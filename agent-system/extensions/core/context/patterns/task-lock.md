@@ -604,6 +604,133 @@ enough to reclaim a genuinely stuck holder.
   `git add` + optional honest-index-rows scan + `git commit` sequence, releases via an `EXIT`
   trap so no code path leaks the mutex.
 
+## Session-Registry CLI: `session-register` / `session-heartbeat` / `session-release` / `session-reap`
+
+A THIRD standalone CLI family, alongside the Scope-Mutex CLI and Commit-Mutex CLI above, but
+serving a genuinely different purpose from either: it is not a mutex at all. It records which
+orchestration **sessions** (not tasks, not critical sections) are actually in flight, at
+`specs/.sessions/{session_id}.json`. Ships as four additive subcommands on this same
+`task-lock.sh`, reusing `write_holder`'s tmp-file-`mv` atomicity pattern (as `write_session_entry`),
+`iso_now`/`now_epoch`/`age_minutes`, `get_file_scope`, and `cmd_reap`'s report-then-delete shape —
+no new script, no new mutex directory.
+
+### Non-Goal: No Reader
+
+**Nothing in the source store consults this registry today.** It is produced only — no gate,
+admission script, or skill reads `specs/.sessions/` anywhere. This mirrors how
+`orchestrator-runtime-files.md` phrases the same obligation for
+`specs/.return-meta-multi-{session_id}.json`: a future reader-adder must add its own
+freshness/ownership checks together with the reader, not separately, and must not assume the
+registry's mere existence implies any particular staleness or ownership guarantee beyond what
+`session-reap`'s own two-signal contract (below) already provides.
+
+### Entry Schema
+
+```json
+{
+  "session_id": "sess_1736700000_a1b2c3",
+  "pid": 261744,
+  "pid_source": "ancestor-claude",
+  "command": "/implement 944",
+  "task_numbers": [944],
+  "file_scope": ["agent-system/extensions/core/scripts/task-lock.sh"],
+  "started_at": "2026-07-04T18:07:17Z",
+  "heartbeat_at": "2026-07-04T18:12:40Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|--------------|
+| `session_id` | string | The registering session's ID (`sess_{timestamp}_{hex}`) |
+| `pid` | integer | Resolved via `resolve_session_pid()` (see below) |
+| `pid_source` | string | `ancestor-claude` \| `ppid` \| `self` \| `explicit` — how `pid` was resolved |
+| `command` | string | The invoking command string, for diagnostics |
+| `task_numbers` | array of integers | Every task this session covers (one for a single-task session, N for a batch) |
+| `file_scope` | array of strings | The deduplicated UNION of every task's declared `file_scope`, computed internally by `session-register` |
+| `started_at` | string (ISO8601) | When the session was first registered (preserved across heartbeats and re-registrations) |
+| `heartbeat_at` | string (ISO8601) | Last refresh; staleness is computed from this field |
+
+### Why No `mkdir` Exclusivity Gate
+
+Unlike the task-number `.lock/` mechanism above, `session-register` writes ONLY its own
+globally-unique-id'd file (`specs/.sessions/{session_id}.json` — `session_id` is generated fresh
+per session by the caller, so no two sessions ever contend for the same target path). There is
+therefore no cross-session exclusivity to protect: `write_session_entry()`'s tmp-file-`mv`
+atomicity alone is sufficient to guarantee a concurrent `session-reap` sweep never observes a
+half-written entry. Adopting `init-marker`'s claim-and-recheck pattern here would add exclusivity
+machinery for a race that cannot occur.
+
+### `resolve_session_pid()`
+
+The recorded `pid` is NOT `$$` inside `task-lock.sh` — `$$` there is this short-lived helper
+script's own pid, not the long-lived session process, which would make every registered entry
+look instantly dead. `resolve_session_pid()` instead performs a bounded ancestor walk (at most 10
+hops, stopping at pid 1) from `$$` upward, looking for a process whose command name contains
+`claude`. Fallback order: `ancestor-claude` (the walk found one) -> `ppid` (walk exhausted, fall
+back to the immediate parent) -> `self` (even `ppid` unavailable). An explicit `--pid N` argument
+to `session-register` overrides the walk entirely and records `pid_source=explicit`.
+
+### `session-register <session_id> <command> <task_numbers_csv> [--pid N]`
+
+Upsert semantics: if an entry for this `session_id` already exists and parses, `started_at` is
+preserved and `heartbeat_at` is refreshed — mirroring `acquire`'s same-session re-entry safety
+property. `file_scope` is computed internally as the deduplicated UNION across every task number
+in `task_numbers_csv`, calling the existing `get_file_scope` once per task and merging with
+`jq -s 'add | unique'` — callers never construct the union themselves. Creates
+`specs/.sessions/` with `mkdir -p` if absent (creation is confined to `session-register`, mirroring
+`resolve_task_dir`'s `create_mode` confinement to `cmd_acquire`).
+
+### `session-heartbeat <session_id>`
+
+Refreshes `heartbeat_at` only, via the same tmp-mv write. Mirrors `heartbeat`'s contract exactly:
+a missing or unparseable entry is a stderr `WARN:` and exit 0 — `session-heartbeat` never blocks
+the caller, matching `heartbeat`'s own "best-effort refresh at existing checkpoints, not a gate"
+character.
+
+### `session-release <session_id>`
+
+`rm -f` the entry; idempotent, always exit 0, mirroring `release`.
+
+### `session-reap [--dry-run]`
+
+Mirrors `reap`'s report-then-delete shape and its "skip corrupt/unreadable entry rather than
+silently ignore" discipline. **Two-signal staleness**, evaluated in this order:
+
+1. **`dead-pid`**: `kill -0 "$pid" 2>/dev/null` FAILS (the pid is confirmably gone — the same
+   idiom already used by `claude-refresh.sh`) AND `heartbeat_at` age exceeds
+   `SESSION_REGISTRY_DEAD_PID_MIN`. Reap with reason `dead-pid`.
+2. **`stale-heartbeat`**: otherwise (the pid is alive, or liveness is undeterminable — e.g. `pid`
+   is missing or non-numeric), fall through to `heartbeat_at` age exceeding
+   `SESSION_REGISTRY_REAP_MIN`. Reap with reason `stale-heartbeat`.
+
+**`kill -0` succeeding is NEVER treated as proof of liveness** — it only prevents the dead-pid
+shortcut from firing; the stale-heartbeat band is always the eventual fallback, exactly as `kill
+-0` is a same-host-only signal (cross-host liveness is an explicit Non-Goal — see the plan's
+Non-Goals list). An entry with a missing/unparseable body falls back to the file's own mtime,
+exactly as `reap` falls back to the `.lock` directory mtime, and is reported via a `SKIP:` or
+`reaped:`/`would reap:` line rather than silently ignored. Always exits 0.
+
+### Threshold Constants
+
+- `SESSION_REGISTRY_REAP_MIN` (default 240 minutes / 4 hours) — deliberately NOT derived from
+  `TASK_LOCK_REAP_MIN`, for the same reason `ORCHESTRATOR_SESSION_REAP_MIN`
+  (`reap-session-runtime-files.sh`) is not: a batch orchestration session can legitimately run far
+  longer than any single task's lock window (up to `MAX_CYCLES_MT = min(task_count * 5, 25)`
+  cycles). Matches `ORCHESTRATOR_SESSION_REAP_MIN`'s own default, since both bound the same class
+  of "batch session, not single task" runtime.
+- `SESSION_REGISTRY_DEAD_PID_MIN` (default 10 minutes) — the floor below which the dead-pid
+  shortcut never fires. `resolve_session_pid()`'s ancestor walk can, in principle, resolve to the
+  wrong pid (a misresolved or since-reused pid); this floor guards against that: even a bogus pid
+  can only ever shorten the wait down to this floor, never reap a genuinely live, recently
+  heartbeated session. This is what makes a `ppid`/`self` `pid_source` fallback an acceptable
+  outcome rather than a safety hole.
+
+### Never Implicit
+
+`session-reap` is reachable ONLY via this explicit subcommand — never called from
+`session-register`, `session-heartbeat`, or `session-release`, mirroring `reap`'s own "never
+implicit" contract for the task-number lock family.
+
 ## The ABORT Refusal Message
 
 Modeled on the established two-line `ABORT:` + remedy shape already used by
@@ -636,7 +763,7 @@ The session-identity branch is checked FIRST, unconditionally, before any stalen
 — a session re-acquiring its own lock (e.g. `/research 42` immediately followed by `/plan 42` in
 the same conversation) always succeeds. This property has a dedicated functional test and should never be weakened by future edits.
 
-## Consumers (Four Distinct Wiring Paths)
+## Consumers (Five Distinct Wiring Paths)
 
 1. **Single-task gate scripts**: `command-gate-in.sh` (acquire after the terminal-status guard)
    and `command-gate-out.sh` (unconditional release) — covers `/research`, `/plan`,
@@ -662,9 +789,31 @@ the same conversation) always succeeds. This property has a dedicated functional
    `claude-refresh.sh` (process cleanup only), not this skill's `specs/` sweep, so reap only runs
    when `/refresh` is invoked explicitly (see `commands/refresh.md`'s "Stale Task Locks" section
    for the same scoping note from the caller's side).
+5. **Session-registry call sites** (see the "Session-Registry CLI" section above — register/
+   heartbeat/release across the gate scripts, the three commands' batch steps, the orchestrate
+   stages, and the implementer's per-phase checkpoint):
+   - `command-gate-in.sh` (register, adjacent to the task-lock acquire) /
+     `command-gate-out.sh` (release, adjacent to the task-lock release) — single-task sessions.
+   - `commands/research.md`, `commands/plan.md`, `commands/implement.md` Step 2 (register under
+     the bare, unsuffixed `batch_session_id`) / Step 4 (or Step 4/5 boundary) (release) —
+     multi-task command batches.
+   - `skill-orchestrate/SKILL.md` Stage MT-1 (register, adjacent to `mt_state_file`
+     initialization) / Stage MT-5 (release, alongside the `mt_state_file` remove/preserve
+     handling) — the `/orchestrate` multi-task batch path. Single-task `/orchestrate` needs no
+     separate wiring: its CHECKPOINT 1/2 already routes through the gate scripts above.
+   - Heartbeat refresh is wired at existing checkpoints only, never a new one:
+     `skill-orchestrate/SKILL.md`'s Stage 3 cycle loop (single-task) and Stage MT-3 step 1 status
+     refresh (multi-task batch), and `agents/general-implementation-agent.md`'s Stage 4D phase
+     transition (the implementer's real per-phase checkpoint — `skill-implementer/SKILL.md` has
+     none and is not touched by this wiring).
+   - `session-reap` is explicit-invocation-only, wired into `skill-refresh/SKILL.md` Step 4.6,
+     mirroring `reap`'s own wiring shape (item 4 above).
+   - **Non-Goal, restated from the Session-Registry CLI section above**: no consumer reads the
+     registry — every call site listed here only writes (register/heartbeat) or deletes
+     (release/reap) an entry.
 
 Every `.lock/`-based path calls the SAME `task-lock.sh` subcommands — never reimplemented inline —
-so the two wiring paths cannot drift from each other's semantics.
+so the wiring paths cannot drift from each other's semantics.
 
 ## Non-Goals (Deferred Follow-Ups)
 
@@ -683,11 +832,19 @@ so the two wiring paths cannot drift from each other's semantics.
 ## Related Documentation
 
 - `.claude/scripts/task-lock.sh` — the implementation (acquire/heartbeat/release/check/reap/
-  init-marker, plus the scope-mutex and commit-mutex CLIs documented above)
+  init-marker, plus the scope-mutex, commit-mutex, and session-registry CLIs documented above)
 - `.claude/scripts/test-task-lock-reap.sh` — isolated-temp-root test suite proving the "Reap
   Contract" section's behavior (fresh-not-reaped, stale-reaped-and-reported, dry-run removes
   nothing, acquire/check/heartbeat/release never implicitly reap, corrupt-holder skip-vs-reap,
   and the depth-3 archive case)
+- `.claude/scripts/test-session-registry.sh` — isolated-temp-root test suite proving the
+  "Session-Registry CLI" section's behavior (required-field write, `file_scope` union,
+  re-register preserves `started_at`, heartbeat-on-missing-entry never blocks, release
+  idempotence, dry-run removes nothing, the dead-pid/`SESSION_REGISTRY_DEAD_PID_MIN` floor guard,
+  the `SESSION_REGISTRY_REAP_MIN` stale-heartbeat band, and corrupt-entry mtime fallback)
+- `.claude/context/standards/orchestrator-runtime-files.md` — the Class Table row for
+  `specs/.sessions/{session_id}.json` (ephemeral, gitignored, no reader) and the repo-root
+  `/.gitignore` coverage point this session-registry storage directory relies on
 - `.claude/skills/skill-refresh/SKILL.md` — the sole `reap` call site ("Reap Stale Task Locks"
   step)
 - `.claude/commands/refresh.md` — the "Stale Task Locks" section documenting `reap` from the

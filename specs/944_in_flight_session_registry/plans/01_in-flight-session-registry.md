@@ -190,34 +190,34 @@ acceptable outcome, not a blocker.
 
 ---
 
-### Phase 2: Extend the Task-Lock Contract Document [NOT STARTED]
+### Phase 2: Extend the Task-Lock Contract Document [COMPLETED]
 
 **Goal**: Document the registry in `context/patterns/task-lock.md` as a new top-level section
 following the shape the document already uses, and update the two existing sections that go stale
 otherwise. Extend, never fork.
 
 **Tasks**:
-- [ ] Read the current `context/patterns/task-lock.md` in full, in particular `## Reap Contract`,
+- [x] Read the current `context/patterns/task-lock.md` in full, in particular `## Reap Contract`,
       `## Scope-Mutex CLI: scope-acquire / scope-release`, and
       `## Commit-Mutex CLI: commit-acquire / commit-release` — the three existing examples of the
       per-mechanism section shape to follow.
-- [ ] Add a `## Session-Registry CLI: session-register / session-heartbeat / session-release /
+- [x] Add a `## Session-Registry CLI: session-register / session-heartbeat / session-release /
       session-reap` section containing: the entry schema with every field, a `###` subsection per
       subcommand with its contract and exit codes, the two threshold constants with their derivation
       rationale, and an explicit statement of why no `mkdir` exclusivity gate is used (globally
       unique id, single writer per file, tmp-mv atomicity sufficient).
-- [ ] Document the two-signal staleness rule verbatim in that section: dead pid shortens (floored by
+- [x] Document the two-signal staleness rule verbatim in that section: dead pid shortens (floored by
       `SESSION_REGISTRY_DEAD_PID_MIN`), alive-or-undeterminable falls through to the
       `heartbeat_at`-age threshold, and `kill -0` is a same-host-only signal that is never proof of
       liveness.
-- [ ] Add an explicit "Non-Goal: no reader" note in the new section stating that nothing consults the
+- [x] Add an explicit "Non-Goal: no reader" note in the new section stating that nothing consults the
       registry yet, and that a future reader-adder must add its own freshness/ownership checks
       together with the reader — mirroring how `orchestrator-runtime-files.md` phrases the same
       obligation for `specs/.return-meta-multi-{session_id}.json`.
-- [ ] Update `## Consumers (Four Distinct Wiring Paths)` to a fifth path covering register/heartbeat/
+- [x] Update `## Consumers (Four Distinct Wiring Paths)` to a fifth path covering register/heartbeat/
       release across the gate scripts, the three commands' batch steps, the orchestrate stages, and
       the implementer per-phase checkpoint. Rename the heading to match the new count.
-- [ ] Update `## Related Documentation` with the new test suite and
+- [x] Update `## Related Documentation` with the new test suite and
       `context/standards/orchestrator-runtime-files.md`.
 
 **Timing**: 1 hour
