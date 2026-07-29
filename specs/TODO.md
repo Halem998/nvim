@@ -1,5 +1,5 @@
 ---
-next_project_number: 965
+next_project_number: 967
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 965
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 947,950,951,955,957,958,959,963,964 | -- | agent-system, orchestration-concurrency |
-| 2 | 948,952,960 | 947,951,957,959 | agent-system |
+| 1 | 947,950,951,955,957,959,963,964,965,966 | -- | agent-system, orchestration-concurrency |
+| 2 | 948,952,958,960 | 947,951,957,959,966 | agent-system |
 | 3 | 949,953,954,961 | 948,952,960 | agent-system |
 | 4 | 962 | 961 | agent-system |
 
@@ -29,19 +29,104 @@ next_project_number: 965
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
     └─ 954 [NOT STARTED] — Give recorded system defects an interactive surface that produces
 955 [NOT STARTED] — specs/errors.json has drifted into three mutually inconsistent do
-958 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 964 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+965 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+966 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 958 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### Orchestration Concurrency
 
 957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
+
+### 966. Give the inter-cycle redeploy checkpoint a pre/post baseline
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations may still reference deployed `.claude/scripts/*` paths -- that is the CALL PATH, not the EDIT TARGET.
+
+WHAT IS WRONG: the inter-cycle redeploy checkpoint (Stage MT-3 step 7 of `skills/skill-orchestrate/SKILL.md`) treats ANY non-zero exit from `scripts/verify-deploy.sh` as proof that the tree is broken, and responds by deferring ALL remaining not-yet-dispatched tasks for the rest of the invocation. But `verify-deploy.sh` has NO BASELINE NOTION: grepping it for `baseline`, `pre-exist`, `newly-introduced`, and `regress` returns a single hit, and that hit is an unrelated comment about duplicate hook registrations. The script reports the tree's ABSOLUTE state, never a DELTA. It therefore cannot distinguish:
+  (a) "the redeploy I just performed broke the tree" -- the condition the checkpoint exists to catch; from
+  (b) "this repository already had an unrelated standing failure before I touched anything" -- a condition the checkpoint should report but must not act on.
+
+CONSEQUENCE: any standing repo-wide lint failure permanently converts multi-task `/orchestrate` into run-one-task-then-defer, triggered the moment any dispatched task's `modified_files` overlaps an orchestrator-critical path. The batch does not fail loudly; it quietly stops doing work.
+
+OBSERVED LIVE (empirical, not code review): a task modified core orchestrator paths. `deploy-headless.sh` SUCCEEDED, deploying 303 artifacts. `verify-deploy.sh` then failed gate 3 (doc-lint) on two stray literature `.pyc` findings entirely unrelated to any redeployed path. The batch's one remaining task was deferred and never dispatched. The redeploy was fine; the checkpoint could not tell.
+
+WORK: capture a `verify-deploy` baseline BEFORE the redeploy, compare against the post-redeploy result, and defer ONLY on NEWLY-INTRODUCED failures. Pre-existing failures must still be reported LOUDLY -- they are real problems -- but must NOT defer the batch.
+
+CONSTRAINTS (binding; each exists because the current design deliberately chose it, and the change must not silently un-choose it):
+1. PRESERVE DEFER-NOT-FAIL. A deferred task is never marked failed and never status-mutated. This is governed by the `## Defer-Not-Fail: The Standing Default` section of `context/patterns/batch-orchestration-guardrails.md`. Abort remains rejected: it discards `mt_state_file` bookkeeping for no benefit, since deferral already halts further exposure.
+2. PRESERVE THE EXPLICIT REJECTION OF SILENT-CONTINUE. The existing failure contract rejects silent-continue outright, on the grounds that the operator must always be able to distinguish "we didn't check" from "we checked, it's broken, and we proceeded anyway". A baseline comparison introduces a THIRD state -- "we checked, it's broken, it was ALREADY broken before we redeployed, and we proceeded deliberately" -- and that third state MUST be reported just as loudly as the second. Proceeding past a pre-existing failure is only acceptable when it is visibly announced; a baseline must never become a mechanism for quietly swallowing failures.
+3. UPDATE THE CONTRACT IN STEP WITH THE BEHAVIOR. The `### The Inter-Cycle Redeploy Checkpoint` subsection of `context/patterns/batch-orchestration-guardrails.md` declares itself "the single, authoritative statement of the inter-cycle redeploy checkpoint contract", and every other file that mentions the checkpoint (`regeneration-is-manual-only.md`, `skills/skill-orchestrate/SKILL.md`, `commands/orchestrate.md`, `scripts/deploy-headless.sh`, `scripts/verify-deploy.sh`) cross-references it BY PATH rather than restating it. Its **Failure contract** paragraph currently reads "on failure of either gate ... defer all remaining not-yet-dispatched tasks". That paragraph is the authoritative text and MUST be rewritten as part of this task. Honor the existing cross-reference-by-path discipline: update the authoritative subsection, do not restate the new contract in the referring files.
+4. PRESERVE THE OTHER CHECKPOINT PROPERTIES UNCHANGED. The trigger (union of dispatched `modified_files` overlapped against the `scope_roots x critical_paths` expansion of `context/reference/orchestrator-critical-paths.json`), the idempotence guard (`deployed_critical_paths`), the sequencing guarantee (per-task commits at Stage MT-4 step 5.5 precede the checkpoint), and the `specs/.deploy-lock/` concurrency mutex are all out of scope and must survive untouched.
+5. `deploy-headless.sh` FAILURE IS NOT SUBJECT TO BASELINING. The two gates are asymmetric: a `deploy-headless.sh` non-zero exit means the redeploy itself did not complete, which has no meaningful "pre-existing" interpretation and must keep deferring unconditionally. Only `verify-deploy.sh` results are baseline-compared. Note also that `verify-deploy.sh` exit 2 is currently a FAILURE at this call site, never a pass (see that script's header) -- decide and document explicitly how exit 2 interacts with baselining rather than letting it fall through whatever the new comparison happens to do.
+
+DESIGN NOTE, NOT A DECISION: comparing exit codes alone is insufficient, because "gate 3 failed with 2 findings" and "gate 3 failed with 5 findings, 3 of them new" produce the identical non-zero exit. The comparison needs finding-level granularity, which may require `verify-deploy.sh` to emit a machine-comparable findings list. Whether that is a new output mode, a structured report file, or something else is left to research and planning -- but a naive exit-code-only comparison will silently mask newly-introduced failures whenever a pre-existing failure is already present in the same gate, which is precisely the observed scenario.
+
+SEQUENCING (binding, and now encoded as a real dependency edge): the separately-tracked task titled "Fix deploy propagation so new scripts/lib files and updated skills reach an existing deploy" proposes, as its item (3), ADDING a stricter `verify-deploy.sh` gate that FAILS when a source-store file has no deployed counterpart. In this repository the literature extension is deliberately undeployed, producing dozens of "core script never deployed" advisories -- so that proposed gate is a strong candidate to become the NEXT standing failure, which under the current checkpoint would defer every batch all over again. This task must therefore land FIRST. That ordering is encoded as a `dependencies[]` edge on the deploy-propagation task pointing at this one, and is additionally REQUIRED by file-footprint overlap: both tasks list `agent-system/extensions/core/scripts/verify-deploy.sh` in their `file_scope`, so they can never be co-dispatched in the same cycle regardless.
+
+KNOWN CONCURRENT-EDIT HAZARD (informational, deliberately NOT encoded as dependency edges): three other not-yet-started tasks also list `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` in their `file_scope` -- the ones titled "Settle research agent orchestrator handoff contract", "Record system defects durably and wire detection sites", and "Surface deferred system defects from autonomous runs"; the last of these also shares `agent-system/extensions/core/commands/orchestrate.md`. No dependency edges were added for these because `/orchestrate`'s admission gate already treats file-scope collision as an admission-time check and will never co-dispatch overlapping tasks in one cycle. They are recorded here so an implementer expects to rebase onto whichever of them lands first, and does not mistake the resulting conflict for a defect.
+
+VERIFICATION BAR:
+1. A batch whose repository carries a PRE-EXISTING `verify-deploy` failure runs to completion, dispatching every eligible task, while reporting that pre-existing failure loudly at each checkpoint firing.
+2. A batch in which the redeploy ITSELF introduces a NEW `verify-deploy` failure still defers all remaining not-yet-dispatched tasks, exactly as today.
+3. A `deploy-headless.sh` failure still defers unconditionally, with no baseline consultation.
+4. No deferred task is marked failed or status-mutated in any of the above.
+5. The authoritative `### The Inter-Cycle Redeploy Checkpoint` subsection describes the implemented behavior, including the new third operator-visible state, and no referring file restates the contract inline.
+6. `bash -n` clean on every edited shell script.
+
+DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task numbers. Use durable anchors instead -- script names (`verify-deploy.sh`, `deploy-headless.sh`), stage labels (Stage MT-3 step 7, Stage MT-4 step 5.5), and section headings (`### The Inter-Cycle Redeploy Checkpoint`, `## Defer-Not-Fail: The Standing Default`).
+
+---
+
+### 965. Make check_undeclared_scripts skip untracked build artifacts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations may still reference deployed `.claude/scripts/*` paths -- that is the CALL PATH, not the EDIT TARGET.
+
+WHAT IS WRONG: `check_undeclared_scripts()` in `scripts/check-extension-docs.sh` enumerates candidate files with `find "$ext_path_norm/scripts" -type f` and exempts exactly one path shape, `deprecated/*`. Every other regular file found under an extension's `scripts/` tree is required to appear in that extension's `provides.scripts` manifest array or it is reported via `fail`. Because `find` walks the working tree rather than the git index, ANY untracked or gitignored file that happens to sit under `scripts/` -- build artifacts, caches, virtualenvs -- becomes a permanent, unfixable hard FAIL. The file cannot be declared in `provides.scripts` (it is not a deliverable and must never be deployed), and it cannot be removed permanently (it is regenerated by the next interpreter run).
+
+OBSERVED LIVE (empirical, not code review): doc-lint reported two FAILs against files that are gitignored and were never tracked:
+  - `agent-system/extensions/literature/scripts/__pycache__/literature-decode-font-offset.cpython-313.pyc`
+  - `agent-system/extensions/literature/scripts/tests/__pycache__/generate-test-fixtures.cpython-313.pyc`
+Both are CPython bytecode caches. Their presence makes `check-extension-docs.sh` exit non-zero unconditionally, so the doc-lint gate is permanently red and every consumer of that exit status inherits a standing failure.
+
+THE FIX IS ALREADY CHOSEN AND ALREADY DOCUMENTED IN THE SAME FILE -- DO NOT REDESIGN IT. The sibling check `check_flat_category_orphans()` in this same script solved exactly this problem via its `_git_deployed_files()` helper, which enumerates with `git ls-files` instead of `find`, and carries this comment verbatim:
+
+    # Enumeration method: git ls-files (not find), matching the research audit method -- naturally
+    # excludes gitignored runtime artifacts (literature-pyenv/venv/, __pycache__/) without extra
+    # path filtering, since they were never tracked.
+
+WORK: apply that same already-chosen, already-justified enumeration method to `check_undeclared_scripts()`. Replace the `find`-based process substitution with a `git ls-files`-based one scoped to the extension's `scripts/` directory. Preserve every existing behavior of the check that is NOT about enumeration:
+  - Matching remains by FULL RELATIVE PATH under `scripts/`, never by basename -- `provides.scripts` entries legitimately carry a path prefix (e.g. literature's `tests/generate-test-fixtures.py`).
+  - All regular file types remain in scope, not just `*.sh` -- `provides.scripts` already holds `.sh`, `.py`, `.sql`, and dotfile entries (e.g. literature's `.zotero-title-sim.py`). Do not reintroduce a `*.sh` glob.
+  - `deprecated/*` stays exempt; `tests/` stays NON-exempt (literature declares its `tests/*.py` and `tests/*.sh` entries deliberately).
+  - The trailing-slash normalization (`ext_path_norm="${ext_path%/}"`) must survive. The caller's loop is `for ext_path in "$EXT_DIR"/*/`, so `ext_path` carries a trailing slash; left unstripped, the prefix-strip builds a double-slash prefix that matches nothing and degrades the check into reporting every script in every extension as undeclared. Re-verify this holds against whatever path form `git ls-files` returns, which is repo-root-relative and therefore NOT the same shape `find` returned -- the prefix-strip logic must be re-derived for the new form, not copied blindly.
+
+DO NOT take the alternative of adding a `__pycache__/*` case to the existing `case` statement. That is a symptom patch: it fixes these two files and leaves the next gitignored artifact class (`.venv/`, `*.pyc` elsewhere, editor swap files, `node_modules/`) to reproduce the identical permanent-FAIL failure mode. The git-index enumeration is a class fix and is what the sibling check already committed to; divergent enumeration between two checks in one script is itself a defect worth closing.
+
+VERIFICATION BAR (all must hold):
+1. The two literature `__pycache__` FAILs no longer appear.
+2. A genuinely undeclared BUT TRACKED script under an extension's `scripts/` is STILL caught. Add or verify a fixture proving this. This assertion is a HARD acceptance criterion, not optional -- the entire risk of this change is silently converting a working check into a no-op, and only a positive-detection fixture distinguishes "correctly ignores untracked artifacts" from "ignores everything".
+3. A declared-and-tracked script produces no finding (no false positive regression).
+4. `bash -n agent-system/extensions/core/scripts/check-extension-docs.sh` is clean.
+5. `bash .claude/scripts/check-extension-docs.sh` exits 0.
+
+DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task numbers. Use durable anchors instead -- function names (`check_undeclared_scripts`, `check_flat_category_orphans`, `_git_deployed_files`), script names, and section headings.
+
+---
 
 ### 964. Repair /refresh orphan detection so live system and session processes are never selected
 - **Status**: [NOT STARTED]
@@ -219,7 +304,7 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 966
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` or the loader in `lua/**`, NEVER `.claude/**`.
 

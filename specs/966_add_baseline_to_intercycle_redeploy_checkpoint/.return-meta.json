@@ -1,0 +1,55 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 meta tasks in /home/benjamin/.config/nvim/specs/: #965 (git ls-files enumeration for check_undeclared_scripts) and #966 (pre/post baseline for the inter-cycle redeploy checkpoint).",
+  "artifacts": [
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/",
+      "summary": "Task directory: make check_undeclared_scripts enumerate via git ls-files so untracked build artifacts stop producing permanent FAILs"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/966_add_baseline_to_intercycle_redeploy_checkpoint/",
+      "summary": "Task directory: baseline verify-deploy pre/post redeploy so only newly-introduced failures defer a batch"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Tasks 965 and 966 added; task 958 moved to wave 2 blocked by 966"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Entries 965/966 appended, next_project_number=967, dependency edge 958->966 added"
+    }
+  ],
+  "next_steps": "Run /research 965 and /research 966. Task 966 must complete before task 958 (dependency edge encoded; both share verify-deploy.sh in file_scope).",
+  "metadata": {
+    "session_id": "sess_1785336979_220ee2",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": [
+      "orchestrator",
+      "meta",
+      "skill-meta",
+      "meta-builder-agent"
+    ],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2,
+    "task_numbers": [
+      965,
+      966
+    ],
+    "topic": "agent-system",
+    "created_at": "2026-07-29T15:00:32Z"
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/state.json",
+    "/home/benjamin/.config/nvim/specs/TODO.md",
+    "/home/benjamin/.config/nvim/specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/",
+    "/home/benjamin/.config/nvim/specs/966_add_baseline_to_intercycle_redeploy_checkpoint/"
+  ],
+  "errors": []
+}
