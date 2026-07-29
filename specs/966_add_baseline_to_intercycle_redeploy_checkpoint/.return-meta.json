@@ -1,34 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/plans/01_redeploy-checkpoint-baseline.md",
-      "summary": "7-phase implementation plan for the verify-deploy --findings mode and the pre/post baseline comparison at the inter-cycle redeploy checkpoint"
-    },
-    {
-      "type": "handoff",
-      "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/.orchestrator-handoff.json",
-      "summary": "Orchestrator handoff recording the plan, its decisions, and three scope notes"
-    }
-  ],
-  "next_steps": "Run /implement 966 to execute the plan",
+  "status": "in_progress",
   "metadata": {
     "session_id": "sess_1785355598_1f68c0_966",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 5.5,
-    "dependency_waves": [[1, 2], [3], [4, 6], [5], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "Giving an absolute-state health-check script a delta notion without changing its contract: add an additive machine-output flag (e.g. --findings) that emits normalized, prefix-tagged, one-per-line finding strings alongside (never instead of) the existing narrative output and exit codes, then have the caller capture the set before and after the mutation and act only on the set difference. Three details make it work: (1) normalize count-bearing messages to be count-free so magnitude drift inside an already-failing check cannot manufacture a spurious new finding; (2) fold 'the checker could not run' into the same findings vocabulary as one synthesized sentinel line rather than special-casing the exit code, keeping the comparison a single uniform set difference; (3) sort -u at the point of capture in both runs so incidental ordering never produces a false delta. The resulting third operator-visible state -- checked, broken, ALREADY broken, proceeded deliberately -- must be announced as loudly as an outright failure (banner + machine marker + durable ledger entry), or the baseline becomes a mechanism for quietly swallowing failures.",
-      "category": "PATTERN",
-      "source_artifact": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/plans/01_redeploy-checkpoint-baseline.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["baseline-comparison", "additive-output-mode", "lint-gate", "set-difference", "pre-existing-failure"]
-    }
-  ]
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 7
+  }
 }

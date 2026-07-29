@@ -1,7 +1,7 @@
 # Implementation Plan: Give the inter-cycle redeploy checkpoint a pre/post baseline
 
 - **Task**: 966 - Give the inter-cycle redeploy checkpoint a pre/post baseline
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: 967 (batch-ordering edge; no file-scope overlap — see Scope Notes)
 - **Research Inputs**: specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md
@@ -205,7 +205,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Add the `--findings` mode to `verify-deploy.sh` [NOT STARTED]
+### Phase 1: Add the `--findings` mode to `verify-deploy.sh` [COMPLETED]
 
 **Goal**: `verify-deploy.sh --findings --quiet` emits a normalized, sorted, deduplicated,
 one-per-line findings set covering all four gates plus the exit-2 sentinel, with default-mode
@@ -213,43 +213,53 @@ behavior (narrative output and exit codes 0/1/2) byte-for-byte unchanged.
 
 **Tasks**:
 
-- [ ] Add a `--findings` flag to the argument loop (`FINDINGS=false` default), and extend the
+- [x] Add a `--findings` flag to the argument loop (`FINDINGS=false` default), and extend the
       `Usage:` and `Exit codes:` header block to document the mode, its output contract (`FINDING `
       prefix, gate labels, `sort -u` at the caller), and its additive-only guarantee. Note in the
       header that the checkpoint is its automated consumer and cross-reference
       `context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle Redeploy
       Checkpoint` subsection by path (the file already does this — extend, do not duplicate).
-- [ ] Introduce a `FINDINGS_LIST` accumulator and a `CURRENT_GATE` variable set to `gate1`..`gate4`
+      *(completed)*
+- [x] Introduce a `FINDINGS_LIST` accumulator and a `CURRENT_GATE` variable set to `gate1`..`gate4`
       immediately before each numbered gate section. Extend `fail()` to append
       `FINDING $CURRENT_GATE $1` to the accumulator. `fail()`'s existing stderr output, counters,
       and `return 0` are unchanged — this is a second consumer of the SAME single source, not a
-      duplicated message.
-- [ ] Emit the exit-2 sentinel `FINDING gate0 verify-deploy could not run: <reason>` on the two
+      duplicated message. *(deviation: altered — `fail()` also accepts an optional 3rd argument
+      that overrides (or, if passed empty, suppresses) the default `$1` finding text; needed so
+      the gate-3 `STRICT_CORE_DEPLOY` sub-check can omit its embedded count (Decision 4) and so
+      the two aggregate gate-3/gate-4 `fail()` calls can suppress their own generic finding in
+      favor of the per-underlying-finding lines extracted separately. The unmodified two-arg call
+      shape used by every other `fail()` call site is untouched.)*
+- [x] Emit the exit-2 sentinel `FINDING gate0 verify-deploy could not run: <reason>` on the two
       tree-condition exit-2 branches (target is not a directory; no `.claude/` deploy tree), and on
       the unknown-flag branch when `--findings` has already been parsed at that point. Emit only
       when `FINDINGS=true`. Document in the header that an unknown-flag exit 2 is a caller-side bug
       that both baseline runs hit identically, and is surfaced by the caller's loud banner.
-- [ ] **Gate 3**: replace `>/dev/null 2>&1` with a capture-to-variable of the same
+      *(completed)*
+- [x] **Gate 3**: replace `>/dev/null 2>&1` with a capture-to-variable of the same
       `check-extension-docs.sh --quiet` invocation (observationally identical — the output was
       already discarded). Keep the pass/fail branch driven by the captured exit status, unchanged.
       When `FINDINGS=true` and the gate failed, extract every `FAIL:` line, attribute it to the
       most recent `[ext_name]` / `[project-wide]` header seen, and append one
       `FINDING gate3 [<ext>] FAIL: <text>` line per finding. Exclude `ADVISORY:` lines
-      (Decision 3).
-- [ ] **Gate 3, `STRICT_CORE_DEPLOY` sub-check**: emit its finding without the numeric count
-      (Decision 4).
-- [ ] **Gate 4**: leave the `check-task-references.sh --quiet >/dev/null 2>&1` gate invocation
+      (Decision 3). *(completed: verified live against this repo's current standing doc-lint
+      failure — extraction produced 4 correctly-attributed `[core]` findings)*
+- [x] **Gate 3, `STRICT_CORE_DEPLOY` sub-check**: emit its finding without the numeric count
+      (Decision 4). *(completed)*
+- [x] **Gate 4**: leave the `check-task-references.sh --quiet >/dev/null 2>&1` gate invocation
       verbatim. When `FINDINGS=true` AND that gate failed, re-invoke WITHOUT `--quiet`, capture
       stdout, and append each `path:line:content` finding line as
       `FINDING gate4 <path>:<line>:<content>`. This re-invocation mirrors the existing
       `STRICT_CORE_DEPLOY` re-invocation precedent in the same file. Add an inline comment stating
       WHY the two gates' `--quiet` handling is asymmetric (gate 3's detail survives `--quiet`;
-      gate 4's does not).
-- [ ] Print the accumulated findings, `sort -u`, to **stdout** after the final narrative PASS/FAIL
+      gate 4's does not). *(completed: verified with simulated non-quiet output since this repo's
+      live gate 4 currently passes with zero findings)*
+- [x] Print the accumulated findings, `sort -u`, to **stdout** after the final narrative PASS/FAIL
       line, when `FINDINGS=true` — including on a passing run (an empty set is a valid, meaningful
       result). Findings go to stdout so a `--quiet` caller's command substitution captures them;
-      the FAIL narrative stays on stderr as today.
-- [ ] Confirm no task-number citation appears in any added line (deliverable rule).
+      the FAIL narrative stays on stderr as today. *(completed)*
+- [x] Confirm no task-number citation appears in any added line (deliverable rule). *(completed:
+      no digit-bearing task citation in any added line)*
 
 **Timing**: 1.25 hours
 

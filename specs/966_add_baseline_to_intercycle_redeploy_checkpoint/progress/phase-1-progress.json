@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Add the --findings mode to verify-deploy.sh",
+  "started_at": "2026-07-29T20:31:00Z",
+  "last_updated": "2026-07-29T20:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add --findings flag, FINDINGS_LIST accumulator, CURRENT_GATE labels, extend fail(), exit-2 sentinels, gate-3 capture + per-FAIL extraction, gate-4 conditional re-invocation, sorted findings output, header docs",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.2",
+      "description": "Extend fail() to append FINDING $CURRENT_GATE $1 to the accumulator.",
+      "type": "altered",
+      "reason": "fail() gained an optional 3rd argument that overrides or (if empty) suppresses the default $1 finding text, needed for Decision 4's count-free STRICT_CORE_DEPLOY finding and to avoid duplicate/aggregate findings at the two gate-3/gate-4 call sites that separately extract per-underlying-finding lines.",
+      "annotation": "*(deviation: altered — fail() also accepts an optional 3rd argument ...)*"
+    }
+  ],
+  "handoff_count": 0
+}
