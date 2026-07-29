@@ -1,7 +1,7 @@
 # Implementation Plan: Task #978
 
 - **Task**: 978 - fix_index_validators_and_line_counts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/978_fix_index_validators_and_line_counts/reports/01_context-index-validation-truth.md
@@ -669,25 +669,53 @@ documentation the system actually generates and reads.
 
 ---
 
-### Phase 9: Final gate and baseline comparison [NOT STARTED]
+### Phase 9: Final gate and baseline comparison [COMPLETED]
 
 **Goal**: The full gate set passes and all three verification-bar criteria are demonstrated
 together on a freshly deployed tree.
 
 **Tasks**:
-- [ ] Redeploy once more via `bash .claude/scripts/deploy-headless.sh` so every source change in
-      this task is reflected in `.claude/`.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` in full and confirm every gate passes, including
-      gate 3 (`check-extension-docs.sh`) and gate 4 (`check-task-references.sh`).
-- [ ] Demonstrate verification-bar criterion 1 by showing the validator's summary both before this
-      task's changes (from the research report's recorded baseline) and now.
-- [ ] Re-run the Phase 7 negative test once on the deployed copy of the gate script, confirming
-      the deployed script — not just the source — carries the new rules.
-- [ ] Record `validate-context-budgets.sh`'s violation count as an observation only, noting that
+- [x] Redeploy once more via `bash .claude/scripts/deploy-headless.sh` so every source change in
+      this task is reflected in `.claude/`. *(completed: 305 artifacts, exit 0)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` in full and confirm every gate passes, including
+      gate 3 (`check-extension-docs.sh`) and gate 4 (`check-task-references.sh`). *(completed:
+      `[verify-deploy] PASS -- 12 check(s), 0 failure(s)`, exit 0, including both gate 3 and
+      gate 4 explicitly listed as PASS)*
+- [x] Demonstrate verification-bar criterion 1 by showing the validator's summary both before this
+      task's changes (from the research report's recorded baseline) and now. *(completed --
+      BEFORE (research report baseline): "Entries checked: 164 / Errors: 0 / Warnings: 0
+      (reported)" while 58 real `[WARN]` lines printed and scrolled past, "Validation PASSED".
+      AFTER (now, deployed): "Entries checked: 178 / Errors: 0 / Warnings: 0 / Validation PASSED"
+      -- entry count rose by the 14 newly-indexed files, and the reported warning count is now
+      truthful (0 real warnings exist, not merely 0-after-being-discarded). `--strict` also
+      exits 0.)*
+- [x] Re-run the Phase 7 negative test once on the deployed copy of the gate script, confirming
+      the deployed script — not just the source — carries the new rules. *(completed: confirmed
+      `.claude/scripts/check-extension-docs.sh` byte-identical to source first via `diff -q`;
+      created a second scratch orphan file, ran the DEPLOYED script directly
+      (`bash .claude/scripts/check-extension-docs.sh --quiet`), got `FAIL: Rule S: deployed
+      context/patterns/zzz-scratch-orphan-test2.md has no entry in .claude/context/index.json`;
+      removed it; re-run showed `PASS: all extensions OK`, exit 0 -- the FULLY clean baseline,
+      with the transient core-script-drift FAIL from Phases 2/3/7 now resolved by this phase's
+      redeploy)*
+- [x] Record `validate-context-budgets.sh`'s violation count as an observation only, noting that
       any change relative to its pre-task output is the expected consequence of accurate
-      `line_count` values and is explicitly out of scope.
-- [ ] Confirm no file under `.claude/` was hand-authored at any point: every `.claude/` change in
-      the final diff must be attributable to `deploy-headless.sh`.
+      `line_count` values and is explicitly out of scope. *(completed -- OBSERVATION ONLY, not
+      fixed: `Violations: 11` both before (research report baseline) and after this task's
+      changes -- the same summary COUNT, but the underlying numbers shifted as expected:
+      `meta-builder-agent`'s computed token estimate rose from 115512 (baseline, undercounted
+      placeholders) to 122432 (now, accurate counts) against its 15000 cap. 9 agents currently
+      report OVER, 2 (`spawn-agent`, `code-reviewer-agent`) report OK. The pre-existing
+      `tier`-field-missing (178/178) and 3 dead-entry findings are unrelated to `line_count` and
+      also untouched, matching the stated Non-Goal.)*
+- [x] Confirm no file under `.claude/` was hand-authored at any point: every `.claude/` change in
+      the final diff must be attributable to `deploy-headless.sh`. *(completed: every `.claude/`
+      write in this implementation was either produced by `deploy-headless.sh` or was a temporary
+      scratch test file for the Phase 7/9 negative tests -- `zzz-scratch-orphan-test.md` and
+      `zzz-scratch-orphan-test2.md` -- created via Bash `echo >`, never via Write/Edit, and both
+      removed immediately after their negative test, never committed (`.claude/` is gitignored so
+      neither could appear in `git diff` regardless). No source file under `.claude/` was ever
+      targeted by a Write or Edit tool call in this implementation.)*
 
 **Timing**: 45 minutes
 
@@ -712,25 +740,34 @@ together on a freshly deployed tree.
 
 The task's three verification-bar criteria, each mapped to the phase that proves it:
 
-- [ ] **Criterion 1 (truthful counts)**: `validate-context-index.sh` against the deployed index
+- [x] **Criterion 1 (truthful counts)**: `validate-context-index.sh` against the deployed index
       reports a nonzero warning count before the regeneration (Phase 1 verification) and zero
-      errors and zero warnings after (Phase 6 and Phase 9 verification).
-- [ ] **Criterion 2 (orphan gate bites)**: a deliberately orphaned scratch context file makes
+      errors and zero warnings after (Phase 6 and Phase 9 verification). VERIFIED: 58 real
+      warnings before (0 reported), 0 errors / 0 warnings after (both default and `--strict`).
+- [x] **Criterion 2 (orphan gate bites)**: a deliberately orphaned scratch context file makes
       `check-extension-docs.sh` fail; removing it makes it pass (Phase 7 negative test, re-run
-      against the deployed script in Phase 9).
-- [ ] **Criterion 3 (exact source counts)**: every `line_count` in
+      against the deployed script in Phase 9). VERIFIED against both the source and the deployed
+      script; no scratch file left behind.
+- [x] **Criterion 3 (exact source counts)**: every `line_count` in
       `agent-system/extensions/*/index-entries.json` equals `wc -l` of its source file (Phase 3,
-      re-confirmed in Phases 5, 8, and 9).
+      re-confirmed in Phases 5, 8, and 9). VERIFIED: 458/458 exact, `generate-context-line-counts.sh --check` exits 0.
 
 Supporting checks:
 
-- [ ] `bash -n` passes on every modified shell script.
-- [ ] `nvim --headless -c "lua require('neotex.plugins.ai.shared.extensions.merge')" -c "q"` loads
+- [x] `bash -n` passes on every modified shell script. (validate-context-index.sh,
+      generate-context-line-counts.sh, check-extension-docs.sh)
+- [x] `nvim --headless -c "lua require('neotex.plugins.ai.shared.extensions.merge')" -c "q"` loads
       cleanly.
-- [ ] `verify-deploy.sh` exits 0 in full.
-- [ ] `check-task-references.sh` passes — no task-number citations outside `specs/`.
-- [ ] `validate-extension-index.sh --check-resolution` passes.
-- [ ] No file under `.claude/` appears in the diff except as output of `deploy-headless.sh`.
+- [x] `verify-deploy.sh` exits 0 in full. (12 checks, 0 failures)
+- [x] `check-task-references.sh` passes — no task-number citations outside `specs/`. (0
+      occurrences across all 4 scanned trees)
+- [x] `validate-extension-index.sh --check-resolution` passes. (Errors: 0, Warnings: 30 --
+      pre-existing, unrelated to line_count, deployment-resolution warnings for unloaded
+      extensions' context files; confirmed not caused by this task in Phase 3)
+- [x] No file under `.claude/` appears in the diff except as output of `deploy-headless.sh`.
+      (`.claude/` is gitignored in this repo, so it never appears in `git diff` regardless; no
+      Write/Edit tool call in this implementation ever targeted a `.claude/**` path — only
+      transient Bash-created scratch test files, both removed)
 
 ## Artifacts & Outputs
 
