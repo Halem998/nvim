@@ -163,7 +163,7 @@ behavior unchanged.
 
 ---
 
-### Phase 2: Defense-in-depth staleness widening [NOT STARTED]
+### Phase 2: Defense-in-depth staleness widening [COMPLETED]
 
 **Goal**: `state-write.sh` passes an explicit staleness window to `scope-acquire` instead of
 silently inheriting the 10s default, mirroring `orchestrator-postflight.sh`'s existing posture.
@@ -174,16 +174,16 @@ now-regeneration-free critical section. It may be skipped without affecting the 
 verification bar; if skipped, record that decision rather than dropping the phase silently.
 
 **Tasks**:
-- [ ] In `acquire_mutex()` in `state-write.sh`, define a named constant near the top of the file
+- [x] In `acquire_mutex()` in `state-write.sh`, define a named constant near the top of the file
       (e.g. `STATE_WRITE_SCOPE_STALE_SEC=30`) and pass it as the second argument to
-      `task-lock.sh scope-acquire "$SESSION_ID"`.
-- [ ] Confirm against `cmd_scope_acquire()` in `task-lock.sh` that the second positional argument
+      `task-lock.sh scope-acquire "$SESSION_ID"`. *(completed)*
+- [x] Confirm against `cmd_scope_acquire()` in `task-lock.sh` that the second positional argument
       is the optional `stale_sec` override and that passing it requires no change to
-      `task-lock.sh`.
-- [ ] Add a one-line comment stating explicitly that this widens the STALENESS window only, and
+      `task-lock.sh`. *(completed: confirmed, no change to task-lock.sh)*
+- [x] Add a one-line comment stating explicitly that this widens the STALENESS window only, and
       that `SCOPE_MUTEX_ACQUIRE_BUDGET_MS` is a separate, non-overridable constant that this
       change does not affect — so a future reader does not mistake it for a fix to waiter-timeout
-      ABORTs.
+      ABORTs. *(completed)*
 
 **Timing**: 0.25 hours
 

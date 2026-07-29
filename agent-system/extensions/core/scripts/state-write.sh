@@ -65,6 +65,14 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
 TMP_DIR="$PROJECT_ROOT/specs/tmp"
 
+# Defense-in-depth staleness widening: an explicit stale_sec passed to `scope-acquire`, mirroring
+# orchestrator-postflight.sh's own widened-bracket posture, so a future slow operation added
+# inside this now-regeneration-free critical section has margin before a live holder's mutex is
+# reclaimed as stale. This widens ONLY the staleness reclaim WINDOW -- it has no effect on
+# SCOPE_MUTEX_ACQUIRE_BUDGET_MS (task-lock.sh's separate, non-overridable waiter-timeout
+# constant), so it is not a fix for waiter-timeout ABORTs on its own.
+STATE_WRITE_SCOPE_STALE_SEC=30
+
 # --- Argument parsing ---
 JQ_FILTER=""
 SESSION_ID=""
@@ -166,7 +174,7 @@ acquire_mutex() {
     return 0
   fi
   local token
-  if ! token=$("$SCRIPT_DIR/task-lock.sh" scope-acquire "$SESSION_ID"); then
+  if ! token=$("$SCRIPT_DIR/task-lock.sh" scope-acquire "$SESSION_ID" "$STATE_WRITE_SCOPE_STALE_SEC"); then
     echo "ABORT: timed out waiting for specs/.scope-lock mutex (session=$SESSION_ID); specs/state.json was NOT modified." >&2
     return 1
   fi

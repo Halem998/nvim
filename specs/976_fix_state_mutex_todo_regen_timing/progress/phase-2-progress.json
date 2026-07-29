@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Defense-in-depth staleness widening",
+  "started_at": "2026-07-29T00:15:00Z",
+  "last_updated": "2026-07-29T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Define STATE_WRITE_SCOPE_STALE_SEC=30 and pass to scope-acquire", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]},
+    {"id": 2, "description": "Confirm task-lock.sh needs no change for the stale_sec override", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add comment distinguishing staleness window from acquire budget", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
