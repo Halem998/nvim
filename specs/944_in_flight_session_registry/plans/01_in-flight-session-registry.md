@@ -511,21 +511,21 @@ and echo discipline Step 4.5 already established.
 
 ---
 
-### Phase 9: Isolated-Temp-Root Test Suite and Manifest Registration [NOT STARTED]
+### Phase 9: Isolated-Temp-Root Test Suite and Manifest Registration [COMPLETED]
 
 **Goal**: Prove the registry contract with a suite that never touches the real `specs/` tree, and
 make the new script deployable.
 
 **Tasks**:
-- [ ] Read `scripts/test-task-lock-reap.sh` in full first; it is the precedent to follow, including
+- [x] Read `scripts/test-task-lock-reap.sh` in full first; it is the precedent to follow, including
       its temp-root construction (copy the real `task-lock.sh` and `deploy-root-guard.sh` into
       `$TMPROOT/.claude/scripts/` so `deploy-root-guard.sh`'s two-levels-under-root check is
       satisfied and the production script never learns it is under test), its `pass`/`fail`/`info`
       helpers, its cleanup trap, and its controlled-epoch timestamp helpers (no sleeping).
-- [ ] Create `scripts/test-session-registry.sh` with a fixture `state.json` carrying tasks with
+- [x] Create `scripts/test-session-registry.sh` with a fixture `state.json` carrying tasks with
       distinct, partially-overlapping `file_scope` arrays, plus fixture `specs/.sessions/` entries at
       controlled `heartbeat_at` ages.
-- [ ] Cover these cases:
+- [x] Cover these cases:
       - Register writes every required field: `session_id`, `pid`, `command`, `task_numbers`,
         `file_scope`, `started_at`, `heartbeat_at`.
       - `file_scope` is the deduplicated UNION across a multi-task registration, not a concatenation.
@@ -539,8 +539,8 @@ make the new script deployable.
       - Live-pid entry younger than `SESSION_REGISTRY_REAP_MIN` is not reaped; older than it is,
         with reason `stale-heartbeat`.
       - A corrupt/unparseable entry falls back to file mtime and is reported, never silently ignored.
-- [ ] Exit 0 when all cases pass, 1 when any fails, matching the precedent's contract.
-- [ ] Add `"test-session-registry.sh"` to the `scripts` array in `manifest.json` so `copy_scripts()`
+- [x] Exit 0 when all cases pass, 1 when any fails, matching the precedent's contract.
+- [x] Add `"test-session-registry.sh"` to the `scripts` array in `manifest.json` so `copy_scripts()`
       deploys it. Confirm whether `task-lock.sh` and `test-task-lock-reap.sh` entries already exist
       (they do) and add only the new one — no other manifest change is needed, since the registry
       ships as subcommands rather than a new sibling implementation script.
@@ -557,6 +557,8 @@ make the new script deployable.
 plus the two pre-existing ones). Confirm case coverage by cross-reading Phase 1's subcommand
 contracts and flagging any documented behavior with no corresponding case rather than declaring the
 suite complete.
+
+**Empirical confirmation**: all 10 cases implemented and PASS (`bash agent-system/extensions/core/scripts/test-session-registry.sh` exits 0); `grep -n 'test-session-registry\|task-lock.sh' manifest.json` shows exactly the new entry plus the two pre-existing ones (`task-lock.sh`, `test-task-lock-reap.sh`). Verified the real repo `specs/.sessions/` is absent both before and after a run, and `test-task-lock-reap.sh` still exits 0 (no regression).
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/test-session-registry.sh` - new file

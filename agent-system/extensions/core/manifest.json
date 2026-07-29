@@ -144,6 +144,7 @@
       "skill-base.sh",
       "state-write.sh",
       "task-lock.sh",
+      "test-session-registry.sh",
       "test-session-runtime-files.sh",
       "test-state-write-concurrency.sh",
       "test-task-lock-reap.sh",
