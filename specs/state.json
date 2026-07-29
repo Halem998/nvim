@@ -2579,7 +2579,7 @@
     {
       "project_number": 957,
       "project_name": "convert_residual_state_json_writers",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Convert the residual specs/state.json inline write sites to state-write.sh",
@@ -2622,12 +2622,18 @@
           "path": "specs/957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md",
           "type": "plan",
           "summary": "10-phase plan converting 68 inline specs/state.json write sites to state-write.sh plus 6 doc-idiom updates"
+        },
+        {
+          "path": "specs/957_convert_residual_state_json_writers/summaries/01_convert-residual-state-writers-summary.md",
+          "type": "summary",
+          "summary": "state-write.sh conversion summary"
         }
       ],
       "created": "2026-07-28T23:14:04Z",
-      "last_updated": "2026-07-29T15:18:52Z",
+      "last_updated": "2026-07-29T15:53:50Z",
       "session_id": "sess_1785337600_a52f75_957",
-      "next_artifact_number": null
+      "next_artifact_number": null,
+      "completion_summary": "Converted all in-scope inline hand-rolled specs/state.json write blocks across 16 core skill/command files and 7 documentation files to the mutex-guarded state-write.sh, leaving specs/archive/state.json and vault-root sites deliberately hand-rolled per scope. All 10 plan phases completed; verification bar (repo-wide grep, bash -n, both mutex regression suites, check-task-references.sh, check-extension-docs.sh, zero .claude/** writes) passes without weakening."
     },
     {
       "project_number": 958,
