@@ -81,14 +81,16 @@ Update task status to "researching" BEFORE spawning teammates.
 
 **Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researching" \
-   --arg sid "$session_id" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "researching" \
+  --arg sid "$session_id"
 ```
 
 **Update TODO.md**: Change status marker to `[RESEARCHING]`.
@@ -172,9 +174,10 @@ max_on_disk=$((10#$max_on_disk))
 if [ "$artifact_number" -le "$max_on_disk" ]; then
   artifact_number=$((max_on_disk + 1))
   # If reconciliation advanced the number, also sync state.json so subsequent operations stay in sync
-  jq --argjson num "$task_number" --argjson new_num "$artifact_number" \
+  bash .claude/scripts/state-write.sh \
     '(.active_projects[] | select(.project_number == $num)).next_artifact_number = $new_num' \
-    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    --session-id "$session_id" \
+    --argjson num "$task_number" --argjson new_num "$artifact_number"
 fi
 
 run_padded=$(printf "%02d" "$artifact_number")
@@ -466,18 +469,21 @@ Update task status to "researched":
 **Update state.json** (includes incrementing `next_artifact_number`):
 ```bash
 # Step 1: Update status and timestamps
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researched" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     researched: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "researched"
 
 # Step 2: Increment next_artifact_number (team research advances the sequence)
-jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
+bash .claude/scripts/state-write.sh \
+  '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
     (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id"
 ```
 
 **Note**: Team research (like single-agent research) is the only operation that increments `next_artifact_number`. Team plan and team implement use `(current - 1)` to stay in the same "round".
@@ -485,19 +491,16 @@ jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifa
 **Update TODO.md**: Change status marker from `[RESEARCHING]` to `[RESEARCHED]` via Edit tool.
 
 **Link artifact in state.json**:
+Fold `--regen-todo` in — this write is immediately followed by nothing but the TODO.md regen:
 ```bash
 padded_num=$(printf "%03d" "$task_number")
-jq --arg path "specs/${padded_num}_${project_name}/reports/${run_padded}_team-research.md" \
-   --arg type "research" \
-   --arg summary "Team research with ${team_size} teammates" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-```
-
-**Regenerate TODO.md** from state.json (state.json artifact update was done in the step above):
-
-```bash
-bash .claude/scripts/generate-todo.sh || echo "WARNING: generate-todo.sh failed (non-fatal)" >&2
+  --session-id "$session_id" \
+  --arg path "specs/${padded_num}_${project_name}/reports/${run_padded}_team-research.md" \
+  --arg type "research" \
+  --arg summary "Team research with ${team_size} teammates" \
+  --regen-todo || echo "WARNING: state-write.sh --regen-todo failed (non-fatal)" >&2
 ```
 
 This regenerates TODO.md from state.json, automatically reflecting the newly linked artifact. If the script exits non-zero, log a warning but continue (regeneration errors are non-blocking).

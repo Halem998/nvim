@@ -88,14 +88,16 @@ Update task status to "planning" BEFORE spawning teammates.
 
 **Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "planning" \
-   --arg sid "$session_id" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "planning" \
+  --arg sid "$session_id"
 ```
 
 **Update TODO.md**: Change status marker to `[PLANNING]`.
@@ -453,31 +455,29 @@ Update task status to "planned":
 
 **Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "planned" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     planned: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "planned"
 ```
 
 **Update TODO.md**: Change status marker to `[PLANNED]`.
 
-**Link artifact**:
+**Link artifact**. Fold `--regen-todo` in — this write is immediately followed by nothing but the TODO.md regen:
 ```bash
 padded_num=$(printf "%03d" "$task_number")
-jq --arg path "specs/${padded_num}_${project_name}/plans/${run_padded}_implementation-plan.md" \
-   --arg type "plan" \
-   --arg summary "Team planning with ${team_size} teammates and trade-off analysis" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-```
-
-**Update TODO.md**: Regenerate from state.json (state.json artifact update was done in the previous step):
-
-```bash
-bash .claude/scripts/generate-todo.sh || echo "WARNING: generate-todo.sh failed (non-fatal)" >&2
+  --session-id "$session_id" \
+  --arg path "specs/${padded_num}_${project_name}/plans/${run_padded}_implementation-plan.md" \
+  --arg type "plan" \
+  --arg summary "Team planning with ${team_size} teammates and trade-off analysis" \
+  --regen-todo || echo "WARNING: state-write.sh --regen-todo failed (non-fatal)" >&2
 ```
 
 If the script exits non-zero, log a warning but continue (regeneration errors are non-blocking).

@@ -205,18 +205,18 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 5: Team Skills [NOT STARTED]
+### Phase 5: Team Skills [COMPLETED]
 
 **Goal**: Convert the three team-orchestration skills, which write state from a coordinating context with multiple teammate branches.
 
 **Tasks**:
-- [ ] Convert `skills/skill-team-research/SKILL.md` (5 sites).
-- [ ] Convert `skills/skill-team-plan/SKILL.md` (3 sites).
-- [ ] Convert `skills/skill-team-implement/SKILL.md` (3 sites).
-- [ ] For each site, confirm whether it executes in the orchestrating session or inside a teammate branch; reuse the session_id belonging to that context rather than assuming one file-level variable.
-- [ ] Check for any site already nested inside an outer mutex bracket; leave the bracket unchanged and rely on `SCOPE_MUTEX_HELD=1` guest mode.
-- [ ] Apply the fold/no-fold decision per site.
-- [ ] `bash -n` every extracted bash block per edited file.
+- [x] Convert `skills/skill-team-research/SKILL.md` (5 sites). *(completed)*
+- [x] Convert `skills/skill-team-plan/SKILL.md` (3 sites). *(completed)*
+- [x] Convert `skills/skill-team-implement/SKILL.md` (3 sites). *(completed)*
+- [x] For each site, confirm whether it executes in the orchestrating session or inside a teammate branch; reuse the session_id belonging to that context rather than assuming one file-level variable. *(completed: all 11 sites execute in the coordinating/orchestrating session, using the single file-level `$session_id`; no teammate-branch writes found)*
+- [x] Check for any site already nested inside an outer mutex bracket; leave the bracket unchanged and rely on `SCOPE_MUTEX_HELD=1` guest mode. *(completed: none of the 11 sites were nested inside an outer mutex bracket)*
+- [x] Apply the fold/no-fold decision per site. *(completed: folded the final artifact-link write in each of the 3 files — each is immediately followed only by a `generate-todo.sh` regen; no-fold on all preflight-status and next-artifact-number writes)*
+- [x] `bash -n` every extracted bash block per edited file. *(completed: all converted blocks clean; `bash -n` also flagged two PRE-EXISTING, unrelated blocks unchanged by this phase — a multi-line `git commit -m "..."` doc example with a deliberately open quote in skill-team-research/skill-team-plan's Git Commit stage, and Python-like pseudocode in a ```bash fence in skill-team-implement's dependency-graph stage; `git diff` confirms neither block was touched by this phase's edits)*
 
 **Timing**: 1.25 hours
 
