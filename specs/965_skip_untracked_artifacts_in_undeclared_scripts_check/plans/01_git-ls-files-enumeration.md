@@ -204,40 +204,49 @@ carried verbatim above `_git_deployed_files()`.
 
 ---
 
-### Phase 3: Positive-detection fixture and regression verification [NOT STARTED]
+### Phase 3: Positive-detection fixture and regression verification [COMPLETED]
 
 **Goal**: Empirically prove all three behavioral properties — untracked artifacts skipped,
 tracked-but-undeclared scripts STILL caught, declared-and-tracked scripts produce no finding —
 against the source-store copy of the script.
 
 **Tasks**:
-- [ ] Baseline: run the source-store script with an explicit REPO_ROOT override (required — the
+- [x] Baseline: run the source-store script with an explicit REPO_ROOT override (required — the
       computed default only resolves inside a deploy tree, and the explicit override deliberately
       bypasses `deploy-root-guard.sh`):
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`.
-      Capture full output.
-- [ ] Assert property 1 (untracked artifacts skipped): neither
+      Capture full output. *(completed: exit 1, sole FAIL is the expected pre-Phase-4 deploy
+      drift on scripts/check-extension-docs.sh itself)*
+- [x] Assert property 1 (untracked artifacts skipped): neither
       `literature/scripts/__pycache__/literature-decode-font-offset.cpython-313.pyc` nor
       `literature/scripts/tests/__pycache__/generate-test-fixtures.cpython-313.pyc` appears in the
-      output as a `provides.scripts` finding.
-- [ ] Assert property 3 (no false-positive regression): no `script file on disk NOT in
+      output as a `provides.scripts` finding. *(completed: confirmed via diff against the
+      pre-change script body run through the same command — the only delta is the removal of
+      those exact two FAIL lines)*
+- [x] Assert property 3 (no false-positive regression): no `script file on disk NOT in
       provides.scripts` finding is reported for any currently-declared, tracked script. Confirm
-      the Rule Q finding count for the clean tree is zero.
-- [ ] Build the positive-detection fixture: create a temporary file at
+      the Rule Q finding count for the clean tree is zero. *(completed: 0 Rule Q findings in the
+      baseline run)*
+- [x] Build the positive-detection fixture: create a temporary file at
       `agent-system/extensions/core/scripts/__undeclared-fixture-probe.sh` (any extension with a
       `scripts/` tree works; core is convenient), containing only a shebang and a comment. Make it
       visible to `git ls-files` WITHOUT committing it: `git add -N <path>` (intent-to-add).
-- [ ] Assert property 2 (HARD acceptance criterion): re-run
+      *(completed)*
+- [x] Assert property 2 (HARD acceptance criterion): re-run
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and
       confirm it now reports exactly one new finding naming
       `scripts/__undeclared-fixture-probe.sh`. If it does NOT, the change has silently converted
       the check into a no-op — STOP, mark this phase `[BLOCKED]`, and do not proceed to Phase 4.
-- [ ] Clean up the fixture: `git restore --staged agent-system/extensions/core/scripts/__undeclared-fixture-probe.sh`
+      *(completed: PASSED — exactly one new FAIL line added, naming
+      `scripts/__undeclared-fixture-probe.sh`; finding count rose from 1 to 2, nothing else
+      changed)*
+- [x] Clean up the fixture: `git restore --staged agent-system/extensions/core/scripts/__undeclared-fixture-probe.sh`
       then `rm agent-system/extensions/core/scripts/__undeclared-fixture-probe.sh`. Confirm
-      `git status --short` shows no residue of the probe file.
-- [ ] Re-run the source-store check post-cleanup and confirm the output matches the baseline
-      exactly (fixture fully removed, no lingering finding).
-- [ ] Record the three assertion results (with the actual command output excerpts) for the
+      `git status --short` shows no residue of the probe file. *(completed: no residue)*
+- [x] Re-run the source-store check post-cleanup and confirm the output matches the baseline
+      exactly (fixture fully removed, no lingering finding). *(completed: post-cleanup output
+      byte-for-byte identical to baseline)*
+- [x] Record the three assertion results (with the actual command output excerpts) for the
       implementation summary.
 
 **Timing**: 30 minutes
