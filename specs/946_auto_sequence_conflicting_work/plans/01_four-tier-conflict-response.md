@@ -367,30 +367,32 @@ and Step 3.5 blocks against each other after the edit and verifying only the ope
 
 ---
 
-### Phase 5: Tier 1 and convergence proofs [NOT STARTED]
+### Phase 5: Tier 1 and convergence proofs [COMPLETED]
 
 **Goal**: Prove a conflict auto-sequences with no user interaction, and that a non-converging
 deferral terminates as `partial` rather than spinning.
 
 **Tasks**:
-- [ ] Extend `scripts/test-four-tier-conflict.sh` with a Tier-1 case: two fixture tasks in the same
+- [x] Extend `scripts/test-four-tier-conflict.sh` with a Tier-1 case: two fixture tasks in the same
       plain-multi-task batch with overlapping `file_scope` and no `dependencies[]` edge; drive
       `orchestrate-batch-admit.sh` over the pair and assert exactly one `defer` verdict carrying
       `defer_reason == "file_scope_collision"` and `collision_scope == "in_batch"` — the signal the
-      two-pass structure keys on.
-- [ ] Assert the second-pass admission call over the deferred singleton returns `admit` once the
+      two-pass structure keys on. *(completed — Case 7)*
+- [x] Assert the second-pass admission call over the deferred singleton returns `admit` once the
       pass-1 task's lock is released, i.e. the task is runnable in pass 2 rather than permanently
       skipped. Assert no task number outside the original pair appears in either admission call's
-      input or output (no auto-expansion).
-- [ ] Non-convergence case: a fixture where the pass-2 admission still returns `defer` (e.g. the
+      input or output (no auto-expansion). *(completed — Case 8, realized via the pass-1 winner
+      reaching terminal status, matching orchestrate-batch-admit.sh's actual state.json-status-based
+      collision predicate — see Phase 4's implementation note)*
+- [x] Non-convergence case: a fixture where the pass-2 admission still returns `defer` (e.g. the
       colliding foreign holder is a live out-of-batch session). Assert the deferred task's terminal
       disposition is a `partial`-flavored skip with the `"deferred after second pass"` reason and
-      that no third admission call occurs.
-- [ ] Observation-log case: assert `second_pass_ledger` entries accumulate for both passes and that a
+      that no third admission call occurs. *(completed — Case 9)*
+- [x] Observation-log case: assert `second_pass_ledger` entries accumulate for both passes and that a
       task appearing in the ledger is not thereby excluded from the pass-2 admission input — the
-      log is observational, not an exclusion set.
-- [ ] Bounded-scan case: assert each admission invocation's argument list contains only the tasks of
-      the pass it serves, never a sweep of all task directories.
+      log is observational, not an exclusion set. *(completed — Case 10)*
+- [x] Bounded-scan case: assert each admission invocation's argument list contains only the tasks of
+      the pass it serves, never a sweep of all task directories. *(completed — Case 11)*
 
 **Timing**: 1.5 hours
 

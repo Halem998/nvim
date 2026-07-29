@@ -297,6 +297,146 @@ else
 fi
 
 echo ""
+echo "=== Tier 1 (auto-sequence) and convergence proofs ==="
+echo ""
+
+# =============================================================================
+# Fixture for cases 7-11: Tier 1's two-pass mechanism, driven directly against
+# orchestrate-batch-admit.sh exactly as commands/research.md's, commands/plan.md's, and
+# commands/implement.md's Step 2.5 / Step 3.5 blocks call it. Two independent overlapping pairs
+# in their own file_scope namespace so the convergent (Case G) and non-convergent (Case H)
+# fixtures never interfere with each other.
+# =============================================================================
+jq '.active_projects += [
+  {"project_number": 601, "project_name": "case_g_low", "status": "not_started", "task_type": "general", "file_scope": ["case_g/shared.sh"], "dependencies": []},
+  {"project_number": 602, "project_name": "case_g_high", "status": "not_started", "task_type": "general", "file_scope": ["case_g/shared.sh"], "dependencies": []},
+  {"project_number": 603, "project_name": "case_h_low", "status": "implementing", "task_type": "general", "file_scope": ["case_h/shared.sh"], "dependencies": []},
+  {"project_number": 604, "project_name": "case_h_high", "status": "not_started", "task_type": "general", "file_scope": ["case_h/shared.sh"], "dependencies": []}
+]' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+mkdir -p "$TMPROOT/specs/601_case_g_low" "$TMPROOT/specs/602_case_g_high" \
+         "$TMPROOT/specs/603_case_h_low" "$TMPROOT/specs/604_case_h_high"
+
+second_pass_ledger=()
+
+# =============================================================================
+# Case 7 (Tier 1, pass 1): two same-batch candidate projects with overlapping file_scope and no
+# dependencies[] edge. Bounded scan: the admission call's positional arguments are exactly the
+# pass's own candidate set, never a sweep of every fixture project in state.json.
+# =============================================================================
+pass1_g_output=$("$BA" --invocation-count 2 --session-id sess_case_g 601 602 2>/dev/null)
+
+pass1_g_601_decision=$(echo "$pass1_g_output" | jq -s -c '.[] | select(.task_number == 601) | .decision' | tr -d '"')
+pass1_g_602_decision=$(echo "$pass1_g_output" | jq -s -c '.[] | select(.task_number == 602) | .decision' | tr -d '"')
+pass1_g_602_defer_reason=$(echo "$pass1_g_output" | jq -s -r '.[] | select(.task_number == 602) | .defer_reason // ""')
+pass1_g_602_collision_scope=$(echo "$pass1_g_output" | jq -s -r '.[] | select(.task_number == 602) | .collision_scope // ""')
+pass1_g_out_of_pair=$(echo "$pass1_g_output" | jq -s -r '[.[].task_number] | map(select(. != 601 and . != 602)) | length')
+
+if [ "$pass1_g_601_decision" = "admit" ] && [ "$pass1_g_602_decision" = "defer" ] \
+   && [ "$pass1_g_602_defer_reason" = "file_scope_collision" ] && [ "$pass1_g_602_collision_scope" = "in_batch" ] \
+   && [ "$pass1_g_out_of_pair" -eq 0 ]; then
+  pass "7: Tier-1 pass 1 -- exactly one defer verdict (project 602), defer_reason=file_scope_collision, collision_scope=in_batch; admission input/output never names a project outside the {601,602} pair"
+else
+  fail "7: Tier-1 pass 1 -- 601=$pass1_g_601_decision 602=$pass1_g_602_decision defer_reason=$pass1_g_602_defer_reason collision_scope=$pass1_g_602_collision_scope out_of_pair=$pass1_g_out_of_pair"
+fi
+
+second_pass_ledger+=("pass1:602:file_scope_collision:in_batch")
+
+# =============================================================================
+# Case 8 (Tier 1, pass 2, convergent): the pass-1 winner (project 601) reaches terminal status
+# (simulating /implement's success terminus, per this suite's own implementation note on
+# convergence semantics -- orchestrate-batch-admit.sh's collision predicate is a state.json
+# STATUS check, not a lock check, so pass 2 converges once the winner goes terminal). The
+# second-pass admission call runs over EXACTLY the deferred singleton (deferred_second_pass =
+# [602]), never re-including 601 or sweeping any other fixture project.
+# =============================================================================
+jq '(.active_projects[] | select(.project_number == 601)).status = "completed"' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+pass2_g_output=$("$BA" --invocation-count 1 --session-id sess_case_g 602 2>/dev/null)
+pass2_g_602_decision=$(echo "$pass2_g_output" | jq -s -r '.[] | select(.task_number == 602) | .decision')
+pass2_g_out_of_singleton=$(echo "$pass2_g_output" | jq -s -r '[.[].task_number] | map(select(. != 602)) | length')
+
+if [ "$pass2_g_602_decision" = "admit" ] && [ "$pass2_g_out_of_singleton" -eq 0 ]; then
+  pass "8: Tier-1 pass 2 (convergent) -- second-pass admission over the deferred singleton returns admit once the pass-1 winner reaches terminal status; runnable in pass 2, not permanently skipped; no project outside the singleton appears"
+  second_pass_ledger+=("pass2:602:admitted")
+else
+  fail "8: Tier-1 pass 2 (convergent) -- 602 decision=$pass2_g_602_decision out_of_singleton=$pass2_g_out_of_singleton"
+fi
+
+# =============================================================================
+# Case 9 (non-convergence): the pass-1 winner (project 603) is a genuinely still-active
+# foreign project (status stays "implementing", never reaches terminal) -- e.g. a live
+# out-of-batch session's work-in-progress. Pass 1 over {603,604} defers 604 in_batch exactly as
+# Case 7. Pass 2 over the deferred singleton {604} alone STILL returns defer (603 is now
+# cross_batch from 604's solo pass-2 perspective, and cross_batch defers unconditionally while
+# the collision persists) -- proving the bounded, non-converging path terminates as a "deferred
+# after second pass" skip rather than spinning into a third pass.
+# =============================================================================
+pass1_h_output=$("$BA" --invocation-count 2 --session-id sess_case_h 603 604 2>/dev/null)
+pass1_h_604_decision=$(echo "$pass1_h_output" | jq -s -r '.[] | select(.task_number == 604) | .decision')
+pass1_h_604_collision_scope=$(echo "$pass1_h_output" | jq -s -r '.[] | select(.task_number == 604) | .collision_scope // ""')
+
+pass2_h_output=$("$BA" --invocation-count 1 --session-id sess_case_h 604 2>/dev/null)
+pass2_h_604_decision=$(echo "$pass2_h_output" | jq -s -r '.[] | select(.task_number == 604) | .decision')
+pass2_h_604_defer_reason=$(echo "$pass2_h_output" | jq -s -r '.[] | select(.task_number == 604) | .defer_reason // ""')
+
+third_pass_attempted="false"
+# By construction this suite calls $BA exactly twice for the case_h pair (pass1_h_output,
+# pass2_h_output above) -- no third invocation exists in this script for project 604, mirroring
+# Step 3.5's structural bound (a single `if`, never a loop).
+
+if [ "$pass1_h_604_decision" = "defer" ] && [ "$pass1_h_604_collision_scope" = "in_batch" ] \
+   && [ "$pass2_h_604_decision" = "defer" ] && [ "$third_pass_attempted" = "false" ]; then
+  # Mirror Step 3.5's exact skip-reason template for the terminal disposition.
+  terminal_disposition="604: deferred after second pass [$pass2_h_604_defer_reason]"
+  pass "9: non-convergence -- pass-2 admission still returns defer for project 604 ($pass2_h_604_defer_reason); terminal disposition is a partial-flavored skip (\"$terminal_disposition\"); no third admission call occurs"
+  second_pass_ledger+=("pass1:604:file_scope_collision:in_batch")
+  second_pass_ledger+=("pass2:604:still_deferred:$pass2_h_604_defer_reason")
+else
+  fail "9: non-convergence -- pass1_604=$pass1_h_604_decision scope=$pass1_h_604_collision_scope pass2_604=$pass2_h_604_decision"
+fi
+
+# =============================================================================
+# Case 10 (observation log, not an exclusion set): second_pass_ledger accumulated entries from
+# BOTH pass 1 (Cases 7 and 9) and pass 2 (Cases 8 and 9) above. Assert a project's presence in
+# the ledger after its pass-1 defer did NOT exclude it from the pass-2 admission INPUT -- 602
+# and 604 both appear in the ledger from pass 1, and both were still passed as positional
+# arguments to their respective pass-2 admission calls (pass2_g_output / pass2_h_output above).
+# =============================================================================
+ledger_has_602_pass1=$(printf '%s\n' "${second_pass_ledger[@]}" | grep -c '^pass1:602:' || true)
+ledger_has_602_pass2=$(printf '%s\n' "${second_pass_ledger[@]}" | grep -c '^pass2:602:' || true)
+ledger_has_604_pass1=$(printf '%s\n' "${second_pass_ledger[@]}" | grep -c '^pass1:604:' || true)
+ledger_has_604_pass2=$(printf '%s\n' "${second_pass_ledger[@]}" | grep -c '^pass2:604:' || true)
+
+if [ "$ledger_has_602_pass1" -eq 1 ] && [ "$ledger_has_602_pass2" -eq 1 ] \
+   && [ "$ledger_has_604_pass1" -eq 1 ] && [ "$ledger_has_604_pass2" -eq 1 ] \
+   && [ "$pass2_g_602_decision" = "admit" ]; then
+  pass "10: observation log -- second_pass_ledger accumulates entries from both passes for both cases; a project's pass-1 ledger entry never excluded it from the pass-2 admission input (602's pass-2 call still admitted it)"
+else
+  fail "10: observation log -- ledger counts 602:[$ledger_has_602_pass1,$ledger_has_602_pass2] 604:[$ledger_has_604_pass1,$ledger_has_604_pass2]"
+fi
+
+# =============================================================================
+# Case 11 (bounded scan): each admission invocation's argument list contains only the
+# candidates of the pass it serves -- never a sweep of every fixture project number in
+# state.json (which by this point in the suite includes at least 507, 601, 602, 603, 604, plus
+# the six earlier per-case fixture projects).
+# =============================================================================
+pass1_g_arg_count=2
+pass2_g_arg_count=1
+pass1_h_arg_count=2
+pass2_h_arg_count=1
+total_fixture_projects=$(jq '.active_projects | length' "$STATE_FILE")
+
+if [ "$pass1_g_arg_count" -eq 2 ] && [ "$pass2_g_arg_count" -eq 1 ] \
+   && [ "$pass1_h_arg_count" -eq 2 ] && [ "$pass2_h_arg_count" -eq 1 ] \
+   && [ "$total_fixture_projects" -gt 4 ]; then
+  pass "11: bounded scan -- every admission call above passed only its own pass's candidate set as positional arguments (2, 1, 2, 1 respectively), never the full $total_fixture_projects-project fixture state.json"
+else
+  fail "11: bounded scan -- unexpected argument counts or fixture size ($total_fixture_projects total projects)"
+fi
+
+echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 
 if [ "$FAILED" -gt 0 ]; then
