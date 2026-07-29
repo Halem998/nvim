@@ -47,7 +47,7 @@ next_project_number: 990
 
 ### Extensions
 
-975 [NOT STARTED] — Fix the generated .claude/CLAUDE.md containing its entire body TW
+975 [RESEARCHED] — Fix the generated .claude/CLAUDE.md containing its entire body TW
 980 [NOT STARTED] — Collapse the TWO independent deploy engines writing .claude/ into
 
 ### Orchestration Concurrency
@@ -480,10 +480,11 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/core/scripts/**, never
 ---
 
 ### 975. Fix generated CLAUDE.md double-body and duplicate Stop-hook registration
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 976
+- **Research**: [975_fix_generated_claudemd_double_body/reports/01_claudemd-double-body-fix.md]
 
 **Description**: Fix the generated .claude/CLAUDE.md containing its entire body TWICE (~891 duplicated lines, ~13k wasted tokens in every session prompt), plus the doubled claude-stop-notify.sh Stop-hook registration in .claude/settings.json.
 

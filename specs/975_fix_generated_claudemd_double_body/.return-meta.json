@@ -1,0 +1,36 @@
+{
+  "status": "researched",
+  "session_id": "sess_1785362998_047bfe",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "research", "general-research-agent"],
+  "task_context": {
+    "task_number": 975,
+    "task_name": "fix_generated_claudemd_double_body",
+    "task_type": "meta"
+  },
+  "findings_count": 2,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/975_fix_generated_claudemd_double_body/reports/01_claudemd-double-body-fix.md",
+      "summary": "Root-cause analysis of the CLAUDE.md double-body and settings.json duplicate Stop-hook defects, with a recommended fix confined to sync.lua's reinject_loaded_extensions() and merge.lua's deep_merge()."
+    }
+  ],
+  "next_steps": "Run /plan 975 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "This nvim agent-system repo's CLAUDE.md/OPENCODE.md merge targets (merge_target_key claudemd/opencode_md) moved to a fully-computed-artifact regeneration model (generate_claudemd() in shared/extensions/merge.lua, called from shared/extensions/init.lua's load/unload paths) that deliberately writes NO <!-- SECTION: id --> markers -- this superseded an earlier section-injection model. Any code path that still calls merge_mod.inject_section() for the claudemd/opencode_md merge key (as claude/commands/picker/operations/sync.lua's reinject_loaded_extensions() does) will append a stray duplicate copy on every run, since the markerless file never satisfies inject_section()'s idempotency check.",
+      "category": "PATTERN",
+      "source_artifact": "specs/975_fix_generated_claudemd_double_body/reports/01_claudemd-double-body-fix.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["generate_claudemd", "computed artifact", "section markers", "inject_section", "extension merge targets"]
+    },
+    {
+      "content": "merge.lua's deep_merge() dedups array items via whole-item vim.deep_equal, not matcher-aware merging. For Claude Code settings.json hook-event arrays (Stop, PreToolUse, etc.), this means a source fragment declaring a hook as its own separate {matcher, hooks} block will never dedup against an existing differently-shaped matcher block containing the same hook command bundled with others -- it gets appended as a new block, duplicating the hook registration. The core manifest.json's own _comment on merge_targets.settings already documents this as a known, unfixed risk.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/975_fix_generated_claudemd_double_body/reports/01_claudemd-double-body-fix.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deep_merge", "settings.json", "hook dedup", "matcher", "vim.deep_equal"]
+    }
+  ]
+}
