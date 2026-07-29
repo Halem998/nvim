@@ -21,9 +21,11 @@
 # <pathspec>... is one or more git pathspecs, exactly as would be passed to `git add`/`git commit
 # --`. At least one POSITIVE (non-`:(exclude)...`) entry is required — see the V3 safety gate
 # below. When any positive entry looks like a task directory (`specs/{NNN}_{slug}/`), the
-# canonical ephemeral-runtime-file exclusion set from context/standards/git-staging-scope.md is
-# injected automatically for that directory, so callers no longer need to spell out (or risk
-# forgetting) `ephemeral_excludes` by hand.
+# canonical ephemeral-runtime-file CANDIDATE set from context/standards/git-staging-scope.md is
+# considered for that directory, so callers no longer need to spell out (or risk forgetting)
+# `ephemeral_excludes` by hand. Each candidate is injected as an explicit `:(exclude)...` pathspec
+# entry only when `git check-ignore` reports it is NOT already covered by `.gitignore` — see the
+# injection loop below for why an unconditional injection is unsafe.
 #
 # --honest-index-rows <task_number>: when given, runs the same staged-vs-HEAD
 # `specs/state.json` comparison `orchestrator-postflight.sh`'s Stage 9b previously ran inline,
@@ -118,21 +120,46 @@ if ! has_positive_pathspec "${pathspecs[@]}"; then
 fi
 
 # --- Inject the canonical ephemeral-runtime-file exclusion set for any task-directory entry ---
-# Mirrors context/standards/git-staging-scope.md's ephemeral_excludes array exactly. Applied here
+# Mirrors context/standards/git-staging-scope.md's ephemeral_excludes CANDIDATE array exactly
+# (same four names, same order); injection is conditional, not unconditional. Applied here
 # (rather than left to each caller) so every call site is protected uniformly, closing the
 # staleness gap where the exclusion set had drifted out of sync at nine of eleven commit sites.
+#
+# Why conditional: naming an already-gitignored path in an explicit `:(exclude)...` pathspec
+# entry makes `git add` treat it as an EXPLICITLY-NAMED ignored path and refuse the WHOLE add
+# ("The following paths are ignored by one of your .gitignore files") whenever that path
+# currently exists on disk — e.g. a held task lock's `.lock/` directory. An ignored path swept up
+# IMPLICITLY by a bare directory pathspec (no exclude entry naming it) is, by contrast, silently
+# skipped by `git add` with no error. So for a candidate `.gitignore` already covers, the exclude
+# entry was pure downside — it added an abort hazard while contributing nothing `.gitignore`
+# wasn't already doing. Each candidate is therefore injected only when `git check-ignore -q`
+# reports it is NOT already covered (non-zero exit); a repo that has not applied the ephemeral
+# `.gitignore` block still gets the injected entries verbatim, same as before this change.
+#
+# Fall-through direction is deliberately safe: ONLY exit code 0 (definitively ignored) skips
+# injection. Exit 1 (not ignored) and exit 128 (error, e.g. malformed pathspec) both fall through
+# to injecting the entry, matching pre-conditional behavior. Do NOT "simplify" this into
+# `if ! git check-ignore ...; then continue` — that would invert the safe direction and skip
+# injection on error instead of on confirmed coverage.
 expanded_pathspecs=()
 for p in "${pathspecs[@]}"; do
   expanded_pathspecs+=("$p")
   case "$p" in
     specs/[0-9][0-9][0-9]_*/)
       task_dir="${p%/}"
-      expanded_pathspecs+=(
-        ":(exclude)${task_dir}/.orchestrator-loop-guard"
-        ":(exclude)${task_dir}/.orchestrator-churn-state.json"
-        ":(exclude)${task_dir}/.drift-inspection.json"
-        ":(exclude)${task_dir}/.lock/"
+      candidate_excludes=(
+        "${task_dir}/.orchestrator-loop-guard"
+        "${task_dir}/.orchestrator-churn-state.json"
+        "${task_dir}/.drift-inspection.json"
+        "${task_dir}/.lock/"
       )
+      for eph in "${candidate_excludes[@]}"; do
+        if git check-ignore -q -- "$eph"; then
+          : # already covered by .gitignore -- injecting would only add an abort hazard, skip
+        else
+          expanded_pathspecs+=(":(exclude)${eph}")
+        fi
+      done
       ;;
   esac
 done

@@ -1,0 +1,27 @@
+{
+  "phase": 2,
+  "phase_name": "Make Exclude Injection Conditional on git check-ignore",
+  "started_at": "2026-07-29T17:50:00Z",
+  "last_updated": "2026-07-29T18:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Empirically confirm git check-ignore exit-code semantics before editing",
+      "status": "done",
+      "files_touched": [],
+      "note": "Scratch-repo probe: ignored+nonexistent=0, ignored+existing=0, non-ignored=1, tracked=1. Matches plan assumption exactly."
+    },
+    {
+      "id": 2,
+      "description": "Replace unconditional exclude injection with a check-ignore-gated loop; update both comment paragraphs",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+      ],
+      "note": "bash -n clean. Phase 1 suite: 7 passed, 0 failed post-fix (T1/T3/T4 flipped from FAIL to PASS; T2/T5/T6/T7 remained PASS). git diff confined to file-header comment + injection block; V2/V3/mutex regions untouched (confirmed by reading the diff)."
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

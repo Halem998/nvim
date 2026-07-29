@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Correct the False Trailing-Slash Workaround in Recorded Memory",
+  "started_at": "2026-07-29T18:20:00Z",
+  "last_updated": "2026-07-29T18:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Search .memory/** and state.json memory_candidates for the false claim and superseded workarounds; correct or purge",
+      "status": "done",
+      "files_touched": [
+        "specs/state.json"
+      ],
+      "note": "Zero .memory/** hits. Zero standalone recorded assertion of the trailing-slash claim anywhere (only appears inside this task's own problem-statement text describing it as a defect to fix). One unharvested memory_candidates entry found (project 965 index 0); rewrote in place to keep the accurate diagnosis and point at the shipped fix instead of the now-superseded 'stage individual subpaths' workaround. Confirms plan's Scope Hypothesis exactly. Note: a first attempt at this edit via python json.dump with default ensure_ascii=True re-escaped every non-ASCII character in the whole file (em-dashes etc.) into \\uXXXX sequences, producing a huge unwanted diff; corrected by re-dumping with ensure_ascii=False, which reduced the diff back to just the intended content change (plus two pre-existing, unrelated in-flight changes to project 967's own status/last_updated from this task's own preflight)."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "python3 json.load/json.dump with default ensure_ascii=True to edit one memory_candidates[].content field",
+      "result": "failed",
+      "reason": "Re-escaped every non-ASCII character (em-dashes, arrows) across the entire 2900-line state.json into \\uXXXX sequences, producing a huge unintended diff far beyond the target field. Corrected by re-dumping the already-parsed data with ensure_ascii=False."
+    }
+  ],
+  "handoff_count": 0
+}

@@ -40,7 +40,7 @@ next_project_number: 970
 
 ### Git Commit Reliability
 
-967 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+967 [IMPLEMENTING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### Orchestrator Completion Gate
 
@@ -126,10 +126,12 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 967. Fix git-commit-scoped.sh .lock exclude pathspec aborting git add and silently dropping commits
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: git-commit-reliability
 - **Dependencies**: None
+- **Research**: [967_fix_git_commit_scoped_lock_exclude_abort/reports/01_lock-exclude-abort.md]
+- **Plan**: [967_fix_git_commit_scoped_lock_exclude_abort/plans/01_lock-exclude-abort-fix.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations may still reference deployed `.claude/scripts/*` paths -- that is the CALL PATH, not the EDIT TARGET.
 

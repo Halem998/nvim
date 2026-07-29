@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Sync git-staging-scope.md with the Script",
+  "started_at": "2026-07-29T18:05:00Z",
+  "last_updated": "2026-07-29T18:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Update both ephemeral_excludes array copies and prose to describe conditional injection, with orchestrator-runtime-files.md cross-reference",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/git-staging-scope.md"
+      ],
+      "note": "grep -c orchestrator-loop-guard confirms exactly 2 copies as hypothesized. Candidate names verified byte-for-byte identical to script's candidate_excludes array."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

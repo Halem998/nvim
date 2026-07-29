@@ -12,11 +12,11 @@ This is the canonical authority referenced by `orchestrator-postflight.sh`, `ski
 
 ## Canonical Runtime-File Exclusion Set
 
-Every task-directory `git add` in this contract excludes the same fixed set of ephemeral runtime
-files, via git exclusion pathspecs (`:(exclude)...`) rather than an allowlist — an allowlist would
-also silently drop legitimate durable content that live task directories carry (`progress/`,
-`handoffs/`, `fixtures/`, `tests/`, `HANDOFF.md`), trading one silent-drop bug for another.
-Exclusion pathspecs instead subtract exactly the ephemeral classes and nothing else. See
+Every task-directory `git add` in this contract considers the same fixed set of ephemeral runtime
+files for exclusion, via git exclusion pathspecs (`:(exclude)...`) rather than an allowlist — an
+allowlist would also silently drop legitimate durable content that live task directories carry
+(`progress/`, `handoffs/`, `fixtures/`, `tests/`, `HANDOFF.md`), trading one silent-drop bug for
+another. Exclusion pathspecs instead subtract exactly the ephemeral classes and nothing else. See
 `context/standards/orchestrator-runtime-files.md` for the full two-class policy and the rationale
 (freshness-gate asymmetry) behind which files these are:
 
@@ -29,6 +29,26 @@ ephemeral_excludes=(
   ":(exclude)${task_dir}/.lock/"
 )
 ```
+
+**This is a CANDIDATE array, not an unconditionally-injected one.** Naming a path already covered
+by `.gitignore` in an explicit `:(exclude)...` pathspec entry makes `git add` treat it as an
+EXPLICITLY-NAMED ignored path and refuse the WHOLE add ("The following paths are ignored by one
+of your .gitignore files") whenever that path currently exists on disk — a held task lock's
+`.lock/` directory is the case that surfaces this in practice, but all four candidates reproduce
+the identical abort if present and gitignored. An ignored path swept up IMPLICITLY by a bare
+directory pathspec (no exclude entry naming it) is, by contrast, silently skipped by `git add`
+with no error — gitignore coverage alone is already sufficient to keep it out. `git-commit-scoped.sh`,
+the sanctioned implementation of this contract (see "Commit-Level Path Scoping and Cross-Process
+Serialization" below), therefore injects each candidate as an explicit `:(exclude)...` entry only
+when `git check-ignore -q` reports it is NOT already covered by `.gitignore`. In a repo that has
+applied the full ephemeral `.gitignore` block (including this one), the post-injection pathspec
+list carries **zero** of these four entries — exclusion is delivered by `.gitignore` alone. In an
+under-configured consumer repo lacking that block, all four candidates are injected verbatim,
+identical to this contract's pre-conditional behavior. See
+`context/standards/orchestrator-runtime-files.md`'s "This gitignore coverage is the primary,
+sufficient control" statement — this conditional-injection behavior is the mechanical expression
+of that already-settled position: gitignore coverage is primary, this exclusion set is
+defense-in-depth for a repo that has not yet applied it, not the primary control itself.
 
 **`.orchestrator-handoff.json` and `.return-meta.json` are deliberately NOT in this set.** They
 are durable provenance under the settled policy in `orchestrator-runtime-files.md` — staging them
@@ -129,7 +149,15 @@ Session: ${session_id}
 
 For `implement`, extend the same pattern with the plan path, `modified_files`, and the canonical
 exclusion set (this template stages the whole task directory, unlike the team-research example
-above, so the exclusions are required here):
+above, so the exclusions are required here). **This inline template is illustrative of the
+overall staging shape only — it is NOT the sanctioned implementation.**
+`agent-system/extensions/core/scripts/git-commit-scoped.sh` is the sanctioned implementation
+(see "Commit-Level Path Scoping and Cross-Process Serialization" below) and applies the
+`git check-ignore`-gated conditional injection documented in "Canonical Runtime-File Exclusion
+Set" above — a caller reading only this template and reproducing the unconditional `git add
+"${ephemeral_excludes[@]}"` shape shown here verbatim would reintroduce the `.lock/`-present
+abort hazard that conditional injection exists to close. Prefer invoking
+`git-commit-scoped.sh` directly over hand-rolling this template's `git add`/`git commit` pair:
 
 ```bash
 padded_num=$(printf "%03d" "$task_number")

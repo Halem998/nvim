@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Author the Regression Suite and Prove It RED Pre-Fix",
+  "started_at": "2026-07-29T17:30:00Z",
+  "last_updated": "2026-07-29T17:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create tests/test-git-commit-scoped.sh with T1-T7 fixtures and register in manifest.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+        "agent-system/extensions/core/manifest.json"
+      ],
+      "note": "Mutation check run against the UNMODIFIED git-commit-scoped.sh: T1 [FAIL] (rc=2, .lock present aborts add), T3 [FAIL] (rc=2, all four present aborts add), T4 [FAIL] (rc=2, other three present also aborts add via the same unconditional injection -- expected, same defect). T2/T5/T6/T7 [PASS] pre-fix (T2 vacuously since no commit landed under T1; T5/T6/T7 unaffected by the defect). Required RED baseline (T1, T3) confirmed."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
