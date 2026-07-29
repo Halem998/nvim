@@ -36,7 +36,7 @@ next_project_number: 990
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a (see above)
 973 [NOT STARTED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
-978 [RESEARCHED] — Make the context-index validation layer tell the truth. From the 
+978 [PLANNED] — Make the context-index validation layer tell the truth. From the 
   └─ 987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
 979 [NOT STARTED] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
@@ -401,11 +401,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 978. Fix the lying context-index validators; machine-compute line_count; add index-orphan gate
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 965, Task 976
 - **Research**: [978_fix_index_validators_and_line_counts/reports/01_context-index-validation-truth.md]
+- **Plan**: [978_fix_index_validators_and_line_counts/plans/01_index-validation-truth.md]
 
 **Description**: Make the context-index validation layer tell the truth. From the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, docs/context section): 104 of 164 deployed index entries have wrong line_count (58 beyond the validator's own 10% tolerance; whole extension blocks are round-number placeholders that were never measured), 14 deployed context files including the single largest context file (patterns/task-lock.md, 1103 lines) have NO index entry and are unreachable by any agent, and the validator that should catch the line counts reports 'Warnings: 0 / Validation PASSED' while 58 real warnings scroll past.
 

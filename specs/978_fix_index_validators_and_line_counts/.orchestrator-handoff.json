@@ -1,26 +1,35 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "All 4 claimed defects confirmed live (not stale): subshell bug swallows 58 real warnings (also dormant on the error-side for 3 other checks); line_count is a real budget input (validate-context-budgets.sh, currently unwired); 14 deployed context files (11 core, 3 extension) have zero source-level index entries, no literature stray exists (extension not loaded); no version/generated stamp is ever written. True scope is source-level across all 19 extensions (444 entries): 226 numeric mismatches + 94 null line_counts (72% need correction), beyond the 164-entry deployed subset the review inspected. Recommended wiring point: extend check-extension-docs.sh (already verify-deploy.sh gate 3) with two new rules (index-orphan gate, line-count drift gate), not validate-context-index.sh (invoked by nothing automated) and not a new verify-deploy.sh gate.",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 9-phase implementation plan (9 hours, 6 dependency waves) covering all four confirmed defects plus one planning-time discovery. Phases: fix the four subshell-discarded counter blocks in validate-context-index.sh; build a source-store line_count regenerator; regenerate ~320 counts across all extensions; convert append_index_entries to upsert and add the version/generated stamp; index the 14 orphaned context files; redeploy and verify; add two new lettered gates to check-extension-docs.sh; documentation sync; final verify-deploy gate. Key caveat: the deployed index merge is currently append-only-with-dedupe, so without the merge.lua change the task's own verification bar would be unreachable.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/978_fix_index_validators_and_line_counts/reports/01_context-index-validation-truth.md"
+      "type": "plan",
+      "path": "specs/978_fix_index_validators_and_line_counts/plans/01_index-validation-truth.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
-  "decisions_made": [
-    "Subshell bug affects error-reporting too (path/domain/deprecated-replacement checks), not only warnings -- fix all 4 pipe-into-while blocks in the same edit via process substitution",
-    "Regenerator must target source agent-system/extensions/*/index-entries.json (444 entries, 19 extensions), not only the 164 currently-deployed entries",
-    "Index-orphan gate and line-count drift gate should be two new rules in check-extension-docs.sh (reusing $EXT_DIR/orphan_report()/ORPHAN_GATE_MODE-style infrastructure), which already flows through verify-deploy.sh gate 3 with no verify-deploy.sh changes needed",
-    "All 14 current orphans (11 core + email + memory + nvim) should be indexed; none warrant exclusion -- all contain real, current content",
-    "Literature extension is not currently loaded (.claude-extensions.json active set is core/email/memory/nix/nvim only) so it has zero deployed context files and zero orphans; task description's literature-stray mention does not match live state"
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/978_fix_index_validators_and_line_counts/plans/01_index-validation-truth.md",
+    "specs/978_fix_index_validators_and_line_counts/.orchestrator-handoff.json",
+    "specs/978_fix_index_validators_and_line_counts/.return-meta.json"
   ],
-  "dead_ends": [],
+  "decisions_made": [
+    "Added a phase (4) not called for by the research: M.append_index_entries in lua/neotex/plugins/ai/shared/extensions/merge.lua is append-only with dedupe-by-path and never updates an existing entry, and sync.lua excludes index.json from context copy -- so corrected source line_count values would never reach the deployed index. Converted to upsert, which also gives the version/generated stamp a natural home.",
+    "Line-count mismatches stay WARNING severity in validate-context-index.sh (exit code still driven by errors only), with an opt-in --strict flag rather than an immediate hard-fail promotion -- avoids a severity regression while still satisfying the nonzero-before/zero-after verification bar.",
+    "Chose remediate-then-gate ordering over the advisory-to-hard two-phase rollout: index entries and line counts land in phases 3/5/6, the new gates land hard in phase 7 against an already-clean baseline. A sibling severity variable is still introduced as an escape hatch.",
+    "Both new gates go in check-extension-docs.sh per the research recommendation: a per-extension source line_count rule (catches the 94 nulls in unloaded extensions the deployed validator can never see) and a project-wide deployed-index-orphan rule. No change to verify-deploy.sh, which already invokes gate 3 in full.",
+    "The new regenerator script is declared in the core manifest provides.scripts in the same phase it is created, so the existing Rule Q undeclared-scripts check stays clean.",
+    "Every phase carries an explicit Scope Hypothesis instructing the implementer to re-derive the asserted counts (444/226/94 entries, 14 orphans, four defective pipelines) live rather than trusting the plan's figures."
+  ],
+  "dead_ends": [
+    "Regenerating line_count only in the deployed .claude/context/index.json: it is a disposable deploy artifact regenerated from agent-system/extensions/**, so the correction is silently undone on the next redeploy. The generator must target the source store.",
+    "Adding the new gates to validate-context-index.sh: that script is invoked by nothing automated (manual tool, referenced only from a docs guide), so a gate there would never run.",
+    "Adding a new verify-deploy.sh gate: unnecessary, since gate 3 already invokes check-extension-docs.sh in full and picks up new rules automatically."
+  ],
   "phases_completed": 0,
-  "phases_total": null,
-  "plan_markers_verified": false
+  "phases_total": 9,
+  "plan_markers_verified": true
 }
