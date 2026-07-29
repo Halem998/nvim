@@ -1,7 +1,7 @@
 # Implementation Plan: In-Flight Orchestration Session Registry
 
 - **Task**: 944 - Add an in-flight orchestration session registry with liveness and reap
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: 942, 943 (both closed)
 - **Research Inputs**: specs/944_in_flight_session_registry/reports/01_in-flight-session-registry.md
@@ -105,46 +105,46 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Session-Registry Subcommands on task-lock.sh [NOT STARTED]
+### Phase 1: Session-Registry Subcommands on task-lock.sh [COMPLETED]
 
 **Goal**: Add the registry primitive — four subcommands, two threshold constants, and the
 supporting helpers — to `scripts/task-lock.sh`, reusing existing helpers and changing no existing
 subcommand.
 
 **Tasks**:
-- [ ] Read the current `scripts/task-lock.sh` in full before editing; anchor on symbol names and
+- [x] Read the current `scripts/task-lock.sh` in full before editing; anchor on symbol names and
       quoted strings, never on line numbers.
-- [ ] Add two env-overridable constants beside `TASK_LOCK_STALE_MIN` / `TASK_LOCK_REAP_MIN`, each
+- [x] Add two env-overridable constants beside `TASK_LOCK_STALE_MIN` / `TASK_LOCK_REAP_MIN`, each
       with a derivation-and-rationale comment in the same style those two already model:
       - `SESSION_REGISTRY_REAP_MIN` (default 240) — deliberately NOT derived from
         `TASK_LOCK_REAP_MIN`, for the same reason `ORCHESTRATOR_SESSION_REAP_MIN` is not: a batch
         session can legitimately run far longer than any single task's lock window.
       - `SESSION_REGISTRY_DEAD_PID_MIN` (default 10) — the floor below which the dead-pid shortcut
         never fires, guarding against a misresolved or reused pid.
-- [ ] Add helper `session_registry_dir()` returning `$PROJECT_ROOT/specs/.sessions` and creating it
+- [x] Add helper `session_registry_dir()` returning `$PROJECT_ROOT/specs/.sessions` and creating it
       with `mkdir -p` on the register path only (heartbeat/release/reap stay non-creating, matching
       how `resolve_task_dir` confines creation to `cmd_acquire`).
-- [ ] Add helper `resolve_session_pid()`: a bounded ancestor walk (at most 10 hops, stopping at pid
+- [x] Add helper `resolve_session_pid()`: a bounded ancestor walk (at most 10 hops, stopping at pid
       1) from `$$` upward looking for a process whose command name contains `claude`; returns that
       pid and a `pid_source` token. Fall back in order: `ancestor-claude` -> `ppid` -> `self`. An
       explicit `--pid N` argument overrides the walk entirely and records `pid_source=explicit`.
-- [ ] Add helper `write_session_entry()` modeled byte-for-byte on `write_holder`'s shape: `jq -n`
+- [x] Add helper `write_session_entry()` modeled byte-for-byte on `write_holder`'s shape: `jq -n`
       into `<file>.tmp`, empty-output guard, then `mv`. **No `mkdir` exclusivity gate** — each
       session writes only its own globally-unique-id'd file, so tmp-mv atomicity is sufficient.
       Do not adopt `init-marker`'s claim-and-recheck pattern.
-- [ ] Add `cmd_session_register`: signature
+- [x] Add `cmd_session_register`: signature
       `session-register <session_id> <command> <task_numbers_csv> [--pid N]`. Normalizes the CSV to
       a JSON integer array with `jq`; computes the `file_scope` UNION internally by calling the
       existing `get_file_scope` once per task number and merging with `jq -s 'add | unique'` (so
       callers never construct the union themselves). Upsert semantics: if an entry for this
       `session_id` already exists and parses, preserve its `started_at` and refresh `heartbeat_at`
       — mirroring `cmd_acquire`'s same-session re-entry safety property.
-- [ ] Add `cmd_session_heartbeat <session_id>`: refreshes `heartbeat_at` only, via the same tmp-mv
+- [x] Add `cmd_session_heartbeat <session_id>`: refreshes `heartbeat_at` only, via the same tmp-mv
       write. Mirrors `cmd_heartbeat`'s contract exactly — a missing or unparseable entry is a
       stderr warning and exit 0, never a block on the caller.
-- [ ] Add `cmd_session_release <session_id>`: `rm -f` the entry; idempotent, always exit 0, mirroring
+- [x] Add `cmd_session_release <session_id>`: `rm -f` the entry; idempotent, always exit 0, mirroring
       `cmd_release`.
-- [ ] Add `cmd_session_reap [--dry-run]`: mirrors `cmd_reap`'s report-then-delete shape and its
+- [x] Add `cmd_session_reap [--dry-run]`: mirrors `cmd_reap`'s report-then-delete shape and its
       "skip corrupt/unreadable entry rather than silently ignore" discipline. Two-signal staleness,
       in this order: (1) if `kill -0 "$pid" 2>/dev/null` FAILS (pid confirmably gone) AND
       `heartbeat_at` age exceeds `SESSION_REGISTRY_DEAD_PID_MIN`, reap with reason `dead-pid`;
@@ -152,9 +152,9 @@ subcommand.
       exceeding `SESSION_REGISTRY_REAP_MIN`, reason `stale-heartbeat`. Never treat "pid alive" as
       proof of liveness. An entry with a missing/unparseable body falls back to the file's own mtime,
       exactly as `cmd_reap` falls back to the `.lock` directory mtime. Always exit 0.
-- [ ] Wire all four into the bottom `case "$SUBCMD"` dispatch with argument-count usage guards
+- [x] Wire all four into the bottom `case "$SUBCMD"` dispatch with argument-count usage guards
       matching the surrounding entries' style.
-- [ ] Extend the top-of-file `# Usage:` block and the `# Exit codes:` block with the four new
+- [x] Extend the top-of-file `# Usage:` block and the `# Exit codes:` block with the four new
       subcommands and the registry entry layout (`specs/.sessions/{session_id}.json` and its field
       list), matching the existing header's documentation density.
 
@@ -172,6 +172,8 @@ the resolver from a real Bash tool invocation and printing the resolved pid plus
 resolves to `self` or `ppid` rather than `ancestor-claude`, record that outcome in the phase notes —
 the `SESSION_REGISTRY_DEAD_PID_MIN` floor is what makes the fallback safe, so a `ppid` result is an
 acceptable outcome, not a blocker.
+
+**Empirical confirmation (recorded at implementation time)**: (a) confirmed — Phases 4-8's wiring sites use exactly `session-register`/`session-heartbeat`/`session-release`/`session-reap`, no fifth verb needed. (b) confirmed — `resolve_session_pid()` run live from a Bash tool invocation resolved `pid_source=ancestor-claude` (found `claude` two hops up the ancestor chain from the helper's own `$$`), not the `ppid`/`self` fallback; the `SESSION_REGISTRY_DEAD_PID_MIN` floor was also verified directly with synthetic fixtures: a dead-pid entry younger than the floor survives reap, one older reaps with reason `dead-pid`, a live-pid entry reaps only past `SESSION_REGISTRY_REAP_MIN` with reason `stale-heartbeat`, and a corrupt entry falls back to file mtime and reaps/skips accordingly.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/task-lock.sh` - new constants, helpers, four `cmd_session_*`

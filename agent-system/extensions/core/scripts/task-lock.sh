@@ -23,6 +23,28 @@
 #   task-lock.sh scope-release <token>
 #   task-lock.sh commit-acquire <session_id> [stale_sec]
 #   task-lock.sh commit-release <token>
+#   task-lock.sh session-register <session_id> <command> <task_numbers_csv> [--pid N]
+#   task-lock.sh session-heartbeat <session_id>
+#   task-lock.sh session-release <session_id>
+#   task-lock.sh session-reap [--dry-run]
+#
+# Session-Registry subcommands (session-register/session-heartbeat/session-release/session-reap)
+# are a SEPARATE, ADDITIVE family from the task-number `.lock/` mechanism above: they record which
+# orchestration SESSIONS (not tasks) are actually in flight, at
+# specs/.sessions/{session_id}.json. This task-lock.sh-only registry is PRODUCED here and consumed
+# by nothing in the source store today -- see context/patterns/task-lock.md's Session-Registry CLI
+# section for the "Non-Goal: no reader" statement and the full contract. Registry entry layout:
+#
+#   {
+#     "session_id": "sess_1736700000_a1b2c3",
+#     "pid": 261744,
+#     "pid_source": "ancestor-claude",
+#     "command": "/implement 944",
+#     "task_numbers": [944],
+#     "file_scope": ["agent-system/extensions/core/scripts/task-lock.sh"],
+#     "started_at": "2026-07-04T18:07:17Z",
+#     "heartbeat_at": "2026-07-04T18:12:40Z"
+#   }
 #
 # scope-acquire/scope-release expose the specs/.scope-lock/ global mutex (defined below as
 # acquire_scope_mutex/release_scope_mutex, originally introduced for cmd_acquire's cross-task
@@ -103,6 +125,22 @@
 #   commit-release:
 #     0 - always (best-effort; a token mismatch or absent mutex is a loud WARNING on stderr,
 #         never a failure — release must never fail a caller's cleanup path)
+#   session-register (specs/.sessions/{session_id}.json -- see the top-of-file usage comment for
+#   the entry schema; upsert semantics -- re-registering the same session_id preserves started_at
+#   and refreshes heartbeat_at):
+#     0 - registered (fresh or upserted)
+#     2 - usage error
+#   session-heartbeat:
+#     0 - heartbeat refreshed, OR no-op with a stderr warning (entry missing/unparseable —
+#         session-heartbeat never blocks the caller, mirroring cmd_heartbeat's own contract)
+#     2 - usage error
+#   session-release:
+#     0 - always (idempotent; releasing an already-absent entry is success)
+#     2 - usage error
+#   session-reap (explicit-invocation-only; NEVER called from session-register/-heartbeat/
+#   -release -- mirrors reap's own "never implicit" contract):
+#     0 - always (reports, never fails on "nothing to do")
+#     2 - usage error
 #
 # Same-session re-entry (CRITICAL): a session re-acquiring its own lock (e.g.
 # `/research 42` then `/plan 42` in one conversation) MUST NOT self-block. `acquire`
@@ -126,6 +164,24 @@ TASK_LOCK_STALE_MIN="${TASK_LOCK_STALE_MIN:-30}"
 # runs unattended and is meant to be the final word that a lock is dead, so it sits at a
 # firm multiple above the override-eligible threshold, not equal to it.
 TASK_LOCK_REAP_MIN="${TASK_LOCK_REAP_MIN:-$(( TASK_LOCK_STALE_MIN * 4 ))}"
+
+# Session-registry reap threshold in minutes, overridable via env var. Default 240 (4 hours).
+# Deliberately NOT derived from TASK_LOCK_REAP_MIN -- for the same reason
+# ORCHESTRATOR_SESSION_REAP_MIN (reap-session-runtime-files.sh) is not: a batch orchestration
+# session can legitimately run far longer than any single task's lock window (up to
+# MAX_CYCLES_MT = min(task_count * 5, 25) cycles), so the safe threshold must be materially
+# longer than a single task's lock threshold. Matches ORCHESTRATOR_SESSION_REAP_MIN's default
+# (240) since both bound the same class of "batch session, not single task" runtime.
+SESSION_REGISTRY_REAP_MIN="${SESSION_REGISTRY_REAP_MIN:-240}"
+
+# Dead-pid floor in minutes, overridable via env var. Default 10. resolve_session_pid()'s bounded
+# ancestor walk can, in principle, resolve to the wrong pid (a misresolved or since-reused pid) --
+# this floor guards session-reap's dead-pid shortcut so it can NEVER fire against an entry that
+# heartbeated more recently than this many minutes ago, regardless of what kill -0 reports for the
+# recorded pid. This is what makes a ppid/self pid_source fallback (see resolve_session_pid below)
+# an acceptable outcome rather than a safety hole: even a bogus pid can only ever shorten the wait
+# down to this floor, never reap a genuinely live, recently-heartbeated session.
+SESSION_REGISTRY_DEAD_PID_MIN="${SESSION_REGISTRY_DEAD_PID_MIN:-10}"
 
 # --- resolve_task_dir: task_number [create_mode] -> specs/{NNN}_{SLUG} absolute path ---
 # Prefers state.json's project_name (authoritative); falls back to a filesystem glob
@@ -282,6 +338,106 @@ find_held_locks() {
       jq -e . "$dir/holder.json" >/dev/null 2>&1 || continue
       echo "$dir"
     done
+}
+
+# --- Session-Registry helpers (session-register/session-heartbeat/session-release/session-reap) ---
+# See context/patterns/task-lock.md's Session-Registry CLI section for the full contract. No
+# `mkdir` exclusivity gate is used here (unlike the task-number `.lock/` mechanism above): each
+# session writes only its own globally-unique-id'd file (specs/.sessions/{session_id}.json), so
+# write_session_entry()'s tmp-file-mv atomicity alone is sufficient to prevent a concurrent
+# session-reap sweep from ever observing a half-written entry.
+
+# --- session_registry_dir: specs/.sessions absolute path, creating it on the register path only ---
+# Creation is confined to session-register, mirroring how resolve_task_dir's create_mode is
+# confined to cmd_acquire -- session-heartbeat/-release/-reap all resolve this path read-only via
+# the same function with create=false and have zero filesystem side effects when the directory is
+# absent.
+session_registry_dir() {
+  local create="${1:-false}"
+  local dir="$PROJECT_ROOT/specs/.sessions"
+  if [ "$create" = "true" ]; then
+    mkdir -p "$dir" 2>/dev/null
+  fi
+  echo "$dir"
+}
+
+# --- resolve_session_pid: bounded ancestor walk for the nearest "claude" process ---
+# Prints "<pid> <pid_source>" on stdout. $$ inside this short-lived helper script is the helper's
+# OWN pid, not the long-lived session process -- using it bare would make every registered entry
+# look instantly dead and let session-reap's dead-pid shortcut reap live sessions. Walks up the
+# process tree (at most 10 hops, stopping at pid 1) looking for a process whose command name
+# contains "claude". Falls back in order: ancestor-claude -> ppid -> self. An explicit --pid N
+# argument overrides the walk entirely (pid_source=explicit).
+resolve_session_pid() {
+  local explicit_pid=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --pid)
+        explicit_pid="$2"
+        shift 2
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  if [ -n "$explicit_pid" ]; then
+    echo "$explicit_pid explicit"
+    return 0
+  fi
+
+  local pid="$$" hop comm ppid
+  for hop in 1 2 3 4 5 6 7 8 9 10; do
+    comm=$(ps -o comm= -p "$pid" 2>/dev/null)
+    if [ -n "$comm" ] && [[ "$comm" == *claude* ]]; then
+      echo "$pid ancestor-claude"
+      return 0
+    fi
+    ppid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+    if [ -z "$ppid" ] || [ "$ppid" = "1" ]; then
+      break
+    fi
+    pid="$ppid"
+  done
+
+  ppid=$(ps -o ppid= -p "$$" 2>/dev/null | tr -d ' ')
+  if [ -n "$ppid" ]; then
+    echo "$ppid ppid"
+    return 0
+  fi
+
+  echo "$$ self"
+  return 0
+}
+
+# --- write_session_entry: tmp-file-rename write of specs/.sessions/{session_id}.json ---
+# Modeled byte-for-byte on write_holder's shape above: jq -n into <file>.tmp, empty-output guard,
+# then mv. No mkdir exclusivity gate (see the Session-Registry helpers comment above).
+write_session_entry() {
+  local sessions_dir="$1" session_id="$2" pid="$3" pid_source="$4" command="$5" task_numbers_json="$6" file_scope_json="$7" started_at="$8" heartbeat_at="$9"
+  local target="$sessions_dir/${session_id}.json"
+  local tmp_file="${target}.tmp"
+
+  jq -n \
+    --arg session_id "$session_id" \
+    --argjson pid "$pid" \
+    --arg pid_source "$pid_source" \
+    --arg command "$command" \
+    --argjson task_numbers "$task_numbers_json" \
+    --argjson file_scope "$file_scope_json" \
+    --arg started_at "$started_at" \
+    --arg heartbeat_at "$heartbeat_at" \
+    '{session_id: $session_id, pid: $pid, pid_source: $pid_source, command: $command, task_numbers: $task_numbers, file_scope: $file_scope, started_at: $started_at, heartbeat_at: $heartbeat_at}' \
+    > "$tmp_file"
+
+  if [ ! -s "$tmp_file" ]; then
+    echo "ERROR: failed to write session registry entry $target (jq produced empty output)" >&2
+    rm -f "$tmp_file"
+    return 1
+  fi
+
+  mv "$tmp_file" "$target"
 }
 
 # --- Named-mutex primitives (generalized from this file's original specs/.scope-lock/-only
@@ -880,6 +1036,202 @@ cmd_init_marker() {
 }
 
 # =====================================================================
+# session-register <session_id> <command> <task_numbers_csv> [--pid N]
+# =====================================================================
+# Upsert semantics: if an entry for this session_id already exists and parses, preserve its
+# started_at and refresh heartbeat_at only -- mirroring cmd_acquire's same-session re-entry safety
+# property. file_scope is the deduplicated UNION across every task in task_numbers_csv, computed
+# internally via get_file_scope -- callers never construct the union themselves.
+cmd_session_register() {
+  local session_id="$1" command="$2" task_numbers_csv="$3"
+  shift 3 || true
+  local explicit_pid=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --pid)
+        explicit_pid="$2"
+        shift 2
+        ;;
+      *)
+        echo "Usage: $0 session-register <session_id> <command> <task_numbers_csv> [--pid N]" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  local sessions_dir
+  sessions_dir=$(session_registry_dir "true")
+
+  local task_numbers_json
+  task_numbers_json=$(echo "$task_numbers_csv" | jq -R -c 'split(",") | map(select(length > 0) | tonumber)' 2>/dev/null)
+  if [ -z "$task_numbers_json" ]; then
+    echo "ERROR: session-register could not parse task_numbers_csv \"$task_numbers_csv\" as a CSV of integers" >&2
+    return 2
+  fi
+
+  local scopes_tmp
+  scopes_tmp=$(mktemp) || { echo "ERROR: session-register could not create a temp file" >&2; return 2; }
+  echo "$task_numbers_json" | jq -c '.[]' 2>/dev/null | while IFS= read -r tn; do
+    get_file_scope "$tn"
+  done > "$scopes_tmp"
+  local file_scope_json
+  file_scope_json=$(jq -s -c 'add | unique' "$scopes_tmp" 2>/dev/null)
+  rm -f "$scopes_tmp"
+  [ -n "$file_scope_json" ] && [ "$file_scope_json" != "null" ] || file_scope_json="[]"
+
+  local pid pid_source
+  read -r pid pid_source <<< "$(resolve_session_pid ${explicit_pid:+--pid "$explicit_pid"})"
+
+  local started_at="$(iso_now)" heartbeat_at="$(iso_now)"
+  local existing="$sessions_dir/${session_id}.json"
+  if [ -f "$existing" ] && jq -e . "$existing" >/dev/null 2>&1; then
+    local prior_started
+    prior_started=$(jq -r '.started_at // empty' "$existing" 2>/dev/null)
+    [ -n "$prior_started" ] && started_at="$prior_started"
+  fi
+
+  write_session_entry "$sessions_dir" "$session_id" "$pid" "$pid_source" "$command" "$task_numbers_json" "$file_scope_json" "$started_at" "$heartbeat_at" || return 2
+  return 0
+}
+
+# =====================================================================
+# session-heartbeat <session_id>
+# =====================================================================
+# Refreshes heartbeat_at only. Mirrors cmd_heartbeat's contract exactly: a missing or
+# unparseable entry is a stderr warning and exit 0, never a block on the caller.
+cmd_session_heartbeat() {
+  local session_id="$1"
+  local sessions_dir target
+  sessions_dir=$(session_registry_dir "false")
+  target="$sessions_dir/${session_id}.json"
+
+  if [ ! -f "$target" ] || ! jq -e . "$target" >/dev/null 2>&1; then
+    echo "WARN: session-heartbeat no-op — no registry entry for session $session_id." >&2
+    return 0
+  fi
+
+  local pid pid_source command task_numbers_json file_scope_json started_at
+  pid=$(jq -r '.pid // empty' "$target" 2>/dev/null)
+  pid_source=$(jq -r '.pid_source // empty' "$target" 2>/dev/null)
+  command=$(jq -r '.command // empty' "$target" 2>/dev/null)
+  task_numbers_json=$(jq -c '.task_numbers // []' "$target" 2>/dev/null)
+  file_scope_json=$(jq -c '.file_scope // []' "$target" 2>/dev/null)
+  started_at=$(jq -r '.started_at // empty' "$target" 2>/dev/null)
+  [ -n "$pid" ] || pid=0
+
+  write_session_entry "$sessions_dir" "$session_id" "$pid" "$pid_source" "$command" "$task_numbers_json" "$file_scope_json" "$started_at" "$(iso_now)" || return 2
+  return 0
+}
+
+# =====================================================================
+# session-release <session_id>
+# =====================================================================
+# rm -f the entry; idempotent, always exit 0, mirroring cmd_release.
+cmd_session_release() {
+  local session_id="$1"
+  local sessions_dir
+  sessions_dir=$(session_registry_dir "false")
+  rm -f "$sessions_dir/${session_id}.json" 2>/dev/null || true
+  return 0
+}
+
+# =====================================================================
+# session-reap [--dry-run]
+# =====================================================================
+# Mirrors cmd_reap's report-then-delete shape and its "skip corrupt/unreadable entry rather than
+# silently ignore" discipline. Two-signal staleness, in this order:
+#   1. dead-pid: kill -0 "$pid" FAILS (pid confirmably gone) AND heartbeat_at age exceeds
+#      SESSION_REGISTRY_DEAD_PID_MIN.
+#   2. stale-heartbeat: otherwise (pid alive, or liveness undeterminable), heartbeat_at age
+#      exceeds SESSION_REGISTRY_REAP_MIN.
+# "pid alive" is NEVER treated as proof of liveness on its own -- it only prevents the dead-pid
+# shortcut from firing; the stale-heartbeat band is always the fallback. An entry with a
+# missing/unparseable body falls back to the file's own mtime, exactly as cmd_reap falls back to
+# the .lock directory mtime. Always exits 0.
+cmd_session_reap() {
+  local dry_run=false
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --dry-run)
+        dry_run=true
+        shift
+        ;;
+      *)
+        echo "Usage: $0 session-reap [--dry-run]" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  local sessions_dir
+  sessions_dir=$(session_registry_dir "false")
+
+  local f total_count=0 reaped_count=0
+  if [ -d "$sessions_dir" ]; then
+    for f in "$sessions_dir"/*.json; do
+      [ -e "$f" ] || continue
+      total_count=$(( total_count + 1 ))
+
+      local session_id pid command task_numbers_csv age reason_suffix=""
+      if jq -e . "$f" >/dev/null 2>&1; then
+        session_id=$(jq -r '.session_id // empty' "$f" 2>/dev/null)
+        pid=$(jq -r '.pid // empty' "$f" 2>/dev/null)
+        command=$(jq -r '.command // empty' "$f" 2>/dev/null)
+        task_numbers_csv=$(jq -r '.task_numbers // [] | join(",")' "$f" 2>/dev/null)
+        age=$(age_minutes "$(jq -r '.heartbeat_at // empty' "$f" 2>/dev/null)")
+      else
+        session_id="unknown"
+        pid=""
+        command="unknown"
+        task_numbers_csv="unknown"
+        local file_mtime
+        file_mtime=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null)
+        if [ -n "$file_mtime" ]; then
+          age=$(( ( $(now_epoch) - file_mtime ) / 60 ))
+        else
+          age=999999
+        fi
+        reason_suffix=" (missing/unparseable entry; age is the file's own mtime)"
+      fi
+
+      local reason=""
+      if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
+        if ! kill -0 "$pid" 2>/dev/null; then
+          if [ "$age" -gt "$SESSION_REGISTRY_DEAD_PID_MIN" ]; then
+            reason="dead-pid"
+          fi
+        fi
+      fi
+      if [ -z "$reason" ] && [ "$age" -gt "$SESSION_REGISTRY_REAP_MIN" ]; then
+        reason="stale-heartbeat"
+      fi
+
+      if [ -n "$reason" ]; then
+        reaped_count=$(( reaped_count + 1 ))
+        if [ "$dry_run" = true ]; then
+          echo "would reap: specs/.sessions/$(basename "$f") session=$session_id command=$command tasks=$task_numbers_csv age_min=$age reason=$reason${reason_suffix}"
+        else
+          rm -f "$f" 2>/dev/null
+          echo "reaped: specs/.sessions/$(basename "$f") session=$session_id command=$command tasks=$task_numbers_csv age_min=$age reason=$reason${reason_suffix}"
+        fi
+      elif [ -n "$reason_suffix" ]; then
+        echo "SKIP: specs/.sessions/$(basename "$f") age_min=$age (below reap thresholds)${reason_suffix}"
+      fi
+    done
+  fi
+
+  if [ "$reaped_count" -eq 0 ]; then
+    echo "no stale session registry entries found (${total_count} scanned, thresholds dead-pid=${SESSION_REGISTRY_DEAD_PID_MIN}min stale-heartbeat=${SESSION_REGISTRY_REAP_MIN}min)"
+  elif [ "$dry_run" = true ]; then
+    echo "would reap ${reaped_count} of ${total_count} session registry entries"
+  else
+    echo "reaped ${reaped_count} of ${total_count} session registry entries"
+  fi
+
+  return 0
+}
+
+# =====================================================================
 # Dispatch
 # =====================================================================
 SUBCMD="${1:-}"
@@ -962,8 +1314,36 @@ case "$SUBCMD" in
     cmd_commit_release "$@"
     exit $?
     ;;
+  session-register)
+    if [ "$#" -lt 3 ]; then
+      echo "Usage: $0 session-register <session_id> <command> <task_numbers_csv> [--pid N]" >&2
+      exit 2
+    fi
+    cmd_session_register "$@"
+    exit $?
+    ;;
+  session-heartbeat)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 session-heartbeat <session_id>" >&2
+      exit 2
+    fi
+    cmd_session_heartbeat "$@"
+    exit $?
+    ;;
+  session-release)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 session-release <session_id>" >&2
+      exit 2
+    fi
+    cmd_session_release "$@"
+    exit $?
+    ;;
+  session-reap)
+    cmd_session_reap "$@"
+    exit $?
+    ;;
   *)
-    echo "Usage: $0 {acquire|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release} ..." >&2
+    echo "Usage: $0 {acquire|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|session-register|session-heartbeat|session-release|session-reap} ..." >&2
     exit 2
     ;;
 esac
