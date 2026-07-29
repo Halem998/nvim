@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Matcher-aware, self-normalizing hook-array merge",
+  "started_at": "2026-07-29T00:35:00Z",
+  "last_updated": "2026-07-29T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add is_hook_event_array shape predicate", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 2, "description": "Add normalize_hook_event_array with idempotency and NOT-reversed-by-unmerge comment", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 3, "description": "Add merge_hook_event_array with tracking return", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 4, "description": "Insert gated fork in deep_merge array branch", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 5, "description": "Verify: module loads, dependents load, unit exercise against scratchpad settings.json copy", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Headless unit exercise (scratchpad phase4-unit-test.lua) confirmed: (a) claude-stop-notify.sh appears exactly once in Stop after merge, (b) no event has two blocks sharing a matcher, (c) permissions and mcpServers are vim.deep_equal to pre-merge values, (d) a second merge_settings call against the merged result is a no-op (idempotent)."
+}

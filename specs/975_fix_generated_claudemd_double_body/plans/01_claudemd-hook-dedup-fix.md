@@ -251,41 +251,42 @@ event is found, consolidate it too and note the discrepancy.
 
 ---
 
-### Phase 4: Matcher-aware, self-normalizing hook-array merge [NOT STARTED]
+### Phase 4: Matcher-aware, self-normalizing hook-array merge [COMPLETED]
 
 **Goal**: `merge_settings()` recognizes Claude Code hook-event arrays, normalizes the target's
 existing blocks, and merges incoming blocks by `matcher` — so a redeploy heals the existing
 duplicate and cannot create a new one, while every non-hook array behaves exactly as before.
 
 **Tasks**:
-- [ ] Add a local shape predicate to `merge.lua`, e.g. `is_hook_event_array(arr)`: returns true only
+- [x] Add a local shape predicate to `merge.lua`, e.g. `is_hook_event_array(arr)`: returns true only
       when `arr` is a non-empty array AND every item is a table carrying both a `matcher` key and an
       array-valued `hooks` key. This predicate is the sole gate for all new behavior below.
-- [ ] Add a local `normalize_hook_event_array(arr)`: returns an array in which each distinct
+      *(completed)*
+- [x] Add a local `normalize_hook_event_array(arr)`: returns an array in which each distinct
       `matcher` value appears exactly once, with that matcher's `hooks` entries concatenated in
       first-appearance order and individually deduplicated by `vim.deep_equal` on the whole hook
       object (`{type, command}`). Match matchers by exact string equality — never by substring or
       pattern. Preserve first-appearance order of matchers. The function must be idempotent:
-      normalizing an already-normalized array returns an equal array.
-- [ ] Add a local `merge_hook_event_array(target_arr, source_arr)`: for each source block, locate a
+      normalizing an already-normalized array returns an equal array. *(completed)*
+- [x] Add a local `merge_hook_event_array(target_arr, source_arr)`: for each source block, locate a
       target block with an equal `matcher`; if found, append each of the source block's hook entries
       not already `vim.deep_equal`-present in that block; if not found, append the whole source block.
-      Return the tracking data described below.
-- [ ] In `deep_merge()`'s array branch, insert a gated fork: when `is_hook_event_array(value)` is
+      Return the tracking data described below. *(completed)*
+- [x] In `deep_merge()`'s array branch, insert a gated fork: when `is_hook_event_array(value)` is
       true AND (`target[key]` is nil, empty, or itself satisfies `is_hook_event_array`), first
       normalize `target[key]` in place, then merge via `merge_hook_event_array`. In every other case
       fall through to the existing whole-item `vim.deep_equal` append loop, unmodified. Do not
-      restructure or reindent the existing fall-through branch.
-- [ ] Define the new tracked shape: `tracked[key] = { type = "hook_merged", items = { <whole blocks
+      restructure or reindent the existing fall-through branch. *(completed)*
+- [x] Define the new tracked shape: `tracked[key] = { type = "hook_merged", items = { <whole blocks
       appended> }, hook_items = { { matcher = <string>, hook = <hook object> }, ... } }`. `items`
       reuses the semantics of the existing `appended` type; `hook_items` is the new record for
-      entries injected into a pre-existing matcher block.
-- [ ] Add a code comment at `normalize_hook_event_array` stating explicitly that normalization is
+      entries injected into a pre-existing matcher block. *(completed)*
+- [x] Add a code comment at `normalize_hook_event_array` stating explicitly that normalization is
       deliberately NOT reversed by `unmerge_settings()`: it is semantically neutral (Claude Code runs
       every matching block), idempotent, and restoring the pre-normalization block split would
-      reintroduce the duplication hazard it exists to close.
-- [ ] Keep 2-space indentation, ~100-character lines, `snake_case` locals, and LuaDoc `---` comment
-      blocks on each new function, per the repository's Lua standards.
+      reintroduce the duplication hazard it exists to close. *(completed)*
+- [x] Keep 2-space indentation, ~100-character lines, `snake_case` locals, and LuaDoc `---` comment
+      blocks on each new function, per the repository's Lua standards. *(completed)*
 
 **Timing**: 1 hour 15 minutes
 

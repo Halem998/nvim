@@ -169,6 +169,116 @@ function M.remove_section(target_path, section_id)
   return true
 end
 
+--- Check whether an array is shaped like a Claude Code hook-event array
+--- (e.g. the value of settings.json's "Stop", "PreToolUse", etc.): a
+--- non-empty array in which every item is a table carrying both a `matcher`
+--- (string) key and an array-valued `hooks` key. This predicate is the sole
+--- gate for the matcher-aware merge behavior below -- any other array shape
+--- (e.g. `permissions.allow`'s flat string array, or `mcpServers`, which is
+--- an object, not an array) falls through to the existing whole-item
+--- vim.deep_equal merge in deep_merge(), untouched.
+--- @param arr any Candidate value to test
+--- @return boolean is_hook_array True if arr is a non-empty hook-event array
+local function is_hook_event_array(arr)
+  if type(arr) ~= "table" or not vim.isarray(arr) or #arr == 0 then
+    return false
+  end
+  for _, item in ipairs(arr) do
+    if
+      type(item) ~= "table"
+      or type(item.matcher) ~= "string"
+      or type(item.hooks) ~= "table"
+      or not vim.isarray(item.hooks)
+    then
+      return false
+    end
+  end
+  return true
+end
+
+--- Normalize a hook-event array so each distinct `matcher` value appears
+--- exactly once, with that matcher's `hooks` entries concatenated in
+--- first-appearance order and individually deduplicated by vim.deep_equal on
+--- the whole hook object (`{type, command}`). Matchers are compared by exact
+--- string equality only -- never by substring or pattern. Idempotent:
+--- normalizing an already-normalized array returns an equal array.
+---
+--- Normalization is deliberately NOT reversed by unmerge_settings(): it is
+--- semantically neutral (Claude Code runs every matching block regardless of
+--- how many blocks share a matcher), it is idempotent, and restoring the
+--- pre-normalization block split on unload would reintroduce the exact
+--- duplication hazard this function exists to close.
+--- @param arr table Hook-event array (expected to satisfy is_hook_event_array)
+--- @return table normalized New array, one block per distinct matcher, in
+---   first-appearance order
+local function normalize_hook_event_array(arr)
+  local normalized = {}
+  local index_by_matcher = {}
+  for _, block in ipairs(arr) do
+    local idx = index_by_matcher[block.matcher]
+    if not idx then
+      idx = #normalized + 1
+      normalized[idx] = { matcher = block.matcher, hooks = {} }
+      index_by_matcher[block.matcher] = idx
+    end
+    for _, hook in ipairs(block.hooks) do
+      local exists = false
+      for _, existing in ipairs(normalized[idx].hooks) do
+        if vim.deep_equal(existing, hook) then
+          exists = true
+          break
+        end
+      end
+      if not exists then
+        table.insert(normalized[idx].hooks, hook)
+      end
+    end
+  end
+  return normalized
+end
+
+--- Merge a source hook-event array into a (pre-normalized) target hook-event
+--- array by `matcher`, rather than by whole-item vim.deep_equal. For each
+--- source block: if a target block with an equal `matcher` already exists,
+--- append each of the source block's hook entries not already
+--- vim.deep_equal-present in that target block's `hooks` array; otherwise
+--- append the whole source block as a new matcher block.
+--- @param target_arr table Target hook-event array, modified in place
+--- @param source_arr table Source hook-event array to merge in
+--- @return table tracked `{ items = {<whole blocks appended>}, hook_items =
+---   { { matcher = <string>, hook = <hook object> }, ... } }`
+local function merge_hook_event_array(target_arr, source_arr)
+  local tracked = { items = {}, hook_items = {} }
+  for _, source_block in ipairs(source_arr) do
+    local target_block = nil
+    for _, block in ipairs(target_arr) do
+      if block.matcher == source_block.matcher then
+        target_block = block
+        break
+      end
+    end
+    if target_block then
+      for _, hook in ipairs(source_block.hooks) do
+        local exists = false
+        for _, existing in ipairs(target_block.hooks) do
+          if vim.deep_equal(existing, hook) then
+            exists = true
+            break
+          end
+        end
+        if not exists then
+          table.insert(target_block.hooks, hook)
+          table.insert(tracked.hook_items, { matcher = source_block.matcher, hook = hook })
+        end
+      end
+    else
+      table.insert(target_arr, source_block)
+      table.insert(tracked.items, source_block)
+    end
+  end
+  return tracked
+end
+
 --- Deep merge two tables (arrays are appended, objects merged)
 --- @param target table Target table (modified in place)
 --- @param source table Source table to merge from
@@ -178,26 +288,54 @@ local function deep_merge(target, source, tracked)
   for key, value in pairs(source) do
     if type(value) == "table" then
       if vim.isarray(value) then
-        -- Array: append elements, track what we added
-        if target[key] == nil then
-          target[key] = {}
-          tracked[key] = { type = "new_array", items = {} }
-        elseif not tracked[key] then
-          tracked[key] = { type = "appended", items = {} }
-        end
-
-        for _, item in ipairs(value) do
-          -- Deduplicate
-          local exists = false
-          for _, existing in ipairs(target[key]) do
-            if vim.deep_equal(existing, item) then
-              exists = true
-              break
-            end
+        if
+          is_hook_event_array(value)
+          and (
+            target[key] == nil
+            or (
+              type(target[key]) == "table"
+              and (vim.tbl_isempty(target[key]) or is_hook_event_array(target[key]))
+            )
+          )
+        then
+          -- Hook-event array (Stop, PreToolUse, etc.): normalize the
+          -- target's existing blocks by matcher, then merge the source
+          -- array by matcher instead of whole-item vim.deep_equal. This
+          -- heals pre-existing same-matcher duplication (e.g. a stray
+          -- second "*" block on Stop) and prevents new duplication of that
+          -- class from ever landing again.
+          if target[key] == nil then
+            target[key] = {}
           end
-          if not exists then
-            table.insert(target[key], item)
-            table.insert(tracked[key].items, item)
+          target[key] = normalize_hook_event_array(target[key])
+          local hook_tracked = merge_hook_event_array(target[key], value)
+          tracked[key] = {
+            type = "hook_merged",
+            items = hook_tracked.items,
+            hook_items = hook_tracked.hook_items,
+          }
+        else
+          -- Array: append elements, track what we added
+          if target[key] == nil then
+            target[key] = {}
+            tracked[key] = { type = "new_array", items = {} }
+          elseif not tracked[key] then
+            tracked[key] = { type = "appended", items = {} }
+          end
+
+          for _, item in ipairs(value) do
+            -- Deduplicate
+            local exists = false
+            for _, existing in ipairs(target[key]) do
+              if vim.deep_equal(existing, item) then
+                exists = true
+                break
+              end
+            end
+            if not exists then
+              table.insert(target[key], item)
+              table.insert(tracked[key].items, item)
+            end
           end
         end
       else
