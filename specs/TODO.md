@@ -1,5 +1,5 @@
 ---
-next_project_number: 958
+next_project_number: 964
 ---
 
 # TODO
@@ -11,9 +11,11 @@ next_project_number: 958
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 947,950,951,955,956 | -- | agent-system |
-| 2 | 948,952,957 | 947,951,956 | agent-system, orchestration-concurrency |
-| 3 | 949,953,954 | 948,952 | agent-system |
+| 1 | 947,950,951,955,956,958,963 | -- | agent-system |
+| 2 | 948,952,957,959 | 947,951,956 | agent-system, orchestration-concurrency |
+| 3 | 949,953,954,960 | 948,952,957,959 | agent-system |
+| 4 | 961 | 960 | agent-system |
+| 5 | 962 | 961 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -28,13 +30,167 @@ next_project_number: 958
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
     └─ 954 [NOT STARTED] — Give recorded system defects an interactive surface that produces
 955 [NOT STARTED] — specs/errors.json has drifted into three mutually inconsistent do
-956 [PLANNED] — Two parsers read the same plan file and disagree about how many p
+956 [IMPLEMENTING] — Two parsers read the same plan file and disagree about how many p
+  └─ 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+    └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+      └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+        └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+958 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### Orchestration Concurrency
 
 957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
+
+### 963. Resolve the cslib implementation-summary format divergence from the core standard
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/**` and NEVER `.claude/**`.
+
+OBSERVED: every cslib task trips non-blocking gate-out format errors on its implementation summary (measured on one real task: 4 errors, 4 fields auto-repaired). cslib summaries come out headed `## What Was Done` / `## Verification` / `## Plan Deviations` / `## Task Completion Assessment`, while `agent-system/extensions/core/context/formats/summary-format.md` requires `## Overview` / `## What Changed` / `## Decisions` / `## Impacts` / `## Follow-ups` / `## References`.
+
+CORRECTED DIAGNOSIS (the reported cause was wrong; verify before acting). The divergence is NOT a competing cslib template overriding the standard -- no cslib file declares `## What Was Done` or `## Task Completion Assessment` anywhere. Two real findings replace that framing:
+  (a) `extensions/cslib/agents/cslib-implementation-agent.md` contains ZERO references to `summary-format.md`. It is never loaded, so the agent has no template to follow and improvises headings into the vacuum. Its only summary-structure instruction is a lone MUST-DO: "Include `## Plan Deviations` section in implementation summary." By contrast the four core/extension implementation agents that DO conform (general, nvim, nix, web) all reference the standard.
+  (b) `extensions/cslib/agents/cslib-implementation-hard-agent.md` DOES load `summary-format.md` -- and ALSO mandates `## Plan Deviations`, a section the standard does not contain. That agent is therefore instructed to satisfy two requirements that cannot both be met, which is a live internal contradiction independent of finding (a).
+
+DECISION REQUIRED (pick one deliberately and record why; do not leave `## Plan Deviations` in its current unresolved status): either (i) cslib conforms fully -- fold plan-deviation content into the standard's existing `## Decisions` or `## Follow-ups` sections and drop the bespoke heading, or (ii) the standard formally ADMITS `## Plan Deviations` as a recognized optional section, in which case `summary-format.md` must say so and the gate-out validator must accept it. Option (ii) is a change to a shared core standard and affects every extension, so it needs explicit justification, not a default.
+
+WORK: (1) Make the decision above. (2) Add a `summary-format.md` reference to `cslib-implementation-agent.md`'s context-loading section so it stops improvising. (3) Resolve the hard agent's contradiction consistently with the decision. (4) Audit whether any OTHER extension implementation agent omits the `summary-format.md` reference and inherits the same improvisation failure mode -- the four named above conform, but the audit should cover all extensions rather than assuming.
+
+VERIFICATION BAR: a cslib implementation summary produces ZERO gate-out format errors and ZERO auto-repaired fields. Both cslib implementation agents reference `summary-format.md`. No agent is left instructed to emit a section the standard forbids, nor to omit one it requires.
+
+DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task numbers.
+
+---
+
+### 962. Correct the pr_ready skill text and docs to describe the actual resulting state
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 961
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
+
+THIS IS A DOCUMENTATION AND SKILL-TEXT ACCURACY FIX, NOT A SCRIPT CHANGE. READ THIS PARAGRAPH BEFORE STARTING. The defect was originally reported as "the skeleton-exhaustion branch asserts `--allow-pr-ready` is a sanctioned exception, but `update-task-status.sh` refuses `pr_ready` for non-`pr` task types and routes to `completed` instead -- decide which side is authoritative." Investigation found the two artifacts ALREADY AGREE and no script change is warranted:
+  - `scripts/update-task-status.sh` DOES honor `--allow-pr-ready`: its guard reads `elif [[ "$target_status" == "pr_ready" && "$ALLOW_PR_READY" == "true" ]]` with the comment "allowed: explicit override flag passed (e.g. skeleton-exhaustion routing in skill-orchestrate-hard)". The script's own comment names this exact call site as sanctioned.
+  - The reason the live run nonetheless landed on `completed` is a SEPARATE, correct mapping in the same script: on `postflight` with target `pr_ready`, `STATE_STATUS` is set to `completed`. So the flag is accepted AND the task still comes to rest at `completed`.
+
+WHAT IS ACTUALLY WRONG: because of that mapping, a non-`pr` task never RESTS at `pr_ready`. The documented policy statement (`[PR READY]` is type=pr only; `[IMPLEMENTING] -> [COMPLETED]` is the terminus for all non-`pr` types) is therefore TRUE of resting states, and the apparent conflict is narrower than a three-way policy contradiction. The inaccurate artifact is `skills/skill-orchestrate-hard/SKILL.md`'s own prose in the skeleton-exhaustion branch, which says "Transition to `pr_ready`" and exits with `EXIT (success, pr_ready -- skeleton exhausted, ...)`. Both MISDESCRIBE the state that actually results. An operator reading the exit line reasonably concludes the task is parked at `[PR READY]` awaiting PR submission, when it has in fact come to rest at `[COMPLETED]`.
+
+WORK: (1) Correct the skeleton-exhaustion branch's prose and EXIT line to describe the state that actually results, naming the `postflight:pr_ready -> completed` mapping so a future reader is not surprised by it. (2) Re-examine the inline comment claiming `--allow-pr-ready` is "the sanctioned task-type-agnostic exception" -- the flag IS honored, so the claim is not false, but it is misleading in isolation because it omits that the resulting resting state is `completed` regardless. Make it accurate. (3) Check whether the CLAUDE.md merge source needs a clarifying sentence distinguishing TRANSITION targets from RESTING states, since the current wording invites exactly the misreading that produced this defect report. (4) DO NOT change `update-task-status.sh`'s guard or its status mapping; both are correct as written. If implementation reveals a genuine reason to change the script, STOP and escalate rather than proceeding -- that would be a policy change, not the accuracy fix this task is scoped to.
+
+EXTERNAL DEPENDENCY RATIONALE: chained behind the sibling tasks editing the same `skill-orchestrate-hard/SKILL.md`.
+
+VERIFICATION BAR: the skeleton-exhaustion branch's prose and exit message name the actual resting state. No behavioral change to `update-task-status.sh` -- a diff touching that script's guard or mapping logic means this task went wrong. `bash .claude/scripts/check-extension-docs.sh` passes.
+
+DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task numbers.
+
+---
+
+### 961. Add staleness detection to the orchestrator loop-guard resume path
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 960
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
+
+DEFECT: the Stage 2 resume branch of `skills/skill-orchestrate-hard/SKILL.md` trusts ANY syntactically valid `.orchestrator-loop-guard` unconditionally. The guard is accepted on the sole condition `[ -f "$loop_guard_file" ] && jq empty "$loop_guard_file"` -- no freshness signal of any kind is consulted before its `cycle_count`, `burnout_signals_this_session`, and `infra_failures` counters are adopted as the current run's state.
+
+OBSERVED (live run): a guard 13 DAYS STALE was encountered, originating from a SUPERSEDED plan lineage (it referenced an early plan version while the live plan was many versions later) and carrying a `max_cycles` value from an older skill version, while the actual current work ran under a different lineage entirely. Trusting it would have resumed at cycle 11 of 13, leaving 2 usable cycles on a counter that never counted ANY of the live lineage's work. `context/standards/orchestrator-runtime-files.md` and the Stage 2 prose already DOCUMENT this hazard as unguarded; the gap is that nothing DETECTS it.
+
+DESIGN CONSTRAINT -- READ BEFORE CHOOSING A SIGNAL. The obvious fix (compare `session_id`) is explicitly ruled out by a sibling decision a few lines below in the same Stage 2 block. The churn-state file's `session_id` handling is annotated: "Observational-only session_id tracking (NEVER a gate ... SESSION_ID is regenerated per /orchestrate invocation, while this file is explicitly designed to survive across conversational turns. The real same-task concurrency guard is task-lock.sh's acquire/heartbeat/release mutex, not session_id equality)." A `session_id` equality gate on the loop guard would directly contradict that rationale and would break legitimate conversational resume, which is the guard's whole purpose. So this task must find a DIFFERENT staleness signal. Candidates to evaluate, not a prescription: mtime age against a threshold; plan lineage (does the guard's referenced plan version still match the live plan?); schema/version drift (the guard's persisted `max_cycles` disagreeing with the skill's current `MAX_CYCLES` constant is direct evidence the guard predates the running skill version). A combination may be warranted; whatever is chosen, the reasoning belongs in `orchestrator-runtime-files.md` alongside the existing two-class policy.
+
+WORK: (1) Decide what counts as stale, and record the decision and its rationale in `context/standards/orchestrator-runtime-files.md`, explicitly addressing why the chosen signal does not fall to the same objection that disqualifies `session_id`. (2) Implement detection on the Stage 2 resume path. (3) On detection, ARCHIVE ASIDE AND REINITIALIZE rather than either silently trusting or silently resetting -- preserve the stale guard as evidence, following the same "preserve the evidence" shape the existing stray-handoff sweep already uses, and emit a loud named notice. Silent reset is only marginally better than silent trust; both destroy the operator's ability to understand what happened. (4) Consider whether `.orchestrator-churn-state.json` warrants the same treatment -- it has the identical unguarded-read shape and the same documented hazard -- and either extend the fix to it or record why it does not need it.
+
+EXTERNAL DEPENDENCY RATIONALE: chained behind the sibling tasks editing the same `skill-orchestrate-hard/SKILL.md`.
+
+VERIFICATION BAR: a loop guard whose staleness signal trips is archived to a preserved path (not deleted), a fresh guard is initialized at cycle 0, and a loud named notice identifies which signal tripped and where the old guard was preserved. A genuinely current guard resumes exactly as before, and an ordinary cross-conversational-turn resume is NOT falsely flagged (this is the regression that a naive `session_id` gate would cause -- test it explicitly). `bash -n` clean.
+
+DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task numbers.
+
+---
+
+### 960. Wire non-conformance detection into the hard-mode resume-scan sites
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 959, Task 957
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
+
+THIS IS NOT A GRAMMAR-WIDENING TASK. READ THIS PARAGRAPH BEFORE STARTING. The defect was originally reported as "the phase-heading regex cannot match letter-suffixed phases such as `Phase 4A`, so widen it." That framing is WRONG and following it would violate a standing, deliberately re-affirmed decision. `context/formats/plan-format.md`'s "Canonical phase-heading shape" subsection states that letter-suffixed sub-phases are deliberately not supported, that this is a decision rather than an unimplemented feature, and -- explicitly -- that the correct general fix for the observed gap is LOUD NON-CONFORMANCE DETECTION rather than a widened grammar, because "widening admits exactly one new token shape and leaves the next unanticipated one (`3-alt`, `III`) just as silent as before." An author reaching for `4A` should write `4.1`. DO NOT widen `PHASE_HEADING_ERE`.
+
+THE ACTUAL DEFECT (verified in the source store, still present): both hard-mode resume-scan sites select the next phase with a grep of the form `grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_path" | head -1`. Because `PHASE_HEADING_ERE` filters to CONFORMING headings only, a non-conforming heading is not merely unmatched -- it is INVISIBLE to the scan. The library's `warn_nonconforming` / `has_nonconforming_phase_headings` detection can therefore NEVER fire on this path, because the grep has already discarded the offending line before any conformance check runs. The two sites do call `warn_nonconforming`, but only in the branch where `next_heading` is non-empty and `extract_phase_number` fails -- a state that is unreachable, since the grep only ever yields lines that already match `PHASE_HEADING_ERE`.
+
+OBSERVED CONSEQUENCE: a plan using `4A`/`4B`/`4C` had `### Phase 4C: ... [IN PROGRESS]` skipped entirely and `### Phase 5: ... [NOT STARTED]` selected instead. `extract_phase_number` then succeeded cleanly on `5`, so nothing warned. The orchestrator would have dispatched work OUT OF ORDER, on top of an unfinished phase. Caught and worked around by hand during a live run.
+
+So the loud-non-conformance contract that `plan-format.md` declares CLOSED ("This is a closed contract, not an aspiration") is in fact not wired at these two sites. That is the gap to close.
+
+WORK: at each resume-scan site, run a conformance check over the WHOLE plan file BEFORE trusting the filtered scan result -- e.g. call `has_nonconforming_phase_headings "$plan_path"` (NOT the racy `nonconforming_phase_headings | grep -q .` pipe form; the library header explains why) and, when it reports findings, emit `warn_nonconforming` and take the loud INCONCLUSIVE branch rather than silently proceeding with a possibly-out-of-order selection. Match each site's existing posture: `skill-implementer-hard` currently hard-stops (`exit 1`) on a non-conforming heading, while `skill-orchestrate-hard` warns and leaves `next_phase` empty -- decide deliberately whether those two postures should remain different, and record the reasoning. Then audit whether any OTHER site in the source store performs a conforming-only filter and inherits the same blind spot; the library's own header documents that consumers are found live via `grep -rl 'phase-heading-patterns.sh' agent-system/extensions`.
+
+EXTERNAL DEPENDENCY RATIONALE: depends on the in-flight phase-heading unification task (owns both edited files and the library itself) and on the residual state.json writer conversion task (lists `skills/skill-implementer-hard/SKILL.md` in its file_scope). Also chained behind the sibling Stage 4 repair task, which edits the same `skill-orchestrate-hard/SKILL.md`.
+
+VERIFICATION BAR: a plan containing `### Phase 4C: ... [IN PROGRESS]` followed by `### Phase 5: ... [NOT STARTED]` produces a LOUD named warning identifying the `4C` heading by line number, and does NOT silently select phase 5. A fully conforming plan resolves its next phase exactly as before (no behavior change on the happy path). `bash -n` clean.
+
+DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task numbers.
+
+---
+
+### 959. Repair Stage 4 H4 gate recognition and skeleton-exhaustion completion-summary propagation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 956
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
+
+Two small, mechanical, low-risk defects in the SAME Stage 4 region of `skills/skill-orchestrate-hard/SKILL.md`. They are combined into one task deliberately: splitting them would buy no parallelism (both edit the same file, so they would have to be dependency-chained anyway) and would cost an extra serialization link.
+
+DEFECT A -- H4 adversarial-verification gate is format-brittle. The `researched` handler greps for the LITERAL string `| Claim | Source/Counterexample` (source-store anchor: the `grep -q "| Claim | Source/Counterexample" "$research_path"` line in the `researched` state handler). OBSERVED: a research report carried a STRONGER 8-row adversarial table headed `| # | Claim under attack | Source / counterexample | Outcome |` and the grep false-negatived. Had it not been caught by hand, it would have triggered a redundant re-dispatch and burned a cycle. WORK: recognize equivalent adversarial tables rather than one exact column spelling -- match on the semantic shape (a markdown table carrying a claim column and a source/counterexample column, case- and spacing-insensitive, tolerant of extra columns) rather than a fixed header string. Prefer a named, reusable matcher over an inline regex if a second call site exists.
+
+DEFECT B -- skeleton-exhaustion branch never propagates the completion summary. `skill_propagate_completion_summary` is called only from the shared `implemented` tail in Stage 5; the Stage 4 skeleton-exhaustion branch transitions status and EXITs without ever calling it. OBSERVED: a task was consequently marked complete carrying a `completion_summary` describing a BLOCKED phase from a SUPERSEDED, earlier plan version -- actively misleading -- and `roadmap_items` stayed empty despite the return-meta carrying two well-formed items. Fixed by hand at the time. WORK: call `skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$TASK_TYPE"` on the skeleton-exhaustion path too, sourcing the summary and roadmap items from the same return-meta/handoff fields the Stage 5 tail uses. Consider whether the propagation belongs in a shared helper invoked by BOTH exit paths rather than duplicated, since a third exit path would otherwise repeat the omission.
+
+EXTERNAL DEPENDENCY RATIONALE: depends on the in-flight phase-heading unification task, which lists `skills/skill-orchestrate-hard/SKILL.md` in its own file_scope. Concurrent edits to the same file would collide.
+
+VERIFICATION BAR: a research report using either the original `| Claim | Source/Counterexample` header OR the observed `| # | Claim under attack | Source / counterexample | Outcome |` header both satisfy the H4 gate. A skeleton-exhaustion exit writes a non-empty `completion_summary` matching the CURRENT plan version and populates `roadmap_items` when the return-meta supplies them. `bash -n` clean on the edited embedded bash.
+
+DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task numbers.
+
+---
+
+### 958. Fix deploy propagation so new scripts/lib files and updated skills reach an existing deploy
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` or the loader in `lua/**`, NEVER `.claude/**`.
+
+OBSERVED (empirically, during a live `/orchestrate --hard` run in a consuming repo -- not from code review): a consuming repository's deployed `.claude/` tree had drifted from the source store, and the drift was silent. Measured divergence at the time of observation:
+  - `.claude/scripts/lib/phase-heading-patterns.sh` -- MISSING ENTIRELY from the deploy, though present in the source store.
+  - `.claude/skills/skill-orchestrate-hard/SKILL.md` -- 1322 deployed lines vs 1365 source lines.
+  - `.claude/skills/skill-implementer-hard/SKILL.md` -- 433 vs 443.
+  - `.claude/scripts/update-task-status.sh` -- 547 vs 551.
+  - `.claude/context/formats/summary-format.md` -- identical (so the drift is selective, not a wholesale stale tree).
+The deployed `skill-orchestrate-hard` still carried the pre-library inline phase regex, while the source store had already replaced it with the library-sourced form. Consequence: an operator spent a full live orchestration run diagnosing defects that had already been fixed upstream, and drew wrong conclusions about three of them because the deployed artifact was the only thing visible.
+
+ROOT CAUSE (already documented, never fixed): `rules/no-task-references-in-deliverables.md` records this exact gap under "Discovered deploy-mechanism gap". Two distinct mechanisms are named there: (a) `root-files/settings.json` is install-only -- `manager.load()` skips a `root-files/settings.json` copy once an extension is already marked loaded; (b) the headless "Load Core" sync path used by `deploy-headless.sh` does not re-run the per-extension `copy_scripts`/`copy_manifest` sequence for already-loaded extensions, so a brand-new `scripts/<subdir>/*.sh` file can never reach `.claude/scripts/<subdir>/` on an existing deploy. Both were previously worked around by a one-off direct invocation of the loader's copy primitives. Neither is fixed.
+
+WORK: (1) Make the sync path re-run `copy_scripts`/`copy_manifest` for already-loaded extensions so new files under `scripts/**` (including new subdirectories such as `scripts/lib/`) propagate on redeploy, not only on first install. (2) Decide and implement the correct behavior for `root-files/**` on an existing deploy -- either re-copy, or merge, or explicitly document why install-only is correct and provide a supported path for adding a new root file. (3) Add a post-deploy verification gate that FAILS LOUDLY when a source-store file has no corresponding deployed file, rather than leaving the divergence silent; `scripts/verify-deploy.sh` is the natural home. A silent stale deploy is the actual damage here -- detection matters more than any single copy fix.
+
+SEQUENCING RATIONALE (recorded here rather than as a dependency edge, deliberately): this task is recommended FIRST among the batch it was created with, because until deploy propagation works, none of the sibling source-store fixes become visible in a consuming repo and the next live run would re-encounter the same already-fixed symptoms. This is a RECOMMENDATION, not a blocker -- the sibling tasks edit the source store and do not technically require this task to complete first, so no dependency edges point at it.
+
+VERIFICATION BAR: after a redeploy into a repo that was already marked loaded, a newly-added `scripts/lib/*.sh` file is present in `.claude/scripts/lib/`. A deliberately-introduced source-store-only file causes `verify-deploy.sh` to exit non-zero with a message naming the missing path. `bash -n` clean on every edited shell script.
+
+DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task numbers.
+
+---
 
 ### 957. Convert the residual specs/state.json inline write sites to state-write.sh
 - **Status**: [NOT STARTED]
@@ -59,7 +215,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 956. Unify phase-heading parsing across all sites and settle the [DESCOPED] outcome
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
