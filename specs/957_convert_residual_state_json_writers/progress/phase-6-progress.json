@@ -1,0 +1,14 @@
+{
+  "phase": 6,
+  "phase_name": "commands/task.md",
+  "started_at": "2026-07-29T01:15:00Z",
+  "last_updated": "2026-07-29T01:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert task.md's 5 in-scope sites, leave 2 archive sites untouched", "status": "done",
+     "files_touched": ["agent-system/extensions/core/commands/task.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Actual site counts (5 in-scope, 2 out-of-scope) differ substantially from the plan's hypothesis (6/7). check-task-references.sh and both mutex regression suites re-verified green after this phase."
+}

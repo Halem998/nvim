@@ -237,17 +237,17 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 6: commands/task.md [NOT STARTED]
+### Phase 6: commands/task.md [COMPLETED]
 
 **Goal**: Convert `task.md`'s 6 in-scope sites while leaving its 7 `specs/archive/state.json` sites untouched.
 
 **Tasks**:
-- [ ] Build a two-column inventory of every `state.json` write in the file: in-scope (`specs/state.json`) vs. out-of-scope (`specs/archive/state.json`), by line number. Do this before any edit.
-- [ ] Convert only the in-scope sites, one at a time by exact line match. Confirm the literal target path on each line before editing it.
-- [ ] Per site, determine the session_id source: Sync Mode already generates its own `sync_session_id` locally; other modes may inherit from `command-gate-in.sh`. Confirm per site rather than assuming a uniform answer across modes. Where a mode has none, generate once at the top of that mode.
-- [ ] Add a one-line comment at each out-of-scope archive site noting it is deliberately left hand-rolled because `state-write.sh` targets `specs/state.json` only. Name the mechanism, never a task number.
-- [ ] Apply the fold/no-fold decision per site, with particular care in the `--recover` path where archive and live writes interleave.
-- [ ] `bash -n` every extracted bash block in the file.
+- [x] Build a two-column inventory of every `state.json` write in the file: in-scope (`specs/state.json`) vs. out-of-scope (`specs/archive/state.json`), by line number. Do this before any edit. *(completed: actual inventory — in-scope at original lines 224-225 (Create Task), 308-309 (Recover), 402-403 (Expand), 787-788 (Review follow-up), 884-885 (Abandon) = 5 sites; out-of-scope archive at 302-303 (Recover) and 878-879 (Abandon) = 2 sites. Deviation: hypothesis was 6/7, actual is 5/2 — a large overcount, recorded per the Scope Hypothesis's own "not the stopping condition" clause)*
+- [x] Convert only the in-scope sites, one at a time by exact line match. Confirm the literal target path on each line before editing it. *(completed: 5/5 converted, each verified by literal path before editing)*
+- [x] Per site, determine the session_id source: Sync Mode already generates its own `sync_session_id` locally; other modes may inherit from `command-gate-in.sh`. Confirm per site rather than assuming a uniform answer across modes. Where a mode has none, generate once at the top of that mode. *(completed: Create Task and Recover and Review modes have no gate-in session_id — each got its own once-per-mode self-generated `session_id`; Expand and Abandon modes reuse `$SESSION_ID` exported by `command-gate-in.sh`)*
+- [x] Add a one-line comment at each out-of-scope archive site noting it is deliberately left hand-rolled because `state-write.sh` targets `specs/state.json` only. Name the mechanism, never a task number. *(completed: both archive sites annotated)*
+- [x] Apply the fold/no-fold decision per site, with particular care in the `--recover` path where archive and live writes interleave. *(completed: folded Create Task, Expand, and Abandon sites — each immediately followed only by a regen call; no-fold on Recover's active_projects write (followed by manage-topics.sh add) and Review's follow-up-task write (followed by manage-topics.sh set))*
+- [x] `bash -n` every extracted bash block in the file. *(completed: clean; also discovered and fixed a pre-existing missing closing code-fence in the Expand mode section, incidental to the fold edit there)*
 
 **Timing**: 1.25 hours
 
@@ -255,7 +255,7 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 **Verification Tier**: interface
 
-**Scope Hypothesis**: 6 in-scope sites and 7 out-of-scope `specs/archive/state.json` sites. Confirm both counts with separate greps before editing; the out-of-scope count must be identical before and after the phase.
+**Scope Hypothesis**: 6 in-scope sites and 7 out-of-scope `specs/archive/state.json` sites. Confirm both counts with separate greps before editing; the out-of-scope count must be identical before and after the phase. **Actual**: 5 in-scope, 2 out-of-scope.
 
 **Files to modify**:
 - `agent-system/extensions/core/commands/task.md`

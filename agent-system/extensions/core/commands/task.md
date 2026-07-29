@@ -201,15 +201,19 @@ When $ARGUMENTS contains a description (no flags).
    - Remove special characters
    - Max 50 characters
 
-6. **Update state.json** (via jq):
+6. **Update state.json** (via `state-write.sh`). Create Task mode has no `session_id` of its
+   own (no `command-gate-in.sh` call — the task does not exist yet), so generate one once,
+   following the same self-generating fallback used by Sync Mode below:
+   ```bash
+   session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+   ```
+   Fold `--regen-todo` in — this write is immediately followed by nothing but the TODO.md regen:
    ```bash
    # Topic assignment is mandatory: $topic from step 4.5 is always non-empty
    # by construction (Mode A has no Skip option). This jq guard remains defensive only.
    # Build topic from step 4.5 result
    # $improved_desc is the final description from step 3 text transformation
-   jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-     --arg topic "$topic" \
-     --arg desc "$improved_desc" \
+   bash .claude/scripts/state-write.sh \
      '.next_project_number = {NEW_NUMBER} |
       .active_projects = [{
         "project_number": {N},
@@ -221,23 +225,20 @@ When $ARGUMENTS contains a description (no flags).
         "created": $ts,
         "last_updated": $ts
       } | if .topic == null then del(.topic) else . end] + .active_projects' \
-     specs/state.json > specs/tmp/state.json && \
-     mv specs/tmp/state.json specs/state.json
+     --session-id "$session_id" \
+     --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+     --arg topic "$topic" \
+     --arg desc "$improved_desc" \
+     --regen-todo
     ```
 
-7. **Regenerate TODO.md** from state.json (handles frontmatter, task entries, and Task Order):
-   ```bash
-   bash .claude/scripts/generate-todo.sh \
-     2>/dev/null || echo "Note: Failed to regenerate TODO.md (non-fatal)" >&2
-   ```
-
-8. **Git commit**:
+7. **Git commit**:
    ```
    git add specs/
    git commit -m "task {N}: create {title}"
    ```
 
-9. **Output**:
+8. **Output**:
    ```
    Task #{N} created: {TITLE}
    Status: [NOT STARTED]
@@ -253,6 +254,13 @@ Parse task ranges after --recover (e.g., "343-345", "337, 343"):
 <!-- NOTE: command-gate-in.sh does NOT apply here. gate-in reads active_projects only;
      recover mode looks up tasks from specs/archive/state.json (completed_projects).
      The inline archive lookup below is intentional. -->
+
+Recover Mode does not source `command-gate-in.sh` either (the task is being restored, not
+looked up in `active_projects`), so it has no `session_id` of its own — generate one once for
+the whole recover run, following the same self-generating fallback used by Sync Mode below:
+```bash
+session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+```
 
 1. For each task number in range:
    **Lookup task in archive via jq**:
@@ -296,17 +304,18 @@ Parse task ranges after --recover (e.g., "343-345", "337, 343"):
 
    **Move to active_projects via jq** (two-step to avoid jq escaping bug - see `jq-escaping-workarounds.md`):
    ```bash
-   # Step 1: Remove from archive using del() instead of map(select(!=))
+   # Step 1: Remove from archive using del() instead of map(select(!=)). Deliberately left
+   # hand-rolled: state-write.sh targets specs/state.json only, never specs/archive/state.json.
    jq --arg num "$task_number" \
      'del(.completed_projects[] | select(.project_number == ($num | tonumber)))' \
     specs/archive/state.json > specs/tmp/archive.json && \
     mv specs/tmp/archive.json specs/archive/state.json
 
    # Step 2: Add to active with status reset ($task_data now carries a non-empty .topic)
-    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson task "$task_data" \
-      '.active_projects = [$task | .status = "not_started" | .last_updated = $ts] + .active_projects' \
-      specs/state.json > specs/tmp/state.json && \
-      mv specs/tmp/state.json specs/state.json
+   bash .claude/scripts/state-write.sh \
+     '.active_projects = [$task | .status = "not_started" | .last_updated = $ts] + .active_projects' \
+     --session-id "$session_id" \
+     --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson task "$task_data"
 
    # Ensure the topic is registered in active_topics (idempotent)
    if [[ -n "$recovered_topic" ]]; then
@@ -392,23 +401,22 @@ Parse task number and optional prompt:
      2>/dev/null || echo "Warning: manage-topics.sh set failed (non-fatal)" >&2
    ```
 
-4. **Update original task** to reference subtasks and set status to expanded:
+4. **Update original task** to reference subtasks and set status to expanded. Fold
+   `--regen-todo` in — this write is immediately followed by nothing but the TODO.md regen
+   (SESSION_ID was exported by `command-gate-in.sh` above):
    ```bash
-   jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   bash .claude/scripts/state-write.sh \
      '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
        status: "expanded",
        subtasks: [list_of_subtask_numbers],
        last_updated: $ts
-      }' specs/state.json > specs/tmp/state.json && \
-      mv specs/tmp/state.json specs/state.json
-
-5. **Regenerate TODO.md** from state.json after all subtask state.json writes complete:
-   ```bash
-   bash .claude/scripts/generate-todo.sh \
-     2>/dev/null || echo "Note: Failed to regenerate TODO.md (non-fatal)" >&2
+      }' \
+     --session-id "$SESSION_ID" \
+     --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+     --regen-todo
    ```
 
-6. Git commit: "task {N}: expand into subtasks"
+5. Git commit: "task {N}: expand into subtasks"
 
 ## Sync Mode (--sync)
 
@@ -546,6 +554,11 @@ if [ -z "$task_data" ]; then
   echo "Error: Task $task_number not found in active projects"
   exit 1
 fi
+
+# Review Mode does not source command-gate-in.sh, so it has no session_id of its own --
+# generate one once for the whole review run, following the same self-generating fallback
+# used by Sync Mode above.
+session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 
 # Extract task metadata
 slug=$(echo "$task_data" | jq -r '.project_name')
@@ -769,9 +782,7 @@ description="Complete phase {P} of task {parent_N}: {phase_name}. Goal: {phase_g
 # Update state.json. $parent_topic is non-empty by construction: either
 # inherited from the parent task or assigned via the Mode A universal fallback (Step 7.6).
 # The null-guard below is defensive only.
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --arg desc "$description" \
-  --arg topic "$parent_topic" \
+bash .claude/scripts/state-write.sh \
   '.next_project_number = ($next_num + 1) |
    .active_projects = [{
      "project_number": '$next_num',
@@ -784,8 +795,10 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      "created": $ts,
      "last_updated": $ts
    } | if .topic == null then del(.topic) else . end] + .active_projects' \
-     specs/state.json > specs/tmp/state.json && \
-     mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg desc "$description" \
+  --arg topic "$parent_topic"
 
 # After state.json write, assign topic via manage-topics.sh (non-blocking)
 if [[ -n "$parent_topic" ]]; then
@@ -872,24 +885,23 @@ Parse task ranges:
 
    **Move to archive via jq** (two-step to avoid jq escaping bug - see `jq-escaping-workarounds.md`):
    ```bash
-    # Step 1: Add to archive with abandoned status
+    # Step 1: Add to archive with abandoned status. Deliberately left hand-rolled:
+    # state-write.sh targets specs/state.json only, never specs/archive/state.json.
     jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson task "$task_data" \
       '.completed_projects = [$task | .status = "abandoned" | .abandoned = $ts] + .completed_projects' \
       specs/archive/state.json > specs/tmp/archive.json && \
       mv specs/tmp/archive.json specs/archive/state.json
 
-    # Step 2: Remove from active using del() instead of map(select(!=))
-    jq --arg num "$task_number" \
+    # Step 2: Remove from active using del() instead of map(select(!=)). Fold --regen-todo
+    # in -- this write is immediately followed by nothing but the TODO.md regen (abandoned
+    # task no longer in active_projects, so it will not be rendered). SESSION_ID was
+    # exported by command-gate-in.sh above.
+    bash .claude/scripts/state-write.sh \
       'del(.active_projects[] | select(.project_number == ($num | tonumber)))' \
-      specs/state.json > specs/tmp/state.json && \
-      mv specs/tmp/state.json specs/state.json
+      --session-id "$SESSION_ID" \
+      --arg num "$task_number" \
+      --regen-todo
     ```
-
-   **Regenerate TODO.md** from state.json (abandoned task no longer in active_projects, so it will not be rendered):
-   ```bash
-   bash .claude/scripts/generate-todo.sh \
-     2>/dev/null || echo "Note: Failed to regenerate TODO.md (non-fatal)" >&2
-   ```
 
    **Move task directory to archive** (handle both legacy unpadded and new padded formats):
    ```bash
