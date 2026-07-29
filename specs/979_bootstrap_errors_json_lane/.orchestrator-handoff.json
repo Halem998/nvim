@@ -1,25 +1,38 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "Confirmed errors.json is absent in nvim and drifted (bare array + undocumented fix_status='resolved') in cslib. Found exactly one real inline writer (skill-planner) and two readers, both assuming object-with-array. Recommended one reconciled schema (context superset, fix_status enum + deprecated 'resolved', recurrence_count dropped as computed-not-stored, fixed_date/fix_task kept), and flagged that errors-append.sh needs both append AND update subcommands since errors.json is mutable, unlike events.jsonl.",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created an 8-phase plan (10h, 6 dependency waves). Phase 1 authors the reconciled draft-07 schema plus a new errors-format.md prose contract; Phases 2-3 build errors-append.sh with an append subcommand (direct events-append.sh port) then a novel update subcommand (read-modify-write held under one flock, validating the merged document before the atomic mv); Phase 4 adds a concurrency and off-schema-rejection regression suite; Phases 5-7 wire the deploy path, reconcile the three doc blocks, and convert the sole inline jq writer; Phase 8 bootstraps specs/errors.json and verifies end-to-end from the deployed tree.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md"
+      "type": "plan",
+      "path": "specs/979_bootstrap_errors_json_lane/plans/01_errors-json-lane-bootstrap.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
-  "decisions_made": [
-    "Object-with-array ({\"errors\": [...]}) over bare array — both live readers already assume this form, cslib's bare array is the anomaly to fix",
-    "fix_status enum expanded to unfixed|in_progress|fixed|resolved, with resolved documented as a deprecated synonym for fixed (backward-compat only, new writes always use fixed)",
-    "recurrence_count dropped from the persisted schema — no writer ever populated it; /errors already describes it as computed at analysis time",
-    "errors-append.sh must implement both an append subcommand (mirrors events-append.sh directly) and a novel update subcommand (read-modify-write under flock, no existing precedent) because errors.json records are mutated in place by the documented Fix Mode workflow, unlike append-only events.jsonl",
-    "Validation style follows events-append.sh's existing idiom: hand-written bash arg/enum/jq-shape checks kept in sync with the schema doc, not a runtime JSON-Schema-library call",
-    "The 'UNBLOCKS: tasks 951/952/953' claim in the task description is thematic, not a real dependency — those tasks explicitly build on events.jsonl instead and carry no dependency edge to/from 979 in state.json"
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/979_bootstrap_errors_json_lane/plans/01_errors-json-lane-bootstrap.md"
   ],
-  "dead_ends": [],
-  "plan_markers_verified": false
+  "decisions_made": [
+    "Top level is object-with-array {\"errors\": [...]}, not a bare array: both live readers (orchestrator-postflight.sh, hooks/events-log-artifact.sh) already index .errors[] / .errors[-1], so this costs zero reader changes and admits a future schema_version key",
+    "errors-append.sh takes TWO subcommands (append, update), split across Phases 2 and 3 so append lands as an independent green milestone; update is original read-modify-write design with no precedent in core/scripts/ (events-append.sh is that directory's only flock user)",
+    "Validation is hand-written bash checks kept in sync with the schema doc, matching the events-append.sh idiom; no ajv or python3 -m jsonschema dependency is introduced",
+    "fix_status enum is unfixed|in_progress|fixed|resolved, with resolved documented as a DEPRECATED synonym for fixed so already-written cross-repo data validates on read; the update subcommand REJECTS resolved as an input value so the deprecation cannot re-propagate",
+    "recurrence_count is dropped from the persisted schema and /errors gains an explicit computed-at-query-time sentence; keeping an unwritten field would be a second dead-field defect of the kind this task exists to eliminate",
+    "The research report's Context Extension Recommendation was ACCEPTED: context/formats/errors-format.md is added alongside the schema, because the doc-block rewrites need a prose target for lazy-creation semantics, the CLI contract, the resolved deprecation, and the recurrence_count rationale, none of which a schema JSON can carry",
+    "id is schema-constrained as a non-empty string with a documented RECOMMENDED form err_{timestamp_ms}_{random6}, NOT an enforced pattern, so legacy err_001-style ids stay valid",
+    "context is the union superset (session_id, command, task, phase, checkpoint, agent, file) with NO individually required sub-fields, since no single writer populates them all",
+    "The subsumed source-store defect lane is added as a documented type value (source_store_defect), not as a new schema field",
+    "specs/errors.json is a specs/** runtime artifact authored directly with {\"errors\": []}, NOT a deploy artifact; errors-append.sh additionally lazily creates it in any repo",
+    "context/standards/error-handling.md's .agent-logs/errors.json block is explicitly OUT of scope: different path, different shape, no writer or reader anywhere",
+    "The UNBLOCKS 951/952/953 claim is recorded as advisory only, not a dependency edge; no work is planned for those tasks and completion is not gated on them"
+  ],
+  "dead_ends": [
+    "Do not plan a repo-wide sweep for inline '.errors +=' writers. Exactly one exists (skills/skill-planner/SKILL.md's jq Parse Failure recovery block); the other 18+ errors.json references in core are narrative prose with no executable jq. Phase 7 is sized as a one-file conversion with a confirming pre-edit grep",
+    "Do not introduce a runtime JSON-Schema-library call. jsonschema 4.26.0 is installed on this machine but is invoked nowhere in core/scripts/",
+    "Do not adopt the bare-array top-level form seen in the sibling repo's live specs/errors.json. It is the drift being corrected, not a precedent",
+    "Do not assume deploy-headless.sh will pick up the new script. The headless Load Core sync path does not always re-run copy_scripts for an already-loaded extension, so Phase 8 verifies .claude/scripts/errors-append.sh exists and is executable and applies the documented loader-primitive workaround if not. Never hand-author the file under .claude/** to work around this: it would be wiped by the next regeneration and would create a false green"
+  ],
+  "plan_markers_verified": true
 }
