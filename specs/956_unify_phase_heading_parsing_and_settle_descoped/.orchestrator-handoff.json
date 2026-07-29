@@ -1,0 +1,24 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Found the letter-suffix ask directly conflicts with plan-format.md's explicit, recent 'must not be used' decision (from the reasoned-exclusions task) -- recommend keeping letters unsupported and making non-conforming headings loud instead. Recommend rejecting [DESCOPED] in favor of the already-wired [COMPLETED WITH EXCLUSIONS]. FILE SCOPE is missing 3 known consumer sites (both implementation agents' Stage 5a, commands/task.md).",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/956_unify_phase_heading_parsing_and_settle_descoped/reports/01_unify-phase-heading-parsing.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Recommend NOT widening the phase-number grammar to accept letter suffixes (Phase Na); plan-format.md already prohibits this as a deliberate, evidenced decision from the prior reasoned-exclusions task, not an oversight.",
+    "Recommend instead making a non-conforming phase-number token a loud, visible warning at every accounting site (generalizing the existing 'no conforming headings' inconclusive-and-pass-through branch), rather than silently under-counting or truncating it.",
+    "Recommend rejecting [DESCOPED] entirely; [COMPLETED WITH EXCLUSIONS]'s five-condition admission test already covers the whole-phase-descope case with zero new accounting sites needed.",
+    "Recommend expanding FILE SCOPE to include agents/general-implementation-agent.md, agents/general-implementation-hard-agent.md, and commands/task.md, per plan-format.md's own (already-incomplete) consumer-site list.",
+    "Recommend a new shared library scripts/lib/phase-heading-patterns.sh modeled directly on the existing scripts/lib/task-reference-patterns.sh precedent as the 'single named anchor'."
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": false
+}

@@ -11,8 +11,8 @@ next_project_number: 958
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 947,950,951,955,956,957 | -- | agent-system, orchestration-concurrency |
-| 2 | 948,952 | 947,951 | agent-system |
+| 1 | 947,950,951,955,956 | -- | agent-system |
+| 2 | 948,952,957 | 947,951,956 | agent-system, orchestration-concurrency |
 | 3 | 949,953,954 | 948,952 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -28,7 +28,7 @@ next_project_number: 958
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
     └─ 954 [NOT STARTED] — Give recorded system defects an interactive surface that produces
 955 [NOT STARTED] — specs/errors.json has drifted into three mutually inconsistent do
-956 [NOT STARTED] — Two parsers read the same plan file and disagree about how many p
+956 [RESEARCHED] — Two parsers read the same plan file and disagree about how many p
 
 ### Orchestration Concurrency
 
@@ -40,7 +40,7 @@ next_project_number: 958
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
-- **Dependencies**: Task 942
+- **Dependencies**: Task 942, Task 956
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations still reference the deployed `.claude/scripts/state-write.sh`; that is the call path, not the edit target.
 
@@ -59,7 +59,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 956. Unify phase-heading parsing across all sites and settle the [DESCOPED] outcome
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

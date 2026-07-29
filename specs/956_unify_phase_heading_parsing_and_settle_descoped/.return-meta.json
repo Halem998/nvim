@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/956_unify_phase_heading_parsing_and_settle_descoped/reports/01_unify-phase-heading-parsing.md",
+      "summary": "Full phase-heading-regex site inventory, the letter-suffix decision conflict with the prior reasoned-exclusions task, and a recommendation to reject [DESCOPED] in favor of [COMPLETED WITH EXCLUSIONS]."
+    }
+  ],
+  "next_steps": "Run /plan 956 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785332281_ac04fb_956",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "This codebase has a reusable shared-library pattern for reconciling copy-pasted regex/pattern logic across multiple consumer scripts: scripts/lib/task-reference-patterns.sh is `source`d by both a lint script and a write-time hook, exporting shared pattern variables and helper functions so both consumers are guaranteed to agree byte-for-byte, with a deploy-tree-first/source-store-fallback resolution list and a loud (not silent) failure if the library can't be found. This is the model to follow any time the same regex/pattern needs to be kept in sync across 2+ independently-maintained files in agent-system/extensions/core/scripts and hooks.",
+      "category": "PATTERN",
+      "source_artifact": "specs/956_unify_phase_heading_parsing_and_settle_descoped/reports/01_unify-phase-heading-parsing.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shared-library", "source", "pattern-reconciliation", "task-reference-patterns", "regex-drift"]
+    },
+    {
+      "content": "plan-format.md's 'Consumer sites of this shape' documentation for the ### Phase N heading contract is itself incomplete/goes stale silently -- a prose-maintained consumer list drifts the same way copy-pasted regexes do. When auditing consumer sites for a documented shared contract, grep for literal usages (e.g. the heading prefix string) across the whole extensions tree rather than trusting the documented list alone; this research found 3 additional files (general-implementation-agent.md, general-implementation-hard-agent.md, commands/task.md) that plan-format.md's own consumer-site paragraph named but a later task's FILE SCOPE omitted.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/956_unify_phase_heading_parsing_and_settle_descoped/reports/01_unify-phase-heading-parsing.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["consumer-site-audit", "plan-format", "documentation-drift", "file-scope-verification"]
+    }
+  ],
+  "modified_files": []
+}
