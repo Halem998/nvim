@@ -151,6 +151,20 @@ jq '[.entries[] |
   .line_count] | add' .claude/context/index.json
 ```
 
+### `line_count`'s real consumer
+
+The three queries above are not merely descriptive: `validate-context-budgets.sh` computes
+`total_tokens = sum(line_count) * 8` per agent and fails the gate on overage against per-agent
+hard caps (e.g. 8000 for `general-research-agent`, 15000 for `meta-builder-agent`/
+`planner-agent`). Accuracy of `line_count` therefore has a real downstream effect, not just a
+cosmetic one. `line_count` is kept exact (matching `wc -l` of each entry's own source file, in
+every extension's `agent-system/extensions/*/index-entries.json`, loaded or not) by
+`generate-context-line-counts.sh` (`--check` to report drift, `--write` to correct it), and
+`check-extension-docs.sh`'s Rule R re-checks this on every `verify-deploy.sh` run so it cannot
+silently rot again. Note that `validate-context-budgets.sh` itself is **not** currently wired
+into `verify-deploy.sh` or any other automated gate — it remains a manual/CI-invoked script, and
+wiring it in is a separate, not-yet-scheduled follow-up.
+
 ## Combined Queries
 
 ### Adaptive Context Loading (Recommended Pattern)

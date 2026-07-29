@@ -615,26 +615,39 @@ sequence before editing.
 
 ---
 
-### Phase 8: Documentation sync [NOT STARTED]
+### Phase 8: Documentation sync [COMPLETED]
 
 **Goal**: The new script and the `line_count`-to-budget relationship are discoverable from the
 documentation the system actually generates and reads.
 
 **Tasks**:
-- [ ] Add the regenerator to the "Utility Scripts" list in
+- [x] Add the regenerator to the "Utility Scripts" list in
       `agent-system/extensions/core/merge-sources/claudemd.md` alongside the existing
-      `check-extension-docs.sh` entry, with a one-line description.
-- [ ] Add a short note to `agent-system/extensions/core/context/patterns/context-discovery.md`
+      `check-extension-docs.sh` entry, with a one-line description. *(completed)*
+- [x] Add a short note to `agent-system/extensions/core/context/patterns/context-discovery.md`
       recording that the documented "Get line counts for budget calculation" query has a real
       consumer in `validate-context-budgets.sh` (`line_count * 8` against per-agent caps), that
       the counts are kept exact by the regenerator, and that the budget script is not currently
-      wired into any automated gate.
-- [ ] Update `agent-system/extensions/core/README.md` and/or `EXTENSION.md` if either enumerates
-      core scripts, so the new script is not left undocumented.
-- [ ] Re-run the generator's `--check` after touching `context-discovery.md`, since editing an
-      indexed context file changes its line count.
-- [ ] Use durable anchors only — script names, function names, file paths. No task-number
-      references in any of these files.
+      wired into any automated gate. *(completed: new "line_count's real consumer" subsection
+      after the three budget-query examples)*
+- [x] Update `agent-system/extensions/core/README.md` and/or `EXTENSION.md` if either enumerates
+      core scripts, so the new script is not left undocumented. *(not applicable, checked both:
+      README.md's "Scripts | 27" and EXTENSION.md's "scripts | 52" are both abbreviated summary
+      counts with a handful of representative example names (`check-extension-docs.sh,
+      export-to-markdown.sh`, `validate-*.sh`), not exhaustive per-script enumerations -- neither
+      count matches the manifest's actual 83-script `provides.scripts` total even before this
+      task's addition, a pre-existing drift out of scope here. Since neither file enumerates
+      scripts individually, the new script is not "left undocumented" by omission; its
+      documentation surface is `merge-sources/claudemd.md`'s Utility Scripts list, which does
+      enumerate individually and was updated above.)*
+- [x] Re-run the generator's `--check` after touching `context-discovery.md`, since editing an
+      indexed context file changes its line count. *(completed: the edit changed
+      context-discovery.md from 297 to 311 lines; ran `--write` which corrected exactly that one
+      entry (297->311) in `agent-system/extensions/core/index-entries.json`; `--check` then
+      passed 458/458 exact)*
+- [x] Use durable anchors only — script names, function names, file paths. No task-number
+      references in any of these files. *(completed: verified via
+      `check-task-references.sh`, 0 occurrences across all 4 scanned trees)*
 
 **Timing**: 45 minutes
 

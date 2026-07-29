@@ -1,0 +1,30 @@
+{
+  "phase": 8,
+  "phase_name": "Documentation sync",
+  "started_at": "2026-07-30T01:40:00Z",
+  "last_updated": "2026-07-30T01:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Document the regenerator in claudemd.md Utility Scripts and the budget-consumer relationship in context-discovery.md; re-correct line_count after the self-referential edit",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/merge-sources/claudemd.md",
+        "agent-system/extensions/core/context/patterns/context-discovery.md",
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.3",
+      "description": "README.md/EXTENSION.md script listings left untouched",
+      "type": "skipped",
+      "reason": "Neither file enumerates scripts individually (both are abbreviated summary counts already stale relative to the manifest's true script total, a pre-existing and out-of-scope drift); the new script's documentation surface is merge-sources/claudemd.md's Utility Scripts list, which was updated.",
+      "annotation": "*(not applicable, checked both -- see plan Phase 8 task checklist)*"
+    }
+  ]
+}

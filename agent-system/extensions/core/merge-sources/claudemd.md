@@ -122,6 +122,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 
 - `.claude/scripts/export-to-markdown.sh` - Export .claude/ directory to consolidated markdown file
 - `.claude/scripts/check-extension-docs.sh` - Doc-lint: validate extension READMEs, manifests, and cross-references (exits non-zero on failures)
+- `.claude/scripts/generate-context-line-counts.sh` - Recompute `line_count` from `wc -l` for every entry in every extension's source `index-entries.json` (`--check` reports only, `--write` corrects in place)
 
 ## State Synchronization
 

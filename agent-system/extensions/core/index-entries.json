@@ -1011,7 +1011,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context discovery query patterns",
-      "line_count": 297,
+      "line_count": 311,
       "keywords": [
         "patterns",
         "context",
