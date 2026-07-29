@@ -32,7 +32,7 @@ next_project_number: 958
 
 ### Orchestration Concurrency
 
-946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+946 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
@@ -376,7 +376,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 946. Auto-sequence conflicting work instead of aborting or skipping
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 945

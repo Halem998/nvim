@@ -2321,7 +2321,7 @@
     {
       "project_number": 946,
       "project_name": "auto_sequence_conflicting_work",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Auto-sequence conflicting work instead of aborting or skipping",
@@ -2344,10 +2344,16 @@
       "dependencies": [
         945
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/946_auto_sequence_conflicting_work/reports/01_four-tier-conflict-response.md",
+          "type": "report",
+          "summary": "four tier conflict response (backfilled by --sync)"
+        }
+      ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T17:22:36Z",
-      "session_id": "sess_1785258774_be5724"
+      "last_updated": "2026-07-29T03:41:29Z",
+      "session_id": "sess_1785296102_18bc9a"
     },
     {
       "project_number": 947,
