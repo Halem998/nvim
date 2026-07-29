@@ -1,7 +1,7 @@
 # Implementation Plan: Fix generated CLAUDE.md double-body and duplicate Stop-hook registration
 
 - **Task**: 975 - Fix generated CLAUDE.md double-body and duplicate Stop-hook registration
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: 976 (completed; unrelated mutex-timing fix, no content overlap)
 - **Research Inputs**: specs/975_fix_generated_claudemd_double_body/reports/01_claudemd-double-body-fix.md
@@ -364,33 +364,39 @@ entry can live nested inside a pre-existing matcher block rather than as a top-l
 
 ---
 
-### Phase 6: Full redeploy and verification-bar sign-off [NOT STARTED]
+### Phase 6: Full redeploy and verification-bar sign-off [COMPLETED]
 
 **Goal**: Demonstrate all three clauses of the stated verification bar simultaneously against a clean
 redeploy, and record the outcome.
 
 **Tasks**:
-- [ ] Copy the current `.claude/settings.json` and `.claude/CLAUDE.md` to the scratchpad as the
-      pre-redeploy baseline.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` from the repository root; confirm exit 0.
-- [ ] Clause 1: `grep -c "This file is generated automatically from loaded extensions"
+- [x] Copy the current `.claude/settings.json` and `.claude/CLAUDE.md` to the scratchpad as the
+      pre-redeploy baseline. *(completed: baseline had 4 Stop blocks / 3x claude-stop-notify.sh,
+      confirming the pre-fix defect was live)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` from the repository root; confirm exit 0.
+      *(completed: exit 0, 304 artifacts)*
+- [x] Clause 1: `grep -c "This file is generated automatically from loaded extensions"
       .claude/CLAUDE.md` returns `1`; every loaded extension fragment appears exactly once;
-      `grep -c "<!-- SECTION:" .claude/CLAUDE.md` returns `0`.
-- [ ] Clause 2: run the deploy a second time and confirm the two resulting `.claude/CLAUDE.md` files
-      are byte-identical (`cmp` reports no difference).
-- [ ] Clause 3: `jq -r '.hooks.Stop[].hooks[].command' .claude/settings.json | grep -c
+      `grep -c "<!-- SECTION:" .claude/CLAUDE.md` returns `0`. *(completed: sentinel=1, marker=0,
+      all 5 loaded extensions' fragments present exactly once)*
+- [x] Clause 2: run the deploy a second time and confirm the two resulting `.claude/CLAUDE.md` files
+      are byte-identical (`cmp` reports no difference). *(completed: cmp reported no difference)*
+- [x] Clause 3: `jq -r '.hooks.Stop[].hooks[].command' .claude/settings.json | grep -c
       "claude-stop-notify.sh"` returns `1`; the `Stop` array has exactly one `*` matcher block; and
       no `(event, matcher, command)` triple in the whole file appears more than once
       (`jq -r '.hooks | to_entries[] | .key as $e | .value[] | .matcher as $m | .hooks[] |
-      "\($e)\t\($m)\t\(.command)"' .claude/settings.json | sort | uniq -d` is empty).
-- [ ] Regression guard: `permissions` and `mcpServers` in the redeployed `.claude/settings.json` are
-      unchanged versus the pre-redeploy baseline.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and confirm it passes, including its
-      task-reference lint gate.
-- [ ] Write the implementation summary to
+      "\($e)\t\($m)\t\(.command)"' .claude/settings.json | sort | uniq -d` is empty). *(completed:
+      all three checks passed)*
+- [x] Regression guard: `permissions` and `mcpServers` in the redeployed `.claude/settings.json` are
+      unchanged versus the pre-redeploy baseline. *(completed: jq -S sorted-key diff empty for
+      both; a raw diff showed only object-key insertion-order change for permissions, no content
+      change)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and confirm it passes, including its
+      task-reference lint gate. *(completed: PASS, 12/12 checks)*
+- [x] Write the implementation summary to
       `specs/975_fix_generated_claudemd_double_body/summaries/01_claudemd-hook-dedup-summary.md`,
       recording the observed loaded-extension count, the CLAUDE.md line count before and after, and
-      the three clause results with their actual command output.
+      the three clause results with their actual command output. *(completed)*
 
 **Timing**: 45 minutes
 

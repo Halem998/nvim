@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "phase_name": "Full redeploy and verification-bar sign-off",
+  "started_at": "2026-07-29T01:15:00Z",
+  "last_updated": "2026-07-29T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Copy current settings.json/CLAUDE.md to scratchpad as pre-redeploy baseline", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh; confirm exit 0", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Clause 1: sentinel, per-extension, marker checks", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Clause 2: second deploy, cmp byte-identical", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Clause 3: claude-stop-notify.sh count 1, one Stop *-block, no duplicated triples", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Regression guard: permissions/mcpServers unchanged vs baseline", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run verify-deploy.sh, confirm passes", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Write implementation summary", "status": "done", "files_touched": ["specs/975_fix_generated_claudemd_double_body/summaries/01_claudemd-hook-dedup-summary.md"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Pre-redeploy live settings.json (a leftover from Phase 2's redeploy, which ran before the merge.lua fix existed) had 4 Stop matcher blocks with claude-stop-notify.sh appearing 3 times, empirically confirming the pre-fix defect was still reproducible at the start of this phase. After the fixed redeploy: CLAUDE.md sentinel=1, SECTION marker=0, all 5 loaded extension fragments (core, email, memory, nix, nvim) appear exactly once, 897 lines both runs and byte-identical (cmp). settings.json: claude-stop-notify.sh count=1, Stop array has exactly 1 '*' matcher block, zero duplicated (event,matcher,command) triples across the whole file. permissions/mcpServers are semantically identical to the pre-redeploy baseline (jq -S sorted-key diff empty; only object key insertion order changed, from JSON re-encoding, not content). verify-deploy.sh passed all 12 checks including the task-reference lint gate."
+}
