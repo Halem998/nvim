@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Rewrite the authoritative failure contract",
+  "started_at": "2026-07-29T20:50:00Z",
+  "last_updated": "2026-07-29T20:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite Failure contract into three branches; add Baseline mechanism, Exit-2 resolution, Rejected alternative; leave surrounding paragraphs untouched",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

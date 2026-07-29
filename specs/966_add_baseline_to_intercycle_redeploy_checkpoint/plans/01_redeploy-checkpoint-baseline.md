@@ -301,7 +301,7 @@ output. If either assertion fails, record the deviation and widen only this phas
 
 ---
 
-### Phase 2: Rewrite the authoritative failure contract [NOT STARTED]
+### Phase 2: Rewrite the authoritative failure contract [COMPLETED]
 
 **Goal**: the `### The Inter-Cycle Redeploy Checkpoint` subsection's **Failure contract**
 paragraph states the three-branch behavior, names the third operator-visible state, and resolves
@@ -309,36 +309,39 @@ exit 2 — with no other property of the subsection altered.
 
 **Tasks**:
 
-- [ ] Replace the **Failure contract** paragraph in
+- [x] Replace the **Failure contract** paragraph in
       `context/patterns/batch-orchestration-guardrails.md` with a three-branch statement:
       (a) `deploy-headless.sh` failure → defer all remaining not-yet-dispatched tasks
       unconditionally, no baseline consultation, unchanged; (b) `verify-deploy.sh` failure with at
       least one newly-introduced finding relative to the pre-redeploy baseline → defer, unchanged
       in spirit, now finding-level rather than exit-code-level; (c) `verify-deploy.sh` failure
       whose findings are ALL present in the pre-redeploy baseline → proceed, reported loudly.
-- [ ] Preserve verbatim the existing rejections and their reasoning: abort is rejected (it discards
+      *(completed)*
+- [x] Preserve verbatim the existing rejections and their reasoning: abort is rejected (it discards
       `mt_state_file` bookkeeping for no benefit, since deferral already halts further exposure);
       silent-continue is rejected outright (the operator must always be able to distinguish "we
       didn't check" from "we checked, it's broken, and we proceeded anyway"). Keep the existing
-      cross-reference to the `## Defer-Not-Fail: The Standing Default` section.
-- [ ] Add the third state's definition explicitly: "we checked, it's broken, it was ALREADY broken
+      cross-reference to the `## Defer-Not-Fail: The Standing Default` section. *(completed)*
+- [x] Add the third state's definition explicitly: "we checked, it's broken, it was ALREADY broken
       before this redeploy, and we proceeded deliberately" — and state that it is announced as
       loudly as an outright failure via a banner, a machine marker, and a durable
       `verify_deploy_baseline_notices` record. State that a baseline must never become a mechanism
-      for quietly swallowing failures.
-- [ ] Add a short **Baseline mechanism** paragraph: the comparison is a sorted, deduplicated,
+      for quietly swallowing failures. *(completed)*
+- [x] Add a short **Baseline mechanism** paragraph: the comparison is a sorted, deduplicated,
       line-level set difference over `verify-deploy.sh --findings --quiet` output, captured once
       immediately before `deploy-headless.sh` and once after; exit-code-only comparison is
       explicitly insufficient because a gate failing with 2 findings and the same gate failing with
-      5 findings (3 of them new) produce the identical non-zero exit.
-- [ ] Add an **Exit-2 resolution** paragraph recording Decision 2 above, including why the
-      asymmetric case (baseline established, post-redeploy unverifiable) defers.
-- [ ] Add a one-line **Rejected alternative** entry: "exit-code-only baseline comparison" —
+      5 findings (3 of them new) produce the identical non-zero exit. *(completed)*
+- [x] Add an **Exit-2 resolution** paragraph recording Decision 2 above, including why the
+      asymmetric case (baseline established, post-redeploy unverifiable) defers. *(completed)*
+- [x] Add a one-line **Rejected alternative** entry: "exit-code-only baseline comparison" —
       rejected for the masking reason above, recorded so a later pass cannot rediscover it.
-- [ ] Leave the Trigger, `modified_files` rationale, Sequencing, Idempotence guard, and Concurrency
+      *(completed)*
+- [x] Leave the Trigger, `modified_files` rationale, Sequencing, Idempotence guard, and Concurrency
       paragraphs untouched. Leave the "cross-references this subsection by path rather than
-      restating it" sentence and its file list intact.
-- [ ] Use durable anchors only — no task numbers (deliverable rule).
+      restating it" sentence and its file list intact. *(completed: single contiguous diff hunk,
+      confirmed via `git diff --unified=0`)*
+- [x] Use durable anchors only — no task numbers (deliverable rule). *(completed)*
 
 **Timing**: 0.75 hours
 

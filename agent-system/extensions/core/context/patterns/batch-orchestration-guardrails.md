@@ -377,14 +377,59 @@ scope at Stage MT-4 step 5.5 of `skill-orchestrate/SKILL.md`.
   know in advance which cycle will touch a critical path, so an opt-in flag either fires on every
   invocation (equivalent to the first rejected alternative) or is never set when it matters.
 
-**Failure contract**: on failure of either gate (`deploy-headless.sh` or `verify-deploy.sh`),
-defer all remaining not-yet-dispatched tasks for the rest of the invocation. Never abort, never
-silently continue. This is governed by the `## Defer-Not-Fail: The Standing Default` section
-above. Abort is rejected because it discards `mt_state_file` bookkeeping for no benefit, since
-deferral already halts further exposure. Silent-continue is rejected outright because the
-operator would see nothing distinguishing "we didn't check" from "we checked, it's broken, and we
-proceeded anyway" — the same reasoning the Blocking vs. Advisory criterion above applies to any
-guardrail whose harm is silent and hard to detect after the fact.
+**Failure contract**: the two gates are asymmetric and are evaluated in three branches.
+
+- **(a) `deploy-headless.sh` failure** — defer all remaining not-yet-dispatched tasks for the rest
+  of the invocation, unconditionally, with NO baseline consultation whatsoever. A redeploy that
+  did not complete has no meaningful "pre-existing" interpretation; this branch is unchanged from
+  before the baseline mechanism existed.
+- **(b) `verify-deploy.sh` failure with at least one newly-introduced finding** relative to the
+  pre-redeploy baseline (see **Baseline mechanism** below) —
+  defer all remaining not-yet-dispatched tasks for the rest of the invocation, unchanged in spirit
+  from the pre-baseline contract, now evaluated at finding-level rather than exit-code-level
+  granularity.
+- **(c) `verify-deploy.sh` failure whose findings are ALL already present in the pre-redeploy
+  baseline** — proceed to the next cycle, reported just as loudly as an outright failure. This is
+  the third operator-visible state: "we checked, it's broken, it was ALREADY broken before this
+  redeploy, and we proceeded deliberately." It is announced via a banner, a machine marker, and a
+  durable `mt_state_file.verify_deploy_baseline_notices` record (see
+  `skills/skill-orchestrate/SKILL.md`'s Stage MT-3 step 7 and Stage MT-5 for the mechanism, and
+  `commands/orchestrate.md`'s Consolidated Output template for the rendering). A baseline must
+  never become a mechanism for quietly swallowing failures — branch (c) exists to make a
+  pre-existing failure MORE visible, never less.
+
+In all three branches: never abort, never silently continue. This is governed by the
+`## Defer-Not-Fail: The Standing Default` section above. Abort is rejected because it discards
+`mt_state_file` bookkeeping for no benefit, since deferral already halts further exposure.
+Silent-continue is rejected outright because the operator would see nothing distinguishing "we
+didn't check" from "we checked, it's broken, and we proceeded anyway" — the same reasoning the
+Blocking vs. Advisory criterion above applies to any guardrail whose harm is silent and hard to
+detect after the fact. Branch (c) does not weaken this: it is a third, EXPLICITLY ANNOUNCED state,
+never an unannounced fourth option.
+
+**Baseline mechanism**: the pre/post comparison is a sorted, deduplicated, line-level set
+difference over `verify-deploy.sh --findings --quiet` output (see that script's own "Findings
+mode" header section for the `FINDING `-prefixed, per-gate-labeled output contract), captured once
+immediately before `deploy-headless.sh` runs and once after it succeeds. Exit-code-only comparison
+is explicitly insufficient: a gate failing with 2 findings and the same gate failing with 5
+findings (3 of them new) produce the identical non-zero exit code, so an exit-code-only comparison
+would silently mask a newly-introduced failure hiding inside an already-failing gate — precisely
+the scenario branch (b) above exists to still catch.
+
+**Exit-2 resolution**: `verify-deploy.sh` exit 2 ("cannot run") is folded into the same findings
+vocabulary as one synthesized `FINDING gate0 ...` sentinel line, rather than special-cased, so the
+comparison stays a single uniform set difference with no separate branch of its own. Two
+consequences:
+- Pre-redeploy exit 2 and post-redeploy exit 2 with the same reason → the sentinel is present in
+  both captured sets → empty difference → **branch (c)**: proceed, reported loudly as "could not
+  run, before or after this redeploy — pre-existing condition."
+- Pre-redeploy exit 0 or 1, post-redeploy exit 2 → the sentinel is present only in the post set →
+  non-empty difference → **branch (b)**: defer, unchanged. A redeploy that succeeded yet cannot be
+  verified at all is exactly the verification gap this checkpoint exists to catch, never something
+  to wave through on a pre-existing-failure technicality.
+
+**Rejected alternative**: **exit-code-only baseline comparison** — rejected for the masking reason
+given in Baseline mechanism above; recorded here so a later pass cannot rediscover and re-adopt it.
 
 **Sequencing**: per-task commits at Stage MT-4 step 5.5 already precede any point the checkpoint
 can occupy, unconditionally and inside the same per-task loop iteration. Committed-then-redeployed,
