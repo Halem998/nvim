@@ -32,7 +32,7 @@ next_project_number: 958
 
 ### Orchestration Concurrency
 
-946 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+946 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
@@ -376,10 +376,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 946. Auto-sequence conflicting work instead of aborting or skipping
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 945
+- **Research**: [946_auto_sequence_conflicting_work/reports/01_four-tier-conflict-response.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
