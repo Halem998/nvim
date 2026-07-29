@@ -380,16 +380,16 @@ Add artifact to state.json with summary.
 ```bash
 if [ -n "$artifact_path" ]; then
     # Step 1: Filter out existing plan artifacts (use "| not" pattern to avoid != escaping - Issue #1132)
-    jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
         [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "plan" | not)]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id"
 
     # Step 2: Add new plan artifact
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --arg path "$artifact_path" --arg type "$artifact_type" --arg summary "$artifact_summary"
 fi
 ```
 

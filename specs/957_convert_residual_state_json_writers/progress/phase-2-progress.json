@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Research and Planning Skills",
+  "started_at": "2026-07-29T00:15:00Z",
+  "last_updated": "2026-07-29T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert skill-researcher, skill-researcher-hard, skill-planner, skill-planner-hard", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+       "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+       "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+       "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md"
+     ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

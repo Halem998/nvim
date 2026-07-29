@@ -306,14 +306,7 @@ if [ -f "$skeleton_file" ] && jq empty "$skeleton_file" 2>/dev/null; then
         # there is no Stage 13-equivalent "update parent task dependencies" step here.
         resolved_deps="[$task_number]"
 
-        jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-           --argjson num "$new_task_num" \
-           --arg name "$task_slug" \
-           --arg desc "$task_desc" \
-           --arg effort "$task_effort" \
-           --arg lang "$task_type_new" \
-           --argjson deps "$resolved_deps" \
-           --argjson parent "$task_number" \
+        bash .claude/scripts/state-write.sh \
           '.active_projects += [{
             "project_number": $num,
             "project_name": $name,
@@ -327,13 +320,22 @@ if [ -f "$skeleton_file" ] && jq empty "$skeleton_file" 2>/dev/null; then
             "last_updated": $ts,
             "artifacts": []
           }]' \
-          specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+          --session-id "$session_id" \
+          --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --argjson num "$new_task_num" \
+          --arg name "$task_slug" \
+          --arg desc "$task_desc" \
+          --arg effort "$task_effort" \
+          --arg lang "$task_type_new" \
+          --argjson deps "$resolved_deps" \
+          --argjson parent "$task_number"
     done
 
     # Update next_project_number
-    jq --argjson next "$((next_num + task_count))" \
+    bash .claude/scripts/state-write.sh \
       '.next_project_number = $next' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --argjson next "$((next_num + task_count))"
 
     # Stage 6b-v: Record follow-up task numbers on the skeleton (current) task's plan_metadata
     # (skeleton: true, follow_up_tasks: [...]) per plan-format.md's schema (Phase 3).
@@ -341,14 +343,15 @@ if [ -f "$skeleton_file" ] && jq empty "$skeleton_file" 2>/dev/null; then
     for idx in $(echo "$dependency_order" | jq -r '.[]'); do
         follow_up_task_nums=$(echo "$follow_up_task_nums" | jq --argjson n "${task_num_map[$idx]}" '. + [$n]')
     done
-    jq --argjson num "$task_number" --argjson follow_ups "$follow_up_task_nums" \
+    # Stage 6b-vi: fold --regen-todo -- this write is immediately followed by nothing but the
+    # TODO.md regen, matching the review.md `.active_goal` precedent.
+    bash .claude/scripts/state-write.sh \
        '(.active_projects[] | select(.project_number == $num) | .plan_metadata) =
         ((.active_projects[] | select(.project_number == $num) | .plan_metadata) // {} +
          {"skeleton": true, "follow_up_tasks": $follow_ups})' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-
-    # Stage 6b-vi: Regenerate TODO.md after state writes.
-    bash .claude/scripts/generate-todo.sh
+      --session-id "$session_id" \
+      --argjson num "$task_number" --argjson follow_ups "$follow_up_task_nums" \
+      --regen-todo
   fi
 fi
 ```

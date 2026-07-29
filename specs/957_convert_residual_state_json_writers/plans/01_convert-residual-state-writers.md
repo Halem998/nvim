@@ -113,18 +113,18 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 2: Research and Planning Skills [NOT STARTED]
+### Phase 2: Research and Planning Skills [COMPLETED]
 
 **Goal**: Convert the research and planning skill families using the Phase 1 template.
 
 **Tasks**:
-- [ ] Convert `skills/skill-researcher/SKILL.md` (5 sites).
-- [ ] Convert `skills/skill-researcher-hard/SKILL.md` (1 site).
-- [ ] Convert `skills/skill-planner/SKILL.md` (2 sites).
-- [ ] Convert `skills/skill-planner-hard/SKILL.md` (3 sites).
-- [ ] For each file, confirm `$session_id` is already in scope at the call site before reusing it; if not, apply the self-generating fallback once per execution path.
-- [ ] Apply the fold/no-fold decision per site against the `review.md` precedent.
-- [ ] `bash -n` every extracted bash block per edited file.
+- [x] Convert `skills/skill-researcher/SKILL.md` (5 sites). *(completed: 5/5 converted; one site, Stage 8 Step 1, has no `--arg`/`--argjson` bindings)*
+- [x] Convert `skills/skill-researcher-hard/SKILL.md` (1 site). *(completed)*
+- [x] Convert `skills/skill-planner/SKILL.md` (2 sites). *(completed; the `specs/errors.json` site at line ~497 is correctly out of scope and left untouched)*
+- [x] Convert `skills/skill-planner-hard/SKILL.md` (3 sites). *(completed)*
+- [x] For each file, confirm `$session_id` is already in scope at the call site before reusing it; if not, apply the self-generating fallback once per execution path. *(completed: `$session_id` in scope in all 4 files; no fallback needed)*
+- [x] Apply the fold/no-fold decision per site against the `review.md` precedent. *(completed: no-fold in skill-researcher/skill-researcher-hard/skill-planner — none directly followed only by a regen call; folded `--regen-todo` into skill-planner-hard's Stage 6b-v write, which IS immediately followed only by `generate-todo.sh`)*
+- [x] `bash -n` every extracted bash block per edited file. *(completed: clean on all 4)*
 
 **Timing**: 1.25 hours
 

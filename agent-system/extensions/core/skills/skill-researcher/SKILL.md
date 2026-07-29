@@ -127,9 +127,10 @@ max_on_disk=$((10#$max_on_disk))
 if [ "$artifact_number" -le "$max_on_disk" ]; then
   artifact_number=$((max_on_disk + 1))
   # If reconciliation advanced the number, also sync state.json so subsequent operations stay in sync
-  jq --argjson num "$task_number" --argjson new_num "$artifact_number" \
+  bash .claude/scripts/state-write.sh \
     '(.active_projects[] | select(.project_number == $num)).next_artifact_number = $new_num' \
-    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    --session-id "$session_id" \
+    --argjson num "$task_number" --argjson new_num "$artifact_number"
 fi
 
 artifact_padded=$(printf "%02d" "$artifact_number")
@@ -346,9 +347,10 @@ if [ "$status" = "researched" ]; then
 fi
 
 # Step 2: Increment next_artifact_number (research advances the sequence)
-jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
+bash .claude/scripts/state-write.sh \
+  '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
     (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id"
 ```
 
 **Note**: Research is the only operation that increments `next_artifact_number`. Plan and implement use `(current - 1)` to stay in the same "round".
@@ -364,10 +366,11 @@ If the agent emitted memory candidates, append them to the task's state.json ent
 ```bash
 if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
     # Append new candidates to existing array (append semantics, not overwrite)
-    jq --argjson new_candidates "$memory_candidates" \
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == '$task_number')).memory_candidates =
         ((.active_projects[] | select(.project_number == '$task_number')).memory_candidates // []) + $new_candidates' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --argjson new_candidates "$memory_candidates"
 fi
 ```
 
@@ -384,16 +387,16 @@ Add artifact to state.json with summary.
 ```bash
 if [ -n "$artifact_path" ]; then
     # Step 1: Filter out existing research artifacts (use "| not" pattern to avoid != escaping - Issue #1132)
-    jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
         [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "research" | not)]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id"
 
     # Step 2: Add new research artifact
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --arg path "$artifact_path" --arg type "$artifact_type" --arg summary "$artifact_summary"
 fi
 ```
 
