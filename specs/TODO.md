@@ -35,13 +35,13 @@ next_project_number: 967
       └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 964 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-965 [PLANNING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+965 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 966 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 958 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### Orchestration Concurrency
 
-957 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+957 [PLANNING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
 
@@ -89,11 +89,12 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 965. Make check_undeclared_scripts skip untracked build artifacts
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md]
+- **Plan**: [965_skip_untracked_artifacts_in_undeclared_scripts_check/plans/01_git-ls-files-enumeration.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations may still reference deployed `.claude/scripts/*` paths -- that is the CALL PATH, not the EDIT TARGET.
 
@@ -330,7 +331,7 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 957. Convert the residual specs/state.json inline write sites to state-write.sh
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 942, Task 956

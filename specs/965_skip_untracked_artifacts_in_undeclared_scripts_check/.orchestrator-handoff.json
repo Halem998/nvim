@@ -1,19 +1,17 @@
 {
-  "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "Confirmed and empirically reproduced the check_undeclared_scripts() bug: find-based enumeration flags gitignored __pycache__/*.pyc under literature/scripts/. Verified the fix (git ls-files, matching _git_deployed_files' existing pattern) requires re-deriving the prefix-strip against REPO_ROOT-relative form, since git ls-files output shape differs from find's absolute-path output. Simulated the exact fix across all extensions: only literature differs, removing precisely the 2 known-bad entries with zero regressions elsewhere.",
-  "artifacts": [
-    {"type": "report", "path": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md"}
+  "task_number": 965,
+  "phase": "plan",
+  "status": "planned",
+  "session_id": "sess_1785337600_a52f75_965",
+  "plan_path": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/plans/01_git-ls-files-enumeration.md",
+  "research_artifacts": [
+    "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md"
   ],
+  "phase_count": 4,
+  "estimated_hours": 1.5,
+  "dependency_waves": [[1], [2], [3], [4]],
+  "file_scope": ["agent-system/extensions/core/scripts/check-extension-docs.sh"],
   "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
-  "decisions_made": [
-    "Enumeration: git -C \"$REPO_ROOT\" ls-files \"$ext_path_norm/scripts\" replaces find \"$ext_path_norm/scripts\" -type f, mirroring _git_deployed_files' already-chosen pattern",
-    "Prefix-strip must be re-derived: introduce ext_rel=\"${ext_path_norm#\"$REPO_ROOT\"/}\" and strip rel_path against ext_rel/scripts/, not the absolute ext_path_norm, because git ls-files always returns REPO_ROOT-relative paths regardless of pathspec form",
-    "Existence guard changes from [[ -f \"$script_file\" ]] to [[ -f \"$REPO_ROOT/$script_file\" ]] since script_file is now REPO_ROOT-relative, matching check_flat_category_orphans' analogous pattern",
-    "All other behavior preserved unchanged: full relative-path matching, no *.sh glob restriction, deprecated/* exemption, tests/ non-exemption, trailing-slash normalization of ext_path"
-  ],
-  "dead_ends": []
+  "next_steps": "Run /implement 965 to execute the plan",
+  "notes": "Hard acceptance criterion lives in Phase 3: a tracked-but-undeclared script must STILL be caught (git add -N fixture). If that assertion fails, Phase 3 blocks and Phase 4 must not run. Phase 4 must propagate via the deploy path only; hand-editing .claude/** is prohibited."
 }

@@ -1,25 +1,19 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1785337600_a52f75_965",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 965,
-  "findings_count": 1,
+  "session_id": "sess_1785337600_a52f75_965",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md",
-      "summary": "Confirms the git-ls-files enumeration fix for check_undeclared_scripts() in agent-system/extensions/core/scripts/check-extension-docs.sh, empirically verified against the live repo across all extensions with zero regressions."
+      "type": "plan",
+      "path": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/plans/01_git-ls-files-enumeration.md",
+      "summary": "4-phase plan replacing find-based enumeration in check_undeclared_scripts() with git ls-files, re-deriving the REPO_ROOT-relative prefix-strip, updating the stale Rule Q header comment, proving positive detection via a tracked-but-undeclared fixture, and propagating via the deploy path."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In check-extension-docs.sh, git -C \"$REPO_ROOT\" ls-files <pathspec> always returns REPO_ROOT-relative paths regardless of whether <pathspec> itself is absolute or relative to cwd. This differs from `find`, whose output mirrors whatever form its search-root argument took. When replacing a `find`-based enumeration with a `git ls-files`-based one in this script, any downstream prefix-strip logic (e.g. rel_path=\"${script_file#\\\"$ext_path_norm\\\"/scripts/}\") must be re-derived against the REPO_ROOT-relative form of the prefix, not copied unchanged -- a naive copy silently degrades to matching nothing.",
-      "category": "PATTERN",
-      "source_artifact": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git ls-files", "check-extension-docs.sh", "path enumeration", "prefix-strip", "REPO_ROOT-relative"]
-    }
-  ],
-  "next_steps": "Run /plan 965 to create implementation plan"
+  "phase_count": 4,
+  "estimated_hours": 1.5,
+  "dependency_waves": [[1], [2], [3], [4]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 965 to execute the plan"
 }

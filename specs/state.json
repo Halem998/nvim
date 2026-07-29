@@ -2579,7 +2579,7 @@
     {
       "project_number": 957,
       "project_name": "convert_residual_state_json_writers",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Convert the residual specs/state.json inline write sites to state-write.sh",
@@ -2620,7 +2620,7 @@
         }
       ],
       "created": "2026-07-28T23:14:04Z",
-      "last_updated": "2026-07-29T15:13:12Z",
+      "last_updated": "2026-07-29T15:13:30Z",
       "session_id": "sess_1785337600_a52f75_957",
       "next_artifact_number": null
     },
@@ -2782,7 +2782,7 @@
     {
       "project_number": 965,
       "project_name": "skip_untracked_artifacts_in_undeclared_scripts_check",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Make check_undeclared_scripts skip untracked build artifacts",
@@ -2796,10 +2796,15 @@
           "path": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md",
           "type": "report",
           "summary": "git ls-files enumeration research"
+        },
+        {
+          "path": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/plans/01_git-ls-files-enumeration.md",
+          "type": "plan",
+          "summary": "git ls-files enumeration plan"
         }
       ],
       "created": "2026-07-29T14:59:46Z",
-      "last_updated": "2026-07-29T15:12:43Z",
+      "last_updated": "2026-07-29T15:16:05Z",
       "session_id": "sess_1785337600_a52f75_965",
       "next_artifact_number": null
     },
