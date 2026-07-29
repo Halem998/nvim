@@ -1,46 +1,29 @@
 {
-  "task_number": 976,
-  "phase": "plan",
-  "status": "planned",
-  "session_id": "sess_1785355598_1f68c0_976",
-  "agent_type": "planner-agent",
-  "orchestrator_mode": true,
-  "plan_path": "specs/976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md",
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 5 plan phases completed. Mutex released before TODO regeneration in state-write.sh (measured hold dropped from ~6.9s to 77ms), defense-in-depth staleness widening added, a new regression suite proves the fix and adversarially fails against pre-fix code, generate-todo.sh rewritten to a single-pass jq extraction with byte-identical output and a measured ~4.4x per-task-loop speedup. Phase 5's literal redeploy step was excluded per documented policy (deploy-headless.sh's automated-caller restriction) and recorded as a Reasoned Exclusion; all independently-verifiable checks (bash -n, both test suites, mutex-hold timing, no task-number citations) pass.",
   "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md",
-      "summary": "5-phase implementation plan for moving TODO regeneration out of the specs/.scope-lock critical section."
-    }
+    {"type": "summary", "path": "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md"}
   ],
-  "plan_metadata": {
-    "phases": 5,
-    "total_effort_hours": 3.5,
-    "complexity": "medium",
-    "research_integrated": true,
-    "plan_version": 1,
-    "dependency_waves": [[1], [2, 3, 4], [5]],
-    "reports_integrated": [
-      {
-        "path": "reports/01_mutex-timing-defect.md",
-        "integrated_in_plan_version": 1,
-        "integrated_date": "2026-07-29"
-      }
-    ],
-    "skeleton": false,
-    "follow_up_tasks": []
-  },
-  "file_scope": [
+  "blockers": [],
+  "next_action_hint": "A human should run the interactive Load Core / Sync all sync so the deployed .claude/scripts/ tree actually carries this fix; the source-store edits alone do not deploy themselves.",
+  "files_modified": [
     "agent-system/extensions/core/scripts/state-write.sh",
     "agent-system/extensions/core/scripts/generate-todo.sh",
     "agent-system/extensions/core/scripts/test-state-write-regen-timing.sh"
   ],
-  "scope_notes": [
-    "generate-task-order.sh costs 2.38s of generate-todo.sh's measured 6.88s and is NOT in the declared file_scope; it stays the dominant residual wall-clock cost after the jq rewrite and must not be modified in this task. It does not threaten the verification bar because Phase 1 removes regeneration from the critical section entirely.",
-    "task-lock.sh is in the declared file_scope but no phase edits it. Phase 1 alone meets the verification bar; making SCOPE_MUTEX_ACQUIRE_BUDGET_MS overridable is deliberately excluded.",
-    "The research report's prediction that the jq rewrite takes generate-todo.sh 'well under 1s' is not reachable in scope; the plan's stated target is ~2.5-3.0s total, with the per-task loop dropping from ~4.5s to well under 0.5s."
+  "decisions_made": [
+    "Phase 2 (optional staleness widening) was implemented, not skipped",
+    "Whole-row base64 encoding (one subprocess spawn per task) replaced the plan's literal per-field base64 suggestion after measurement showed per-field encoding did not remove the subprocess-spawn cost",
+    "mapfile -d (Unit Separator record delimiter) used instead of IFS=... read to avoid two bash pitfalls: whitespace-class IFS collapsing empty fields, and read's line-oriented truncation of multi-line fields",
+    "Phase 5's deploy-headless.sh redeploy step was NOT run, per context/patterns/regeneration-is-manual-only.md's Automated Exception subsection restricting automated invocation to skill-orchestrate's Stage MT-3 step 7 only; recorded as a Reasoned Exclusion rather than silently skipped or silently violated"
   ],
-  "critical_path": true,
-  "blocks_tasks": [975, 977, 978, 979],
-  "next_steps": "Run /implement 976 to execute the plan"
+  "dead_ends": [
+    "Per-field @base64 encoding (one base64 spawn per field, ~8/task) -- only reduced wall time to ~4.8-5.0s, abandoned in favor of whole-row encoding",
+    "IFS=$'\\t' read and IFS=$'\\x1f' read for splitting the decoded row -- both corrupted output on empty/multi-line fields; replaced with mapfile -d"
+  ],
+  "plan_markers_verified": true,
+  "phases_completed": 5,
+  "phases_total": 5
 }

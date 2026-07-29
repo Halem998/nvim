@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy sync and full verification sweep",
+  "started_at": "2026-07-29T02:20:00Z",
+  "last_updated": "2026-07-29T02:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy core extension via deploy-headless.sh so deployed tree reflects source store", "status": "blocked", "files_touched": [], "note": "Excluded per Reasoned Exclusions -- deploy-headless.sh's own documented policy (context/patterns/regeneration-is-manual-only.md's Automated Exception subsection) restricts automated invocation to skill-orchestrate's Stage MT-3 step 7 only; a general-implementation-agent /implement dispatch is not that sanctioned call site. Additionally state-write.sh/generate-todo.sh are not on orchestrator-critical-paths.json's critical_paths list, so even the sanctioned checkpoint would not fire for this task's changes."},
+    {"id": 2, "description": "Diff each changed source-store script against its deployed counterpart", "status": "done", "files_touched": [], "note": "Confirmed NOT identical by design (deployed tree deliberately left stale). Also discovered and reverted an incidental hand-copy of generate-todo.sh into .claude/scripts/ made during Phase 4 debugging (restored to pre-task content via git show a16a3e3b0^)."},
+    {"id": 3, "description": "Run both test suites from the deployed tree", "status": "done", "files_touched": [], "note": "Substituted: ran both suites from an isolated throwaway root built from the source-store copies (same construction the suites already use internally), since the deployed tree was deliberately left stale."},
+    {"id": 4, "description": "Measure live mutex hold for a real status flip", "status": "done", "files_touched": [], "note": "77ms measured via mutex-directory-lifetime polling against an isolated-root copy of the real state.json during a real --regen-todo call. Well under the 1s bar (>10x margin)."},
+    {"id": 5, "description": "Confirm no task-number citations in modified/created scripts", "status": "done", "files_touched": [], "note": "grep -inE 'task [0-9]|tasks [0-9]' across state-write.sh, generate-todo.sh, test-state-write-regen-timing.sh: zero matches."},
+    {"id": 6, "description": "Record phases landed, skipped-optional-phase status, and measured numbers in the summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Redeploy the core extension via deploy-headless.sh",
+      "type": "skipped",
+      "reason": "Automated-caller restriction in context/patterns/regeneration-is-manual-only.md's Automated Exception subsection names skill-orchestrate's Stage MT-3 step 7 as the exact and only sanctioned automated call site for deploy-headless.sh; this dispatch is not that call site and has no recorded exception. Also, state-write.sh and generate-todo.sh are not on orchestrator-critical-paths.json's critical_paths list, so the sanctioned checkpoint's evidence-gate would not have matched this task's modified_files even under skill-orchestrate.",
+      "annotation": "*(deviation: excluded -- see Reasoned Exclusions below)*"
+    }
+  ],
+  "notes": "Phase 5 closed as [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record (Item | Reason | Evidence). The task's actual verification bar (mutex hold under 1s, byte-identical generate-todo.sh output, both test suites passing, no task-number citations) is fully met via source-store-only verification; only the LIVE-DEPLOYED-TREE aspect of Phase 5's literal wording is excluded, for a documented policy reason outside this task's control. A follow-up question (whether state-write.sh/generate-todo.sh should be added to orchestrator-critical-paths.json) was surfaced and recorded but explicitly left unactioned as out of file_scope."
+}

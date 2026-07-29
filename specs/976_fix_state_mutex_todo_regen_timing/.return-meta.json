@@ -1,16 +1,56 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 976,
-  "session_id": "sess_1785355598_1f68c0_976",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md",
+      "summary": "All 5 phases landed: mutex released before TODO regeneration (measured 77ms hold, was ~6.9s), defense-in-depth staleness widening, new adversarially-verified regression suite, single-pass jq rewrite of generate-todo.sh (byte-identical output, ~4.4x per-task-loop speedup), and a full verification sweep with one documented policy-driven exclusion (live redeploy deferred to the sanctioned mechanism)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Moved TODO regeneration out of state-write.sh's scope mutex critical section (measured hold dropped from ~6.9s to 77ms), added a regression suite that adversarially fails against the pre-fix code, and rewrote generate-todo.sh to a single-pass jq extraction with byte-identical output and a measured ~4.4x speedup on the in-scope per-task loop."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/state-write.sh",
+    "agent-system/extensions/core/scripts/generate-todo.sh",
+    "agent-system/extensions/core/scripts/test-state-write-regen-timing.sh",
+    "specs/976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md",
+    "specs/976_fix_state_mutex_todo_regen_timing/progress/phase-1-progress.json",
+    "specs/976_fix_state_mutex_todo_regen_timing/progress/phase-2-progress.json",
+    "specs/976_fix_state_mutex_todo_regen_timing/progress/phase-3-progress.json",
+    "specs/976_fix_state_mutex_todo_regen_timing/progress/phase-4-progress.json",
+    "specs/976_fix_state_mutex_todo_regen_timing/progress/phase-5-progress.json",
+    "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "bash's `read` (any form, including `IFS=$'\\x1f' read`) is fundamentally line-oriented: it stops consuming input at the first real newline regardless of IFS, silently truncating any field containing embedded newlines and blanking every subsequent field in that record. Use `mapfile -d $'\\x1f' -t arr <<< \"$data\"` instead when splitting a record on a custom delimiter where any field might contain embedded newlines -- `mapfile -d` uses the given character as the record terminator instead of newline. Separately, `IFS=<char> read` collapses CONSECUTIVE occurrences of the delimiter (silently dropping empty fields) whenever that character is in bash's IFS-whitespace class (space/tab/newline) -- use a non-whitespace delimiter like the ASCII Unit Separator (0x1f) to avoid this.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "read", "mapfile", "IFS", "delimiter", "unit-separator", "field-splitting"]
+    },
+    {
+      "content": "When eliminating a per-item subprocess-spawn storm (e.g. N jq calls per loop iteration), encoding each extracted FIELD separately with @base64 and decoding each with its own subprocess call does not remove the spawn-count cost -- it only trades one subprocess type for another (jq spawns become base64 spawns) of the same order of magnitude. Instead, join all fields for one record with a safe delimiter FIRST, then base64-encode the WHOLE joined record ONCE, so decode is a single subprocess spawn per record rather than one per field.",
+      "category": "PATTERN",
+      "source_artifact": "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "base64", "subprocess-spawn", "performance", "shell-scripting"]
+    },
+    {
+      "content": "In this repo, `agent-system/extensions/core/scripts/deploy-headless.sh` (the non-interactive .claude/ redeploy mechanism) has exactly one sanctioned automated caller: skill-orchestrate's Stage MT-3 step 7 inter-cycle redeploy checkpoint, documented in context/patterns/regeneration-is-manual-only.md's Automated Exception subsection. Any other agent (including a general-implementation-agent /implement dispatch) must NOT invoke it directly, even when a plan explicitly directs a Phase 5-style redeploy-and-verify step -- the correct response is to verify everything possible via an isolated throwaway root (matching the existing test-suite convention) and record the actual redeploy as a documented Reasoned Exclusion, deferring to a human-invoked interactive Load Core sync.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless", "regeneration-is-manual-only", "orchestrator-critical-paths", "source-store", "policy"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785355598_1f68c0_976",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 5,
     "phases_total": 5
   }
 }
