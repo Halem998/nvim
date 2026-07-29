@@ -214,7 +214,7 @@ For each validated task, invoke the appropriate research skill using parallel Sk
 
 1. Extract task_type per task from state.json
 2. Route to the appropriate research skill per task (extension routing or default `skill-researcher`)
-3. **Before** invoking the skill for a task: `bash .claude/scripts/task-lock.sh acquire "$task_num" research "${batch_session_id}_${task_num}" "/research (multi-task)"`. If this refuses (exit 1 — a fresh lock held by a genuinely different session; same-session re-entry never refuses), move that task from `validated_tasks` to `skipped_tasks` with reason `"locked by another session"` and do NOT invoke its skill this run.
+3. **Before** invoking the skill for a task: `bash .claude/scripts/task-lock.sh acquire-retry "$task_num" research "${batch_session_id}_${task_num}" "/research (multi-task)"`. If this refuses (exit 1 — still locked by a genuinely different session after the bounded retry budget; same-session re-entry never refuses and never enters the retry wait), move that task from `validated_tasks` to `skipped_tasks` with reason `"locked by another session"` and do NOT invoke its skill this run.
 4. Invoke all skills in a single message (parallel execution, one skill per task)
 5. Each skill runs the full single-task research lifecycle independently (preflight, agent delegation, postflight)
 6. Collect text results from all skills; read `.return-meta.json` in each task directory for structured data if needed

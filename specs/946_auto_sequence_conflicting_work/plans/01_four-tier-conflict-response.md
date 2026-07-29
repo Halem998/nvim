@@ -233,25 +233,41 @@ Confirm with `git status --short` before committing.
 
 ---
 
-### Phase 3: Tier 2 wiring — single-task gate and multi-task dispatch loops [NOT STARTED]
+### Phase 3: Tier 2 wiring — single-task gate and multi-task dispatch loops [COMPLETED]
 
 **Goal**: Route every `task-lock.sh acquire` call site through `acquire-retry` so both the
 `command-gate-in.sh` path and the direct multi-task path get bounded retry from one mechanism.
 
 **Tasks**:
-- [ ] In `scripts/command-gate-in.sh`, change the acquire invocation to `acquire-retry` (arguments
+- [x] In `scripts/command-gate-in.sh`, change the acquire invocation to `acquire-retry` (arguments
       unchanged). Update the adjacent comment block to state that a fresh foreign lock is now
       retried within a bounded budget before the command aborts, and that same-session re-entry
-      still never self-blocks and never enters the retry loop.
-- [ ] In `commands/research.md` Step 3 item 3, change the per-task acquire to `acquire-retry` and
+      still never self-blocks and never enters the retry loop. *(completed)*
+- [x] In `commands/research.md` Step 3 item 3, change the per-task acquire to `acquire-retry` and
       update the surrounding prose: a refusal now means "still locked after the bounded retry
-      budget", and only then does the task move to `skipped_tasks`.
-- [ ] Apply the identical change to `commands/plan.md` and `commands/implement.md` Step 3 (all three
-      are byte-identical in shape; keep them so).
-- [ ] Confirm no other `task-lock.sh acquire` call site exists that should retry; record any
+      budget", and only then does the task move to `skipped_tasks`. *(completed)*
+- [x] Apply the identical change to `commands/plan.md` and `commands/implement.md` Step 3 (all three
+      are byte-identical in shape; keep them so). *(completed)*
+- [x] Confirm no other `task-lock.sh acquire` call site exists that should retry; record any
       deliberate non-retry site (e.g. `skill-orchestrate`'s Stage MT-4 per-task acquire, which
       already has a cycling loop providing Tier-1 re-sequencing and does not need Tier 2) as a
-      reasoned exclusion in the phase notes.
+      reasoned exclusion in the phase notes. *(completed — reasoned exclusion below)*
+
+**Reasoned Exclusion**: `skills/skill-orchestrate/SKILL.md`'s Stage MT-4 per-task acquire
+(`task-lock.sh acquire "$task_num" "$op" "${session_id}_${task_num}" "/orchestrate (multi-task)"`)
+is deliberately left on plain `acquire`, not `acquire-retry`. `/orchestrate`'s own cycling loop
+(Stage MT-3 step 4.5) already re-attempts a deferred `in_batch` collision on a later cycle — that
+IS Tier 1 (auto-sequence) for this call site, operating at a coarser, cycle-level granularity than
+Tier 2's sub-second bounded retry. Adding Tier 2 here as well would layer a second, redundant
+wait-and-retry mechanism underneath a re-sequencing loop that already resolves the identical
+`in_batch` case; the two mechanisms are not composed at any other call site either. This is a
+recorded decision, not an oversight.
+
+The prose "Locked by another session" bullets in `commands/research.md`, `commands/plan.md`, and
+`commands/revise.md`'s "GATE IN Failure" sections (describing `command-gate-in.sh`'s single-task
+behavior) are intentionally left untouched in this phase to keep the four-file Scope Hypothesis
+below accurate; their wording is corrected in the same edit that adds the Tier-4 reference
+(Phase 6), since both changes touch the identical bullet.
 
 **Timing**: 1 hour
 

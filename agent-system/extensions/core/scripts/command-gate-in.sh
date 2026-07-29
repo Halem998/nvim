@@ -70,9 +70,14 @@ gate_in() {
 
   # Task lock: acquire AFTER the terminal-status guard so terminal-status tasks fail fast
   # without ever touching the lock. See .claude/context/patterns/task-lock.md for the full
-  # acquire/heartbeat/release/check contract. Same-session re-entry never self-blocks; a fresh
-  # lock held by a DIFFERENT session aborts the command before DELEGATE.
-  if ! bash .claude/scripts/task-lock.sh acquire "$task_number" "$operation" "$SESSION_ID" "/$operation $task_number"; then
+  # acquire/heartbeat/release/check contract, and its "Four-Tier Conflict Response" section for
+  # where this call sits in the ladder. Same-session re-entry never self-blocks — this is
+  # unchanged by the acquire-retry wrapper below, since every retried attempt is a full fresh
+  # cmd_acquire entry and same-session re-entry returns 0 on the FIRST attempt every time (see
+  # task-lock.sh's cmd_acquire_retry contract comment). A fresh lock held by a DIFFERENT session
+  # is now retried within a bounded budget (Tier 2) before the command aborts (Tier 3) — a
+  # refusal here means "still locked after the bounded retry budget," not "locked on first look."
+  if ! bash .claude/scripts/task-lock.sh acquire-retry "$task_number" "$operation" "$SESSION_ID" "/$operation $task_number"; then
     return 1
   fi
 
