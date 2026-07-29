@@ -2234,7 +2234,7 @@
     {
       "project_number": 944,
       "project_name": "in_flight_session_registry",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Add an in-flight orchestration session registry with liveness and reap",
@@ -2272,8 +2272,9 @@
         }
       ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-29T00:00:40Z",
-      "session_id": "sess_1785282438_f1034e"
+      "last_updated": "2026-07-29T00:20:30Z",
+      "session_id": "sess_1785282438_f1034e",
+      "completion_summary": "Implemented the in-flight orchestration session registry (specs/.sessions/{session_id}.json) as four additive task-lock.sh subcommands (session-register/session-heartbeat/session-release/session-reap), wired register/heartbeat/release at every single-task and multi-task/batch session-start and session-end site, added gitignore coverage and runtime-file classification, extended the task-lock.md contract doc, wrote a 10-case isolated-temp-root test suite, and ran a full scope-boundary audit confirming zero admission/refusal-path changes and byte-unchanged existing task-lock.sh subcommands."
     },
     {
       "project_number": 945,

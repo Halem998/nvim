@@ -1,7 +1,7 @@
 # Implementation Plan: In-Flight Orchestration Session Registry
 
 - **Task**: 944 - Add an in-flight orchestration session registry with liveness and reap
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: 942, 943 (both closed)
 - **Research Inputs**: specs/944_in_flight_session_registry/reports/01_in-flight-session-registry.md

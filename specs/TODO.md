@@ -11,9 +11,9 @@ next_project_number: 958
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 944,947,950,951,955,956,957 | -- | agent-system, orchestration-concurrency |
-| 2 | 945,948,952 | 944,947,951 | agent-system, orchestration-concurrency |
-| 3 | 946,949,953,954 | 945,948,952 | agent-system, orchestration-concurrency |
+| 1 | 945,947,950,951,955,956,957 | -- | agent-system, orchestration-concurrency |
+| 2 | 946,948,952 | 945,947,951 | agent-system, orchestration-concurrency |
+| 3 | 949,953,954 | 948,952 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -32,9 +32,8 @@ next_project_number: 958
 
 ### Orchestration Concurrency
 
-944 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-  └─ 945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-    └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
@@ -456,11 +455,12 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 944. Add an in-flight orchestration session registry with liveness and reap
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 942, Task 943
 - **Research**: [944_in_flight_session_registry/reports/01_in-flight-session-registry.md]
+- **Plan**: [944_in_flight_session_registry/plans/01_in-flight-session-registry.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
