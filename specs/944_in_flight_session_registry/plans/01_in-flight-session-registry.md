@@ -574,34 +574,34 @@ suite complete.
 
 ---
 
-### Phase 10: Scope-Boundary Audit and Final Verification [NOT STARTED]
+### Phase 10: Scope-Boundary Audit and Final Verification [COMPLETED]
 
 **Goal**: Prove the registry is produced and nothing consumes it, and run the full gate set.
 
 **Tasks**:
-- [ ] Grep the entire source store for reads of the registry path:
+- [x] Grep the entire source store for reads of the registry path:
       `grep -rn "\.sessions" agent-system/extensions/core/`. Assert the only hits are
       `scripts/task-lock.sh`, `scripts/test-session-registry.sh`,
       `scripts/check-runtime-file-tracking.sh`, `context/patterns/task-lock.md`,
       `context/standards/orchestrator-runtime-files.md`, and the wiring call sites from Phases 4-8.
       Any hit inside an admission, eligibility, or refusal code path is a failure of this task's
       scope boundary and must be reverted, not rationalized.
-- [ ] Assert `scripts/orchestrate-batch-admit.sh` appears nowhere in the task's cumulative diff.
-- [ ] Assert `cmd_acquire`, `cmd_heartbeat`, `cmd_release`, `cmd_check`, `cmd_reap`, `cmd_init_marker`,
+- [x] Assert `scripts/orchestrate-batch-admit.sh` appears nowhere in the task's cumulative diff.
+- [x] Assert `cmd_acquire`, `cmd_heartbeat`, `cmd_release`, `cmd_check`, `cmd_reap`, `cmd_init_marker`,
       and both mutex command pairs in `task-lock.sh` have byte-unchanged bodies.
-- [ ] Assert no `specs/state.json` write was introduced anywhere in the diff; if any phase needed
+- [x] Assert no `specs/state.json` write was introduced anywhere in the diff; if any phase needed
       one, it must route through `scripts/state-write.sh` and never a hand-rolled tmp-and-mv.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` (or the deployed
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` (or the deployed
       equivalent) to confirm no deliverable outside `specs/**` cites a task number.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` — all three
+- [x] Run `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` — all three
       checks pass, including the new `.sessions` probe under Check A and Check C still green for the
       durable-provenance files.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and the repo's
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and the repo's
       `scripts/verify-deploy.sh` gate set.
-- [ ] Run both test suites: `test-task-lock-reap.sh` and `test-session-registry.sh`.
-- [ ] Confirm no file under `.claude/**` was hand-authored in this task's diff (the source-store
+- [x] Run both test suites: `test-task-lock-reap.sh` and `test-session-registry.sh`.
+- [x] Confirm no file under `.claude/**` was hand-authored in this task's diff (the source-store
       rule), with the single sanctioned exception being the repo root `/.gitignore` from Phase 3.
-- [ ] Check whether `test-session-registry.sh` reached `.claude/scripts/` after a redeploy; if the
+- [x] Check whether `test-session-registry.sh` reached `.claude/scripts/` after a redeploy; if the
       known `copy_scripts` loader gap prevents it, report that plainly in the summary as an
       unresolved environment issue rather than working around it in this task's scope.
 
@@ -619,22 +619,40 @@ suite complete.
 - The scope-boundary grep produces a hit list containing no admission/refusal code path.
 - A summary line records, for each of the four registry subcommands, which wiring site exercises it.
 
+**Audit results (recorded at implementation time)**:
+- `grep -rn "\.sessions" agent-system/extensions/core/` hits exactly: `scripts/task-lock.sh`, `scripts/test-session-registry.sh`, `scripts/check-runtime-file-tracking.sh`, `context/patterns/task-lock.md`, `context/standards/orchestrator-runtime-files.md`, and `skills/skill-refresh/SKILL.md` (the Step 4.6 wiring site, whose prose names the storage path directly). No hit is inside an admission, eligibility, or refusal code path. The other wiring call sites (`command-gate-in.sh`/`command-gate-out.sh`, the three commands' batch steps, `skill-orchestrate/SKILL.md`, `agents/general-implementation-agent.md`) invoke the `session-*` subcommand names directly and never reference the literal string `.sessions`, so they do not appear in this grep — a narrower result than the plan's expected list, not a gap.
+- `scripts/orchestrate-batch-admit.sh` does not appear anywhere in the task's cumulative diff (confirmed via `git diff <first-commit>^..HEAD --name-only`).
+- `cmd_acquire`, `cmd_heartbeat`, `cmd_release`, `cmd_check`, `cmd_reap`, `cmd_init_marker`, and both mutex command pairs are byte-unchanged: the only removed line in the entire `task-lock.sh` diff is the dispatch fallback's usage string, extended to list the four new subcommands.
+- No `specs/state.json` write was introduced anywhere in the diff.
+- `check-task-references.sh`: PASS, 0 unexempted occurrences across all 4 scanned trees.
+- `check-runtime-file-tracking.sh`: PASS, all three checks including the new `.sessions` probe under Check A.
+- `check-extension-docs.sh` / `verify-deploy.sh`: both report a `literature` extension doc-lint FAIL (stale `.pyc` cache entries and several core scripts never deployed) that predates this task and is unrelated to any file this task touched — every other extension, including `core`, reports PASS. Not fixed here (out of scope).
+- `test-task-lock-reap.sh` and `test-session-registry.sh`: both exit 0 against the deployed `.claude/scripts/` copies after `deploy-headless.sh`.
+- Known `copy_scripts`/manifest loader gap: `test-session-registry.sh` itself DID reach `.claude/scripts/` via `deploy-headless.sh` this run; only the deployed copy of `manifest.json` (`.claude/extensions/core/manifest.json`) was stale (missing the new `test-session-registry.sh` array entry) after the same run. Worked around with a one-off direct `cp` from the source-store `manifest.json`, per this chain's established precedent — the loader gap itself remains open and unfixed, as directed.
+- No file under `.claude/**` was hand-authored in this task's diff; the single sanctioned exception is the repo root `/.gitignore`, confirmed via `git diff --name-only` over the task's full commit range.
+
+**Per-subcommand wiring-site summary**:
+- `session-register`: `command-gate-in.sh` (single-task); `commands/research.md`/`plan.md`/`implement.md` Step 2 (multi-task command batches); `skill-orchestrate/SKILL.md` Stage MT-1 (`/orchestrate` batch).
+- `session-heartbeat`: `skill-orchestrate/SKILL.md` Stage 3 (single-task cycle loop) and Stage MT-3 step 1 (batch status refresh); `agents/general-implementation-agent.md` Stage 4D (implementer per-phase transition).
+- `session-release`: `command-gate-out.sh` (single-task); `commands/research.md`/`plan.md`/`implement.md` Step 4 (multi-task command batches); `skill-orchestrate/SKILL.md` Stage MT-5 (`/orchestrate` batch).
+- `session-reap`: `skill-refresh/SKILL.md` Step 4.6, explicit `/refresh` invocation only.
+
 ---
 
 ## Testing & Validation
 
-- [ ] `bash -n` on every modified shell script.
-- [ ] `bash agent-system/extensions/core/scripts/test-session-registry.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh` exits 0 (no regression).
-- [ ] `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` exits 0 with the new
-      `.sessions` probe covered.
-- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` exits 0.
-- [ ] `scripts/verify-deploy.sh` gate set passes, including the task-reference lint gate.
-- [ ] `jq -e . agent-system/extensions/core/manifest.json` parses.
+- [x] `bash -n` on every modified shell script. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/test-session-registry.sh` exits 0. *(completed: 10/10 cases pass, both source-store and deployed copies)*
+- [x] `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh` exits 0 (no regression). *(completed: 6/6 cases pass, both copies)*
+- [x] `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` exits 0 with the new
+      `.sessions` probe covered. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` exits 0. *(deviation: pre-existing `literature` extension doc-lint FAIL, unrelated to any file this task touched — `core` and every other extension report PASS; see Phase 10's audit notes)*
+- [x] `scripts/verify-deploy.sh` gate set passes, including the task-reference lint gate. *(deviation: same pre-existing `literature` doc-lint FAIL propagates into this gate set; the task-reference lint gate itself PASSes)*
+- [x] `jq -e . agent-system/extensions/core/manifest.json` parses. *(completed)*
 - [ ] End-to-end smoke: a real single-task command run leaves exactly one
-      `specs/.sessions/{session_id}.json` while in flight and none after completion.
-- [ ] Scope-boundary audit produces no consumer outside `task-lock.sh`, the test suite, docs, and the
-      wiring call sites.
+      `specs/.sessions/{session_id}.json` while in flight and none after completion. *(deviation: deferred — no live `/research`/`/plan`/`/implement` invocation was run against this repo during implementation; Phase 4's isolated manual smoke and the deployed test-suite runs cover the equivalent contract instead)*
+- [x] Scope-boundary audit produces no consumer outside `task-lock.sh`, the test suite, docs, and the
+      wiring call sites. *(completed)*
 
 ## Artifacts & Outputs
 

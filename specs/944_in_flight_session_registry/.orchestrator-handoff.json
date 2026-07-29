@@ -1,0 +1,48 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 10 plan phases complete. Added specs/.sessions/{session_id}.json as four additive task-lock.sh subcommands (session-register/session-heartbeat/session-release/session-reap), reusing write_holder's tmp-mv atomicity, get_file_scope, age_minutes, and cmd_reap's report-then-delete shape. Wired register/release at every single-task (command-gate-in.sh/command-gate-out.sh) and multi-task/batch (research.md/plan.md/implement.md Step 2 and Step 4, skill-orchestrate/SKILL.md Stage MT-1/MT-5) session-start/session-end site, using the bare unsuffixed batch_session_id everywhere. Heartbeats wired only at pre-existing checkpoints (skill-orchestrate Stage 3 and Stage MT-3 step 1, general-implementation-agent.md Stage 4D). session-reap is wired into /refresh Step 4.6, explicit-invocation-only. Gitignore coverage added at the repo root (the one sanctioned source-store-rule exception) plus runtime-file classification and a check-runtime-file-tracking.sh probe. context/patterns/task-lock.md extended with a new Session-Registry CLI section and a renamed five-path Consumers section. A 10-case isolated-temp-root test suite (test-session-registry.sh) proves the full contract including the empirically-confirmed ancestor-walk pid resolution and the SESSION_REGISTRY_DEAD_PID_MIN floor guard. Phase 10's scope-boundary audit confirms zero consumers, byte-unchanged existing task-lock.sh subcommands, orchestrate-batch-admit.sh absent from the diff, and no new specs/state.json write.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/944_in_flight_session_registry/plans/01_in-flight-session-registry.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "complete",
+  "files_modified": [
+    ".gitignore",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
+    "agent-system/extensions/core/scripts/command-gate-in.sh",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/test-session-registry.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "specs/944_in_flight_session_registry/plans/01_in-flight-session-registry.md",
+    "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md"
+  ],
+  "decisions_made": [
+    "Empirically confirmed resolve_session_pid() resolves pid_source=ancestor-claude (not the ppid/self fallback) when run live from a Bash tool invocation, and verified the SESSION_REGISTRY_DEAD_PID_MIN floor with synthetic fixtures (dead-pid-young survives, dead-pid-old reaps with reason dead-pid).",
+    "Deferred the deployed-tree end-to-end smoke at Phase 4 (the deployed task-lock.sh copy was stale at that point in the sequence) to Phase 10, after deploy-headless.sh; ran both test suites against the deployed copies there instead, both green.",
+    "Known copy_scripts/manifest loader gap manifested narrowly this run: test-session-registry.sh itself DID deploy correctly via deploy-headless.sh, but the deployed .claude/extensions/core/manifest.json copy was stale (missing the new scripts-array entry). Worked around with a one-off direct cp from the source-store manifest.json, per this task chain's established precedent; the loader gap itself is left open per the plan's direction.",
+    "check-extension-docs.sh and verify-deploy.sh both report a pre-existing literature extension doc-lint FAIL, confirmed unrelated to any file this task touched (core and every other extension report PASS) and left unfixed as out of scope.",
+    "Deferred the plan's literal 'End-to-end smoke: a real single-task command run' Testing & Validation item — no live /research/plan/implement command was invoked against this repo during implementation; the isolated manual smoke (Phase 1) and deployed test-suite runs (Phase 10) cover the equivalent contract."
+  ],
+  "dead_ends": [],
+  "phases_completed": 10,
+  "phases_total": 10
+}

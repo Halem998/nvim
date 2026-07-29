@@ -1,8 +1,64 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "session_id": "sess_1785282438_f1034e",
-  "task_number": 944,
-  "task_name": "in_flight_session_registry"
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md",
+      "summary": "Full 10-phase implementation of the in-flight session registry: four additive task-lock.sh subcommands, wiring at every register/heartbeat/release/reap call site, gitignore and runtime-file classification, an isolated-temp-root test suite, and a scope-boundary audit proving no consumer was added."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the in-flight orchestration session registry (specs/.sessions/{session_id}.json) as four additive task-lock.sh subcommands (session-register/session-heartbeat/session-release/session-reap), wired register/heartbeat/release at every single-task and multi-task/batch session-start and session-end site, added gitignore coverage and runtime-file classification, extended the task-lock.md contract doc, wrote a 10-case isolated-temp-root test suite, and ran a full scope-boundary audit confirming zero admission/refusal-path changes and byte-unchanged existing task-lock.sh subcommands."
+  },
+  "modified_files": [
+    ".gitignore",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
+    "agent-system/extensions/core/scripts/command-gate-in.sh",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/test-session-registry.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "specs/944_in_flight_session_registry/plans/01_in-flight-session-registry.md",
+    "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a helper script invoked as a short-lived subprocess (e.g. task-lock.sh) that needs to record the PID of its long-lived CALLING session (not its own $$), use a bounded ancestor-walk (ps -o ppid=/comm= up to ~10 hops, stop at pid 1) looking for a process name match, with an explicit fallback chain (found -> ppid -> self) and a pid_source field recording which branch fired. Pair this with a floor constant on any liveness-based reap so a misresolved pid can only ever SHORTEN a wait, never incorrectly reap a live session.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["pid-resolution", "ancestor-walk", "process-liveness", "task-lock", "bash"]
+    },
+    {
+      "content": "When a new per-entity registry file is keyed by a globally-unique caller-generated id (e.g. session_id), no mkdir-exclusivity gate is needed for writes -- each writer touches only its own path, so a plain tmp-file-write-then-mv (the write_holder pattern) is already race-free. Reserve mkdir-exclusivity primitives for cases where multiple writers could contend for the SAME path.",
+      "category": "PATTERN",
+      "source_artifact": "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["atomic-write", "tmp-file-rename", "concurrency", "registry-design"]
+    },
+    {
+      "content": "Two-signal staleness for a reap/cleanup feature: evaluate a fast-but-fallible liveness check (e.g. kill -0 pid) FIRST but only let it shorten the wait below a floor constant (never let 'process confirmably alive' count as proof of liveness on its own); always fall through to a slower, more conservative heartbeat-age threshold as the real backstop. This makes an unreliable fast signal safe to use opportunistically.",
+      "category": "PATTERN",
+      "source_artifact": "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["reap", "staleness", "liveness-check", "two-signal", "floor-constant"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1785282438_f1034e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 10,
+    "phases_total": 10
+  }
 }
