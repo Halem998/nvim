@@ -375,40 +375,60 @@ distinct third call site. `remove_index_entries_tracked` has exactly one real co
 
 ---
 
-### Phase 5: Index the 14 unindexed context files [NOT STARTED]
+### Phase 5: Index the 14 unindexed context files [COMPLETED]
 
 **Goal**: Every deployed context markdown file has a source-level index entry, with `load_when`
 metadata grounded in how each file is actually referenced today.
 
 **Tasks**:
-- [ ] Re-derive the live orphan set rather than trusting the list below: diff `*.md` files under
-      `.claude/context/` against `.entries[].path` in `.claude/context/index.json`.
-- [ ] For the 11 core orphans, add entries to `agent-system/extensions/core/index-entries.json`:
+- [x] Re-derive the live orphan set rather than trusting the list below: diff `*.md` files under
+      `.claude/context/` against `.entries[].path` in `.claude/context/index.json`. *(completed:
+      exactly 14, byte-identical to the list below)*
+- [x] For the 11 core orphans, add entries to `agent-system/extensions/core/index-entries.json`:
       `guides/hard-mode-routing.md`, `patterns/batch-drain-loop.md`,
       `patterns/checkpoint-before-overflow.md`, `patterns/context-exhaustion-detection.md`,
       `patterns/context-protective-lead.md`, `patterns/lit-stage4a-flow.md`,
       `patterns/subagent-continuation-loop.md`, `patterns/task-lock.md`,
       `patterns/topic-assignment-pattern.md`, `standards/git-staging-scope.md`,
-      `standards/orchestrator-runtime-files.md`.
-- [ ] Add the three extension strays to their owning extensions:
+      `standards/orchestrator-runtime-files.md`. *(completed: appended via jq --slurpfile since
+      core/index-entries.json is already in canonical jq pretty-print form -- confirmed
+      format-preserving, diff shows pure addition)*
+- [x] Add the three extension strays to their owning extensions:
       `project/email/design/email-to-memory-preferences.md` to
       `agent-system/extensions/email/index-entries.json`, `project/memory/README.md` to
       `agent-system/extensions/memory/index-entries.json`, and
       `project/neovim/domain/extension-deploy-modes.md` to
-      `agent-system/extensions/nvim/index-entries.json`.
-- [ ] Populate each entry's required fields (`path`, `domain`, `summary`, `line_count`) plus
+      `agent-system/extensions/nvim/index-entries.json`. *(completed: email/memory appended via
+      jq --slurpfile (both already canonical jq format); nvim's entry inserted via surgical Edit
+      matching its file's compact-array style, since nvim/index-entries.json is NOT
+      jq-round-trip-safe -- confirmed by `diff <(jq '.' file) file` before choosing method)*
+- [x] Populate each entry's required fields (`path`, `domain`, `summary`, `line_count`) plus
       `topics`, `keywords`, and `load_when`, matching the field shape used by existing entries in
-      the same file. `domain` must be one of `core`, `project`, `system`.
-- [ ] Derive `load_when.agents` / `load_when.skills` / `load_when.commands` from each file's
+      the same file. `domain` must be one of `core`, `project`, `system`. *(completed)*
+- [x] Derive `load_when.agents` / `load_when.skills` / `load_when.commands` from each file's
       existing `@`-referencing agents, skills, commands, and rules — the research report's
       reference table is the starting point; re-derive with a grep per file to catch drift.
-- [ ] For the five files with zero existing references, choose `load_when` from the file's own
+      *(completed: re-grepped every one of the 14 files live via
+      `grep -rl "context/<path>" .claude/agents .claude/skills .claude/commands .claude/rules`;
+      results matched the research table for the 9 referenced files with no drift found)*
+- [x] For the five files with zero existing references, choose `load_when` from the file's own
       content and subject matter; do not leave a `load_when` that matches nothing (empty arrays
-      mean "never match" per the documented semantics).
-- [ ] Run the Phase 2 generator in `--write` mode again so the new entries' `line_count` values are
-      exact rather than hand-typed.
-- [ ] Do not use task-number citations in any summary or keyword text (deliverable rule); anchor
-      descriptions to file paths and concepts.
+      mean "never match" per the documented semantics). *(completed: re-confirmed live the same 5
+      zero-reference files the research named --
+      `guides/hard-mode-routing.md`, `patterns/batch-drain-loop.md`,
+      `patterns/context-protective-lead.md`, `project/memory/README.md`,
+      `project/neovim/domain/extension-deploy-modes.md` -- read each and assigned load_when
+      grounded in its stated audience/purpose, e.g. context-protective-lead.md's own "Audience:
+      Skill authors, team orchestration leads, /meta agent" line)*
+- [x] Run the Phase 2 generator in `--write` mode again so the new entries' `line_count` values are
+      exact rather than hand-typed. *(completed: --write ran with 0 changes, confirming the
+      hand-typed values were already exact; --check also passed 458/458 exact)*
+- [x] Do not use task-number citations in any summary or keyword text (deliverable rule); anchor
+      descriptions to file paths and concepts. *(completed: verified none of the 14 new entries'
+      summary/keyword/topic text cites a task number, including the email stray whose underlying
+      .md file itself has a pre-existing task-number header line -- that pre-existing content was
+      left untouched, only a new index entry pointing at the file was added, and that entry's own
+      summary text was written without any task-number citation)*
 
 **Timing**: 1.5 hours
 
@@ -420,6 +440,10 @@ metadata grounded in how each file is actually referenced today.
 strays, with no `literature` orphan (that extension is not loaded). Confirm at implementation time
 by re-running the deployed-files-vs-indexed-paths diff before adding anything; if the count is not
 14, reconcile against the live result and report the difference.
+
+**Scope Hypothesis result (re-derived live)**: exact match — `comm -23` of deployed `.claude/context/*.md`
+against `.claude/context/index.json`'s indexed paths returned exactly the same 14 files, in the
+same 11-core-plus-3-extension-strays split, with no `literature` orphan.
 
 **Files to modify**:
 - `agent-system/extensions/core/index-entries.json` - 11 new entries.

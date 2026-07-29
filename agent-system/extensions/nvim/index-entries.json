@@ -298,6 +298,19 @@
         "languages": ["neovim"],
         "agents": ["neovim-research-agent", "neovim-implementation-agent"]
       }
+    },
+    {
+      "path": "project/neovim/domain/extension-deploy-modes.md",
+      "domain": "project",
+      "subdomain": "neovim",
+      "topics": ["extensions", "deploy", "symlinks"],
+      "keywords": ["extension-deploy", "symlink-installer", "copy-engine"],
+      "summary": "Two deploy mechanisms (symlink installer, copy engine) for extension artifacts and their ownership rule",
+      "line_count": 118,
+      "load_when": {
+        "agents": ["meta-builder-agent"],
+        "task_types": ["meta"]
+      }
     }
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Index the 14 unindexed context files",
+  "started_at": "2026-07-30T00:25:00Z",
+  "last_updated": "2026-07-30T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add 11 core + 3 extension-stray index entries with grounded load_when metadata",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/email/index-entries.json",
+        "agent-system/extensions/memory/index-entries.json",
+        "agent-system/extensions/nvim/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

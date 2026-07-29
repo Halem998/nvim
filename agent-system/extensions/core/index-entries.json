@@ -2836,6 +2836,325 @@
           "/orchestrate"
         ]
       }
+    },
+    {
+      "path": "guides/hard-mode-routing.md",
+      "domain": "core",
+      "subdomain": "guides",
+      "summary": "Hard-mode routing resolution precedence used by command-route-skill.sh for --hard",
+      "line_count": 174,
+      "keywords": [
+        "hard-mode",
+        "routing",
+        "command-route-skill"
+      ],
+      "topics": [
+        "routing"
+      ],
+      "load_when": {
+        "agents": [
+          "meta-builder-agent"
+        ],
+        "task_types": [
+          "meta"
+        ],
+        "commands": [
+          "/meta"
+        ]
+      }
+    },
+    {
+      "path": "patterns/batch-drain-loop.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Batch drain loop pattern for capped bulk-mutation tools with a single upstream approval",
+      "line_count": 84,
+      "keywords": [
+        "batch",
+        "drain-loop",
+        "bulk-mutation",
+        "approval"
+      ],
+      "topics": [
+        "workflow"
+      ],
+      "load_when": {
+        "agents": [
+          "meta-builder-agent"
+        ],
+        "skills": [
+          "skill-email-cleanup"
+        ],
+        "task_types": [
+          "meta"
+        ]
+      }
+    },
+    {
+      "path": "patterns/checkpoint-before-overflow.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Git checkpoint procedure to run before context-window overflow during implementation",
+      "line_count": 176,
+      "keywords": [
+        "checkpoint",
+        "context-exhaustion",
+        "git-snapshot"
+      ],
+      "topics": [
+        "context-management"
+      ],
+      "load_when": {
+        "agents": [
+          "general-research-agent",
+          "general-research-hard-agent",
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "task_types": []
+      }
+    },
+    {
+      "path": "patterns/context-exhaustion-detection.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Detecting and responding to context window exhaustion signals during a task",
+      "line_count": 211,
+      "keywords": [
+        "context-exhaustion",
+        "handoff",
+        "monitoring"
+      ],
+      "topics": [
+        "context-management"
+      ],
+      "load_when": {
+        "agents": [
+          "general-research-agent",
+          "general-research-hard-agent",
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "skills": [
+          "skill-implementer"
+        ]
+      }
+    },
+    {
+      "path": "patterns/context-protective-lead.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Context-protective lead pattern: orchestrators route and delegate, never read full artifacts",
+      "line_count": 269,
+      "keywords": [
+        "context-budget",
+        "lead-agent",
+        "delegation"
+      ],
+      "topics": [
+        "context-management",
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [
+          "meta-builder-agent"
+        ],
+        "skills": [
+          "skill-orchestrate",
+          "skill-team-research",
+          "skill-team-plan",
+          "skill-team-implement"
+        ],
+        "task_types": [
+          "meta"
+        ],
+        "commands": [
+          "/meta",
+          "/orchestrate"
+        ]
+      }
+    },
+    {
+      "path": "patterns/lit-stage4a-flow.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Shared Stage 4a literature-mode sub-index detection flow imported by --lit-capable skills",
+      "line_count": 233,
+      "keywords": [
+        "literature",
+        "lit-flag",
+        "sub-index"
+      ],
+      "topics": [
+        "literature"
+      ],
+      "load_when": {
+        "skills": [
+          "skill-planner",
+          "skill-researcher",
+          "skill-planner-hard",
+          "skill-researcher-hard",
+          "skill-implementer-hard",
+          "skill-implementer"
+        ],
+        "task_types": []
+      }
+    },
+    {
+      "path": "patterns/subagent-continuation-loop.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Continuation loop pattern for resuming a successor subagent from a handoff artifact",
+      "line_count": 215,
+      "keywords": [
+        "continuation",
+        "handoff",
+        "resume"
+      ],
+      "topics": [
+        "context-management",
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "skills": [
+          "skill-implementer",
+          "skill-implementer-hard",
+          "skill-orchestrate"
+        ]
+      }
+    },
+    {
+      "path": "patterns/task-lock.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
+      "line_count": 1103,
+      "keywords": [
+        "task-lock",
+        "concurrency",
+        "heartbeat"
+      ],
+      "topics": [
+        "state",
+        "concurrency"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent"
+        ],
+        "skills": [
+          "skill-refresh",
+          "skill-orchestrate-hard",
+          "skill-orchestrate",
+          "skill-implementer"
+        ],
+        "commands": [
+          "/research",
+          "/refresh",
+          "/plan",
+          "/implement",
+          "/orchestrate"
+        ]
+      }
+    },
+    {
+      "path": "patterns/topic-assignment-pattern.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Topic assignment pattern for classifying and grouping tasks by subject area",
+      "line_count": 266,
+      "keywords": [
+        "topic",
+        "classification",
+        "grouping"
+      ],
+      "topics": [
+        "task-management"
+      ],
+      "load_when": {
+        "agents": [
+          "meta-builder-agent"
+        ],
+        "skills": [
+          "skill-fix-it",
+          "skill-project-overview",
+          "skill-spawn",
+          "skill-todo"
+        ],
+        "commands": [
+          "/task",
+          "/review"
+        ]
+      }
+    },
+    {
+      "path": "standards/git-staging-scope.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
+      "line_count": 328,
+      "keywords": [
+        "git-staging",
+        "commit-scope",
+        "targeted-staging"
+      ],
+      "topics": [
+        "git-workflow"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent",
+          "neovim-implementation-agent",
+          "nix-implementation-agent"
+        ],
+        "skills": [
+          "skill-reviser",
+          "skill-planner",
+          "skill-spawn",
+          "skill-implementer",
+          "skill-todo",
+          "skill-team-research",
+          "skill-git-workflow",
+          "skill-orchestrate"
+        ],
+        "commands": [
+          "/orchestrate",
+          "/research",
+          "/errors",
+          "/implement",
+          "/plan"
+        ]
+      }
+    },
+    {
+      "path": "standards/orchestrator-runtime-files.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
+      "line_count": 184,
+      "keywords": [
+        "runtime-files",
+        "cleanup",
+        "orchestrator"
+      ],
+      "topics": [
+        "orchestration"
+      ],
+      "load_when": {
+        "skills": [
+          "skill-refresh",
+          "skill-orchestrate-hard",
+          "skill-orchestrate"
+        ],
+        "commands": [
+          "/refresh"
+        ]
+      }
     }
   ]
 }

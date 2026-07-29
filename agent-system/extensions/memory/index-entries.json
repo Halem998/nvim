@@ -201,6 +201,32 @@
           "/distill"
         ]
       }
+    },
+    {
+      "path": "project/memory/README.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "topics": [
+        "memory",
+        "navigation"
+      ],
+      "keywords": [
+        "memory",
+        "vault",
+        "index"
+      ],
+      "summary": "Navigation index for the memory vault system's documentation files",
+      "line_count": 14,
+      "load_when": {
+        "skills": [
+          "skill-learn",
+          "skill-distill"
+        ],
+        "commands": [
+          "/learn",
+          "/distill"
+        ]
+      }
     }
   ]
 }
