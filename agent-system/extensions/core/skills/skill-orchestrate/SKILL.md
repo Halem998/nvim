@@ -820,6 +820,41 @@ else
   echo "[orchestrate] Dispatch result: $dispatch_status — $dispatch_summary"
   [ "$phases_total" -gt 0 ] && echo "[orchestrate] Phase progress: $phases_completed/$phases_total"
 
+  # ── Evidence corroboration (handoff-present branch) ──────────────────────────
+  # PRECONDITION: reachable ONLY here — a handoff IS present and fresh (this is the `else` of
+  # the missing/stale-handoff branch above), dispatch_status is "implemented", AND phases_total
+  # is exactly 0 (accounting absent or malformed). This is the THIRD reachable branch of the
+  # phase-marker-grep exception — see "MUST NOT (Context Flatness Constraint) — Recovery
+  # exception (phase-marker grep)" below for the full three-branch enumeration.
+  #
+  # D3 (deliberate divergence): the trigger is `phases_total -eq 0` ALONE, not the recovered
+  # path's `PHASES_ZERO_ON_SUCCESS` (both-counts-zero) signature above — matching
+  # skill_gate_completion_claim's own Case 3 precondition exactly, so trigger and gate cannot
+  # drift apart. See skill_corroborate_phase_counts's header comment in scripts/skill-base.sh
+  # for the full rationale.
+  # D4 (structural, not a promise): Case 1 of skill_gate_completion_claim (phase accounting
+  # present and incomplete -> always refuse) is UNREACHABLE from this trigger by construction,
+  # since phases_total is already 0 here and Case 1 requires phases_total > 0 — a corroborated
+  # correction never overrides a refusal, it only supplies independent evidence (the plan file's
+  # own headings, never the handoff's own values) where the handoff supplied none.
+  #
+  # skill_corroborate_phase_counts is defined in scripts/skill-base.sh; source it defensively
+  # here (idempotent — redefines the same functions, no side effects beyond recomputing
+  # SKILL_REPO_ROOT) since this Stage 5 code fence has no earlier explicit source line of its
+  # own to depend on.
+  source .claude/scripts/skill-base.sh
+  if [ "$dispatch_status" = "implemented" ] && [ "$phases_total" -eq 0 ]; then
+    corroboration_plan_path="${plan_path:-}"
+    if [ -z "$corroboration_plan_path" ]; then
+      corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+    fi
+    cpc_line=$(skill_corroborate_phase_counts "$task_number" "$corroboration_plan_path" "[orchestrate]" "$handoff_file")
+    IFS=' ' read -r cpc_a cpc_b cpc_c <<< "$cpc_line"
+    phases_completed="${cpc_a#phases_completed=}"
+    phases_total="${cpc_b#phases_total=}"
+    plan_markers_verified="${cpc_c#plan_markers_verified=}"
+  fi
+
   # Drift detection: arithmetic gate (cheap check before expensive inspection fork)
   if [ "$phases_total" -gt 0 ] && [ "$dispatch_status" = "partial" ]; then
     # Use awk for floating-point comparison (bash only does integer math)
@@ -868,11 +903,15 @@ if [ "$have_outcome" = "true" ]; then
       # logic lives in ONE place — skill_gate_completion_claim in skill-base.sh — so base mode,
       # hard mode, and multi-task mode cannot drift apart again. See that function's header for
       # the full case table (phase accounting present-and-complete always allows,
-      # present-and-incomplete always refuses, absent falls back to plan_markers_verified — the
-      # recovered path above sets plan_markers_verified="absent" by default, so an absent phase
-      # count on a recovered "implemented" claim is conservatively refused here, not allowed,
-      # UNLESS the evidence-corroboration block above already flipped it to "true" from an
-      # independent, corroborating plan-heading grep — see "Evidence corroboration" above).
+      # present-and-incomplete always refuses, absent falls back to plan_markers_verified — both
+      # the recovered path above AND the handoff-present branch's own read set
+      # plan_markers_verified="absent" by default, so an absent phase count on either an
+      # "implemented" claim recovered from .return-meta.json or one read directly from a fresh
+      # handoff is conservatively refused here, not allowed, UNLESS one of the two
+      # evidence-corroboration call sites above already flipped it to "true" via
+      # skill_corroborate_phase_counts — the recovered-path corroboration block, or the
+      # handoff-present branch's own "Evidence corroboration (handoff-present branch)" block —
+      # from an independent, corroborating plan-heading read).
       if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
            "$plan_markers_verified" "[orchestrate]"; then
         # `warn`, deliberately NOT `refuse`: the script-side backstop reads the plan file's own
@@ -2174,28 +2213,43 @@ against the plan file's `### Phase N: {name} [STATUS]` heading lines to recover
   two calls return one integer each, a hard ceiling of **≤10 tokens per recovery event**.
 - **Heading lines only**: the patterns anchor on `^### Phase N: `. Checklist items, prose,
   deviation annotations, and every other part of the plan file remain out of scope.
-- **Recovery-only precondition, TWO reachable branches**: this identical two-`grep -c` idiom
-  fires from exactly two places, never elsewhere. (1) The missing/stale-handoff branch of Stage
-  5, after return-meta recovery above has already declined — the original branch documented
-  here. (2) The recovered=true branch above, but ONLY when return-meta recovery's own
+- **Recovery-only precondition, THREE reachable branches**: this identical two-`grep -c` idiom
+  (branches 1-2) or its shared-function equivalent `skill_corroborate_phase_counts` (branch 3,
+  which performs the same two greps inside `scripts/skill-base.sh` rather than inline) fires
+  from exactly three places, never elsewhere. (1) The missing/stale-handoff branch of Stage 5,
+  after return-meta recovery above has already declined — the original branch documented here.
+  (2) The recovered=true branch above, but ONLY when return-meta recovery's own
   `evidence_suspect`/`evidence_reason` fields report `PHASES_ZERO_ON_SUCCESS` for a claimed
   `implemented` status — the evidence-corroboration block that widens this exception's trigger
   to the one scenario branch (1) structurally cannot see, since branch (1) requires
-  `recovered=false`. Neither branch is a routine per-cycle read, and neither is a substitute for
-  reading a handoff that is present and fresh.
-- **Diagnostic in branch (1), evidence-based escalation in branch (2)**: in branch (1) the
-  recovered counts are logged and recorded in the loop guard only — they never synthesize a
+  `recovered=false`. (3) The handoff-present branch (Stage 5's `else`, and its Stage MT-4 step 2
+  mirror), but ONLY when the handoff itself reports `dispatch_status = "implemented"` AND
+  `phases_total -eq 0` — the scenario branches (1) and (2) structurally cannot see, since both
+  require the handoff to be missing, stale, or recovered from `.return-meta.json` rather than
+  read directly. None of the three branches is a routine per-cycle read, and none is a
+  substitute for reading a handoff that is present and fresh with populated accounting — the
+  normal path (fresh handoff, `phases_total > 0` or `plan_markers_verified` already set) never
+  reaches any of them.
+- **Diagnostic in branch (1), evidence-based escalation in branches (2) and (3)**: in branch (1)
+  the recovered counts are logged and recorded in the loop guard only — they never synthesize a
   `dispatch_status` and never drive a status transition, since there is no recoverable outcome
-  to trust. In branch (2) a *corroborating* grep result (heading count matches the recovered
-  phase count exactly) DOES set `plan_markers_verified="true"` and corrects
-  `phases_completed`/`phases_total` for the completion-claim gate to act on — the recovery
-  script's own emitted 0/0 values are left untouched; only this orchestrator-side variable is
-  corrected, from an independent artifact. A non-corroborating result in branch (2) is treated
-  identically to branch (1): diagnostic-only, `plan_markers_verified` stays `absent`.
+  to trust. In branches (2) and (3) a *corroborating* grep result (heading count matches the
+  claimed phase count exactly, or the plan is fully closed) DOES set
+  `plan_markers_verified="true"` and corrects `phases_completed`/`phases_total` for the
+  completion-claim gate to act on — in branch (2) the recovery script's own emitted 0/0 values
+  are left untouched, only this orchestrator-side variable is corrected; in branch (3) the
+  handoff's own null/zero fields are likewise left unwritten, since this branch reads them but
+  never rewrites the file. In both branches the correction is sourced from an independent
+  artifact (the plan file), never from the off-schema value itself. A non-corroborating result
+  in branch (2) or (3) is treated identically to branch (1): diagnostic-only,
+  `plan_markers_verified` stays `absent`.
 
-These two exceptions narrow item 2 inside one branch; they do not relax items 1, 3, or 4, and
-they do not relax item 2 anywhere else. The ~450-tokens-per-cycle flatness invariant is
-unaffected on the normal path, where neither recovery mechanism runs at all.
+These three named branches — (1) missing/stale-handoff recovery, (2) recovered=true
+PHASES_ZERO_ON_SUCCESS corroboration, (3) handoff-present implemented/phases_total=0
+corroboration — are the ONLY places item 2 is narrowed; items 1, 3, and 4 stay unrelaxed
+everywhere, and item 2 stays fully in force outside these three branches. The normal path — a
+fresh handoff with `phases_total > 0` or an already-populated `plan_markers_verified` — reads no
+plan file at all, so the ~450-tokens-per-cycle flatness invariant is unaffected there.
 
 ## Skill-to-Agent Mapping
 

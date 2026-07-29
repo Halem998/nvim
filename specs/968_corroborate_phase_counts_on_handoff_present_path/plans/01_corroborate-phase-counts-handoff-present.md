@@ -317,36 +317,36 @@ leaving a branch uncovered.
 
 ---
 
-### Phase 4: Base single-task Stage 5 wiring and MUST NOT prose edit [NOT STARTED]
+### Phase 4: Base single-task Stage 5 wiring and MUST NOT prose edit [COMPLETED]
 
 **Goal**: Make corroboration reachable from `skill-orchestrate/SKILL.md` Stage 5's
 handoff-present branch, and update the `## MUST NOT (Context Flatness Constraint)` contract in
 the same commit so no stated invariant is left contradicted.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate/SKILL.md` Stage 5, inside the `else` (handoff-present) branch,
+- [x] In `skills/skill-orchestrate/SKILL.md` Stage 5, inside the `else` (handoff-present) branch,
       after `plan_markers_verified` is read from the handoff and before `have_outcome=true`, add
       the new trigger: when `dispatch_status = "implemented"` AND `phases_total -eq 0`, resolve
       the plan path with the same `${plan_path:-}` / `ls -1 "${TASK_DIR}/plans/"*.md | sort -V |
       tail -1` idiom the recovery block uses, then call `skill_corroborate_phase_counts` and
       re-assign `phases_completed` / `phases_total` / `plan_markers_verified` from its output.
-- [ ] Pass `"$handoff_file"` as the optional fourth argument so the log-only
+- [x] Pass `"$handoff_file"` as the optional fourth argument so the log-only
       `validate-handoff.sh` diagnostic fires exactly here and nowhere else.
-- [ ] Add the in-place comment recording D3's total-only precondition as a deliberate divergence
+- [x] Add the in-place comment recording D3's total-only precondition as a deliberate divergence
       from the recovery path's `PHASES_ZERO_ON_SUCCESS` signature, and D4's structural argument
       that Case 1 is unreachable from this trigger.
-- [ ] Edit `## MUST NOT (Context Flatness Constraint)`'s "Recovery exception (phase-marker grep)"
+- [x] Edit `## MUST NOT (Context Flatness Constraint)`'s "Recovery exception (phase-marker grep)"
       to enumerate a THIRD reachable branch (handoff-present + `phases_total == 0` +
       `status == "implemented"`), preserving the same four bounds already stated for the other
       two branches (count-only, heading-lines-only, narrow precondition, evidence-based
       escalation).
-- [ ] Rewrite the closing sentence "they do not relax item 2 anywhere else" so it remains true —
+- [x] Rewrite the closing sentence "they do not relax item 2 anywhere else" so it remains true —
       it must now name the three bounded branches rather than assert a single-branch scope, and
       must keep asserting that the normal path (fresh handoff with populated accounting) runs no
       plan read at all.
-- [ ] Update the `implemented)` case comment in the shared postflight tail, which currently says
+- [x] Update the `implemented)` case comment in the shared postflight tail, which currently says
       corroboration comes only from "the recovered path above".
-- [ ] Durable anchors only in all comment text; no task-number citations.
+- [x] Durable anchors only in all comment text; no task-number citations.
 
 **Timing**: 1.5 hours
 
@@ -377,26 +377,26 @@ above"; each hit is either edited or explicitly confirmed still-accurate before 
 
 ---
 
-### Phase 5: Hard-mode Stage 5 wiring and Read allowlist prose edit [NOT STARTED]
+### Phase 5: Hard-mode Stage 5 wiring and Read allowlist prose edit [COMPLETED]
 
 **Goal**: Apply the identical change to `skill-orchestrate-hard/SKILL.md`, including its own
 `## Tool Constraints (Pure Dispatcher)` Read allowlist invariant.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate-hard/SKILL.md` Stage 5 (inside the marked hard-mode Stage 5
+- [x] In `skills/skill-orchestrate-hard/SKILL.md` Stage 5 (inside the marked hard-mode Stage 5
       block), add the same trigger and `skill_corroborate_phase_counts` call to the
       handoff-present `else` branch, with the `[hard-orchestrate]` log prefix.
-- [ ] Pass the handoff path as the optional fourth argument, matching Phase 4.
-- [ ] Edit "Read allowlist" item 3(c) in `## Tool Constraints (Pure Dispatcher)`: it currently
+- [x] Pass the handoff path as the optional fourth argument, matching Phase 4.
+- [x] Edit "Read allowlist" item 3(c) in `## Tool Constraints (Pure Dispatcher)`: it currently
       says the count-only phase-marker grep "fires only inside the missing/stale-handoff branch".
       Widen it to name the handoff-present corroboration trigger as a second bounded use, keeping
       the ≤10-tokens-per-event ceiling and the grep-only (never full-file-comprehension)
       framing.
-- [ ] Update the hard-mode `implemented)` case comment that currently attributes
+- [x] Update the hard-mode `implemented)` case comment that currently attributes
       `plan_markers_verified="true"` solely to "the evidence-corroboration block above".
-- [ ] Add the same D3/D4 comment as Phase 4, worded for this engine, so a reader of either file
+- [x] Add the same D3/D4 comment as Phase 4, worded for this engine, so a reader of either file
       sees the same rationale.
-- [ ] Durable anchors only; no task-number citations.
+- [x] Durable anchors only; no task-number citations.
 
 **Timing**: 1.25 hours
 
