@@ -516,28 +516,28 @@ migration — record the divergence in-file as deliberate, in the style of the m
 
 ---
 
-### Phase 8: Scratch-deploy-tree verification and engine-agreement audit [NOT STARTED]
+### Phase 8: Scratch-deploy-tree verification and engine-agreement audit [COMPLETED]
 
 **Goal**: Clear the verification hazard before anything reaches the live deploy, and confirm the
 full verification bar is met.
 
 **Tasks**:
-- [ ] Create a disposable scratch copy of the deploy tree (a throwaway clone or git worktree with
+- [x] Create a disposable scratch copy of the deploy tree (a throwaway clone or git worktree with
       its own regenerated `.claude/`) and verify there. The live `.claude/` this session and its
       siblings are being orchestrated through MUST NOT be redeployed as part of this task.
-- [ ] In the scratch tree, extract every fenced bash block from both `SKILL.md` files and run
+- [x] In the scratch tree, extract every fenced bash block from both `SKILL.md` files and run
       `bash -n` over each. Record the block count checked.
-- [ ] In the scratch tree, run the full test set: the new corroboration suite,
+- [x] In the scratch tree, run the full test set: the new corroboration suite,
       `test-phase-heading-patterns.sh`, and `test-orchestrate-triage-classify.sh`.
-- [ ] Run `bash scripts/verify-deploy.sh` in the scratch tree and confirm all gates pass,
+- [x] Run `bash scripts/verify-deploy.sh` in the scratch tree and confirm all gates pass,
       including the task-reference lint gate over the newly edited deliverables.
-- [ ] Engine-agreement audit: grep all three engines for the corroboration call and confirm each
+- [x] Engine-agreement audit: grep all three engines for the corroboration call and confirm each
       calls the shared function with the same precondition shape. Record any remaining divergence
       in-file as deliberate, in the style of the multi-task `blocked`-row divergence — an
       undocumented divergence is a phase failure.
-- [ ] Walk the stated verification bar item by item and record the evidence for each of the three
+- [x] Walk the stated verification bar item by item and record the evidence for each of the three
       required fixtures in the implementation summary.
-- [ ] Confirm no file under `.claude/**` was written by any phase
+- [x] Confirm no file under `.claude/**` was written by any phase
       (`git status --short` shows only `agent-system/extensions/core/**` and `specs/**`).
 
 **Timing**: 1.25 hours
@@ -567,20 +567,20 @@ the three engines and the test suite is either brought into the audit or explain
 
 ## Testing & Validation
 
-- [ ] Handoff reports `implemented` with null phase counts + plan fully closed -> completion
+- [x] Handoff reports `implemented` with null phase counts + plan fully closed -> completion
       ALLOWED, `[UNVERIFIED PHASES CORROBORATED]` banner emitted.
-- [ ] Handoff reports `implemented` with null phase counts + plan partially closed -> completion
+- [x] Handoff reports `implemented` with null phase counts + plan partially closed -> completion
       REFUSED.
-- [ ] Plan has zero conforming phase headings -> completion REFUSED, non-conforming warning
+- [x] Plan has zero conforming phase headings -> completion REFUSED, non-conforming warning
       emitted.
-- [ ] `phases_total > 0` and incomplete -> completion REFUSED (Case 1 untouched).
-- [ ] `[COMPLETED WITH EXCLUSIONS]` counts as closed, matching the shared library's DONE
+- [x] `phases_total > 0` and incomplete -> completion REFUSED (Case 1 untouched).
+- [x] `[COMPLETED WITH EXCLUSIONS]` counts as closed, matching the shared library's DONE
       alternation.
-- [ ] `bash -n` clean on every edited file's embedded bash.
-- [ ] `test-corroborate-phase-counts.sh`, `test-phase-heading-patterns.sh`, and
+- [x] `bash -n` clean on every edited file's embedded bash.
+- [x] `test-corroborate-phase-counts.sh`, `test-phase-heading-patterns.sh`, and
       `test-orchestrate-triage-classify.sh` all exit 0.
-- [ ] `verify-deploy.sh` passes in the scratch tree, including the task-reference lint gate.
-- [ ] The three engines agree, or any remaining divergence is documented in-file as deliberate.
+- [x] `verify-deploy.sh` passes in the scratch tree, including the task-reference lint gate.
+- [x] The three engines agree, or any remaining divergence is documented in-file as deliberate.
 
 ## Artifacts & Outputs
 
