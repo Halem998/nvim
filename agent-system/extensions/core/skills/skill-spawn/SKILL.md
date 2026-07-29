@@ -102,16 +102,18 @@ Determine spawn type and preserve original status before updating.
 padded_num=$(printf "%03d" "$task_number")
 previous_status=$(echo "$task_data" | jq -r '.status')
 
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "blocked" \
-   --arg prev "$previous_status" \
-   --arg sid "$session_id" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     previous_status: $prev,
     last_updated: $ts,
     session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "blocked" \
+  --arg prev "$previous_status" \
+  --arg sid "$session_id"
 ```
 
 ---
@@ -368,16 +370,7 @@ for idx in $(echo "$dependency_order" | jq -r '.[]'); do
     task_slug=$(echo "$task_title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | sed 's/[^a-z0-9_]//g')
 
     # Add to state.json (inherit parent topic if available)
-    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-       --argjson num "$new_task_num" \
-       --arg name "$task_slug" \
-       --arg desc "$task_desc" \
-       --arg effort "$task_effort" \
-       --arg lang "$task_lang" \
-       --argjson deps "$resolved_deps" \
-       --argjson parent "$task_number" \
-       --arg topic "$parent_topic" \
-       --arg report "$report_path" \
+    bash .claude/scripts/state-write.sh \
       '.active_projects += [{
         "project_number": $num,
         "project_name": $name,
@@ -392,13 +385,24 @@ for idx in $(echo "$dependency_order" | jq -r '.[]'); do
         "last_updated": $ts,
         "artifacts": [{"type": "research", "path": $report, "summary": "Spawn analysis from parent task"}]
       } | if .topic == null then del(.topic) else . end]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      --argjson num "$new_task_num" \
+      --arg name "$task_slug" \
+      --arg desc "$task_desc" \
+      --arg effort "$task_effort" \
+      --arg lang "$task_lang" \
+      --argjson deps "$resolved_deps" \
+      --argjson parent "$task_number" \
+      --arg topic "$parent_topic" \
+      --arg report "$report_path"
 done
 
 # Update next_project_number
-jq --argjson next "$((next_num + task_count))" \
+bash .claude/scripts/state-write.sh \
   '.next_project_number = $next' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --argjson next "$((next_num + task_count))"
 ```
 
 ---
@@ -421,11 +425,11 @@ for idx in $(echo "$dependency_order" | jq -r '.[]'); do
 done
 
 # Update parent task dependencies (use "| not" pattern for Issue #1132)
-jq --argjson new_deps "$new_task_nums" \
-   --argjson num "$task_number" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == $num) | .dependencies) =
    ((.active_projects[] | select(.project_number == $num) | .dependencies) // [] + $new_deps)' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --argjson new_deps "$new_task_nums" --argjson num "$task_number"
 ```
 
 ---

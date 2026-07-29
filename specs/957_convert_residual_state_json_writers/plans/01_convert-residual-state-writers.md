@@ -177,15 +177,15 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 4: Spawn and Project-Overview Skills [NOT STARTED]
+### Phase 4: Spawn and Project-Overview Skills [COMPLETED]
 
 **Goal**: Convert the two remaining single-purpose skills.
 
 **Tasks**:
-- [ ] Convert `skills/skill-spawn/SKILL.md` (4 sites). Note this skill creates new task entries — check whether a topic-assignment or artifact-linking step follows any write before folding `--regen-todo`.
-- [ ] Convert `skills/skill-project-overview/SKILL.md` (1 site).
-- [ ] Confirm `$session_id` scope per site.
-- [ ] `bash -n` every extracted bash block per edited file.
+- [x] Convert `skills/skill-spawn/SKILL.md` (4 sites). Note this skill creates new task entries — check whether a topic-assignment or artifact-linking step follows any write before folding `--regen-todo`. *(completed: no-fold on all 4 — Stage 13's write is followed by Stage 14a's `manage-topics.sh set` before the Stage 14b regen, matching the review.md precedent that must NOT fold)*
+- [x] Convert `skills/skill-project-overview/SKILL.md` (1 site). *(completed: this file used a different tmp-staging naming, `specs/state.json.tmp` rather than `specs/tmp/state.json` — same conversion applies; no-fold, followed by `manage-topics.sh set`)*
+- [x] Confirm `$session_id` scope per site. *(completed: skill-spawn has `$session_id` in scope; skill-project-overview self-generates it once near the top of its task-creation flow)*
+- [x] `bash -n` every extracted bash block per edited file. *(completed: clean)*
 
 **Timing**: 0.75 hours
 

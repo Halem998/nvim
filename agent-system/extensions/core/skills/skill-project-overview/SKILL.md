@@ -394,9 +394,7 @@ Show picker via AskUserQuestion:
 Add new task to active_projects. `$topic` is non-empty by construction (mandatory
 topic assignment, no Skip option); the null-guard below is defensive only.
 ```bash
-jq --argjson num "$next_num" \
-   --arg name "$task_slug" \
-   --arg topic "$topic" \
+bash .claude/scripts/state-write.sh \
    '.active_projects += [{
      "project_number": $num,
      "project_name": $name,
@@ -407,7 +405,8 @@ jq --argjson num "$next_num" \
      "topic": (if ($topic == "" | not) then $topic else null end),
      "next_artifact_number": 2
    } | if .topic == null then del(.topic) else . end] | .next_project_number = ($num + 1)' \
-   specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+   --session-id "$session_id" \
+   --argjson num "$next_num" --arg name "$task_slug" --arg topic "$topic"
 ```
 
 After the state.json write, assign topic via manage-topics.sh (non-blocking):
