@@ -36,6 +36,7 @@ Every runtime file falls into exactly one of two classes:
 | `.continuation-loop-guard` / `.continuation-loop-guard.tmp` | `skill-implementer`/`skill-implementer-hard` (their own internal continuation-retry counter, distinct from the orchestrator loop guard above) | Same skills, own resume branch | Removed at postflight (`orchestrator-postflight.sh` Stage 10 for `implement`; also inline at each skill's own postflight) | **Ephemeral** |
 | `.postflight-loop-guard` | `skill-planner`/`skill-researcher`/`skill-implementer`/`skill-reviser`/`skill-spawn` (their own postflight retry marker) | Same skills' own postflight | Removed at postflight (`skill_cleanup()`, `orchestrator-postflight.sh` Stage 10) | **Ephemeral** |
 | `.return-meta-*.json` (suffixed variants, e.g. `.return-meta-orchestrate.json`, `specs/.return-meta-multi-{session_id}.json`) | Distinct from the bare `.return-meta.json` above — see "The bare-vs-suffixed distinction" below | Varies by variant. **`specs/.return-meta-multi-{session_id}.json` has no reader anywhere in the source store today** — it is written for collision/audit hygiene only; a future reader-adder must add the read-time `session_id` verification check together with the reader, not separately | Varies | **Ephemeral** |
+| `specs/.sessions/{session_id}.json` | `task-lock.sh session-register`/`session-heartbeat` | **None in the source store today** — the in-flight session registry is produced but not yet consumed; a future reader-adder must add its own freshness/ownership checks together with the reader, not separately (mirrors the `specs/.return-meta-multi-{session_id}.json` row above) | `task-lock.sh session-release` at session end; `task-lock.sh session-reap` after `SESSION_REGISTRY_REAP_MIN` (or sooner via the pid-liveness-shortened `dead-pid` band, floored by `SESSION_REGISTRY_DEAD_PID_MIN`) | **Ephemeral** |
 
 **Not classified here (reviewed and deliberately excluded)**: `.stray-handoff-{timestamp}.json`.
 Both orchestrate skills' stray-handoff sweep (`docs/architecture/handoff-schema.md`'s "Handoff
@@ -102,8 +103,12 @@ mechanism-level justification for the settled split, independent of (and consist
 There is no automatic way for the source store to deliver a repo-root `.gitignore` contribution —
 `copy_root_files()` deploys `root-files/` into the consumer's `.claude/` directory, not the repo
 root (see `context/guides/loader-reference.md`), so a `specs/*/` pattern placed there would
-resolve to `.claude/specs/*/` and silently match nothing. Add the following block to the
-consumer repo's **own root** `/.gitignore` **by hand, once**:
+resolve to `.claude/specs/*/` and silently match nothing. This is exactly why
+`specs/.sessions/` (the in-flight session registry's storage directory — see the Class Table row
+above) is covered ONLY by the consumer repo's own root `/.gitignore`, never by
+`root-files/.gitignore`: a `specs/`-rooted pattern placed in the latter would deploy to
+`.claude/.gitignore` and resolve to `.claude/specs/.sessions/`, matching nothing real. Add the
+following block to the consumer repo's **own root** `/.gitignore` **by hand, once**:
 
 ```gitignore
 # Ephemeral orchestrator runtime state: per-dispatch scratch, mutex directories, and loop
@@ -121,6 +126,7 @@ consumer repo's **own root** `/.gitignore` **by hand, once**:
 **/.drift-inspection.json
 **/.return-meta-*.json
 **/.events.lock
+**/.sessions/
 ```
 
 Run `check-runtime-file-tracking.sh` afterward to confirm coverage (see "Verification" below).

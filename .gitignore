@@ -38,6 +38,7 @@
 **/.drift-inspection.json
 **/.return-meta-*.json
 **/.events.lock
+**/.sessions/
 # Note: specs/events.jsonl is deliberately NOT ignored — it is an append-only durable
 # store (see .claude/context/formats/events-format.md). Do not add it here.
 .syncprotect

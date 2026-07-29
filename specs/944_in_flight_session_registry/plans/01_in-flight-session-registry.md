@@ -239,31 +239,31 @@ otherwise. Extend, never fork.
 
 ---
 
-### Phase 3: Gitignore Coverage and Runtime-File Classification [NOT STARTED]
+### Phase 3: Gitignore Coverage and Runtime-File Classification [COMPLETED]
 
 **Goal**: Make `specs/.sessions/` ignored, classified, and mechanically verified — at the location
 that actually governs `specs/**` tracking.
 
 **Tasks**:
-- [ ] Read the CURRENT state of all three targets before editing — the repo root `/.gitignore`,
+- [x] Read the CURRENT state of all three targets before editing — the repo root `/.gitignore`,
       `scripts/check-runtime-file-tracking.sh`, and
       `context/standards/orchestrator-runtime-files.md` were all modified by the just-completed
       session-scoping work; do not edit from a remembered version.
-- [ ] Add `**/.sessions/` to the existing "Ephemeral orchestrator runtime state" block in the repo
+- [x] Add `**/.sessions/` to the existing "Ephemeral orchestrator runtime state" block in the repo
       root `/.gitignore`, matching that block's existing `**/`-prefixed style and placement. This is
       the ONE sanctioned exception to the source-store rule for this task.
-- [ ] Add a Class Table row to `orchestrator-runtime-files.md` for
+- [x] Add a Class Table row to `orchestrator-runtime-files.md` for
       `specs/.sessions/{session_id}.json`: Writer = `task-lock.sh session-register`/`session-heartbeat`;
       Reader = **none in the source store today** (state it as plainly as the
       `.return-meta-multi-{session_id}.json` row already does); Cleanup site =
       `task-lock.sh session-release` at session end, `session-reap` after
       `SESSION_REGISTRY_REAP_MIN`; Disposition = **Ephemeral**.
-- [ ] Add the same `**/.sessions/` pattern to that file's "Consumer Repo Setup" gitignore code block
+- [x] Add the same `**/.sessions/` pattern to that file's "Consumer Repo Setup" gitignore code block
       (the block consumer repos hand-copy).
-- [ ] Add `"specs/.sessions/sess_0000000000_probe.json"` to `EPHEMERAL_PROBES` in
+- [x] Add `"specs/.sessions/sess_0000000000_probe.json"` to `EPHEMERAL_PROBES` in
       `check-runtime-file-tracking.sh` (Check A / Check B).
-- [ ] Add `'/\.sessions/[^/]+\.json$'` to `b_patterns` in the same script.
-- [ ] Record the reasoned exclusion for `root-files/.gitignore` in the plan's execution notes and,
+- [x] Add `'/\.sessions/[^/]+\.json$'` to `b_patterns` in the same script.
+- [x] Record the reasoned exclusion for `root-files/.gitignore` in the plan's execution notes and,
       briefly, in `orchestrator-runtime-files.md`'s existing "Consumer Repo Setup" prose if it does
       not already say so: that file deploys to `.claude/.gitignore`, so a `specs/`-rooted pattern
       placed there resolves to `.claude/specs/` and matches nothing. It is deliberately NOT edited.
@@ -280,6 +280,9 @@ that actually governs `specs/**` tracking.
 observing the matching line comes from the repo root file; then confirm
 `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` passes Check A for the
 new probe.
+
+**Empirical confirmation (recorded at implementation time)**: exactly three files edited (`/.gitignore`, `orchestrator-runtime-files.md`, `check-runtime-file-tracking.sh`); `root-files/.gitignore` was NOT touched, per the reasoned exclusion above. `git check-ignore -v specs/.sessions/sess_0000000000_probe.json` names `.gitignore:41:**/.sessions/`
+(the repo root file), and `check-runtime-file-tracking.sh` passes all three checks including the new `.sessions` probe under Check A.
 
 **Files to modify**:
 - `/.gitignore` (repo root) - one pattern added to the existing ephemeral block
