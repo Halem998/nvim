@@ -1,0 +1,30 @@
+{
+  "phase": 7,
+  "phase_name": "Verification-bar sweep",
+  "started_at": "2026-07-29T21:27:00Z",
+  "last_updated": "2026-07-29T21:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Demonstrate all six verification-bar criteria with evidence; run repo lint gates; write implementation summary",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+        "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/summaries/01_redeploy-checkpoint-baseline-summary.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "7.1",
+      "description": "Criterion 1 evidence-gathering run",
+      "type": "altered",
+      "reason": "Discovered during this phase's own criterion-1 evidence run that the Phase 3/Phase 6 documented capture pattern `X=$(cmd | grep ... | sort -u); EXIT=$?` incorrectly captures sort -u's exit code, not verify-deploy.sh's own, because a pipeline inside a command substitution runs in a subshell whose PIPESTATUS does not propagate to the parent shell. Fixed by splitting into two steps in both skill-orchestrate/SKILL.md (Stage MT-3 step 7's Fire and post-success bullets) and skill-orchestrate-hard/SKILL.md (the Transcribed summary's prose): capture the script's own exit code first as the sole command in its substitution, then filter the already-captured text as a separate step. Verified empirically both that the bug existed (PRE_EXIT/POST_EXIT read as 0 despite verify-deploy.sh actually exiting 1) and that the fix resolves it (PRE_EXIT/POST_EXIT correctly read 1).",
+      "annotation": "recorded in Phase 7 checklist Criterion 1 evidence note"
+    }
+  ],
+  "handoff_count": 0
+}

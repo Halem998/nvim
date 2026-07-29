@@ -1386,8 +1386,11 @@ critical_paths` expression `orchestrate-batch-admit.sh` performs, intersect agai
 accumulated `cycle_modified_files` using the directory-prefix overlap predicate in
 `context/patterns/file-footprint-overlap.md`, and subtract already-deployed critical paths
 (`deployed_critical_paths`, the idempotence guard). If the remainder is non-empty: immediately
-before redeploying, capture a pre-redeploy baseline (`verify-deploy.sh --findings --quiet`,
-filtered to `^FINDING ` lines and `sort -u`'d), then run, in order:
+before redeploying, capture a pre-redeploy baseline (`verify-deploy.sh`'s own exit code captured
+FIRST, as the sole command in its command substitution, THEN its `--findings --quiet` output
+filtered to `^FINDING ` lines and `sort -u`'d as a separate step — see
+`skill-orchestrate/SKILL.md`'s Stage MT-3 step 7 Fire bullet for why the exit code must not be
+read off a piped substitution), then run, in order:
 
 ```bash
 bash .claude/scripts/deploy-headless.sh

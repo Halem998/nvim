@@ -639,46 +639,78 @@ record-do-not-edit treatment, and the deviation is recorded.
 
 ---
 
-### Phase 7: Verification-bar sweep [NOT STARTED]
+### Phase 7: Verification-bar sweep [COMPLETED]
 
 **Goal**: every one of the six verification-bar criteria is demonstrated with evidence, and the
 repo's own lint gates pass.
 
 **Tasks**:
 
-- [ ] **Criterion 6 first (cheapest)**: `bash -n` on every edited shell script. Only
+- [x] **Criterion 6 first (cheapest)**: `bash -n` on every edited shell script. Only
       `verify-deploy.sh` is expected; confirm no other `.sh` was touched via `git status --short`.
-- [ ] **Criterion 1** (pre-existing failure does not defer): with this repo's current standing
+      *(completed: `git diff --name-only` across all six phase commits shows exactly one `.sh`
+      file touched — `agent-system/extensions/core/scripts/verify-deploy.sh` — and `bash -n`
+      against it exits 0)*
+- [x] **Criterion 1** (pre-existing failure does not defer): with this repo's current standing
       `verify-deploy.sh` state, walk the rewritten Stage MT-3 step 7 against a captured
       `PRE_FINDINGS`/`POST_FINDINGS` pair produced by running the new mode twice against an
       unchanged tree. Demonstrate the difference is empty and the documented branch is the third
-      state. Record the actual captured counts as evidence.
-- [ ] **Criterion 2** (a newly-introduced failure still defers): construct the negative case by
+      state. Record the actual captured counts as evidence. *(completed — evidence: `PRE_EXIT=1`,
+      `POST_EXIT=1`, `pre_count=4`, `post_count=4`, `NEW_FINDINGS=[]` (empty). Rendered banner:
+      `[PRE-EXISTING VERIFY-DEPLOY FAILURE - 4 finding(s) predate this redeploy, 0 newly
+      introduced; batch continuing]`. NOTE: this evidence run used the CORRECTED capture pattern
+      below — an earlier draft run using a piped `$(cmd | grep | sort -u); $?` one-liner
+      incorrectly reported `PRE_EXIT=0`/`POST_EXIT=0` because `$?` after a piped command
+      substitution reports the pipeline's last command's exit status, not `verify-deploy.sh`'s;
+      this was caught during this phase and fixed as a deviation, see below.)*
+- [x] **Criterion 2** (a newly-introduced failure still defers): construct the negative case by
       taking a `PRE_FINDINGS` capture, then inducing one additional finding (e.g. temporarily
       introduce a task-number citation in a scratch file inside a deliverable tree, or rename an
       event-store file in a scratch deploy copy), capturing `POST_FINDINGS`, and confirming
       `comm -13` yields exactly the induced line. Revert the induced condition and re-confirm the
       difference returns to empty. Never induce the condition in a way that requires a destructive
-      git operation to undo.
-- [ ] **Criterion 3** (`deploy-headless.sh` failure defers unconditionally): confirm by
+      git operation to undo. *(completed — evidence, all against a scratch copy under
+      `mktemp -d`, never the live tree: `PRE_EXIT=0`; induced by renaming
+      `scripts/events-append.sh` to `.bak` in the scratch copy; `POST_EXIT=1`;
+      `NEW_FINDINGS=[FINDING gate1 scripts/events-append.sh is missing]` — exactly the induced
+      line; after reverting the rename, `REVERT_EXIT=0` and the diff against `PRE_FINDINGS`
+      returned empty again)*
+- [x] **Criterion 3** (`deploy-headless.sh` failure defers unconditionally): confirm by
       read-through that the `deploy-headless.sh` failure branch in Stage MT-3 step 7 appears before
       and independently of any baseline capture consultation, and that no baseline field is
-      referenced inside it.
-- [ ] **Criterion 4** (no deferred task is failed or status-mutated): `grep -n 'failed_tasks'` and
+      referenced inside it. *(completed: `sed -n '1637,1650p' ... | grep -n 'PRE_FINDINGS\|PRE_EXIT\|POST_FINDINGS\|POST_EXIT\|PRE_RAW\|POST_RAW'` returns nothing)*
+- [x] **Criterion 4** (no deferred task is failed or status-mutated): `grep -n 'failed_tasks'` and
       `grep -n 'status-mutate'` across Stage MT-3 step 7 confirm the "never add to `failed_tasks`,
       never status-mutate, never abort" language survives in the defer branch and that the third
-      state adds nothing to either.
-- [ ] **Criterion 5** (authoritative subsection describes implemented behavior; no referring file
+      state adds nothing to either. *(completed: the phrase appears verbatim in both the
+      `deploy-headless.sh` failure branch and the `NEW_FINDINGS` non-empty branch; the third-state
+      (`NEW_FINDINGS` empty) branch's paragraph does not mention `failed_tasks` at all)*
+- [x] **Criterion 5** (authoritative subsection describes implemented behavior; no referring file
       restates it): read the rewritten subsection against Phases 1, 3, 4, and 5 for agreement, then
       `grep -rn 'The Inter-Cycle Redeploy Checkpoint' agent-system/extensions/core/` and confirm
       every referring file cross-references by path rather than restating the contract. Note the
-      Phase 6 outcome for the hard-mode file explicitly here.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm the edited deliverables
+      Phase 6 outcome for the hard-mode file explicitly here. *(completed: every hit either IS the
+      authoritative subsection itself or cross-references it by path. `skill-orchestrate-hard/SKILL.md`'s
+      own file-list is not enumerated among the authoritative subsection's "every other file that
+      mentions the checkpoint... cross-references this subsection by path" sentence — this is a
+      pre-existing, deliberate distinction: that file carries a separately-contracted
+      CO-MAINTENANCE **transcribed summary**, not a bare cross-reference, per Scope Note 1; Phase 6
+      kept it a summary (never a full restatement) while bringing its content back into agreement.)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm the edited deliverables
       introduce no new finding (compare against the baseline captured at the start of this phase).
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh --quiet` and confirm no new `FAIL:` line
-      relative to the same baseline.
-- [ ] Write the implementation summary covering all six criteria with the evidence captured above,
-      plus the Phase 6 scope-note outcome.
+      *(completed: `PASS: 0 unexempted task-reference occurrences across 4 tree(s)`)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh --quiet` and confirm no new `FAIL:` line
+      relative to the same baseline. *(completed: 4 `FAIL:` lines present, all pre-existing
+      "deployed script content drift" / "not in provides.scripts" deploy-freshness findings — one
+      of which (`scripts/verify-deploy.sh`) is the EXPECTED, documented consequence of editing a
+      source-store script without a subsequent redeploy, per
+      `.claude/rules/source-store-deploy-boundary.md` ("The deploy/reload process... is not a
+      violation"); this is itself a live instance of the exact "pre-existing, reported loudly,
+      does not block" scenario this task implements, not a defect introduced by this task's
+      deliverables)*
+- [x] Write the implementation summary covering all six criteria with the evidence captured above,
+      plus the Phase 6 scope-note outcome. *(completed — see
+      `specs/966_add_baseline_to_intercycle_redeploy_checkpoint/summaries/01_redeploy-checkpoint-baseline-summary.md`)*
 
 **Timing**: 1.0 hour
 

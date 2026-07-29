@@ -1627,9 +1627,16 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      and its label. Immediately before running `deploy-headless.sh`, capture the pre-redeploy
      baseline:
      ```bash
-     PRE_FINDINGS=$(bash .claude/scripts/verify-deploy.sh --findings --quiet | grep '^FINDING ' | sort -u)
+     PRE_RAW=$(bash .claude/scripts/verify-deploy.sh --findings --quiet)
      PRE_EXIT=$?
+     PRE_FINDINGS=$(printf '%s\n' "$PRE_RAW" | grep '^FINDING ' | sort -u)
      ```
+     (capturing `verify-deploy.sh`'s own exit code requires it to be the LAST command in its
+     command substitution — `$?` after a piped substitution like
+     `x=$(cmd | grep ... | sort -u)` reports `sort -u`'s exit status, not `cmd`'s, since the
+     pipeline runs inside the substitution's own subshell and does not update the parent shell's
+     `PIPESTATUS`. The filtering is therefore a separate second step over the already-captured
+     text.)
      Then run, in order, from the repo root:
      ```bash
      bash .claude/scripts/deploy-headless.sh
@@ -1650,8 +1657,9 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    - **On `deploy-headless.sh` success**, capture the post-redeploy baseline at the same call site
      the plain `verify-deploy.sh` call occupied before this baseline mechanism existed:
      ```bash
-     POST_FINDINGS=$(bash .claude/scripts/verify-deploy.sh --findings --quiet | grep '^FINDING ' | sort -u)
+     POST_RAW=$(bash .claude/scripts/verify-deploy.sh --findings --quiet)
      POST_EXIT=$?
+     POST_FINDINGS=$(printf '%s\n' "$POST_RAW" | grep '^FINDING ' | sort -u)
      ```
    - **Success path (`POST_EXIT == 0`)**: unchanged — record the matched paths into
      `mt_state_file.deployed_critical_paths`, log the deployed artifact count and a `verify-deploy`
