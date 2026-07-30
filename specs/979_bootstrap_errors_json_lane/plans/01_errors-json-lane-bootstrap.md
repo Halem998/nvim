@@ -1,7 +1,7 @@
 # Implementation Plan: Task #979
 
 - **Task**: 979 - Bootstrap the errors.json lane for real: one schema, validated append script, reconciled docs
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: None (see "Non-Dependency Note" below regarding tasks 951/952/953)
 - **Research Inputs**: specs/979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md

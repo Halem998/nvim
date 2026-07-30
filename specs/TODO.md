@@ -6,12 +6,12 @@ next_project_number: 990
 
 ## Task Order
 
-*Updated 2026-07-29. Generated from state.json dependency graph.*
+*Updated 2026-07-30. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 948,951,959,963,964,969,971,973,979,980,981,982,983,987,988 | -- | agent-system, extensions, orchestration-concurrency, ... |
+| 1 | 948,951,959,963,964,969,971,973,980,981,982,983,987,988 | -- | agent-system, extensions, orchestration-concurrency, ... |
 | 2 | 952,960,972,974,984,985,986 | 951,959,969,971,980 | agent-system, status-marker-lifecycle |
 | 3 | 953,961,989 | 952,960,972,974 | agent-system |
 | 4 | 962 | 961 | agent-system |
@@ -36,7 +36,6 @@ next_project_number: 990
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a (see above)
 973 [NOT STARTED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
-979 [IMPLEMENTING] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
 987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
@@ -371,7 +370,7 @@ SOURCE-STORE RULE (binding): deploy machinery edits target lua/neotex/plugins/ai
 ---
 
 ### 979. Bootstrap the errors.json lane for real: one schema, validated append script, reconciled docs
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 976
