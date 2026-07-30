@@ -46,7 +46,7 @@ next_project_number: 990
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
     └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
-973 [PLANNING] — Give reconcile-task-status.sh a defined, safe recovery behavior w
+973 [PLANNED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
@@ -554,11 +554,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 973. Make reconcile-task-status.sh recover from a malformed handoff status instead of refusing promotion
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [973_recover_reconcile_from_malformed_handoff_status/reports/01_malformed-handoff-recovery-design.md]
+- **Plan**: [973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md]
 
 **Description**: Give reconcile-task-status.sh a defined, safe recovery behavior when .orchestrator-handoff.json carries a status outside the normative vocabulary, instead of silently refusing promotion and wedging the task.
 

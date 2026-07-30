@@ -1,21 +1,34 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "Root cause confirmed at reconcile-task-status.sh:186-195: handoff_permits_promotion() permits on a missing handoff but refuses on any off-vocabulary status via strict equality, wedging the task. Recommended fix: treat off-vocabulary status as equivalent to missing (permit, deferring to artifact evidence) with a mandatory loud diagnostic; keep refusing on-vocabulary non-matching statuses unchanged. Also found a second call site (partial branch, lines 433-442) needing the same consolidation.",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 4-phase plan giving reconcile-task-status.sh a three-way handoff-status classification: exact match permits, on-enum terminal mismatch refuses unchanged, and any value carrying no terminal claim (off-vocabulary, empty, unparseable, or in_progress) permits with a mandatory loud diagnostic naming the offending value and the six legal values. Phase 2 consolidates the partial branch's inline duplicate onto the shared helper; Phase 3 adds a fixture-driven regression suite asserting the parity bar; Phase 4 runs the full gate and rule-compliance sweep.",
   "artifacts": [
-    {"type": "report", "path": "specs/973_recover_reconcile_from_malformed_handoff_status/reports/01_malformed-handoff-recovery-design.md"}
+    {
+      "type": "plan",
+      "path": "specs/973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md",
+      "summary": "4-phase implementation plan: helper rewrite with recorded rationale, partial-branch consolidation, regression suite, final gate"
+    }
   ],
   "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md"
+  ],
   "decisions_made": [
-    "Off-vocabulary handoff status treated as equivalent to missing handoff (permit + loud diagnostic), not refused and not synonym-normalized",
-    "orchestrate-recover-outcome.sh is out of scope -- it serves a different call site (missing/stale handoff) with a deliberately narrower policy",
-    "partial branch's inline duplicate check (lines 433-442) must be consolidated into handoff_permits_promotion for consistency"
+    "Adopted the research report's core design: off-vocabulary status treated as equivalent to a missing handoff (permit, deferring to artifact evidence) with a mandatory loud diagnostic",
+    "REFINEMENT beyond the report: in_progress stays in the permit bucket but gets DISTINCT diagnostic wording, never off-schema/malformed framing, because system-defect-discrimination.md's OFF_SCHEMA_STATUS row states verbatim that in_progress is a valid non-terminal marker and not a violation",
+    "On-enum terminal mismatches (blocked/partial/failed/cross-phase success) continue to refuse exactly as today -- no relaxation",
+    "Empty/absent .status and unparseable handoff JSON land in the permit default, matching the missing-handoff branch",
+    "partial branch's inline duplicate consolidated onto handoff_permits_promotion; its on-enum refusals gain a logged line plus an idempotent record_refused_promotion call",
+    "Verification requires a throwaway sandbox deploy tree because deploy-root-guard.sh hard-fails when the script runs from the source store; never test by copying into the repo's real .claude/ tree",
+    "File-disjoint from the sibling discrimination-contract task: system-defect-discrimination.md is read for alignment, never edited"
   ],
   "dead_ends": [
     "Rejected refuse-with-diagnostic-only: preserves the wedge, only adds visibility",
-    "Rejected synonym-normalization table: incomplete by construction, risks false-positive promotion"
+    "Rejected synonym-normalization table: incomplete by construction, launders malformed writes, risks false-positive promotion",
+    "Rejected routing the fix through orchestrate-recover-outcome.sh: different call site, different reader, own documented policy against permissive off-schema fallbacks"
   ]
 }
