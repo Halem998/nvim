@@ -504,13 +504,13 @@ absorbing it.
 
 ---
 
-### Phase 7: Convert the one inline jq writer [NOT STARTED]
+### Phase 7: Convert the one inline jq writer [COMPLETED]
 
 **Goal**: Eliminate the sole live `.errors += [...]` inline write so `errors-append.sh` is the only
 writer, satisfying the verification bar's grep sweep.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/skills/skill-planner/SKILL.md`, the "jq Parse Failure"
+- [x] In `agent-system/extensions/core/skills/skill-planner/SKILL.md`, the "jq Parse Failure"
       recovery block: replace the `jq '.errors += [{...}]' specs/errors.json > specs/tmp/errors.json
       && mv` pipeline with an equivalent single `scripts/errors-append.sh append` invocation
       carrying the same payload — `--type jq_parse_failure`, `--severity medium`,
@@ -518,10 +518,18 @@ writer, satisfying the verification bar's grep sweep.
       `--command /plan`, `--task "$task_number"`, `--checkpoint GATE_OUT`,
       `--suggested-action "Use two-step jq pattern from jq-escaping-workarounds.md"`,
       `--auto-recoverable true`.
-- [ ] Leave step 2 ("Retry with two-step pattern") and the surrounding "Subagent Timeout" and "Git
+- [x] Leave step 2 ("Retry with two-step pattern") and the surrounding "Subagent Timeout" and "Git
       Commit Failure" subsections untouched.
-- [ ] Re-run the verification-bar grep across the whole core extension to confirm zero remaining
-      inline writers.
+- [x] Re-run the verification-bar grep across the whole core extension to confirm zero remaining
+      inline writers. *(deviation: altered — after this phase's edit, `grep -rn '\.errors *+='
+      agent-system/extensions/core/` returns exactly ONE hit, not zero: the internal
+      `.errors += [$rec]` expression inside `errors-append.sh` itself (the sanctioned writer,
+      written in Phase 2). The plan's own Goal line for this phase already names
+      `errors-append.sh` as "the only writer," and the task's outer VERIFICATION BAR is phrased
+      "returns zero hits outside errors-append.sh" — this phase's own verification bullets below
+      inherited the unqualified wording from the Overview's "Definition of done" without that
+      qualifier. Treated as a plan wording gap, not a real defect: zero hits OUTSIDE
+      errors-append.sh is satisfied and is what actually matters.)*
 
 **Timing**: 0.5 hours
 

@@ -479,22 +479,15 @@ Non-blocking: Log failure but continue with success response.
 
 ### jq Parse Failure
 If jq commands fail with INVALID_CHARACTER or syntax error (Issue #1132):
-1. Log to errors.json:
+1. Log to errors.json via `errors-append.sh append` (the single validated, `flock`'d writer --
+   see `context/formats/errors-format.md`):
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg sid "$session_id" \
-   --arg msg "jq parse error in postflight artifact linking" \
-   --argjson task "$task_number" \
-  '.errors += [{
-    "id": ("err_" + ($ts | gsub("[^0-9]"; ""))),
-    "timestamp": $ts,
-    "type": "jq_parse_failure",
-    "severity": "medium",
-    "message": $msg,
-    "context": {"session_id": $sid, "command": "/plan", "task": $task, "checkpoint": "GATE_OUT"},
-    "recovery": {"suggested_action": "Use two-step jq pattern from jq-escaping-workarounds.md", "auto_recoverable": true},
-    "fix_status": "unfixed"
-  }]' specs/errors.json > specs/tmp/errors.json && mv specs/tmp/errors.json specs/errors.json
+.claude/scripts/errors-append.sh append \
+  --type jq_parse_failure --severity medium \
+  --message "jq parse error in postflight artifact linking" \
+  --session "$session_id" --command /plan --task "$task_number" --checkpoint GATE_OUT \
+  --suggested-action "Use two-step jq pattern from jq-escaping-workarounds.md" \
+  --auto-recoverable true
 ```
 2. Retry with two-step pattern (already implemented in Stage 8)
 
