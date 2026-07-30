@@ -39,6 +39,16 @@
 #   would silently fast-forward every recovered task past the research or planning it was
 #   recovered to redo.
 #
+# Off-enum handoff status recovery:
+#   handoff_permits_promotion() below treats a handoff `.status` that falls outside both the
+#   on-enum terminal set (researched|planned|implemented|partial|failed|blocked) and the
+#   recognized non-terminal marker `in_progress` as equivalent to a MISSING handoff -- it
+#   permits promotion rather than refusing it, because a value making no interpretable terminal
+#   claim carries no less evidence than no claim at all. Every branch reaching this guard has
+#   already found the phase's success artifact on disk, so this is never promotion on faith
+#   alone. See that function's own docstring for the full three-way contract and the two
+#   rejected alternatives (refuse-with-diagnostic-only; a known-bad-synonym table).
+#
 # Exit codes:
 #   0 - Success or no-op (nothing to reconcile, or reconciliation applied)
 #   1 - Validation error (bad arguments or state.json missing)
@@ -179,10 +189,45 @@ link_artifact() {
 }
 
 # --- Helper: does a handoff permit promotion to this phase's success status? ---
-# Generalizes the contract the `partial` branch below already implements: if the handoff file is
-# absent, permit promotion (preserves pre-existing behavior for tasks with no handoff); if
-# present and its `.status` matches the expected success value for this phase, permit; otherwise
-# refuse. Returns 0 (permit) or 1 (refuse) via exit status.
+# Three-way classification of the handoff's `.status` against this phase's expected success
+# value, generalizing the contract the `partial` branch below already implements for the
+# missing-handoff case:
+#   1. Handoff file absent -> permit (0). Unchanged from prior behavior.
+#   2. Handoff present, `.status` exact-matches expected_status -> permit (0). Unchanged.
+#   3. Handoff present, `.status` is an on-enum terminal value from a DIFFERENT phase's success
+#      (or blocked/partial/failed) -> refuse (1), unchanged. This is genuine negative evidence:
+#      the phase legitimately claims a different terminal outcome than the one being checked for.
+#   4. Handoff present, `.status` is `in_progress`, off-vocabulary, empty, or the file is
+#      unparseable JSON -> permit (0). None of these make a terminal claim at all, so they are
+#      treated exactly like a missing handoff -- the same code path as case 1, not merely an
+#      equivalent outcome. This mirrors artifact_newer_than_last_update's "signal absent ->
+#      permit" philosophy (see that helper's docstring below): the absence of an interpretable
+#      terminal claim is not evidence of failure. Refusing here wedges the task forever, because
+#      record_refused_promotion (below) writes no recoverable state for an off-enum value and
+#      every subsequent reconcile pass hits the identical refusal.
+#
+# `in_progress` gets DISTINCT diagnostic wording from the off-vocabulary case, never the
+# off-schema/malformed framing: it is a recognized non-terminal marker in
+# context/formats/return-metadata-file.md's normative vocabulary, not a schema violation. See
+# context/patterns/system-defect-discrimination.md's OFF_SCHEMA_STATUS row, which states verbatim
+# that `in_progress` "is a valid non-terminal marker, not a violation" -- labeling it malformed
+# here would invent a second, competing notion of "malformed status" and contradict that sibling
+# contract.
+#
+# Do NOT re-tighten case 4 back to a bare refusal, and do NOT add a known-bad-synonym
+# normalization table. Both were considered and rejected:
+#   - refuse-with-diagnostic-only: preserves the original wedge exactly (record_refused_promotion
+#     writes no state for an off-enum value, so every re-run hits the identical refusal) -- only
+#     adds visibility, never fixes the underlying bug.
+#   - a synonym table mapping known-bad values (e.g. "success", "research_complete") to their
+#     intended enum equivalents: unmaintainable (an open-ended, ever-growing list that must be
+#     updated for every new writer bug), launders malformed writes into looking legitimate, and
+#     risks false-positive promotion for a synonym that was never actually vetted against the
+#     writer that produced it.
+#
+# Both diagnostics go to stderr, unconditionally (not gated on --dry-run), using the
+# `[reconcile] WARNING:` prefix already used elsewhere in this file. Returns 0 (permit) or 1
+# (refuse) via exit status.
 handoff_permits_promotion() {
   local expected_status="$1"
   local handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
@@ -191,7 +236,36 @@ handoff_permits_promotion() {
   fi
   local handoff_status
   handoff_status=$(jq -r '.status // ""' "$handoff_file" 2>/dev/null)
-  [[ "$handoff_status" == "$expected_status" ]]
+
+  if [[ "$handoff_status" == "$expected_status" ]]; then
+    return 0
+  fi
+
+  case "$handoff_status" in
+    researched|planned|implemented|partial|failed|blocked)
+      # On-enum terminal value that does not match this phase's expected success status --
+      # genuine negative evidence. Refuse, unchanged from prior behavior.
+      return 1
+      ;;
+    in_progress)
+      # Recognized non-terminal marker: makes no terminal claim, so it is treated as if the
+      # handoff were absent. Diagnostic wording is deliberately distinct from the off-vocabulary
+      # case below -- never "off-schema" or "malformed" for this recognized value.
+      echo "[reconcile] WARNING: task $task_number: handoff status='in_progress' is a recognized non-terminal marker carrying no terminal claim -- treating the handoff as if absent and permitting promotion to '$expected_status'." >&2
+      return 0
+      ;;
+    *)
+      # Off-vocabulary, including empty (.status absent or unparseable JSON): makes no
+      # interpretable terminal claim, so it is treated exactly like a missing handoff. See the
+      # do-not-re-tighten note above for why this is the deliberate, chosen behavior.
+      local displayed_status="$handoff_status"
+      if [[ -z "$displayed_status" ]]; then
+        displayed_status="(empty -- handoff present but .status is missing or the file is unparseable)"
+      fi
+      echo "[reconcile] WARNING: task $task_number: handoff status='$displayed_status' is off-schema (not one of the six legal values researched|planned|implemented|partial|failed|blocked, and not in_progress) -- treating the handoff as if absent and permitting promotion to '$expected_status'." >&2
+      return 0
+      ;;
+  esac
 }
 
 # --- Helper: read the handoff's status field (empty string if no handoff file) ---
@@ -429,25 +503,28 @@ case "$current_status" in
       exit 0
     fi
 
-    # Only promote partial->completed if the handoff indicates "implemented" status
-    handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
-    if [[ -f "$handoff_file" ]]; then
-      handoff_status=$(jq -r '.status // ""' "$handoff_file" 2>/dev/null)
-      if [[ "$handoff_status" != "implemented" ]]; then
-        if [[ "$DRY_RUN" == "true" ]]; then
-          echo "[reconcile] Task $task_number: status=partial, handoff status=$handoff_status (not 'implemented') — no-op"
-        fi
-        exit 0
-      fi
+    # Handoff-aware promotion guard (see handoff_permits_promotion above), consolidated onto the
+    # shared helper so this reader gets the same three-way classification as the other five
+    # call sites instead of a bare `!= "implemented"` fallthrough. Behavior change, deliberate:
+    # an on-enum non-"implemented" status (e.g. "blocked") previously fell through this inline
+    # check silently (a no-op logged only under --dry-run); it now logs unconditionally and
+    # calls record_refused_promotion, matching the `implementing` branch's refusal shape exactly.
+    # record_refused_promotion writing "partial" on an already-`partial` task is an idempotent
+    # no-op transition, so this is safe to call unconditionally.
+    if ! handoff_permits_promotion "implemented"; then
+      handoff_status=$(handoff_status_value)
+      echo "[reconcile] Task $task_number: status=partial, artifact exists but handoff status=$handoff_status — refusing promotion"
+      record_refused_promotion "$handoff_status"
+      exit 0
     fi
 
     summary_basename=$(basename "$summary_file")
     if [[ "$DRY_RUN" == "true" ]]; then
-      echo "[reconcile] Task $task_number: status=partial, found summary $summary_basename with implemented handoff"
+      echo "[reconcile] Task $task_number: status=partial, found summary $summary_basename, handoff permits promotion"
       echo "[reconcile] Would promote: partial -> completed via postflight implement"
       link_artifact "$summary_file" "summary" "Implementation summary: $summary_basename"
     else
-      echo "[reconcile] Task $task_number: status=partial but summary exists ($summary_basename) with implemented handoff — replaying postflight"
+      echo "[reconcile] Task $task_number: status=partial but summary exists ($summary_basename), handoff permits promotion — replaying postflight"
       link_artifact "$summary_file" "summary" "Implementation summary: $summary_basename"
       reconcile_rc=0
       "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "implement" "$session_id" --phase-check=refuse || reconcile_rc=$?

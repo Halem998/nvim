@@ -1,7 +1,7 @@
 # Implementation Plan: Task #973
 
 - **Task**: 973 - Make reconcile-task-status.sh recover from a malformed handoff status instead of refusing promotion
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/973_recover_reconcile_from_malformed_handoff_status/reports/01_malformed-handoff-recovery-design.md
@@ -117,38 +117,38 @@ Phases within the same wave can execute in parallel. This plan is a deliberate l
 `partial` consolidation must target the already-rewritten helper, and the test suite asserts the
 final semantics of both.
 
-### Phase 1: Rewrite `handoff_permits_promotion()` with the three-way split [NOT STARTED]
+### Phase 1: Rewrite `handoff_permits_promotion()` with the three-way split [COMPLETED]
 
 **Goal**: Replace the bare `[[ "$handoff_status" == "$expected_status" ]]` fallthrough with an
 explicit three-way classification, and record the rationale plus both rejected alternatives in the
 script.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/reconcile-task-status.sh` lines 181-203 and confirm
-      the current helper text matches the report's verbatim quote before editing.
-- [ ] Rewrite the body so that, after the existing missing-file early return and the `jq` read:
+- [x] Read `agent-system/extensions/core/scripts/reconcile-task-status.sh` lines 181-203 and confirm
+      the current helper text matches the report's verbatim quote before editing. *(completed: confirmed byte-for-byte before editing)*
+- [x] Rewrite the body so that, after the existing missing-file early return and the `jq` read:
       (a) `status == expected_status` returns 0, unchanged; (b) a `case` arm matching exactly
       `researched|planned|implemented|partial|failed|blocked` returns 1 — genuine terminal negative
       evidence, refusing exactly as today; (c) an arm matching `in_progress` returns 0 after
       emitting a diagnostic that names it as a **recognized non-terminal marker carrying no
       terminal claim**, explicitly NOT as an off-schema or malformed value; (d) the `*` default
       returns 0 after emitting a diagnostic naming the offending value verbatim AND the full
-      six-value legal set, and stating that the handoff is being treated as if absent.
-- [ ] Route both diagnostics to `stderr` with the existing `[reconcile] WARNING:` prefix used
-      elsewhere in this file, and include the task number.
-- [ ] Ensure the empty-string case (handoff present but `.status` absent, or the file unparseable so
+      six-value legal set, and stating that the handoff is being treated as if absent. *(completed)*
+- [x] Route both diagnostics to `stderr` with the existing `[reconcile] WARNING:` prefix used
+      elsewhere in this file, and include the task number. *(completed)*
+- [x] Ensure the empty-string case (handoff present but `.status` absent, or the file unparseable so
       `jq` yields nothing) lands in the `*` default and therefore permits. Word that diagnostic so
-      an empty value is legible rather than rendering as a bare `''` with no explanation.
-- [ ] Update the helper's docstring (lines 181-185) to describe the three-way contract instead of
+      an empty value is legible rather than rendering as a bare `''` with no explanation. *(completed)*
+- [x] Update the helper's docstring (lines 181-185) to describe the three-way contract instead of
       the current "otherwise refuse" sentence, and cite the `artifact_newer_than_last_update`
-      docstring's already-named "signal absent -> permit" philosophy as the governing principle.
-- [ ] Add the do-not-re-tighten note naming both rejected alternatives (refuse-with-diagnostic-only;
-      known-bad synonym table) and why each was rejected.
-- [ ] Add a short note to the file's top-of-file header block recording that an off-enum handoff
+      docstring's already-named "signal absent -> permit" philosophy as the governing principle. *(completed)*
+- [x] Add the do-not-re-tighten note naming both rejected alternatives (refuse-with-diagnostic-only;
+      known-bad synonym table) and why each was rejected. *(completed)*
+- [x] Add a short note to the file's top-of-file header block recording that an off-enum handoff
       status is treated as equivalent to a missing handoff, so a reader skimming the header sees the
-      contract without reading the helper.
-- [ ] Leave `handoff_status_value()` unchanged — it already returns the raw string, and the
-      malformed case no longer reaches the callers' refusal lines.
+      contract without reading the helper. *(completed)*
+- [x] Leave `handoff_status_value()` unchanged — it already returns the raw string, and the
+      malformed case no longer reaches the callers' refusal lines. *(completed: left unmodified)*
 
 **Timing**: 45 minutes
 
@@ -179,24 +179,24 @@ report.
 
 ---
 
-### Phase 2: Consolidate the `partial` branch onto the shared helper [NOT STARTED]
+### Phase 2: Consolidate the `partial` branch onto the shared helper [COMPLETED]
 
 **Goal**: Remove the inline duplicate handoff-status check in the `partial` branch so the new
 semantics apply at every reader, not five of six.
 
 **Tasks**:
-- [ ] Replace the inline block (`handoff_file=...` / `[[ -f ]]` / `jq` / `!= "implemented"` →
-      `exit 0`, lines ~433-442) with `if ! handoff_permits_promotion "implemented"; then ... fi`.
-- [ ] Inside the refusal branch, follow the same triad the other five sites already use:
+- [x] Replace the inline block (`handoff_file=...` / `[[ -f ]]` / `jq` / `!= "implemented"` →
+      `exit 0`, lines ~433-442) with `if ! handoff_permits_promotion "implemented"; then ... fi`. *(completed)*
+- [x] Inside the refusal branch, follow the same triad the other five sites already use:
       `handoff_status=$(handoff_status_value)`, a `[reconcile] Task N: status=partial, ... handoff
       status=$handoff_status — refusing promotion` line, `record_refused_promotion
-      "$handoff_status"`, then `exit 0`.
-- [ ] Emit the refusal line unconditionally (not only under `--dry-run`, which is the current
-      under-instrumented behavior), matching the other five sites.
-- [ ] Confirm no other reader of `.orchestrator-handoff.json`'s `.status` remains in the file.
-- [ ] Add a one-line comment noting the intended behavior change for on-enum non-`implemented`
+      "$handoff_status"`, then `exit 0`. *(completed)*
+- [x] Emit the refusal line unconditionally (not only under `--dry-run`, which is the current
+      under-instrumented behavior), matching the other five sites. *(completed)*
+- [x] Confirm no other reader of `.orchestrator-handoff.json`'s `.status` remains in the file. *(completed: verified via grep — only handoff_permits_promotion/handoff_status_value read .status)*
+- [x] Add a one-line comment noting the intended behavior change for on-enum non-`implemented`
       values (previously a silent no-op, now a logged refusal plus an idempotent
-      `record_refused_promotion` call) so the diff's intent is legible.
+      `record_refused_promotion` call) so the diff's intent is legible. *(completed)*
 
 **Timing**: 30 minutes
 
@@ -223,26 +223,30 @@ record the discovery in the summary rather than silently leaving it.
 
 ---
 
-### Phase 3: Add the fixture-driven regression suite [NOT STARTED]
+### Phase 3: Add the fixture-driven regression suite [COMPLETED]
 
 **Goal**: Leave a mechanical regression guard that asserts the chosen semantics, including the
 task's explicit parity bar (off-vocabulary at least as permissive as handoff-deleted).
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh`,
       modelled structurally on `scripts/tests/test-phase-heading-patterns.sh`
       (`pass()`/`fail()`/`info()` helpers, `PASSED`/`FAILED` counters, `mktemp -d` + `trap cleanup
-      EXIT`, exit 0 all-pass / 1 any-fail / 2 environment error).
-- [ ] Implement a sandbox-deploy harness: `mktemp -d`, create `$SANDBOX/.claude/scripts/`, copy the
-      resolved `scripts/` tree into it (deploy-tree-first then source-store-fallback candidate
-      list, same idiom as the model test), and write a minimal
-      `$SANDBOX/specs/state.json` containing one synthetic task with a `project_name`, a `status`,
-      and a `last_updated`. This is what satisfies `deploy-root-guard.sh`.
-- [ ] Drive every case as `bash "$SANDBOX/.claude/scripts/reconcile-task-status.sh" <num> <sess>
+      EXIT`, exit 0 all-pass / 1 any-fail / 2 environment error). *(completed)*
+- [x] Implement a sandbox-deploy harness: `mktemp -d`, create `$SANDBOX/.claude/scripts/`, copy the
+      resolved `scripts/` tree into it, and write a minimal `$SANDBOX/specs/state.json` containing
+      one synthetic task with a `project_name`, a `status`, and a `last_updated`. This is what
+      satisfies `deploy-root-guard.sh`. *(deviation: altered — candidate order is source-store-first /
+      deploy-tree-fallback, inverted from the model test's deploy-tree-first order. Discovered
+      during implementation: `.claude/scripts/reconcile-task-status.sh` is a stale pre-fix mirror
+      until the next redeploy, so a deploy-tree-first order silently validated the OLD code and
+      made cases 4-11 fail against a script this task never touched. Source-store-first makes the
+      suite test the actual edit. See the test file's header comment for the full rationale.)*
+- [x] Drive every case as `bash "$SANDBOX/.claude/scripts/reconcile-task-status.sh" <num> <sess>
       --dry-run`, capturing stdout and stderr separately, and asserting on the emitted text
       (`Would promote` vs `refusing promotion`) rather than on exit status, which is 0 on both
-      paths by design.
-- [ ] Cases, each with the phase's success artifact present on disk:
+      paths by design. *(completed)*
+- [x] Cases, each with the phase's success artifact present on disk:
       (1) handoff `.status` == expected → permits;
       (2) on-enum terminal mismatch (`blocked`) → refuses;
       (3) another phase's success value (`implemented` where `researched` expected) → refuses;
@@ -257,10 +261,11 @@ task's explicit parity bar (off-vocabulary at least as permissive as handoff-del
       (10) the `partial` branch with an off-vocabulary status → permits, exercising the Phase 2
           consolidation;
       (11) the `partial` branch with `blocked` → refuses AND emits the refusal line (regression
-          guard for the removed dry-run-only silence).
-- [ ] Keep the suite free of task-number citations per
+          guard for the removed dry-run-only silence). *(completed: all 11 cases implemented, 14
+      assertions total, all PASS)*
+- [x] Keep the suite free of task-number citations per
       `rules/no-task-references-in-deliverables.md` — it lives outside `specs/**`. Reference the
-      behavior by name, not by task number.
+      behavior by name, not by task number. *(completed)*
 
 **Timing**: 60 minutes
 
@@ -284,26 +289,36 @@ file rather than deleting it silently.
 
 ---
 
-### Phase 4: Final gate and rule-compliance sweep [NOT STARTED]
+### Phase 4: Final gate and rule-compliance sweep [COMPLETED]
 
 **Goal**: Run the full gate set and confirm the task's own stated verification bar plus the two
 binding repository rules.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh` and
-      record the pass count in the summary.
-- [ ] Run the sibling suites in `scripts/tests/` that could plausibly be affected, and record which
-      were run and their outcomes.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` (or the deployed
-      equivalent) and confirm no new findings from the two touched files.
-- [ ] Confirm `git status --short` shows changes ONLY under `agent-system/extensions/core/` and
-      `specs/973_*/` — no `.claude/**` path may appear.
-- [ ] Confirm the task's stated bar is met by direct demonstration, quoting the actual emitted
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh` and
+      record the pass count in the summary. *(completed: 14 passed, 0 failed)*
+- [x] Run the sibling suites in `scripts/tests/` that could plausibly be affected, and record which
+      were run and their outcomes. *(completed: test-state-write-concurrency.sh — 9 passed, 0
+      failed; test-state-write-regen-timing.sh — 3 passed, 0 failed)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` (or the deployed
+      equivalent) and confirm no new findings from the two touched files. *(completed: repo-wide
+      scan reports 0 unexempted occurrences across all 4 tree(s))*
+- [x] Confirm `git status --short` shows changes ONLY under `agent-system/extensions/core/` and
+      `specs/973_*/` — no `.claude/**` path may appear. *(completed: `.claude/` is gitignored
+      (`.gitignore:6`) so it structurally cannot appear; this task's OWN changes are confined to
+      `agent-system/extensions/core/scripts/reconcile-task-status.sh` (modified),
+      `agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh` (new), and
+      `specs/973_recover_reconcile_from_malformed_handoff_status/` (plan + return-meta). This is a
+      shared working tree with several other tasks' agents running concurrently in the same
+      session — `git status --short` also shows their in-flight, unrelated changes under other
+      `specs/{N}_*/` directories and a handful of other `agent-system/**` files; those are
+      out of this task's scope and were left untouched.)*
+- [x] Confirm the task's stated bar is met by direct demonstration, quoting the actual emitted
       stderr in the summary: an off-vocabulary handoff status produces the chosen behavior, it is
       at least as permissive as the same directory with the handoff removed, and the diagnostic
-      names both the offending value and the legal set.
-- [ ] Write the implementation summary under `specs/973_*/summaries/01_*.md`, explicitly recording
-      the `in_progress` refinement as a departure from the research report's proposed code and why.
+      names both the offending value and the legal set. *(completed: see summary)*
+- [x] Write the implementation summary under `specs/973_*/summaries/01_*.md`, explicitly recording
+      the `in_progress` refinement as a departure from the research report's proposed code and why. *(completed)*
 
 **Timing**: 30 minutes
 
@@ -322,15 +337,18 @@ binding repository rules.
 
 ## Testing & Validation
 
-- [ ] `bash -n` and `shellcheck` clean (no new findings) on `reconcile-task-status.sh`.
-- [ ] All eleven regression cases pass.
-- [ ] Parity bar demonstrated: off-vocabulary status behaves identically to handoff-deleted.
-- [ ] Diagnostic text names the offending value and all six legal values.
-- [ ] `in_progress` diagnostic is distinct and does not call the value off-schema or malformed.
-- [ ] On-enum terminal mismatches still refuse — no relaxation.
-- [ ] Suite proven non-vacuous by reverting the fix in a scratch copy.
-- [ ] No task-number citations in either touched file (both are outside `specs/**`).
-- [ ] No file under `.claude/**` modified.
+- [x] `bash -n` clean on `reconcile-task-status.sh`. *(shellcheck is not installed in this
+      environment — `which shellcheck` resolved nothing; this bullet is honestly partial: syntax
+      validated via `bash -n`, but no shellcheck baseline/diff was possible. Recorded as a
+      follow-up, not silently skipped.)*
+- [x] All eleven regression cases pass.
+- [x] Parity bar demonstrated: off-vocabulary status behaves identically to handoff-deleted.
+- [x] Diagnostic text names the offending value and all six legal values.
+- [x] `in_progress` diagnostic is distinct and does not call the value off-schema or malformed.
+- [x] On-enum terminal mismatches still refuse — no relaxation.
+- [x] Suite proven non-vacuous by reverting the fix in a scratch copy.
+- [x] No task-number citations in either touched file (both are outside `specs/**`).
+- [x] No file under `.claude/**` modified.
 
 ## Artifacts & Outputs
 

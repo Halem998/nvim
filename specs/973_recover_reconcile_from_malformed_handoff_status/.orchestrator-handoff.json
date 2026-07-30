@@ -1,34 +1,41 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 4-phase plan giving reconcile-task-status.sh a three-way handoff-status classification: exact match permits, on-enum terminal mismatch refuses unchanged, and any value carrying no terminal claim (off-vocabulary, empty, unparseable, or in_progress) permits with a mandatory loud diagnostic naming the offending value and the six legal values. Phase 2 consolidates the partial branch's inline duplicate onto the shared helper; Phase 3 adds a fixture-driven regression suite asserting the parity bar; Phase 4 runs the full gate and rule-compliance sweep.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Rewrote handoff_permits_promotion() in reconcile-task-status.sh with an explicit three-way classification: exact match permits, an on-enum terminal mismatch refuses unchanged, and any value carrying no terminal claim (off-vocabulary, empty .status, unparseable JSON, or in_progress) permits with a mandatory loud diagnostic naming the offending value and the six legal values -- treating it exactly like a missing handoff. in_progress gets distinct diagnostic wording, never off-schema/malformed framing, per alignment with system-defect-discrimination.md's OFF_SCHEMA_STATUS row. Consolidated the partial branch's inline duplicate onto the same helper. Added an 11-case, 14-assertion fixture-driven regression suite in a throwaway sandbox deploy tree, proven non-vacuous by reverting the fix in a scratch copy (4 passed / 10 failed against the old code). All 4 plan phases COMPLETED.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/973_recover_reconcile_from_malformed_handoff_status/summaries/01_malformed-handoff-recovery-summary.md",
+      "summary": "Implementation summary covering the three-way classification rewrite, partial-branch consolidation, the regression suite, and the direct parity demonstration"
+    },
     {
       "type": "plan",
       "path": "specs/973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md",
-      "summary": "4-phase implementation plan: helper rewrite with recorded rationale, partial-branch consolidation, regression suite, final gate"
+      "summary": "4-phase plan, all phases COMPLETED, all task checklists checked off with completion/deviation annotations"
     }
   ],
   "blockers": [],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
-  "next_action_hint": "implement",
+  "next_action_hint": "complete",
   "files_modified": [
-    "specs/973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md"
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh",
+    "specs/973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md",
+    "specs/973_recover_reconcile_from_malformed_handoff_status/summaries/01_malformed-handoff-recovery-summary.md"
   ],
   "decisions_made": [
-    "Adopted the research report's core design: off-vocabulary status treated as equivalent to a missing handoff (permit, deferring to artifact evidence) with a mandatory loud diagnostic",
-    "REFINEMENT beyond the report: in_progress stays in the permit bucket but gets DISTINCT diagnostic wording, never off-schema/malformed framing, because system-defect-discrimination.md's OFF_SCHEMA_STATUS row states verbatim that in_progress is a valid non-terminal marker and not a violation",
-    "On-enum terminal mismatches (blocked/partial/failed/cross-phase success) continue to refuse exactly as today -- no relaxation",
-    "Empty/absent .status and unparseable handoff JSON land in the permit default, matching the missing-handoff branch",
-    "partial branch's inline duplicate consolidated onto handoff_permits_promotion; its on-enum refusals gain a logged line plus an idempotent record_refused_promotion call",
-    "Verification requires a throwaway sandbox deploy tree because deploy-root-guard.sh hard-fails when the script runs from the source store; never test by copying into the repo's real .claude/ tree",
-    "File-disjoint from the sibling discrimination-contract task: system-defect-discrimination.md is read for alignment, never edited"
+    "Off-vocabulary, empty, and unparseable-JSON handoff statuses are treated as equivalent to a MISSING handoff -- same permit code path -- because they make no interpretable terminal claim",
+    "in_progress permits but with DISTINCT diagnostic wording, never off-schema/malformed framing, per system-defect-discrimination.md's OFF_SCHEMA_STATUS row",
+    "On-enum terminal mismatches (blocked/partial/failed/cross-phase success) continue to refuse exactly as before -- no relaxation",
+    "partial branch's inline duplicate consolidated onto handoff_permits_promotion; its refusal line now fires unconditionally (not dry-run-only) and calls record_refused_promotion, matching the other five call sites",
+    "Both rejected alternatives (refuse-with-diagnostic-only; known-bad-synonym table) recorded directly in the script's own comments, not just this summary, per the task's do-not-re-tighten concern",
+    "Regression suite sandbox candidate order flipped to source-store-first / deploy-tree-fallback (deviation from the plan's deploy-tree-first spec) -- discovered mid-implementation that .claude/scripts/ is a stale gitignored mirror until the next redeploy, so deploy-tree-first silently validated the OLD pre-fix code"
   ],
   "dead_ends": [
     "Rejected refuse-with-diagnostic-only: preserves the wedge, only adds visibility",
-    "Rejected synonym-normalization table: incomplete by construction, launders malformed writes, risks false-positive promotion",
-    "Rejected routing the fix through orchestrate-recover-outcome.sh: different call site, different reader, own documented policy against permissive off-schema fallbacks"
+    "Rejected synonym-normalization table: unmaintainable, launders malformed writes, risks false-positive promotion",
+    "Rejected routing through orchestrate-recover-outcome.sh: different call site, different reader, own documented policy"
   ]
 }

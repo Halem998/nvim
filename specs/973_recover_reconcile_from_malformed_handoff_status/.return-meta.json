@@ -1,24 +1,44 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
   "session_id": "sess_1785373759_72035f_973",
   "delegation_depth": 2,
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
   "task_number": 973,
   "task_name": "recover_reconcile_from_malformed_handoff_status",
   "task_type": "meta",
-  "summary": "Created a 4-phase implementation plan for giving reconcile-task-status.sh a defined, safe recovery behavior when .orchestrator-handoff.json carries a status outside the normative vocabulary. Design: three-way classification in handoff_permits_promotion() -- exact match permits, on-enum terminal mismatch refuses unchanged, and any value carrying no terminal claim permits with a mandatory loud diagnostic. Phases cover the helper rewrite with recorded rationale, the partial-branch call-site consolidation, a fixture-driven regression suite, and a full gate plus rule-compliance sweep.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md",
-      "summary": "4-phase implementation plan: helper rewrite with recorded rationale, partial-branch consolidation, 11-case regression suite, final gate and rule sweep"
+      "type": "summary",
+      "path": "specs/973_recover_reconcile_from_malformed_handoff_status/summaries/01_malformed-handoff-recovery-summary.md",
+      "summary": "Implementation summary covering the three-way classification rewrite, partial-branch consolidation, the regression suite, and the direct parity demonstration"
     }
   ],
-  "phase_count": 4,
-  "estimated_hours": 2.5,
-  "dependency_waves": [[1], [2], [3], [4]],
-  "blockers": [],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 973 to execute the plan"
+  "completion_data": {
+    "completion_summary": "Rewrote handoff_permits_promotion() in reconcile-task-status.sh with a three-way classification (exact match permits; on-enum terminal mismatch refuses unchanged; off-vocabulary/empty/unparseable/in_progress permits with a mandatory diagnostic), consolidated the partial branch's inline duplicate onto the shared helper, and added an 11-case, 14-assertion fixture-driven regression suite proven non-vacuous by reverting the fix in a scratch copy."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh",
+    "specs/973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md",
+    "specs/973_recover_reconcile_from_malformed_handoff_status/summaries/01_malformed-handoff-recovery-summary.md",
+    "specs/973_recover_reconcile_from_malformed_handoff_status/.orchestrator-handoff.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Test suites regression-guarding a JUST-EDITED source-store script (agent-system/extensions/core/scripts/**) must resolve the script under test SOURCE-STORE-FIRST, not deploy-tree-first. .claude/scripts/ is a gitignored mirror refreshed only on explicit redeploy, so a deploy-tree-first candidate order (the idiom used by tests guarding STABLE, already-deployed shared libraries like phase-heading-patterns.sh) silently validates stale pre-fix code whenever the deployed copy lags the source-store edit. Symptom: a freshly-written regression suite fails most of its new cases on first run, with a stack trace/output that matches the OLD code's behavior rather than the new. Fix: swap SCRIPTS_SRC_CANDIDATES order to prefer agent-system/extensions/core/scripts before .claude/scripts, and document why in the test's header comment so a future reader doesn't 'fix' it back.",
+      "category": "PATTERN",
+      "source_artifact": "specs/973_recover_reconcile_from_malformed_handoff_status/summaries/01_malformed-handoff-recovery-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-root-guard", "sandbox test harness", "source-store-first", "stale deploy mirror", "reconcile-task-status"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1785373759_72035f_973",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }
