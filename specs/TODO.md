@@ -1,5 +1,5 @@
 ---
-next_project_number: 990
+next_project_number: 994
 ---
 
 # TODO
@@ -11,12 +11,12 @@ next_project_number: 990
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 951,959,964,969,971,973,980,981,987 | -- | agent-system, extensions, state-write-coverage |
-| 2 | 952,960,972,974 | 951,959,971 | agent-system |
-| 3 | 953,961,963,982,988 | 952,960,964,972,974 | agent-system, orchestration-concurrency |
-| 4 | 948,962,989 | 961,972,982 | agent-system |
-| 5 | 983,984 | 953,962,964,969,981,982 | agent-system, status-marker-lifecycle |
-| 6 | 985,986 | 952,963,973,980,981,982,983,984,987,988 | agent-system |
+| 1 | 951,959,972,974,980,981,990,991,992 | -- | agent-system, extensions |
+| 2 | 952,960,963,982,993 | 951,959,972,974,990,992 | agent-system, orchestration-concurrency |
+| 3 | 948,953,961,988,989 | 952,960,972,982 | agent-system |
+| 4 | 962 | 961 | agent-system |
+| 5 | 983,984 | 953,962,981,982 | agent-system, status-marker-lifecycle |
+| 6 | 985,986 | 952,963,980,981,982,983,984,988 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -35,25 +35,21 @@ next_project_number: 990
         └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
     └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
       └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-964 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-  └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
-  └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv (see above)
-971 [PLANNED] — Loosen the plan-checklist mark-completed instruction in the imple
-  └─ 972 [NOT STARTED] — Add a plan-checklist mark-completed contract to agent-system/exte
-    └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-      └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
-    └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
-  └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
-    └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
-973 [PLANNED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
-  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
+972 [NOT STARTED] — Add a plan-checklist mark-completed contract to agent-system/exte
+  └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+    └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
+    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+  └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
+974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
+  └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-987 [PLANNED] — Bring context loading back within its own declared budgets and gi
-  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-  └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+990 [NOT STARTED] — Migrate all 19 extensions' index-entries.json to the reconciled i
+  └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
+991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
+992 [NOT STARTED] — Trim the 7 over-length EXTENSION.md files flagged by the prerequi
+  └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis (see above)
 948 [NOT STARTED] — Add a Stage 7 / final-metadata section to agent-system/extensions
 
 ### Extensions
@@ -68,11 +64,47 @@ next_project_number: 990
 
 984 [NOT STARTED] — Give specs/state.json a machine-enforced schema and make the stat
 
-### State Write Coverage
-
-969 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-
 ## Tasks
+
+### 993. Promote SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 987, Task 990, Task 992
+
+**Description**: Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequisite task in agent-system/extensions/core/scripts/check-extension-docs.sh, governing Rules T and U) from its advisory default to hard, mirroring the promotion sequence ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE already went through once their own remediation landed. DEPENDS ON the index_entries_schema_migration and extension_md_slim_down follow-on tasks both landing clean first -- flipping the default before either lands would turn a passing doc-lint gate into a standing hard failure for every extension either task was meant to fix. WORK: change the default in the SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-advisory}" line to hard, and update its preceding comment block to record that source-store remediation is now complete (mirroring INDEX_TRUTH_GATE_MODE's own comment). VERIFICATION BAR: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh exits 0 with the gate hard (no SCHEMA_CONFORMANCE_GATE_MODE override needed at invocation time, since hard is now the baked-in default). SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 992. Trim the 7 over-length EXTENSION.md files per the slim standard
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 987
+
+**Description**: Trim the 7 over-length EXTENSION.md files flagged by the prerequisite task's Rule U (check-extension-docs.sh, check_extension_md_length): literature (169L), email (106L), lean (73L), cslib (71L), present (64L), nix (62L), core (62L) -- observed counts at the time Rule U was added; re-measure at implementation time since these may have grown further. WORK: for each of the 7, follow extension-slim-standard.md's own Migration Template to move detailed content (usage examples, architecture docs, conversion tables, migration guides, troubleshooting, prerequisites, MCP tool integration, mode descriptions) into context/project/{ext}/{domain,patterns,tools}/ files, leaving only the four required sections (Header, Routing Table, Command List, Context Pointers) in EXTENSION.md, each under the required per-section line budgets. Add an index-entries.json entry (conforming to the reconciled schema landed by the prerequisite task -- coordinate with the sibling index_entries_schema_migration follow-on task) for every new context file created. VERIFICATION BAR: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh reports zero Rule U advisories. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 991. Break the meta task_types catch-all and derive tier algorithmically
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 987
+
+**Description**: Break the meta task_types catch-all. WORK: (1) give the ~24 core/index-entries.json entries whose ONLY load_when hook is task_types:["meta"] real agents/commands hooks, grouped thematically per the prerequisite task's research report section 5; (2) trim the wider 123-entry task_types:["meta"] set so meta-builder-agent's resolved context stops including everything tagged meta regardless of relevance; (3) derive the tier classification algorithmically inside validate-context-budgets.sh from load_when shape (always==true -> Tier 1, non-empty agents -> Tier 2, non-empty commands/task_types only -> Tier 3) instead of querying the never-populated authored tier field (0 of 470 entries anywhere carry it, confirmed by the prerequisite task's research); (4) fix the 2 load_when.agents values across all extensions that name agents not present in this deploy. VERIFICATION BAR: bash .claude/scripts/validate-context-budgets.sh reports zero per-agent budget violations (or each remaining violation carries a documented, deliberate cap change); its 'entries with tier field' check passes via the new derivation logic rather than the authored field. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 990. Migrate all 19 extensions index-entries.json to the reconciled schema shape
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 987
+
+**Description**: Migrate all 19 extensions' index-entries.json to the reconciled index.schema.json shape landed by the prerequisite task. WORK: (1) fold each of the 166 description-bearing entries' (10 extensions: cslib, email, filetypes, latex, lean, nix, python, typst, web, z3) unique detail into summary rather than a blind delete -- spot-checked samples show description usually carries more detail than summary, so this is editorial, not mechanical; (2) rename tags to keywords (same 10 extensions); (3) migrate load_when.languages to load_when.task_types 1:1 using the prerequisite task's research report section 4's per-extension value map (languages->task_types renames for cslib, formal, latex, lean, nix, python, typst, web, z3, founder, present, nvim -- nvim's task_type string is 'neovim', not 'nvim', a pre-existing mismatch to preserve, not invent-around); (4) delete the two filetypes entries' load_when.skills arrays each containing only ["deck"]; (5) delete literature's (6 entries) and memory's (8 entries) load_when.skills arrays -- both extensions' entries already carry non-empty commands (/literature, /learn) on the same entries, so skills is fully redundant. CORRECTION TO THE PREREQUISITE TASK'S OWN SCOPE HYPOTHESIS: its Phase 2 predicted Rule T would fire for 14 of 19 extensions; the actual observed count when Rule T was implemented was 17 of 19 (only epidemiology and slidev are clean) -- the extra 3 (core, literature, memory) come from the load_when.skills violation the 14-count did not enumerate. Treat 17 as the true scope, not 14. VERIFICATION BAR (inherited from the prerequisite task, not met there): REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh reports zero Rule T advisories across all 19 extensions; grep -rn 'load_when.languages\|load_when.skills' across agent-system/extensions/*/index-entries.json returns zero declarations. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 989. Agent contract normalization: shared critical-requirements include, one frontmatter standard
 - **Status**: [NOT STARTED]
@@ -132,12 +164,13 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 987. Context budget enforcement: demote always-load bloat, break the meta catch-all, one index schema
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 978
 - **Research**: [987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md]
 - **Plan**: [987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md]
+- **Summary**: [987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md]
 
 **Description**: Bring context loading back within its own declared budgets and give index entries ONE schema authority. DEPENDS ON the index-validator repair task (truthful line counts are the precondition for any budget work).
 
@@ -555,12 +588,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 973. Make reconcile-task-status.sh recover from a malformed handoff status instead of refusing promotion
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [973_recover_reconcile_from_malformed_handoff_status/reports/01_malformed-handoff-recovery-design.md]
 - **Plan**: [973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md]
+- **Summary**: [973_recover_reconcile_from_malformed_handoff_status/summaries/01_malformed-handoff-recovery-summary.md]
 
 **Description**: Give reconcile-task-status.sh a defined, safe recovery behavior when .orchestrator-handoff.json carries a status outside the normative vocabulary, instead of silently refusing promotion and wedging the task.
 
@@ -633,7 +667,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 971. Loosen implementation agents' plan-checklist match off the literal **Task {P}.{N}**: prefix
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -699,7 +733,7 @@ DELIVERABLE RULE: deliverables outside `specs/**` must not cite task numbers; us
 ---
 
 ### 969. Extend state-write.sh to cover archive and vault state files and convert residual hand-rolled sites
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: state-write-coverage
 - **Dependencies**: Task 967
@@ -905,7 +939,7 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 964. Repair /refresh orphan detection so live system and session processes are never selected
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

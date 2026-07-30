@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 990,
+  "next_project_number": 994,
   "active_projects": [
     {
       "project_number": 970,
@@ -2796,7 +2796,7 @@
     {
       "project_number": 964,
       "project_name": "repair_refresh_orphan_detection",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Repair /refresh orphan detection so live system and session processes are never selected",
@@ -2823,9 +2823,10 @@
         }
       ],
       "created": "2026-07-29T14:57:12Z",
-      "last_updated": "2026-07-30T01:34:30Z",
+      "last_updated": "2026-07-30T02:09:47Z",
       "session_id": "sess_1785373759_72035f_964",
-      "next_artifact_number": null
+      "next_artifact_number": null,
+      "completion_summary": "Replaced /refresh's orphan-process matcher (two-stage ps-aux-regex-then-ancestor-walk) with a single atomic ps -eo snapshot and four independently-testable exclusion predicates, closing the false positives that misidentified a system OOM daemon, live sleep inhibitors, a memory-tracker service, and the script's own subshells as orphans (10/10 confirmed false positives on this machine, now 0). Shipped the required regression suite (RED-proven against the pre-fix script), made the hourly systemd timer non-destructive by default, fixed the pre-exclusion reclaim figure, added a genuine --dry-run preview path, and reconciled every doc site that claimed a safety property the code did not implement. All seven acceptance criteria verified PASS."
     },
     {
       "project_number": 965,
@@ -3012,7 +3013,7 @@
     {
       "project_number": 969,
       "project_name": "extend_state_write_to_archive_and_vault_targets",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "state-write-coverage",
       "title": "Extend state-write.sh to cover archive and vault state files and convert residual hand-rolled sites",
@@ -3037,18 +3038,19 @@
         {
           "path": "specs/969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md",
           "type": "plan",
-          "summary": "8-phase plan in 4 waves extending state-write.sh with --state-file and --init, converting 11 hand-rolled archive/vault write sites across 8 source-store files, correcting task-lock.md's stale residual note, and closing the verification bar against an enumerated exclusion list."
+          "summary": ""
         }
       ],
       "created": "2026-07-29T16:26:39Z",
-      "last_updated": "2026-07-30T01:34:38Z",
+      "last_updated": "2026-07-30T02:09:54Z",
       "session_id": "sess_1785373759_72035f_969",
-      "next_artifact_number": 1
+      "next_artifact_number": 1,
+      "completion_summary": "Extended state-write.sh with --state-file and --init, converted every hand-rolled archive/vault state.json write site across commands/task.md, commands/todo.md, skill-todo/SKILL.md, archive-task.sh, and vault-operation.sh (including two former unprotected live-state writes in vault-operation.sh), corrected task-lock.md's stale residual-surface note, and closed the verification bar against a re-measured five-item exclusion list. All three state-write test suites pass (18/18 cases)."
     },
     {
       "project_number": 971,
       "project_name": "loosen_implementation_agent_checklist_match",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "title": "Loosen implementation agents' plan-checklist match off the literal **Task {P}.{N}**: prefix",
       "description": "Loosen the plan-checklist mark-completed instruction in the implementation agents so it matches checklist items by their existing text rather than by a literal `**Task {P}.{N}**:` prefix.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**. The source store lives at /home/benjamin/.config/nvim/agent-system/, NOT in the cslib repo. The user reloads the agent system via a <leader>al keybinding which redeploys from this nvim source store to cslib and other repos, so the fix must land there to propagate.\n\nOBSERVED FAILURE (live, verified during an /orchestrate run in the cslib repo, not hypothetical): plan checklist items were never ticked. A plan carried 87 checklist items and 0 were marked complete even though 4 phases were genuinely finished.\n\nROOT CAUSE - SHAPE MISMATCH (verified by direct file inspection of the source store): general-implementation-agent.md instructs a literal Edit match on `- [ ] **Task {P}.{N}**: {description}` (12 occurrences of that prefix form, concentrated at lines ~187-201 and ~300-302). But planner-agent.md emits FREE-FORM PROSE checklist items - see agent-system/extensions/core/agents/planner-agent.md lines ~237-238 (`- [ ] {Step 1}` / `- [ ] {Step 2}`) and ~267-268 (`- [ ] {Test criterion 1}`). Zero of the 87 items in the observed plan matched the literal prefix shape. So even a correctly-instructed agent matches nothing, and it fails SILENTLY - the Edit simply finds no match and the agent proceeds.\n\nSCOPE - three files carry the same brittle literal-prefix instruction:\n- agent-system/extensions/core/agents/general-implementation-agent.md (12 occurrences)\n- agent-system/extensions/lean/agents/lean-implementation-agent.md (3 occurrences)\n- agent-system/extensions/nix/agents/nix-implementation-agent.md (5 occurrences)\n\nCHOSEN RESOLUTION (decided, do not relitigate): loosen the INSTRUCTION to match items by their existing text, rather than standardizing planner-agent.md onto the `**Task {P}.{N}**:` prefix. Rationale: (a) the brittle literal-prefix match is precisely what made this fail silently; (b) the free-form prose items are more readable in plans; (c) empirically confirmed workable - instructing an agent to match by prose text took the observed plan from 0/87 to 7/87 ticked in a single session. planner-agent.md is therefore NOT edited by this task.\n\nTHIS TASK ESTABLISHES CANONICAL WORDING. Two downstream tasks copy the loosened phrasing verbatim into agents that currently have no mark-completed instruction at all. Write the instruction so it is directly reusable: it must tell the agent to locate the checklist item by its existing item text and rewrite the leading `- [ ]` to `- [x]`, appending the `*(completed)*` marker, without depending on any particular item-title format. Preserve the existing deviation-annotation formats (skipped / altered / deferred), which are a separate concern and are already correct.\n\nKNOCK-ON EFFECT TO BE AWARE OF (context, not extra scope): agent-system/extensions/core/skills/skill-orchestrate/SKILL.md line ~1044 defines the drift-inspection prompt, which computes `completed_items` by counting `- [x]`. Because nothing was ever ticked, that metric reported 0 completed and drift_pct 0.0 - reading as \"no work done\" while 4 phases were complete. The drift metric stays dead until this task and its downstream siblings land. No edit to skill-orchestrate is required here; the metric becomes correct once items are actually ticked.\n\nVERIFICATION: after the edit, confirm no remaining instruction in the three files requires the literal `**Task {P}.{N}**:` prefix in order to mark an item complete, and that the deviation-annotation formats are unchanged.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
@@ -3071,8 +3073,9 @@
         "agent-system/extensions/lean/agents/lean-implementation-agent.md",
         "agent-system/extensions/nix/agents/nix-implementation-agent.md"
       ],
-      "last_updated": "2026-07-30T01:34:45Z",
-      "session_id": "sess_1785373759_72035f_971"
+      "last_updated": "2026-07-30T02:10:02Z",
+      "session_id": "sess_1785373759_72035f_971",
+      "completion_summary": "Rewrote general-implementation-agent.md's Stage 4B-ii into the canonical prefix-free checklist-matching contract, and genericized the matching deviation-annotation lines in lean-implementation-agent.md and nix-implementation-agent.md, so plan-checklist items are located by their existing item text rather than an assumed literal prefix that planner-agent.md never emits."
     },
     {
       "project_number": 972,
@@ -3093,7 +3096,7 @@
     {
       "project_number": 973,
       "project_name": "recover_reconcile_from_malformed_handoff_status",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "title": "Make reconcile-task-status.sh recover from a malformed handoff status instead of refusing promotion",
       "description": "Give reconcile-task-status.sh a defined, safe recovery behavior when .orchestrator-handoff.json carries a status outside the normative vocabulary, instead of silently refusing promotion and wedging the task.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**. The source store lives at /home/benjamin/.config/nvim/agent-system/, NOT in the cslib repo. The user reloads the agent system via a <leader>al keybinding which redeploys from this nvim source store to cslib and other repos, so the fix must land there to propagate.\n\nFILE: agent-system/extensions/core/scripts/reconcile-task-status.sh\n\nTHE DEFECT - AN ASYMMETRY (verified by direct inspection, lines 186-195, recorded here verbatim because it is the actual defect and is easy to lose in paraphrase):\n\n    handoff_permits_promotion() {\n      local expected_status=\"$1\"\n      local handoff_file=\"${TASK_DIR}/.orchestrator-handoff.json\"\n      if [[ ! -f \"$handoff_file\" ]]; then\n        return 0\n      fi\n      local handoff_status\n      handoff_status=$(jq -r '.status // \"\"' \"$handoff_file\" 2>/dev/null)\n      [[ \"$handoff_status\" == \"$expected_status\" ]]\n    }\n\nA MISSING handoff returns 0 at the `[[ ! -f \"$handoff_file\" ]]` early return - promotion is PERMITTED. A MALFORMED one falls through to the exact string equality test `[[ \"$handoff_status\" == \"$expected_status\" ]]` and REFUSES. A malformed handoff is therefore treated STRICTLY WORSE than no handoff at all, which is backwards: the no-handoff case is the one carrying less information.\n\nOBSERVED CONSEQUENCE (live, verified, not hypothetical): during an /orchestrate run in the cslib repo, cslib-research-agent wrote `\"status\": \"success\"` into .orchestrator-handoff.json (and `\"research_complete\"` into .return-meta.json); neither value is in the closed six-value vocabulary researched|planned|implemented|partial|failed|blocked defined in docs/architecture/handoff-schema.md and context/formats/return-metadata-file.md. TWO independent guards then both rejected it:\n1. skill-orchestrate Stage 5 Tier C halted the run on cycle 1.\n2. This guard ALSO refused promotion.\n\nBecause of guard 2, the documented recovery path - \"re-run /orchestrate, entry reconcile repairs it\" - DID NOT WORK. The task was genuinely wedged and required MANUAL normalization of the status fields in both .orchestrator-handoff.json and .return-meta.json to unstick it.\n\nRELATIONSHIP TO THE EXISTING AGENT-CONTRACT TASK CHAIN (important, prevents duplicate/conflicting work): three not_started tasks already own the AGENT-CONTRACT half of this incident - settling whether research agents may write handoffs at all, adding a Stage 7 final-metadata contract to cslib-research-agent.md, and propagating the artifacts array-of-objects spec to the sibling cslib agents. ALL THREE describe only the orchestrator Stage 5 halt. NONE of them covers this second guard in reconcile-task-status.sh. This task is deliberately standalone and scoped to the SCRIPT behavior; it is a shell-script fix with different verification from that chain's documentation reconciliation. Do NOT fold it back into them, and do NOT re-do their agent-contract work here.\n\nDESIGN TENSION THE FIX MUST RESOLVE RATHER THAN PAPER OVER: the guard's strictness is presumably DELIBERATE - do not promote on an outcome you cannot parse. So the fix is NOT simply to relax the comparison. It needs a DEFINED behavior for the malformed case that is at least as safe as the missing-handoff case the function already permits. Consider, and decide explicitly between, options such as: treating an off-vocabulary status as equivalent to a missing handoff (falling through to whatever evidence the missing-handoff path already relies on, e.g. the .return-meta.json recovery helper); versus refusing promotion but emitting a loud, actionable diagnostic naming the offending value and the legal vocabulary so the operator is not left guessing; versus a narrow normalization of known-bad synonyms. Whichever is chosen, the outcome must not be \"silently stuck\", and the rationale must be recorded in the script so a future reader does not re-tighten it by reflex.\n\nALSO CHECK: the sibling helper handoff_status_value() at lines ~197-203 and any other call site that reads the handoff status, so the chosen semantics are applied consistently rather than at one call site only.\n\nVERIFICATION: construct a task directory with an off-vocabulary handoff status and confirm the chosen behavior occurs, that it is at least as permissive as the same directory with the handoff file removed, and that the diagnostic (if that route is chosen) names both the offending value and the legal set.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
@@ -3109,13 +3112,19 @@
           "path": "specs/973_recover_reconcile_from_malformed_handoff_status/plans/01_malformed-handoff-recovery.md",
           "type": "plan",
           "summary": "4-phase implementation plan: helper rewrite with recorded rationale, partial-branch consolidation, regression suite, final gate"
+        },
+        {
+          "path": "specs/973_recover_reconcile_from_malformed_handoff_status/summaries/01_malformed-handoff-recovery-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering the three-way classification rewrite, partial-branch consolidation, the regression suite, and the direct parity demonstration"
         }
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/reconcile-task-status.sh"
       ],
-      "last_updated": "2026-07-30T01:34:52Z",
-      "session_id": "sess_1785373759_72035f_973"
+      "last_updated": "2026-07-30T02:10:08Z",
+      "session_id": "sess_1785373759_72035f_973",
+      "completion_summary": "Rewrote handoff_permits_promotion() in reconcile-task-status.sh with a three-way classification (exact match permits; on-enum terminal mismatch refuses unchanged; off-vocabulary/empty/unparseable/in_progress permits with a mandatory diagnostic), consolidated the partial branch's inline duplicate onto the shared helper, and added an 11-case, 14-assertion fixture-driven regression suite proven non-vacuous by reverting the fix in a scratch copy."
     },
     {
       "project_number": 974,
@@ -3497,7 +3506,7 @@
       "project_number": 987,
       "project_name": "context_budget_enforcement_and_index_schema",
       "title": "Context budget enforcement: demote always-load bloat, break the meta catch-all, one index schema",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -3510,7 +3519,7 @@
       ],
       "description": "Bring context loading back within its own declared budgets and give index entries ONE schema authority. DEPENDS ON the index-validator repair task (truthful line counts are the precondition for any budget work).\n\nWHAT IS WRONG (from specs/reviews/review-2026-07-29-agent-system.md):\n  1. Per-agent budgets: 11 violations, 0 passes for core agents — meta-builder-agent resolves 115,512 tokens of context against a 15,000 cap; general-implementation-agent 30k vs 8k. Root cause: task_types [\"meta\"] is a 77-entry catch-all (~23,000 lines), with 22 entries reachable ONLY via it; 'meta' has become a synonym for 'load everything'.\n  2. Tier-1 (always-load) is 96% over its own <=500-line target: jq-escaping-workarounds.md (281L) and context-discovery.md (297L) are reference material marked always:true; repo/project-overview.md loads TWICE (always:true AND @-imported from claudemd.md).\n  3. load_when.languages is queried by NOTHING at runtime (the only two references are orphan-detection guards in validate-context-budgets.sh), yet it is the sole task-type hook for 11 of 19 extensions — their context is reachable only via load_when.agents. Meanwhile literature and memory use a third unqueried key, load_when.skills.\n  4. THREE contradictory index-entry schema authorities: index.schema.json (forbids description/tags, requires line_count, forbids task_types), extension-slim-standard.md's canonical example (uses description, no line_count), and the extensions README example. 14 of 19 extensions violate the schema file; 6 (cslib, latex, lean, python, typst, z3) omit line_count entirely and contribute zero to every budget calculation. The 'tier' field the budget script expects appears in 0 of 164 entries and is not in the schema.\n  5. Two load_when.agents values name agents that do not exist in this deploy.\n\nWORK:\n  1. Reconcile the three schema authorities into one: extend index.schema.json to the real field set (task_types yes; description/tags decide; line_count required; add tier if the budget model keeps it), fix extension-slim-standard.md's example, migrate all 19 index-entries.json to conform, and add a check_index_entries_schema rule to check-extension-docs.sh so drift fails loudly.\n  2. Migrate the 11 languages-only extensions (and the 2 skills-keyed ones) to task_types (coordinate with the routing consolidation task's task_type registry); delete the dead languages/skills discriminators or implement them — no declared-but-unqueried dimensions.\n  3. Break the meta catch-all: give the 77 task_types meta entries real agent/command hooks; target meta-builder-agent within its cap (raise the cap only with explicit justification).\n  4. Demote jq-escaping-workarounds.md and context-discovery.md from always:true to command/agent-scoped; deduplicate the project-overview double-load; bring Tier 1 under 500 lines.\n  5. Enforce the EXTENSION.md 60-line limit (7 of 19 violate; literature is 161 lines) with a doc-lint check, trimming the violators.\n\nVERIFICATION BAR:\n  - validate-context-budgets.sh: zero per-agent violations (or documented cap changes); Tier 1 <= 500 lines.\n  - check-extension-docs.sh fails on a fixture index entry violating the reconciled schema; passes on all 19 real files.\n  - grep for load_when.languages across scripts and skills returns zero live consumers AND zero declarations (or a real implemented consumer).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-30T01:35:00Z",
+      "last_updated": "2026-07-30T02:02:40Z",
       "session_id": "sess_1785373759_72035f_987",
       "artifacts": [
         {
@@ -3522,8 +3531,14 @@
           "path": "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md",
           "type": "plan",
           "summary": ""
+        },
+        {
+          "path": "specs/987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md",
+          "type": "summary",
+          "summary": ""
         }
-      ]
+      ],
+      "completion_summary": "Reconciled index.schema.json into the single schema authority (task_types allowed, languages removed); added advisory Rules T/U to check-extension-docs.sh with a passing fixture test; corrected both competing prose examples; brought Tier-1 always-load from 996 to 334 lines; created four follow-on tasks (990-993) for the deferred bulk migrations."
     },
     {
       "project_number": 988,
@@ -3567,6 +3582,91 @@
       "created": "2026-07-29T19:29:18Z",
       "last_updated": "2026-07-29T19:29:18Z",
       "session_id": "sess_1785353358_66268f"
+    },
+    {
+      "project_number": 990,
+      "project_name": "index_entries_schema_migration",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Migrate all 19 extensions index-entries.json to the reconciled schema shape",
+      "description": "Migrate all 19 extensions' index-entries.json to the reconciled index.schema.json shape landed by the prerequisite task. WORK: (1) fold each of the 166 description-bearing entries' (10 extensions: cslib, email, filetypes, latex, lean, nix, python, typst, web, z3) unique detail into summary rather than a blind delete -- spot-checked samples show description usually carries more detail than summary, so this is editorial, not mechanical; (2) rename tags to keywords (same 10 extensions); (3) migrate load_when.languages to load_when.task_types 1:1 using the prerequisite task's research report section 4's per-extension value map (languages->task_types renames for cslib, formal, latex, lean, nix, python, typst, web, z3, founder, present, nvim -- nvim's task_type string is 'neovim', not 'nvim', a pre-existing mismatch to preserve, not invent-around); (4) delete the two filetypes entries' load_when.skills arrays each containing only [\"deck\"]; (5) delete literature's (6 entries) and memory's (8 entries) load_when.skills arrays -- both extensions' entries already carry non-empty commands (/literature, /learn) on the same entries, so skills is fully redundant. CORRECTION TO THE PREREQUISITE TASK'S OWN SCOPE HYPOTHESIS: its Phase 2 predicted Rule T would fire for 14 of 19 extensions; the actual observed count when Rule T was implemented was 17 of 19 (only epidemiology and slidev are clean) -- the extra 3 (core, literature, memory) come from the load_when.skills violation the 14-count did not enumerate. Treat 17 as the true scope, not 14. VERIFICATION BAR (inherited from the prerequisite task, not met there): REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh reports zero Rule T advisories across all 19 extensions; grep -rn 'load_when.languages\\|load_when.skills' across agent-system/extensions/*/index-entries.json returns zero declarations. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "file_scope": [
+        "agent-system/extensions/*/index-entries.json (all 19 extensions)"
+      ],
+      "dependencies": [
+        987
+      ],
+      "created": "2026-07-30T01:55:17Z",
+      "last_updated": "2026-07-30T01:55:17Z",
+      "session_id": "sess_1785373759_72035f_987",
+      "artifacts": []
+    },
+    {
+      "project_number": 991,
+      "project_name": "meta_catchall_decomposition",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Break the meta task_types catch-all and derive tier algorithmically",
+      "description": "Break the meta task_types catch-all. WORK: (1) give the ~24 core/index-entries.json entries whose ONLY load_when hook is task_types:[\"meta\"] real agents/commands hooks, grouped thematically per the prerequisite task's research report section 5; (2) trim the wider 123-entry task_types:[\"meta\"] set so meta-builder-agent's resolved context stops including everything tagged meta regardless of relevance; (3) derive the tier classification algorithmically inside validate-context-budgets.sh from load_when shape (always==true -> Tier 1, non-empty agents -> Tier 2, non-empty commands/task_types only -> Tier 3) instead of querying the never-populated authored tier field (0 of 470 entries anywhere carry it, confirmed by the prerequisite task's research); (4) fix the 2 load_when.agents values across all extensions that name agents not present in this deploy. VERIFICATION BAR: bash .claude/scripts/validate-context-budgets.sh reports zero per-agent budget violations (or each remaining violation carries a documented, deliberate cap change); its 'entries with tier field' check passes via the new derivation logic rather than the authored field. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "file_scope": [
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/scripts/validate-context-budgets.sh"
+      ],
+      "dependencies": [
+        987
+      ],
+      "created": "2026-07-30T01:55:17Z",
+      "last_updated": "2026-07-30T01:55:17Z",
+      "session_id": "sess_1785373759_72035f_987",
+      "artifacts": []
+    },
+    {
+      "project_number": 992,
+      "project_name": "extension_md_slim_down",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Trim the 7 over-length EXTENSION.md files per the slim standard",
+      "description": "Trim the 7 over-length EXTENSION.md files flagged by the prerequisite task's Rule U (check-extension-docs.sh, check_extension_md_length): literature (169L), email (106L), lean (73L), cslib (71L), present (64L), nix (62L), core (62L) -- observed counts at the time Rule U was added; re-measure at implementation time since these may have grown further. WORK: for each of the 7, follow extension-slim-standard.md's own Migration Template to move detailed content (usage examples, architecture docs, conversion tables, migration guides, troubleshooting, prerequisites, MCP tool integration, mode descriptions) into context/project/{ext}/{domain,patterns,tools}/ files, leaving only the four required sections (Header, Routing Table, Command List, Context Pointers) in EXTENSION.md, each under the required per-section line budgets. Add an index-entries.json entry (conforming to the reconciled schema landed by the prerequisite task -- coordinate with the sibling index_entries_schema_migration follow-on task) for every new context file created. VERIFICATION BAR: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh reports zero Rule U advisories. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "file_scope": [
+        "agent-system/extensions/literature/EXTENSION.md",
+        "agent-system/extensions/email/EXTENSION.md",
+        "agent-system/extensions/lean/EXTENSION.md",
+        "agent-system/extensions/cslib/EXTENSION.md",
+        "agent-system/extensions/present/EXTENSION.md",
+        "agent-system/extensions/nix/EXTENSION.md",
+        "agent-system/extensions/core/EXTENSION.md"
+      ],
+      "dependencies": [
+        987
+      ],
+      "created": "2026-07-30T01:55:17Z",
+      "last_updated": "2026-07-30T01:55:17Z",
+      "session_id": "sess_1785373759_72035f_987",
+      "artifacts": []
+    },
+    {
+      "project_number": 993,
+      "project_name": "promote_schema_gates_to_hard",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Promote SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard",
+      "description": "Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequisite task in agent-system/extensions/core/scripts/check-extension-docs.sh, governing Rules T and U) from its advisory default to hard, mirroring the promotion sequence ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE already went through once their own remediation landed. DEPENDS ON the index_entries_schema_migration and extension_md_slim_down follow-on tasks both landing clean first -- flipping the default before either lands would turn a passing doc-lint gate into a standing hard failure for every extension either task was meant to fix. WORK: change the default in the SCHEMA_CONFORMANCE_GATE_MODE=\"${SCHEMA_CONFORMANCE_GATE_MODE:-advisory}\" line to hard, and update its preceding comment block to record that source-store remediation is now complete (mirroring INDEX_TRUTH_GATE_MODE's own comment). VERIFICATION BAR: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh exits 0 with the gate hard (no SCHEMA_CONFORMANCE_GATE_MODE override needed at invocation time, since hard is now the baked-in default). SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "file_scope": [
+        "agent-system/extensions/core/scripts/check-extension-docs.sh"
+      ],
+      "dependencies": [
+        987,
+        990,
+        992
+      ],
+      "created": "2026-07-30T01:55:17Z",
+      "last_updated": "2026-07-30T01:55:17Z",
+      "session_id": "sess_1785373759_72035f_987",
+      "artifacts": []
     }
   ],
   "completed_projects": [],
