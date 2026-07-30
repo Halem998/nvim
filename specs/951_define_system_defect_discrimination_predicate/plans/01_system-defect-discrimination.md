@@ -1,7 +1,7 @@
 # Implementation Plan: System-Defect Discrimination Predicate
 
 - **Task**: 951 - Define the system-defect discrimination predicate and detection-point registry
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.0 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research report was produced; the research phase wrote the
@@ -326,25 +326,38 @@ orchestrator scripts neither added to nor excluded from the registry, with reaso
 
 ---
 
-### Phase 4: Final gate and consistency pass [NOT STARTED]
+### Phase 4: Final gate and consistency pass [COMPLETED]
 
 **Goal**: Run the full gate set over the finished document and confirm the scope boundary and
 source-store boundary both held across all edits.
 
 **Tasks**:
-- [ ] Read the complete document top to bottom and confirm internal consistency: the Signal A
+- [x] Read the complete document top to bottom and confirm internal consistency: the Signal A
       table, the Class (b) detection-hole note, and the invariant section tell one coherent story
-      with no contradiction introduced by the incremental edits.
-- [ ] Update `line_count` for `patterns/system-defect-discrimination.md` in
+      with no contradiction introduced by the incremental edits. *(completed: found and fixed one
+      consistency gap the top-to-bottom read surfaced — the deduplication rule's "Identity key"
+      enumeration still named only the original four Signal A instances after the table grew to
+      five; added `ARTIFACTS_MISSING_ON_SUCCESS` to that enumeration)*
+- [x] Update `line_count` for `patterns/system-defect-discrimination.md` in
       `agent-system/extensions/core/index-entries.json` to match `wc -l` on the edited file. Verify
       with `bash .claude/scripts/generate-context-line-counts.sh --check` if that script is
-      available; correct with `--write` if it reports a mismatch.
-- [ ] Grep the full task diff for any `.claude/` write target; there must be none.
-- [ ] Confirm the diff contains no recorder script, no new consumer arm at any of the five
-      `evidence_reason` sites, no hook change, and no command change.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm exit 0.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it does not regress; if it
+      available; correct with `--write` if it reports a mismatch. *(completed: 285 -> 345;
+      `--check` reports 461/461 exact match across all extensions)*
+- [x] Grep the full task diff for any `.claude/` write target; there must be none. *(completed:
+      `git diff --name-only` across all four phase commits shows zero `.claude/` paths)*
+- [x] Confirm the diff contains no recorder script, no new consumer arm at any of the five
+      `evidence_reason` sites, no hook change, and no command change. *(completed: confirmed —
+      the only content changes are prose/table additions to the pattern doc plus the
+      index-entries.json line_count integer)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm exit 0. *(completed: exit 0)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it does not regress; if it
       reports a pre-existing unrelated failure, record that rather than fixing it here.
+      *(completed: this task's own line_count fix above resolved the one failure this task could
+      have caused (`Rule R` line_count mismatch, transiently 285 vs. 344/345 mid-phase); the
+      remaining `FAIL: script file on disk NOT in provides.scripts:
+      scripts/tests/test-reconcile-handoff-status.sh` is pre-existing and unrelated — confirmed by
+      re-running the check against the pre-Phase-4 committed state via `git stash`, where it was
+      already present. Recorded here, not fixed, per this task's own instruction)*
 
 **Timing**: 0.25 hours
 
@@ -368,17 +381,17 @@ source-store boundary both held across all edits.
 
 ## Testing & Validation
 
-- [ ] Every line citation in the final document resolves to text supporting the claim made about it.
-- [ ] The Signal A instance table has five rows, each named in the established convention, and the
+- [x] Every line citation in the final document resolves to text supporting the claim made about it.
+- [x] The Signal A instance table has five rows, each named in the established convention, and the
       fifth is marked as having no current detector.
-- [ ] The "system defect iff A AND B" classification and the "a schema-conformant failure is always
+- [x] The "system defect iff A AND B" classification and the "a schema-conformant failure is always
       task work" invariant are intact and unweakened.
-- [ ] The Class (b) section distinguishes detected-and-discarded from undetected.
-- [ ] `orchestrator-critical-paths.json` is byte-identical to its committed state (13 entries).
-- [ ] No file under `.claude/**` was written.
-- [ ] No recorder script, detection wiring, or command change exists in the diff.
-- [ ] `check-task-references.sh` exits 0.
-- [ ] `index-entries.json` `line_count` matches `wc -l`.
+- [x] The Class (b) section distinguishes detected-and-discarded from undetected.
+- [x] `orchestrator-critical-paths.json` is byte-identical to its committed state (13 entries).
+- [x] No file under `.claude/**` was written.
+- [x] No recorder script, detection wiring, or command change exists in the diff.
+- [x] `check-task-references.sh` exits 0.
+- [x] `index-entries.json` `line_count` matches `wc -l`.
 
 ## Artifacts & Outputs
 

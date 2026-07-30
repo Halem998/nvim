@@ -302,8 +302,9 @@ versus a recording pipeline that has no safe action to take without the recursio
 A defect already having an open task must not spawn a duplicate.
 
 **Identity key**: `{defect_class}:{attributed_source_path}` — the Signal A instance
-(`OFF_SCHEMA_STATUS`, `ARTIFACTS_SHAPE_MISMATCH`, `HANDOFF_MISLOCATED`, or
-`META_MISSING_AFTER_NARRATION`) paired with the Signal B attributed path. This is deliberately
+(`OFF_SCHEMA_STATUS`, `ARTIFACTS_SHAPE_MISMATCH`, `HANDOFF_MISLOCATED`,
+`META_MISSING_AFTER_NARRATION`, or `ARTIFACTS_MISSING_ON_SUCCESS`) paired with the Signal B
+attributed path. This is deliberately
 coarser than including the detecting site or the dispatched agent's task number: the same
 underlying bug in the same source-store file will keep tripping the same class at whatever site
 next encounters it, and a fix for one occurrence fixes all of them — recording each detecting
