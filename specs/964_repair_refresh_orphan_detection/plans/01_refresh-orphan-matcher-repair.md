@@ -1,7 +1,7 @@
 # Implementation Plan: Task #964
 
 - **Task**: 964 - Repair /refresh orphan detection so live system and session processes are never selected
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md
@@ -129,7 +129,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Matcher core rewrite in claude-refresh.sh [NOT STARTED]
+### Phase 1: Matcher core rewrite in claude-refresh.sh [COMPLETED]
 
 - **Goal:** Replace the two-stage `ps aux` regex + later re-query matcher with a single atomic
   snapshot and four independently-callable exclusion predicates; add the `main()` dual-mode
@@ -137,60 +137,72 @@ Phases within the same wave can execute in parallel.
   block to describe the mechanism that actually exists.
 
 - **Tasks:**
-  - [ ] Replace `get_claude_processes()` (`:106-108`) and `get_orphaned_processes()` (`:111-113`)
+  - [x] Replace `get_claude_processes()` (`:106-108`) and `get_orphaned_processes()` (`:111-113`)
         with one snapshot collector taking a single
         `ps -eo pid,ppid,uid,tty,etimes,rss,comm,cgroup,args --no-headers` reading. If the `ps`
         call fails or the cgroup column comes back empty, print an explicit error naming the
-        missing column and exit non-zero — never fall back to the old regex.
-  - [ ] Record the new field-index map at the top of the parsing code and audit **every**
+        missing column and exit non-zero — never fall back to the old regex. *(completed:
+        `take_snapshot()` + `validate_cgroup_support()`)*
+  - [x] Record the new field-index map at the top of the parsing code and audit **every**
         `awk '{print $N}'` in the file against it. New order: `$1` pid, `$2` ppid, `$3` uid,
         `$4` tty, `$5` etimes, `$6` rss, `$7` comm, `$8` cgroup, `$9..NF` args. This changes the
         existing `aux`-based indices at `:112`, `:117`, `:124`, `:174`, `:181`, and `:182`.
-  - [ ] Add the four predicates as named, separately-callable functions:
+        *(completed: field map documented in a header comment; all `awk` field-index parsing
+        removed in favor of `read`, so no residual `awk '{print $N}'` sites remain — verified
+        `grep -n awk` returns only the explanatory comment)*
+  - [x] Add the four predicates as named, separately-callable functions:
         `is_claude_executable_comm`, `is_system_slice_cgroup`, `is_owned_by_current_uid`,
         `is_live_inhibitor_target`. Each takes its inputs as arguments (fields already read from
         the snapshot) and performs no `ps` re-query, with the single exception noted below.
-  - [ ] `is_claude_executable_comm`: match on the `comm` column against a narrow
+  - [x] `is_claude_executable_comm`: match on the `comm` column against a narrow
         Claude-executable allow-list. `node` matches ONLY when its argv additionally references a
         Claude CLI entrypoint path. Never match on a bare argv substring anywhere.
-  - [ ] `is_system_slice_cgroup`: exclude any candidate whose cgroup field is under
+  - [x] `is_system_slice_cgroup`: exclude any candidate whose cgroup field is under
         `/system.slice/`.
-  - [ ] `is_owned_by_current_uid`: exclude any candidate whose uid differs from `$(id -u)`.
-  - [ ] `is_live_inhibitor_target`: for a candidate identified as a `systemd-inhibit`/`tail
+  - [x] `is_owned_by_current_uid`: exclude any candidate whose uid differs from `$(id -u)`.
+  - [x] `is_live_inhibitor_target`: for a candidate identified as a `systemd-inhibit`/`tail
         --pid=<N>` holder, extract `<N>` from the args column and exclude the candidate when
         `kill -0 <N>` succeeds. **This is the one predicate that legitimately performs a live
         check** — and it checks a *different* process (the held target), not the candidate, so it
         introduces no stale-snapshot race on the candidate itself.
-  - [ ] **Do not omit predicate 4 as redundant.** Once comm matching lands, today's observed
+  - [x] **Do not omit predicate 4 as redundant.** Once comm matching lands, today's observed
         inhibitors (comm `systemd-inhibit`/`tail`) are already excluded by predicate 1. Predicate
         4 is nonetheless required by acceptance criterion 1(c), is the only predicate that
         protects *other* live sessions rather than the invoker's own, and must remain
-        independently unit-testable.
-  - [ ] Delete `is_in_current_tree()` (`:54-66`) entirely, along with the `PARENT_PID` re-query at
+        independently unit-testable. *(kept and documented in-code as defense-in-depth, not
+        dead code)*
+  - [x] Delete `is_in_current_tree()` (`:54-66`) entirely, along with the `PARENT_PID` re-query at
         `:51`. Replace with zero-query self-exclusion: skip any candidate whose pid or ppid equals
         `$$` (known at parse time, no second query, no race window).
-  - [ ] Rewrite `get_process_age()` (`:69-86`) to read `etimes` from the snapshot rather than
+  - [x] Rewrite `get_process_age()` (`:69-86`) to read `etimes` from the snapshot rather than
         re-querying `ps`, removing the last stale-snapshot re-query.
-  - [ ] Retain `tty == "?"` as a necessary-but-not-sufficient signal, never as the sole
+  - [x] Retain `tty == "?"` as a necessary-but-not-sufficient signal, never as the sole
         discriminator. Document in a comment that it is true of every systemd-managed process by
         construction and therefore discriminates nothing on its own.
-  - [ ] Move the reclaim summation so it runs over the **post-exclusion** surviving set. Replace
+  - [x] Move the reclaim summation so it runs over the **post-exclusion** surviving set. Replace
         the pre-loop `orphan_mem=$(echo "$orphan_procs" | calculate_memory)` (`:155`) with an
         accumulator inside the exclusion loop (`:172-188`). Fix **both** consumers: the status-mode
-        display (`:206`, `:217`) and the force-mode summary (`:266`).
-  - [ ] Wrap the existing top-level execution block (`:132` onward) in a new `main()` and guard
+        display (`:206`, `:217`) and the force-mode summary (`:266`). *(completed: `orphan_mem`
+        is now accumulated only for rows surviving every predicate, in the single snapshot loop;
+        both the no-flag/`--dry-run` display and the force-mode summary read the same
+        post-exclusion total)*
+  - [x] Wrap the existing top-level execution block (`:132` onward) in a new `main()` and guard
         the call with `if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then main "$@"; fi`. Runtime
-        behavior when executed normally must be unchanged by this restructure alone.
-  - [ ] Add `--dry-run` to the argument parser (`:28-47`) as an explicit named mode, behaving
+        behavior when executed normally must be unchanged by this restructure alone. *(completed:
+        argument parsing was also moved inside `main()`, not just the business logic, so that
+        `source`-ing the script has zero side effects — behavior when run as a script is
+        byte-for-byte equivalent to keeping the parser outside `main()`, since `main "$@"` is
+        called unconditionally in that case)*
+  - [x] Add `--dry-run` to the argument parser (`:28-47`) as an explicit named mode, behaving
         identically to the existing safe no-flag path but emitting a `DRY RUN` banner. Do not
         invent a second preview implementation; the no-flag path already is the correct preview.
         Update the `--help` text to list `--dry-run`.
-  - [ ] Rewrite the header safety block (`:11-14`). Delete the false "Excludes current process
+  - [x] Rewrite the header safety block (`:11-14`). Delete the false "Excludes current process
         and parent process tree" claim. Describe the four actual predicates plus zero-query self
         exclusion, and record the deliberate recall-for-safety trade-off (a missed orphan is
         strictly preferable to killing a live daemon) so a future reader does not widen the match
         back toward argv.
-  - [ ] Cite durable anchors only in comments — mechanism names and section titles, never task
+  - [x] Cite durable anchors only in comments — mechanism names and section titles, never task
         numbers (this file is a deliverable outside `specs/**`).
 
 - **Timing:** 1.5 hours

@@ -2,18 +2,49 @@
 #
 # claude-refresh.sh - Identify and terminate orphaned Claude Code processes
 #
-# Usage: ./claude-refresh.sh [--force]
+# Usage: ./claude-refresh.sh [--force|--dry-run]
 #
 # Options:
-#   --force    Skip confirmation prompt and terminate immediately
-#   (none)     Show status and exit (skill handles confirmation via AskUserQuestion)
+#   --force      Skip confirmation prompt and terminate immediately
+#   --dry-run    Preview mode: identical to the no-flag path, with an explicit banner
+#   (none)       Show status and exit (skill handles confirmation via AskUserQuestion)
 #
-# Safety:
-#   - Only targets processes with TTY == "?" (no controlling terminal)
-#   - Excludes current process and parent process tree
-#   - Uses SIGTERM first, then SIGKILL if needed
+# Safety mechanism (read this before touching the predicates below):
+#   A single atomic `ps -eo` snapshot is taken once per invocation. Every exclusion
+#   decision is made from data already present in that snapshot -- there is no second,
+#   later re-query of a candidate PID, so there is no window in which a transient PID
+#   from the snapshot can have already exited and be misjudged as "not excluded".
+#   Four independently-callable predicates decide candidacy/exclusion:
+#     - is_claude_executable_comm: a candidate must match a narrow allow-list on its
+#       `comm` (executable identity), never on an argv substring. This is what keeps a
+#       system daemon that merely MENTIONS "claude" in one of its own flags (e.g. an
+#       OOM-killer's process-name preference regex) from ever being considered a
+#       candidate at all.
+#     - is_system_slice_cgroup: a candidate whose cgroup is under `/system.slice/` is
+#       excluded -- defense-in-depth against a system service ever being selected, even
+#       if some future daemon's comm happened to collide with the allow-list.
+#     - is_owned_by_current_uid: a candidate not owned by the invoking user's UID is
+#       excluded -- defense-in-depth against a different user's/service's process.
+#     - is_live_inhibitor_target: a candidate identified as holding a
+#       `systemd-inhibit ... tail --pid=<N>` sleep-inhibitor is excluded when `<N>` (a
+#       DIFFERENT process than the candidate -- the session it protects) is still
+#       alive. This is the one predicate that legitimately performs a live check, and
+#       it never re-checks the candidate's own liveness, so it introduces no race.
+#   Plus zero-query self-exclusion: any row whose pid or ppid equals this script's own
+#   PID ($$, known at parse time) is skipped without any further check.
+#
+#   Deliberate trade-off, stated explicitly so this is not "fixed" back toward argv
+#   matching later: this design trades recall for safety. A leaked/orphaned process
+#   that this allow-list fails to recognize survives (false negative); that is strictly
+#   preferable to ever terminating a live system daemon or another live session's
+#   process (false positive). Do not widen `is_claude_executable_comm` to match on a
+#   bare argv substring -- that is exactly the defect this rewrite removes.
+#
+#   If the platform's `ps` does not support the `cgroup` column (or the invocation
+#   fails), this script refuses to run rather than silently falling back to the old,
+#   unsafe argv-substring behavior. See validate_cgroup_support() below.
 
-set -euo pipefail
+set -uo pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -22,53 +53,105 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Parse arguments
-FORCE=false
+# Current invoking UID, computed once. Used by is_owned_by_current_uid.
+CURRENT_UID="$(id -u)"
 
-for arg in "$@"; do
-    case $arg in
-        --force)
-            FORCE=true
+# --- Snapshot field-index map (single `ps -eo` reading, no second live re-query) ---
+# $1 pid   $2 ppid   $3 uid   $4 tty   $5 etimes   $6 rss   $7 comm   $8 cgroup   $9..NF args
+# (cgroup is requested at an explicit 200-column width so a long cgroup path is never
+# silently truncated by ps's default fixed column width; args is captured by `read`'s
+# "last variable gets the remainder of the line" behavior, so no awk field arithmetic
+# is needed for it.)
+SNAPSHOT_PS_FIELDS='pid,ppid,uid,tty,etimes,rss,comm,cgroup:200,args'
+
+# --- Predicate 1: executable-identity match (candidacy gate, not merely an exclusion) ---
+# Returns 0 (true) only when this process IS a genuine Claude Code executable. Matching
+# is on `comm` (the kernel-level executable identity), never on a substring anywhere in
+# argv -- this is what makes a process that merely mentions "claude" in one of its own
+# arguments (a system daemon's preference regex, a memory-tracker service's invocation
+# path, this very script's own path) fail to match, without needing a bespoke exclusion
+# for each such case individually.
+is_claude_executable_comm() {
+    local comm="$1"
+    local args="${2:-}"
+
+    case "$comm" in
+        claude)
+            return 0
             ;;
-        --help|-h)
-            echo "Usage: $0 [--force]"
-            echo ""
-            echo "Options:"
-            echo "  --force    Skip confirmation prompt and terminate immediately"
-            echo "  (none)     Show status and exit (for use with /refresh command)"
-            exit 0
+        node|nodejs)
+            # node only qualifies when its argv additionally names a Claude CLI
+            # entrypoint -- never on a bare "claude" substring elsewhere in argv.
+            case "$args" in
+                *claude-code*|*/claude|*/claude\ *)
+                    return 0
+                    ;;
+                *)
+                    return 1
+                    ;;
+            esac
             ;;
         *)
-            echo "Unknown option: $arg"
-            echo "Use --help for usage information"
-            exit 1
+            return 1
             ;;
     esac
-done
-
-# Get current process tree to exclude
-CURRENT_PID=$$
-PARENT_PID=$(ps -o ppid= -p $$ 2>/dev/null | tr -d ' ')
-
-# Function to check if a PID is in our process tree (should be excluded)
-is_in_current_tree() {
-    local pid=$1
-    local check_pid=$pid
-
-    # Walk up the process tree
-    while [ "$check_pid" != "1" ] && [ -n "$check_pid" ]; do
-        if [ "$check_pid" == "$CURRENT_PID" ] || [ "$check_pid" == "$PARENT_PID" ]; then
-            return 0  # true, is in current tree
-        fi
-        check_pid=$(ps -o ppid= -p "$check_pid" 2>/dev/null | tr -d ' ')
-    done
-    return 1  # false, not in current tree
 }
 
-# Function to get process age in human-readable format
+# --- Predicate 2: system-slice cgroup exclusion ---
+# Returns 0 (true) when the candidate's cgroup is under /system.slice/, i.e. it is a
+# system-managed service and must never be selected, regardless of anything else.
+is_system_slice_cgroup() {
+    local cgroup="$1"
+    case "$cgroup" in
+        *"/system.slice/"*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# --- Predicate 3: invoking-UID ownership ---
+# Returns 0 (true) when the candidate's uid matches the invoking user's uid. A
+# candidate owned by a different user/service (e.g. a system service's dedicated user)
+# is excluded by the caller when this returns false.
+is_owned_by_current_uid() {
+    local uid="$1"
+    [ "$uid" = "$CURRENT_UID" ]
+}
+
+# --- Predicate 4: inhibitor-target liveness ---
+# Returns 0 (true) when this candidate's argv identifies it as a
+# `systemd-inhibit ... tail --pid=<N>` sleep-inhibitor AND <N> -- a DIFFERENT process
+# than the candidate itself, the session it protects -- is still alive. This is the
+# only predicate that legitimately performs a live check, and it never re-checks the
+# candidate's own liveness (which was already captured in the one snapshot), so it
+# introduces no stale-snapshot race. Returns false (not excluded by this predicate) for
+# any candidate whose argv does not carry a `--pid=<N>` inhibitor target at all.
+#
+# Note: with predicate 1's allow-list as narrow as documented above, a `systemd-inhibit`
+# process's comm never matches it, so today's observed inhibitors are already excluded
+# before reaching this predicate. It remains a required, independently-callable/testable
+# layer of defense-in-depth (see the plan's Risks table) rather than dead code to be
+# pruned -- do not remove it as "redundant".
+is_live_inhibitor_target() {
+    local args="$1"
+    local target_pid
+
+    if [[ "$args" =~ --pid=([0-9]+) ]]; then
+        target_pid="${BASH_REMATCH[1]}"
+    else
+        return 1
+    fi
+
+    kill -0 "$target_pid" 2>/dev/null
+}
+
+# Function to get process age in human-readable format. Reads etimes from the
+# already-captured snapshot -- no re-query of ps for a candidate PID.
 get_process_age() {
-    local pid=$1
-    local elapsed=$(ps -o etimes= -p "$pid" 2>/dev/null | tr -d ' ')
+    local elapsed="${1:-}"
 
     if [ -z "$elapsed" ]; then
         echo "unknown"
@@ -101,168 +184,213 @@ format_memory() {
     fi
 }
 
-# Get all Claude-related processes
-# Match: claude, node.*claude, anthropic
-get_claude_processes() {
-    ps aux 2>/dev/null | grep -E '[c]laude|[n]ode.*claude|[a]nthropic' | grep -v grep || true
+# Take the single atomic process snapshot. Fails loudly (non-zero exit, explicit
+# message) rather than silently degrading if `ps` itself fails.
+take_snapshot() {
+    local out
+    if ! out=$(ps -eo "$SNAPSHOT_PS_FIELDS" --no-headers 2>&1); then
+        echo "ERROR: 'ps -eo $SNAPSHOT_PS_FIELDS' failed:" >&2
+        echo "$out" >&2
+        exit 1
+    fi
+    printf '%s\n' "$out"
 }
 
-# Get orphaned processes (TTY == "?")
-get_orphaned_processes() {
-    get_claude_processes | awk '$7 == "?" {print $0}'
-}
-
-# Get active processes (have a TTY)
-get_active_processes() {
-    get_claude_processes | awk '$7 != "?"'
-}
-
-# Calculate total memory from process list
-calculate_memory() {
-    local total=0
-    while IFS= read -r line; do
-        if [ -n "$line" ]; then
-            mem=$(echo "$line" | awk '{print $6}')
-            total=$((total + mem))
-        fi
-    done
-    echo "$total"
-}
-
-# Main execution
-echo ""
-
-# Count processes - use wc -l with safeguard for empty strings
-all_procs=$(get_claude_processes)
-orphan_procs=$(get_orphaned_processes)
-active_procs=$(get_active_processes)
-
-count_lines() {
-    local input="$1"
-    if [ -z "$input" ]; then
-        echo 0
-    else
-        echo "$input" | wc -l
+# Refuse to run rather than silently falling back to an unsafe argv-substring match if
+# this platform's `ps` does not support the cgroup column the safety predicates require.
+validate_cgroup_support() {
+    local self_cgroup
+    self_cgroup=$(ps -eo cgroup:200 --no-headers -p "$$" 2>/dev/null | tr -d ' ')
+    if [ -z "$self_cgroup" ]; then
+        echo "ERROR: 'ps -o cgroup' returned no data for this process." >&2
+        echo "This platform's ps may not support the cgroup column that claude-refresh.sh's" >&2
+        echo "safety predicates require. Refusing to run rather than falling back to an" >&2
+        echo "unsafe argv-substring match." >&2
+        exit 1
     fi
 }
 
-total_count=$(count_lines "$all_procs")
-orphan_count=$(count_lines "$orphan_procs")
-active_count=$(count_lines "$active_procs")
-
-# Calculate memory
-total_mem=$(echo "$all_procs" | calculate_memory)
-orphan_mem=$(echo "$orphan_procs" | calculate_memory)
-active_mem=$(echo "$active_procs" | calculate_memory)
-
-# No orphaned processes
-if [ "$orphan_count" -eq 0 ]; then
-    echo -e "${GREEN}Claude Code Refresh${NC}"
-    echo "==================="
+print_help() {
+    echo "Usage: $0 [--force|--dry-run]"
     echo ""
-    echo "No orphaned processes found."
-    echo "All $active_count Claude processes are active sessions."
-    exit 0
-fi
+    echo "Options:"
+    echo "  --force      Skip confirmation prompt and terminate immediately"
+    echo "  --dry-run    Preview mode (identical to the no-flag path, with a DRY RUN banner)"
+    echo "  (none)       Show status and exit (for use with /refresh command)"
+}
 
-# Build list of orphaned PIDs (excluding current tree)
-orphan_pids=()
-orphan_details=()
+main() {
+    local FORCE=false
+    local DRY_RUN=false
 
-while IFS= read -r line; do
-    if [ -n "$line" ]; then
-        pid=$(echo "$line" | awk '{print $2}')
+    for arg in "$@"; do
+        case $arg in
+            --force)
+                FORCE=true
+                ;;
+            --dry-run)
+                DRY_RUN=true
+                ;;
+            --help|-h)
+                print_help
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $arg"
+                echo "Use --help for usage information"
+                exit 1
+                ;;
+        esac
+    done
 
-        # Skip if in current process tree
-        if is_in_current_tree "$pid"; then
+    validate_cgroup_support
+
+    local snapshot
+    snapshot=$(take_snapshot)
+
+    local total_count=0 active_count=0 orphan_count=0
+    local total_mem=0 active_mem=0 orphan_mem=0
+    local orphan_pids=()
+    local orphan_details=()
+
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+
+        local pid ppid uid tty etimes rss comm cgroup args
+        read -r pid ppid uid tty etimes rss comm cgroup args <<< "$line"
+
+        # Zero-query self-exclusion: known at parse time, no second query, no race.
+        if [ "$pid" = "$$" ] || [ "$ppid" = "$$" ]; then
             continue
         fi
 
-        mem=$(echo "$line" | awk '{print $6}')
-        cmd=$(echo "$line" | awk '{for(i=11;i<=NF;i++) printf "%s ", $i; print ""}' | cut -c1-50)
-        age=$(get_process_age "$pid")
+        # Candidacy gate: must be identified as a genuine Claude executable.
+        if ! is_claude_executable_comm "$comm" "$args"; then
+            continue
+        fi
+
+        total_count=$((total_count + 1))
+        total_mem=$((total_mem + rss))
+
+        # tty == "?" is necessary-but-not-sufficient: true of every systemd-managed
+        # process by construction, so it discriminates nothing on its own -- it is
+        # combined with the exclusion predicates below, never used alone.
+        if [ "$tty" != "?" ]; then
+            active_count=$((active_count + 1))
+            active_mem=$((active_mem + rss))
+            continue
+        fi
+
+        # Orphan-candidate exclusions (defense-in-depth; see predicate docs above).
+        if is_system_slice_cgroup "$cgroup"; then
+            continue
+        fi
+        if ! is_owned_by_current_uid "$uid"; then
+            continue
+        fi
+        if is_live_inhibitor_target "$args"; then
+            continue
+        fi
+
+        # Survives every predicate: a genuine orphan.
+        orphan_count=$((orphan_count + 1))
+        orphan_mem=$((orphan_mem + rss))
+
+        local age cmd_display
+        age=$(get_process_age "$etimes")
+        cmd_display=$(echo "$args" | cut -c1-50)
 
         orphan_pids+=("$pid")
-        orphan_details+=("$pid|$(format_memory $mem)|$age|$cmd")
+        orphan_details+=("$pid|$(format_memory "$rss")|$age|$cmd_display")
+    done <<< "$snapshot"
+
+    echo ""
+
+    # No orphaned processes
+    if [ "$orphan_count" -eq 0 ]; then
+        echo -e "${GREEN}Claude Code Refresh${NC}"
+        echo "==================="
+        echo ""
+        echo "No orphaned processes found."
+        echo "All $active_count Claude processes are active sessions."
+        exit 0
     fi
-done <<< "$orphan_procs"
 
-actual_orphan_count=${#orphan_pids[@]}
+    # Default mode (no --force) - show status and exit, or --dry-run - same, with a banner.
+    # The skill handles confirmation via AskUserQuestion.
+    if ! $FORCE; then
+        echo -e "${YELLOW}Claude Code Refresh${NC}"
+        echo "==================="
+        if $DRY_RUN; then
+            echo ""
+            echo -e "${BLUE}[DRY RUN]${NC} Preview only -- no processes will be terminated."
+        fi
+        echo ""
+        echo "Found $orphan_count orphaned processes using $(format_memory "$orphan_mem"):"
+        echo ""
+        printf "%-8s %-12s %-10s %s\n" "PID" "Memory" "Age" "Command"
+        printf "%-8s %-12s %-10s %s\n" "-----" "-------" "-------" "--------------------------------"
 
-if [ "$actual_orphan_count" -eq 0 ]; then
-    echo -e "${GREEN}Claude Code Refresh${NC}"
-    echo "==================="
+        for detail in "${orphan_details[@]}"; do
+            IFS='|' read -r pid mem age cmd <<< "$detail"
+            printf "%-8s %-12s %-10s %s\n" "$pid" "$mem" "$age" "$cmd"
+        done
+
+        echo ""
+        echo "Total memory that can be reclaimed: $(format_memory "$orphan_mem")"
+        echo ""
+        # Exit here - skill will prompt with AskUserQuestion and re-run with --force if confirmed
+        exit 0
+    fi
+
+    # Force mode - execute cleanup
     echo ""
-    echo "No orphaned processes found (excluded current session)."
-    exit 0
-fi
+    echo -e "${GREEN}Terminating orphaned processes...${NC}"
 
-# Default mode (no --force) - show status and exit
-# The skill handles confirmation via AskUserQuestion
-if ! $FORCE; then
-    echo -e "${YELLOW}Claude Code Refresh${NC}"
-    echo "==================="
-    echo ""
-    echo "Found $actual_orphan_count orphaned processes using $(format_memory $orphan_mem):"
-    echo ""
-    printf "%-8s %-12s %-10s %s\n" "PID" "Memory" "Age" "Command"
-    printf "%-8s %-12s %-10s %s\n" "-----" "-------" "-------" "--------------------------------"
+    local terminated=0
+    local failed=0
 
-    for detail in "${orphan_details[@]}"; do
-        IFS='|' read -r pid mem age cmd <<< "$detail"
-        printf "%-8s %-12s %-10s %s\n" "$pid" "$mem" "$age" "$cmd"
+    for pid in "${orphan_pids[@]}"; do
+        # Check if process still exists
+        if ! kill -0 "$pid" 2>/dev/null; then
+            echo "  PID $pid: already gone"
+            continue
+        fi
+
+        # Try SIGTERM first
+        if kill -15 "$pid" 2>/dev/null; then
+            sleep 0.5
+
+            # Check if still running
+            if kill -0 "$pid" 2>/dev/null; then
+                # Force kill
+                if kill -9 "$pid" 2>/dev/null; then
+                    echo "  PID $pid: terminated (forced)"
+                    terminated=$((terminated + 1))
+                else
+                    echo "  PID $pid: failed to terminate"
+                    failed=$((failed + 1))
+                fi
+            else
+                echo "  PID $pid: terminated (graceful)"
+                terminated=$((terminated + 1))
+            fi
+        else
+            echo "  PID $pid: failed to signal (permission denied?)"
+            failed=$((failed + 1))
+        fi
     done
 
     echo ""
-    echo "Total memory that can be reclaimed: $(format_memory $orphan_mem)"
+    echo -e "${GREEN}Claude Code Refresh Complete${NC}"
+    echo "============================"
+    echo "Terminated: $terminated processes"
+    echo "Failed:     $failed processes"
+    echo "Memory reclaimed: ~$(format_memory "$orphan_mem")"
     echo ""
-    # Exit here - skill will prompt with AskUserQuestion and re-run with --force if confirmed
-    exit 0
+    echo "Active sessions preserved: $active_count"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
 fi
-
-# Force mode - execute cleanup
-echo ""
-echo -e "${GREEN}Terminating orphaned processes...${NC}"
-
-terminated=0
-failed=0
-
-for pid in "${orphan_pids[@]}"; do
-    # Check if process still exists
-    if ! kill -0 "$pid" 2>/dev/null; then
-        echo "  PID $pid: already gone"
-        continue
-    fi
-
-    # Try SIGTERM first
-    if kill -15 "$pid" 2>/dev/null; then
-        sleep 0.5
-
-        # Check if still running
-        if kill -0 "$pid" 2>/dev/null; then
-            # Force kill
-            if kill -9 "$pid" 2>/dev/null; then
-                echo "  PID $pid: terminated (forced)"
-                terminated=$((terminated + 1))
-            else
-                echo "  PID $pid: failed to terminate"
-                failed=$((failed + 1))
-            fi
-        else
-            echo "  PID $pid: terminated (graceful)"
-            terminated=$((terminated + 1))
-        fi
-    else
-        echo "  PID $pid: failed to signal (permission denied?)"
-        failed=$((failed + 1))
-    fi
-done
-
-echo ""
-echo -e "${GREEN}Claude Code Refresh Complete${NC}"
-echo "============================"
-echo "Terminated: $terminated processes"
-echo "Failed:     $failed processes"
-echo "Memory reclaimed: ~$(format_memory $orphan_mem)"
-echo ""
-echo "Active sessions preserved: $active_count"
