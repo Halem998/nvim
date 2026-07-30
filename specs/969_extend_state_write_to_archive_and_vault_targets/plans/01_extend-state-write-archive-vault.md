@@ -1,7 +1,7 @@
 # Implementation Plan: Task #969
 
 - **Task**: 969 - Extend state-write.sh to cover archive and vault state files and convert residual hand-rolled sites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: 967
 - **Research Inputs**: specs/969_extend_state_write_to_archive_and_vault_targets/reports/01_extend-state-write-archive-vault.md
@@ -630,34 +630,89 @@ out still accurate, say so rather than "correcting" it to match this plan.
 
 ---
 
-### Phase 8: Verification bar, scoped grep, and exclusion report [NOT STARTED]
+### Phase 8: Verification bar, scoped grep, and exclusion report [COMPLETED]
 
 **Goal**: Every element of the task's verification bar is executed, and the unsatisfiable
 "zero hits" grep is replaced by a scoped grep checked against an explicitly enumerated exclusion
 list.
 
+**Execution notes** (actual results, not hypotheses):
+- All three named suites passed: concurrency (9/9), task-lock-reap (6/6), regen-timing (3/3).
+- Backward-compatibility: 41 files reference `state-write.sh` (re-measured; the plan's ~24
+  estimate was stale). `git diff` across every phase's commits confirms every pre-existing
+  `state-write.sh` invocation is byte-identical; only newly-converted sites gained
+  `--state-file`/`--init`.
+- Baseline check: the scoped grep against pre-conversion content (via `git show
+  107db0d59^:<path>`) matched 7 known sites in `task.md`/`todo.md`/`jq-escaping-workarounds.md` --
+  confirming the pattern is not vacuous for those files. **Caveat found and recorded, not
+  papered over**: the same pattern does NOT match `archive-task.sh`'s/`vault-operation.sh`'s
+  pre-conversion sites at baseline, because those sites used shell variables
+  (`"$ARCHIVE_STATE_FILE"`, `"$state_json"`) rather than literal `state.json`/`archive/state.json`
+  text adjacent to the redirect. The grep is therefore not a meaningful regression proof for
+  those two scripts; their correctness was instead verified directly (Phase 6: `bash -n`,
+  `--dry-run` smoke test for `archive-task.sh`, and a full no-op-then-confirmed vault-operation
+  run against a fixtured `>1000` state for `vault-operation.sh`).
+- Post-conversion scoped grep residual set (5 hits, not 4): mapped to the declared list plus
+  one added item:
+  1. `scripts/state-write.sh`'s own header comment — item 1.
+  2. `commands/review.md` (2 sites, `specs/reviews/state.json`) — item 2.
+  3. `context/patterns/jq-escaping-workarounds.md`'s "Test Script" section (line ~255,
+     `specs/tmp/test-state.json`) — **added as item 5**: an isolated test-fixture example
+     demonstrating the raw jq escaping-workaround mechanics against a throwaway path, never a
+     production `specs/state.json`/`specs/archive/state.json` write site.
+  4. `context/formats/command-structure.md` ("❌ Mistake 3: Updating State Directly", labeled
+     **Wrong**) — item 4 (quotes the anti-pattern as a named negative example).
+  `context/patterns/task-lock.md`'s historical-narrative text (item 3) produced zero hits, which
+  is consistent (the exclusion list is an upper bound, not a required minimum per item).
+- Out-of-scope surface (re-measured, not quoted from the plan): 115 hand-rolled
+  `specs/state.json` write sites across 50 files under `agent-system/extensions/` outside `core/`
+  (cslib, epidemiology, founder, lean, present, web).
+- `file_scope` expansion reported (not silently applied): `scripts/archive-task.sh`,
+  `scripts/vault-operation.sh`, and `context/patterns/jq-escaping-workarounds.md` were edited
+  beyond the declared `file_scope`, per D5 and Phase 3. `state.json`'s `file_scope` field itself
+  was not edited.
+- `bash -n`/fence sweep: 4 `.sh` files clean; 116 bash fences checked across the 5 edited `.md`
+  files (114 pass; 2 pre-existing illustrative "BROKEN" jq-fragment examples in
+  `jq-escaping-workarounds.md`, unrelated to this task's edits, fail `bash -n` as they always
+  have since they are jq-only fragments, not complete scripts).
+- `check-task-references.sh`: exit 0, 0 unexempted occurrences.
+- `check-extension-docs.sh`: found 2 real `Rule R` `line_count` mismatches in
+  `agent-system/extensions/core/index-entries.json` for `patterns/jq-escaping-workarounds.md` and
+  `patterns/task-lock.md` (stale after this task's edits grew both files) — fixed via
+  `bash .claude/scripts/generate-context-line-counts.sh --write` (writes only the source-store
+  `index-entries.json`, never `.claude/**`, per that script's own header). A third,
+  separately-reported "deployed script content drift" note for `scripts/vault-operation.sh`
+  (deployed `.claude/scripts/` copy vs. source) is the expected, transient state of any
+  source-store-only edit before the next redeploy cycle — resolving it is `deploy-headless.sh`'s
+  remit, explicitly restricted to `skill-orchestrate`'s own inter-cycle redeploy checkpoint, not
+  a general implementer action; it cleared on its own during this task without this agent
+  invoking that script. Final run: exit 0, "PASS: all extensions OK".
+- `git status --short`: zero `.claude/**` paths anywhere in the repo; every one of this task's
+  own modified paths is under `agent-system/extensions/core/**` or `specs/**`.
+
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh`; require
+- [x] Run `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh`; require
       exit 0 with the extended case set.
-- [ ] Run `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh`; require exit 0.
-- [ ] Run `bash agent-system/extensions/core/scripts/test-state-write-regen-timing.sh`; require
+- [x] Run `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh`; require exit 0.
+- [x] Run `bash agent-system/extensions/core/scripts/test-state-write-regen-timing.sh`; require
       exit 0 (not named in the task's bar, but it is a `state-write.sh` suite and a regression here
       would be a real one).
-- [ ] **Backward-compatibility check** (hard requirement): enumerate every `state-write.sh` caller
+- [x] **Backward-compatibility check** (hard requirement): enumerate every `state-write.sh` caller
       with `grep -rl 'state-write\.sh' agent-system/extensions/core/` and confirm no pre-existing
       invocation's argument list changed. New `--state-file`/`--init` arguments appear only at sites
       converted in Phases 3-6; every other call site must be byte-identical to its pre-task form
       (`git diff` on those files must show no change to their `state-write.sh` lines).
-- [ ] **Baseline the grep before trusting it**: run the scoped grep below against the pre-conversion
+- [x] **Baseline the grep before trusting it**: run the scoped grep below against the pre-conversion
       content (e.g. `git stash`, or `git show HEAD:<path>` piped per file) and confirm it DOES match
       the known pre-conversion sites. A pattern that matches nothing before the work proves nothing
-      after it.
-- [ ] Run the scoped grep:
+      after it. *(completed: baseline matched 7 sites; a caveat for archive-task.sh/vault-operation.sh
+      is recorded above — see Execution notes)*
+- [x] Run the scoped grep:
       ```bash
       grep -rnE 'state\.json[^ ]* *> *[^ ]*(tmp|\.tmp)|(tmp|state\.json\.tmp)[^|]*&&[^|]*mv[^|]*state\.json|(jq -n|echo)[^>]*> *"?[^ "]*archive/state\.json' \
         --include='*.md' --include='*.sh' agent-system/extensions/core/
       ```
-- [ ] Compare the result against this **declared exclusion list**. Green means the residual set
+- [x] Compare the result against this **declared exclusion list**. Green means the residual set
       equals this list exactly; any hit not on it is a failure:
       1. `scripts/state-write.sh` itself — the sanctioned implementation.
       2. `commands/review.md` — two sites targeting `specs/reviews/state.json`, a different state
@@ -667,24 +722,31 @@ list.
          `jq ... > tmp && mv` / `specs/state.json.tmp` pattern to explain why the mechanism exists.
          Prose about the past, not current guidance.
       4. Any doc passage that quotes the anti-pattern as a negative example while naming it as such.
-      If a hit falls outside 1-4, it is a real residual site: convert it if it is a state write, or
+      5. *(added during Phase 8)* `context/patterns/jq-escaping-workarounds.md`'s "Test Script"
+         section — an isolated test-fixture example against `specs/tmp/test-state.json`, never a
+         production state-file write site.
+      If a hit falls outside 1-5, it is a real residual site: convert it if it is a state write, or
       add it to the list with a stated reason. Never pass silently.
-- [ ] Report the deliberately-out-of-scope surface explicitly in the summary (never silently
+- [x] Report the deliberately-out-of-scope surface explicitly in the summary (never silently
       passed): the non-core extension domains under `agent-system/extensions/` outside `core/`
-      (re-measure the file and site counts here rather than quoting this plan), which
-      `task-lock.md`'s residual note already records as a separate surface.
-- [ ] Report the `file_scope` expansion explicitly: `scripts/archive-task.sh`,
+      (re-measured: 115 sites across 50 files), which `task-lock.md`'s residual note already
+      records as a separate surface.
+- [x] Report the `file_scope` expansion explicitly: `scripts/archive-task.sh`,
       `scripts/vault-operation.sh`, and `context/patterns/jq-escaping-workarounds.md` were edited
       beyond the declared `file_scope`, per D5 and Phase 3. Do not edit `state.json`'s `file_scope`
-      field.
-- [ ] `bash -n` sweep: every edited `.sh` file directly, and every bash fence extracted from every
-      edited `.md` file. Record the count of fences checked.
-- [ ] Run `bash .claude/scripts/check-task-references.sh`; require exit 0. If it flags any of this
+      field. *(completed: reported above; field itself untouched)*
+- [x] `bash -n` sweep: every edited `.sh` file directly, and every bash fence extracted from every
+      edited `.md` file. Record the count of fences checked. *(completed: 4 scripts clean, 116
+      fences checked, 114 pass / 2 pre-existing unrelated illustrative failures)*
+- [x] Run `bash .claude/scripts/check-task-references.sh`; require exit 0. If it flags any of this
       task's own edits, fix by using a durable anchor — never by adding a `task-ref-ok` marker for
-      a citation this task introduced.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh`; require exit 0.
-- [ ] Confirm no file under `.claude/**` was edited: `git status --short` plus a check that every
-      modified path is under `agent-system/extensions/core/**` or `specs/**`.
+      a citation this task introduced. *(completed: exit 0, no fixes needed)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh`; require exit 0. *(completed: found and
+      fixed 2 stale index-entries.json line_count values via generate-context-line-counts.sh
+      --write; final exit 0)*
+- [x] Confirm no file under `.claude/**` was edited: `git status --short` plus a check that every
+      modified path is under `agent-system/extensions/core/**` or `specs/**`. *(completed: zero
+      .claude/** paths in git status repo-wide)*
 
 **Timing**: 1 hour
 
@@ -712,19 +774,28 @@ delta rather than widening the list silently.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh` exits 0, extended
+- [x] `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh` exits 0, extended
       with a non-default `--state-file` case, a cross-target single-mutex serialization case, an
-      `--init` case, and both usage-refusal cases.
-- [ ] `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/test-state-write-regen-timing.sh` exits 0.
-- [ ] Every pre-existing `state-write.sh` caller works with no argument changes (enumerated and
-      diff-verified, not assumed).
-- [ ] `bash -n` clean on every edited script and every bash fence in every edited markdown file.
-- [ ] `bash .claude/scripts/check-task-references.sh` exits 0.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0.
-- [ ] The scoped residual grep's output equals the declared four-item exclusion list.
-- [ ] Adversarial confirmation that at least one new test case fails when its Phase 1 change is
-      reverted.
+      `--init` case, and both usage-refusal cases. *(9/9 passed)*
+- [x] `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh` exits 0. *(6/6 passed)*
+- [x] `bash agent-system/extensions/core/scripts/test-state-write-regen-timing.sh` exits 0. *(3/3
+      passed)*
+- [x] Every pre-existing `state-write.sh` caller works with no argument changes (enumerated and
+      diff-verified, not assumed). *(41 callers enumerated; `git diff` confirms zero unintended
+      argument changes)*
+- [x] `bash -n` clean on every edited script and every bash fence in every edited markdown file.
+      *(4 scripts clean; 116 fences checked, 114 pass, 2 pre-existing unrelated illustrative
+      failures)*
+- [x] `bash .claude/scripts/check-task-references.sh` exits 0.
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0. *(after fixing 2 stale
+      index-entries.json line_count values)*
+- [x] The scoped residual grep's output equals the declared four-item exclusion list.
+      *(deviation: altered — the residual set required a 5th declared item,
+      `jq-escaping-workarounds.md`'s isolated "Test Script" fixture example; see Phase 8's
+      Execution notes for the full mapping)*
+- [x] Adversarial confirmation that at least one new test case fails when its Phase 1 change is
+      reverted. *(confirmed: temporarily disabling the D4 --regen-todo refusal made case 8 fail
+      as expected, then restored)*
 
 ## Artifacts & Outputs
 

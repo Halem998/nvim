@@ -1045,10 +1045,13 @@
         "context-loading"
       ],
       "load_when": {
-        "always": true,
-        "agents": [],
+        "agents": [
+          "meta-builder-agent"
+        ],
         "task_types": [],
-        "commands": []
+        "commands": [
+          "/meta"
+        ]
       }
     },
     {
@@ -1126,7 +1129,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Workarounds for jq escaping issues",
-      "line_count": 281,
+      "line_count": 286,
       "keywords": [
         "patterns",
         "jq",
@@ -1136,10 +1139,16 @@
         "troubleshooting"
       ],
       "load_when": {
-        "always": true,
-        "agents": [],
+        "agents": [
+          "meta-builder-agent",
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
         "task_types": [],
-        "commands": []
+        "commands": [
+          "/errors",
+          "/meta"
+        ]
       }
     },
     {
@@ -1626,10 +1635,11 @@
         "project"
       ],
       "load_when": {
-        "always": true,
         "agents": [],
         "task_types": [],
-        "commands": []
+        "commands": [
+          "/project-overview"
+        ]
       }
     },
     {
@@ -2501,7 +2511,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "JSON Schema for context index.json validation",
-      "line_count": 127,
+      "line_count": 128,
       "keywords": [
         "schema",
         "index",
@@ -3107,7 +3117,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1103,
+      "line_count": 1161,
       "keywords": [
         "task-lock",
         "concurrency",
