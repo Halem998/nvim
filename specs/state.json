@@ -3137,7 +3137,7 @@
     {
       "project_number": 974,
       "project_name": "add_checklist_contract_to_hard_implementation_variants",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Add a plan-checklist mark-completed contract to the hard implementation variants",
       "description": "Add a plan-checklist mark-completed contract to the two HARD implementation agent variants, which currently have no checklist instruction of any kind.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**. The source store lives at /home/benjamin/.config/nvim/agent-system/, NOT in the cslib repo. The user reloads the agent system via a <leader>al keybinding which redeploys from this nvim source store to cslib and other repos, so the fix must land there to propagate.\n\nFILES:\n- agent-system/extensions/core/agents/general-implementation-hard-agent.md\n- agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md\n\nEMPIRICAL SURVEY (verified by direct grep against the source store): both files return ZERO occurrences of `- [x]` AND ZERO occurrences of the literal `Task {P}.{N}` prefix form. They have neither a correct instruction nor a brittle one - they have no per-item mark-completed instruction at all. For contrast, the non-hard siblings carry: general-implementation-agent 6 mark-completed instructions / 12 prefix occurrences, lean-implementation-agent 2 / 3, nix-implementation-agent 2 / 5.\n\nWHY THIS IS A SEPARATE TASK (decided, do not fold back in): this is a DISTINCT DEFECT CLASS from the brittle-prefix match. The prerequisite task fixes agents that HAVE an instruction whose matching pattern is wrong; this task fixes agents that have NO instruction. Keeping them separate makes each independently revertible. It is the same defect class as the cslib-implementation-agent omission, but in different files and a different extension pairing, so the two run in parallel.\n\nDEPENDENCY - COPY, DO NOT INVENT: the prerequisite task establishes the canonical loosened wording - matching checklist items by their existing item text rather than by a literal `**Task {P}.{N}**:` prefix. Copy that wording verbatim into both files. Do NOT author a prefix-shaped instruction: planner-agent.md emits free-form prose checklist items, so a prefix pattern matches nothing and fails SILENTLY, which is the exact bug being eliminated.\n\nPARALLELISM NOTE: this task and the cslib-implementation-agent task touch disjoint files and are independent of each other. Both depend only on the prerequisite for canonical wording.\n\nREQUIRED SCOPE:\n1. Add the mark-completed instruction (canonical loosened wording) to each of the two files, sited in whatever section each file uses for plan/phase status updates.\n2. Respect each file's existing hard-mode structure - in particular cslib-implementation-hard-agent.md's Stage 5 wrap-up contract (H9) and its sorry_inventory requirements. Add the checklist instruction alongside these; do not restructure or displace them.\n3. Do not alter either file's existing terminal-status or handoff behavior. cslib-implementation-hard-agent.md carries four .orchestrator-handoff.json references (lines ~236, ~259, ~342, ~356); those are out of scope here and are the subject of separate work.\n\nVERIFICATION: after the edit, both files instruct ticking individual plan checklist items, the instruction does not depend on any particular item-title format, and the hard-mode wrap-up/sorry-inventory contracts are intact.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
@@ -3145,12 +3145,18 @@
       "dependencies": [
         971
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/974_add_checklist_contract_to_hard_implementation_variants/reports/01_checklist-contract-hard-variants.md",
+          "type": "report",
+          "summary": "Extracts the canonical checklist-matching contract verbatim, confirms both target files are in this repo's source store with zero existing checklist instructions, specifies exact insertion points (new B-ii sub-section before each file's C step) preserving each file's own dash convention, and flags the web/neovim brittle-prefix gap plus the non-hard cslib sibling gap as out-of-scope follow-ups."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
         "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md"
       ],
-      "last_updated": "2026-07-30T02:11:26Z",
+      "last_updated": "2026-07-30T02:17:25Z",
       "session_id": "sess_1785373759_72035f_974"
     },
     {
