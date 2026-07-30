@@ -18,35 +18,22 @@ Analyze errors.json, identify patterns, and create fix plans.
 
 ### 1. Load Error Data
 
-Read specs/errors.json:
-```json
-{
-  "errors": [
-    {
-      "id": "err_001",
-      "timestamp": "ISO_DATE",
-      "type": "delegation_hang|timeout|build_error|...",
-      "severity": "critical|high|medium|low",
-      "message": "Error description",
-      "context": {
-        "command": "/implement",
-        "task": 259,
-        "agent": "implementer",
-        "file": "path/to/file"
-      },
-      "fix_status": "unfixed|in_progress|fixed",
-      "recurrence_count": 1
-    }
-  ]
-}
-```
+Read `specs/errors.json`. The top-level shape is `{"errors": [...]}` -- an object holding the
+array, never a bare array. The formal machine-checkable contract lives in
+`context/schemas/errors-schema.json`, with the full field/CLI prose contract in
+`context/formats/errors-format.md`; the two must stay in sync. Each record's `context` sub-object
+is a union superset (`session_id`, `command`, `task`, `phase`, `checkpoint`, `agent`, `file`),
+`fix_status` is a closed enum (`unfixed|in_progress|fixed`, plus the deprecated `resolved`
+synonym read-only), and `type` is an open string.
 
 ### 2. Analyze Patterns
 
 Group errors by:
 - **Type**: delegation_hang, timeout, build_error, etc.
 - **Severity**: critical, high, medium, low
-- **Recurrence**: How often each error repeats
+- **Recurrence**: How often each error repeats -- COMPUTED at analysis time by grouping records on
+  `type` (not read from a stored field; the schema has no `recurrence_count` field, since no
+  writer has ever populated one)
 - **Context**: Which commands/agents trigger them
 
 Identify:
@@ -176,20 +163,23 @@ or matching the task description
 For each error:
 1. Analyze root cause
 2. Implement fix
-3. Update error status to "in_progress"
+3. Update error status to "in_progress" via `scripts/errors-append.sh update --id ERR_ID
+   --fix-status in_progress`
 4. Verify fix works
-5. Update error status to "fixed"
+5. Update error status to "fixed" via `scripts/errors-append.sh update` (see step 4 below)
 
 ### 4. Update errors.json
 
-Mark fixed errors:
-```json
-{
-  "fix_status": "fixed",
-  "fixed_date": "ISO_DATE",
-  "fix_task": N
-}
+Mark fixed errors via `errors-append.sh update`, which mutates the record in place under `flock`
+and validates the merged document before writing:
+```bash
+.claude/scripts/errors-append.sh update --id ERR_ID --fix-status fixed --fix-task "$M"
 ```
+
+This sets `fix_status: "fixed"`, a `fixed_date` (defaulting to now when omitted), and `fix_task`.
+Never pass `--fix-status resolved` -- it is a deprecated synonym for `fixed`, schema-valid for
+reading but rejected as an `update` input. See `context/formats/errors-format.md` for the full
+CLI contract.
 
 ### 5. Git Commit
 

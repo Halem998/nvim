@@ -445,13 +445,13 @@ been converted to a per-file list, add the explicit entries instead.
 
 ---
 
-### Phase 6: Reconcile the three conflicting doc blocks [NOT STARTED]
+### Phase 6: Reconcile the three conflicting doc blocks [COMPLETED]
 
 **Goal**: Replace the three inline restatements of the record shape with short field summaries plus
 pointers to the schema and format doc, so drift cannot recur.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/rules/error-handling.md`, the "1. Log the Error" section:
+- [x] `agent-system/extensions/core/rules/error-handling.md`, the "1. Log the Error" section:
       replace the full inline JSON example with a short prose field list (the 7 required fields
       named, `context` described as a superset) plus the pointer sentence: the formal contract
       lives in `context/schemas/errors-schema.json` and the prose contract in
@@ -459,20 +459,21 @@ pointers to the schema and format doc, so drift cannot recur.
       errors.json:" with an instruction to call `scripts/errors-append.sh append`, showing one
       short invocation. Leave the "Session-Aware Error Aggregation" subsection and every other
       section of the file untouched.
-- [ ] `agent-system/extensions/core/commands/errors.md`, "1. Load Error Data" (the read-shape
+- [x] `agent-system/extensions/core/commands/errors.md`, "1. Load Error Data" (the read-shape
       block): replace the inline JSON with a pointer to the schema/format doc plus a one-line
       statement of the top-level shape (`{"errors": [...]}`) that a reader needs to write a `jq`
       query. Delete `recurrence_count` from the example; add a sentence to "2. Analyze Patterns"
       making explicit that recurrence is COMPUTED at analysis time by grouping on `type`, not read
       from a stored field.
-- [ ] `agent-system/extensions/core/commands/errors.md`, "4. Update errors.json" (the update-shape
+- [x] `agent-system/extensions/core/commands/errors.md`, "4. Update errors.json" (the update-shape
       block): replace the inline JSON with an `errors-append.sh update` invocation showing
       `--id`, `--fix-status fixed`, `--fix-task`. Rewrite step 3 of "3. Execute Fixes" ("Update
       error status to 'in_progress'") and step 5 ("Update error status to 'fixed'") to name the
       script as well.
-- [ ] Leave "5. Git Commit" and its `stage_paths` block BYTE-IDENTICAL. Diff-check this explicitly.
-- [ ] Use durable anchors only (script names, schema field names, file paths) — no task numbers, in
-      keeping with the deliverable rule.
+- [x] Leave "5. Git Commit" and its `stage_paths` block BYTE-IDENTICAL. Diff-check this explicitly.
+      *(completed: verified via direct sed-extracted section diff, byte-identical)*
+- [x] Use durable anchors only (script names, schema field names, file paths) — no task numbers, in
+      keeping with the deliverable rule. *(completed: check-task-references.sh PASS, 0 occurrences)*
 
 **Timing**: 1 hour
 
