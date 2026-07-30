@@ -1,34 +1,34 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md",
-      "summary": "Confirms all reported root causes at the line level, live-reproduces all false positives (including a new race-condition finding for the self-subshell case) on this machine read-only, and recommends a unifying single-snapshot ps -eo comm/cgroup/uid/liveness redesign plus a sourceable-main() test design closing all four required regression assertions."
-    }
-  ],
-  "next_steps": "Run /plan 964 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1785373759_72035f_964",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"]
-  },
-  "findings_count": 9,
-  "memory_candidates": [
-    {
-      "content": "ps -eo pid,ppid,uid,tty,etimes,rss,comm,cgroup,args --no-headers is a single atomic snapshot (procps-ng, verified on NixOS) that supplies executable identity (comm), cgroup path, and owning UID in one call -- use this instead of a two-stage 'ps aux | grep <argv substring>' plus a later re-query for ancestor/tree-membership checks. A later, second live re-query against PIDs captured in an earlier snapshot risks a race: transient/short-lived candidate PIDs (e.g. a script's own subshells) may have already exited by the time the second query runs, causing ancestor-walk-style checks to silently fail closed to 'not excluded' (unsafe fail-open) rather than correctly recognizing membership.",
-      "category": "PATTERN",
-      "source_artifact": "specs/964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["ps", "process-matching", "cgroup", "race-condition", "orphan-detection", "procps"]
+      "type": "plan",
+      "path": "specs/964_repair_refresh_orphan_detection/plans/01_refresh-orphan-matcher-repair.md",
+      "summary": "Five-phase plan (4 waves, 5 hours) replacing the /refresh matcher with a single atomic ps -eo snapshot plus four named exclusion predicates, adding the mandatory regression suite and its manifest registration, making both timer ExecStart sites non-destructive, reconciling the remaining doc sites, and sweeping all seven acceptance criteria read-only."
     },
     {
-      "content": "For bash scripts that need both CLI-executable and test-sourceable behavior, guard a main() call with `if [[ \"${BASH_SOURCE[0]}\" == \"${0}\" ]]; then main \"$@\"; fi`. This lets a regression suite `source` the script to unit-test individual predicate/helper functions directly, without spawning subprocesses for every case, while keeping normal execution completely unchanged. This is a standard bash idiom, not a test-only instrumentation hack, and is consistent with the shell-testing convention that scripts under test should never be modified to 'know' they are being tested.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["bash", "testability", "sourceable-script", "main-guard", "unit-testing"]
+      "type": "handoff",
+      "path": "specs/964_repair_refresh_orphan_detection/.orchestrator-handoff.json",
+      "summary": "Orchestrator handoff recording status planned, 0/5 phases, and the six plan-time decisions downstream dispatches must not re-litigate."
+    }
+  ],
+  "next_steps": "Run /implement 964 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1785373759_72035f_964",
+    "agent_type": "planner-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 5,
+    "dependency_waves": [[1], [2, 3], [4], [5]]
+  },
+  "memory_candidates": [
+    {
+      "content": "When a safety-critical selector (process killer, file deleter, mail mutator) is wired to an unattended timer with a --force-equivalent flag, treat the timer's default action and the selector's correctness as two independent defects requiring two independent fixes. Fixing only the selector leaves a latent amplifier: the next selector bug becomes an unattended hourly destructive action. The durable posture is that the automated cadence REPORTS and the destructive mode is an explicit opt-in, applied at BOTH the shipped unit file and the installer that generates an equivalent unit -- otherwise a fresh install and an existing deployment diverge in posture. Additionally, a safety predicate must never degrade silently when its input data source is unavailable (e.g. a ps cgroup column missing on another platform); it must fail loudly and non-zero, because a permissive fallback reintroduces exactly the defect being fixed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/964_repair_refresh_orphan_detection/plans/01_refresh-orphan-matcher-repair.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["safety-critical", "systemd-timer", "non-destructive-default", "fail-loud", "unattended-amplification", "opt-in-force"]
     }
   ]
 }

@@ -35,10 +35,10 @@ next_project_number: 990
         └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
     └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
       └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-964 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+964 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
   └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv (see above)
-971 [RESEARCHED] — Loosen the plan-checklist mark-completed instruction in the imple
+971 [PLANNING] — Loosen the plan-checklist mark-completed instruction in the imple
   └─ 972 [NOT STARTED] — Add a plan-checklist mark-completed contract to agent-system/exte
     └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
@@ -46,12 +46,12 @@ next_project_number: 990
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
     └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
-973 [RESEARCHED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
+973 [PLANNING] — Give reconcile-task-status.sh a defined, safe recovery behavior w
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-987 [RESEARCHED] — Bring context loading back within its own declared budgets and gi
+987 [PLANNING] — Bring context loading back within its own declared budgets and gi
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
   └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
 948 [NOT STARTED] — Add a Stage 7 / final-metadata section to agent-system/extensions
@@ -70,7 +70,7 @@ next_project_number: 990
 
 ### State Write Coverage
 
-969 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+969 [PLANNING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
 
@@ -132,7 +132,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 987. Context budget enforcement: demote always-load bloat, break the meta catch-all, one index schema
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 978
@@ -554,7 +554,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 973. Make reconcile-task-status.sh recover from a malformed handoff status instead of refusing promotion
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -631,7 +631,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 971. Loosen implementation agents' plan-checklist match off the literal **Task {P}.{N}**: prefix
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -696,7 +696,7 @@ DELIVERABLE RULE: deliverables outside `specs/**` must not cite task numbers; us
 ---
 
 ### 969. Extend state-write.sh to cover archive and vault state files and convert residual hand-rolled sites
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: state-write-coverage
 - **Dependencies**: Task 967
@@ -901,11 +901,12 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 964. Repair /refresh orphan detection so live system and session processes are never selected
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md]
+- **Plan**: [964_repair_refresh_orphan_detection/plans/01_refresh-orphan-matcher-repair.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 

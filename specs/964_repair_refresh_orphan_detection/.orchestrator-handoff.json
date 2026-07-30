@@ -1,0 +1,31 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 5-phase plan repairing /refresh orphan detection. Phase 1 replaces the two-stage ps-aux-regex matcher with a single atomic ps -eo snapshot plus four named predicates (comm allow-list, /system.slice cgroup exclusion, invoking-UID ownership, inhibitor-target liveness), deletes the racing ancestor walk, adds --dry-run, and moves the reclaim sum post-exclusion. Phases 2-4 add the mandatory regression suite (with manifest registration), make both timer ExecStart sites non-destructive, and reconcile the two remaining doc sites; Phase 5 sweeps all seven acceptance criteria read-only. Total 5 hours, 4 waves.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/964_repair_refresh_orphan_detection/plans/01_refresh-orphan-matcher-repair.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/964_repair_refresh_orphan_detection/plans/01_refresh-orphan-matcher-repair.md"
+  ],
+  "decisions_made": [
+    "Unifying single-snapshot redesign chosen over patching the existing two-stage matcher, because the second live ps re-query is an inherent race that a walk-direction fix would not close.",
+    "Predicate 4 (inhibitor-target liveness) is retained and independently unit-tested even though comm-based matching already excludes today's observed inhibitors -- acceptance criterion 1(c) requires it, and it is the only predicate protecting OTHER live sessions rather than the invoker's own.",
+    "Timer ExecStart uses --dry-run rather than a bare no-flag invocation, so the non-destructive posture is visible in journalctl; this creates the Phase 3 -> Phase 1 dependency edge.",
+    "Recall is deliberately traded for safety: a missed orphan is preferable to killing a live daemon, and this trade-off is recorded in the script header so a future reader does not widen the match back toward argv.",
+    "manifest.json provides.scripts registration of the new test file is called out as an explicit, separately-verified Phase 2 task, since it falls outside the declared six-file file_scope.",
+    "Phase 1's cgroup-unavailable path fails loudly and exits non-zero; a silent fallback to the old regex is prohibited."
+  ],
+  "dead_ends": [],
+  "sorry_inventory": [],
+  "continuation_path": null,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "plan_markers_verified": true
+}
