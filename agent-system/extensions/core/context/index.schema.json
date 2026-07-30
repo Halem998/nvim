@@ -33,6 +33,7 @@
   "$defs": {
     "entry": {
       "type": "object",
+      "$comment": "description, tags, and tier are deliberately ABSENT from this entry shape, not oversights: 'description' duplicates 'summary' and its unique detail is meant to be folded into 'summary' (not carried as a second free-text field); 'tags' is a naming mismatch for the already-declared 'keywords' property below (use 'keywords'); 'tier' is meant to be derived algorithmically from load_when shape rather than hand-authored, since no entry in practice ever populated it accurately. additionalProperties stays false so these cannot silently reappear.",
       "required": ["path", "domain", "summary", "line_count"],
       "additionalProperties": false,
       "properties": {
@@ -79,7 +80,7 @@
         },
         "load_when": {
           "type": "object",
-          "description": "Conditions for automatic loading",
+          "description": "Conditions for automatic loading. Closed key set: agents / commands / task_types / always -- languages and skills were removed as never-queried at runtime (their only historical consumers were defensive exclusions in validate-context-budgets.sh's dead-entry guard); additionalProperties stays false so a future undeclared discriminator is forbidden rather than silently accepted.",
           "additionalProperties": false,
           "properties": {
             "agents": {
@@ -98,13 +99,13 @@
               "description": "Commands that should load this context",
               "examples": [["/implement", "/plan"]]
             },
-            "languages": {
+            "task_types": {
               "type": "array",
               "items": {
                 "type": "string"
               },
-              "description": "Task languages that trigger loading",
-              "examples": [["general", "meta"]]
+              "description": "Task types that trigger loading -- the primary task-type discriminator (supersedes the removed 'languages' key)",
+              "examples": [["meta"], ["lean4"]]
             },
             "always": {
               "type": "boolean",

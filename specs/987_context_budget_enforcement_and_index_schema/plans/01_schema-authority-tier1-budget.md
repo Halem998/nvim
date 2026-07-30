@@ -1,7 +1,7 @@
 # Implementation Plan: Task #987
 
 - **Task**: 987 - Context budget enforcement: demote always-load bloat, break the meta catch-all, one index schema
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 6.25 hours
 - **Dependencies**: 978 (index-validator/line-count repair — COMPLETED; precondition confirmed satisfied: all 470 entries across 19 extensions carry `line_count`)
 - **Research Inputs**: specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md
@@ -156,29 +156,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Reconcile index.schema.json into the single authority [NOT STARTED]
+### Phase 1: Reconcile index.schema.json into the single authority [COMPLETED]
 
 **Goal**: `index.schema.json` declares exactly the field set real extensions need, and records in
 prose which fields are deliberately excluded and why.
 
 **Tasks**:
-- [ ] Add `task_types` to `$defs.entry.properties.load_when.properties` as an array of strings,
+- [x] Add `task_types` to `$defs.entry.properties.load_when.properties` as an array of strings,
       with a description naming it the primary task-type discriminator and examples drawn from
-      real values (`["meta"]`, `["lean4"]`).
-- [ ] Delete the `languages` property from `load_when` (confirmed dead at runtime; only consumer
-      is a defensive exclusion in `validate-context-budgets.sh`'s dead-entry guard).
-- [ ] Leave `load_when`'s `additionalProperties: false` in place so `skills` and any future
+      real values (`["meta"]`, `["lean4"]`). *(completed)*
+- [x] Delete the `languages` property from `load_when` (confirmed dead at runtime; only consumer
+      is a defensive exclusion in `validate-context-budgets.sh`'s dead-entry guard). *(completed)*
+- [x] Leave `load_when`'s `additionalProperties: false` in place so `skills` and any future
       undeclared discriminator stay forbidden; add a `description` line on the `load_when` object
       recording that the closed key set is `agents` / `commands` / `task_types` / `always`, and
-      that `languages` and `skills` were removed as never-queried.
-- [ ] Add a prose note (as a `$comment` or an extended top-level `description`) recording that
+      that `languages` and `skills` were removed as never-queried. *(completed)*
+- [x] Add a prose note (as a `$comment` or an extended top-level `description`) recording that
       `description`, `tags`, and `tier` are deliberately absent at entry level: `description`
       duplicates `summary` and its unique detail is to be folded into `summary`, `tags` is a naming
       mismatch for the already-declared `keywords`, and `tier` is to be derived from `load_when`
-      shape rather than hand-authored.
-- [ ] Confirm entry-level `required` stays `["path", "domain", "summary", "line_count"]` and
-      `additionalProperties: false` is retained.
-- [ ] Bump `version` if the file carries one, or leave absent if it does not.
+      shape rather than hand-authored. *(completed: added as `$comment` on the entry def)*
+- [x] Confirm entry-level `required` stays `["path", "domain", "summary", "line_count"]` and
+      `additionalProperties: false` is retained. *(completed: unchanged, confirmed)*
+- [x] Bump `version` if the file carries one, or leave absent if it does not. *(completed: no
+      version key in the file; left absent)*
 
 **Timing**: 0.75 hours
 
@@ -198,19 +199,19 @@ prose which fields are deliberately excluded and why.
 
 ---
 
-### Phase 2: Add Rules T and U to check-extension-docs.sh, advisory-first [NOT STARTED]
+### Phase 2: Add Rules T and U to check-extension-docs.sh, advisory-first [COMPLETED]
 
 **Goal**: Schema non-conformance and EXTENSION.md over-length are detected and reported loudly on
 every doc-lint run, without changing the script's current exit code.
 
 **Tasks**:
-- [ ] Introduce `SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-advisory}"` with a
+- [x] Introduce `SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-advisory}"` with a
       comment block explaining it is a SIBLING to `INDEX_TRUTH_GATE_MODE` (which defaults `hard`
       and whose remediation already landed), not an overload of it, and that it defaults advisory
-      because the extension migration has not yet happened.
-- [ ] Add `schema_conformance_report()` mirroring `index_truth_report()`: route to `fail()` when
-      the mode is `hard`, otherwise `info "ADVISORY (not yet blocking): ..."`.
-- [ ] Add `check_index_entries_schema()` (Rule T), per-extension, source-level, following
+      because the extension migration has not yet happened. *(completed)*
+- [x] Add `schema_conformance_report()` mirroring `index_truth_report()`: route to `fail()` when
+      the mode is `hard`, otherwise `info "ADVISORY (not yet blocking): ..."`. *(completed)*
+- [x] Add `check_index_entries_schema()` (Rule T), per-extension, source-level, following
       `check_line_count_accuracy()`'s hand-written jq idiom — never a new ajv/jsonschema
       dependency. For each entry in `$ext_path/index-entries.json` assert: (a) `path`, `domain`,
       `subdomain`, `summary`, `line_count` all present; (b) no `description` key, no `tags` key;
@@ -218,14 +219,15 @@ every doc-lint run, without changing the script's current exit code.
       (so a present-but-empty `languages` array is reported, since the goal is zero declarations);
       (d) `domain` is one of `core`/`project`/`system`. Report each violation through
       `schema_conformance_report()` with the extension name and entry path in the message.
-- [ ] Add `check_extension_md_length()` (Rule U), per-extension: `wc -l` of
+      *(completed)*
+- [x] Add `check_extension_md_length()` (Rule U), per-extension: `wc -l` of
       `$ext_path/EXTENSION.md`, report through `schema_conformance_report()` when it exceeds 60,
       naming the actual and the limit. Skip silently when the file is absent (`check_file` already
-      fails that case).
-- [ ] Register both in the per-extension loop next to `check_line_count_accuracy`.
-- [ ] Update the script header: add the two new bullets to the leading checks list, and add
+      fails that case). *(completed)*
+- [x] Register both in the per-extension loop next to `check_line_count_accuracy`. *(completed)*
+- [x] Update the script header: add the two new bullets to the leading checks list, and add
       `T - check_index_entries_schema` and `U - check_extension_md_length` to the Rule letter
-      index in first-introduced order.
+      index in first-introduced order. *(completed)*
 
 **Timing**: 1.75 hours
 
@@ -238,6 +240,17 @@ every doc-lint run, without changing the script's current exit code.
 implementation time by counting the ADVISORY lines the run actually emits per rule and comparing
 against these numbers; a materially different count means the predicate is wrong, not that the
 codebase changed. Record the observed counts.
+
+**Observed at implementation time**: Rule U fired for exactly the 7 predicted extensions (core,
+cslib, email, lean, literature, nix, present) — prediction confirmed. Rule T fired for 17 of 19
+(all except epidemiology and slidev), not the predicted 14. This is NOT a predicate bug: the
+predicate is correct per-clause (verified against the fixture in Phase 4 and against manual
+per-extension checks). The 14-count in this Scope Hypothesis only tallied the
+`load_when.languages`-driven violations; it did not enumerate the `load_when.skills` violation,
+which independently flags 3 more extensions (core: 9 entries, literature: 6 entries, memory: 8
+entries) that have no `languages` usage at all. 14 (`languages`-driven) + 3
+(`skills`-only, previously uncounted) = 17, the true total. Recorded here and in the
+`index_entries_schema_migration` follow-on task's description so its scope is accurate.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/check-extension-docs.sh` - new gate-mode variable,
@@ -254,27 +267,32 @@ codebase changed. Record the observed counts.
 
 ---
 
-### Phase 3: Correct the two competing schema examples [NOT STARTED]
+### Phase 3: Correct the two competing schema examples [COMPLETED]
 
 **Goal**: Neither prose document contradicts `index.schema.json`; both point at it as the
 authority.
 
 **Tasks**:
-- [ ] In `extension-slim-standard.md`'s "Index Integration" section, replace the example's
+- [x] In `extension-slim-standard.md`'s "Index Integration" section, replace the example's
       `description` with `summary`, replace `load_when.languages` with `load_when.task_types`, and
       add `domain`/`subdomain` so the example is actually schema-conformant as written.
-- [ ] Add one line under that example naming
+      *(completed: also corrected the path prefix from `context/project/{ext}/...` to the
+      canonical `project/{ext}/...` form per extensions/README.md's own canonical-path rule)*
+- [x] Add one line under that example naming
       `agent-system/extensions/core/context/index.schema.json` as the authoritative field
       definition, so a future edit to the example cannot silently become a fourth authority.
-- [ ] Note in the "Size Limit" section that the 60-line limit is now lint-enforced (Rule U in
+      *(completed)*
+- [x] Note in the "Size Limit" section that the 60-line limit is now lint-enforced (Rule U in
       `check-extension-docs.sh`), and correct the stale "Current total across 14 extensions: ~1,111
       lines" figure — recount it against the 19 extensions that exist now, or replace the absolute
       figure with a pointer to the lint output so it cannot go stale again (prefer the latter).
-- [ ] In `agent-system/extensions/README.md`'s "index-entries.json Format" section, replace
+      *(completed: replaced the absolute figure with a pointer to the lint output, per the
+      plan's own stated preference)*
+- [x] In `agent-system/extensions/README.md`'s "index-entries.json Format" section, replace
       `load_when.languages` with `load_when.task_types` and add the required `summary` and
-      `line_count` fields to the "Correct example".
-- [ ] Reduce that section to a canonical-path rule plus a pointer to `index.schema.json` and
-      `extension-slim-standard.md`, rather than a third free-standing field example.
+      `line_count` fields to the "Correct example". *(completed)*
+- [x] Reduce that section to a canonical-path rule plus a pointer to `index.schema.json` and
+      `extension-slim-standard.md`, rather than a third free-standing field example. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -295,31 +313,41 @@ authority.
 
 ---
 
-### Phase 4: Fixture test for Rules T and U [NOT STARTED]
+### Phase 4: Fixture test for Rules T and U [COMPLETED]
 
 **Goal**: A committed test proves both new rules fire on a crafted violation and stay silent on a
 conformant input — the task's "fails on a fixture index entry" bar.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh` following
+- [x] Create `agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh` following
       the existing test idiom in that directory (`test-validate-no-task-references.sh`'s
-      assert-triggers / assert-clean shape).
-- [ ] Build a temp fixture extension tree (`manifest.json`, `EXTENSION.md`, `README.md`,
+      assert-triggers / assert-clean shape). *(completed)*
+- [x] Build a temp fixture extension tree (`manifest.json`, `EXTENSION.md`, `README.md`,
       `index-entries.json`, `context/`) under `mktemp -d`, point `EXT_DIR` at it, and run
-      `check-extension-docs.sh` against it.
-- [ ] Rule T positive cases, one fixture entry each: a `description` key present; a `tags` key
+      `check-extension-docs.sh` against it. *(completed)*
+- [x] Rule T positive cases, one fixture entry each: a `description` key present; a `tags` key
       present; a `load_when.languages` array present; a missing `line_count`; a `domain` outside
-      the enum. Assert a `Rule T:` line naming the entry appears for each.
-- [ ] Rule T negative case: a fully conformant entry. Assert no `Rule T:` line mentions it.
-- [ ] Rule U positive case: a 61-line `EXTENSION.md`. Assert a `Rule U:` line appears. Negative
+      the enum. Assert a `Rule T:` line naming the entry appears for each. *(completed)*
+- [x] Rule T negative case: a fully conformant entry. Assert no `Rule T:` line mentions it.
+      *(completed)*
+- [x] Rule U positive case: a 61-line `EXTENSION.md`. Assert a `Rule U:` line appears. Negative
       case: a 60-line file. Assert none does (the limit is "exceeds 60", not "reaches 60" — the
-      research recorded `formal` at exactly 60L as OK).
-- [ ] Assert with `SCHEMA_CONFORMANCE_GATE_MODE=hard` that the fixture run exits non-zero, so the
-      test pins the severity wiring rather than only the message text.
-- [ ] Declare `tests/test-index-entries-schema.sh` in `agent-system/extensions/core/manifest.json`
+      research recorded `formal` at exactly 60L as OK). *(completed)*
+- [x] Assert with `SCHEMA_CONFORMANCE_GATE_MODE=hard` that the fixture run exits non-zero, so the
+      test pins the severity wiring rather than only the message text. *(completed)*
+- [x] Declare `tests/test-index-entries-schema.sh` in `agent-system/extensions/core/manifest.json`
       `provides.scripts` (alongside the seven `tests/*.sh` entries already there) — otherwise
-      Rule Q fails on an undeclared script file on disk.
-- [ ] Clean up the temp fixture on exit (trap), and do not leave anything under `specs/`.
+      Rule Q fails on an undeclared script file on disk. *(completed)*
+- [x] Clean up the temp fixture on exit (trap), and do not leave anything under `specs/`.
+      *(completed)*
+
+**Implementation note**: the script-under-test resolution deliberately inverts the deploy-first
+pattern other tests in this directory use (see `test-phase-heading-patterns.sh`'s
+`LIB_CANDIDATES`) — it prefers the SOURCE-STORE sibling copy of `check-extension-docs.sh` first,
+falling back to the deployed `.claude/scripts/` copy only if the source-store copy is absent.
+Confirmed empirically: preferring deploy-first here made every Rule T/U assertion fail silently
+against a stale, not-yet-redeployed script, since this test exists specifically to validate logic
+still living only in the source store during this same task's Phase 2.
 
 **Timing**: 1 hour
 
@@ -346,34 +374,39 @@ least one fixture case; add cases if a branch is unexercised.
 
 ---
 
-### Phase 5: Bring Tier-1 under 500 lines and remove the project-overview double-load [NOT STARTED]
+### Phase 5: Bring Tier-1 under 500 lines and remove the project-overview double-load [COMPLETED]
 
 **Goal**: `validate-context-budgets.sh`'s always-loaded total is at or under its 500-line target,
 and `repo/project-overview.md` is loaded once rather than twice.
 
 **Tasks**:
-- [ ] Capture the baseline: regenerate the deploy tree
+- [x] Capture the baseline: regenerate the deploy tree
       (`bash .claude/scripts/deploy-headless.sh`) and record
       `bash .claude/scripts/validate-context-budgets.sh` always-loaded count, total lines, and the
-      per-entry breakdown, plus its dead-entry section.
-- [ ] In `agent-system/extensions/core/index-entries.json`, remove `always: true` from
+      per-entry breakdown, plus its dead-entry section. *(completed: baseline was 6 entries, 996
+      lines, OVER by 496; dead-entry section named 3 unrelated entries, none of the three
+      demotion targets)*
+- [x] In `agent-system/extensions/core/index-entries.json`, remove `always: true` from
       `patterns/context-discovery.md` and give it a real hook — `agents: ["meta-builder-agent"]`
       plus `commands: ["/meta"]` — on the grounds that CLAUDE.md already inlines the canonical
       adaptive query, so the full document is system-builder reference material, not per-prompt
-      material.
-- [ ] Remove `always: true` from `patterns/jq-escaping-workarounds.md` and give it a real hook
+      material. *(completed)*
+- [x] Remove `always: true` from `patterns/jq-escaping-workarounds.md` and give it a real hook
       scoped to the agents that actually author jq (`meta-builder-agent`,
       `general-implementation-agent`, `general-implementation-hard-agent`) plus
       `commands: ["/errors", "/meta"]`. CLAUDE.md's own jq-safety section already carries the
-      essential `| not` pattern inline, so the deep reference is genuinely on-demand.
-- [ ] Remove `always: true` from `repo/project-overview.md` and give it
+      essential `| not` pattern inline, so the deep reference is genuinely on-demand. *(completed)*
+- [x] Remove `always: true` from `repo/project-overview.md` and give it
       `commands: ["/project-overview"]`. Keep the `@`-import at `merge-sources/claudemd.md` — it
       is the more universal of the two mechanisms and does not depend on an agent running the
       dynamic-discovery query. This removes the DUPLICATE, not the load: the file is still present
       in every session via the import, and `merge-sources/claudemd.md` is not edited in this phase.
-- [ ] Confirm no demoted entry is left hookless (each must retain at least one of
-      `agents`/`commands`/`task_types`), so none registers in the dead-entry check.
-- [ ] Redeploy and re-measure.
+      *(completed: `@`-import at merge-sources/claudemd.md confirmed unedited)*
+- [x] Confirm no demoted entry is left hookless (each must retain at least one of
+      `agents`/`commands`/`task_types`), so none registers in the dead-entry check. *(completed:
+      all three retain 1-5 hook entries)*
+- [x] Redeploy and re-measure. *(completed: 3 entries, 334 lines, status OK — matching the Scope
+      Hypothesis's predicted 334L exactly)*
 
 **Timing**: 1 hour
 
@@ -403,33 +436,44 @@ appears.
 
 ---
 
-### Phase 6: Full-gate verification and follow-on task creation [NOT STARTED]
+### Phase 6: Full-gate verification and follow-on task creation [COMPLETED]
 
 **Goal**: Every gate is green (or its verdict is unchanged from baseline), and the four deferred
 work items exist as real tasks carrying their own verification bars.
 
 **Tasks**:
-- [ ] Regenerate the deploy tree and run the full gate set: `bash .claude/scripts/verify-deploy.sh`
+- [x] Regenerate the deploy tree and run the full gate set: `bash .claude/scripts/verify-deploy.sh`
       (which includes doc-lint gate 3 and task-reference lint gate 4),
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`,
-      `bash .claude/scripts/validate-context-budgets.sh`, and the new fixture test.
-- [ ] Confirm `check-extension-docs.sh`'s exit code matches the Phase 2 baseline (the two new
+      `bash .claude/scripts/validate-context-budgets.sh`, and the new fixture test. *(completed:
+      `verify-deploy.sh` PASS -- 15 check(s), 0 failure(s); fixture test 9/9 PASS; Tier-1 334L OK)*
+- [x] Confirm `check-extension-docs.sh`'s exit code matches the Phase 2 baseline (the two new
       advisory rules must not have changed the verdict), and that Rules R and S are still hard.
-- [ ] Confirm `check-task-references.sh` passes — none of the edited deliverables outside
-      `specs/**` may cite a task number.
-- [ ] Record the observed Rule T / Rule U advisory counts in the implementation summary, against
-      the Phase 2 Scope Hypothesis.
-- [ ] Create the four follow-on tasks (FU-1..FU-4 from the Scope Decision table) by appending to
+      *(completed: `INDEX_TRUTH_GATE_MODE` untouched, still defaults `hard`; intermediate runs
+      showed transient FAIL noise from concurrently-committing sibling tasks in this same
+      session touching unrelated files (`vault-operation.sh`, `jq-escaping-workarounds.md`,
+      `task-lock.md`) -- none attributable to Rule T/U, confirmed by grep; final post-redeploy
+      run is clean)*
+- [x] Confirm `check-task-references.sh` passes — none of the edited deliverables outside
+      `specs/**` may cite a task number. *(completed: PASS, 0 unexempted occurrences)*
+- [x] Record the observed Rule T / Rule U advisory counts in the implementation summary, against
+      the Phase 2 Scope Hypothesis. *(completed: recorded in Phase 2's Scope Hypothesis section
+      above and in the implementation summary)*
+- [x] Create the four follow-on tasks (FU-1..FU-4 from the Scope Decision table) by appending to
       `specs/state.json` `active_projects` with numbers allocated from `next_project_number` at
       execution time — never hardcoded — each with `task_type: "meta"`, `topic: "agent-system"`, a
       description carrying its scope and inherited verification bar verbatim from that table, the
       binding source-store rule, and a `file_scope` reflecting what the research actually
       established it touches. Set FU-4's `dependencies` to the allocated FU-1 and FU-3 numbers;
-      set every FU's `dependencies` to include 987.
-- [ ] Regenerate TODO.md with `bash .claude/scripts/generate-todo.sh` and confirm the four new
-      entries render.
-- [ ] Record the two out-of-scope risks in the implementation summary so they are not lost:
+      set every FU's `dependencies` to include 987. *(completed via `state-write.sh` under the
+      mutex: 990=index_entries_schema_migration, 991=meta_catchall_decomposition,
+      992=extension_md_slim_down, 993=promote_schema_gates_to_hard, deps [987,990,992] on 993)*
+- [x] Regenerate TODO.md with `bash .claude/scripts/generate-todo.sh` and confirm the four new
+      entries render. *(completed via `state-write.sh --regen-todo`; all four titles confirmed
+      present)*
+- [x] Record the two out-of-scope risks in the implementation summary so they are not lost:
       `install-extension.sh`'s stale index-merge jq logic, and the `nvim`/`neovim` naming mismatch.
+      *(completed: recorded in the implementation summary's Follow-ups section)*
 
 **Timing**: 1 hour
 
@@ -457,16 +501,16 @@ the follow-on task that owns it. Any item with no owner is a gap to close before
 
 ## Testing & Validation
 
-- [ ] `jq empty` passes on `index.schema.json`, `core/index-entries.json`, and `core/manifest.json`.
-- [ ] `bash -n` passes on `check-extension-docs.sh` and the new fixture test.
-- [ ] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh`
+- [x] `jq empty` passes on `index.schema.json`, `core/index-entries.json`, and `core/manifest.json`.
+- [x] `bash -n` passes on `check-extension-docs.sh` and the new fixture test.
+- [x] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh`
       passes all assertions, including the `SCHEMA_CONFORMANCE_GATE_MODE=hard` non-zero-exit case.
-- [ ] `check-extension-docs.sh` exit code is unchanged from the pre-task baseline; Rule T and
+- [x] `check-extension-docs.sh` exit code is unchanged from the pre-task baseline; Rule T and
       Rule U advisories are visible in its output.
-- [ ] `validate-context-budgets.sh` always-loaded total is <= 500 lines with status OK.
-- [ ] `check-task-references.sh` passes (no task numbers in any deliverable outside `specs/**`).
-- [ ] `verify-deploy.sh` reports no new failures.
-- [ ] Every write in this task targeted `agent-system/extensions/**` or `specs/**`; nothing under
+- [x] `validate-context-budgets.sh` always-loaded total is <= 500 lines with status OK.
+- [x] `check-task-references.sh` passes (no task numbers in any deliverable outside `specs/**`).
+- [x] `verify-deploy.sh` reports no new failures.
+- [x] Every write in this task targeted `agent-system/extensions/**` or `specs/**`; nothing under
       `.claude/**` was hand-authored.
 
 ## Artifacts & Outputs

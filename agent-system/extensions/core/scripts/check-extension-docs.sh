@@ -37,6 +37,13 @@
 #     controlled by INDEX_TRUTH_GATE_MODE)
 #   - deployed `.claude/context/**/*.md` files with no entry in `.claude/context/index.json`
 #     (project-wide, not per-extension; severity controlled by INDEX_TRUTH_GATE_MODE)
+#   - per-extension source `index-entries.json` schema conformance against
+#     context/index.schema.json's real field set: required keys present, forbidden keys
+#     (description, tags, non-agents/commands/task_types/always load_when keys) absent, domain
+#     value in the enum (source-level, per entry; severity controlled by
+#     SCHEMA_CONFORMANCE_GATE_MODE, defaults advisory)
+#   - EXTENSION.md exceeding the 60-line limit from extension-slim-standard.md (severity
+#     controlled by SCHEMA_CONFORMANCE_GATE_MODE, defaults advisory)
 #
 # Rule letter index (checks named "Rule X" in function comments below, in first-introduced
 # order; unlettered checks are unnamed/structural and are not part of this index):
@@ -60,6 +67,8 @@
 #   Q - check_undeclared_scripts            : script file on disk not in provides.scripts
 #   R - check_line_count_accuracy          : source index-entries.json line_count wrong/null/missing
 #   S - check_deployed_index_orphans       : deployed context/*.md file with no index.json entry
+#   T - check_index_entries_schema         : source index-entries.json entry violates index.schema.json's field set
+#   U - check_extension_md_length          : EXTENSION.md exceeds the 60-line limit
 #
 # Exit codes:
 #   0 - all extensions pass (Core Deploy-Drift Advisories, if any, do NOT affect this)
@@ -631,6 +640,111 @@ check_line_count_accuracy() {
   done
 }
 
+# SCHEMA_CONFORMANCE_GATE_MODE controls severity for Rules T and U (the two checks this block
+# introduces) -- a SIBLING to INDEX_TRUTH_GATE_MODE above, not an overload of it.
+# INDEX_TRUTH_GATE_MODE already defaults to "hard" because Rules R/S landed after their
+# remediation was already complete; routing these new, pre-remediation rules through it would
+# either hard-fail 14 of 19 extensions (Rule T) and 7 of 19 (Rule U) on day one, or force
+# demoting Rules R/S back to advisory. Defaults to "advisory" until the bulk index-entries.json
+# migration and EXTENSION.md slim-down follow-on tasks land; promote to "hard" only once those
+# have shipped (mirrors the ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE promotion precedent).
+SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-advisory}"
+
+schema_conformance_report() {
+  local msg="$1"
+  if [[ "$SCHEMA_CONFORMANCE_GATE_MODE" == "hard" ]]; then
+    fail "$msg"
+  else
+    info "ADVISORY (not yet blocking): $msg"
+  fi
+}
+
+# Rule T: source index-entries.json schema conformance, per extension, per entry.
+#
+# Hand-written jq conformance check against context/index.schema.json's real shape --
+# deliberately not a new ajv/jsonschema dependency, following check_line_count_accuracy's own
+# idiom. Flags: (a) any of path/domain/subdomain/summary/line_count missing; (b) a present
+# 'description' or 'tags' key (both are schema-forbidden -- 'description' duplicates 'summary',
+# 'tags' is a naming mismatch for 'keywords'); (c) a load_when key outside
+# agents/commands/task_types/always (this deliberately also flags a present-but-empty
+# 'languages'/'skills' array, since the goal is zero declarations, not merely zero non-empty
+# ones); (d) a 'domain' value outside core/project/system.
+check_index_entries_schema() {
+  local ext_path="$1"
+  local index_file="$ext_path/index-entries.json"
+
+  [[ -f "$index_file" ]] || return 0
+  jq -e '.entries' "$index_file" > /dev/null 2>&1 || return 0
+
+  local entry_count i path domain has_subdomain has_summary has_line_count
+  local has_description has_tags load_when_keys extra_keys key
+  entry_count=$(jq '.entries | length' "$index_file" 2>/dev/null) || return 0
+
+  for ((i = 0; i < entry_count; i++)); do
+    path=$(jq -r ".entries[$i].path" "$index_file")
+    domain=$(jq -r ".entries[$i].domain // \"\"" "$index_file")
+
+    if [[ "$(jq -r ".entries[$i] | has(\"path\")" "$index_file")" != "true" ]]; then
+      schema_conformance_report "Rule T: index-entries.json entry [$i] is missing the path key"
+    fi
+    if [[ "$(jq -r ".entries[$i] | has(\"domain\")" "$index_file")" != "true" ]]; then
+      schema_conformance_report "Rule T: index-entries.json entry '$path' is missing the domain key"
+    fi
+    if [[ "$(jq -r ".entries[$i] | has(\"subdomain\")" "$index_file")" != "true" ]]; then
+      schema_conformance_report "Rule T: index-entries.json entry '$path' is missing the subdomain key"
+    fi
+    if [[ "$(jq -r ".entries[$i] | has(\"summary\")" "$index_file")" != "true" ]]; then
+      schema_conformance_report "Rule T: index-entries.json entry '$path' is missing the summary key"
+    fi
+    if [[ "$(jq -r ".entries[$i] | has(\"line_count\")" "$index_file")" != "true" ]]; then
+      schema_conformance_report "Rule T: index-entries.json entry '$path' is missing the line_count key"
+    fi
+
+    has_description=$(jq -r ".entries[$i] | has(\"description\")" "$index_file")
+    if [[ "$has_description" == "true" ]]; then
+      schema_conformance_report "Rule T: index-entries.json entry '$path' has forbidden key 'description' (fold its detail into 'summary')"
+    fi
+    has_tags=$(jq -r ".entries[$i] | has(\"tags\")" "$index_file")
+    if [[ "$has_tags" == "true" ]]; then
+      schema_conformance_report "Rule T: index-entries.json entry '$path' has forbidden key 'tags' (use 'keywords' instead)"
+    fi
+
+    load_when_keys=$(jq -r ".entries[$i].load_when // {} | keys[]" "$index_file" 2>/dev/null)
+    while IFS= read -r key; do
+      [[ -z "$key" ]] && continue
+      case "$key" in
+        agents|commands|task_types|always) ;;
+        *)
+          schema_conformance_report "Rule T: index-entries.json entry '$path' has forbidden load_when key '$key' (allowed: agents, commands, task_types, always)"
+          ;;
+      esac
+    done <<< "$load_when_keys"
+
+    if [[ -n "$domain" && "$domain" != "core" && "$domain" != "project" && "$domain" != "system" ]]; then
+      schema_conformance_report "Rule T: index-entries.json entry '$path' has domain '$domain' outside the enum (core, project, system)"
+    fi
+  done
+}
+
+# Rule U: EXTENSION.md length limit, per extension.
+#
+# extension-slim-standard.md's 60-line maximum for EXTENSION.md was, until this rule, unenforced
+# prose. Reports (never silently skips) when the file exceeds 60 lines; a missing EXTENSION.md is
+# already covered by check_file's own required-file FAIL and is not double-reported here.
+check_extension_md_length() {
+  local ext_path="$1"
+  local ext_md="$ext_path/EXTENSION.md"
+  local actual
+
+  [[ -f "$ext_md" ]] || return 0
+
+  actual=$(wc -l < "$ext_md")
+  actual=${actual// /}
+  if (( actual > 60 )); then
+    schema_conformance_report "Rule U: EXTENSION.md is $actual lines, exceeding the 60-line limit"
+  fi
+}
+
 # Rules B + C: Routing target consistency and deployment
 #
 # Policy rationale (restored after a later sync reverted it from the stale extension-source
@@ -1168,6 +1282,8 @@ for ext_path in "$EXT_DIR"/*/; do
       check_undeclared_rules "$ext_path"
       check_undeclared_scripts "$ext_path"
       check_line_count_accuracy "$ext_path"
+      check_index_entries_schema "$ext_path"
+      check_extension_md_length "$ext_path"
       check_deployed_rule_drift "$ext_path"
       check_routing_consistency "$ext_path"
       check_deployed_skill_agents "$ext_path"

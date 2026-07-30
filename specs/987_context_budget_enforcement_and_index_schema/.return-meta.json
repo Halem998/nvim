@@ -1,40 +1,55 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
   "session_id": "sess_1785373759_72035f_987",
   "task_number": 987,
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md",
-      "summary": "Six-phase plan reconciling index.schema.json into one authority, adding advisory Rules T/U to check-extension-docs.sh with a fixture test, correcting both competing prose examples, bringing Tier-1 always-load from 996L to a predicted 334L, and creating four named follow-on tasks for the deferred bulk migrations."
+      "type": "summary",
+      "path": "specs/987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md",
+      "summary": "All six plan phases completed: reconciled index.schema.json into the single authority, added advisory Rules T/U with a passing fixture test, corrected both competing prose examples, brought Tier-1 always-load from 996 to 334 lines, and created four follow-on tasks (990-993)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Reconciled index.schema.json into the single schema authority (task_types allowed, languages removed); added advisory Rules T/U to check-extension-docs.sh with a passing fixture test; corrected both competing prose examples; brought Tier-1 always-load from 996 to 334 lines; created four follow-on tasks (990-993) for the deferred bulk migrations."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/index.schema.json",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/docs/reference/standards/extension-slim-standard.md",
+    "agent-system/extensions/README.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/state.json",
+    "specs/TODO.md",
+    "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md",
+    "specs/987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "check-extension-docs.sh test fixtures that drive the script as a subprocess (EXT_DIR pointed at a synthetic extension) must resolve the script-under-test with SOURCE-STORE FIRST, deployed-tree FALLBACK -- the opposite priority from library tests like test-phase-heading-patterns.sh's deploy-first pattern. A test validating logic still landing only in the source store (not yet redeployed) will silently test a stale deployed copy and produce false negatives on every assertion if it prefers deploy-first. Confirmed empirically while building test-index-entries-schema.sh: preferring .claude/scripts/check-extension-docs.sh first made all 9 assertions fail until the candidate order was flipped to prefer the sibling source-store copy.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["check-extension-docs", "fixture-test", "source-store", "deploy-tree", "test-resolution"]
+    },
+    {
+      "content": "When a plan's Scope Hypothesis predicts a violation count for a new hand-written jq lint predicate (e.g. 'Rule T fires for 14 of 19 extensions'), verify the prediction's OWN enumeration completeness before assuming a mismatch means the predicate is wrong. In this task, the actual count (17) differed from the predicted count (14) not because the predicate was buggy, but because the prediction's source research only tallied one violation type (load_when.languages) and omitted a second, independent violation type (load_when.skills) that flags 3 additional extensions with zero languages usage. Always decompose an unexpected count by violation-type before concluding the code is wrong.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["scope-hypothesis", "lint-rule", "verification", "check-extension-docs", "reconciliation"]
     }
   ],
   "metadata": {
-    "phase_count": 6,
-    "estimated_hours": 6.25,
-    "complexity": "complex",
-    "dependency_waves": [[1, 5], [2, 3], [4], [6]],
-    "research_integrated": true,
-    "plan_version": 1,
-    "scope_decision": "Adopted the research's split recommendation with the boundary moved: Phase A plus the Tier-1 demotion, the extensions/README.md correction, and the EXTENSION.md length check land here; four follow-on tasks (index_entries_schema_migration, meta_catchall_decomposition, extension_md_slim_down, promote_schema_gates_to_hard) carry the deferred bulk work and two of the three VERIFICATION BAR lines.",
-    "research_correction": "Rule T cannot reuse INDEX_TRUTH_GATE_MODE (already defaults hard; Rules R/S depend on that). Plan introduces sibling SCHEMA_CONFORMANCE_GATE_MODE defaulting advisory.",
-    "verification_bar_coverage": {
-      "tier1_under_500_lines": "Phase 5 (this task)",
-      "doc_lint_fails_on_fixture": "Phases 2 and 4 (this task)",
-      "zero_per_agent_budget_violations": "follow-on: meta_catchall_decomposition",
-      "zero_load_when_languages_declarations": "follow-on: index_entries_schema_migration"
-    }
+    "session_id": "sess_1785373759_72035f_987",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   },
-  "memory_candidates": [
-    {
-      "content": "In check-extension-docs.sh, a new lint rule whose codebase is not yet remediated must get its OWN gate-severity variable, never reuse an existing one. INDEX_TRUTH_GATE_MODE defaults to 'hard' because Rules R/S landed after their remediation was complete; routing a new pre-remediation rule through it would either hard-fail 14 of 19 extensions on day one or silently demote R/S. The established pattern is a sibling variable defaulting 'advisory' with its own reporter function (mirroring index_truth_report), promoted to 'hard' in a later dedicated task once the migration it gates has landed. ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE is the precedent; both carry comments documenting the promotion. Generalizes: gate-severity variables are per-remediation-timeline, not per-check-family.",
-      "category": "PATTERN",
-      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["check-extension-docs", "gate-severity", "advisory-first", "lint-promotion", "INDEX_TRUTH_GATE_MODE", "doc-lint"]
-    }
-  ],
-  "next_steps": "Run /implement 987 to execute the plan"
+  "next_steps": "None -- task complete. Four follow-on tasks (990 index_entries_schema_migration, 991 meta_catchall_decomposition, 992 extension_md_slim_down, 993 promote_schema_gates_to_hard) exist in state.json/TODO.md for the deferred bulk work, per the plan's own scope decision."
 }

@@ -6,9 +6,10 @@ EXTENSION.md files are injected into CLAUDE.md context when loaded via the exten
 
 ## Size Limit
 
-**Maximum: 60 lines** for any EXTENSION.md file.
-
-Current total across 14 extensions: ~1,111 lines. Target after migration: ~350 lines (~68% reduction).
+**Maximum: 60 lines** for any EXTENSION.md file. Lint-enforced: `check-extension-docs.sh`'s
+Rule U flags any EXTENSION.md exceeding 60 lines (severity controlled by
+`SCHEMA_CONFORMANCE_GATE_MODE`, defaulting `advisory`) -- run the lint for the current violator
+count rather than trusting a hand-maintained total, which goes stale as extensions are added.
 
 ## Required Sections
 
@@ -58,15 +59,21 @@ Every new context file must have an entry in the extension's `index-entries.json
 
 ```json
 {
-  "path": "context/project/{ext}/domain/conversion-tables.md",
-  "description": "Format conversion support matrix with fallback chains",
+  "path": "project/{ext}/domain/conversion-tables.md",
+  "domain": "project",
+  "subdomain": "{ext}",
+  "summary": "Format conversion support matrix with fallback chains",
   "line_count": 45,
   "load_when": {
     "agents": ["relevant-agent"],
-    "languages": ["{ext}"]
+    "task_types": ["{ext}"]
   }
 }
 ```
+
+The authoritative field definition lives in
+`agent-system/extensions/core/context/index.schema.json` -- if this example and that schema ever
+disagree, the schema wins; fix this example rather than treating it as a second authority.
 
 ## Migration Template
 

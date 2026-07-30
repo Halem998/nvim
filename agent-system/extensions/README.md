@@ -97,14 +97,21 @@ Do not edit `.claude/CLAUDE.md` directly -- changes will be overwritten. Edit th
       "path": "project/neovim/README.md",
       "domain": "project",
       "subdomain": "neovim",
+      "summary": "Neovim extension README",
+      "line_count": 42,
       "load_when": {
-        "languages": ["neovim"],
+        "task_types": ["neovim"],
         "agents": ["neovim-research-agent"]
       }
     }
   ]
 }
 ```
+
+The authoritative field definition is
+`agent-system/extensions/core/context/index.schema.json`; see also
+`agent-system/extensions/core/docs/reference/standards/extension-slim-standard.md`'s Index
+Integration section for the same canonical shape.
 
 ## Post-Load Verification
 

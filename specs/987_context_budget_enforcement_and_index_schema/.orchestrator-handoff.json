@@ -1,28 +1,43 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Six-phase plan. ADOPTED the research's split recommendation with the boundary moved: this task lands the reconciled index.schema.json, advisory Rules T (schema conformance) + U (EXTENSION.md 60-line limit) in check-extension-docs.sh, corrections to BOTH competing prose examples (extension-slim-standard.md and extensions/README.md), a fixture test, and the Tier-1 demotion (context-discovery.md 311L + jq-escaping-workarounds.md 281L + project-overview.md 70L lose always:true, 996L -> predicted 334L). Four follow-on tasks are named and created in Phase 6 for the deferred bulk work. One research recommendation CORRECTED: Rule T cannot reuse INDEX_TRUTH_GATE_MODE (which already defaults hard and whose Rules R/S depend on that); the plan introduces a sibling SCHEMA_CONFORMANCE_GATE_MODE defaulting advisory instead.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All six plan phases completed. Reconciled index.schema.json into the single schema authority (task_types allowed, languages removed, exclusion rationale recorded in a $comment). Added advisory Rules T (schema conformance) and U (EXTENSION.md length) to check-extension-docs.sh behind a new sibling SCHEMA_CONFORMANCE_GATE_MODE (default advisory), with a fixture test (9/9 assertions pass, including the SCHEMA_CONFORMANCE_GATE_MODE=hard severity-wiring case). Corrected both competing prose examples (extension-slim-standard.md and agent-system/extensions/README.md) to the reconciled shape with authority pointers. Brought Tier-1 always-load from 996 lines/6 entries to 334 lines/3 entries (target <=500), matching the plan's predicted 334L exactly, by demoting context-discovery.md, jq-escaping-workarounds.md, and project-overview.md off always:true and giving each a real agents/commands hook; project-overview.md's @-import in merge-sources/claudemd.md was left untouched, removing the duplicate load path without losing the single remaining one. Created four follow-on tasks (990 index_entries_schema_migration, 991 meta_catchall_decomposition, 992 extension_md_slim_down, 993 promote_schema_gates_to_hard) via the mutex-guarded state-write.sh, with 993 depending on [987, 990, 992]. Final verify-deploy.sh run: PASS, 15/15 checks, 0 failures.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md"
+    },
     {
       "type": "plan",
       "path": "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "implement",
+  "next_action_hint": "none",
   "files_modified": [
-    "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md"
+    "agent-system/extensions/core/context/index.schema.json",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/docs/reference/standards/extension-slim-standard.md",
+    "agent-system/extensions/README.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/state.json",
+    "specs/TODO.md",
+    "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md",
+    "specs/987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md"
   ],
   "decisions_made": [
-    "ADOPTED the research's Phase-A-now / spawn-B-E recommendation, but expanded the boundary to also include agent-system/extensions/README.md (the third schema authority), the Tier-1 demotion in core/index-entries.json (one file, three entries, the only route to the 'Tier 1 <= 500 lines' verification bar), and the EXTENSION.md length check (validator half only, not the content trims)",
-    "CORRECTED the research: Rule T must NOT reuse INDEX_TRUTH_GATE_MODE (it already defaults hard and Rules R/S depend on it staying hard). The plan introduces a sibling SCHEMA_CONFORMANCE_GATE_MODE defaulting advisory with its own schema_conformance_report(), mirroring how INDEX_TRUTH_GATE_MODE relates to ORPHAN_GATE_MODE",
-    "Resolved the project-overview double-load in the direction the research recommended (drop always:true, keep the @-import), but noted the demoted entry MUST gain a commands:[/project-overview] hook or it registers in validate-context-budgets.sh's dead-entry check",
-    "file_scope treated as advisory not binding, per state-management.md's own definition of it as descriptive/anticipated; the research proved it an undercount",
-    "Stated explicitly which VERIFICATION BAR lines this task does NOT meet: 'zero per-agent violations' transfers to FU-2, 'zero load_when.languages declarations' transfers to FU-1",
-    "Four follow-on tasks named: FU-1 index_entries_schema_migration, FU-2 meta_catchall_decomposition (including algorithmic tier derivation in validate-context-budgets.sh), FU-3 extension_md_slim_down, FU-4 promote_schema_gates_to_hard (depends FU-1 + FU-3). Numbers allocated from next_project_number at implement time, never hardcoded"
+    "Introduced sibling SCHEMA_CONFORMANCE_GATE_MODE (default advisory) rather than reusing INDEX_TRUTH_GATE_MODE (which already defaults hard and whose Rules R/S depend on staying hard), per the plan's own correction to the research recommendation",
+    "Corrected extension-slim-standard.md's example path prefix from context/project/{ext}/... to the canonical project/{ext}/... form (matching extensions/README.md's own canonical-path rule) -- a small scope expansion within the plan's 'file_scope is advisory' allowance, needed so the corrected example did not carry a second, silent inconsistency",
+    "Fixed index.schema.json's own line_count entry in core/index-entries.json (127->128) as a direct side effect of the Phase 1 schema edit growing the file by one line, avoiding a self-inflicted fresh Rule R drift",
+    "Reconciled the Phase 2 Scope Hypothesis's predicted Rule T count (14 of 19) against the actual observed count (17 of 19): the 14-count only tallied load_when.languages violations, omitting the independent load_when.skills violation that flags 3 more extensions (core, literature, memory) with zero languages usage. Recorded as 14+3=17 in the plan and carried into follow-on task 990's description so its scope is accurate",
+    "Fixture test's check-extension-docs.sh resolution deliberately prefers the source-store sibling copy over the deployed .claude/scripts/ copy (inverting the deploy-first pattern other tests in this directory use), since this suite validates logic landing in the source store during the same task's earlier phase, before any redeploy"
   ],
-  "dead_ends": [],
-  "phases_completed": 0,
+  "dead_ends": [
+    "Initial fixture-test candidate-order (deploy-tree-first, matching test-phase-heading-patterns.sh's LIB_CANDIDATES pattern) silently tested the stale, not-yet-redeployed .claude/scripts/check-extension-docs.sh copy and produced 6 false-negative assertion failures before the resolution order was inverted to source-store-first"
+  ],
+  "phases_completed": 6,
   "phases_total": 6
 }
