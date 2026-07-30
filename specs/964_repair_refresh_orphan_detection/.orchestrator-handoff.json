@@ -1,31 +1,46 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 5-phase plan repairing /refresh orphan detection. Phase 1 replaces the two-stage ps-aux-regex matcher with a single atomic ps -eo snapshot plus four named predicates (comm allow-list, /system.slice cgroup exclusion, invoking-UID ownership, inhibitor-target liveness), deletes the racing ancestor walk, adds --dry-run, and moves the reclaim sum post-exclusion. Phases 2-4 add the mandatory regression suite (with manifest registration), make both timer ExecStart sites non-destructive, and reconcile the two remaining doc sites; Phase 5 sweeps all seven acceptance criteria read-only. Total 5 hours, 4 waves.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Completed all 5 phases. Phase 1 replaced claude-refresh.sh's two-stage ps-aux-regex-then-ancestor-walk matcher with a single atomic ps -eo snapshot plus four named predicates (comm allow-list, /system.slice cgroup exclusion, invoking-UID ownership, inhibitor-target liveness), deleted the racing ancestor walk, added a main()/BASH_SOURCE guard, --dry-run, and a post-exclusion reclaim-memory accumulator. Phase 2 shipped scripts/tests/test-claude-refresh-matcher.sh (12/12 assertions, RED-proven against the pre-fix script at commit 7e79b2695) and registered it in manifest.json. Phase 3 made both timer ExecStart sites (claude-refresh.service and install-systemd-timer.sh) non-destructive by default (--dry-run instead of --force). Phase 4 reconciled skill-refresh/SKILL.md and commands/refresh.md with the real mechanism, forwarded --dry-run through Step 2, and recorded the non-destructive timer posture. Phase 5 swept all seven acceptance criteria read-only: live machine now reports 0 orphans (previously 10, all confirmed false positives, individually cross-checked against the new predicates); reclaim figure verified post-exclusion via a targeted fake-ps harness; --dry-run banner verified via a harness run with a synthetic orphan present; residual-claim grep, check-task-references.sh, and manifest jq checks all clean; no file written under .claude/**.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/964_repair_refresh_orphan_detection/plans/01_refresh-orphan-matcher-repair.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/964_repair_refresh_orphan_detection/summaries/01_refresh-orphan-matcher-repair-summary.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "implement",
+  "next_action_hint": "complete",
   "files_modified": [
-    "specs/964_repair_refresh_orphan_detection/plans/01_refresh-orphan-matcher-repair.md"
+    "agent-system/extensions/core/scripts/claude-refresh.sh",
+    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/systemd/claude-refresh.service",
+    "agent-system/extensions/core/scripts/install-systemd-timer.sh",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "agent-system/extensions/core/commands/refresh.md",
+    "specs/964_repair_refresh_orphan_detection/plans/01_refresh-orphan-matcher-repair.md",
+    "specs/964_repair_refresh_orphan_detection/summaries/01_refresh-orphan-matcher-repair-summary.md",
+    "specs/964_repair_refresh_orphan_detection/.return-meta.json"
   ],
   "decisions_made": [
     "Unifying single-snapshot redesign chosen over patching the existing two-stage matcher, because the second live ps re-query is an inherent race that a walk-direction fix would not close.",
+    "is_claude_executable_comm's allow-list is exact-match on comm (claude, plus node gated by an argv entrypoint check), not a prefix/substring match -- this is what correctly excludes claude-memory-tracker (kernel-truncated comm 'claude-memory-t') without a bespoke exception.",
     "Predicate 4 (inhibitor-target liveness) is retained and independently unit-tested even though comm-based matching already excludes today's observed inhibitors -- acceptance criterion 1(c) requires it, and it is the only predicate protecting OTHER live sessions rather than the invoker's own.",
-    "Timer ExecStart uses --dry-run rather than a bare no-flag invocation, so the non-destructive posture is visible in journalctl; this creates the Phase 3 -> Phase 1 dependency edge.",
+    "Timer ExecStart uses --dry-run rather than a bare no-flag invocation, so the non-destructive posture is visible in journalctl.",
     "Recall is deliberately traded for safety: a missed orphan is preferable to killing a live daemon, and this trade-off is recorded in the script header so a future reader does not widen the match back toward argv.",
-    "manifest.json provides.scripts registration of the new test file is called out as an explicit, separately-verified Phase 2 task, since it falls outside the declared six-file file_scope.",
-    "Phase 1's cgroup-unavailable path fails loudly and exits non-zero; a silent fallback to the old regex is prohibited."
+    "The regression suite's mutation check is pinned to commit 7e79b2695 (the last commit before the Phase 1 rewrite), not HEAD, since HEAD at test-authoring time already is the fixed script."
   ],
-  "dead_ends": [],
+  "dead_ends": [
+    "A naive $PPID-based guess at 'the running script's own pid' inside the self-exclusion test harness's fake ps was wrong: snapshot=$(take_snapshot) forks an intermediate subshell to run that function, so the process that execs the fake ps is a grandchild, not a direct child, of the real script -- $PPID named the intermediate subshell. Fixed by walking real ancestry with the system ps and taking the highest ancestor whose argv still names the script under test."
+  ],
   "sorry_inventory": [],
   "continuation_path": null,
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "plan_markers_verified": true
 }

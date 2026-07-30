@@ -1,9 +1,58 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/964_repair_refresh_orphan_detection/summaries/01_refresh-orphan-matcher-repair-summary.md",
+      "summary": "Full acceptance-bar sweep (7/7 PASS) for the claude-refresh.sh matcher rewrite, regression suite, non-destructive timer, and doc reconciliation."
+    },
+    {
+      "type": "code",
+      "path": "agent-system/extensions/core/scripts/claude-refresh.sh",
+      "summary": "Matcher rewrite: single ps -eo snapshot, four exclusion predicates, main()/BASH_SOURCE guard, --dry-run, post-exclusion reclaim figure."
+    },
+    {
+      "type": "test",
+      "path": "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+      "summary": "New regression suite, 12/12 assertions GREEN against the fix and RED against the pre-fix commit."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced /refresh's orphan-process matcher (two-stage ps-aux-regex-then-ancestor-walk) with a single atomic ps -eo snapshot and four independently-testable exclusion predicates, closing the false positives that misidentified a system OOM daemon, live sleep inhibitors, a memory-tracker service, and the script's own subshells as orphans (10/10 confirmed false positives on this machine, now 0). Shipped the required regression suite (RED-proven against the pre-fix script), made the hourly systemd timer non-destructive by default, fixed the pre-exclusion reclaim figure, added a genuine --dry-run preview path, and reconciled every doc site that claimed a safety property the code did not implement. All seven acceptance criteria verified PASS."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/claude-refresh.sh",
+    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/systemd/claude-refresh.service",
+    "agent-system/extensions/core/scripts/install-systemd-timer.sh",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "agent-system/extensions/core/commands/refresh.md",
+    "specs/964_repair_refresh_orphan_detection/plans/01_refresh-orphan-matcher-repair.md",
+    "specs/964_repair_refresh_orphan_detection/summaries/01_refresh-orphan-matcher-repair-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "bash `$PPID` inside a nested function-command-substitution (e.g. `snapshot=$(take_snapshot)` where take_snapshot() itself does `out=$(ps ...)`) names the intermediate subshell forked for the OUTER function substitution, not the true top-level script's own $$ -- because capturing a function's stdout via `$(...)` always forks a subshell (functions can't be exec'd directly), the process that ultimately execs an external command nested inside is a grandchild, not a direct child, of the real script. When a test harness needs to identify 'the real top-level pid' from inside a faked/mocked subprocess, walk the process's own ancestry with the real system `ps` and take the HIGHEST ancestor whose argv still matches the target script -- a subshell forked (not exec'd) retains identical argv to its parent, so the first matching ancestor found walking upward is not necessarily the real top-level pid; the last match before the first non-matching ancestor is.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/964_repair_refresh_orphan_detection/summaries/01_refresh-orphan-matcher-repair-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "PPID", "command-substitution", "subshell", "process-ancestry", "test-harness"]
+    },
+    {
+      "content": "For an orphan/leaked-process matcher (or any tool that can terminate processes), design exclusion as comm-identity allow-list + cgroup/uid ownership checks + a liveness check on a DIFFERENT process a candidate protects (e.g. a sleep-inhibitor's held target pid), never as an argv-substring match or an ancestor-only process-tree walk. An ancestor walk structurally cannot reach a sibling (e.g. the invoking session's own sleep inhibitor, a child of the same parent shell, not an ancestor of the invoker), and re-querying a PID captured in an earlier snapshot is a race if that PID is a transient subshell that has already exited by the time of the second query -- the fix must decide everything from ONE atomic snapshot, with the sole exception of the liveness check on a different, protected process. Deliberately trade recall for safety: a leaked process the allow-list fails to recognize survives (false negative), which is strictly preferable to ever terminating a live system daemon or another session's process (false positive).",
+      "category": "PATTERN",
+      "source_artifact": "specs/964_repair_refresh_orphan_detection/summaries/01_refresh-orphan-matcher-repair-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["process-matcher", "orphan-detection", "ps-snapshot", "safety-predicate", "false-positive"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785373759_72035f_964",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

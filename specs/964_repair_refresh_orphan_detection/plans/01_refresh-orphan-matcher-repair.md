@@ -1,7 +1,7 @@
 # Implementation Plan: Task #964
 
 - **Task**: 964 - Repair /refresh orphan detection so live system and session processes are never selected
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md
@@ -478,42 +478,75 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Acceptance-bar sweep and final verification [NOT STARTED]
+### Phase 5: Acceptance-bar sweep and final verification [COMPLETED]
 
 - **Goal:** Verify all seven acceptance criteria hold, on the real machine, read-only.
 
 - **Tasks:**
-  - [ ] Criterion 1 — regression tests exist and pass: run
+  - [x] Criterion 1 — regression tests exist and pass: run
         `bash agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh` and
         confirm all four named assertions executed (not skipped) and passed. Re-confirm the
-        recorded RED-against-pre-fix result from Phase 2.
-  - [ ] Criterion 2 — zero orphans on a live machine: run
+        recorded RED-against-pre-fix result from Phase 2. *(PASS: 12/12 assertions, exit 0)*
+  - [x] Criterion 2 — zero orphans on a live machine: run
         `bash agent-system/extensions/core/scripts/claude-refresh.sh` with no flags and report the
         count. Cross-check against the 10 previously reported: for each of the earlier false
         positives still running, confirm which predicate now excludes it. **Never invoke
-        `--force`.**
-  - [ ] Criterion 3 — reclaim figure matches post-exclusion selection: verify by inspection that
+        `--force`.** *(PASS: 0 orphans, 6 active sessions. All 8 still-running originals
+        individually cross-checked: earlyoom and all 6 systemd-inhibit PIDs fail the comm
+        allow-list at the candidacy gate; claude-memory-tracker's truncated comm
+        "claude-memory-t" also fails the exact-match allow-list. The 2 transient self-subshell
+        PIDs had already exited; the new design no longer forks pipeline subshells for candidate
+        gathering and additionally has zero-query self-exclusion as defense-in-depth.)*
+  - [x] Criterion 3 — reclaim figure matches post-exclusion selection: verify by inspection that
         the displayed figure sums only surviving PIDs. With zero survivors the figure must be
         zero/absent, not a stale pre-exclusion total. If the live machine yields zero orphans and
         so cannot exercise a non-empty sum, say so explicitly and verify the accumulator by
         reading the code path plus a targeted unit-style check rather than claiming an untested
-        pass.
-  - [ ] Criterion 4 — real preview path and true doc: `--dry-run` accepted, banner printed, no
-        mutation performed; `commands/refresh.md`'s description matches observed output.
-  - [ ] Criterion 5 — non-destructive timer/installer: confirm neither `ExecStart` carries
-        `--force` and both name a flag the script accepts.
-  - [ ] Criterion 6 — no doc site claims an unimplemented safety property: re-run the Phase 4
-        residual-claim grep across the whole source store, including the script header.
-  - [ ] Criterion 7 — `bash -n` clean on every edited script:
+        pass. *(PASS: live machine yields zero orphans, so the figure is absent as required, not
+        a stale total. Non-empty-sum path verified via a targeted fake-ps harness run with two
+        surviving 500 KB/1500 KB claude candidates PLUS a huge 99999 KB earlyoom row: reported
+        total was exactly 1.9 MB (500+1500 KB), confirming the earlyoom row's memory is excluded
+        from the sum, not merely from the printed list.)*
+  - [x] Criterion 4 — real preview path and true doc: `--dry-run` accepted, banner printed, no
+        mutation performed; `commands/refresh.md`'s description matches observed output. *(PASS:
+        `--dry-run` accepted, exit 0, no processes touched (0 orphans on this machine anyway).
+        Banner behavior additionally verified via a fake-ps harness run WITH a synthetic orphan
+        present -- the `[DRY RUN] Preview only -- no processes will be terminated.` banner
+        printed correctly above the report. Doc description in `commands/refresh.md`'s Options
+        table matches.)*
+  - [x] Criterion 5 — non-destructive timer/installer: confirm neither `ExecStart` carries
+        `--force` and both name a flag the script accepts. *(PASS: both `ExecStart` lines plus
+        the commented system-wide alternative now read `--dry-run`; confirmed accepted by
+        `claude-refresh.sh` directly.)*
+  - [x] Criterion 6 — no doc site claims an unimplemented safety property: re-run the Phase 4
+        residual-claim grep across the whole source store, including the script header. *(PASS:
+        all three remaining hits are accurate `TTY == "?"` necessary-but-not-sufficient
+        descriptions -- the script header, SKILL.md, and refresh.md -- no uncorrected claim.)*
+  - [x] Criterion 7 — `bash -n` clean on every edited script:
         `claude-refresh.sh`, `install-systemd-timer.sh`, `test-claude-refresh-matcher.sh`.
-  - [ ] Run `bash .claude/scripts/check-task-references.sh` (or the source-store fallback path) to
-        confirm no task-number citation landed in any of the seven edited deliverables.
-  - [ ] `jq empty agent-system/extensions/core/manifest.json` and confirm the test registration
-        is present.
-  - [ ] Confirm no file was written under `.claude/**` by this task: `git status --short` shows
-        changes only under `agent-system/extensions/core/**` and `specs/964_*/`.
-  - [ ] Report each criterion as PASS or explicitly NOT VERIFIED with the reason. Do not report a
-        criterion as passing on inspection alone where a command could have been run.
+        *(PASS: all three clean.)*
+  - [x] Run `bash .claude/scripts/check-task-references.sh` (or the source-store fallback path) to
+        confirm no task-number citation landed in any of the seven edited deliverables. *(PASS:
+        0 unexempted occurrences across all 4 scanned trees.)*
+  - [x] `jq empty agent-system/extensions/core/manifest.json` and confirm the test registration
+        is present. *(PASS: valid JSON; both `claude-refresh.sh` and
+        `tests/test-claude-refresh-matcher.sh` present.)*
+  - [x] Confirm no file was written under `.claude/**` by this task: `git status --short` shows
+        changes only under `agent-system/extensions/core/**` and `specs/964_*/`. *(PASS: all four
+        of this task's commits (phases 1-4) touch only
+        `agent-system/extensions/core/scripts/claude-refresh.sh`,
+        `agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh`,
+        `agent-system/extensions/core/manifest.json`,
+        `agent-system/extensions/core/systemd/claude-refresh.service`,
+        `agent-system/extensions/core/scripts/install-systemd-timer.sh`,
+        `agent-system/extensions/core/skills/skill-refresh/SKILL.md`,
+        `agent-system/extensions/core/commands/refresh.md`, and
+        `specs/964_repair_refresh_orphan_detection/plans/...`. Other unrelated modified/untracked
+        paths visible in `git status --short` belong to concurrently-running agents on other
+        tasks (969/971/973/987), not this task.)*
+  - [x] Report each criterion as PASS or explicitly NOT VERIFIED with the reason. Do not report a
+        criterion as passing on inspection alone where a command could have been run. *(All
+        seven criteria PASS -- see per-criterion notes above and the implementation summary.)*
 
 - **Timing:** 0.75 hours
 
@@ -542,18 +575,20 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean: `claude-refresh.sh`, `install-systemd-timer.sh`,
+- [x] `bash -n` clean: `claude-refresh.sh`, `install-systemd-timer.sh`,
       `test-claude-refresh-matcher.sh`
-- [ ] `test-claude-refresh-matcher.sh` GREEN against the fixed script, all four named assertions
+- [x] `test-claude-refresh-matcher.sh` GREEN against the fixed script, all four named assertions
       executed
-- [ ] `test-claude-refresh-matcher.sh` RED against the pre-fix script (`git show HEAD:`)
-- [ ] Live no-flag run reports ZERO orphans (read-only; `--force` never invoked at any point)
-- [ ] `--dry-run`, `--force`, `--help`, and no-flag invocations all accepted
-- [ ] Sourcing `claude-refresh.sh` defines the four predicates without executing `main()`
-- [ ] `jq empty manifest.json` valid and `tests/test-claude-refresh-matcher.sh` registered
-- [ ] Residual-false-claim grep across the source store returns no uncorrected hit
-- [ ] `check-task-references.sh` clean
-- [ ] No file written under `.claude/**`
+- [x] `test-claude-refresh-matcher.sh` RED against the pre-fix script (`git show HEAD:`)
+      *(pinned to commit `7e79b2695`, the last commit before Phase 1's rewrite, since `HEAD` at
+      test-authoring time already IS the fixed script)*
+- [x] Live no-flag run reports ZERO orphans (read-only; `--force` never invoked at any point)
+- [x] `--dry-run`, `--force`, `--help`, and no-flag invocations all accepted
+- [x] Sourcing `claude-refresh.sh` defines the four predicates without executing `main()`
+- [x] `jq empty manifest.json` valid and `tests/test-claude-refresh-matcher.sh` registered
+- [x] Residual-false-claim grep across the source store returns no uncorrected hit
+- [x] `check-task-references.sh` clean
+- [x] No file written under `.claude/**`
 
 ## Artifacts & Outputs
 
