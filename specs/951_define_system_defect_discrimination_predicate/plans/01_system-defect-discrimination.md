@@ -200,36 +200,41 @@ All four phases edit or gate on the same single file, so no two phases may run i
 
 ---
 
-### Phase 2: Complete Signal A for the missing-artifacts violation class [NOT STARTED]
+### Phase 2: Complete Signal A for the missing-artifacts violation class [COMPLETED]
 
 **Goal**: Add the one evidenced Signal A instance covering a `null`/absent `artifacts` field on a
 success status, with the empirical evidence that no current detector fires on it.
 
 **Tasks**:
-- [ ] Reproduce the detector evidence before writing anything:
+- [x] Reproduce the detector evidence before writing anything:
       `echo '{"status":"planned","artifacts":null}' | jq -r '(.artifacts // []) | length'` and
       `... | jq -r '.artifacts[0].path // ""'; echo $?` — confirm `0` and empty-with-exit-0, so
       neither arm of the `evidence_reason` computation fires. Contrast with the bare-string-array
-      form, which exits 5 and therefore does fire via `jq_artifact_failure`.
-- [ ] Confirm `artifacts` is a required field in both schemas:
+      form, which exits 5 and therefore does fire via `jq_artifact_failure`. *(completed: confirmed
+      both outputs exactly as described)*
+- [x] Confirm `artifacts` is a required field in both schemas:
       `return-metadata-file.md:117` (`### artifacts (required)`) and `handoff-schema.md`'s
-      `### artifacts (required)` section.
-- [ ] Add a fifth row to the Signal A instance table naming the class (a name of the
+      `### artifacts (required)` section. *(completed: both confirmed present)*
+- [x] Add a fifth row to the Signal A instance table naming the class (a name of the
       `ARTIFACTS_MISSING_ON_SUCCESS` shape, consistent with the existing four SCREAMING_SNAKE
       names), defining it as a `null`, absent, or empty `artifacts` field accompanying a success
-      status where both owning schemas mark the field required.
-- [ ] In the "Where it is already computed" column for that row, state plainly that it is **not**
+      status where both owning schemas mark the field required. *(completed)*
+- [x] In the "Where it is already computed" column for that row, state plainly that it is **not**
       currently computed anywhere, and cross-reference the new Gap B text (Phase 3) rather than
-      naming a site that does not check it.
-- [ ] Add a short paragraph beneath the table recording the empirical finding: the existing
+      naming a site that does not check it. *(completed: cross-references "the detection hole
+      recorded under Class (b) below", the durable anchor Phase 3 adds)*
+- [x] Add a short paragraph beneath the table recording the empirical finding: the existing
       detector's two arms are `artifacts_length > 0 && empty path` and `jq_artifact_failure`, and a
       `null` field satisfies neither. Cite `scripts/orchestrate-recover-outcome.sh` by the line
-      range verified in this phase, not by the range asserted here.
-- [ ] State explicitly that this instance defines what counts as a violation and that building a
-      detector for it is downstream work, so the scope boundary is not widened.
-- [ ] Re-read the "A schema-conformant failure is always task work" section and confirm no tension:
+      range verified in this phase, not by the range asserted here. *(completed: cites lines 92-93,
+      matching Phase 1's corrected range)*
+- [x] State explicitly that this instance defines what counts as a violation and that building a
+      detector for it is downstream work, so the scope boundary is not widened. *(completed)*
+- [x] Re-read the "A schema-conformant failure is always task work" section and confirm no tension:
       a missing required field is a schema violation, not a conformant failure. If any sentence
-      there now reads ambiguously, adjust that sentence — do not weaken the invariant.
+      there now reads ambiguously, adjust that sentence — do not weaken the invariant. *(completed:
+      no tension found, no edit needed to that section; the new row's closing sentence explicitly
+      states the missing-field case is a schema violation, not a conformant failure)*
 
 **Timing**: 0.75 hours
 

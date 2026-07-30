@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Complete Signal A for the missing-artifacts violation class",
+  "started_at": "2026-07-29T00:10:00Z",
+  "last_updated": "2026-07-29T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Reproduce detector evidence (null artifacts jq probes)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm artifacts required in both schemas", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add fifth Signal A row (ARTIFACTS_MISSING_ON_SUCCESS) with empirical paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 4, "description": "Re-read schema-conformant-failure invariant section for tension", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

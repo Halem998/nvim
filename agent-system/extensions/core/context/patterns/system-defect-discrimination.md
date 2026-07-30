@@ -80,6 +80,39 @@ decision, not silently done by a detection site):
 | `ARTIFACTS_SHAPE_MISMATCH` — an artifacts array that is non-empty but yields no `.path` | `scripts/orchestrate-recover-outcome.sh:205` |
 | `HANDOFF_MISLOCATED` — a handoff written outside its task directory | the stray-handoff sweep, see registry below |
 | `META_MISSING_AFTER_NARRATION` — a `.return-meta.json` missing or unparseable after a dispatch that produced subagent-authored narration (i.e., not the infra-failure case — see [infra-failure-discrimination.md](infra-failure-discrimination.md) for that adjacent, already-solved discrimination) | the completion-claim gate, see registry below |
+| `ARTIFACTS_MISSING_ON_SUCCESS` — a `null`, absent, or empty `artifacts` field accompanying a success status (`researched\|planned\|implemented`), where both owning schemas mark the field required ([return-metadata-file.md](../formats/return-metadata-file.md)'s `### artifacts (required)` section and [handoff-schema.md](../../docs/architecture/handoff-schema.md)'s `### \`artifacts\` (required)` section) | **not currently computed anywhere** — see the detection hole recorded under Class (b) below |
+
+Not every instance above yet has a working detector — see the `ARTIFACTS_MISSING_ON_SUCCESS` row:
+it defines what counts as a violation of this kind, not what currently fires. Building a detector
+for it is downstream work; adding it here does not widen this task's scope boundary (no recorder,
+no wiring, no command change).
+
+**Empirical finding motivating the row above**: the existing `ARTIFACTS_SHAPE_MISMATCH` detector
+(`scripts/orchestrate-recover-outcome.sh:205`, comment at lines 92-93 above) has exactly two firing
+arms — `artifacts_length > 0` with an empty resolved path, and a non-zero `jq` exit while resolving
+`artifact_path`/`artifact_type`/`artifact_summary` (`jq_artifact_failure`). A `null` or absent
+`artifacts` field satisfies **neither** arm:
+
+```
+$ echo '{"status":"planned","artifacts":null}' | jq -r '(.artifacts // []) | length'
+0
+$ echo '{"status":"planned","artifacts":null}' | jq -r '.artifacts[0].path // ""'; echo $?
+       # (empty output)
+0
+```
+
+Both arms report clean (`evidence_suspect=false, evidence_reason="NONE"`) even though the field is
+required by both owning schemas. By contrast, the bare-string-array form (`artifacts:
+["some/path.md"]`) exits non-zero while indexing `.path` on a string, so it **does** fire — but via
+the `jq_artifact_failure` arm, not the length-and-empty-path arm the in-file comment's prose
+describes as the mismatch's signature. This is not hypothetical: a planner handoff during this same
+task's own orchestration run emitted `status: "planned"` with `artifacts: null`, and the artifact
+row had to be reconstructed by hand because no detector fired on either arm.
+
+A missing required field is a schema *violation*, not a conformant failure — see "A
+schema-conformant failure is always task work" below; this new instance does not weaken that
+invariant, it names a previously-unlisted violation of the same kind the other four instances
+already cover.
 
 ### Signal B — attribution
 
