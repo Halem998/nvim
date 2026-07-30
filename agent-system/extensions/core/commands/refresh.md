@@ -18,7 +18,7 @@ Comprehensive cleanup of Claude Code resources - terminate orphaned processes an
 
 | Flag | Description |
 |------|-------------|
-| `--dry-run` | Preview both process and directory cleanup without making changes |
+| `--dry-run` | Preview both process and directory cleanup without making changes. Process cleanup shows the same orphan report as the no-flag path, labeled with an explicit `[DRY RUN]` banner; directory cleanup shows the 8-hour preview. |
 | `--force` | Skip confirmation and execute immediately (8-hour default for directory cleanup) |
 | (no flags) | Interactive mode with process cleanup and age threshold selection |
 
@@ -60,6 +60,13 @@ lower-frequency, higher-consequence operation than process cleanup, and explicit
 a conservative threshold is the intended posture. Moving it onto the timer is a separable,
 out-of-scope change.
 
+**The hourly cadence itself is non-destructive.** `claude-refresh.timer`'s shipped `ExecStart`
+invokes `claude-refresh.sh --dry-run`, not `--force` -- the unattended, no-confirmation hourly run
+reports/logs found orphans to the systemd journal rather than terminating them. `--force` is a
+deliberate, manual opt-in only (direct invocation, or a hand-edited unit); a matcher defect can no
+longer be amplified into unattended hourly kills regardless of how correct the matcher looks at
+review time.
+
 ### Stale Session-Scoped Orchestration Files
 
 `/refresh` also sweeps the `specs/` root for stale session-scoped
@@ -74,7 +81,9 @@ is scoped to the two repo-level singletons directly under `specs/`; it does not 
 `specs/{NNN}_{SLUG}/`, whose per-task runtime files are already isolated by task directory.
 
 Like the task-lock reap above, this cleanup runs **only on explicit `/refresh` invocation**, not
-on the hourly systemd cadence.
+on the hourly systemd cadence -- and, like the task-lock section above, that hourly cadence is
+itself non-destructive (`claude-refresh.timer` runs `claude-refresh.sh --dry-run`, reporting
+rather than terminating; `--force` is a deliberate manual opt-in only).
 
 ## Interactive Mode
 
@@ -114,9 +123,26 @@ Files modified within the last hour are **never deleted**, regardless of age thr
 
 ### Process Protection
 
-- Only targets processes without a controlling terminal (TTY = "?")
-- Never kills active Claude Code sessions
-- Excludes current process tree
+`claude-refresh.sh` identifies orphans from a single atomic process snapshot, using four
+independently-testable predicates rather than an argv-substring match or an ancestor-only
+process-tree walk (an ancestor walk cannot reach a sibling, such as the invoking session's own
+sleep inhibitor, and re-querying a transient PID from an earlier snapshot is a race):
+
+- **Executable-identity match**: a candidate must match a narrow allow-list on its executable
+  name (`comm`), never on a substring anywhere in its argv -- this is what keeps a system daemon
+  that merely mentions "claude" in one of its own arguments from ever being a candidate.
+- **System-slice cgroup exclusion**: a candidate under `/system.slice/` is never selected.
+- **Invoking-UID ownership**: a candidate not owned by the invoking user's UID is excluded.
+- **Inhibitor-target liveness**: a candidate holding a `systemd-inhibit ... tail --pid=<N>`
+  sleep-inhibitor is excluded when the process it protects is still alive -- correctly
+  protecting any live session's inhibitor on the machine, not just the invoker's own.
+- **Zero-query self-exclusion**: a candidate whose pid or ppid equals the script's own pid is
+  skipped, with no second query and no race window.
+
+`TTY == "?"` (no controlling terminal) remains a necessary-but-not-sufficient signal, combined
+with the predicates above rather than used alone. This design deliberately trades recall for
+safety: a leaked process this allow-list fails to recognize survives, which is strictly
+preferable to ever terminating a live system daemon or another live session's process.
 
 ## Examples
 

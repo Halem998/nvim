@@ -410,36 +410,36 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Doc reconciliation across the two remaining sites [NOT STARTED]
+### Phase 4: Doc reconciliation across the two remaining sites [COMPLETED]
 
 - **Goal:** No doc site claims a safety property the code does not implement, and
   `commands/refresh.md`'s `--dry-run` description is true of shipped behavior. The third site,
   the script header block, is covered by Phase 1.
 
 - **Tasks:**
-  - [ ] `skills/skill-refresh/SKILL.md`, "Process Safety" section: replace "Only targets orphaned
+  - [x] `skills/skill-refresh/SKILL.md`, "Process Safety" section: replace "Only targets orphaned
         processes (TTY = \"?\")" / "Excludes current process tree" with the actual mechanism —
         executable/comm match, `/system.slice/` cgroup exclusion, invoking-UID ownership,
         inhibitor-target liveness, and zero-query self exclusion. Note that TTY is a
         necessary-but-not-sufficient signal, not a discriminator.
-  - [ ] `skills/skill-refresh/SKILL.md`, Step 2: forward `--dry-run` through to
+  - [x] `skills/skill-refresh/SKILL.md`, Step 2: forward `--dry-run` through to
         `claude-refresh.sh`. It currently drops the flag and passes no arguments at all when
         `dry_run=true`. The `dry_run` boolean is already parsed in Step 1 — reuse it; add no new
         argument parsing.
-  - [ ] `skills/skill-refresh/SKILL.md`: update the "Dry-Run Flow" example so the process-cleanup
+  - [x] `skills/skill-refresh/SKILL.md`: update the "Dry-Run Flow" example so the process-cleanup
         half shows the DRY RUN banner, matching shipped behavior.
-  - [ ] `commands/refresh.md`, "Process Protection" section: same mechanism-accurate rewrite as
+  - [x] `commands/refresh.md`, "Process Protection" section: same mechanism-accurate rewrite as
         above.
-  - [ ] `commands/refresh.md`, Options table: make the `--dry-run` row true — it currently claims
+  - [x] `commands/refresh.md`, Options table: make the `--dry-run` row true — it currently claims
         "Preview both process and directory cleanup without making changes", which was false for
         the process half. After Phase 1 it becomes true; confirm the wording matches the actual
         preview rather than assuming it.
-  - [ ] `commands/refresh.md`: record the non-destructive timer posture from Phase 3 alongside
+  - [x] `commands/refresh.md`: record the non-destructive timer posture from Phase 3 alongside
         the existing hourly-cadence discussion in the "Stale Task Locks" and "Stale
         Session-Scoped Orchestration Files" sections, which already explain what the timer does
         and does not cover. An operator reading those sections should learn the timer reports
-        rather than terminates.
-  - [ ] Both files are deliverables outside `specs/**`: cite durable anchors (section names,
+        rather than terminates. *(completed: added to both sections, not just one)*
+  - [x] Both files are deliverables outside `specs/**`: cite durable anchors (section names,
         mechanism descriptions), never task numbers.
 
 - **Timing:** 0.75 hours

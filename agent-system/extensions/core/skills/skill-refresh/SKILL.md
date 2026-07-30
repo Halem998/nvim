@@ -34,10 +34,11 @@ fi
 
 ### Step 2: Run Process Cleanup
 
-Execute process cleanup script:
+Execute process cleanup script, forwarding `--dry-run` through when set (reusing the `dry_run`
+boolean already parsed in Step 1 -- no new argument parsing):
 
 ```bash
-.claude/scripts/claude-refresh.sh $( [ "$force" = true ] && echo "--force" )
+.claude/scripts/claude-refresh.sh $( [ "$force" = true ] && echo "--force" ) $( [ "$dry_run" = true ] && echo "--dry-run" )
 ```
 
 Store process cleanup output for display.
@@ -357,7 +358,17 @@ New total size: 600.0 MB
 ```bash
 # User runs: /refresh --dry-run
 
-# Shows survey, then:
+# Process cleanup half, forwarding --dry-run through to claude-refresh.sh:
+Claude Code Refresh
+===================
+
+[DRY RUN] Preview only -- no processes will be terminated.
+
+Found 2 orphaned processes using 1.2 MB:
+...
+Total memory that can be reclaimed: 1.2 MB
+
+# Directory cleanup half -- shows survey, then:
 === DRY RUN MODE ===
 Showing 8-hour cleanup preview...
 
@@ -400,9 +411,33 @@ Files modified within the last hour are **never deleted**, regardless of age thr
 
 ### Process Safety
 
-- Only targets orphaned processes (TTY = "?")
-- Never kills active sessions
-- Excludes current process tree
+`claude-refresh.sh` identifies orphans from a single atomic process snapshot, applying four
+independently-testable predicates rather than an argv-substring match or an ancestor-only
+process-tree walk (an ancestor walk cannot reach a sibling, such as the invoking session's own
+sleep inhibitor, and re-querying a transient PID from an earlier snapshot is a race -- see the
+script's own header comment for the full rationale):
+
+- **Executable-identity match**: a candidate must match a narrow allow-list on its executable
+  name (`comm`), never on a substring anywhere in its argv. This is what keeps a system daemon
+  that merely mentions "claude" in one of its own arguments from ever being considered a
+  candidate at all.
+- **System-slice cgroup exclusion**: a candidate under `/system.slice/` is never selected,
+  regardless of anything else.
+- **Invoking-UID ownership**: a candidate not owned by the invoking user's UID is excluded.
+- **Inhibitor-target liveness**: a candidate holding a `systemd-inhibit ... tail --pid=<N>`
+  sleep-inhibitor is excluded when the process it protects (`<N>`, a DIFFERENT process than the
+  candidate) is still alive -- this is what correctly protects a live session's own inhibitor
+  and any other live session's inhibitor on the machine, not just the invoker's own.
+- **Zero-query self-exclusion**: a candidate whose pid or ppid equals the script's own pid is
+  skipped, known at parse time with no second query and no race window.
+
+`TTY == "?"` (no controlling terminal) remains a necessary-but-not-sufficient signal -- it is
+true of every systemd-managed process by construction, so it is combined with the predicates
+above, never used alone as the sole discriminator.
+
+This design deliberately trades recall for safety: a leaked process this allow-list fails to
+recognize survives (false negative), which is strictly preferable to ever terminating a live
+system daemon or another live session's process (false positive).
 
 ---
 
