@@ -1,0 +1,25 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Audited all 19 extensions' index-entries.json (470 entries) against the 3 contradictory schema authorities. Confirmed load_when.languages/skills are dead at runtime (only referenced in validate-context-budgets.sh's dead-entry guard); task_types is the dominant live key (168/470 entries) yet forbidden by index.schema.json. Confirmed 24 core entries are reachable only via the meta catch-all, Tier-1 always-load is 996L (2x the 500L target), project-overview.md double-loads, and 7/19 EXTENSION.md files exceed 60 lines. Produced a concrete migration map and a new check-extension-docs.sh Rule T design (advisory-first, promote to hard after migration).",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Standardize entries on summary/line_count/keywords/topics; retire description/tags (fold description detail into summary per-entry, not a blind rename)",
+    "Extend load_when to allow task_types; delete languages and skills entirely; migrate languages values 1:1 to task_types using each extension's own manifest.json routing keys",
+    "Do not add a hand-authored tier field; derive tier algorithmically in validate-context-budgets.sh from existing load_when shape instead",
+    "New check-extension-docs.sh Rule T (check_index_entries_schema) should default advisory via the existing INDEX_TRUTH_GATE_MODE variable, promoted to hard only after the 14-extension migration lands",
+    "Declared file_scope (3 files) undercounts the real edit surface; recommend Phase A (schema+standard+advisory check) as this task's deliverable, with Phases B-E (migration, meta catch-all, Tier-1 demotion, EXTENSION.md trims) spawned as follow-on tasks"
+  ],
+  "dead_ends": [],
+  "phases_completed": 1,
+  "phases_total": 1
+}

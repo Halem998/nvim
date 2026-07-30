@@ -51,7 +51,7 @@ next_project_number: 990
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-987 [RESEARCHING] — Bring context loading back within its own declared budgets and gi
+987 [RESEARCHED] — Bring context loading back within its own declared budgets and gi
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
   └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
 948 [NOT STARTED] — Add a Stage 7 / final-metadata section to agent-system/extensions
@@ -132,10 +132,11 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 987. Context budget enforcement: demote always-load bloat, break the meta catch-all, one index schema
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 978
+- **Research**: [987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md]
 
 **Description**: Bring context loading back within its own declared budgets and give index entries ONE schema authority. DEPENDS ON the index-validator repair task (truthful line counts are the precondition for any budget work).
 

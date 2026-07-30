@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md",
+      "summary": "Empirical audit of all 19 extensions' index-entries.json against the 3 contradictory schema authorities, with a concrete migration map, meta-catch-all breakdown, Tier-1/double-load findings, and a new check-extension-docs.sh Rule T design."
+    }
+  ],
+  "next_steps": "Run /plan 987 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785373759_72035f_987",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent-system repo, index.schema.json's load_when has additionalProperties:false allowing only agents/commands/languages/always -- yet task_types is the dominant real-world key (used by 6/19 extensions, 168/470 entries incl. core's meta catch-all) and is technically forbidden by the schema. The schema was never mechanically enforced (no ajv/jsonschema validator call exists anywhere; validate-context-index.sh only cites it in a comment), which is how it drifted this far without any gate failing.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index.schema.json", "load_when", "task_types", "context-index", "schema-drift"]
+    },
+    {
+      "content": "load_when.languages and load_when.skills in this repo's context index are read by NOTHING at runtime except a defensive dead-entry-check exclusion inside validate-context-budgets.sh (2 occurrences total, confirmed by exhaustive grep). The real, live-queried load_when keys are agents/commands/task_types/always (confirmed via context-discovery.md, validate-index.sh, validate-wiring.sh, lint-contract-compliance.sh). Any future audit of this index should treat languages/skills as dead weight, not a data source.",
+      "category": "PATTERN",
+      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["load_when", "dead-code", "context-index", "runtime-consumers", "validate-context-budgets"]
+    },
+    {
+      "content": "The live index-entries.json -> index.json merge engine is lua/neotex/plugins/ai/shared/extensions/merge.lua's M.append_index_entries -- it passes each source entry through verbatim with zero field remapping. A separate, apparently-stale merge implementation also exists inside install-extension.sh (lines ~180-260) assuming an obsolete flat-array/description-tags schema shape that no longer matches any real extension file; it is not exercised by the live deploy path but is a latent risk (silently drops commands/always from load_when in its object-shape branch) worth a future cleanup task.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["install-extension.sh", "merge.lua", "index.json", "dead-code", "deploy-engine"]
+    }
+  ]
+}
