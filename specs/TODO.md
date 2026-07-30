@@ -70,7 +70,7 @@ next_project_number: 990
 
 ### State Write Coverage
 
-969 [PLANNING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+969 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
 
@@ -696,11 +696,12 @@ DELIVERABLE RULE: deliverables outside `specs/**` must not cite task numbers; us
 ---
 
 ### 969. Extend state-write.sh to cover archive and vault state files and convert residual hand-rolled sites
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: state-write-coverage
 - **Dependencies**: Task 967
 - **Research**: [969_extend_state_write_to_archive_and_vault_targets/reports/01_extend-state-write-archive-vault.md]
+- **Plan**: [969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations still reference the deployed `.claude/scripts/state-write.sh`; that is the call path, not the edit target.
 

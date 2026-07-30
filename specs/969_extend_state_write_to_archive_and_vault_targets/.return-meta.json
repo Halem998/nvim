@@ -1,21 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/969_extend_state_write_to_archive_and_vault_targets/reports/01_extend-state-write-archive-vault.md",
-      "summary": "Maps every archive/vault hand-rolled state.json write site in file_scope, flags a fresh-create design fork state-write.sh cannot cover with a plain flag, and names out-of-scope sites (archive-task.sh, vault-operation.sh, jq-escaping-workarounds.md, review.md, extension-domain debt) that will affect the verification bar."
+      "type": "plan",
+      "path": "specs/969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md",
+      "summary": "8-phase plan in 4 waves extending state-write.sh with --state-file and --init, converting 11 hand-rolled archive/vault write sites across 8 source-store files, correcting task-lock.md's stale residual note, and closing the verification bar against an enumerated exclusion list."
     }
   ],
-  "next_steps": "Run /plan 969 to create implementation plan",
+  "next_steps": "Run /implement 969 to execute the plan",
   "metadata": {
     "session_id": "sess_1785373759_72035f_969",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
-    "findings_count": 9
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 7.5,
+    "dependency_waves": 4
   },
   "memory_candidates": [
+    {
+      "content": "When a task's verification bar is worded as an absolute negative ('a repo-wide grep returns ZERO hits outside X'), check satisfiability before planning to it. Such bars routinely catch illustrative doc examples, same-named-but-different files, and large pre-existing debt outside the task's scope, making them unsatisfiable as written. The correct resolution is not to weaken the bar or to let it silently fail: scope the search explicitly (e.g. to one extension root), then replace 'result is empty' with 'result equals a declared, per-item-reasoned exclusion list exactly' -- any hit not on the list is a failure. Also baseline the pattern against pre-change content first: a grep that matched nothing before the work proves nothing after it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verification-bar", "grep-scoping", "exclusion-list", "satisfiability", "baseline-check"]
+    },
     {
       "content": "When generalizing a single-file mutex-guarded writer (like state-write.sh) to cover additional target files (archive/vault state.json), keep the underlying mutex (specs/.scope-lock) a single global lock rather than per-file. Per-file locks create a real ABBA deadlock risk when a single logical operation interleaves writes to two different target files in different orders across concurrent callers (e.g. recover: archive-then-live vs abandon: live-then-archive-then-live). A single lock makes every acquire/release pair sequential and non-nested regardless of target file, at negligible serialization cost for rare, human/agent-paced operations.",
       "category": "PATTERN",

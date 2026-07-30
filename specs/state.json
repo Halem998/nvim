@@ -3012,7 +3012,7 @@
     {
       "project_number": 969,
       "project_name": "extend_state_write_to_archive_and_vault_targets",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "state-write-coverage",
       "title": "Extend state-write.sh to cover archive and vault state files and convert residual hand-rolled sites",
@@ -3033,10 +3033,15 @@
           "path": "specs/969_extend_state_write_to_archive_and_vault_targets/reports/01_extend-state-write-archive-vault.md",
           "type": "report",
           "summary": ""
+        },
+        {
+          "path": "specs/969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md",
+          "type": "plan",
+          "summary": "8-phase plan in 4 waves extending state-write.sh with --state-file and --init, converting 11 hand-rolled archive/vault write sites across 8 source-store files, correcting task-lock.md's stale residual note, and closing the verification bar against an enumerated exclusion list."
         }
       ],
       "created": "2026-07-29T16:26:39Z",
-      "last_updated": "2026-07-30T01:26:12Z",
+      "last_updated": "2026-07-30T01:34:38Z",
       "session_id": "sess_1785373759_72035f_969",
       "next_artifact_number": 1
     },
