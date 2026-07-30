@@ -459,29 +459,29 @@ any further site.
 
 ---
 
-### Phase 5: Convert `skills/skill-todo/SKILL.md`'s archive and vault sites [NOT STARTED]
+### Phase 5: Convert `skills/skill-todo/SKILL.md`'s archive and vault sites [COMPLETED]
 
 **Goal**: The vault archive-reinit and both prose-only archive steps in `skill-todo` route through
 `state-write.sh`.
 
 **Tasks**:
-- [ ] Re-grep `skills/skill-todo/SKILL.md` for `archive/state.json` and `jq -n` and confirm the
+- [x] Re-grep `skills/skill-todo/SKILL.md` for `archive/state.json` and `jq -n` and confirm the
       site set before editing.
-- [ ] Convert Stage 9.2 CreateVault's archive reinit — the design-fork site. Replace the
+- [x] Convert Stage 9.2 CreateVault's archive reinit — the design-fork site. Replace the
       `jq -n '{ "_comment": ..., "completed_projects": [], "archived_at": "'"$current_timestamp"'" }' > "specs/archive/state.json"`
       block with a `state-write.sh --init --state-file specs/archive/state.json` invocation. Bind
       the timestamp via `--arg ts "$current_timestamp"` and reference `$ts` inside the filter —
       do **not** carry over the shell-interpolation-inside-single-quotes construction, which is
       exactly what `--arg` passthrough exists to replace. Replace the "Deliberately left
       hand-rolled" prose that introduces the block.
-- [ ] Make Stage 10 step 1 ("Update specs/archive/state.json") concrete per D7, matching Phase 4's
+- [x] Make Stage 10 step 1 ("Update specs/archive/state.json") concrete per D7, matching Phase 4's
       Step 5A shape so the command file and the skill file describe the same invocation.
-- [ ] Make Stage 10 step 8b ("Add entry to specs/archive/state.json completed_projects array" for
+- [x] Make Stage 10 step 8b ("Add entry to specs/archive/state.json completed_projects array" for
       TODO.md orphans) concrete per D7, matching Phase 4's Step 5E.2 shape.
-- [ ] Confirm Stages 9.3 (RenumberTasks) and 9.4 (ResetState) already route every **live**
+- [x] Confirm Stages 9.3 (RenumberTasks) and 9.4 (ResetState) already route every **live**
       `specs/state.json` write through `state-write.sh` and leave them unchanged — the research
       report verified this; re-confirm rather than trust it.
-- [ ] Leave Stage 9.2's `mv "${vault_path}/archive/state.json" "${vault_path}/state.json"`
+- [x] Leave Stage 9.2's `mv "${vault_path}/archive/state.json" "${vault_path}/state.json"`
       untouched with the same clarifying note Phase 4 adds to its `commands/todo.md` twin.
 
 **Timing**: 1.25 hours

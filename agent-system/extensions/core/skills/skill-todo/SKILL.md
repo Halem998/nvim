@@ -446,6 +446,23 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            array for `expanded`); `abandoned` tasks add to archived_projects array
          - Include all task fields
          - Add archived timestamp
+         - Bootstrap if this is the first archive operation (via `--init`), then apply the batch
+           transform through `state-write.sh`'s `--state-file` flag, matching
+           `commands/todo.md`'s Step 5A shape:
+           ```bash
+           [ -f specs/archive/state.json ] || bash .claude/scripts/state-write.sh \
+             '{ "archived_projects": [], "completed_projects": [] }' \
+             --init --state-file specs/archive/state.json --session-id "$todo_session_id"
+
+           archivable_tasks_json=$(printf '%s\n' "${archivable_tasks[@]}" | jq -s '.')
+           bash .claude/scripts/state-write.sh \
+             '.completed_projects = ([$tasks[] | select(.status == "completed" or .status == "expanded") | .archived_at = $ts] + .completed_projects) |
+              .archived_projects = ([$tasks[] | select(.status == "abandoned") | .archived_at = $ts] + .archived_projects)' \
+             --state-file specs/archive/state.json \
+             --session-id "$todo_session_id" \
+             --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+             --argjson tasks "$archivable_tasks_json"
+           ```
 
       2. Update specs/state.json:
          - Remove from active_projects array. As in `commands/todo.md`'s Step 5B, this removal
@@ -497,7 +514,23 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
               "archived_at": "YYYY-MM-DDTHH:MM:SSZ"
             }
             ```
-         b. Add entry to specs/archive/state.json completed_projects array
+         b. Add entry to specs/archive/state.json completed_projects array, matching
+            `commands/todo.md`'s Step 5E.2 shape (`$orphan` is the same JSON blob shown in
+            step a):
+            ```bash
+            bash .claude/scripts/state-write.sh \
+              '.completed_projects += [{
+                project_number: $orphan.project_number,
+                project_name: $orphan.project_name,
+                status: $orphan.status,
+                created_at: "TODO.md_orphan",
+                archived_at: $ts
+              }]' \
+              --state-file specs/archive/state.json \
+              --session-id "$todo_session_id" \
+              --argjson orphan "$orphan" \
+              --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ```
          c. Move directory from specs/ to specs/archive/:
             ```bash
             source_dir="specs/OC_${orphan.project_number}_${orphan.project_name}/"
@@ -639,7 +672,8 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          fi
          ```
 
-         Move archive state.json to vault root:
+         Move archive state.json to vault root (a file rename, not a state write -- correctly
+         outside state-write.sh's remit):
          ```bash
          # Archive state.json becomes vault state.json
          if [ -f "${vault_path}/archive/state.json" ]; then
@@ -671,17 +705,20 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            }' > "${vault_path}/meta.json"
          ```
 
-         Reinitialize empty specs/archive/ with fresh state.json. Deliberately left hand-rolled:
-         `state-write.sh` targets `specs/state.json` only, never `specs/archive/state.json`:
+         Reinitialize empty specs/archive/ with fresh state.json via `state-write.sh`'s `--init`
+         mode. The timestamp is bound with `--arg`, not shell-interpolated into the filter:
          ```bash
          mkdir -p "specs/archive"
 
          # Create fresh archive state.json
-         jq -n '{
-           "_comment": "Archive state for completed and abandoned tasks",
-           "completed_projects": [],
-           "archived_at": "'"$current_timestamp"'"
-         }' > "specs/archive/state.json"
+         bash .claude/scripts/state-write.sh \
+           '{
+             "_comment": "Archive state for completed and abandoned tasks",
+             "completed_projects": [],
+             "archived_at": $ts
+           }' \
+           --init --state-file specs/archive/state.json --session-id "$todo_session_id" \
+           --arg ts "$current_timestamp"
          ```
 
       9.3. **RenumberTasks** (if vault_approved=true)
