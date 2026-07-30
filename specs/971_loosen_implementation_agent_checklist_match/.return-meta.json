@@ -1,30 +1,38 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "session_id": "sess_1785373759_72035f_971",
-  "delegation_depth": 2,
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
-  "task_number": 971,
-  "task_name": "loosen_implementation_agent_checklist_match",
-  "task_type": "meta",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md",
-      "summary": "4-phase plan (3 waves, 1.5h) loosening the plan-checklist mark-completed instruction in the core, lean, and nix implementation agents off the literal '**Task {P}.{N}**:' prefix, with the canonical verbatim-quotable contract wording designated in general-implementation-agent.md Stage 4B-ii for the two downstream sibling tasks."
+      "type": "summary",
+      "path": "specs/971_loosen_implementation_agent_checklist_match/summaries/01_loosen-checklist-match-summary.md",
+      "summary": "All 4 plan phases completed: loosened the plan-checklist matching contract in the three in-scope implementation-agent files off the literal '**Task {P}.{N}**:' prefix, established the canonical wording location for two downstream sibling tasks, preserved annotation-suffix vocabulary byte-for-byte."
     }
   ],
-  "phase_count": 4,
-  "estimated_hours": 1.5,
-  "dependency_waves": [[1], [2, 3], [4]],
+  "completion_data": {
+    "completion_summary": "Rewrote general-implementation-agent.md's Stage 4B-ii into the canonical prefix-free checklist-matching contract, and genericized the matching deviation-annotation lines in lean-implementation-agent.md and nix-implementation-agent.md, so plan-checklist items are located by their existing item text rather than an assumed literal prefix that planner-agent.md never emits."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+    "specs/971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md",
+    "specs/971_loosen_implementation_agent_checklist_match/summaries/01_loosen-checklist-match-summary.md",
+    "specs/971_loosen_implementation_agent_checklist_match/.orchestrator-handoff.json"
+  ],
   "memory_candidates": [
     {
-      "content": "Silent-failure pattern in agent instruction contracts: when an agent is told to Edit-match a literal template line shape (e.g. '- [ ] **Task {P}.{N}**: {description}') against an artifact produced by a DIFFERENT agent whose emission template is free-form, the match finds nothing and the agent proceeds without error. Observed live as 0 of 87 plan-checklist items ticked across 4 completed phases, which in turn zeroed a downstream drift metric that counted '- [x]' occurrences, making completed work read as 'no work done'. Two structural lessons: (1) a cross-agent instruction must describe what to LOCATE AND PRESERVE ('the item's existing text, whatever form it takes', tolerating formatting drift) rather than a template to match, because a producer-side template and a consumer-side match template drift independently and nothing detects the drift; (2) when the same idiom is copied across N agent files, designate one named canonical home (file plus section heading) that siblings quote verbatim, since N independent paraphrases reproduce exactly the inconsistency being fixed. Useful diagnostic signal: if a file already contains BOTH a brittle template-match phrasing and a loose text-agnostic phrasing of the same instruction, the loose one is usually the correct idiom and the brittle sites should be made consistent with it rather than new wording invented.",
+      "content": "When an implementer-agent contract's Edit-match instruction assumes a specific plan-item title template (e.g. a literal '**Task {P}.{N}**:' prefix) that the planner producing those plans never emits, the Edit silently finds nothing and checklist items never get ticked -- with no error surfaced. The durable fix is a matching contract that locates items by their existing item text/intent with formatting-drift tolerance, explicitly forbidding byte-exact template matching, plus a single canonical, verbatim-quotable home for the wording so sibling agent files point at it rather than paraphrasing (paraphrase drift across agent files is itself a recurring failure mode).",
       "category": "PATTERN",
-      "source_artifact": "specs/971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md",
+      "source_artifact": "specs/971_loosen_implementation_agent_checklist_match/summaries/01_loosen-checklist-match-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["agent-instruction-contract", "silent-failure", "template-match-brittleness", "canonical-wording", "cross-agent-drift", "checklist-annotation"]
+      "suggested_keywords": ["checklist-matching", "implementation-agent", "plan-format", "silent-failure", "canonical-wording"]
     }
   ],
-  "next_steps": "Run /implement 971 to execute the plan"
+  "metadata": {
+    "session_id": "sess_1785373759_72035f_971",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

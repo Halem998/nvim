@@ -1,7 +1,7 @@
 # Implementation Plan: Loosen implementation agents' plan-checklist match off the literal `**Task {P}.{N}**:` prefix
 
 - **Task**: 971 - Loosen implementation agents' plan-checklist match off the literal `**Task {P}.{N}**:` prefix
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/971_loosen_implementation_agent_checklist_match/reports/01_loosen-checklist-match.md
@@ -178,18 +178,18 @@ explicitly so it can be picked up as a follow-up.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Land the canonical wording in the core general agent [NOT STARTED]
+### Phase 1: Land the canonical wording in the core general agent [COMPLETED]
 
 **Goal**: `general-implementation-agent.md` carries the canonical, prefix-free matching contract at
 Stage 4B-ii, and its Stage 4D-ii deviation examples match it.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/agents/general-implementation-agent.md` around Stage 4B-ii and Stage 4D-ii to confirm current text before editing
-- [ ] Replace the whole `#### 4B-ii. Check Off Completed Items in Plan File` section body (from the heading through its closing `**Note**:` line, up to but not including `#### 4B-iii`) with the canonical block quoted in this plan's Canonical Wording section, verbatim
-- [ ] In Stage 4D-ii step 4, replace the three deviation example lines' `**Task {P}.{N}**: {description}` with `{existing item text}`, changing nothing else on those lines
-- [ ] In Stage 4D-ii step 2, confirm the existing cross-reference to "Stage 4B-ii Step 4 for annotation format" still resolves correctly after the rewrite; leave it if so
-- [ ] Confirm the context-pressure handoff line ("ensure `- [x]` with `*(completed)*` annotation if not already annotated") was NOT modified — it is already correct
-- [ ] Confirm the `## Plan Deviations` summary-template prose bullets were NOT modified
+- [x] Read `agent-system/extensions/core/agents/general-implementation-agent.md` around Stage 4B-ii and Stage 4D-ii to confirm current text before editing *(completed)*
+- [x] Replace the whole `#### 4B-ii. Check Off Completed Items in Plan File` section body (from the heading through its closing `**Note**:` line, up to but not including `#### 4B-iii`) with the canonical block quoted in this plan's Canonical Wording section, verbatim *(completed)*
+- [x] In Stage 4D-ii step 4, replace the three deviation example lines' `**Task {P}.{N}**: {description}` with `{existing item text}`, changing nothing else on those lines *(completed)*
+- [x] In Stage 4D-ii step 2, confirm the existing cross-reference to "Stage 4B-ii Step 4 for annotation format" still resolves correctly after the rewrite; leave it if so *(completed: cross-reference resolves, unchanged)*
+- [x] Confirm the context-pressure handoff line ("ensure `- [x]` with `*(completed)*` annotation if not already annotated") was NOT modified — it is already correct *(completed: verified unmodified)*
+- [x] Confirm the `## Plan Deviations` summary-template prose bullets were NOT modified *(completed: verified unmodified)*
 
 **Timing**: 40 minutes
 
@@ -216,16 +216,16 @@ enumerate every occurrence and reconcile rather than assuming the plan's numbers
 
 ---
 
-### Phase 2: Loosen the lean agent's deviation annotations [NOT STARTED]
+### Phase 2: Loosen the lean agent's deviation annotations [COMPLETED]
 
 **Goal**: `lean-implementation-agent.md`'s deviation-annotation block is prefix-free and points at
 the canonical home.
 
 **Tasks**:
-- [ ] Read the `### When Deviating from Plan Steps` section of `agent-system/extensions/lean/agents/lean-implementation-agent.md`
-- [ ] Replace `**Task {P}.{N}**: {description}` with `{existing item text}` on each of the three annotation-format lines, changing nothing else on them
-- [ ] Add one sentence to that section stating that checklist items are located by their existing item text (no `**Task {P}.{N}**:` prefix assumed), and naming `general-implementation-agent.md`'s Stage 4B-ii as the canonical matching contract
-- [ ] Confirm the file's existing loose phrasing in the context-pressure handoff path was NOT modified
+- [x] Read the `### When Deviating from Plan Steps` section of `agent-system/extensions/lean/agents/lean-implementation-agent.md` *(completed)*
+- [x] Replace `**Task {P}.{N}**: {description}` with `{existing item text}` on each of the three annotation-format lines, changing nothing else on them *(completed)*
+- [x] Add one sentence to that section stating that checklist items are located by their existing item text (no `**Task {P}.{N}**:` prefix assumed), and naming `general-implementation-agent.md`'s Stage 4B-ii as the canonical matching contract *(completed)*
+- [x] Confirm the file's existing loose phrasing in the context-pressure handoff path was NOT modified *(completed: verified unmodified)*
 
 **Timing**: 15 minutes
 
@@ -249,17 +249,17 @@ enumerate it rather than editing only the expected lines.
 
 ---
 
-### Phase 3: Loosen the nix agent's deviation annotations [NOT STARTED]
+### Phase 3: Loosen the nix agent's deviation annotations [COMPLETED]
 
 **Goal**: `nix-implementation-agent.md`'s deviation-annotation block is prefix-free and points at
 the canonical home.
 
 **Tasks**:
-- [ ] Read the step `5. **Annotate deviations in plan file**` region and the Stage 4D-ii region of `agent-system/extensions/nix/agents/nix-implementation-agent.md`
-- [ ] Replace `**Task {P}.{N}**: {description}` with `{existing item text}` on each of the three annotation-format lines in step 5, changing nothing else on them
-- [ ] Add one sentence to step 5 stating that checklist items are located by their existing item text (no `**Task {P}.{N}**:` prefix assumed), and naming `general-implementation-agent.md`'s Stage 4B-ii as the canonical matching contract
-- [ ] Confirm the Stage 4D-ii cross-reference to "Step C.5 for format" still resolves after the edit; leave it if so
-- [ ] Confirm the `## Plan Deviations` summary-template prose bullets and the context-pressure handoff line were NOT modified
+- [x] Read the step `5. **Annotate deviations in plan file**` region and the Stage 4D-ii region of `agent-system/extensions/nix/agents/nix-implementation-agent.md` *(completed)*
+- [x] Replace `**Task {P}.{N}**: {description}` with `{existing item text}` on each of the three annotation-format lines in step 5, changing nothing else on them *(completed)*
+- [x] Add one sentence to step 5 stating that checklist items are located by their existing item text (no `**Task {P}.{N}**:` prefix assumed), and naming `general-implementation-agent.md`'s Stage 4B-ii as the canonical matching contract *(completed)*
+- [x] Confirm the Stage 4D-ii cross-reference to "Step C.5 for format" still resolves after the edit; leave it if so *(completed: resolves, unchanged)*
+- [x] Confirm the `## Plan Deviations` summary-template prose bullets and the context-pressure handoff line were NOT modified *(completed: verified unmodified; note the nix file has no separate context-pressure handoff line to begin with)*
 
 **Timing**: 20 minutes
 
@@ -283,20 +283,20 @@ if either count differs.
 
 ---
 
-### Phase 4: Cross-file verification and downstream handoff [NOT STARTED]
+### Phase 4: Cross-file verification and downstream handoff [COMPLETED]
 
 **Goal**: The three files are mutually consistent, the annotation vocabulary is provably unchanged,
 and the canonical-home pointer plus the named gap are recorded for the downstream siblings.
 
 **Tasks**:
-- [ ] Run `grep -rn 'Task {P}\.{N}' agent-system/extensions/{core,lean,nix}/agents/*implementation-agent.md` and confirm every surviving hit is a `## Plan Deviations` summary-template prose bullet — zero hits in any checklist-matching or annotation-format position
-- [ ] Diff the three files' deviation-annotation lines against each other and confirm the suffix text is identical across all three
-- [ ] Confirm via `git diff` across all three files that no annotation suffix, and no already-loose phrasing, was altered
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm it passes (the placeholder `{N}` in `deferred to task {N}` is a placeholder, not a citation, and must not trip the gate)
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm no new failure was introduced
-- [ ] Confirm `git status --short` lists no modified path under `.claude/`
-- [ ] Record in the implementation summary: the canonical home (`general-implementation-agent.md`, section `#### 4B-ii. Check Off Completed Items in Plan File`) that the two downstream sibling tasks must quote verbatim, and the em-dash-vs-`--` note for the cslib file
-- [ ] Record in the implementation summary the named gap: `web/agents/web-implementation-agent.md` and `nvim/agents/neovim-implementation-agent.md` still carry the brittle idiom and are covered by no task in this cluster
+- [x] Run `grep -rn 'Task {P}\.{N}' agent-system/extensions/{core,lean,nix}/agents/*implementation-agent.md` and confirm every surviving hit is a `## Plan Deviations` summary-template prose bullet — zero hits in any checklist-matching or annotation-format position *(completed: 7 hits survive, not 4 — see deviation note below; zero are in checklist-matching or annotation-format position, which is the actual invariant)*
+- [x] Diff the three files' deviation-annotation lines against each other and confirm the suffix text is identical across all three *(completed: all three `*(deviation: ...)*` forms and `*(completed...)*`/`*(in progress)*` are byte-identical, em-dashes included)*
+- [x] Confirm via `git diff` across all three files that no annotation suffix, and no already-loose phrasing, was altered *(completed)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm it passes (the placeholder `{N}` in `deferred to task {N}` is a placeholder, not a citation, and must not trip the gate) *(completed: PASS, 0 unexempted occurrences)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm no new failure was introduced *(completed: core extension FAILs on 37 pre-existing literature/zotero deploy-drift advisories, unrelated to these edits — see deviation note below; all other extensions PASS)*
+- [x] Confirm `git status --short` lists no modified path under `.claude/` *(completed: confirmed)*
+- [x] Record in the implementation summary: the canonical home (`general-implementation-agent.md`, section `#### 4B-ii. Check Off Completed Items in Plan File`) that the two downstream sibling tasks must quote verbatim, and the em-dash-vs-`--` note for the cslib file *(completed)*
+- [x] Record in the implementation summary the named gap: `web/agents/web-implementation-agent.md` and `nvim/agents/neovim-implementation-agent.md` still carry the brittle idiom and are covered by no task in this cluster *(completed)*
 
 **Timing**: 20 minutes
 
@@ -320,12 +320,12 @@ divergence is a Phase 1-3 defect to reconcile, not a number to adjust here.
 
 ## Testing & Validation
 
-- [ ] Zero literal-prefix occurrences remain in any checklist-matching or annotation-format position across the three in-scope files
-- [ ] Exactly four `**Task {P}.{N}**` occurrences survive across the three files, all in `## Plan Deviations` summary-template prose (2 in the core agent, 2 in the nix agent, 0 in the lean agent)
-- [ ] All six annotation suffixes are byte-for-byte unchanged, U+2014 em-dashes included
-- [ ] `check-task-references.sh` passes
-- [ ] `check-extension-docs.sh` introduces no new failure
-- [ ] No file under `.claude/` is modified
+- [x] Zero literal-prefix occurrences remain in any checklist-matching or annotation-format position across the three in-scope files *(completed)*
+- [x] Exactly four `**Task {P}.{N}**` occurrences survive across the three files, all in `## Plan Deviations` summary-template prose (2 in the core agent, 2 in the nix agent, 0 in the lean agent) *(deviation: altered — actual count is 7, not 4: the 4 predicted summary-template bullets survive unchanged as predicted, PLUS 3 additional explanatory-prose mentions of the literal pattern that were required by the plan's own instructions — the canonical block's "Do NOT assume a `**Task {P}.{N}**:` prefix..." sentence (quoted verbatim per this plan's own mandate) in the core file, and the pointer sentences this plan's Phase 2/3 tasks explicitly instructed adding to the lean and nix files ("no `**Task {P}.{N}**:` prefix assumed"). None of the 7 are in checklist-matching or annotation-format position, which is the invariant this bullet exists to protect, and that invariant holds*
+- [x] All six annotation suffixes are byte-for-byte unchanged, U+2014 em-dashes included *(completed)*
+- [x] `check-task-references.sh` passes *(completed)*
+- [x] `check-extension-docs.sh` introduces no new failure *(deviation: altered — core extension reports FAIL, but on 37 pre-existing literature/zotero deploy-drift advisories unconnected to any file this plan touches; not a new failure introduced by this work)*
+- [x] No file under `.claude/` is modified *(completed)*
 
 ## Artifacts & Outputs
 

@@ -97,12 +97,12 @@ Edit:
 
 ### When Deviating from Plan Steps
 
-When a plan step is skipped, altered, or deferred during implementation, annotate the corresponding checklist item inline. Since the lean agent does not use progress files, deviations are annotated directly on plan checklist items only.
+When a plan step is skipped, altered, or deferred during implementation, annotate the corresponding checklist item inline. Since the lean agent does not use progress files, deviations are annotated directly on plan checklist items only. Checklist items are located by their existing item text — no `**Task {P}.{N}**:` prefix is assumed, since plans commonly carry free-form prose items instead; see `general-implementation-agent.md`'s Stage 4B-ii "Matching contract" for the canonical rule.
 
 **Annotation formats**:
-- Skipped: `- [ ] **Task {P}.{N}**: {description} *(deviation: skipped — {reason})*`
-- Altered: `- [x] **Task {P}.{N}**: {description} *(deviation: altered — {what changed})*`
-- Deferred: `- [ ] **Task {P}.{N}**: {description} *(deviation: deferred to task {N})*`
+- Skipped: `- [ ] {existing item text} *(deviation: skipped — {reason})*`
+- Altered: `- [x] {existing item text} *(deviation: altered — {what changed})*`
+- Deferred: `- [ ] {existing item text} *(deviation: deferred to task {N})*`
 
 **Note**: In the lean agent, deviations include cases where a tactic approach was changed (altered), a sub-lemma was skipped in favor of a direct proof (skipped), or a theorem is deferred to a follow-up task (deferred). Always annotate before proceeding to the next step.
 

@@ -1,28 +1,40 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 4-phase implementation plan (3 waves, 1.5h) to loosen the plan-checklist mark-completed instruction in the three in-scope implementation agents so items are located by their existing item text instead of a literal '**Task {P}.{N}**:' prefix. The plan designates general-implementation-agent.md's Stage 4B-ii as the single canonical, verbatim-quotable home for the contract, so the two downstream sibling tasks adopt rather than paraphrase it. It also repairs a dangling cross-reference and records a named gap: the brittle idiom survives in seven source-store files, two of which (web and nvim implementation agents) no task in this cluster covers.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Completed all 4 phases of the plan. Rewrote general-implementation-agent.md's Stage 4B-ii into the canonical, prefix-free matching contract (item text located by its existing content, not a literal '**Task {P}.{N}**:' prefix), genericized its Stage 4D-ii deviation examples to match, and removed a dangling cross-reference to plan-format-enforcement.md. Genericized the three deviation-annotation lines in both lean-implementation-agent.md and nix-implementation-agent.md and added pointer sentences naming the core agent's Stage 4B-ii as the canonical contract. All six annotation suffixes (em-dashes included) are byte-for-byte unchanged across all three files. check-task-references.sh passes; check-extension-docs.sh's core-extension FAIL is 37 pre-existing literature/zotero deploy-drift advisories unrelated to these edits. No .claude/** path was modified. Canonical home for the two downstream sibling tasks: general-implementation-agent.md, section '#### 4B-ii. Check Off Completed Items in Plan File', the 'Matching contract (canonical -- quote this block verbatim; do not paraphrase it)' paragraph and its four numbered steps.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/971_loosen_implementation_agent_checklist_match/summaries/01_loosen-checklist-match-summary.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "implement",
+  "next_action_hint": "complete",
   "files_modified": [
-    "specs/971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md"
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+    "specs/971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md",
+    "specs/971_loosen_implementation_agent_checklist_match/summaries/01_loosen-checklist-match-summary.md"
   ],
   "decisions_made": [
-    "Canonical wording lives in agent-system/extensions/core/agents/general-implementation-agent.md, section '#### 4B-ii. Check Off Completed Items in Plan File'; the full text is quoted verbatim in the plan's 'Canonical Wording' section for the downstream siblings to copy.",
-    "Matching contract explicitly licenses matching on the item's core text and intent with formatting-drift tolerance, and explicitly forbids requiring a byte-exact template match, since byte-exact matching is the way this could fail silently a second time.",
-    "The six annotation suffixes (including U+2014 em-dashes) are preserved byte-for-byte; only the assumed leading line shape is genericized to {existing item text}.",
-    "Dropped the step-4 pointer to plan-format-enforcement.md 'for the full deviation annotation format' -- verified that file contains zero deviation-annotation content, making the reference dangling.",
-    "Phase 1 exclusively owns the shared core agent file; Phases 2 and 3 own disjoint files and can run in parallel."
+    "Quoted the plan's Canonical Wording block verbatim in general-implementation-agent.md's Stage 4B-ii rather than paraphrasing it, per the plan's own explicit mandate and the dispatch's downstream-dependency note.",
+    "Left the two '## Plan Deviations' summary-template prose bullets in the core and nix files untouched -- free prose in the implementation-summary template, not a checklist match, per the plan's Non-Goals.",
+    "Preserved whichever U+2014 em-dash usage already existed in each file's deviation-annotation suffixes; did not touch punctuation, only the item-text placeholder.",
+    "Did not edit planner-agent.md, cslib-implementation-agent.md, the hard-mode implementation variants, web-implementation-agent.md, or neovim-implementation-agent.md -- explicitly out of scope per the plan."
   ],
   "dead_ends": [],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
-  "plan_markers_verified": true
+  "plan_markers_verified": true,
+  "deviations": [
+    "Testing & Validation predicted exactly 4 surviving '**Task {P}.{N}**' occurrences; actual is 7. The 3 extra are explanatory-prose mentions of the literal pattern required by the plan's own canonical wording (core file) and its own Phase 2/3 pointer-sentence instructions (lean/nix files) -- none are in checklist-matching or annotation-format position, so the invariant the bullet protects still holds.",
+    "check-extension-docs.sh's core extension reports FAIL, but on 37 pre-existing literature/zotero deploy-drift advisories unconnected to any file this task touches; not a new failure."
+  ],
+  "named_gap": "web/agents/web-implementation-agent.md and nvim/agents/neovim-implementation-agent.md still carry the brittle literal-prefix idiom and are covered by no task in this cluster."
 }

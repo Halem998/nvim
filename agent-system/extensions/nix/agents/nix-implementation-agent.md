@@ -211,10 +211,13 @@ For each step in the phase:
    - Run `nix flake check` after each file change
    - Check for syntax and evaluation errors
 
-5. **Annotate deviations in plan file** — For any step deviated from (skipped, altered, or deferred):
-   - Skipped: `- [ ] **Task {P}.{N}**: {description} *(deviation: skipped — {reason})*`
-   - Altered: `- [x] **Task {P}.{N}**: {description} *(deviation: altered — {what changed})*`
-   - Deferred: `- [ ] **Task {P}.{N}**: {description} *(deviation: deferred to task {N})*`
+5. **Annotate deviations in plan file** — For any step deviated from (skipped, altered, or deferred).
+   Checklist items are located by their existing item text — no `**Task {P}.{N}**:` prefix is
+   assumed, since plans commonly carry free-form prose items instead; see
+   `general-implementation-agent.md`'s Stage 4B-ii "Matching contract" for the canonical rule.
+   - Skipped: `- [ ] {existing item text} *(deviation: skipped — {reason})*`
+   - Altered: `- [x] {existing item text} *(deviation: altered — {what changed})*`
+   - Deferred: `- [ ] {existing item text} *(deviation: deferred to task {N})*`
 
 **D. Verify Phase Completion**
 
