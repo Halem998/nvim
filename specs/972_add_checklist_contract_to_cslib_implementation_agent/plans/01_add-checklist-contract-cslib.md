@@ -1,7 +1,7 @@
 # Implementation Plan: Task #972
 
 - **Task**: 972 - Add a plan-checklist mark-completed contract to cslib-implementation-agent.md
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.75 hours
 - **Dependencies**: 971 (COMPLETED — established the canonical matching contract)
 - **Research Inputs**: `specs/972_add_checklist_contract_to_cslib_implementation_agent/reports/01_add-checklist-contract-cslib.md`
@@ -160,7 +160,7 @@ number, and record the actual line numbers observed.
 
 ---
 
-### Phase 2: Verify Byte-Identity and Prefix-Freedom [NOT STARTED]
+### Phase 2: Verify Byte-Identity and Prefix-Freedom [COMPLETED]
 
 **Goal**: Mechanically confirm the inserted contract matches core's byte-for-byte in the
 load-bearing spans, that no brittle-prefix matching entered the new text, and that the untouched
@@ -168,14 +168,14 @@ deviation subsection kept its ASCII dash style.
 
 **Tasks**:
 
-- [ ] Assert the three completion/in-progress annotation suffixes in the new subsection are byte-identical to core's: `*(completed)*`, `*(completed: {brief note})*`, `*(in progress)*`
-- [ ] Diff the copied span against canonical lines 183-206 plus the closing Note, confirming the only differences are the heading depth (`###` vs `####`), the omission of step 4, and the one-line cross-reference sentence appended to the Note
-- [ ] Assert the new subsection contains zero occurrences of `**Task {P}.{N}**` — i.e. no brittle-prefix matching in checklist-matching or annotation-format position within the added text
-- [ ] Assert `{existing item text}` appears in the new subsection as the matching placeholder
-- [ ] Assert exactly three `*(deviation: ...)*` lines remain in the file, all inside `### When Deviating from Plan Steps`, all still using ASCII `--` (never em-dash) and still carrying their original `**Task {P}.{N}**: {description}` prefix
-- [ ] Assert the two em-dashes inside the copied matching-contract prose were preserved as U+2014 (they are canonical prose, not annotation suffixes, so the cslib ASCII-dash caveat does not apply to them)
-- [ ] Re-run the comparative count that established cslib as the outlier and record the new numbers for the summary
-- [ ] Record the known residual (existing deviation subsection retains brittle-prefix matching, by explicit task-scope instruction) so it surfaces in the completion summary rather than being silently dropped
+- [x] Assert the three completion/in-progress annotation suffixes in the new subsection are byte-identical to core's: `*(completed)*`, `*(completed: {brief note})*`, `*(in progress)*` *(completed: all three confirmed present verbatim in both files)*
+- [x] Diff the copied span against canonical lines 183-206 plus the closing Note, confirming the only differences are the heading depth (`###` vs `####`), the omission of step 4, and the one-line cross-reference sentence appended to the Note *(completed: diff of the shared paragraph+steps-1-3 body (core 183-207 vs cslib 108-132) is byte-identical; the only divergences are the heading depth, step-4 omission, and the extended closing Note)*
+- [x] Assert the new subsection contains zero occurrences of `**Task {P}.{N}**` in checklist-matching or annotation-format position *(completed: 1 raw occurrence found, but it is the documented negative reference "Do NOT assume a `**Task {P}.{N}**:` prefix" — zero occurrences in matching/annotation-format position, consistent with the plan's own cross-reference note)*
+- [x] Assert `{existing item text}` appears in the new subsection as the matching placeholder *(completed: 5 occurrences)*
+- [x] Assert exactly three `*(deviation: ...)*` lines remain in the file, all inside `### When Deviating from Plan Steps`, all still using ASCII `--` (never em-dash) and still carrying their original `**Task {P}.{N}**: {description}` prefix *(completed: 3 lines at 141-143, all ASCII `--`, all prefixed)*
+- [x] Assert the two em-dashes inside the copied matching-contract prose were preserved as U+2014 *(completed: 2 em-dashes confirmed)*
+- [x] Re-run the comparative count that established cslib as the outlier and record the new numbers for the summary *(completed: cslib now matches core at 1 "Check Off Completed Items" subsection, same as general-implementation-agent.md)*
+- [x] Record the known residual (existing deviation subsection retains brittle-prefix matching, by explicit task-scope instruction) so it surfaces in the completion summary rather than being silently dropped *(completed: recorded in summary)*
 
 **Timing**: 0.35 hours
 
@@ -258,14 +258,13 @@ brittle-prefix use in *matching or annotation-format position*, which this block
 
 ## Testing & Validation
 
-- [ ] `grep -c '(completed)'` on the target file returns >= 1 (baseline was 0)
-- [ ] The four `###` subsections appear in the expected order
-- [ ] The three completion/in-progress suffixes are byte-identical to core's
-- [ ] Exactly three `deviation:` lines remain, all ASCII `--`, all in the untouched subsection
-- [ ] `git diff --stat` shows insertions only on the one file in `file_scope`
-- [ ] No file under `.claude/**` was written
-- [ ] No task-number citation introduced outside `specs/**`
-  (`bash .claude/scripts/check-task-references.sh` if available)
+- [x] `grep -c '(completed)'` on the target file returns >= 1 (baseline was 0) *(completed: 1)*
+- [x] The four `###` subsections appear in the expected order *(completed)*
+- [x] The three completion/in-progress suffixes are byte-identical to core's *(completed)*
+- [x] Exactly three `deviation:` lines remain, all ASCII `--`, all in the untouched subsection *(completed)*
+- [x] `git diff --stat` shows insertions only on the one file in `file_scope` *(completed: 32 insertions, 0 deletions)*
+- [x] No file under `.claude/**` was written *(completed)*
+- [x] No task-number citation introduced outside `specs/**` *(completed: grep found no matches)*
 
 ## Artifacts & Outputs
 

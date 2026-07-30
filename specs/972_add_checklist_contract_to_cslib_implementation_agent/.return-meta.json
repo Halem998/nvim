@@ -1,17 +1,37 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "started_at": "2026-07-30T02:23:09Z",
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "initializing",
-    "details": "Agent started, parsing delegation context",
-    "phases_completed": 0,
-    "phases_total": 2
+  "completed_at": "2026-07-30T02:36:00Z",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/972_add_checklist_contract_to_cslib_implementation_agent/summaries/01_add-checklist-contract-cslib-summary.md",
+      "summary": "Execution summary: inserted the Check Off Completed Items in Plan File subsection into cslib-implementation-agent.md, verified byte-identity against the canonical core source, and recorded the deviation-subsection residual as a follow-up."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/972_add_checklist_contract_to_cslib_implementation_agent/handoffs/phase-1-handoff-20260730T023000Z.md",
+      "summary": "Phase 1 progressive handoff recording insertion completion and the step-4 omission decision."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Inserted a new '### Check Off Completed Items in Plan File' subsection into agent-system/extensions/cslib/agents/cslib-implementation-agent.md, quoting the canonical prefix-free matching contract verbatim (paragraph plus steps 1-3, heading depth adapted). Verified byte-identity against core, prefix-freedom, and that the untouched deviation subsection kept its 3 ASCII-dash lines and original prefix."
   },
+  "modified_files": [
+    "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+    "specs/972_add_checklist_contract_to_cslib_implementation_agent/plans/01_add-checklist-contract-cslib.md",
+    "specs/972_add_checklist_contract_to_cslib_implementation_agent/progress/phase-1-progress.json",
+    "specs/972_add_checklist_contract_to_cslib_implementation_agent/progress/phase-2-progress.json",
+    "specs/972_add_checklist_contract_to_cslib_implementation_agent/handoffs/phase-1-handoff-20260730T023000Z.md",
+    "specs/972_add_checklist_contract_to_cslib_implementation_agent/summaries/01_add-checklist-contract-cslib-summary.md"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1785373759_72035f_972",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }
