@@ -185,6 +185,20 @@ dead-signal finding" above already read `evidence_reason` — they simply branch
 sibling value. These sites need **a consumer, not a new detector**: the mechanical work is
 already done; what is missing is a conditional arm.
 
+**Detection hole, distinct from all three classes above**: all five sites listed under "The dead-signal
+finding" sit on the **recovered** (`.return-meta.json`, via `orchestrate-recover-outcome.sh`)
+outcome path. `skill-orchestrate/SKILL.md`'s handoff-present branch (verified at lines 795-845)
+reads `blockers`, the continuation forms, `next_action_hint`, the phase counts, and
+`plan_markers_verified` from the handoff JSON, and performs no `artifacts` shape check of any
+kind — `evidence_reason` is never computed on this path at all, let alone consumed. So the
+`ARTIFACTS_MISSING_ON_SUCCESS` instance above (Signal A) is not detected-and-unactioned (class
+(a)) nor computed-but-discarded (class (b)): on the handoff-present path it is **undetected**,
+full stop. This is a fourth, distinct outcome the registry's three classes do not name, and it
+matters precisely because it is easy to mistake for class (b): a downstream implementer who adds
+a consumer arm at the five recovered-path sites enumerated above will cover the recovered-path
+occurrence of this instance but will do nothing for the handoff-present path, where the defect
+that motivated this row was actually observed.
+
 ### Class (c) — ephemeral
 
 Five `PostToolUse` advisory hooks in `hooks/`, each of which emits `additionalContext` into
@@ -257,6 +271,18 @@ mechanism (every agent's Stage 7 contract, `handoff-schema.md`'s cross-reference
 is ordinary system-defect work, not a recursion hazard. The five hooks are detection *sites*, not
 part of the discrimination/recording pipeline's own implementation — a bug in one of them is
 likewise ordinary system-defect work, exactly like a bug in `skill-orchestrate/SKILL.md`.
+
+Two further orchestrator-load-bearing scripts were considered and are likewise excluded, for the
+same reason: `scripts/reconcile-task-status.sh` (runs at every `/orchestrate` entry) and
+`scripts/check-extension-docs.sh` (feeds `verify-deploy.sh`, already a `critical_paths` entry
+above). Neither is part of the discrimination/recording pipeline this guard scopes itself to — the
+guard's stated scope is limited to files that *implement* the discrimination/recording pipeline
+itself, and a status-reconciliation script and a documentation-lint script are ordinary
+orchestrator machinery, not part of that pipeline. So the recursion guard supplies no reason to
+add either. Whether they belong in `critical_paths` for the file's *other* consumer — the
+self-modification-hazard check in `scripts/orchestrate-batch-admit.sh` — is a separate question
+this document's scope boundary excludes; it is named here as a follow-on for whoever next revisits
+that consumer, not decided.
 
 **Degraded behaviour, when the critical-paths data file is missing or unparseable**: the guard
 degrades to an **unknown** recursion status and refuses to record or file a task — never to fail

@@ -264,40 +264,45 @@ not in fact mark it required, narrow the new row's wording to the schema that do
 
 ---
 
-### Phase 3: Record the handoff-branch detection hole and the excluded registry entries [NOT STARTED]
+### Phase 3: Record the handoff-branch detection hole and the excluded registry entries [COMPLETED]
 
 **Goal**: Close Gap B (an undetected path currently presented as a covered one) and Gap D (two
 orchestrator scripts neither added to nor excluded from the registry, with reasoning).
 
 **Tasks**:
-- [ ] Verify Gap B by inspection: read `skill-orchestrate/SKILL.md` around lines 800-840 and
+- [x] Verify Gap B by inspection: read `skill-orchestrate/SKILL.md` around lines 800-840 and
       confirm the handoff-present branch reads `blockers`, the continuation forms,
       `next_action_hint`, and the phase counts, and performs no `artifacts` shape check. Record the
-      line range you actually observe.
-- [ ] In the Class (b) section, add a clearly-marked note that all five `evidence_reason` consumer
+      line range you actually observe. *(completed: observed range 795-845; also reads
+      `plan_markers_verified`; grep for "artifact" over that range returns zero matches)*
+- [x] In the Class (b) section, add a clearly-marked note that all five `evidence_reason` consumer
       sites sit on the **recovered** (`.return-meta.json`) path, and that the handoff-present branch
       performs no artifacts shape check at all — so the missing-artifacts class from Phase 2 is
       **undetected**, not detected-and-discarded. Name it as a detection hole, distinct from the
       three existing classes, and state that a downstream implementer adding a consumer arm to the
-      five sites will not cover this surface.
-- [ ] In the "Considered and excluded" paragraph of the recursion-guard section, add
+      five sites will not cover this surface. *(completed)*
+- [x] In the "Considered and excluded" paragraph of the recursion-guard section, add
       `scripts/reconcile-task-status.sh` and `scripts/check-extension-docs.sh` with the guard-scope
       reasoning: the guard's scope is limited to files implementing the discrimination/recording
       pipeline, neither script is part of that pipeline, and so the recursion guard supplies no
       reason to add them — while noting that whether they belong for the self-modification-hazard
       consumer is a separate question outside this contract's scope, left as a named follow-on.
-- [ ] Confirm both script paths exist in the source store before naming them, and state their
+      *(completed)*
+- [x] Confirm both script paths exist in the source store before naming them, and state their
       orchestrator roles accurately (`reconcile-task-status.sh` at `/orchestrate` entry;
       `check-extension-docs.sh` feeding `verify-deploy.sh`, which is already a `critical_paths`
-      entry).
-- [ ] Check whether the adjacent point-fix work has any durable anchor to cross-reference under
+      entry). *(completed: both confirmed present under agent-system/extensions/core/scripts/)*
+- [x] Check whether the adjacent point-fix work has any durable anchor to cross-reference under
       "Related documentation" — the task description asks for a cross-reference without
       duplication, but a task number is prohibited here. `commands/errors.md` exists; a
       `command-structure.md` at `context/reference/` does not, and no file yet uses the phrase
       "source-store lane". If no durable anchor exists for a given item, add nothing for it and
       leave the motivating-case narrative as the worked example — record that conclusion in the
-      phase's completion note rather than inventing a link.
-- [ ] Make no edit to `orchestrator-critical-paths.json`.
+      phase's completion note rather than inventing a link. *(completed: no durable anchor found —
+      `command-structure.md` does not exist and no file uses "source-store lane"; "Related
+      documentation" left unchanged, no link invented)*
+- [x] Make no edit to `orchestrator-critical-paths.json`. *(completed: confirmed absent from
+      `git diff --stat`, byte-identical, 13 entries)*
 
 **Timing**: 0.5 hours
 
