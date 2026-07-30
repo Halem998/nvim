@@ -11,37 +11,50 @@ next_project_number: 990
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 948,951,959,963,964,969,971,973,980,981,982,983,987,988 | -- | agent-system, extensions, orchestration-concurrency, ... |
-| 2 | 952,960,972,974,984,985,986 | 951,959,969,971,980 | agent-system, status-marker-lifecycle |
-| 3 | 953,961,989 | 952,960,972,974 | agent-system |
-| 4 | 962 | 961 | agent-system |
+| 1 | 951,959,964,969,971,973,980,981,987 | -- | agent-system, extensions, state-write-coverage |
+| 2 | 952,960,972,974 | 951,959,971 | agent-system |
+| 3 | 953,961,963,982,988 | 952,960,964,972,974 | agent-system, orchestration-concurrency |
+| 4 | 948,962,989 | 961,972,982 | agent-system |
+| 5 | 983,984 | 953,962,964,969,981,982 | agent-system, status-marker-lifecycle |
+| 6 | 985,986 | 952,963,973,980,981,982,983,984,987,988 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-948 [NOT STARTED] — Add a Stage 7 / final-metadata section to agent-system/extensions
-951 [NOT STARTED] — Create the foundational contract that lets the agent system tell 
+951 [RESEARCHED] — Create the foundational contract that lets the agent system tell 
   └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
+      └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+        └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+    └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-964 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-971 [NOT STARTED] — Loosen the plan-checklist mark-completed instruction in the imple
+        └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
+    └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
+      └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
+964 [RESEARCHING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
+  └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv (see above)
+971 [RESEARCHING] — Loosen the plan-checklist mark-completed instruction in the imple
   └─ 972 [NOT STARTED] — Add a plan-checklist mark-completed contract to agent-system/exte
+    └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+      └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
+      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
-    └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a (see above)
-973 [NOT STARTED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
+    └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
+973 [RESEARCHING] — Give reconcile-task-status.sh a defined, safe recovery behavior w
+  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
-983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
-988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
-985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
-986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+  └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
+  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
+987 [RESEARCHING] — Bring context loading back within its own declared budgets and gi
+  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
+  └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+948 [NOT STARTED] — Add a Stage 7 / final-metadata section to agent-system/extensions
 
 ### Extensions
 
@@ -57,7 +70,7 @@ next_project_number: 990
 
 ### State Write Coverage
 
-969 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+969 [RESEARCHING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
 
@@ -65,7 +78,7 @@ next_project_number: 990
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 971, Task 972, Task 974
+- **Dependencies**: Task 971, Task 972, Task 974, Task 982
 
 **Description**: Normalize agent frontmatter and contract sections across all 77 agents, closing the documented known gaps as SHARED includes rather than 77 hand-copies. DEPENDS ON the three in-flight checklist-contract tasks (loosen checklist match; add checklist contract to cslib and hard implementation variants) because they edit the same agent files — this task rebases on whatever they land and generalizes the pattern.
 
@@ -88,7 +101,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 960, Task 964
 
 **Description**: Consolidate shell-script boilerplate, settle the strict-mode convention, and make the existing test suites actually run. From the shell-layer review (specs/reviews/review-2026-07-29-agent-system.md): 123 shell scripts; the shared-library posture is good where it exists (3 libs, all genuinely single-source) but thin.
 
@@ -119,7 +132,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 987. Context budget enforcement: demote always-load bloat, break the meta catch-all, one index schema
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 978
@@ -153,7 +166,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 980
+- **Dependencies**: Task 951, Task 960, Task 961, Task 962, Task 963, Task 969, Task 980, Task 982, Task 983, Task 984, Task 987
 
 **Description**: Make the documentation layer stop describing machinery that does not exist, and consolidate the redundant doc surfaces. DEPENDS ON the deploy-engine consolidation task, because the correct replacement text for every 'Load Core / Sync all' remediation instruction is decided there.
 
@@ -181,7 +194,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 980
+- **Dependencies**: Task 952, Task 960, Task 963, Task 964, Task 969, Task 973, Task 980, Task 981, Task 982, Task 984, Task 987, Task 988
 
 **Description**: Quarantine (never silently delete) the dead machinery the review inventoried, mirroring the literature extension's existing scripts/deprecated/ + README-with-per-file-rationale precedent. DEPENDS ON the deploy-engine consolidation task landing first, because that task decides the fate of several items below (manager.regenerate and settings_backup get WIRED there, not quarantined; sync.lua's status changes there).
 
@@ -206,7 +219,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
-- **Dependencies**: Task 969
+- **Dependencies**: Task 962, Task 969
 
 **Description**: Give specs/state.json a machine-enforced schema and make the status vocabulary a single source of truth. This SUBSUMES task 950 (marked abandoned in favor of this task — its verified command-structure.md defect inventory folds into item 4 below) and DEPENDS ON task 969 (state-write.sh archive/vault coverage) landing first so the writer conversion in item 5 has a mechanism that can address every target.
 
@@ -238,7 +251,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 951, Task 952, Task 953, Task 959, Task 960, Task 961, Task 962, Task 964, Task 969, Task 981, Task 982
 
 **Description**: Apply the lit-stage4a-flow.md pattern (ONE shared, directly-executable block imported by @-reference — the single best-factored block in the system, whose own header documents the drift class it fixed) to the rest of the skill lifecycle, and make skills call the skill-base.sh functions that already exist instead of hand-copying them.
 
@@ -273,7 +286,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
-- **Dependencies**: None
+- **Dependencies**: Task 974
 
 **Description**: Unify the .orchestrator-handoff.json contract. FOUR disagreeing schemas currently coexist, and the nominal producer has zero callers. This SUBSUMES tasks 947 and 949 (both marked abandoned in favor of this task — read their descriptions first; 949's cslib-sibling propagation should be handled here or spun out at planning time). Related but NOT subsumed: task 968 (handoff-present corroboration gate — this task simplifies its terrain but 968's gate logic stays separate) and task 973 (reconcile-task-status safe recovery from malformed handoff status — that failure-mode handling stays; this task reduces its trigger frequency).
 
@@ -540,7 +553,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 973. Make reconcile-task-status.sh recover from a malformed handoff status instead of refusing promotion
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -616,7 +629,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 971. Loosen implementation agents' plan-checklist match off the literal **Task {P}.{N}**: prefix
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -680,7 +693,7 @@ DELIVERABLE RULE: deliverables outside `specs/**` must not cite task numbers; us
 ---
 
 ### 969. Extend state-write.sh to cover archive and vault state files and convert residual hand-rolled sites
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: state-write-coverage
 - **Dependencies**: Task 967
@@ -884,7 +897,7 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 964. Repair /refresh orphan detection so live system and session processes are never selected
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -939,7 +952,7 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 972, Task 974
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/**` and NEVER `.claude/**`.
 
@@ -1266,10 +1279,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 951. Define the system-defect discrimination predicate and detection-point registry
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [agent-system/extensions/core/context/patterns/system-defect-discrimination.md]
 
 **Description**: Create the foundational contract that lets the agent system tell one of ITS OWN defects apart from an ordinary failure of the user's task work, and enumerate the sites where such defects are already detected. This is the design task the other tasks in this group encode; settle it first.
 
@@ -1369,7 +1383,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 947
+- **Dependencies**: Task 982
 
 **Description**: Add a Stage 7 / final-metadata section to agent-system/extensions/cslib/agents/cslib-research-agent.md, which currently has no terminal-metadata contract at all. This is the agent that actually failed in production.
 

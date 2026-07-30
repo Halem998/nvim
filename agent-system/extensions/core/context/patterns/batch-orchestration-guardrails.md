@@ -723,8 +723,12 @@ This document states principles only. The mechanisms are defined, exactly once e
 - **Creation-time overlap component**: `docs/reference/standards/multi-task-creation-standard.md`
   — the file-scope capture and overlap-detection component invoked at task-creation time.
 - **Self-modification hazard data and schema**: `context/reference/orchestrator-critical-paths.json`
-  — the single declaration of the ten-file critical-path list and its `scope_roots` expansion
-  rule, consumed by `scripts/orchestrate-batch-admit.sh`; and
+  — the single declaration of the critical-path list (13 entries as of the system-defect
+  discrimination recursion guard's additions — see
+  `context/patterns/system-defect-discrimination.md`'s "Recursion guard rule" section) and its
+  `scope_roots` expansion rule, consumed by `scripts/orchestrate-batch-admit.sh` for the
+  self-modification hazard check AND by the system-defect-discrimination recursion guard as a
+  second consumer of the same `self_mod_match` predicate; and
   `docs/architecture/batch-admit-schema.md` — the `self_modifying` / `defer_reason` verdict fields
   this fourth dimension adds to the admission predicate's output.
 - **Deliberate-invocation constraint and its automated exception**:

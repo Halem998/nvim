@@ -1167,6 +1167,32 @@
       }
     },
     {
+      "path": "patterns/system-defect-discrimination.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, and dedup rule",
+      "line_count": 285,
+      "keywords": [
+        "patterns",
+        "orchestrate",
+        "defect",
+        "discrimination",
+        "schema",
+        "attribution"
+      ],
+      "topics": [
+        "recovery",
+        "meta-system"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [
+          "meta"
+        ],
+        "commands": []
+      }
+    },
+    {
       "path": "patterns/mcp-tool-recovery.md",
       "domain": "core",
       "subdomain": "patterns",
@@ -2811,7 +2837,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 733,
+      "line_count": 737,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -2865,7 +2891,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Declared orchestrator-critical paths and scope roots driving the self-modification defer verdict",
-      "line_count": 50,
+      "line_count": 62,
       "keywords": [
         "reference",
         "orchestrate",

@@ -1,0 +1,285 @@
+# System-Defect vs. Task-Work Discrimination
+
+Distinguishes a defect IN THE AGENT SYSTEM ITSELF (a bug in an agent definition, skill, hook, or
+script under `agent-system/extensions/**`) from an ordinary failure of the user's task work (a
+Lean proof that will not compile, a plan that is incomplete, a research report the user rejects),
+so the former can eventually be turned into a durable, deduplicated record and the latter is left
+to the ordinary `failed`/`partial`/`blocked` task-status machinery untouched.
+
+This document settles the discrimination contract and enumerates the sites where such defects are
+already detected. It is modelled closely on
+[Infra-Failure vs. Work-Cycle Discrimination](infra-failure-discrimination.md), which solves a
+structurally identical two-signal discrimination problem (transport error vs. genuine work
+cycle) — the same section shape, the same conservative-default reasoning, and the same explicit
+warning against weakening the rule are reused here rather than reinvented.
+
+**Scope of this document**: the predicate, the detection-point registry, the recursion-guard
+rule, and the deduplication rule. It defines no recorder script, wires no detection site, and
+changes no command — those are downstream work that must encode, not re-derive, the answers
+below.
+
+## The motivating case
+
+An autonomous run dispatched a research agent for two tasks. Both produced correct, fully
+verified research, but both wrote a status value outside the normative vocabulary (see
+[return-metadata-file.md](../formats/return-metadata-file.md) lines 88-94:
+`in_progress|researched|planned|implemented|partial|failed|blocked`) plus an artifacts array of
+bare path strings instead of `{type, path, summary}` objects. The orchestrator's off-schema
+branch behaved correctly: it emitted a loud `[OFF-SCHEMA DISPATCH STATUS ...]` banner, refused
+the status transitions, and charged both tasks to `failed_tasks`. And then it stopped. Nothing
+connected "this is a defect in an agent definition" to "a fix task should be created against the
+source store." A human noticed the banner, diagnosed the root cause across five files, and
+invoked `/meta` by hand. Closing that manual hop is the point of this work.
+
+### The dead-signal finding
+
+Half of the motivating defect was **already detected and discarded**. This is the sharpest single
+piece of evidence for why a discrimination contract — not just louder banners — is needed.
+
+`scripts/orchestrate-recover-outcome.sh` line 205 sets
+`evidence_reason="ARTIFACTS_SHAPE_MISMATCH"`, and the in-file comment already explains exactly why
+it matters (lines 92-95): *"A non-empty array yielding no path is proof of a shape mismatch (e.g.
+a bare-string array), not proof of 'no artifacts'."* That comment has never been read by any
+consumer. Every site that reads `evidence_reason` gates on `PHASES_ZERO_ON_SUCCESS` alone and
+ignores `ARTIFACTS_SHAPE_MISMATCH` entirely (citations verified against current file text; the
+original diagnosis's line numbers had already drifted by the time this document was written,
+which is itself evidence that citations must always be re-verified rather than trusted from a
+prior report):
+
+- `skills/skill-orchestrate/SKILL.md:682` (single-task Stage 5 recovered-outcome branch)
+- `skills/skill-orchestrate/SKILL.md:826` (handoff-present branch, D3 note)
+- `skills/skill-orchestrate/SKILL.md:1870` (multi-task Stage MT-4 mirror)
+- `skills/skill-orchestrate/SKILL.md:2316` (the three-reachable-branches prose specification)
+- `skills/skill-orchestrate-hard/SKILL.md:888` (hard-mode mirror)
+
+Five consumer sites, one signal, zero readers. This is Deliverable 2's class (b) below — a
+detector with no consumer, not a missing detector.
+
+## The predicate
+
+A system defect is registered **iff both signals hold**.
+
+| Signal | Kind | Question it answers |
+|--------|------|----------------------|
+| A — schema violation | mechanical, bash-checkable | Is the failure a violation of a schema the agent system **itself** owns? |
+| B — attribution | mechanical, bash-checkable | Is the violation attributable to a **named** source-store file under `agent-system/extensions/**`? |
+
+**Classification: system defect iff A AND B. Every other combination is task work.** Both signals
+are already-computed booleans by the time either is consulted; neither requires new LLM judgment
+— this mirrors infra-failure-discrimination.md's own framing exactly (`dispatch_was_transport_error`
+and `meta_touched` are likewise pre-computed booleans, not judgments made at classification time).
+
+### Signal A — schema violation instances
+
+Signal A is `true` for any of these (a closed, extensible list — extending it is a future task's
+decision, not silently done by a detection site):
+
+| Instance | Where it is already computed |
+|----------|-------------------------------|
+| `OFF_SCHEMA_STATUS` — a status value outside the six-value normative enum (`researched\|planned\|implemented\|partial\|failed\|blocked`; `in_progress` is a valid non-terminal marker, not a violation) | Tier C branches, see registry below |
+| `ARTIFACTS_SHAPE_MISMATCH` — an artifacts array that is non-empty but yields no `.path` | `scripts/orchestrate-recover-outcome.sh:205` |
+| `HANDOFF_MISLOCATED` — a handoff written outside its task directory | the stray-handoff sweep, see registry below |
+| `META_MISSING_AFTER_NARRATION` — a `.return-meta.json` missing or unparseable after a dispatch that produced subagent-authored narration (i.e., not the infra-failure case — see [infra-failure-discrimination.md](infra-failure-discrimination.md) for that adjacent, already-solved discrimination) | the completion-claim gate, see registry below |
+
+### Signal B — attribution
+
+Detection alone is not enough: the violation must resolve to a **named** file under
+`agent-system/extensions/**`, derivable from the dispatched agent's name (or, for
+orchestrator-internal sites, from the detecting site itself). The resolution is a mechanical path
+transform, not judgment: a `.claude/{agents,skills,commands,rules,context,scripts,hooks,extensions}/**`
+path is always a deploy artifact of exactly one source-store path — `agent-system/extensions/core/**`
+for core files, or the matching `agent-system/extensions/<ext>/**` for extension-owned files (see
+[source-store-deploy-boundary.md](../../rules/source-store-deploy-boundary.md)). For an agent
+dispatch failure, the attributed file is the dispatched agent's own definition file (e.g. a
+research-agent status violation attributes to that agent's `.md` definition under
+`agent-system/extensions/<ext>/agents/`).
+
+**Detection without attribution must log only and never offer a task.** Unattributable detections
+are the main noise vector this predicate exists to suppress — a violation that cannot be pinned to
+a named file is exactly the case where an automatically-filed task would have no actionable scope,
+and would instead train operators to ignore the mechanism's output.
+
+## A schema-conformant failure is always task work
+
+This is the load-bearing consequence, not a corollary — an implementer who loses this property
+rebuilds the exact noise problem this predicate exists to prevent, so it gets its own named
+section, in the manner of infra-failure-discrimination.md's "Either signal alone defaults to
+charging a genuine cycle" section.
+
+**A Lean proof that will not compile writes `status: "failed"` with a well-formed artifacts
+array.** Signal A is false — nothing about that outcome violates a schema the agent system owns;
+the implementation agent followed its own contract to the letter and reported an honest failure
+of the *user's* work. The mechanism never fires, however severe the underlying failure is, however
+many times it recurs, and however loudly `/errors` or a human reviewer later complains about it.
+
+This is deliberate and total: severity of the underlying failure is not an input to the predicate
+at all. A catastrophic, repeatedly-failing Lean proof and a single successful research report both
+score Signal A = false. The predicate only ever looks at whether the *system's own contract* —
+the status vocabulary, the artifacts shape, the handoff location, the metadata-write obligation —
+was honored, never at whether the *content* of the work succeeded. Conflating "this failed badly"
+with "this is a system defect" is exactly the drift that would turn every hard user-facing problem
+into system-defect noise, defeating the entire purpose of discriminating between the two in the
+first place.
+
+## Detection-point registry
+
+The real detection points fall into three classes that need **different** downstream work — the
+registry states which class each site is in so a future implementer does not try to treat them
+uniformly. All line citations below were verified against current file text at the time of
+writing; a future reader should re-verify before building on them, per the same discipline
+demonstrated above for the dead-signal citations.
+
+### Class (a) — loud but unactioned
+
+Already emits a clear, human-legible signal at the point of detection, but nothing downstream
+converts that signal into a durable record or task. These sites need **a recorder call added
+beside the existing banner** — the diagnosis is already in hand.
+
+| Site | File:line | What it detects |
+|------|-----------|------------------|
+| Off-schema Tier C (single-task) | `skills/skill-orchestrate/SKILL.md:977` | `dispatch_status` outside the accept-list — `OFF_SCHEMA_STATUS` |
+| Off-schema Tier C (hard mode) | `skills/skill-orchestrate-hard/SKILL.md:1186` | same, hard-mode mirror |
+| Off-schema (multi-task) | `skills/skill-orchestrate/SKILL.md:2028-2038` | same, Stage MT-4 prose specification |
+| Stale-handoff gate | `skills/skill-orchestrate/SKILL.md:590-591` | handoff mtime predates the dispatch window — may indicate a stale write, a hung writer, or a writer bug |
+| Stray-handoff sweep | `skills/skill-orchestrate/SKILL.md:606-612` | `HANDOFF_MISLOCATED` — a writer produced the handoff outside its task directory (moved to `.stray-handoff-{ts}.json` for inspection, never actioned further) |
+| Completion-claim gate, Case 3/3 refuse | `scripts/skill-base.sh:729` | `META_MISSING_AFTER_NARRATION`-shaped: phase accounting absent/malformed AND no corroborating plan-marker signal — already logs the phrase `handoff-writer defect suspected` verbatim |
+
+### Class (b) — computed but discarded
+
+`ARTIFACTS_SHAPE_MISMATCH` is the sole current instance: `scripts/orchestrate-recover-outcome.sh`
+already computes and emits it (line 205), and the five consumer sites enumerated under "The
+dead-signal finding" above already read `evidence_reason` — they simply branch only on the
+sibling value. These sites need **a consumer, not a new detector**: the mechanical work is
+already done; what is missing is a conditional arm.
+
+### Class (c) — ephemeral
+
+Five `PostToolUse` advisory hooks in `hooks/`, each of which emits `additionalContext` into
+exactly one agent's context and **persists nothing** — the signal exists only for the duration of
+that single tool-call turn:
+
+| Hook | Detects |
+|------|---------|
+| `validate-meta-write.sh` | a direct write under `.claude/**` during `/meta`-adjacent work |
+| `validate-handoff-location.sh` | a handoff written outside its task directory (Write/Edit-tool path only — structurally blind to the Bash-redirection write path, by design; see the hook's own header) |
+| `validate-no-task-references.sh` | a task-number citation in a deliverable outside `specs/**` (blocking, not advisory — the one hook in this class that denies the write rather than merely annotating context) |
+| `validate-plan-write.sh` | an artifact write under `specs/*/{plans,reports,summaries}/*.md` that fails format validation |
+| `validate-state-sync.sh` | `state.json`/`TODO.md` desynchronization |
+
+`validate-meta-write.sh` already names the correct source-store target in its own message (`"Edit
+the source store instead: agent-system/extensions/core/** for core system files, or
+agent-system/extensions/<ext>/** for extension-owned files"`) — so for this hook, Signal B's
+attribution work is largely already done; a future recorder need only capture the `FILE` variable
+it already resolves, rather than re-deriving the source-store mapping from scratch.
+
+## The recursion guard rule
+
+The mechanism must not fire on defects in itself — a bug in the discrimination/recording pipeline
+being reported by that same pipeline risks an unbounded regress (the recorder crashing while
+recording a defect about its own crash; a dedup-logic bug producing infinite duplicate records of
+itself). This is a narrower, more specific concern than "every orchestrator-critical file" — most
+of the Class (a) detection sites above (`skill-orchestrate/SKILL.md`, `skill-orchestrate-hard/SKILL.md`,
+`scripts/skill-base.sh`) are ordinary orchestrator machinery whose defects are exactly the kind of
+thing this mechanism should record normally, not exempt. The guard's scope is limited to the files
+that **implement the discrimination/recording pipeline itself**.
+
+**Decision: extend `context/reference/orchestrator-critical-paths.json`, do not add a sibling
+file.** That file already enumerates the orchestrator's own critical files in a `scope_roots` +
+`critical_paths` shape, and `scripts/orchestrate-batch-admit.sh` already consumes it — via
+`self_mod_match` in `scripts/lib/file-scope-overlap.sh`'s shared jq definitions — for the
+self-modification hazard check (a task whose `file_scope` names a critical path is deferred from
+concurrent co-dispatch). The recursion guard is a **second consumer of the same predicate and the
+same data**, not a new one: "is this attributed path one of the declared critical paths?" is
+exactly `self_mod_match`'s question, just asked at defect-detection time instead of at admission
+time. A sibling file would require independently maintaining a second scope-roots-plus-paths
+structure that must be kept in sync with the first by hand — the DRY choice this codebase already
+prefers elsewhere (`scripts/lib/file-scope-overlap.sh`'s own shared defs, `scripts/lib/phase-heading-patterns.sh`
+as the single grammar anchor, `skill_corroborate_phase_counts` as the single anchor for
+plan-heading corroboration).
+
+**Accepted, deliberate side effect**: extending the shared list means a task whose `file_scope`
+touches one of the newly-added entries also becomes self-modification-hazard-protected for
+concurrent dispatch admission, exactly like every other entry already in the file. This is
+correct, not incidental — these files genuinely are foundational orchestrator plumbing by the
+same reasoning that justifies every other entry's presence.
+
+**New entries this document adds** (all pre-existing files; no path is added for a file that does
+not yet exist):
+
+| Path (relative to a `scope_roots` entry) | Label |
+|---|---|
+| `context/patterns/system-defect-discrimination.md` | system-defect discrimination contract (this document) |
+| `context/reference/orchestrator-critical-paths.json` | orchestrator critical-path registry (self-reference) |
+| `scripts/orchestrate-recover-outcome.sh` | return-meta evidence-signal computation (`PHASES_ZERO_ON_SUCCESS` / `ARTIFACTS_SHAPE_MISMATCH`) |
+
+**Forward reference (binding on downstream work, not implemented here)**: when the recorder script
+(`scripts/system-defect-record.sh`) is created, its own path MUST be appended to this same list as
+a fourth entry — the recorder guarding itself against recursive self-recording is the single
+sharpest instance of this rule, and it cannot be added before the file exists.
+
+**Considered and excluded**: `context/formats/return-metadata-file.md` (the schema Signal A
+checks against) and the five Class (c) hooks were both considered for inclusion and left out.
+`return-metadata-file.md` is a general-purpose format specification consumed far beyond this
+mechanism (every agent's Stage 7 contract, `handoff-schema.md`'s cross-reference) — a defect in it
+is ordinary system-defect work, not a recursion hazard. The five hooks are detection *sites*, not
+part of the discrimination/recording pipeline's own implementation — a bug in one of them is
+likewise ordinary system-defect work, exactly like a bug in `skill-orchestrate/SKILL.md`.
+
+**Degraded behaviour, when the critical-paths data file is missing or unparseable**: the guard
+degrades to an **unknown** recursion status and refuses to record or file a task — never to fail
+open silently. This differs in *direction* from `orchestrate-batch-admit.sh`'s own precedent
+(which degrades `self_modifying` to `null` on every verdict, warns loudly, and falls through to
+the ordinary collision scan unaffected — because that scan has independent, still-meaningful work
+to do without the self-mod signal). The defect-recording path has no equivalent independent work
+to fall through to: if the guard cannot determine whether a detection is self-referential, the
+only safe default is the same one Signal B's attribution failure already uses — **log only, never
+create a task**. The shared *principle* — degrade loudly, never silently, never fail open — is
+identical to batch-admit's; only the resulting action differs, because the two consumers are
+protecting against different failure modes (an admission scan that has other useful work to do,
+versus a recording pipeline that has no safe action to take without the recursion signal).
+
+## The deduplication rule
+
+A defect already having an open task must not spawn a duplicate.
+
+**Identity key**: `{defect_class}:{attributed_source_path}` — the Signal A instance
+(`OFF_SCHEMA_STATUS`, `ARTIFACTS_SHAPE_MISMATCH`, `HANDOFF_MISLOCATED`, or
+`META_MISSING_AFTER_NARRATION`) paired with the Signal B attributed path. This is deliberately
+coarser than including the detecting site or the dispatched agent's task number: the same
+underlying bug in the same source-store file will keep tripping the same class at whatever site
+next encounters it, and a fix for one occurrence fixes all of them — recording each detecting
+site as a separate identity would fragment one bug into several open tasks.
+
+**Where the open-task check reads from**: `specs/events.jsonl`, queried for prior
+`event_type: "system_defect"` events whose `detail.defect_key` matches the identity key above (the
+schema's `detail` object is `additionalProperties: true`, so `defect_key` requires no schema
+revision — see `context/schemas/events-schema.json`). For each match, resolve
+`detail.linked_task_number` (present once a detection has been promoted to a task; absent for a
+detection-only record) against `specs/state.json`'s `active_projects` and classify:
+
+- **No prior matching event** → not a duplicate; proceed.
+- **A prior matching event exists with a `linked_task_number` whose `state.json` status is
+  non-terminal** (per [state-management.md](../../rules/state-management.md)'s terminal-state
+  list: `completed`, `abandoned`, `expanded`) → duplicate; log only, do not record or file again.
+- **A prior matching event exists but carries no `linked_task_number`** (detected, never
+  promoted), **or** its linked task is terminal → not a duplicate; a fresh occurrence of a
+  previously-unfixed or since-closed defect is worth a new record, since either nothing is
+  currently tracking it or the prior fix evidently did not hold.
+
+This keeps the check entirely inside the already-decided `specs/events.jsonl` substrate — no new
+file, no new field on `active_projects`, and no dependency on `errors.json`'s independently
+tracked schema drift.
+
+## Related documentation
+
+- [Infra-Failure vs. Work-Cycle Discrimination](infra-failure-discrimination.md) — the structural
+  precedent this document mirrors; a different failure surface (Agent-tool transport errors vs.
+  Signal A/B schema-and-attribution violations)
+- [return-metadata-file.md](../formats/return-metadata-file.md) — the normative status/artifacts
+  vocabulary Signal A checks against
+- [source-store-deploy-boundary.md](../../rules/source-store-deploy-boundary.md) — the
+  source-store/deploy-artifact split Signal B's attribution resolves against
+- [file-footprint-overlap.md](file-footprint-overlap.md) — the shared overlap predicate
+  (`self_mod_match`) the recursion guard reuses rather than reimplements
+- `docs/architecture/batch-admit-schema.md` — the self-modification hazard's existing schema and
+  degradation contract, whose direction the recursion guard deliberately diverges from (see above)

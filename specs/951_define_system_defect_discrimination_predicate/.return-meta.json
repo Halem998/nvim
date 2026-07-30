@@ -1,0 +1,52 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+      "summary": "The system-defect discrimination contract: two-signal predicate (schema violation + source-store attribution), the schema-conformant-failure-is-always-task-work invariant, the three-class detection-point registry, the recursion-guard rule (extends orchestrator-critical-paths.json), and the deduplication rule."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
+      "summary": "Extended with three new critical_paths entries for the recursion guard: the discrimination doc itself, the critical-paths registry itself, and orchestrate-recover-outcome.sh."
+    }
+  ],
+  "next_steps": "Run /plan 951 or proceed directly to the downstream recorder/wiring task, which must encode this contract's predicate, registry, recursion guard, and dedup rule rather than re-deriving them.",
+  "metadata": {
+    "session_id": "sess_1785373759_72035f_951",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
+    "findings_count": 5
+  },
+  "memory_candidates": [
+    {
+      "content": "In this codebase, orchestrator-critical-paths.json (scope_roots + critical_paths shape) has exactly one live consumer today (orchestrate-batch-admit.sh's self-modification hazard check via self_mod_match), but its declarative shape generalizes cleanly to a second, unrelated consumer purpose (a recursion guard preventing a defect-recording mechanism from recording defects in its own implementing files) without needing a sibling data file -- reuse the same self_mod_match predicate from scripts/lib/file-scope-overlap.sh rather than duplicating the scope_roots+critical_paths structure.",
+      "category": "PATTERN",
+      "source_artifact": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrator-critical-paths", "self_mod_match", "recursion-guard", "file-scope-overlap"]
+    },
+    {
+      "content": "scripts/orchestrate-recover-outcome.sh already computes evidence_reason=ARTIFACTS_SHAPE_MISMATCH (line 205) as a general empty-value-detection signal, but as of this research, all five sites reading evidence_reason (skill-orchestrate/SKILL.md:682,826,1870,2316 and skill-orchestrate-hard/SKILL.md:888) gate only on the sibling PHASES_ZERO_ON_SUCCESS value and never check for ARTIFACTS_SHAPE_MISMATCH -- a computed-but-discarded signal, needing a consumer arm added at each site rather than a new detector.",
+      "category": "INSIGHT",
+      "source_artifact": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["ARTIFACTS_SHAPE_MISMATCH", "evidence_reason", "orchestrate-recover-outcome", "dead-signal"]
+    },
+    {
+      "content": "Base-mode research agents (general-research-agent, cslib-research-agent, etc.) are explicitly prohibited from writing .orchestrator-handoff.json even when orchestrator_mode is true in the delegation context -- see docs/architecture/handoff-schema.md's Handoff Writers table ('Research is explicitly prohibited from writing one'). A generic delegation instruction saying 'you MUST write your orchestrator handoff' should be checked against this prohibition before acting -- for base-mode research, .return-meta.json alone (recovered via orchestrate-recover-outcome.sh) is the correct and only outcome channel.",
+      "category": "INSIGHT",
+      "source_artifact": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrator-handoff", "handoff-writers", "research-agent", "orchestrator_mode"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/index-entries.json"
+  ]
+}

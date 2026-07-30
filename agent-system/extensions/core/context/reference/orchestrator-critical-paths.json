@@ -45,6 +45,18 @@
     {
       "path": "scripts/verify-deploy.sh",
       "label": "deploy verification gate"
+    },
+    {
+      "path": "context/patterns/system-defect-discrimination.md",
+      "label": "system-defect discrimination contract (recursion-guard self-reference)"
+    },
+    {
+      "path": "context/reference/orchestrator-critical-paths.json",
+      "label": "orchestrator critical-path registry (self-reference)"
+    },
+    {
+      "path": "scripts/orchestrate-recover-outcome.sh",
+      "label": "return-meta evidence-signal computation (PHASES_ZERO_ON_SUCCESS / ARTIFACTS_SHAPE_MISMATCH)"
     }
   ]
 }
