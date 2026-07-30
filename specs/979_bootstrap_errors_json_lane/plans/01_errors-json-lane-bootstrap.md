@@ -335,35 +335,38 @@ has no precedent in `core/scripts/` — so `/errors` Fix Mode has a real impleme
 
 ---
 
-### Phase 4: Regression suite for concurrency and off-schema rejection [NOT STARTED]
+### Phase 4: Regression suite for concurrency and off-schema rejection [COMPLETED]
 
 **Goal**: Prove the two verification-bar claims mechanically — concurrent invocation does not lose
 or corrupt records, and off-schema input is rejected loudly.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-errors-append.sh`, structurally
+- [x] Create `agent-system/extensions/core/scripts/tests/test-errors-append.sh`, structurally
       modeled on `scripts/tests/test-phase-heading-patterns.sh`: `set -uo pipefail`,
       `pass()`/`fail()`/`info()` helpers, `PASSED`/`FAILED` integer counters, exit 0 on all-pass /
       1 on any-fail / 2 on environment error, and the same deploy-tree-first /
       source-store-fallback candidate list for locating the script under test.
-- [ ] Run every case against an isolated scratch project root (`mktemp -d` with a `specs/`
+- [x] Run every case against an isolated scratch project root (`mktemp -d` with a `specs/`
       subdirectory), never against the live repo's `specs/errors.json`.
-- [ ] Concurrency case (the flock test): launch N (>= 20) `append` invocations in parallel with
+- [x] Concurrency case (the flock test): launch N (>= 20) `append` invocations in parallel with
       `&` + `wait`, then assert `jq '.errors | length'` equals exactly N, that the document still
       parses, and that `jq '[.errors[].id] | unique | length'` also equals N (no lost or duplicated
-      records).
-- [ ] Concurrent-update case: seed M records, launch M parallel `update` invocations each targeting
+      records). *(completed: N=25)*
+- [x] Concurrent-update case: seed M records, launch M parallel `update` invocations each targeting
       a distinct id, then assert all M carry `fix_status: "fixed"` and the record count is
-      unchanged.
-- [ ] Off-schema rejection cases, each asserting exit code 1 AND a byte-identical file afterwards:
+      unchanged. *(completed: M=10)*
+- [x] Off-schema rejection cases, each asserting exit code 1 AND a byte-identical file afterwards:
       invalid `--severity`; missing `--message`; non-integer `--task`; malformed
       `--delegation-path-json`; `--auto-recoverable maybe`; `update --fix-status resolved`;
-      `update` with an unmatched `--id`.
-- [ ] Lazy-creation case: `append` against a scratch root with no `specs/errors.json` creates it
+      `update` with an unmatched `--id`. *(completed: also added an 8th case,
+      `update` against an absent `specs/errors.json`, and a 9th, bare-array corruption -- both
+      already covered by Phase 3's verification list but not itemized in this phase's case
+      inventory)*
+- [x] Lazy-creation case: `append` against a scratch root with no `specs/errors.json` creates it
       with a valid shape.
-- [ ] Shape-conformance case: assert every produced record carries all 7 required fields and that
+- [x] Shape-conformance case: assert every produced record carries all 7 required fields and that
       the top level is an object with an `errors` array (never a bare array).
-- [ ] `chmod +x` the test script.
+- [x] `chmod +x` the test script.
 
 **Timing**: 1.5 hours
 

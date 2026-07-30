@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Regression suite for concurrency and off-schema rejection",
+  "started_at": "2026-07-30T00:21:00Z",
+  "last_updated": "2026-07-30T00:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-errors-append.sh: 14 cases (lazy-creation, shape-conformance, concurrency N=25, concurrent-update M=10, 9 rejection cases including bare-array corruption, update correctness); verified the suite discriminates by deliberately breaking the severity check in a scratch copy (exit flips from 0 to 1)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-errors-append.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Off-schema rejection cases (seven named)",
+      "type": "altered",
+      "reason": "Added two extra rejection cases beyond the seven named in this phase's checklist -- update against an absent errors.json, and bare-array corruption -- both already specified as verification criteria in Phase 3 but not itemized in this phase's case inventory. Widening, not narrowing.",
+      "annotation": "N/A -- additive, recorded inline on the checklist item"
+    }
+  ]
+}
