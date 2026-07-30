@@ -1,52 +1,35 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
-      "summary": "The system-defect discrimination contract: two-signal predicate (schema violation + source-store attribution), the schema-conformant-failure-is-always-task-work invariant, the three-class detection-point registry, the recursion-guard rule (extends orchestrator-critical-paths.json), and the deduplication rule."
-    },
-    {
-      "type": "implementation",
-      "path": "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
-      "summary": "Extended with three new critical_paths entries for the recursion guard: the discrimination doc itself, the critical-paths registry itself, and orchestrate-recover-outcome.sh."
+      "type": "plan",
+      "path": "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
+      "summary": "4-phase sequential verification-and-gap-closure plan for the system-defect discrimination contract: re-verify citations and fix an off-by-two citation range; extend Signal A by one empirically-evidenced instance (null/absent artifacts on a success status) explicitly marked as having no current detector; record the handoff-present branch's total absence of an artifacts shape check as a detection hole distinct from the three existing classes; document the two deliberately-excluded critical_paths candidates with guard-scope reasoning; final gate with line_count refresh. orchestrator-critical-paths.json verified correct as delivered and left unchanged."
     }
   ],
-  "next_steps": "Run /plan 951 or proceed directly to the downstream recorder/wiring task, which must encode this contract's predicate, registry, recursion guard, and dedup rule rather than re-deriving them.",
+  "next_steps": "Run /implement 951 to execute the plan",
   "metadata": {
     "session_id": "sess_1785373759_72035f_951",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
-    "findings_count": 5
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+    "task_number": 951,
+    "phase_count": 4,
+    "estimated_hours": 2.0,
+    "dependency_waves": 4
   },
   "memory_candidates": [
     {
-      "content": "In this codebase, orchestrator-critical-paths.json (scope_roots + critical_paths shape) has exactly one live consumer today (orchestrate-batch-admit.sh's self-modification hazard check via self_mod_match), but its declarative shape generalizes cleanly to a second, unrelated consumer purpose (a recursion guard preventing a defect-recording mechanism from recording defects in its own implementing files) without needing a sibling data file -- reuse the same self_mod_match predicate from scripts/lib/file-scope-overlap.sh rather than duplicating the scope_roots+critical_paths structure.",
-      "category": "PATTERN",
-      "source_artifact": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrator-critical-paths", "self_mod_match", "recursion-guard", "file-scope-overlap"]
-    },
-    {
-      "content": "scripts/orchestrate-recover-outcome.sh already computes evidence_reason=ARTIFACTS_SHAPE_MISMATCH (line 205) as a general empty-value-detection signal, but as of this research, all five sites reading evidence_reason (skill-orchestrate/SKILL.md:682,826,1870,2316 and skill-orchestrate-hard/SKILL.md:888) gate only on the sibling PHASES_ZERO_ON_SUCCESS value and never check for ARTIFACTS_SHAPE_MISMATCH -- a computed-but-discarded signal, needing a consumer arm added at each site rather than a new detector.",
+      "content": "The ARTIFACTS_SHAPE_MISMATCH detector in scripts/orchestrate-recover-outcome.sh has exactly two firing arms -- (artifacts_length > 0 AND resolved path empty), and jq_artifact_failure (non-zero jq exit while resolving .artifacts[0].path/.type/.summary). A `null` or absent artifacts field satisfies NEITHER: `(.artifacts // []) | length` yields 0 and `.artifacts[0].path // \"\"` yields empty with exit 0, because jq's null[0] is null rather than an error. Only the bare-string-array form trips the detector, and it does so via the jq-failure arm (exit 5), not the length arm that the in-file header comment describes. Consequence: a handoff or return-meta emitting `artifacts: null` alongside a success status passes as clean with evidence_reason=NONE. Verify this empirically with the two one-line jq probes before reasoning about artifacts-shape coverage; the header comment alone will mislead you about which arm fires.",
       "category": "INSIGHT",
-      "source_artifact": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+      "source_artifact": "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
       "confidence": 0.9,
-      "suggested_keywords": ["ARTIFACTS_SHAPE_MISMATCH", "evidence_reason", "orchestrate-recover-outcome", "dead-signal"]
-    },
-    {
-      "content": "Base-mode research agents (general-research-agent, cslib-research-agent, etc.) are explicitly prohibited from writing .orchestrator-handoff.json even when orchestrator_mode is true in the delegation context -- see docs/architecture/handoff-schema.md's Handoff Writers table ('Research is explicitly prohibited from writing one'). A generic delegation instruction saying 'you MUST write your orchestrator handoff' should be checked against this prohibition before acting -- for base-mode research, .return-meta.json alone (recovered via orchestrate-recover-outcome.sh) is the correct and only outcome channel.",
-      "category": "INSIGHT",
-      "source_artifact": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrator-handoff", "handoff-writers", "research-agent", "orchestrator_mode"]
+      "suggested_keywords": ["ARTIFACTS_SHAPE_MISMATCH", "orchestrate-recover-outcome", "jq-null-indexing", "evidence_reason", "artifacts-null"]
     }
   ],
   "modified_files": [
-    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
-    "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
-    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
-    "agent-system/extensions/core/index-entries.json"
+    "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
+    "specs/951_define_system_defect_discrimination_predicate/.orchestrator-handoff.json",
+    "specs/951_define_system_defect_discrimination_predicate/.return-meta.json"
   ]
 }

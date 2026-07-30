@@ -1,0 +1,24 @@
+{
+  "status": "planned",
+  "summary": "Verification-and-gap-closure plan for the system-defect discrimination contract. Both file_scope deliverables were already written and committed by the research phase; all 20 verifiable claims in them (line citations, cross-references, index registration, task-reference lint, JSON validity) were independently re-checked and hold. Three genuine gaps found in the markdown deliverable, one substantive: Signal A's ARTIFACTS_SHAPE_MISMATCH wording provably excludes a null/absent artifacts field on a success status, and the live detector fires on neither arm for that case (verified empirically) — the exact defect observed this run as a planner handoff with artifacts: null. Also: the handoff-present branch has no artifacts shape check at all, so that class is undetected rather than detected-and-discarded; a citation range is off by two lines; and two orchestrator-load-bearing scripts are neither added to nor excluded from critical_paths with reasoning. 4 sequential phases, 2.0 hours. The JSON deliverable needs no change and the task's own scope boundary (no recorder, no wiring, no command change) is preserved.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
+      "summary": "4-phase sequential verification-and-gap-closure plan: re-verify citations and fix a citation range; extend Signal A by one empirically-evidenced instance (missing artifacts on success) marked as having no current detector; record the handoff-branch detection hole and the two deliberately-excluded registry entries; final gate with line_count refresh. Edits are confined to system-defect-discrimination.md plus one integer in index-entries.json; orchestrator-critical-paths.json is verified correct as delivered and left unchanged."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "next_action_hint": "implement",
+  "blockers": [],
+  "metadata": {
+    "session_id": "sess_1785373759_72035f_951",
+    "agent_type": "planner-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+    "task_number": 951,
+    "estimated_hours": 2.0,
+    "dependency_waves": 4
+  }
+}

@@ -2459,7 +2459,7 @@
     {
       "project_number": 951,
       "project_name": "define_system_defect_discrimination_predicate",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Define the system-defect discrimination predicate and detection-point registry",
@@ -2470,13 +2470,18 @@
       ],
       "dependencies": [],
       "created": "2026-07-28T00:00:00Z",
-      "last_updated": "2026-07-30T01:22:24Z",
+      "last_updated": "2026-07-30T02:35:34Z",
       "session_id": "sess_1785373759_72035f_951",
       "artifacts": [
         {
           "path": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
           "type": "report",
           "summary": "The system-defect discrimination contract: two-signal predicate (schema violation + source-store attribution), the schema-conformant-failure-is-always-task-work invariant, the three-class detection-point registry, the recursion-guard rule (extends orchestrator-critical-paths.json), and the deduplication rule."
+        },
+        {
+          "path": "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
+          "type": "plan",
+          "summary": "4-phase sequential verification-and-gap-closure plan: re-verify citations and fix a citation range; extend Signal A by one empirically-evidenced instance (missing artifacts on success) marked as having no current detector; record the handoff-branch detection hole and the two deliberately-excluded registry entries; final gate with line_count refresh. Edits are confined to system-defect-discrimination.md plus one integer in index-entries.json; orchestrator-critical-paths.json is verified correct as delivered and left unchanged."
         }
       ]
     },

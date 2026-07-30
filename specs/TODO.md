@@ -22,7 +22,7 @@ next_project_number: 994
 
 ### Agent System
 
-951 [RESEARCHED] — Create the foundational contract that lets the agent system tell 
+951 [PLANNED] — Create the foundational contract that lets the agent system tell 
   └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
       └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
@@ -1326,11 +1326,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 951. Define the system-defect discrimination predicate and detection-point registry
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [agent-system/extensions/core/context/patterns/system-defect-discrimination.md]
+- **Plan**: [951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md]
 
 **Description**: Create the foundational contract that lets the agent system tell one of ITS OWN defects apart from an ordinary failure of the user's task work, and enumerate the sites where such defects are already detected. This is the design task the other tasks in this group encode; settle it first.
 
