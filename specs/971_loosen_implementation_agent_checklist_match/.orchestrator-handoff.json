@@ -1,0 +1,20 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Confirmed the shape mismatch: planner-agent.md emits free-form prose checklist items with no **Task {P}.{N}**: prefix, while general/lean/nix implementation agents match on that literal prefix (12/3/5 occurrences respectively). Recommend a single canonical instruction that locates items by existing text and preserves the deviation-annotation suffix wording unchanged. planner-agent.md stays out of scope per the task's chosen resolution.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/971_loosen_implementation_agent_checklist_match/reports/01_loosen-checklist-match.md"
+    }
+  ],
+  "next_action_hint": "plan",
+  "decisions_made": [
+    "Loosen the instruction to match items by existing text rather than standardizing planner-agent.md onto the literal prefix; planner-agent.md is not edited by this task.",
+    "Preserve the deviation-annotation suffix wording (*(deviation: skipped — reason)*, *(deviation: altered — what changed)*, *(deviation: deferred to task N)*, *(completed)*, *(in progress)*) unchanged; only the assumed leading `**Task {P}.{N}**:` line shape is genericized.",
+    "general-implementation-agent.md needs two sites updated (Stage 4B-ii check-off instruction, Stage 4D-ii cross-referenced deviation examples); lean and nix agents need only their deviation-annotation example blocks updated (they have no separate check-off instruction)."
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": false
+}
