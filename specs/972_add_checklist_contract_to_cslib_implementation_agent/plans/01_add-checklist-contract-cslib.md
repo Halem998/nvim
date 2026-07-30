@@ -1,7 +1,7 @@
 # Implementation Plan: Task #972
 
 - **Task**: 972 - Add a plan-checklist mark-completed contract to cslib-implementation-agent.md
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.75 hours
 - **Dependencies**: 971 (COMPLETED — established the canonical matching contract)
 - **Research Inputs**: `specs/972_add_checklist_contract_to_cslib_implementation_agent/reports/01_add-checklist-contract-cslib.md`
@@ -110,7 +110,7 @@ contract.)
 
 Phases within the same wave can execute in parallel. Here the two phases are strictly sequential.
 
-### Phase 1: Insert the Check-Off Subsection [NOT STARTED]
+### Phase 1: Insert the Check-Off Subsection [COMPLETED]
 
 **Goal**: `agent-system/extensions/cslib/agents/cslib-implementation-agent.md` gains one new
 `### Check Off Completed Items in Plan File` subsection carrying the canonical prefix-free
@@ -119,14 +119,14 @@ matching contract plus numbered steps 1-3, positioned between `### After Complet
 
 **Tasks**:
 
-- [ ] Assert the edit target is `agent-system/extensions/cslib/agents/cslib-implementation-agent.md` under `/home/benjamin/.config/nvim/`, and NOT any path under `.claude/`
-- [ ] Read `agent-system/extensions/core/agents/general-implementation-agent.md` lines 181-217 to obtain the canonical text firsthand rather than relying on any transcription
-- [ ] Read `agent-system/extensions/cslib/agents/cslib-implementation-agent.md` lines 82-112 to confirm the current subsection boundaries and locate the exact insertion seam
-- [ ] Insert the new subsection after the closing fence of `### After Completing a Phase` and before the `### When Deviating from Plan Steps` heading, using the reference text in "Verbatim Insert Text" below
-- [ ] Confirm the heading is `### Check Off Completed Items in Plan File` (three hashes, matching sibling depth) and not the canonical `####`
-- [ ] Confirm canonical numbered step 4 and its three `*(deviation: ...)*` suffixes were NOT copied
-- [ ] Confirm the existing `### Before Starting a Phase`, `### After Completing a Phase`, and `### When Deviating from Plan Steps` subsections are byte-unchanged
-- [ ] Confirm no task-number citation was introduced (this file is a deliverable outside `specs/**`)
+- [x] Assert the edit target is `agent-system/extensions/cslib/agents/cslib-implementation-agent.md` under `/home/benjamin/.config/nvim/`, and NOT any path under `.claude/` *(completed)*
+- [x] Read `agent-system/extensions/core/agents/general-implementation-agent.md` lines 181-217 to obtain the canonical text firsthand rather than relying on any transcription *(completed)*
+- [x] Read `agent-system/extensions/cslib/agents/cslib-implementation-agent.md` lines 82-112 to confirm the current subsection boundaries and locate the exact insertion seam *(completed)*
+- [x] Insert the new subsection after the closing fence of `### After Completing a Phase` and before the `### When Deviating from Plan Steps` heading, using the reference text in "Verbatim Insert Text" below *(completed)*
+- [x] Confirm the heading is `### Check Off Completed Items in Plan File` (three hashes, matching sibling depth) and not the canonical `####` *(completed)*
+- [x] Confirm canonical numbered step 4 and its three `*(deviation: ...)*` suffixes were NOT copied *(completed)*
+- [x] Confirm the existing `### Before Starting a Phase`, `### After Completing a Phase`, and `### When Deviating from Plan Steps` subsections are byte-unchanged *(completed: git diff shows insertions only, zero deletions)*
+- [x] Confirm no task-number citation was introduced (this file is a deliverable outside `specs/**`) *(completed)*
 
 **Timing**: 0.4 hours
 
