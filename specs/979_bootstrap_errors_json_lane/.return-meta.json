@@ -1,12 +1,51 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/979_bootstrap_errors_json_lane/summaries/01_errors-json-lane-bootstrap-summary.md",
+      "summary": "All 8 plan phases completed: reconciled draft-07 schema plus format contract, flock'd two-subcommand errors-append.sh (append/update), 14-case regression suite, deploy-path wiring, doc reconciliation, inline-writer conversion, and bootstrapped specs/errors.json verified end-to-end from the deployed tree."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Bootstrapped the errors.json lane end-to-end: one reconciled draft-07 schema plus prose format contract, a flock'd validated writer (errors-append.sh append/update) proven under concurrency and off-schema rejection by a 14-case regression suite, deploy-path wiring (worked around a real Lua sync-scan gap for scripts/ subdirectories via the documented loader-primitive fallback), reconciliation of all three conflicting doc blocks plus the one live inline jq writer, and a bootstrapped specs/errors.json verified end-to-end against both live readers."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/errors.md",
+    "agent-system/extensions/core/context/formats/errors-format.md",
+    "agent-system/extensions/core/context/schemas/errors-schema.json",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/rules/error-handling.md",
+    "agent-system/extensions/core/scripts/errors-append.sh",
+    "agent-system/extensions/core/scripts/tests/test-errors-append.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+    ".gitignore",
+    "specs/errors.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "This repo's headless 'Sync all' deploy path (sync.scan_all_artifacts, used by deploy-headless.sh and the <leader>al 'Load Core'/'Sync all' picker option) does NOT recurse into scripts/tests/ or scripts/lib/ subdirectories for the scripts category at all -- confirmed empirically via a headless-nvim probe returning zero is_subdir=true entries for that category, across BOTH already-deployed and brand-new subdirectory scripts. This is broader than the previously-documented 'brand-new file' gap in source-store-deploy-boundary.md. The reliable one-off workaround: invoke `loader.copy_scripts(manifest, source_dir, target_dir, protected_paths)` directly via `nvim --headless -c \"luafile <script>\" -c \"qa!\"`, requiring `package.path` extended with the repo's `lua/?.lua;lua/?/init.lua`, `require(\"neotex.plugins.ai.shared.extensions.manifest\").read(source_dir)` to load the manifest, and `require(\"neotex.plugins.ai.shared.extensions.loader\")` for copy_scripts and load_syncprotect. This primitive correctly handles subdirectory entries (it iterates manifest.provides.scripts literally, so 'tests/foo.sh' style entries copy correctly with parent-dir creation and .sh permission preservation) where the incremental scan path does not.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/979_bootstrap_errors_json_lane/summaries/01_errors-json-lane-bootstrap-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless", "copy_scripts", "sync-scan-gap", "loader-primitive", "scripts-subdirectory"]
+    },
+    {
+      "content": "When a plan's verification bar says 'grep for pattern X returns zero hits' but the very artifact the plan builds (a canonical writer script) legitimately CONTAINS pattern X as its own sanctioned internal implementation, the literal grep will never return zero once the plan's own work is done -- the correct reading is 'zero hits outside the canonical writer,' which is usually stated correctly in the plan's own Goal/Overview prose ('X is the only writer') even when a later verification bullet inherited unqualified wording. Don't treat this as a defect to chase; verify the qualified claim (zero hits outside the sanctioned location), record the literal grep's real count as a reported finding, and move on -- re-deriving live numbers and reporting where they diverge from the plan's literal text is the correct behavior, not silently 'fixing' the grep result to match stale wording.",
+      "category": "PATTERN",
+      "source_artifact": "specs/979_bootstrap_errors_json_lane/summaries/01_errors-json-lane-bootstrap-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["verification-bar", "self-referential-grep", "plan-wording-gap", "scope-hypothesis"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785368489_e9acfc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 8,
     "phases_total": 8
   }
 }

@@ -1,38 +1,50 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created an 8-phase plan (10h, 6 dependency waves). Phase 1 authors the reconciled draft-07 schema plus a new errors-format.md prose contract; Phases 2-3 build errors-append.sh with an append subcommand (direct events-append.sh port) then a novel update subcommand (read-modify-write held under one flock, validating the merged document before the atomic mv); Phase 4 adds a concurrency and off-schema-rejection regression suite; Phases 5-7 wire the deploy path, reconcile the three doc blocks, and convert the sole inline jq writer; Phase 8 bootstraps specs/errors.json and verifies end-to-end from the deployed tree.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 8 plan phases completed and committed. Phase 1: reconciled draft-07 schema (errors-schema.json) plus prose format contract (errors-format.md), registered in index-entries.json. Phases 2-3: errors-append.sh with append (near-direct events-append.sh port) and update (original read-modify-write held under one flock, validating the merged document before the atomic mv) subcommands. Phase 4: 14-case regression suite (concurrency N=25, concurrent-update M=10, 9 rejection cases, lazy-creation, shape-conformance), verified to actually discriminate. Phase 5: deploy-path wiring in manifest.json and verify-deploy.sh (gate 1 now 9 entries). Phase 6: reconciled all three conflicting doc blocks in rules/error-handling.md and commands/errors.md; verified the Git Commit block byte-identical. Phase 7: converted the sole live inline jq writer in skill-planner/SKILL.md. Phase 8: bootstrapped specs/errors.json, regenerated the deploy tree, hit and repaired the known deploy-mechanism gap (broader than documented -- the Sync-all scan path never recurses into scripts/tests or scripts/lib at all), then verified end-to-end from the deployed path including both live readers.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/979_bootstrap_errors_json_lane/plans/01_errors-json-lane-bootstrap.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/979_bootstrap_errors_json_lane/summaries/01_errors-json-lane-bootstrap-summary.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "implement",
+  "next_action_hint": "complete",
+  "phases_completed": 8,
+  "phases_total": 8,
   "files_modified": [
-    "specs/979_bootstrap_errors_json_lane/plans/01_errors-json-lane-bootstrap.md"
+    "agent-system/extensions/core/context/schemas/errors-schema.json",
+    "agent-system/extensions/core/context/formats/errors-format.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/errors-append.sh",
+    "agent-system/extensions/core/scripts/tests/test-errors-append.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/rules/error-handling.md",
+    "agent-system/extensions/core/commands/errors.md",
+    "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+    "specs/errors.json",
+    ".gitignore"
   ],
   "decisions_made": [
     "Top level is object-with-array {\"errors\": [...]}, not a bare array: both live readers (orchestrator-postflight.sh, hooks/events-log-artifact.sh) already index .errors[] / .errors[-1], so this costs zero reader changes and admits a future schema_version key",
-    "errors-append.sh takes TWO subcommands (append, update), split across Phases 2 and 3 so append lands as an independent green milestone; update is original read-modify-write design with no precedent in core/scripts/ (events-append.sh is that directory's only flock user)",
-    "Validation is hand-written bash checks kept in sync with the schema doc, matching the events-append.sh idiom; no ajv or python3 -m jsonschema dependency is introduced",
+    "errors-append.sh takes TWO subcommands (append, update); update is original read-modify-write design holding one flock across the whole read -> transform -> temp-write -> validate -> atomic-mv sequence, validating the MERGED document (not the delta) before the mv",
+    "Validation is hand-written bash checks kept in sync with the schema doc, matching the events-append.sh idiom; no ajv or python3 -m jsonschema dependency was introduced",
     "fix_status enum is unfixed|in_progress|fixed|resolved, with resolved documented as a DEPRECATED synonym for fixed so already-written cross-repo data validates on read; the update subcommand REJECTS resolved as an input value so the deprecation cannot re-propagate",
-    "recurrence_count is dropped from the persisted schema and /errors gains an explicit computed-at-query-time sentence; keeping an unwritten field would be a second dead-field defect of the kind this task exists to eliminate",
-    "The research report's Context Extension Recommendation was ACCEPTED: context/formats/errors-format.md is added alongside the schema, because the doc-block rewrites need a prose target for lazy-creation semantics, the CLI contract, the resolved deprecation, and the recurrence_count rationale, none of which a schema JSON can carry",
-    "id is schema-constrained as a non-empty string with a documented RECOMMENDED form err_{timestamp_ms}_{random6}, NOT an enforced pattern, so legacy err_001-style ids stay valid",
-    "context is the union superset (session_id, command, task, phase, checkpoint, agent, file) with NO individually required sub-fields, since no single writer populates them all",
-    "The subsumed source-store defect lane is added as a documented type value (source_store_defect), not as a new schema field",
-    "specs/errors.json is a specs/** runtime artifact authored directly with {\"errors\": []}, NOT a deploy artifact; errors-append.sh additionally lazily creates it in any repo",
-    "context/standards/error-handling.md's .agent-logs/errors.json block is explicitly OUT of scope: different path, different shape, no writer or reader anywhere",
-    "The UNBLOCKS 951/952/953 claim is recorded as advisory only, not a dependency edge; no work is planned for those tasks and completion is not gated on them"
+    "recurrence_count was dropped from the persisted schema; /errors' Analyze Patterns section now states recurrence is computed at query time by grouping on type",
+    "The verification bar's grep for inline '.errors +=' writers is satisfied as 'zero hits outside errors-append.sh', not literally zero hits repo-wide -- errors-append.sh's own internal jq expression is the sanctioned writer, not a rogue duplicate. This matches the plan's own Phase 7 goal text and the task's outer VERIFICATION BAR wording; the plan's individual verification bullets inherited the Overview's unqualified wording and were treated as a plan wording gap, not a defect",
+    "The known deploy-mechanism gap DID bite, and was broader than documented: the headless 'Sync all' scan path (sync.scan_all_artifacts) returns zero is_subdir=true entries for the scripts category -- it never recurses into scripts/tests/ or scripts/lib/, for either brand-new or already-deployed files. Repaired via the documented one-off loader-primitive workaround (direct headless-nvim invocation of loader.copy_scripts), never by hand-authoring the deployed file. The underlying Lua gap remains open as a follow-up, out of this task's scope",
+    "Added **/.errors.lock to .gitignore alongside the existing **/.events.lock entry -- an unplanned but necessary completeness fix so the ephemeral lock file does not accumulate as an untracked artifact"
   ],
   "dead_ends": [
-    "Do not plan a repo-wide sweep for inline '.errors +=' writers. Exactly one exists (skills/skill-planner/SKILL.md's jq Parse Failure recovery block); the other 18+ errors.json references in core are narrative prose with no executable jq. Phase 7 is sized as a one-file conversion with a confirming pre-edit grep",
-    "Do not introduce a runtime JSON-Schema-library call. jsonschema 4.26.0 is installed on this machine but is invoked nowhere in core/scripts/",
-    "Do not adopt the bare-array top-level form seen in the sibling repo's live specs/errors.json. It is the drift being corrected, not a precedent",
-    "Do not assume deploy-headless.sh will pick up the new script. The headless Load Core sync path does not always re-run copy_scripts for an already-loaded extension, so Phase 8 verifies .claude/scripts/errors-append.sh exists and is executable and applies the documented loader-primitive workaround if not. Never hand-author the file under .claude/** to work around this: it would be wiped by the next regeneration and would create a false green"
+    "Do not treat the literal 'grep returns zero hits' verification bullets as requiring errors-append.sh's own internal .errors += expression to be eliminated -- that would mean the writer script cannot use jq to build its own merge, which is nonsensical. The correct bar is zero hits OUTSIDE errors-append.sh.",
+    "Do not assume deploy-headless.sh reliably picks up subdirectory scripts/ files (scripts/tests/*.sh, scripts/lib/*.sh) even after a second run -- confirmed non-idempotent-fixing for this specific gap. Always explicitly verify each of the four deploy artifacts individually rather than trusting the deploy tool's own summary count.",
+    "Do not hand-author .claude/scripts/tests/test-errors-append.sh to work around the gap -- it would be silently wiped by the next regeneration and create a false green. Use the loader-primitive workaround instead."
   ],
   "plan_markers_verified": true
 }
