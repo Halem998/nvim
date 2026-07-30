@@ -1,0 +1,22 @@
+{
+  "status": "researched",
+  "started_at": "2026-07-30T02:15:00Z",
+  "completed_at": "2026-07-30T02:20:00Z",
+  "findings_count": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/972_add_checklist_contract_to_cslib_implementation_agent/reports/01_add-checklist-contract-cslib.md",
+      "summary": "Confirms cslib extension lives in this repo (agent-system/extensions/cslib/), locates the canonical mark-completed contract in general-implementation-agent.md (#4B-ii, lines 181-217), and recommends inserting a new '### Check Off Completed Items in Plan File' subsection into cslib-implementation-agent.md between the existing phase-heading and deviation-annotation subsections, quoting the Matching-contract paragraph plus canonical steps 1-3 verbatim while deliberately omitting step 4 (deviation) since that is already handled, untouched, by the existing sibling subsection."
+    }
+  ],
+  "partial_progress": null,
+  "memory_candidates": [],
+  "next_steps": "Run /plan 972 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785373759_72035f_972",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"]
+  }
+}

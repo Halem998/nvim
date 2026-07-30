@@ -35,12 +35,12 @@ next_project_number: 994
         └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
     └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
       └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-972 [NOT STARTED] — Add a plan-checklist mark-completed contract to agent-system/exte
+972 [RESEARCHED] — Add a plan-checklist mark-completed contract to agent-system/exte
   └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
   └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
-974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
+974 [RESEARCHING] — Add a plan-checklist mark-completed contract to the two HARD impl
   └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
@@ -555,7 +555,7 @@ SOURCE-STORE RULE (binding): fix in lua/neotex/plugins/ai/** — the deploy mach
 ---
 
 ### 974. Add a plan-checklist mark-completed contract to the hard implementation variants
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 971
@@ -636,10 +636,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 972. Add a plan-checklist mark-completed contract to cslib-implementation-agent.md
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 971
+- **Research**: [972_add_checklist_contract_to_cslib_implementation_agent/reports/01_add-checklist-contract-cslib.md]
 
 **Description**: Add a plan-checklist mark-completed contract to agent-system/extensions/cslib/agents/cslib-implementation-agent.md, which currently has none.
 
