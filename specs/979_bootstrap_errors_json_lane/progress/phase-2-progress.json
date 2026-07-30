@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Write errors-append.sh with the append subcommand",
+  "started_at": "2026-07-30T00:00:00Z",
+  "last_updated": "2026-07-30T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create errors-append.sh with header, usage(), subcommand dispatch, append parsing/validation, id/timestamp generation, jq -c -n record build, lazy create, flock append",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/errors-append.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.6",
+      "description": "Resolve SCRIPT_DIR/PROJECT_ROOT and source deploy-root-guard.sh immediately after arg validation, exactly as events-append.sh does",
+      "type": "altered",
+      "reason": "Sourced the guard immediately after subcommand dispatch instead, before append's own arg parsing -- functionally equivalent (fails even faster from the source store) and verified not to break the no-subcommand/--help short-circuit paths.",
+      "annotation": "*(deviation: altered -- guarded right after subcommand dispatch, before append's own arg parsing, rather than after append's arg validation like events-append.sh; functionally equivalent and fails fast even earlier. Verified: --help and no-subcommand cases still short-circuit to usage() before the guard runs.)*"
+    }
+  ]
+}

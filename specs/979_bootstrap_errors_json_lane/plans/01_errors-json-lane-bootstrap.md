@@ -212,28 +212,28 @@ live files win and the divergence is recorded in the format doc.
 
 ---
 
-### Phase 2: Write errors-append.sh with the `append` subcommand [NOT STARTED]
+### Phase 2: Write errors-append.sh with the `append` subcommand [COMPLETED]
 
 **Goal**: Land the single writer script with a working `append` path — a near-direct port of
 `events-append.sh`'s validated, `flock`'d, `jq -c -n`-built shape, adapted to a JSON document
 (not JSON Lines) target.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/errors-append.sh`, matching the surrounding
+- [x] Create `agent-system/extensions/core/scripts/errors-append.sh`, matching the surrounding
       style in `core/scripts/` (`events-append.sh` is the model): shebang, header comment block
       with Usage / single-responsibility statement / pointer to `context/formats/errors-format.md`
       and `context/schemas/errors-schema.json` / exit codes / outputs, `set -euo pipefail`, a
       `usage()` heredoc.
-- [ ] Add subcommand dispatch: first positional argument is `append` or `update`; anything else
+- [x] Add subcommand dispatch: first positional argument is `append` or `update`; anything else
       (including absent) exits 1 with a loud error and the usage block. `update` is stubbed in this
       phase to exit 1 with "not yet implemented" and is completed in Phase 3.
-- [ ] Implement `append` argument parsing:
+- [x] Implement `append` argument parsing:
   - Required: `--type`, `--severity`, `--message`
   - Optional context: `--session`, `--command`, `--task`, `--phase`, `--checkpoint`, `--agent`,
     `--file`
   - Optional trajectory: `--delegation-path-json '["a","b"]'`, `--failed-at-depth N`
   - Optional recovery: `--suggested-action`, `--auto-recoverable true|false`
-- [ ] Implement hand-written validation (the house idiom — NO JSON-Schema-library call), each
+- [x] Implement hand-written validation (the house idiom — NO JSON-Schema-library call), each
       failing loudly with a specific message and writing nothing:
   - Required-arg presence check.
   - `--severity` against the closed `case` enum `critical|high|medium|low`.
@@ -241,20 +241,24 @@ live files win and the divergence is recorded in the format doc.
   - `--auto-recoverable` is exactly `true` or `false`.
   - `--delegation-path-json` parses and is a JSON ARRAY (`jq -e 'type == "array"'`).
   - `--message` and `--type` are non-empty.
-- [ ] Resolve `SCRIPT_DIR`/`PROJECT_ROOT` and source `deploy-root-guard.sh` immediately after,
+- [x] Resolve `SCRIPT_DIR`/`PROJECT_ROOT` and source `deploy-root-guard.sh` immediately after,
       exactly as `events-append.sh` does, so invocation from the source store fails loudly.
-- [ ] Generate `id` as `err_${timestamp_ms}_${random6}` and `timestamp` as ISO-8601 UTC, reusing
+      *(deviation: altered — guarded right after subcommand dispatch, before append's own arg
+      parsing, rather than after append's arg validation like events-append.sh; functionally
+      equivalent and fails fast even earlier. Verified: `--help` and no-subcommand cases still
+      short-circuit to usage() before the guard runs.)*
+- [x] Generate `id` as `err_${timestamp_ms}_${random6}` and `timestamp` as ISO-8601 UTC, reusing
       `events-append.sh`'s `/dev/urandom` + `$RANDOM` fallback block verbatim in shape.
-- [ ] Build the record via `jq -c -n --arg ...` — never string concatenation. Omit optional
+- [x] Build the record via `jq -c -n --arg ...` — never string concatenation. Omit optional
       sub-objects entirely when no contributing flag was supplied (do not emit an empty
       `trajectory: {}`); emit `context` always, containing only the supplied keys.
-- [ ] Lazily create `specs/errors.json` with `{"errors": []}` if absent, INSIDE the lock.
-- [ ] Append under `flock -x 200` on `specs/.errors.lock` (sibling naming to `specs/.events.lock`),
+- [x] Lazily create `specs/errors.json` with `{"errors": []}` if absent, INSIDE the lock.
+- [x] Append under `flock -x 200` on `specs/.errors.lock` (sibling naming to `specs/.events.lock`),
       holding the lock across the entire read -> `jq '.errors += [$rec]'` -> temp-file write ->
       validate -> `mv` sequence. Validate the MERGED document parses and still has an array
       `.errors` before the `mv`; on failure, leave the original untouched and exit 1.
-- [ ] Echo the new `id` to stdout; exit 0.
-- [ ] `chmod +x` the script.
+- [x] Echo the new `id` to stdout; exit 0.
+- [x] `chmod +x` the script.
 
 **Timing**: 1.5 hours
 
