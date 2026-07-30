@@ -1,41 +1,40 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "session_id": "sess_1785373759_72035f_987",
+  "task_number": 987,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md",
-      "summary": "Empirical audit of all 19 extensions' index-entries.json against the 3 contradictory schema authorities, with a concrete migration map, meta-catch-all breakdown, Tier-1/double-load findings, and a new check-extension-docs.sh Rule T design."
+      "type": "plan",
+      "path": "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md",
+      "summary": "Six-phase plan reconciling index.schema.json into one authority, adding advisory Rules T/U to check-extension-docs.sh with a fixture test, correcting both competing prose examples, bringing Tier-1 always-load from 996L to a predicted 334L, and creating four named follow-on tasks for the deferred bulk migrations."
     }
   ],
-  "next_steps": "Run /plan 987 to create implementation plan",
   "metadata": {
-    "session_id": "sess_1785373759_72035f_987",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
-    "findings_count": 7
+    "phase_count": 6,
+    "estimated_hours": 6.25,
+    "complexity": "complex",
+    "dependency_waves": [[1, 5], [2, 3], [4], [6]],
+    "research_integrated": true,
+    "plan_version": 1,
+    "scope_decision": "Adopted the research's split recommendation with the boundary moved: Phase A plus the Tier-1 demotion, the extensions/README.md correction, and the EXTENSION.md length check land here; four follow-on tasks (index_entries_schema_migration, meta_catchall_decomposition, extension_md_slim_down, promote_schema_gates_to_hard) carry the deferred bulk work and two of the three VERIFICATION BAR lines.",
+    "research_correction": "Rule T cannot reuse INDEX_TRUTH_GATE_MODE (already defaults hard; Rules R/S depend on that). Plan introduces sibling SCHEMA_CONFORMANCE_GATE_MODE defaulting advisory.",
+    "verification_bar_coverage": {
+      "tier1_under_500_lines": "Phase 5 (this task)",
+      "doc_lint_fails_on_fixture": "Phases 2 and 4 (this task)",
+      "zero_per_agent_budget_violations": "follow-on: meta_catchall_decomposition",
+      "zero_load_when_languages_declarations": "follow-on: index_entries_schema_migration"
+    }
   },
   "memory_candidates": [
     {
-      "content": "In this agent-system repo, index.schema.json's load_when has additionalProperties:false allowing only agents/commands/languages/always -- yet task_types is the dominant real-world key (used by 6/19 extensions, 168/470 entries incl. core's meta catch-all) and is technically forbidden by the schema. The schema was never mechanically enforced (no ajv/jsonschema validator call exists anywhere; validate-context-index.sh only cites it in a comment), which is how it drifted this far without any gate failing.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["index.schema.json", "load_when", "task_types", "context-index", "schema-drift"]
-    },
-    {
-      "content": "load_when.languages and load_when.skills in this repo's context index are read by NOTHING at runtime except a defensive dead-entry-check exclusion inside validate-context-budgets.sh (2 occurrences total, confirmed by exhaustive grep). The real, live-queried load_when keys are agents/commands/task_types/always (confirmed via context-discovery.md, validate-index.sh, validate-wiring.sh, lint-contract-compliance.sh). Any future audit of this index should treat languages/skills as dead weight, not a data source.",
+      "content": "In check-extension-docs.sh, a new lint rule whose codebase is not yet remediated must get its OWN gate-severity variable, never reuse an existing one. INDEX_TRUTH_GATE_MODE defaults to 'hard' because Rules R/S landed after their remediation was complete; routing a new pre-remediation rule through it would either hard-fail 14 of 19 extensions on day one or silently demote R/S. The established pattern is a sibling variable defaulting 'advisory' with its own reporter function (mirroring index_truth_report), promoted to 'hard' in a later dedicated task once the migration it gates has landed. ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE is the precedent; both carry comments documenting the promotion. Generalizes: gate-severity variables are per-remediation-timeline, not per-check-family.",
       "category": "PATTERN",
-      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["load_when", "dead-code", "context-index", "runtime-consumers", "validate-context-budgets"]
-    },
-    {
-      "content": "The live index-entries.json -> index.json merge engine is lua/neotex/plugins/ai/shared/extensions/merge.lua's M.append_index_entries -- it passes each source entry through verbatim with zero field remapping. A separate, apparently-stale merge implementation also exists inside install-extension.sh (lines ~180-260) assuming an obsolete flat-array/description-tags schema shape that no longer matches any real extension file; it is not exercised by the live deploy path but is a latent risk (silently drops commands/always from load_when in its object-shape branch) worth a future cleanup task.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["install-extension.sh", "merge.lua", "index.json", "dead-code", "deploy-engine"]
+      "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-extension-docs", "gate-severity", "advisory-first", "lint-promotion", "INDEX_TRUTH_GATE_MODE", "doc-lint"]
     }
-  ]
+  ],
+  "next_steps": "Run /implement 987 to execute the plan"
 }

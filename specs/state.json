@@ -3497,7 +3497,7 @@
       "project_number": 987,
       "project_name": "context_budget_enforcement_and_index_schema",
       "title": "Context budget enforcement: demote always-load bloat, break the meta catch-all, one index schema",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -3510,12 +3510,17 @@
       ],
       "description": "Bring context loading back within its own declared budgets and give index entries ONE schema authority. DEPENDS ON the index-validator repair task (truthful line counts are the precondition for any budget work).\n\nWHAT IS WRONG (from specs/reviews/review-2026-07-29-agent-system.md):\n  1. Per-agent budgets: 11 violations, 0 passes for core agents — meta-builder-agent resolves 115,512 tokens of context against a 15,000 cap; general-implementation-agent 30k vs 8k. Root cause: task_types [\"meta\"] is a 77-entry catch-all (~23,000 lines), with 22 entries reachable ONLY via it; 'meta' has become a synonym for 'load everything'.\n  2. Tier-1 (always-load) is 96% over its own <=500-line target: jq-escaping-workarounds.md (281L) and context-discovery.md (297L) are reference material marked always:true; repo/project-overview.md loads TWICE (always:true AND @-imported from claudemd.md).\n  3. load_when.languages is queried by NOTHING at runtime (the only two references are orphan-detection guards in validate-context-budgets.sh), yet it is the sole task-type hook for 11 of 19 extensions — their context is reachable only via load_when.agents. Meanwhile literature and memory use a third unqueried key, load_when.skills.\n  4. THREE contradictory index-entry schema authorities: index.schema.json (forbids description/tags, requires line_count, forbids task_types), extension-slim-standard.md's canonical example (uses description, no line_count), and the extensions README example. 14 of 19 extensions violate the schema file; 6 (cslib, latex, lean, python, typst, z3) omit line_count entirely and contribute zero to every budget calculation. The 'tier' field the budget script expects appears in 0 of 164 entries and is not in the schema.\n  5. Two load_when.agents values name agents that do not exist in this deploy.\n\nWORK:\n  1. Reconcile the three schema authorities into one: extend index.schema.json to the real field set (task_types yes; description/tags decide; line_count required; add tier if the budget model keeps it), fix extension-slim-standard.md's example, migrate all 19 index-entries.json to conform, and add a check_index_entries_schema rule to check-extension-docs.sh so drift fails loudly.\n  2. Migrate the 11 languages-only extensions (and the 2 skills-keyed ones) to task_types (coordinate with the routing consolidation task's task_type registry); delete the dead languages/skills discriminators or implement them — no declared-but-unqueried dimensions.\n  3. Break the meta catch-all: give the 77 task_types meta entries real agent/command hooks; target meta-builder-agent within its cap (raise the cap only with explicit justification).\n  4. Demote jq-escaping-workarounds.md and context-discovery.md from always:true to command/agent-scoped; deduplicate the project-overview double-load; bring Tier 1 under 500 lines.\n  5. Enforce the EXTENSION.md 60-line limit (7 of 19 violate; literature is 161 lines) with a doc-lint check, trimming the violators.\n\nVERIFICATION BAR:\n  - validate-context-budgets.sh: zero per-agent violations (or documented cap changes); Tier 1 <= 500 lines.\n  - check-extension-docs.sh fails on a fixture index entry violating the reconciled schema; passes on all 19 real files.\n  - grep for load_when.languages across scripts and skills returns zero live consumers AND zero declarations (or a real implemented consumer).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-30T01:26:24Z",
+      "last_updated": "2026-07-30T01:35:00Z",
       "session_id": "sess_1785373759_72035f_987",
       "artifacts": [
         {
           "path": "specs/987_context_budget_enforcement_and_index_schema/reports/01_context-budget-schema-reconciliation.md",
           "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/987_context_budget_enforcement_and_index_schema/plans/01_schema-authority-tier1-budget.md",
+          "type": "plan",
           "summary": ""
         }
       ]
