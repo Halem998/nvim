@@ -346,29 +346,29 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Non-destructive-by-default timer, service, and installer [NOT STARTED]
+### Phase 3: Non-destructive-by-default timer, service, and installer [COMPLETED]
 
 - **Goal:** Remove `--force` from both `ExecStart` sites so the hourly unattended cadence reports
   rather than terminates, with `--force` a deliberate manual opt-in. A matcher bug must never
   again be amplifiable into unattended hourly kills.
 
 - **Tasks:**
-  - [ ] `agent-system/extensions/core/systemd/claude-refresh.service`: change
+  - [x] `agent-system/extensions/core/systemd/claude-refresh.service`: change
         `ExecStart=%h/.config/nvim/.claude/scripts/claude-refresh.sh --force` to use `--dry-run`
         instead of `--force`, so the journal entry is explicitly self-labelled as a report. Also
         update the commented-out system-wide alternative `ExecStart` line directly below it,
         which carries the same `--force`.
-  - [ ] `agent-system/extensions/core/scripts/install-systemd-timer.sh`: change the
+  - [x] `agent-system/extensions/core/scripts/install-systemd-timer.sh`: change the
         heredoc-generated `ExecStart=$REFRESH_SCRIPT --force` (around line 104) the same way, so
         a fresh install and the already-shipped unit converge on the same posture.
-  - [ ] Add a short comment at both sites recording the decided policy: the timer reports/logs;
+  - [x] Add a short comment at both sites recording the decided policy: the timer reports/logs;
         `--force` is a deliberate opt-in via manual invocation or a hand-edited unit. State the
         rationale (a matcher bug must not be amplifiable into unattended hourly kills) rather
         than citing a task number.
-  - [ ] Leave `systemd/claude-refresh.timer` (`OnCalendar=hourly`, `Persistent=true`) unchanged —
-        the cadence is fine once the action is non-destructive.
-  - [ ] `StandardOutput=journal` is already set in the service file; no new logging mechanism is
-        needed or wanted.
+  - [x] Leave `systemd/claude-refresh.timer` (`OnCalendar=hourly`, `Persistent=true`) unchanged —
+        the cadence is fine once the action is non-destructive. *(confirmed unmodified)*
+  - [x] `StandardOutput=journal` is already set in the service file; no new logging mechanism is
+        needed or wanted. *(confirmed unchanged)*
 
 - **Timing:** 0.5 hours
 

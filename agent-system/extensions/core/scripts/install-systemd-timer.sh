@@ -101,7 +101,12 @@ Documentation=https://github.com/anthropics/claude-code
 
 [Service]
 Type=oneshot
-ExecStart=$REFRESH_SCRIPT --force
+# Policy: this unattended, hourly, no-confirmation cadence is intentionally
+# non-destructive -- it reports/logs found orphans rather than terminating them.
+# A matcher bug must never again be amplifiable into unattended hourly kills,
+# regardless of how correct the matcher looks at review time. --force remains
+# available as a deliberate opt-in via manual invocation or a hand-edited unit.
+ExecStart=$REFRESH_SCRIPT --dry-run
 
 # Run with normal user permissions
 User=$USER

@@ -6,9 +6,15 @@ Documentation=https://github.com/anthropics/claude-code
 Type=oneshot
 # Use the script from the project
 # Update this path to match your installation
-ExecStart=%h/.config/nvim/.claude/scripts/claude-refresh.sh --force
+#
+# Policy: this unattended, hourly, no-confirmation cadence is intentionally
+# non-destructive -- it reports/logs found orphans rather than terminating them.
+# A matcher bug must never again be amplifiable into unattended hourly kills,
+# regardless of how correct the matcher looks at review time. --force remains
+# available as a deliberate opt-in via manual invocation or a hand-edited unit.
+ExecStart=%h/.config/nvim/.claude/scripts/claude-refresh.sh --dry-run
 # Alternatively, if installed system-wide:
-# ExecStart=/usr/local/bin/claude-refresh.sh --force
+# ExecStart=/usr/local/bin/claude-refresh.sh --dry-run
 
 # Run with normal user permissions
 User=%u
