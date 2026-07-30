@@ -1,7 +1,7 @@
 # Implementation Plan: Task #979
 
 - **Task**: 979 - Bootstrap the errors.json lane for real: one schema, validated append script, reconciled docs
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: None (see "Non-Dependency Note" below regarding tasks 951/952/953)
 - **Research Inputs**: specs/979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md
@@ -123,13 +123,13 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Author the reconciled schema and format contract [NOT STARTED]
+### Phase 1: Author the reconciled schema and format contract [COMPLETED]
 
 **Goal**: Produce the single source of truth for the `specs/errors.json` record shape — a draft-07
 JSON Schema plus a prose format document — resolving all three documented variants into one.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/context/schemas/errors-schema.json` (draft-07), modeled
+- [x] Write `agent-system/extensions/core/context/schemas/errors-schema.json` (draft-07), modeled
       structurally on `context/schemas/events-schema.json`:
   - Top level: object with required `errors` (array of error records) and OPTIONAL
     `schema_version` (string). Bare array is NOT valid — see Decisions below.
@@ -156,7 +156,7 @@ JSON Schema plus a prose format document — resolving all three documented vari
     already-written cross-repo data validates. The writer never emits it.
   - `fixed_date` (optional, `format: date-time`) and `fix_task` (optional, integer).
   - NO `recurrence_count`. Record the drop rationale in the schema `description` and the format doc.
-- [ ] Write `agent-system/extensions/core/context/formats/errors-format.md`, modeled on
+- [x] Write `agent-system/extensions/core/context/formats/errors-format.md`, modeled on
       `context/formats/events-format.md` (~150-250 lines), covering:
   - Overview + the "formal machine-checkable contract lives in
     `context/schemas/errors-schema.json`; the two must stay in sync" pointer.
@@ -177,11 +177,11 @@ JSON Schema plus a prose format document — resolving all three documented vari
   - Reconciliation decisions: `recurrence_count` is computed at query time by `/errors` grouping on
     `type`, never stored; `resolved` is deprecated-but-valid; `context` is a superset with no
     required sub-fields.
-- [ ] Register both files in `agent-system/extensions/core/index-entries.json`, copying the shape
+- [x] Register both files in `agent-system/extensions/core/index-entries.json`, copying the shape
       of the existing `formats/events-format.md` and `schemas/events-schema.json` entries
       (`domain: core`, matching `subdomain`, `load_when.task_types: ["meta"]`, accurate
       `line_count`, keywords, `topics: ["observability"]` / `["observability","standards"]`).
-- [ ] Verify no task-number citations appear in either new file (durable anchors only).
+- [x] Verify no task-number citations appear in either new file (durable anchors only). *(completed: check-task-references.sh PASS, 0 occurrences)*
 
 **Timing**: 1.5 hours
 

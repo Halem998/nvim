@@ -1,33 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/979_bootstrap_errors_json_lane/plans/01_errors-json-lane-bootstrap.md",
-      "summary": "8-phase implementation plan (10 hours, 6 dependency waves) bootstrapping the errors.json lane: reconciled schema plus format contract, flock'd two-subcommand writer script, regression suite, deploy wiring, doc reconciliation, and end-to-end verification"
-    }
-  ],
-  "next_steps": "Run /implement 979 to execute the plan",
+  "status": "in_progress",
+  "artifacts": [],
   "metadata": {
     "session_id": "sess_1785368489_e9acfc",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 10,
-    "dependency_waves": [[1], [2, 6], [3, 7], [4], [5], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a codebase already has an append-only JSONL store helper (flock'd, jq -c -n built, lazily created) and a second store needs the same treatment, check the mutability axis before assuming a literal port. An append-only log's helper needs one code path; a mutable-record store needs a second read-modify-write path with fundamentally different lock discipline: the flock must be held across the whole read -> jq transform -> temp-write -> validate -> atomic mv sequence, not just the write, and the MERGED result must be validated before the mv (validating only the delta lets a corrupt merge land). This distinction is invisible at the 'mirror the existing script' level of planning and only surfaces by reading the consumer's documented mutation workflow. A useful planning tell: grep the consumer docs for status-transition language ('mark as fixed', 'update status to') -- its presence means the store is living state, not a log.",
-      "category": "PATTERN",
-      "source_artifact": "specs/979_bootstrap_errors_json_lane/plans/01_errors-json-lane-bootstrap.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["flock", "read-modify-write", "append-only", "atomic-rename", "schema-validation", "concurrency"]
-    }
-  ],
-  "modified_files": [
-    "specs/979_bootstrap_errors_json_lane/plans/01_errors-json-lane-bootstrap.md",
-    "specs/979_bootstrap_errors_json_lane/.orchestrator-handoff.json"
-  ]
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }

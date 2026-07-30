@@ -36,7 +36,7 @@ next_project_number: 990
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a (see above)
 973 [NOT STARTED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
-979 [PLANNED] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
+979 [IMPLEMENTING] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
 987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
@@ -371,7 +371,7 @@ SOURCE-STORE RULE (binding): deploy machinery edits target lua/neotex/plugins/ai
 ---
 
 ### 979. Bootstrap the errors.json lane for real: one schema, validated append script, reconciled docs
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 976
