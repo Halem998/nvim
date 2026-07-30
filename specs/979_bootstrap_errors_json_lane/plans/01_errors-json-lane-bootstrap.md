@@ -392,27 +392,30 @@ a case for it rather than leaving it untested.
 
 ---
 
-### Phase 5: Deploy-path wiring [NOT STARTED]
+### Phase 5: Deploy-path wiring [COMPLETED]
 
 **Goal**: Make the new script, schema, format doc, and test actually reach a deployed `.claude/`
 tree, and gate on their presence.
 
 **Tasks**:
-- [ ] Insert `"errors-append.sh"` into `agent-system/extensions/core/manifest.json`'s
+- [x] Insert `"errors-append.sh"` into `agent-system/extensions/core/manifest.json`'s
       `provides.scripts` array in correct alphabetical position — between `"deploy-root-guard.sh"`
       and `"events-append.sh"` (`err` < `eve`).
-- [ ] Insert `"tests/test-errors-append.sh"` into the same array in correct position within the
+- [x] Insert `"tests/test-errors-append.sh"` into the same array in correct position within the
       `tests/` grouping (before `tests/test-git-commit-scoped.sh`; after
       `tests/test-corroborate-phase-counts.sh`).
-- [ ] Confirm no manifest change is needed for the schema or format doc: `provides.context` lists
+- [x] Confirm no manifest change is needed for the schema or format doc: `provides.context` lists
       `"schemas"` and `"formats"` as whole-directory copy targets, so both new files are picked up
-      automatically. Record this confirmation rather than assuming it.
-- [ ] Extend `agent-system/extensions/core/scripts/verify-deploy.sh` gate 1's presence-check loop
+      automatically. Record this confirmation rather than assuming it. *(completed: confirmed via
+      `jq -r '.provides.context[]' manifest.json` -- both remain bare directory-name entries, not
+      per-file lists, so no manifest edit was needed for either new context file)*
+- [x] Extend `agent-system/extensions/core/scripts/verify-deploy.sh` gate 1's presence-check loop
       with `scripts/errors-append.sh`, `context/schemas/errors-schema.json`, and
       `context/formats/errors-format.md`. Update the gate's header comment, which currently says
       "These six are the passive-signal-capture stack" — restate it in terms of the store families
       covered rather than a bare count, so the comment does not go stale on the next addition.
-- [ ] Verify the deliverable rule: no task-number citations introduced into any of these files.
+- [x] Verify the deliverable rule: no task-number citations introduced into any of these files.
+      *(completed: check-task-references.sh PASS, 0 occurrences)*
 
 **Timing**: 0.75 hours
 

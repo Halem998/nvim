@@ -116,10 +116,12 @@ fail() {
 say "[verify-deploy] Target: $TARGET"
 say ""
 
-# ── 1. Core event-store files present ────────────────────────────────────────
-# These six are the passive-signal-capture stack. A missing one means the deploy predates that
-# work or was a partial sync.
-say "1. Event-store files (ls .claude/{scripts,hooks,context}/...)"
+# ── 1. Core event-store and error-store files present ─────────────────────────
+# Covers two store families: the passive-signal-capture stack (events.jsonl: append-only script,
+# query script, both hooks, schema, format doc) and the error-tracking stack (errors.json:
+# validated append/update writer, schema, format doc). A missing entry means the deploy predates
+# that store's work or was a partial sync.
+say "1. Event-store and error-store files (ls .claude/{scripts,hooks,context}/...)"
 CURRENT_GATE="gate1"
 for rel in \
   scripts/events-append.sh \
@@ -127,7 +129,10 @@ for rel in \
   hooks/events-log-artifact.sh \
   hooks/events-log-lifecycle.sh \
   context/schemas/events-schema.json \
-  context/formats/events-format.md
+  context/formats/events-format.md \
+  scripts/errors-append.sh \
+  context/schemas/errors-schema.json \
+  context/formats/errors-format.md
 do
   if [ -e "$CLAUDE_DIR/$rel" ]; then
     pass "$rel"

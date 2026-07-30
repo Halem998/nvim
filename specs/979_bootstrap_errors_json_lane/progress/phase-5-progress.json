@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy-path wiring",
+  "started_at": "2026-07-30T00:36:00Z",
+  "last_updated": "2026-07-30T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Insert errors-append.sh and tests/test-errors-append.sh into manifest.json provides.scripts; confirm provides.context needs no change; extend verify-deploy.sh gate 1 with 3 presence checks and reword header comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
