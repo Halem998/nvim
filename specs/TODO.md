@@ -40,7 +40,7 @@ next_project_number: 994
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
   └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
-974 [PLANNING] — Add a plan-checklist mark-completed contract to the two HARD impl
+974 [PLANNED] — Add a plan-checklist mark-completed contract to the two HARD impl
   └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
@@ -555,7 +555,7 @@ SOURCE-STORE RULE (binding): fix in lua/neotex/plugins/ai/** — the deploy mach
 ---
 
 ### 974. Add a plan-checklist mark-completed contract to the hard implementation variants
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 971

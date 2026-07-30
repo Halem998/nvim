@@ -1,0 +1,19 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "task_number": 974,
+  "session_id": "sess_1785373759_72035f_974",
+  "plan_path": "specs/974_add_checklist_contract_to_hard_implementation_variants/plans/01_checklist-contract-hard-variants.md",
+  "phase_count": 3,
+  "phases_completed": 0,
+  "estimated_hours": 1.0,
+  "dependency_waves": [[1, 2], [3]],
+  "territory": {
+    "phase_1": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"],
+    "phase_2": ["agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md"],
+    "phase_3": [],
+    "read_only_files": ["agent-system/extensions/core/agents/general-implementation-agent.md"]
+  },
+  "blockers": [],
+  "next_steps": "Run /implement 974 to execute the plan. Phases 1 and 2 are territory-disjoint and may be dispatched in parallel; phase 3 is the cross-file verification gate and must run after both."
+}

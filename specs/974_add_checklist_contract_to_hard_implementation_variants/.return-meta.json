@@ -1,36 +1,22 @@
 {
-  "status": "researched",
-  "started_at": "2026-07-29T00:00:00Z",
-  "completed_at": "2026-07-29T00:30:00Z",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 974,
+  "task_name": "add_checklist_contract_to_hard_implementation_variants",
+  "task_type": "meta",
+  "session_id": "sess_1785373759_72035f_974",
+  "delegation_depth": 2,
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/974_add_checklist_contract_to_hard_implementation_variants/reports/01_checklist-contract-hard-variants.md",
-      "summary": "Extracts the canonical checklist-matching contract verbatim, confirms both target files are in this repo's source store with zero existing checklist instructions, specifies exact insertion points (new B-ii sub-section before each file's C step) preserving each file's own dash convention, and flags the web/neovim brittle-prefix gap plus the non-hard cslib sibling gap as out-of-scope follow-ups."
+      "type": "plan",
+      "path": "specs/974_add_checklist_contract_to_hard_implementation_variants/plans/01_checklist-contract-hard-variants.md",
+      "summary": "3-phase plan inserting the canonical 4B-ii checklist mark-completed contract verbatim into both hard-mode implementation agents (core + cslib), with a cross-file byte-equality and deploy-boundary verification gate."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1785373759_72035f_974",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
-    "findings_count": 5
-  },
-  "memory_candidates": [
-    {
-      "content": "When a predecessor task establishes a canonical verbatim-quotable contract block in one agent file for downstream sibling tasks to copy, the research phase should extract the exact insertion point (old_string/new_string or section-anchor) and verify each target file's own pre-existing punctuation convention (e.g. em-dash vs ASCII double-dash) before recommending the copy, rather than assuming the canonical file's convention applies uniformly everywhere.",
-      "category": "PATTERN",
-      "source_artifact": "specs/974_add_checklist_contract_to_hard_implementation_variants/reports/01_checklist-contract-hard-variants.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["checklist-contract", "canonical-wording", "dash-convention", "sibling-task", "verbatim-quote"]
-    },
-    {
-      "content": "A general-research-agent invocation under /orchestrate should never directly Edit/Write production source-store files (agent-system/extensions/**) -- that is implementation-phase work. If research produces a fully-specified edit (exact old_string/new_string), it belongs in the report as an implementation-ready recommendation, not applied directly, so the subsequent plan/implement phases have a clean baseline to work from.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/974_add_checklist_contract_to_hard_implementation_variants/reports/01_checklist-contract-hard-variants.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["research-agent", "scope-boundary", "orchestrate", "implementation-phase", "role-discipline"]
-    }
-  ],
-  "next_steps": "Run /plan 974 to create implementation plan"
+  "phase_count": 3,
+  "estimated_hours": 1.0,
+  "dependency_waves": [[1, 2], [3]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 974 to execute the plan"
 }
