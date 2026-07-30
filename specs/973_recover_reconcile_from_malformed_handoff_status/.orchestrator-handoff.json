@@ -1,0 +1,21 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Root cause confirmed at reconcile-task-status.sh:186-195: handoff_permits_promotion() permits on a missing handoff but refuses on any off-vocabulary status via strict equality, wedging the task. Recommended fix: treat off-vocabulary status as equivalent to missing (permit, deferring to artifact evidence) with a mandatory loud diagnostic; keep refusing on-vocabulary non-matching statuses unchanged. Also found a second call site (partial branch, lines 433-442) needing the same consolidation.",
+  "artifacts": [
+    {"type": "report", "path": "specs/973_recover_reconcile_from_malformed_handoff_status/reports/01_malformed-handoff-recovery-design.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Off-vocabulary handoff status treated as equivalent to missing handoff (permit + loud diagnostic), not refused and not synonym-normalized",
+    "orchestrate-recover-outcome.sh is out of scope -- it serves a different call site (missing/stale handoff) with a deliberately narrower policy",
+    "partial branch's inline duplicate check (lines 433-442) must be consolidated into handoff_permits_promotion for consistency"
+  ],
+  "dead_ends": [
+    "Rejected refuse-with-diagnostic-only: preserves the wedge, only adds visibility",
+    "Rejected synonym-normalization table: incomplete by construction, risks false-positive promotion"
+  ]
+}

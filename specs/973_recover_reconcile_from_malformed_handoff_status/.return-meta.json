@@ -1,0 +1,31 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
+  "session_id": "sess_1785373759_72035f_973",
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/973_recover_reconcile_from_malformed_handoff_status/reports/01_malformed-handoff-recovery-design.md",
+      "summary": "Recommends treating an off-vocabulary .orchestrator-handoff.json status as equivalent to a missing handoff (permit, deferring to artifact evidence) with a mandatory loud diagnostic naming the offending value and the six legal values, while continuing to refuse on-vocabulary non-matching statuses unchanged; also identifies the partial branch's inline duplicate check (lines 433-442) as a second call site needing the same consolidation."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/reconcile-task-status.sh, an off-vocabulary (malformed) .orchestrator-handoff.json status value should be treated as equivalent to a MISSING handoff (permit promotion, deferring to artifact-on-disk evidence) rather than refused, because it carries strictly less information than a genuine on-vocabulary refusal signal (blocked/partial/failed). The file's own artifact_newer_than_last_update() already names this governing principle explicitly: 'signal absent -> permit' philosophy. Refusing on malformed status (the pre-fix behavior) treats malformed as worse than absent, which is backwards and produces a genuine unrecoverable wedge since record_refused_promotion() only records blocked|partial and no-ops on anything else, including malformed values.",
+      "category": "PATTERN",
+      "source_artifact": "specs/973_recover_reconcile_from_malformed_handoff_status/reports/01_malformed-handoff-recovery-design.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["reconcile-task-status", "orchestrator-handoff", "malformed status", "fail-open", "signal absent permit", "handoff_permits_promotion"]
+    },
+    {
+      "content": "orchestrate-recover-outcome.sh is a separate, deliberately narrow .return-meta.json-consultation mechanism used only by skill-orchestrate Stage 5 / Stage MT-4 when a handoff is missing or STALE -- never for a malformed-but-present handoff, and never as a generic fallback. Its own 'Item C decision' comment explicitly rejects adding permissive off-schema fallbacks, to keep writer drift visible. Do not route a malformed-handoff fix for reconcile-task-status.sh (or similar scripts) through this mechanism -- it belongs to a different call site with a different, deliberately stricter philosophy.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/973_recover_reconcile_from_malformed_handoff_status/reports/01_malformed-handoff-recovery-design.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrate-recover-outcome", "return-meta.json", "handoff staleness", "scope boundary", "skill-orchestrate"]
+    }
+  ],
+  "next_steps": "Run /plan 973 to create implementation plan"
+}
