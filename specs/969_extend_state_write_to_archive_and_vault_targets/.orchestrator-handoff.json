@@ -1,0 +1,23 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Mapped 4 concrete archive/vault hand-rolled write sites in the declared file_scope (2 in task.md, 1 in todo.md, 1 in skill-todo/SKILL.md) plus 3 prose-only sites. Found one real design fork: the vault archive-reinit is a fresh-file create, not a transform, so a plain --state-file flag cannot cover it alone -- needs an --init/no-input mode or an explicit scope-acquire/scope-release bracket. Flagged task-lock.md's residual-surface note as stale (needs correcting regardless), and named several out-of-file_scope sites (archive-task.sh, vault-operation.sh -- which already hand-rolls a live specs/state.json write with zero mutex --, jq-escaping-workarounds.md examples, review.md's specs/reviews/state.json, and the large pre-existing extension-domain debt) that will keep the verification bar's literal repo-wide-zero-hits grep from passing unless explicitly scoped or reported.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/969_extend_state_write_to_archive_and_vault_targets/reports/01_extend-state-write-archive-vault.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Recommend a single specs/.scope-lock mutex for all --state-file targets, not per-file locks, to avoid an ABBA deadlock between concurrent recover/abandon-style interleaved operations.",
+    "Recommend --regen-todo be refused as a usage error when combined with a non-default --state-file.",
+    "Recommend the vault archive-reinit site be resolved via either a state-write.sh --init/no-input mode or an explicit scope-acquire/scope-release bracket around the existing jq -n write, since it is a fresh-create with no existing file to transform."
+  ],
+  "dead_ends": [],
+  "phases_completed": 0,
+  "phases_total": 0
+}
