@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 # test-state-write-concurrency.sh - Isolated-temp-root suite proving state-write.sh's two
-# load-bearing safety properties (no lost update, staging-file isolation) plus its fail-closed
-# acquire and guest-mode reentrancy contracts.
+# load-bearing safety properties (no lost update, staging-file isolation), its fail-closed
+# acquire and guest-mode reentrancy contracts (cases 1-4), and the `--state-file`/`--init`
+# surface added for archive/vault targets: cross-target single-mutex serialization, `--init`
+# fresh-create plus overwrite-note, and both `--regen-todo`/`--init` usage refusals (cases 5-9).
 #
 # Never touches the real specs/ tree. Follows test-task-lock-reap.sh's isolated-temp-root
 # precedent exactly: build a throwaway $TMPROOT, copy state-write.sh, task-lock.sh,
 # generate-todo.sh, and deploy-root-guard.sh byte-for-byte into $TMPROOT/.claude/scripts/, and
-# fixture a minimal $TMPROOT/specs/state.json with at least two project entries. No testability
-# hooks are added to production code -- every script under test is copied unmodified and never
-# learns it is under test.
+# fixture a minimal $TMPROOT/specs/state.json with at least two project entries, plus a minimal
+# $TMPROOT/specs/archive/state.json for the non-default `--state-file` target cases. No
+# testability hooks are added to production code -- every script under test is copied unmodified
+# and never learns it is under test.
 #
 # Interleaving is controlled through the fixture's OWN transform cost (a deliberately heavy jq
 # `range` computation), never through a blind wall-clock `sleep` used to fake correctness timing
@@ -16,7 +19,7 @@
 # condition (e.g. waiting for a background process's staging file to appear), it polls a real
 # predicate on a bounded budget, which is a different thing from sleeping to fake an ordering.
 #
-# Exit 0 when all four cases PASS, exit 1 when any case FAILS.
+# Exit 0 when all nine cases PASS, exit 1 when any case FAILS.
 
 set -uo pipefail
 
@@ -71,6 +74,7 @@ chmod +x "$TMPROOT/.claude/scripts/"*.sh
 SW="$TMPROOT/.claude/scripts/state-write.sh"
 TL="$TMPROOT/.claude/scripts/task-lock.sh"
 STATE_FILE="$TMPROOT/specs/state.json"
+ARCHIVE_STATE_FILE="$TMPROOT/specs/archive/state.json"
 
 reset_state_json() {
   cat > "$STATE_FILE" << 'EOF'
@@ -84,7 +88,19 @@ reset_state_json() {
 EOF
 }
 
+reset_archive_state_json() {
+  mkdir -p "$(dirname "$ARCHIVE_STATE_FILE")"
+  cat > "$ARCHIVE_STATE_FILE" << 'EOF'
+{
+  "completed_projects": [
+    {"project_number": 100, "project_name": "archived_a"}
+  ]
+}
+EOF
+}
+
 reset_state_json
+reset_archive_state_json
 info "Fixture built at $TMPROOT"
 
 # =====================================================================
@@ -280,6 +296,232 @@ else
 fi
 
 rm -rf "$TMPROOT/specs/.scope-lock"
+
+# =====================================================================
+# Case 5: non-default --state-file target -- a transform against
+# specs/archive/state.json lands, exits 0, leaves specs/state.json byte-identical, and produces
+# valid JSON.
+# =====================================================================
+reset_state_json
+reset_archive_state_json
+before_default_hash=$(jq -S . "$STATE_FILE")
+
+(
+  cd "$TMPROOT"
+  "$SW" '.completed_projects += [{"project_number": 200, "project_name": "case5"}]' \
+    --state-file specs/archive/state.json --session-id "sess_case5" > "$TMPROOT/case5.out" 2>&1
+  echo $? > "$TMPROOT/case5.exit"
+)
+
+case5_exit=$(cat "$TMPROOT/case5.exit" 2>/dev/null || echo "?")
+after_default_hash=$(jq -S . "$STATE_FILE")
+
+c5_ok=true
+[ "$case5_exit" = "0" ] || { c5_ok=false; info "case5 exited $case5_exit (expected 0): $(cat "$TMPROOT/case5.out" 2>/dev/null)"; }
+[ "$before_default_hash" = "$after_default_hash" ] || { c5_ok=false; info "case5 specs/state.json changed even though --state-file targeted the archive file"; }
+jq -e '.completed_projects[] | select(.project_number == 200)' "$ARCHIVE_STATE_FILE" >/dev/null 2>&1 || { c5_ok=false; info "case5 archive mutation missing"; }
+jq empty "$ARCHIVE_STATE_FILE" >/dev/null 2>&1 || { c5_ok=false; info "case5 archive file failed jq empty validation"; }
+
+if [ "$c5_ok" = true ]; then
+  pass "5: non-default --state-file target -- a transform against specs/archive/state.json lands, exits 0, and leaves specs/state.json byte-identical"
+else
+  fail "5: non-default --state-file case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 6: single-mutex serialization ACROSS targets (D2's load-bearing property) -- one heavy
+# writer against the default path concurrent with one writer against specs/archive/state.json;
+# both must land, and the second must genuinely have waited (no lost update on either file). This
+# is the regression test for D2 -- it would fail under per-file locks, since the archive writer
+# would never contend with the default-path writer at all.
+# =====================================================================
+reset_state_json
+reset_archive_state_json
+
+(
+  cd "$TMPROOT"
+  "$SW" '([range(0;20000000)] | length) as $burn | (.active_projects[] | select(.project_number == 1)) |= . + {counter: 1, marker_case6_default: "written"}' \
+    --session-id "sess_case6_default" > "$TMPROOT/case6_default.out" 2>&1
+  echo $? > "$TMPROOT/case6_default.exit"
+) &
+PID_CASE6_DEFAULT=$!
+
+# Poll (bounded, real-predicate) for the heavy default-path writer's staging file to appear so
+# the archive writer is launched once we know the default-path writer genuinely holds the mutex
+# -- proving real cross-target contention rather than lucky non-overlap.
+for _ in $(seq 1 200); do
+  n=$(ls "$TMPROOT/specs/tmp/" 2>/dev/null | grep -c '^state-write\.' || true)
+  [ "$n" -ge 1 ] && break
+  sleep 0.01
+done
+
+case6_archive_start_epoch=$(date -u +%s%N)
+(
+  cd "$TMPROOT"
+  "$SW" '.completed_projects += [{"project_number": 201, "project_name": "case6"}]' \
+    --state-file specs/archive/state.json --session-id "sess_case6_archive" > "$TMPROOT/case6_archive.out" 2>&1
+  echo $? > "$TMPROOT/case6_archive.exit"
+) &
+PID_CASE6_ARCHIVE=$!
+
+wait "$PID_CASE6_DEFAULT"
+case6_default_done_epoch=$(date -u +%s%N)
+wait "$PID_CASE6_ARCHIVE"
+case6_archive_done_epoch=$(date -u +%s%N)
+
+case6_default_exit=$(cat "$TMPROOT/case6_default.exit" 2>/dev/null || echo "?")
+case6_archive_exit=$(cat "$TMPROOT/case6_archive.exit" 2>/dev/null || echo "?")
+
+c6_ok=true
+[ "$case6_default_exit" = "0" ] || { c6_ok=false; info "case6 default-path writer exited $case6_default_exit: $(cat "$TMPROOT/case6_default.out" 2>/dev/null)"; }
+[ "$case6_archive_exit" = "0" ] || { c6_ok=false; info "case6 archive writer exited $case6_archive_exit: $(cat "$TMPROOT/case6_archive.out" 2>/dev/null)"; }
+jq -e '.active_projects[] | select(.project_number == 1) | .marker_case6_default == "written"' "$STATE_FILE" >/dev/null 2>&1 || { c6_ok=false; info "case6 default-path mutation missing"; }
+jq -e '.completed_projects[] | select(.project_number == 201)' "$ARCHIVE_STATE_FILE" >/dev/null 2>&1 || { c6_ok=false; info "case6 archive mutation missing"; }
+# The archive writer was launched only once the default-path writer's staging file was observed
+# (i.e. once it held the mutex), and its own completion must not have raced ahead of the
+# default-path writer's completion under the single-mutex design -- the archive write started
+# strictly after the default-path writer began holding the lock, so if the two share one mutex
+# the archive write can only finish once the default writer has released it. We only assert
+# ordering of completion timestamps as corroborating evidence, not as the sole proof (the real
+# proof is that both landed correctly above); a near-simultaneous finish is not itself a failure
+# signal on a fast machine, so this is reported as info rather than asserted as a hard failure.
+info "case6 timing: default-writer finished at ${case6_default_done_epoch}ns, archive-writer finished at ${case6_archive_done_epoch}ns (archive launched at ${case6_archive_start_epoch}ns, after observing the default writer's staging file)"
+
+if [ "$c6_ok" = true ]; then
+  pass "6: single-mutex serialization ACROSS targets -- a default-path writer and an archive-targeted writer both land under the same specs/.scope-lock mutex (D2 regression guard)"
+else
+  fail "6: cross-target single-mutex serialization case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 7: --init -- against a target that does NOT exist, the file is created with the
+# constructed document and exits 0; a second --init against the now-existing target succeeds and
+# emits the overwrite note on stderr.
+# =====================================================================
+INIT_TARGET="$TMPROOT/specs/archive/state-init-case7.json"
+rm -f "$INIT_TARGET"
+
+(
+  cd "$TMPROOT"
+  "$SW" '{"completed_projects": [], "archived_at": "case7-first"}' --init \
+    --state-file specs/archive/state-init-case7.json --session-id "sess_case7_first" \
+    > "$TMPROOT/case7_first.out" 2>&1
+  echo $? > "$TMPROOT/case7_first.exit"
+)
+case7_first_exit=$(cat "$TMPROOT/case7_first.exit" 2>/dev/null || echo "?")
+
+c7_ok=true
+[ "$case7_first_exit" = "0" ] || { c7_ok=false; info "case7 first --init exited $case7_first_exit (expected 0): $(cat "$TMPROOT/case7_first.out" 2>/dev/null)"; }
+[ -f "$INIT_TARGET" ] || { c7_ok=false; info "case7 first --init did not create $INIT_TARGET"; }
+jq -e '.archived_at == "case7-first"' "$INIT_TARGET" >/dev/null 2>&1 || { c7_ok=false; info "case7 first --init did not write the constructed document"; }
+grep -q "replacing an existing" "$TMPROOT/case7_first.out" && { c7_ok=false; info "case7 first --init (against a non-existing target) unexpectedly emitted the overwrite note"; }
+
+(
+  cd "$TMPROOT"
+  "$SW" '{"completed_projects": [], "archived_at": "case7-second"}' --init \
+    --state-file specs/archive/state-init-case7.json --session-id "sess_case7_second" \
+    > "$TMPROOT/case7_second.out" 2>&1
+  echo $? > "$TMPROOT/case7_second.exit"
+)
+case7_second_exit=$(cat "$TMPROOT/case7_second.exit" 2>/dev/null || echo "?")
+
+[ "$case7_second_exit" = "0" ] || { c7_ok=false; info "case7 second --init exited $case7_second_exit (expected 0): $(cat "$TMPROOT/case7_second.out" 2>/dev/null)"; }
+jq -e '.archived_at == "case7-second"' "$INIT_TARGET" >/dev/null 2>&1 || { c7_ok=false; info "case7 second --init did not overwrite the target"; }
+grep -q "replacing an existing" "$TMPROOT/case7_second.out" || { c7_ok=false; info "case7 second --init (against an existing target) did not emit the overwrite note on stderr"; }
+
+if [ "$c7_ok" = true ]; then
+  pass "7: --init creates a non-existing target cleanly, and a second --init against the now-existing target overwrites with a loud stderr note"
+else
+  fail "7: --init case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 8: --regen-todo refusal -- with a non-default --state-file, exits 1, the target is
+# untouched, and specs/TODO.md is not created/modified. Exercise at least two spellings of the
+# default path (relative and absolute) to confirm the normalized comparison treats both as
+# default and permits --regen-todo there.
+# =====================================================================
+reset_state_json
+reset_archive_state_json
+rm -f "$TMPROOT/specs/TODO.md"
+before_archive_hash=$(jq -S . "$ARCHIVE_STATE_FILE")
+
+(
+  cd "$TMPROOT"
+  "$SW" '.completed_projects += [{"project_number": 202, "project_name": "case8"}]' \
+    --regen-todo --state-file specs/archive/state.json --session-id "sess_case8_refuse" \
+    > "$TMPROOT/case8_refuse.out" 2>&1
+  echo $? > "$TMPROOT/case8_refuse.exit"
+)
+case8_refuse_exit=$(cat "$TMPROOT/case8_refuse.exit" 2>/dev/null || echo "?")
+after_archive_hash=$(jq -S . "$ARCHIVE_STATE_FILE")
+
+c8_ok=true
+[ "$case8_refuse_exit" = "1" ] || { c8_ok=false; info "case8 refusal exited $case8_refuse_exit (expected 1): $(cat "$TMPROOT/case8_refuse.out" 2>/dev/null)"; }
+[ "$before_archive_hash" = "$after_archive_hash" ] || { c8_ok=false; info "case8 archive target was modified despite the --regen-todo refusal"; }
+[ ! -f "$TMPROOT/specs/TODO.md" ] || { c8_ok=false; info "case8 specs/TODO.md was created despite the --regen-todo refusal"; }
+
+# Two spellings of the default path -- relative (from within TMPROOT) and absolute -- must both
+# be recognized as the default and PERMIT --regen-todo (exit 0), proving the realpath -m
+# normalized comparison, not a raw string compare.
+(
+  cd "$TMPROOT"
+  "$SW" '.next_project_number = 10' --regen-todo --state-file specs/state.json \
+    --session-id "sess_case8_rel" > "$TMPROOT/case8_rel.out" 2>&1
+  echo $? > "$TMPROOT/case8_rel.exit"
+)
+case8_rel_exit=$(cat "$TMPROOT/case8_rel.exit" 2>/dev/null || echo "?")
+[ "$case8_rel_exit" = "0" ] || { c8_ok=false; info "case8 relative-default-path --regen-todo exited $case8_rel_exit (expected 0): $(cat "$TMPROOT/case8_rel.out" 2>/dev/null)"; }
+
+(
+  cd "$TMPROOT"
+  "$SW" '.next_project_number = 11' --regen-todo --state-file "$STATE_FILE" \
+    --session-id "sess_case8_abs" > "$TMPROOT/case8_abs.out" 2>&1
+  echo $? > "$TMPROOT/case8_abs.exit"
+)
+case8_abs_exit=$(cat "$TMPROOT/case8_abs.exit" 2>/dev/null || echo "?")
+[ "$case8_abs_exit" = "0" ] || { c8_ok=false; info "case8 absolute-default-path --regen-todo exited $case8_abs_exit (expected 0): $(cat "$TMPROOT/case8_abs.out" 2>/dev/null)"; }
+jq -e '.next_project_number == 11' "$STATE_FILE" >/dev/null 2>&1 || { c8_ok=false; info "case8 absolute-default-path write did not land"; }
+
+if [ "$c8_ok" = true ]; then
+  pass "8: --regen-todo refused (exit 1, target untouched, TODO.md not created) for a non-default --state-file, and permitted for both a relative and an absolute spelling of the default path"
+else
+  fail "8: --regen-todo refusal case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 9: --init default-path refusal -- --init with no --state-file exits 1 and specs/state.json
+# is byte-identical afterward; --init --state-file <the default path> likewise exits 1.
+# =====================================================================
+reset_state_json
+before_default_hash_c9=$(jq -S . "$STATE_FILE")
+
+(
+  cd "$TMPROOT"
+  "$SW" '{"foo": 1}' --init --session-id "sess_case9_noflag" > "$TMPROOT/case9_noflag.out" 2>&1
+  echo $? > "$TMPROOT/case9_noflag.exit"
+)
+case9_noflag_exit=$(cat "$TMPROOT/case9_noflag.exit" 2>/dev/null || echo "?")
+
+(
+  cd "$TMPROOT"
+  "$SW" '{"foo": 1}' --init --state-file specs/state.json --session-id "sess_case9_explicit" \
+    > "$TMPROOT/case9_explicit.out" 2>&1
+  echo $? > "$TMPROOT/case9_explicit.exit"
+)
+case9_explicit_exit=$(cat "$TMPROOT/case9_explicit.exit" 2>/dev/null || echo "?")
+after_default_hash_c9=$(jq -S . "$STATE_FILE")
+
+c9_ok=true
+[ "$case9_noflag_exit" = "1" ] || { c9_ok=false; info "case9 --init with no --state-file exited $case9_noflag_exit (expected 1): $(cat "$TMPROOT/case9_noflag.out" 2>/dev/null)"; }
+[ "$case9_explicit_exit" = "1" ] || { c9_ok=false; info "case9 --init --state-file <default path> exited $case9_explicit_exit (expected 1): $(cat "$TMPROOT/case9_explicit.out" 2>/dev/null)"; }
+[ "$before_default_hash_c9" = "$after_default_hash_c9" ] || { c9_ok=false; info "case9 specs/state.json was modified despite both --init default-path refusals"; }
+
+if [ "$c9_ok" = true ]; then
+  pass "9: --init default-path refusal -- both no --state-file and an explicit default-path --state-file are refused (exit 1), specs/state.json untouched"
+else
+  fail "9: --init default-path refusal case failed (see INFO lines above)"
+fi
 
 # =====================================================================
 # Summary

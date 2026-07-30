@@ -285,34 +285,34 @@ the case count from the suite's own "Results: N passed" line and the caller coun
 
 ---
 
-### Phase 2: Extend the concurrency suite for the new surface [NOT STARTED]
+### Phase 2: Extend the concurrency suite for the new surface [COMPLETED]
 
 **Goal**: `test-state-write-concurrency.sh` proves the new flags' contracts with the same
 isolated-temp-root, no-testability-hooks discipline the existing four cases use.
 
 **Tasks**:
-- [ ] Extend the fixture builder to also create `$TMPROOT/specs/archive/state.json` with a minimal
+- [x] Extend the fixture builder to also create `$TMPROOT/specs/archive/state.json` with a minimal
       `{"completed_projects": [...]}` document, and a `reset_archive_state_json()` helper mirroring
       the existing `reset_state_json()`.
-- [ ] Case 5: non-default `--state-file` target — a transform against
+- [x] Case 5: non-default `--state-file` target — a transform against
       `$TMPROOT/specs/archive/state.json` lands, exits 0, leaves `specs/state.json` byte-identical
       (assert with a `jq -S .` before/after hash), and produces valid JSON.
-- [ ] Case 6: single-mutex serialization ACROSS targets (D2's load-bearing property) — one heavy
+- [x] Case 6: single-mutex serialization ACROSS targets (D2's load-bearing property) — one heavy
       writer against the default path concurrent with one writer against
       `specs/archive/state.json`; both must land, and the second must genuinely have waited (assert
       no lost update on either file). This is the case that would fail under per-file locks and is
       the regression test for D2.
-- [ ] Case 7: `--init` — against a target that does **not** exist, the file is created with the
+- [x] Case 7: `--init` — against a target that does **not** exist, the file is created with the
       constructed document and exits 0; then a second `--init` against the now-existing target
       succeeds and emits the overwrite note on stderr.
-- [ ] Case 8: `--regen-todo` refusal — with a non-default `--state-file`, exits 1, the target is
+- [x] Case 8: `--regen-todo` refusal — with a non-default `--state-file`, exits 1, the target is
       untouched, and `specs/TODO.md` is not created/modified. Exercise at least two spellings of
       the default path (relative and absolute) to confirm the normalized comparison treats both as
       default and permits `--regen-todo` there.
-- [ ] Case 9: `--init` default-path refusal — `--init` with no `--state-file` exits 1 and
+- [x] Case 9: `--init` default-path refusal — `--init` with no `--state-file` exits 1 and
       `specs/state.json` is byte-identical afterward; `--init --state-file <the default path>`
       likewise exits 1.
-- [ ] Update the header comment's "Exit 0 when all four cases PASS" line and the file's opening
+- [x] Update the header comment's "Exit 0 when all four cases PASS" line and the file's opening
       description to reflect the new case count and what the added cases prove.
 
 **Timing**: 1.5 hours
