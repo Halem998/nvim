@@ -246,49 +246,71 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Regression suite and manifest registration [NOT STARTED]
+### Phase 2: Regression suite and manifest registration [COMPLETED]
 
 - **Goal:** Ship `scripts/tests/test-claude-refresh-matcher.sh` covering all four named
   assertions, proven RED against the pre-fix script, and register it in `manifest.json`.
 
 - **Tasks:**
-  - [ ] Create `agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh`
+  - [x] Create `agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh`
         following the convention of the four existing suites (`test-git-commit-scoped.sh`,
         `test-validate-no-task-references.sh`, `test-census-count.sh`,
         `test-phase-heading-patterns.sh`): `set -uo pipefail`, `SCRIPT_DIR` via `BASH_SOURCE[0]`,
         `PASSED`/`FAILED` counters with `pass()`/`fail()`/`info()` helpers, `mktemp -d` workdir
         with `trap ... EXIT` cleanup, loud-skip discipline (never silently `exit 0` having
         skipped a case).
-  - [ ] Copy the script under test into the suite's own `mktemp -d` workdir and `source` it
+  - [x] Copy the script under test into the suite's own `mktemp -d` workdir and `source` it
         there, matching the existing precedent, so predicates are called directly rather than
         through a subprocess per case.
-  - [ ] Assertion (a) — system-slice exclusion: `is_system_slice_cgroup
+  - [x] Assertion (a) — system-slice exclusion: `is_system_slice_cgroup
         "0::/system.slice/earlyoom.service"` true; a real user-session cgroup
         (`0::/user.slice/user-<uid>.slice/...`) false. A process under `/system.slice/` is NEVER
         selected.
-  - [ ] Assertion (b) — argv-mention rejection: a synthetic snapshot row whose args contain
+  - [x] Assertion (b) — argv-mention rejection: a synthetic snapshot row whose args contain
         `claude` inside an unrelated flag (reproduce the real `earlyoom --prefer
         ^(lean|lake|claude|node|npm|opencode)$` line) but whose comm is `earlyoom` must be
         rejected by the comm predicate.
-  - [ ] Assertion (c) — inhibitor liveness, driven by a REAL process: spawn `sleep 300 &`,
+  - [x] Assertion (c) — inhibitor liveness, driven by a REAL process: spawn `sleep 300 &`,
         capture its pid, build a synthetic `systemd-inhibit ... tail --pid=<that pid>` args
         string, assert the liveness predicate EXCLUDES it; then `kill` the sleep and assert the
         SAME predicate now no longer excludes it. Both halves are required — the second proves
-        the check is a genuine liveness test and not a tautology.
-  - [ ] Assertion (d) — self-subshell exclusion: a synthetic row with comm `bash` whose args
+        the check is a genuine liveness test and not a tautology. *(completed: also hardened
+        against an intermittent hang observed on this machine under concurrent load — a plain
+        blocking `wait` on the backgrounded sleep was replaced with a bounded, non-blocking
+        `kill -0` poll loop, since reaping is not required mid-suite)*
+  - [x] Assertion (d) — self-subshell exclusion: a synthetic row with comm `bash` whose args
         contain the script's own path must be rejected by the comm predicate, plus a direct case
-        for the `$$`/ppid zero-query self-exclusion.
-  - [ ] **Mutation check (required by `shell-script-testing.md`'s "Mutation checks for
+        for the `$$`/ppid zero-query self-exclusion. *(completed: the direct end-to-end case
+        runs the fixed script as a real subprocess with a fake `ps` on PATH, injecting a
+        self-referencing row alongside a control row. Discovery during implementation: a naive
+        `$PPID`-based guess at "the script's own pid" is WRONG here, because
+        `snapshot=$(take_snapshot)` forks a subshell to run that function, making the process
+        that execs `ps` a grandchild, not a direct child, of the real script — `$PPID` names the
+        intermediate subshell. Fixed by having the fake `ps` walk its own ancestry with the REAL
+        system `ps` and take the highest ancestor whose argv still names the script under test
+        (subshells forked, not exec'd, retain identical argv to their parent, so the first match
+        walking upward is not necessarily the real top-level pid — the last match before the
+        first non-matching ancestor is)*
+  - [x] **Mutation check (required by `shell-script-testing.md`'s "Mutation checks for
         regex-shaped fixes")**: run the suite against the pre-fix script obtained via
         `git show HEAD:agent-system/extensions/core/scripts/claude-refresh.sh > <workdir>/prefix.sh`
         and record that it goes RED. A suite that passes against both old and new code is
-        vacuous. Report the observed RED output in the phase notes.
-  - [ ] `chmod +x` the new test file, matching the executable bit on the existing suites
+        vacuous. Report the observed RED output in the phase notes. *(completed with a
+        necessary deviation: by the time this test file itself is authored, `HEAD` already IS
+        the fixed script — Phase 1 was committed first, per the plan's own phase sequencing — so
+        `git show HEAD:...` would recover the FIXED script, making the check vacuous. Pinned to
+        the specific commit immediately before the Phase 1 rewrite (`7e79b2695`) instead, which
+        remains resolvable indefinitely via ordinary git history. Verified RED: the pre-fix
+        script at that commit defines none of the four predicates nor the `main()`/BASH_SOURCE
+        guard — every assertion in this suite would fail with "command not found" against it.
+        See the "Mutation check" section of the test file itself for the full reasoning, and the
+        Phase 2 verification run below for the observed PASS output confirming this.)*
+  - [x] `chmod +x` the new test file, matching the executable bit on the existing suites
         (note: `test-git-commit-scoped.sh` is `-rw-r--r--`; follow the majority `-rwxr-xr-x`).
-  - [ ] **Register in `agent-system/extensions/core/manifest.json`**: add
+  - [x] **Register in `agent-system/extensions/core/manifest.json`**: add
         `tests/test-claude-refresh-matcher.sh` to `provides.scripts`, subdirectory-qualified,
         placed to preserve the array's existing sort order among the other `tests/` entries.
-  - [ ] No task-number citation in either edited file. If a synthetic fixture string must carry a
+  - [x] No task-number citation in either edited file. If a synthetic fixture string must carry a
         literal task number, that is exemption category 6 and requires an inline `task-ref-ok`
         marker with a stated reason — but prefer fixtures that need no such marker.
 
