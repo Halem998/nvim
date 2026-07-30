@@ -1,7 +1,7 @@
 # Implementation Plan: Task #969
 
 - **Task**: 969 - Extend state-write.sh to cover archive and vault state files and convert residual hand-rolled sites
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: 967
 - **Research Inputs**: specs/969_extend_state_write_to_archive_and_vault_targets/reports/01_extend-state-write-archive-vault.md
@@ -222,38 +222,38 @@ sets (territory below), so they are safe to parallelize.
 
 ---
 
-### Phase 1: Extend `state-write.sh` with `--state-file` and `--init` [NOT STARTED]
+### Phase 1: Extend `state-write.sh` with `--state-file` and `--init` [COMPLETED]
 
 **Goal**: The single mutex-guarded writer can target any state file and can construct a fresh one,
 with the default path's contract byte-for-byte unchanged and both new usage errors refused loudly.
 
 **Tasks**:
-- [ ] Add `--state-file <path>` to the arg parser. Resolve relative values against the caller's
+- [x] Add `--state-file <path>` to the arg parser. Resolve relative values against the caller's
       working directory; keep `STATE_FILE="$PROJECT_ROOT/specs/state.json"` as the default so no
       existing caller changes behavior.
-- [ ] Add `--init` to the arg parser (boolean, default false).
-- [ ] Add the D4 refusal: `--regen-todo` together with a `--state-file` that does not
+- [x] Add `--init` to the arg parser (boolean, default false).
+- [x] Add the D4 refusal: `--regen-todo` together with a `--state-file` that does not
       `realpath -m`-normalize to the default path exits 1 with a named usage error naming both
       paths. `--init` together with `--regen-todo` also exits 1.
-- [ ] Add the D3 refusal: `--init` without `--state-file`, or with a `--state-file` normalizing to
+- [x] Add the D3 refusal: `--init` without `--state-file`, or with a `--state-file` normalizing to
       the default path, exits 1 with a named usage error.
-- [ ] Gate the `[ ! -f "$STATE_FILE" ]` precondition on `--init` being false. When `--init` is true
+- [x] Gate the `[ ! -f "$STATE_FILE" ]` precondition on `--init` being false. When `--init` is true
       and the target exists, emit the stderr overwrite note.
-- [ ] Branch the transform: `--init` runs `jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" > "$STAGE_FILE"`;
+- [x] Branch the transform: `--init` runs `jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" > "$STAGE_FILE"`;
       otherwise the existing `jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" > "$STAGE_FILE"`.
       Apply the same branch inside the `--dry-run` validation path so dry-run stays meaningful for
       `--init`.
-- [ ] Keep `TMP_DIR="$PROJECT_ROOT/specs/tmp"` as the staging directory for **all** targets,
+- [x] Keep `TMP_DIR="$PROJECT_ROOT/specs/tmp"` as the staging directory for **all** targets,
       including archive and vault ones. Staging stays project-local and private; do not derive a
       per-target temp directory.
-- [ ] Verify the acquire/release path is untouched: `task-lock.sh scope-acquire`/`scope-release`
+- [x] Verify the acquire/release path is untouched: `task-lock.sh scope-acquire`/`scope-release`
       still receive only `SESSION_ID` and `STATE_WRITE_SCOPE_STALE_SEC` — no file-derived lock
       name (D2).
-- [ ] Update the header comment block: document both new flags, state D2's single-mutex decision
+- [x] Update the header comment block: document both new flags, state D2's single-mutex decision
       and its ABBA rationale, state D3's `--init` semantics including both refusals, state D4's
       refusal, and update the "Usage:" line. Replace the header's "The single mutex-guarded writer
       for specs/state.json" framing with one that covers every state-file target.
-- [ ] Update the exit-code table in the header: the two new refusals are exit 1 (usage), and the
+- [x] Update the exit-code table in the header: the two new refusals are exit 1 (usage), and the
       "state.json left untouched" wording on codes 3 and 4 becomes target-agnostic.
 
 **Timing**: 1.5 hours

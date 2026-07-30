@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# state-write.sh - The single mutex-guarded writer for specs/state.json.
+# state-write.sh - The single mutex-guarded writer for specs/state.json and its archive/vault
+# counterparts.
 #
 # Every specs/state.json read-modify-write in this codebase is meant to go through this one
 # helper instead of hand-rolling its own `jq ... > tmp && mv tmp state.json` sequence. Before
@@ -13,14 +14,35 @@
 # `mktemp` staging path, and a single acquire -> stage -> transform -> validate -> mv -> release
 # sequence that every writer shares.
 #
+# `--state-file` extends this same sequence to archive and vault targets (the default target,
+# `specs/state.json`, is unchanged for every pre-existing caller). `--init` extends it further to
+# fresh-create targets that have no existing file to transform. See the "`--state-file` and
+# `--init`" section below for both contracts in full, including why the mutex stays a single,
+# unparameterized global across every target rather than becoming per-file.
+#
 # Usage:
-#   state-write.sh <jq-filter> --session-id SID [--arg NAME VALUE]... [--argjson NAME VALUE]...
-#                  [--regen-todo] [--dry-run]
+#   state-write.sh <jq-filter> --session-id SID [--state-file PATH] [--init]
+#                  [--arg NAME VALUE]... [--argjson NAME VALUE]... [--regen-todo] [--dry-run]
 #
 # Arguments:
-#   <jq-filter>     Required. An arbitrary jq filter applied against specs/state.json. Must be
-#                   the first positional argument.
+#   <jq-filter>     Required. An arbitrary jq filter applied against the target state file. Must
+#                   be the first positional argument.
 #   --session-id    Required. The caller's session_id, used to attribute mutex ownership.
+#   --state-file    Optional. Path to the target state file, default
+#                   "$PROJECT_ROOT/specs/state.json" (every pre-existing caller keeps working
+#                   unchanged since none passes this flag). A relative value is resolved against
+#                   the caller's own working directory, exactly as passing that same relative
+#                   path directly to `jq`/`mv` would be -- this script never `cd`s elsewhere
+#                   first. Used for `specs/archive/state.json` and vault-root `state.json`
+#                   targets.
+#   --init          Optional, boolean. Constructs a fresh target from null input
+#                   (`jq -n "$JQ_FILTER"`) instead of transforming an existing file, for
+#                   fresh-create sites (e.g. an archive reinit) that have nothing to read yet.
+#                   REQUIRES an explicit `--state-file` naming a non-default target -- refused
+#                   (exit 1) against the default live path, since a filter typo there must never
+#                   be able to destroy live task state. Overwrites an existing target, but never
+#                   silently: emits a named stderr note first. See "`--state-file` and `--init`"
+#                   below.
 #   --arg NAME VAL      Optional, repeatable. Forwarded to jq as `--arg NAME VAL`.
 #   --argjson NAME VAL  Optional, repeatable. Forwarded to jq as `--argjson NAME VAL`.
 #   --regen-todo    Optional. When passed, `generate-todo.sh` runs AFTER the mutex is released (in
@@ -31,19 +53,55 @@
 #                   an accepted trade-off, since it is a generated view and its own write is already
 #                   atomic (tempfile + mv). A regen failure is a loud warning, not a hard failure --
 #                   the state.json write already succeeded, matching update-task-status.sh's
-#                   existing posture.
+#                   existing posture. REFUSED (exit 1) when combined with a non-default
+#                   `--state-file`, or with `--init` -- see "`--state-file` and `--init`" below.
 #   --dry-run       Optional. Serializes nothing because it writes nothing: no mutex acquire, no
 #                   staging, no transform. Matches update-task-status.sh's existing dry-run
-#                   posture. The filter and bindings are still validated for syntax.
+#                   posture. The filter and bindings are still validated for syntax, against
+#                   the target's `--init`/existing-file transform shape.
 #
 # Exit codes:
 #   0 - success (write applied, or --dry-run preview)
-#   1 - usage error (missing filter, missing --session-id, malformed --arg/--argjson)
+#   1 - usage error (missing filter, missing --session-id, malformed --arg/--argjson, or one of
+#       the two `--state-file`/`--init` usage refusals below). The target state file is untouched.
 #   2 - mutex acquire failed: FAIL CLOSED. An ABORT-prefixed message on stderr names the current
-#       holder. specs/state.json is untouched.
-#   3 - jq transform failed. specs/state.json is left untouched.
-#   4 - jq empty validation failed on the transformed output (invalid JSON). specs/state.json is
-#       left untouched.
+#       holder. The target state file is untouched.
+#   3 - jq transform failed. The target state file is left untouched.
+#   4 - jq empty validation failed on the transformed output (invalid JSON). The target state file
+#       is left untouched.
+#
+# `--state-file` and `--init`
+# ---------------------------
+# Single mutex, not per-file (binding decision, not an oversight): `state-write.sh` continues to
+# call `task-lock.sh scope-acquire`/`scope-release` with no file-derived lock name -- only the
+# internal STATE_FILE variable is parameterized. A per-file mutex scheme is a real ABBA-deadlock
+# surface: `commands/task.md`'s recover flow does an archive removal immediately followed by a
+# live-state insert in the same logical operation, and its abandon flow does the mirror image
+# (live-state extract, archive add, live-state remove). Two concurrent sessions doing opposite
+# operations under per-file locks could acquire in opposite order and deadlock. A single lock name
+# for every `--state-file` target makes this impossible by construction -- each acquire/release
+# pair is sequential and never nested, regardless of which file it targets. The cost (archive/vault
+# writers serializing against live-state writers) is negligible: these are rare, human/agent-paced
+# operations that already serialize in practice. See context/patterns/task-lock.md's State-Write
+# Convention section for the fuller rationale and the recover/abandon interleaved-block example.
+#
+# `--init` mode: skips the "target must already exist" precondition and runs `jq -n
+# "${JQ_ARGS[@]}" "$JQ_FILTER"` (null input) instead of transforming an existing file --
+# `--arg`/`--argjson` passthrough is unchanged. It overwrites an existing target, but never
+# silently: a named stderr note ("Note: --init is replacing an existing <path>") is emitted first
+# so an accidental clobber is visible in the transcript. `--init` REFUSES to run (exit 1) against
+# the default live path -- either with no `--state-file` at all, or with a `--state-file` that
+# normalizes (via `realpath -m`, since an `--init` target may not exist yet) to the same path as
+# the default -- as a cheap, loud guard against a filter typo destroying live task state. `--init`
+# is for archive and vault targets only.
+#
+# `--regen-todo` refusal: `generate-todo.sh` regenerates `specs/TODO.md` from
+# `specs/state.json` unconditionally. Running it after an archive or vault write would render a
+# view of a file that was not the one just written, so `--regen-todo` together with a
+# `--state-file` that does not `realpath -m`-normalize to the default path is a hard usage error
+# (exit 1), naming both paths. `--init` combined with `--regen-todo` is likewise a hard usage
+# error -- unreachable given the default-path refusal above, but asserted explicitly so the
+# combination can never become reachable through a later edit alone.
 #
 # Mutex posture: fail-closed, not fail-open. Honors SCOPE_MUTEX_HELD=1 as guest mode exactly as
 # update-task-status.sh's acquire_state_mutex does today -- when an outer holder (e.g.
@@ -54,8 +112,10 @@
 # fail-open-on-timeout posture. See context/patterns/task-lock.md for the full mutex contract.
 #
 # Staging: a private `mktemp` file under specs/tmp/ (directory created if absent), never a fixed
-# shared path. The EXIT trap is scoped to THIS process's own mktemp path plus mutex release, so
-# one process's exit can never delete another's in-flight staging file.
+# shared path, and never per-target -- every `--state-file` value stages through the same
+# project-local `specs/tmp/` directory, kept private and un-parameterized. The EXIT trap is
+# scoped to THIS process's own mktemp path plus mutex release, so one process's exit can never
+# delete another's in-flight staging file.
 
 set -uo pipefail
 
@@ -78,10 +138,12 @@ JQ_FILTER=""
 SESSION_ID=""
 REGEN_TODO=false
 DRY_RUN=false
+INIT_MODE=false
+STATE_FILE_EXPLICIT=false
 JQ_ARGS=()
 
 usage() {
-  echo "Usage: $0 <jq-filter> --session-id SID [--arg NAME VALUE]... [--argjson NAME VALUE]... [--regen-todo] [--dry-run]" >&2
+  echo "Usage: $0 <jq-filter> --session-id SID [--state-file PATH] [--init] [--arg NAME VALUE]... [--argjson NAME VALUE]... [--regen-todo] [--dry-run]" >&2
 }
 
 while [ "$#" -gt 0 ]; do
@@ -89,6 +151,20 @@ while [ "$#" -gt 0 ]; do
     --session-id)
       SESSION_ID="${2:-}"
       shift 2
+      ;;
+    --state-file)
+      if [ "$#" -lt 2 ]; then
+        echo "Error: --state-file requires a PATH argument" >&2
+        usage
+        exit 1
+      fi
+      STATE_FILE="$2"
+      STATE_FILE_EXPLICIT=true
+      shift 2
+      ;;
+    --init)
+      INIT_MODE=true
+      shift
       ;;
     --arg)
       if [ "$#" -lt 3 ]; then
@@ -145,14 +221,59 @@ if [ -z "$SESSION_ID" ]; then
   exit 1
 fi
 
-if [ ! -f "$STATE_FILE" ]; then
-  echo "Error: state.json not found at $STATE_FILE" >&2
+# --- D3/D4: normalized-path comparison and the two hard usage refusals ---
+# `realpath -m` does not require the path to exist -- required here since an `--init` target may
+# not exist yet. Both sides are normalized before comparison so `./specs/state.json`,
+# `specs/state.json`, and an absolute "$PROJECT_ROOT/specs/state.json" all compare equal to the
+# default; a raw string compare would let `./specs/state.json` slip past these refusals.
+DEFAULT_STATE_FILE_NORMALIZED="$(realpath -m "$PROJECT_ROOT/specs/state.json")"
+STATE_FILE_NORMALIZED="$(realpath -m "$STATE_FILE")"
+IS_DEFAULT_TARGET=false
+if [ "$STATE_FILE_NORMALIZED" = "$DEFAULT_STATE_FILE_NORMALIZED" ]; then
+  IS_DEFAULT_TARGET=true
+fi
+
+if [ "$INIT_MODE" = true ] && [ "$IS_DEFAULT_TARGET" = true ]; then
+  if [ "$STATE_FILE_EXPLICIT" = true ]; then
+    echo "Error: --init refuses to target the default live state file ($STATE_FILE_NORMALIZED); --init is for archive/vault targets only. Pass an explicit --state-file naming a non-default target." >&2
+  else
+    echo "Error: --init requires an explicit --state-file naming a non-default target; refusing to run against the default live state file ($DEFAULT_STATE_FILE_NORMALIZED)." >&2
+  fi
+  usage
   exit 1
+fi
+
+if [ "$REGEN_TODO" = true ] && [ "$INIT_MODE" = true ]; then
+  echo "Error: --regen-todo cannot be combined with --init (an --init target is never the default live state file that --regen-todo reads from)." >&2
+  usage
+  exit 1
+fi
+
+if [ "$REGEN_TODO" = true ] && [ "$IS_DEFAULT_TARGET" = false ]; then
+  echo "Error: --regen-todo cannot be combined with a non-default --state-file ($STATE_FILE_NORMALIZED != $DEFAULT_STATE_FILE_NORMALIZED); generate-todo.sh always regenerates specs/TODO.md from the default live state.json, which would not reflect this write. Refusing rather than regenerating from the wrong source." >&2
+  usage
+  exit 1
+fi
+
+# --- Existence precondition (skipped for --init) / overwrite note ---
+if [ "$INIT_MODE" = true ]; then
+  if [ -f "$STATE_FILE" ]; then
+    echo "Note: --init is replacing an existing $STATE_FILE" >&2
+  fi
+else
+  if [ ! -f "$STATE_FILE" ]; then
+    echo "Error: state file not found at $STATE_FILE" >&2
+    exit 1
+  fi
 fi
 
 # --- Dry run: validate filter syntax only, write nothing, acquire nothing ---
 if [ "$DRY_RUN" = true ]; then
-  dryrun_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > /dev/null)
+  if [ "$INIT_MODE" = true ]; then
+    dryrun_err=$(jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" 2>&1 > /dev/null)
+  else
+    dryrun_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > /dev/null)
+  fi
   dryrun_status=$?
   if [ "$dryrun_status" -ne 0 ]; then
     echo "Error: [dry-run] jq filter failed syntax/apply check:" >&2
@@ -175,7 +296,7 @@ acquire_mutex() {
   fi
   local token
   if ! token=$("$SCRIPT_DIR/task-lock.sh" scope-acquire "$SESSION_ID" "$STATE_WRITE_SCOPE_STALE_SEC"); then
-    echo "ABORT: timed out waiting for specs/.scope-lock mutex (session=$SESSION_ID); specs/state.json was NOT modified." >&2
+    echo "ABORT: timed out waiting for specs/.scope-lock mutex (session=$SESSION_ID); $STATE_FILE was NOT modified." >&2
     return 1
   fi
   MUTEX_TOKEN="$token"
@@ -204,7 +325,7 @@ if ! acquire_mutex; then
   exit 2
 fi
 
-# --- Staging: private mktemp under specs/tmp/, never a fixed shared path ---
+# --- Staging: private mktemp under specs/tmp/, never a fixed shared path, never per-target ---
 mkdir -p "$TMP_DIR"
 STAGE_FILE=$(mktemp "$TMP_DIR/state-write.XXXXXX") || {
   echo "Error: failed to create private staging file under $TMP_DIR" >&2
@@ -212,17 +333,21 @@ STAGE_FILE=$(mktemp "$TMP_DIR/state-write.XXXXXX") || {
 }
 
 # --- Apply the caller's jq filter with forwarded bindings ---
-transform_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > "$STAGE_FILE")
+if [ "$INIT_MODE" = true ]; then
+  transform_err=$(jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" 2>&1 > "$STAGE_FILE")
+else
+  transform_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > "$STAGE_FILE")
+fi
 transform_status=$?
 if [ "$transform_status" -ne 0 ]; then
-  echo "Error: jq transform failed; specs/state.json left untouched." >&2
+  echo "Error: jq transform failed; $STATE_FILE left untouched." >&2
   [ -n "$transform_err" ] && echo "$transform_err" >&2
   exit 3
 fi
 
 # --- Validate before mv ---
 if ! jq empty "$STAGE_FILE" 2>/dev/null; then
-  echo "Error: jq produced invalid JSON; specs/state.json left untouched." >&2
+  echo "Error: jq produced invalid JSON; $STATE_FILE left untouched." >&2
   exit 4
 fi
 
@@ -242,6 +367,8 @@ release_mutex
 
 # --- Optional TODO.md regen (outside the critical section in owned-here mode; still inside the
 # outer caller's bracket in guest mode, since release_mutex() above was a no-op there) ---
+# Reachable only against the default target -- the D4 refusal above exits before this point for
+# any non-default --state-file.
 if [ "$REGEN_TODO" = true ]; then
   "$SCRIPT_DIR/generate-todo.sh" || {
     echo "Warning: generate-todo.sh failed (state.json was updated successfully)" >&2
