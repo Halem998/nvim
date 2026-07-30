@@ -1,13 +1,25 @@
 {
-  "status": "planned",
-  "phase": "plan",
+  "status": "implemented",
+  "phase": "implement",
   "task_number": 974,
   "session_id": "sess_1785373759_72035f_974",
   "plan_path": "specs/974_add_checklist_contract_to_hard_implementation_variants/plans/01_checklist-contract-hard-variants.md",
   "phase_count": 3,
-  "phases_completed": 0,
-  "estimated_hours": 1.0,
-  "dependency_waves": [[1, 2], [3]],
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/974_add_checklist_contract_to_hard_implementation_variants/summaries/01_checklist-contract-hard-variants-summary.md",
+      "summary": "Both hard-mode implementation agents (core, cslib) now carry the canonical verbatim Check Off Completed Items in Plan File contract in place of the bare placeholder bullet."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+    "specs/974_add_checklist_contract_to_hard_implementation_variants/plans/01_checklist-contract-hard-variants.md",
+    "specs/974_add_checklist_contract_to_hard_implementation_variants/summaries/01_checklist-contract-hard-variants-summary.md"
+  ],
   "territory": {
     "phase_1": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"],
     "phase_2": ["agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md"],
@@ -15,5 +27,5 @@
     "read_only_files": ["agent-system/extensions/core/agents/general-implementation-agent.md"]
   },
   "blockers": [],
-  "next_steps": "Run /implement 974 to execute the plan. Phases 1 and 2 are territory-disjoint and may be dispatched in parallel; phase 3 is the cross-file verification gate and must run after both."
+  "next_steps": "Implementation complete. All three phases COMPLETED and verified (byte-equal diffs against the canonical source, dash-convention and sorry_inventory/handoff/Lean-bullet counts preserved, check-task-references.sh PASS). Ready for task completion / postflight."
 }

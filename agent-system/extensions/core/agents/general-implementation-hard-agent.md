@@ -171,7 +171,43 @@ bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$pha
   every `Write`/`Edit`, append the repo-relative path to the current objective's `files_touched`
   array, per the "How Implementation Agents Populate modified_files" procedure in
   `@.claude/context/formats/return-metadata-file.md`
-- For each completed checklist item: check off in plan file
+**B-ii. Check Off Completed Items in Plan File**
+
+After updating the progress file, also update the plan file to reflect completed work.
+
+**Matching contract (canonical — quote this block verbatim; do not paraphrase it)**: locate a
+checklist item by its EXISTING item text, meaning whatever text already follows `- [ ]` in the
+plan file. Do NOT assume a `**Task {P}.{N}**:` prefix, bold markup, or any other particular title
+format — plans commonly carry free-form prose items such as `- [ ] {Step 1}` or
+`- [ ] {Test criterion 1}`. Match on the item's core text and intent, tolerating minor whitespace
+or formatting drift between plan authoring and implementation; never require a byte-exact match
+against a template. Preserve the located item's text unchanged and rewrite only the leading
+marker and the appended annotation. Below, `{existing item text}` denotes that already-present
+text: it describes what to locate and preserve, and is never template syntax to inject into a
+plan.
+
+1. **Locate the current phase's Tasks section** in the plan file
+2. **For each objective just completed**: Edit the corresponding checklist item, rewriting the
+   leading `- [ ]` to `- [x]` and appending the completion annotation:
+   - old_string: `- [ ] {existing item text}`
+   - new_string: `- [x] {existing item text} *(completed)*`
+
+   If a brief completion note adds value (e.g., "removed 9,611 files", "3 of 5 validators done"), append it:
+   - new_string: `- [x] {existing item text} *(completed: {brief note})*`
+
+3. **For the current in-progress objective** (if any): Leave as `- [ ]` but optionally append a note:
+   - `- [ ] {existing item text} *(in progress)*`
+
+4. **For a step being deviated from** (skipped, altered, or deferred during execution):
+   - Add a deviation entry to the progress file `deviations` array (see `.claude/context/formats/progress-file.md` for schema)
+   - Annotate the checklist item inline, keeping these annotation suffixes exactly as written:
+     - Skipped: `- [ ] {existing item text} *(deviation: skipped — {reason})*`
+     - Altered: `- [x] {existing item text} *(deviation: altered — {what changed})*`
+     - Deferred: `- [ ] {existing item text} *(deviation: deferred to task {N})*`
+
+**Note**: This step applies to any phase carrying `- [ ]` checklist syntax, whatever the item
+wording. Skip it only when the phase has no checklist items at all; the progress file remains the
+authoritative tracking mechanism.
 
 **C. Verify Phase Completion** - Run phase verification criteria
 

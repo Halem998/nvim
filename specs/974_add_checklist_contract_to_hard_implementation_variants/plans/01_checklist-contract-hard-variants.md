@@ -1,7 +1,7 @@
 # Implementation Plan: Task #974
 
 - **Task**: 974 - Add plan-checklist mark-completed contract to the two hard-mode implementation agent variants
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1.0 hours
 - **Dependencies**: Task 971 (COMPLETED) — establishes the canonical loosened matching wording
 - **Research Inputs**: specs/974_add_checklist_contract_to_hard_implementation_variants/reports/01_checklist-contract-hard-variants.md
@@ -120,26 +120,26 @@ and share no state, so they are territory-safe for parallel dispatch:
 
 ---
 
-### Phase 1: Insert Canonical Checklist Contract into the Core Hard Agent [NOT STARTED]
+### Phase 1: Insert Canonical Checklist Contract into the Core Hard Agent [COMPLETED]
 
 **Goal**: `general-implementation-hard-agent.md` carries the full canonical checklist contract in
 place of its bare placeholder bullet, with its lettered-step structure and em-dash convention
 intact.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/agents/general-implementation-agent.md` lines 181-218 and
+- [x] Read `agent-system/extensions/core/agents/general-implementation-agent.md` lines 181-218 and
       copy the canonical block body (the text under `#### 4B-ii.`, from "After updating the
-      progress file..." through the closing `**Note**:` paragraph) into a scratch buffer verbatim
-- [ ] Read `agent-system/extensions/core/agents/general-implementation-hard-agent.md` lines 152-195
-      to confirm the Stage 4 structure matches the sites named in this plan before editing
-- [ ] Delete the single line `- For each completed checklist item: check off in plan file` from the
-      `**B. Execute Steps**` bullet list, leaving the two surrounding B bullets untouched
-- [ ] Insert a new bold-label sub-section `**B-ii. Check Off Completed Items in Plan File**`
+      progress file..." through the closing `**Note**:` paragraph) into a scratch buffer verbatim *(completed)*
+- [x] Read `agent-system/extensions/core/agents/general-implementation-hard-agent.md` lines 152-195
+      to confirm the Stage 4 structure matches the sites named in this plan before editing *(completed)*
+- [x] Delete the single line `- For each completed checklist item: check off in plan file` from the
+      `**B. Execute Steps**` bullet list, leaving the two surrounding B bullets untouched *(completed)*
+- [x] Insert a new bold-label sub-section `**B-ii. Check Off Completed Items in Plan File**`
       containing the canonical block body verbatim, positioned immediately before the existing
       `**C. Verify Phase Completion** - Run phase verification criteria` line, separated by blank
-      lines consistent with neighboring sub-sections
-- [ ] Confirm all four of the block's em-dashes survived the paste: the "canonical" parenthetical,
-      the "particular title format" dash, and the skipped and altered deviation suffixes
+      lines consistent with neighboring sub-sections *(completed)*
+- [x] Confirm all four of the block's em-dashes survived the paste: the "canonical" parenthetical,
+      the "particular title format" dash, and the skipped and altered deviation suffixes *(completed: em-dash count rose 18->22)*
 
 **Timing**: 0.3 hours
 
@@ -172,25 +172,25 @@ nothing else.
 
 ---
 
-### Phase 2: Insert Canonical Checklist Contract into the CSLib Hard Agent [NOT STARTED]
+### Phase 2: Insert Canonical Checklist Contract into the CSLib Hard Agent [COMPLETED]
 
 **Goal**: `cslib-implementation-hard-agent.md` carries the same canonical contract verbatim, with
 its Lean-specific B bullets, Stage 5 H9 wrap-up, and `sorry_inventory` requirements untouched.
 
 **Tasks**:
-- [ ] Copy the canonical block body from
+- [x] Copy the canonical block body from
       `agent-system/extensions/core/agents/general-implementation-agent.md` (`#### 4B-ii.`) verbatim
-      — identical text to Phase 1, em-dashes included; do NOT convert to ASCII `--`
-- [ ] Read `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md` lines 201-240
-      to confirm the Stage 4 structure and the Stage 5 boundary before editing
-- [ ] Delete the single line `- For each completed checklist item: check off in plan file` from the
+      — identical text to Phase 1, em-dashes included; do NOT convert to ASCII `--` *(completed)*
+- [x] Read `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md` lines 201-240
+      to confirm the Stage 4 structure and the Stage 5 boundary before editing *(completed)*
+- [x] Delete the single line `- For each completed checklist item: check off in plan file` from the
       `**B. Execute Steps**, plus hard-mode additions:` bullet list, keeping the two Lean-specific
-      bullets (`lean_goal`, `lean_multi_attempt`) in the list in their existing order
-- [ ] Insert `**B-ii. Check Off Completed Items in Plan File**` with the canonical block body
+      bullets (`lean_goal`, `lean_multi_attempt`) in the list in their existing order *(completed)*
+- [x] Insert `**B-ii. Check Off Completed Items in Plan File**` with the canonical block body
       verbatim, immediately before the existing `**C. Verify Phase Completion** - Run CSLib CI
-      pipeline steps relevant to this phase:` line
-- [ ] Confirm Stage 5's H9 wrap-up, the 7-step CI pipeline list, and every `sorry_inventory`
-      reference are unchanged
+      pipeline steps relevant to this phase:` line *(completed)*
+- [x] Confirm Stage 5's H9 wrap-up, the 7-step CI pipeline list, and every `sorry_inventory`
+      reference are unchanged *(completed: sorry_inventory count 10 unchanged, orchestrator-handoff.json count 4 unchanged)*
 
 **Timing**: 0.3 hours
 
@@ -223,26 +223,26 @@ diff must contain no line mentioning `sorry_inventory`, `orchestrator-handoff`, 
 
 ---
 
-### Phase 3: Cross-File Verification and Deploy-Boundary Gate [NOT STARTED]
+### Phase 3: Cross-File Verification and Deploy-Boundary Gate [COMPLETED]
 
 **Goal**: Prove both insertions are byte-identical to the canonical source, that the diff is
 confined to the two declared source-store paths, and that repo-wide gates still pass.
 
 **Tasks**:
-- [ ] Extract the canonical block body from `general-implementation-agent.md` and the inserted
+- [x] Extract the canonical block body from `general-implementation-agent.md` and the inserted
       block body from each hard file, then `diff` each pair — both diffs must be empty (byte
-      equality, not "looks the same")
-- [ ] Confirm all six annotation suffixes appear verbatim in each hard file: `*(completed)*`,
+      equality, not "looks the same") *(completed: both diffs empty)*
+- [x] Confirm all six annotation suffixes appear verbatim in each hard file: `*(completed)*`,
       `*(completed: {brief note})*`, `*(in progress)*`, and the three `*(deviation: ...)*` forms
-      (skipped / altered / deferred)
-- [ ] Confirm `grep -n 'Task {P}\.{N}'` in each hard file returns hits ONLY inside the canonical
+      (skipped / altered / deferred) *(completed)*
+- [x] Confirm `grep -n 'Task {P}\.{N}'` in each hard file returns hits ONLY inside the canonical
       block's "Do NOT assume a `**Task {P}.{N}**:` prefix" prose — never in a checklist-matching
-      or annotation position
-- [ ] Run `git diff --stat` and confirm exactly two paths changed, both under
-      `agent-system/extensions/**`, with zero paths under `.claude/**`
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm it still reports
-      `PASS: 0 unexempted task-reference occurrences`
-- [ ] Confirm neither file's `Stage 5` region appears in the diff
+      or annotation position *(completed: exactly one hit each, in the negated prose)*
+- [x] Run `git diff --stat` and confirm exactly two paths changed, both under
+      `agent-system/extensions/**`, with zero paths under `.claude/**` *(completed)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm it still reports
+      `PASS: 0 unexempted task-reference occurrences` *(completed)*
+- [x] Confirm neither file's `Stage 5` region appears in the diff *(completed)*
 
 **Timing**: 0.4 hours
 
@@ -269,15 +269,15 @@ stop and reconcile before closing the phase.
 
 ## Testing & Validation
 
-- [ ] Both hard-mode files instruct ticking individual plan checklist items
-- [ ] The instruction matches on existing item text and depends on no particular item-title format
-- [ ] All six annotation suffixes present verbatim in both files
-- [ ] `Task {P}.{N}` appears in both files only as the explicitly-negated placeholder inside the
+- [x] Both hard-mode files instruct ticking individual plan checklist items
+- [x] The instruction matches on existing item text and depends on no particular item-title format
+- [x] All six annotation suffixes present verbatim in both files
+- [x] `Task {P}.{N}` appears in both files only as the explicitly-negated placeholder inside the
       canonical prose
-- [ ] Hard-mode wrap-up (H9), `sorry_inventory`, territory, Stage 5a, and handoff contracts intact
-- [ ] Em-dash convention preserved in both files; no ASCII `--` introduced in annotation position
-- [ ] Zero writes under `.claude/**`
-- [ ] `bash .claude/scripts/check-task-references.sh` PASS
+- [x] Hard-mode wrap-up (H9), `sorry_inventory`, territory, Stage 5a, and handoff contracts intact
+- [x] Em-dash convention preserved in both files; no ASCII `--` introduced in annotation position
+- [x] Zero writes under `.claude/**`
+- [x] `bash .claude/scripts/check-task-references.sh` PASS
 
 ## Artifacts & Outputs
 
