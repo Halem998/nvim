@@ -1,43 +1,58 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md",
-      "summary": "8-phase plan in 4 waves extending state-write.sh with --state-file and --init, converting 11 hand-rolled archive/vault write sites across 8 source-store files, correcting task-lock.md's stale residual note, and closing the verification bar against an enumerated exclusion list."
+      "type": "summary",
+      "path": "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md",
+      "summary": "All 8 phases completed: state-write.sh extended with --state-file/--init, every archive/vault write site in the core source store converted, task-lock.md's stale residual note corrected, and the verification bar closed against a re-measured, enumerated exclusion list."
     }
   ],
-  "next_steps": "Run /implement 969 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1785373759_72035f_969",
-    "agent_type": "planner-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 7.5,
-    "dependency_waves": 4
+  "completion_data": {
+    "completion_summary": "Extended state-write.sh with --state-file and --init, converted every hand-rolled archive/vault state.json write site across commands/task.md, commands/todo.md, skill-todo/SKILL.md, archive-task.sh, and vault-operation.sh (including two former unprotected live-state writes in vault-operation.sh), corrected task-lock.md's stale residual-surface note, and closed the verification bar against a re-measured five-item exclusion list. All three state-write test suites pass (18/18 cases)."
   },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/state-write.sh",
+    "agent-system/extensions/core/scripts/test-state-write-concurrency.sh",
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "agent-system/extensions/core/scripts/archive-task.sh",
+    "agent-system/extensions/core/scripts/vault-operation.sh",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md",
+    "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md"
+  ],
   "memory_candidates": [
     {
-      "content": "When a task's verification bar is worded as an absolute negative ('a repo-wide grep returns ZERO hits outside X'), check satisfiability before planning to it. Such bars routinely catch illustrative doc examples, same-named-but-different files, and large pre-existing debt outside the task's scope, making them unsatisfiable as written. The correct resolution is not to weaken the bar or to let it silently fail: scope the search explicitly (e.g. to one extension root), then replace 'result is empty' with 'result equals a declared, per-item-reasoned exclusion list exactly' -- any hit not on the list is a failure. Also baseline the pattern against pre-change content first: a grep that matched nothing before the work proves nothing after it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["verification-bar", "grep-scoping", "exclusion-list", "satisfiability", "baseline-check"]
-    },
-    {
-      "content": "When generalizing a single-file mutex-guarded writer (like state-write.sh) to cover additional target files (archive/vault state.json), keep the underlying mutex (specs/.scope-lock) a single global lock rather than per-file. Per-file locks create a real ABBA deadlock risk when a single logical operation interleaves writes to two different target files in different orders across concurrent callers (e.g. recover: archive-then-live vs abandon: live-then-archive-then-live). A single lock makes every acquire/release pair sequential and non-nested regardless of target file, at negligible serialization cost for rare, human/agent-paced operations.",
-      "category": "PATTERN",
-      "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/reports/01_extend-state-write-archive-vault.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["mutex", "scope-lock", "state-write", "deadlock", "single-lock-design"]
-    },
-    {
-      "content": "A jq-filter-based read-modify-write helper (state-write.sh style: `jq $FILTER $EXISTING_FILE`) cannot express a fresh-file-create operation (`jq -n '{...}' > newfile`, no existing input) without an explicit no-input/init mode, because its contract assumes the target file already exists. Before assuming a generic '--target-file' flag closes every hand-rolled write site, check whether each site is actually a transform-of-existing-file vs a create-from-scratch -- the latter needs a distinct code path.",
+      "content": "A verification-bar grep that matches literal path text (e.g. 'state.json' or 'archive/state.json' adjacent to a redirect) will silently miss hand-rolled writes that route through shell variables instead (e.g. \"$ARCHIVE_STATE_FILE\" > \"${ARCHIVE_STATE_FILE}.tmp\"). Baselining the grep against ONE known pre-conversion file is not sufficient to trust it everywhere -- baseline it against every distinct file/pattern shape in scope, since a variable-based site can produce zero matches both before and after conversion, proving nothing either way. When this gap is found, verify that script's correctness directly (bash -n, --dry-run smoke test, or a full fixtured run) rather than relying on the grep.",
       "category": "INSIGHT",
-      "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/reports/01_extend-state-write-archive-vault.md",
+      "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verification-grep", "baseline-check", "shell-variables", "false-negative", "regression-proof"]
+    },
+    {
+      "content": "check-extension-docs.sh's 'deployed script content drift' finding (deployed .claude/scripts/X differs from agent-system/extensions/*/scripts/X) is the EXPECTED, transient state of any source-store-only edit before the next redeploy cycle -- it is NOT a defect for a general-implementation-agent to fix by invoking deploy-headless.sh, whose own header restricts automated invocation to skill-orchestrate's inter-cycle redeploy checkpoint only. Distinguish this from a genuinely actionable check-extension-docs.sh failure like a stale index-entries.json line_count (Rule R), which IS a source-store fix within an implementer's scope, via generate-context-line-counts.sh --write.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-drift", "source-store-boundary", "check-extension-docs", "deploy-headless", "line_count"]
+    },
+    {
+      "content": "Scripts guarded by deploy-root-guard.sh (e.g. generate-context-line-counts.sh) refuse to run when invoked directly from the agent-system/extensions/*/scripts/ source-store location, even when their actual read/write target is a source-store file (like index-entries.json) rather than anything under .claude/**. This is because they resolve PROJECT_ROOT via SCRIPT_DIR/../.., which only lands correctly two levels under a deployed .claude/scripts/ or .opencode/scripts/ tree. Invoke such scripts via their DEPLOYED path (bash .claude/scripts/<name>.sh) even when the fix itself belongs in the source store.",
+      "category": "CONFIG",
+      "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["jq", "state-write", "fresh-create", "read-modify-write", "design-fork"]
+      "suggested_keywords": ["deploy-root-guard", "PROJECT_ROOT", "source-store", "script-invocation"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1785373759_72035f_969",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
+  }
 }

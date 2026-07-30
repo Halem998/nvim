@@ -1,23 +1,44 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "Mapped 4 concrete archive/vault hand-rolled write sites in the declared file_scope (2 in task.md, 1 in todo.md, 1 in skill-todo/SKILL.md) plus 3 prose-only sites. Found one real design fork: the vault archive-reinit is a fresh-file create, not a transform, so a plain --state-file flag cannot cover it alone -- needs an --init/no-input mode or an explicit scope-acquire/scope-release bracket. Flagged task-lock.md's residual-surface note as stale (needs correcting regardless), and named several out-of-file_scope sites (archive-task.sh, vault-operation.sh -- which already hand-rolls a live specs/state.json write with zero mutex --, jq-escaping-workarounds.md examples, review.md's specs/reviews/state.json, and the large pre-existing extension-domain debt) that will keep the verification bar's literal repo-wide-zero-hits grep from passing unless explicitly scoped or reported.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Completed all 8 phases: state-write.sh extended with --state-file and --init; every hand-rolled archive/vault state.json write site converted across commands/task.md, commands/todo.md, skill-todo/SKILL.md, archive-task.sh, and vault-operation.sh (including vault-operation.sh's two former unprotected LIVE specs/state.json writes); task-lock.md's stale residual-surface note corrected; verification bar closed against a re-measured, five-item exclusion list (one item added during Phase 8 beyond the plan's declared four). All three state-write test suites pass (18/18 cases total), backward compatibility confirmed across 41 pre-existing callers, check-task-references.sh and check-extension-docs.sh both exit 0.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/969_extend_state_write_to_archive_and_vault_targets/reports/01_extend-state-write-archive-vault.md"
+      "type": "plan",
+      "path": "specs/969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
+  "next_action_hint": "complete",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/state-write.sh",
+    "agent-system/extensions/core/scripts/test-state-write-concurrency.sh",
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "agent-system/extensions/core/scripts/archive-task.sh",
+    "agent-system/extensions/core/scripts/vault-operation.sh",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/969_extend_state_write_to_archive_and_vault_targets/plans/01_extend-state-write-archive-vault.md",
+    "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md",
+    "specs/969_extend_state_write_to_archive_and_vault_targets/.return-meta.json"
+  ],
   "decisions_made": [
-    "Recommend a single specs/.scope-lock mutex for all --state-file targets, not per-file locks, to avoid an ABBA deadlock between concurrent recover/abandon-style interleaved operations.",
-    "Recommend --regen-todo be refused as a usage error when combined with a non-default --state-file.",
-    "Recommend the vault archive-reinit site be resolved via either a state-write.sh --init/no-input mode or an explicit scope-acquire/scope-release bracket around the existing jq -n write, since it is a fresh-create with no existing file to transform."
+    "D1-D7 applied as written in the plan (see plan's Resolved Design Decisions section).",
+    "Phase 8 finding: the declared four-item verification exclusion list needed a fifth item -- jq-escaping-workarounds.md's isolated 'Test Script' section (specs/tmp/test-state.json), an illustrative fixture demonstrating raw jq escaping mechanics, never a production state-file write site. Added with a stated reason rather than silently widening or ignoring the residual hit.",
+    "Phase 8 finding: the plan's scoped verification grep does not match archive-task.sh's/vault-operation.sh's ORIGINAL hand-rolled sites at baseline, because those sites redirected through shell variables ($ARCHIVE_STATE_FILE, $state_json) rather than literal state.json/archive/state.json text. The grep is therefore not a meaningful regression proof for those two scripts specifically; their correctness was verified directly instead (bash -n, --dry-run smoke test, and a full no-op-then-confirmed fixtured run).",
+    "Re-measured (not assumed) out-of-scope surface: 115 hand-rolled specs/state.json sites across 50 files in non-core extensions (vs. the plan's 128/56 estimate from planning); 41 total state-write.sh callers (vs. the research report's ~24 estimate).",
+    "check-extension-docs.sh transiently flagged 'deployed script content drift' for vault-operation.sh (deploy tree lagging the source-store edit) -- resolving that is deploy-headless.sh's remit, explicitly restricted to skill-orchestrate's own inter-cycle redeploy checkpoint per that script's header, not a general-implementation-agent action. It cleared on its own before the final Phase 8 verification run without this agent invoking that script. Fixed the two genuinely in-scope check-extension-docs.sh failures (stale index-entries.json line_count values) via generate-context-line-counts.sh --write."
   ],
   "dead_ends": [],
-  "phases_completed": 0,
-  "phases_total": 0
+  "phases_completed": 8,
+  "phases_total": 8,
+  "plan_markers_verified": true
 }
