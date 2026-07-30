@@ -576,32 +576,32 @@ before editing.
 
 ---
 
-### Phase 7: Correct `context/patterns/task-lock.md` [NOT STARTED]
+### Phase 7: Correct `context/patterns/task-lock.md` [COMPLETED]
 
 **Goal**: The State-Write Convention section reflects reality: the corrected residual surface, the
 single-mutex decision, the `--state-file`/`--init` contract, and the `--regen-todo` refusal.
 
 **Tasks**:
-- [ ] Replace the stale "Known residual surface (not yet converted)" paragraph. Its current claims
+- [x] Replace the stale "Known residual surface (not yet converted)" paragraph. Its current claims
       — 14 core skill files with 48 inline write sites, `commands/task.md` 5 sites,
       `commands/todo.md` 3 sites — were verified stale during planning: a grep for hand-rolled
       `specs/state.json` writes across `agent-system/extensions/core/**` now returns only reads
       plus `commands/review.md`'s different `specs/reviews/state.json` file. Re-measure before
       writing the replacement; do not copy planning's numbers on faith.
-- [ ] The replacement note must state: (a) every `specs/state.json` writer in
+- [x] The replacement note must state: (a) every `specs/state.json` writer in
       `agent-system/extensions/core/**` routes through `state-write.sh`; (b) `specs/archive/state.json`
       and vault-root targets are now covered via `--state-file`, and fresh-creates via `--init`;
       (c) the remaining surface is the non-core extension domains (give the re-measured file and
       site counts, framed as a measurement with its date-free method stated, not a permanent fact)
       plus `commands/review.md`'s `specs/reviews/state.json` — a genuinely different state file,
       now mechanically convertible via `--state-file` and left as named follow-up.
-- [ ] Document D2 in the same section: one `specs/.scope-lock` for every state-file target, with
+- [x] Document D2 in the same section: one `specs/.scope-lock` for every state-file target, with
       the ABBA-deadlock rationale and the recover/abandon interleaved-block example that motivates
       it. This is the durable home for the reasoning; the script header cross-references it.
-- [ ] Document D3's `--init` semantics: no existence precondition, `jq -n` transform, loud
+- [x] Document D3's `--init` semantics: no existence precondition, `jq -n` transform, loud
       overwrite note, and the hard refusal against the default live path.
-- [ ] Document D4's `--regen-todo` refusal and the `realpath -m` normalized comparison.
-- [ ] Check the section's other absolute claims against the new reality — in particular the "no
+- [x] Document D4's `--regen-todo` refusal and the `realpath -m` normalized comparison.
+- [x] Check the section's other absolute claims against the new reality — in particular the "no
       other sanctioned way to write `specs/state.json`" line and the historical-narrative passages
       that quote the old `jq ... > tmp && mv` pattern. The historical passages stay (they explain
       why the mechanism exists); confirm none of them now reads as current-state guidance.

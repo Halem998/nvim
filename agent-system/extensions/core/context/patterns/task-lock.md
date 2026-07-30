@@ -523,34 +523,92 @@ removes the mutex on an exact match, as described above.
 ### State-Write Convention
 
 Every `specs/state.json` writer in this codebase is a call to `scripts/state-write.sh`. There is
-no other sanctioned way to write `specs/state.json`: not a hand-rolled `jq ... > tmp && mv`
-sequence, not a `python3 json.load`/`json.dump` in-place write, and not a direct
-`acquire_scope_mutex` call from a new script. A new writer should call `state-write.sh` with its
-jq filter and any `--arg`/`--argjson` bindings, exactly as the existing consumers above do,
-rather than reimplementing the acquire -> mktemp -> transform -> validate -> mv -> release
-sequence inline. This closes two independent corruption channels that used to exist in this
-codebase: (1) most writers never acquired the `.scope-lock` mutex at all, and the two that did
-failed OPEN on a timeout (proceeded unserialized rather than refusing); (2) several writers
-staged through a FIXED, shared temp path (`specs/tmp/state.json`, or the literal
-`specs/state.json.tmp`) with an unconditional `rm -f` EXIT trap, so one process's normal exit
-could delete another concurrent process's in-flight staging file regardless of any mutex work.
-`state-write.sh` closes both: fail-closed mutex acquisition, and a private per-process `mktemp`
-staging path with an EXIT trap scoped to that process's own file only. See
-`scripts/test-state-write-concurrency.sh` for the isolated-temp-root suite proving both
-properties (no-lost-update, staging-file isolation) plus fail-closed-acquire and
-guest-mode-reentrancy.
+no other sanctioned way to write `specs/state.json`, `specs/archive/state.json`, or a vault-root
+`state.json`: not a hand-rolled `jq ... > tmp && mv` sequence, not a `python3
+json.load`/`json.dump` in-place write, and not a direct `acquire_scope_mutex` call from a new
+script. A new writer should call `state-write.sh` with its jq filter and any `--arg`/`--argjson`
+bindings, exactly as the existing consumers above do, rather than reimplementing the acquire ->
+mktemp -> transform -> validate -> mv -> release sequence inline. This closes two independent
+corruption channels that used to exist in this codebase: (1) most writers never acquired the
+`.scope-lock` mutex at all, and the two that did failed OPEN on a timeout (proceeded unserialized
+rather than refusing); (2) several writers staged through a FIXED, shared temp path
+(`specs/tmp/state.json`, or the literal `specs/state.json.tmp`) with an unconditional `rm -f`
+EXIT trap, so one process's normal exit could delete another concurrent process's in-flight
+staging file regardless of any mutex work. `state-write.sh` closes both: fail-closed mutex
+acquisition, and a private per-process `mktemp` staging path with an EXIT trap scoped to that
+process's own file only. See `scripts/test-state-write-concurrency.sh` for the isolated-temp-root
+suite proving both properties (no-lost-update, staging-file isolation) plus fail-closed-acquire,
+guest-mode-reentrancy, cross-target single-mutex serialization, `--init` fresh-create semantics,
+and the `--regen-todo`/`--init` usage refusals below.
 
-**Known residual surface (not yet converted):** a re-measured, source-store-wide grep found 14
-`agent-system/extensions/core/` skill files (48 inline write sites total) still carrying their
-own hand-rolled `specs/state.json` write blocks -- `skill-implementer`, `skill-implementer-hard`,
-`skill-planner`, `skill-planner-hard`, `skill-project-overview`, `skill-researcher`,
-`skill-researcher-hard`, `skill-reviser`, `skill-spawn`, `skill-status-sync`,
-`skill-team-implement`, `skill-team-plan`, `skill-team-research`, `skill-todo` -- plus two
-commands carrying 8 further sites (`commands/task.md` 5, `commands/todo.md` 3). These were
-outside the `file_scope` of the plan that introduced `state-write.sh` and remain open follow-up
-work, tracked as a dedicated task (see `specs/TODO.md`'s orchestration-concurrency topic group),
-not a silently-accepted gap. Every extension `SKILL.md` file with its own inline
-`specs/state.json` write pattern is a further, separately out-of-scope surface.
+**`--state-file` and `--init`: archive and vault targets are covered too.** `state-write.sh`
+takes an optional `--state-file <path>` (default `specs/state.json`, so every pre-existing caller
+is unchanged) and an `--init` flag for fresh-create targets that have no existing file to
+transform. Both `specs/archive/state.json` and vault-root `state.json` writers in
+`commands/task.md`, `commands/todo.md`, `skills/skill-todo/SKILL.md`, `scripts/archive-task.sh`,
+and `scripts/vault-operation.sh` now route through these two flags rather than hand-rolling their
+own `jq ... > tmp && mv` or `jq -n ... > file` sequences.
+
+- **Single mutex, not per-file (D2)**: `--state-file` parameterizes only the internal
+  `STATE_FILE` target -- the `specs/.scope-lock` mutex acquired via `task-lock.sh
+  scope-acquire`/`scope-release` stays single and unparameterized across every target, archive
+  and vault included. This is a deliberate choice, not an oversight: `commands/task.md`'s recover
+  flow does an archive removal immediately followed by a live-state insert in the same logical
+  operation, and its abandon flow does the mirror image (live-state extract, archive add,
+  live-state remove). Under per-file locks, two concurrent sessions doing opposite operations
+  could acquire in opposite order and deadlock (classic ABBA). A single lock name makes every
+  acquire/release pair sequential and never nested regardless of target, so the deadlock is
+  impossible by construction. The cost -- archive/vault writers serializing against live-state
+  writers -- is negligible: these are rare, human/agent-paced operations that already serialize
+  against each other in practice.
+- **`--init` semantics (D3)**: skips the "target must already exist" precondition and runs `jq -n
+  "${JQ_ARGS[@]}" "$JQ_FILTER"` (null input) instead of transforming an existing file --
+  `--arg`/`--argjson` passthrough is unchanged. It overwrites an existing target, but never
+  silently: a named stderr note ("Note: --init is replacing an existing <path>") is emitted first.
+  `--init` REFUSES to run (exit 1) against the default live path -- either with no `--state-file`
+  at all, or with a `--state-file` that `realpath -m`-normalizes to the same path as the default
+  -- as a cheap, loud guard against a filter typo destroying live task state. `--init` is for
+  archive and vault targets only.
+- **`--regen-todo` refusal (D4)**: `generate-todo.sh` regenerates `specs/TODO.md` from
+  `specs/state.json` unconditionally, so running it after an archive or vault write would render
+  a view of a file that was not the one just written. `--regen-todo` together with a
+  `--state-file` that does not `realpath -m`-normalize to the default path is a hard usage error
+  (exit 1), naming both paths; `--init` combined with `--regen-todo` is likewise a hard usage
+  error (unreachable given the default-path refusal above, but asserted explicitly so the
+  combination can never become reachable through a later edit alone). Path comparison is always
+  `realpath -m`-normalized, never a raw string compare, so `./specs/state.json`,
+  `specs/state.json`, and an absolute `$PROJECT_ROOT/specs/state.json` all correctly compare
+  equal to the default.
+
+**Known residual surface (re-measured for this section; the numbers below are a point-in-time
+grep result, not a permanent fact -- re-run the same searches before trusting them again):**
+
+- Every `specs/state.json` writer in `agent-system/extensions/core/**` now routes through
+  `state-write.sh`. The 14 skill files this note previously listed as still carrying hand-rolled
+  write blocks (`skill-implementer`, `skill-implementer-hard`, `skill-planner`,
+  `skill-planner-hard`, `skill-project-overview`, `skill-researcher`, `skill-researcher-hard`,
+  `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-team-implement`, `skill-team-plan`,
+  `skill-team-research`, `skill-todo`) each show zero hand-rolled hits today and call
+  `state-write.sh` instead -- that claim was stale; a separate, already-completed effort had
+  closed it before this section's own `--state-file`/`--init` work began. `commands/task.md` and
+  `commands/todo.md` likewise carry zero hand-rolled `specs/state.json` or
+  `specs/archive/state.json` write sites now (re-measured via
+  `grep -rnE 'state\.json[^ ]* *> *[^ ]*(tmp|\.tmp)|(tmp|state\.json\.tmp)[^|]*&&[^|]*mv[^|]*state\.json'
+  --include='*.md' --include='*.sh' agent-system/extensions/core/`, restricted to matches outside
+  `state-write.sh` itself, `specs/reviews/state.json`, and non-`specs/state.json` illustrative
+  fixtures).
+- `specs/archive/state.json` and vault-root targets are now covered via `--state-file`, and
+  fresh-creates via `--init` (see above); the two previously-orphaned scripts
+  `scripts/archive-task.sh` and `scripts/vault-operation.sh` are converted as well, including
+  `vault-operation.sh`'s two former live-`specs/state.json` writes that carried zero mutex
+  protection at all.
+- The remaining surface is the non-core extension domains -- re-measured at 115 hand-rolled
+  `specs/state.json` write sites across 50 files under `agent-system/extensions/` outside
+  `core/` (`cslib`, `epidemiology`, `founder`, `lean`, `present`, `web`) via the same grep pattern
+  above -- plus `commands/review.md`'s `specs/reviews/state.json` (a genuinely different state
+  file, 3 sites: one fresh-create and two `tmp && mv` transforms), now mechanically convertible
+  via `--state-file` and left as named follow-up. Neither is a silently-accepted gap: both are
+  named here and in the task that did this re-measurement.
 
 ### Relationship to the Task-Number Lock
 
