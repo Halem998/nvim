@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
 # vault-operation.sh - Execute vault archival operation when task numbering exceeds 1000
 #
-# Usage: vault-operation.sh <state_json> [--confirmed]
+# Usage: vault-operation.sh <state_json> [--confirmed] [--session-id SID]
 #
 # When next_project_number > 1000, this script:
 #   1. Detects vault threshold
 #   2. Creates vault directory (specs/vault/NN-vault/)
 #   3. Moves specs/archive/ into the vault
-#   4. Reinitializes specs/archive/ with empty state
-#   5. Renumbers active tasks > 1000 by subtracting 1000
-#   6. Resets next_project_number to max(renumbered) + 1
+#   4. Reinitializes specs/archive/ with empty state (via state-write.sh --init)
+#   5. Renumbers active tasks > 1000 by subtracting 1000 (via state-write.sh --state-file)
+#   6. Resets next_project_number to max(renumbered) + 1 (via state-write.sh --state-file)
 #   7. Regenerates Task Order via generate-task-order.sh
 #
 # The --confirmed flag skips the vault threshold check and proceeds unconditionally.
 # Without --confirmed, exits 0 if next_project_number <= 1000 (no-op).
+#
+# --session-id SID   Optional. Attributes the specs/.scope-lock mutex acquisition (via
+#                     state-write.sh) to this session. If omitted, a session_id is generated
+#                     inline using the same portable pattern archive-task.sh uses, so this
+#                     script remains callable standalone.
 #
 # Exit codes:
 #   0 - Success (including no-op when threshold not reached)
@@ -22,15 +27,39 @@
 set -euo pipefail
 
 # --- Arguments ---
-state_json="${1:-}"
+state_json=""
 confirmed=false
-if [ "${2:-}" = "--confirmed" ]; then
-  confirmed=true
-fi
+session_id=""
+positional=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --confirmed)
+      confirmed=true
+      shift
+      ;;
+    --session-id)
+      session_id="${2:-}"
+      shift 2
+      ;;
+    --session-id=*)
+      session_id="${1#--session-id=}"
+      shift
+      ;;
+    *)
+      positional+=("$1")
+      shift
+      ;;
+  esac
+done
+state_json="${positional[0]:-}"
 
 if [ -z "$state_json" ]; then
-  echo "Usage: vault-operation.sh <state_json> [--confirmed]" >&2
+  echo "Usage: vault-operation.sh <state_json> [--confirmed] [--session-id SID]" >&2
   exit 1
+fi
+
+if [ -z "$session_id" ]; then
+  session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 fi
 
 # --- Validate inputs ---
@@ -90,7 +119,8 @@ if [ -d "$ARCHIVE_DIR" ]; then
   mv "$ARCHIVE_DIR" "${vault_path}/archive"
   echo "Moved specs/archive/ -> ${vault_path}/archive/"
 
-  # Move archive state.json to vault root
+  # Move archive state.json to vault root -- a file rename, not a state write, and correctly
+  # outside state-write.sh's remit.
   if [ -f "${vault_path}/archive/state.json" ]; then
     mv "${vault_path}/archive/state.json" "${vault_path}/state.json"
     echo "Moved archive/state.json -> vault state.json"
@@ -120,7 +150,9 @@ echo "Created vault meta.json (archived_count=$archived_count, final_task_number
 
 # --- Step 5.8.6: Reinitialize archive ---
 mkdir -p "$ARCHIVE_DIR"
-echo '{ "completed_projects": [] }' > "${ARCHIVE_DIR}/state.json"
+"$SCRIPT_DIR/state-write.sh" \
+  '{ "completed_projects": [] }' \
+  --init --state-file "${ARCHIVE_DIR}/state.json" --session-id "$session_id"
 echo "Reinitialized specs/archive/ with empty state"
 
 # --- Step 5.8.7: Renumber tasks > 1000 ---
@@ -135,10 +167,13 @@ if [ "$renumber_count" -gt 0 ]; then
     new_num=$(echo "$task_json" | jq -r '.new_number')
     task_name=$(echo "$task_json" | jq -r '.project_name')
 
-    # Update project_number in state.json for this task
-    jq --argjson old "$old_num" --argjson new "$new_num" '
-      (.active_projects[] | select(.project_number == $old)).project_number = $new
-    ' "$state_json" > "${state_json}.tmp" && mv "${state_json}.tmp" "$state_json"
+    # Update project_number in state.json for this task -- routed through state-write.sh, the
+    # single mutex-guarded writer, via --state-file (this is a LIVE specs/state.json write).
+    "$SCRIPT_DIR/state-write.sh" \
+      '(.active_projects[] | select(.project_number == $old)).project_number = $new' \
+      --state-file "$state_json" \
+      --session-id "$session_id" \
+      --argjson old "$old_num" --argjson new "$new_num"
 
     # Compute padded numbers
     old_padded=$(printf "%04d" "$old_num")
@@ -177,18 +212,22 @@ fi
 max_active=$(jq -r '[.active_projects[].project_number] | max // 0' "$state_json")
 new_next_num=$((max_active + 1))
 
-jq --argjson new_next "$new_next_num" \
-   --argjson vault_num "$new_vault_num" \
-   --arg vault_path "${vault_path}/" \
-   --arg created "$current_timestamp" \
-   '.next_project_number = $new_next |
-    .vault_count = (.vault_count // 0) + 1 |
-    .vault_history = (.vault_history // []) + [{
-      vault_number: $vault_num,
-      vault_dir: $vault_path,
-      created_at: $created
-    }]' "$state_json" > "${state_json}.tmp"
-mv "${state_json}.tmp" "$state_json"
+# Routed through state-write.sh, the single mutex-guarded writer, via --state-file (this is a
+# LIVE specs/state.json write).
+"$SCRIPT_DIR/state-write.sh" \
+  '.next_project_number = $new_next |
+   .vault_count = (.vault_count // 0) + 1 |
+   .vault_history = (.vault_history // []) + [{
+     vault_number: $vault_num,
+     vault_dir: $vault_path,
+     created_at: $created
+   }]' \
+  --state-file "$state_json" \
+  --session-id "$session_id" \
+  --argjson new_next "$new_next_num" \
+  --argjson vault_num "$new_vault_num" \
+  --arg vault_path "${vault_path}/" \
+  --arg created "$current_timestamp"
 
 echo "Reset next_project_number to $new_next_num (was $next_num)"
 echo "Updated vault_count to $new_vault_num"

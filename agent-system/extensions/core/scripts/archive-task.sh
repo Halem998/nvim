@@ -5,10 +5,10 @@
 #
 # Operations:
 #   A. Move task entry from state.json active_projects to archive/state.json completed_projects
-#      (archive/state.json is a DIFFERENT file from specs/state.json -- out of scope for the
-#      shared state-write.sh conversion; this step's write is unchanged.)
-#   B. Remove task entry from state.json active_projects (the ONLY specs/state.json write in
-#      this script; routed through state-write.sh)
+#      (archive/state.json is a DIFFERENT file from specs/state.json, reached via
+#      state-write.sh's --state-file flag -- both this write and step B below go through the
+#      same mutex-guarded writer)
+#   B. Remove task entry from state.json active_projects (routed through state-write.sh)
 #   C. Regenerate TODO.md from state.json (task no longer in active_projects, so not rendered)
 #   D. Move task directory from specs/ to specs/archive/
 #
@@ -86,7 +86,10 @@ fi
 # --- Initialize archive/state.json if missing ---
 if [ ! -f "$ARCHIVE_STATE_FILE" ]; then
   if ! $dry_run; then
-    echo '{ "archived_projects": [], "completed_projects": [] }' > "$ARCHIVE_STATE_FILE"
+    "$SCRIPT_DIR/state-write.sh" \
+      '{ "archived_projects": [], "completed_projects": [] }' \
+      --init --state-file "$ARCHIVE_STATE_FILE" --session-id "$session_id" \
+      || { echo "error: state-write.sh failed to initialize $ARCHIVE_STATE_FILE" >&2; exit 1; }
   fi
 fi
 
@@ -124,11 +127,13 @@ else
   archive_array="completed_projects"
 fi
 
-jq --argjson entry "$task_entry" \
-   --arg array "$archive_array" \
-   '.[$array] += [$entry]' \
-  "$ARCHIVE_STATE_FILE" > "${ARCHIVE_STATE_FILE}.tmp" \
-  && mv "${ARCHIVE_STATE_FILE}.tmp" "$ARCHIVE_STATE_FILE"
+"$SCRIPT_DIR/state-write.sh" \
+  '.[$array] += [$entry]' \
+  --state-file "$ARCHIVE_STATE_FILE" \
+  --session-id "$session_id" \
+  --argjson entry "$task_entry" \
+  --arg array "$archive_array" \
+  || { echo "error: state-write.sh failed to archive task $task_number to $archive_array" >&2; exit 1; }
 
 echo "Archived state entry for task $task_number to $archive_array"
 

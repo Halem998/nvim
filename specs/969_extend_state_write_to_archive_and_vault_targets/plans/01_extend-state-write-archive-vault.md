@@ -508,41 +508,41 @@ each of the four claims independently at implementation time.
 
 ---
 
-### Phase 6: Convert `scripts/archive-task.sh` and `scripts/vault-operation.sh` [NOT STARTED]
+### Phase 6: Convert `scripts/archive-task.sh` and `scripts/vault-operation.sh` [COMPLETED]
 
 **Goal**: The two deployed-but-uncalled scripts — including `vault-operation.sh`'s two
 **unprotected live-`specs/state.json`** writes — route through `state-write.sh`. This is the
 recorded `file_scope` expansion from D5.
 
 **Tasks**:
-- [ ] `archive-task.sh`: convert step A's
+- [x] `archive-task.sh`: convert step A's
       `jq ... "$ARCHIVE_STATE_FILE" > "${ARCHIVE_STATE_FILE}.tmp" && mv ...` to
       `"$SCRIPT_DIR/state-write.sh" '.[$array] += [$entry]' --state-file "$ARCHIVE_STATE_FILE" --session-id "$session_id" --argjson entry "$task_entry" --arg array "$archive_array"`.
       The script already resolves `$session_id` (inline-generated when `--session-id` is omitted) —
       reuse it, do not add a second generation path.
-- [ ] `archive-task.sh`: convert the "Initialize archive/state.json if missing"
+- [x] `archive-task.sh`: convert the "Initialize archive/state.json if missing"
       `echo '{ "archived_projects": [], "completed_projects": [] }' > "$ARCHIVE_STATE_FILE"` to a
       `state-write.sh --init --state-file "$ARCHIVE_STATE_FILE"` invocation, keeping it inside the
       existing `if [ ! -f ... ]` guard and the existing `if ! $dry_run` guard.
-- [ ] `archive-task.sh`: update the header's step-A description, which currently states archive
+- [x] `archive-task.sh`: update the header's step-A description, which currently states archive
       state is "out of scope for the shared state-write.sh conversion; this step's write is
       unchanged." That sentence becomes false — rewrite it to name `--state-file`.
-- [ ] `vault-operation.sh`: convert the "Renumber tasks" write
+- [x] `vault-operation.sh`: convert the "Renumber tasks" write
       (`jq ... "$state_json" > "${state_json}.tmp" && mv ...`) to a `state-write.sh` invocation
       with `--state-file "$state_json"`. This is a LIVE state write with no mutex today — the
       highest-value conversion in this phase.
-- [ ] `vault-operation.sh`: convert the "Reset state" write the same way, preserving its
+- [x] `vault-operation.sh`: convert the "Reset state" write the same way, preserving its
       `--argjson new_next` / `--argjson vault_num` / `--arg vault_path` / `--arg created` bindings.
-- [ ] `vault-operation.sh`: convert step 5.8.6's
+- [x] `vault-operation.sh`: convert step 5.8.6's
       `echo '{ "completed_projects": [] }' > "${ARCHIVE_DIR}/state.json"` to
       `state-write.sh --init --state-file "${ARCHIVE_DIR}/state.json"`.
-- [ ] `vault-operation.sh`: add `session_id` plumbing — the script has none today. Add an optional
+- [x] `vault-operation.sh`: add `session_id` plumbing — the script has none today. Add an optional
       `--session-id SID` argument plus inline generation when omitted, copying
       `archive-task.sh`'s existing pattern and header wording verbatim rather than inventing a
       variant. Update the `Usage:` line and the header's step list.
-- [ ] Leave `vault-operation.sh`'s `mv "${vault_path}/archive/state.json" "${vault_path}/state.json"`
+- [x] Leave `vault-operation.sh`'s `mv "${vault_path}/archive/state.json" "${vault_path}/state.json"`
       untouched (rename, not a write), with the same clarifying note added in Phases 4 and 5.
-- [ ] Confirm neither script's `set -euo pipefail` posture conflicts with `state-write.sh`'s exit
+- [x] Confirm neither script's `set -euo pipefail` posture conflicts with `state-write.sh`'s exit
       codes: an exit 2 (mutex ABORT) or 3/4 must surface as a script failure, not be swallowed.
       Under `set -e` it propagates; assert this rather than assume it, and do not add a `|| true`.
 
