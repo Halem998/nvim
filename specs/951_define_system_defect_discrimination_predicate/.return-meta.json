@@ -1,35 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
-      "summary": "4-phase sequential verification-and-gap-closure plan for the system-defect discrimination contract: re-verify citations and fix an off-by-two citation range; extend Signal A by one empirically-evidenced instance (null/absent artifacts on a success status) explicitly marked as having no current detector; record the handoff-present branch's total absence of an artifacts shape check as a detection hole distinct from the three existing classes; document the two deliberately-excluded critical_paths candidates with guard-scope reasoning; final gate with line_count refresh. orchestrator-critical-paths.json verified correct as delivered and left unchanged."
-    }
-  ],
-  "next_steps": "Run /implement 951 to execute the plan",
+  "status": "in_progress",
   "metadata": {
     "session_id": "sess_1785373759_72035f_951",
-    "agent_type": "planner-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
     "task_number": 951,
-    "phase_count": 4,
-    "estimated_hours": 2.0,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "The ARTIFACTS_SHAPE_MISMATCH detector in scripts/orchestrate-recover-outcome.sh has exactly two firing arms -- (artifacts_length > 0 AND resolved path empty), and jq_artifact_failure (non-zero jq exit while resolving .artifacts[0].path/.type/.summary). A `null` or absent artifacts field satisfies NEITHER: `(.artifacts // []) | length` yields 0 and `.artifacts[0].path // \"\"` yields empty with exit 0, because jq's null[0] is null rather than an error. Only the bare-string-array form trips the detector, and it does so via the jq-failure arm (exit 5), not the length arm that the in-file header comment describes. Consequence: a handoff or return-meta emitting `artifacts: null` alongside a success status passes as clean with evidence_reason=NONE. Verify this empirically with the two one-line jq probes before reasoning about artifacts-shape coverage; the header comment alone will mislead you about which arm fires.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["ARTIFACTS_SHAPE_MISMATCH", "orchestrate-recover-outcome", "jq-null-indexing", "evidence_reason", "artifacts-null"]
-    }
-  ],
-  "modified_files": [
-    "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
-    "specs/951_define_system_defect_discrimination_predicate/.orchestrator-handoff.json",
-    "specs/951_define_system_defect_discrimination_predicate/.return-meta.json"
-  ]
+    "phases_completed": 0,
+    "phases_total": 4
+  }
 }

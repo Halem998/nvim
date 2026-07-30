@@ -1,7 +1,7 @@
 # Implementation Plan: System-Defect Discrimination Predicate
 
 - **Task**: 951 - Define the system-defect discrimination predicate and detection-point registry
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.0 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research report was produced; the research phase wrote the
@@ -163,20 +163,24 @@ All four phases edit or gate on the same single file, so no two phases may run i
 
 ---
 
-### Phase 1: Re-verify citations and correct the citation range [NOT STARTED]
+### Phase 1: Re-verify citations and correct the citation range [COMPLETED]
 
 **Goal**: Independently reproduce the verification table above (do not trust it), then correct the
 `lines 92-95` range at line 41 of the document.
 
 **Tasks**:
-- [ ] Re-run each mechanical check in the "Verification performed during planning" table against
+- [x] Re-run each mechanical check in the "Verification performed during planning" table against
       current file text. Any row that now disagrees is a citation that drifted since planning and
-      must be corrected in the document in this phase.
-- [ ] Inspect `agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh` lines 90-96 and
+      must be corrected in the document in this phase. *(completed: all rows re-confirmed accurate,
+      no drift since planning)*
+- [x] Inspect `agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh` lines 90-96 and
       determine the exact line range spanned by the sentence the document quotes ("A non-empty
-      array yielding no path is proof of a shape mismatch...").
-- [ ] Edit `system-defect-discrimination.md` line 41's parenthetical to that exact range.
-- [ ] Do not change the quoted text itself — it was verified accurate.
+      array yielding no path is proof of a shape mismatch..."). *(completed: sentence spans lines
+      92-93; lines 94-95 are the separate jq-failure sentence)*
+- [x] Edit `system-defect-discrimination.md` line 41's parenthetical to that exact range.
+      *(completed: "lines 92-95" -> "lines 92-93")*
+- [x] Do not change the quoted text itself — it was verified accurate. *(completed: quote
+      unchanged)*
 
 **Timing**: 0.5 hours
 

@@ -38,7 +38,7 @@ piece of evidence for why a discrimination contract — not just louder banners 
 
 `scripts/orchestrate-recover-outcome.sh` line 205 sets
 `evidence_reason="ARTIFACTS_SHAPE_MISMATCH"`, and the in-file comment already explains exactly why
-it matters (lines 92-95): *"A non-empty array yielding no path is proof of a shape mismatch (e.g.
+it matters (lines 92-93): *"A non-empty array yielding no path is proof of a shape mismatch (e.g.
 a bare-string array), not proof of 'no artifacts'."* That comment has never been read by any
 consumer. Every site that reads `evidence_reason` gates on `PHASES_ZERO_ON_SUCCESS` alone and
 ignores `ARTIFACTS_SHAPE_MISMATCH` entirely (citations verified against current file text; the
