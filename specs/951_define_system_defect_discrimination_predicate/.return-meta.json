@@ -1,12 +1,53 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/951_define_system_defect_discrimination_predicate/summaries/01_system-defect-discrimination-summary.md",
+      "summary": "Closed the three planned gaps in system-defect-discrimination.md (citation range, missing-artifacts Signal A instance, handoff-branch detection hole plus registry-exclusion reasoning) plus one consistency gap surfaced during the final self-review; orchestrator-critical-paths.json verified unchanged throughout."
+    },
+    {
+      "type": "pattern",
+      "path": "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+      "summary": "Extended: corrected citation range; added fifth Signal A instance ARTIFACTS_MISSING_ON_SUCCESS with empirical jq evidence; added Class (b) detection-hole note for the handoff-present branch; extended recursion-guard exclusions with two named orchestrator scripts and reasoning; fixed the deduplication rule's identity-key enumeration to include the new instance."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed all three planned gaps (and one Phase-4-discovered consistency gap) in the system-defect discrimination contract: corrected an off-by-two citation range, added an empirically-evidenced fifth Signal A instance for missing artifacts on a success status, named the handoff-present branch's total absence of an artifacts check as a distinct detection hole, and documented the reasoned exclusion of two orchestrator scripts from the recursion guard's critical-paths registry. orchestrator-critical-paths.json required and received no change."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
+    "specs/951_define_system_defect_discrimination_predicate/progress/phase-1-progress.json",
+    "specs/951_define_system_defect_discrimination_predicate/progress/phase-2-progress.json",
+    "specs/951_define_system_defect_discrimination_predicate/progress/phase-3-progress.json",
+    "specs/951_define_system_defect_discrimination_predicate/progress/phase-4-progress.json",
+    "specs/951_define_system_defect_discrimination_predicate/summaries/01_system-defect-discrimination-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a document maintains more than one enumeration of the same closed list (e.g. a Signal-A instance table in one section and a downstream deduplication 'identity key' enumeration in another), incrementally extending one enumeration across separate edit passes without grepping the whole document for sibling enumerations of the same set is a real and easy-to-miss consistency gap. A final top-to-bottom read-through phase, done AFTER all incremental edits and treated as a genuine re-read rather than a rubber stamp, is the right place to catch it -- in this task it caught exactly one such gap (a dedup-rule enumeration left at four items after the source table grew to five).",
+      "category": "PATTERN",
+      "source_artifact": "specs/951_define_system_defect_discrimination_predicate/summaries/01_system-defect-discrimination-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["consistency-check", "enumeration-drift", "final-gate", "self-review", "documentation-maintenance"]
+    },
+    {
+      "content": "For a verification-and-gap-closure plan (deliverables already written and committed by an earlier research phase; the plan only records verification and plans the gap closures), re-independently reproducing every claimed jq/grep/sed evidence command at implementation time -- not trusting the planner's verification table at face value -- is cheap (each check is a single command) and catches citation drift between planning and implementation. In this task every row still held, but the same discipline is what the document itself argues for (citations must be re-verified, never trusted from a prior report) and applying it recursively to the plan's own verification table is consistent, not redundant.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/951_define_system_defect_discrimination_predicate/summaries/01_system-defect-discrimination-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["citation-verification", "gap-closure-plan", "re-verify-dont-trust", "mechanical-checks"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785373759_72035f_951",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
     "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
     "task_number": 951,
-    "phases_completed": 0,
+    "phases_completed": 4,
     "phases_total": 4
   }
 }
