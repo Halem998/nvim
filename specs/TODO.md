@@ -11,9 +11,9 @@ next_project_number: 994
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 951,959,963,980,981,982,990,991,992 | -- | agent-system, extensions, orchestration-concurrency |
-| 2 | 948,952,960,989,993 | 951,959,982,990,992 | agent-system |
-| 3 | 953,961,988 | 952,960 | agent-system |
+| 1 | 952,959,963,980,981,982,990,991,992 | -- | agent-system, extensions, orchestration-concurrency |
+| 2 | 948,953,960,989,993 | 952,959,982,990,992 | agent-system |
+| 3 | 961,988 | 960 | agent-system |
 | 4 | 962 | 961 | agent-system |
 | 5 | 983,984 | 953,962,981,982 | agent-system, status-marker-lifecycle |
 | 6 | 985,986 | 952,963,980,981,982,983,984,988 | agent-system |
@@ -22,12 +22,11 @@ next_project_number: 994
 
 ### Agent System
 
-951 [PLANNED] — Create the foundational contract that lets the agent system tell 
-  └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
-    └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
-      └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-        └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-    └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
+952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
+  └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
+    └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
@@ -1326,12 +1325,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 951. Define the system-defect discrimination predicate and detection-point registry
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [agent-system/extensions/core/context/patterns/system-defect-discrimination.md]
 - **Plan**: [951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md]
+- **Summary**: [951_define_system_defect_discrimination_predicate/summaries/01_system-defect-discrimination-summary.md]
 
 **Description**: Create the foundational contract that lets the agent system tell one of ITS OWN defects apart from an ordinary failure of the user's task work, and enumerate the sites where such defects are already detected. This is the design task the other tasks in this group encode; settle it first.
 

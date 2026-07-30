@@ -2459,7 +2459,7 @@
     {
       "project_number": 951,
       "project_name": "define_system_defect_discrimination_predicate",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Define the system-defect discrimination predicate and detection-point registry",
@@ -2470,7 +2470,7 @@
       ],
       "dependencies": [],
       "created": "2026-07-28T00:00:00Z",
-      "last_updated": "2026-07-30T02:35:34Z",
+      "last_updated": "2026-07-30T02:48:15Z",
       "session_id": "sess_1785373759_72035f_951",
       "artifacts": [
         {
@@ -2482,8 +2482,14 @@
           "path": "specs/951_define_system_defect_discrimination_predicate/plans/01_system-defect-discrimination.md",
           "type": "plan",
           "summary": "4-phase sequential verification-and-gap-closure plan: re-verify citations and fix a citation range; extend Signal A by one empirically-evidenced instance (missing artifacts on success) marked as having no current detector; record the handoff-branch detection hole and the two deliberately-excluded registry entries; final gate with line_count refresh. Edits are confined to system-defect-discrimination.md plus one integer in index-entries.json; orchestrator-critical-paths.json is verified correct as delivered and left unchanged."
+        },
+        {
+          "path": "specs/951_define_system_defect_discrimination_predicate/summaries/01_system-defect-discrimination-summary.md",
+          "type": "summary",
+          "summary": "Closed the three planned gaps in system-defect-discrimination.md (citation range, missing-artifacts Signal A instance, handoff-branch detection hole plus registry-exclusion reasoning) plus one consistency gap surfaced during the final self-review; orchestrator-critical-paths.json verified unchanged throughout."
         }
-      ]
+      ],
+      "completion_summary": "Closed all three planned gaps (and one Phase-4-discovered consistency gap) in the system-defect discrimination contract: corrected an off-by-two citation range, added an empirically-evidenced fifth Signal A instance for missing artifacts on a success status, named the handoff-present branch's total absence of an artifacts check as a distinct detection hole, and documented the reasoned exclusion of two orchestrator scripts from the recursion guard's critical-paths registry. orchestrator-critical-paths.json required and received no change."
     },
     {
       "project_number": 952,
