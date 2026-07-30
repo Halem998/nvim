@@ -403,34 +403,34 @@ silently.
 
 ---
 
-### Phase 4: Convert `commands/todo.md`'s archive and vault sites [NOT STARTED]
+### Phase 4: Convert `commands/todo.md`'s archive and vault sites [COMPLETED]
 
 **Goal**: Every `specs/archive/state.json` write in `commands/todo.md` — the orphan-entry
 transform, the vault reinit fresh-create, and the prose-only archival step — routes through
 `state-write.sh`.
 
 **Tasks**:
-- [ ] Re-grep `commands/todo.md` for `archive/state.json` and confirm the site set before editing.
-- [ ] Convert Step 5E.2's orphan-entry block: replace
+- [x] Re-grep `commands/todo.md` for `archive/state.json` and confirm the site set before editing.
+- [x] Convert Step 5E.2's orphan-entry block: replace
       `jq '.completed_projects += [...]' specs/archive/state.json > specs/archive/state.json.tmp && mv ...`
       with a `state-write.sh --state-file specs/archive/state.json` invocation carrying the same
       `--arg num/name/date` and `--argjson arts` bindings. Replace the "Deliberately left
       hand-rolled" comment per Phase 3's rule (replace, do not delete).
-- [ ] Convert Step 5.8.6 "Reinitialize archive" — the site the research report missed. Replace
+- [x] Convert Step 5.8.6 "Reinitialize archive" — the site the research report missed. Replace
       `jq -n '{ "completed_projects": [] }' > "specs/archive/state.json"` with
       `bash .claude/scripts/state-write.sh '{ "completed_projects": [] }' --init --state-file specs/archive/state.json --session-id "$session_id"`,
       keeping the preceding `mkdir -p "specs/archive"`. Replace the "Deliberately left hand-rolled:
       `state-write.sh` targets `specs/state.json` only" prose that introduces the block.
-- [ ] Make Step 5A ("Update archive/state.json") concrete per D7: keep the prose stating which
+- [x] Make Step 5A ("Update archive/state.json") concrete per D7: keep the prose stating which
       array each status routes to and that all task fields plus an archived timestamp are included,
       and add a canonical `state-write.sh --state-file specs/archive/state.json` invocation whose
       filter shape matches `commands/task.md`'s abandon Step 1. Do not change the routing rules
       themselves (`completed`/`expanded` -> `completed_projects`, `abandoned` ->
       `archived_projects`, no third array).
-- [ ] Confirm the `session_id` variable used at each site is actually in scope in that step; if a
+- [x] Confirm the `session_id` variable used at each site is actually in scope in that step; if a
       step has none, use the same inline generation pattern `archive-task.sh` uses rather than
       inventing a new one.
-- [ ] Leave Step 5.8.4's `mv "${vault_path}/archive/state.json" "${vault_path}/state.json"`
+- [x] Leave Step 5.8.4's `mv "${vault_path}/archive/state.json" "${vault_path}/state.json"`
       untouched — a file rename, not a state write, and correctly out of `state-write.sh`'s remit.
       Add a one-line note saying so, so the next auditor does not flag it.
 

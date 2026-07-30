@@ -482,19 +482,29 @@ Ensure archive directory exists:
 mkdir -p specs/archive/
 ```
 
-Read or create specs/archive/state.json:
-```json
-{
-  "archived_projects": [],
-  "completed_projects": []
-}
+Bootstrap `specs/archive/state.json` if this is the first archive operation (via `--init`, so
+the fresh-create is mutex-guarded and staged exactly like every other state-file write):
+```bash
+[ -f specs/archive/state.json ] || bash .claude/scripts/state-write.sh \
+  '{ "archived_projects": [], "completed_projects": [] }' \
+  --init --state-file specs/archive/state.json --session-id "$session_id"
 ```
 
 Move each task in `archivable_tasks[]` (the guard-filtered list from Step 3 — never a
 freshly-recomputed status match, so deferred expanded parents are excluded) from state.json
 `active_projects` to archive/state.json `completed_projects` (for completed AND expanded tasks)
 or `archived_projects` (for abandoned tasks). Expanded tasks join `completed_projects` — there is
-no third array.
+no third array. All task fields are preserved and an `archived_at` timestamp is added:
+```bash
+archivable_tasks_json=$(printf '%s\n' "${archivable_tasks[@]}" | jq -s '.')
+bash .claude/scripts/state-write.sh \
+  '.completed_projects = ([$tasks[] | select(.status == "completed" or .status == "expanded") | .archived_at = $ts] + .completed_projects) |
+   .archived_projects = ([$tasks[] | select(.status == "abandoned") | .archived_at = $ts] + .archived_projects)' \
+  --state-file specs/archive/state.json \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --argjson tasks "$archivable_tasks_json"
+```
 
 **B. Update state.json**
 
@@ -595,12 +605,9 @@ for orphan_dir in "${orphaned_dirs[@]}"; do
   [ -d "$archive_path/plans" ] && artifacts=$(echo "$artifacts" | jq '. + ["plans/"]')
   [ -d "$archive_path/summaries" ] && artifacts=$(echo "$artifacts" | jq '. + ["summaries/"]')
 
-  # Add entry to archive/state.json. Deliberately left hand-rolled: state-write.sh targets
-  # specs/state.json only, never specs/archive/state.json.
-  jq --arg num "$project_num" \
-     --arg name "$project_name" \
-     --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-     --argjson arts "$artifacts" \
+  # Add entry to archive/state.json. The archive target is reached via state-write.sh's
+  # --state-file flag.
+  bash .claude/scripts/state-write.sh \
      '.completed_projects += [{
        project_number: ($num | tonumber),
        project_name: $name,
@@ -608,8 +615,13 @@ for orphan_dir in "${orphaned_dirs[@]}"; do
        archived: $date,
        source: "orphan_recovery",
        detected_artifacts: $arts
-     }]' specs/archive/state.json > specs/archive/state.json.tmp \
-  && mv specs/archive/state.json.tmp specs/archive/state.json
+     }]' \
+     --state-file specs/archive/state.json \
+     --session-id "$session_id" \
+     --arg num "$project_num" \
+     --arg name "$project_name" \
+     --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+     --argjson arts "$artifacts"
 
   echo "Added state entry for orphan: ${dir_name}"
 done
@@ -855,6 +867,7 @@ vault_path="specs/vault/${vault_dir_name}"
 
 mkdir -p "$vault_path"
 mv "specs/archive" "${vault_path}/archive"
+# A file rename, not a state write -- correctly outside state-write.sh's remit.
 mv "${vault_path}/archive/state.json" "${vault_path}/state.json"
 ```
 
@@ -876,11 +889,12 @@ jq -n \
   }' > "${vault_path}/meta.json"
 ```
 
-**Step 5.8.6: Reinitialize archive**. Deliberately left hand-rolled: `state-write.sh` targets
-`specs/state.json` only, never `specs/archive/state.json`:
+**Step 5.8.6: Reinitialize archive**. The fresh-create archive target is reached via
+`state-write.sh`'s `--init` mode:
 ```bash
 mkdir -p "specs/archive"
-jq -n '{ "completed_projects": [] }' > "specs/archive/state.json"
+bash .claude/scripts/state-write.sh '{ "completed_projects": [] }' \
+  --init --state-file specs/archive/state.json --session-id "$session_id"
 ```
 
 **Step 5.8.7: Renumber tasks > 1000**:
