@@ -187,10 +187,13 @@ bash .claude/scripts/state-write.sh \
   --session-id "$session_id" \
   --argjson task "$task_json"
 
-# Step 3: Remove from archive. Deliberately left hand-rolled: state-write.sh targets
-# specs/state.json only, never specs/archive/state.json.
-jq 'del(.archived_projects[] | select(.project_number == '$task_number'))' \
-  specs/archive/state.json > specs/tmp/archive.json && mv specs/tmp/archive.json specs/archive/state.json
+# Step 3: Remove from archive. The archive target is reached via state-write.sh's --state-file
+# flag; the del()-not-map(select(!=)) escaping workaround this section demonstrates is unchanged.
+bash .claude/scripts/state-write.sh \
+  'del(.archived_projects[] | select(.project_number == ($num | tonumber)))' \
+  --state-file specs/archive/state.json \
+  --session-id "$session_id" \
+  --arg num "$task_number"
 ```
 
 ### Task Abandon (to archive)
@@ -199,10 +202,12 @@ jq 'del(.archived_projects[] | select(.project_number == '$task_number'))' \
 # Step 1: Extract task to archive
 task_json=$(jq '.active_projects[] | select(.project_number == '$task_number')' specs/state.json)
 
-# Step 2: Add to archive. Deliberately left hand-rolled: state-write.sh targets
-# specs/state.json only, never specs/archive/state.json.
-jq --argjson task "$task_json" \
-  '.archived_projects += [$task]' specs/archive/state.json > specs/tmp/archive.json && mv specs/tmp/archive.json specs/archive/state.json
+# Step 2: Add to archive. The archive target is reached via state-write.sh's --state-file flag.
+bash .claude/scripts/state-write.sh \
+  '.archived_projects += [$task]' \
+  --state-file specs/archive/state.json \
+  --session-id "$session_id" \
+  --argjson task "$task_json"
 
 # Step 3: Remove from active
 bash .claude/scripts/state-write.sh \

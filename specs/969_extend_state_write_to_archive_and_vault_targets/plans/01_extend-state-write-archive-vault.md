@@ -342,35 +342,35 @@ and reading its "Results: N passed" line against the number of `pass`/`fail` cal
 
 ---
 
-### Phase 3: Convert `commands/task.md`'s archive sites and the illustrative examples [NOT STARTED]
+### Phase 3: Convert `commands/task.md`'s archive sites and the illustrative examples [COMPLETED]
 
 **Goal**: The recover and abandon paths' archive writes go through `state-write.sh`, and the
 `jq-escaping-workarounds.md` examples they cross-reference stop demonstrating the anti-pattern.
 
 **Tasks**:
-- [ ] Re-grep `commands/task.md` for `specs/archive/state.json` anchored on quoted strings, and
+- [x] Re-grep `commands/task.md` for `specs/archive/state.json` anchored on quoted strings, and
       confirm the site set before editing.
-- [ ] Convert recover mode "Step 1: Remove from archive": replace the
+- [x] Convert recover mode "Step 1: Remove from archive": replace the
       `jq 'del(...)' specs/archive/state.json > specs/tmp/archive.json && mv ...` block with
       `bash .claude/scripts/state-write.sh 'del(.completed_projects[] | select(.project_number == ($num | tonumber)))' --state-file specs/archive/state.json --session-id "$session_id" --arg num "$task_number"`.
       Preserve the `del()`-not-`map(select(!=))` choice and its `jq-escaping-workarounds.md`
       cross-reference — that is an independent Issue #1132 workaround, not part of this conversion.
-- [ ] Convert abandon mode "Step 1: Add to archive" the same way, keeping its `--arg ts` /
+- [x] Convert abandon mode "Step 1: Add to archive" the same way, keeping its `--arg ts` /
       `--argjson task` bindings and the `.completed_projects = [$task | ...] + .completed_projects`
       filter shape.
-- [ ] Replace both "Deliberately left hand-rolled: state-write.sh targets specs/state.json only,
+- [x] Replace both "Deliberately left hand-rolled: state-write.sh targets specs/state.json only,
       never specs/archive/state.json" comments. Do not simply delete them: replace with a short
       note that the archive target is reached via `--state-file`, so a future reader does not
       re-derive the old rationale.
-- [ ] In recover mode, verify the now-adjacent Step 1 and Step 2 both invoke `state-write.sh` and
+- [x] In recover mode, verify the now-adjacent Step 1 and Step 2 both invoke `state-write.sh` and
       add a one-line note that the two sequential acquires are safe because a single
       `specs/.scope-lock` covers both targets (D2). Same for abandon mode's Step 1/Step 2 pair.
       This is the interleaved block the task description names; the safety must be visible at the
       site, not only in `task-lock.md`.
-- [ ] Confirm abandon Step 2's existing `--regen-todo` stays on the **live-state** write only and
+- [x] Confirm abandon Step 2's existing `--regen-todo` stays on the **live-state** write only and
       is not folded into the archive write (D4 would refuse it, but the intent must also be
       correct at the site).
-- [ ] Update `context/patterns/jq-escaping-workarounds.md`'s "Task Recovery (from archive)" and
+- [x] Update `context/patterns/jq-escaping-workarounds.md`'s "Task Recovery (from archive)" and
       "Task Abandon (to archive)" examples to show the `state-write.sh --state-file` form, keeping
       each example's actual lesson (the `del()` / two-step escaping workaround) intact and removing
       the two "Deliberately left hand-rolled" comments.

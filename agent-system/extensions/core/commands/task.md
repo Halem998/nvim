@@ -304,12 +304,16 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 
    **Move to active_projects via jq** (two-step to avoid jq escaping bug - see `jq-escaping-workarounds.md`):
    ```bash
-   # Step 1: Remove from archive using del() instead of map(select(!=)). Deliberately left
-   # hand-rolled: state-write.sh targets specs/state.json only, never specs/archive/state.json.
-   jq --arg num "$task_number" \
+   # Step 1: Remove from archive using del() instead of map(select(!=)). The archive target is
+   # reached via state-write.sh's --state-file flag, so this step is mutex-guarded and staged
+   # exactly like the live-state write in Step 2 below -- a single specs/.scope-lock mutex covers
+   # both targets (see context/patterns/task-lock.md's State-Write Convention section), so this
+   # step's acquire/release and Step 2's are safely sequential rather than nested.
+   bash .claude/scripts/state-write.sh \
      'del(.completed_projects[] | select(.project_number == ($num | tonumber)))' \
-    specs/archive/state.json > specs/tmp/archive.json && \
-    mv specs/tmp/archive.json specs/archive/state.json
+     --state-file specs/archive/state.json \
+     --session-id "$session_id" \
+     --arg num "$task_number"
 
    # Step 2: Add to active with status reset ($task_data now carries a non-empty .topic)
    bash .claude/scripts/state-write.sh \
@@ -885,17 +889,23 @@ Parse task ranges:
 
    **Move to archive via jq** (two-step to avoid jq escaping bug - see `jq-escaping-workarounds.md`):
    ```bash
-    # Step 1: Add to archive with abandoned status. Deliberately left hand-rolled:
-    # state-write.sh targets specs/state.json only, never specs/archive/state.json.
-    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson task "$task_data" \
+    # Step 1: Add to archive with abandoned status. The archive target is reached via
+    # state-write.sh's --state-file flag, so this step is mutex-guarded and staged exactly like
+    # the live-state write in Step 2 below -- a single specs/.scope-lock mutex covers both
+    # targets (see context/patterns/task-lock.md's State-Write Convention section), so this
+    # step's acquire/release and Step 2's are safely sequential rather than nested.
+    bash .claude/scripts/state-write.sh \
       '.completed_projects = [$task | .status = "abandoned" | .abandoned = $ts] + .completed_projects' \
-      specs/archive/state.json > specs/tmp/archive.json && \
-      mv specs/tmp/archive.json specs/archive/state.json
+      --state-file specs/archive/state.json \
+      --session-id "$SESSION_ID" \
+      --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson task "$task_data"
 
     # Step 2: Remove from active using del() instead of map(select(!=)). Fold --regen-todo
     # in -- this write is immediately followed by nothing but the TODO.md regen (abandoned
     # task no longer in active_projects, so it will not be rendered). SESSION_ID was
-    # exported by command-gate-in.sh above.
+    # exported by command-gate-in.sh above. --regen-todo stays on this live-state write only --
+    # D4 refuses it on the archive write above, and the intent here is also correct: TODO.md
+    # should reflect the removal from active_projects, not the archive insert.
     bash .claude/scripts/state-write.sh \
       'del(.active_projects[] | select(.project_number == ($num | tonumber)))' \
       --session-id "$SESSION_ID" \
