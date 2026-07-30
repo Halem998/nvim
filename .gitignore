@@ -38,9 +38,11 @@
 **/.drift-inspection.json
 **/.return-meta-*.json
 **/.events.lock
+**/.errors.lock
 **/.sessions/
-# Note: specs/events.jsonl is deliberately NOT ignored — it is an append-only durable
-# store (see .claude/context/formats/events-format.md). Do not add it here.
+# Note: specs/events.jsonl and specs/errors.json are deliberately NOT ignored — they are
+# durable stores (see .claude/context/formats/events-format.md and errors-format.md). Do not
+# add either here.
 .syncprotect
 specs/literature/**/*.pdf
 specs/literature/**/*.djvu

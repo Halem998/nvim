@@ -555,42 +555,69 @@ so a non-core hit is reported, not silently fixed.
 
 ---
 
-### Phase 8: Bootstrap, deploy, and end-to-end verification [NOT STARTED]
+### Phase 8: Bootstrap, deploy, and end-to-end verification [COMPLETED]
 
 **Goal**: Create the runtime artifact, regenerate the deploy tree, and prove the whole lane works
 from the deployed path with no silent degradation.
 
 **Tasks**:
-- [ ] Create `specs/errors.json` in this repo with exactly `{"errors": []}`. This is a `specs/**`
+- [x] Create `specs/errors.json` in this repo with exactly `{"errors": []}`. This is a `specs/**`
       RUNTIME artifact, NOT a deploy artifact — it is authored directly here and has no
       manifest/source-store counterpart.
-- [ ] Confirm `specs/errors.json` is not gitignored and will be tracked.
-- [ ] Regenerate the deploy tree via `bash .claude/scripts/deploy-headless.sh`. Do NOT hand-author
+- [x] Confirm `specs/errors.json` is not gitignored and will be tracked. *(completed:
+      `git check-ignore -v` exits 1 = not ignored; also added `**/.errors.lock` to root
+      `.gitignore` for parity with `**/.events.lock`, an unplanned but necessary completeness fix
+      -- the lock file is ephemeral and should not accumulate as an untracked artifact)*
+- [x] Regenerate the deploy tree via `bash .claude/scripts/deploy-headless.sh`. Do NOT hand-author
       anything under `.claude/**`.
-- [ ] Verify the known deploy-mechanism gap did not bite: confirm `.claude/scripts/errors-append.sh`
+- [x] Verify the known deploy-mechanism gap did not bite: confirm `.claude/scripts/errors-append.sh`
       exists AND is executable, `.claude/scripts/tests/test-errors-append.sh` exists,
       `.claude/context/schemas/errors-schema.json` exists, and
       `.claude/context/formats/errors-format.md` exists. If any is missing, apply the documented
       one-off loader-primitive workaround (per `rules/source-store-deploy-boundary.md`'s "Known
-      gap") and re-verify — do not proceed on a partial deploy.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and confirm gate 1 passes with the three new
-      entries.
-- [ ] Run `bash .claude/scripts/tests/test-errors-append.sh` from the DEPLOYED path and confirm
-      exit 0.
-- [ ] End-to-end `/errors` check against the live `specs/errors.json`: confirm it loads the file
+      gap") and re-verify — do not proceed on a partial deploy. *(deviation: the gap DID bite --
+      `errors-append.sh`, `errors-schema.json`, and `errors-format.md` deployed correctly via
+      `deploy-headless.sh` (twice, idempotently), but `.claude/scripts/tests/test-errors-append.sh`
+      did not, even after a second run. Root-caused empirically via a headless nvim probe of
+      `sync.scan_all_artifacts`: the "Sync all" incremental scan path returns ZERO
+      `is_subdir=true` entries for the `scripts` category -- it does not recurse into
+      `scripts/tests/` or `scripts/lib/` AT ALL (a broader gap than "brand-new file only";
+      already-deployed `tests/*.sh` and `lib/*.sh` files are equally unreachable by this scan
+      path and were seeded by a different, earlier code path). Applied the documented workaround:
+      invoked `loader.copy_scripts(manifest, source_dir, target_dir, protected_paths)` directly
+      via a one-off headless-nvim `luafile` (the `load_extension` primitive, which iterates
+      `manifest.provides.scripts` literally and does handle subdirectory entries correctly) rather
+      than hand-authoring the file. Re-verified: all four files now byte-identical to source store,
+      script executable. This is a real, reportable finding, not papered over -- the underlying
+      Lua sync-scan gap remains open and is out of this task's scope to fix.)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and confirm gate 1 passes with the three new
+      entries. *(completed: 15 checks, 0 failures, all nine gate-1 entries PASS)*
+- [x] Run `bash .claude/scripts/tests/test-errors-append.sh` from the DEPLOYED path and confirm
+      exit 0. *(completed: 14/14 PASS, exit 0)*
+- [x] End-to-end `/errors` check against the live `specs/errors.json`: confirm it loads the file
       and reports zero errors as a real empty result, NOT as the `[ -f ]`-guard silent-degradation
       path. Then append one throwaway record via the deployed `errors-append.sh`, re-run the
       `/errors` load step, confirm the record is seen, and `update` it to `fixed` — then remove the
       throwaway record so the committed `specs/errors.json` is left as `{"errors": []}`.
-- [ ] Confirm the two live readers work against the real file: `orchestrator-postflight.sh`'s
+      *(completed: real-load path confirmed via `orchestrator-postflight.sh`'s exact guard
+      expression; throwaway appended, seen, updated to fixed with fix_task, then removed --
+      `specs/errors.json` restored to `{"errors": []}`)*
+- [x] Confirm the two live readers work against the real file: `orchestrator-postflight.sh`'s
       `error_ref` query (`jq '[.errors[]? | select(.context.session_id == $sid)] | ... | .id'`)
       returns cleanly, and `hooks/events-log-artifact.sh`'s `.errors[-1].context.session_id` read
-      resolves against a seeded record.
-- [ ] Run the final gate set: `bash .claude/scripts/check-task-references.sh` (no new findings),
+      resolves against a seeded record. *(completed: both readers replicated verbatim against the
+      seeded throwaway record, both resolved cleanly)*
+- [x] Run the final gate set: `bash .claude/scripts/check-task-references.sh` (no new findings),
       `bash .claude/scripts/check-extension-docs.sh`, and the verification-bar grep
-      `grep -rn '\.errors *+=' agent-system/extensions/core/` (zero hits).
-- [ ] Confirm via `git status --short` that no hand-authored file appeared under `.claude/**`
-      outside the deploy regeneration.
+      `grep -rn '\.errors *+=' agent-system/extensions/core/` (zero hits). *(deviation: the grep
+      returns exactly ONE hit -- the sanctioned internal use inside `errors-append.sh` itself, per
+      the same Phase 7 finding. Zero hits OUTSIDE `errors-append.sh`, matching the outer
+      VERIFICATION BAR's actual phrasing. check-task-references.sh and check-extension-docs.sh
+      both PASS with no findings.)*
+- [x] Confirm via `git status --short` that no hand-authored file appeared under `.claude/**`
+      outside the deploy regeneration. *(completed: `.claude/` is entirely gitignored at the repo
+      root, so no `.claude/**` path can appear in `git status --short` at all -- zero such paths
+      confirmed present)*
 
 **Timing**: 1.25 hours
 

@@ -1,0 +1,36 @@
+{
+  "phase": 8,
+  "phase_name": "Bootstrap, deploy, and end-to-end verification",
+  "started_at": "2026-07-30T01:06:00Z",
+  "last_updated": "2026-07-30T01:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Bootstrap specs/errors.json; regenerate deploy tree; verify/repair the known deploy-mechanism gap; run verify-deploy.sh and deployed test suite; end-to-end /errors check with throwaway record lifecycle; confirm both live readers; run final gate set; confirm no hand-authored .claude/** files",
+      "status": "done",
+      "files_touched": [
+        "specs/errors.json",
+        ".gitignore"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.4",
+      "description": "Verify the known deploy-mechanism gap did not bite",
+      "type": "altered",
+      "reason": "The gap DID bite: .claude/scripts/tests/test-errors-append.sh failed to deploy via deploy-headless.sh (run twice, idempotently missing both times), while errors-append.sh/errors-schema.json/errors-format.md deployed correctly. Root-caused via a headless-nvim probe: sync.scan_all_artifacts's incremental 'Sync all' scan path returns zero is_subdir=true entries for the scripts category -- it does not recurse into scripts/tests/ or scripts/lib/ at all, a broader gap than 'brand-new file only' (already-deployed tests/*.sh and lib/*.sh files are equally unreachable by this scan path). Applied the documented one-off loader-primitive workaround: invoked loader.copy_scripts(manifest, source_dir, target_dir, protected_paths) directly via headless nvim luafile, which correctly handles subdirectory entries. Re-verified all four files byte-identical to source store post-workaround.",
+      "annotation": "recorded inline on the checklist item"
+    },
+    {
+      "task_id": "8.8",
+      "description": "Verification-bar grep zero hits",
+      "type": "altered",
+      "reason": "Same finding as Phase 7: grep returns exactly one hit (errors-append.sh's own sanctioned internal use), zero hits outside errors-append.sh, matching the outer VERIFICATION BAR's actual phrasing.",
+      "annotation": "recorded inline on the checklist item"
+    }
+  ]
+}
