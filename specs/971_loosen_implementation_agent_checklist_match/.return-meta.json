@@ -1,27 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "session_id": "sess_1785373759_72035f_971",
+  "delegation_depth": 2,
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+  "task_number": 971,
+  "task_name": "loosen_implementation_agent_checklist_match",
+  "task_type": "meta",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/971_loosen_implementation_agent_checklist_match/reports/01_loosen-checklist-match.md",
-      "summary": "Confirms the planner/implementation checklist shape mismatch and proposes a canonical, prefix-agnostic mark-completed/deviation-annotation instruction reusable across the three in-scope agent files and the two downstream tasks."
+      "type": "plan",
+      "path": "specs/971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md",
+      "summary": "4-phase plan (3 waves, 1.5h) loosening the plan-checklist mark-completed instruction in the core, lean, and nix implementation agents off the literal '**Task {P}.{N}**:' prefix, with the canonical verbatim-quotable contract wording designated in general-implementation-agent.md Stage 4B-ii for the two downstream sibling tasks."
     }
   ],
-  "next_steps": "Run /plan 971 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1785373759_72035f_971",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
-    "findings_count": 6
-  },
+  "phase_count": 4,
+  "estimated_hours": 1.5,
+  "dependency_waves": [[1], [2, 3], [4]],
   "memory_candidates": [
     {
-      "content": "When an implementation agent's plan-checklist mark-completed instruction assumes a literal title prefix (e.g. **Task {P}.{N}**:) but the planner emits free-form prose checklist items (- [ ] {Step 1}), the Edit match finds nothing and fails silently -- the agent proceeds without ticking any items. Fix by matching on the item's existing text rather than any assumed prefix shape, while preserving separate annotation-suffix wording (*(completed)*, *(deviation: skipped -- reason)*, etc.) which is a distinct, usually-already-correct concern.",
+      "content": "Silent-failure pattern in agent instruction contracts: when an agent is told to Edit-match a literal template line shape (e.g. '- [ ] **Task {P}.{N}**: {description}') against an artifact produced by a DIFFERENT agent whose emission template is free-form, the match finds nothing and the agent proceeds without error. Observed live as 0 of 87 plan-checklist items ticked across 4 completed phases, which in turn zeroed a downstream drift metric that counted '- [x]' occurrences, making completed work read as 'no work done'. Two structural lessons: (1) a cross-agent instruction must describe what to LOCATE AND PRESERVE ('the item's existing text, whatever form it takes', tolerating formatting drift) rather than a template to match, because a producer-side template and a consumer-side match template drift independently and nothing detects the drift; (2) when the same idiom is copied across N agent files, designate one named canonical home (file plus section heading) that siblings quote verbatim, since N independent paraphrases reproduce exactly the inconsistency being fixed. Useful diagnostic signal: if a file already contains BOTH a brittle template-match phrasing and a loose text-agnostic phrasing of the same instruction, the loose one is usually the correct idiom and the brittle sites should be made consistent with it rather than new wording invented.",
       "category": "PATTERN",
-      "source_artifact": "specs/971_loosen_implementation_agent_checklist_match/reports/01_loosen-checklist-match.md",
+      "source_artifact": "specs/971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md",
       "confidence": 0.85,
-      "suggested_keywords": ["checklist", "plan-format", "implementation-agent", "silent-match-failure", "mark-completed"]
+      "suggested_keywords": ["agent-instruction-contract", "silent-failure", "template-match-brittleness", "canonical-wording", "cross-agent-drift", "checklist-annotation"]
     }
-  ]
+  ],
+  "next_steps": "Run /implement 971 to execute the plan"
 }

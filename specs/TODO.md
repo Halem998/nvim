@@ -38,7 +38,7 @@ next_project_number: 990
 964 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
   └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv (see above)
-971 [PLANNING] — Loosen the plan-checklist mark-completed instruction in the imple
+971 [PLANNED] — Loosen the plan-checklist mark-completed instruction in the imple
   └─ 972 [NOT STARTED] — Add a plan-checklist mark-completed contract to agent-system/exte
     └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
@@ -631,11 +631,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 971. Loosen implementation agents' plan-checklist match off the literal **Task {P}.{N}**: prefix
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [971_loosen_implementation_agent_checklist_match/reports/01_loosen-checklist-match.md]
+- **Plan**: [971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md]
 
 **Description**: Loosen the plan-checklist mark-completed instruction in the implementation agents so it matches checklist items by their existing text rather than by a literal `**Task {P}.{N}**:` prefix.
 

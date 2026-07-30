@@ -3048,7 +3048,7 @@
     {
       "project_number": 971,
       "project_name": "loosen_implementation_agent_checklist_match",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Loosen implementation agents' plan-checklist match off the literal **Task {P}.{N}**: prefix",
       "description": "Loosen the plan-checklist mark-completed instruction in the implementation agents so it matches checklist items by their existing text rather than by a literal `**Task {P}.{N}**:` prefix.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**. The source store lives at /home/benjamin/.config/nvim/agent-system/, NOT in the cslib repo. The user reloads the agent system via a <leader>al keybinding which redeploys from this nvim source store to cslib and other repos, so the fix must land there to propagate.\n\nOBSERVED FAILURE (live, verified during an /orchestrate run in the cslib repo, not hypothetical): plan checklist items were never ticked. A plan carried 87 checklist items and 0 were marked complete even though 4 phases were genuinely finished.\n\nROOT CAUSE - SHAPE MISMATCH (verified by direct file inspection of the source store): general-implementation-agent.md instructs a literal Edit match on `- [ ] **Task {P}.{N}**: {description}` (12 occurrences of that prefix form, concentrated at lines ~187-201 and ~300-302). But planner-agent.md emits FREE-FORM PROSE checklist items - see agent-system/extensions/core/agents/planner-agent.md lines ~237-238 (`- [ ] {Step 1}` / `- [ ] {Step 2}`) and ~267-268 (`- [ ] {Test criterion 1}`). Zero of the 87 items in the observed plan matched the literal prefix shape. So even a correctly-instructed agent matches nothing, and it fails SILENTLY - the Edit simply finds no match and the agent proceeds.\n\nSCOPE - three files carry the same brittle literal-prefix instruction:\n- agent-system/extensions/core/agents/general-implementation-agent.md (12 occurrences)\n- agent-system/extensions/lean/agents/lean-implementation-agent.md (3 occurrences)\n- agent-system/extensions/nix/agents/nix-implementation-agent.md (5 occurrences)\n\nCHOSEN RESOLUTION (decided, do not relitigate): loosen the INSTRUCTION to match items by their existing text, rather than standardizing planner-agent.md onto the `**Task {P}.{N}**:` prefix. Rationale: (a) the brittle literal-prefix match is precisely what made this fail silently; (b) the free-form prose items are more readable in plans; (c) empirically confirmed workable - instructing an agent to match by prose text took the observed plan from 0/87 to 7/87 ticked in a single session. planner-agent.md is therefore NOT edited by this task.\n\nTHIS TASK ESTABLISHES CANONICAL WORDING. Two downstream tasks copy the loosened phrasing verbatim into agents that currently have no mark-completed instruction at all. Write the instruction so it is directly reusable: it must tell the agent to locate the checklist item by its existing item text and rewrite the leading `- [ ]` to `- [x]`, appending the `*(completed)*` marker, without depending on any particular item-title format. Preserve the existing deviation-annotation formats (skipped / altered / deferred), which are a separate concern and are already correct.\n\nKNOCK-ON EFFECT TO BE AWARE OF (context, not extra scope): agent-system/extensions/core/skills/skill-orchestrate/SKILL.md line ~1044 defines the drift-inspection prompt, which computes `completed_items` by counting `- [x]`. Because nothing was ever ticked, that metric reported 0 completed and drift_pct 0.0 - reading as \"no work done\" while 4 phases were complete. The drift metric stays dead until this task and its downstream siblings land. No edit to skill-orchestrate is required here; the metric becomes correct once items are actually ticked.\n\nVERIFICATION: after the edit, confirm no remaining instruction in the three files requires the literal `**Task {P}.{N}**:` prefix in order to mark an item complete, and that the deviation-annotation formats are unchanged.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
@@ -3059,6 +3059,11 @@
           "path": "specs/971_loosen_implementation_agent_checklist_match/reports/01_loosen-checklist-match.md",
           "type": "report",
           "summary": ""
+        },
+        {
+          "path": "specs/971_loosen_implementation_agent_checklist_match/plans/01_loosen-checklist-match.md",
+          "type": "plan",
+          "summary": ""
         }
       ],
       "file_scope": [
@@ -3066,7 +3071,7 @@
         "agent-system/extensions/lean/agents/lean-implementation-agent.md",
         "agent-system/extensions/nix/agents/nix-implementation-agent.md"
       ],
-      "last_updated": "2026-07-30T01:26:16Z",
+      "last_updated": "2026-07-30T01:34:45Z",
       "session_id": "sess_1785373759_72035f_971"
     },
     {
