@@ -294,7 +294,119 @@ if [ "$subcommand" = "append" ]; then
 fi
 
 # =====================================================================================
-# update
+# update -- read-modify-write under lock (no precedent in core/scripts/ -- errors.json records
+# are living state, mutated in place, unlike the strictly append-only specs/events.jsonl).
 # =====================================================================================
-echo "error: 'update' subcommand not yet implemented" >&2
-exit 1
+err_id=""
+fix_status=""
+fixed_date=""
+fix_task=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --id) err_id="${2:-}"; shift 2 ;;
+    --fix-status) fix_status="${2:-}"; shift 2 ;;
+    --fixed-date) fixed_date="${2:-}"; shift 2 ;;
+    --fix-task) fix_task="${2:-}"; shift 2 ;;
+    -h|--help) usage ;;
+    *) echo "error: unknown argument: $1" >&2; usage ;;
+  esac
+done
+
+# --- Validate required arguments (fail loudly, write nothing) ---
+if [ -z "$err_id" ] || [ -z "$fix_status" ]; then
+  echo "error: --id and --fix-status are both required" >&2
+  usage
+fi
+
+# --- Validate --fix-status against the closed enum. 'resolved' is schema-valid for READING
+#     (deprecated cross-repo data) but is explicitly rejected as an UPDATE input, so the
+#     deprecation cannot re-propagate into new writes. ---
+case "$fix_status" in
+  unfixed|in_progress|fixed) ;;
+  resolved)
+    echo "error: --fix-status 'resolved' is a deprecated synonym for 'fixed' and is rejected as an update input; use --fix-status fixed instead" >&2
+    exit 1
+    ;;
+  *)
+    echo "error: invalid --fix-status '$fix_status' (must be one of: unfixed|in_progress|fixed)" >&2
+    exit 1
+    ;;
+esac
+
+# --- Validate --fix-task is a bare integer if given ---
+if [ -n "$fix_task" ] && ! [[ "$fix_task" =~ ^[0-9]+$ ]]; then
+  echo "error: --fix-task must be a bare integer, got: $fix_task" >&2
+  exit 1
+fi
+
+# --- Default --fixed-date to now when transitioning to fixed and the flag was omitted ---
+fixed_date_value="$fixed_date"
+if [ "$fix_status" = "fixed" ] && [ -z "$fixed_date_value" ]; then
+  fixed_date_value=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+fi
+
+# --- update NEVER lazily creates: fail loudly if the target file does not already exist ---
+if [ ! -f "$ERRORS_FILE" ]; then
+  echo "error: $ERRORS_FILE does not exist; 'update' never creates it (use 'append' first)" >&2
+  exit 1
+fi
+
+# --- Read-modify-write under flock -x, holding the lock across the entire read -> transform ->
+#     temp-write -> validate -> mv sequence. Validates the MERGED document (not the delta)
+#     before the mv. On any failure the original file is left untouched. ---
+(
+  flock -x 200
+
+  current=$(cat "$ERRORS_FILE")
+
+  if ! echo "$current" | jq -e '.errors | type == "array"' > /dev/null 2>&1; then
+    echo "error: $ERRORS_FILE does not have the expected {\"errors\": [...]} shape; refusing to write" >&2
+    exit 1
+  fi
+
+  match_count=$(echo "$current" | jq --arg id "$err_id" '[.errors[] | select(.id == $id)] | length')
+  if [ "$match_count" -eq 0 ]; then
+    echo "error: no record matching id '$err_id' found in $ERRORS_FILE" >&2
+    exit 1
+  fi
+
+  tmp_file="${ERRORS_FILE%/*}/.errors.json.tmp.$$"
+  if ! echo "$current" | jq \
+    --arg id "$err_id" \
+    --arg fix_status "$fix_status" \
+    --arg fixed_date "$fixed_date_value" \
+    --argjson fix_task "${fix_task:-null}" \
+    '.errors |= map(
+      if .id == $id then
+        . + {fix_status: $fix_status}
+        + (if $fixed_date != "" then {fixed_date: $fixed_date} else {} end)
+        + (if $fix_task != null then {fix_task: $fix_task} else {} end)
+      else . end
+    )' > "$tmp_file" 2>/dev/null; then
+    rm -f "$tmp_file"
+    echo "error: failed to build merged errors.json document" >&2
+    exit 1
+  fi
+
+  # Validate the MERGED result: parses; .errors is an array; the target record still carries
+  # all 7 required fields; its fix_status is in the enum.
+  if ! jq -e --arg id "$err_id" '
+    (.errors | type == "array")
+    and (([.errors[] | select(.id == $id)]) as $matches
+      | ($matches | length) == 1
+      and ($matches[0] | (has("id") and has("timestamp") and has("type") and has("severity")
+           and has("message") and has("context") and has("fix_status")))
+      and ($matches[0].fix_status as $fs
+        | ($fs == "unfixed" or $fs == "in_progress" or $fs == "fixed" or $fs == "resolved")))
+    ' "$tmp_file" > /dev/null 2>&1; then
+    rm -f "$tmp_file"
+    echo "error: merged document failed shape validation; aborting write" >&2
+    exit 1
+  fi
+
+  mv "$tmp_file" "$ERRORS_FILE"
+) 200> "$LOCK_FILE"
+
+echo "$err_id"
+exit 0

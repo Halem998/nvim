@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Add the update subcommand (read-modify-write under lock)",
+  "started_at": "2026-07-30T00:11:00Z",
+  "last_updated": "2026-07-30T00:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Implement update: arg parsing/validation, resolved-rejection, read-modify-write under flock with merged-document validation, temp-file atomic mv",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/errors-append.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -282,21 +282,21 @@ live files win and the divergence is recorded in the format doc.
 
 ---
 
-### Phase 3: Add the `update` subcommand (read-modify-write under lock) [NOT STARTED]
+### Phase 3: Add the `update` subcommand (read-modify-write under lock) [COMPLETED]
 
 **Goal**: Implement in-place record mutation — the design deviation from `events-append.sh` that
 has no precedent in `core/scripts/` — so `/errors` Fix Mode has a real implementing script.
 
 **Tasks**:
-- [ ] Implement `update` argument parsing:
+- [x] Implement `update` argument parsing:
   - Required: `--id ERR_ID`, `--fix-status STATUS`
   - Optional: `--fixed-date ISO8601` (defaults to now when `--fix-status fixed` is given and the
     flag is absent), `--fix-task N`
-- [ ] Validate before touching the file: `--fix-status` against the closed `case` enum
+- [x] Validate before touching the file: `--fix-status` against the closed `case` enum
       `unfixed|in_progress|fixed`. **`resolved` is schema-valid for reading but MUST be rejected as
       an input value** with a message stating it is a deprecated synonym for `fixed`; this is what
       keeps the deprecation from re-propagating. `--fix-task` is a bare integer.
-- [ ] Implement the read-modify-write inside ONE `flock -x 200` subshell on the same
+- [x] Implement the read-modify-write inside ONE `flock -x 200` subshell on the same
       `specs/.errors.lock`:
   1. Fail loudly (exit 1) if `specs/errors.json` is absent — `update` never lazily creates.
   2. Fail loudly if the document does not parse or `.errors` is not an array.
@@ -306,10 +306,12 @@ has no precedent in `core/scripts/` — so `/errors` Fix Mode has a real impleme
      target record still carries all 7 required fields; its `fix_status` is in the enum) BEFORE the
      atomic `mv`. On any failure, leave the original untouched and exit 1.
   6. `mv` the temp file into place — still holding the lock.
-- [ ] Place the temp file next to the target (e.g. `specs/.errors.json.tmp.$$`) so the `mv` is a
+- [x] Place the temp file next to the target (e.g. `specs/.errors.json.tmp.$$`) so the `mv` is a
       same-filesystem atomic rename, and clean it up on the failure paths.
-- [ ] Echo the updated `id` to stdout; exit 0.
-- [ ] Extend the header comment block and `usage()` to document both subcommands fully.
+- [x] Echo the updated `id` to stdout; exit 0.
+- [x] Extend the header comment block and `usage()` to document both subcommands fully. *(completed:
+      done as part of the original header/usage() in Phase 2, since both subcommands were
+      documented together from the start)*
 
 **Timing**: 1.5 hours
 
