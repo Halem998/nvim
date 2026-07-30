@@ -11,9 +11,9 @@ next_project_number: 994
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 951,959,972,974,980,981,990,991,992 | -- | agent-system, extensions |
-| 2 | 952,960,963,982,993 | 951,959,972,974,990,992 | agent-system, orchestration-concurrency |
-| 3 | 948,953,961,988,989 | 952,960,972,982 | agent-system |
+| 1 | 951,959,974,980,981,990,991,992 | -- | agent-system, extensions |
+| 2 | 952,960,963,982,993 | 951,959,974,990,992 | agent-system, orchestration-concurrency |
+| 3 | 948,953,961,988,989 | 952,960,982 | agent-system |
 | 4 | 962 | 961 | agent-system |
 | 5 | 983,984 | 953,962,981,982 | agent-system, status-marker-lifecycle |
 | 6 | 985,986 | 952,963,980,981,982,983,984,988 | agent-system |
@@ -35,13 +35,10 @@ next_project_number: 994
         └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
     └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
       └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-972 [PLANNED] — Add a plan-checklist mark-completed contract to agent-system/exte
+974 [IMPLEMENTING] — Add a plan-checklist mark-completed contract to the two HARD impl
   └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
-  └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
-974 [PLANNED] — Add a plan-checklist mark-completed contract to the two HARD impl
-  └─ 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
@@ -51,6 +48,7 @@ next_project_number: 994
 992 [NOT STARTED] — Trim the 7 over-length EXTENSION.md files flagged by the prerequi
   └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis (see above)
 948 [NOT STARTED] — Add a Stage 7 / final-metadata section to agent-system/extensions
+989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
 
 ### Extensions
 
@@ -555,11 +553,12 @@ SOURCE-STORE RULE (binding): fix in lua/neotex/plugins/ai/** — the deploy mach
 ---
 
 ### 974. Add a plan-checklist mark-completed contract to the hard implementation variants
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 971
 - **Research**: [974_add_checklist_contract_to_hard_implementation_variants/reports/01_checklist-contract-hard-variants.md]
+- **Plan**: [974_add_checklist_contract_to_hard_implementation_variants/plans/01_checklist-contract-hard-variants.md]
 
 **Description**: Add a plan-checklist mark-completed contract to the two HARD implementation agent variants, which currently have no checklist instruction of any kind.
 
@@ -637,12 +636,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 972. Add a plan-checklist mark-completed contract to cslib-implementation-agent.md
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 971
 - **Research**: [972_add_checklist_contract_to_cslib_implementation_agent/reports/01_add-checklist-contract-cslib.md]
 - **Plan**: [972_add_checklist_contract_to_cslib_implementation_agent/plans/01_add-checklist-contract-cslib.md]
+- **Summary**: [972_add_checklist_contract_to_cslib_implementation_agent/summaries/01_add-checklist-contract-cslib-summary.md]
 
 **Description**: Add a plan-checklist mark-completed contract to agent-system/extensions/cslib/agents/cslib-implementation-agent.md, which currently has none.
 
