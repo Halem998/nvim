@@ -35,7 +35,7 @@ next_project_number: 990
         └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
     └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
       └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-964 [RESEARCHING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+964 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
   └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv (see above)
 971 [RESEARCHING] — Loosen the plan-checklist mark-completed instruction in the imple
@@ -897,10 +897,11 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 964. Repair /refresh orphan detection so live system and session processes are never selected
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 

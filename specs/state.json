@@ -2796,7 +2796,7 @@
     {
       "project_number": 964,
       "project_name": "repair_refresh_orphan_detection",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Repair /refresh orphan detection so live system and session processes are never selected",
@@ -2810,9 +2810,15 @@
         "agent-system/extensions/core/scripts/install-systemd-timer.sh"
       ],
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md",
+          "type": "report",
+          "summary": "Confirms all reported root causes at the line level, live-reproduces all false positives (including a new race-condition finding for the self-subshell case) on this machine read-only, and recommends a unifying single-snapshot ps -eo comm/cgroup/uid/liveness redesign plus a sourceable-main() test design closing all four required regression assertions."
+        }
+      ],
       "created": "2026-07-29T14:57:12Z",
-      "last_updated": "2026-07-30T01:10:44Z",
+      "last_updated": "2026-07-30T01:22:32Z",
       "session_id": "sess_1785373759_72035f_964",
       "next_artifact_number": null
     },

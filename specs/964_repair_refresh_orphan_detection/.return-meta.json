@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md",
+      "summary": "Confirms all reported root causes at the line level, live-reproduces all false positives (including a new race-condition finding for the self-subshell case) on this machine read-only, and recommends a unifying single-snapshot ps -eo comm/cgroup/uid/liveness redesign plus a sourceable-main() test design closing all four required regression assertions."
+    }
+  ],
+  "next_steps": "Run /plan 964 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785373759_72035f_964",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"]
+  },
+  "findings_count": 9,
+  "memory_candidates": [
+    {
+      "content": "ps -eo pid,ppid,uid,tty,etimes,rss,comm,cgroup,args --no-headers is a single atomic snapshot (procps-ng, verified on NixOS) that supplies executable identity (comm), cgroup path, and owning UID in one call -- use this instead of a two-stage 'ps aux | grep <argv substring>' plus a later re-query for ancestor/tree-membership checks. A later, second live re-query against PIDs captured in an earlier snapshot risks a race: transient/short-lived candidate PIDs (e.g. a script's own subshells) may have already exited by the time the second query runs, causing ancestor-walk-style checks to silently fail closed to 'not excluded' (unsafe fail-open) rather than correctly recognizing membership.",
+      "category": "PATTERN",
+      "source_artifact": "specs/964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["ps", "process-matching", "cgroup", "race-condition", "orphan-detection", "procps"]
+    },
+    {
+      "content": "For bash scripts that need both CLI-executable and test-sourceable behavior, guard a main() call with `if [[ \"${BASH_SOURCE[0]}\" == \"${0}\" ]]; then main \"$@\"; fi`. This lets a regression suite `source` the script to unit-test individual predicate/helper functions directly, without spawning subprocesses for every case, while keeping normal execution completely unchanged. This is a standard bash idiom, not a test-only instrumentation hack, and is consistent with the shell-testing convention that scripts under test should never be modified to 'know' they are being tested.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/964_repair_refresh_orphan_detection/reports/01_refresh-orphan-matcher-repair.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash", "testability", "sourceable-script", "main-guard", "unit-testing"]
+    }
+  ]
+}
