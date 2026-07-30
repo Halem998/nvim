@@ -1,0 +1,30 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 2-phase plan (0.75h) to insert one '### Check Off Completed Items in Plan File' subsection into agent-system/extensions/cslib/agents/cslib-implementation-agent.md, between the existing '### After Completing a Phase' and '### When Deviating from Plan Steps' subsections. Phase 1 inserts the canonical matching-contract paragraph plus numbered steps 1-3 quoted verbatim from general-implementation-agent.md's '#### 4B-ii' section (heading depth adapted from '####' to '###' to match cslib's flat subsection nesting). Phase 2 mechanically verifies byte-identity of the three completion/in-progress annotation suffixes against core's, asserts zero brittle-prefix matching in the new text, and asserts the untouched deviation subsection kept its three ASCII '--' lines. Both phases are Verification Tier 'prose' (markdown agent contract, zero compile surface) and both carry Scope Hypothesis lines. DELIBERATE DIVERGENCE from the dispatch brief: canonical numbered step 4 (deviation annotation) is OMITTED, per the research report's Decisions carve-out -- the task description explicitly forbids touching the existing deviation subsection, which already covers that concern, so copying step 4 would place a second deviation block immediately above it conflicting in both prefix assumption and dash style. Consequence recorded, not hidden: the existing deviation subsection therefore retains brittle-prefix matching in annotation-format position, which the brief's verification bar would otherwise forbid. Scope wins; flagged as a follow-up candidate in the plan's Non-Goals.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/972_add_checklist_contract_to_cslib_implementation_agent/plans/01_add-checklist-contract-cslib.md",
+      "summary": "2-phase implementation plan: insert the canonical prefix-free check-off subsection into cslib-implementation-agent.md, then verify byte-identity and prefix-freedom."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/972_add_checklist_contract_to_cslib_implementation_agent/plans/01_add-checklist-contract-cslib.md"
+  ],
+  "decisions_made": [
+    "Omit canonical numbered step 4 (deviation annotation) from the inserted subsection, adopting the research report's carve-out; including it would duplicate and conflict with the untouched '### When Deviating from Plan Steps' subsection in both prefix assumption and dash style.",
+    "Adapt the heading depth from '####' to '###' -- a structural fit to cslib's flat subsection nesting under '## Phase Status Updates (MANDATORY)', not a content paraphrase.",
+    "Preserve the two U+2014 em-dashes inside the copied matching-contract prose verbatim. The cslib ASCII '--' caveat applies to the deviation-annotation suffixes, none of which are copied (step 4 omitted), so the caveat does not engage for this material.",
+    "Both phases assigned Verification Tier 'prose': the target is a markdown agent-contract file with zero compile or elaboration surface.",
+    "Embed the exact insert text in a fenced block inside the plan, with an explicit warning that its literal '- [ ]' / '- [x]' lines are template content and must never be ticked as the plan's own checklist."
+  ],
+  "dead_ends": [],
+  "phase_count": 2,
+  "estimated_hours": 0.75,
+  "dependency_waves": [[1], [2]],
+  "named_gap": "The existing '### When Deviating from Plan Steps' subsection keeps its brittle '**Task {P}.{N}**: {description}' prefix and ASCII '--' dashes by explicit task-scope instruction. This is the one place the dispatch brief's 'no brittle-prefix matching survives in annotation-format position' bar is not met; it is out of scope for this task and left as a follow-up candidate."
+}
