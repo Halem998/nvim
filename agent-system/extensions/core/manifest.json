@@ -163,6 +163,7 @@
       "tests/test-index-entries-schema.sh",
       "tests/test-orchestrate-triage-classify.sh",
       "tests/test-phase-heading-patterns.sh",
+      "tests/test-reconcile-handoff-status.sh",
       "tests/test-validate-no-task-references.sh",
       "tier-selection.sh",
       "uninstall-extension.sh",
