@@ -18,9 +18,6 @@
       "summary": "Usage guide for /learn command and memory management",
       "line_count": 304,
       "load_when": {
-        "skills": [
-          "skill-learn"
-        ],
         "commands": [
           "/learn"
         ]
@@ -44,9 +41,6 @@
       "summary": "MCP server setup for Obsidian memory vault",
       "line_count": 247,
       "load_when": {
-        "skills": [
-          "skill-learn"
-        ],
         "commands": [
           "/learn"
         ]
@@ -70,9 +64,9 @@
       "summary": "Troubleshooting guide for memory system issues",
       "line_count": 250,
       "load_when": {
-        "skills": [
-          "skill-learn",
-          "skill-distill"
+        "commands": [
+          "/learn",
+          "/distill"
         ]
       }
     },
@@ -96,10 +90,6 @@
       "summary": "Memory vault reference: MCP integration, vault structure, classification, scoring engine, maintenance operations",
       "line_count": 57,
       "load_when": {
-        "skills": [
-          "skill-learn",
-          "skill-distill"
-        ],
         "commands": [
           "/learn",
           "/distill"
@@ -128,9 +118,6 @@
       "summary": "Example workflows for knowledge capture system",
       "line_count": 320,
       "load_when": {
-        "skills": [
-          "skill-learn"
-        ],
         "commands": [
           "/learn"
         ]
@@ -160,9 +147,6 @@
       "summary": "Usage guide for /distill command: all 12 sub-mode workflows (seven hygiene sub-modes plus revise/meta/review/learn/dream), scoring formula, maintenance cadence, and telemetry-sourced log files",
       "line_count": 297,
       "load_when": {
-        "skills": [
-          "skill-distill"
-        ],
         "commands": [
           "/distill"
         ],
@@ -194,9 +178,6 @@
       "summary": "Binding design constraints for telemetry-consuming /distill sub-modes: four-tier source model, evaluator-outside-the-loop rule, six failure modes, gen_ai borrowing rule, and cross-repo invocation discipline",
       "line_count": 172,
       "load_when": {
-        "skills": [
-          "skill-distill"
-        ],
         "commands": [
           "/distill"
         ]
@@ -218,10 +199,6 @@
       "summary": "Navigation index for the memory vault system's documentation files",
       "line_count": 14,
       "load_when": {
-        "skills": [
-          "skill-learn",
-          "skill-distill"
-        ],
         "commands": [
           "/learn",
           "/distill"

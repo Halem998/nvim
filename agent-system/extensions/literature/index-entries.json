@@ -4,84 +4,214 @@
       "path": "project/literature/domain/literature-index.md",
       "domain": "project",
       "subdomain": "literature",
-      "topics": ["literature", "index", "schema", "per-repo", "global"],
-      "keywords": ["literature", "index", "schema", "doc_id", "sub-index", "briefing"],
+      "topics": [
+        "literature",
+        "index",
+        "schema",
+        "per-repo",
+        "global"
+      ],
+      "keywords": [
+        "literature",
+        "index",
+        "schema",
+        "doc_id",
+        "sub-index",
+        "briefing"
+      ],
       "summary": "Unified index schema: global Literature/ repo structure, per-repo sub-index (specs/literature-index.json), and runtime resolution",
       "line_count": 97,
       "load_when": {
-        "agents": ["literature-agent"],
-        "skills": ["skill-literature"],
-        "commands": ["/literature"]
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
       }
     },
     {
       "path": "project/literature/patterns/agent-exploration.md",
       "domain": "project",
       "subdomain": "literature",
-      "topics": ["literature", "briefing", "tools", "agent", "exploration"],
-      "keywords": ["briefing", "literature-search", "read", "chunk", "agent-exploration"],
+      "topics": [
+        "literature",
+        "briefing",
+        "tools",
+        "agent",
+        "exploration"
+      ],
+      "keywords": [
+        "briefing",
+        "literature-search",
+        "read",
+        "chunk",
+        "agent-exploration"
+      ],
       "summary": "Briefing+tools pattern: how agents interact with literature using Read and literature-search.sh on demand",
       "line_count": 116,
       "load_when": {
-        "agents": ["literature-agent", "general-research-agent", "general-implementation-agent", "planner-agent"],
-        "skills": ["skill-literature", "skill-researcher", "skill-implementer", "skill-planner"],
-        "commands": ["/literature", "/research", "/plan", "/implement"]
+        "agents": [
+          "literature-agent",
+          "general-research-agent",
+          "general-implementation-agent",
+          "planner-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/research",
+          "/plan",
+          "/implement"
+        ]
       }
     },
     {
       "path": "project/literature/patterns/adhoc-navigation-directive.md",
       "domain": "project",
       "subdomain": "literature",
-      "topics": ["literature", "adhoc", "conversational", "navigation", "directive", "briefing", "primary-session"],
-      "keywords": ["adhoc", "conversational", "navigation", "directive", "briefing", "primary-session", "orchestrator-mode"],
+      "topics": [
+        "literature",
+        "adhoc",
+        "conversational",
+        "navigation",
+        "directive",
+        "briefing",
+        "primary-session"
+      ],
+      "keywords": [
+        "adhoc",
+        "conversational",
+        "navigation",
+        "directive",
+        "briefing",
+        "primary-session",
+        "orchestrator-mode"
+      ],
       "summary": "How the primary/root session reproduces skill Stage 4a's --lit navigation conversationally by reusing literature-lit-flag-resolve.sh and literature-briefing.sh with --orchestrator-mode false",
       "line_count": 107,
       "load_when": {
-        "agents": ["literature-agent", "general-research-agent", "general-implementation-agent", "planner-agent"],
-        "skills": ["skill-literature", "skill-researcher", "skill-implementer", "skill-planner"],
-        "commands": ["/literature", "/research", "/plan", "/implement"]
+        "agents": [
+          "literature-agent",
+          "general-research-agent",
+          "general-implementation-agent",
+          "planner-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/research",
+          "/plan",
+          "/implement"
+        ]
       }
     },
     {
       "path": "project/literature/patterns/zotero-pdf-resolution.md",
       "domain": "project",
       "subdomain": "literature",
-      "topics": ["literature", "zotero", "pdf", "resolution", "storage-root", "provenance"],
-      "keywords": ["zotero", "pdf", "resolve", "storage-root", "sqlite", "live-api", "citekey", "title-similarity"],
+      "topics": [
+        "literature",
+        "zotero",
+        "pdf",
+        "resolution",
+        "storage-root",
+        "provenance"
+      ],
+      "keywords": [
+        "zotero",
+        "pdf",
+        "resolve",
+        "storage-root",
+        "sqlite",
+        "live-api",
+        "citekey",
+        "title-similarity"
+      ],
       "summary": "How to resolve an index.json doc_id to its Zotero PDF: live-API-vs-sqlite-vs-snapshot tradeoffs, derived (never hardcoded) storage root, citekey-vs-real-key gotcha, and title-search truncation/similarity-floor mitigations",
       "line_count": 114,
       "load_when": {
-        "agents": ["literature-agent", "general-research-agent", "general-implementation-agent"],
-        "skills": ["skill-literature", "skill-researcher", "skill-implementer"],
-        "commands": ["/literature"]
+        "agents": [
+          "literature-agent",
+          "general-research-agent",
+          "general-implementation-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
       }
     },
     {
       "path": "project/literature/domain/format-decision.md",
       "domain": "project",
       "subdomain": "literature",
-      "topics": ["literature", "format", "typst", "markdown", "decision", "format-agnostic"],
-      "keywords": ["typst", "format", "markdown", "decision", "format-agnostic", "segmentation", "source_format"],
+      "topics": [
+        "literature",
+        "format",
+        "typst",
+        "markdown",
+        "decision",
+        "format-agnostic"
+      ],
+      "keywords": [
+        "typst",
+        "format",
+        "markdown",
+        "decision",
+        "format-agnostic",
+        "segmentation",
+        "source_format"
+      ],
       "summary": "Durable NO-GO decision record: markdown retained as the sole convert/chunk/index format; no PDF-to-Typst converter comparable to pymupdf4llm exists and the FTS5 index is format-agnostic",
       "line_count": 95,
       "load_when": {
-        "agents": ["literature-agent", "general-research-agent", "general-implementation-agent", "planner-agent"],
-        "skills": ["skill-literature", "skill-researcher", "skill-implementer", "skill-planner"],
-        "commands": ["/literature", "/research", "/plan", "/implement"]
+        "agents": [
+          "literature-agent",
+          "general-research-agent",
+          "general-implementation-agent",
+          "planner-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/research",
+          "/plan",
+          "/implement"
+        ]
       }
     },
     {
       "path": "project/literature/patterns/zotero-item-creation.md",
       "domain": "project",
       "subdomain": "literature",
-      "topics": ["literature", "zotero", "item-add", "create-item", "pdf", "magic-byte", "online-ingest"],
-      "keywords": ["zotero", "item-add", "zot add", "create-item", "attach-file", "magic-byte", "storage-repoint", "online-ingest", "in_zotero_no_pdf"],
+      "topics": [
+        "literature",
+        "zotero",
+        "item-add",
+        "create-item",
+        "pdf",
+        "magic-byte",
+        "online-ingest"
+      ],
+      "keywords": [
+        "zotero",
+        "item-add",
+        "zot add",
+        "create-item",
+        "attach-file",
+        "magic-byte",
+        "storage-repoint",
+        "online-ingest",
+        "in_zotero_no_pdf"
+      ],
       "summary": "How literature-ingest-online.sh creates a new Zotero item with a PDF attachment (item-add wrapping zot add --pdf), the unconfirmed envelope-field-name mitigation, the mandatory %PDF gate, storage re-pointing, and the in_zotero_no_pdf attach-to-existing sub-path",
       "line_count": 124,
       "load_when": {
-        "agents": ["literature-agent", "general-research-agent", "general-implementation-agent"],
-        "skills": ["skill-literature", "skill-researcher", "skill-implementer"],
-        "commands": ["/literature"]
+        "agents": [
+          "literature-agent",
+          "general-research-agent",
+          "general-implementation-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
       }
     }
   ]

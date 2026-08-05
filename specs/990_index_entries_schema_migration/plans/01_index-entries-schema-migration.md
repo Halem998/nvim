@@ -216,24 +216,24 @@ than deleting blindly.
 
 ---
 
-### Phase 3: `literature` + `memory` — Delete `load_when.skills` (14 entries, 1 with replacement hook) [NOT STARTED]
+### Phase 3: `literature` + `memory` — Delete `load_when.skills` (14 entries, 1 with replacement hook) [COMPLETED]
 
 **Goal**: Clear the remaining skills-only extensions without orphaning
 `memory-troubleshooting.md`.
 
 **Tasks**:
-- [ ] Edit **`agent-system/extensions/literature/index-entries.json`** and
+- [x] Edit **`agent-system/extensions/literature/index-entries.json`** and
       **`agent-system/extensions/memory/index-entries.json`** only. Never `.claude/**`.
-- [ ] `literature`: delete `load_when.skills` from all 6 entries. All 6 already carry a non-empty
+- [x] `literature`: delete `load_when.skills` from all 6 entries. All 6 already carry a non-empty
       `commands` array (`/literature`, and for three of them `/research`, `/plan`, `/implement`);
-      no replacement hook is needed.
-- [ ] `memory`: delete `load_when.skills` from 7 of 8 entries, each of which already carries a
-      matching non-empty `commands` array.
-- [ ] `memory`: for **`project/memory/memory-troubleshooting.md`**, whose `skills` array is its
+      no replacement hook is needed. *(completed)*
+- [x] `memory`: delete `load_when.skills` from 7 of 8 entries, each of which already carries a
+      matching non-empty `commands` array. *(completed)*
+- [x] `memory`: for **`project/memory/memory-troubleshooting.md`**, whose `skills` array is its
       *only* reachability hook, add `commands: ["/learn", "/distill"]` before or while deleting
       `skills` — mirroring the pattern already used by sibling entries
       `domain/memory-reference.md` and `README.md`, which pair those same two skills with those
-      same two commands.
+      same two commands. *(completed)*
 
 **Timing**: 0.5 hours
 
