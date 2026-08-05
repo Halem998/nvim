@@ -42,7 +42,7 @@ next_project_number: 998
               └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
       └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
         └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
-989 [RESEARCHED] — Normalize agent frontmatter and contract sections across all 77 a
+989 [PLANNED] — Normalize agent frontmatter and contract sections across all 77 a
   └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
   └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
@@ -246,11 +246,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 989. Agent contract normalization: shared critical-requirements include, one frontmatter standard
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 948, Task 963, Task 971, Task 972, Task 974, Task 982
 - **Research**: [989_agent_contract_normalization/reports/01_agent-contract-normalization-research.md]
+- **Plan**: [989_agent_contract_normalization/plans/01_agent-frontmatter-normalization.md]
 
 **Description**: Normalize agent frontmatter and contract sections across all 77 agents, closing the documented known gaps as SHARED includes rather than 77 hand-copies. DEPENDS ON the handoff-unification task, the cslib summary-format task, and the cslib terminal-metadata task, because they edit the same agent files — this task rebases on whatever they land and generalizes their patterns. (The three checklist-contract tasks it originally waited on — loosen checklist match; add checklist contract to cslib and hard implementation variants — have all landed; their pattern is among those generalized here.)
 
