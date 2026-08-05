@@ -1,34 +1,46 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 990,
+  "task_type": "meta",
+  "session_id": "sess_1785950363_553a84_990",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "orchestrator_mode": true,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md",
-      "summary": "Corrects and grounds the task's WORK-item scope against a live check-extension-docs.sh run: true description count is 147 (not 166), tags rename applies to only 6 of the 10 named extensions, WORK item 5's blanket 'safe to delete' premise has an exception (memory-troubleshooting.md), core (9 entries, 1 needing a replacement agents hook) and email (1 entry) are also in scope for load_when.skills deletion beyond what WORK item 5 names, formal has 40 load_when.topics violations not named in any WORK item, and founder's 11 entries need an array-union merge rather than an overwrite for WORK item 3."
+      "type": "plan",
+      "path": "specs/990_index_entries_schema_migration/plans/01_index-entries-schema-migration.md",
+      "summary": "11-phase migration of 17 of 19 extensions' source index-entries.json to the reconciled schema. Honors the research report's six corrections (147 description entries not 166; tags in 6 not 10 extensions; two orphan-risk skills entries needing replacement hooks; core and email additionally in scope; formal's 40 load_when.topics hoist; founder's 11-entry array-union merge) and adds two live-audit refinements: email's 8 and filetypes' 9 load_when.languages arrays are empty so they are deletions not renames, and the corpus is 461 entries not 470. Phases 2-10 are territory-disjoint per-extension and run in parallel."
     }
   ],
-  "next_steps": "Run /plan 990 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1785950363_553a84_990",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 12
+  "phase_count": 11,
+  "estimated_hours": 11,
+  "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8, 9, 10], [11]],
+  "plan_metadata": {
+    "phases": 11,
+    "total_effort_hours": 11,
+    "complexity": "complex",
+    "research_integrated": true,
+    "plan_version": 1,
+    "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8, 9, 10], [11]],
+    "reports_integrated": [
+      {
+        "path": "specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-08-05"
+      }
+    ],
+    "skeleton": false,
+    "follow_up_tasks": []
   },
   "memory_candidates": [
     {
-      "content": "When a task description gives concrete WORK-item counts/scope for a mechanical migration (e.g. '166 entries', 'same 10 extensions'), re-derive those counts live against the actual gate/validator (e.g. check-extension-docs.sh's own advisory-line counts) rather than trusting the task description's summary numbers -- this task's description undercounted (166 vs actual 147) and overscoped (claimed tags exists in 10 extensions when it's really 6), and separately omitted 3 real violation sources (core's load_when.skills, email's 1 load_when.skills entry, formal's load_when.topics nesting) that are required by the verification bar but not named in any WORK item.",
-      "category": "PATTERN",
-      "source_artifact": "specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["index-entries.json", "check-extension-docs.sh", "Rule T", "task-scope-verification", "schema-migration"]
-    },
-    {
-      "content": "Before a blind field-deletion migration (e.g. deleting load_when.skills across many entries), check each entry's OTHER load_when keys individually -- a blanket per-extension justification ('these entries already carry non-empty commands') can still have per-entry exceptions. In this codebase, project/memory/memory-troubleshooting.md and core/patterns/lit-stage4a-flow.md each had skills as their ONLY reachability hook, so deleting skills without adding a replacement (commands or agents respectively) would have orphaned them from context-discovery.md's adaptive jq query.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["load_when", "orphaned-entry", "context-discovery", "reachability-check", "index-entries.json"]
+      "content": "When planning a schema-conformance migration driven by a lint gate, re-run the live gate at plan time and treat its per-category output as the authoritative scope, never the task description's summary counts. A task description's enumerated WORK items are a hypothesis about the gate's true-positive set and routinely under-scope it: a live audit of an index-entries schema migration found the description's stated entry count inflated by ~13%, one named transform applying to only 6 of 10 listed targets, two additional extensions in scope that no WORK item named, and an entire violation category (a key nested one level too deep) omitted from the description while still required by the stated verification bar. A second, generalizable trap in any 'rename key X to key Y' migration: partition the target set by whether the value is EMPTY before renaming. Empty arrays rename into inert keys that satisfy no routing query, so they are deletions, not renames -- and any target already carrying BOTH the old and new key needs an array union, since a uniform rename silently overwrites the more specific pre-existing values. Both partitions are cheap to confirm with a jq probe and expensive to discover mid-implementation.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/990_index_entries_schema_migration/plans/01_index-entries-schema-migration.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["schema-migration", "plan-scoping", "lint-gate", "live-verification", "jq-audit", "key-rename"]
     }
-  ]
+  ],
+  "next_steps": "Run /implement 990 to execute the plan"
 }
