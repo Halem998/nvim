@@ -151,65 +151,68 @@ function M.show_commands_picker(opts, config)
                   return
                 end
 
-                -- Build dependency graph for topological sort
-                local loaded_set = {}
-                for _, name in ipairs(loaded) do
-                  loaded_set[name] = true
-                end
-                local deps_of = {}
-                for _, name in ipairs(loaded) do
-                  local details = exts.get_details(name)
-                  local deps = {}
-                  if details and details.dependencies then
-                    for _, dep in ipairs(details.dependencies) do
-                      if loaded_set[dep] then
-                        table.insert(deps, dep)
+                if choice == "Unload All" then
+                  -- Build dependency graph for topological sort (needed so leaves unload before
+                  -- roots -- manager.unload hard-blocks unloading an extension that still has a
+                  -- loaded dependent). Local to this branch: "Reload All" below no longer needs
+                  -- its own copy of this ordering -- it delegates entirely to
+                  -- manager.resync_all, which owns the same Kahn's-algorithm ordering.
+                  local loaded_set = {}
+                  for _, name in ipairs(loaded) do
+                    loaded_set[name] = true
+                  end
+                  local deps_of = {}
+                  for _, name in ipairs(loaded) do
+                    local details = exts.get_details(name)
+                    local deps = {}
+                    if details and details.dependencies then
+                      for _, dep in ipairs(details.dependencies) do
+                        if loaded_set[dep] then
+                          table.insert(deps, dep)
+                        end
                       end
                     end
+                    deps_of[name] = deps
                   end
-                  deps_of[name] = deps
-                end
-                -- Topological sort (Kahn's): load_order has roots first (core), leaves last
-                local in_degree = {}
-                for _, name in ipairs(loaded) do
-                  in_degree[name] = 0
-                end
-                for _, name in ipairs(loaded) do
-                  for _, dep in ipairs(deps_of[name]) do
-                    in_degree[name] = (in_degree[name] or 0) + 1
+                  local in_degree = {}
+                  for _, name in ipairs(loaded) do
+                    in_degree[name] = 0
                   end
-                end
-                local load_order = {}
-                local queue = {}
-                for _, name in ipairs(loaded) do
-                  if in_degree[name] == 0 then
-                    table.insert(queue, name)
+                  for _, name in ipairs(loaded) do
+                    for _, dep in ipairs(deps_of[name]) do
+                      in_degree[name] = (in_degree[name] or 0) + 1
+                    end
                   end
-                end
-                while #queue > 0 do
-                  local name = table.remove(queue, 1)
-                  table.insert(load_order, name)
-                  for _, other in ipairs(loaded) do
-                    for _, dep in ipairs(deps_of[other]) do
-                      if dep == name then
-                        in_degree[other] = in_degree[other] - 1
-                        if in_degree[other] == 0 then
-                          table.insert(queue, other)
+                  local load_order = {}
+                  local queue = {}
+                  for _, name in ipairs(loaded) do
+                    if in_degree[name] == 0 then
+                      table.insert(queue, name)
+                    end
+                  end
+                  while #queue > 0 do
+                    local name = table.remove(queue, 1)
+                    table.insert(load_order, name)
+                    for _, other in ipairs(loaded) do
+                      for _, dep in ipairs(deps_of[other]) do
+                        if dep == name then
+                          in_degree[other] = in_degree[other] - 1
+                          if in_degree[other] == 0 then
+                            table.insert(queue, other)
+                          end
                         end
                       end
                     end
                   end
-                end
-                -- Unload in reverse order (leaves first, roots/core last)
-                local errors = {}
-                for i = #load_order, 1, -1 do
-                  local ok, err = exts.unload(load_order[i], { confirm = false })
-                  if not ok then
-                    table.insert(errors, load_order[i] .. ": " .. (err or "unknown"))
-                  end
-                end
 
-                if choice == "Unload All" then
+                  -- Unload in reverse order (leaves first, roots/core last)
+                  local errors = {}
+                  for i = #load_order, 1, -1 do
+                    local ok, err = exts.unload(load_order[i], { confirm = false })
+                    if not ok then
+                      table.insert(errors, load_order[i] .. ": " .. (err or "unknown"))
+                    end
+                  end
                   local unloaded = #load_order - #errors
                   if #errors == 0 then
                     vim.notify(
@@ -229,26 +232,24 @@ function M.show_commands_picker(opts, config)
                   return
                 end
 
-                -- Reload All: load in forward order (roots/core first, leaves last)
-                local success_count = 0
-                for _, name in ipairs(load_order) do
-                  local ok, err = exts.load(name, { confirm = false })
-                  if ok then
-                    success_count = success_count + 1
-                  else
-                    table.insert(errors, name .. ": " .. (err or "unknown"))
-                  end
-                end
-                local total = #load_order
-                if #errors == 0 then
+                -- Reload All: manager-level non-destructive force-resync, in dependency order.
+                -- Replaces the former picker-local unload-all/load-all reimplementation
+                -- entirely -- exts.resync_all (neotex.plugins.ai.shared.extensions.init's
+                -- manager.resync_all) owns the Kahn's-algorithm ordering and never unloads.
+                local result = exts.resync_all()
+                if #result.failed == 0 then
                   vim.notify(
-                    string.format("Reloaded %d extension(s)", success_count),
+                    string.format("Resynced %d extension(s)", #result.succeeded),
                     vim.log.levels.INFO
                   )
                 else
+                  local failed_list = {}
+                  for _, f in ipairs(result.failed) do
+                    table.insert(failed_list, f.name .. ": " .. (f.error or "unknown"))
+                  end
                   vim.notify(
-                    string.format("Reloaded %d/%d. Errors: %s",
-                      success_count, total, table.concat(errors, ", ")),
+                    string.format("Resynced %d/%d. Errors: %s",
+                      #result.succeeded, result.total, table.concat(failed_list, ", ")),
                     vim.log.levels.WARN
                   )
                 end

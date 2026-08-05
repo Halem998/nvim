@@ -1,0 +1,43 @@
+{
+  "phase": 3,
+  "phase_name": "Force/resync mode and one bulk-resync entry point",
+  "started_at": "2026-08-05T01:10:00Z",
+  "last_updated": "2026-08-05T01:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "opts.force bypass on manager.load's already-loaded abort + manager.resync_all(opts) in init.lua",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Rewire picker Reload All to exts.resync_all(); keep Unload All's own Kahn ordering",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/claude/commands/picker/init.lua"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Verify force bypass, resync_all, and no regression to Phase 1 harness",
+      "status": "done",
+      "files_touched": [],
+      "note": "Direct headless calls confirm: no-force refusal unchanged; force=true succeeds with byte-identical re-copy (339 files); resync_all(project_dir=...) succeeds total=1/succeeded=1/failed=0. test-deploy-propagation.sh unchanged (1 passed/3 failed) since deploy-headless.sh still drives Engine B until Phase 6."
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.verification",
+      "description": "Phase 1 harness assertion B (resync) flips from RED to GREEN",
+      "type": "deferred",
+      "reason": "deploy-headless.sh still drives Engine B (load_all_globally) until Phase 6 rewires its default invocation to manager.resync_all; Phase 3 alone cannot make the harness observe an Engine A fix.",
+      "annotation": "*(deviation: deferred to Phase 6)*"
+    }
+  ]
+}

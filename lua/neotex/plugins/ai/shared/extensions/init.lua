@@ -248,9 +248,20 @@ function M.create(config)
     local ext_manifest = extension.manifest
     local source_dir = extension.path
 
-    -- Check if already loaded
+    -- Check if already loaded. `opts.force` bypasses ONLY this abort -- everything downstream
+    -- (the copy sequence, merge-target processing, state update) is already idempotent/
+    -- overwrite-safe given the install-once root-files guard, so no further special-casing is
+    -- needed to make a forced re-run of an already-loaded extension safe.
+    --
+    -- Dual effect of `opts.force`, deliberate rather than an accidental name collision: this
+    -- same field is also threaded to recursive dependency loads below ("Resolve dependencies"),
+    -- so forcing a resync of an extension also force-resyncs any of its dependencies that are
+    -- already loaded, rather than short-circuiting them as already-satisfied. This is the
+    -- desired effect for `manager.resync_all` (every active extension gets fresh files,
+    -- transitively) and is harmless for a plain single-extension force-load (dependencies that
+    -- were not already active are loaded normally regardless of `force`).
     local state = state_mod.read(project_dir, config)
-    if state_mod.is_loaded(state, extension_name) then
+    if state_mod.is_loaded(state, extension_name) and not opts.force then
       return false, "Extension already loaded: " .. extension_name
     end
 
@@ -830,6 +841,96 @@ function M.create(config)
 
     helpers.notify(string.format("Reloaded extension '%s'", extension_name), "INFO")
     return true, nil
+  end
+
+  --- Non-destructive force-resync of every currently active extension, in dependency order.
+  ---
+  --- This is the single `manager`-level bulk-resync entry point shared by the picker's
+  --- "Reload All" and (via `deploy-headless.sh`'s default invocation) headless callers. It
+  --- promotes the topological ordering (Kahn's algorithm) formerly duplicated in the picker's
+  --- "Reload All" handler (`picker/init.lua`) rather than writing a third ordering
+  --- implementation -- the same shape `manager.regenerate`'s load loop also needs, and which it
+  --- gets for free by building on this function (see `manager.regenerate`).
+  ---
+  --- Never unloads: each extension is re-loaded in place via `manager.load(..., {force = true})`,
+  --- so there is no destructive intermediate "everything unloaded" state -- unlike the former
+  --- picker-local unload-all/load-all reimplementation this function replaces.
+  --- @param opts table|nil Options: { project_dir = string|nil }
+  --- @return table result { succeeded = {name, ...}, failed = {{name=, error=}, ...}, total = N }
+  function manager.resync_all(opts)
+    opts = opts or {}
+    local project_dir = opts.project_dir or vim.fn.getcwd()
+
+    local loaded = manager.list_loaded(project_dir)
+    local result = { succeeded = {}, failed = {}, total = #loaded }
+
+    if #loaded == 0 then
+      return result
+    end
+
+    -- Build a dependency graph restricted to the currently-loaded set (a dependency outside it
+    -- is already satisfied and does not participate in the ordering).
+    local loaded_set = {}
+    for _, name in ipairs(loaded) do
+      loaded_set[name] = true
+    end
+    local deps_of = {}
+    for _, name in ipairs(loaded) do
+      local extension = manifest_mod.get_extension(name, config)
+      local deps = {}
+      if extension and extension.manifest and extension.manifest.dependencies then
+        for _, dep in ipairs(extension.manifest.dependencies) do
+          if loaded_set[dep] then
+            table.insert(deps, dep)
+          end
+        end
+      end
+      deps_of[name] = deps
+    end
+
+    -- Topological sort (Kahn's algorithm): resync_order has roots first (e.g. core, which
+    -- nothing else depends on being loaded before), leaves last.
+    local in_degree = {}
+    for _, name in ipairs(loaded) do
+      in_degree[name] = 0
+    end
+    for _, name in ipairs(loaded) do
+      for _ in ipairs(deps_of[name]) do
+        in_degree[name] = in_degree[name] + 1
+      end
+    end
+    local resync_order = {}
+    local queue = {}
+    for _, name in ipairs(loaded) do
+      if in_degree[name] == 0 then
+        table.insert(queue, name)
+      end
+    end
+    while #queue > 0 do
+      local name = table.remove(queue, 1)
+      table.insert(resync_order, name)
+      for _, other in ipairs(loaded) do
+        for _, dep in ipairs(deps_of[other]) do
+          if dep == name then
+            in_degree[other] = in_degree[other] - 1
+            if in_degree[other] == 0 then
+              table.insert(queue, other)
+            end
+          end
+        end
+      end
+    end
+
+    for _, name in ipairs(resync_order) do
+      local ok, err = manager.load(name, { confirm = false, project_dir = project_dir, force = true })
+      if ok then
+        table.insert(result.succeeded, name)
+      else
+        table.insert(result.failed, { name = name, error = err })
+      end
+    end
+
+    return result
   end
 
   --- Get extension status

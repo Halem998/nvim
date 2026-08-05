@@ -274,27 +274,31 @@ hypothesized one.
 
 ---
 
-### Phase 3: Force/resync mode and one bulk-resync entry point [NOT STARTED]
+### Phase 3: Force/resync mode and one bulk-resync entry point [COMPLETED]
 
 **Goal**: Make `manager.load` re-runnable against an already-loaded extension, and promote a
 single `manager`-level bulk-resync function that the picker and the headless script will both
 call.
 
 **Tasks**:
-- [ ] Add `opts.force` handling to `manager.load` that bypasses **only** the already-loaded abort
+- [x] Add `opts.force` handling to `manager.load` that bypasses **only** the already-loaded abort
       (`init.lua:253-254`). Everything downstream is already idempotent/overwrite-safe given the
-      install-once root-files guard; do not add further special-casing.
-- [ ] Verify `opts.force` is not conflated with the existing `force` reference used for dependency
+      install-once root-files guard; do not add further special-casing. *(completed)*
+- [x] Verify `opts.force` is not conflated with the existing `force` reference used for dependency
       loads — either reuse it deliberately with a comment naming both effects, or introduce a
-      distinctly named option. Do not leave the ambiguity unresolved.
-- [ ] Add `manager.resync_all(opts)`: a **non-destructive** force-resync of every currently active
+      distinctly named option. Do not leave the ambiguity unresolved. *(completed: reused
+      deliberately, documented inline — forcing a resync also force-resyncs already-loaded
+      dependencies transitively)*
+- [x] Add `manager.resync_all(opts)`: a **non-destructive** force-resync of every currently active
       extension, in dependency order. Promote the Kahn's-algorithm topological ordering out of the
       picker's "Reload All" handler into this function rather than writing a third ordering
-      implementation.
-- [ ] Return a structured result (per-extension success/failure plus aggregate counts) suitable
-      for both a picker notification and a headless script's stdout parse.
-- [ ] Rewire the picker's "Reload All" to call `manager.resync_all`, deleting the picker-local
-      unload-all/load-all reimplementation.
+      implementation. *(completed)*
+- [x] Return a structured result (per-extension success/failure plus aggregate counts) suitable
+      for both a picker notification and a headless script's stdout parse. *(completed:
+      `{succeeded = {name,...}, failed = {{name=,error=},...}, total = N}`)*
+- [x] Rewire the picker's "Reload All" to call `manager.resync_all`, deleting the picker-local
+      unload-all/load-all reimplementation. *(completed; "Unload All" keeps its own Kahn's-sort
+      copy since it's a distinct operation `manager.resync_all` doesn't perform — see phase notes)*
 
 **Timing**: 1.5 hours
 
@@ -308,10 +312,30 @@ call.
 
 **Verification**:
 - Loading an already-loaded extension with `force` succeeds and re-copies files (previously
-  returned `false, "Extension already loaded"`).
+  returned `false, "Extension already loaded"`). *(confirmed via direct headless call: without
+  force -> `OK=false ERR=Extension already loaded: core`; with `force=true` -> `OK=true`, and a
+  before/after `find -printf '%M %p'` listing diff is empty, i.e. the re-copy reproduced the same
+  339-file tree byte-for-byte)*
 - Loading without `force` still returns the same refusal — no behavior change on the default path.
-- Phase 1 harness assertion B (resync) flips from RED to GREEN.
+  *(confirmed, same test above)*
+- Phase 1 harness assertion B (resync) flips from RED to GREEN. **Not yet true at this phase's
+  close, and this is expected, not a defect**: `deploy-headless.sh` still drives Engine B
+  (`load_all_globally`) until Phase 6 rewires its default invocation to `manager.resync_all`;
+  Phase 3 only fixes Engine A, which the harness doesn't exercise until Phase 6 lands. Verified
+  directly instead via `manager.resync_all({project_dir=...})` against a scratch tree with
+  `core` loaded: `total=1 succeeded=1 failed=0`. Re-ran `test-deploy-propagation.sh` after this
+  phase — unchanged, 1 passed/3 failed, confirming no regression. This flip is deferred to
+  Phase 6's own verification bullet, which already names the same assertion.
 - "Reload All" from the picker still resyncs every active extension in dependency order.
+  *(structurally verified: `exts.resync_all()` — the re-exported `manager.resync_all` — performs
+  the same Kahn's-ordered forward pass the deleted reimplementation did, minus the destructive
+  unload step; both modules load cleanly under `nvim --headless`)*
+
+**Phase Deviation**: the plan's own Verification bullet for this phase ("Phase 1 harness
+assertion B flips from RED to GREEN") is only achievable after Phase 6 rewires
+`deploy-headless.sh`'s entry point — Phase 3 alone cannot make the harness (which drives
+`deploy-headless.sh`) observe an Engine A fix. Recorded as a deviation rather than silently
+declared satisfied; re-verified directly against Engine A instead (see above).
 
 ---
 
