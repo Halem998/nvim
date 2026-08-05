@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/989_agent_contract_normalization/reports/01_agent-contract-normalization-research.md",
+      "summary": "Resolves the @-import critical question (does not auto-resolve; use generated-copy-with-lint) and the frontmatter-field load-bearing unknown (tools/disallowedTools/mcpServers are real; allowed-tools/mcp-servers are not), corrects the review's skeleton-drift and Error Handling counts, audits terminal-metadata presence across all 77 agents, and recommends splitting items 4 and 5 into separate tasks."
+    }
+  ],
+  "next_steps": "Run /plan 989 to create implementation plan; strongly consider splitting item 4 (skeleton drift + lint) and item 5 (terminal-metadata audit + lint) into separate tasks per the report's Recommended Phasing section",
+  "metadata": {
+    "session_id": "sess_1785961976_f6b468_989",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "Claude Code subagent definition files (.claude/agents/*.md) do NOT auto-resolve @path references in their body text at spawn time -- the subagent receives the raw markdown body verbatim as its system prompt with no import-expansion step. This is a distinct code path from CLAUDE.md/memory files, which DO support real, auto-resolving @path imports (max depth 4, approval dialog on first external import). Verified both empirically (a live subagent's own un-expanded @-reference bullets) and via the official code.claude.com/docs/en/sub-agents docs. Any 'shared @-imported include' design for agent contract text must use generated-copy-with-lint (this repo's own CLAUDE.md-from-merge-sources generation is the precedent) rather than assuming automatic injection.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/989_agent_contract_normalization/reports/01_agent-contract-normalization-research.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["@-import", "subagent frontmatter", "Claude Code", "agent template", "shared include", "CLAUDE.md import"]
+    },
+    {
+      "content": "The real, documented Claude Code subagent frontmatter fields for tool/MCP restriction are `tools:` (allowlist, comma-separated string) and `disallowedTools:` (denylist, camelCase) and `mcpServers:` (camelCase). `allowed-tools:` is NOT a subagent field -- it belongs to SKILL.md/slash-command frontmatter, a different artifact type -- so any agent file using `allowed-tools:` is silently running with full inherited tool access. `mcp-servers:` (hyphenated) is also invalid; the correct spelling is `mcpServers:`, and a hyphenated spelling silently no-ops the MCP server declaration. Confirmed via the live official docs table at code.claude.com/docs/en/sub-agents.",
+      "category": "CONFIG",
+      "source_artifact": "specs/989_agent_contract_normalization/reports/01_agent-contract-normalization-research.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["frontmatter", "tools", "disallowedTools", "mcpServers", "allowed-tools", "subagent config"]
+    }
+  ]
+}
