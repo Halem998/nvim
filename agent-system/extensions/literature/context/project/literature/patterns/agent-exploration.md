@@ -79,6 +79,28 @@ Or use the path shown in the briefing for the document directory.
 - Read 1-3 chunks per search query for typical tasks
 - Only read entire documents when comprehensive coverage is needed
 
+## Two Search Tools: Corpus vs. Zotero Library
+
+`literature-search.sh` and `zotero-search.sh` search two different things and take arguments
+differently:
+
+| Tool | Searches | Query form |
+|------|----------|------------|
+| `literature-search.sh` | The already-ingested local corpus under `$LITERATURE_DIR` (documents that have been converted and chunked) | A single quoted query string, e.g. `"modal logic completeness"` |
+| `zotero-search.sh` | The Better BibTeX CSL-JSON export of the Zotero library (documents that may not yet be ingested) | Each search word as a SEPARATE argument, not one quoted phrase |
+
+IMPORTANT -- pass each search word to `zotero-search.sh` as a SEPARATE argument. Query terms are
+OR-scored independently, so a single quoted multi-word phrase is treated as one term and will
+match nothing even when every individual word is present in the library.
+  Wrong:   zotero-search.sh "Burgess axioms tense logic"     -> 0 results
+  Right:   zotero-search.sh Burgess axioms tense logic       -> matches
+From a shell variable, expand unquoted (or use an array): "${TERMS[@]}".
+
+A matched Zotero entry is not yet part of the searchable corpus above — import it first via
+`/literature --search` so it becomes available to `literature-search.sh`. The two tools compose:
+`zotero-search.sh` to find candidates in the library, `/literature --search` to bring one into
+the corpus, `literature-search.sh` to search it thereafter.
+
 ## Selectivity Principle
 
 The briefing pattern is designed for selectivity:

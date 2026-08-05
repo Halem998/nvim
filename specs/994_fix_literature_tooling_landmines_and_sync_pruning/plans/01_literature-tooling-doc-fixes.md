@@ -223,7 +223,7 @@ update every occurrence found and record the actual count in the summary.
 
 ---
 
-### Phase 2: Zotero-vs-corpus search section in agent-exploration.md [NOT STARTED]
+### Phase 2: Zotero-vs-corpus search section in agent-exploration.md [COMPLETED]
 
 **Goal**: Give the literature extension's context docs their first coverage of
 `zotero-search.sh`, distinguished from the corpus-search tool they currently document, carrying
@@ -268,7 +268,7 @@ the Phase 1 warning.
 
 ---
 
-### Phase 3: Concrete invocation example in literature-agent.md [NOT STARTED]
+### Phase 3: Concrete invocation example in literature-agent.md [COMPLETED]
 
 **Goal**: Replace the ambiguous `{terms}` placeholder with a concrete space-separated example so
 an agent copying the line gets a working invocation.
