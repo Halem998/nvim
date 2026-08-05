@@ -359,7 +359,7 @@ must re-derive it by reading the retired script.
 
 ---
 
-### Phase 5: Retire two stale zotero-index-add.sh stderr hints [NOT STARTED]
+### Phase 5: Retire two stale zotero-index-add.sh stderr hints [COMPLETED]
 
 **Goal**: Stop two live scripts from telling the user to run a script that is no longer deployed.
 
@@ -374,14 +374,20 @@ exclusion with evidence, not dropped silently.
 
 **Tasks**:
 
-- [ ] `agent-system/extensions/literature/scripts/zotero-chunk.sh` line ~145: replace
+- [x] `agent-system/extensions/literature/scripts/zotero-chunk.sh` line ~145: replace
       `echo "Run: zotero-index-add.sh $KEY" >&2` with a hint pointing at the live mechanism —
       the `jq` append pattern documented in `skills/skill-literature/SKILL.md`'s "Sub-Index
-      Management" section.
-- [ ] `agent-system/extensions/literature/scripts/zotero-attach-chunks.sh` line ~125: apply the
-      identical replacement.
-- [ ] Keep both messages on stderr and keep the surrounding `exit 2` unchanged — this is a
-      message-text change only, not a control-flow change.
+      Management" section. *(completed)*
+- [x] `agent-system/extensions/literature/scripts/zotero-attach-chunks.sh` line ~125: apply the
+      identical replacement. *(completed)*
+- [x] Keep both messages on stderr and keep the surrounding `exit 2` unchanged — this is a
+      message-text change only, not a control-flow change. *(completed)*
+- [x] *(deviation: altered — the Scope Hypothesis grep found a third hit,
+      `agent-system/extensions/literature/scripts/literature-normalize-authors.sh:9`, a
+      provenance comment citing a stale `.claude/extensions/...` path to the now-quarantined
+      script. Per the Scope Hypothesis's own instruction ("if more appear, fix all of them"),
+      corrected it to point at the script's current quarantined location under
+      `scripts/deprecated/`. Actual hit count: 3, not the anticipated 2.)*
 
 **Timing**: 0.2 hours
 

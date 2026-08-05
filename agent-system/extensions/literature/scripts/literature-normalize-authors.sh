@@ -6,7 +6,9 @@
 # .claude/context/project/literature/domain/literature-index.md for the tooling ownership
 # boundary). Canonical representation is an array of individual author strings, e.g.
 # ["Patrick Blackburn", "Maarten de Rijke", "Yde Venema"] -- modeled on the correct pattern
-# already used by .claude/extensions/literature/scripts/zotero-index-add.sh:142-148.
+# formerly used by the now-quarantined script at
+# agent-system/extensions/literature/scripts/deprecated/ (see that directory's README.md for
+# retirement rationale; lines 142-148 of its authors-array construction).
 #
 # Usage:
 #   literature-normalize-authors.sh <index.json> [--apply|--write]

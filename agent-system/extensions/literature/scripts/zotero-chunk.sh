@@ -142,7 +142,7 @@ entry="$(jq -r --arg k "$KEY" '.entries[] | select(.zotero_key == $k)' "$ZOTERO_
 
 if [[ -z "$entry" ]]; then
   echo "zotero-chunk.sh: key $KEY not found in index" >&2
-  echo "Run: zotero-index-add.sh $KEY" >&2
+  echo "See skills/skill-literature/SKILL.md 'Sub-Index Management > Add: Append a Document Entry' for the jq append pattern that registers an entry." >&2
   exit 2
 fi
 
