@@ -1,0 +1,56 @@
+{
+  "phase": 7,
+  "phase_name": "Full-category verification with content-hash parity",
+  "started_at": "2026-08-05T19:45:00Z",
+  "last_updated": "2026-08-05T20:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add manifest-driven per-category parity + content-hash verification in verify.lua, driven by loader.CATEGORY_DESCRIPTORS, covering the 7 previously-uncovered categories (commands, scripts, hooks, docs, templates, systemd, root_files) plus a hash-equality overlay on the 4 already-covered categories (agents, skills, rules, context)",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/verify.lua"
+      ],
+      "note": "walk_category_leaves + verify_manifest_category added, driven by loader.CATEGORY_DESCRIPTORS. Fixed a copy-engine trailing-newline false positive by hashing vim.fn.readfile-joined content instead of raw bytes. Verified: fresh scratch deploy is zero-findings across all 11 categories; deliberate staling of skills/skill-orchestrate/SKILL.md is caught and clears on redeploy."
+    },
+    {
+      "id": 2,
+      "description": "Wire the new verification into verify-deploy.sh as an additive gate5, routing findings through the existing FINDINGS_LIST accumulator",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ],
+      "note": "gate5 runs manager.verify_all headlessly and emits FINDING gate5 lines. Fixed an OSC7-escape-sequence parsing bug (anchored grep '^VERIFY_FINDING' silently matched nothing) by switching to unanchored grep, mirroring deploy-headless.sh's own DEPLOY_COUNT= extraction pattern. Verified: clean deploy -> gate5 PASS; deliberately-staled deploy -> gate5 FAIL with the correct FINDING gate5 line; gates 1-4 narrative output unchanged before/after."
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {
+      "approach": "Raw byte-for-byte sha256 hash of file content",
+      "result": "failed",
+      "reason": "False positive on context/formats/frontmatter.md (and any other source file lacking a final trailing newline) because loader.lua's copy engine reads/writes via vim.fn.readfile/writefile line-array semantics, which always appends a trailing newline on write. Fixed by hashing readfile-joined content instead."
+    },
+    {
+      "approach": "Anchored grep '^VERIFY_FINDING ' to extract findings from headless nvim stdout in verify-deploy.sh",
+      "result": "failed",
+      "reason": "nvim --headless in this environment prepends an OSC7 cwd-reporting terminal escape sequence to the first stdout line with no newline separator, defeating the start-of-line anchor. Fixed by switching to unanchored grep, matching deploy-headless.sh's existing DEPLOY_COUNT= extraction convention."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.scope-hypothesis",
+      "description": "Plan's Scope Hypothesis and task list said 6 uncovered categories (scripts, hooks, docs, templates, systemd, root_files)",
+      "type": "altered",
+      "reason": "jq -r '.provides | keys[]' lists 11 categories; 4 were already covered (agents, skills, rules, context) before this phase, leaving 7 uncovered, not 6 -- commands (18 entries) was omitted from the plan's prose enumeration. Because verification is driven generically from loader.CATEGORY_DESCRIPTORS rather than a hand-typed list, commands required no extra implementation work, just recognizing it belonged in the uncovered_categories array.",
+      "annotation": "*(deviation: altered — category-count reconciliation, see plan Phase 7 notes)*"
+    },
+    {
+      "task_id": "7.verification.stale-skills",
+      "description": "Plan's Verification bullet named skill-orchestrate/skill-orchestrate-hard as currently-stale deployed skill definitions to be caught by the new check",
+      "type": "altered",
+      "reason": "This repository's .claude/ had already been redeployed multiple times earlier in this dispatch (Phase 6 work), so both named skills were already clean, not stale, by the time Phase 7 began. Verified the mechanism equivalently via deliberate staling of skills/skill-orchestrate/SKILL.md instead of relying on found-already-stale content.",
+      "annotation": "*(deviation: altered — deliberate staling substituted for found-already-stale content, see plan Phase 7 Verification section)*"
+    }
+  ]
+}

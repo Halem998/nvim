@@ -31,10 +31,10 @@
 #      redeploy landed is in the same position as one that established it did not.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all four gates plus a
+#   Emits a normalized, one-per-line, machine-diffable findings set across all five gates plus a
 #   gate0 "could not run" sentinel, printed to stdout after the final narrative PASS/FAIL line
 #   (including on a passing run, where an empty set is a valid, meaningful result). Every finding
-#   line begins with the literal token `FINDING ` followed by a gate label (`gate0`..`gate4`); the
+#   line begins with the literal token `FINDING ` followed by a gate label (`gate0`..`gate5`); the
 #   automated consumer is expected to invoke `verify-deploy.sh --findings --quiet`, filter with
 #   `grep '^FINDING ' | sort -u`, and diff two such captures rather than compare exit codes alone
 #   -- see the Checkpoint subsection above for why exit-code-only comparison masks a
@@ -273,6 +273,60 @@ else
       while IFS= read -r task_ref_line; do
         FINDINGS_LIST+=("FINDING gate4 ${task_ref_line#  }")
       done < <(printf '%s\n' "$task_ref_output" | grep -E '^  [^:]+:[0-9]+:')
+    fi
+  fi
+fi
+
+# ── 5. Manifest-driven category parity + content-hash equality (verify.lua) ──────
+# Extends gates 1-4 (which check specific known files/registrations) to full declared-vs-
+# deployed parity plus content-hash equality across every provides.* category the manifest
+# declares, driven by neotex.plugins.ai.shared.extensions.verify's manager.verify_all -- the
+# same check the extension loader itself runs after a load. Only meaningful in the source-store
+# repo (a deploy consumer has no agent-system/extensions/core/ source directory to diff against),
+# mirroring gates 3-4's SKIP-if-not-source-store precedent.
+say "5. Manifest-driven category parity + content-hash equality (verify.lua)"
+CURRENT_GATE="gate5"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- this gate compares against"
+  say "         the source store and does not apply here"
+elif ! command -v nvim >/dev/null 2>&1; then
+  fail "nvim not found on PATH; cannot run the manifest-driven verification"
+else
+  verify_output=$(cd "$TARGET" && nvim --headless \
+    -c "lua local ok1, ext_config = pcall(require, 'neotex.plugins.ai.shared.extensions.config'); local ok2, ext_init = pcall(require, 'neotex.plugins.ai.shared.extensions.init'); if not (ok1 and ok2) then print('VERIFY_ERROR require: ' .. tostring(ok1 and ext_init or ext_config)) else local manager = ext_init.create(ext_config.claude()); local pok, results = pcall(manager.verify_all, '${TARGET}'); if not pok then print('VERIFY_ERROR call: ' .. tostring(results)) else for _, v in ipairs(results) do if v.status ~= 'passed' then for _, err in ipairs(v.errors or {}) do print('VERIFY_FINDING ' .. v.extension .. ': ' .. err) end end end print('VERIFY_DONE count=' .. tostring(#results)) end end" \
+    -c "qa!" 2>&1)
+
+  if echo "$verify_output" | grep -q 'VERIFY_ERROR'; then
+    verify_error_line=$(echo "$verify_output" | grep 'VERIFY_ERROR' | head -1)
+    fail "manifest-driven verification could not run" "$verify_error_line" \
+         "manifest-driven verification could not run: $verify_error_line"
+  elif ! echo "$verify_output" | grep -q 'VERIFY_DONE'; then
+    fail "manifest-driven verification produced no result" \
+         "re-run: nvim --headless -c \"lua ...manager.verify_all(...)\"" \
+         "manifest-driven verification produced no result"
+  else
+    # Unanchored (not '^VERIFY_FINDING '): nvim can prepend a terminal OSC7 cwd-reporting escape
+    # sequence to its first stdout line with no newline separator, which would otherwise defeat a
+    # start-of-line anchor. Mirrors deploy-headless.sh's own unanchored 'grep -o DEPLOY_COUNT=...'
+    # extraction of the same headless-nvim-output family, for the same reason.
+    verify_finding_count=$(echo "$verify_output" | grep -c 'VERIFY_FINDING ')
+    if [ "$verify_finding_count" -eq 0 ]; then
+      pass "declared-vs-deployed parity and content-hash equality (all loaded extensions)"
+    else
+      # Third arg "" suppresses the default aggregate finding -- the per-underlying-VERIFY_FINDING
+      # lines extracted below are the findings-mode representation of this failure, mirroring
+      # gate 3's doc-lint per-FAIL: line extraction.
+      fail "manifest-driven verification reported $verify_finding_count finding(s)" \
+           "re-run without --quiet for detail: bash .claude/scripts/verify-deploy.sh" ""
+      if [ "$FINDINGS" = "true" ]; then
+        # -o 'VERIFY_FINDING .*' extracts from the token onward regardless of what (if anything)
+        # precedes it on the line -- same OSC7 robustness rationale as verify_finding_count above.
+        # '#*VERIFY_FINDING ' (not '#VERIFY_FINDING ') strips everything up to and including the
+        # token wherever it falls, not only at position 0.
+        while IFS= read -r verify_finding_line; do
+          FINDINGS_LIST+=("FINDING gate5 ${verify_finding_line#*VERIFY_FINDING }")
+        done < <(echo "$verify_output" | grep -o 'VERIFY_FINDING .*')
+      fi
     fi
   fi
 fi

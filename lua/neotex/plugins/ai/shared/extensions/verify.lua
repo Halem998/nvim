@@ -3,6 +3,12 @@
 
 local M = {}
 
+-- Drives the manifest-driven category verification below (see verify_manifest_category):
+-- loader.CATEGORY_DESCRIPTORS is Phase 2's single source of truth for how every provides.*
+-- category maps declared entries to deployed paths, reused here rather than duplicating a
+-- second hand-maintained category list.
+local loader_mod = require("neotex.plugins.ai.shared.extensions.loader")
+
 --- Verify that a file exists on disk
 --- @param filepath string Path to file
 --- @return boolean exists True if file exists
@@ -59,6 +65,205 @@ local function read_json(filepath)
 
   return result
 end
+
+--- Recursively scan a directory for files. Mirrors loader.lua's private helper of the same
+--- name; kept as an independent local copy rather than requiring loader.lua to export it, since
+--- this is the only other consumer and the two are simple enough to stay correct independently.
+--- @param dir string Directory path
+--- @return table files Array of relative file paths
+local function scan_directory_recursive(dir)
+  local files = {}
+
+  if vim.fn.isdirectory(dir) ~= 1 then
+    return files
+  end
+
+  local all_files = vim.fn.glob(dir .. "/**/*", false, true)
+  for _, filepath in ipairs(all_files) do
+    if vim.fn.isdirectory(filepath) ~= 1 then
+      table.insert(files, filepath:sub(#dir + 2))
+    end
+  end
+
+  -- Also check for top-level files (glob **/* doesn't match them)
+  local top_files = vim.fn.glob(dir .. "/*", false, true)
+  for _, filepath in ipairs(top_files) do
+    if vim.fn.isdirectory(filepath) ~= 1 then
+      local rel_path = filepath:sub(#dir + 2)
+      local found = false
+      for _, f in ipairs(files) do
+        if f == rel_path then
+          found = true
+          break
+        end
+      end
+      if not found then
+        table.insert(files, rel_path)
+      end
+    end
+  end
+
+  return files
+end
+
+--- Compute a sha256 content hash for a file, using the SAME line-array semantics
+--- `loader.lua`'s `copy_file` itself copies with (`vim.fn.readfile`/`writefile`, not a raw byte
+--- stream). `writefile()` unconditionally appends a trailing newline after the last line unless
+--- called with the `"b"` binary flag, which `copy_file` does not use -- so a source file that
+--- itself lacks a final trailing newline is faithfully (by this copy engine's own definition)
+--- deployed with one added. Hashing raw bytes would make that a false-positive "differs from
+--- source" finding on every such file after a completely clean deploy (confirmed empirically:
+--- `context/formats/frontmatter.md` in this repo lacks a final newline and reproduced exactly
+--- this false positive before this fix). Hashing the same line-joined content the copy engine
+--- itself reads/writes makes a faithfully-copied file hash identically while still catching any
+--- REAL content divergence (verified: a deliberately-staled skill file with an appended line
+--- still hashes differently).
+--- @param filepath string Path to file
+--- @return string|nil hash Hex sha256 digest of the line-joined content, or nil if unreadable
+local function file_hash(filepath)
+  if vim.fn.filereadable(filepath) ~= 1 then
+    return nil
+  end
+  local ok, lines = pcall(vim.fn.readfile, filepath)
+  if not ok or lines == nil then
+    return nil
+  end
+  return vim.fn.sha256(table.concat(lines, "\n"))
+end
+
+--- Enumerate every leaf (source_path, target_path, rel_path, entry_name) a manifest category
+--- declares, driven entirely by `loader.CATEGORY_DESCRIPTORS` -- Phase 2's single source of
+--- truth for how each `provides.*` category maps declared entries to deployed paths. Mirrors
+--- `loader.copy_category`'s own traversal (file / dir / file_or_dir) exactly, without performing
+--- any copy, so a future category (or a non-core extension declaring one of the 11 existing
+--- categories) is covered by construction rather than by a second hand-maintained list.
+--- @param category string A key of `loader.CATEGORY_DESCRIPTORS` with a `list_key` (i.e. one of
+---   the 11 `provides.*`-keyed categories -- excludes the `manifest`/`data` special cases)
+--- @param manifest table Extension manifest
+--- @param source_dir string Extension source directory
+--- @param target_dir string Target base directory (.claude or .opencode)
+--- @param opts table|nil { agents_subdir } -- agents' target subdir varies by config (OpenCode)
+--- @return table leaves Array of { rel_path, source_path, target_path, entry_name }
+local function walk_category_leaves(category, manifest, source_dir, target_dir, opts)
+  opts = opts or {}
+  local leaves = {}
+  local descriptor = loader_mod.CATEGORY_DESCRIPTORS[category]
+  if not descriptor or not descriptor.list_key then
+    return leaves
+  end
+  if not manifest.provides or not manifest.provides[descriptor.list_key] then
+    return leaves
+  end
+
+  local target_category_name = descriptor.target_subdir
+  if category == "agents" and opts.agents_subdir then
+    target_category_name = opts.agents_subdir
+  end
+  local target_category_dir = target_category_name == "" and target_dir
+    or (target_dir .. "/" .. target_category_name)
+  local source_category_dir = source_dir .. "/" .. descriptor.source_subdir
+
+  for _, entry_name in ipairs(manifest.provides[descriptor.list_key]) do
+    if descriptor.entry_kind == "dir" then
+      -- skills: each entry is a directory, recursively enumerated.
+      local source_entry_dir = source_category_dir .. "/" .. entry_name
+      local target_entry_dir = target_category_dir .. "/" .. entry_name
+      if vim.fn.isdirectory(source_entry_dir) == 1 then
+        for _, file_rel in ipairs(scan_directory_recursive(source_entry_dir)) do
+          table.insert(leaves, {
+            rel_path = target_category_name .. "/" .. entry_name .. "/" .. file_rel,
+            source_path = source_entry_dir .. "/" .. file_rel,
+            target_path = target_entry_dir .. "/" .. file_rel,
+            entry_name = entry_name,
+          })
+        end
+      end
+    elseif descriptor.entry_kind == "file_or_dir" then
+      -- context/docs: an entry may itself be a directory or a flat file.
+      local source_entry_path = source_category_dir .. "/" .. entry_name
+      local target_entry_path = target_category_dir .. "/" .. entry_name
+      if vim.fn.isdirectory(source_entry_path) == 1 then
+        for _, file_rel in ipairs(scan_directory_recursive(source_entry_path)) do
+          table.insert(leaves, {
+            rel_path = target_category_name .. "/" .. entry_name .. "/" .. file_rel,
+            source_path = source_entry_path .. "/" .. file_rel,
+            target_path = target_entry_path .. "/" .. file_rel,
+            entry_name = entry_name,
+          })
+        end
+      elseif vim.fn.filereadable(source_entry_path) == 1 then
+        table.insert(leaves, {
+          rel_path = target_category_name .. "/" .. entry_name,
+          source_path = source_entry_path,
+          target_path = target_entry_path,
+          entry_name = entry_name,
+        })
+      end
+    else
+      -- "file": flat per-entry (agents/commands/rules/scripts/hooks/systemd/templates/
+      -- root_files). rel_path for root_files (target_category_name == "") is the bare
+      -- filename, matching loader.copy_category's own rel_path construction exactly.
+      local rel_path = target_category_name == "" and entry_name or (target_category_name .. "/" .. entry_name)
+      table.insert(leaves, {
+        rel_path = rel_path,
+        source_path = source_category_dir .. "/" .. entry_name,
+        target_path = target_category_dir .. "/" .. entry_name,
+        entry_name = entry_name,
+      })
+    end
+  end
+
+  return leaves
+end
+
+--- Verify one manifest-declared category for declared-vs-deployed parity (presence) plus
+--- content-hash equality, driven entirely by `walk_category_leaves` above.
+---
+--- Exemptions:
+---   - Install-once entries (root_files' settings.json/settings.local.json) are exempt from
+---     hash equality: a target repo is expected to customize them, and a deployed copy
+---     diverging from the source-store version is by design, not a finding.
+---   - `.syncprotect`-listed paths are exempt from BOTH presence and hash checks: a protected
+---     path is deliberately never overwritten by the copy engine, so a stale or customized
+---     deployed copy is expected there too.
+--- @param category string
+--- @param manifest table
+--- @param source_dir string
+--- @param target_dir string
+--- @param protected_paths table|nil Set of protected relative paths {[path] = true}
+--- @param opts table|nil { agents_subdir }
+--- @return table result { checked, missing = {rel_path,...}, hash_mismatch = {rel_path,...},
+---   protected = {rel_path,...} }
+local function verify_manifest_category(category, manifest, source_dir, target_dir, protected_paths, opts)
+  protected_paths = protected_paths or {}
+  local descriptor = loader_mod.CATEGORY_DESCRIPTORS[category]
+  local result = { checked = 0, missing = {}, hash_mismatch = {}, protected = {} }
+
+  for _, leaf in ipairs(walk_category_leaves(category, manifest, source_dir, target_dir, opts)) do
+    result.checked = result.checked + 1
+    if protected_paths[leaf.rel_path] then
+      table.insert(result.protected, leaf.rel_path)
+    elseif not file_exists(leaf.target_path) then
+      table.insert(result.missing, leaf.rel_path)
+    else
+      local install_once_exempt = descriptor and descriptor.install_once
+        and descriptor.install_once[leaf.entry_name]
+      if not install_once_exempt then
+        local source_hash = file_hash(leaf.source_path)
+        local target_hash = file_hash(leaf.target_path)
+        if source_hash and target_hash and source_hash ~= target_hash then
+          table.insert(result.hash_mismatch, leaf.rel_path)
+        end
+      end
+    end
+  end
+
+  return result
+end
+
+-- Exposed for the scratch-tree regression harness / direct inspection outside verify_extension's
+-- aggregate report.
+M.verify_manifest_category = verify_manifest_category
 
 --- Verify all agent files referenced by extension skills exist
 --- @param manifest table Extension manifest
@@ -371,6 +576,15 @@ function M.verify_extension(extension_name, extension_dir, target_dir, config, p
     section = { passed = true },
     index = { passed = true },
     opencode_json = { passed = true },
+    -- Populated below by the manifest-driven parity + content-hash pass; declared here upfront
+    -- for a stable report shape even before that pass runs.
+    commands = { passed = true },
+    scripts = { passed = true },
+    hooks = { passed = true },
+    docs = { passed = true },
+    templates = { passed = true },
+    systemd = { passed = true },
+    root_files = { passed = true },
     errors = {},
   }
 
@@ -478,6 +692,64 @@ function M.verify_extension(extension_name, extension_dir, target_dir, config, p
     end
     for _, name in ipairs(opencode_json_result.missing_from_manifest) do
       table.insert(verification.errors, "Agent '" .. name .. "' in opencode-agents.json but missing from manifest")
+    end
+  end
+
+  -- Content-hash equality overlay for the 4 already-covered categories above (agents/skills/
+  -- rules/context): a stale deployed file can be presence-correct (the hand-written checkers
+  -- above find nothing missing) while its content has drifted from the source store -- e.g. a
+  -- deployed skill definition edited or left behind by a prior partial sync. This does not
+  -- duplicate the missing-detection above (that stays driven by the hand-written checkers, whose
+  -- `context` variant reads the richer index-entries.json source); it only adds a hash_mismatch
+  -- field alongside each category's existing report when content differs.
+  local hash_only_categories = { "agents", "skills", "rules", "context" }
+  for _, category in ipairs(hash_only_categories) do
+    local cat_result = verify_manifest_category(
+      category, manifest, extension_dir, target_dir, protected_paths,
+      { agents_subdir = config.agents_subdir }
+    )
+    if #cat_result.hash_mismatch > 0 then
+      verification[category].passed = false
+      verification[category].hash_mismatch = cat_result.hash_mismatch
+      for _, rel in ipairs(cat_result.hash_mismatch) do
+        table.insert(verification.errors, "Content differs from source: " .. rel)
+      end
+    end
+  end
+
+  -- Full declared-vs-deployed parity plus content-hash equality for the 7 previously-uncovered
+  -- categories, driven by loader.CATEGORY_DESCRIPTORS (Phase 2's single source of truth) rather
+  -- than a hand-maintained list, so a future category -- or one a non-core extension declares --
+  -- is covered by construction.
+  local uncovered_categories = { "commands", "scripts", "hooks", "docs", "templates", "systemd", "root_files" }
+  for _, category in ipairs(uncovered_categories) do
+    local cat_result = verify_manifest_category(category, manifest, extension_dir, target_dir, protected_paths, {})
+    verification[category] = { passed = true, checked = cat_result.checked }
+    if #cat_result.missing > 0 then
+      verification[category].passed = false
+      verification[category].missing = cat_result.missing
+      -- Cap detail to the first 5 entries, matching the context checker's convention above, to
+      -- avoid a verbose errors[] list on a broad drift.
+      for i, rel in ipairs(cat_result.missing) do
+        if i <= 5 then
+          table.insert(verification.errors, "Missing " .. category .. ": " .. rel)
+        elseif i == 6 then
+          table.insert(verification.errors, "... and " .. (#cat_result.missing - 5) .. " more missing " .. category .. " files")
+          break
+        end
+      end
+    end
+    if #cat_result.hash_mismatch > 0 then
+      verification[category].passed = false
+      verification[category].hash_mismatch = cat_result.hash_mismatch
+      for i, rel in ipairs(cat_result.hash_mismatch) do
+        if i <= 5 then
+          table.insert(verification.errors, "Content differs from source: " .. rel)
+        elseif i == 6 then
+          table.insert(verification.errors, "... and " .. (#cat_result.hash_mismatch - 5) .. " more content differences in " .. category)
+          break
+        end
+      end
     end
   end
 

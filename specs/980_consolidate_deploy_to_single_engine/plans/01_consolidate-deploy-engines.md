@@ -660,28 +660,82 @@ phase bar, most of which is deferred with the phase):
 
 ---
 
-### Phase 7: Full-category verification with content-hash parity [NOT STARTED]
+### Phase 7: Full-category verification with content-hash parity [COMPLETED]
 
 **Goal**: Extend post-load verification from 4 covered categories to declared-vs-deployed parity
 plus content-hash equality across all 11 `provides.*` categories, without creating standing
 failures that defer batch orchestration.
 
 **Tasks**:
-- [ ] Add per-category verification for the six currently-uncovered categories: `scripts`, `hooks`,
+- [x] Add per-category verification for the six currently-uncovered categories: `scripts`, `hooks`,
       `docs`, `templates`, `systemd`, `root_files`. Follow the structural pattern of the existing
-      rules/context verifiers.
-- [ ] Drive verification from the manifest's `provides.*` keys rather than a hand-maintained list,
-      so a future category is covered by construction.
-- [ ] Add content-hash equality: a declared source file whose deployed counterpart differs in
+      rules/context verifiers. *(completed, WITH a scope correction — see "Category-count
+      reconciliation" below: the actual uncovered count is 7, not 6 — `commands` was also
+      uncovered and the plan's own prose enumeration omitted it, mirroring Phase 6's analogous
+      "5 vs 6" `is_load_all` site-count correction)*
+- [x] Drive verification from the manifest's `provides.*` keys rather than a hand-maintained list,
+      so a future category is covered by construction. *(completed: `walk_category_leaves` and
+      `verify_manifest_category` in `verify.lua` are driven entirely by
+      `loader.CATEGORY_DESCRIPTORS` — Phase 2's single source of truth for category-to-path
+      mapping — reused rather than duplicated. This is what caught the `commands` omission: the
+      generic walker iterates every descriptor key, so nothing needed a second manual add)*
+- [x] Add content-hash equality: a declared source file whose deployed counterpart differs in
       content is a finding, not just a presence check. No existing verifier hashes content — this
       is new. Exempt install-once root files from hash equality (they are intentionally allowed to
-      diverge) and honor `.syncprotect` exemptions.
-- [ ] Route every new finding through `verify-deploy.sh`'s existing `FINDINGS_LIST` accumulator so
+      diverge) and honor `.syncprotect` exemptions. *(completed: `file_hash` via `vim.fn.sha256`;
+      `verify_manifest_category` skips hash equality for `descriptor.install_once` entries
+      (root_files' settings.json/settings.local.json) and for any `protected_paths` match, and
+      applies the hash overlay to ALL 11 categories — not just the 7 newly-covered ones — since
+      the plan's own Verification bullet requires catching a stale `skills`-category entry, which
+      was already presence-covered before this phase)*
+- [x] Route every new finding through `verify-deploy.sh`'s existing `FINDINGS_LIST` accumulator so
       the pre/post baseline diff at the inter-cycle redeploy checkpoint absorbs pre-existing
       failures. Use the optional finding-text override where a narrative message embeds a count, so
-      findings stay stable across runs and diffable.
-- [ ] Do not alter `verify-deploy.sh`'s gate structure, exit codes, or default-mode narrative
+      findings stay stable across runs and diffable. *(completed: new gate5 in `verify-deploy.sh`
+      runs `manager.verify_all` headlessly and appends each non-passed extension's `errors[]`
+      entries as `FINDING gate5 ...` lines, using the same 3-arg `fail()` count-suppression
+      convention gate3's doc-lint extraction already established)*
+- [x] Do not alter `verify-deploy.sh`'s gate structure, exit codes, or default-mode narrative
       output — the additive `--findings` contract must remain byte-for-byte compatible.
+      *(completed: gate5 is purely additive, appended after gate4 and before the final
+      PASS/FAIL summary; gates 1-4's narrative output confirmed byte-for-byte unchanged by
+      re-running verify-deploy.sh before and after this phase's edit)*
+
+**Category-count reconciliation (performed)**: the plan's Scope Hypothesis and task-list prose
+both said "6 uncovered categories" (`scripts`, `hooks`, `docs`, `templates`, `systemd`,
+`root_files`), but `jq -r '.provides | keys[]' agent-system/extensions/core/manifest.json` lists
+11 categories total and the pre-Phase-7 `verify.lua` covered exactly 4
+(`verify_agents`/`verify_skills`/`verify_rules`/`verify_context`) — 11 - 4 = **7** uncovered, not
+6. `commands` (18 declared entries) had no verifier and was missing from the plan's prose
+enumeration. Because the implementation is driven generically from
+`loader.CATEGORY_DESCRIPTORS` rather than a hand-typed category list, this omission cost nothing
+to fix — `commands` is simply one more entry in the `uncovered_categories` array in `verify.lua`.
+
+**Copy-engine trailing-newline discovery (not anticipated by the plan)**: a raw byte-for-byte
+content hash produced a FALSE POSITIVE on a completely clean scratch-tree deploy —
+`context/formats/frontmatter.md` (a real file in this repo, no relation to Phase 7's own edits)
+lacks a final trailing newline in the source store, but `loader.lua`'s `copy_file` reads/writes
+through `vim.fn.readfile`/`writefile` (line-array semantics, not raw bytes), and `writefile()`
+unconditionally appends a trailing newline unless called with its `"b"` binary flag — which
+`copy_file` does not use. This is a pre-existing, harmless, systemic property of the ENTIRE copy
+engine (every category, not particular to this file), invisible before Phase 7 because no
+verifier previously did byte-for-byte comparison. Fixed by hashing the same line-joined content
+the copy engine itself reads/writes (`table.concat(vim.fn.readfile(path), "\n")`) rather than raw
+file bytes — a faithfully-copied file (by the copy engine's own definition of "faithful") now
+hashes identically, while a genuinely-staled file (verified via deliberate staling of
+`skills/skill-orchestrate/SKILL.md`, twice, before and after this fix) still hashes differently.
+
+**OSC7-escape-sequence parsing discovery (not anticipated by the plan)**: gate5's first attempt
+at extracting `VERIFY_FINDING` lines from headless-nvim stdout via `grep -c '^VERIFY_FINDING '`
+(anchored) silently reported zero findings on a deliberately-staled deployed file, because this
+environment's `nvim --headless` invocations prepend a terminal OSC7 cwd-reporting escape sequence
+to the first stdout line with NO newline separator, defeating the `^` anchor. Fixed by switching
+to unanchored `grep -c 'VERIFY_FINDING '` / `grep -o 'VERIFY_FINDING .*'` plus `${line#*VERIFY_FINDING }`
+(strip-to-first-match, not strip-from-position-0) — mirroring `deploy-headless.sh`'s own
+already-robust unanchored `grep -o 'DEPLOY_COUNT=[0-9]*'` pattern for the same headless-nvim-output
+family. Caught by direct comparison against a manual (non-bash-script) invocation of the identical
+Lua, which DID report the finding, isolating the bug to the shell-side extraction rather than the
+Lua verification logic.
 
 **Timing**: 2 hours
 
@@ -695,18 +749,42 @@ failures that defer batch orchestration.
 `jq -r '.provides | keys[]' agent-system/extensions/core/manifest.json` and
 `grep -n 'sha256\|hash' lua/neotex/plugins/ai/shared/extensions/verify.lua`. A non-core extension
 declaring a category outside this set must also be covered by the manifest-driven approach.
+**Reconciled to 7 uncovered (`commands` was omitted) — see "Category-count reconciliation" above.**
 
 **Files to modify**:
 - `lua/neotex/plugins/ai/shared/extensions/verify.lua` - manifest-driven per-category parity + content hashing
+- `agent-system/extensions/core/scripts/verify-deploy.sh` - additive gate5 routing findings through `FINDINGS_LIST`
 
 **Verification**:
 - Two known-stale deployed skill definitions (`skill-orchestrate`, `skill-orchestrate-hard`) are
   reported as findings by the new content-hash check **before** a redeploy, and clean after.
-- A deliberately-staled deployed file is caught; reverting it clears the finding.
+  *(deviation: this repository's `.claude/` had already been redeployed multiple times earlier in
+  this same dispatch — a direct check confirmed both skills are currently clean, not stale, so
+  there was no live pre-existing staleness to observe. Verified the mechanism equivalently instead:
+  deliberately staled `skills/skill-orchestrate/SKILL.md` by appending a line, confirmed
+  `manager.verify_all` and `verify-deploy.sh --findings` both report
+  `Content differs from source: skills/skill-orchestrate/SKILL.md`, then redeployed and confirmed
+  the finding clears — same evidentiary content as the plan's literal wording, against the same
+  named file, just performed as a deliberate stale rather than an found-already-stale.)*
+- A deliberately-staled deployed file is caught; reverting it clears the finding. *(confirmed
+  twice: once via direct `manager.verify_all` on a scratch tree, once via
+  `verify-deploy.sh --findings --quiet` against this repo's own live deploy — see above)*
 - Declared-vs-deployed parity reports zero findings across all 11 categories after a clean deploy.
+  *(confirmed: a fresh scratch-tree `manager.load('core', {force=true})` produces
+  `status: "passed"` with zero errors across all 11 categories' `checked` counts (18 commands, 89
+  scripts, 19 hooks, 28 docs, 3 templates, 2 systemd, 3 root_files, plus the pre-existing
+  agents/skills/rules/context checks) — confirmed only after the trailing-newline fix above,
+  which was itself required to reach this zero-findings state)*
 - A pre-existing failure present in both the pre and post baselines does **not** defer a
-  multi-task batch; a newly introduced one still does.
-- No previously-passing verification regresses.
+  multi-task batch; a newly introduced one still does. *(structurally satisfied: gate5's findings
+  flow through the same `FINDINGS_LIST` accumulator and `--findings` diffable-set contract gates
+  3-4 already use, which the inter-cycle redeploy checkpoint's pre/post diff already relies on
+  unmodified — not re-tested end-to-end here since that diff mechanism lives in
+  `skill-orchestrate`, outside this phase's file scope)*
+- No previously-passing verification regresses. *(confirmed: `verify-deploy.sh` narrative output
+  for gates 1-4 is unchanged before/after this phase's edit — same single pre-existing
+  `formats/summary-format.md` finding, same PASS/FAIL per check; `test-deploy-propagation.sh`
+  still `4 passed, 0 failed`; `sync_spec.lua`'s 5 cases still pass)*
 
 ---
 
