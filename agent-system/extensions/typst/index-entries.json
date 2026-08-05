@@ -3,553 +3,527 @@
     {
       "path": "project/typst/patterns/theorem-environments.md",
       "line_count": 74,
-      "description": "Theorem, definition, and proof environments",
-      "tags": [
-        "typst",
-        "theorems",
-        "environments"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Theorem, definition, and proof environments"
+      "summary": "Theorem, definition, and proof environments",
+      "keywords": [
+        "typst",
+        "theorems",
+        "environments"
+      ]
     },
     {
       "path": "project/typst/patterns/cross-references.md",
       "line_count": 206,
-      "description": "Cross-reference patterns in Typst",
-      "tags": [
-        "typst",
-        "references",
-        "labels"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent",
           "typst-research-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Cross-reference patterns in Typst"
+      "summary": "Cross-reference patterns in Typst",
+      "keywords": [
+        "typst",
+        "references",
+        "labels"
+      ]
     },
     {
       "path": "project/typst/patterns/fletcher-diagrams.md",
       "line_count": 251,
-      "description": "Fletcher package for flowcharts and diagrams",
-      "tags": [
-        "typst",
-        "diagrams",
-        "fletcher"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Fletcher package for flowcharts and diagrams"
+      "summary": "Fletcher package for flowcharts and diagrams",
+      "keywords": [
+        "typst",
+        "diagrams",
+        "fletcher"
+      ]
     },
     {
       "path": "project/typst/patterns/rule-environments.md",
       "line_count": 135,
-      "description": "Inference rule and typing rule environments",
-      "tags": [
-        "typst",
-        "rules",
-        "inference"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Inference rule and typing rule environments"
+      "summary": "Inference rule and typing rule environments",
+      "keywords": [
+        "typst",
+        "rules",
+        "inference"
+      ]
     },
     {
       "path": "project/typst/patterns/bibliography.md",
       "line_count": 125,
-      "description": "Bibliography and citation management",
-      "tags": [
-        "typst",
-        "bibliography",
-        "citations"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Bibliography and citation management"
+      "summary": "Bibliography and citation management",
+      "keywords": [
+        "typst",
+        "bibliography",
+        "citations"
+      ]
     },
     {
       "path": "project/typst/patterns/document-structure.md",
       "line_count": 136,
-      "description": "Document structure patterns and organization",
-      "tags": [
-        "typst",
-        "structure",
-        "patterns"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Document structure patterns and organization"
+      "summary": "Document structure patterns and organization",
+      "keywords": [
+        "typst",
+        "structure",
+        "patterns"
+      ]
     },
     {
       "path": "project/typst/patterns/math-typesetting.md",
       "line_count": 165,
-      "description": "Mathematical typesetting patterns",
-      "tags": [
-        "typst",
-        "math",
-        "typesetting"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Mathematical typesetting patterns"
+      "summary": "Mathematical typesetting patterns",
+      "keywords": [
+        "typst",
+        "math",
+        "typesetting"
+      ]
     },
     {
       "path": "project/typst/patterns/styling-patterns.md",
       "line_count": 153,
-      "description": "Styling and theming patterns",
-      "tags": [
-        "typst",
-        "styling",
-        "themes"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Styling and theming patterns"
+      "summary": "Styling and theming patterns",
+      "keywords": [
+        "typst",
+        "styling",
+        "themes"
+      ]
     },
     {
       "path": "project/typst/patterns/tables-and-figures.md",
       "line_count": 170,
-      "description": "Tables and figures layout patterns",
-      "tags": [
-        "typst",
-        "tables",
-        "figures"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Tables and figures layout patterns"
+      "summary": "Tables and figures layout patterns",
+      "keywords": [
+        "typst",
+        "tables",
+        "figures"
+      ]
     },
     {
       "path": "project/typst/standards/document-structure.md",
       "line_count": 283,
-      "description": "Document structure and organization standards",
-      "tags": [
-        "typst",
-        "structure",
-        "organization"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Document structure and organization standards"
+      "summary": "Document structure and organization standards",
+      "keywords": [
+        "typst",
+        "structure",
+        "organization"
+      ]
     },
     {
       "path": "project/typst/standards/notation-conventions.md",
       "line_count": 156,
-      "description": "Mathematical notation conventions in Typst",
-      "tags": [
-        "typst",
-        "math",
-        "notation"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Mathematical notation conventions in Typst"
+      "summary": "Mathematical notation conventions in Typst",
+      "keywords": [
+        "typst",
+        "math",
+        "notation"
+      ]
     },
     {
       "path": "project/typst/standards/textbook-standards.md",
       "line_count": 221,
-      "description": "Textbook authoring standards and conventions",
-      "tags": [
-        "typst",
-        "textbook",
-        "standards"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent",
           "typst-research-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Textbook authoring standards and conventions"
+      "summary": "Textbook authoring standards and conventions",
+      "keywords": [
+        "typst",
+        "textbook",
+        "standards"
+      ]
     },
     {
       "path": "project/typst/standards/typst-style-guide.md",
       "line_count": 359,
-      "description": "Typst coding style and conventions",
-      "tags": [
-        "typst",
-        "style",
-        "conventions"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent",
           "typst-research-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Typst coding style and conventions"
+      "summary": "Typst coding style and conventions",
+      "keywords": [
+        "typst",
+        "style",
+        "conventions"
+      ]
     },
     {
       "path": "project/typst/standards/type-theory-foundations.md",
       "line_count": 198,
-      "description": "Type theory foundations and DTT conventions",
-      "tags": [
-        "typst",
-        "type-theory",
-        "foundations"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Type theory foundations and DTT conventions"
+      "summary": "Type theory foundations and DTT conventions",
+      "keywords": [
+        "typst",
+        "type-theory",
+        "foundations"
+      ]
     },
     {
       "path": "project/typst/standards/compilation-standards.md",
       "line_count": 142,
-      "description": "Compilation and build standards",
-      "tags": [
-        "typst",
-        "compilation",
-        "build"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Compilation and build standards"
+      "summary": "Compilation and build standards",
+      "keywords": [
+        "typst",
+        "compilation",
+        "build"
+      ]
     },
     {
       "path": "project/typst/standards/package-usage.md",
       "line_count": 141,
-      "description": "Package usage and import standards",
-      "tags": [
-        "typst",
-        "packages",
-        "imports"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent",
           "typst-research-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Package usage and import standards"
+      "summary": "Package usage and import standards",
+      "keywords": [
+        "typst",
+        "packages",
+        "imports"
+      ]
     },
     {
       "path": "project/typst/templates/chapter-template.md",
       "line_count": 243,
-      "description": "Chapter template for Typst documents",
-      "tags": [
-        "typst",
-        "templates",
-        "chapters"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Chapter template for Typst documents"
+      "summary": "Chapter template for Typst documents",
+      "keywords": [
+        "typst",
+        "templates",
+        "chapters"
+      ]
     },
     {
       "path": "project/typst/templates/article-template.md",
       "line_count": 127,
-      "description": "Article template for Typst documents",
-      "tags": [
-        "typst",
-        "templates",
-        "articles"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Article template for Typst documents"
+      "summary": "Article template for Typst documents",
+      "keywords": [
+        "typst",
+        "templates",
+        "articles"
+      ]
     },
     {
       "path": "project/typst/templates/presentation-template.md",
       "line_count": 175,
-      "description": "Presentation/slides template",
-      "tags": [
-        "typst",
-        "templates",
-        "presentations"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Presentation/slides template"
+      "summary": "Presentation/slides template",
+      "keywords": [
+        "typst",
+        "templates",
+        "presentations"
+      ]
     },
     {
       "path": "project/typst/templates/report-template.md",
       "line_count": 159,
-      "description": "Report template for Typst documents",
-      "tags": [
-        "typst",
-        "templates",
-        "reports"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Report template for Typst documents"
+      "summary": "Report template for Typst documents",
+      "keywords": [
+        "typst",
+        "templates",
+        "reports"
+      ]
     },
     {
       "path": "project/typst/templates/thesis-template.md",
       "line_count": 222,
-      "description": "Thesis/dissertation template",
-      "tags": [
-        "typst",
-        "templates",
-        "thesis"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Thesis/dissertation template"
+      "summary": "Thesis/dissertation template",
+      "keywords": [
+        "typst",
+        "templates",
+        "thesis"
+      ]
     },
     {
       "path": "project/typst/tools/compilation-guide.md",
       "line_count": 63,
-      "description": "Typst compilation and tooling",
-      "tags": [
-        "typst",
-        "compile",
-        "tools"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Typst compilation and tooling"
+      "summary": "Typst compilation and tooling",
+      "keywords": [
+        "typst",
+        "compile",
+        "tools"
+      ]
     },
     {
       "path": "project/typst/README.md",
       "line_count": 35,
-      "description": "Typst extension overview and navigation",
-      "tags": [
-        "typst",
-        "overview",
-        "navigation"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-implementation-agent",
           "typst-research-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Typst extension overview and navigation"
+      "summary": "Typst extension overview and navigation",
+      "keywords": [
+        "typst",
+        "overview",
+        "navigation"
+      ]
     },
     {
       "path": "project/typst/typst-overview.md",
       "line_count": 85,
-      "description": "Typst language overview and introduction",
-      "tags": [
-        "typst",
-        "overview",
-        "introduction"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-research-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Typst language overview and introduction"
+      "summary": "Typst language overview and introduction",
+      "keywords": [
+        "typst",
+        "overview",
+        "introduction"
+      ]
     },
     {
       "path": "project/typst/typst-packages.md",
       "line_count": 136,
-      "description": "Available Typst packages and ecosystem",
-      "tags": [
-        "typst",
-        "packages",
-        "ecosystem"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-research-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Available Typst packages and ecosystem"
+      "summary": "Available Typst packages and ecosystem",
+      "keywords": [
+        "typst",
+        "packages",
+        "ecosystem"
+      ]
     },
     {
       "path": "project/typst/typst-vs-latex.md",
       "line_count": 133,
-      "description": "Comparison of Typst vs LaTeX",
-      "tags": [
-        "typst",
-        "latex",
-        "comparison"
-      ],
       "load_when": {
-        "languages": [
-          "typst"
-        ],
         "agents": [
           "typst-research-agent"
+        ],
+        "task_types": [
+          "typst"
         ]
       },
       "domain": "project",
       "subdomain": "typst",
-      "summary": "Comparison of Typst vs LaTeX"
+      "summary": "Comparison of Typst vs LaTeX",
+      "keywords": [
+        "typst",
+        "latex",
+        "comparison"
+      ]
     }
   ]
 }

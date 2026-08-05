@@ -413,19 +413,19 @@ or fabricate a key on the 31st entry.
 
 ---
 
-### Phase 7: `typst` — Full Migration (26 entries) [NOT STARTED]
+### Phase 7: `typst` — Full Migration (26 entries) [COMPLETED]
 
 **Goal**: Migrate `typst`'s description + tags + languages triple.
 
 **Tasks**:
-- [ ] Edit **`agent-system/extensions/typst/index-entries.json`** only. Never `.claude/**`.
-- [ ] Fold `description` into `summary` and delete `description` on all 26 entries. No entry
+- [x] Edit **`agent-system/extensions/typst/index-entries.json`** only. Never `.claude/**`.
+- [x] Fold `description` into `summary` and delete `description` on all 26 entries. No entry
       exceeds the 200-char cap when merged, so these are straightforward merges — but check each
       merged result against the cap rather than assuming.
-- [ ] Rename `tags` -> `keywords` on all 26 entries.
-- [ ] Rename `load_when.languages` -> `load_when.task_types` on all 26 entries, value
+- [x] Rename `tags` -> `keywords` on all 26 entries.
+- [x] Rename `load_when.languages` -> `load_when.task_types` on all 26 entries, value
       `["typst"]` unchanged. No pre-existing `task_types` overlap.
-- [ ] No `load_when.skills` or `load_when.topics` in this extension.
+- [x] No `load_when.skills` or `load_when.topics` in this extension.
 
 **Timing**: 1 hour
 
