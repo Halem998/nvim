@@ -3490,7 +3490,7 @@
       "project_number": 981,
       "project_name": "consolidate_routing_to_single_router",
       "title": "One router: command-route-skill.sh everywhere, manifest-declared agent resolution",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -3506,8 +3506,26 @@
       ],
       "description": "Collapse the FIVE independent routing implementations into one. From the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, skills/commands section):\n\nWHAT IS WRONG:\n  1. command-route-skill.sh (the canonical router, with the documented 5-step routing_hard ladder) is called by exactly ONE of 48 commands (implement.md ~line 263). research.md and plan.md each carry a ~37-line inline hand-copy of Steps 1-3 that OMITS the hard ladder entirely — so /research N --hard and /plan N --hard resolve the STANDARD skill and the manifest routing_hard entries are never consulted on those paths. This silently defeats hard mode for two of its three commands.\n  2. skill-orchestrate (~lines 69-108) and skill-orchestrate-hard (~lines 143-190) carry two MORE routing implementations with OPPOSITE precedence (first-match vs last-match, acknowledged in context/guides/hard-mode-routing.md), and derive agent names by string surgery: sed 's/^skill-//' + '-agent'. Applied to real manifests this produces NON-EXISTENT agents: email -> researcher-agent, memory -> learn-agent, filetypes -> filetypes-agent (real name filetypes-router-agent), present:slides -> slides:assemble-agent. /orchestrate on an email or memory task dispatches to an agent with no file.\n  3. skill-orchestrate's extension probe keys manifest path on task_type == directory name, which is false for neovim->nvim, lean4->lean (both masked by hardcoded case arms) and epi->epidemiology (NOT masked — epi silently falls through to general-* agents).\n  4. routing_exempt:true is documented as identifying THE core manifest but is set by three manifests (core, literature, slidev); the loop breaks on the first glob hit and resolves to core only because 'core' sorts first alphabetically. An extension named e.g. 'base' would silently shadow core's routing_hard table.\n  5. skill-orchestrator/SKILL.md is a vestigial sixth table (knows only general|meta|markdown), byte-identical to its own SKILL.md.archived twin, with one live consumer (epidemiology/commands/epi.md) — yet adding-domains.md and copy-claude-directory.md still instruct developers to update it.\n\nWORK:\n  1. Make research.md and plan.md call command-route-skill.sh exactly as implement.md does; delete the inline copies.\n  2. Add explicit agent routing to the manifests (e.g. routing_agents or derive from provides.agents) and make both orchestrate engines resolve agents from it; delete the sed-based derivation and both hardcoded case tables; unify precedence to the documented first-match-wins ladder.\n  3. Fix the manifest probe to resolve extension directory from task_type via the manifests themselves (scan for the manifest whose routing declares the task_type), not directory-name guessing.\n  4. Key core-manifest identification on .name == \"core\" (or equivalent unique key) instead of routing_exempt; keep routing_exempt for its exemption semantics only.\n  5. Retire skill-orchestrator: fold its one consumer (epi.md) onto the canonical router, delete the .archived twin, and fix the two guides that still reference it.\n\nVERIFICATION BAR:\n  - /research N --hard on a general task resolves skill-researcher-hard via the manifest routing_hard entry (assert with the router's stderr trace); same for /plan.\n  - /orchestrate routing resolution for every task_type declared in any loaded manifest yields an agent file that EXISTS on disk (add this as a wiring validation check so the class cannot recur).\n  - epi tasks resolve epidemiology agents; email and memory task types resolve real agents or explicitly route to general-* by declaration, not by accident.\n  - Both orchestrate engines produce identical routing decisions for an identical (op, task_type) matrix (table-driven test).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-08-05T17:16:46Z",
-      "session_id": "sess_1785353358_66268f"
+      "last_updated": "2026-08-05T23:52:56Z",
+      "session_id": "sess_1785970423_25f36e",
+      "artifacts": [
+        {
+          "path": "specs/981_consolidate_routing_to_single_router/reports/01_routing-consolidation-research.md",
+          "type": "report",
+          "summary": "Confirms all 5 review-named routing defects live in agent-system/extensions/core, plus a 6th undocumented bug, with exact line numbers and manifest data."
+        },
+        {
+          "path": "specs/981_consolidate_routing_to_single_router/plans/01_routing-consolidation-plan.md",
+          "type": "plan",
+          "summary": "8-phase plan collapsing six routing implementations onto one shared library plus two thin resolvers; adds routing_agents manifest declarations, fixes implement.md's missing effort_flag, retires skill-orchestrator, adds a wiring-lint gate and parity test."
+        },
+        {
+          "path": "specs/981_consolidate_routing_to_single_router/summaries/01_routing-consolidation-summary.md",
+          "type": "summary",
+          "summary": "All 8 phases completed: shared routing library, two thin resolvers, explicit routing_agents manifest declarations, implement.md effort_flag fix, skill-orchestrator retirement, wiring-lint gate7 and 18-assertion parity test."
+        }
+      ],
+      "completion_summary": "Consolidated six independent routing implementations onto one shared library (scripts/lib/manifest-routing-lib.sh) plus two thin resolvers (command-route-skill.sh refactored, command-route-agent.sh new); added explicit routing_agents/routing_agents_hard declarations across 17 manifests ground-truthed against each skill's own subagent_type dispatch; fixed implement.md's missing effort_flag argument; switched core-manifest identification to .name==\"core\"; retired skill-orchestrator; added lint-routing-wiring.sh (verify-deploy gate7) and an 18-assertion table-driven parity test. All 8 plan phases COMPLETED with zero unresolved deviations."
     },
     {
       "project_number": 982,
