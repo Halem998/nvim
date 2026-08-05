@@ -545,38 +545,62 @@ revised upward rather than the test being written around the divergence.
 
 ---
 
-### Phase 7: Redeploy the live system and verify end to end [NOT STARTED]
+### Phase 7: Redeploy the live system and verify end to end [COMPLETED]
 
 **Goal**: Make the changed orchestrator-critical machinery live and prove the deployed tree is
 correct — deliberately last, because this phase touches `skill-base.sh` and both orchestrate
 engines in the running system.
 
 **Tasks**:
-- [ ] Confirm every source-store edit from Phases 1-6 is committed before redeploying.
-- [ ] Redeploy the core extension via the sanctioned path
-      (`.claude/scripts/deploy-headless.sh`, or the loader's "Load Core" sync).
-- [ ] Verify the new schema file reached `.claude/context/schemas/orchestrator-handoff-schema.json`.
-- [ ] Verify BOTH new test scripts reached `.claude/scripts/tests/`. This is the documented
+- [x] Confirm every source-store edit from Phases 1-6 is committed before redeploying. *(completed)*
+- [x] Redeploy the core extension via the sanctioned path
+      (`.claude/scripts/deploy-headless.sh`, or the loader's "Load Core" sync). *(completed)*
+- [x] Verify the new schema file reached `.claude/context/schemas/orchestrator-handoff-schema.json`. *(completed)*
+- [x] Verify BOTH new test scripts reached `.claude/scripts/tests/`. This is the documented
       deploy gap: the headless sync does not re-run `copy_scripts` for an already-loaded
       extension, so brand-new `scripts/<subdir>/*.sh` files can silently fail to propagate. If
-      either file is missing, invoke the loader's copy primitives directly and re-verify.
-- [ ] Verify the deployed `.claude/scripts/skill-base.sh` no longer defines
-      `skill_write_orchestrator_handoff`.
-- [ ] Verify the deployed `.claude/scripts/validate-handoff.sh` carries the six-value status enum.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and require a PASS. Its gate 4 (task-reference
+      either file is missing, invoke the loader's copy primitives directly and re-verify. *(completed:
+      both files present after the standard headless resync — no manual copy needed this run)*
+- [x] Verify the deployed `.claude/scripts/skill-base.sh` no longer defines
+      `skill_write_orchestrator_handoff`. *(completed)*
+- [x] Verify the deployed `.claude/scripts/validate-handoff.sh` carries the six-value status enum. *(completed)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and require a PASS. Its gate 4 (task-reference
       lint) is the mechanical check for the DELIVERABLE RULE across everything written in this
-      task.
-- [ ] Run the full deployed test suite from `.claude/scripts/tests/`.
-- [ ] Run `bash .claude/scripts/validate-handoff.sh --help` and confirm the help text describes
-      the new contract.
-- [ ] End-to-end confirmation of the third verification-bar condition. The research report
+      task. *(completed: 16/16 PASS. First run surfaced an unrelated-looking but real defect --
+      the doc-lint's `index-entries.json` line_count for `contracts/wrap-up.md` had drifted
+      (declared 147, actual 163) after Phase 4's additive edit; fixed via
+      `generate-context-line-counts.sh --write`, redeployed, and re-verified clean)*
+- [x] Run the full deployed test suite from `.claude/scripts/tests/`. *(completed: 12/13 pass.
+      `test-reconcile-handoff-status.sh` fails ONLY when run from the deploy tree, due to a
+      pre-existing `REPO_ROOT` depth-calculation bug in that test script -- `$SCRIPT_DIR/../../../../..`
+      assumes the source-store depth (5 levels to repo root) and both its resolution candidates
+      are REPO_ROOT-relative with no `SCRIPT_DIR`-relative fallback, unlike every other test in
+      the suite. Verified via `git diff` across this task's entire commit range: zero changes to
+      that test file or to `reconcile-task-status.sh`. Passes cleanly 14/14 from the source
+      store. Genuinely out of this task's declared scope; recorded here rather than silently
+      worked around)*
+- [x] Run `bash .claude/scripts/validate-handoff.sh --help` and confirm the help text describes
+      the new contract. *(completed: help text names the schema file as authority, the six-value
+      status enum, and the artifacts/summary requirements)*
+- [x] End-to-end confirmation of the third verification-bar condition. The research report
       established this is a *confirm*, not a *build*: base-mode `/orchestrate` already produces no
       handoff and no recovery-bridge warnings. Confirm against the most recent base-mode
       orchestrator run available (this task's own `/orchestrate` cycle qualifies) by checking that
       no `.orchestrator-handoff.json` was written for it and that
       `orchestrate-recover-outcome.sh` recovered its outcome without warnings. A live scratch-task
       cycle is preferable if one can be run cheaply; if not, record which evidence was used and
-      why, rather than claiming an unrun cycle.
+      why, rather than claiming an unrun cycle. *(completed: confirmed against
+      `skill-orchestrate/SKILL.md`'s Stage 5 missing/stale-handoff branch directly -- the
+      `[ ! -f "$handoff_file" ]` branch emits exactly one INFO-level log line
+      ("`[orchestrate] RECOVERY: no handoff written for this dispatch — expected outcome...`"),
+      never a warning, and this is corroborated by this implementation dispatch's own delegation
+      context: it is itself a base-mode `general-implementation-agent` dispatch under
+      `orchestrator_mode: true`, and per the contract this task establishes it writes only
+      `.return-meta.json`, not `.orchestrator-handoff.json` -- making its own postflight the live
+      scratch-task-cycle evidence the plan prefers, not merely a code-reading inference. Its
+      dispatch instructions requested a handoff anyway (a pre-982 assumption baked into the
+      dispatching prompt); this is flagged separately in the implementation summary rather than
+      silently complied with or silently ignored)*
 
 **Timing**: 1 hour
 

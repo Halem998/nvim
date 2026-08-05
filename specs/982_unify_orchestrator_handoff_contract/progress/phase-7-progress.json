@@ -1,0 +1,32 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy the live system and verify end to end",
+  "started_at": "2026-08-05T21:21:00Z",
+  "last_updated": "2026-08-05T21:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm commits clean; redeploy via deploy-headless.sh; verify file propagation",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Fix index-entries.json line_count drift for wrap-up.md discovered by verify-deploy.sh doc-lint gate; redeploy; re-verify PASS",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Run deployed test suite, validate-handoff.sh --help, and confirm third verification-bar condition via code evidence plus this dispatch's own live cycle",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "verify-deploy.sh PASS 16/16 after the index-entries.json fix. Deployed test suite: 12/13 pass; test-reconcile-handoff-status.sh fails only from the deploy tree due to a pre-existing, unrelated REPO_ROOT depth bug in that test script (untouched by this task; passes 14/14 from source store)."
+}
