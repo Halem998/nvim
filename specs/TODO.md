@@ -1,5 +1,5 @@
 ---
-next_project_number: 995
+next_project_number: 997
 ---
 
 # TODO
@@ -11,42 +11,51 @@ next_project_number: 995
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 952,959,963,980,981,982,990,991,992,994 | -- | agent-system, extensions, literature, ... |
-| 2 | 948,953,960,989,993 | 952,959,982,990,992 | agent-system |
-| 3 | 961,988 | 960 | agent-system |
-| 4 | 962 | 961 | agent-system |
-| 5 | 983,984 | 953,962,981,982 | agent-system, status-marker-lifecycle |
-| 6 | 985,986 | 952,963,980,981,982,983,984,988 | agent-system |
+| 1 | 963,980,982,990 | -- | agent-system, extensions, orchestration-concurrency |
+| 2 | 948,981,991,994 | 963,980,982,990 | agent-system, literature |
+| 3 | 959,989,992 | 948,981,991 | agent-system |
+| 4 | 960,993 | 959,992 | agent-system |
+| 5 | 961,988 | 960 | agent-system |
+| 6 | 962 | 961 | agent-system |
+| 7 | 952,984 | 962,988 | agent-system, status-marker-lifecycle |
+| 8 | 953,985 | 952,963,980,984,992 | agent-system |
+| 9 | 983 | 953 | agent-system |
+| 10 | 986,995 | 983,984,985,989 | agent-system |
+| 11 | 996 | 986,993,995 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
+963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 948 [NOT STARTED] — Add a Stage 7 / final-metadata contract to ALL THREE cslib agents
+    └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
+      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
+  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
+    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+990 [NOT STARTED] — Migrate all 19 extensions' index-entries.json to the reconciled i
+  └─ 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
+    └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
+      └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
+      └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
+        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
   └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
     └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
+      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+      └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
+        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-        └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
+        └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
     └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
-      └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-  └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+      └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
-  └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu (see above)
-  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-990 [NOT STARTED] — Migrate all 19 extensions' index-entries.json to the reconciled i
-  └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
-991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
-992 [NOT STARTED] — Trim the 7 over-length EXTENSION.md files flagged by the prerequi
-  └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis (see above)
-948 [NOT STARTED] — Add a Stage 7 / final-metadata section to agent-system/extensions
-989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
+  └─ 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
 
 ### Extensions
 
@@ -66,13 +75,53 @@ next_project_number: 995
 
 ## Tasks
 
+### 996. Capstone: end-to-end verification of the refactored agent system
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 985, Task 986, Task 993, Task 995
+
+**Description**: Capstone acceptance gate for the agent-system refactor: verify the COMPOSED system end-to-end after all structural waves land. Every prior refactor task carries its own verification bar; nothing yet verifies the composition — a fresh deploy, all gates at their hardened defaults, and a live orchestrate cycle exercising routing, handoff, gate-out, and defect-recording together. This task fixes nothing structural itself: any failure is recorded (errors.json entry and/or spawned follow-up task) and the gate re-runs after the fix lands.
+
+VERIFICATION SCOPE:
+  1. DEPLOY: wipe+regenerate to a scratch tree succeeds; running it twice is byte-identical; declared-vs-deployed parity plus content-hash equality holds for EVERY provides.* category; no quarantined/deprecated file is present in the deployed tree; protected (.syncprotect) files and settings.local.json survive the round-trip.
+  2. GATES: check-extension-docs.sh exits 0 with every gate mode at its hardened baked-in default (no env overrides at invocation); validate-state.sh (including --deep invariants) passes on live state; the script test runner (run-all.sh) is green; the repo-wide task-reference lint (check-task-references.sh) passes.
+  3. LIVE CYCLE: one scratch-task /orchestrate cycle runs end-to-end — routing resolution yields an agent file that EXISTS on disk for every task_type declared in any loaded manifest; the cycle produces a schema-valid handoff (or, if the return-meta single-channel design was chosen, no handoff and no recovery-bridge warnings); gate-out reports zero format errors and zero auto-repaired fields; the system-defect recorder emits NO system_defect event on the clean run (the negative test) and the deferred-defect surface renders empty.
+  4. Record the results as a dated review artifact under specs/reviews/ so the refactor has a closing bookend to the review that opened it.
+
+SOURCE-STORE RULE (binding): any fixes spun out of this task target agent-system/extensions/** (or lua/neotex/plugins/ai/** for deploy machinery), never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 995. Convert surviving extension state.json writers to state-write.sh
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 983, Task 984
+
+**Description**: Convert the hand-rolled specs/state.json read-modify-write sequences that SURVIVE the skill-skeleton collapse to state-write.sh (or its guest mode). SPLIT RATIONALE (post-review): this work was originally item 5 of the state-schema/status-vocabulary task; it is split out because the skill-skeleton task collapses the 12 domain skill files onto a shared skeleton and routes the three team skills through update-task-status.sh, eliminating many of the ~110 hand-rolled writer blocks by construction (founder ~44, present ~22, web, lean, cslib — two via machine-global /tmp/state.tmp — epidemiology; all mutex-blind, most via fixed shared temp paths). Converting before the collapse would be partially wasted work, and gating the whole state-schema task on the collapse would delay the schema/vocabulary fixes needlessly. Correct sequence: collapse first, then convert the survivors against the landed schema.
+
+WORK:
+  1. Re-grep the FULL source store for hand-rolled state.json writes after the skeleton collapse lands (mv onto state.json, jq-to-temp-then-mv sequences, fixed shared temp paths such as /tmp/state.tmp) — do not trust the pre-collapse inventory counts.
+  2. Convert every survivor to state-write.sh or its guest mode, preserving each site's semantics.
+  3. Add the repo lint generalized from the archive/vault conversion's verification bar so the class cannot recur, wired where the other repo lints run.
+
+VERIFICATION BAR:
+  - grep for 'mv' onto state.json outside state-write.sh across the FULL source store returns zero.
+  - A founder/present skill dry-run exercises the converted write path.
+  - The new lint fails on a fixture containing a hand-rolled write and passes on the clean tree.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
 ### 994. Fix literature tooling landmines and sync pruning
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: literature
-- **Dependencies**: None
+- **Dependencies**: Task 980
 
-**Description**: Fix literature-extension tooling landmines surfaced by downstream research in the PossibleWorlds paper repo (report: ~/Philosophy/Papers/PossibleWorlds/specs/054_ingest_presheaf_semantics_literature/reports/01_literature-acquisition-research.md). (1) Document zotero-search.sh multi-term argument behavior explicitly: usage is QUERY [QUERY...] with additive OR scoring per term, so multi-word queries must be passed as separate arguments and a single quoted phrase fails to match; add an explicit warning to the script's usage header and the literature extension context docs. (2) Deployment hygiene for retired scripts: zotero-index-add.sh was retired upstream (agent-system/extensions/literature/scripts/deprecated/) but deployed repos still carry it as an active script (.claude/scripts/zotero-index-add.sh) together with stale generated references (the .claude/CLAUDE.md Zotero Integration table row claiming it adds to specs/literature-index.json, and .claude/agents/literature-agent.md around line 172) — extend the sync / Load Core process, or add a retirement manifest, so deprecated scripts are pruned and merged CLAUDE.md sections are regenerated in downstream deployments instead of persisting stale. (3) Record the retirement rationale in deprecated/README.md if absent: the script writes a ~20-field Zotero metadata entry while literature-briefing.sh reads the simpler {doc_id, relevance, added, source} shape from specs/literature-index.json, and it depends on the zot CLI and an undefined /zotero --setup command, so repair would have required schema translation; sub-index registration should instead use the documented jq append pattern in skill-literature/SKILL.md.
+**Description**: Fix literature-extension tooling landmines surfaced by downstream research in the PossibleWorlds paper repo (report: ~/Philosophy/Papers/PossibleWorlds/specs/054_ingest_presheaf_semantics_literature/reports/01_literature-acquisition-research.md). (1) Document zotero-search.sh multi-term argument behavior explicitly: usage is QUERY [QUERY...] with additive OR scoring per term, so multi-word queries must be passed as separate arguments and a single quoted phrase fails to match; add an explicit warning to the script's usage header and the literature extension context docs. (2) Deployment hygiene for retired scripts — REVISED (post-review) to verification-plus-gap-fill, not mechanism-building: zotero-index-add.sh was retired upstream (agent-system/extensions/literature/scripts/deprecated/) but deployed repos still carry it as an active script (.claude/scripts/zotero-index-add.sh) together with stale generated references (the .claude/CLAUDE.md Zotero Integration table row claiming it adds to specs/literature-index.json, and .claude/agents/literature-agent.md around line 172). The structural fix is the deploy-engine consolidation task this task now DEPENDS ON: its wipe+regenerate path prunes retired scripts and regenerates merged CLAUDE.md sections by construction. The work here is to run the consolidated deploy against an affected downstream repo (or scratch tree) and VERIFY the retired script is pruned and the stale generated references are regenerated; if any stale reference survives because its source-store origin still mentions the retired script, fix those source references. Do NOT build a parallel retirement/pruning mechanism. (3) Record the retirement rationale in deprecated/README.md if absent: the script writes a ~20-field Zotero metadata entry while literature-briefing.sh reads the simpler {doc_id, relevance, added, source} shape from specs/literature-index.json, and it depends on the zot CLI and an undefined /zotero --setup command, so repair would have required schema translation; sub-index registration should instead use the documented jq append pattern in skill-literature/SKILL.md.
 
 ---
 
@@ -86,13 +135,21 @@ next_project_number: 995
 
 ---
 
-### 992. Trim the 7 over-length EXTENSION.md files per the slim standard
+### 992. Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 987
+- **Dependencies**: Task 987, Task 990, Task 991
 
-**Description**: Trim the 7 over-length EXTENSION.md files flagged by the prerequisite task's Rule U (check-extension-docs.sh, check_extension_md_length): literature (169L), email (106L), lean (73L), cslib (71L), present (64L), nix (62L), core (62L) -- observed counts at the time Rule U was added; re-measure at implementation time since these may have grown further. WORK: for each of the 7, follow extension-slim-standard.md's own Migration Template to move detailed content (usage examples, architecture docs, conversion tables, migration guides, troubleshooting, prerequisites, MCP tool integration, mode descriptions) into context/project/{ext}/{domain,patterns,tools}/ files, leaving only the four required sections (Header, Routing Table, Command List, Context Pointers) in EXTENSION.md, each under the required per-section line budgets. Add an index-entries.json entry (conforming to the reconciled schema landed by the prerequisite task -- coordinate with the sibling index_entries_schema_migration follow-on task) for every new context file created. VERIFICATION BAR: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh reports zero Rule U advisories. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+**Description**: Bring every EXTENSION.md into conformance with extension-slim-standard.md and Rule U (check-extension-docs.sh, check_extension_md_length), so the gate-promotion follow-on can flip SCHEMA_CONFORMANCE_GATE_MODE to hard without standing failures. Two sub-scopes:
+
+(A) TRIM the 6 over-length LIVE EXTENSION.md files flagged by Rule U: literature (169L), email (106L), lean (73L), cslib (71L), present (64L), nix (62L) -- observed counts at the time Rule U was added; re-measure at implementation time since these may have grown further. For each, follow extension-slim-standard.md's own Migration Template to move detailed content (usage examples, architecture docs, conversion tables, migration guides, troubleshooting, prerequisites, MCP tool integration, mode descriptions) into context/project/{ext}/{domain,patterns,tools}/ files, leaving only the four required sections (Header, Routing Table, Command List, Context Pointers) in EXTENSION.md, each under the required per-section line budgets. Add an index-entries.json entry (conforming to the reconciled schema landed by the prerequisite schema-migration sibling — this task is sequenced AFTER it for exactly that reason) for every new context file created.
+
+(B) RESOLVE the two DEAD EXTENSION.md files instead of trimming them (SCOPE MOVED HERE, post-review, from the quarantine sweep so the doc-lint lane stays self-contained and the gate promotion is not blocked behind that late sweep): core/EXTENSION.md (62L) is dead because core's manifest points its claudemd merge target at merge-sources/claudemd.md, and slidev/EXTENSION.md is dead because slidev has no claudemd merge target at all. Decide deliberately: delete each dead file (updating manifest provides.* and any references so check-extension-docs.sh passes), or teach check-extension-docs.sh that merge_targets.claudemd.source is the authority for which file must exist. Record the decision rationale. Trimming a dead file is the one WRONG outcome — it spends effort making conformant a file nothing consumes.
+
+VERIFICATION BAR: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh reports zero Rule U advisories across all 19 extensions (via trim for the 6 live files, via delete-or-checker-fix for the 2 dead ones); every new context file has a schema-conformant index entry.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ---
 
@@ -100,7 +157,7 @@ next_project_number: 995
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 987
+- **Dependencies**: Task 987, Task 990
 
 **Description**: Break the meta task_types catch-all. WORK: (1) give the ~24 core/index-entries.json entries whose ONLY load_when hook is task_types:["meta"] real agents/commands hooks, grouped thematically per the prerequisite task's research report section 5; (2) trim the wider 123-entry task_types:["meta"] set so meta-builder-agent's resolved context stops including everything tagged meta regardless of relevance; (3) derive the tier classification algorithmically inside validate-context-budgets.sh from load_when shape (always==true -> Tier 1, non-empty agents -> Tier 2, non-empty commands/task_types only -> Tier 3) instead of querying the never-populated authored tier field (0 of 470 entries anywhere carry it, confirmed by the prerequisite task's research); (4) fix the 2 load_when.agents values across all extensions that name agents not present in this deploy. VERIFICATION BAR: bash .claude/scripts/validate-context-budgets.sh reports zero per-agent budget violations (or each remaining violation carries a documented, deliberate cap change); its 'entries with tier field' check passes via the new derivation logic rather than the authored field. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
@@ -120,18 +177,19 @@ next_project_number: 995
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 971, Task 972, Task 974, Task 982
+- **Dependencies**: Task 948, Task 963, Task 971, Task 972, Task 974, Task 982
 
-**Description**: Normalize agent frontmatter and contract sections across all 77 agents, closing the documented known gaps as SHARED includes rather than 77 hand-copies. DEPENDS ON the three in-flight checklist-contract tasks (loosen checklist match; add checklist contract to cslib and hard implementation variants) because they edit the same agent files — this task rebases on whatever they land and generalizes the pattern.
+**Description**: Normalize agent frontmatter and contract sections across all 77 agents, closing the documented known gaps as SHARED includes rather than 77 hand-copies. DEPENDS ON the handoff-unification task, the cslib summary-format task, and the cslib terminal-metadata task, because they edit the same agent files — this task rebases on whatever they land and generalizes their patterns. (The three checklist-contract tasks it originally waited on — loosen checklist match; add checklist contract to cslib and hard implementation variants — have all landed; their pattern is among those generalized here.)
 
 WHAT IS WRONG (from specs/reviews/review-2026-07-29-agent-system.md, agents section):
   1. The no-task-references MUST-NOT bullet exists in exactly TWO agents (general-implementation-agent, cslib-implementation-agent) plus passing mentions in their hard variants. The rule file's own Enforcement section names a 3-agent gap (neovim/nix/email); the real gap is ~73 agents, including every domain implementation agent and — highest value — planner-agent, planner-hard-agent, meta-builder-agent, reviser-agent (plans and system-change specs are the artifacts most likely to cite task numbers). Since scripts/lib/task-reference-patterns.sh already exists as the shared pattern library, add the bullet as a shared @-imported '## Critical Requirements' include, not 73 copies; update the rule file's Enforcement section to match.
   2. Frontmatter: agent-frontmatter-standard.md allows exactly name/description/model, but four undeclared keys are live in three spellings — tools: (spawn-agent), allowed-tools: (synthesis-agent, literature-agent), disallowedTools: (both web agents) — plus mcp-servers: in five founder/present agents. Standardize on one key (whichever Claude Code actually honors), document it in the standard, migrate all users.
   3. Fifteen domain agents omit model: despite the standard's tier table assigning them sonnet (all filetypes and founder agents). Add it or amend the standard.
   4. Body-skeleton drift: all 11 core agents lack the '## Agent Metadata' and '## Allowed Tools' sections that nearly all extension agents carry; six agents lack '## Error Handling'; two files under lean/context/.../agents/ have no frontmatter at all but sit in an agents/-globbed path. Pick the canonical section skeleton, encode it in ONE agent template (two competing templates exist: docs/templates/agent-template.md and context/templates/agent-template.md — the docs-truth-sweep task folds them; coordinate), and add a lint (extend check-extension-docs.sh or lint-contract-compliance.sh) checking frontmatter keys and required sections so drift fails loudly.
+  5. SCOPE ADDED (post-review) — terminal-metadata contract presence, generalizing the observed cslib production failure (an agent with no in-file terminal-status contract invented an off-schema status and bare-string artifacts, stranding two successfully-researched tasks): every DISPATCHABLE research/implementation agent — core AND extensions (nix, nvim, email, filetypes, founder, present, epi, web, latex, typst, python, z3, lean, formal, cslib) — must contain a final-metadata section naming its terminal status value from the normative vocabulary in return-metadata-file.md (researched for research agents, implemented for implementation agents) and the artifacts array-of-objects shape {type, path, summary} with the bare-string-array rationale. The cslib terminal-metadata task fixes the three cslib agents and establishes the reference text; this task audits ALL remaining dispatchable agents and adds a section-PRESENCE check to the lint so the class cannot recur. Prefer a shared @-imported include over per-agent copies, consistent with item 1.
 
 VERIFICATION BAR:
-  - A lint pass over all agents/ files reports zero frontmatter-key violations and zero missing required sections; a fixture with a rogue key fails.
+  - A lint pass over all agents/ files reports zero frontmatter-key violations, zero missing required sections, and zero dispatchable agents lacking the terminal-metadata section; a fixture with a rogue key fails; a fixture agent missing the terminal-metadata section fails.
   - grep for the no-task-references bullet (or its include reference) matches every implementation/planning/meta agent; the rule file's Enforcement section no longer names a known gap.
   - All agents declaring a model use a valid value; the 15 previously-bare agents resolve per the tier table.
 
@@ -211,25 +269,25 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 951, Task 960, Task 961, Task 962, Task 963, Task 969, Task 980, Task 982, Task 983, Task 984, Task 987
+- **Dependencies**: Task 951, Task 960, Task 961, Task 962, Task 963, Task 969, Task 980, Task 982, Task 983, Task 984, Task 985, Task 987, Task 989, Task 992
 
-**Description**: Make the documentation layer stop describing machinery that does not exist, and consolidate the redundant doc surfaces. DEPENDS ON the deploy-engine consolidation task, because the correct replacement text for every 'Load Core / Sync all' remediation instruction is decided there.
+**Description**: Make the documentation layer stop describing machinery that does not exist, and consolidate the redundant doc surfaces. This is the LAST pass of the review batch: it DEPENDS ON the deploy-engine consolidation task (the correct replacement text for every 'Load Core / Sync all' remediation instruction is decided there), the quarantine sweep (its removals change which references are dangling), the agent-contract normalization (the canonical template decision feeds item 7), and the EXTENSION.md slim-down (item 5's target shape and Rule U budgets).
 
 INVENTORY (from specs/reviews/review-2026-07-29-agent-system.md, docs/context section; all verified):
   1. The dispatch-agent fiction: docs/architecture/system-overview.md (~line 7) asserts dispatch-agent.sh is CURRENT architecture; architecture-spec.md (599 lines) describes it in detail; docs/fork-patterns.md admits it is old; the script does not exist; dispatch-agent-spec.md is cited four times and does not exist. Retire architecture-spec.md (or rewrite to reality), fix system-overview.md, remove the dangling citations.
   2. Eight-plus references to nonexistent scripts: postflight-research/plan/implement.sh in context/patterns/jq-escaping-workarounds.md (~lines 267-273 — an ALWAYS-LOADED file, so dead recipes ship in every prompt), postflight-workflow.sh + nix-postflight.sh + nix-verify.sh in architecture-spec.md, cleanup-stale-sessions.sh in orchestration/sessions.md, validate-context-refs.sh/update-context-refs.sh in context-loading-best-practices.md, validate-all-standards.sh in postflight-tool-restrictions.md, test-implement-pipeline.sh in shell-script-testing.md. Purge or correct each (artifact-linking-todo.md's 'correctly marked removed' style is the model).
   3. Consolidate the four validation docs sharing verbatim headings (orchestration/validation.md 698L, subagent-validation.md 313L, orchestration-validation.md 233L, context/validation.md 46L) into one.
   4. Fold docs/README.md (restates CLAUDE.md's tables, titled 'v3.0') into docs/docs-README.md (the actual directory map); one README per directory.
-  5. Move the 162-line '## Literature Mode (--lit)' section out of core's merge-sources/claudemd.md into the literature extension's EXTENSION.md (it currently loads unconditionally in repos where literature is not installed and heavily overlaps that EXTENSION.md); apply the same test to the other ~300 lines of claudemd.md that restate always-loaded context files (Context Discovery, jq Safety, State Synchronization sections).
+  5. Move the 162-line '## Literature Mode (--lit)' section out of core's merge-sources/claudemd.md into the LITERATURE EXTENSION'S OWN claudemd merge-source, so it merges into a repo's .claude/CLAUDE.md only where the literature extension is loaded, with any overflow detail landing in context/project/literature/** files. Do NOT move it into literature/EXTENSION.md: the slim-down task has just brought that file under Rule U's per-section line budgets and the gate-promotion task makes Rule U a hard failure — parking 162 lines there would re-bloat it and turn the hardened gate red. Apply the same relocation test to the other ~300 lines of claudemd.md that restate always-loaded context files (Context Discovery, jq Safety, State Synchronization sections).
   6. Trim rules/no-task-references-in-deliverables.md to its ~60-line actionable constraint: move the four 'Discovered during Phase N purge' / 'Resolved test case' / 'deploy-mechanism gap' narratives (~90 lines) to a decision record under specs/; the deploy-gap narrative is additionally OBSOLETE once the deploy consolidation lands and contains the wrong Lua path.
-  7. Two agent templates exist (docs/templates/agent-template.md, context/templates/agent-template.md) — keep one, redirect the other.
+  7. Two agent templates exist (docs/templates/agent-template.md, context/templates/agent-template.md) — keep one, redirect the other, consistent with the canonical template the agent-contract normalization task selects.
   8. Rewrite context/patterns/skill-lifecycle.md's prescribed section layout (used by zero skills) — coordinate with the skill-skeleton task which owns the replacement content.
   9. Fix the always-loaded context/patterns/context-discovery.md documented jq recipe that declares --arg lang but references $task_type (copy-pasting the recommended pattern errors).
 
 VERIFICATION BAR:
   - grep across docs/ and context/ for each nonexistent script name returns zero hits (or only marked-removed notes).
   - check-extension-docs.sh doc-lint passes; no doc references dispatch-agent as current.
-  - merge-sources/claudemd.md shrinks by >=250 lines with no loss of unique content (each removed section has a durable home).
+  - merge-sources/claudemd.md shrinks by >=250 lines with no loss of unique content (each removed section has a durable home); literature's EXTENSION.md stays within Rule U budgets after the move.
 
 SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**; the narratives moved out of the rule file land under specs/ where task numbers are permitted.
 
@@ -239,7 +297,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 952, Task 960, Task 963, Task 964, Task 969, Task 973, Task 980, Task 981, Task 982, Task 984, Task 987, Task 988
+- **Dependencies**: Task 952, Task 960, Task 963, Task 964, Task 969, Task 973, Task 980, Task 981, Task 982, Task 984, Task 987, Task 988, Task 992
 
 **Description**: Quarantine (never silently delete) the dead machinery the review inventoried, mirroring the literature extension's existing scripts/deprecated/ + README-with-per-file-rationale precedent. DEPENDS ON the deploy-engine consolidation task landing first, because that task decides the fate of several items below (manager.regenerate and settings_backup get WIRED there, not quarantined; sync.lua's status changes there).
 
@@ -249,7 +307,7 @@ INVENTORY (from specs/reviews/review-2026-07-29-agent-system.md; re-verify each 
   3. Dead rules: pr-prohibition.md (96L, references cslib /pr commands not in this deploy) and project-overview-detection.md (28L) are deployed but wired to nothing (.claude/rules/ is not auto-loaded; only CLAUDE.md @-imports pull rules in, and neither is imported). Decide: wire into the @-import list or quarantine.
   4. skill-orchestrator/SKILL.md.archived — byte-identical twin of the live file (the routing task retires the skill itself; this task removes the twin).
   5. The dead .syncprotect entry (output/implementation-001.md) and the empty artifacts.settings/lib/tests glob targets in sync.lua IF the deploy task leaves sync.lua alive.
-  6. Two dead EXTENSION.md files (core/EXTENSION.md — manifest points claudemd at merge-sources/claudemd.md instead; slidev/EXTENSION.md — no claudemd merge target at all): delete, or teach check-extension-docs.sh that merge_targets.claudemd.source is the authority for which file must exist.
+  6. Two dead EXTENSION.md files (core/EXTENSION.md — manifest points claudemd at merge-sources/claudemd.md instead; slidev/EXTENSION.md — no claudemd merge target at all). SCOPE ADJUSTMENT (post-review): this item is now DECIDED AND EXECUTED by the EXTENSION.md slim-down task, which this task depends on — that task resolves the dead-file status (delete, or teach check-extension-docs.sh that merge_targets.claudemd.source is the authority) as part of its doc-lint lane so the gate-promotion task is not blocked behind this sweep. Here, only RE-VERIFY its outcome during the caller-graph re-grep; do not re-decide or re-touch those files.
 
 VERIFICATION BAR:
   - Every quarantined file sits under a deprecated/ dir with a README rationale line (literature's format); manifest provides.* no longer declares it; check-extension-docs.sh passes.
@@ -264,7 +322,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
-- **Dependencies**: Task 962, Task 969
+- **Dependencies**: Task 962, Task 969, Task 988
 
 **Description**: Give specs/state.json a machine-enforced schema and make the status vocabulary a single source of truth. This SUBSUMES task 950 (marked abandoned in favor of this task — its verified command-structure.md defect inventory folds into item 4 below) and DEPENDS ON task 969 (state-write.sh archive/vault coverage) landing first so the writer conversion in item 5 has a mechanism that can address every target.
 
@@ -296,7 +354,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 951, Task 952, Task 953, Task 959, Task 960, Task 961, Task 962, Task 964, Task 969, Task 981, Task 982
+- **Dependencies**: Task 951, Task 952, Task 953, Task 959, Task 960, Task 961, Task 962, Task 964, Task 969, Task 981, Task 982, Task 988
 
 **Description**: Apply the lit-stage4a-flow.md pattern (ONE shared, directly-executable block imported by @-reference — the single best-factored block in the system, whose own header documents the drift class it fixed) to the rest of the skill lifecycle, and make skills call the skill-base.sh functions that already exist instead of hand-copying them.
 
@@ -333,7 +391,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 974
 
-**Description**: Unify the .orchestrator-handoff.json contract. FOUR disagreeing schemas currently coexist, and the nominal producer has zero callers. This SUBSUMES tasks 947 and 949 (both marked abandoned in favor of this task — read their descriptions first; 949's cslib-sibling propagation should be handled here or spun out at planning time). Related but NOT subsumed: task 968 (handoff-present corroboration gate — this task simplifies its terrain but 968's gate logic stays separate) and task 973 (reconcile-task-status safe recovery from malformed handoff status — that failure-mode handling stays; this task reduces its trigger frequency).
+**Description**: Unify the .orchestrator-handoff.json contract. FOUR disagreeing schemas currently coexist, and the nominal producer has zero callers. This SUBSUMES task 947 (marked abandoned in favor of this task — read its description first). Task 949's cslib-sibling propagation is SPUN OUT to the cslib terminal-metadata task (which depends on this one and encodes its decisions); this task's file scope deliberately excludes cslib agent files so it cannot collide with the cslib summary-format task. Related but NOT subsumed: task 968 (handoff-present corroboration gate — this task simplifies its terrain but 968's gate logic stays separate) and task 973 (reconcile-task-status safe recovery from malformed handoff status — that failure-mode handling stays; this task reduces its trigger frequency).
 
 THE FOUR SCHEMAS (from the review, specs/reviews/review-2026-07-29-agent-system.md):
   1. docs/architecture/handoff-schema.md (~lines 103-140): requires phase, status, summary, artifacts[]{type,path}; blockers as {description, phase, severity}; nested continuation_context.
@@ -346,8 +404,7 @@ WORK:
   1. Decide the ONE schema (a JSON Schema file, like events-schema.json), covering the union the readers actually need: status, phase, summary, artifacts[]{type,path,summary}, phases_completed/total, plan_markers_verified, ONE blocker shape, one continuation form. Settle the research-phase writer question (do research dispatches write a handoff or not — pick one and align agent contracts, wrap-up.md, and the schema's writer table).
   2. Make validate-handoff.sh enforce exactly that schema.
   3. Pick ONE writer: either wire skill_write_orchestrator_handoff into the skills for all three phases (making base-mode handoffs real and retiring the recovery bridge), or delete it and declare .return-meta.json the single return channel with the handoff generated FROM it by the orchestrator. Do not keep both channels with a bridge.
-  4. Align both engines' reads (including the blockers divergence) and the three hard-mode agents' H9 prose to the schema.
-  5. Propagate the artifacts-shape spec to the cslib sibling agents or explicitly spin it out.
+  4. Align both engines' reads (including the blockers divergence) and the three hard-mode agents' H9 prose to the schema. (The cslib agents are deliberately OUT of scope here — the downstream cslib terminal-metadata task propagates this task's decisions to them.)
 
 VERIFICATION BAR:
   - validate-handoff.sh accepts a handoff written by the chosen writer and REJECTS one missing any reader-required field (test both directions).
@@ -362,7 +419,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 982
 
 **Description**: Collapse the FIVE independent routing implementations into one. From the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, skills/commands section):
 
@@ -1110,7 +1167,7 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 956
+- **Dependencies**: Task 956, Task 981
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
@@ -1306,7 +1363,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 951
+- **Dependencies**: Task 951, Task 962, Task 988
 
 **Description**: Build the recorder that turns a detected agent-system defect into a durable, deduplicated record, then wire the detection sites the prerequisite task's registry classifies as ready. Today NO site anywhere converts a detected agent-system defect into a task, an errors.json entry, or any durable record -- every one of them terminates in EXIT (partial), a failed_tasks entry, or an 'mv ... for inspection'.
 
@@ -1441,13 +1498,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 
 ---
 
-### 948. Add a Stage 7 final-metadata contract to cslib-research-agent.md
+### 948. Add terminal-metadata contracts to all three cslib agents
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 982
+- **Dependencies**: Task 963, Task 982
 
-**Description**: Add a Stage 7 / final-metadata section to agent-system/extensions/cslib/agents/cslib-research-agent.md, which currently has no terminal-metadata contract at all. This is the agent that actually failed in production.
+**Description**: Add a Stage 7 / final-metadata contract to ALL THREE cslib agents: agent-system/extensions/cslib/agents/cslib-research-agent.md (which currently has no terminal-metadata contract at all — this is the agent that actually failed in production), cslib-implementation-agent.md, and cslib-implementation-hard-agent.md. SCOPE WIDENED (post-review): the cslib-sibling artifacts-shape propagation formerly carried as item 5 of the handoff-unification task (and before that by the abandoned propagation task) lands HERE instead, so all cslib terminal-metadata work happens in one task and cannot collide with the handoff-unification task's file scope.
 
 SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**. The source store lives at /home/benjamin/.config/nvim/agent-system/, NOT in the cslib repo. The user reloads the agent system via a <leader>al keybinding which redeploys from this nvim source store to cslib and other repos, so the fix must land there to propagate.
 
@@ -1458,11 +1515,13 @@ ROOT CAUSE (verified by direct file inspection): cslib-research-agent.md defines
 REFERENCE CONTRACT TO MIRROR: agent-system/extensions/core/agents/general-research-agent.md Stage 7 (lines ~306-322). It explicitly states status researched AND documents that artifacts is a required array of objects with type/path/summary keys, 'never an array of bare path strings', with the precise rationale that a bare-string array parses as valid JSON but silently breaks the orchestrator's .artifacts[0].path read (which yields an empty string against a string element instead of an object). It includes a minimal JSON example and a pointer to return-metadata-file.md's 'artifacts (required)' section as the full field spec.
 
 REQUIRED SCOPE:
-1. Name the terminal status value researched explicitly.
-2. Specify the artifacts array-of-objects shape WITH its rationale (not just the shape - the rationale is what stops future drift).
-3. Encode whichever .orchestrator-handoff.json rule the prerequisite task establishes.
+1. Name the terminal status value explicitly in each agent: researched for the research agent, implemented for both implementation agents (per the normative vocabulary in return-metadata-file.md).
+2. Specify the artifacts array-of-objects shape WITH its rationale in all three agents (not just the shape - the rationale is what stops future drift).
+3. Encode whichever .orchestrator-handoff.json rule the handoff-unification prerequisite task establishes.
 
-CRITICAL - DO NOT PRE-COMMIT ITEM 3: it is tempting to 'add an orchestrator-handoff writing contract', but core currently contradicts itself on whether research agents may write that file at all (general-research-agent.md lines 182-190 forbid it; skill-orchestrate/SKILL.md line 2045 reads it after each dispatch). The prerequisite task settles this. Encode ITS answer - which may well be an explicit PROHIBITION on writing the handoff rather than a contract for writing one.
+CRITICAL - DO NOT PRE-COMMIT ITEM 3: it is tempting to 'add an orchestrator-handoff writing contract', but core currently contradicts itself on whether research agents may write that file at all (general-research-agent.md lines 182-190 forbid it; skill-orchestrate/SKILL.md line 2045 reads it after each dispatch). The handoff-unification prerequisite settles this. Encode ITS answer - which may well be an explicit PROHIBITION on writing the handoff rather than a contract for writing one.
+
+SEQUENCING: depends on the handoff-unification task (whose schema/writer decisions this task encodes) AND on the cslib summary-format task (which edits the same two cslib implementation-agent files; this task lands after it and rebases on its text).
 
 Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
 
