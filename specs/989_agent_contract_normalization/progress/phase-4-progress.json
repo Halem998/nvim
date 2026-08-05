@@ -1,0 +1,51 @@
+{
+  "phase": 4,
+  "phase_name": "Establish the canonical no-task-references fragment and classification rule",
+  "started_at": "2026-08-05T21:50:00Z",
+  "last_updated": "2026-08-05T22:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create canonical fragment file with the exact bullet text",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/no-task-references-bullet.md"]
+    },
+    {
+      "id": 2,
+      "description": "Document generated-copy-not-@-import + CLAUDE.md/merge-sources precedent",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/no-task-references-bullet.md"]
+    },
+    {
+      "id": 3,
+      "description": "Write in-scope classification rule into fragment header",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/no-task-references-bullet.md"]
+    },
+    {
+      "id": 4,
+      "description": "Update rule file Enforcement section: replace Known gap paragraph",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/rules/no-task-references-in-deliverables.md"]
+    },
+    {
+      "id": 5,
+      "description": "Register the new fragment in manifest.json provides array",
+      "status": "done",
+      "files_touched": [],
+      "note": "No manifest.json edit made. Verified via lua/neotex/plugins/ai/shared/extensions/loader.lua (context category, entry_kind file_or_dir, lines ~435-459): a provides.context entry that resolves to a directory is copied recursively (scan_directory_recursive), so any new file placed inside an already-registered directory entry deploys automatically. manifest.json's provides.context already lists \"contracts\" as a directory entry (confirmed: jq -r '.provides.context[]' manifest.json includes 'contracts'), which is exactly how the two pre-existing files in that directory (phase-closure.md, pre-edit-gate.md) deploy today without their own manifest entries. Adding a manifest.json entry for the new fragment specifically would be a no-op at best and inconsistent with the existing precedent in the same directory."
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4 (manifest.json registration)",
+      "description": "Update agent-system/extensions/core/manifest.json to register the new fragment under the appropriate provides array so it deploys",
+      "type": "skipped",
+      "reason": "manifest.json's provides.context array already lists \"contracts\" as a whole-directory entry, which the deploy loader (loader.lua, file_or_dir entry kind) copies recursively. A new file placed inside context/contracts/ therefore deploys automatically without a new manifest.json entry -- verified against the loader source and against the precedent of the two pre-existing contracts/ files, neither of which has an individual manifest.json entry.",
+      "annotation": "*(deviation: skipped -- no manifest.json edit needed; the contracts/ directory entry already covers new files recursively, see progress file)*"
+    }
+  ]
+}

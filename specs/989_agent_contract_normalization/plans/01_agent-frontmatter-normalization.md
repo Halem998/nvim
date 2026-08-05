@@ -266,33 +266,40 @@ before Phase 2 because four founder agents appear in both edit sets.
 
 ---
 
-### Phase 4: Establish the canonical no-task-references fragment and classification rule [NOT STARTED]
+### Phase 4: Establish the canonical no-task-references fragment and classification rule [COMPLETED]
 
 - **Goal**: One authoritative source for the MUST-NOT bullet text plus a written rule for which
   agents must carry it — the design work that makes Phase 5 mechanical.
 
 - **Tasks**:
-  - [ ] Create a canonical fragment file under
+  - [x] Create a canonical fragment file under
     `agent-system/extensions/core/context/contracts/` (or the nearest existing shared-fragment
     location the implementer confirms) holding the exact bullet text currently live in the four
     compliant agents:
     ``Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead``
-  - [ ] Document in that fragment's header that it is a **generated-copy source, not an
+    *(completed: agent-system/extensions/core/context/contracts/no-task-references-bullet.md)*
+  - [x] Document in that fragment's header that it is a **generated-copy source, not an
     `@`-import**: agent bodies carry a literal copy of the bullet, kept in sync by lint, because
     `@`-references in an agent body do not auto-resolve at spawn. Cite the CLAUDE.md-from-
-    merge-sources generation precedent as the model.
-  - [ ] Write the in-scope classification rule into the fragment header: an agent must carry the
+    merge-sources generation precedent as the model. *(completed)*
+  - [x] Write the in-scope classification rule into the fragment header: an agent must carry the
     bullet if and only if it **authors deliverable files outside `specs/**`**. This covers every
     implementation agent, the planning agents (`planner-agent`, `planner-hard-agent`,
     `reviser-agent`), and `meta-builder-agent`. Research agents whose only outputs are reports
     under `specs/**` are out of scope, and the fragment must say so explicitly so the exclusion
-    reads as a decision rather than an omission.
-  - [ ] Update the Enforcement section of
+    reads as a decision rather than an omission. *(completed)*
+  - [x] Update the Enforcement section of
     `agent-system/extensions/core/rules/no-task-references-in-deliverables.md`: replace the
     "Known gap" paragraph naming `neovim-implementation-agent`, `nix-implementation-agent`, and
     `email-implementation-agent` with a statement of the real coverage rule and a pointer to the
     lint that enforces it. Do not delete the paragraph before Phase 5 lands the coverage it
     describes — write the replacement text in this phase and confirm accuracy in Phase 8.
+    *(completed)*
+  - [x] Register the fragment in `manifest.json`. *(deviation: skipped — `provides.context`
+    already lists `contracts` as a whole-directory entry that the deploy loader copies
+    recursively; a new file placed inside it deploys automatically, matching the precedent of the
+    two pre-existing files in that directory, neither of which has its own manifest entry. See
+    progress file for the loader-source verification.)*
 
 - **Timing**: 1.5 hours
 

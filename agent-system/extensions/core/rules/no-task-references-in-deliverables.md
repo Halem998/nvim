@@ -121,18 +121,21 @@ Three layers. `specs/**` is the ONLY exempt tree — `agent-system/extensions/**
   Bash heredoc, so this hook DOES see and can block `.memory/**` memory-candidate harvest writes.
   The heredoc gap exists only in `memory-harvest.sh` itself, which is not on the live `/todo`
   path today.
-- **Agent contracts**: four agent files carry an explicit MUST-NOT bullet against citing task
-  numbers in files outside `specs/**` —
-  `agent-system/extensions/core/agents/general-implementation-agent.md`,
-  `agent-system/extensions/core/agents/general-implementation-hard-agent.md`,
-  `agent-system/extensions/cslib/agents/cslib-implementation-agent.md`, and
-  `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md`.
-
-**Known gap**: the extension implementation agents `neovim-implementation-agent`,
-`nix-implementation-agent`, and `email-implementation-agent` also author files outside
-`specs/**` and do not yet carry the MUST-NOT bullet. This is a real, named gap, not an oversight
-papered over — adding it to those three agents is out of scope for the plan that authored this
-section and is left as a follow-up.
+- **Agent contracts**: every agent that authors deliverable files outside `specs/**` carries an
+  explicit MUST-NOT bullet against citing task numbers, sourced from one canonical fragment,
+  `agent-system/extensions/core/context/contracts/no-task-references-bullet.md`. That fragment is
+  a generated-copy source (not an `@`-import — `@`-references in an agent body do not auto-resolve
+  at subagent spawn) and states the exact in-scope/out-of-scope classification rule: an agent must
+  carry the bullet if and only if it authors deliverable files outside `specs/**`. This covers
+  every dispatchable implementation agent (core and extensions alike), the planning agents
+  (`planner-agent`, `planner-hard-agent`, `reviser-agent`), and `meta-builder-agent`; research
+  agents whose only output is a `specs/**` report are out of scope by that same rule, not by
+  oversight.
+- **Coverage lint**: `lint-agent-contracts.sh` (Check C) enforces bullet presence across the full
+  in-scope set defined by the fragment above, reading the expected text from the fragment file
+  itself rather than a hardcoded string, so drift between the fragment and any agent's literal
+  copy fails loudly instead of silently re-accumulating. See
+  `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`.
 
 **Deploy-mechanism note (not part of this rule's own scope, recorded for maintainers)**:
 `agent-system/extensions/core/root-files/settings.json` is install-only by design — the deploy
