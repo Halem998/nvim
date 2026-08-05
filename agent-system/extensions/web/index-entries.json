@@ -2,13 +2,12 @@
   "entries": [
     {
       "path": "project/web/README.md",
-      "description": "Web context overview with directory structure and loading strategy",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -19,13 +18,12 @@
     },
     {
       "path": "project/web/domain/astro-framework.md",
-      "description": "Astro 5/6 framework reference with .astro file format and islands architecture",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -36,13 +34,12 @@
     },
     {
       "path": "project/web/domain/tailwind-v4.md",
-      "description": "Tailwind CSS v4 CSS-first configuration with @theme directive",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -53,13 +50,12 @@
     },
     {
       "path": "project/web/domain/cloudflare-pages.md",
-      "description": "Cloudflare Pages deployment platform and edge CDN reference",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -70,13 +66,12 @@
     },
     {
       "path": "project/web/domain/typescript-web.md",
-      "description": "TypeScript configuration and patterns for type-safe Astro development",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -87,13 +82,12 @@
     },
     {
       "path": "project/web/patterns/astro-component.md",
-      "description": "Common patterns for building Astro components",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -104,13 +98,12 @@
     },
     {
       "path": "project/web/patterns/astro-layout.md",
-      "description": "Patterns for building layout components that wrap pages",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -121,13 +114,12 @@
     },
     {
       "path": "project/web/patterns/astro-content-collections.md",
-      "description": "Patterns for defining, querying, and rendering type-safe content collections",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -138,13 +130,12 @@
     },
     {
       "path": "project/web/patterns/tailwind-patterns.md",
-      "description": "UI component patterns with Tailwind CSS v4",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -155,13 +146,12 @@
     },
     {
       "path": "project/web/patterns/accessibility-patterns.md",
-      "description": "Semantic HTML, ARIA, and keyboard navigation patterns",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -172,13 +162,12 @@
     },
     {
       "path": "project/web/standards/web-style-guide.md",
-      "description": "Naming conventions, structure, and coding standards",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -189,13 +178,12 @@
     },
     {
       "path": "project/web/standards/performance-standards.md",
-      "description": "Core Web Vitals targets and performance optimization rules",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -206,13 +194,12 @@
     },
     {
       "path": "project/web/standards/accessibility-standards.md",
-      "description": "WCAG 2.2 AA compliance requirements",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -223,13 +210,12 @@
     },
     {
       "path": "project/web/tools/astro-cli-guide.md",
-      "description": "Astro CLI commands and development workflow",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -240,13 +226,12 @@
     },
     {
       "path": "project/web/tools/pnpm-guide.md",
-      "description": "pnpm package manager commands and best practices",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -257,13 +242,12 @@
     },
     {
       "path": "project/web/tools/cloudflare-deploy-guide.md",
-      "description": "Wrangler deployment workflow for Cloudflare Pages",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -274,13 +258,12 @@
     },
     {
       "path": "project/web/tools/cicd-pipeline-guide.md",
-      "description": "CI/CD pipeline configuration and deployment debugging",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -291,13 +274,12 @@
     },
     {
       "path": "project/web/tools/debugging-utilities.md",
-      "description": "CLI debugging and optimization tools (optipng, httpie, dig, etc.)",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -308,12 +290,11 @@
     },
     {
       "path": "project/web/templates/astro-page-template.md",
-      "description": "Page boilerplate variations",
       "load_when": {
         "agents": [
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -324,12 +305,11 @@
     },
     {
       "path": "project/web/templates/astro-component-template.md",
-      "description": "Component boilerplate variations",
       "load_when": {
         "agents": [
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -340,13 +320,12 @@
     },
     {
       "path": "project/web/domain/web-reference.md",
-      "description": "Key technologies, build verification commands, context categories, deployment version tracking",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -357,13 +336,12 @@
     },
     {
       "path": "project/web/astro-framework.md",
-      "description": "Astro framework quick reference",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },
@@ -374,13 +352,12 @@
     },
     {
       "path": "project/web/tailwind-v4.md",
-      "description": "Tailwind CSS v4 quick reference",
       "load_when": {
         "agents": [
           "web-research-agent",
           "web-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "web"
         ]
       },

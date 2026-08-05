@@ -447,20 +447,20 @@ over cap, it needs a rewrite, not a concatenation.
 
 ---
 
-### Phase 8: `nix` + `web` — Description Fold-In and Languages Rename (34 entries) [NOT STARTED]
+### Phase 8: `nix` + `web` — Description Fold-In and Languages Rename (34 entries) [COMPLETED]
 
 **Goal**: Migrate the two extensions that carry `description` and `languages` but no `tags`.
 
 **Tasks**:
-- [ ] Edit **`agent-system/extensions/nix/index-entries.json`** and
+- [x] Edit **`agent-system/extensions/nix/index-entries.json`** and
       **`agent-system/extensions/web/index-entries.json`** only. Never `.claude/**`.
-- [ ] Fold `description` into `summary` and delete `description`: nix 11, web 23 = 34 entries.
+- [x] Fold `description` into `summary` and delete `description`: nix 11, web 23 = 34 entries.
       No entry in either exceeds the 200-char cap when merged; verify per entry anyway.
-- [ ] Rename `load_when.languages` -> `load_when.task_types`: nix `["nix"]` (11 entries), web
+- [x] Rename `load_when.languages` -> `load_when.task_types`: nix `["nix"]` (11 entries), web
       `["web"]` (23 entries), values unchanged. No pre-existing `task_types` overlap in either.
-- [ ] **Neither extension has a `tags` field.** WORK item 2 is a no-op here — do not go looking
+- [x] **Neither extension has a `tags` field.** WORK item 2 is a no-op here — do not go looking
       for one, and do not invent a `keywords` field where none existed.
-- [ ] No `load_when.skills` or `load_when.topics` in either.
+- [x] No `load_when.skills` or `load_when.topics` in either.
 
 **Timing**: 1.25 hours
 
