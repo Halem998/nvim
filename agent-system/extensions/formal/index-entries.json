@@ -10,7 +10,7 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
         ]
@@ -28,19 +28,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "modal",
-          "kripke",
-          "semantics",
-          "accessibility"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "modal",
+        "kripke",
+        "semantics",
+        "accessibility"
+      ]
     },
     {
       "path": "project/logic/domain/metalogic-concepts.md",
@@ -52,19 +52,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "soundness",
-          "completeness",
-          "decidability",
-          "canonical"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "soundness",
+        "completeness",
+        "decidability",
+        "canonical"
+      ]
     },
     {
       "path": "project/logic/domain/proof-theory-concepts.md",
@@ -76,19 +76,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "proof",
-          "sequent",
-          "axiom",
-          "inference"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "proof",
+        "sequent",
+        "axiom",
+        "inference"
+      ]
     },
     {
       "path": "project/logic/domain/bilateral-propositions.md",
@@ -100,19 +100,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "bilateral",
-          "verifier",
-          "truthmaker",
-          "hyperintensional"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "bilateral",
+        "verifier",
+        "truthmaker",
+        "hyperintensional"
+      ]
     },
     {
       "path": "project/logic/domain/bilateral-semantics.md",
@@ -124,19 +124,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "bilateral",
-          "semantics",
-          "verifier",
-          "falsifier"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "bilateral",
+        "semantics",
+        "verifier",
+        "falsifier"
+      ]
     },
     {
       "path": "project/logic/domain/counterfactual-semantics.md",
@@ -148,19 +148,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "counterfactual",
-          "conditional",
-          "lewis",
-          "stalnaker"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "counterfactual",
+        "conditional",
+        "lewis",
+        "stalnaker"
+      ]
     },
     {
       "path": "project/logic/domain/lattice-theory-concepts.md",
@@ -172,19 +172,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "lattice",
-          "boolean",
-          "heyting",
-          "bilattice"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "lattice",
+        "boolean",
+        "heyting",
+        "bilattice"
+      ]
     },
     {
       "path": "project/logic/domain/mereology-foundations.md",
@@ -196,19 +196,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "mereology",
-          "part",
-          "fusion",
-          "state"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "mereology",
+        "part",
+        "fusion",
+        "state"
+      ]
     },
     {
       "path": "project/logic/domain/spatial-domain.md",
@@ -220,19 +220,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "spatial",
-          "region",
-          "topology",
-          "rcc"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "spatial",
+        "region",
+        "topology",
+        "rcc"
+      ]
     },
     {
       "path": "project/logic/domain/task-semantics.md",
@@ -244,19 +244,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "task",
-          "model",
-          "temporal",
-          "history"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "task",
+        "model",
+        "temporal",
+        "history"
+      ]
     },
     {
       "path": "project/logic/domain/topological-foundations-domain.md",
@@ -268,19 +268,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "topology",
-          "interior",
-          "closure",
-          "stone"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "topology",
+        "interior",
+        "closure",
+        "stone"
+      ]
     },
     {
       "path": "project/logic/processes/modal-proof-strategies.md",
@@ -292,19 +292,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "proof",
-          "modal",
-          "strategy",
-          "axiom"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "proof",
+        "modal",
+        "strategy",
+        "axiom"
+      ]
     },
     {
       "path": "project/logic/processes/temporal-proof-strategies.md",
@@ -316,19 +316,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "proof",
-          "temporal",
-          "ltl",
-          "ctl"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "proof",
+        "temporal",
+        "ltl",
+        "ctl"
+      ]
     },
     {
       "path": "project/logic/processes/proof-construction.md",
@@ -340,18 +340,18 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "proof",
-          "construction",
-          "workflow"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "proof",
+        "construction",
+        "workflow"
+      ]
     },
     {
       "path": "project/logic/processes/verification-workflow.md",
@@ -363,18 +363,18 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "verification",
-          "safety",
-          "liveness"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "verification",
+        "safety",
+        "liveness"
+      ]
     },
     {
       "path": "project/logic/standards/proof-conventions.md",
@@ -386,7 +386,7 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
         ]
@@ -404,7 +404,7 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
         ]
@@ -422,7 +422,7 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
         ]
@@ -440,7 +440,7 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
         ]
@@ -458,19 +458,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "group",
-          "monoid",
-          "algebra",
-          "homomorphism"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "group",
+        "monoid",
+        "algebra",
+        "homomorphism"
+      ]
     },
     {
       "path": "project/math/algebra/rings-and-fields.md",
@@ -482,19 +482,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "ring",
-          "field",
-          "algebra",
-          "ideal"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "ring",
+        "field",
+        "algebra",
+        "ideal"
+      ]
     },
     {
       "path": "project/math/lattice-theory/lattices.md",
@@ -506,20 +506,20 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "lattice",
-          "sup",
-          "inf",
-          "complete",
-          "boolean"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "lattice",
+        "sup",
+        "inf",
+        "complete",
+        "boolean"
+      ]
     },
     {
       "path": "project/math/lattice-theory/bilattice-theory.md",
@@ -531,18 +531,18 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "bilattice",
-          "four-valued",
-          "paraconsistent"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "bilattice",
+        "four-valued",
+        "paraconsistent"
+      ]
     },
     {
       "path": "project/math/order-theory/partial-orders.md",
@@ -554,19 +554,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "order",
-          "partial",
-          "well-founded",
-          "zorn"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "order",
+        "partial",
+        "well-founded",
+        "zorn"
+      ]
     },
     {
       "path": "project/math/order-theory/monoidal-posets.md",
@@ -578,19 +578,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "monoidal",
-          "poset",
-          "resource",
-          "linear"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "monoidal",
+        "poset",
+        "resource",
+        "linear"
+      ]
     },
     {
       "path": "project/math/topology/topological-spaces.md",
@@ -602,19 +602,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "topology",
-          "continuous",
-          "compact",
-          "connected"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "topology",
+        "continuous",
+        "compact",
+        "connected"
+      ]
     },
     {
       "path": "project/math/topology/scott-topology.md",
@@ -626,19 +626,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "scott",
-          "domain",
-          "cpo",
-          "continuous"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "scott",
+        "domain",
+        "cpo",
+        "continuous"
+      ]
     },
     {
       "path": "project/math/category-theory/basics.md",
@@ -650,19 +650,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "category",
-          "functor",
-          "natural",
-          "limit"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "category",
+        "functor",
+        "natural",
+        "limit"
+      ]
     },
     {
       "path": "project/math/category-theory/monoidal-categories.md",
@@ -674,19 +674,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "monoidal",
-          "tensor",
-          "symmetric",
-          "closed"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "monoidal",
+        "tensor",
+        "symmetric",
+        "closed"
+      ]
     },
     {
       "path": "project/math/category-theory/enriched-categories.md",
@@ -698,18 +698,18 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "enriched",
-          "weighted",
-          "metric"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "enriched",
+        "weighted",
+        "metric"
+      ]
     },
     {
       "path": "project/math/category-theory/lawvere-metric-spaces.md",
@@ -721,19 +721,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "lawvere",
-          "metric",
-          "enriched",
-          "distance"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "lawvere",
+        "metric",
+        "enriched",
+        "distance"
+      ]
     },
     {
       "path": "project/math/category-theory/cauchy-completion.md",
@@ -745,18 +745,18 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "cauchy",
-          "completion",
-          "idempotent"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "cauchy",
+        "completion",
+        "idempotent"
+      ]
     },
     {
       "path": "project/math/category-theory/profunctors.md",
@@ -768,18 +768,18 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "profunctor",
-          "bimodule",
-          "weighted"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "profunctor",
+        "bimodule",
+        "weighted"
+      ]
     },
     {
       "path": "project/math/foundations/dependent-type-theory.md",
@@ -791,20 +791,20 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "type",
-          "dependent",
-          "pi",
-          "sigma",
-          "identity"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "type",
+        "dependent",
+        "pi",
+        "sigma",
+        "identity"
+      ]
     },
     {
       "path": "project/physics/README.md",
@@ -816,7 +816,7 @@
           "physics-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "physics",
           "formal"
         ]
@@ -834,21 +834,21 @@
           "physics-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "physics",
           "formal"
-        ],
-        "topics": [
-          "dynamical",
-          "orbit",
-          "fixed",
-          "flow",
-          "ergodic",
-          "chaos"
         ]
       },
       "domain": "project",
-      "subdomain": "physics"
+      "subdomain": "physics",
+      "topics": [
+        "dynamical",
+        "orbit",
+        "fixed",
+        "flow",
+        "ergodic",
+        "chaos"
+      ]
     },
     {
       "path": "project/logic/domain/modal-logic-extensions.md",
@@ -860,19 +860,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "modal",
-          "hybrid",
-          "dynamic",
-          "multi-modal"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "modal",
+        "hybrid",
+        "dynamic",
+        "multi-modal"
+      ]
     },
     {
       "path": "project/logic/domain/proof-theory-basics.md",
@@ -884,19 +884,19 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "proof",
-          "deduction",
-          "natural",
-          "sequent"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "proof",
+        "deduction",
+        "natural",
+        "sequent"
+      ]
     },
     {
       "path": "project/logic/domain/temporal-logic-patterns.md",
@@ -908,20 +908,20 @@
           "logic-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "formal"
-        ],
-        "topics": [
-          "temporal",
-          "ltl",
-          "ctl",
-          "until",
-          "eventually"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "temporal",
+        "ltl",
+        "ctl",
+        "until",
+        "eventually"
+      ]
     },
     {
       "path": "project/math/category-theory/adjunctions.md",
@@ -933,20 +933,20 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "adjunction",
-          "adjoint",
-          "universal",
-          "unit",
-          "counit"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "adjunction",
+        "adjoint",
+        "universal",
+        "unit",
+        "counit"
+      ]
     },
     {
       "path": "project/math/category-theory/category-basics.md",
@@ -958,19 +958,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "category",
-          "morphism",
-          "composition",
-          "identity"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "category",
+        "morphism",
+        "composition",
+        "identity"
+      ]
     },
     {
       "path": "project/math/category-theory/functors-natural-transformations.md",
@@ -982,19 +982,19 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "functor",
-          "natural",
-          "transformation",
-          "yoneda"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "functor",
+        "natural",
+        "transformation",
+        "yoneda"
+      ]
     },
     {
       "path": "project/math/category-theory/limits-colimits.md",
@@ -1006,20 +1006,20 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "limit",
-          "colimit",
-          "cone",
-          "product",
-          "coproduct"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "limit",
+        "colimit",
+        "cone",
+        "product",
+        "coproduct"
+      ]
     },
     {
       "path": "project/math/foundations/set-theory-foundations.md",
@@ -1031,20 +1031,20 @@
           "math-research-agent",
           "formal-research-agent"
         ],
-        "languages": [
+        "task_types": [
           "math",
           "formal"
-        ],
-        "topics": [
-          "set",
-          "zfc",
-          "axiom",
-          "ordinal",
-          "cardinal"
         ]
       },
       "domain": "project",
-      "subdomain": "math"
+      "subdomain": "math",
+      "topics": [
+        "set",
+        "zfc",
+        "axiom",
+        "ordinal",
+        "cardinal"
+      ]
     },
     {
       "path": "project/logic/standards/literature-fidelity-policy.md",
@@ -1059,22 +1059,22 @@
           "physics-research-agent",
           "general-implementation-agent"
         ],
-        "languages": [
+        "task_types": [
           "logic",
           "math",
           "physics",
           "formal"
-        ],
-        "topics": [
-          "literature",
-          "fidelity",
-          "proof",
-          "source",
-          "reference"
         ]
       },
       "domain": "project",
-      "subdomain": "logic"
+      "subdomain": "logic",
+      "topics": [
+        "literature",
+        "fidelity",
+        "proof",
+        "source",
+        "reference"
+      ]
     }
   ]
 }

@@ -484,31 +484,31 @@ applies after all.
 
 ---
 
-### Phase 9: `formal` — Languages Rename Plus `load_when.topics` Hoist (46 entries) [NOT STARTED]
+### Phase 9: `formal` — Languages Rename Plus `load_when.topics` Hoist (46 entries) [COMPLETED]
 
 **Goal**: Migrate `formal`, the only extension with a `load_when.topics` violation, without
 losing its topic data and without touching its out-of-scope `category` field.
 
 **Tasks**:
-- [ ] Edit **`agent-system/extensions/formal/index-entries.json`** only. Never `.claude/**`.
-- [ ] Rename `load_when.languages` -> `load_when.task_types` on all 46 entries. Value strings
+- [x] Edit **`agent-system/extensions/formal/index-entries.json`** only. Never `.claude/**`.
+- [x] Rename `load_when.languages` -> `load_when.task_types` on all 46 entries. Value strings
       are preserved **verbatim**: `formal` (46), `logic` (23), `math` (22), `physics` (3), so an
       entry with `languages: ["formal","logic"]` becomes `task_types: ["formal","logic"]`. Do
       **not** rewrite these to the manifest's colon-form routing keys
       (`formal:logic`/`formal:math`/`formal:physics`) — WORK item 3 says migrate 1:1, and this
       plan reads that as preserving the literal values, consistent with the `nvim` mismatch
       being preserved rather than invented around.
-- [ ] **Hoist `load_when.topics` to entry-level `topics` on the 40 entries that have it.** Move
+- [x] **Hoist `load_when.topics` to entry-level `topics` on the 40 entries that have it.** Move
       the array up to `entries[i].topics` (a valid, already-declared schema field that `formal`
       currently does not use anywhere) and delete the nested `load_when.topics` key. This is a
       move, not a delete — the topic strings are meaningful search keywords.
-- [ ] Confirm no `formal` entry already has an entry-level `topics` field before hoisting; if one
+- [x] Confirm no `formal` entry already has an entry-level `topics` field before hoisting; if one
       does, union rather than overwrite.
-- [ ] **Leave `category` untouched on all 46 entries.** It is a genuine
+- [x] **Leave `category` untouched on all 46 entries.** It is a genuine
       `additionalProperties: false` violation, but it is out of scope: Rule T does not check it
       and the verification bar does not require it. Deleting it is not a bonus fix — whether its
       content belongs in `subdomain` or `topics` is unverified.
-- [ ] `formal` has no `description`, `tags`, or `load_when.skills`.
+- [x] `formal` has no `description`, `tags`, or `load_when.skills`.
 
 **Timing**: 1 hour
 
