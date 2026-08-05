@@ -105,6 +105,50 @@
       "founder:consult": "skill-founder-implement"
     }
   },
+  "routing_agents": {
+    "research": {
+      "founder": "market-agent",
+      "founder:market": "market-agent",
+      "founder:analyze": "analyze-agent",
+      "founder:strategy": "strategy-agent",
+      "founder:legal": "legal-council-agent",
+      "founder:project": "project-agent",
+      "founder:sheet": "founder-spreadsheet-agent",
+      "founder:finance": "finance-agent",
+      "founder:financial-analysis": "financial-analysis-agent",
+      "founder:deck": "deck-research-agent",
+      "founder:meeting": "meeting-agent",
+      "founder:consult": "legal-analysis-agent"
+    },
+    "plan": {
+      "founder": "founder-plan-agent",
+      "founder:market": "founder-plan-agent",
+      "founder:analyze": "founder-plan-agent",
+      "founder:strategy": "founder-plan-agent",
+      "founder:legal": "founder-plan-agent",
+      "founder:project": "founder-plan-agent",
+      "founder:sheet": "founder-plan-agent",
+      "founder:finance": "founder-plan-agent",
+      "founder:financial-analysis": "founder-plan-agent",
+      "founder:deck": "deck-planner-agent",
+      "founder:meeting": "founder-plan-agent",
+      "founder:consult": "founder-plan-agent"
+    },
+    "implement": {
+      "founder": "founder-implement-agent",
+      "founder:market": "founder-implement-agent",
+      "founder:analyze": "founder-implement-agent",
+      "founder:strategy": "founder-implement-agent",
+      "founder:legal": "founder-implement-agent",
+      "founder:project": "founder-implement-agent",
+      "founder:sheet": "founder-implement-agent",
+      "founder:finance": "founder-implement-agent",
+      "founder:financial-analysis": "founder-implement-agent",
+      "founder:deck": "deck-builder-agent",
+      "founder:meeting": "founder-implement-agent",
+      "founder:consult": "founder-implement-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

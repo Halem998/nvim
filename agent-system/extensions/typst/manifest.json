@@ -34,6 +34,17 @@
       "typst": "skill-typst-implementation"
     }
   },
+  "routing_agents": {
+    "research": {
+      "typst": "typst-research-agent"
+    },
+    "plan": {
+      "typst": "planner-agent"
+    },
+    "implement": {
+      "typst": "typst-implementation-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

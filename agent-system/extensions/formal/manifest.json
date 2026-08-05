@@ -48,6 +48,26 @@
       "formal:physics": "skill-implementer"
     }
   },
+  "routing_agents": {
+    "research": {
+      "formal": "formal-research-agent",
+      "formal:logic": "logic-research-agent",
+      "formal:math": "math-research-agent",
+      "formal:physics": "physics-research-agent"
+    },
+    "plan": {
+      "formal": "planner-agent",
+      "formal:logic": "planner-agent",
+      "formal:math": "planner-agent",
+      "formal:physics": "planner-agent"
+    },
+    "implement": {
+      "formal": "general-implementation-agent",
+      "formal:logic": "general-implementation-agent",
+      "formal:math": "general-implementation-agent",
+      "formal:physics": "general-implementation-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

@@ -34,6 +34,17 @@
       "python": "skill-python-implementation"
     }
   },
+  "routing_agents": {
+    "research": {
+      "python": "python-research-agent"
+    },
+    "plan": {
+      "python": "planner-agent"
+    },
+    "implement": {
+      "python": "python-implementation-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

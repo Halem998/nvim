@@ -38,6 +38,17 @@
       "neovim": "skill-neovim-implementation"
     }
   },
+  "routing_agents": {
+    "research": {
+      "neovim": "neovim-research-agent"
+    },
+    "plan": {
+      "neovim": "planner-agent"
+    },
+    "implement": {
+      "neovim": "neovim-implementation-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

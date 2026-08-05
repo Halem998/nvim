@@ -36,6 +36,17 @@
       "latex": "skill-latex-implementation"
     }
   },
+  "routing_agents": {
+    "research": {
+      "latex": "latex-research-agent"
+    },
+    "plan": {
+      "latex": "planner-agent"
+    },
+    "implement": {
+      "latex": "latex-implementation-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

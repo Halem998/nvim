@@ -34,6 +34,17 @@
       "z3": "skill-z3-implementation"
     }
   },
+  "routing_agents": {
+    "research": {
+      "z3": "z3-research-agent"
+    },
+    "plan": {
+      "z3": "planner-agent"
+    },
+    "implement": {
+      "z3": "z3-implementation-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

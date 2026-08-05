@@ -1,0 +1,76 @@
+{
+  "phase": 3,
+  "phase_name": "Explicit agent routing declarations on every manifest",
+  "started_at": "2026-08-05T23:40:00Z",
+  "last_updated": "2026-08-06T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Define routing_agents block shape mirroring routing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add routing_agents/routing_agents_hard to core manifest for general/meta/markdown",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 3,
+      "description": "Add routing_agents to every non-core manifest declaring routing keys, ground-truthed against each skill's subagent_type",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/manifest.json",
+        "agent-system/extensions/email/manifest.json",
+        "agent-system/extensions/epidemiology/manifest.json",
+        "agent-system/extensions/filetypes/manifest.json",
+        "agent-system/extensions/formal/manifest.json",
+        "agent-system/extensions/founder/manifest.json",
+        "agent-system/extensions/latex/manifest.json",
+        "agent-system/extensions/lean/manifest.json",
+        "agent-system/extensions/memory/manifest.json",
+        "agent-system/extensions/nix/manifest.json",
+        "agent-system/extensions/nvim/manifest.json",
+        "agent-system/extensions/present/manifest.json",
+        "agent-system/extensions/python/manifest.json",
+        "agent-system/extensions/typst/manifest.json",
+        "agent-system/extensions/web/manifest.json",
+        "agent-system/extensions/z3/manifest.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Handle filetypes/memory/email special cases by explicit declaration",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Handle present:slides/present:grant compound multi-stage skills by representative primary agent, ground-truthed against skill-slides' target_agent case table and skill-grant's single subagent_type",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Add routing_agents_hard to cslib and lean",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/manifest.json",
+        "agent-system/extensions/lean/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.3",
+      "description": "Declare routing_agents.critique for present's non-standard 'critique' op",
+      "type": "altered",
+      "reason": "present/manifest.json declares a fourth op ('critique': {'present:slides': 'skill-slide-critic'}) beyond research/plan/implement. The plan's block-shape example only lists research/plan/implement, but its own zero-gaps verification criterion ('every key in routing.{op} has a counterpart') is not scoped to those three ops, and Phase 5's lint Check A is written the same way -- so critique was included for completeness rather than left as a gap.",
+      "annotation": "*(deviation: altered — included the critique op for completeness, not just research/plan/implement)*"
+    }
+  ]
+}

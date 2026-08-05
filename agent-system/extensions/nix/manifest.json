@@ -39,6 +39,17 @@
       "nix": "skill-nix-implementation"
     }
   },
+  "routing_agents": {
+    "research": {
+      "nix": "nix-research-agent"
+    },
+    "plan": {
+      "nix": "planner-agent"
+    },
+    "implement": {
+      "nix": "nix-implementation-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

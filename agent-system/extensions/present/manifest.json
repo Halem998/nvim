@@ -72,6 +72,36 @@
       "present:slides": "skill-slide-critic"
     }
   },
+  "routing_agents": {
+    "research": {
+      "present": "grant-agent",
+      "present:grant": "grant-agent",
+      "present:budget": "budget-agent",
+      "present:timeline": "timeline-agent",
+      "present:funds": "funds-agent",
+      "present:slides": "slides-research-agent"
+    },
+    "plan": {
+      "present": "planner-agent",
+      "present:grant": "planner-agent",
+      "present:budget": "planner-agent",
+      "present:timeline": "planner-agent",
+      "present:funds": "planner-agent",
+      "present:slides": "slide-planner-agent",
+      "slides": "slide-planner-agent"
+    },
+    "implement": {
+      "present": "grant-agent",
+      "present:grant": "grant-agent",
+      "present:budget": "budget-agent",
+      "present:timeline": "timeline-agent",
+      "present:funds": "funds-agent",
+      "present:slides": "slidev-assembly-agent"
+    },
+    "critique": {
+      "present:slides": "slide-critic-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

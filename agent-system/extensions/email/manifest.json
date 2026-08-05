@@ -3,30 +3,91 @@
   "version": "1.0.0",
   "description": "AI email management: wrapper-only triage, classification, and confirmed-mutation workflow over Himalaya/notmuch via nix-built agent tools",
   "task_type": "email",
-  "dependencies": ["core"],
+  "dependencies": [
+    "core"
+  ],
   "keyword_overrides": {
     "email": {
-      "keywords": ["inbox", "email", "gmail", "himalaya", "notmuch", "unsubscribe", "junk mail", "draft reply", "mbsync", "aerc", "mail triage", "logos", "protonmail", "proton"],
-      "aliases": ["mail", "mailbox"]
+      "keywords": [
+        "inbox",
+        "email",
+        "gmail",
+        "himalaya",
+        "notmuch",
+        "unsubscribe",
+        "junk mail",
+        "draft reply",
+        "mbsync",
+        "aerc",
+        "mail triage",
+        "logos",
+        "protonmail",
+        "proton"
+      ],
+      "aliases": [
+        "mail",
+        "mailbox"
+      ]
     }
   },
   "provides": {
-    "agents": ["email-implementation-agent.md"],
-    "skills": ["skill-email-implementation", "skill-email-cleanup", "skill-email-sync"],
-    "commands": ["email.md"],
+    "agents": [
+      "email-implementation-agent.md"
+    ],
+    "skills": [
+      "skill-email-implementation",
+      "skill-email-cleanup",
+      "skill-email-sync"
+    ],
+    "commands": [
+      "email.md"
+    ],
     "rules": [],
-    "context": ["project/email"],
-    "scripts": ["email-preference-harvest.sh"],
-    "hooks": ["mail-guard.sh"]
+    "context": [
+      "project/email"
+    ],
+    "scripts": [
+      "email-preference-harvest.sh"
+    ],
+    "hooks": [
+      "mail-guard.sh"
+    ]
   },
   "routing": {
-    "research":  { "email": "skill-researcher" },
-    "plan":      { "email": "skill-planner" },
-    "implement": { "email": "skill-email-implementation" }
+    "research": {
+      "email": "skill-researcher"
+    },
+    "plan": {
+      "email": "skill-planner"
+    },
+    "implement": {
+      "email": "skill-email-implementation"
+    }
+  },
+  "routing_agents": {
+    "research": {
+      "email": "general-research-agent"
+    },
+    "plan": {
+      "email": "planner-agent"
+    },
+    "implement": {
+      "email": "email-implementation-agent"
+    }
   },
   "merge_targets": {
-    "claudemd": { "source": "EXTENSION.md", "target": ".claude/CLAUDE.md", "section_id": "extension_email" },
-    "settings": { "source": "settings-fragment.json", "target": ".claude/settings.local.json" },
-    "index":    { "source": "index-entries.json", "target": ".claude/context/index.json" }
+    "claudemd": {
+      "source": "EXTENSION.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_email"
+    },
+    "settings": {
+      "source": "settings-fragment.json",
+      "target": ".claude/settings.local.json"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    }
   }
 }

@@ -40,6 +40,17 @@
       "memory": "skill-learn"
     }
   },
+  "routing_agents": {
+    "research": {
+      "memory": "general-research-agent"
+    },
+    "plan": {
+      "memory": "planner-agent"
+    },
+    "implement": {
+      "memory": "general-implementation-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

@@ -36,6 +36,17 @@
       "web": "skill-web-implementation"
     }
   },
+  "routing_agents": {
+    "research": {
+      "web": "web-research-agent"
+    },
+    "plan": {
+      "web": "planner-agent"
+    },
+    "implement": {
+      "web": "web-implementation-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

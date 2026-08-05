@@ -41,6 +41,23 @@
       "epidemiology": "skill-epi-implement"
     }
   },
+  "routing_agents": {
+    "research": {
+      "epi": "epi-research-agent",
+      "epi:study": "epi-research-agent",
+      "epidemiology": "epi-research-agent"
+    },
+    "plan": {
+      "epi": "planner-agent",
+      "epi:study": "planner-agent",
+      "epidemiology": "planner-agent"
+    },
+    "implement": {
+      "epi": "epi-implement-agent",
+      "epi:study": "epi-implement-agent",
+      "epidemiology": "epi-implement-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

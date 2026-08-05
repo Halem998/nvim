@@ -28,7 +28,10 @@
       "skill-pr-review-implementation",
       "skill-cslib-vet"
     ],
-    "commands": ["pr.md", "vet.md"],
+    "commands": [
+      "pr.md",
+      "vet.md"
+    ],
     "rules": [
       "cslib.md",
       "cslib-lint-fix.md"
@@ -67,13 +70,58 @@
       "pr": "skill-implementer-hard"
     }
   },
+  "routing_agents": {
+    "research": {
+      "cslib": "cslib-research-agent",
+      "pr": "pr-review-research-agent"
+    },
+    "plan": {
+      "cslib": "planner-agent",
+      "pr": "planner-agent"
+    },
+    "implement": {
+      "cslib": "cslib-implementation-agent",
+      "pr": "pr-review-implementation-agent"
+    }
+  },
+  "routing_agents_hard": {
+    "research": {
+      "cslib": "cslib-research-hard-agent",
+      "pr": "general-research-hard-agent"
+    },
+    "plan": {
+      "cslib": "planner-hard-agent",
+      "pr": "planner-hard-agent"
+    },
+    "implement": {
+      "cslib": "cslib-implementation-hard-agent",
+      "pr": "general-implementation-hard-agent"
+    }
+  },
   "keyword_overrides": {
     "cslib": {
-      "keywords": ["lean", "lean4", "mathlib", "theorem", "proof", "lint-fix"],
-      "aliases": ["lean4"]
+      "keywords": [
+        "lean",
+        "lean4",
+        "mathlib",
+        "theorem",
+        "proof",
+        "lint-fix"
+      ],
+      "aliases": [
+        "lean4"
+      ]
     },
     "pr": {
-      "keywords": ["pr", "pull request", "submit", "upstream", "branch", "rebase", "cherry-pick"],
+      "keywords": [
+        "pr",
+        "pull request",
+        "submit",
+        "upstream",
+        "branch",
+        "rebase",
+        "cherry-pick"
+      ],
       "aliases": []
     }
   },

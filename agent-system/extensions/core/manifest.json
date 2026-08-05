@@ -270,5 +270,39 @@
       "meta": "skill-implementer-hard",
       "markdown": "skill-implementer-hard"
     }
+  },
+  "routing_agents": {
+    "research": {
+      "general": "general-research-agent",
+      "meta": "general-research-agent",
+      "markdown": "general-research-agent"
+    },
+    "plan": {
+      "general": "planner-agent",
+      "meta": "planner-agent",
+      "markdown": "planner-agent"
+    },
+    "implement": {
+      "general": "general-implementation-agent",
+      "meta": "general-implementation-agent",
+      "markdown": "general-implementation-agent"
+    }
+  },
+  "routing_agents_hard": {
+    "research": {
+      "general": "general-research-hard-agent",
+      "meta": "general-research-hard-agent",
+      "markdown": "general-research-hard-agent"
+    },
+    "plan": {
+      "general": "planner-hard-agent",
+      "meta": "planner-hard-agent",
+      "markdown": "planner-hard-agent"
+    },
+    "implement": {
+      "general": "general-implementation-hard-agent",
+      "meta": "general-implementation-hard-agent",
+      "markdown": "general-implementation-hard-agent"
+    }
   }
 }

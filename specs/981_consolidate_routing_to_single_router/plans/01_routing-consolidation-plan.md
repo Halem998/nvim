@@ -255,7 +255,7 @@ before and after; the post-state must show exactly three `source` calls and zero
 
 ---
 
-### Phase 3: Explicit agent routing declarations on every manifest [NOT STARTED]
+### Phase 3: Explicit agent routing declarations on every manifest [COMPLETED]
 
 **Goal**: Add `routing_agents` (and `routing_agents_hard` where `routing_hard` exists) to every
 manifest, so agent names are declared data rather than derived strings.

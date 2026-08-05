@@ -67,6 +67,35 @@
       "filetypes:xlsx": "skill-sheet"
     }
   },
+  "routing_agents": {
+    "research": {
+      "filetypes": "filetypes-router-agent",
+      "filetypes:document": "filetypes-router-agent",
+      "filetypes:spreadsheet": "filetypes-spreadsheet-agent",
+      "filetypes:presentation": "presentation-agent",
+      "filetypes:scrape": "scrape-agent",
+      "filetypes:docx": "docx-edit-agent",
+      "filetypes:xlsx": "sheet-agent"
+    },
+    "plan": {
+      "filetypes": "planner-agent",
+      "filetypes:document": "planner-agent",
+      "filetypes:spreadsheet": "planner-agent",
+      "filetypes:presentation": "planner-agent",
+      "filetypes:scrape": "planner-agent",
+      "filetypes:docx": "planner-agent",
+      "filetypes:xlsx": "planner-agent"
+    },
+    "implement": {
+      "filetypes": "filetypes-router-agent",
+      "filetypes:document": "filetypes-router-agent",
+      "filetypes:spreadsheet": "filetypes-spreadsheet-agent",
+      "filetypes:presentation": "presentation-agent",
+      "filetypes:scrape": "scrape-agent",
+      "filetypes:docx": "docx-edit-agent",
+      "filetypes:xlsx": "sheet-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

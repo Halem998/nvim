@@ -64,6 +64,31 @@
       "lean4": "skill-lean-implementation-hard"
     }
   },
+  "routing_agents": {
+    "research": {
+      "lean4": "lean-research-agent",
+      "lean4:lake": "lean-research-agent",
+      "lean4:version": "lean-research-agent"
+    },
+    "plan": {
+      "lean4": "planner-agent",
+      "lean4:lake": "planner-agent",
+      "lean4:version": "planner-agent"
+    },
+    "implement": {
+      "lean4": "lean-implementation-agent",
+      "lean4:lake": "lean-implementation-agent",
+      "lean4:version": "lean-implementation-agent"
+    }
+  },
+  "routing_agents_hard": {
+    "research": {
+      "lean4": "lean-research-hard-agent"
+    },
+    "implement": {
+      "lean4": "lean-implementation-hard-agent"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",
@@ -86,7 +111,9 @@
   "mcp_servers": {
     "lean-lsp": {
       "command": "uvx",
-      "args": ["lean-lsp-mcp"]
+      "args": [
+        "lean-lsp-mcp"
+      ]
     }
   }
 }
