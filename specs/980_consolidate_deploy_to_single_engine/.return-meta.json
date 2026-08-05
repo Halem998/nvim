@@ -1,39 +1,32 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "session_id": "sess_1785950363_553a84_980",
   "task_number": 980,
-  "findings_count": 9,
+  "phase_count": 9,
+  "estimated_hours": 15,
+  "dependency_waves": [[1], [2, 4], [3], [5], [6, 7], [8], [9]],
   "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md",
+      "summary": "9-phase plan collapsing the two deploy engines onto the manifest-driven loader: scratch-tree regression harness first (red baseline), table-driven copier collapse, force/resync mode plus a single manager.resync_all bulk entry point (absorbing the picker's third Kahn's-algorithm reimplementation), preserved-state snapshot/restore covering .syncprotect paths, corrected regenerate ordering with a wired backup->wipe->restore->clear sequence, entry-point consolidation retiring load_all_globally and the dead is_load_all branch, manifest-driven verification with content-hash parity across all 11 provides.* categories routed through verify-deploy.sh's existing findings accumulator, prose corrections, and end-to-end execution of the union verification bar. Includes 7 dependency waves, 6 scope hypotheses, 2 declared atomic-batch phases, and a rollback path that ships force-resync plus full verification without the wipe if the wipe cannot be made safe."
+    },
     {
       "type": "report",
       "path": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
-      "summary": "Confirms all six root causes from the review with fresh file:line evidence: manager.load's already-loaded hard-abort (init.lua:253-254), deploy-headless.sh's exclusive dependence on Engine B (sync.lua load_all_globally), the allow-list top-path-segment mismatch dropping scripts/lib and scripts/tests entries, the dead is_load_all picker producer, manager.regenerate's settings-restore-after-merge ordering bug plus staging-dir leak, settings_backup.backup's zero callers, verify.lua's missing scripts/hooks/docs/templates/systemd/root_files coverage, and a fully enumerated 11-function copy_* divergence table (return arity, symlink guard, preserve_perms). Includes concrete recommendations and risks for the implementation plan, including a third bulk-resync path (picker 'Reload All') the plan should also consolidate."
+      "summary": "Research report confirming all six root causes with file:line evidence (carried forward from the research dispatch)."
     }
   ],
   "memory_candidates": [
     {
-      "content": "In this repo's extension deploy system (lua/neotex/plugins/ai/shared/extensions/), manager.regenerate (init.lua:972-1035) already exists as a working wipe-safe reload loop with zero callers, and settings_backup.lua (backup/restore of settings.json+settings.local.json via a project-root staging dir) already exists with settings_backup.backup having zero callers. Before assuming new deploy-consolidation mechanism must be built from scratch, check for already-written-but-unwired functions like these -- the gap is often wiring/ordering bugs, not missing implementation.",
-      "category": "PATTERN",
-      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["deploy-engine", "manager.regenerate", "settings_backup", "loader.lua", "unwired-function"]
-    },
-    {
-      "content": "picker/operations/sync.lua's load_all_globally allow-list post-filter (~sync.lua:1001-1042) matches provides.<category> manifest entries by TOP path segment only (rel_path:match(\"^([^/]+)\")), while manifest.json declares full relative paths for scripts/hooks (e.g. lib/foo.sh). This silently drops every subdirectory entry on both fresh and resync deploys. The code has a self-aware 'zero-result wipeout detector' (WARN only, non-blocking) at the same location that already flags this class of defect but doesn't fail loudly.",
+      "content": "When extending a verification gate's coverage in this repo, new findings MUST be emitted through verify-deploy.sh's existing FINDINGS_LIST accumulator (the additive --findings mode, one normalized 'FINDING <gate> <text>' line per finding, with an optional override argument for messages embedding a numeric count). The inter-cycle redeploy checkpoint diffs a pre/post baseline of that findings set: a finding present in both baselines is reported loudly but does not defer a multi-task /orchestrate batch, while a newly introduced one still defers. Broadening verification coverage WITHOUT routing through this accumulator converts multi-task orchestration into run-one-then-defer, because every pre-existing failure in the newly covered surface reads as new. Findings text must also stay stable across runs to be diffable -- hence the count-override argument.",
       "category": "INSIGHT",
-      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
+      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md",
       "confidence": 0.85,
-      "suggested_keywords": ["sync.lua", "allow-list", "load_all_globally", "deploy-headless", "scripts-propagation"]
-    },
-    {
-      "content": "The 11 copy_* functions in loader.lua diverge in return arity (2, 3, or 4 return values), symlink-guard presence (only copy_simple_files and copy_skill_dirs return a symlink_skipped_count), and preserve_perms (hardcoded true for scripts/hooks, false for context/systemd/docs/templates/root_files, conditional on .sh extension only in copy_simple_files/copy_skill_dirs). A future table-driven collapse should express copy_manifest's realpath self-load skip and copy_data_dirs' merge-copy-to-project-root semantics as additional table fields rather than forcing false uniformity, since both are meaningfully different in kind from the other 9 copiers.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["loader.lua", "copy_functions", "table-driven-refactor", "deploy-consolidation"]
+      "suggested_keywords": ["verify-deploy", "findings-baseline", "orchestrate-defer", "verification-coverage", "batch-orchestration"]
     }
   ],
-  "next_steps": "Run /plan 980 to create implementation plan"
+  "next_steps": "Run /implement 980 to execute the plan"
 }
