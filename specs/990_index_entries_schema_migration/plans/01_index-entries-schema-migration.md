@@ -1,7 +1,7 @@
 # Implementation Plan: Migrate All 19 Extensions' index-entries.json to the Reconciled Schema
 
 - **Task**: 990 - Migrate all 19 extensions index-entries.json to the reconciled schema shape
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours (phase sum 10.75)
 - **Dependencies**: 987 (completed — landed `index.schema.json` and `check-extension-docs.sh` Rule T in `advisory` mode)
 - **Research Inputs**: `specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md`
