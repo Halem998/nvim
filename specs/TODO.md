@@ -26,7 +26,7 @@ next_project_number: 998
 
 ### Agent System
 
-948 [NOT STARTED] — Add a Stage 7 / final-metadata contract to ALL THREE cslib agents
+948 [RESEARCHED] — Add a Stage 7 / final-metadata contract to ALL THREE cslib agents
   └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
       └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
@@ -53,7 +53,7 @@ next_project_number: 998
 
 ### Literature
 
-994 [NOT STARTED] — Fix literature-extension tooling landmines surfaced by downstream
+994 [RESEARCHED] — Fix literature-extension tooling landmines surfaced by downstream
 
 ### Orchestration Concurrency
 
@@ -187,10 +187,11 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 994. Fix literature tooling landmines and sync pruning
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 980
+- **Research**: [994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md]
 
 **Description**: Fix literature-extension tooling landmines surfaced by downstream research in the PossibleWorlds paper repo (report: ~/Philosophy/Papers/PossibleWorlds/specs/054_ingest_presheaf_semantics_literature/reports/01_literature-acquisition-research.md). (1) Document zotero-search.sh multi-term argument behavior explicitly: usage is QUERY [QUERY...] with additive OR scoring per term, so multi-word queries must be passed as separate arguments and a single quoted phrase fails to match; add an explicit warning to the script's usage header and the literature extension context docs. (2) Deployment hygiene for retired scripts — REVISED (post-review) to verification-plus-gap-fill, not mechanism-building: zotero-index-add.sh was retired upstream (agent-system/extensions/literature/scripts/deprecated/) but deployed repos still carry it as an active script (.claude/scripts/zotero-index-add.sh) together with stale generated references (the .claude/CLAUDE.md Zotero Integration table row claiming it adds to specs/literature-index.json, and .claude/agents/literature-agent.md around line 172). The structural fix is the deploy-engine consolidation task this task now DEPENDS ON: its wipe+regenerate path prunes retired scripts and regenerates merged CLAUDE.md sections by construction. The work here is to run the consolidated deploy against an affected downstream repo (or scratch tree) and VERIFY the retired script is pruned and the stale generated references are regenerated; if any stale reference survives because its source-store origin still mentions the retired script, fix those source references. Do NOT build a parallel retirement/pruning mechanism. (3) Record the retirement rationale in deprecated/README.md if absent: the script writes a ~20-field Zotero metadata entry while literature-briefing.sh reads the simpler {doc_id, relevance, added, source} shape from specs/literature-index.json, and it depends on the zot CLI and an undefined /zotero --setup command, so repair would have required schema translation; sub-index registration should instead use the documented jq append pattern in skill-literature/SKILL.md.
 
@@ -1582,10 +1583,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 948. Add terminal-metadata contracts to all three cslib agents
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 963, Task 982
+- **Research**: [948_add_stage7_final_metadata_to_cslib_research_agent/reports/01_stage7-final-metadata-cslib-agents.md]
 
 **Description**: Add a Stage 7 / final-metadata contract to ALL THREE cslib agents: agent-system/extensions/cslib/agents/cslib-research-agent.md (which currently has no terminal-metadata contract at all — this is the agent that actually failed in production), cslib-implementation-agent.md, and cslib-implementation-hard-agent.md. SCOPE WIDENED (post-review): the cslib-sibling artifacts-shape propagation formerly carried as item 5 of the handoff-unification task (and before that by the abandoned propagation task) lands HERE instead, so all cslib terminal-metadata work happens in one task and cannot collide with the handoff-unification task's file scope.
 
