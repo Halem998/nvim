@@ -307,7 +307,7 @@ an agent copying the line gets a working invocation.
 
 ---
 
-### Phase 4: Concrete retirement rationale in deprecated/README.md [NOT STARTED]
+### Phase 4: Concrete retirement rationale in deprecated/README.md [COMPLETED]
 
 **Goal**: Record why `zotero-index-add.sh` was retired specifically enough that no future reader
 must re-derive it by reading the retired script.

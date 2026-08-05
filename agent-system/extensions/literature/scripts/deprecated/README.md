@@ -15,7 +15,24 @@ QUARANTINE-NEVER-DELETE posture. Files are retained for:
 ## Contents
 
 - **zotero-index-add.sh** - Formerly added entries to the Zotero index; superseded by the
-  inline `jq` logic in `skills/skill-literature/SKILL.md`. Quarantined during the same removal that dropped it from `manifest.json`.
+  inline `jq` logic in `skills/skill-literature/SKILL.md`. Quarantined during the same removal
+  that dropped it from `manifest.json`. Retired rather than repaired, for four concrete reasons:
+  - **Schema mismatch**: it built a ~20-field entry (`zotero_key`, `citation_key`, `title`,
+    `authors`, `year`, `item_type`, `abstract_snippet`, `keywords`, `tags`, `collections`,
+    `has_pdf`, `pdf_path`, `has_chunks`, `chunk_dir`, `chunk_count`, `token_count`,
+    `relevance_keywords`, `notes_summary`, `added_at`, `last_retrieved`), while
+    `literature-briefing.sh` — the actual `--lit` consumer — reads only a 4-field shape:
+    `{doc_id, relevance, added, source}`.
+  - **Wrong target file**: it wrote `specs/zotero-index.json`; `literature-briefing.sh` reads
+    `specs/literature-index.json`. These are different files, not different views of one file.
+  - **Unmet dependencies**: it depends on the `zot` CLI (via `zotero-read.sh`) and prints setup
+    instructions referencing `/zotero --setup`, a command that does not exist in this project's
+    command set (`commands/` contains only `cite.md` and `literature.md`).
+  - **Why retirement over repair**: repairing it would require schema translation plus a
+    target-file change plus removing the `zot`/`--setup` dependency — a rewrite, not a fix.
+    Sub-index registration instead uses the documented `jq` append pattern in
+    `skills/skill-literature/SKILL.md`'s "Sub-Index Management" section ("Add: Append a
+    Document Entry"), which already writes the correct 4-field shape to the correct file.
 - **zotero-index-remove.sh** - Formerly removed entries from the Zotero index; superseded by
   the inline `jq` logic in `skills/skill-literature/SKILL.md`. Quarantined during the same removal that dropped it from `manifest.json`.
 
