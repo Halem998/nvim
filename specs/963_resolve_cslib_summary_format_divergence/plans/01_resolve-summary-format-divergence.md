@@ -230,37 +230,37 @@ the full diff to check every added line is either a comment or the new unreferen
 
 ---
 
-### Phase 3: Wire cslib-implementation-agent.md to the standard [NOT STARTED]
+### Phase 3: Wire cslib-implementation-agent.md to the standard [COMPLETED]
 
 **Goal**: Give the base cslib agent a direct `summary-format.md` reference and a complete,
 copyable summary skeleton so it stops improvising both the metadata block and the headings.
 
 **Tasks**:
 
-- [ ] Add `- `@.claude/context/formats/summary-format.md` - Summary structure (when creating
+- [x] Add `- `@.claude/context/formats/summary-format.md` - Summary structure (when creating
       summary)` to the `## Context References` section of
       `agent-system/extensions/cslib/agents/cslib-implementation-agent.md`, matching the wording
-      already used in `cslib-implementation-hard-agent.md`.
-- [ ] Add a `## Create Implementation Summary` stage to the file. Place it after the
+      already used in `cslib-implementation-hard-agent.md`. *(completed)*
+- [x] Add a `## Create Implementation Summary` stage to the file. Place it after the
       `## Final Verification Stage (MANDATORY)` section and before the metadata write, so it sits
       where the agent actually needs it in the run order. State the output path
-      `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`.
-- [ ] Inside that stage, embed a complete fenced skeleton modeled on the one in
+      `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`. *(completed)*
+- [x] Inside that stage, embed a complete fenced skeleton modeled on the one in
       `agent-system/extensions/core/agents/general-implementation-agent.md`'s summary stage. It
       MUST include the full metadata bullet block (`Task`, `Status`, `Started`, `Completed`,
       `Effort`, `Dependencies`, `Artifacts`, `Standards`), then `## Overview`, `## What Changed`,
       `## Decisions`, `## Plan Deviations`, `## Verification`, `## Impacts`, `## Follow-ups`,
-      `## References`.
-- [ ] Add the same non-abbreviation warning the general agent carries: the metadata header is
+      `## References`. *(completed)*
+- [x] Add the same non-abbreviation warning the general agent carries: the metadata header is
       mandatory and MUST NOT be abbreviated, reordered, or partially omitted, because every
-      bullet is a field the validator checks by name.
-- [ ] Adapt the `## Verification` block's contents to CSLib reality (build/lint/sorry/axiom
-      results from the CI pipeline) rather than copying the generic Build/Tests wording verbatim.
-- [ ] Amend MUST-DO #16 so it points at the new stage and the standard instead of standing alone
+      bullet is a field the validator checks by name. *(completed)*
+- [x] Adapt the `## Verification` block's contents to CSLib reality (build/lint/sorry/axiom
+      results from the CI pipeline) rather than copying the generic Build/Tests wording verbatim. *(completed)*
+- [x] Amend MUST-DO #16 so it points at the new stage and the standard instead of standing alone
       as the file's only structural instruction — e.g. write the summary per `summary-format.md`,
       including the `## Plan Deviations` section, using `- None (implementation followed plan)`
-      when there were no deviations.
-- [ ] Confirm no task-number citation and no `.claude/**` write target was introduced.
+      when there were no deviations. *(completed)*
+- [x] Confirm no task-number citation and no `.claude/**` write target was introduced. *(completed: grep clean; git diff --stat shows only the agent-system source-store path)*
 
 **Timing**: 1 hour
 

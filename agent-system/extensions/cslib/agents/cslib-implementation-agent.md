@@ -16,6 +16,7 @@ Implementation agent specialized for CSLib proof development. Built on the lean-
 
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative
   status vocabulary (always load before writing final metadata)
+- `@.claude/context/formats/summary-format.md` - Summary structure (when creating summary)
 - `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
@@ -348,6 +349,82 @@ If any check fails:
 2. Set `status: "partial"` with `requires_user_review: true`
 3. Include `review_reason` explaining what failed
 
+## Create Implementation Summary
+
+After the Final Verification Stage passes (or, in PR Description Mode, immediately after
+composing `pr-description.md`), write the implementation summary before writing final metadata.
+
+**Output path**: `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`
+
+**This block is the authoritative shape of a summary artifact.** The metadata header below is
+mandatory and MUST NOT be abbreviated, reordered, or partially omitted — every bullet is a field
+`validate-artifact.sh` checks by name against `SUMMARY_METADATA`. Follow
+`@.claude/context/formats/summary-format.md` for the full standard; the skeleton below is a
+complete, copyable instance of it, adapted to CSLib's CI pipeline for the `## Verification`
+content.
+
+```markdown
+# Implementation Summary: Task #{N}
+
+- **Task**: {N} - {title}
+- **Status**: [COMPLETED]
+- **Started**: {ISO8601}
+- **Completed**: {ISO8601}
+- **Effort**: {time}
+- **Dependencies**: {list or None}
+- **Artifacts**: plans/{NN}_{short-slug}.md
+- **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
+
+## Overview
+
+{2-3 sentences on scope and what was proven/changed}
+
+## What Changed
+
+- `path/to/File.lean` — {change description}
+- `path/to/NewFile.lean` — Created new file
+
+## Decisions
+
+- {Key decision made during implementation}
+
+## Plan Deviations
+
+- **Task {P}.{N}** skipped: {reason}
+- **Task {P}.{N}** altered: {what changed and why}
+
+(Use `- None (implementation followed plan)` when no deviations occurred)
+
+## Verification
+
+- Build: Success/Failure
+- `lake exe checkInitImports`: Passed/Failed
+- `lake lint`: {warning count} (0 expected)
+- `lake exe lint-style`: Passed/Failed
+- `lake shake`: Passed/Failed
+- `lake exe mk_all --module`: Passed/Failed
+- `lake test`: Passed/Failed
+- Sorry count: {N} (0 required for implemented status)
+- Vacuous definition count: {N} (0 required)
+- New axiom count: {N} (must not increase from baseline)
+
+## Impacts
+
+- {Downstream effect of these changes}
+
+## Follow-ups
+
+- {Remaining item, caveat, or follow-up task; use `- None` when there are none}
+
+## References
+
+- {Paths to the plan, reports, and other artifacts informing this summary}
+```
+
+`## Plan Deviations` is `summary-format.md`'s recognized optional section: position it
+immediately after `## Decisions` and before `## Verification`/`## Impacts`, using
+`- None (implementation followed plan)` when there were no deviations.
+
 ## CSLib Style Compliance
 
 ### Proof Style
@@ -539,7 +616,10 @@ When approaching context limit:
 13. **Verify no new axioms introduced before returning implemented**
 14. **Ensure all files import Cslib.Init** (directly or transitively)
 15. **Include AI disclosure in PR descriptions**
-16. **Include `## Plan Deviations` section** in implementation summary
+16. **Write the summary per `@.claude/context/formats/summary-format.md`** using the
+    `## Create Implementation Summary` skeleton above, including the `## Plan Deviations`
+    section (the standard's recognized optional section), using
+    `- None (implementation followed plan)` when there were no deviations
 17. **Follow all 7 lint prevention rules** from lint-prevention-rules.md for every new declaration
 
 **MUST NOT**:
