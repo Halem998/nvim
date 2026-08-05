@@ -1,7 +1,7 @@
 # Implementation Plan: Task #989
 
 - **Task**: 989 - Agent contract normalization: frontmatter standard + no-task-references rollout
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8.5 hours
 - **Dependencies**: 948, 963, 971, 972, 974, 982 (all landed; this plan rebases on their agent-file edits)
 - **Research Inputs**: specs/989_agent_contract_normalization/reports/01_agent-contract-normalization-research.md
@@ -487,28 +487,35 @@ before Phase 2 because four founder agents appear in both edit sets.
 
 ---
 
-### Phase 8: Full verification sweep and follow-up handoff [NOT STARTED]
+### Phase 8: Full verification sweep and follow-up handoff [COMPLETED]
 
 - **Goal**: Every item in the task's verification bar is demonstrated green, and the two deferred
   items are handed off in ready-to-run form.
 
 - **Tasks**:
-  - [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` and
+  - [x] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` and
     confirm zero frontmatter-key violations, zero missing `model:`, zero missing bullets.
-  - [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm it still passes across the
-    repo after the ~17-plus bullet insertions.
-  - [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm the
+    *(completed: 33 passed, 0 warnings, 0 failed)*
+  - [x] Run `bash .claude/scripts/check-task-references.sh` and confirm it still passes across the
+    repo after the ~17-plus bullet insertions. *(completed: PASS, 0 occurrences)*
+  - [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm the
     new fragment, lint, and test files did not introduce dangling-reference or orphan findings.
-  - [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` and
-    confirm no regression from the frontmatter edits.
-  - [ ] Confirm the rule file's Enforcement section text written in Phase 4 is now factually
+    *(completed: 3 pre-existing/unrelated findings only, none from the new files)*
+  - [x] Run `bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` and
+    confirm no regression from the frontmatter edits. *(deviation: altered — the named source-store
+    path fails for this pre-existing, unmodified script, which has no REPO_ROOT override; verified
+    instead via the deployed path .claude/scripts/lint/lint-contract-compliance.sh: 24 passed, 0
+    warnings, 0 failed. See summary Plan Deviations.)*
+  - [x] Confirm the rule file's Enforcement section text written in Phase 4 is now factually
     accurate against the shipped coverage; correct it if Phase 5's confirmed set differed from the
-    hypothesis.
-  - [ ] Reproduce the two Deferred Follow-Up Task descriptions below verbatim in the
+    hypothesis. *(completed: text describes the rule and points to the lint without hardcoding a
+    count, so it required no correction; Phase 5's confirmed set matched its hypothesis exactly)*
+  - [x] Reproduce the two Deferred Follow-Up Task descriptions below verbatim in the
     implementation summary so they can be created directly with `/task`. Do not create the tasks
-    from within implementation.
-  - [ ] Record in the summary: the confirmed in-scope agent enumeration from Phase 5, the
+    from within implementation. *(completed: summaries/01_agent-frontmatter-normalization-summary.md)*
+  - [x] Record in the summary: the confirmed in-scope agent enumeration from Phase 5, the
     tool-scope audit results from Phase 2, and any count that differed from its Scope Hypothesis.
+    *(completed: no count diverged materially from its hypothesis)*
 
 - **Timing**: 1 hour
 
@@ -616,17 +623,25 @@ Create with `/task` using this description:
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` exits 0
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` exits 0 with
-      all positive and negative fixtures asserted
-- [ ] `bash .claude/scripts/check-task-references.sh` exits 0
-- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` exits 0
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` exits 0
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh` runs and reports the new gate
-- [ ] Every edited agent file's frontmatter still parses: opening `---`, closing `---`, `name:` and
-      `description:` present
-- [ ] No file under `.claude/**` was modified (`git status --short .claude/` is empty, or shows
-      only deploy-regeneration output the user initiated)
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` exits 0
+      *(33 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` exits 0 with
+      all positive and negative fixtures asserted *(9/9 passed)*
+- [x] `bash .claude/scripts/check-task-references.sh` exits 0 *(PASS, 0 occurrences)*
+- [x] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` exits 0 *(deviation:
+      3 pre-existing findings unrelated to this task's new files remain — 2 expected `.claude/`
+      deploy-tree staleness from source-store-only edits, 1 unrelated literature-extension
+      line_count drift never touched by this task; see summary)*
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` exits 0
+      *(deviation: verified via the deployed .claude/scripts/lint/lint-contract-compliance.sh path
+      instead — the source-store path fails for this pre-existing, unmodified script with no
+      REPO_ROOT override; 24 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh` runs and reports the new gate
+      *(confirmed: gate6 PASS against source-store repo, [SKIP] against a deploy-consumer target)*
+- [x] Every edited agent file's frontmatter still parses: opening `---`, closing `---`, `name:` and
+      `description:` present *(confirmed across all 39 uniquely-edited agent files)*
+- [x] No file under `.claude/**` was modified (`git status --short .claude/` is empty, or shows
+      only deploy-regeneration output the user initiated) *(confirmed: empty)*
 
 ## Artifacts & Outputs
 

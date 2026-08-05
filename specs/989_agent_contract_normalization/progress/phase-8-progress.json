@@ -1,0 +1,27 @@
+{
+  "phase": 8,
+  "phase_name": "Full verification sweep and follow-up handoff",
+  "started_at": "2026-08-05T21:35:00Z",
+  "last_updated": "2026-08-05T21:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run lint-agent-contracts.sh --verbose, confirm zero violations", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run check-task-references.sh, confirm passes", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run check-extension-docs.sh, confirm no new dangling/orphan findings", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run lint-contract-compliance.sh, confirm no regression", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm rule file Enforcement section accuracy", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Reproduce follow-up task descriptions verbatim in summary", "status": "done", "files_touched": ["specs/989_agent_contract_normalization/summaries/01_agent-frontmatter-normalization-summary.md"]},
+    {"id": 7, "description": "Record confirmed enumeration, tool-scope audit, hypothesis deltas in summary", "status": "done", "files_touched": ["specs/989_agent_contract_normalization/summaries/01_agent-frontmatter-normalization-summary.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.4",
+      "description": "Run bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh and confirm no regression from the frontmatter edits",
+      "type": "altered",
+      "reason": "lint-contract-compliance.sh (pre-existing, not modified by this task) has no REPO_ROOT override and computes its root relative to its own script location; invoking it via the source-store path resolves to a bogus root (agent-system/extensions/.claude/...) and fails with 15 unrelated errors regardless of this task's changes. Verified instead via the deployed path .claude/scripts/lint/lint-contract-compliance.sh, which is the only way this pre-existing script can be meaningfully run: 24 passed, 0 warnings, 0 failed -- no regression.",
+      "annotation": "*(deviation: altered -- verified via the deployed path since the pre-existing script has no source-store invocation support)*"
+    }
+  ]
+}

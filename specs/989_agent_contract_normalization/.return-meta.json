@@ -1,10 +1,92 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/989_agent_contract_normalization/plans/01_agent-frontmatter-normalization.md",
       "summary": "8-phase plan delivering items 2, 3, and 1 of the task description (frontmatter field-set standard, the 7 silently-broken frontmatter key migrations, model: sonnet on 15 agents, no-task-references bullet rollout) plus a new frontmatter-gated lint-agent-contracts.sh with fixture tests, manifest registration, and verify-deploy gate wiring. Items 4 and 5 are deferred per the research report's split recommendation and recorded as two ready-to-run follow-up task descriptions in a Deferred Follow-Up Tasks section."
+    },
+    {
+      "type": "summary",
+      "path": "specs/989_agent_contract_normalization/summaries/01_agent-frontmatter-normalization-summary.md",
+      "summary": "Full implementation summary: all 8 phases completed, confirmed in-scope agent enumeration (31 agents carry the no-task-references bullet), tool-scope audit results, plan deviations, verification output, and the two deferred follow-up task descriptions reproduced verbatim."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Rewrote the agent frontmatter standard to document the real subagent field set (tools/disallowedTools/mcpServers), fixed 7 silently-broken allowed-tools:/mcp-servers: frontmatter declarations with a tool-scope safety audit, added model: sonnet to 15 agents, rolled out the no-task-references MUST-NOT bullet to 27 agents from a new canonical fragment (31 total including 4 pre-existing), and shipped lint-agent-contracts.sh with fixture tests, manifest registration, and a new verify-deploy.sh gate to enforce all three going forward. Items 4/5 deferred as two ready-to-run follow-up task descriptions."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/meta-builder-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/agents/planner-hard-agent.md",
+    "agent-system/extensions/core/agents/reviser-agent.md",
+    "agent-system/extensions/core/agents/spawn-agent.md",
+    "agent-system/extensions/core/agents/synthesis-agent.md",
+    "agent-system/extensions/core/context/contracts/no-task-references-bullet.md",
+    "agent-system/extensions/core/context/templates/agent-template.md",
+    "agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
+    "agent-system/extensions/email/agents/email-implementation-agent.md",
+    "agent-system/extensions/epidemiology/agents/epi-implement-agent.md",
+    "agent-system/extensions/filetypes/agents/document-agent.md",
+    "agent-system/extensions/filetypes/agents/docx-edit-agent.md",
+    "agent-system/extensions/filetypes/agents/filetypes-router-agent.md",
+    "agent-system/extensions/filetypes/agents/filetypes-spreadsheet-agent.md",
+    "agent-system/extensions/filetypes/agents/presentation-agent.md",
+    "agent-system/extensions/filetypes/agents/scrape-agent.md",
+    "agent-system/extensions/filetypes/agents/sheet-agent.md",
+    "agent-system/extensions/founder/agents/analyze-agent.md",
+    "agent-system/extensions/founder/agents/deck-builder-agent.md",
+    "agent-system/extensions/founder/agents/finance-agent.md",
+    "agent-system/extensions/founder/agents/financial-analysis-agent.md",
+    "agent-system/extensions/founder/agents/founder-implement-agent.md",
+    "agent-system/extensions/founder/agents/founder-spreadsheet-agent.md",
+    "agent-system/extensions/founder/agents/market-agent.md",
+    "agent-system/extensions/founder/agents/meeting-agent.md",
+    "agent-system/extensions/founder/agents/project-agent.md",
+    "agent-system/extensions/founder/agents/strategy-agent.md",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/literature/agents/literature-agent.md",
+    "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+    "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+    "agent-system/extensions/present/agents/budget-agent.md",
+    "agent-system/extensions/present/agents/pptx-assembly-agent.md",
+    "agent-system/extensions/present/agents/slidev-assembly-agent.md",
+    "agent-system/extensions/python/agents/python-implementation-agent.md",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/web/agents/web-implementation-agent.md",
+    "agent-system/extensions/z3/agents/z3-implementation-agent.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a deploy loader entry in manifest.json provides.<category> resolves to a directory (entry_kind 'dir' or 'file_or_dir'), the deploy copies it recursively (see lua/neotex/plugins/ai/shared/extensions/loader.lua's scan_directory_recursive branches). A new file placed inside an already-registered directory entry (e.g. a new file under context/contracts/ when 'contracts' is already listed) deploys automatically WITHOUT needing its own manifest.json entry -- only genuinely new top-level provides entries (a new script, a new top-level context file, a new directory itself) need registration. Verify this against the target category's entry_kind before assuming a new file needs a manifest edit.",
+      "category": "PATTERN",
+      "source_artifact": "specs/989_agent_contract_normalization/summaries/01_agent-frontmatter-normalization-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manifest.json", "deploy loader", "provides.context", "directory entry", "recursive copy", "contracts directory"]
+    },
+    {
+      "content": "deploy-root-guard.sh (sourced by scripts/*.sh to reject source-store invocation) is depth-specific to one level under .claude/ or .opencode/ (scripts/). It uses BASH_SOURCE[0], which inside a sourced file resolves to the ORIGINAL calling script's path, not the guard's own path -- so a script living two levels deep (scripts/lint/*.sh, scripts/tests/*.sh) would have its parent-directory check strip to '.claude/scripts' rather than '.claude', never matching the guard's case pattern, and would incorrectly reject even a validly deployed invocation. Scripts at that depth needing source-store-invocation support (REPO_ROOT env override for direct agent-system/extensions/... execution) should NOT reuse deploy-root-guard.sh unmodified; use `git rev-parse --show-toplevel` instead for read-only lints (safe, since there's no destructive-write risk to mask), falling back to a REPO_ROOT override then a script-relative default.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/989_agent_contract_normalization/summaries/01_agent-frontmatter-normalization-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-root-guard.sh", "BASH_SOURCE", "source-store invocation", "REPO_ROOT", "scripts/lint depth", "git rev-parse show-toplevel"]
+    },
+    {
+      "content": "allowed-tools: and mcp-servers: (hyphenated) are NOT valid Claude Code subagent frontmatter fields -- they are silently ignored (not rejected), which lets the drift go unnoticed indefinitely. allowed-tools: is a SKILL.md/slash-command field; the subagent equivalent is tools: (comma-separated string allowlist). mcp-servers: is a misspelling of the real camelCase mcpServers: field. An agent carrying allowed-tools: runs with UNRESTRICTED inherited tool access despite appearing to declare a restriction -- correcting it to tools: is a real behavior change (narrows access), not a cosmetic rename, and should be preceded by a tool-scope audit of the agent's actual body + dispatching skill before applying the fix.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/989_agent_contract_normalization/summaries/01_agent-frontmatter-normalization-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["subagent frontmatter", "allowed-tools", "mcp-servers", "tools field", "mcpServers", "silent no-op", "tool scope audit"]
     }
   ],
   "metadata": {
@@ -12,7 +94,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 8,
     "phases_total": 8
   }
 }
