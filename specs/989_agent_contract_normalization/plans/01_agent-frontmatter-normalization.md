@@ -1,7 +1,7 @@
 # Implementation Plan: Task #989
 
 - **Task**: 989 - Agent contract normalization: frontmatter standard + no-task-references rollout
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: 948, 963, 971, 972, 974, 982 (all landed; this plan rebases on their agent-file edits)
 - **Research Inputs**: specs/989_agent_contract_normalization/reports/01_agent-contract-normalization-research.md
@@ -117,32 +117,35 @@ before Phase 2 because four founder agents appear in both edit sets.
 
 ---
 
-### Phase 1: Rewrite the frontmatter standard to the real field set [NOT STARTED]
+### Phase 1: Rewrite the frontmatter standard to the real field set [COMPLETED]
 
 - **Goal**: `agent-frontmatter-standard.md` becomes an accurate, complete reference for subagent
   frontmatter, so the migrations in Phases 2-3 have a standard to cite.
 
 - **Tasks**:
-  - [ ] Add a complete supported-fields table to
+  - [x] Add a complete supported-fields table to
     `agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md`:
     `name`, `description` (required); `tools`, `disallowedTools`, `model`, `permissionMode`,
     `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation`,
-    `color`, `initialPrompt` (optional).
-  - [ ] Document `tools:` semantics (allowlist; the documented form is a comma-separated string,
+    `color`, `initialPrompt` (optional). *(completed)*
+  - [x] Document `tools:` semantics (allowlist; the documented form is a comma-separated string,
     e.g. `tools: Read, Glob, Grep`), `disallowedTools:` (denylist, camelCase), and `mcpServers:`
-    (camelCase).
-  - [ ] Add an explicit **Invalid on agent files** subsection naming `allowed-tools:` (valid only
+    (camelCase). *(completed)*
+  - [x] Add an explicit **Invalid on agent files** subsection naming `allowed-tools:` (valid only
     in SKILL.md / slash-command frontmatter) and `mcp-servers:` (hyphenated misspelling of
     `mcpServers:`), each with a one-line statement that the key is silently ignored rather than
-    rejected — this is why the drift went unnoticed.
-  - [ ] Extend the Validation Rules section so rule 4 forbids the two invalid keys and rule 5
-    requires `model:` on every dispatchable agent per the tier table.
-  - [ ] Correct the single stale claim in
+    rejected — this is why the drift went unnoticed. *(completed)*
+  - [x] Extend the Validation Rules section so rule 4 forbids the two invalid keys and rule 5
+    requires `model:` on every dispatchable agent per the tier table. *(completed)*
+  - [x] Correct the single stale claim in
     `agent-system/extensions/core/docs/templates/agent-template.md` that a `tools:` block is not
     supported. Change only that claim; do not touch the template's section skeleton (deferred).
-  - [ ] Add a short note recording that `@`-references in an agent body are inert pointer text the
+    *(deviation: altered — the stale claim actually lives in
+    `agent-system/extensions/core/context/templates/agent-template.md`, not
+    `docs/templates/agent-template.md`; fixed the real location, see progress file)*
+  - [x] Add a short note recording that `@`-references in an agent body are inert pointer text the
     agent must `Read` itself, not framework-level auto-expansion — the report identified this as a
-    repo-wide documentation gap that keeps getting re-litigated.
+    repo-wide documentation gap that keeps getting re-litigated. *(completed)*
 
 - **Timing**: 1 hour
 

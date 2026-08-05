@@ -18,7 +18,10 @@ model: opus
 
 **Required fields**: `name`, `description`
 
-**Optional field**: `model` (values: `opus`, `sonnet`)
+**Optional fields**: `model` (values: `opus`, `sonnet`, `haiku`), `tools`, `disallowedTools`,
+`mcpServers`, and the rest of the supported field set documented in
+`.claude/docs/reference/standards/agent-frontmatter-standard.md`. A `tools:` block IS supported
+(comma-separated string allowlist) — see that standard for the full field table and semantics.
 
 **Do NOT include** these fields - they are not supported by the current Agent tool:
 - `mode`
@@ -26,7 +29,8 @@ model: opus
 - `temperature`
 - `max_tokens`
 - `timeout`
-- `tools:` block
+- `allowed-tools:` (SKILL.md/slash-command field, not a subagent field — use `tools:`)
+- `mcp-servers:` (hyphenated misspelling — use `mcpServers:`)
 - `return_format`
 
 ## Agent Body Structure

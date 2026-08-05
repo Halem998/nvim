@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "artifacts": [
     {
       "type": "plan",
@@ -7,23 +7,12 @@
       "summary": "8-phase plan delivering items 2, 3, and 1 of the task description (frontmatter field-set standard, the 7 silently-broken frontmatter key migrations, model: sonnet on 15 agents, no-task-references bullet rollout) plus a new frontmatter-gated lint-agent-contracts.sh with fixture tests, manifest registration, and verify-deploy gate wiring. Items 4 and 5 are deferred per the research report's split recommendation and recorded as two ready-to-run follow-up task descriptions in a Deferred Follow-Up Tasks section."
     }
   ],
-  "next_steps": "Run /implement 989 to execute the plan. After completion, create the two follow-up tasks recorded in the plan's Deferred Follow-Up Tasks section (agent body-skeleton drift + section lint; terminal-metadata contract audit + Check E).",
   "metadata": {
     "session_id": "sess_1785961976_f6b468_989",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 8.5,
-    "dependency_waves": [[1], [2, 4], [3, 5], [6], [7], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a lint script must enumerate 'all agents' in this repo, a bare `**/agents/*.md` path glob is wrong: three files match it that are not dispatchable subagents -- `core/agents/README.md` and the two `lean/context/project/lean4/agents/lean-{research,implementation}-flow.md` reference docs, none of which has a frontmatter block. The correct detector gates on frontmatter presence (first line `---`) plus a `name:` key, which yields 75 dispatchable agents out of 78 glob matches. Write this detector once as a reusable shell function; every future agent-wide check (required body sections, terminal-metadata presence, frontmatter key validity) needs the same gate and will otherwise re-derive it incorrectly.",
-      "category": "PATTERN",
-      "source_artifact": "specs/989_agent_contract_normalization/plans/01_agent-frontmatter-normalization.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["agent lint", "dispatchable agent", "frontmatter gate", "path glob", "lean flow files", "agent enumeration"]
-    }
-  ]
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }

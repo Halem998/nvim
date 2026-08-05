@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Rewrite the frontmatter standard to the real field set",
+  "started_at": "2026-08-05T21:11:24Z",
+  "last_updated": "2026-08-05T21:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add complete supported-fields table to agent-frontmatter-standard.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"]},
+    {"id": 2, "description": "Document tools:/disallowedTools:/mcpServers: semantics", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"]},
+    {"id": 3, "description": "Add Invalid on agent files subsection", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"]},
+    {"id": 4, "description": "Extend Validation Rules (rule 4 + rule 5)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"]},
+    {"id": 5, "description": "Correct stale tools:-not-supported claim in agent template", "status": "done", "files_touched": ["agent-system/extensions/core/context/templates/agent-template.md"], "note": "Plan named docs/templates/agent-template.md as the file to modify, but the actual stale claim lives in context/templates/agent-template.md -- docs/templates/agent-template.md has no such claim (verified via grep). Fixed the real location; recorded as a deviation."},
+    {"id": 6, "description": "Add note on @-references being inert pointer text", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.5",
+      "description": "Correct the single stale claim in agent-system/extensions/core/docs/templates/agent-template.md that a tools: block is not supported",
+      "type": "altered",
+      "reason": "The plan misidentified the file path. The stale 'tools: block' / 'not supported' claim actually lives in agent-system/extensions/core/context/templates/agent-template.md (the machine-consumed template), not docs/templates/agent-template.md (the tutorial template, which never made this claim). Verified via grep against both files before editing.",
+      "annotation": "*(deviation: altered -- corrected context/templates/agent-template.md, the actual location of the stale claim, not docs/templates/agent-template.md as named in the plan)*"
+    }
+  ]
+}

@@ -1,12 +1,18 @@
 # Agent Frontmatter Standard
 
 **Created**: 2026-02-24
-**Updated**: 2026-04-16
+**Updated**: 2026-08-05
 **Purpose**: Define YAML frontmatter requirements for agent files
 
 ## Overview
 
-Agent files in `.claude/agents/` use YAML frontmatter to declare metadata that the Claude Code system and invoking skills use for agent selection, model enforcement, and capability discovery.
+Agent files in `.claude/agents/` use YAML frontmatter to declare metadata that the Claude Code system and invoking skills use for agent selection, tool scoping, MCP server access, and capability discovery.
+
+**Subagent frontmatter is a distinct field set from SKILL.md / slash-command frontmatter.**
+The two are easy to conflate because both use YAML frontmatter and both have a field spelled
+similarly, but `allowed-tools:` (skills/commands) and `tools:` (subagents) are not
+interchangeable — see the Invalid on Agent Files section below for the two keys that have been
+observed silently confused between the two contexts.
 
 ## Required Fields
 
@@ -22,6 +28,29 @@ description: {brief description of agent purpose}
 | `name` | string | Yes | Agent identifier (e.g., `general-research-agent`) |
 | `description` | string | Yes | Brief description of agent purpose and capabilities |
 
+## Supported Fields
+
+The complete set of frontmatter fields a subagent file may declare:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Agent identifier (e.g., `general-research-agent`) |
+| `description` | string | Yes | Brief description of agent purpose and capabilities |
+| `tools` | string | No | Tool allowlist. Comma-separated string, e.g. `tools: Read, Glob, Grep`. Omit to inherit the full tool set. |
+| `disallowedTools` | string | No | Tool denylist (camelCase). Comma-separated string of tools to exclude from the inherited set. |
+| `model` | string | No | Preferred model for this agent (`opus`, `sonnet`, `haiku`) |
+| `permissionMode` | string | No | Permission mode override for this agent's tool calls |
+| `maxTurns` | number | No | Maximum agentic turns before the agent is stopped |
+| `skills` | string | No | Skills this agent may invoke |
+| `mcpServers` | string/list | No | MCP server access declaration (camelCase — see Invalid on Agent Files below for the hyphenated misspelling to avoid) |
+| `hooks` | object | No | Lifecycle hook overrides for this agent |
+| `memory` | string | No | Memory access configuration |
+| `background` | boolean | No | Whether this agent runs as a background task |
+| `effort` | string | No | Reasoning effort override |
+| `isolation` | string | No | Isolation mode (e.g., `worktree`) |
+| `color` | string | No | Display color for this agent in UI surfaces |
+| `initialPrompt` | string | No | Seed prompt injected before the agent's own instructions |
+
 ## Optional Fields
 
 ```yaml
@@ -35,6 +64,44 @@ model: opus
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `model` | string | No | Preferred model for this agent (`opus`, `sonnet`, `haiku`) |
+
+### `tools:`, `disallowedTools:`, and `mcpServers:` Semantics
+
+- **`tools:`** — an allowlist. The documented, verified-working form is a comma-separated
+  string: `tools: Read, Glob, Grep`. Omitting the field means the agent inherits the full
+  available tool set.
+- **`disallowedTools:`** — a denylist (camelCase). Same comma-separated string form, naming
+  tools to exclude from an otherwise-inherited set. Use this when an agent should have broad
+  access minus a small number of excluded tools, rather than enumerating everything it may use.
+- **`mcpServers:`** — camelCase. Declares which MCP servers this agent may call. See Invalid on
+  Agent Files below for the hyphenated `mcp-servers:` spelling, which is not a real field.
+
+### Invalid on Agent Files
+
+These two keys look plausible but are **not valid subagent frontmatter fields**. Both are
+silently ignored rather than rejected, which is why drift onto them goes unnoticed until an
+audit catches it — the frontmatter still parses as valid YAML, but the value has no effect.
+
+| Invalid key | Why it looks valid | Correct field |
+|-------------|--------------------|----------------|
+| `allowed-tools:` | Real field name — but only in SKILL.md / slash-command frontmatter, not subagent frontmatter | `tools:` |
+| `mcp-servers:` | Hyphenated misspelling of the real camelCase field | `mcpServers:` |
+
+An agent declaring `allowed-tools:` runs with **unrestricted inherited tool access** despite
+apparently declaring a restriction — the key is parsed as an unrecognized frontmatter field and
+has no scoping effect. An agent declaring `mcp-servers:` gets **no MCP server access** despite
+apparently declaring one — the misspelled key is likewise ignored. Both are silent no-ops, not
+errors, which is what allows them to go undetected in review.
+
+### `@`-References Are Not Auto-Expanded
+
+An agent body may contain `@`-style references (e.g. `` `@.claude/context/formats/foo.md` ``) as
+pointer text. These are **not** framework-level auto-imports at subagent spawn time — the agent
+must explicitly `Read` the referenced file itself if it needs the content. This is a common
+source of confusion because `@`-imports do resolve automatically elsewhere (e.g. CLAUDE.md
+loading), which invites the assumption that agent-body `@`-references behave the same way. They
+do not; treat every `@`-reference in an agent body as a citation the agent must go read, never as
+content that has already been injected.
 
 ## Model Field
 
@@ -158,6 +225,9 @@ Agent frontmatter is validated during:
 1. `name` must be present and non-empty
 2. `description` must be present and non-empty
 3. `model`, if present, must be one of: `opus`, `sonnet`, `haiku`
+4. `allowed-tools:` and `mcp-servers:` (hyphenated) MUST NOT appear on any dispatchable agent
+   file — see Invalid on Agent Files above; use `tools:` and `mcpServers:` respectively
+5. `model:` is required on every dispatchable agent, per the Tiered Model Policy table above
 
 ## Examples
 
