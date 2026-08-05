@@ -384,35 +384,38 @@ before Phase 2 because four founder agents appear in both edit sets.
 
 ---
 
-### Phase 6: New `lint-agent-contracts.sh` with frontmatter-gated detection [NOT STARTED]
+### Phase 6: New `lint-agent-contracts.sh` with frontmatter-gated detection [COMPLETED]
 
 - **Goal**: A narrowly-scoped lint that fails loudly on frontmatter-key drift, missing `model:`,
   and missing no-task-references bullets — with a dispatchable-agent detector the deferred
   follow-up tasks can reuse.
 
 - **Tasks**:
-  - [ ] Create `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`, modeled on
+  - [x] Create `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`, modeled on
     `lint-contract-compliance.sh`'s existing structure: `set -euo pipefail`, color constants,
     `--verbose`/`--help` parsing, `log_pass`/`log_fail`/`log_warn` helpers, PASSED/FAILED/WARNINGS
     counters, lettered check functions, and the same summary block and exit-code contract
-    (0 = pass, 1 = failures).
-  - [ ] Implement the **dispatchable-agent detector** as a shared function: a file under an
+    (0 = pass, 1 = failures). *(completed)*
+  - [x] Implement the **dispatchable-agent detector** as a shared function: a file under an
     `agents/`-named path qualifies only if its first line is `---` and its frontmatter contains a
     `name:` key. This must exclude `core/agents/README.md` and both
     `lean/context/project/lean4/agents/lean-*-flow.md`. Write it as a reusable function with a
     header comment stating that the deferred section-presence and terminal-metadata checks are
-    expected to call it.
-  - [ ] **Check A - frontmatter key validity**: fail on `allowed-tools:` or `mcp-servers:` in any
+    expected to call it. *(completed: verified in isolation — 78 glob matches, 75 dispatchable,
+    excludes exactly the 3 known non-agent files)*
+  - [x] **Check A - frontmatter key validity**: fail on `allowed-tools:` or `mcp-servers:` in any
     dispatchable agent; warn on any frontmatter key outside the documented set from Phase 1.
-  - [ ] **Check B - model presence**: fail on any dispatchable agent lacking `model:`; fail on a
-    `model:` value outside `opus|sonnet|haiku`.
-  - [ ] **Check C - no-task-references bullet presence**: for every agent matching Phase 4's
+    *(completed)*
+  - [x] **Check B - model presence**: fail on any dispatchable agent lacking `model:`; fail on a
+    `model:` value outside `opus|sonnet|haiku`. *(completed)*
+  - [x] **Check C - no-task-references bullet presence**: for every agent matching Phase 4's
     classification rule, fail if the canonical bullet is absent. Read the expected text **from the
     Phase 4 fragment file**, never from a string hardcoded in the lint — that is what makes the
-    fragment load-bearing. Fail loudly if the fragment file itself is missing.
-  - [ ] Leave a commented placeholder block naming Check D (required body sections) and Check E
+    fragment load-bearing. Fail loudly if the fragment file itself is missing. *(completed:
+    verified fragment-missing case produces the named FAIL)*
+  - [x] Leave a commented placeholder block naming Check D (required body sections) and Check E
     (terminal-metadata section presence) as the deferred follow-up tasks' insertion point, so the
-    seam is explicit rather than rediscovered.
+    seam is explicit rather than rediscovered. *(completed)*
 
 - **Timing**: 2 hours
 

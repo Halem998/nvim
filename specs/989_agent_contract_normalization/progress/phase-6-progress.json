@@ -1,0 +1,59 @@
+{
+  "phase": 6,
+  "phase_name": "New lint-agent-contracts.sh with frontmatter-gated detection",
+  "started_at": "2026-08-05T22:50:00Z",
+  "last_updated": "2026-08-05T23:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create lint-agent-contracts.sh modeled on lint-contract-compliance.sh structure",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"],
+      "note": "Uses set -euo pipefail (matching lint-contract-compliance.sh exactly), color constants, --verbose/--help parsing, log_pass/log_fail/log_warn helpers, PASSED/FAILED/WARNINGS counters, lettered check functions, and the same summary/exit-code contract, as specified. Verified -e does not cause premature exit: all conditional greps are tested within if/&&/|| contexts, safe under set -e; re-ran both the clean pass and both negative fixtures after adding -e to confirm identical behavior. Root resolution deviates from the scripts/*.sh deploy-root-guard.sh convention: that guard is depth-specific to scripts/ (one level under .claude or .opencode) and, empirically verified, would misfire if sourced from scripts/lint/ (two levels deep) -- BASH_SOURCE[0] inside a sourced file resolves to the ORIGINAL calling script's path, not the guard's own path, so the guard's parent-directory check would see '.claude/scripts/lint' stripped to '.claude/scripts', never matching its '*/.claude' case pattern, and would reject even a validly-deployed invocation. Verified this empirically with a throwaway /tmp reproduction before deciding not to reuse the guard. Used git rev-parse --show-toplevel instead (safe for a read-only lint), falling back to REPO_ROOT env override, then a script-relative default -- this works identically whether invoked from the deployed .claude/scripts/lint/ copy or directly from the agent-system/extensions/core/scripts/lint/ source-store copy, which Phase 8's verification requires."
+    },
+    {
+      "id": 2,
+      "description": "Implement dispatchable-agent detector as shared function with header comment for Check D/E reuse",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"],
+      "note": "Verified in isolation: 78 total */agents/*.md glob matches, 75 dispatchable, excludes exactly core/agents/README.md and both lean/context/project/lean4/agents/lean-{research,implementation}-flow.md by name -- matches the plan's Scope Hypothesis exactly."
+    },
+    {
+      "id": 3,
+      "description": "Check A: frontmatter key validity (fail on allowed-tools:/mcp-servers:, warn on unknown keys)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"],
+      "note": "Verified against a scratch fixture: a rogue allowed-tools: key produces both a FAIL (invalid key) and a WARN (unknown key, since allowed-tools is also not in the supported set) -- both are correct, non-contradictory outcomes per the check's own stated behavior."
+    },
+    {
+      "id": 4,
+      "description": "Check B: model presence and validity (opus|sonnet|haiku)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"],
+      "note": "Verified against a scratch fixture: an agent with no model: field fails with the correct message."
+    },
+    {
+      "id": 5,
+      "description": "Check C: no-task-references bullet presence, expected text read from the Phase 4 fragment file, fails loudly if fragment missing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"],
+      "note": "In-scope set is a curated, path-relative allowlist (IN_SCOPE_RELATIVE_PATHS, 31 entries matching Phase 5's confirmed enumeration) since the classification rule ('authors deliverable files outside specs/**') is a judgment call not mechanically derivable from a file's own content -- documented inline in the script. Verified: temporarily renaming the fragment file produces the expected named FAIL ('canonical fragment not found ... cannot verify bullet text'); restored immediately after."
+    },
+    {
+      "id": 6,
+      "description": "Commented placeholder block naming Check D and Check E as the deferred follow-up insertion point",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "Reuse deploy-root-guard.sh unchanged via the same one-liner check-task-references.sh/check-extension-docs.sh use",
+      "result": "failed",
+      "reason": "Empirically verified via /tmp reproduction that the guard's BASH_SOURCE[0]-based parent-directory check resolves to the ORIGINAL calling script's directory (not the guard's own), which for a scripts/lint/ caller strips to '.claude/scripts' -- never matching the guard's '*/.claude'|'*/.opencode' case pattern, so it would reject even a validly-deployed scripts/lint/ invocation. Used git rev-parse --show-toplevel instead."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
