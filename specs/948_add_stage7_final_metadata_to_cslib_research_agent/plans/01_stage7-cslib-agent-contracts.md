@@ -252,24 +252,24 @@ exclusively through `.return-meta.json`.
 
 ---
 
-### Phase 3: Close the two named gaps in cslib-implementation-hard-agent.md [NOT STARTED]
+### Phase 3: Close the two named gaps in cslib-implementation-hard-agent.md [COMPLETED]
 
 **Goal**: Add the `artifacts`-shape rationale to the existing Stage 7 and replace the deprecated
 nested `continuation_context` key in the Stage 5 handoff template with the canonical flat
 `continuation_path`, plus its population rule and the artifacts-linking rationale.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md` and locate
-      `### Stage 5: Wrap-Up Contract (H9)` Step 2 and `### Stage 7: Write Metadata File`.
-- [ ] **Gap A (Stage 7)**: append the artifacts-shape paragraph below to the existing
+- [x] Read `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md` and locate
+      `### Stage 5: Wrap-Up Contract (H9)` Step 2 and `### Stage 7: Write Metadata File`. *(completed)*
+- [x] **Gap A (Stage 7)**: append the artifacts-shape paragraph below to the existing
       `### Stage 7: Write Metadata File` section. Do NOT create a second Stage 7 and do NOT
-      renumber `### Stage 8: Return Brief Text Summary`.
-- [ ] **Gap B (Stage 5, Step 2)**: in the inline handoff JSON template, replace the line
-      `"continuation_context": null,` with `"continuation_path": null,`.
-- [ ] **Gap B, continued**: immediately below that template, add the population rule and the
-      artifacts-linking rationale text below.
-- [ ] Leave `### Stage 1: Parse Delegation Context`'s `continuation_context` bullets untouched —
-      see Decisions.
+      renumber `### Stage 8: Return Brief Text Summary`. *(completed)*
+- [x] **Gap B (Stage 5, Step 2)**: in the inline handoff JSON template, replace the line
+      `"continuation_context": null,` with `"continuation_path": null,`. *(completed)*
+- [x] **Gap B, continued**: immediately below that template, add the population rule and the
+      artifacts-linking rationale text below. *(completed)*
+- [x] Leave `### Stage 1: Parse Delegation Context`'s `continuation_context` bullets untouched —
+      see Decisions. *(completed: verified via grep -n confirming lines 160 and 165 unchanged)*
 
 **Gap A drop-in text** (append inside the existing Stage 7):
 

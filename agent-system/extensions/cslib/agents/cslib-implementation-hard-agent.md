@@ -305,10 +305,22 @@ Always write this file, even on successful completion:
   "phases_total": M,
   "sorry_inventory": [],
   "blockers": [],
-  "continuation_context": null,
+  "continuation_path": null,
   "artifacts": [{"path": "...", "type": "summary", "summary": "..."}]
 }
 ```
+
+**`continuation_path` population rule**: `null` when `status == "implemented"`; when
+`status != "implemented"`, set it to the path of the continuation handoff markdown artifact
+written under `handoffs/`. This flat string field is the ONLY canonical writable continuation
+form. Never write the nested `continuation_context` object — it has zero live writers
+system-wide and is retained only as a deprecated, read-only-accepted legacy shape per
+`@.claude/docs/architecture/handoff-schema.md`.
+
+**`artifacts` linking rationale**: `artifacts` is what the orchestrator's artifact-linking step
+consumes to link the produced summary file into `state.json`. It is an array of objects with
+`path`, `type`, and `summary` keys — never bare path strings. An absent or empty `artifacts`
+array on an `implemented` handoff silently prevents that linking from happening.
 
 `sorry_inventory` MUST be populated: list any remaining sorries with the canonical schema
 `{file, line, statement, strategic, assumption, why_deferred, follow_up_task}`. On clean
@@ -362,6 +374,12 @@ Include `phases_completed`, `phases_total`, `memory_candidates`, and verificatio
   }
 }
 ```
+
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects**, each with
+`type`, `path`, and `summary` keys — **never an array of bare path strings**. A bare-string
+array parses as valid JSON but silently breaks the orchestrator's artifact-linking read
+(`.artifacts[0].path`). See `@.claude/context/formats/return-metadata-file.md`'s `artifacts
+(required)` section for the full field spec.
 
 ### Stage 8: Return Brief Text Summary
 
