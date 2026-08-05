@@ -318,7 +318,7 @@ this list.
 
 ---
 
-### Phase 4: Single agent resolver, adopted by both orchestrate engines [NOT STARTED]
+### Phase 4: Single agent resolver, adopted by both orchestrate engines [COMPLETED]
 
 **Goal**: Add `command-route-agent.sh` on top of the Phase 1 library and replace both orchestrate
 engines' Stage 1b routing blocks with calls to it, deleting both hardcoded case tables, the

@@ -142,49 +142,22 @@ HANDOFF_PATH_ABS="${TASK_DIR_ABS}/.orchestrator-handoff.json"
 
 ### Stage 1b: Resolve Hard-Mode Agent Routing
 
-Map task_type to hard-mode research and implementation agents.
+Map task_type to hard-mode research, plan, and implementation agents via the single canonical
+agent resolver, `command-route-agent.sh` — the same script `skill-orchestrate`'s (base) Stage 1b
+calls, sourced here with effort `"hard"` and hard-mode defaults. Resolution runs against each
+manifest's `routing_agents_hard` declarations; a miss falls through directly to the
+caller-supplied hard-mode default below (NOT to the standard, non-hard `routing_agents` block),
+preserving today's default-to-general-hard-agent behavior exactly. The two engines now differ
+only in the effort argument and these three defaults — no case table, no manifest loop, no sed
+derivation.
 
 ```bash
-# Default to hard-mode variants; fall back to base agents if hard variant doesn't exist
-case "$TASK_TYPE" in
-  lean4|lean)
-    RESEARCH_AGENT="lean-research-hard-agent"
-    IMPLEMENT_AGENT="lean-implementation-hard-agent"
-    PLANNER_AGENT="planner-hard-agent"
-    # Verify hard variants exist, fall back if not
-    [ ! -f ".claude/agents/${RESEARCH_AGENT}.md" ] && RESEARCH_AGENT="lean-research-agent"
-    [ ! -f ".claude/agents/${IMPLEMENT_AGENT}.md" ] && IMPLEMENT_AGENT="lean-implementation-agent"
-    ;;
-  neovim)
-    RESEARCH_AGENT="general-research-hard-agent"
-    IMPLEMENT_AGENT="general-implementation-hard-agent"
-    PLANNER_AGENT="planner-hard-agent"
-    ;;
-  nix)
-    RESEARCH_AGENT="general-research-hard-agent"
-    IMPLEMENT_AGENT="general-implementation-hard-agent"
-    PLANNER_AGENT="planner-hard-agent"
-    ;;
-  *)
-    RESEARCH_AGENT="general-research-hard-agent"
-    IMPLEMENT_AGENT="general-implementation-hard-agent"
-    PLANNER_AGENT="planner-hard-agent"
-    ;;
-esac
-
-# Check routing_hard extension manifests for overrides
-for manifest in .claude/extensions/*/manifest.json; do
-  if [ -f "$manifest" ]; then
-    ext_hard_research=$(jq -r --arg tt "$TASK_TYPE" '.routing_hard.research[$tt] // empty' "$manifest" 2>/dev/null)
-    ext_hard_implement=$(jq -r --arg tt "$TASK_TYPE" '.routing_hard.implement[$tt] // empty' "$manifest" 2>/dev/null)
-    if [ -n "$ext_hard_research" ]; then
-      RESEARCH_AGENT=$(echo "$ext_hard_research" | sed 's/^skill-//' | sed 's/$/-agent/')
-    fi
-    if [ -n "$ext_hard_implement" ]; then
-      IMPLEMENT_AGENT=$(echo "$ext_hard_implement" | sed 's/^skill-//' | sed 's/$/-agent/')
-    fi
-  fi
-done
+source .claude/scripts/command-route-agent.sh "research" "$TASK_TYPE" "general-research-hard-agent" "hard"
+RESEARCH_AGENT="$AGENT_NAME"
+source .claude/scripts/command-route-agent.sh "plan" "$TASK_TYPE" "planner-hard-agent" "hard"
+PLANNER_AGENT="$AGENT_NAME"
+source .claude/scripts/command-route-agent.sh "implement" "$TASK_TYPE" "general-implementation-hard-agent" "hard"
+IMPLEMENT_AGENT="$AGENT_NAME"
 
 echo "[hard-orchestrate] Routing: research=$RESEARCH_AGENT, implement=$IMPLEMENT_AGENT, plan=$PLANNER_AGENT"
 ```

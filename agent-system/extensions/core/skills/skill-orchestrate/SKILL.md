@@ -68,45 +68,20 @@ HANDOFF_PATH_ABS="${TASK_DIR_ABS}/.orchestrator-handoff.json"
 
 ### Stage 1b: Resolve Task-Type Routing
 
-Map task_type to the correct research and implementation agents using extension manifests.
+Map task_type to the correct research, plan, and implementation agents via the single canonical
+agent resolver, `command-route-agent.sh` — sourced from the shared manifest-routing-lib.sh
+ladder (the same one `command-route-skill.sh` uses), against each manifest's `routing_agents`
+declarations. No case table, no directory probe, no sed derivation: agent names are declared
+data, not derived strings (see `context/guides/manifest-routing-schema.md`).
 
 ```bash
-# Resolve agents by task_type — consult extension manifests for non-core types
-case "$TASK_TYPE" in
-  lean4|lean)
-    RESEARCH_AGENT="lean-research-agent"
-    IMPLEMENT_AGENT="lean-implementation-agent"
-    ;;
-  neovim)
-    RESEARCH_AGENT="neovim-research-agent"
-    IMPLEMENT_AGENT="neovim-implementation-agent"
-    ;;
-  nix)
-    RESEARCH_AGENT="nix-research-agent"
-    IMPLEMENT_AGENT="nix-implementation-agent"
-    ;;
-  *)
-    RESEARCH_AGENT="general-research-agent"
-    IMPLEMENT_AGENT="general-implementation-agent"
-    ;;
-esac
-echo "[orchestrate] Task type: $TASK_TYPE → research=$RESEARCH_AGENT, implement=$IMPLEMENT_AGENT"
-```
-
-**Extension resolution**: If a task_type is not in the case table above, check for an extension manifest:
-```bash
-manifest=".claude/extensions/${TASK_TYPE}/manifest.json"
-if [ -f "$manifest" ]; then
-  ext_research=$(jq -r ".routing.research[\"$TASK_TYPE\"] // empty" "$manifest")
-  ext_implement=$(jq -r ".routing.implement[\"$TASK_TYPE\"] // empty" "$manifest")
-  # Map skill names to agent names (skill-X-Y -> X-Y-agent)
-  if [ -n "$ext_research" ]; then
-    RESEARCH_AGENT=$(echo "$ext_research" | sed 's/^skill-//' | sed 's/$/-agent/')
-  fi
-  if [ -n "$ext_implement" ]; then
-    IMPLEMENT_AGENT=$(echo "$ext_implement" | sed 's/^skill-//' | sed 's/$/-agent/')
-  fi
-fi
+source .claude/scripts/command-route-agent.sh "research" "$TASK_TYPE" "general-research-agent" ""
+RESEARCH_AGENT="$AGENT_NAME"
+source .claude/scripts/command-route-agent.sh "plan" "$TASK_TYPE" "planner-agent" ""
+PLANNER_AGENT="$AGENT_NAME"
+source .claude/scripts/command-route-agent.sh "implement" "$TASK_TYPE" "general-implementation-agent" ""
+IMPLEMENT_AGENT="$AGENT_NAME"
+echo "[orchestrate] Task type: $TASK_TYPE → research=$RESEARCH_AGENT, plan=$PLANNER_AGENT, implement=$IMPLEMENT_AGENT"
 ```
 
 ### Stage 2: Loop Guard Initialization
@@ -326,7 +301,7 @@ Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
-| `subagent_type` | `"planner-agent"` |
+| `subagent_type` | `$PLANNER_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty) |
 | `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
 
@@ -2361,11 +2336,11 @@ plan file at all, so the ~450-tokens-per-cycle flatness invariant is unaffected 
 | Operation | `subagent_type` | Notes |
 |-----------|----------------|-------|
 | Research dispatch | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) | Fresh context; `orchestrator_mode: true` |
-| Plan dispatch | `"planner-agent"` | Fresh context; `orchestrator_mode: true` |
+| Plan dispatch | `$PLANNER_AGENT` (resolved by task type in Stage 1b) | Fresh context; `orchestrator_mode: true` |
 | Implement dispatch | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) | Fresh context; `orchestrator_mode: true` |
 | Blocker research | `"fork"` | Inherits parent cache; fast blocker research |
 | Plan revision (blocker) | `"reviser-agent"` | Fresh context; `orchestrator_mode: false` |
 | Drift inspection | `"fork"` | Inherits parent cache; reads plan file, writes .drift-inspection.json |
 | Plan revision (drift) | `"reviser-agent"` | Triggered when drift_pct > DRIFT_REVISION_THRESHOLD |
 
-Default agents: `general-research-agent`, `general-implementation-agent`. Extension agents resolved in Stage 1b.
+Default agents: `general-research-agent`, `planner-agent`, `general-implementation-agent`. Extension agents resolved in Stage 1b via `command-route-agent.sh`.

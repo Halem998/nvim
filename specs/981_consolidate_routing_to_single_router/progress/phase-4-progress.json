@@ -1,0 +1,50 @@
+{
+  "phase": 4,
+  "phase_name": "Single agent resolver, adopted by both orchestrate engines",
+  "started_at": "2026-08-06T00:10:00Z",
+  "last_updated": "2026-08-06T00:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create command-route-agent.sh sourcing manifest-routing-lib.sh, exporting AGENT_NAME",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/command-route-agent.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Emit [route-agent] stderr trace shape (extended routing_trace with optional label param)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Replace skill-orchestrate Stage 1b with three sourced calls; updated single-task plan dispatch site and skill-to-agent table to use $PLANNER_AGENT",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]
+    },
+    {
+      "id": 4,
+      "description": "Replace skill-orchestrate-hard Stage 1b with three sourced calls, effort=hard",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]
+    },
+    {
+      "id": 5,
+      "description": "Register command-route-agent.sh in core manifest provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Also updated skill-orchestrate's single-task plan-dispatch site (line ~304) and the Skill-to-Agent Mapping summary table to use $PLANNER_AGENT instead of the literal \"planner-agent\", since Stage 1b now resolves PLANNER_AGENT and leaving the dispatch site hardcoded would make the new resolution dead for the plan op in single-task mode",
+      "type": "altered",
+      "reason": "Plan Phase 4 scope names Stage 1b as the replacement target but the point of adding plan-op resolution is lost if the actual dispatch site 30 lines later keeps citing the literal skill name instead of the newly-resolved variable; Stage MT-2/MT-3 (multi-task batch mode) were left untouched since the plan's own grep-based Scope Hypothesis confirmed they fall outside the two Stage 1b blocks",
+      "annotation": "*(deviation: altered — also wired the single-task plan dispatch site to $PLANNER_AGENT)*"
+    }
+  ]
+}

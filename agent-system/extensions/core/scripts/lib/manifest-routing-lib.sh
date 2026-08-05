@@ -187,11 +187,13 @@ routing_lookup() {
   return 0
 }
 
-# routing_trace -- emits one `[route] op=.. task_type=.. effort=.. resolved=.. via=..` line to
+# routing_trace -- emits one `[LABEL] op=.. task_type=.. effort=.. resolved=.. via=..` line to
 # stderr. Never writes to stdout (would corrupt a caller capturing routing_lookup's own output).
+# $6 (optional) overrides the bracketed label, default "route" (command-route-skill.sh's shape);
+# command-route-agent.sh passes "route-agent" for its own, otherwise-identical trace shape.
 routing_trace() {
-  local _route_op="$1" _route_task_type="$2" _route_effort="$3" _route_resolved="$4" _route_via="${5:-}"
-  echo "[route] op=${_route_op} task_type=${_route_task_type} effort=${_route_effort} resolved=${_route_resolved} via=${_route_via}" >&2
-  unset _route_op _route_task_type _route_effort _route_resolved _route_via
+  local _route_op="$1" _route_task_type="$2" _route_effort="$3" _route_resolved="$4" _route_via="${5:-}" _route_label="${6:-route}"
+  echo "[${_route_label}] op=${_route_op} task_type=${_route_task_type} effort=${_route_effort} resolved=${_route_resolved} via=${_route_via}" >&2
+  unset _route_op _route_task_type _route_effort _route_resolved _route_via _route_label
   return 0
 }
