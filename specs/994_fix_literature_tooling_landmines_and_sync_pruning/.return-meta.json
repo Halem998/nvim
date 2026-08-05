@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "artifacts": [
     {
       "type": "plan",
@@ -7,18 +7,12 @@
       "summary": "7-phase, 2-hour plan covering items 1 and 3 only: the zotero-search.sh separate-arguments warning across four documentation surfaces (both USAGE copies, agent-exploration.md, literature-agent.md), the deprecated/README.md retirement rationale, and retirement of two stale zotero-index-add.sh stderr hints. Item 2 is recorded as an explicit out-of-scope deploy-engine finding with a ready-to-use follow-up task description; no fix and no parallel pruning mechanism is planned."
     }
   ],
-  "next_steps": "Run /implement 994 to execute the plan. Item 2's deploy-engine defect (detect_legacy_core migrating only 'core' in lua/neotex/plugins/ai/shared/extensions/init.lua) needs a separate user-created task; do not run deploy-headless.sh --wipe against any repo lacking a root .claude-extensions.json until it lands.",
   "metadata": {
     "session_id": "sess_1785961976_f6b468_994",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 2,
-    "dependency_waves": [[1, 4, 5], [2, 3], [6], [7]],
-    "complexity": "medium",
-    "research_integrated": true,
-    "plan_version": 1
-  },
-  "memory_candidates": []
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 7
+  }
 }

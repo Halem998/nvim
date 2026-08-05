@@ -1,7 +1,7 @@
 # Implementation Plan: Task #994
 
 - **Task**: 994 - Fix literature-extension tooling landmines and sync pruning
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: 980 (deploy-engine consolidation; already satisfied for planning purposes — see Out-of-Scope Finding below)
 - **Research Inputs**: `specs/994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md`
@@ -166,7 +166,7 @@ placed in wave 3 only for narrative ordering; it may run at any point.
 
 ---
 
-### Phase 1: Canonical quoting warning in both zotero-search.sh USAGE copies [NOT STARTED]
+### Phase 1: Canonical quoting warning in both zotero-search.sh USAGE copies [COMPLETED]
 
 **Goal**: State the separate-arguments requirement, with a concrete worked example, in both
 copies of the USAGE text, and fix the canonical wording that later phases reuse.

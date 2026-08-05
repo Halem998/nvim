@@ -20,6 +20,13 @@
 # USAGE:
 #   zotero-search.sh [OPTIONS] QUERY [QUERY...]
 #
+# IMPORTANT -- pass each search word as a SEPARATE argument. Query terms are OR-scored
+# independently, so a single quoted multi-word phrase is treated as one term and will
+# match nothing even when every individual word is present in the library.
+#   Wrong:   zotero-search.sh "Burgess axioms tense logic"     -> 0 results
+#   Right:   zotero-search.sh Burgess axioms tense logic       -> matches
+# From a shell variable, expand unquoted (or use an array): "${TERMS[@]}".
+#
 # DESCRIPTION:
 #   Searches a Zotero Better BibTeX CSL-JSON library by keyword using
 #   weighted multi-field matching in a single jq pass, then verifies
@@ -73,6 +80,13 @@ show_usage() {
   cat >&"$fd" << 'USAGE'
 USAGE:
   zotero-search.sh [OPTIONS] QUERY [QUERY...]
+
+IMPORTANT -- pass each search word as a SEPARATE argument. Query terms are OR-scored
+independently, so a single quoted multi-word phrase is treated as one term and will
+match nothing even when every individual word is present in the library.
+  Wrong:   zotero-search.sh "Burgess axioms tense logic"     -> 0 results
+  Right:   zotero-search.sh Burgess axioms tense logic       -> matches
+From a shell variable, expand unquoted (or use an array): "${TERMS[@]}".
 
 DESCRIPTION:
   Searches a Zotero Better BibTeX CSL-JSON library by keyword using
