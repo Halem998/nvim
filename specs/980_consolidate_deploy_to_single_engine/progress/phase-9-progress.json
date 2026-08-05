@@ -1,0 +1,57 @@
+{
+  "phase": 9,
+  "phase_name": "Execute the full verification bar",
+  "started_at": "2026-08-05T21:10:00Z",
+  "last_updated": "2026-08-05T21:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Declare a brand-new scripts/lib/ entry in the live manifest (temporarily), run fresh + resync deploy against a scratch tree, assert it lands; assert full declared-vs-deployed parity",
+      "status": "done",
+      "files_touched": [],
+      "note": "Temporary manifest.json + scratch script file edits, reverted at end of phase (never committed). Fresh deploy and resync both landed the new entry; manager.verify_all reported status=passed, errors=0, scripts checked=90 (89 + the new canary), all 11 categories missing=0/hash_mismatch=0."
+    },
+    {
+      "id": 2,
+      "description": "Deliberately stale skill-orchestrate and skill-orchestrate-hard SKILL.md files on the scratch tree; assert content-hash equality catches both before redeploy and clears after",
+      "status": "done",
+      "files_touched": [],
+      "note": "Both named skills (matching the plan's literal Verification bullet) caught before redeploy (status=failed, both errors present) and clean after (status=passed, errors=0)."
+    },
+    {
+      "id": 3,
+      "description": "Run the wipe+regenerate round trip on a fresh scratch tree: settings.local.json + protected project-overview.md survival, hook registration presence, two-consecutive-wipe byte-identical listing",
+      "status": "done",
+      "files_touched": [],
+      "note": "First attempt (before the auto-seed fix below) revealed a genuine gap: a from-scratch scratch tree with no pre-existing .syncprotect did not protect a customized context/repo/project-overview.md across a wipe. Root-caused and fixed via ensure_default_syncprotect in init.lua. Re-verified: settings.local.json survives, protected project-overview.md survives, 7 hook registrations present, two consecutive --wipe runs produce byte-identical file listings."
+    },
+    {
+      "id": 4,
+      "description": "Fix the .syncprotect auto-seed gap discovered by objective 3 (a regression from retiring load_all_globally, which used to auto-seed .syncprotect on a repo's first bulk sync)",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ],
+      "note": "Added ensure_default_syncprotect (module-local function) called from manager.load's core-extension path, right before load_syncprotect reads protected_paths for this same load's copy pass. No-op if .syncprotect already exists. Verified: fresh scratch deploy now auto-seeds .syncprotect with the same default entry (context/repo/project-overview.md) the retired engine used to seed; a customized project-overview.md now survives a resync immediately after the auto-seed."
+    },
+    {
+      "id": 5,
+      "description": "Redeploy this repo's own .claude/ with the init.lua fix; re-run verify-deploy.sh, test-deploy-propagation.sh, and sync_spec.lua as a final regression check; clean up all temporary scratch-manifest edits",
+      "status": "done",
+      "files_touched": [],
+      "note": "verify-deploy.sh: 16/16 PASS, 0 failures (unchanged from Phase 8's close). test-deploy-propagation.sh: 4 passed, 0 failed. sync_spec.lua: 5/5 passed. Temporary manifest.json canary entry and scratch script file both reverted before this phase's commit -- git status confirmed clean of any test artifacts."
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.regression-fix",
+      "description": "Phase 9 was scoped as 'execution and evidence capture only ... harness fixes land back in the Phase 1 file if needed' -- no implementation files were expected to change",
+      "type": "altered",
+      "reason": "The wipe+regenerate round-trip test itself (not a harness defect) surfaced a genuine, real deploy-correctness gap: the retired load_all_globally engine's .syncprotect auto-seed step was never carried over to the manifest-driven engine. Left unfixed, any brand-new consuming repo deployed only via the new engine would silently lose a customized context/repo/project-overview.md on its first regenerate. This was fixed with a small, targeted addition to init.lua rather than deferred, since it is a real correctness defect directly within this task's own subject matter.",
+      "annotation": "*(deviation: altered — genuine regression found and fixed during verification-bar execution, see plan Phase 9 notes)*"
+    }
+  ]
+}

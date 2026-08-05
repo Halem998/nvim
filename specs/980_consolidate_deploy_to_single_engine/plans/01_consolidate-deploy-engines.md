@@ -1,7 +1,7 @@
 # Implementation Plan: Task #980
 
 - **Task**: 980 - One deploy engine: idempotent manifest-driven load, wipe+regenerate, full-category verification
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 15 hours
 - **Dependencies**: 966 (verify-deploy baseline/delta semantics) — COMPLETED, constraint satisfied
 - **Research Inputs**: specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md
@@ -917,26 +917,75 @@ function names — see "Scope widening" above.**
 
 ---
 
-### Phase 9: Execute the full verification bar [NOT STARTED]
+### Phase 9: Execute the full verification bar [COMPLETED]
 
 **Goal**: Run the union of the two subsumed tasks' verification bars end to end against a scratch
 tree and record the evidence.
 
 **Tasks**:
-- [ ] Declare a new script under `scripts/lib/` in a scratch manifest; run the real headless deploy;
-      assert the file lands. Repeat against an already-deployed tree (resync).
-- [ ] Assert declared-vs-deployed parity over the full `provides.*` surface after a single deploy
-      pass.
-- [ ] Deliberately stale a deployed skill definition; assert content-hash equality catches it;
-      assert a redeploy clears it.
-- [ ] Run the wipe+regenerate round trip: assert `.syncprotect`-listed paths and
+- [x] Declare a new script under `scripts/lib/` in a scratch manifest; run the real headless deploy;
+      assert the file lands. Repeat against an already-deployed tree (resync). *(completed: a
+      brand-new, never-before-declared entry, `lib/phase9-scratch-canary-<timestamp>.sh`, was
+      temporarily appended to the LIVE core manifest's `provides.scripts` (file created, entry
+      added via `jq`, both reverted at the end of this phase — see the "Genuine regression found
+      and fixed" note below for what this test surfaced). Fresh deploy against a from-scratch
+      scratch git repo landed it (`PASS: fresh deploy landed ...`); a second `deploy-headless.sh`
+      run against the same now-populated tree (resync) retained/re-landed it
+      (`PASS: resync deploy retained/re-landed ...`))*
+- [x] Assert declared-vs-deployed parity over the full `provides.*` surface after a single deploy
+      pass. *(completed: `manager.verify_all` against the same scratch tree reported
+      `status="passed", errors=0` with all 11 categories at `missing=0, hash_mismatch=0`
+      — `scripts` checked count was 90, one higher than the repo's normal 89, confirming the new
+      canary entry above was included in the parity surface, not just presence-checked in
+      isolation)*
+- [x] Deliberately stale a deployed skill definition; assert content-hash equality catches it;
+      assert a redeploy clears it. *(completed against the SAME two skills the plan's own
+      Verification bullet below names: appended a line to both `skills/skill-orchestrate/SKILL.md`
+      and `skills/skill-orchestrate-hard/SKILL.md` in the scratch tree. Before redeploy:
+      `status="failed"` with both
+      `Content differs from source: skills/skill-orchestrate{,-hard}/SKILL.md` errors present.
+      After a resync redeploy: `status="passed", errors=0`)*
+- [x] Run the wipe+regenerate round trip: assert `.syncprotect`-listed paths and
       `settings.local.json` survive, assert a new merge-source hook registration is present after,
-      and assert two consecutive runs are byte-identical.
-- [ ] Assert no regression for already-correct entries — compare the full deployed file listing
-      against a pre-change baseline.
-- [ ] Assert the two known-stale deployed skill definitions were caught before the fix and are clean
-      after.
-- [ ] Record every result as evidence in the implementation summary.
+      and assert two consecutive runs are byte-identical. *(completed on a fresh scratch tree:
+      seeded a `settings.local.json` custom marker and a customized `context/repo/
+      project-overview.md`; `deploy-headless.sh --wipe` survived both byte-identically; `settings.
+      json`'s `.hooks` reports 7 registered event keys (matching Phase 5's own verification, i.e.
+      the core manifest's merge-source hook registrations are present post-wipe); a full `find
+      -printf '%M %p' | sort` file listing diff between two consecutive `--wipe` runs against the
+      same tree is empty)*
+- [x] Assert no regression for already-correct entries — compare the full deployed file listing
+      against a pre-change baseline. *(satisfied cumulatively: Phase 2's own before/after listing
+      diff against a real `manager.load` scratch-tree comparison was empty (339 files, zero
+      differences); Phase 3's before/after listing diff after adding `force` was likewise empty;
+      Phase 5's two-consecutive-wipe diff was empty; this phase's own two-consecutive-`--wipe`
+      diff above is empty. No phase's own before/after comparison found an unexplained deviation
+      at any point across the whole task)*
+- [x] Assert the two known-stale deployed skill definitions were caught before the fix and are clean
+      after. *(completed — see the staling task above; both named skills, specifically)*
+- [x] Record every result as evidence in the implementation summary. *(completed — see
+      `specs/980_consolidate_deploy_to_single_engine/summaries/01_consolidate-deploy-engines-summary.md`)*
+
+**Genuine regression found and fixed (not anticipated by the plan; discovered by this phase's own
+scratch-tree execution, not a harness artifact)**: while seeding the wipe-round-trip test above
+with a customized `context/repo/project-overview.md`, the FIRST attempt (before any fix) showed
+the customization did NOT survive a wipe on a from-scratch scratch tree that had never had a
+`.syncprotect` file. Root cause: the retired `load_all_globally` engine had an "auto-seed
+`.syncprotect` if the target repo has none" step (seeding a default `context/repo/
+project-overview.md` protection entry on a repo's first-ever bulk sync) that was never carried
+over to the manifest-driven engine when that engine became the sole bulk-sync path in Phase 6.
+`context/repo/project-overview.md` is explicitly repo-specific (populated via `/project-overview`,
+per this repo's own `CLAUDE.md` "New repository setup" guidance) and must never be silently
+replaced by the generic source-store template — without an auto-seeded `.syncprotect`, ANY
+brand-new consuming repo that has never been deployed before and only ever uses the (now sole)
+manifest-driven engine would lose a customized `project-overview.md` on its first regenerate.
+Fixed by adding `ensure_default_syncprotect` to `neotex.plugins.ai.shared.extensions`'s `init.lua`,
+called on `core`'s first-ever `manager.load` into a project directory that has no `.syncprotect`
+yet (no-op, never overwrites, if one already exists) — a deliberate carry-over of the retired
+engine's exact seed content, not new behavior. Re-verified the wipe round trip with the fix in
+place: PASS (see task above). This repository's own `.claude/` was unaffected (it already has a
+`.syncprotect` from before this task, so the auto-seed path never fires here) — the gap was
+real but invisible to every earlier phase's testing precisely because this repo already had one.
 
 **Timing**: 1.5 hours
 
@@ -945,11 +994,18 @@ tree and record the evidence.
 **Verification Tier**: full
 
 **Files to modify**:
-- (none — execution and evidence capture only; harness fixes land back in the Phase 1 file if needed)
+- (planned: none — execution and evidence capture only; harness fixes land back in the Phase 1
+  file if needed. Actual: one small, targeted fix landed here after all — see "Genuine regression
+  found and fixed" above; this is new implementation code discovered necessary by the verification
+  bar itself, not a harness artifact, so it did not fit the "land back in Phase 1" contingency.)*
+- `lua/neotex/plugins/ai/shared/extensions/init.lua` - `ensure_default_syncprotect` added, called from `manager.load`'s core path
 
 **Verification**:
-- All six bar items above pass with captured evidence.
+- All six bar items above pass with captured evidence. *(confirmed — see each task above)*
 - The repository's own deploy is re-run and `verify-deploy.sh` reports no newly introduced findings.
+  *(confirmed: redeployed this repo's own `.claude/` after the `init.lua` fix; `verify-deploy.sh`
+  reports a full 16/16 PASS, 0 failures — unchanged from Phase 8's close; `test-deploy-propagation.sh`
+  still `4 passed, 0 failed`; `sync_spec.lua`'s 5 cases still pass)*
 
 ---
 
@@ -958,19 +1014,26 @@ tree and record the evidence.
 The verification bar below is the union of the two subsumed predecessor tasks' bars, preserved
 verbatim in substance:
 
-- [ ] A test declaring a new script under `scripts/lib/` runs the real headless deploy against a
-      scratch tree and asserts the file lands.
-- [ ] The same assertion holds for a re-sync of an already-loaded extension.
-- [ ] Declared-vs-deployed parity over the **full** `provides.*` surface (not just scripts) after a
-      single deploy pass.
-- [ ] Content-hash equality catches a deliberately-staled deployed skill definition.
-- [ ] Wipe+regenerate round-trip: protected files and `settings.local.json` survive; new
+- [x] A test declaring a new script under `scripts/lib/` runs the real headless deploy against a
+      scratch tree and asserts the file lands. *(Phase 1's harness + Phase 9's live scratch-manifest execution)*
+- [x] The same assertion holds for a re-sync of an already-loaded extension. *(same evidence)*
+- [x] Declared-vs-deployed parity over the **full** `provides.*` surface (not just scripts) after a
+      single deploy pass. *(Phase 7 implementation + Phase 9 execution)*
+- [x] Content-hash equality catches a deliberately-staled deployed skill definition. *(Phase 7 implementation + Phase 9 execution, both named skills)*
+- [x] Wipe+regenerate round-trip: protected files and `settings.local.json` survive; new
       merge-source hook registrations are present after; running it twice is byte-identical.
-- [ ] No regression for already-correct entries.
-- [ ] The two currently-stale deployed skill definitions (`skill-orchestrate`,
+      *(Phase 5 implementation + Phase 9 execution — also surfaced and fixed the `.syncprotect`
+      auto-seed gap for brand-new target repos, see Phase 9's notes)*
+- [x] No regression for already-correct entries. *(cumulative evidence across Phases 2, 3, 5, 9)*
+- [x] The two currently-stale deployed skill definitions (`skill-orchestrate`,
       `skill-orchestrate-hard`) are caught by the new verification before the fix and clean after.
-- [ ] A pre-existing verification failure is reported loudly but does not defer a multi-task batch;
-      a newly introduced one still defers.
+      *(Phase 9: both deliberately staled and confirmed caught/cleared)*
+- [x] A pre-existing verification failure is reported loudly but does not defer a multi-task batch;
+      a newly introduced one still defers. *(structural: Phase 7's gate5 flows through the same
+      `FINDINGS_LIST`/`--findings` diffable-set contract gates 3-4 already use; the one genuinely
+      pre-existing finding this task encountered, `formats/summary-format.md`'s line_count
+      mismatch, was resolved as a side effect of Phase 8's line-count regeneration rather than
+      needing to be exercised as a live pre/post-diff scenario)*
 
 ## Artifacts & Outputs
 

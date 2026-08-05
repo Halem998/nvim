@@ -222,6 +222,39 @@ local function detect_legacy_core(project_dir, config, core_manifest)
   return false, nil
 end
 
+--- Auto-seed a default `.syncprotect` at the project root the first time `core` loads into a
+--- repo that has none, so `context/repo/project-overview.md` (a `provides.context` entry that is
+--- explicitly meant to be repo-specific -- see `/project-overview` and the "New repository setup"
+--- guidance) is protected from being overwritten by the generic source-store template on a later
+--- resync/regenerate. This is a deliberate carry-over of the retired glob+allow-list sync
+--- engine's own auto-seed step (which every consuming repo's first bulk sync used to go through),
+--- discovered missing from the manifest-driven engine during a from-scratch scratch-tree
+--- verification pass: a target repo that has NEVER been deployed before and only ever uses this
+--- engine would otherwise never get a `.syncprotect` at all, silently losing the protection a
+--- customized `project-overview.md` needs across every future regenerate. No-op if a
+--- `.syncprotect` already exists at the project root (never overwrites one, even a legacy-located
+--- or otherwise customized one) -- this only fires on a genuinely first-ever deploy.
+--- @param project_dir string Project directory
+local function ensure_default_syncprotect(project_dir)
+  local syncprotect_path = project_dir .. "/.syncprotect"
+  if vim.fn.filereadable(syncprotect_path) == 1 then
+    return
+  end
+
+  local seed_content = "# Protected files - not overwritten during sync\n"
+    .. "# Add relative paths (one per line) to protect local customizations\n"
+    .. "# Paths are relative to the base directory (e.g., rules/my-rule.md)\n"
+    .. "#\n"
+    .. "# Note: this file lives at project root, outside the sync base directory,\n"
+    .. "# so it is inherently safe from sync operations.\n"
+    .. "\n"
+    .. "# Repository-specific context (regenerated per repo via /project-overview; must never be\n"
+    .. "# overwritten by the generic source-store template)\n"
+    .. "context/repo/project-overview.md\n"
+
+  helpers.write_file(syncprotect_path, seed_content)
+end
+
 --- Create an extension manager instance with the given configuration
 --- @param config table Extension system configuration from config.lua
 --- @return table manager Extension manager with load, unload, reload, etc.
@@ -396,6 +429,14 @@ function M.create(config)
 
     -- Ensure base directory exists
     helpers.ensure_directory(target_dir)
+
+    -- Auto-seed a default .syncprotect on core's first-ever load into this project (no-op if one
+    -- already exists) -- see ensure_default_syncprotect's own doc comment for why this matters.
+    -- Deliberately BEFORE load_syncprotect below, so a freshly-seeded entry is honored by this
+    -- very load's own copy pass, not just future ones.
+    if extension_name == "core" then
+      ensure_default_syncprotect(project_dir)
+    end
 
     -- Load .syncprotect to skip protected files during copy operations
     local protected_paths = loader_mod.load_syncprotect(project_dir, config.base_dir)
