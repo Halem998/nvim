@@ -342,36 +342,36 @@ this phase rather than assuming the research finding still holds.
 
 ---
 
-### Phase 5: Verify the bar and record follow-ups [NOT STARTED]
+### Phase 5: Verify the bar and record follow-ups [COMPLETED]
 
 **Goal**: Empirically confirm the task's verification bar — zero gate-out format errors and zero
 auto-repaired fields on a cslib-shaped summary — and confirm both binding constraints held.
 
 **Tasks**:
 
-- [ ] Construct a representative cslib implementation summary by filling in the Phase 3 skeleton
+- [x] Construct a representative cslib implementation summary by filling in the Phase 3 skeleton
       with plausible content, and write it to a scratch path (not into a task's `summaries/`
-      directory, to avoid polluting task artifacts).
-- [ ] Run `bash agent-system/extensions/core/scripts/validate-artifact.sh <scratch> summary` and
-      confirm the output reports zero errors.
-- [ ] Run the same command with `--fix` and confirm zero fields were auto-repaired (exit code 0,
-      not 2; no `[FIXED]` lines).
-- [ ] Run with `--strict` and record any warnings; warnings do not fail the bar but should be
-      reported in the summary if present.
-- [ ] Confirm the source-store rule held: `git status --short` and the phase diffs contain zero
-      paths under `.claude/`. Every changed path must be under `agent-system/extensions/`.
-- [ ] Confirm the deliverable rule held: run `bash .claude/scripts/check-task-references.sh` if
+      directory, to avoid polluting task artifacts). *(completed: wrote to verification-scratch/ under the task dir, since specs/** is the required exemption for the write-time task-reference guard)*
+- [x] Run `bash agent-system/extensions/core/scripts/validate-artifact.sh <scratch> summary` and
+      confirm the output reports zero errors. *(completed: 0 errors, exit 0)*
+- [x] Run the same command with `--fix` and confirm zero fields were auto-repaired (exit code 0,
+      not 2; no `[FIXED]` lines). *(completed: exit 0, no [FIXED] lines)*
+- [x] Run with `--strict` and record any warnings; warnings do not fail the bar but should be
+      reported in the summary if present. *(completed: 0 warnings)*
+- [x] Confirm the source-store rule held: `git status --short` and the phase diffs contain zero
+      paths under `.claude/`. Every changed path must be under `agent-system/extensions/`. *(completed: verified)*
+- [x] Confirm the deliverable rule held: run `bash .claude/scripts/check-task-references.sh` if
       present, otherwise grep each of the four changed files for task-number citation patterns.
-      All four are deliverables outside `specs/**`.
-- [ ] Confirm both cslib agents now reference `summary-format.md`:
+      All four are deliverables outside `specs/**`. *(completed: repo-wide scan passed, 0 occurrences across all 4 deliverable trees)*
+- [x] Confirm both cslib agents now reference `summary-format.md`:
       `grep -l 'summary-format' agent-system/extensions/cslib/agents/cslib-implementation*.md`
-      lists both files.
-- [ ] Record in the implementation summary's `## Follow-ups` the out-of-scope gaps the research
+      lists both files. *(completed: both files listed)*
+- [x] Record in the implementation summary's `## Follow-ups` the out-of-scope gaps the research
       surfaced: `web`, `lean` base, `epi`, and `founder` implementation agents have the same
       no-reference failure mode; `latex`, `python`, `typst`, `z3` use an indirect pointer instead
       of a direct reference; and `progress-file.md`'s documented schema lacks the `deviations`
-      array its consumers reference.
-- [ ] Delete the scratch summary file.
+      array its consumers reference. *(completed: recorded in the implementation summary)*
+- [x] Delete the scratch summary file. *(completed: verification-scratch/ removed)*
 
 **Timing**: 0.75 hours
 

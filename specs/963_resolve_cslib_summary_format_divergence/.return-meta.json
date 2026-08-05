@@ -1,9 +1,43 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/963_resolve_cslib_summary_format_divergence/summaries/01_resolve-summary-format-divergence-summary.md",
+      "summary": "Amended summary-format.md to admit '## Plan Deviations' as a recognized optional section with minimum-not-whitelist semantics; synced validate-artifact.sh comments (zero enforcement change); wired both cslib implementation agents to the amended standard with a full copyable skeleton; empirically confirmed zero errors and zero auto-repaired fields on a cslib-shaped summary."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Resolved the cslib implementation-summary format divergence by formally admitting '## Plan Deviations' into the core summary-format.md standard as a recognized optional section (Option ii), syncing validate-artifact.sh's documentation to match with zero enforcement change, and wiring both cslib implementation agents (base and hard) to the amended standard with a complete summary skeleton. Empirically verified a cslib-shaped summary now validates with zero errors and zero auto-repaired fields."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/summary-format.md",
+    "agent-system/extensions/core/scripts/validate-artifact.sh",
+    "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a core format standard (e.g. summary-format.md) documents required sections as a closed list but the validator (validate-artifact.sh) only checks for MISSING required entries and never enumerates document headings against a whitelist, an ecosystem-wide convention that isn't in the standard (e.g. '## Plan Deviations' used by 11/16 implementation agents) is a documentation gap, not a live validator conflict. The fix is to formally admit the convention into the standard as a named optional section with a canonical position and empty-value convention, plus a comment stating explicitly that the required list is a minimum, not a whitelist -- this avoids rewriting already-converged agents while removing ambiguity for agents that omit the section reference and improvise headings into the vacuum (the actual failure mode: heading REPLACEMENT of a required section, not heading addition).",
+      "category": "PATTERN",
+      "source_artifact": "specs/963_resolve_cslib_summary_format_divergence/summaries/01_resolve-summary-format-divergence-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["summary-format", "validate-artifact", "optional-section", "minimum-not-whitelist", "agent-context-references", "format-standard-drift"]
+    },
+    {
+      "content": "A base/hard agent pair implementing the same domain (e.g. cslib-implementation-agent.md vs cslib-implementation-hard-agent.md) commonly diverges in whether each references a shared format standard: the hard variant often already has the @-reference and a terse pointer-style stage, while the base variant lacks the reference entirely and has no equivalent stage at all -- not just a shorter one. When fixing this asymmetry, give the base agent the FULL skeleton (since it has nothing to fall back on) and keep the hard agent's fix terse, pointing at the base agent's skeleton rather than duplicating it, consistent with the hard agent's existing compressed style.",
+      "category": "PATTERN",
+      "source_artifact": "specs/963_resolve_cslib_summary_format_divergence/summaries/01_resolve-summary-format-divergence-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["base-hard-agent-asymmetry", "agent-skeleton", "context-references", "extension-agents", "cslib"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785950363_553a84_963",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
