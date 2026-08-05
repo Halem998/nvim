@@ -1,9 +1,62 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 982,
-  "session_id": "sess_1785958454_710f14",
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
-  "artifacts": [],
-  "next_steps": "Executing plan phase by phase"
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md",
+      "summary": "Unified the four disagreeing .orchestrator-handoff.json descriptions around one JSON Schema, rewrote validate-handoff.sh, deleted the zero-caller nested-form writer, fixed the live artifact-linking defect, added a two-engine reader-parity test, and verified the redeployed tree end to end."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Established context/schemas/orchestrator-handoff-schema.json as the single source of truth for .orchestrator-handoff.json, rewrote validate-handoff.sh and handoff-schema.md to match it, deleted the unreferenced skill_write_orchestrator_handoff (collapsing the continuation pointer to one canonical form), fixed the hard-mode writer's missing summary/artifacts fields, added bidirectional validator tests and a two-engine reader-parity test, and redeployed with a clean verify-deploy.sh pass."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/agents/planner-hard-agent.md",
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/context/schemas/orchestrator-handoff-schema.json",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/hooks/validate-handoff-location.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh",
+    "agent-system/extensions/core/scripts/validate-handoff.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When authoring a bash test that asserts two production files (e.g. two SKILL.md engines) stay in agreement, extract the literal jq filter strings from both files via stable text-anchor grep rather than hand-copying the filters into the test. Hand-copied filters only prove the test agrees with itself; anchor-based extraction (grep -A<N> on a unique surrounding comment/line, then grep -oP to pull the filter between quotes) actually catches drift if a future editor changes one file's read logic but not the other's.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-authoring", "reader-parity", "jq-extraction", "drift-detection", "two-engine-testing"]
+    },
+    {
+      "content": "This repo's test-validate-handoff.sh-style scripts under core/scripts/tests/ resolve their subject file via a candidate list checked in order; convention across the suite is deploy-tree-first when the subject is invoked identically to production runtime (e.g. skill-base.sh functions calling a hardcoded .claude/-relative path), but source-store-first when the test is meant to validate a script under ACTIVE DEVELOPMENT before a redeploy has happened -- deploy-first would silently test the stale pre-edit version during implementation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["test-resolution", "source-store", "deploy-tree", "candidate-path", "verify-deploy"]
+    },
+    {
+      "content": "Editing a context/ prose doc's content changes its line count, which can silently drift the corresponding index-entries.json line_count declaration and fail verify-deploy.sh's doc-lint gate on the NEXT redeploy, even though the edit itself was correct. Run `bash .claude/scripts/generate-context-line-counts.sh --write` (source-store target) after any substantive content edit to a doc tracked in index-entries.json, before redeploying, to avoid a late-discovered doc-lint failure.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["index-entries", "line-count", "doc-lint", "verify-deploy", "deploy-headless"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1785958454_710f14",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
