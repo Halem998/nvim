@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/982_unify_orchestrator_handoff_contract/reports/01_unify-handoff-contract.md",
+      "summary": "Verifies the four disagreeing handoff schemas against the freshly-redeployed source store, finds the readers already reconciled with each other but a live artifact-linking defect in the only active writer, and recommends: one JSON Schema file, delete skill_write_orchestrator_handoff and make .return-meta.json the base-mode channel, canonicalize the hard/wrap-up.md blocker shape and flat continuation_path form, and expand validate-handoff.sh's status enum plus add an artifacts check."
+    }
+  ],
+  "next_steps": "Run /plan 982 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785950363_553a84_982",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 12,
+  "memory_candidates": [
+    {
+      "content": "In agent-system's orchestrator-handoff contract, always cross-check a documented schema against actual reader jq paths via grep before trusting the prose doc: handoff-schema.md's own 'Complete JSON Schema' example omitted skeleton/sorry_inventory/artifacts[].summary and documented a blockers shape ({description,phase,severity}) that neither orchestrate engine (base or hard) ever reads -- only the wrap-up.md hard shape ({phase,target,verbatim_goal,...}) is read, and only by the hard engine. Grepping for '.field[0].subfield' reader patterns across both SKILL.md engines is the fast way to find which documented shape is actually live vs dead.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/982_unify_orchestrator_handoff_contract/reports/01_unify-handoff-contract.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrator-handoff", "schema-reconciliation", "dead-code-detection", "jq-grep-audit"]
+    },
+    {
+      "content": "general-implementation-hard-agent.md's Stage 5 H9 handoff-write template omits 'summary' and 'artifacts' entirely, even though both skill-orchestrate and skill-orchestrate-hard unconditionally read '.summary' and '.artifacts[0].path' from every handoff to decide whether to call skill_link_artifacts. This means live hard-mode implement dispatches never get their summary artifact auto-linked into state.json today -- a silent defect, not just a documentation gap. Worth checking for analogous 'engine reads a field the only live writer's own written template omits' gaps whenever auditing a handoff/return-channel contract.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/982_unify_orchestrator_handoff_contract/reports/01_unify-handoff-contract.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrator-handoff", "artifact-linking", "H9", "wrap-up-contract", "hard-mode"]
+    }
+  ]
+}

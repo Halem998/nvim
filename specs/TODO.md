@@ -60,7 +60,7 @@ next_project_number: 997
 
 ### Orchestration Concurrency
 
-982 [NOT STARTED] — Unify the .orchestrator-handoff.json contract. FOUR disagreeing s
+982 [RESEARCHED] — Unify the .orchestrator-handoff.json contract. FOUR disagreeing s
 
 ### Status Marker Lifecycle
 
@@ -382,10 +382,11 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 982. One handoff schema, one writer, one validator
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 974
+- **Research**: [982_unify_orchestrator_handoff_contract/reports/01_unify-handoff-contract.md]
 
 **Description**: Unify the .orchestrator-handoff.json contract. FOUR disagreeing schemas currently coexist, and the nominal producer has zero callers. This SUBSUMES task 947 (marked abandoned in favor of this task — read its description first). Task 949's cslib-sibling propagation is SPUN OUT to the cslib terminal-metadata task (which depends on this one and encodes its decisions); this task's file scope deliberately excludes cslib agent files so it cannot collide with the cslib summary-format task. Related but NOT subsumed: task 968 (handoff-present corroboration gate — this task simplifies its terrain but 968's gate logic stays separate) and task 973 (reconcile-task-status safe recovery from malformed handoff status — that failure-mode handling stays; this task reduces its trigger frequency).
 
