@@ -436,28 +436,32 @@ before Phase 2 because four founder agents appear in both edit sets.
 
 ---
 
-### Phase 7: Fixture tests, manifest registration, and deploy-gate wiring [NOT STARTED]
+### Phase 7: Fixture tests, manifest registration, and deploy-gate wiring [COMPLETED]
 
 - **Goal**: The new lint is independently tested and actually runs as part of deploy verification.
 
 - **Tasks**:
-  - [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh`, modeled
+  - [x] Create `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh`, modeled
     on the existing test scripts in that directory (e.g. `test-validate-no-task-references.sh`'s
-    assert-helper shape).
-  - [ ] Positive fixtures: a rogue-key agent (`allowed-tools:`) fails Check A; an agent without
-    `model:` fails Check B; an implementation agent without the bullet fails Check C.
-  - [ ] Negative fixtures: a frontmatter-less file placed in an `agents/`-named fixture directory
+    assert-helper shape). *(completed)*
+  - [x] Positive fixtures: a rogue-key agent (`allowed-tools:`) fails Check A; an agent without
+    `model:` fails Check B; an implementation agent without the bullet fails Check C. *(completed:
+    9/9 assertions pass)*
+  - [x] Negative fixtures: a frontmatter-less file placed in an `agents/`-named fixture directory
     is not treated as an agent and produces no finding; a compliant agent passes all three checks.
-  - [ ] Register both new scripts in `agent-system/extensions/core/manifest.json` under
+    *(completed)*
+  - [x] Register both new scripts in `agent-system/extensions/core/manifest.json` under
     `provides.scripts` as `lint/lint-agent-contracts.sh` and
     `tests/test-lint-agent-contracts.sh`, matching the existing subdirectory-path entry style
-    (`lint/lint-contract-compliance.sh`, `tests/test-handoff-reader-parity.sh`).
-  - [ ] Wire the lint into `agent-system/extensions/core/scripts/verify-deploy.sh` as a new gate
+    (`lint/lint-contract-compliance.sh`, `tests/test-handoff-reader-parity.sh`). *(completed)*
+  - [x] Wire the lint into `agent-system/extensions/core/scripts/verify-deploy.sh` as a new gate
     following the `check-task-references.sh` gate-4 pattern: a `CURRENT_GATE` label, the
-    source-store-only skip for deploy consumers, and finding-line emission on failure.
-  - [ ] Update the utility-scripts list in
+    source-store-only skip for deploy consumers, and finding-line emission on failure. *(completed:
+    added as gate6, the next available gate number, appended after gate5 rather than renumbering
+    existing gates)*
+  - [x] Update the utility-scripts list in
     `agent-system/extensions/core/merge-sources/` (the CLAUDE.md generation source) to mention
-    `lint-agent-contracts.sh`, so the generated index stays truthful.
+    `lint-agent-contracts.sh`, so the generated index stays truthful. *(completed)*
 
 - **Timing**: 1.5 hours
 

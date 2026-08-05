@@ -2191,7 +2191,7 @@
       "domain": "core",
       "subdomain": "templates",
       "summary": "Template for creating new agents",
-      "line_count": 114,
+      "line_count": 118,
       "keywords": [
         "template",
         "agent"

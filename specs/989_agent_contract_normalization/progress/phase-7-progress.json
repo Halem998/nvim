@@ -1,0 +1,47 @@
+{
+  "phase": 7,
+  "phase_name": "Fixture tests, manifest registration, and deploy-gate wiring",
+  "started_at": "2026-08-05T23:10:00Z",
+  "last_updated": "2026-08-05T23:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-lint-agent-contracts.sh with positive and negative fixtures",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"],
+      "note": "9 assertions, all passing: lint exits 1 against a violating fixture tree; rogue-key-agent.md fails Check A; no-model-agent.md fails Check B; a general-implementation-agent.md fixture (no bullet) fails Check C; README.md (frontmatter-less) produces no finding; compliant-agent.md produces no FAIL; fragment-missing case fails loudly by name; --help exits 0; unknown argument exits 2."
+    },
+    {
+      "id": 2,
+      "description": "Register both scripts in manifest.json provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"],
+      "note": "lint/lint-agent-contracts.sh inserted alphabetically before lint/lint-contract-compliance.sh; tests/test-lint-agent-contracts.sh inserted alphabetically between tests/test-index-entries-schema.sh and tests/test-orchestrate-triage-classify.sh. Verified: jq -r '.provides.scripts[]' | grep agent-contracts returns both entries; manifest.json remains valid JSON."
+    },
+    {
+      "id": 3,
+      "description": "Wire the lint into verify-deploy.sh as a new gate",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"],
+      "note": "Added as gate6 (appended after the existing gate5, not renumbering gate0-gate5) since verify-deploy.sh's gate numbering is consumed by an automated caller (skill-orchestrate's redeploy checkpoint) and inserting mid-sequence would have silently relabeled every downstream gate. Follows the check-task-references.sh gate4 pattern: CURRENT_GATE label, source-store-only [SKIP] for deploy consumers (no agent-system/extensions dir), and FINDING gate6 line emission on failure via the same fail() helper. Verified live: bash verify-deploy.sh --quiet . reports '6. Agent contracts lint (lint-agent-contracts.sh --verbose)' / '[PASS] agent contracts lint reports no failures', 17 total checks with 2 pre-existing unrelated failures (gate3 doc-lint and gate5 manifest-driven verification, both caused by .claude/ deploy-tree staleness from this task's own source-store-only edits per the binding source-store rule -- a redeploy would clear them but redeploying is a user-triggered action out of scope here)."
+    },
+    {
+      "id": 4,
+      "description": "Update merge-sources utility-scripts list",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7 (unplanned but necessary fixup)",
+      "description": "index-entries.json line_count accuracy for templates/agent-template.md",
+      "type": "altered",
+      "reason": "Not a plan task, but discovered via check-extension-docs.sh while verifying Phase 7's deploy-gate wiring: Phase 1's edit to context/templates/agent-template.md changed its line count from 114 to 118, and index-entries.json still declared 114, tripping check-extension-docs.sh's Rule R (index-truth gate). Fixed the single declared line_count field to match wc -l, using the same correction generate-context-line-counts.sh --write would apply, but scoped to only this one entry rather than running the global rewrite (which would also have touched an unrelated, pre-existing drifted entry -- project/literature/patterns/agent-exploration.md, declared 116 vs actual 138 -- that this task never touched and that is out of scope to fix here).",
+      "annotation": null
+    }
+  ]
+}

@@ -332,6 +332,34 @@ else
 fi
 
 say ""
+
+# ── 6. Agent contracts lint gate ──────────────────────────────────────────────
+# Only meaningful in the source-store repo, mirroring gates 3-4's SKIP-if-not-source-store
+# precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
+# skips there.
+say "6. Agent contracts lint (lint-agent-contracts.sh --verbose)"
+CURRENT_GATE="gate6"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- agent contracts lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh" ]; then
+  fail "lint-agent-contracts.sh not found in source store"
+else
+  agent_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh" --verbose 2>&1)
+  agent_lint_status=$?
+  if [ "$agent_lint_status" -eq 0 ]; then
+    pass "agent contracts lint reports no failures"
+  else
+    fail "agent contracts lint reported failures" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r agent_lint_line; do
+        FINDINGS_LIST+=("FINDING gate6 ${agent_lint_line#*FAIL\] }")
+      done < <(printf '%s\n' "$agent_lint_output" | grep -F '[FAIL]')
+    fi
+  fi
+fi
+
+say ""
 if [ "$FAILURES" -eq 0 ]; then
   echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)"
   say ""
