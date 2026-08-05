@@ -1,12 +1,84 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/981_consolidate_routing_to_single_router/summaries/01_routing-consolidation-summary.md",
+      "summary": "All 8 phases completed: shared routing library, unified call sites, explicit routing_agents manifest declarations, single agent resolver adopted by both orchestrate engines, wiring-validation lint (gate7), table-driven parity test, skill-orchestrator retirement, and schema documentation."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Consolidated six independent routing implementations onto one shared library (scripts/lib/manifest-routing-lib.sh) plus two thin resolvers (command-route-skill.sh refactored, command-route-agent.sh new); added explicit routing_agents/routing_agents_hard declarations across 17 manifests ground-truthed against each skill's own subagent_type dispatch; fixed implement.md's missing effort_flag argument; switched core-manifest identification to .name==\"core\"; retired skill-orchestrator; added lint-routing-wiring.sh (verify-deploy gate7) and an 18-assertion table-driven parity test. All 8 plan phases COMPLETED with zero unresolved deviations."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+    "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
+    "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+    "agent-system/extensions/core/docs/guides/adding-domains.md",
+    "agent-system/extensions/core/docs/guides/copy-claude-directory.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/command-route-agent.sh",
+    "agent-system/extensions/core/scripts/command-route-skill.sh",
+    "agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh",
+    "agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh",
+    "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrator/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrator/SKILL.md.archived",
+    "agent-system/extensions/cslib/manifest.json",
+    "agent-system/extensions/email/manifest.json",
+    "agent-system/extensions/epidemiology/commands/epi.md",
+    "agent-system/extensions/epidemiology/manifest.json",
+    "agent-system/extensions/filetypes/manifest.json",
+    "agent-system/extensions/formal/manifest.json",
+    "agent-system/extensions/founder/manifest.json",
+    "agent-system/extensions/latex/manifest.json",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/memory/manifest.json",
+    "agent-system/extensions/nix/manifest.json",
+    "agent-system/extensions/nvim/manifest.json",
+    "agent-system/extensions/present/manifest.json",
+    "agent-system/extensions/python/manifest.json",
+    "agent-system/extensions/typst/manifest.json",
+    "agent-system/extensions/web/manifest.json",
+    "agent-system/extensions/z3/manifest.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shared bash library function needs to return TWO outputs to its caller (a value plus metadata like 'which precedence step matched'), do not use `$(function_call)` command substitution for the metadata side-channel — command substitution forks a subshell, so any non-local variable the function sets is invisible to the caller once the subshell exits. Under `set -u`, the caller's later reference to that now-unset variable is a hard error that silently kills the sourcing shell with zero output, which is very hard to diagnose (looks like the whole pipeline hung or produced nothing). Fix: have the function set both outputs as plain (non-subshelled) globals and have the caller invoke it directly (not via `$(...)`), reading both outputs immediately after the call — the same pattern used for constructs like SKILL_NAME/AGENT_NAME exports.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/981_consolidate_routing_to_single_router/summaries/01_routing-consolidation-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "subshell", "command-substitution", "set-u", "side-channel"]
+    },
+    {
+      "content": "When a shared shell library must validate BOTH a deployed tree and its pre-deploy source store using the exact same resolution logic (e.g. a lint that should test what the live router actually does, not a re-derived copy), add a single environment-variable override for the manifest/data root (e.g. ROUTE_MANIFEST_ROOT) rather than parameterizing every function call. Default it to the value every live caller already uses, so behavior is provably unchanged (verify via a full before/after resolution-matrix diff); validation-only callers (lint, test) set the override to point at the source store instead. This lets one library serve both 'live behavior' and 'pre-deploy validation' consumers without duplicating logic.",
+      "category": "PATTERN",
+      "source_artifact": "specs/981_consolidate_routing_to_single_router/summaries/01_routing-consolidation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-library", "source-store", "deployed-tree", "validation", "environment-override"]
+    },
+    {
+      "content": "When ground-truthing which agent a routing table's skill name actually dispatches to (rather than deriving it via string transformation, e.g. sed 's/^skill-//' + '-agent'), grep each candidate skill's SKILL.md for its literal `subagent_type:`/`subagent_type =` dispatch line rather than trusting the skill-name-to-agent-name naming convention to hold universally. In a real manifest set, roughly 15-20% of entries broke a naive derivation (compound multi-stage skills that pick an agent dynamically at runtime, skills whose agent name doesn't follow the skill-name pattern, skills that are direct-execution with no agent at all). A cross-check against provides.agents alone is not sufficient either — a manifest's routing.{op} value can point to a DIFFERENT skill than the one whose agent name superficially matches the task_type (e.g. a 'document' sub-key routing to the SAME generic skill/agent as the parent key, not a document-specific one).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/981_consolidate_routing_to_single_router/summaries/01_routing-consolidation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["routing", "manifest", "ground-truth", "agent-resolution", "subagent_type"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785970423_25f36e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 8,
     "phases_total": 8
   }
 }

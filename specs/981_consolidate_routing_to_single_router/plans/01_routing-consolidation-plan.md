@@ -1,7 +1,7 @@
 # Implementation Plan: Consolidate Routing to a Single Router
 
 - **Task**: 981 - consolidate_routing_to_single_router
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/981_consolidate_routing_to_single_router/reports/01_routing-consolidation-research.md
