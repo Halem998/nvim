@@ -31,11 +31,19 @@ A `PostToolUse` hook (`hooks/validate-handoff-location.sh`) rejects Write/Edit c
 destination is not `specs/{NNN}_{SLUG}/.orchestrator-handoff.json`. Treat that rejection as a
 hard error: delete the stray file, then rewrite at the correct absolute path.
 
+The machine-checkable authority for this shape is
+`context/schemas/orchestrator-handoff-schema.json`; this section is the H9 prose contract and
+must stay consistent with it.
+
 Required fields:
 
 ```json
 {
   "status": "implemented | partial | blocked",
+  "summary": "One to two sentence summary of what this dispatch accomplished.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md", "summary": "One-line description"}
+  ],
   "skeleton": false,
   "phases_completed": 2,
   "phases_total": 5,
@@ -54,6 +62,14 @@ Required fields:
 ```
 
 **Field semantics**:
+- `summary`: REQUIRED. What the orchestrator surfaces as the dispatch summary — both engines
+  read `.summary` unconditionally.
+- `artifacts`: REQUIRED array (may be `[]` only when `status` is `partial`/`blocked`/`failed`;
+  non-empty required when `status` is `implemented`). This is what `skill_link_artifacts`
+  consumes to link the produced file(s) into `state.json` — an absent or empty `artifacts` on an
+  `implemented` handoff silently prevents the summary artifact from being linked. Name the
+  implementation summary file with `type: "summary"`.
+- `phase`: Optional, informational. Not required.
 - `skeleton`: Boolean, default `false`. `true` ONLY when `status == "implemented"` and
   completeness rests on one or more strategic sorries meeting the `anti-analysis.md`
   strategic-sorry policy — the "implemented (skeleton)" outcome. MUST be `false` or absent when

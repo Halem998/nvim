@@ -352,10 +352,17 @@ working directory at Write-tool-call time and strands the handoff outside the ta
 where the orchestrator will instead read the previous cycle's leftover file. See
 `context/contracts/wrap-up.md`, "Write location", for the full rule.
 
-Always write this file, even on successful completion:
+Always write this file, even on successful completion. `artifacts` MUST name the implementation
+summary file this dispatch produced, with `type: "summary"` — omitting it (or leaving it `[]`
+on an `implemented` handoff) silently breaks artifact linking, because both orchestrate engines
+read `.artifacts[0].path` to decide whether to call `skill_link_artifacts`:
 ```json
 {
   "status": "implemented | partial | blocked",
+  "summary": "One to two sentence summary of what this dispatch accomplished.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md", "summary": "One-line description"}
+  ],
   "phases_completed": N,
   "phases_total": M,
   "sorry_inventory": [],
@@ -364,15 +371,21 @@ Always write this file, even on successful completion:
 }
 ```
 
-On `partial` or `blocked`: populate `blockers` with verbatim goal text from plan checklist.
-On `implemented`: set `status: "implemented"`, empty `blockers`, null `continuation_path`.
+On `partial` or `blocked`: populate `blockers` with verbatim goal text from plan checklist;
+`artifacts` may be `[]`.
+On `implemented`: set `status: "implemented"`, empty `blockers`, null `continuation_path`,
+non-empty `artifacts`.
 
 On `implemented` with strategic sorries (skeleton): set `status: "implemented"`,
-`skeleton: true`, empty `blockers`, null `continuation_path`, and populate `sorry_inventory`
-with the full canonical 7-field entry for every strategic sorry:
+`skeleton: true`, empty `blockers`, null `continuation_path`, non-empty `artifacts`, and populate
+`sorry_inventory` with the full canonical 7-field entry for every strategic sorry:
 ```json
 {
   "status": "implemented",
+  "summary": "One to two sentence summary of what this dispatch accomplished.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md", "summary": "One-line description"}
+  ],
   "skeleton": true,
   "phases_completed": N,
   "phases_total": M,

@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "Align the live writer contracts to the schema",
+  "started_at": "2026-08-05T20:06:00Z",
+  "last_updated": "2026-08-05T20:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add summary/artifacts to wrap-up.md required-fields block, semantics bullets, schema pointer",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/wrap-up.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add summary/artifacts to general-implementation-hard-agent.md Stage 5 base and skeleton templates",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/general-implementation-hard-agent.md"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

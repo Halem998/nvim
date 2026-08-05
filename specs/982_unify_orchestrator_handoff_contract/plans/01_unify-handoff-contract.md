@@ -348,34 +348,37 @@ deliberately deferred to Phase 5 and are NOT part of this hypothesis.
 
 ---
 
-### Phase 4: Align the live writer contracts to the schema [NOT STARTED]
+### Phase 4: Align the live writer contracts to the schema [COMPLETED]
 
 **Goal**: Fix the artifact-linking defect by making the two live writer-facing documents emit
 `summary` and `artifacts`.
 
 **Tasks**:
-- [ ] Read `core/context/contracts/wrap-up.md`'s "Orchestrator Handoff JSON Schema" section in
-      full before editing.
-- [ ] Add `"summary"` (required, string) and `"artifacts"` (required array, may be `[]`) to
+- [x] Read `core/context/contracts/wrap-up.md`'s "Orchestrator Handoff JSON Schema" section in
+      full before editing. *(completed)*
+- [x] Add `"summary"` (required, string) and `"artifacts"` (required array, may be `[]`) to
       wrap-up.md's "Required fields" JSON block, with `artifacts` entries showing
-      `{type, path, summary}`.
-- [ ] Add field-semantics bullets for both: `summary` is what the orchestrator surfaces as the
+      `{type, path, summary}`. *(completed)*
+- [x] Add field-semantics bullets for both: `summary` is what the orchestrator surfaces as the
       dispatch summary; `artifacts` is what `skill_link_artifacts` consumes — an absent or empty
       `artifacts` on an `implemented` handoff silently prevents the summary artifact from being
-      linked into `state.json`.
-- [ ] Add a one-line note that `phase` is optional and informational.
-- [ ] Add a pointer to `context/schemas/orchestrator-handoff-schema.json` as the machine-checkable
-      authority, keeping wrap-up.md as the H9 prose contract.
-- [ ] Read `core/agents/general-implementation-hard-agent.md` Stage 5 in full, INCLUDING the
-      `git_checkpoint` checkpoint sub-section and the skeleton example block, before editing.
-- [ ] Add `"summary"` and `"artifacts"` to the Stage 5 Step 1 base handoff template. This is the
-      fix for the verified defect, not a documentation nicety.
-- [ ] Add the same two fields to the skeleton example block so the two templates do not diverge.
-- [ ] Add a one-sentence instruction that `artifacts` must name the implementation summary file
+      linked into `state.json`. *(completed)*
+- [x] Add a one-line note that `phase` is optional and informational. *(completed)*
+- [x] Add a pointer to `context/schemas/orchestrator-handoff-schema.json` as the machine-checkable
+      authority, keeping wrap-up.md as the H9 prose contract. *(completed)*
+- [x] Read `core/agents/general-implementation-hard-agent.md` Stage 5 in full, INCLUDING the
+      `git_checkpoint` checkpoint sub-section and the skeleton example block, before editing. *(completed)*
+- [x] Add `"summary"` and `"artifacts"` to the Stage 5 Step 1 base handoff template. This is the
+      fix for the verified defect, not a documentation nicety. *(completed)*
+- [x] Add the same two fields to the skeleton example block so the two templates do not diverge. *(completed)*
+- [x] Add a one-sentence instruction that `artifacts` must name the implementation summary file
       the dispatch produced, with `type: "summary"`, and that omitting it silently breaks
-      artifact linking.
-- [ ] Confirm additive-only: `skeleton`, `sorry_inventory`, `blockers`, `continuation_path`, and
-      the `git_checkpoint` field are all still present and unchanged after the edit.
+      artifact linking. *(completed)*
+- [x] Confirm additive-only: `skeleton`, `sorry_inventory`, `blockers`, `continuation_path`, and
+      the `git_checkpoint` field are all still present and unchanged after the edit. *(completed:
+      diff review shows only prose superseded by additive versions, no JSON field removed;
+      `git_checkpoint` sub-section untouched — it lives in the Stage 4C checkpoint section, out of
+      this phase's edit range)*
 
 **Timing**: 1 hour
 
