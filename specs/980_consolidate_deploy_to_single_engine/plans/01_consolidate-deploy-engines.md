@@ -315,22 +315,36 @@ call.
 
 ---
 
-### Phase 4: Preserved-state snapshot and restore [NOT STARTED]
+### Phase 4: Preserved-state snapshot and restore [COMPLETED]
 
 **Goal**: Give the wipe path a correct, leak-free preserved-state mechanism covering both the
 settings files and every `.syncprotect`-listed path.
 
 **Tasks**:
-- [ ] Extend the settings-backup module to snapshot `.syncprotect`-listed paths alongside
+- [x] Extend the settings-backup module to snapshot `.syncprotect`-listed paths alongside
       `settings.json` and `settings.local.json` — same staging directory, same lifecycle. Do not
-      invent a second staging mechanism.
-- [ ] Add an explicit staging-clear function and call it on successful restore, closing the leak
-      where a stale staging dir silently re-applies on every later regenerate.
-- [ ] Make `restore` report success/failure explicitly so a caller can refuse to proceed with a
-      wipe when the snapshot step failed.
-- [ ] Preserve `.syncprotect`'s existing overwrite-protection semantics unchanged — snapshot/restore
-      is additive.
-- [ ] Leave `settings_backup.backup` wiring to Phase 5 (this phase makes it correct; Phase 5 calls it).
+      invent a second staging mechanism. *(completed: `M.backup` now accepts an optional
+      `protected_paths` argument, staged under `{staging_dir}/protected/{rel_path}` preserving
+      nested structure; `M.restore` walks that subdirectory back onto `base_dir`)*
+- [x] Add an explicit staging-clear function and call it on successful restore, closing the leak
+      where a stale staging dir silently re-applies on every later regenerate. *(completed:
+      `M.clear_staging`, called at the end of a fully-successful `M.restore`; verified a second
+      restore immediately after is a no-op — 0 files restored)*
+- [x] Make `restore` report success/failure explicitly so a caller can refuse to proceed with a
+      wipe when the snapshot step failed. *(already true pre-existing: `M.restore` already
+      returned `(boolean success, table restored)`; preserved unchanged, now also covers the
+      protected-paths branch's own read/write failures)*
+- [x] Preserve `.syncprotect`'s existing overwrite-protection semantics unchanged — snapshot/restore
+      is additive. *(completed: no change to `copy_file`'s protection check in loader.lua)*
+- [x] Leave `settings_backup.backup` wiring to Phase 5 (this phase makes it correct; Phase 5 calls it).
+      *(completed: `M.backup` has zero callers as of this phase, confirmed by
+      `grep -rn 'settings_backup\.backup' lua/` matching only the module's own definition)*
+
+**Verification evidence** (ad hoc headless round-trip against a scratch tree with a seeded
+`context/repo/project-overview.md`): backup staged 3 entries (2 settings files + 1 protected
+path); after deleting all three originals (simulating a wipe), restore recovered all 3 with
+byte-identical content (`diff` clean); the staging directory was absent immediately after;
+a second restore call reported 0 restored (no-op), confirming the leak-close requirement.
 
 **Timing**: 2 hours
 

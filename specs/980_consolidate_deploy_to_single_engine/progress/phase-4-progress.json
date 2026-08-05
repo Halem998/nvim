@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Preserved-state snapshot and restore",
+  "started_at": "2026-08-05T00:50:00Z",
+  "last_updated": "2026-08-05T01:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend settings_backup.lua to snapshot .syncprotect-listed protected_paths under staging_dir/protected/, restore them back, add clear_staging, verify round-trip",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/settings_backup.lua"
+      ],
+      "note": "Ad hoc headless round-trip against a scratch tree: backup staged 3 entries, restore recovered all 3 byte-identical, staging dir absent after, second restore is a no-op (0 restored)."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
