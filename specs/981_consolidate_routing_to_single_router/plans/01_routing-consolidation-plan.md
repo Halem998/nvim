@@ -438,7 +438,7 @@ editing, and correct the range to cover every gate actually present, not just th
 
 ---
 
-### Phase 6: Table-driven routing parity test [NOT STARTED]
+### Phase 6: Table-driven routing parity test [COMPLETED]
 
 **Goal**: Assert, mechanically and repeatably, that both orchestrate engines produce identical
 routing decisions across an identical `(op, task_type)` matrix, and that hard-mode skill

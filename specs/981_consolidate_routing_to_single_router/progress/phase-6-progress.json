@@ -1,0 +1,54 @@
+{
+  "phase": 6,
+  "phase_name": "Table-driven routing parity test",
+  "started_at": "2026-08-06T01:10:00Z",
+  "last_updated": "2026-08-06T01:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-routing-resolution.sh following scripts/tests/ conventions",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Build matrix mechanically from manifests (140 standard + 17 hard pairs), not hardcoded",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Assert 1: skill resolution matches manifest declarations, plus --hard on general/meta/markdown",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Assert 2: agent existence for every routing_agents/routing_agents_hard declaration",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Assert 3: engine parity, structural (grep both SKILL.md for command-route-agent.sh, absence of case-table/sed) plus semantic (hard fall-through never reuses standard block)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Assert 4: precedence direction via synthetic core+non-core conflicting fixture",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Assert 1 negative control via mutating a manifest's routing.research.nix value",
+      "result": "failed",
+      "reason": "Assert 1's expected value is read from the same manifest data the resolver reads (by design, so the matrix auto-covers new extensions), so mutating manifest data moves both sides of the comparison together and the test trivially still passes. Documented inline in the test file; the meaningful negative control for Assert 1 is corrupting command-route-skill.sh's own resolution call, which was verified manually (141 induced failures) and reverted."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
