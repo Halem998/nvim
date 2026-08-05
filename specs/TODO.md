@@ -11,8 +11,8 @@ next_project_number: 998
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 948,981,991,994,997 | -- | agent-system, literature, orchestration-concurrency |
-| 2 | 959,989,992 | 948,981,991 | agent-system |
+| 1 | 981,989,991,997 | -- | agent-system, orchestration-concurrency |
+| 2 | 959,992 | 981,991 | agent-system |
 | 3 | 960,993 | 959,992 | agent-system |
 | 4 | 961,988 | 960 | agent-system |
 | 5 | 962 | 961 | agent-system |
@@ -26,10 +26,6 @@ next_project_number: 998
 
 ### Agent System
 
-948 [PLANNED] — Add a Stage 7 / final-metadata contract to ALL THREE cslib agents
-  └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
-    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
   └─ 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
@@ -38,22 +34,21 @@ next_project_number: 998
           └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
             └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
               └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-                └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+                └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+                  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
                 └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
                   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
             └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
               └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
       └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
         └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
+989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
+  └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
   └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
     └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
       └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
-
-### Literature
-
-994 [PLANNED] — Fix literature-extension tooling landmines surfaced by downstream
 
 ### Orchestration Concurrency
 
@@ -187,12 +182,13 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 994. Fix literature tooling landmines and sync pruning
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 980
 - **Research**: [994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md]
 - **Plan**: [994_fix_literature_tooling_landmines_and_sync_pruning/plans/01_literature-tooling-doc-fixes.md]
+- **Summary**: [994_fix_literature_tooling_landmines_and_sync_pruning/summaries/01_literature-tooling-doc-fixes-summary.md]
 
 **Description**: Fix literature-extension tooling landmines surfaced by downstream research in the PossibleWorlds paper repo (report: ~/Philosophy/Papers/PossibleWorlds/specs/054_ingest_presheaf_semantics_literature/reports/01_literature-acquisition-research.md). (1) Document zotero-search.sh multi-term argument behavior explicitly: usage is QUERY [QUERY...] with additive OR scoring per term, so multi-word queries must be passed as separate arguments and a single quoted phrase fails to match; add an explicit warning to the script's usage header and the literature extension context docs. (2) Deployment hygiene for retired scripts — REVISED (post-review) to verification-plus-gap-fill, not mechanism-building: zotero-index-add.sh was retired upstream (agent-system/extensions/literature/scripts/deprecated/) but deployed repos still carry it as an active script (.claude/scripts/zotero-index-add.sh) together with stale generated references (the .claude/CLAUDE.md Zotero Integration table row claiming it adds to specs/literature-index.json, and .claude/agents/literature-agent.md around line 172). The structural fix is the deploy-engine consolidation task this task now DEPENDS ON: its wipe+regenerate path prunes retired scripts and regenerates merged CLAUDE.md sections by construction. The work here is to run the consolidated deploy against an affected downstream repo (or scratch tree) and VERIFY the retired script is pruned and the stale generated references are regenerated; if any stale reference survives because its source-store origin still mentions the retired script, fix those source references. Do NOT build a parallel retirement/pruning mechanism. (3) Record the retirement rationale in deprecated/README.md if absent: the script writes a ~20-field Zotero metadata entry while literature-briefing.sh reads the simpler {doc_id, relevance, added, source} shape from specs/literature-index.json, and it depends on the zot CLI and an undefined /zotero --setup command, so repair would have required schema translation; sub-index registration should instead use the documented jq append pattern in skill-literature/SKILL.md.
 
@@ -1584,12 +1580,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 948. Add terminal-metadata contracts to all three cslib agents
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 963, Task 982
 - **Research**: [948_add_stage7_final_metadata_to_cslib_research_agent/reports/01_stage7-final-metadata-cslib-agents.md]
 - **Plan**: [948_add_stage7_final_metadata_to_cslib_research_agent/plans/01_stage7-cslib-agent-contracts.md]
+- **Summary**: [948_add_stage7_final_metadata_to_cslib_research_agent/summaries/01_stage7-cslib-agent-contracts-summary.md]
 
 **Description**: Add a Stage 7 / final-metadata contract to ALL THREE cslib agents: agent-system/extensions/cslib/agents/cslib-research-agent.md (which currently has no terminal-metadata contract at all — this is the agent that actually failed in production), cslib-implementation-agent.md, and cslib-implementation-hard-agent.md. SCOPE WIDENED (post-review): the cslib-sibling artifacts-shape propagation formerly carried as item 5 of the handoff-unification task (and before that by the abandoned propagation task) lands HERE instead, so all cslib terminal-metadata work happens in one task and cannot collide with the handoff-unification task's file scope.
 

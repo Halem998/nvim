@@ -1,7 +1,7 @@
 # Implementation Plan: Task #948
 
 - **Task**: 948 - Add a Stage 7 / final-metadata contract to all three cslib agents
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (both cited prerequisites are [COMPLETED])
 - **Research Inputs**: `specs/948_add_stage7_final_metadata_to_cslib_research_agent/reports/01_stage7-final-metadata-cslib-agents.md`

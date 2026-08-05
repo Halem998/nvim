@@ -5,12 +5,12 @@
     {
       "project_number": 994,
       "project_name": "fix_literature_tooling_landmines_and_sync_pruning",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "description": "Fix literature-extension tooling landmines surfaced by downstream research in the PossibleWorlds paper repo (report: ~/Philosophy/Papers/PossibleWorlds/specs/054_ingest_presheaf_semantics_literature/reports/01_literature-acquisition-research.md). (1) Document zotero-search.sh multi-term argument behavior explicitly: usage is QUERY [QUERY...] with additive OR scoring per term, so multi-word queries must be passed as separate arguments and a single quoted phrase fails to match; add an explicit warning to the script's usage header and the literature extension context docs. (2) Deployment hygiene for retired scripts — REVISED (post-review) to verification-plus-gap-fill, not mechanism-building: zotero-index-add.sh was retired upstream (agent-system/extensions/literature/scripts/deprecated/) but deployed repos still carry it as an active script (.claude/scripts/zotero-index-add.sh) together with stale generated references (the .claude/CLAUDE.md Zotero Integration table row claiming it adds to specs/literature-index.json, and .claude/agents/literature-agent.md around line 172). The structural fix is the deploy-engine consolidation task this task now DEPENDS ON: its wipe+regenerate path prunes retired scripts and regenerates merged CLAUDE.md sections by construction. The work here is to run the consolidated deploy against an affected downstream repo (or scratch tree) and VERIFY the retired script is pruned and the stale generated references are regenerated; if any stale reference survives because its source-store origin still mentions the retired script, fix those source references. Do NOT build a parallel retirement/pruning mechanism. (3) Record the retirement rationale in deprecated/README.md if absent: the script writes a ~20-field Zotero metadata entry while literature-briefing.sh reads the simpler {doc_id, relevance, added, source} shape from specs/literature-index.json, and it depends on the zot CLI and an undefined /zotero --setup command, so repair would have required schema translation; sub-index registration should instead use the documented jq append pattern in skill-literature/SKILL.md.",
       "topic": "literature",
       "created": "2026-08-05T12:56:12Z",
-      "last_updated": "2026-08-05T20:46:28Z",
+      "last_updated": "2026-08-05T20:54:19Z",
       "dependencies": [
         980
       ],
@@ -29,8 +29,14 @@
           "path": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/plans/01_literature-tooling-doc-fixes.md",
           "type": "plan",
           "summary": "7-phase, 2-hour plan covering items 1 and 3 only: the zotero-search.sh separate-arguments warning across four documentation surfaces (both USAGE copies, agent-exploration.md, literature-agent.md), the deprecated/README.md retirement rationale, and retirement of two stale zotero-index-add.sh stderr hints. Item 2 is recorded as an explicit out-of-scope deploy-engine finding with a ready-to-use follow-up task description; no fix and no parallel pruning mechanism is planned."
+        },
+        {
+          "path": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/summaries/01_literature-tooling-doc-fixes-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all six modified source-store files, the Phase 5 scope-hypothesis deviation (3 stale references found vs. 2 anticipated), the out-of-scope deploy-engine finding with ready-to-use follow-up task text, and the full Phase 7 boundary/consistency audit results."
         }
-      ]
+      ],
+      "completion_summary": "Fixed items 1 and 3 of the literature-extension tooling landmines task: documented zotero-search.sh's separate-arguments quoting requirement across all four surfaces an agent could copy an invocation from, and expanded deprecated/README.md with the concrete schema-mismatch/dependency rationale for zotero-index-add.sh's retirement. Also retired three stale references to the quarantined script (two live stderr hints plus one provenance comment discovered during implementation). Item 2 (deploy-engine legacy-migration defect) was recorded as an explicit out-of-scope finding with a ready-to-use follow-up task description, per the plan's instruction not to fix it."
     },
     {
       "project_number": 970,
@@ -2427,7 +2433,7 @@
     {
       "project_number": 948,
       "project_name": "add_stage7_final_metadata_to_cslib_research_agent",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add terminal-metadata contracts to all three cslib agents",
@@ -2442,7 +2448,7 @@
         982
       ],
       "created": "2026-07-28T00:00:00Z",
-      "last_updated": "2026-08-05T20:46:21Z",
+      "last_updated": "2026-08-05T20:54:13Z",
       "session_id": "sess_1785961976_f6b468_948",
       "artifacts": [
         {
@@ -2454,8 +2460,14 @@
           "path": "specs/948_add_stage7_final_metadata_to_cslib_research_agent/plans/01_stage7-cslib-agent-contracts.md",
           "type": "plan",
           "summary": "Four-phase additive-only plan adding a terminal Stage 7 final-metadata contract to cslib-research-agent.md and cslib-implementation-agent.md, closing the two named continuation_path/artifacts-rationale gaps in cslib-implementation-hard-agent.md, and gating on a cross-file consistency and repo lint phase; includes verbatim drop-in text for every edit."
+        },
+        {
+          "path": "specs/948_add_stage7_final_metadata_to_cslib_research_agent/summaries/01_stage7-cslib-agent-contracts-summary.md",
+          "type": "summary",
+          "summary": "Adds Stage 7 final-metadata contracts to cslib-research-agent.md and cslib-implementation-agent.md, and closes two named gaps (artifacts-shape rationale, continuation_path key) in cslib-implementation-hard-agent.md's existing Stage 7/Stage 5."
         }
-      ]
+      ],
+      "completion_summary": "Added a terminal `## Stage 7: Write Final Metadata` section to cslib-research-agent.md (status \"researched\") and cslib-implementation-agent.md (status \"implemented\"), each with the required artifacts array-of-objects shape and an .orchestrator-handoff.json prohibition. Closed two named gaps in cslib-implementation-hard-agent.md: appended the artifacts-shape rationale to its existing Stage 7, and replaced the deprecated continuation_context key with the canonical flat continuation_path (plus population rule and linking rationale) in its Stage 5 handoff template."
     },
     {
       "project_number": 949,
