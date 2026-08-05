@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 994,
+  "next_project_number": 995,
   "active_projects": [
+    {
+      "project_number": 994,
+      "project_name": "fix_literature_tooling_landmines_and_sync_pruning",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Fix literature-extension tooling landmines surfaced by downstream research in the PossibleWorlds paper repo (report: ~/Philosophy/Papers/PossibleWorlds/specs/054_ingest_presheaf_semantics_literature/reports/01_literature-acquisition-research.md). (1) Document zotero-search.sh multi-term argument behavior explicitly: usage is QUERY [QUERY...] with additive OR scoring per term, so multi-word queries must be passed as separate arguments and a single quoted phrase fails to match; add an explicit warning to the script's usage header and the literature extension context docs. (2) Deployment hygiene for retired scripts: zotero-index-add.sh was retired upstream (agent-system/extensions/literature/scripts/deprecated/) but deployed repos still carry it as an active script (.claude/scripts/zotero-index-add.sh) together with stale generated references (the .claude/CLAUDE.md Zotero Integration table row claiming it adds to specs/literature-index.json, and .claude/agents/literature-agent.md around line 172) — extend the sync / Load Core process, or add a retirement manifest, so deprecated scripts are pruned and merged CLAUDE.md sections are regenerated in downstream deployments instead of persisting stale. (3) Record the retirement rationale in deprecated/README.md if absent: the script writes a ~20-field Zotero metadata entry while literature-briefing.sh reads the simpler {doc_id, relevance, added, source} shape from specs/literature-index.json, and it depends on the zot CLI and an undefined /zotero --setup command, so repair would have required schema translation; sub-index registration should instead use the documented jq append pattern in skill-literature/SKILL.md.",
+      "topic": "literature",
+      "created": "2026-08-05T12:56:12Z",
+      "last_updated": "2026-08-05T12:56:12Z"
+    },
     {
       "project_number": 970,
       "project_name": "fix_headless_deploy_provides_scripts",

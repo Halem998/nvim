@@ -1,17 +1,17 @@
 ---
-next_project_number: 994
+next_project_number: 995
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-07-30. Generated from state.json dependency graph.*
+*Updated 2026-08-05. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 952,959,963,980,981,982,990,991,992 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 952,959,963,980,981,982,990,991,992,994 | -- | agent-system, extensions, literature, ... |
 | 2 | 948,953,960,989,993 | 952,959,982,990,992 | agent-system |
 | 3 | 961,988 | 960 | agent-system |
 | 4 | 962 | 961 | agent-system |
@@ -52,6 +52,10 @@ next_project_number: 994
 
 980 [NOT STARTED] — Collapse the TWO independent deploy engines writing .claude/ into
 
+### Literature
+
+994 [NOT STARTED] — Fix literature-extension tooling landmines surfaced by downstream
+
 ### Orchestration Concurrency
 
 982 [NOT STARTED] — Unify the .orchestrator-handoff.json contract. FOUR disagreeing s
@@ -61,6 +65,16 @@ next_project_number: 994
 984 [NOT STARTED] — Give specs/state.json a machine-enforced schema and make the stat
 
 ## Tasks
+
+### 994. Fix literature tooling landmines and sync pruning
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Fix literature-extension tooling landmines surfaced by downstream research in the PossibleWorlds paper repo (report: ~/Philosophy/Papers/PossibleWorlds/specs/054_ingest_presheaf_semantics_literature/reports/01_literature-acquisition-research.md). (1) Document zotero-search.sh multi-term argument behavior explicitly: usage is QUERY [QUERY...] with additive OR scoring per term, so multi-word queries must be passed as separate arguments and a single quoted phrase fails to match; add an explicit warning to the script's usage header and the literature extension context docs. (2) Deployment hygiene for retired scripts: zotero-index-add.sh was retired upstream (agent-system/extensions/literature/scripts/deprecated/) but deployed repos still carry it as an active script (.claude/scripts/zotero-index-add.sh) together with stale generated references (the .claude/CLAUDE.md Zotero Integration table row claiming it adds to specs/literature-index.json, and .claude/agents/literature-agent.md around line 172) — extend the sync / Load Core process, or add a retirement manifest, so deprecated scripts are pruned and merged CLAUDE.md sections are regenerated in downstream deployments instead of persisting stale. (3) Record the retirement rationale in deprecated/README.md if absent: the script writes a ~20-field Zotero metadata entry while literature-briefing.sh reads the simpler {doc_id, relevance, added, source} shape from specs/literature-index.json, and it depends on the zot CLI and an undefined /zotero --setup command, so repair would have required schema translation; sub-index registration should instead use the documented jq append pattern in skill-literature/SKILL.md.
+
+---
 
 ### 993. Promote SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard
 - **Status**: [NOT STARTED]
