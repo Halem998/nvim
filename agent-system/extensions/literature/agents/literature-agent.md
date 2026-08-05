@@ -2,7 +2,7 @@
 name: literature-agent
 description: Manage specs/literature/ — scan, convert PDFs/DJVUs, maintain index.json, and search/import from Zotero. Invoke for /literature command.
 model: sonnet
-allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
+tools: Bash, Read, Write, Edit, AskUserQuestion
 ---
 
 # Literature Agent

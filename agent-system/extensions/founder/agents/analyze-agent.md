@@ -1,7 +1,7 @@
 ---
 name: analyze-agent
 description: Competitive landscape research with positioning maps and battle cards
-mcp-servers:
+mcpServers:
   - firecrawl
 ---
 

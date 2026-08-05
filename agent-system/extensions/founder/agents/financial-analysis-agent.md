@@ -1,7 +1,7 @@
 ---
 name: financial-analysis-agent
 description: Financial analysis with forcing questions, XLSX generation, and JSON metrics export
-mcp-servers: []
+mcpServers: []
 ---
 
 # Financial Analysis Agent

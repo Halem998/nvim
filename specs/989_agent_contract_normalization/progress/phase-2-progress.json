@@ -1,0 +1,43 @@
+{
+  "phase": 2,
+  "phase_name": "Fix the seven invalid frontmatter declarations",
+  "started_at": "2026-08-05T21:25:00Z",
+  "last_updated": "2026-08-05T21:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "synthesis-agent.md and literature-agent.md: allowed-tools: -> tools:, with tool-scope audit",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/synthesis-agent.md", "agent-system/extensions/literature/agents/literature-agent.md"],
+      "note": "Audit: synthesis-agent body (Stage 2 Read teammate files, Stage 8 Write unified report, Stage 9 return) uses only Read and Write; declared 'Read, Write' already covers actual usage, no widening needed. literature-agent body (Bash: pdftotext/pdfinfo/djvutxt/zotero-search.sh/symlinks/git commit; Read: index.json/markdown/state.json; Write: new markdown/index.json init; Edit: update index.json; AskUserQuestion: interactivity per Tool Usage table) matches declared 'Bash, Read, Write, Edit, AskUserQuestion' exactly, no widening needed. Both agents were previously running with UNRESTRICTED inherited tool access (allowed-tools: is not a recognized subagent field and was silently ignored) and now have the declared restriction actually enforced -- a real behavior change, not a lint fix."
+    },
+    {
+      "id": 2,
+      "description": "5 founder/present agents: mcp-servers: -> mcpServers:, values preserved verbatim",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/founder/agents/market-agent.md",
+        "agent-system/extensions/founder/agents/analyze-agent.md",
+        "agent-system/extensions/founder/agents/founder-spreadsheet-agent.md",
+        "agent-system/extensions/founder/agents/financial-analysis-agent.md",
+        "agent-system/extensions/present/agents/budget-agent.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "spawn-agent.md: tools: YAML list -> comma-separated string form",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/spawn-agent.md"]
+    },
+    {
+      "id": 4,
+      "description": "Leave web-{research,implementation}-agent.md disallowedTools: unchanged (verified already correct)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

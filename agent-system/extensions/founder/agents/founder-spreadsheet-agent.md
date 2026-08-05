@@ -1,7 +1,7 @@
 ---
 name: founder-spreadsheet-agent
 description: Cost breakdown spreadsheet generation with forcing questions
-mcp-servers: []
+mcpServers: []
 ---
 
 # Founder Spreadsheet Agent

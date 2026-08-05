@@ -166,30 +166,31 @@ before Phase 2 because four founder agents appear in both edit sets.
 
 ---
 
-### Phase 2: Fix the seven invalid frontmatter declarations [NOT STARTED]
+### Phase 2: Fix the seven invalid frontmatter declarations [COMPLETED]
 
 - **Goal**: The seven agents whose tool/MCP restrictions are silent no-ops today declare them
   under the correct field names, with their intended scope preserved and verified.
 
 - **Tasks**:
-  - [ ] For `core/agents/synthesis-agent.md` and `literature/agents/literature-agent.md`: read the
+  - [x] For `core/agents/synthesis-agent.md` and `literature/agents/literature-agent.md`: read the
     agent body and its dispatching skill (`skill-team-research` / `skill-literature`), confirm the
     declared value covers every tool the agent actually invokes, then change `allowed-tools:` to
     `tools:`. Widen the value where the audit shows it is too narrow, and record the widening in
-    the phase notes rather than silently keeping the old value.
-  - [ ] For `founder/agents/market-agent.md`, `founder/agents/analyze-agent.md`,
+    the phase notes rather than silently keeping the old value. *(completed: audit found declared
+    values already cover actual usage for both agents, no widening needed — see progress file)*
+  - [x] For `founder/agents/market-agent.md`, `founder/agents/analyze-agent.md`,
     `founder/agents/founder-spreadsheet-agent.md`,
     `founder/agents/financial-analysis-agent.md`, and `present/agents/budget-agent.md`: change
     `mcp-servers:` to `mcpServers:`, preserving the existing value verbatim (three carry `[]`; two
-    carry a one-entry list — `sec-edgar` and `firecrawl` respectively).
-  - [ ] For `core/agents/spawn-agent.md`: normalize the YAML block-list `tools:` value to the
+    carry a one-entry list — `sec-edgar` and `firecrawl` respectively). *(completed)*
+  - [x] For `core/agents/spawn-agent.md`: normalize the YAML block-list `tools:` value to the
     documented comma-separated string form. The list form's parsing is unconfirmed by the docs;
-    the string form is the verified-working shape.
-  - [ ] Leave `web/agents/web-{research,implementation}-agent.md` unchanged — `disallowedTools:`
-    is already correct and is the field to standardize on.
-  - [ ] Record, in the phase notes, that the two `allowed-tools:` agents were previously running
+    the string form is the verified-working shape. *(completed)*
+  - [x] Leave `web/agents/web-{research,implementation}-agent.md` unchanged — `disallowedTools:`
+    is already correct and is the field to standardize on. *(completed: verified unchanged)*
+  - [x] Record, in the phase notes, that the two `allowed-tools:` agents were previously running
     with unrestricted inherited tool access and now are not. This is a behavior change, not a lint
-    fix.
+    fix. *(completed: recorded in specs/989_agent_contract_normalization/progress/phase-2-progress.json)*
 
 - **Timing**: 1 hour
 

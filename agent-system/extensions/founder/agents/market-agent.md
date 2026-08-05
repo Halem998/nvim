@@ -1,7 +1,7 @@
 ---
 name: market-agent
 description: Market sizing research with TAM/SAM/SOM framework using forcing questions
-mcp-servers:
+mcpServers:
   - sec-edgar
 ---
 

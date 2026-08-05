@@ -2,7 +2,7 @@
 name: synthesis-agent
 description: Multi-output synthesis for team skills. Reads all teammate finding files in its own fresh context, resolves conflicts, identifies gaps, and writes a unified research report.
 model: sonnet
-allowed-tools: Read, Write
+tools: Read, Write
 ---
 
 # Synthesis Agent
