@@ -1,7 +1,7 @@
 # Implementation Plan: Task #994
 
 - **Task**: 994 - Fix literature-extension tooling landmines and sync pruning
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: 980 (deploy-engine consolidation; already satisfied for planning purposes — see Out-of-Scope Finding below)
 - **Research Inputs**: `specs/994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md`
@@ -415,22 +415,23 @@ above. If more appear, fix all of them and record the actual count.
 
 ---
 
-### Phase 6: Record the item 2 out-of-scope finding and follow-up recommendation [NOT STARTED]
+### Phase 6: Record the item 2 out-of-scope finding and follow-up recommendation [COMPLETED]
 
 **Goal**: Ensure the deploy-engine defect survives past this task's completion as an actionable
 recommendation rather than being lost with the research report.
 
 **Tasks**:
 
-- [ ] Reproduce the "Out-of-Scope Finding" section of this plan (root cause, both empirical
+- [x] Reproduce the "Out-of-Scope Finding" section of this plan (root cause, both empirical
       failure modes, the recommended follow-up task description verbatim, and the interim
       "do not run `deploy-headless.sh --wipe` on a repo without a root `.claude-extensions.json`"
-      warning) as a dedicated section of the implementation summary.
-- [ ] Surface the recommended follow-up task description to the user as a ready-to-use `/task`
-      argument. Do NOT create the task — task creation is a user decision.
-- [ ] State plainly in the summary that item 2 produced no file edits, and why: its premise was
+      warning) as a dedicated section of the implementation summary. *(completed)*
+- [x] Surface the recommended follow-up task description to the user as a ready-to-use `/task`
+      argument. Do NOT create the task — task creation is a user decision. *(completed)*
+- [x] State plainly in the summary that item 2 produced no file edits, and why: its premise was
       empirically disproved and its actual remediation lies in
       `lua/neotex/plugins/ai/shared/extensions/init.lua`, outside this task's file scope.
+      *(completed)*
 
 **Timing**: 0.2 hours
 
@@ -451,28 +452,31 @@ recommendation rather than being lost with the research report.
 
 ---
 
-### Phase 7: Boundary and consistency audit [NOT STARTED]
+### Phase 7: Boundary and consistency audit [COMPLETED]
 
 **Goal**: Confirm the change set respects the source-store boundary, the no-task-references
 rule, and cross-file wording consistency before the task closes.
 
 **Tasks**:
 
-- [ ] `git status --short` — confirm every modified path begins with
+- [x] `git status --short` — confirm every modified path begins with
       `agent-system/extensions/literature/` or `specs/994_.../`. Any `.claude/` path is a
-      boundary violation and must be reverted.
-- [ ] `bash .claude/scripts/check-task-references.sh` (or an equivalent grep for `task [0-9]`
+      boundary violation and must be reverted. *(completed: verified via per-commit
+      `git log --name-only`, zero `.claude/` paths)*
+- [x] `bash .claude/scripts/check-task-references.sh` (or an equivalent grep for `task [0-9]`
       / `Task #[0-9]` / `tasks [0-9]` across the five modified deliverable files) — confirm no
-      task-number citation landed outside `specs/**`.
-- [ ] Confirm the warning wording is consistent across `zotero-search.sh` (both copies),
+      task-number citation landed outside `specs/**`. *(completed: PASS, 0 unexempted
+      occurrences)*
+- [x] Confirm the warning wording is consistent across `zotero-search.sh` (both copies),
       `agent-exploration.md`, and `literature-agent.md` — same claim, same example, no
-      contradiction.
-- [ ] `bash -n` on all three modified shell scripts.
-- [ ] Confirm `zotero-search.sh`'s argument parsing, scoring block, and exit-code behavior are
+      contradiction. *(completed)*
+- [x] `bash -n` on all three modified shell scripts. *(completed: also ran on the fourth,
+      literature-normalize-authors.sh, per the Phase 5 deviation)*
+- [x] Confirm `zotero-search.sh`'s argument parsing, scoring block, and exit-code behavior are
       byte-identical to their pre-change state (`git diff` shows changes only inside the comment
-      block and the heredoc).
-- [ ] Confirm no file under `agent-system/extensions/literature/scripts/deprecated/` other than
-      `README.md` was modified — the quarantined scripts stay untouched.
+      block and the heredoc). *(completed)*
+- [x] Confirm no file under `agent-system/extensions/literature/scripts/deprecated/` other than
+      `README.md` was modified — the quarantined scripts stay untouched. *(completed)*
 
 **Timing**: 0.3 hours
 
