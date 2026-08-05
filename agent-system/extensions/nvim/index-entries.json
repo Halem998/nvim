@@ -4,312 +4,629 @@
       "path": "project/neovim/README.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["neovim", "lua", "configuration"],
-      "keywords": ["neovim", "lua", "plugin"],
+      "topics": [
+        "neovim",
+        "lua",
+        "configuration"
+      ],
+      "keywords": [
+        "neovim",
+        "lua",
+        "plugin"
+      ],
       "summary": "Neovim configuration domain overview",
       "line_count": 96,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/domain/lua-patterns.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["lua", "patterns", "idioms"],
-      "keywords": ["lua", "patterns", "module"],
+      "topics": [
+        "lua",
+        "patterns",
+        "idioms"
+      ],
+      "keywords": [
+        "lua",
+        "patterns",
+        "module"
+      ],
       "summary": "Common Lua patterns and idioms for Neovim",
       "line_count": 207,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/domain/neovim-api.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["api", "vim", "nvim"],
-      "keywords": ["api", "vim", "nvim_*"],
+      "topics": [
+        "api",
+        "vim",
+        "nvim"
+      ],
+      "keywords": [
+        "api",
+        "vim",
+        "nvim_*"
+      ],
       "summary": "Neovim API reference and usage patterns",
       "line_count": 236,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/domain/plugin-ecosystem.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["plugins", "ecosystem", "community"],
-      "keywords": ["plugin", "lazy", "ecosystem"],
+      "topics": [
+        "plugins",
+        "ecosystem",
+        "community"
+      ],
+      "keywords": [
+        "plugin",
+        "lazy",
+        "ecosystem"
+      ],
       "summary": "Neovim plugin ecosystem overview",
       "line_count": 165,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent"]
+        "agents": [
+          "neovim-research-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/domain/lsp-overview.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["lsp", "language-server", "completion"],
-      "keywords": ["lsp", "language", "server"],
+      "topics": [
+        "lsp",
+        "language-server",
+        "completion"
+      ],
+      "keywords": [
+        "lsp",
+        "language",
+        "server"
+      ],
       "summary": "LSP configuration and integration in Neovim",
       "line_count": 188,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/patterns/autocommand-patterns.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["autocommands", "events", "augroup"],
-      "keywords": ["autocmd", "augroup", "event"],
+      "topics": [
+        "autocommands",
+        "events",
+        "augroup"
+      ],
+      "keywords": [
+        "autocmd",
+        "augroup",
+        "event"
+      ],
       "summary": "Autocommand patterns and best practices",
       "line_count": 228,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-implementation-agent"]
+        "agents": [
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/patterns/ftplugin-patterns.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["ftplugin", "filetype", "settings"],
-      "keywords": ["ftplugin", "filetype", "after"],
+      "topics": [
+        "ftplugin",
+        "filetype",
+        "settings"
+      ],
+      "keywords": [
+        "ftplugin",
+        "filetype",
+        "after"
+      ],
       "summary": "Filetype plugin patterns and organization",
       "line_count": 212,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-implementation-agent"]
+        "agents": [
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/patterns/keymap-patterns.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["keymaps", "mappings", "which-key"],
-      "keywords": ["keymap", "map", "leader"],
+      "topics": [
+        "keymaps",
+        "mappings",
+        "which-key"
+      ],
+      "keywords": [
+        "keymap",
+        "map",
+        "leader"
+      ],
       "summary": "Keymap definition patterns and organization",
       "line_count": 185,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-implementation-agent"]
+        "agents": [
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/patterns/plugin-spec.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["lazy-nvim", "plugin-spec", "dependencies"],
-      "keywords": ["lazy", "plugin", "dependencies"],
+      "topics": [
+        "lazy-nvim",
+        "plugin-spec",
+        "dependencies"
+      ],
+      "keywords": [
+        "lazy",
+        "plugin",
+        "dependencies"
+      ],
       "summary": "lazy.nvim plugin specification patterns",
       "line_count": 267,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-implementation-agent"]
+        "agents": [
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/standards/lua-style-guide.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["style", "conventions", "formatting"],
-      "keywords": ["style", "format", "convention"],
+      "topics": [
+        "style",
+        "conventions",
+        "formatting"
+      ],
+      "keywords": [
+        "style",
+        "format",
+        "convention"
+      ],
       "summary": "Lua coding style guide for Neovim",
       "line_count": 309,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-implementation-agent"]
+        "agents": [
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/standards/testing-patterns.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["testing", "plenary", "busted"],
-      "keywords": ["test", "plenary", "spec"],
+      "topics": [
+        "testing",
+        "plenary",
+        "busted"
+      ],
+      "keywords": [
+        "test",
+        "plenary",
+        "spec"
+      ],
       "summary": "Testing patterns for Neovim configuration",
       "line_count": 238,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-implementation-agent"]
+        "agents": [
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/templates/ftplugin-template.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["template", "ftplugin", "boilerplate"],
-      "keywords": ["template", "ftplugin", "starter"],
+      "topics": [
+        "template",
+        "ftplugin",
+        "boilerplate"
+      ],
+      "keywords": [
+        "template",
+        "ftplugin",
+        "starter"
+      ],
       "summary": "Template for creating new ftplugin files",
       "line_count": 273,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-implementation-agent"]
+        "agents": [
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/templates/plugin-template.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["template", "plugin", "boilerplate"],
-      "keywords": ["template", "plugin", "starter"],
+      "topics": [
+        "template",
+        "plugin",
+        "boilerplate"
+      ],
+      "keywords": [
+        "template",
+        "plugin",
+        "starter"
+      ],
       "summary": "Template for creating new plugin specs",
       "line_count": 239,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-implementation-agent"]
+        "agents": [
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/tools/lazy-nvim-guide.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["lazy-nvim", "plugin-manager", "loading"],
-      "keywords": ["lazy", "plugin", "manager"],
+      "topics": [
+        "lazy-nvim",
+        "plugin-manager",
+        "loading"
+      ],
+      "keywords": [
+        "lazy",
+        "plugin",
+        "manager"
+      ],
       "summary": "Guide to lazy.nvim plugin manager",
       "line_count": 311,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/tools/telescope-guide.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["telescope", "fuzzy-finder", "pickers"],
-      "keywords": ["telescope", "find", "picker"],
+      "topics": [
+        "telescope",
+        "fuzzy-finder",
+        "pickers"
+      ],
+      "keywords": [
+        "telescope",
+        "find",
+        "picker"
+      ],
       "summary": "Guide to telescope.nvim fuzzy finder",
       "line_count": 290,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/tools/treesitter-guide.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["treesitter", "parsing", "highlighting"],
-      "keywords": ["treesitter", "parse", "highlight"],
+      "topics": [
+        "treesitter",
+        "parsing",
+        "highlighting"
+      ],
+      "keywords": [
+        "treesitter",
+        "parse",
+        "highlight"
+      ],
       "summary": "Guide to nvim-treesitter integration",
       "line_count": 250,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/standards/box-drawing-guide.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["box-drawing", "unicode", "characters"],
-      "keywords": ["box", "drawing", "unicode", "border"],
+      "topics": [
+        "box-drawing",
+        "unicode",
+        "characters"
+      ],
+      "keywords": [
+        "box",
+        "drawing",
+        "unicode",
+        "border"
+      ],
       "summary": "Unicode box-drawing character reference for UI elements",
       "line_count": 53,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/standards/documentation-policy.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["documentation", "readme", "policy"],
-      "keywords": ["documentation", "readme", "structure", "style"],
+      "topics": [
+        "documentation",
+        "readme",
+        "policy"
+      ],
+      "keywords": [
+        "documentation",
+        "readme",
+        "structure",
+        "style"
+      ],
       "summary": "README requirements, structure template, and style guidelines",
       "line_count": 40,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/standards/emoji-policy.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["emoji", "encoding", "characters"],
-      "keywords": ["emoji", "encoding", "unicode", "policy"],
+      "topics": [
+        "emoji",
+        "encoding",
+        "characters"
+      ],
+      "keywords": [
+        "emoji",
+        "encoding",
+        "unicode",
+        "policy"
+      ],
       "summary": "Character encoding guidelines and approved emoji alternatives",
       "line_count": 33,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/standards/lua-assertion-patterns.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["testing", "assertions", "lua"],
-      "keywords": ["assert", "match", "string", "test"],
+      "topics": [
+        "testing",
+        "assertions",
+        "lua"
+      ],
+      "keywords": [
+        "assert",
+        "match",
+        "string",
+        "test"
+      ],
       "summary": "Correct string:match() assertion usage for Lua tests",
       "line_count": 40,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-implementation-agent"]
+        "agents": [
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/hooks/wezterm-integration.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["wezterm", "terminal", "integration"],
-      "keywords": ["wezterm", "terminal", "hooks", "integration"],
+      "topics": [
+        "wezterm",
+        "terminal",
+        "integration"
+      ],
+      "keywords": [
+        "wezterm",
+        "terminal",
+        "hooks",
+        "integration"
+      ],
       "summary": "WezTerm terminal integration for Neovim workflow",
       "line_count": 283,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/guides/neovim-integration.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["neovim", "hooks", "sidebar", "readiness", "tts", "stt"],
-      "keywords": ["neovim", "integration", "hooks", "sidebar", "tts", "stt"],
+      "topics": [
+        "neovim",
+        "hooks",
+        "sidebar",
+        "readiness",
+        "tts",
+        "stt"
+      ],
+      "keywords": [
+        "neovim",
+        "integration",
+        "hooks",
+        "sidebar",
+        "tts",
+        "stt"
+      ],
       "summary": "Hook-based readiness signaling, TTS notifications, and STT voice input for Neovim",
       "line_count": 335,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/guides/tts-stt-integration.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["tts", "stt", "pico", "vosk", "audio"],
-      "keywords": ["tts", "stt", "pico", "vosk", "speech", "audio"],
+      "topics": [
+        "tts",
+        "stt",
+        "pico",
+        "vosk",
+        "audio"
+      ],
+      "keywords": [
+        "tts",
+        "stt",
+        "pico",
+        "vosk",
+        "speech",
+        "audio"
+      ],
       "summary": "TTS/STT setup, configuration, and troubleshooting for Claude Code and Neovim",
       "line_count": 372,
       "load_when": {
-        "languages": ["neovim"],
-        "agents": ["neovim-research-agent", "neovim-implementation-agent"]
+        "agents": [
+          "neovim-research-agent",
+          "neovim-implementation-agent"
+        ],
+        "task_types": [
+          "neovim"
+        ]
       }
     },
     {
       "path": "project/neovim/domain/extension-deploy-modes.md",
       "domain": "project",
       "subdomain": "neovim",
-      "topics": ["extensions", "deploy", "symlinks"],
-      "keywords": ["extension-deploy", "symlink-installer", "copy-engine"],
+      "topics": [
+        "extensions",
+        "deploy",
+        "symlinks"
+      ],
+      "keywords": [
+        "extension-deploy",
+        "symlink-installer",
+        "copy-engine"
+      ],
       "summary": "Two deploy mechanisms (symlink installer, copy engine) for extension artifacts and their ownership rule",
       "line_count": 118,
       "load_when": {
-        "agents": ["meta-builder-agent"],
-        "task_types": ["meta"]
+        "agents": [
+          "meta-builder-agent"
+        ],
+        "task_types": [
+          "meta"
+        ]
       }
     }
   ]

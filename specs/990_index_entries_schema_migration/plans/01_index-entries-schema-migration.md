@@ -535,15 +535,15 @@ hoist must union with existing values, not replace them.
 
 ---
 
-### Phase 10: `founder` + `present` + `nvim` — Languages Migration (83 entries) [NOT STARTED]
+### Phase 10: `founder` + `present` + `nvim` — Languages Migration (83 entries) [COMPLETED]
 
 **Goal**: Migrate the three remaining languages-only extensions, including the one case that
 requires a union-merge rather than a rename.
 
 **Tasks**:
-- [ ] Edit **`agent-system/extensions/{founder,present,nvim}/index-entries.json`** only. Never
+- [x] Edit **`agent-system/extensions/{founder,present,nvim}/index-entries.json`** only. Never
       `.claude/**`.
-- [ ] **`founder` (34 entries) — union, do NOT overwrite.** 11 entries carry both
+- [x] **`founder` (34 entries) — union, do NOT overwrite.** 11 entries carry both
       `languages: ["founder"]` and a populated, more-specific `task_types`:
       `patterns/legal-planning.md` (`contract-review`, `legal`), `patterns/project-planning.md`
       (`project-timeline`), `domain/spreadsheet-frameworks.md` (`sheet`),
@@ -555,14 +555,14 @@ requires a union-merge rather than a rename.
       (`deck`). For each, union `"founder"` into the existing array (e.g.
       `["founder","contract-review","legal"]`) — an overwrite silently drops the actual routing
       discriminators. The other 23 founder entries are a plain rename.
-- [ ] **`present` (26 entries)**: plain rename `languages: ["present"]` ->
+- [x] **`present` (26 entries)**: plain rename `languages: ["present"]` ->
       `task_types: ["present"]`. `present` has 36 entries total, 26 with `languages` and 10 with
       `task_types`, and the two sets are verified disjoint — no union needed.
-- [ ] **`nvim` (23 of 24 entries)**: plain rename `languages: ["neovim"]` ->
+- [x] **`nvim` (23 of 24 entries)**: plain rename `languages: ["neovim"]` ->
       `task_types: ["neovim"]`. **Preserve the `neovim` string exactly**; the directory is `nvim`
       but the task_type is `neovim`, a pre-existing mismatch this task must not "fix". One nvim
       entry has no `languages` key — leave it alone.
-- [ ] None of the three has `description`, `tags`, `load_when.skills`, or `load_when.topics`.
+- [x] None of the three has `description`, `tags`, `load_when.skills`, or `load_when.topics`.
 
 **Timing**: 1.25 hours
 

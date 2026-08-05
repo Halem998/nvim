@@ -10,11 +10,11 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/project"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -33,13 +33,13 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/market",
           "/analyze",
           "/strategy"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -55,11 +55,11 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/legal"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -77,13 +77,13 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/market",
           "/analyze",
           "/strategy"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -103,15 +103,15 @@
           "finance-agent",
           "founder-plan-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/market",
           "/analyze",
           "/strategy",
           "/legal",
           "/project"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -125,11 +125,11 @@
         "agents": [
           "legal-council-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/legal"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -147,13 +147,13 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/market",
           "/analyze",
           "/strategy"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -171,14 +171,14 @@
           "project-agent",
           "founder-plan-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/market",
           "/analyze",
           "/strategy",
           "/project"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -193,11 +193,11 @@
           "market-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/market"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -212,11 +212,11 @@
           "analyze-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/analyze"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -231,11 +231,11 @@
           "strategy-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/strategy"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -250,11 +250,11 @@
           "legal-council-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/legal"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -268,10 +268,10 @@
         "agents": [
           "founder-implement-agent"
         ],
-        "languages": [
+        "commands": [],
+        "task_types": [
           "founder"
-        ],
-        "commands": []
+        ]
       },
       "domain": "project",
       "subdomain": "founder"
@@ -284,10 +284,10 @@
         "agents": [
           "founder-implement-agent"
         ],
-        "languages": [
+        "commands": [],
+        "task_types": [
           "founder"
-        ],
-        "commands": []
+        ]
       },
       "domain": "project",
       "subdomain": "founder"
@@ -300,10 +300,10 @@
         "agents": [
           "founder-implement-agent"
         ],
-        "languages": [
+        "commands": [],
+        "task_types": [
           "founder"
-        ],
-        "commands": []
+        ]
       },
       "domain": "project",
       "subdomain": "founder"
@@ -316,10 +316,10 @@
         "agents": [
           "founder-implement-agent"
         ],
-        "languages": [
+        "commands": [],
+        "task_types": [
           "founder"
-        ],
-        "commands": []
+        ]
       },
       "domain": "project",
       "subdomain": "founder"
@@ -332,10 +332,10 @@
         "agents": [
           "founder-implement-agent"
         ],
-        "languages": [
+        "commands": [],
+        "task_types": [
           "founder"
-        ],
-        "commands": []
+        ]
       },
       "domain": "project",
       "subdomain": "founder"
@@ -349,11 +349,11 @@
           "project-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/project"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -367,10 +367,8 @@
         "agents": [
           "founder-plan-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "contract-review",
           "legal"
         ],
@@ -394,15 +392,15 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/market",
           "/analyze",
           "/strategy",
           "/legal",
           "/project"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -414,10 +412,10 @@
       "line_count": 35,
       "load_when": {
         "agents": [],
-        "languages": [
+        "commands": [],
+        "task_types": [
           "founder"
-        ],
-        "commands": []
+        ]
       },
       "domain": "project",
       "subdomain": "founder"
@@ -431,10 +429,8 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "project-timeline"
         ],
         "commands": []
@@ -452,10 +448,8 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "sheet"
         ],
         "commands": [
@@ -474,10 +468,8 @@
           "founder-spreadsheet-agent",
           "founder-plan-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "sheet"
         ],
         "commands": [
@@ -495,10 +487,8 @@
         "agents": [
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "sheet"
         ],
         "commands": []
@@ -516,10 +506,8 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "finance"
         ],
         "commands": [
@@ -538,10 +526,8 @@
           "finance-agent",
           "founder-plan-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "finance"
         ],
         "commands": [
@@ -560,10 +546,8 @@
           "finance-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "finance"
         ],
         "commands": [
@@ -585,10 +569,8 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "deck"
         ],
         "commands": [
@@ -610,10 +592,8 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "deck"
         ],
         "commands": [
@@ -635,10 +615,8 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "task_types": [
+          "founder",
           "deck"
         ],
         "commands": [
@@ -658,11 +636,11 @@
           "deck-builder-agent",
           "deck-research-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/deck"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -678,11 +656,11 @@
           "founder-plan-agent",
           "founder-implement-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/meeting"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",
@@ -696,11 +674,11 @@
         "agents": [
           "meeting-agent"
         ],
-        "languages": [
-          "founder"
-        ],
         "commands": [
           "/meeting"
+        ],
+        "task_types": [
+          "founder"
         ]
       },
       "domain": "project",

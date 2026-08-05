@@ -4,504 +4,1163 @@
       "path": "project/present/README.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["grant", "proposal", "funding", "research"],
-      "keywords": ["grant", "proposal", "funder", "budget"],
+      "topics": [
+        "grant",
+        "proposal",
+        "funding",
+        "research"
+      ],
+      "keywords": [
+        "grant",
+        "proposal",
+        "funder",
+        "budget"
+      ],
       "summary": "Grant writing domain overview and extension capabilities",
       "line_count": 126,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/domain/funder-types.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["funders", "ai-safety", "sbir", "nsf", "nih", "foundations"],
-      "keywords": ["funder", "foundation", "federal", "open-philanthropy", "sff", "ltff"],
+      "topics": [
+        "funders",
+        "ai-safety",
+        "sbir",
+        "nsf",
+        "nih",
+        "foundations"
+      ],
+      "keywords": [
+        "funder",
+        "foundation",
+        "federal",
+        "open-philanthropy",
+        "sff",
+        "ltff"
+      ],
       "summary": "Funder categories including AI Safety, SBIR, Foundation, and Academic funders",
       "line_count": 93,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/domain/proposal-components.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["proposal", "sections", "executive-summary", "budget", "evaluation"],
-      "keywords": ["proposal", "narrative", "budget", "timeline", "evaluation"],
+      "topics": [
+        "proposal",
+        "sections",
+        "executive-summary",
+        "budget",
+        "evaluation"
+      ],
+      "keywords": [
+        "proposal",
+        "narrative",
+        "budget",
+        "timeline",
+        "evaluation"
+      ],
       "summary": "Standard grant proposal sections with purpose and content guidance",
       "line_count": 195,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/domain/grant-terminology.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["terminology", "definitions", "acronyms", "federal"],
-      "keywords": ["terminology", "glossary", "definitions", "acronyms", "cfda", "sam"],
+      "topics": [
+        "terminology",
+        "definitions",
+        "acronyms",
+        "federal"
+      ],
+      "keywords": [
+        "terminology",
+        "glossary",
+        "definitions",
+        "acronyms",
+        "cfda",
+        "sam"
+      ],
       "summary": "Key grant writing terms, definitions, and common acronyms",
       "line_count": 122,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/patterns/proposal-structure.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["structure", "organization", "sections", "formatting"],
-      "keywords": ["structure", "outline", "sections", "nsf", "nih", "foundation"],
+      "topics": [
+        "structure",
+        "organization",
+        "sections",
+        "formatting"
+      ],
+      "keywords": [
+        "structure",
+        "outline",
+        "sections",
+        "nsf",
+        "nih",
+        "foundation"
+      ],
       "summary": "Proposal structural patterns by funder type with section hierarchy",
       "line_count": 246,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/patterns/budget-patterns.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["budget", "personnel", "travel", "equipment", "indirect"],
-      "keywords": ["budget", "justification", "personnel", "fringe", "indirect", "mtdc"],
+      "topics": [
+        "budget",
+        "personnel",
+        "travel",
+        "equipment",
+        "indirect"
+      ],
+      "keywords": [
+        "budget",
+        "justification",
+        "personnel",
+        "fringe",
+        "indirect",
+        "mtdc"
+      ],
       "summary": "Budget formats and justification templates for NSF, NIH, SBIR, Foundation",
       "line_count": 279,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/patterns/evaluation-patterns.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["evaluation", "logic-model", "outcomes", "indicators", "measurement"],
-      "keywords": ["evaluation", "logic-model", "outcomes", "indicators", "process", "impact"],
+      "topics": [
+        "evaluation",
+        "logic-model",
+        "outcomes",
+        "indicators",
+        "measurement"
+      ],
+      "keywords": [
+        "evaluation",
+        "logic-model",
+        "outcomes",
+        "indicators",
+        "process",
+        "impact"
+      ],
       "summary": "Evaluation frameworks including logic models and measurement approaches",
       "line_count": 271,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/patterns/narrative-patterns.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["narrative", "writing", "impact", "problem-framing"],
-      "keywords": ["narrative", "impact", "active-voice", "specificity", "evidence"],
+      "topics": [
+        "narrative",
+        "writing",
+        "impact",
+        "problem-framing"
+      ],
+      "keywords": [
+        "narrative",
+        "impact",
+        "active-voice",
+        "specificity",
+        "evidence"
+      ],
       "summary": "Writing patterns for impact statements, problem framing, and persuasion",
       "line_count": 271,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/standards/writing-standards.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["writing", "style", "voice", "formatting"],
-      "keywords": ["writing", "style", "active-voice", "formatting", "consistency"],
+      "topics": [
+        "writing",
+        "style",
+        "voice",
+        "formatting"
+      ],
+      "keywords": [
+        "writing",
+        "style",
+        "active-voice",
+        "formatting",
+        "consistency"
+      ],
       "summary": "Grant writing style guide covering voice, precision, and formatting",
       "line_count": 256,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/standards/character-limits.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["limits", "character-count", "page-limits", "formatting"],
-      "keywords": ["character-limit", "page-limit", "nsf", "nih", "sbir", "word-count"],
+      "topics": [
+        "limits",
+        "character-count",
+        "page-limits",
+        "formatting"
+      ],
+      "keywords": [
+        "character-limit",
+        "page-limit",
+        "nsf",
+        "nih",
+        "sbir",
+        "word-count"
+      ],
       "summary": "Funder-specific character and page limits for proposal sections",
       "line_count": 202,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/templates/executive-summary.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["executive-summary", "abstract", "template"],
-      "keywords": ["executive-summary", "abstract", "overview", "template", "ai-safety"],
+      "topics": [
+        "executive-summary",
+        "abstract",
+        "template"
+      ],
+      "keywords": [
+        "executive-summary",
+        "abstract",
+        "overview",
+        "template",
+        "ai-safety"
+      ],
       "summary": "Executive summary templates for Foundation, Research, AI Safety, SBIR",
       "line_count": 226,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/templates/budget-justification.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["budget", "justification", "personnel", "equipment", "travel"],
-      "keywords": ["budget", "justification", "personnel", "fringe", "equipment", "travel"],
+      "topics": [
+        "budget",
+        "justification",
+        "personnel",
+        "equipment",
+        "travel"
+      ],
+      "keywords": [
+        "budget",
+        "justification",
+        "personnel",
+        "fringe",
+        "equipment",
+        "travel"
+      ],
       "summary": "Budget justification templates for all standard cost categories",
       "line_count": 295,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/templates/evaluation-plan.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["evaluation", "plan", "logic-model", "data-collection"],
-      "keywords": ["evaluation", "plan", "logic-model", "indicators", "data-collection"],
+      "topics": [
+        "evaluation",
+        "plan",
+        "logic-model",
+        "data-collection"
+      ],
+      "keywords": [
+        "evaluation",
+        "plan",
+        "logic-model",
+        "indicators",
+        "data-collection"
+      ],
       "summary": "Evaluation plan templates with logic model and data collection guidance",
       "line_count": 273,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/templates/submission-checklist.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["checklist", "submission", "compliance", "attachments"],
-      "keywords": ["checklist", "submission", "nsf", "nih", "sbir", "foundation"],
+      "topics": [
+        "checklist",
+        "submission",
+        "compliance",
+        "attachments"
+      ],
+      "keywords": [
+        "checklist",
+        "submission",
+        "nsf",
+        "nih",
+        "sbir",
+        "foundation"
+      ],
       "summary": "Pre-submission verification checklists for federal and foundation grants",
       "line_count": 305,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/tools/funder-research.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["research", "funders", "990", "databases", "due-diligence"],
-      "keywords": ["funder", "research", "990", "database", "candid", "grants-gov"],
+      "topics": [
+        "research",
+        "funders",
+        "990",
+        "databases",
+        "due-diligence"
+      ],
+      "keywords": [
+        "funder",
+        "research",
+        "990",
+        "database",
+        "candid",
+        "grants-gov"
+      ],
       "summary": "Systematic funder research process with tracking templates",
       "line_count": 260,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/domain/grant-workflow.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["grant", "workflow", "draft", "budget", "revise"],
-      "keywords": ["grant", "workflow", "draft", "budget", "revise", "legacy"],
+      "topics": [
+        "grant",
+        "workflow",
+        "draft",
+        "budget",
+        "revise"
+      ],
+      "keywords": [
+        "grant",
+        "workflow",
+        "draft",
+        "budget",
+        "revise",
+        "legacy"
+      ],
       "summary": "Grant command usage, draft/budget/revise modes, revision workflow, output directory",
       "line_count": 153,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/tools/web-resources.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["resources", "databases", "tools", "training"],
-      "keywords": ["resources", "grants-gov", "candid", "nsf", "nih", "training"],
+      "topics": [
+        "resources",
+        "databases",
+        "tools",
+        "training"
+      ],
+      "keywords": [
+        "resources",
+        "grants-gov",
+        "candid",
+        "nsf",
+        "nih",
+        "training"
+      ],
       "summary": "Curated list of grant research databases, writing tools, and training",
       "line_count": 223,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["grant-agent"],
-        "commands": ["/grant"]
+        "agents": [
+          "grant-agent"
+        ],
+        "commands": [
+          "/grant"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/domain/grant-budget-frameworks.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["budget", "frameworks", "f-and-a", "salary-cap", "mtdc"],
-      "keywords": ["budget", "framework", "indirect", "f-and-a", "salary-cap", "modular", "detailed"],
+      "topics": [
+        "budget",
+        "frameworks",
+        "f-and-a",
+        "salary-cap",
+        "mtdc"
+      ],
+      "keywords": [
+        "budget",
+        "framework",
+        "indirect",
+        "f-and-a",
+        "salary-cap",
+        "modular",
+        "detailed"
+      ],
       "summary": "Grant budget cost structures, F&A calculation, salary caps, multi-year conventions",
       "line_count": 215,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["budget-agent"],
-        "commands": ["/budget"]
+        "agents": [
+          "budget-agent"
+        ],
+        "commands": [
+          "/budget"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/patterns/budget-forcing-questions.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["budget", "forcing-questions", "push-back", "validation"],
-      "keywords": ["forcing", "questions", "budget", "push-back", "validation", "grant"],
+      "topics": [
+        "budget",
+        "forcing-questions",
+        "push-back",
+        "validation"
+      ],
+      "keywords": [
+        "forcing",
+        "questions",
+        "budget",
+        "push-back",
+        "validation",
+        "grant"
+      ],
       "summary": "Grant-adapted forcing question framework with push-back patterns for budgets",
       "line_count": 260,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["budget-agent"],
-        "commands": ["/budget"]
+        "agents": [
+          "budget-agent"
+        ],
+        "commands": [
+          "/budget"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/domain/research-timelines.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["timeline", "specific-aims", "regulatory", "milestones", "pert"],
-      "keywords": ["timeline", "gantt", "pert", "specific-aims", "irb", "iacuc", "dsmb", "reporting"],
+      "topics": [
+        "timeline",
+        "specific-aims",
+        "regulatory",
+        "milestones",
+        "pert"
+      ],
+      "keywords": [
+        "timeline",
+        "gantt",
+        "pert",
+        "specific-aims",
+        "irb",
+        "iacuc",
+        "dsmb",
+        "reporting"
+      ],
       "summary": "Research timeline domain: specific aims WBS, regulatory milestones, reporting schedules",
       "line_count": 266,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["timeline-agent"],
-        "commands": ["/timeline"]
+        "agents": [
+          "timeline-agent"
+        ],
+        "commands": [
+          "/timeline"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/patterns/timeline-patterns.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["timeline", "validation", "pert", "effort", "milestones"],
-      "keywords": ["timeline", "validation", "pert", "effort", "milestone", "lead-time"],
+      "topics": [
+        "timeline",
+        "validation",
+        "pert",
+        "effort",
+        "milestones"
+      ],
+      "keywords": [
+        "timeline",
+        "validation",
+        "pert",
+        "effort",
+        "milestone",
+        "lead-time"
+      ],
       "summary": "Timeline validation rules, PERT formulas, effort conversion, milestone estimates",
       "line_count": 151,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["timeline-agent"],
-        "commands": ["/timeline"]
+        "agents": [
+          "timeline-agent"
+        ],
+        "commands": [
+          "/timeline"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/templates/timeline-template.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["timeline", "template", "report", "typst"],
-      "keywords": ["timeline", "template", "report", "json", "typst", "gantt"],
+      "topics": [
+        "timeline",
+        "template",
+        "report",
+        "typst"
+      ],
+      "keywords": [
+        "timeline",
+        "template",
+        "report",
+        "json",
+        "typst",
+        "gantt"
+      ],
       "summary": "Structured timeline report template with JSON data block for Typst rendering",
       "line_count": 197,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["timeline-agent"],
-        "commands": ["/timeline"]
+        "agents": [
+          "timeline-agent"
+        ],
+        "commands": [
+          "/timeline"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/domain/funding-analysis.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["funding", "landscape", "portfolio", "federal", "foundation"],
-      "keywords": ["funding", "nih", "nsf", "foundation", "f-and-a", "effort", "subaward"],
+      "topics": [
+        "funding",
+        "landscape",
+        "portfolio",
+        "federal",
+        "foundation"
+      ],
+      "keywords": [
+        "funding",
+        "nih",
+        "nsf",
+        "foundation",
+        "f-and-a",
+        "effort",
+        "subaward"
+      ],
       "summary": "Research funding lifecycle, federal mechanisms, F&A rates, effort reporting",
       "line_count": 275,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["funds-agent"],
-        "commands": ["/funds"]
+        "agents": [
+          "funds-agent"
+        ],
+        "commands": [
+          "/funds"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/patterns/funding-forcing-questions.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["funding", "forcing-questions", "landscape", "portfolio", "justify", "gap"],
-      "keywords": ["forcing", "questions", "funding", "landscape", "portfolio", "justify", "gap"],
+      "topics": [
+        "funding",
+        "forcing-questions",
+        "landscape",
+        "portfolio",
+        "justify",
+        "gap"
+      ],
+      "keywords": [
+        "forcing",
+        "questions",
+        "funding",
+        "landscape",
+        "portfolio",
+        "justify",
+        "gap"
+      ],
       "summary": "Mode-specific funding analysis questions with push-back patterns and output schemas",
       "line_count": 337,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["funds-agent"],
-        "commands": ["/funds"]
+        "agents": [
+          "funds-agent"
+        ],
+        "commands": [
+          "/funds"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/domain/presentation-types.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["talk", "presentation", "conference", "seminar", "defense"],
-      "keywords": ["talk", "presentation", "conference", "seminar", "defense", "poster", "journal-club"],
+      "topics": [
+        "talk",
+        "presentation",
+        "conference",
+        "seminar",
+        "defense"
+      ],
+      "keywords": [
+        "talk",
+        "presentation",
+        "conference",
+        "seminar",
+        "defense",
+        "poster",
+        "journal-club"
+      ],
       "summary": "Academic presentation types: conference, seminar, defense, poster, journal club",
       "line_count": 113,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["slides-research-agent", "pptx-assembly-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
-        "commands": ["/slides"]
+        "agents": [
+          "slides-research-agent",
+          "pptx-assembly-agent",
+          "slidev-assembly-agent",
+          "slide-planner-agent",
+          "slide-critic-agent"
+        ],
+        "commands": [
+          "/slides"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/patterns/talk-structure.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["talk", "structure", "slides", "content", "flow"],
-      "keywords": ["talk", "structure", "slides", "conference", "seminar", "content"],
+      "topics": [
+        "talk",
+        "structure",
+        "slides",
+        "content",
+        "flow"
+      ],
+      "keywords": [
+        "talk",
+        "structure",
+        "slides",
+        "conference",
+        "seminar",
+        "content"
+      ],
       "summary": "Talk structure guidelines and cross-mode slide organization patterns",
       "line_count": 111,
       "load_when": {
-        "languages": ["present"],
-        "agents": ["slides-research-agent", "pptx-assembly-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
-        "commands": ["/slides"]
+        "agents": [
+          "slides-research-agent",
+          "pptx-assembly-agent",
+          "slidev-assembly-agent",
+          "slide-planner-agent",
+          "slide-critic-agent"
+        ],
+        "commands": [
+          "/slides"
+        ],
+        "task_types": [
+          "present"
+        ]
       }
     },
     {
       "path": "project/present/talk/patterns/slidev-pitfalls.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["slidev", "pitfalls", "footer", "mermaid", "pdf-export"],
-      "keywords": ["slidev", "pitfalls", "footer"],
+      "topics": [
+        "slidev",
+        "pitfalls",
+        "footer",
+        "mermaid",
+        "pdf-export"
+      ],
+      "keywords": [
+        "slidev",
+        "pitfalls",
+        "footer"
+      ],
       "summary": "Slidev implementation gotchas (footer, Mermaid, PDF export, lz-string)",
       "line_count": 253,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["slides-research-agent", "slidev-assembly-agent", "slide-planner-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "slides-research-agent",
+          "slidev-assembly-agent",
+          "slide-planner-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     },
     {
       "path": "project/present/talk/patterns/pptx-generation.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["pptx", "python-pptx", "powerpoint", "generation"],
-      "keywords": ["pptx", "python-pptx", "powerpoint"],
+      "topics": [
+        "pptx",
+        "python-pptx",
+        "powerpoint",
+        "generation"
+      ],
+      "keywords": [
+        "pptx",
+        "python-pptx",
+        "powerpoint"
+      ],
       "summary": "python-pptx API patterns for PPTX slide creation, theme application, component helpers, speaker notes, and error handling",
       "line_count": 828,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["pptx-assembly-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "pptx-assembly-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     },
     {
       "path": "project/present/talk/index.json",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["talk", "library", "index", "themes", "patterns"],
-      "keywords": ["talk", "library", "index"],
+      "topics": [
+        "talk",
+        "library",
+        "index",
+        "themes",
+        "patterns"
+      ],
+      "keywords": [
+        "talk",
+        "library",
+        "index"
+      ],
       "summary": "Talk library index with theme, pattern, component, and template registrations",
       "line_count": 68,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["slides-research-agent", "pptx-assembly-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "slides-research-agent",
+          "pptx-assembly-agent",
+          "slidev-assembly-agent",
+          "slide-planner-agent",
+          "slide-critic-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     },
     {
       "path": "project/present/talk/templates/playwright-verify.mjs",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["playwright", "verification", "slides", "testing"],
-      "keywords": ["playwright", "verify", "slides"],
+      "topics": [
+        "playwright",
+        "verification",
+        "slides",
+        "testing"
+      ],
+      "keywords": [
+        "playwright",
+        "verify",
+        "slides"
+      ],
       "summary": "Playwright slide verification script for Slidev decks",
       "line_count": 127,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["slidev-assembly-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "slidev-assembly-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     },
     {
       "path": "project/present/talk/templates/pptx-project/theme_mappings.json",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["pptx", "theme", "colors", "fonts", "mappings"],
-      "keywords": ["pptx", "theme", "colors"],
+      "topics": [
+        "pptx",
+        "theme",
+        "colors",
+        "fonts",
+        "mappings"
+      ],
+      "keywords": [
+        "pptx",
+        "theme",
+        "colors"
+      ],
       "summary": "Theme constants for python-pptx generation (colors, fonts, sizes for all themes)",
       "line_count": 125,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["pptx-assembly-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "pptx-assembly-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     },
     {
       "path": "project/present/talk/templates/pptx-project/generate_deck.py",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["pptx", "generate", "python-pptx", "skeleton"],
-      "keywords": ["pptx", "generate", "python-pptx"],
+      "topics": [
+        "pptx",
+        "generate",
+        "python-pptx",
+        "skeleton"
+      ],
+      "keywords": [
+        "pptx",
+        "generate",
+        "python-pptx"
+      ],
       "summary": "Skeleton PowerPoint generation script with theme-aware helpers",
       "line_count": 290,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["pptx-assembly-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "pptx-assembly-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     },
     {
       "path": "project/present/talk/templates/pptx-project/README.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["pptx", "project", "template", "usage"],
-      "keywords": ["pptx", "project", "template"],
+      "topics": [
+        "pptx",
+        "project",
+        "template",
+        "usage"
+      ],
+      "keywords": [
+        "pptx",
+        "project",
+        "template"
+      ],
       "summary": "PowerPoint generation template usage instructions and component equivalents",
       "line_count": 83,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["pptx-assembly-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "pptx-assembly-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     },
     {
       "path": "project/present/talk/templates/slidev-project/README.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["slidev", "project", "template", "scaffold"],
-      "keywords": ["slidev", "project", "template"],
+      "topics": [
+        "slidev",
+        "project",
+        "template",
+        "scaffold"
+      ],
+      "keywords": [
+        "slidev",
+        "project",
+        "template"
+      ],
       "summary": "Slidev project scaffold template with pnpm/vite/lz-string configuration",
       "line_count": 36,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["slidev-assembly-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "slidev-assembly-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     },
     {
       "path": "project/present/talk/themes/ucsf-institutional.json",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["theme", "ucsf", "institutional", "colors", "branding"],
-      "keywords": ["ucsf", "theme", "institutional", "branding"],
+      "topics": [
+        "theme",
+        "ucsf",
+        "institutional",
+        "colors",
+        "branding"
+      ],
+      "keywords": [
+        "ucsf",
+        "theme",
+        "institutional",
+        "branding"
+      ],
       "summary": "UCSF institutional theme constants for slide generation (colors, fonts, logos)",
       "line_count": 50,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["pptx-assembly-agent", "slidev-assembly-agent", "slide-planner-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "pptx-assembly-agent",
+          "slidev-assembly-agent",
+          "slide-planner-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     },
     {
       "path": "project/present/talk/critique-rubric.md",
       "domain": "project",
       "subdomain": "present",
-      "topics": ["critique", "rubric", "evaluation", "slides", "review"],
-      "keywords": ["critique", "rubric", "severity", "narrative", "audience", "timing", "evidence", "visual"],
+      "topics": [
+        "critique",
+        "rubric",
+        "evaluation",
+        "slides",
+        "review"
+      ],
+      "keywords": [
+        "critique",
+        "rubric",
+        "severity",
+        "narrative",
+        "audience",
+        "timing",
+        "evidence",
+        "visual"
+      ],
       "summary": "6-category critique rubric with severity definitions, talk-type priority matrix, and structured output format",
       "line_count": 248,
       "load_when": {
-        "task_types": ["present"],
-        "agents": ["slide-critic-agent"],
-        "commands": ["/slides"]
+        "task_types": [
+          "present"
+        ],
+        "agents": [
+          "slide-critic-agent"
+        ],
+        "commands": [
+          "/slides"
+        ]
       }
     }
   ]
