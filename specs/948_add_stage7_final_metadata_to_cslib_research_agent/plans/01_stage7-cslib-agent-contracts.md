@@ -328,29 +328,37 @@ rather than editing blind.
 
 ---
 
-### Phase 4: Cross-file consistency and repository lint gate [NOT STARTED]
+### Phase 4: Cross-file consistency and repository lint gate [COMPLETED]
 
 **Goal**: Confirm the three files are mutually consistent, that no edit escaped the source store,
 and that the repository's standing lint gates pass.
 
 **Tasks**:
-- [ ] Confirm the changed-file set is exactly the three cslib agent files and nothing else:
-      `git status --short` and `git diff --name-only`.
-- [ ] Confirm zero writes under `.claude/**`: the diff must contain no `.claude/` path.
-- [ ] Diff the artifacts-shape rationale paragraph across all three files and against
+- [x] Confirm the changed-file set is exactly the three cslib agent files and nothing else:
+      `git status --short` and `git diff --name-only`. *(completed: verified per-commit via
+      `git show --name-only` on each of the three phase commits, since concurrent sessions in
+      this repo interleaved unrelated commits into working-tree/HEAD~N range diffs)*
+- [x] Confirm zero writes under `.claude/**`: the diff must contain no `.claude/` path. *(completed)*
+- [x] Diff the artifacts-shape rationale paragraph across all three files and against
       `agent-system/extensions/core/agents/general-research-agent.md`'s Stage 7 to confirm the
       wording is mirrored, not paraphrased. The hard agent's variant is intentionally the
       condensed form (no inline JSON example) per Phase 3; the two non-hard agents carry the full
-      form with the example.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm it exits 0 — no task-number
-      citation may appear in any of the three edited files.
-- [ ] Confirm every `@.claude/...` reference introduced by Phases 1-3 resolves to an existing
+      form with the example. *(completed: byte-identical for the two non-hard agents against
+      general-research-agent.md; hard agent's condensed form confirmed intentional)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm it exits 0 — no task-number
+      citation may appear in any of the three edited files. *(completed: exit 0)*
+- [x] Confirm every `@.claude/...` reference introduced by Phases 1-3 resolves to an existing
       file (this closes the `prose` tier's named blind spot for broken cross-references):
       `.claude/context/formats/return-metadata-file.md` and
-      `.claude/docs/architecture/handoff-schema.md`.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` if present and confirm it exits 0.
-- [ ] Confirm each of the three files now names its terminal status value explicitly:
-      `researched` in the research agent, `implemented` in both implementation agents.
+      `.claude/docs/architecture/handoff-schema.md`. *(completed: both files exist on disk)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` if present and confirm it exits 0.
+      *(deviation: altered — script exits 1 overall, but the failure is a pre-existing
+      `[literature]` extension `Rule R` line-count drift in
+      `agent-system/extensions/literature/context/project/literature/patterns/agent-exploration.md`,
+      caused by a concurrent session's edits to that unrelated extension. The `[cslib]` extension
+      section itself reports PASS with zero warnings/failures attributable to this task's edits)*
+- [x] Confirm each of the three files now names its terminal status value explicitly:
+      `researched` in the research agent, `implemented` in both implementation agents. *(completed)*
 
 **Timing**: 0.3 hours
 

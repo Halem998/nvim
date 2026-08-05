@@ -1,21 +1,41 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/948_add_stage7_final_metadata_to_cslib_research_agent/plans/01_stage7-cslib-agent-contracts.md",
-      "summary": "Four-phase additive-only plan adding a terminal Stage 7 final-metadata contract to cslib-research-agent.md and cslib-implementation-agent.md, closing the two named continuation_path/artifacts-rationale gaps in cslib-implementation-hard-agent.md, and gating on a cross-file consistency and repo lint phase; includes verbatim drop-in text for every edit."
+      "type": "summary",
+      "path": "specs/948_add_stage7_final_metadata_to_cslib_research_agent/summaries/01_stage7-cslib-agent-contracts-summary.md",
+      "summary": "Adds Stage 7 final-metadata contracts to cslib-research-agent.md and cslib-implementation-agent.md, and closes two named gaps (artifacts-shape rationale, continuation_path key) in cslib-implementation-hard-agent.md's existing Stage 7/Stage 5."
     }
   ],
-  "next_steps": "Run /implement 948 to execute the plan",
+  "completion_data": {
+    "completion_summary": "Added a terminal `## Stage 7: Write Final Metadata` section to cslib-research-agent.md (status \"researched\") and cslib-implementation-agent.md (status \"implemented\"), each with the required artifacts array-of-objects shape and an .orchestrator-handoff.json prohibition. Closed two named gaps in cslib-implementation-hard-agent.md: appended the artifacts-shape rationale to its existing Stage 7, and replaced the deprecated continuation_context key with the canonical flat continuation_path (plus population rule and linking rationale) in its Stage 5 handoff template."
+  },
+  "modified_files": [
+    "agent-system/extensions/cslib/agents/cslib-research-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+    "specs/948_add_stage7_final_metadata_to_cslib_research_agent/plans/01_stage7-cslib-agent-contracts.md",
+    "specs/948_add_stage7_final_metadata_to_cslib_research_agent/summaries/01_stage7-cslib-agent-contracts-summary.md",
+    "specs/948_add_stage7_final_metadata_to_cslib_research_agent/progress/phase-1-progress.json",
+    "specs/948_add_stage7_final_metadata_to_cslib_research_agent/progress/phase-2-progress.json",
+    "specs/948_add_stage7_final_metadata_to_cslib_research_agent/progress/phase-3-progress.json",
+    "specs/948_add_stage7_final_metadata_to_cslib_research_agent/progress/phase-4-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When auditing a repo-wide lint gate (e.g. check-extension-docs.sh) during a task scoped to one extension, a FAIL originating from an unrelated extension section (caused by a concurrent session's edits elsewhere in the same repo) should be recorded as a plan deviation with root-cause attribution rather than treated as this task's failure -- verify the in-scope extension's own section reports PASS and cite that explicitly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/948_add_stage7_final_metadata_to_cslib_research_agent/summaries/01_stage7-cslib-agent-contracts-summary.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["check-extension-docs", "concurrent-sessions", "scope-attribution", "plan-deviation", "multi-agent"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785961976_f6b468_948",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 1.5,
-    "dependency_waves": [[1, 2, 3], [4]]
-  },
-  "memory_candidates": []
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }
