@@ -1,0 +1,280 @@
+critique	present:slides	hard	skill-slide-critic
+critique	present:slides		skill-slide-critic
+implement	cslib	hard	skill-cslib-implementation-hard
+implement	cslib		skill-cslib-implementation
+implement	email	hard	skill-email-implementation
+implement	email		skill-email-implementation
+implement	epidemiology	hard	skill-epi-implement
+implement	epidemiology		skill-epi-implement
+implement	epi	hard	skill-epi-implement
+implement	epi		skill-epi-implement
+implement	epi:study	hard	skill-epi-implement
+implement	epi:study		skill-epi-implement
+implement	filetypes:document	hard	skill-filetypes
+implement	filetypes:document		skill-filetypes
+implement	filetypes:docx	hard	skill-docx-edit
+implement	filetypes:docx		skill-docx-edit
+implement	filetypes	hard	skill-filetypes
+implement	filetypes:presentation	hard	skill-presentation
+implement	filetypes:presentation		skill-presentation
+implement	filetypes:scrape	hard	skill-scrape
+implement	filetypes:scrape		skill-scrape
+implement	filetypes		skill-filetypes
+implement	filetypes:spreadsheet	hard	skill-filetypes-spreadsheet
+implement	filetypes:spreadsheet		skill-filetypes-spreadsheet
+implement	filetypes:xlsx	hard	skill-sheet
+implement	filetypes:xlsx		skill-sheet
+implement	formal	hard	skill-implementer-hard
+implement	formal:logic	hard	skill-implementer-hard
+implement	formal:logic		skill-implementer
+implement	formal:math	hard	skill-implementer-hard
+implement	formal:math		skill-implementer
+implement	formal:physics	hard	skill-implementer-hard
+implement	formal:physics		skill-implementer
+implement	formal		skill-implementer
+implement	founder:analyze	hard	skill-founder-implement
+implement	founder:analyze		skill-founder-implement
+implement	founder:consult	hard	skill-founder-implement
+implement	founder:consult		skill-founder-implement
+implement	founder:deck	hard	skill-deck-implement
+implement	founder:deck		skill-deck-implement
+implement	founder:finance	hard	skill-founder-implement
+implement	founder:finance		skill-founder-implement
+implement	founder:financial-analysis	hard	skill-founder-implement
+implement	founder:financial-analysis		skill-founder-implement
+implement	founder	hard	skill-founder-implement
+implement	founder:legal	hard	skill-founder-implement
+implement	founder:legal		skill-founder-implement
+implement	founder:market	hard	skill-founder-implement
+implement	founder:market		skill-founder-implement
+implement	founder:meeting	hard	skill-founder-implement
+implement	founder:meeting		skill-founder-implement
+implement	founder:project	hard	skill-founder-implement
+implement	founder:project		skill-founder-implement
+implement	founder:sheet	hard	skill-founder-implement
+implement	founder:sheet		skill-founder-implement
+implement	founder		skill-founder-implement
+implement	founder:strategy	hard	skill-founder-implement
+implement	founder:strategy		skill-founder-implement
+implement	latex	hard	skill-latex-implementation
+implement	latex		skill-latex-implementation
+implement	lean4	hard	skill-lean-implementation-hard
+implement	lean4:lake	hard	skill-lean-implementation-hard
+implement	lean4:lake		skill-lake-repair
+implement	lean4		skill-lean-implementation
+implement	lean4:version	hard	skill-lean-implementation-hard
+implement	lean4:version		skill-lean-version
+implement	memory	hard	skill-learn
+implement	memory		skill-learn
+implement	neovim	hard	skill-neovim-implementation
+implement	neovim		skill-neovim-implementation
+implement	nix	hard	skill-nix-implementation
+implement	nix		skill-nix-implementation
+implement	present:budget	hard	skill-budget
+implement	present:budget		skill-budget
+implement	present:funds	hard	skill-funds
+implement	present:funds		skill-funds
+implement	present:grant	hard	skill-grant:assemble
+implement	present:grant		skill-grant:assemble
+implement	present	hard	skill-grant
+implement	present		skill-grant
+implement	present:slides	hard	skill-slides:assemble
+implement	present:slides		skill-slides:assemble
+implement	present:timeline	hard	skill-timeline
+implement	present:timeline		skill-timeline
+implement	pr	hard	skill-implementer-hard
+implement	pr		skill-pr-review-implementation
+implement	python	hard	skill-python-implementation
+implement	python		skill-python-implementation
+implement	typst	hard	skill-typst-implementation
+implement	typst		skill-typst-implementation
+implement	web	hard	skill-web-implementation
+implement	web		skill-web-implementation
+implement	z3	hard	skill-z3-implementation
+implement	z3		skill-z3-implementation
+plan	cslib	hard	skill-planner-hard
+plan	cslib		skill-planner
+plan	email	hard	skill-planner-hard
+plan	email		skill-planner
+plan	epidemiology	hard	skill-planner-hard
+plan	epidemiology		skill-planner
+plan	epi	hard	skill-planner-hard
+plan	epi		skill-planner
+plan	epi:study	hard	skill-planner-hard
+plan	epi:study		skill-planner
+plan	filetypes:document	hard	skill-planner-hard
+plan	filetypes:document		skill-planner
+plan	filetypes:docx	hard	skill-planner-hard
+plan	filetypes:docx		skill-planner
+plan	filetypes	hard	skill-planner-hard
+plan	filetypes:presentation	hard	skill-planner-hard
+plan	filetypes:presentation		skill-planner
+plan	filetypes:scrape	hard	skill-planner-hard
+plan	filetypes:scrape		skill-planner
+plan	filetypes		skill-planner
+plan	filetypes:spreadsheet	hard	skill-planner-hard
+plan	filetypes:spreadsheet		skill-planner
+plan	filetypes:xlsx	hard	skill-planner-hard
+plan	filetypes:xlsx		skill-planner
+plan	formal	hard	skill-planner-hard
+plan	formal:logic	hard	skill-planner-hard
+plan	formal:logic		skill-planner
+plan	formal:math	hard	skill-planner-hard
+plan	formal:math		skill-planner
+plan	formal:physics	hard	skill-planner-hard
+plan	formal:physics		skill-planner
+plan	formal		skill-planner
+plan	founder:analyze	hard	skill-founder-plan
+plan	founder:analyze		skill-founder-plan
+plan	founder:consult	hard	skill-founder-plan
+plan	founder:consult		skill-founder-plan
+plan	founder:deck	hard	skill-deck-plan
+plan	founder:deck		skill-deck-plan
+plan	founder:finance	hard	skill-founder-plan
+plan	founder:finance		skill-founder-plan
+plan	founder:financial-analysis	hard	skill-founder-plan
+plan	founder:financial-analysis		skill-founder-plan
+plan	founder	hard	skill-founder-plan
+plan	founder:legal	hard	skill-founder-plan
+plan	founder:legal		skill-founder-plan
+plan	founder:market	hard	skill-founder-plan
+plan	founder:market		skill-founder-plan
+plan	founder:meeting	hard	skill-founder-plan
+plan	founder:meeting		skill-founder-plan
+plan	founder:project	hard	skill-founder-plan
+plan	founder:project		skill-founder-plan
+plan	founder:sheet	hard	skill-founder-plan
+plan	founder:sheet		skill-founder-plan
+plan	founder		skill-founder-plan
+plan	founder:strategy	hard	skill-founder-plan
+plan	founder:strategy		skill-founder-plan
+plan	latex	hard	skill-planner-hard
+plan	latex		skill-planner
+plan	lean4	hard	skill-planner-hard
+plan	lean4:lake	hard	skill-planner-hard
+plan	lean4:lake		skill-planner
+plan	lean4		skill-planner
+plan	lean4:version	hard	skill-planner-hard
+plan	lean4:version		skill-planner
+plan	memory	hard	skill-planner-hard
+plan	memory		skill-planner
+plan	neovim	hard	skill-planner-hard
+plan	neovim		skill-planner
+plan	nix	hard	skill-planner-hard
+plan	nix		skill-planner
+plan	present:budget	hard	skill-planner-hard
+plan	present:budget		skill-planner
+plan	present:funds	hard	skill-planner-hard
+plan	present:funds		skill-planner
+plan	present:grant	hard	skill-planner-hard
+plan	present:grant		skill-planner
+plan	present	hard	skill-planner-hard
+plan	present		skill-planner
+plan	present:slides	hard	skill-slide-planning
+plan	present:slides		skill-slide-planning
+plan	present:timeline	hard	skill-planner-hard
+plan	present:timeline		skill-planner
+plan	pr	hard	skill-planner-hard
+plan	pr		skill-planner
+plan	python	hard	skill-planner-hard
+plan	python		skill-planner
+plan	slides	hard	skill-slide-planning
+plan	slides		skill-slide-planning
+plan	typst	hard	skill-planner-hard
+plan	typst		skill-planner
+plan	web	hard	skill-planner-hard
+plan	web		skill-planner
+plan	z3	hard	skill-planner-hard
+plan	z3		skill-planner
+research	cslib	hard	skill-cslib-research-hard
+research	cslib		skill-cslib-research
+research	email	hard	skill-researcher-hard
+research	email		skill-researcher
+research	epidemiology	hard	skill-epi-research
+research	epidemiology		skill-epi-research
+research	epi	hard	skill-epi-research
+research	epi		skill-epi-research
+research	epi:study	hard	skill-epi-research
+research	epi:study		skill-epi-research
+research	filetypes:document	hard	skill-filetypes
+research	filetypes:document		skill-filetypes
+research	filetypes:docx	hard	skill-docx-edit
+research	filetypes:docx		skill-docx-edit
+research	filetypes	hard	skill-filetypes
+research	filetypes:presentation	hard	skill-presentation
+research	filetypes:presentation		skill-presentation
+research	filetypes:scrape	hard	skill-scrape
+research	filetypes:scrape		skill-scrape
+research	filetypes		skill-filetypes
+research	filetypes:spreadsheet	hard	skill-filetypes-spreadsheet
+research	filetypes:spreadsheet		skill-filetypes-spreadsheet
+research	filetypes:xlsx	hard	skill-sheet
+research	filetypes:xlsx		skill-sheet
+research	formal	hard	skill-formal-research
+research	formal:logic	hard	skill-logic-research
+research	formal:logic		skill-logic-research
+research	formal:math	hard	skill-math-research
+research	formal:math		skill-math-research
+research	formal:physics	hard	skill-physics-research
+research	formal:physics		skill-physics-research
+research	formal		skill-formal-research
+research	founder:analyze	hard	skill-analyze
+research	founder:analyze		skill-analyze
+research	founder:consult	hard	skill-consult
+research	founder:consult		skill-consult
+research	founder:deck	hard	skill-deck-research
+research	founder:deck		skill-deck-research
+research	founder:finance	hard	skill-finance
+research	founder:finance		skill-finance
+research	founder:financial-analysis	hard	skill-financial-analysis
+research	founder:financial-analysis		skill-financial-analysis
+research	founder	hard	skill-market
+research	founder:legal	hard	skill-legal
+research	founder:legal		skill-legal
+research	founder:market	hard	skill-market
+research	founder:market		skill-market
+research	founder:meeting	hard	skill-meeting
+research	founder:meeting		skill-meeting
+research	founder:project	hard	skill-project
+research	founder:project		skill-project
+research	founder:sheet	hard	skill-founder-spreadsheet
+research	founder:sheet		skill-founder-spreadsheet
+research	founder		skill-market
+research	founder:strategy	hard	skill-strategy
+research	founder:strategy		skill-strategy
+research	latex	hard	skill-latex-research
+research	latex		skill-latex-research
+research	lean4	hard	skill-lean-research-hard
+research	lean4:lake	hard	skill-lean-research-hard
+research	lean4:lake		skill-lake-repair
+research	lean4		skill-lean-research
+research	lean4:version	hard	skill-lean-research-hard
+research	lean4:version		skill-lean-version
+research	memory	hard	skill-learn
+research	memory		skill-learn
+research	neovim	hard	skill-neovim-research
+research	neovim		skill-neovim-research
+research	nix	hard	skill-nix-research
+research	nix		skill-nix-research
+research	present:budget	hard	skill-budget
+research	present:budget		skill-budget
+research	present:funds	hard	skill-funds
+research	present:funds		skill-funds
+research	present:grant	hard	skill-grant
+research	present:grant		skill-grant
+research	present	hard	skill-grant
+research	present		skill-grant
+research	present:slides	hard	skill-slides
+research	present:slides		skill-slides
+research	present:timeline	hard	skill-timeline
+research	present:timeline		skill-timeline
+research	pr	hard	skill-researcher-hard
+research	pr		skill-pr-review-research
+research	python	hard	skill-python-research
+research	python		skill-python-research
+research	typst	hard	skill-typst-research
+research	typst		skill-typst-research
+research	web	hard	skill-web-research
+research	web		skill-web-research
+research	z3	hard	skill-z3-research
+research	z3		skill-z3-research

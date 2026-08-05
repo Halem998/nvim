@@ -1,0 +1,56 @@
+{
+  "phase": 1,
+  "phase_name": "Shared routing library and core-manifest identification",
+  "started_at": "2026-08-05T23:00:00Z",
+  "last_updated": "2026-08-05T23:21:53Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run repo-wide grep for routing_exempt, confirm consumer set",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Capture pre-change resolution baseline (280 rows: 140 pairs x 2 efforts)",
+      "status": "done",
+      "files_touched": [
+        "specs/981_consolidate_routing_to_single_router/scratch/baseline-pre-phase1.tsv"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Create manifest-routing-lib.sh with routing_core_manifest/routing_lookup/routing_manifest_for_task_type/routing_trace",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Refactor command-route-skill.sh to source the library, .name==core identification, routing_trace",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/command-route-skill.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Register lib/manifest-routing-lib.sh in core manifest provides.scripts",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "routing_lookup echoes the resolved value and sets a side-channel global $_ROUTE_LAST_VIA for the via-tag, caller invokes it via $(routing_lookup ...) command substitution",
+      "result": "failed",
+      "reason": "command substitution forks a subshell; $_ROUTE_LAST_VIA set inside the subshell never propagates back to the caller, and under set -u the caller's later reference to it is an unbound-variable error that silently kills the sourcing subshell with no output at all"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
