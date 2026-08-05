@@ -2967,9 +2967,6 @@
         "agents": [
           "meta-builder-agent"
         ],
-        "skills": [
-          "skill-email-cleanup"
-        ],
         "task_types": [
           "meta"
         ]
@@ -3019,9 +3016,6 @@
           "general-research-hard-agent",
           "general-implementation-agent",
           "general-implementation-hard-agent"
-        ],
-        "skills": [
-          "skill-implementer"
         ]
       }
     },
@@ -3043,12 +3037,6 @@
       "load_when": {
         "agents": [
           "meta-builder-agent"
-        ],
-        "skills": [
-          "skill-orchestrate",
-          "skill-team-research",
-          "skill-team-plan",
-          "skill-team-implement"
         ],
         "task_types": [
           "meta"
@@ -3074,15 +3062,14 @@
         "literature"
       ],
       "load_when": {
-        "skills": [
-          "skill-planner",
-          "skill-researcher",
-          "skill-planner-hard",
-          "skill-researcher-hard",
-          "skill-implementer-hard",
-          "skill-implementer"
-        ],
-        "task_types": []
+        "agents": [
+          "general-research-agent",
+          "general-research-hard-agent",
+          "general-implementation-agent",
+          "general-implementation-hard-agent",
+          "planner-agent",
+          "planner-hard-agent"
+        ]
       }
     },
     {
@@ -3104,11 +3091,6 @@
         "agents": [
           "general-implementation-agent",
           "general-implementation-hard-agent"
-        ],
-        "skills": [
-          "skill-implementer",
-          "skill-implementer-hard",
-          "skill-orchestrate"
         ]
       }
     },
@@ -3130,12 +3112,6 @@
       "load_when": {
         "agents": [
           "general-implementation-agent"
-        ],
-        "skills": [
-          "skill-refresh",
-          "skill-orchestrate-hard",
-          "skill-orchestrate",
-          "skill-implementer"
         ],
         "commands": [
           "/research",
@@ -3164,12 +3140,6 @@
         "agents": [
           "meta-builder-agent"
         ],
-        "skills": [
-          "skill-fix-it",
-          "skill-project-overview",
-          "skill-spawn",
-          "skill-todo"
-        ],
         "commands": [
           "/task",
           "/review"
@@ -3197,16 +3167,6 @@
           "neovim-implementation-agent",
           "nix-implementation-agent"
         ],
-        "skills": [
-          "skill-reviser",
-          "skill-planner",
-          "skill-spawn",
-          "skill-implementer",
-          "skill-todo",
-          "skill-team-research",
-          "skill-git-workflow",
-          "skill-orchestrate"
-        ],
         "commands": [
           "/orchestrate",
           "/research",
@@ -3231,11 +3191,6 @@
         "orchestration"
       ],
       "load_when": {
-        "skills": [
-          "skill-refresh",
-          "skill-orchestrate-hard",
-          "skill-orchestrate"
-        ],
         "commands": [
           "/refresh"
         ]

@@ -1,7 +1,7 @@
 # Implementation Plan: Migrate All 19 Extensions' index-entries.json to the Reconciled Schema
 
 - **Task**: 990 - Migrate all 19 extensions index-entries.json to the reconciled schema shape
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours (phase sum 10.75)
 - **Dependencies**: 987 (completed — landed `index.schema.json` and `check-extension-docs.sh` Rule T in `advisory` mode)
 - **Research Inputs**: `specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md`
@@ -128,7 +128,7 @@ files, and no file is written by two phases.
 
 ---
 
-### Phase 1: Baseline Capture and Reachability Snapshot [NOT STARTED]
+### Phase 1: Baseline Capture and Reachability Snapshot [COMPLETED]
 
 **Goal**: Record the pre-migration ground truth so every later phase can be verified by diff
 rather than by assumption, and so orphaning is detectable.
@@ -170,26 +170,26 @@ plan, record the live number as authoritative and note the divergence for Phase 
 
 ---
 
-### Phase 2: `core` — Delete `load_when.skills` (9 entries, 1 with replacement hook) [NOT STARTED]
+### Phase 2: `core` — Delete `load_when.skills` (9 entries, 1 with replacement hook) [COMPLETED]
 
 **Goal**: Clear `core`'s 9 `load_when.skills` violations without orphaning
 `patterns/lit-stage4a-flow.md`.
 
 **Tasks**:
-- [ ] Edit **`agent-system/extensions/core/index-entries.json`** only. Never `.claude/**`.
-- [ ] For the 8 entries that already carry a populated `agents` and/or `commands` array, delete
+- [x] Edit **`agent-system/extensions/core/index-entries.json`** only. Never `.claude/**`. *(completed)*
+- [x] For the 8 entries that already carry a populated `agents` and/or `commands` array, delete
       the `skills` key outright: `patterns/batch-drain-loop.md`,
       `patterns/context-exhaustion-detection.md`, `patterns/context-protective-lead.md`,
       `patterns/subagent-continuation-loop.md`, `patterns/task-lock.md`,
       `patterns/topic-assignment-pattern.md`, `standards/git-staging-scope.md`,
-      `standards/orchestrator-runtime-files.md`.
-- [ ] For **`patterns/lit-stage4a-flow.md`**, whose only other key is an inert `task_types: []`:
+      `standards/orchestrator-runtime-files.md`. *(completed)*
+- [x] For **`patterns/lit-stage4a-flow.md`**, whose only other key is an inert `task_types: []`:
       before or while deleting `skills`, add an `agents` array naming the agents that run its six
       skills — `general-research-agent`, `general-research-hard-agent`,
       `general-implementation-agent`, `general-implementation-hard-agent`, `planner-agent`,
       `planner-hard-agent` — mirroring how `patterns/subagent-continuation-loop.md` already
-      expresses skill-implied reachability via `agents`. Also drop the inert `task_types: []`.
-- [ ] Confirm no other `core` entry was touched (129 of 130 entries unchanged apart from the 9).
+      expresses skill-implied reachability via `agents`. Also drop the inert `task_types: []`. *(completed)*
+- [x] Confirm no other `core` entry was touched (129 of 130 entries unchanged apart from the 9). *(completed)*
 
 **Timing**: 0.75 hours
 
