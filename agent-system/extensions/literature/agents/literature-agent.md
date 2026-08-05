@@ -107,7 +107,7 @@ Search Step 7 -> handle_import(citation_key)
 
 The `/literature --search "QUERY"` and `/literature --task N` modes provide end-to-end Zotero discovery and import:
 
-1. **Search**: invokes `zotero-search.sh --format=json --limit=20 {terms}` which searches the CSL-JSON library by weighted multi-field matching (title +3, keyword +2, abstract +1, author +1)
+1. **Search**: invokes `zotero-search.sh --format=json --limit=20 {term1} {term2} ...` which searches the CSL-JSON library by weighted multi-field matching (title +3, keyword +2, abstract +1, author +1) — each search word must be a SEPARATE argument (e.g. "Burgess axioms tense logic" must be passed as four separate arguments: `Burgess axioms tense logic`, never as one quoted phrase). See `zotero-search.sh --help` and `context/project/literature/patterns/agent-exploration.md` for the full quoting warning.
 2. **Cross-reference**: checks Literature/ index for already-imported entries (match on `bib_key`, `zotero_key`, or `id` fields)
 3. **Classify**: each result gets an availability status:
    - `[IMPORTED]` — already in Literature/ index
