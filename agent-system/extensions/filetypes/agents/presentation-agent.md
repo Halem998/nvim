@@ -1,6 +1,7 @@
 ---
 name: presentation-agent
 description: Extract presentations and generate slide decks (Beamer/Polylux/Touying)
+model: sonnet
 ---
 
 # Presentation Agent

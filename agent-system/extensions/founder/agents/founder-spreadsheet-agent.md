@@ -1,6 +1,7 @@
 ---
 name: founder-spreadsheet-agent
 description: Cost breakdown spreadsheet generation with forcing questions
+model: sonnet
 mcpServers: []
 ---
 

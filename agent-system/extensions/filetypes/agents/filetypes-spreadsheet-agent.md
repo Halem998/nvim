@@ -1,6 +1,7 @@
 ---
 name: filetypes-spreadsheet-agent
 description: Convert spreadsheets to LaTeX/Typst tables
+model: sonnet
 ---
 
 # Filetypes Spreadsheet Agent

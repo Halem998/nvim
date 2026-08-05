@@ -1,6 +1,7 @@
 ---
 name: financial-analysis-agent
 description: Financial analysis with forcing questions, XLSX generation, and JSON metrics export
+model: sonnet
 mcpServers: []
 ---
 

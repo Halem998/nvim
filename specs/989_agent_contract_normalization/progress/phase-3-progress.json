@@ -1,0 +1,53 @@
+{
+  "phase": 3,
+  "phase_name": "Add model: sonnet to the 15 agents missing it",
+  "started_at": "2026-08-05T21:40:00Z",
+  "last_updated": "2026-08-05T21:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add model: sonnet to 8 founder agents",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/founder/agents/project-agent.md",
+        "agent-system/extensions/founder/agents/meeting-agent.md",
+        "agent-system/extensions/founder/agents/market-agent.md",
+        "agent-system/extensions/founder/agents/founder-spreadsheet-agent.md",
+        "agent-system/extensions/founder/agents/finance-agent.md",
+        "agent-system/extensions/founder/agents/financial-analysis-agent.md",
+        "agent-system/extensions/founder/agents/strategy-agent.md",
+        "agent-system/extensions/founder/agents/analyze-agent.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add model: sonnet to 7 filetypes agents",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/filetypes/agents/presentation-agent.md",
+        "agent-system/extensions/filetypes/agents/sheet-agent.md",
+        "agent-system/extensions/filetypes/agents/docx-edit-agent.md",
+        "agent-system/extensions/filetypes/agents/filetypes-router-agent.md",
+        "agent-system/extensions/filetypes/agents/filetypes-spreadsheet-agent.md",
+        "agent-system/extensions/filetypes/agents/scrape-agent.md",
+        "agent-system/extensions/filetypes/agents/document-agent.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Verify lean flow files and README.md untouched (no frontmatter)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "model: placed consistently after description: in each frontmatter block",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

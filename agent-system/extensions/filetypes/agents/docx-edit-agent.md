@@ -1,6 +1,7 @@
 ---
 name: docx-edit-agent
 description: In-place DOCX editing with SuperDoc MCP and Word AppleScript integration
+model: sonnet
 ---
 
 # DOCX Edit Agent

@@ -1,6 +1,7 @@
 ---
 name: filetypes-router-agent
 description: Route file format operations to specialized sub-agents based on file type
+model: sonnet
 ---
 
 # Filetypes Router Agent

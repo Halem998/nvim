@@ -1,6 +1,7 @@
 ---
 name: project-agent
 description: Project research with WBS, PERT estimation, and resource analysis
+model: sonnet
 ---
 
 # Project Agent

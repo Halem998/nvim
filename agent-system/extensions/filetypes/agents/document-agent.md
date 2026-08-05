@@ -1,6 +1,7 @@
 ---
 name: document-agent
 description: Convert documents between formats (PDF/DOCX to Markdown, Markdown to PDF)
+model: sonnet
 ---
 
 # Document Agent

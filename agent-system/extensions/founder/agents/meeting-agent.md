@@ -1,6 +1,7 @@
 ---
 name: meeting-agent
 description: Investor meeting note processor with web research and CSV tracking
+model: sonnet
 ---
 
 # Meeting Agent

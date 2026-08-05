@@ -1,6 +1,7 @@
 ---
 name: finance-agent
 description: Financial analysis and verification with spreadsheet generation
+model: sonnet
 ---
 
 # Finance Agent

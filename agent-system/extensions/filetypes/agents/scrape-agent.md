@@ -1,6 +1,7 @@
 ---
 name: scrape-agent
 description: Extract annotations and comments from PDF files
+model: sonnet
 ---
 
 # Scrape Agent

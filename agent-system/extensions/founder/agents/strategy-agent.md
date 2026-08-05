@@ -1,6 +1,7 @@
 ---
 name: strategy-agent
 description: Go-to-market strategy research with positioning, channels, and planning context
+model: sonnet
 ---
 
 # Strategy Agent

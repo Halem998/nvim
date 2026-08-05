@@ -1,6 +1,7 @@
 ---
 name: sheet-agent
 description: XLSX creation, editing, and analysis using openpyxl and pandas
+model: sonnet
 ---
 
 # XLSX Agent

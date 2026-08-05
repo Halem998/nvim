@@ -225,22 +225,23 @@ before Phase 2 because four founder agents appear in both edit sets.
 
 ---
 
-### Phase 3: Add `model: sonnet` to the 15 agents missing it [NOT STARTED]
+### Phase 3: Add `model: sonnet` to the 15 agents missing it [COMPLETED]
 
 - **Goal**: Every dispatchable agent declares a model, resolving the tier table's assignment
   rather than silently inheriting.
 
 - **Tasks**:
-  - [ ] Add `model: sonnet` to the 8 founder agents: `project-agent.md`, `meeting-agent.md`,
+  - [x] Add `model: sonnet` to the 8 founder agents: `project-agent.md`, `meeting-agent.md`,
     `market-agent.md`, `founder-spreadsheet-agent.md`, `finance-agent.md`,
-    `financial-analysis-agent.md`, `strategy-agent.md`, `analyze-agent.md`.
-  - [ ] Add `model: sonnet` to the 7 filetypes agents: `presentation-agent.md`, `sheet-agent.md`,
+    `financial-analysis-agent.md`, `strategy-agent.md`, `analyze-agent.md`. *(completed)*
+  - [x] Add `model: sonnet` to the 7 filetypes agents: `presentation-agent.md`, `sheet-agent.md`,
     `docx-edit-agent.md`, `filetypes-router-agent.md`, `filetypes-spreadsheet-agent.md`,
-    `scrape-agent.md`, `document-agent.md`.
-  - [ ] Do NOT add `model:` to `lean/context/project/lean4/agents/lean-{research,implementation}-flow.md`
+    `scrape-agent.md`, `document-agent.md`. *(completed)*
+  - [x] Do NOT add `model:` to `lean/context/project/lean4/agents/lean-{research,implementation}-flow.md`
     or `core/agents/README.md` — none is a dispatchable agent (no frontmatter block at all).
-  - [ ] Place `model:` consistently after `description:` in each frontmatter block, matching the
-    standard's examples.
+    *(completed: verified untouched)*
+  - [x] Place `model:` consistently after `description:` in each frontmatter block, matching the
+    standard's examples. *(completed)*
 
 - **Timing**: 45 minutes
 
