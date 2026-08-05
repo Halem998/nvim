@@ -1069,28 +1069,34 @@ function M.create(config)
   --- `state_mod.write` lives at the project root (`config.root_state_file`), outside
   --- `base_dir`, so it survives a `rm -rf base_dir` wipe. Calling this after such a
   --- wipe re-reads that surviving manifest's `status == "active"` extensions and
-  --- reloads each one via `manager.load`, reconstructing an identical `base_dir`.
+  --- reloads each one, reconstructing an identical `base_dir`.
   ---
-  --- Implementation note: the surviving manifest's per-extension tracking data
-  --- (`installed_files`/`installed_dirs`/`merged_sections`) all point into `base_dir`,
-  --- which is gone after a wipe, so it is stale -- and `manager.load` itself refuses
-  --- to act on an extension its state already marks `status == "active"` (see
-  --- `manager.load`'s "Check if already loaded" guard). To make regeneration work
-  --- despite that guard, the in-memory/on-disk state is first reset to empty, then
-  --- each formerly-active extension is (re)loaded via `manager.load`, whose own
-  --- recursive dependency resolution (see `manager.load`'s "Resolve dependencies"
-  --- section) transparently handles any ordering requirements -- a dependency pulled
-  --- in by an earlier iteration is detected via a fresh state read and counted as
-  --- loaded rather than re-invoked (which would otherwise surface a harmless
-  --- "already loaded" as a spurious failure).
+  --- Ordering fix (the bug this function used to have): settings.json/settings.local.json and
+  --- every `.syncprotect`-listed protected path are restored from the staged backup (Phase 4)
+  --- BEFORE the load loop runs, not after. Restoring after the loop -- the historical
+  --- ordering -- clobbered any settings-fragment merge the loop's own extension loads had just
+  --- performed, silently losing newly registered merge-source hook registrations across every
+  --- wipe+regenerate cycle. Restoring first means the loop's merges land on top of the restored
+  --- base and survive.
   ---
-  --- No-op-safe: a missing or empty manifest yields `{ loaded = {}, failed = {} }`
-  --- with no error and no state reset. Each individual extension load is guarded by
-  --- `manager.load`'s own error return, so one failure does not abort the rest.
+  --- Load-loop simplification: this now delegates directly to `manager.resync_all`, which
+  --- force-resyncs (`opts.force = true`, Phase 3) every currently-active extension in
+  --- dependency order. Because `force` bypasses `manager.load`'s already-loaded abort, the
+  --- historical "reset state to empty, then reload one at a time, re-checking state each
+  --- iteration to avoid a spurious already-loaded failure" dance is no longer needed --
+  --- `state_mod.mark_loaded` (called by `manager.load` for every extension `resync_all`
+  --- processes) unconditionally overwrites `state.extensions[name]`, so no stale entry survives
+  --- a force-resync regardless of what the surviving root manifest said going in. `resync_all`
+  --- also gives this load loop dependency-order correctness (Kahn's algorithm) that the former
+  --- per-extension loop did not have.
+  ---
+  --- No-op-safe: a missing or empty manifest yields `{ loaded = {}, failed = {} }` with no
+  --- error. Each individual extension load is guarded by `manager.load`'s own error return
+  --- (surfaced via `resync_all`'s `failed` list), so one failure does not abort the rest.
   --- @param opts table|nil Options: { project_dir = string|nil }
   --- @return table result { loaded = {name, ...}, failed = {{name=, error=}, ...},
   ---   settings_restored = {filename, ...} } -- settings_restored lists which of
-  ---   settings.json/settings.local.json were restored from a staged backup, if any
+  ---   settings.json/settings.local.json/protected-paths were restored from a staged backup
   function manager.regenerate(opts)
     opts = opts or {}
     local project_dir = opts.project_dir or vim.fn.getcwd()
@@ -1108,52 +1114,73 @@ function M.create(config)
       return result
     end
 
-    local reset_ok = state_mod.write(project_dir, { version = "1.0.0", extensions = {} }, config)
-    if not reset_ok then
-      table.insert(result.failed, {
-        name = "<manifest>",
-        error = "Failed to reset extension state before regenerate",
-      })
-      return result
-    end
-
-    for _, extension_name in ipairs(active_names) do
-      -- A prior iteration may already have (re)loaded this extension as a
-      -- dependency; re-check current state instead of calling manager.load
-      -- again, which would otherwise report a harmless "already loaded" as a
-      -- failure.
-      local current_state = state_mod.read(project_dir, config)
-      if state_mod.is_loaded(current_state, extension_name) then
-        table.insert(result.loaded, extension_name)
-      else
-        local load_ok, load_err = manager.load(extension_name, {
-          confirm = false,
-          project_dir = project_dir,
-        })
-        if load_ok then
-          table.insert(result.loaded, extension_name)
-        else
-          table.insert(result.failed, { name = extension_name, error = load_err })
-        end
-      end
-    end
-
-    -- Restore settings.json/settings.local.json from a project-root backup
-    -- staged before the wipe, if one exists. This is what makes the wipe
-    -- sequence (backup -> rm -rf base_dir -> regenerate -> restore) truly
-    -- lossless for the two files that install-once semantics (Phase 4) alone
-    -- cannot protect across a full base_dir deletion. No-op-safe when no
-    -- backup was staged (e.g. regenerate called outside a wipe sequence).
+    -- Restore settings + protected paths BEFORE the load loop (see ordering-fix note above).
+    -- No-op-safe when no backup was staged (e.g. regenerate called outside a wipe sequence).
+    -- A restore failure is surfaced but does not abort the load loop: base_dir may already be
+    -- gone (post-wipe), so refusing to reload the surviving extensions would leave the repo in
+    -- a strictly worse state (no base_dir at all) than proceeding without the restored settings.
     local restore_ok, restored = settings_backup.restore(project_dir, config)
     result.settings_restored = restored
     if not restore_ok then
       table.insert(result.failed, {
         name = "<settings-restore>",
-        error = "Failed to restore settings backup after regenerate",
+        error = "Failed to restore settings backup before regenerate load loop",
       })
     end
 
+    local resync_result = manager.resync_all({ project_dir = project_dir })
+    for _, extension_name in ipairs(resync_result.succeeded) do
+      table.insert(result.loaded, extension_name)
+    end
+    for _, failure in ipairs(resync_result.failed) do
+      table.insert(result.failed, failure)
+    end
+
     return result
+  end
+
+  --- Full destructive wipe+regenerate sequence: snapshot -> `rm -rf base_dir` -> regenerate
+  --- (which itself restores the snapshot as the merge base BEFORE re-applying every surviving
+  --- extension's settings fragments on top, then clears staging on success -- see
+  --- `manager.regenerate`'s ordering-fix note). This is the one place the full six-step sequence
+  --- named in the plan's Overview (snapshot -> wipe -> regenerate -> restore-as-merge-base ->
+  --- re-apply settings fragments -> clear staging) is wired end to end; `deploy-headless.sh
+  --- --wipe` and the picker's `[Regenerate]` entry both call this rather than reimplementing it.
+  ---
+  --- Refuses to run when the snapshot step reports failure: the refusal is returned to the
+  --- caller (never a silent fall-through into the destructive `rm -rf`), so a snapshot failure
+  --- leaves `base_dir` completely untouched.
+  --- @param opts table|nil Options: { project_dir = string|nil }
+  --- @return boolean success False only when the pre-wipe snapshot failed (base_dir untouched
+  ---   in that case); true once the wipe has proceeded, even if some extensions subsequently
+  ---   failed to reload (see the second return value's `failed` list for those).
+  --- @return table|string result The `manager.regenerate` result table on success, or a string
+  ---   explaining the refusal when `success` is false.
+  function manager.wipe(opts)
+    opts = opts or {}
+    local project_dir = opts.project_dir or vim.fn.getcwd()
+    local target_dir = project_dir .. "/" .. config.base_dir
+
+    local protected_paths = loader_mod.load_syncprotect(project_dir, config.base_dir)
+    -- pcall-wrapped: settings_backup.backup's underlying helpers (e.g. vim.fn.mkdir via
+    -- ensure_directory) can throw rather than return false on some failures (e.g. a path
+    -- collision at the staging directory location). Without this wrapper such a failure would
+    -- propagate as an uncaught Lua error instead of the clean refusal this function promises --
+    -- confirmed empirically by staging a file at the would-be staging directory path and
+    -- observing an uncaught `mkdir` error prior to this fix.
+    local backup_call_ok, backup_ok = pcall(settings_backup.backup, project_dir, config, protected_paths)
+    if not backup_call_ok or not backup_ok then
+      local detail = (not backup_call_ok) and (" (" .. tostring(backup_ok) .. ")") or ""
+      return false, string.format(
+        "Wipe refused: settings/.syncprotect snapshot failed before removing %s -- %s left untouched.%s",
+        config.base_dir, config.base_dir, detail
+      )
+    end
+
+    vim.fn.delete(target_dir, "rf")
+
+    local regen_result = manager.regenerate({ project_dir = project_dir })
+    return true, regen_result
   end
 
   return manager

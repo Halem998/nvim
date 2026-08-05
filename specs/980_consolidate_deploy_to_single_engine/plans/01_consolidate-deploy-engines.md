@@ -391,24 +391,36 @@ zero callers outside the module. Confirm with
 
 ---
 
-### Phase 5: Correct the regenerate sequence [NOT STARTED]
+### Phase 5: Correct the regenerate sequence [COMPLETED]
 
 **Goal**: Fix `manager.regenerate`'s settings-ordering bug and wire it into a complete, correctly
 ordered wipe sequence.
 
 **Tasks**:
-- [ ] Move the settings restore to run **before** the per-extension load loop, so the loop's
+- [x] Move the settings restore to run **before** the per-extension load loop, so the loop's
       settings-fragment merge runs on top of restored settings and newly registered merge-source
       fragments survive. Today the restore runs after the loop and overwrites the fresh merge.
-- [ ] Restore `.syncprotect`-listed paths in the same pre-loop step.
-- [ ] Clear the staging directory at the end of a successful sequence.
-- [ ] Wire `settings_backup.backup` as the explicit first step of the wipe sequence: snapshot ->
+      *(completed)*
+- [x] Restore `.syncprotect`-listed paths in the same pre-loop step. *(completed: same
+      `settings_backup.restore` call now covers both, per Phase 4)*
+- [x] Clear the staging directory at the end of a successful sequence. *(completed: inherited
+      from Phase 4's `M.restore` auto-clear-on-success; no separate call needed here)*
+- [x] Wire `settings_backup.backup` as the explicit first step of the wipe sequence: snapshot ->
       remove `base_dir` -> regenerate -> restore-as-merge-base -> re-apply settings fragments ->
-      clear staging.
-- [ ] Refuse to wipe when the snapshot step reports failure; surface the refusal, do not fall
-      through silently.
-- [ ] Build `manager.regenerate` on `manager.resync_all` for its load loop rather than keeping a
+      clear staging. *(completed: new `manager.wipe(opts)`, the one place the full six-step
+      sequence is wired end to end)*
+- [x] Refuse to wipe when the snapshot step reports failure; surface the refusal, do not fall
+      through silently. *(completed, and hardened beyond the original ask: `settings_backup.backup`
+      can throw rather than return `false` on some failures — e.g. `helpers.ensure_directory`'s
+      `vim.fn.mkdir` errors on a path collision — discovered empirically by staging a file at the
+      would-be staging directory path. `manager.wipe` now pcall-wraps the backup call so this
+      surfaces as the same clean refusal string, not an uncaught Lua error)*
+- [x] Build `manager.regenerate` on `manager.resync_all` for its load loop rather than keeping a
       separate per-extension loop — the wipe is the only thing that distinguishes it.
+      *(completed: the historical "reset state to empty, reload one at a time, re-check state
+      each iteration" dance is removed entirely — `state_mod.mark_loaded` unconditionally
+      overwrites `state.extensions[name]`, so `resync_all`'s `force=true` loads make it
+      unnecessary)*
 
 **Timing**: 1.5 hours
 
@@ -421,10 +433,22 @@ ordered wipe sequence.
 
 **Verification**:
 - After a wipe+regenerate, a merge-source hook registration added since the last deploy is present
-  in the deployed settings.
+  in the deployed settings. *(confirmed: after `manager.wipe` against a scratch tree with `core`
+  loaded, `settings.json`'s `.hooks` object has 7 registered event keys — the core manifest's
+  merge-source hook registrations, present post-wipe)*
 - After a wipe+regenerate, `settings.local.json` and every `.syncprotect`-listed path survive.
-- Running wipe+regenerate twice in a row produces byte-identical trees.
-- A simulated snapshot failure aborts before the wipe rather than proceeding.
+  *(confirmed: hand-edited `settings.local.json` with a `custom_hook` marker and a seeded
+  `context/repo/project-overview.md` protected path both survive `manager.wipe` byte-identical —
+  this is the install-once-guard-plus-restore-ordering fix working end to end: restore recreates
+  `settings.local.json` BEFORE the load loop's `copy_category("root_files", ...)` runs, so its
+  install-once check sees the file already present and skips overwriting it)*
+- Running wipe+regenerate twice in a row produces byte-identical trees. *(confirmed: full
+  `find -type f -printf '%M %p' | sort` listing diff between two consecutive `manager.wipe` calls
+  against the same scratch tree is empty)*
+- A simulated snapshot failure aborts before the wipe rather than proceeding. *(confirmed: staged
+  a plain file at the would-be `.claude-settings-backup` staging path so directory creation
+  fails; `manager.wipe` returns `false` with a descriptive refusal string, and `base_dir`'s file
+  count is unchanged (339 before, 339 after) — `rm -rf base_dir` never ran)*
 
 ---
 

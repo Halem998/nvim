@@ -1,0 +1,44 @@
+{
+  "phase": 5,
+  "phase_name": "Correct the regenerate sequence",
+  "started_at": "2026-08-05T01:45:00Z",
+  "last_updated": "2026-08-05T02:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Reorder manager.regenerate: restore settings/protected paths BEFORE the load loop; rebuild the load loop on manager.resync_all",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add manager.wipe(opts): snapshot -> refuse-on-failure -> rm -rf base_dir -> regenerate",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Harden manager.wipe's backup call with pcall after discovering settings_backup.backup can throw (mkdir path-collision) rather than return false",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ],
+      "note": "Discovered empirically: staging a file at the would-be staging dir path caused an uncaught vim.fn.mkdir error. pcall-wrapped so it's now a clean false + descriptive-string refusal."
+    },
+    {
+      "id": 4,
+      "description": "Verify full wipe+regenerate round trip against a scratch tree",
+      "status": "done",
+      "files_touched": [],
+      "note": "settings.json merge-source hooks (7 keys) survive; hand-edited settings.local.json marker survives; seeded .syncprotect path survives byte-identical; two consecutive wipes produce byte-identical 339-file listings; simulated snapshot failure returns false with base_dir file count unchanged (339/339)."
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
