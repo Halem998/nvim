@@ -1,5 +1,5 @@
 ---
-next_project_number: 997
+next_project_number: 998
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 997
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 982,991,994 | -- | agent-system, literature, orchestration-concurrency |
+| 1 | 982,991,994,997 | -- | agent-system, literature, orchestration-concurrency |
 | 2 | 948,981,992 | 982,991 | agent-system |
 | 3 | 959,989,993 | 948,981,992 | agent-system |
 | 4 | 960 | 959 | agent-system |
@@ -60,13 +60,95 @@ next_project_number: 997
 
 ### Orchestration Concurrency
 
-982 [RESEARCHED] — Unify the .orchestrator-handoff.json contract. FOUR disagreeing s
+982 [IMPLEMENTING] — Unify the .orchestrator-handoff.json contract. FOUR disagreeing s
+997 [NOT STARTED] — session_liveness() in scripts/task-lock.sh reports liveness_reaso
 
 ### Status Marker Lifecycle
 
 984 [NOT STARTED] — Give specs/state.json a machine-enforced schema and make the stat
 
 ## Tasks
+
+### 997. Report a confirmably-dead pid within the grace floor as its own liveness reason
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: None
+
+**Description**: session_liveness() in scripts/task-lock.sh reports liveness_reason "pid-alive" for a pid that
+`kill -0` just proved is GONE, whenever the entry's age is below SESSION_REGISTRY_DEAD_PID_MIN
+(default 10 min). Observed live: `task-lock.sh session-list` emitted
+{"pid":793539,"live":true,"liveness_reason":"pid-alive","age_min":9} for a batch session whose
+process did not exist (`kill -0 793539` -> "No such process").
+
+ROOT CAUSE (scripts/task-lock.sh, session_liveness(), the five-branch reason ladder):
+  if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
+    if ! kill -0 "$pid" 2>/dev/null; then
+      if [ "$age" -gt "$SESSION_REGISTRY_DEAD_PID_MIN" ]; then reason="dead-pid"; fi
+    fi
+  fi
+  ...
+  if [ -z "$reason" ]; then
+    if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then reason="pid-alive"; else reason="undeterminable"; fi
+  fi
+When `kill -0` FAILS but age <= the grace floor, `reason` is left empty, and the final else-branch
+assigns "pid-alive" on the sole basis that the pid field is NUMERIC -- it never re-consults the
+`kill -0` result it already computed. The dead-pid probe's outcome is discarded below the floor.
+
+WHAT IS AND IS NOT THE BUG:
+  - The VERDICT (`live: true`) is CORRECT and must not change. The grace floor exists so a
+    just-registered session is not reaped before its pid is observable (see the floor's rationale
+    at the SESSION_REGISTRY_DEAD_PID_MIN definition and in context/patterns/task-lock.md's
+    "Two-Signal Liveness" section). Conservative contention is the intended behavior.
+  - The REASON STRING is WRONG. It positively asserts the process is alive when the script has
+    just proved the opposite. This is a fifth state ("confirmably dead, still within the grace
+    floor") being reported under a label that means the opposite.
+
+WHY IT MATTERS (not merely cosmetic): liveness_reason is not internal-only -- it is propagated
+verbatim into operator-facing output.
+  1. scripts/orchestrate-batch-admit.sh (~lines 488-489) copies it into the session_active defer
+     verdict's `session_liveness_reason` field AND interpolates it into the human-readable
+     `reason` string.
+  2. commands/orchestrate.md and skills/skill-orchestrate/SKILL.md both render it in the
+     session_active defer warning ("liveness: {session_liveness_reason}"). An operator diagnosing
+     a deferred task is told a dead session is "pid-alive", which points debugging in exactly the
+     wrong direction -- toward hunting a live process that does not exist, instead of waiting out
+     or reaping a stale entry.
+
+THE DOCS CARRY THE SAME DEFECT (they describe the buggy behavior as if intended, so fixing code
+alone would leave them contradicting the fix):
+  - context/patterns/task-lock.md ~line 842 defines `pid-alive` as "not dead-pid, not
+    stale-heartbeat, and pid is a parseable integer for which `kill -0` succeeded" -- the
+    `kill -0` succeeded clause is false in exactly this window.
+  - docs/architecture/batch-admit-schema.md ~line 119 enumerates "session_liveness()'s five
+    reasons" and constrains the session_active case to pid-alive/corrupt/undeterminable.
+
+WORK:
+  1. Add a distinct sixth reason (suggested: `dead-pid-within-grace`) for "pid confirmably gone,
+     age <= SESSION_REGISTRY_DEAD_PID_MIN". Restructure the ladder so the `kill -0` result is
+     carried forward rather than discarded when the floor check fails.
+  2. PRESERVE the verdict exactly: the new reason MUST map to `live: true` in cmd_session_list's
+     `dead-pid|stale-heartbeat) live_flag="false"` case, and MUST NOT be reaped by
+     cmd_session_reap (whose reap set stays {dead-pid, stale-heartbeat}). Confirm
+     session_contention()'s contend-set is unchanged: the entry still contends.
+  3. Update the two docs above, plus the five-reasons count wherever it is stated, and the
+     session_active allowed-value list in batch-admit-schema.md.
+  4. Check whether any consumer branches on the literal string `pid-alive` (grep both trees); the
+     known consumers interpolate it as an opaque placeholder, but verify rather than assume.
+
+VERIFICATION BAR:
+  - A registry entry with a dead pid and age below the floor reports the new reason with
+    `live: true`, and `session-reap --dry-run` does not select it.
+  - A registry entry with a dead pid and age above the floor still reports `dead-pid` with
+    `live: false` and IS selected by reap (no regression to the existing path).
+  - A registry entry with a live pid still reports `pid-alive`.
+  - scripts/test-conflict-predicate.sh and the session-registry reap tests still pass.
+  - `bash .claude/scripts/verify-deploy.sh` passes, including the task-reference lint gate.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 996. Capstone: end-to-end verification of the refactored agent system
 - **Status**: [NOT STARTED]
@@ -382,11 +464,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 982. One handoff schema, one writer, one validator
-- **Status**: [RESEARCHED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 974
 - **Research**: [982_unify_orchestrator_handoff_contract/reports/01_unify-handoff-contract.md]
+- **Plan**: [982_unify_orchestrator_handoff_contract/plans/01_unify-handoff-contract.md]
 
 **Description**: Unify the .orchestrator-handoff.json contract. FOUR disagreeing schemas currently coexist, and the nominal producer has zero callers. This SUBSUMES task 947 (marked abandoned in favor of this task — read its description first). Task 949's cslib-sibling propagation is SPUN OUT to the cslib terminal-metadata task (which depends on this one and encodes its decisions); this task's file scope deliberately excludes cslib agent files so it cannot collide with the cslib summary-format task. Related but NOT subsumed: task 968 (handoff-present corroboration gate — this task simplifies its terrain but 968's gate logic stays separate) and task 973 (reconcile-task-status safe recovery from malformed handoff status — that failure-mode handling stays; this task reduces its trigger frequency).
 
