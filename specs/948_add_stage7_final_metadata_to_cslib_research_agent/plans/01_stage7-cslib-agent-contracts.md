@@ -176,23 +176,25 @@ the delegation context. `.orchestrator-handoff.json` is formally hard-mode-imple
 
 ---
 
-### Phase 2: Add Stage 7 to cslib-implementation-agent.md [NOT STARTED]
+### Phase 2: Add Stage 7 to cslib-implementation-agent.md [COMPLETED]
 
 **Goal**: Give the base (non-hard) implementation agent an explicit terminal-metadata contract
 naming `"status": "implemented"`, the `artifacts` shape with rationale, and the
 `.orchestrator-handoff.json` prohibition.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/cslib/agents/cslib-implementation-agent.md` and locate the
+- [x] Read `agent-system/extensions/cslib/agents/cslib-implementation-agent.md` and locate the
       `## Create Implementation Summary` section and the `## CSLib Style Compliance` section that
-      follows it.
-- [ ] Insert a new `## Stage 7: Write Final Metadata` section **between** those two headings,
-      using the drop-in text below verbatim.
-- [ ] In `## Critical Requirements` -> MUST NOT, append a bullet:
+      follows it. *(completed)*
+- [x] Insert a new `## Stage 7: Write Final Metadata` section **between** those two headings,
+      using the drop-in text below verbatim. *(completed)*
+- [x] In `## Critical Requirements` -> MUST NOT, append a bullet:
       `Write .orchestrator-handoff.json -- base-mode implementation never writes a handoff
-      (see Stage 7)`.
-- [ ] Confirm the existing `### Recording Verification Results` and `### On Verification Failure`
+      (see Stage 7)`. *(completed)*
+- [x] Confirm the existing `### Recording Verification Results` and `### On Verification Failure`
       subsections are left untouched — the new Stage 7 references them rather than restating them.
+      *(completed: verified via grep -n on Stage 7 heading position and Recording Verification
+      Results heading)*
 
 **Drop-in text for the new Stage 7** (copy verbatim):
 

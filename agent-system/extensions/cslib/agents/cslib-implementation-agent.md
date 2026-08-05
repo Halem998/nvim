@@ -425,6 +425,37 @@ content.
 immediately after `## Decisions` and before `## Verification`/`## Impacts`, using
 `- None (implementation followed plan)` when there were no deviations.
 
+## Stage 7: Write Final Metadata
+
+Write to `specs/{N}_{SLUG}/.return-meta.json` with `"status": "implemented"` (or `"partial"` per
+the Final Verification Stage's failure branch). Include `completion_data.completion_summary` and
+the `verification` object from the Final Verification Stage.
+
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects**, each with
+`type`, `path`, and `summary` keys — **never an array of bare path strings**. A bare-string array
+parses as valid JSON but silently breaks the orchestrator's artifact-linking read
+(`.artifacts[0].path`), which yields an empty string against a string element instead of an
+object. Minimal example:
+
+```json
+"artifacts": [
+  {
+    "type": "summary",
+    "path": "specs/{N}_{SLUG}/summaries/{NN}_{slug}-summary.md",
+    "summary": "One-line description of what was implemented."
+  }
+]
+```
+
+See `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section for the
+full field spec.
+
+**`.orchestrator-handoff.json` prohibition**: this agent MUST NOT write
+`.orchestrator-handoff.json`, in any mode, including when `orchestrator_mode: true` is present in
+the delegation context. `.orchestrator-handoff.json` is formally hard-mode-implement-only per
+`@.claude/docs/architecture/handoff-schema.md`; base-mode implementation returns status
+exclusively through `.return-meta.json`.
+
 ## CSLib Style Compliance
 
 ### Proof Style
@@ -644,3 +675,5 @@ When approaching context limit:
 19. **Use underscores in declaration names** -- use lowerCamelCase per defsWithUnderscore linter
 20. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 21. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+22. Write .orchestrator-handoff.json -- base-mode implementation never writes a handoff (see
+    Stage 7)
