@@ -1,39 +1,45 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 963,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_type": "meta",
   "session_id": "sess_1785950363_553a84_963",
-  "findings_count": 9,
-  "next_steps": "Run /plan 963 to create implementation plan",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/963_resolve_cslib_summary_format_divergence/reports/01_summary-format-divergence.md",
-      "summary": "Confirms cslib findings (a)/(b), recommends Option (ii) -- formally admit ## Plan Deviations as an optional summary-format.md section given 11/16 implementation agents already use it -- and corrects the task's premise that web/lean-base already conform (they do not); audits all extension implementation agents for the same failure mode."
+      "type": "plan",
+      "path": "specs/963_resolve_cslib_summary_format_divergence/plans/01_resolve-summary-format-divergence.md",
+      "summary": "Five-phase plan implementing research Option (ii): amend summary-format.md to admit '## Plan Deviations' as a recognized optional section and state that the required-section list is a minimum rather than a whitelist; sync validate-artifact.sh comments with zero enforcement change; add a direct summary-format.md reference plus a full summary skeleton to cslib-implementation-agent.md; align cslib-implementation-hard-agent.md Stage 6; then empirically verify zero errors and zero auto-repaired fields."
     }
   ],
+  "phase_count": 5,
+  "estimated_hours": 3.5,
+  "dependency_waves": [[1], [2, 3, 4], [5]],
+  "plan_metadata": {
+    "phases": 5,
+    "total_effort_hours": 4,
+    "complexity": "medium",
+    "research_integrated": true,
+    "plan_version": 1,
+    "dependency_waves": [[1], [2, 3, 4], [5]],
+    "reports_integrated": [
+      {
+        "path": "reports/01_summary-format-divergence.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-08-05"
+      }
+    ],
+    "skeleton": false,
+    "follow_up_tasks": []
+  },
   "memory_candidates": [
     {
-      "content": "validate-artifact.sh's summary/report/plan checks only flag MISSING required sections/metadata fields (grep -qE \"^##+ Section\" / grep -qF \"**Field**:\"); it never rejects extra headings. Any implementation agent can safely add domain-specific sections (e.g. ## Plan Deviations, ## Verification) alongside the six required summary-format.md headings without tripping gate-out errors -- gate-out failures come from REPLACING required headings, not adding extra ones.",
+      "content": "Agent-system failure mode: when an agent definition omits an @-reference to a format standard, the agent does not fail loudly -- it improvises headings into the vacuum and trips downstream format validators. The diagnostic tell is a validator reporting missing REQUIRED sections (heading replacement) rather than rejecting extra ones. Corollary about validator design: validate-artifact.sh only reports missing required fields/sections and never enumerates a document's headings against a whitelist, so extra sections have always been silently accepted. A section that is widely used but undocumented in the standard is therefore an ambiguity in the written spec, not a live gate failure -- diagnose which of the two you have before choosing between 'conform the outlier' and 'formalize the practice'. A base/hard agent asymmetry (hard variant references the standard, base variant does not) recurs across extensions and is worth checking as a pair whenever one is found.",
       "category": "PATTERN",
-      "source_artifact": "specs/963_resolve_cslib_summary_format_divergence/reports/01_summary-format-divergence.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["validate-artifact.sh", "summary-format", "gate-out", "required-sections", "extra-headings"]
-    },
-    {
-      "content": "Several extension implementation agents follow a base/hard asymmetry where the -hard variant references summary-format.md but the base variant does not (observed in both cslib and lean extensions). When auditing one extension's base/hard pair for a context-reference gap, check sibling extensions' base/hard pairs for the same asymmetry rather than assuming it's isolated.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/963_resolve_cslib_summary_format_divergence/reports/01_summary-format-divergence.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["base-hard-asymmetry", "context-references", "summary-format", "extension-agents", "audit"]
-    },
-    {
-      "content": "## Plan Deviations is a de facto ecosystem-wide summary section (used/mandated by 11 of 16 implementation-terminus agents: general, general-hard, cslib both, nvim, nix, web, latex, python, typst, z3, lean-base) despite not being documented in core summary-format.md. It captures the progress-file deviations array's skipped/altered/deferred taxonomy, a distinct concern from ## Decisions or ## Follow-ups.",
-      "category": "PATTERN",
-      "source_artifact": "specs/963_resolve_cslib_summary_format_divergence/reports/01_summary-format-divergence.md",
+      "source_artifact": "specs/963_resolve_cslib_summary_format_divergence/plans/01_resolve-summary-format-divergence.md",
       "confidence": 0.85,
-      "suggested_keywords": ["plan-deviations", "summary-format", "implementation-agents", "convention", "optional-section"]
+      "suggested_keywords": ["agent-context-references", "format-validator", "summary-format", "improvisation-failure-mode", "base-hard-agent-asymmetry", "extension-conformance"]
     }
-  ]
+  ],
+  "next_steps": "Run /implement 963 to execute the plan"
 }
