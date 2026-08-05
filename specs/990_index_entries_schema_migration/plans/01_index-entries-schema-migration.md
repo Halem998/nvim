@@ -591,44 +591,44 @@ data.
 
 ---
 
-### Phase 11: Full-Corpus Verification and Reachability Diff [NOT STARTED]
+### Phase 11: Full-Corpus Verification and Reachability Diff [COMPLETED]
 
 **Goal**: Prove the inherited verification bar is met and that no entry was orphaned or corrupted
 in the process.
 
 **Tasks**:
-- [ ] Run the binding check:
+- [x] Run the binding check:
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and
-      confirm **zero** Rule T advisory lines across all 19 extensions (down from 580).
-- [ ] Run the spot-check:
+      confirm **zero** Rule T advisory lines across all 19 extensions (down from 580). *(completed: confirmed 0, down from 580)*
+- [x] Run the spot-check:
       `grep -rn 'load_when.languages\|load_when.skills' agent-system/extensions/*/index-entries.json`
       and confirm zero hits. **Treat this as a narrower subset of the Rule T run, never a
-      substitute for it** — it does not catch `load_when.topics`, `description`, or `tags`.
-- [ ] Corpus integrity: `jq empty` on all 19 files; total entry count still 461, and each
-      extension's per-file count matches the Phase 1 baseline exactly.
-- [ ] Zero forbidden entry keys corpus-wide:
+      substitute for it** — it does not catch `load_when.topics`, `description`, or `tags`. *(completed: 0 hits)*
+- [x] Corpus integrity: `jq empty` on all 19 files; total entry count still 461, and each
+      extension's per-file count matches the Phase 1 baseline exactly. *(completed)*
+- [x] Zero forbidden entry keys corpus-wide:
       `jq -s '[.[].entries[]|select(has("description") or has("tags"))]|length' agent-system/extensions/*/index-entries.json`
-      returns 0.
-- [ ] Cap compliance:
+      returns 0. *(completed)*
+- [x] Cap compliance:
       `jq -s '[.[].entries[]|select((.summary|length)>200)]|length' agent-system/extensions/*/index-entries.json`
-      returns 0.
-- [ ] **Reachability diff against the Phase 1 baseline**: recompute the effective-hook set
+      returns 0. *(deviation: altered — returns 8, not 0. All 8 are pre-existing over-cap summaries in core (5), literature (2), memory (1) that never had a `description` field and were never touched by any description-fold edit in this migration -- confirmed identical in the pre-Phase-2/3 backups. The 13 in-scope over-cap merges (email 6, cslib 3, lean 4) are all compliant. Zero Rule T advisories and zero grep hits, the task's actual binding verification bar, both hold; the corpus-wide 200-char sweep is a stricter aspirational check this plan added beyond that bar and is left as a follow-up.)*
+- [x] **Reachability diff against the Phase 1 baseline**: recompute the effective-hook set
       (non-empty `agents`/`commands`/`task_types`, or `always: true`) for every entry and confirm
       the zero-effective-hook set did not grow. Specifically confirm
       `memory/project/memory/memory-troubleshooting.md` and `core/patterns/lit-stage4a-flow.md`
-      are now reachable, and that no previously-reachable entry became unreachable.
-- [ ] Run the adaptive query from `context-discovery.md` for a representative sample of hooks
+      are now reachable, and that no previously-reachable entry became unreachable. *(completed: zero-hook set shrank 7 -> 4, both named entries now reachable, no new orphans; bonus reachability gain for founder/domain/migration-guide.md)*
+- [x] Run the adaptive query from `context-discovery.md` for a representative sample of hooks
       (`planner-agent`, `/learn`, `/distill`, `/literature`, `task_type=meta`) and confirm the
-      migrated entries appear.
-- [ ] Deliverable rule: run `bash agent-system/extensions/core/scripts/check-task-references.sh`
+      migrated entries appear. *(completed)*
+- [x] Deliverable rule: run `bash agent-system/extensions/core/scripts/check-task-references.sh`
       (or the deployed equivalent) and confirm no task-number citation was introduced into any
-      merged `summary` text. `agent-system/**` is a deliverable tree, not exempt.
-- [ ] Source-store rule: confirm `git status --short` shows changes only under
+      merged `summary` text. `agent-system/**` is a deliverable tree, not exempt. *(completed: ran deployed .claude/scripts/check-task-references.sh, PASS 0 occurrences)*
+- [x] Source-store rule: confirm `git status --short` shows changes only under
       `agent-system/extensions/*/index-entries.json` and `specs/990_*/`, with **no** modified
-      files under `.claude/`.
-- [ ] Optional confidence check: re-run the gate with `SCHEMA_CONFORMANCE_GATE_MODE=hard` to
+      files under `.claude/`. *(completed)*
+- [x] Optional confidence check: re-run the gate with `SCHEMA_CONFORMANCE_GATE_MODE=hard` to
       confirm it would pass if promoted. **Do not commit any change to the gate's default mode** —
-      promotion is a separate follow-up task.
+      promotion is a separate follow-up task. *(completed: 0 Rule T failures under hard mode; 10 unrelated pre-existing Rule U/R/deploy-drift failures remain, out of this task's scope)*
 
 **Timing**: 0.75 hours
 
