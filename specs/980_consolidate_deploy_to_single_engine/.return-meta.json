@@ -1,32 +1,11 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "session_id": "sess_1785950363_553a84_980",
-  "task_number": 980,
-  "phase_count": 9,
-  "estimated_hours": 15,
-  "dependency_waves": [[1], [2, 4], [3], [5], [6, 7], [8], [9]],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md",
-      "summary": "9-phase plan collapsing the two deploy engines onto the manifest-driven loader: scratch-tree regression harness first (red baseline), table-driven copier collapse, force/resync mode plus a single manager.resync_all bulk entry point (absorbing the picker's third Kahn's-algorithm reimplementation), preserved-state snapshot/restore covering .syncprotect paths, corrected regenerate ordering with a wired backup->wipe->restore->clear sequence, entry-point consolidation retiring load_all_globally and the dead is_load_all branch, manifest-driven verification with content-hash parity across all 11 provides.* categories routed through verify-deploy.sh's existing findings accumulator, prose corrections, and end-to-end execution of the union verification bar. Includes 7 dependency waves, 6 scope hypotheses, 2 declared atomic-batch phases, and a rollback path that ships force-resync plus full verification without the wipe if the wipe cannot be made safe."
-    },
-    {
-      "type": "report",
-      "path": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
-      "summary": "Research report confirming all six root causes with file:line evidence (carried forward from the research dispatch)."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When extending a verification gate's coverage in this repo, new findings MUST be emitted through verify-deploy.sh's existing FINDINGS_LIST accumulator (the additive --findings mode, one normalized 'FINDING <gate> <text>' line per finding, with an optional override argument for messages embedding a numeric count). The inter-cycle redeploy checkpoint diffs a pre/post baseline of that findings set: a finding present in both baselines is reported loudly but does not defer a multi-task /orchestrate batch, while a newly introduced one still defers. Broadening verification coverage WITHOUT routing through this accumulator converts multi-task orchestration into run-one-then-defer, because every pre-existing failure in the newly covered surface reads as new. Findings text must also stay stable across runs to be diffable -- hence the count-override argument.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "findings-baseline", "orchestrate-defer", "verification-coverage", "batch-orchestration"]
-    }
-  ],
-  "next_steps": "Run /implement 980 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1785950363_553a84_980",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 9
+  }
 }

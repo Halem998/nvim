@@ -1,7 +1,7 @@
 # Implementation Plan: Task #980
 
 - **Task**: 980 - One deploy engine: idempotent manifest-driven load, wipe+regenerate, full-category verification
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 15 hours
 - **Dependencies**: 966 (verify-deploy baseline/delta semantics) — COMPLETED, constraint satisfied
 - **Research Inputs**: specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md
@@ -132,29 +132,50 @@ Phases within the same wave can execute in parallel. Phases 2 and 4 touch disjoi
 
 ---
 
-### Phase 1: Scratch-tree deploy regression harness [NOT STARTED]
+### Phase 1: Scratch-tree deploy regression harness [COMPLETED]
 
 **Goal**: Author the missing test scaffold that runs a real headless deploy against a scratch git
 tree and asserts a subdirectory-declared script lands. This establishes the red baseline that
 every later phase is measured against.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` following the
+- [x] Create `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` following the
       conventions of the existing sibling tests in that directory (`test-phase-heading-patterns.sh`
-      is the closest structural model for assertion helpers).
-- [ ] Harness sets up a scratch git repo in a temp dir, points the deploy at it, and runs the real
+      is the closest structural model for assertion helpers). *(completed)*
+- [x] Harness sets up a scratch git repo in a temp dir, points the deploy at it, and runs the real
       headless deploy — reusing `deploy-headless.sh`'s own stub-and-invoke technique
-      (`nvim --headless` with `vim.fn.confirm` stubbed).
-- [ ] Assertion A (fresh deploy): a manifest-declared `scripts/lib/*.sh` entry exists in the
-      deployed tree after a from-scratch deploy.
-- [ ] Assertion B (resync): the same assertion holds after a second deploy against the
-      already-deployed tree.
-- [ ] Assertion C (parity): every entry of every `provides.*` category present in the source
-      manifest exists in the deployed tree.
-- [ ] Assertion D (content equality): a deliberately-staled deployed file is detected as differing
-      from source.
-- [ ] Record the initial red/green status of each assertion in the phase notes — this is the
-      before-state the final verification compares against.
+      (`nvim --headless` with `vim.fn.confirm` stubbed). *(completed: invokes deploy-headless.sh
+      as a subprocess against a scratch target rather than reimplementing the stub inline, since
+      the script itself already encapsulates the stub-and-invoke technique end to end)*
+- [x] Assertion A (fresh deploy): a manifest-declared `scripts/lib/*.sh` entry exists in the
+      deployed tree after a from-scratch deploy. *(completed)*
+- [x] Assertion B (resync): the same assertion holds after a second deploy against the
+      already-deployed tree. *(completed)*
+- [x] Assertion C (parity): every entry of every `provides.*` category present in the source
+      manifest exists in the deployed tree. *(completed: manifest-driven via jq, independent of
+      verify.lua)*
+- [x] Assertion D (content equality): a deliberately-staled deployed file is detected as differing
+      from source. *(completed: direct `diff` check; verify.lua gains equivalent content-hash
+      teeth in Phase 7)*
+- [x] Record the initial red/green status of each assertion in the phase notes — this is the
+      before-state the final verification compares against. *(completed, see Initial Baseline
+      below)*
+
+**Initial Baseline** (recorded at harness authorship, `bash agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh`):
+- Assertion A: **RED** — `scripts/lib/phase-heading-patterns.sh` missing after a fresh deploy
+  (310 artifacts deployed, but the whole `scripts/lib/` subdirectory never lands).
+- Assertion B: **RED** — same file still missing after a resync deploy (309 artifacts).
+- Assertion C: **RED** — 22 of 204 checked entries missing (all of `scripts/lib/`,
+  `scripts/lint/`, `scripts/tests/`, plus `commands/README.md`, `docs/README.md`,
+  `templates/*-template.md`, `root_files/.gitignore`, `root_files/settings.local.json`,
+  `context/README.md` — a broader gap than the scripts-only defect this task named, confirming
+  the "6 uncovered categories" diagnosis).
+- Assertion D: **GREEN** — the direct `diff` mechanic itself works (canary was seeded
+  synthetically since A/B were red); this assertion validates the *mechanism*, not the product
+  under test — Phase 7 gives `verify.lua` equivalent teeth as a real, non-synthetic check.
+- Overall: 1 passed, 3 failed, exit 1 — matches the plan's expected-red baseline for A/B; C's
+  broader-than-expected redness is additional evidence for Phase 2/6/7's scope, not a sign the
+  harness is miscalibrated.
 
 **Timing**: 1.5 hours
 

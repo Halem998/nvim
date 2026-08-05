@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Scratch-tree deploy regression harness",
+  "started_at": "2026-08-05T00:00:00Z",
+  "last_updated": "2026-08-05T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-deploy-propagation.sh with scratch-tree setup, real headless deploy invocation, and Assertions A-D",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh"
+      ],
+      "note": "Ran against scratch tree: 1 passed, 3 failed (A/B red as expected; C red and broader than scripts-only; D green as a mechanism check)."
+    },
+    {
+      "id": 2,
+      "description": "Record initial red/green baseline in phase notes",
+      "status": "done",
+      "files_touched": [
+        "specs/980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
