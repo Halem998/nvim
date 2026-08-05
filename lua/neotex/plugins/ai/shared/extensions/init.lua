@@ -401,86 +401,107 @@ function M.create(config)
     -- Wrap copy+merge in pcall for atomic rollback on failure
     local load_ok, load_err = pcall(function()
       local skipped, symlink_skipped
-      -- Copy agents (use configured agents_subdir for target path)
+      -- Shared opts for every category copy this load performs: project_dir/extension_name are
+      -- needed by the `data`/`manifest` special-cased categories respectively; agents_subdir
+      -- resolves the one category (agents) whose target directory name varies by config.
+      local copy_opts = {
+        project_dir = project_dir,
+        extension_name = extension_name,
+        agents_subdir = config.agents_subdir,
+      }
+
       local files, dirs
-      files, dirs, skipped, symlink_skipped = loader_mod.copy_simple_files(ext_manifest, source_dir, target_dir, "agents", ".md", config.agents_subdir, protected_paths)
+      -- Copy agents (use configured agents_subdir for target path)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("agents", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
       total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy commands
-      files, dirs, skipped, symlink_skipped = loader_mod.copy_simple_files(ext_manifest, source_dir, target_dir, "commands", ".md", nil, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("commands", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
       total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy rules
-      files, dirs, skipped, symlink_skipped = loader_mod.copy_simple_files(ext_manifest, source_dir, target_dir, "rules", ".md", nil, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("rules", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
       total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy skills
-      files, dirs, skipped, symlink_skipped = loader_mod.copy_skill_dirs(ext_manifest, source_dir, target_dir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("skills", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
       total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy context
-      files, dirs, skipped = loader_mod.copy_context_dirs(ext_manifest, source_dir, target_dir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("context", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy scripts
-      files, dirs, skipped = loader_mod.copy_scripts(ext_manifest, source_dir, target_dir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("scripts", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy hooks (flat .sh files with execute permissions)
-      files, dirs, skipped = loader_mod.copy_hooks(ext_manifest, source_dir, target_dir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("hooks", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy docs
-      files, dirs, skipped = loader_mod.copy_docs(ext_manifest, source_dir, target_dir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("docs", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy templates
-      files, dirs, skipped = loader_mod.copy_templates(ext_manifest, source_dir, target_dir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("templates", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy systemd unit files
-      files, dirs, skipped = loader_mod.copy_systemd(ext_manifest, source_dir, target_dir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("systemd", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy root files (settings.json, .gitignore, etc.)
-      files, dirs, skipped = loader_mod.copy_root_files(ext_manifest, source_dir, target_dir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("root_files", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy manifest.json to extensions/{name}/
-      files, dirs = loader_mod.copy_manifest(ext_manifest, source_dir, target_dir, extension_name)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_category("manifest", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
+      total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy data directories (merge-copy semantics - preserves existing files)
       -- Data skeleton files are tracked separately for safe unload
-      local data_files, data_dirs = loader_mod.copy_data_dirs(ext_manifest, source_dir, project_dir)
+      local data_files, data_dirs
+      data_files, data_dirs, skipped, symlink_skipped = loader_mod.copy_category("data", ext_manifest, source_dir, target_dir, protected_paths, copy_opts)
       vim.list_extend(all_dirs, data_dirs)
+      total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
       -- Track data files separately - they go into data_skeleton_files, not all_files
       -- This allows unload to only remove skeleton files, not user-created data
       for _, f in ipairs(data_files) do

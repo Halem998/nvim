@@ -1,0 +1,35 @@
+{
+  "phase": 2,
+  "phase_name": "Collapse the 11 copiers into one table-driven copier",
+  "started_at": "2026-08-05T00:15:00Z",
+  "last_updated": "2026-08-05T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Define CATEGORY_DESCRIPTORS table + M.copy_category generic copier in loader.lua; remove 11 old copy_* functions",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/loader.lua"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Update init.lua's 13 call sites to the uniform M.copy_category(category, ...) 4-value-return signature",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Verify: modules load; direct manager.load scratch-tree file listing + perms byte-identical before/after; Phase 1 harness unchanged (Engine A change doesn't affect Engine B path)",
+      "status": "done",
+      "files_touched": [],
+      "note": "diff of `find . -type f -printf '%M %p\\n' | sort` before/after manager.load('core', ...) against fresh scratch targets: 0 differences, 339 files. Phase 1 harness: unchanged 1 passed/3 failed."
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

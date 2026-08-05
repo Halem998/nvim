@@ -123,453 +123,6 @@ local function scan_directory_recursive(dir)
   return files
 end
 
---- Copy simple files (agents, commands, rules).
----
---- Ownership invariant (mirrors `M.remove_installed_files`): this copy engine
---- owns only paths it created as regular files. A pre-existing symlink at a
---- deployed target belongs to `install-extension.sh` and is never written
---- through here -- the copy is skipped entirely rather than self-overwriting
---- through the symlink, and the path is not recorded in `copied_files`.
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory (.claude or .opencode)
---- @param category string Category name (agents, commands, rules)
---- @param extension string File extension (.md)
---- @param agents_subdir string|nil Optional subdirectory for agents (e.g., "agent/subagents")
---- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect
---- @return number symlink_skipped_count Number of files skipped because the
----   deployed target is a pre-existing symlink (distinct from
----   `skipped_count`, which counts `.syncprotect` skips only)
-function M.copy_simple_files(manifest, source_dir, target_dir, category, extension, agents_subdir, protected_paths)
-  local copied_files = {}
-  local created_dirs = {}
-  local skipped_count = 0
-  local symlink_skipped_count = 0
-
-  if not manifest.provides or not manifest.provides[category] then
-    return copied_files, created_dirs, skipped_count, symlink_skipped_count
-  end
-
-  local source_category_dir = source_dir .. "/" .. category
-  -- Use agents_subdir for agents category if provided, otherwise use category name
-  local target_category_name = (category == "agents" and agents_subdir) or category
-  local target_category_dir = target_dir .. "/" .. target_category_name
-
-  -- Track if we created the category directory
-  if vim.fn.isdirectory(target_category_dir) ~= 1 then
-    helpers.ensure_directory(target_category_dir)
-    table.insert(created_dirs, target_category_dir)
-  end
-
-  for _, filename in ipairs(manifest.provides[category]) do
-    local source_path = source_category_dir .. "/" .. filename
-    local target_path = target_category_dir .. "/" .. filename
-    local rel_path = target_category_name .. "/" .. filename
-
-    if vim.fn.filereadable(source_path) == 1 then
-      if vim.fn.getftype(target_path) == "link" then
-        symlink_skipped_count = symlink_skipped_count + 1
-      else
-        local preserve_perms = filename:match("%.sh$")
-        local ok, skipped = copy_file(source_path, target_path, preserve_perms, protected_paths, rel_path)
-        if skipped then
-          skipped_count = skipped_count + 1
-        elseif ok then
-          table.insert(copied_files, target_path)
-        end
-      end
-    end
-  end
-
-  return copied_files, created_dirs, skipped_count, symlink_skipped_count
-end
-
---- Copy skill directories (recursive).
----
---- Ownership invariant (mirrors `M.remove_installed_files`): this copy engine
---- owns only paths it created as regular files/directories. A pre-existing
---- symlink at a deployed skill directory belongs to `install-extension.sh`
---- and is never written through here. Note that `vim.fn.isdirectory()`
---- returns 1 for a symlink-to-directory, so it only guards directory
---- *creation* -- the per-file copy loop below would otherwise always run
---- regardless of whether the target is a symlink; `getftype()` is checked
---- explicitly to skip the whole skill when the target is a symlink.
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory
---- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect
---- @return number symlink_skipped_count Number of skills skipped because the
----   deployed skill directory is a pre-existing symlink (distinct from
----   `skipped_count`, which counts `.syncprotect` skips only)
-function M.copy_skill_dirs(manifest, source_dir, target_dir, protected_paths)
-  local copied_files = {}
-  local created_dirs = {}
-  local skipped_count = 0
-  local symlink_skipped_count = 0
-
-  if not manifest.provides or not manifest.provides.skills then
-    return copied_files, created_dirs, skipped_count, symlink_skipped_count
-  end
-
-  local source_skills_dir = source_dir .. "/skills"
-  local target_skills_dir = target_dir .. "/skills"
-
-  -- Ensure skills directory exists
-  if vim.fn.isdirectory(target_skills_dir) ~= 1 then
-    helpers.ensure_directory(target_skills_dir)
-    table.insert(created_dirs, target_skills_dir)
-  end
-
-  for _, skill_name in ipairs(manifest.provides.skills) do
-    local source_skill_dir = source_skills_dir .. "/" .. skill_name
-    local target_skill_dir = target_skills_dir .. "/" .. skill_name
-
-    if vim.fn.isdirectory(source_skill_dir) == 1 then
-      if vim.fn.getftype(target_skill_dir) == "link" then
-        symlink_skipped_count = symlink_skipped_count + 1
-      else
-        -- Create skill directory
-        if vim.fn.isdirectory(target_skill_dir) ~= 1 then
-          helpers.ensure_directory(target_skill_dir)
-          table.insert(created_dirs, target_skill_dir)
-        end
-
-        -- Copy all files in skill directory
-        local files = scan_directory_recursive(source_skill_dir)
-        for _, file_rel_path in ipairs(files) do
-          local source_path = source_skill_dir .. "/" .. file_rel_path
-          local target_path = target_skill_dir .. "/" .. file_rel_path
-          local preserve_perms = file_rel_path:match("%.sh$")
-          local rel_path = "skills/" .. skill_name .. "/" .. file_rel_path
-
-          local ok, skipped = copy_file(source_path, target_path, preserve_perms, protected_paths, rel_path)
-          if skipped then
-            skipped_count = skipped_count + 1
-          elseif ok then
-            table.insert(copied_files, target_path)
-          end
-        end
-      end
-    end
-  end
-
-  return copied_files, created_dirs, skipped_count, symlink_skipped_count
-end
-
---- Copy context directories (preserving structure)
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory
---- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect
-function M.copy_context_dirs(manifest, source_dir, target_dir, protected_paths)
-  local copied_files = {}
-  local created_dirs = {}
-  local skipped_count = 0
-
-  if not manifest.provides or not manifest.provides.context then
-    return copied_files, created_dirs, skipped_count
-  end
-
-  local source_context_dir = source_dir .. "/context"
-  local target_context_dir = target_dir .. "/context"
-
-  -- Ensure context directory exists
-  if vim.fn.isdirectory(target_context_dir) ~= 1 then
-    helpers.ensure_directory(target_context_dir)
-    table.insert(created_dirs, target_context_dir)
-  end
-
-  for _, context_path in ipairs(manifest.provides.context) do
-    local source_ctx_dir = source_context_dir .. "/" .. context_path
-    local target_ctx_dir = target_context_dir .. "/" .. context_path
-
-    if vim.fn.isdirectory(source_ctx_dir) == 1 then
-      -- Create context subdirectory
-      if vim.fn.isdirectory(target_ctx_dir) ~= 1 then
-        helpers.ensure_directory(target_ctx_dir)
-        table.insert(created_dirs, target_ctx_dir)
-      end
-
-      -- Copy all files preserving structure
-      local files = scan_directory_recursive(source_ctx_dir)
-      for _, file_rel_path in ipairs(files) do
-        local source_path = source_ctx_dir .. "/" .. file_rel_path
-        local target_path = target_ctx_dir .. "/" .. file_rel_path
-        local rel_path = "context/" .. context_path .. "/" .. file_rel_path
-
-        local ok, skipped = copy_file(source_path, target_path, false, protected_paths, rel_path)
-        if skipped then
-          skipped_count = skipped_count + 1
-        elseif ok then
-          table.insert(copied_files, target_path)
-        end
-      end
-    elseif vim.fn.filereadable(source_ctx_dir) == 1 then
-      -- Handle individual files at context root (mirrors copy_docs pattern)
-      local rel_path = "context/" .. context_path
-      local ok, skipped = copy_file(source_ctx_dir, target_ctx_dir, false, protected_paths, rel_path)
-      if skipped then
-        skipped_count = skipped_count + 1
-      elseif ok then
-        table.insert(copied_files, target_ctx_dir)
-      end
-    end
-  end
-
-  return copied_files, created_dirs, skipped_count
-end
-
---- Copy scripts
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory
---- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect
-function M.copy_scripts(manifest, source_dir, target_dir, protected_paths)
-  local copied_files = {}
-  local created_dirs = {}
-  local skipped_count = 0
-
-  if not manifest.provides or not manifest.provides.scripts then
-    return copied_files, created_dirs, skipped_count
-  end
-
-  local source_scripts_dir = source_dir .. "/scripts"
-  local target_scripts_dir = target_dir .. "/scripts"
-
-  -- Ensure scripts directory exists
-  if vim.fn.isdirectory(target_scripts_dir) ~= 1 then
-    helpers.ensure_directory(target_scripts_dir)
-    table.insert(created_dirs, target_scripts_dir)
-  end
-
-  for _, script_name in ipairs(manifest.provides.scripts) do
-    local source_path = source_scripts_dir .. "/" .. script_name
-    local target_path = target_scripts_dir .. "/" .. script_name
-    local rel_path = "scripts/" .. script_name
-
-    if vim.fn.filereadable(source_path) == 1 then
-      local ok, skipped = copy_file(source_path, target_path, true, protected_paths, rel_path)
-      if skipped then
-        skipped_count = skipped_count + 1
-      elseif ok then
-        table.insert(copied_files, target_path)
-      end
-    end
-  end
-
-  return copied_files, created_dirs, skipped_count
-end
-
---- Copy hooks (flat .sh files with execute permissions preserved)
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory
---- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect
-function M.copy_hooks(manifest, source_dir, target_dir, protected_paths)
-  local copied_files = {}
-  local created_dirs = {}
-  local skipped_count = 0
-
-  if not manifest.provides or not manifest.provides.hooks then
-    return copied_files, created_dirs, skipped_count
-  end
-
-  local source_hooks_dir = source_dir .. "/hooks"
-  local target_hooks_dir = target_dir .. "/hooks"
-
-  -- Ensure hooks directory exists
-  if vim.fn.isdirectory(target_hooks_dir) ~= 1 then
-    helpers.ensure_directory(target_hooks_dir)
-    table.insert(created_dirs, target_hooks_dir)
-  end
-
-  for _, hook_name in ipairs(manifest.provides.hooks) do
-    local source_path = source_hooks_dir .. "/" .. hook_name
-    local target_path = target_hooks_dir .. "/" .. hook_name
-    local rel_path = "hooks/" .. hook_name
-
-    if vim.fn.filereadable(source_path) == 1 then
-      -- Always preserve execute permissions for hook scripts
-      local ok, skipped = copy_file(source_path, target_path, true, protected_paths, rel_path)
-      if skipped then
-        skipped_count = skipped_count + 1
-      elseif ok then
-        table.insert(copied_files, target_path)
-      end
-    end
-  end
-
-  return copied_files, created_dirs, skipped_count
-end
-
---- Copy systemd unit files (flat files, no execute permissions)
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory
---- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect
-function M.copy_systemd(manifest, source_dir, target_dir, protected_paths)
-  local copied_files = {}
-  local created_dirs = {}
-  local skipped_count = 0
-
-  if not manifest.provides or not manifest.provides.systemd then
-    return copied_files, created_dirs, skipped_count
-  end
-
-  local source_systemd_dir = source_dir .. "/systemd"
-  local target_systemd_dir = target_dir .. "/systemd"
-
-  -- Ensure systemd directory exists
-  if vim.fn.isdirectory(target_systemd_dir) ~= 1 then
-    helpers.ensure_directory(target_systemd_dir)
-    table.insert(created_dirs, target_systemd_dir)
-  end
-
-  for _, unit_name in ipairs(manifest.provides.systemd) do
-    local source_path = source_systemd_dir .. "/" .. unit_name
-    local target_path = target_systemd_dir .. "/" .. unit_name
-    local rel_path = "systemd/" .. unit_name
-
-    if vim.fn.filereadable(source_path) == 1 then
-      local ok, skipped = copy_file(source_path, target_path, false, protected_paths, rel_path)
-      if skipped then
-        skipped_count = skipped_count + 1
-      elseif ok then
-        table.insert(copied_files, target_path)
-      end
-    end
-  end
-
-  return copied_files, created_dirs, skipped_count
-end
-
---- Copy docs (flat files, no execute permissions)
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory
---- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect
-function M.copy_docs(manifest, source_dir, target_dir, protected_paths)
-  local copied_files = {}
-  local created_dirs = {}
-  local skipped_count = 0
-
-  if not manifest.provides or not manifest.provides.docs then
-    return copied_files, created_dirs, skipped_count
-  end
-
-  local source_docs_dir = source_dir .. "/docs"
-  local target_docs_dir = target_dir .. "/docs"
-
-  -- Ensure docs directory exists
-  if vim.fn.isdirectory(target_docs_dir) ~= 1 then
-    helpers.ensure_directory(target_docs_dir)
-    table.insert(created_dirs, target_docs_dir)
-  end
-
-  for _, doc_name in ipairs(manifest.provides.docs) do
-    local source_path = source_docs_dir .. "/" .. doc_name
-    local target_path = target_docs_dir .. "/" .. doc_name
-
-    if vim.fn.isdirectory(source_path) == 1 then
-      -- Directory entry: copy recursively (like copy_context_dirs)
-      if vim.fn.isdirectory(target_path) ~= 1 then
-        helpers.ensure_directory(target_path)
-        table.insert(created_dirs, target_path)
-      end
-
-      local files = scan_directory_recursive(source_path)
-      for _, file_rel_path in ipairs(files) do
-        local rel_path = "docs/" .. doc_name .. "/" .. file_rel_path
-        local ok, skipped = copy_file(
-          source_path .. "/" .. file_rel_path,
-          target_path .. "/" .. file_rel_path,
-          false, protected_paths, rel_path
-        )
-        if skipped then
-          skipped_count = skipped_count + 1
-        elseif ok then
-          table.insert(copied_files, target_path .. "/" .. file_rel_path)
-        end
-      end
-    elseif vim.fn.filereadable(source_path) == 1 then
-      local rel_path = "docs/" .. doc_name
-      local ok, skipped = copy_file(source_path, target_path, false, protected_paths, rel_path)
-      if skipped then
-        skipped_count = skipped_count + 1
-      elseif ok then
-        table.insert(copied_files, target_path)
-      end
-    end
-  end
-
-  return copied_files, created_dirs, skipped_count
-end
-
---- Copy templates (flat files, no execute permissions)
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory
---- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect
-function M.copy_templates(manifest, source_dir, target_dir, protected_paths)
-  local copied_files = {}
-  local created_dirs = {}
-  local skipped_count = 0
-
-  if not manifest.provides or not manifest.provides.templates then
-    return copied_files, created_dirs, skipped_count
-  end
-
-  local source_templates_dir = source_dir .. "/templates"
-  local target_templates_dir = target_dir .. "/templates"
-
-  -- Ensure templates directory exists
-  if vim.fn.isdirectory(target_templates_dir) ~= 1 then
-    helpers.ensure_directory(target_templates_dir)
-    table.insert(created_dirs, target_templates_dir)
-  end
-
-  for _, template_name in ipairs(manifest.provides.templates) do
-    local source_path = source_templates_dir .. "/" .. template_name
-    local target_path = target_templates_dir .. "/" .. template_name
-    local rel_path = "templates/" .. template_name
-
-    if vim.fn.filereadable(source_path) == 1 then
-      local ok, skipped = copy_file(source_path, target_path, false, protected_paths, rel_path)
-      if skipped then
-        skipped_count = skipped_count + 1
-      elseif ok then
-        table.insert(copied_files, target_path)
-      end
-    end
-  end
-
-  return copied_files, created_dirs, skipped_count
-end
-
 --- Root files that are install-once: copied only when no project copy exists yet, never
 --- overwritten on subsequent loads/reloads. Mirrors the OpenCode install-only pattern in
 --- picker/operations/sync.lua's root_file_names handling (settings.json/opencode.json/
@@ -590,79 +143,137 @@ local INSTALL_ONCE_ROOT_FILES = {
 -- -- the "live clobber-on-reload bug" this phase closes requires both halves.
 M.INSTALL_ONCE_ROOT_FILES = INSTALL_ONCE_ROOT_FILES
 
---- Copy root files (files that go directly into target_dir, not a subdirectory)
---- These are files like settings.json, .gitignore that live at the .claude/ root.
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory (.claude/)
---- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect (or install-once)
-function M.copy_root_files(manifest, source_dir, target_dir, protected_paths)
-  local copied_files = {}
-  local created_dirs = {}
-  local skipped_count = 0
+--- Category descriptor table: the single source of truth for how every `provides.*` category
+--- (plus the two non-`provides`-keyed special cases, `manifest` and `data`) is copied. Collapses
+--- what used to be 11 near-identical `copy_*` functions (symlink guard present in only 2 of 11,
+--- `preserve_perms` hardcoded per call site, return arity inconsistent) into one descriptor-
+--- driven copier (`M.copy_category` below), so the symlink guard and permission handling hold
+--- for every category by construction rather than by each function separately remembering to
+--- implement them.
+---
+--- Fields:
+---   source_subdir        Directory under the extension source (`source_dir`) entries are read
+---                         from. `nil`/absent for the two special-cased entries (`manifest`,
+---                         handled entirely inline; and any future single-file category).
+---   target_subdir         Directory under `target_dir` entries are written to. `""` means
+---                         entries land directly at `target_dir`'s root (root_files).
+---   list_key              Key into `manifest.provides` holding the array of declared entries.
+---   entry_kind             "file" (flat file per entry; agents/commands/rules/scripts/hooks/
+---                         systemd/templates/root_files), "dir" (each entry is itself a
+---                         directory, recursively copied; skills), or "file_or_dir" (an entry
+---                         may be either; context/docs).
+---   preserve_perms        "always" (scripts/hooks: every copied file keeps its execute bit),
+---                         "sh_only" (agents/commands/rules/skills: only `.sh` entries do), or
+---                         "none" (everything else). Mirrors today's effective behavior exactly
+---                         -- see the historical per-category `preserve_perms` call-site values
+---                         this table replaces.
+---   symlink_guard          When true, a pre-existing symlink at the deployed target is left
+---                         alone rather than written through (see `M.remove_installed_files`'s
+---                         matching ownership invariant). True for exactly the categories the
+---                         former `copy_simple_files` (agents/commands/rules) and
+---                         `copy_skill_dirs` (skills) functions guarded -- "2 of 11" functions,
+---                         now 4 category rows sharing the same two behaviors.
+---   install_once           Optional set `{[entry_name] = true}`; an entry present here is
+---                         skipped (counted, not copied) whenever a target copy already exists.
+---                         Only `root_files` uses this (`INSTALL_ONCE_ROOT_FILES`).
+---   merge_copy_only         True for `data`: an entry already present at the target is skipped
+---                         rather than overwritten (merge-copy semantics preserving user data).
+---   target_is_project_root  True for `data`: entries land under `project_dir`, not `target_dir`
+---                         (data directories such as `.claude/memory/` are addressed relative to
+---                         the project root, mirroring the historical `copy_data_dirs` contract).
+---   single_file             True for `manifest`: not a `provides.*`-keyed list at all -- one
+---                         fixed source file copied to one fixed target path.
+---   self_load_skip           True for `manifest`: skip the copy when source and target resolve
+---                         (via `vim.uv.fs_realpath`) to the same file (the home-repo case).
+local CATEGORY_DESCRIPTORS = {
+  agents = {
+    source_subdir = "agents", target_subdir = "agents", list_key = "agents",
+    entry_kind = "file", preserve_perms = "sh_only", symlink_guard = true,
+  },
+  commands = {
+    source_subdir = "commands", target_subdir = "commands", list_key = "commands",
+    entry_kind = "file", preserve_perms = "sh_only", symlink_guard = true,
+  },
+  rules = {
+    source_subdir = "rules", target_subdir = "rules", list_key = "rules",
+    entry_kind = "file", preserve_perms = "sh_only", symlink_guard = true,
+  },
+  skills = {
+    source_subdir = "skills", target_subdir = "skills", list_key = "skills",
+    entry_kind = "dir", preserve_perms = "sh_only", symlink_guard = true,
+  },
+  context = {
+    source_subdir = "context", target_subdir = "context", list_key = "context",
+    entry_kind = "file_or_dir", preserve_perms = "none",
+  },
+  scripts = {
+    source_subdir = "scripts", target_subdir = "scripts", list_key = "scripts",
+    entry_kind = "file", preserve_perms = "always",
+  },
+  hooks = {
+    source_subdir = "hooks", target_subdir = "hooks", list_key = "hooks",
+    entry_kind = "file", preserve_perms = "always",
+  },
+  docs = {
+    source_subdir = "docs", target_subdir = "docs", list_key = "docs",
+    entry_kind = "file_or_dir", preserve_perms = "none",
+  },
+  templates = {
+    source_subdir = "templates", target_subdir = "templates", list_key = "templates",
+    entry_kind = "file", preserve_perms = "none",
+  },
+  systemd = {
+    source_subdir = "systemd", target_subdir = "systemd", list_key = "systemd",
+    entry_kind = "file", preserve_perms = "none",
+  },
+  root_files = {
+    source_subdir = "root-files", target_subdir = "", list_key = "root_files",
+    entry_kind = "file", preserve_perms = "none", install_once = INSTALL_ONCE_ROOT_FILES,
+  },
+  manifest = {
+    single_file = true, self_load_skip = true, preserve_perms = "none",
+  },
+  data = {
+    source_subdir = "data", list_key = "data", entry_kind = "dir",
+    preserve_perms = "none", merge_copy_only = true, target_is_project_root = true,
+  },
+}
 
-  if not manifest.provides or not manifest.provides.root_files then
-    return copied_files, created_dirs, skipped_count
+M.CATEGORY_DESCRIPTORS = CATEGORY_DESCRIPTORS
+
+--- Resolve whether a given entry's execute permissions should be preserved, per the
+--- descriptor's `preserve_perms` mode. Mirrors each historical call site's inline check exactly.
+--- @param mode string "always" | "sh_only" | "none"
+--- @param filename string Entry filename (basename or relative path) being copied
+--- @return boolean|string preserve Truthy iff permissions should be preserved
+local function resolve_preserve_perms(mode, filename)
+  if mode == "always" then
+    return true
+  elseif mode == "sh_only" then
+    return filename:match("%.sh$")
   end
-
-  local source_root_dir = source_dir .. "/root-files"
-
-  for _, filename in ipairs(manifest.provides.root_files) do
-    local source_path = source_root_dir .. "/" .. filename
-    local target_path = target_dir .. "/" .. filename
-    -- Root files are at the base_dir level; rel_path is just the filename
-    local rel_path = filename
-
-    -- Install-once guard: skip the copy entirely when a project copy already exists,
-    -- preserving any in-place edits (e.g. project-specific permissions/hooks in
-    -- settings.local.json). All other root files (e.g. .gitignore) keep the existing
-    -- always-copy (overwrite) behavior.
-    if INSTALL_ONCE_ROOT_FILES[filename] and vim.fn.filereadable(target_path) == 1 then
-      skipped_count = skipped_count + 1
-      goto continue
-    end
-
-    if vim.fn.filereadable(source_path) == 1 then
-      local ok, skipped = copy_file(source_path, target_path, false, protected_paths, rel_path)
-      if skipped then
-        skipped_count = skipped_count + 1
-      elseif ok then
-        table.insert(copied_files, target_path)
-      end
-    end
-
-    ::continue::
-  end
-
-  return copied_files, created_dirs, skipped_count
+  return false
 end
 
---- Copy manifest.json to target extensions directory
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param target_dir string Target base directory (.claude or .opencode)
---- @param extension_name string Extension name
---- @return table copied_files Array of copied file paths
---- @return table created_dirs Array of created directory paths
-function M.copy_manifest(manifest, source_dir, target_dir, extension_name)
-  local copied_files = {}
-  local created_dirs = {}
+--- Copy the `manifest` single-file special case (manifest.json -> extensions/{name}/manifest.json).
+local function copy_manifest_entry(descriptor, source_dir, target_dir, protected_paths, opts)
+  local copied_files, created_dirs, skipped_count, symlink_skipped_count = {}, {}, 0, 0
+  local extension_name = opts.extension_name
 
   local source_path = source_dir .. "/manifest.json"
   local target_path = target_dir .. "/extensions/" .. extension_name .. "/manifest.json"
+  local rel_path = "extensions/" .. extension_name .. "/manifest.json"
 
-  -- Skip when source and target resolve to the same file (home repo)
-  local source_real = vim.uv.fs_realpath(source_path)
-  local target_real = vim.uv.fs_realpath(target_path)
-  if source_real and target_real and source_real == target_real then
-    return copied_files, created_dirs
+  if descriptor.self_load_skip then
+    local source_real = vim.uv.fs_realpath(source_path)
+    local target_real = vim.uv.fs_realpath(target_path)
+    if source_real and target_real and source_real == target_real then
+      return copied_files, created_dirs, skipped_count, symlink_skipped_count
+    end
   end
 
   if vim.fn.filereadable(source_path) ~= 1 then
-    return copied_files, created_dirs
+    return copied_files, created_dirs, skipped_count, symlink_skipped_count
   end
 
   local ext_dir = target_dir .. "/extensions/" .. extension_name
@@ -671,73 +282,216 @@ function M.copy_manifest(manifest, source_dir, target_dir, extension_name)
     table.insert(created_dirs, ext_dir)
   end
 
-  if copy_file(source_path, target_path, false) then
+  local ok, skipped = copy_file(source_path, target_path, false, protected_paths, rel_path)
+  if skipped then
+    skipped_count = skipped_count + 1
+  elseif ok then
     table.insert(copied_files, target_path)
   end
 
-  return copied_files, created_dirs
+  return copied_files, created_dirs, skipped_count, symlink_skipped_count
 end
 
---- Copy data directories (merge-copy semantics - only copy non-existing files)
---- Data directories are copied to the parent directory (project root) not target_dir (.claude/.opencode)
---- @param manifest table Extension manifest
---- @param source_dir string Extension source directory
---- @param project_dir string Project root directory (NOT target_dir)
---- @return table copied_files Array of copied file paths (skeleton files)
---- @return table created_dirs Array of created directory paths
-function M.copy_data_dirs(manifest, source_dir, project_dir)
-  local copied_files = {}
-  local created_dirs = {}
+--- Copy the `data` merge-copy, project-root-targeted special case.
+local function copy_data_entry(descriptor, manifest, source_dir, protected_paths, opts)
+  local copied_files, created_dirs, skipped_count, symlink_skipped_count = {}, {}, 0, 0
 
-  if not manifest.provides or not manifest.provides.data then
-    return copied_files, created_dirs
+  if not manifest.provides or not manifest.provides[descriptor.list_key] then
+    return copied_files, created_dirs, skipped_count, symlink_skipped_count
   end
 
-  local source_data_dir = source_dir .. "/data"
+  local project_dir = opts.project_dir
+  local source_category_dir = source_dir .. "/" .. descriptor.source_subdir
 
-  for _, data_name in ipairs(manifest.provides.data) do
-    local source_data_path = source_data_dir .. "/" .. data_name
-    -- Data directories go to project root (e.g., .opencode/memory/ at base_dir/../memory/)
-    -- Actually for memory, the plan says to copy to {base_dir}/{name}/ -> .opencode/memory/
-    -- Let me re-read the plan... it says "Copies from extension/data/{name}/ to {base_dir}/{name}/"
-    -- So data goes INTO the base_dir (e.g., .opencode/memory/ or .claude/memory/)
-    local target_data_path = project_dir .. "/" .. data_name
+  for _, entry_name in ipairs(manifest.provides[descriptor.list_key]) do
+    local source_entry_dir = source_category_dir .. "/" .. entry_name
+    local target_entry_dir = project_dir .. "/" .. entry_name
 
-    if vim.fn.isdirectory(source_data_path) == 1 then
-      -- Create data directory if it doesn't exist
-      if vim.fn.isdirectory(target_data_path) ~= 1 then
-        helpers.ensure_directory(target_data_path)
-        table.insert(created_dirs, target_data_path)
+    if vim.fn.isdirectory(source_entry_dir) == 1 then
+      if vim.fn.isdirectory(target_entry_dir) ~= 1 then
+        helpers.ensure_directory(target_entry_dir)
+        table.insert(created_dirs, target_entry_dir)
       end
 
-      -- Copy all files using merge-copy semantics (don't overwrite existing)
-      local files = scan_directory_recursive(source_data_path)
-      for _, rel_path in ipairs(files) do
-        local source_path = source_data_path .. "/" .. rel_path
-        local target_path = target_data_path .. "/" .. rel_path
+      local files = scan_directory_recursive(source_entry_dir)
+      for _, file_rel in ipairs(files) do
+        local source_path = source_entry_dir .. "/" .. file_rel
+        local target_path = target_entry_dir .. "/" .. file_rel
+        local rel_path = descriptor.list_key .. "/" .. entry_name .. "/" .. file_rel
 
-        -- Only copy if target file doesn't already exist (preserve user data)
-        if vim.fn.filereadable(target_path) ~= 1 then
-          -- Ensure subdirectory exists
+        if protected_paths and protected_paths[rel_path] then
+          skipped_count = skipped_count + 1
+        elseif vim.fn.filereadable(target_path) ~= 1 then
+          -- Merge-copy semantics: only copy if target doesn't already exist (preserve user data)
           local subdir = vim.fn.fnamemodify(target_path, ":h")
           if vim.fn.isdirectory(subdir) ~= 1 then
             helpers.ensure_directory(subdir)
             table.insert(created_dirs, subdir)
           end
-
-          -- Read and write file
           local content = helpers.read_file(source_path)
           if content then
             if helpers.write_file(target_path, content) then
               table.insert(copied_files, target_path)
             end
           end
+        else
+          skipped_count = skipped_count + 1
         end
       end
     end
   end
 
-  return copied_files, created_dirs
+  return copied_files, created_dirs, skipped_count, symlink_skipped_count
+end
+
+--- Copy one `provides.*` category (or the `manifest`/`data` special cases) per its descriptor.
+--- The single copier every category flows through -- the symlink guard and permission handling
+--- hold for every category by construction, since they are descriptor-driven rather than each
+--- category separately reimplementing them.
+--- @param category string Category name; must be a key of `M.CATEGORY_DESCRIPTORS`
+--- @param manifest table Extension manifest
+--- @param source_dir string Extension source directory
+--- @param target_dir string Target base directory (.claude or .opencode)
+--- @param protected_paths table|nil Set of protected relative paths {[path] = true}
+--- @param opts table|nil { project_dir, extension_name, agents_subdir } -- required per category:
+---   `data` needs `project_dir`; `manifest` needs `extension_name`; `agents` uses
+---   `agents_subdir` if given (falls back to the descriptor's own "agents" target_subdir).
+--- @return table copied_files
+--- @return table created_dirs
+--- @return number skipped_count Files skipped due to .syncprotect (or install-once/merge-copy)
+--- @return number symlink_skipped_count Files/dirs skipped because the deployed target is a
+---   pre-existing symlink
+function M.copy_category(category, manifest, source_dir, target_dir, protected_paths, opts)
+  opts = opts or {}
+  local descriptor = CATEGORY_DESCRIPTORS[category]
+  if not descriptor then
+    error("loader.copy_category: unknown category '" .. tostring(category) .. "'")
+  end
+
+  if descriptor.single_file then
+    return copy_manifest_entry(descriptor, source_dir, target_dir, protected_paths, opts)
+  end
+
+  if descriptor.target_is_project_root and descriptor.merge_copy_only then
+    return copy_data_entry(descriptor, manifest, source_dir, protected_paths, opts)
+  end
+
+  local copied_files, created_dirs, skipped_count, symlink_skipped_count = {}, {}, 0, 0
+
+  if not manifest.provides or not manifest.provides[descriptor.list_key] then
+    return copied_files, created_dirs, skipped_count, symlink_skipped_count
+  end
+
+  -- Resolve the target category directory name. "agents" is the one category whose target
+  -- subdir varies by config (agents_subdir, e.g. "agent/subagents" for OpenCode); every other
+  -- category uses its fixed descriptor.target_subdir. "" (root_files) means "target_dir itself".
+  local target_category_name = descriptor.target_subdir
+  if category == "agents" and opts.agents_subdir then
+    target_category_name = opts.agents_subdir
+  end
+  local target_category_dir = target_category_name == "" and target_dir
+    or (target_dir .. "/" .. target_category_name)
+
+  if target_category_name ~= "" then
+    if vim.fn.isdirectory(target_category_dir) ~= 1 then
+      helpers.ensure_directory(target_category_dir)
+      table.insert(created_dirs, target_category_dir)
+    end
+  end
+
+  local source_category_dir = source_dir .. "/" .. descriptor.source_subdir
+
+  for _, entry_name in ipairs(manifest.provides[descriptor.list_key]) do
+    if descriptor.entry_kind == "dir" then
+      -- skills: each entry is a directory, recursively copied, symlink-guarded as a whole.
+      local source_entry_dir = source_category_dir .. "/" .. entry_name
+      local target_entry_dir = target_category_dir .. "/" .. entry_name
+
+      if vim.fn.isdirectory(source_entry_dir) == 1 then
+        if descriptor.symlink_guard and vim.fn.getftype(target_entry_dir) == "link" then
+          symlink_skipped_count = symlink_skipped_count + 1
+        else
+          if vim.fn.isdirectory(target_entry_dir) ~= 1 then
+            helpers.ensure_directory(target_entry_dir)
+            table.insert(created_dirs, target_entry_dir)
+          end
+
+          local files = scan_directory_recursive(source_entry_dir)
+          for _, file_rel in ipairs(files) do
+            local source_path = source_entry_dir .. "/" .. file_rel
+            local target_path = target_entry_dir .. "/" .. file_rel
+            local preserve = resolve_preserve_perms(descriptor.preserve_perms, file_rel)
+            local rel_path = target_category_name .. "/" .. entry_name .. "/" .. file_rel
+
+            local ok, skipped = copy_file(source_path, target_path, preserve, protected_paths, rel_path)
+            if skipped then
+              skipped_count = skipped_count + 1
+            elseif ok then
+              table.insert(copied_files, target_path)
+            end
+          end
+        end
+      end
+    elseif descriptor.entry_kind == "file_or_dir" then
+      -- context/docs: an entry may itself be a directory (recursive copy) or a flat file.
+      local source_entry_path = source_category_dir .. "/" .. entry_name
+      local target_entry_path = target_category_dir .. "/" .. entry_name
+
+      if vim.fn.isdirectory(source_entry_path) == 1 then
+        if vim.fn.isdirectory(target_entry_path) ~= 1 then
+          helpers.ensure_directory(target_entry_path)
+          table.insert(created_dirs, target_entry_path)
+        end
+
+        local files = scan_directory_recursive(source_entry_path)
+        for _, file_rel in ipairs(files) do
+          local source_path = source_entry_path .. "/" .. file_rel
+          local target_path = target_entry_path .. "/" .. file_rel
+          local rel_path = target_category_name .. "/" .. entry_name .. "/" .. file_rel
+
+          local ok, skipped = copy_file(source_path, target_path, false, protected_paths, rel_path)
+          if skipped then
+            skipped_count = skipped_count + 1
+          elseif ok then
+            table.insert(copied_files, target_path)
+          end
+        end
+      elseif vim.fn.filereadable(source_entry_path) == 1 then
+        local rel_path = target_category_name .. "/" .. entry_name
+        local ok, skipped = copy_file(source_entry_path, target_entry_path, false, protected_paths, rel_path)
+        if skipped then
+          skipped_count = skipped_count + 1
+        elseif ok then
+          table.insert(copied_files, target_entry_path)
+        end
+      end
+    else
+      -- "file": flat per-entry copy (agents/commands/rules/scripts/hooks/systemd/templates/
+      -- root_files). rel_path for root_files (target_category_name == "") is the bare filename,
+      -- matching the historical copy_root_files behavior exactly.
+      local source_path = source_category_dir .. "/" .. entry_name
+      local target_path = target_category_dir .. "/" .. entry_name
+      local rel_path = target_category_name == "" and entry_name or (target_category_name .. "/" .. entry_name)
+
+      if descriptor.install_once and descriptor.install_once[entry_name] and vim.fn.filereadable(target_path) == 1 then
+        skipped_count = skipped_count + 1
+      elseif vim.fn.filereadable(source_path) == 1 then
+        if descriptor.symlink_guard and vim.fn.getftype(target_path) == "link" then
+          symlink_skipped_count = symlink_skipped_count + 1
+        else
+          local preserve = resolve_preserve_perms(descriptor.preserve_perms, entry_name)
+          local ok, skipped = copy_file(source_path, target_path, preserve, protected_paths, rel_path)
+          if skipped then
+            skipped_count = skipped_count + 1
+          elseif ok then
+            table.insert(copied_files, target_path)
+          end
+        end
+      end
+    end
+  end
+
+  return copied_files, created_dirs, skipped_count, symlink_skipped_count
 end
 
 --- Check for conflicts before loading

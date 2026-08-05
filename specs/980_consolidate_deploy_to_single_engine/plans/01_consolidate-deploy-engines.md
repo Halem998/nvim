@@ -199,7 +199,7 @@ must be authored from scratch rather than extended. Confirm at implementation ti
 
 ---
 
-### Phase 2: Collapse the 11 copiers into one table-driven copier [NOT STARTED]
+### Phase 2: Collapse the 11 copiers into one table-driven copier [COMPLETED]
 
 **Goal**: Replace `copy_simple_files`, `copy_skill_dirs`, `copy_context_dirs`, `copy_scripts`,
 `copy_hooks`, `copy_systemd`, `copy_docs`, `copy_templates`, `copy_root_files`, `copy_manifest`,
@@ -207,22 +207,36 @@ and `copy_data_dirs` with one descriptor-driven copier so the symlink guard and 
 handling hold for every category by construction.
 
 **Tasks**:
-- [ ] Define a category descriptor table with at minimum
+- [x] Define a category descriptor table with at minimum
       `{category, source_subdir, target_subdir, recursive, preserve_perms, install_once}` plus the
       three fields needed to express the two genuinely-different copiers: `self_load_skip`
       (manifest realpath self-load skip), `merge_copy_only` (copy only if absent), and
       `target_is_project_root` (data dirs land under `project_dir`, not `target_dir`).
-- [ ] Implement one copier consuming the descriptor, with a **uniform 4-value return**
+      *(completed: `CATEGORY_DESCRIPTORS` in loader.lua, keyed by category name; `recursive` is
+      expressed via `entry_kind` ("file"/"dir"/"file_or_dir"), which also captures the
+      context/docs "entry may be a file or a directory" case the plan's minimal field list didn't
+      separately name)*
+- [x] Implement one copier consuming the descriptor, with a **uniform 4-value return**
       `(copied_files, created_dirs, skipped_count, symlink_skipped_count)` for every category.
-- [ ] Make `preserve_perms` a descriptor value derived from one shared rule, not a per-call-site
+      *(completed: `M.copy_category(category, manifest, source_dir, target_dir, protected_paths,
+      opts)`, including `manifest` and `data`, both of which previously returned only 2 values)*
+- [x] Make `preserve_perms` a descriptor value derived from one shared rule, not a per-call-site
       hardcode. Preserve today's effective behavior: executable perms retained for scripts and
-      hooks and for any `.sh` file in any category.
-- [ ] Ensure `.syncprotect` `protected_paths` are honored for **every** category — including the
-      manifest copy, which currently has no `protected_paths` parameter at all.
-- [ ] Update all 13 call sites in `init.lua`'s copy sequence (3 of them are the same
+      hooks and for any `.sh` file in any category. *(completed: `resolve_preserve_perms(mode,
+      filename)` with modes "always"/"sh_only"/"none"; verified byte-identical deployed file
+      listing + permission strings before/after via a direct `manager.load` scratch-tree
+      comparison, see Verification below)*
+- [x] Ensure `.syncprotect` `protected_paths` are honored for **every** category — including the
+      manifest copy, which currently has no `protected_paths` parameter at all. *(completed: both
+      `manifest` and `data` now thread `protected_paths`/`rel_path` through `copy_file` — data
+      previously had no `protected_paths` parameter either, a second gap beyond the one the task
+      named)*
+- [x] Update all 13 call sites in `init.lua`'s copy sequence (3 of them are the same
       `copy_simple_files` function with different category arguments) to the new uniform signature
-      and 4-value return.
-- [ ] Do not leave dead wrappers behind — remove the old functions rather than aliasing them.
+      and 4-value return. *(completed)*
+- [x] Do not leave dead wrappers behind — remove the old functions rather than aliasing them.
+      *(completed: `grep` confirms zero remaining references to any of the 11 old function names
+      outside doc-comments)*
 
 **Timing**: 2 hours
 
@@ -244,10 +258,19 @@ hypothesized one.
 - `lua/neotex/plugins/ai/shared/extensions/init.lua` - copy sequence call sites updated to uniform signature
 
 **Verification**:
-- Phase 1 harness assertions C and D behave no worse than their Phase 1 baseline.
+- Phase 1 harness assertions C and D behave no worse than their Phase 1 baseline. *(confirmed:
+  re-ran `test-deploy-propagation.sh` after this phase's edits — identical result, 1 passed/3
+  failed, since Phase 2 touches Engine A (`manager.load`) and `deploy-headless.sh` still drives
+  Engine B (`load_all_globally`) until Phase 6)*
 - A full interactive load of one extension into a scratch tree produces the same deployed file set
-  as before the change (compare deployed file listings before/after).
+  as before the change (compare deployed file listings before/after). *(confirmed: captured a
+  `find . -type f -printf '%M %p\n' | sort` listing from a direct `manager.load("core", ...)`
+  call against a scratch target both before and after this phase's edit — `diff` reports zero
+  differences, 339 files, across the full deployed tree)*
 - Executable bit is present on deployed `.sh` files in every category that had it before.
+  *(confirmed by the same before/after listing diff above, since `%M` includes the permission
+  string; spot-checked `hooks/guard-destructive-git.sh` and `scripts/deploy-headless.sh` both
+  land `-rwxr-xr-x`)*
 
 ---
 
