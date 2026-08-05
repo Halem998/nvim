@@ -1,9 +1,12 @@
 # Hard-Mode Routing: Composition Model
 
-This document describes the `--hard` routing resolution implemented in
-`command-route-skill.sh`. It covers the 5-step precedence, the
-"extension overrides core" rule, and the safety gate that prevents
-resolution to undeployed agents.
+This document describes the `--hard` routing resolution implemented in the shared
+`manifest-routing-lib.sh` ladder and consumed by `command-route-skill.sh` (skill resolution) and
+`command-route-agent.sh` (agent resolution). It covers the 5-step precedence, the
+"extension overrides core" rule, and the safety gate that prevents resolution to undeployed
+agents. See `context/guides/manifest-routing-schema.md` for the full routing model (all four
+manifest blocks, core identification, and the declared-not-derived agent-name rule); this
+document focuses specifically on the `--hard` resolution path.
 
 **Scope**: This document covers the script/skill routing layer only.
 The CLAUDE.md "Routing Mechanism" and "Hard Mode" sections are maintained
@@ -36,7 +39,7 @@ Step 4b: If no hit and task_type contains ":", compute base_type (split on ":")
          Search non-core extension manifests for routing_hard[$op][$base_type]
          → First non-core manifest hit → SKILL_NAME = that skill; DONE
 
-Step 4c: Search core manifest (routing_exempt: true) for routing_hard[$op][$task_type]
+Step 4c: Search core manifest (identified by .name == "core") for routing_hard[$op][$task_type]
          → Hit → SKILL_NAME = that skill; DONE
 
 Step 4d: If no hit and task_type contains ":", compound-key fallback against core
@@ -58,8 +61,11 @@ Step 4e: -hard append fallback (only reaches here if all manifest lookups failed
 
 Non-core extensions (Steps 4a-4b) are scanned **before** the core extension
 (Steps 4c-4d). This is deterministic regardless of glob ordering because the
-core manifest is identified by the `routing_exempt: true` field and explicitly
-skipped during the non-core pass.
+core manifest is identified by `.name == "core"` and explicitly skipped during
+the non-core pass (`routing_exempt: true` is also set on `core`, but is not
+unique to it -- `literature` and `slidev` set it too, for their own,
+independently-scoped exemption semantics; it is no longer used for core
+identification).
 
 **Consequence**: If both a non-core extension and the core manifest declare a
 `routing_hard` entry for the same `($op, $task_type)` pair, the non-core
@@ -108,35 +114,21 @@ the `-hard` append fallback (Step 4e) or via manifest routing (Steps 4a-4d):
 | `skill-implementer-hard` | Core manifest routing_hard + Step 4e fallback |
 | `skill-cslib-research-hard` | CSLib extension manifest routing_hard |
 | `skill-cslib-implementation-hard` | CSLib extension manifest routing_hard |
-| `skill-orchestrate-hard` | Separate path (see note below) |
+| `skill-orchestrate-hard` | Not manifest-routed itself; invoked directly by `/orchestrate --hard`, and resolves agents via `command-route-agent.sh` against `routing_agents_hard` (see note below) |
 
 ---
 
-## Orchestrate-Hard: Separate Reader
+## Orchestrate-Hard: Same Resolver, Different Block
 
-`skill-orchestrate-hard` (invoked by `/orchestrate --hard`) uses a **separate
-inline manifest reader** in its own SKILL.md. That reader:
-
-- Reads agent names (not skill names) from `routing_hard`
-- Uses last-match-wins semantics (not first-match-wins)
-- Does NOT call `command-route-skill.sh`
-
-This is intentional and documented rather than refactored. The two paths
-serve different purposes: `command-route-skill.sh` routes skills for single
-invocations; `skill-orchestrate-hard` routes agents for autonomous lifecycle
-orchestration.
-
----
-
-## First-Match vs Last-Match Precedence
-
-`command-route-skill.sh` uses **first-match-wins** within each pass (non-core
-manifests and core manifest). This is consistent with the standard routing
-(Steps 1-2) and provides predictable, auditable behavior.
-
-`skill-orchestrate-hard` uses **last-match-wins** in its inline reader (a
-consequence of its shell loop structure). Do not rely on this distinction
-when declaring routing_hard entries intended for both code paths.
+`skill-orchestrate-hard` (invoked by `/orchestrate --hard`) resolves AGENT names (not skill
+names) via `command-route-agent.sh` — the same shared `manifest-routing-lib.sh` ladder
+`command-route-skill.sh` uses, called with effort `"hard"` against each manifest's
+`routing_agents_hard` block instead of `routing_hard`. It previously used a separate inline
+manifest reader with last-match-wins semantics (the opposite of `command-route-skill.sh`'s
+first-match-wins); that divergence has been eliminated — both `skill-orchestrate` and
+`skill-orchestrate-hard` now call `command-route-agent.sh` with identical precedence, differing
+only in the effort argument and their three defaults (standard vs `-hard` agents). See
+`context/guides/manifest-routing-schema.md` for the full model.
 
 ---
 
@@ -168,7 +160,10 @@ entry. Undeclared-but-deployed skills are automatically reachable via Step 4e.
 
 ## Related Files
 
-- `.claude/scripts/command-route-skill.sh` — Implementation (with inline comments)
-- `.claude/extensions/core/manifest.json` — Core routing_hard entries
-- `.claude/extensions/cslib/manifest.json` — CSLib routing_hard entries
-- `.claude/extensions/lean/manifest.json` — Lean routing_hard entries (note: lean hard skills not yet deployed)
+- `.claude/scripts/lib/manifest-routing-lib.sh` — Shared ladder implementation
+- `.claude/scripts/command-route-skill.sh` — Skill resolution (research.md/plan.md/implement.md)
+- `.claude/scripts/command-route-agent.sh` — Agent resolution (skill-orchestrate/skill-orchestrate-hard)
+- `.claude/extensions/core/manifest.json` — Core routing_hard / routing_agents_hard entries
+- `.claude/extensions/cslib/manifest.json` — CSLib routing_hard / routing_agents_hard entries
+- `.claude/extensions/lean/manifest.json` — Lean routing_hard / routing_agents_hard entries
+- `context/guides/manifest-routing-schema.md` — Full routing model (all four manifest blocks)

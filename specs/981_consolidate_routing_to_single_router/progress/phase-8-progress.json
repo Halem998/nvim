@@ -1,0 +1,57 @@
+{
+  "phase": 8,
+  "phase_name": "Routing schema documentation and system-index updates",
+  "started_at": "2026-08-06T02:10:00Z",
+  "last_updated": "2026-08-06T02:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create context/guides/manifest-routing-schema.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]
+    },
+    {
+      "id": 2,
+      "description": "Register new guide in index-entries.json with accurate line_count; correct hard-mode-routing.md's stale line_count",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]
+    },
+    {
+      "id": 3,
+      "description": "Update hard-mode-routing.md: remove First-Match vs Last-Match divergence section, fix routing_exempt references to .name==core, fix now-stale Orchestrate-Hard separate-reader section",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/guides/hard-mode-routing.md"]
+    },
+    {
+      "id": 4,
+      "description": "Update core merge-source CLAUDE.md: Routing Mechanism section (routing_exempt -> .name==core, mentions shared library) and Utility Scripts list (add lint-routing-wiring.sh)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]
+    },
+    {
+      "id": 5,
+      "description": "Cross-reference from adding-domains.md and copy-claude-directory.md to the new schema guide",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.3",
+      "description": "Also rewrote hard-mode-routing.md's 'Orchestrate-Hard: Separate Reader' section (renamed 'Same Resolver, Different Block') and its Deployed Hard Skills table row for skill-orchestrate-hard",
+      "type": "altered",
+      "reason": "That section described skill-orchestrate-hard's OLD last-match-wins inline reader as current behavior. After Phase 4 replaced it with command-route-agent.sh (the same ladder as skill-orchestrate), leaving that section unchanged would have been actively false documentation, not merely stale -- worse than the divergence section the plan explicitly named for removal. Left the section in place (renamed, corrected) rather than deleting it outright, since it still usefully documents which block (routing_agents_hard) skill-orchestrate-hard reads.",
+      "annotation": "*(deviation: altered — corrected the now-false Orchestrate-Hard section beyond the named divergence-section removal)*"
+    },
+    {
+      "task_id": "8.2/verification",
+      "description": "generate-context-line-counts.sh --check and check-extension-docs.sh both refuse to run from the source store (they require a deployed .claude/scripts/ tree) -- confirmed by direct invocation, not worked around",
+      "type": "deferred",
+      "reason": "Both scripts hard-require a deployed tree by design (deploy-root-guard.sh's PROJECT_ROOT derivation). Running a deploy as part of a phase's own verification is an explicit plan Non-Goal (deploy is the user's action). Verified the line_count values by direct wc -l cross-check instead (169 and 184, both matching what was registered), and confirmed no-task-references cleanliness by direct grep across every phase-8 file.",
+      "annotation": "*(deviation: deferred — line-count and doc-lint scripts require a deploy to run; verified via direct wc -l and grep instead, per the plan's own Non-Goal on phase-level deploys)*"
+    }
+  ]
+}

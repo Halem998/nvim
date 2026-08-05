@@ -545,7 +545,7 @@ functional references, with any surviving mention explicitly marked historical.
 
 ---
 
-### Phase 8: Routing schema documentation and system-index updates [NOT STARTED]
+### Phase 8: Routing schema documentation and system-index updates [COMPLETED]
 
 **Goal**: Document the consolidated routing model once, in a durable place, and update the
 generated-system index sections that describe the old mechanism.
