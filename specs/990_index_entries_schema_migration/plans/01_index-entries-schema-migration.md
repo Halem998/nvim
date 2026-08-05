@@ -366,27 +366,27 @@ before a blind rename.
 
 ---
 
-### Phase 6: `lean` — Full Migration (31 entries) [NOT STARTED]
+### Phase 6: `lean` — Full Migration (31 entries) [COMPLETED]
 
 **Goal**: Migrate `lean`, the extension with the heaviest editorial load relative to its size.
 
 **Tasks**:
-- [ ] Edit **`agent-system/extensions/lean/index-entries.json`** only. Never `.claude/**`.
-- [ ] Fold `description` into `summary` and delete `description` on all 31 entries.
+- [x] Edit **`agent-system/extensions/lean/index-entries.json`** only. Never `.claude/**`.
+- [x] Fold `description` into `summary` and delete `description` on all 31 entries.
       **4 entries exceed the 200-char cap when merged** and need a rewrite:
       `contracts/context-hygiene.md` (121 + 273 = 394), `contracts/adversarial-verification.md`
       (148 + 240 = 388), `contracts/anti-analysis.md` (107 + 179 = 286), and
       `contracts/reference-grounding.md` (80 + 191 = 271).
-- [ ] **2 lean summaries already exceed 200 characters on their own** and must be compressed
+- [x] **2 lean summaries already exceed 200 characters on their own** and must be compressed
       regardless of the merge — identify them with
       `jq -r '.entries[]|select((.summary|length)>200)|.path'` and shrink them as part of the
       same edit. Note this is the only extension where a summary is already over-cap
       pre-migration.
-- [ ] Rename `tags` -> `keywords` on all 31 entries.
-- [ ] Rename `load_when.languages` -> `load_when.task_types` on the 30 entries that have it,
+- [x] Rename `tags` -> `keywords` on all 31 entries.
+- [x] Rename `load_when.languages` -> `load_when.task_types` on the 30 entries that have it,
       value `["lean4"]` unchanged. **One entry has no `languages` key** — leave its `load_when`
       alone.
-- [ ] No `load_when.skills` or `load_when.topics` in this extension.
+- [x] No `load_when.skills` or `load_when.topics` in this extension.
 
 **Timing**: 1.25 hours
 
