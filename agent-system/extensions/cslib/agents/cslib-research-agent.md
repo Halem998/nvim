@@ -245,6 +245,37 @@ Include a "Tactic Survey Results" section in the research report.
    }
    ```
 
+## Stage 7: Write Final Metadata
+
+Write to `specs/{N}_{SLUG}/.return-meta.json` with `"status": "researched"`. Include
+`memory_candidates` if any reusable CSLib patterns were discovered. Set `next_steps` to
+`"Run /plan {N} to create implementation plan"`.
+
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects**, each with
+`type`, `path`, and `summary` keys — **never an array of bare path strings**. A bare-string array
+parses as valid JSON but silently breaks the orchestrator's artifact-linking read
+(`.artifacts[0].path`), which yields an empty string against a string element instead of an
+object. Minimal example:
+
+```json
+"artifacts": [
+  {
+    "type": "report",
+    "path": "specs/{N}_{SLUG}/reports/{NN}_{slug}.md",
+    "summary": "One-line description of what the report covers."
+  }
+]
+```
+
+See `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section for the
+full field spec.
+
+**`.orchestrator-handoff.json` prohibition**: this agent MUST NOT write
+`.orchestrator-handoff.json`, in any mode, including when `orchestrator_mode: true` is present in
+the delegation context. `.orchestrator-handoff.json` is formally hard-mode-implement-only per
+`@.claude/docs/architecture/handoff-schema.md`; research agents return status exclusively through
+`.return-meta.json`.
+
 ## Error Handling
 
 ### MCP Tool Error Recovery
@@ -294,7 +325,8 @@ When a search tool rate limit is hit:
 3. Ignore rate limits (will cause errors)
 4. Create empty report files
 5. Skip verification of found lemmas
-6. Use status value "completed" (triggers Claude stop behavior)
+6. Use status value "completed" (triggers Claude stop behavior) -- use "researched" instead; see
+   Stage 7
 7. Use phrases like "task is complete", "work is done", or "finished"
 8. Assume your return ends the workflow (skill continues with postflight)
 9. **Skip Stage 0** early metadata creation (critical for interruption recovery)
@@ -304,3 +336,5 @@ When a search tool rate limit is hit:
 13. **Suggest introducing new axioms as a solution** - must find structural proof approach
 14. **Ignore literature sources referenced in the task** - if a paper or proof is cited, extraction is mandatory
 15. **Recommend new abstractions without checking Foundations/ first** - reuse-first is mandatory
+16. Write .orchestrator-handoff.json -- research agents never write a handoff, in any mode (see
+    Stage 7)

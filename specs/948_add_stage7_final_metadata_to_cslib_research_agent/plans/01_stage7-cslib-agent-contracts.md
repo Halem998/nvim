@@ -1,7 +1,7 @@
 # Implementation Plan: Task #948
 
 - **Task**: 948 - Add a Stage 7 / final-metadata contract to all three cslib agents
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (both cited prerequisites are [COMPLETED])
 - **Research Inputs**: `specs/948_add_stage7_final_metadata_to_cslib_research_agent/reports/01_stage7-final-metadata-cslib-agents.md`
@@ -98,26 +98,26 @@ have no ordering constraint between them.
 
 ---
 
-### Phase 1: Add Stage 7 to cslib-research-agent.md [NOT STARTED]
+### Phase 1: Add Stage 7 to cslib-research-agent.md [COMPLETED]
 
 **Goal**: Give the research agent an explicit terminal-metadata contract naming
 `"status": "researched"`, the `artifacts` shape with rationale, and the
 `.orchestrator-handoff.json` prohibition.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/cslib/agents/cslib-research-agent.md` and locate the
+- [x] Read `agent-system/extensions/cslib/agents/cslib-research-agent.md` and locate the
       `## Stage 0: Initialize Early Metadata` section and the `## Error Handling` section that
-      follows it.
-- [ ] Insert a new `## Stage 7: Write Final Metadata` section **between** `## Stage 0: Initialize
-      Early Metadata` and `## Error Handling`, using the drop-in text below verbatim.
-- [ ] In `## Critical Requirements` -> MUST NOT, amend the existing bullet reading
+      follows it. *(completed)*
+- [x] Insert a new `## Stage 7: Write Final Metadata` section **between** `## Stage 0: Initialize
+      Early Metadata` and `## Error Handling`, using the drop-in text below verbatim. *(completed)*
+- [x] In `## Critical Requirements` -> MUST NOT, amend the existing bullet reading
       `Use status value "completed" (triggers Claude stop behavior)` to supply the correct
       alternative inline: `Use status value "completed" (triggers Claude stop behavior) -- use
-      "researched" instead; see Stage 7`.
-- [ ] In `## Critical Requirements` -> MUST NOT, append a new bullet:
+      "researched" instead; see Stage 7`. *(completed)*
+- [x] In `## Critical Requirements` -> MUST NOT, append a new bullet:
       `Write .orchestrator-handoff.json -- research agents never write a handoff, in any mode
-      (see Stage 7)`.
-- [ ] Confirm no existing heading was renumbered, reworded, or reordered.
+      (see Stage 7)`. *(completed)*
+- [x] Confirm no existing heading was renumbered, reworded, or reordered. *(completed: verified via grep -n on Stage 0/Stage 7/Error Handling/Critical Requirements headings)*
 
 **Drop-in text for the new Stage 7** (copy verbatim; the nested ```json fence is part of the
 inserted content):
