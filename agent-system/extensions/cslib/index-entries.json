@@ -3,210 +3,349 @@
     {
       "path": "project/cslib/domain/contributing-standards.md",
       "line_count": 121,
-      "description": "CSLib CONTRIBUTING.md key standards: variable names, proof style, notation, CI",
-      "tags": ["cslib", "contributing", "standards"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-research-agent", "cslib-implementation-agent"]
+        "agents": [
+          "cslib-research-agent",
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "CSLib CONTRIBUTING.md key standards: variable names, proof style, notation, CI"
+      "summary": "CSLib CONTRIBUTING.md key standards: variable names, proof style, notation, CI",
+      "keywords": [
+        "cslib",
+        "contributing",
+        "standards"
+      ]
     },
     {
       "path": "project/cslib/domain/notation-conventions.md",
       "line_count": 93,
-      "description": "CSLib-specific notation: alpha equivalence, LTS transitions, reduction arrows",
-      "tags": ["cslib", "notation", "conventions"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-research-agent", "cslib-implementation-agent"]
+        "agents": [
+          "cslib-research-agent",
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "CSLib-specific notation: alpha equivalence, LTS transitions, reduction arrows"
+      "summary": "CSLib-specific notation: alpha equivalence, LTS transitions, reduction arrows",
+      "keywords": [
+        "cslib",
+        "notation",
+        "conventions"
+      ]
     },
     {
       "path": "project/cslib/domain/project-organization.md",
       "line_count": 137,
-      "description": "CSLib project structure: pillars, working groups, module layout",
-      "tags": ["cslib", "project", "organization"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-research-agent", "cslib-implementation-agent"]
+        "agents": [
+          "cslib-research-agent",
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "CSLib project structure: pillars, working groups, module layout"
+      "summary": "CSLib project structure: pillars, working groups, module layout",
+      "keywords": [
+        "cslib",
+        "project",
+        "organization"
+      ]
     },
     {
       "path": "project/cslib/patterns/proof-structure.md",
       "line_count": 104,
-      "description": "CSLib proof structure patterns and module organization",
-      "tags": ["cslib", "proofs", "patterns"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-implementation-agent"]
+        "agents": [
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "CSLib proof structure patterns and module organization"
+      "summary": "CSLib proof structure patterns and module organization",
+      "keywords": [
+        "cslib",
+        "proofs",
+        "patterns"
+      ]
     },
     {
       "path": "project/cslib/patterns/reuse-first.md",
       "line_count": 103,
-      "description": "CSLib reuse-first philosophy: prefer existing Mathlib/CSLib abstractions",
-      "tags": ["cslib", "reuse", "mathlib"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-research-agent", "cslib-implementation-agent"]
+        "agents": [
+          "cslib-research-agent",
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "CSLib reuse-first philosophy: prefer existing Mathlib/CSLib abstractions"
+      "summary": "CSLib reuse-first philosophy: prefer existing Mathlib/CSLib abstractions",
+      "keywords": [
+        "cslib",
+        "reuse",
+        "mathlib"
+      ]
     },
     {
       "path": "project/cslib/standards/ci-pipeline.md",
       "line_count": 135,
-      "description": "CSLib CI pipeline: lake test, checkInitImports, lint-style, lake shake commands",
-      "tags": ["cslib", "ci", "pipeline", "lake"],
       "load_when": {
-        "languages": ["cslib", "pr"],
-        "agents": ["cslib-implementation-agent"]
+        "agents": [
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib",
+          "pr"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "CSLib CI pipeline: lake test, checkInitImports, lint-style, lake shake commands"
+      "summary": "CSLib CI pipeline: lake test, checkInitImports, lint-style, lake shake commands",
+      "keywords": [
+        "cslib",
+        "ci",
+        "pipeline",
+        "lake"
+      ]
     },
     {
       "path": "project/cslib/standards/pr-conventions.md",
       "line_count": 87,
-      "description": "CSLib PR title conventions, conventional commits, review process",
-      "tags": ["cslib", "pr", "git", "commits"],
       "load_when": {
-        "languages": ["cslib", "pr"],
-        "agents": ["cslib-implementation-agent"]
+        "agents": [
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib",
+          "pr"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "CSLib PR title conventions, conventional commits, review process"
+      "summary": "CSLib PR title conventions, conventional commits, review process",
+      "keywords": [
+        "cslib",
+        "pr",
+        "git",
+        "commits"
+      ]
     },
     {
       "path": "project/cslib/standards/pr-description-format.md",
       "line_count": 303,
-      "description": "CSLib PR description canonical format: Summary, Context, file-by-file summary, AI Disclosure",
-      "tags": ["cslib", "pr", "format", "description", "template"],
       "load_when": {
-        "languages": ["cslib", "pr"],
-        "agents": ["cslib-implementation-agent"]
+        "agents": [
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib",
+          "pr"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "Canonical PR description format with required sections, optional sections, and AI disclosure boilerplate"
+      "summary": "Canonical CSLib PR description format: Summary, Context, file-by-file summary, AI Disclosure section, with optional sections and boilerplate",
+      "keywords": [
+        "cslib",
+        "pr",
+        "format",
+        "description",
+        "template"
+      ]
     },
     {
       "path": "project/cslib/standards/mathlib-style.md",
       "line_count": 70,
-      "description": "Mathlib-style Lean coding standards applied to CSLib",
-      "tags": ["cslib", "mathlib", "style"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-implementation-agent"]
+        "agents": [
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "Mathlib-style Lean coding standards applied to CSLib"
+      "summary": "Mathlib-style Lean coding standards applied to CSLib",
+      "keywords": [
+        "cslib",
+        "mathlib",
+        "style"
+      ]
     },
     {
       "path": "project/cslib/tools/lake-commands.md",
       "line_count": 152,
-      "description": "Lake commands for CSLib: build, test, exe targets, shake",
-      "tags": ["cslib", "lake", "tools", "build"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-research-agent", "cslib-implementation-agent"]
+        "agents": [
+          "cslib-research-agent",
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "Lake commands for CSLib: build, test, exe targets, shake"
+      "summary": "Lake commands for CSLib: build, test, exe targets, shake",
+      "keywords": [
+        "cslib",
+        "lake",
+        "tools",
+        "build"
+      ]
     },
     {
       "path": "project/cslib/tools/linters.md",
       "line_count": 109,
-      "description": "CSLib linting tools: checkInitImports, lint-style, lake shake",
-      "tags": ["cslib", "linters", "checkInitImports", "lint-style"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-implementation-agent"]
+        "agents": [
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "CSLib linting tools: checkInitImports, lint-style, lake shake"
+      "summary": "CSLib linting tools: checkInitImports, lint-style, lake shake",
+      "keywords": [
+        "cslib",
+        "linters",
+        "checkInitImports",
+        "lint-style"
+      ]
     },
     {
       "path": "project/cslib/standards/citation-conventions.md",
       "line_count": 144,
-      "description": "CSLib citation conventions: BibKey format, references.bib verification for hard-mode H3 grounding",
-      "tags": ["cslib", "citations", "bibkey", "references", "hard-mode"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-research-hard-agent"]
+        "agents": [
+          "cslib-research-hard-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "BibKey format (AuthorYYYY) and references.bib citation verification for Tier 1 literature-backed CSLib research"
+      "summary": "BibKey format (AuthorYYYY) and references.bib citation verification for Tier 1 literature-backed CSLib research, supporting hard-mode H3 grounding",
+      "keywords": [
+        "cslib",
+        "citations",
+        "bibkey",
+        "references",
+        "hard-mode"
+      ]
     },
     {
       "path": "project/cslib/standards/ci-pipeline.md",
       "line_count": 135,
-      "description": "CSLib CI pipeline steps for hard-mode implementation: lake build, checkInitImports, lint, shake, test",
-      "tags": ["cslib", "ci", "pipeline", "lake", "hard-mode"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-implementation-hard-agent"]
+        "agents": [
+          "cslib-implementation-hard-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "7-step CSLib CI pipeline required before returning implemented status in hard-mode"
+      "summary": "7-step CSLib CI pipeline required before returning implemented status in hard-mode: lake build, checkInitImports, lint, shake, test",
+      "keywords": [
+        "cslib",
+        "ci",
+        "pipeline",
+        "lake",
+        "hard-mode"
+      ]
     },
     {
       "path": "project/cslib/tools/build-cache-strategy.md",
       "line_count": 140,
-      "description": "CSLib build cache strategy: Mathlib cloud cache, lake exe cache get, feature branch workflow",
-      "tags": ["cslib", "cache", "lake", "build", "mathlib"],
       "load_when": {
-        "languages": ["cslib", "pr"],
-        "agents": ["cslib-implementation-agent"]
+        "agents": [
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "cslib",
+          "pr"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "CSLib build cache strategy: Mathlib cloud cache, lake exe cache get, feature branch workflow"
+      "summary": "CSLib build cache strategy: Mathlib cloud cache, lake exe cache get, feature branch workflow",
+      "keywords": [
+        "cslib",
+        "cache",
+        "lake",
+        "build",
+        "mathlib"
+      ]
     },
     {
       "path": "project/cslib/standards/lint-prevention-rules.md",
       "line_count": 98,
-      "description": "CSLib lint prevention rules: 7 rules for environment linters not caught by PR CI",
-      "tags": ["cslib", "lint", "prevention", "environment-linters"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["cslib-implementation-agent", "cslib-implementation-hard-agent"]
+        "agents": [
+          "cslib-implementation-agent",
+          "cslib-implementation-hard-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "7 lint prevention rules (docBlame, defLemma, defsWithUnderscore, simpNF, unusedSectionVars, topNamespace, dupNamespace) for agent enforcement"
+      "summary": "7 lint prevention rules (docBlame, defLemma, defsWithUnderscore, simpNF, unusedSectionVars, topNamespace, dupNamespace) for environment linters not caught by PR CI",
+      "keywords": [
+        "cslib",
+        "lint",
+        "prevention",
+        "environment-linters"
+      ]
     },
     {
       "path": "project/cslib/patterns/lint-fix-wave-assignment.md",
       "line_count": 82,
-      "description": "File-overlap wave assignment guidance for multi-task lint-fix orchestration: conflict matrix, 30% threshold, worktree isolation",
-      "tags": ["cslib", "lint", "orchestration", "wave", "parallel", "conflicts"],
       "load_when": {
-        "languages": ["cslib"],
-        "agents": ["planner-agent", "planner-hard-agent"]
+        "agents": [
+          "planner-agent",
+          "planner-hard-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "Wave assignment checklist and conflict matrix format for planning parallel lint-fix tasks without file conflicts"
+      "summary": "Wave assignment checklist and conflict matrix (30% threshold, worktree isolation) for planning parallel lint-fix tasks without file conflicts",
+      "keywords": [
+        "cslib",
+        "lint",
+        "orchestration",
+        "wave",
+        "parallel",
+        "conflicts"
+      ]
     }
   ]
 }

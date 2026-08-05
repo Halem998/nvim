@@ -3,134 +3,128 @@
     {
       "path": "project/python/standards/code-style.md",
       "line_count": 123,
-      "description": "Python coding style and conventions",
-      "tags": [
-        "python",
-        "style",
-        "conventions"
-      ],
       "load_when": {
-        "languages": [
-          "python"
-        ],
         "agents": [
           "python-implementation-agent"
+        ],
+        "task_types": [
+          "python"
         ]
       },
       "domain": "project",
       "subdomain": "python",
-      "summary": "Python coding style and conventions"
+      "summary": "Python coding style and conventions",
+      "keywords": [
+        "python",
+        "style",
+        "conventions"
+      ]
     },
     {
       "path": "project/python/patterns/testing-patterns.md",
       "line_count": 123,
-      "description": "Pytest patterns and fixtures",
-      "tags": [
-        "python",
-        "pytest",
-        "testing"
-      ],
       "load_when": {
-        "languages": [
-          "python"
-        ],
         "agents": [
           "python-implementation-agent"
+        ],
+        "task_types": [
+          "python"
         ]
       },
       "domain": "project",
       "subdomain": "python",
-      "summary": "Pytest patterns and fixtures"
+      "summary": "Pytest patterns and fixtures",
+      "keywords": [
+        "python",
+        "pytest",
+        "testing"
+      ]
     },
     {
       "path": "project/python/domain/model-checker-api.md",
       "line_count": 177,
-      "description": "ModelChecker framework API - package structure, key classes, import patterns",
-      "tags": [
+      "load_when": {
+        "agents": [
+          "python-implementation-agent",
+          "python-research-agent"
+        ],
+        "task_types": [
+          "python"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "python",
+      "summary": "ModelChecker framework API - package structure, key classes, import patterns",
+      "keywords": [
         "python",
         "modelchecker",
         "api",
         "z3",
         "semantics"
-      ],
-      "load_when": {
-        "languages": [
-          "python"
-        ],
-        "agents": [
-          "python-implementation-agent",
-          "python-research-agent"
-        ]
-      },
-      "domain": "project",
-      "subdomain": "python",
-      "summary": "ModelChecker framework API - package structure, key classes, import patterns"
+      ]
     },
     {
       "path": "project/python/domain/theory-lib-patterns.md",
       "line_count": 262,
-      "description": "Theory library file structure and conventions for semantic theories",
-      "tags": [
+      "load_when": {
+        "agents": [
+          "python-implementation-agent",
+          "python-research-agent"
+        ],
+        "task_types": [
+          "python"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "python",
+      "summary": "Theory library file structure and conventions for semantic theories",
+      "keywords": [
         "python",
         "modelchecker",
         "theory",
         "patterns"
-      ],
-      "load_when": {
-        "languages": [
-          "python"
-        ],
-        "agents": [
-          "python-implementation-agent",
-          "python-research-agent"
-        ]
-      },
-      "domain": "project",
-      "subdomain": "python",
-      "summary": "Theory library file structure and conventions for semantic theories"
+      ]
     },
     {
       "path": "project/python/patterns/semantic-evaluation.md",
       "line_count": 355,
-      "description": "Tree-walking evaluation patterns",
-      "tags": [
-        "python",
-        "evaluation",
-        "interpreter"
-      ],
       "load_when": {
-        "languages": [
-          "python"
-        ],
         "agents": [
           "python-implementation-agent"
+        ],
+        "task_types": [
+          "python"
         ]
       },
       "domain": "project",
       "subdomain": "python",
-      "summary": "Tree-walking evaluation patterns"
+      "summary": "Tree-walking evaluation patterns",
+      "keywords": [
+        "python",
+        "evaluation",
+        "interpreter"
+      ]
     },
     {
       "path": "project/python/README.md",
       "line_count": 49,
-      "description": "Python extension overview and navigation",
-      "tags": [
-        "python",
-        "overview",
-        "navigation"
-      ],
       "load_when": {
-        "languages": [
-          "python"
-        ],
         "agents": [
           "python-implementation-agent",
           "python-research-agent"
+        ],
+        "task_types": [
+          "python"
         ]
       },
       "domain": "project",
       "subdomain": "python",
-      "summary": "Python extension overview and navigation"
+      "summary": "Python extension overview and navigation",
+      "keywords": [
+        "python",
+        "overview",
+        "navigation"
+      ]
     }
   ]
 }

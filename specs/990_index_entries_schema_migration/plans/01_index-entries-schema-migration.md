@@ -318,25 +318,25 @@ If any `languages` array turns out non-empty in `email`, it is a rename, not a d
 
 ---
 
-### Phase 5: `cslib` + `latex` + `python` + `z3` — Full Migration (37 entries) [NOT STARTED]
+### Phase 5: `cslib` + `latex` + `python` + `z3` — Full Migration (37 entries) [COMPLETED]
 
 **Goal**: Migrate the four small extensions that carry the full `description` + `tags` +
 non-empty `languages` triple with a clean 1:1 task_type mapping.
 
 **Tasks**:
-- [ ] Edit **`agent-system/extensions/{cslib,latex,python,z3}/index-entries.json`** only. Never
+- [x] Edit **`agent-system/extensions/{cslib,latex,python,z3}/index-entries.json`** only. Never
       `.claude/**`.
-- [ ] Fold `description` into `summary` and delete `description`: cslib 16, latex 10, python 6,
+- [x] Fold `description` into `summary` and delete `description`: cslib 16, latex 10, python 6,
       z3 5 = 37 entries. **3 cslib entries exceed the 200-char cap when merged** and need a
       rewrite; the remaining 34 merge cleanly.
-- [ ] Rename `tags` -> `keywords` on all 37 entries (cslib 16, latex 10, python 6, z3 5). No entry
+- [x] Rename `tags` -> `keywords` on all 37 entries (cslib 16, latex 10, python 6, z3 5). No entry
       in any of these four already has a populated `keywords` field, so the rename is
       conflict-free; confirm before renaming rather than assuming.
-- [ ] Rename `load_when.languages` -> `load_when.task_types`, values unchanged: cslib
+- [x] Rename `load_when.languages` -> `load_when.task_types`, values unchanged: cslib
       `["cslib"]`, latex `["latex"]`, python `["python"]`, z3 `["z3"]`. None of these four has a
       pre-existing `task_types` on the same entry, so this is a pure key rename with no union
       needed — confirm with the overlap probe before renaming.
-- [ ] None of these four has `load_when.skills` or `load_when.topics`.
+- [x] None of these four has `load_when.skills` or `load_when.topics`.
 
 **Timing**: 1.25 hours
 
