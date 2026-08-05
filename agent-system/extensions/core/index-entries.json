@@ -2814,6 +2814,37 @@
       }
     },
     {
+      "path": "contracts/no-task-references-bullet.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Canonical source text for the no-task-references MUST-NOT bullet carried by in-scope agents; a generated-copy source read by humans and by lint-agent-contracts.sh Check C, never an @-import resolved at spawn time",
+      "line_count": 70,
+      "keywords": [
+        "no-task-references",
+        "canonical-fragment",
+        "generated-copy",
+        "agent-contract",
+        "lint",
+        "must-not-bullet"
+      ],
+      "topics": [
+        "contracts",
+        "agent-contracts",
+        "deliverable-hygiene"
+      ],
+      "load_when": {
+        "agents": [
+          "meta-builder-agent"
+        ],
+        "commands": [
+          "/meta"
+        ],
+        "task_types": [
+          "meta"
+        ]
+      }
+    },
+    {
       "path": "patterns/regeneration-is-manual-only.md",
       "domain": "core",
       "subdomain": "patterns",

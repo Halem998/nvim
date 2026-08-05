@@ -49,7 +49,7 @@
         "agent-exploration"
       ],
       "summary": "Briefing+tools pattern: how agents interact with literature using Read and literature-search.sh on demand",
-      "line_count": 116,
+      "line_count": 138,
       "load_when": {
         "agents": [
           "literature-agent",
