@@ -45,18 +45,22 @@ hooks from -- there is no configuration point to redirect that read.
 Because a full `rm -rf .claude/` wipe still destroys these two files, they are protected by a
 different mechanism than a path move:
 
-- **Install-once** (`loader.lua:copy_root_files`): once a project has its own
+- **Install-once** (`loader.lua`'s `copy_category("root_files", ...)`, gated by
+  `CATEGORY_DESCRIPTORS.root_files.install_once`): once a project has its own
   `settings.json`/`settings.local.json`, reloading or re-loading the providing extension never
   overwrites it. `manager.unload` also excludes these two files from removal
   (`loader_mod.INSTALL_ONCE_ROOT_FILES`), so an unload-then-load reload cycle does not clobber
   in-place edits either. See "Install-Once vs Always-Overwrite" in
   `../architecture/extension-system.md` for the full asymmetry across `loader.lua` and `sync.lua`.
-- **Backup/restore** (`settings_backup.lua`): for a *full* wipe (where the files themselves are
-  deleted, not just reloaded), install-once alone cannot help -- there is nothing left to preserve
-  in place. The wipe sequence is instead `backup -> rm -rf base_dir -> regenerate -> restore`,
-  snapshotting to a project-root staging directory (`.claude-settings-backup/` /
-  `.opencode-settings-backup/`, gitignored) before the wipe and restoring immediately after
-  `manager.regenerate` rebuilds `base_dir`.
+- **Backup/restore** (`settings_backup.lua`, driven by `manager.wipe`): for a *full* wipe (where
+  the files themselves are deleted, not just reloaded), install-once alone cannot help -- there is
+  nothing left to preserve in place. `manager.wipe`'s sequence is `backup -> rm -rf base_dir ->
+  manager.regenerate`, snapshotting to a project-root staging directory
+  (`.claude-settings-backup/` / `.opencode-settings-backup/`, gitignored) before the wipe.
+  `manager.regenerate` itself restores that snapshot as the merge base BEFORE its per-extension
+  load loop runs (not after) -- restoring first means the loop's own settings-fragment merges land
+  on top of the restored base and survive, rather than being clobbered by a later restore. Staging
+  is cleared once the restore succeeds.
 
 ---
 

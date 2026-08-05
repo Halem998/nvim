@@ -7,129 +7,121 @@ the extension loading system.
 
 ## Public Functions in loader.lua
 
-All 12 public functions follow the same signature pattern:
+The former 11 near-identical per-category `copy_*` functions have been collapsed into one
+descriptor-driven copier, `M.copy_category`, plus a `CATEGORY_DESCRIPTORS` table that is the
+single source of truth for how each `provides.*` category (and the two non-`provides`-keyed
+special cases, `manifest` and `data`) maps declared entries to deployed paths. The symlink guard
+and permission handling hold for every category by construction, since they are driven by the
+descriptor rather than each category separately reimplementing them.
 
 ```lua
-function M.{name}(manifest, source_dir, target_dir) -> copied_files, created_dirs
--- except check_conflicts and remove_installed_files (different signatures)
+function M.copy_category(category, manifest, source_dir, target_dir, protected_paths, opts)
+  -> copied_files, created_dirs, skipped_count, symlink_skipped_count
+-- except check_conflicts and remove_installed_files (different signatures, unchanged)
 ```
 
-### Function-to-Category Table
+### Category Descriptor Table
 
-| Function | Manifest Key | Copy Semantics | Source Subdir | Target Subdir |
-|----------|-------------|----------------|---------------|---------------|
-| `copy_simple_files()` | `agents`, `commands`, `rules` | Simple copy (flat .md files) | `{category}/` | `{category}/` (agents use `agents_subdir`) |
-| `copy_skill_dirs()` | `skills` | Recursive copy (full directory tree) | `skills/{name}/` | `skills/{name}/` |
-| `copy_context_dirs()` | `context` | Recursive copy (preserves structure) | `context/{path}/` | `context/{path}/` |
-| `copy_scripts()` | `scripts` | Simple copy + preserve .sh permissions | `scripts/` | `scripts/` |
-| `copy_hooks()` | `hooks` | Simple copy + always preserve execute perms | `hooks/` | `hooks/` |
-| `copy_docs()` | `docs` | Simple copy (files) or recursive (dirs) | `docs/` | `docs/` |
-| `copy_templates()` | `templates` | Simple copy (no execute permissions) | `templates/` | `templates/` |
-| `copy_systemd()` | `systemd` | Simple copy (no execute permissions) | `systemd/` | `systemd/` |
-| `copy_root_files()` | `root_files` | Simple copy (no execute permissions) | `root-files/` | `{target_dir}/` root |
-| `copy_data_dirs()` | `data` | Merge-copy (skip existing files) | `data/{name}/` | `{project_dir}/{name}/` |
-| `check_conflicts()` | all categories | Read-only scan; returns conflict list | n/a | `{target_dir}/{category}/` |
-| `remove_installed_files()` | n/a (takes file list) | Delete files; remove empty dirs deepest-first | n/a | n/a |
+`M.CATEGORY_DESCRIPTORS`, keyed by category name:
 
-**`copy_root_files()` cannot deliver a consumer repo-root contribution.** Its target is
-`{target_dir}/` root — for the core extension, `{target_dir}` is the consumer's `.claude/`
-directory, not the repository root. A pattern intended for the repo's own root `/.gitignore`
-(e.g. a `specs/*/` runtime-file ignore block) placed in `root-files/.gitignore` would deploy to
-`.claude/.gitignore` and resolve relative to `.claude/`, matching nothing. There is currently no
-loader function that writes to a consumer repo's root; such a contribution is applied by hand,
-once, per `context/standards/orchestrator-runtime-files.md`'s "Consumer Repo Setup" section.
+| Category | `list_key` | `entry_kind` | `preserve_perms` | `symlink_guard` | Other fields |
+|----------|-----------|--------------|-------------------|-----------------|--------------|
+| `agents` | `agents` | `file` | `sh_only` | yes | target subdir overridable via `opts.agents_subdir` |
+| `commands` | `commands` | `file` | `sh_only` | yes | |
+| `rules` | `rules` | `file` | `sh_only` | yes | |
+| `skills` | `skills` | `dir` | `sh_only` | yes | each entry is itself a directory, recursively copied |
+| `context` | `context` | `file_or_dir` | `none` | no | an entry may be a file or a directory |
+| `scripts` | `scripts` | `file` | `always` | no | entries may themselves contain `/` (subdirectory-declared) |
+| `hooks` | `hooks` | `file` | `always` | no | |
+| `docs` | `docs` | `file_or_dir` | `none` | no | |
+| `templates` | `templates` | `file` | `none` | no | |
+| `systemd` | `systemd` | `file` | `none` | no | |
+| `root_files` | `root_files` | `file` | `none` | no | `target_subdir = ""` (lands at `target_dir` root); `install_once` set for `settings.json`/`settings.local.json` |
+| `manifest` | n/a | n/a | `none` | n/a | `single_file = true`, `self_load_skip = true` -- one fixed source file, not a `provides.*` list |
+| `data` | `data` | `dir` | `none` | n/a | `merge_copy_only = true`, `target_is_project_root = true` -- lands under `project_dir`, skips entries that already exist |
+
+**`preserve_perms` modes**: `"always"` (every copied file keeps its execute bit -- scripts/hooks),
+`"sh_only"` (only `.sh`-suffixed entries do -- agents/commands/rules/skills), `"none"`
+(everything else).
+
+**`entry_kind` values**: `"file"` (flat file per entry), `"dir"` (each entry is itself a
+directory, recursively copied and symlink-guarded as a whole), `"file_or_dir"` (an entry may be
+either -- context/docs).
+
+**`root_files` cannot deliver a consumer repo-root contribution.** Its target is `{target_dir}/`
+root -- for the core extension, `{target_dir}` is the consumer's `.claude/` directory, not the
+repository root. A pattern intended for the repo's own root `/.gitignore` (e.g. a `specs/*/`
+runtime-file ignore block) placed in `root-files/.gitignore` would deploy to `.claude/.gitignore`
+and resolve relative to `.claude/`, matching nothing. There is currently no loader function that
+writes to a consumer repo's root; such a contribution is applied by hand, once, per
+`context/standards/orchestrator-runtime-files.md`'s "Consumer Repo Setup" section.
 
 ### Copy Semantics Detail
 
-**Simple copy**: Read source file, write to target path. Parent directories created automatically.
-Execute permissions preserved only when `preserve_perms=true` AND file ends in `.sh`.
+**"file" entries**: Read source file, write to target path. Parent directories created
+automatically. Execute permissions preserved per the category's `preserve_perms` mode.
 
-**Recursive copy**: Uses `scan_directory_recursive()` to walk all files under a directory,
-preserving subdirectory structure. Uses `glob("**/*")` plus top-level file fallback.
+**"dir"/"file_or_dir" recursive entries**: Uses an internal `scan_directory_recursive()` to walk
+all files under a directory, preserving subdirectory structure (`glob("**/*")` plus a top-level
+file fallback).
 
-**Permission-preserving copy**: After writing, calls `helpers.copy_file_permissions(src, tgt)`
-to replicate the source file's mode bits on the target.
+**Permission-preserving copy**: After writing, calls `helpers.copy_file_permissions(src, tgt)` to
+replicate the source file's mode bits on the target, when the category's `preserve_perms` mode
+says to.
 
-**Merge-copy**: Before writing, checks `vim.fn.filereadable(target_path)`. If the target already
-exists it is **skipped** (user data preserved). Only new skeleton files are copied. These files
-are tracked separately in `data_skeleton_files` so that unload can remove extension-provided
-starters without touching user-created files.
+**Symlink guard**: For a category with `symlink_guard = true`, a pre-existing symlink at the
+deployed target is left alone rather than written through -- the copy engine only ever owns paths
+it created as regular files (see `extension-deploy-modes.md` for the full ownership rule and
+`M.remove_installed_files`'s matching invariant on the removal side).
+
+**Install-once**: For an entry present in a category's `install_once` set (currently only
+`root_files`' `settings.json`/`settings.local.json`), the copy is skipped (counted, not written)
+whenever a target copy already exists -- these files carry project-specific customizations that
+must never be silently overwritten by a reload/regenerate.
+
+**Merge-copy** (`data` only): Before writing, checks `vim.fn.filereadable(target_path)`. If the
+target already exists it is **skipped** (user data preserved). Only new skeleton files are
+copied. These files are tracked separately in `data_skeleton_files` so that unload can remove
+extension-provided starters without touching user-created files.
 
 ---
 
-## Function Signatures
+## Function Signature
 
 ```lua
---- Copy simple files (agents, commands, rules)
-function M.copy_simple_files(manifest, source_dir, target_dir, category, extension, agents_subdir)
-  -- manifest.provides[category] = array of filenames
-  -- agents_subdir: optional override for agents target subdir (e.g., "agent/subagents" for OpenCode)
-  -- returns: copied_files[], created_dirs[]
-
---- Copy skill directories (recursive)
-function M.copy_skill_dirs(manifest, source_dir, target_dir)
-  -- manifest.provides.skills = array of skill directory names
-  -- returns: copied_files[], created_dirs[]
-
---- Copy context directories (preserving structure)
-function M.copy_context_dirs(manifest, source_dir, target_dir)
-  -- manifest.provides.context = array of relative paths (files or directories)
-  -- returns: copied_files[], created_dirs[]
-
---- Copy scripts (with permission preservation)
-function M.copy_scripts(manifest, source_dir, target_dir)
-  -- manifest.provides.scripts = array of filenames
-  -- .sh files get execute permissions copied from source
-  -- returns: copied_files[], created_dirs[]
-
---- Copy hooks (execute permissions always preserved)
-function M.copy_hooks(manifest, source_dir, target_dir)
-  -- manifest.provides.hooks = array of filenames
-  -- ALL files get execute permissions copied regardless of extension
-  -- returns: copied_files[], created_dirs[]
-
---- Copy docs (flat files or recursive directories)
-function M.copy_docs(manifest, source_dir, target_dir)
-  -- manifest.provides.docs = array of filenames or directory names
-  -- directories are copied recursively; files are copied flat
-  -- returns: copied_files[], created_dirs[]
-
---- Copy templates (flat files, no execute permissions)
-function M.copy_templates(manifest, source_dir, target_dir)
-  -- manifest.provides.templates = array of filenames
-  -- returns: copied_files[], created_dirs[]
-
---- Copy systemd unit files (flat files, no execute permissions)
-function M.copy_systemd(manifest, source_dir, target_dir)
-  -- manifest.provides.systemd = array of unit filenames
-  -- returns: copied_files[], created_dirs[]
-
---- Copy root files (to target_dir root, not a subdirectory)
-function M.copy_root_files(manifest, source_dir, target_dir)
-  -- manifest.provides.root_files = array of filenames
-  -- source reads from extension's root-files/ subdirectory
-  -- target goes directly into target_dir/ (e.g., .claude/settings.json)
-  -- returns: copied_files[], created_dirs[]
-
---- Copy data directories (merge-copy semantics)
-function M.copy_data_dirs(manifest, source_dir, project_dir)
-  -- manifest.provides.data = array of directory names
-  -- NOTE: third arg is project_dir (not target_dir) - data goes to project root
-  -- only copies files that do not already exist (preserves user data)
-  -- returns: skeleton_files[], created_dirs[]
+--- Copy one provides.* category (or the manifest/data special cases) per its descriptor.
+--- @param category string Category name; must be a key of M.CATEGORY_DESCRIPTORS
+--- @param manifest table Extension manifest
+--- @param source_dir string Extension source directory
+--- @param target_dir string Target base directory (.claude or .opencode)
+--- @param protected_paths table|nil Set of protected relative paths {[path] = true}
+--- @param opts table|nil { project_dir, extension_name, agents_subdir } -- required per
+---   category: `data` needs project_dir; `manifest` needs extension_name; `agents` uses
+---   agents_subdir if given (falls back to the descriptor's own "agents" target_subdir)
+--- @return table copied_files
+--- @return table created_dirs
+--- @return number skipped_count Files skipped due to .syncprotect (or install-once/merge-copy)
+--- @return number symlink_skipped_count Files/dirs skipped because the deployed target is a
+---   pre-existing symlink
+function M.copy_category(category, manifest, source_dir, target_dir, protected_paths, opts)
 
 --- Check for conflicts before loading
+--- @param manifest table Extension manifest
+--- @param target_dir string Target base directory
+--- @param project_dir string|nil Project directory (for data conflict checking)
+--- @return table conflicts Array of {category, file, path, [merge=true]}; merge=true means a
+---   data-directory merge scenario, not an overwrite conflict
 function M.check_conflicts(manifest, target_dir, project_dir)
-  -- project_dir is optional (only used for data conflict checking)
-  -- returns: conflicts[] where each is {category, file, path, [merge=true]}
-  -- merge=true means data directory merge scenario (not an overwrite conflict)
 
 --- Remove installed files on unload
-function M.remove_installed_files(installed_files, installed_dirs)
-  -- installed_files: array of absolute file paths to delete
-  -- installed_dirs: array of absolute directory paths; only empty dirs are removed
-  -- dirs sorted deepest-first so nested empty dirs are cleaned before parents
-  -- returns: removed_count (number of files deleted)
+--- @param installed_files table Array of absolute file paths to delete
+--- @param installed_dirs table Array of absolute directory paths; only empty dirs are removed
+--- @param opts table|nil { project_dir } -- bounds the symlinked-ancestor-directory walk; without
+---   it, any path resolving through a symlink anywhere is skipped rather than deleted (fail-safe)
+--- @return number removed_count
+--- @return number skipped_count Paths left in place because they (or an ancestor) are a symlink
+--- Dirs sorted deepest-first so nested empty dirs are cleaned before parents.
+function M.remove_installed_files(installed_files, installed_dirs, opts)
 ```
 
 ---
@@ -140,38 +132,47 @@ The extension loading system consists of 8 Lua source files:
 
 | File | Description |
 |------|-------------|
-| `init.lua` | Public API. Provides `M.create(config)` returning a manager with `load()`, `unload()`, `reload()`, `get_status()`, `list_available()`, `list_loaded()`, `get_details()`, `verify()`, `verify_all()`. Orchestrates all other modules. |
-| `loader.lua` | File copy engine. All 12 public functions for copying extension files into the target project. Handles permission preservation, merge-copy, and conflict detection. |
-| `merge.lua` | Merge strategies. `generate_claudemd()`, `append_index_entries()`, `remove_index_entries_tracked()`, `remove_orphaned_index_entries()`, `merge_settings()`, `unmerge_settings()`, `inject_section()`, `remove_section()`. |
+| `init.lua` | Public API. Provides `M.create(config)` returning a manager with `load()`, `unload()`, `reload()`, `resync_all()`, `wipe()`, `regenerate()`, `get_status()`, `list_available()`, `list_loaded()`, `get_details()`, `verify()`, `verify_all()`. Orchestrates all other modules. |
+| `loader.lua` | File copy engine. `M.copy_category()` (descriptor-driven, covers all 13 category keys), `M.check_conflicts()`, `M.remove_installed_files()`, `M.load_syncprotect()`. Handles permission preservation, merge-copy, install-once, and symlink-guard semantics per `CATEGORY_DESCRIPTORS`. |
+| `merge.lua` | Merge strategies. `generate_claudemd()`, `generate_opencode_json()`, `append_index_entries()`, `remove_index_entries_tracked()`, `remove_orphaned_index_entries()`, `merge_settings()`, `unmerge_settings()`, `inject_section()`, `remove_section()`. |
 | `state.lua` | State tracking via `extensions.json`. `read()`, `write()`, `mark_loaded()`, `mark_unloaded()`, `is_loaded()`, `needs_update()`, `get_installed_files()`, `get_installed_dirs()`, `get_merged_sections()`, `get_data_skeleton_files()`, `list_loaded()`, `get_extension_info()`. |
 | `manifest.lua` | Extension discovery and manifest validation. `get_extension()`, `list_extensions()`. Validates required fields (`name`, `version`, `description`) and known `provides` categories. |
 | `config.lua` | Configuration presets. `M.create(opts)` for custom config, `M.claude()` preset for `.claude/` target, `M.opencode()` preset for `.opencode/` target. |
 | `picker.lua` | Telescope picker UI. Provides the extension browser launched from the extension picker. Reads manager API from `init.lua` to show status, details, and trigger load/unload. |
-| `verify.lua` | Post-load integrity checks. `verify_extension()` confirms all manifested files were actually copied to target, index entries exist in `index.json`, and settings entries were merged. `notify_results()` reports failures to the user. |
+| `verify.lua` | Post-load integrity checks. `verify_extension()` confirms all manifested files were actually copied to target, index entries exist in `index.json`, settings entries were merged, AND (declared-vs-deployed parity plus content-hash equality across every `provides.*` category, driven by `loader.CATEGORY_DESCRIPTORS`) that no deployed file's content has drifted from its source. `notify_results()` reports failures to the user. |
 
 ---
 
 ## Usage in init.lua
 
-When `manager.load()` runs, it calls these loader functions in order:
+When `manager.load()` runs, it calls `loader_mod.copy_category` once per category, in a fixed
+order:
 
 ```
-1. copy_simple_files(manifest, source, target, "agents", ".md", config.agents_subdir)
-2. copy_simple_files(manifest, source, target, "commands", ".md")
-3. copy_simple_files(manifest, source, target, "rules", ".md")
-4. copy_skill_dirs(manifest, source, target)
-5. copy_context_dirs(manifest, source, target)
-6. copy_scripts(manifest, source, target)
-7. copy_hooks(manifest, source, target)
-8. copy_docs(manifest, source, target)
-9. copy_templates(manifest, source, target)
-10. copy_systemd(manifest, source, target)
-11. copy_root_files(manifest, source, target)
-12. copy_data_dirs(manifest, source, project_dir)   -- note: project_dir not target
+1.  copy_category("agents", manifest, source, target, protected_paths, opts)
+2.  copy_category("commands", manifest, source, target, protected_paths, opts)
+3.  copy_category("rules", manifest, source, target, protected_paths, opts)
+4.  copy_category("skills", manifest, source, target, protected_paths, opts)
+5.  copy_category("context", manifest, source, target, protected_paths, opts)
+6.  copy_category("scripts", manifest, source, target, protected_paths, opts)
+7.  copy_category("hooks", manifest, source, target, protected_paths, opts)
+8.  copy_category("docs", manifest, source, target, protected_paths, opts)
+9.  copy_category("templates", manifest, source, target, protected_paths, opts)
+10. copy_category("systemd", manifest, source, target, protected_paths, opts)
+11. copy_category("root_files", manifest, source, target, protected_paths, opts)
+12. copy_category("manifest", manifest, source, target, protected_paths, opts)
+13. copy_category("data", manifest, source, target, protected_paths, opts)  -- opts.project_dir required
 ```
 
 All operations run inside a `pcall` block. On failure, `remove_installed_files()` rolls back
 all copied files and directories before the error is returned to the caller.
+
+`manager.resync_all(opts)` force-resyncs (`opts.force = true`) every currently-active extension
+in Kahn's-algorithm dependency order, reusing the same `manager.load` path above rather than a
+separate loop. `manager.wipe(opts)` performs the full destructive sequence (snapshot
+`settings.json`/`settings.local.json`/`.syncprotect`-listed paths -> `rm -rf target_dir` ->
+`manager.regenerate`, which restores the snapshot as the merge base BEFORE re-running the load
+loop above for every surviving active extension, then clears the snapshot staging directory).
 
 ---
 

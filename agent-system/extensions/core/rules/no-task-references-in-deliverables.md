@@ -134,19 +134,30 @@ Three layers. `specs/**` is the ONLY exempt tree — `agent-system/extensions/**
 papered over — adding it to those three agents is out of scope for the plan that authored this
 section and is left as a follow-up.
 
-**Discovered deploy-mechanism gap (not part of this rule's own scope, recorded for maintainers)**:
-`agent-system/extensions/core/root-files/settings.json` is install-only — the deploy loader
-(`manager.load()` in `lua/neotex/shared/extensions/init.lua`) skips a `root-files/settings.json`
-copy entirely once an extension is already marked loaded, so a new hook registration added there
-alone never reaches an already-deployed repo's `.claude/settings.json`. The registration that
-actually takes effect on redeploy is the one in `merge-sources/settings-hooks.json` (an add-only,
-dedup-on-`deep_equal` merge target re-applied on every "Load Core"/"Sync all"). Separately, the
-headless "Load Core" sync path used by `deploy-headless.sh` does not re-run the per-extension
-`copy_scripts`/`copy_manifest` sequence for already-loaded extensions either, so a brand-new
-`scripts/<subdir>/*.sh` file (e.g. this rule's own `scripts/lib/task-reference-patterns.sh`,
-added when the taxonomy/library were first authored) can silently never reach
-`.claude/scripts/<subdir>/` on an existing deploy, even though `check-task-references.sh`'s
-source-store-fallback path masks the gap during in-repo verification. Both gaps were discovered
-empirically during this rule's own write-time-gate flip and worked around for this repo via a
-direct one-off invocation of the loader's copy primitives; neither gap is fixed by this task, and
-both remain open follow-ups in the extension-loader subsystem, not in this rule.
+**Deploy-mechanism note (not part of this rule's own scope, recorded for maintainers)**:
+`agent-system/extensions/core/root-files/settings.json` is install-only by design — the deploy
+loader's `manager.load` (`neotex.plugins.ai.shared.extensions.init`) skips a
+`root-files/settings.json` copy once a target repo already has one, since that file carries
+user/project-specific hook permissions and MCP configuration that must never be silently
+overwritten. A new hook registration therefore does not reach an already-deployed repo's
+`.claude/settings.json` through the root-files copy at all — it reaches it exclusively through
+`merge-sources/settings-hooks.json` (an add-only, dedup-on-`deep_equal` merge target re-applied
+on every load/resync/regenerate, reachable via the picker's `[Reload All]`/`[Regenerate]` entries
+or `deploy-headless.sh`).
+
+A second, related class of symptom — a brand-new `scripts/<subdir>/*.sh` file (e.g. this rule's
+own `scripts/lib/task-reference-patterns.sh`, added when the taxonomy/library were first
+authored) silently never reaching `.claude/scripts/<subdir>/` on an existing deploy — was
+mis-diagnosed at the time this note was first written as an "already-loaded skip" analogous to
+the settings.json case above. It was not: the root cause was the (now-retired) glob+allow-list
+sync engine's top-path-segment allow-list match, which dropped every subdirectory-declared
+`provides.scripts`/`provides.hooks` entry unconditionally, on both a fresh deploy and a resync
+alike — it never ran a correct script copier for anyone, loaded or not. This is now fixed: the
+deploy tree is driven by a single manifest-driven engine (`neotex.plugins.ai.shared.extensions`'s
+`manager.load`/`manager.resync_all`/`manager.wipe`, reachable interactively via the picker's
+`[Reload All]`/`[Regenerate]` entries and headlessly via `deploy-headless.sh`), which addresses
+every declared entry — including subdirectory-declared ones — by its manifest path rather than by
+a directory-glob allow-list. A scratch-tree regression harness
+(`agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh`) asserts a
+subdirectory-declared `scripts/lib/*.sh` entry lands on both a fresh deploy and a resync, guarding
+against a regression of this exact defect class.

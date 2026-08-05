@@ -482,7 +482,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation summary file format",
-      "line_count": 58,
+      "line_count": 76,
       "keywords": [
         "format",
         "summary",
@@ -557,7 +557,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Guide for creating new extensions",
-      "line_count": 266,
+      "line_count": 267,
       "keywords": [
         "guide",
         "extension",
@@ -583,7 +583,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Loader function reference: all 12 public loader.lua functions with signatures, copy semantics, and source file descriptions",
-      "line_count": 181,
+      "line_count": 182,
       "keywords": [
         "guide",
         "loader",
@@ -2818,7 +2818,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
-      "line_count": 149,
+      "line_count": 159,
       "keywords": [
         "regeneration",
         "deploy",

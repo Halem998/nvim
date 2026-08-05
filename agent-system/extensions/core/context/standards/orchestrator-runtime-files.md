@@ -101,8 +101,8 @@ mechanism-level justification for the settled split, independent of (and consist
 ## Consumer Repo Setup
 
 There is no automatic way for the source store to deliver a repo-root `.gitignore` contribution —
-`copy_root_files()` deploys `root-files/` into the consumer's `.claude/` directory, not the repo
-root (see `context/guides/loader-reference.md`), so a `specs/*/` pattern placed there would
+`copy_category("root_files", ...)` deploys `root-files/` into the consumer's `.claude/` directory,
+not the repo root (see `context/guides/loader-reference.md`), so a `specs/*/` pattern placed there would
 resolve to `.claude/specs/*/` and silently match nothing. This is exactly why
 `specs/.sessions/` (the in-flight session registry's storage directory — see the Class Table row
 above) is covered ONLY by the consumer repo's own root `/.gitignore`, never by

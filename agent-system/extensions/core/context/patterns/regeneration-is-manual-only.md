@@ -2,10 +2,14 @@
 
 ## Overview
 
-The `<leader>al` picker ("Load Core" / "Load All") is the primary mechanism that deploys the
+The `<leader>al` picker's `[Reload All]` (non-destructive force-resync) and `[Regenerate]`
+(destructive wipe + rebuild) entries are the primary interactive mechanism that deploys the
 extension source store (`agent-system/extensions/**`) into a consuming repo's gitignored
 `.claude/` tree. Every deployed file under `.claude/` has a source under
-`agent-system/extensions/**`; nothing under `.claude/` is hand-authored.
+`agent-system/extensions/**`; nothing under `.claude/` is hand-authored. Both entries -- and the
+headless path below -- are backed by the same single manifest-driven engine
+(`neotex.plugins.ai.shared.extensions`'s `manager.resync_all`/`manager.wipe`); there is no second,
+independent sync mechanism to keep in sync with this one.
 
 **CORRECTION.** An earlier revision of this document asserted that regeneration had *no*
 headless, scripted, or CI equivalent, and instructed future work not to retread the question.
@@ -16,40 +20,45 @@ implemented as `scripts/deploy-headless.sh`.
 
 ## The Headless Path (verified)
 
-The two claims that produced the wrong conclusion, and what is actually true:
-
-| Earlier claim | Reality |
-|---|---|
-| `execute_sync` is module-local, so nothing can trigger a sync | True but irrelevant -- `M.load_all_globally` **is** exported and calls `execute_sync` internally |
-| `vim.fn.confirm()` blocks every code path with no bypass | It is an ordinary function reference and can be stubbed in-process before the call |
-
-The working invocation, run with cwd at the target repo root:
+`scripts/deploy-headless.sh` calls the manifest-driven engine's `manager` functions directly with
+an explicit `confirm = false` option, rather than stubbing `vim.fn.confirm()` in front of an
+interactive-only entry point (the technique this section originally documented, back when the
+only bulk-sync engine was the picker-only, confirm-dialog-gated `load_all_globally`). That engine
+has since been retired: the picker's `[Reload All]`/`[Regenerate]` entries and this script are
+both direct `manager` callers now, with no confirm-stubbing indirection involved on either path.
 
 ```bash
-nvim --headless \
-  -c "lua vim.fn.confirm = function() return 1 end" \
-  -c "lua require('neotex.plugins.ai.claude.commands.picker.operations.sync').load_all_globally(nil)" \
-  -c "qa!"
+# Default: bootstrap-safe, non-destructive force-resync of every active extension
+bash scripts/deploy-headless.sh [TARGET_REPO]
+
+# Full destructive wipe + rebuild (snapshot -> rm -rf .claude -> regenerate -> restore)
+bash scripts/deploy-headless.sh --wipe [TARGET_REPO]
 ```
 
-Returning `1` selects the first dialog button -- "Sync all (replace existing)" when replacements
-are pending, "Add all" when only additions are. Both are the intended full-deploy choice.
+This was verified against a from-scratch scratch git repository: a fresh (no prior `.claude/`)
+default-mode deploy correctly reconstructs the full tree, including subdirectory-declared
+`provides.scripts`/`provides.hooks` entries -- the exact class of entry the retired engine
+silently dropped on both a fresh deploy and a resync alike (see
+`scripts/tests/test-deploy-propagation.sh`, whose Assertions A and B guard against a regression
+of this exact defect). `--wipe` was verified to survive `settings.local.json` and every
+`.syncprotect`-listed path byte-identically across the deletion.
 
-This was verified by deploying into a throwaway directory: 263 artifacts copied, including the
-event scripts, hooks, schema, and format docs, with all hook registrations present in the
-resulting `settings.json`.
-
-Use `scripts/deploy-headless.sh` rather than open-coding the invocation above -- it resolves the
-repo root, refuses to run outside a git repository, and reports the artifact count it deployed.
+Use `scripts/deploy-headless.sh` rather than open-coding an equivalent `manager` call -- it
+resolves the repo root, refuses to run outside a git repository, holds the `specs/.deploy-lock`
+mutex, and reports the artifact/extension count it deployed.
 
 ## When to Prefer Which
 
-- **Interactive `<leader>al`** remains the right default for a human at a terminal. The confirm
-  dialog is a genuine safeguard: a full sync overwrites deployed files, and seeing the
-  replacement count before agreeing is worth the keystroke.
+- **The interactive picker's `[Reload All]`/`[Regenerate]` entries** remain the right default for
+  a human at a terminal. `[Regenerate]` (the destructive path) is gated behind a `vim.fn.confirm`
+  yes/no dialog -- a genuine safeguard, since it deletes and rebuilds `.claude/` from scratch.
+  `[Reload All]` (non-destructive) is gated behind its own submenu choice
+  ("Reload All"/"Unload All"/"Step Through"/"Cancel") rather than a yes/no dialog, matching its
+  lower-risk, non-destructive intent while still requiring an explicit selection.
 - **`scripts/deploy-headless.sh`** is for scripted, CI, and agent-driven contexts where no human
-  is present to answer a dialog. It deliberately bypasses that safeguard, so it must be invoked
-  explicitly and never as a silent side effect of an unrelated operation.
+  is present to answer a dialog. Its `--wipe` flag deliberately bypasses the interactive
+  confirmation `[Regenerate]` would otherwise show, so it must be invoked explicitly and never as
+  a silent side effect of an unrelated operation.
 
 ## Automated Exception: The Inter-Cycle Self-Modification Checkpoint
 
@@ -106,10 +115,11 @@ authoritatively, in `context/patterns/batch-orchestration-guardrails.md`'s
 Two deploy behaviors are structural and survive any number of regenerations:
 
 - **Install-once root files.** `settings.json` and `settings.local.json` are listed in
-  `INSTALL_ONCE_ROOT_FILES`; `copy_root_files` skips them entirely once the target exists.
-  Anything added only to `root-files/settings.json` can therefore never reach an
-  already-initialized repo. Additions intended for existing repos belong in
-  `merge-sources/settings-hooks.json`, which is what the merge step actually reads.
+  `INSTALL_ONCE_ROOT_FILES`; the `root_files` category's descriptor-driven copier
+  (`loader.lua`'s `M.copy_category`, keyed by `CATEGORY_DESCRIPTORS.root_files.install_once`)
+  skips them entirely once the target exists. Anything added only to `root-files/settings.json`
+  can therefore never reach an already-initialized repo. Additions intended for existing repos
+  belong in `merge-sources/settings-hooks.json`, which is what the merge step actually reads.
 - **Add-only, object-granularity dedup.** The merge compares whole matcher objects via
   `vim.deep_equal` and only declines to add -- it never removes. A duplicate command entry
   already present in a deployed tree survives every future merge and requires manual removal.

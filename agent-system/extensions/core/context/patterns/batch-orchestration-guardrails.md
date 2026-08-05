@@ -160,9 +160,9 @@ MT path but a defect in them fails loudly or is merely cosmetic, not a silent wr
 
 The research behind this gate initially hypothesized that a source-store edit to orchestrator
 machinery could corrupt the *currently running* session. That hypothesis does not hold: this
-repository's core extension deploys manually (a human runs `<leader>al` / "Load Core" to
-regenerate `.claude/` from `agent-system/extensions/core/`), so a source-store edit cannot alter
-a session already in flight. That reversal does not cancel the gate — it redefines what the gate
+repository's core extension deploys manually (a human runs `<leader>al` -> `[Reload All]` or
+`[Regenerate]` to regenerate `.claude/` from `agent-system/extensions/core/`), so a source-store
+edit cannot alter a session already in flight. That reversal does not cancel the gate — it redefines what the gate
 actually protects. Of the three hazards this reasoning originally identified, hazard 2 below is
 now **RETIRED**; hazards 1 and 3 remain live and are the actual, surviving rationale for keeping
 this gate:

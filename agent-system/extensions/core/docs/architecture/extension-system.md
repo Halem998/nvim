@@ -226,44 +226,40 @@ The manifest declares what the extension provides:
 
 ### 2. Loader (loader.lua)
 
-The loader handles all file copy operations. For detailed function signatures and parameters, see [Loader Reference](../../context/guides/loader-reference.md).
+The loader handles all file copy operations through a single descriptor-driven copier,
+`M.copy_category`, table-driven by `CATEGORY_DESCRIPTORS` (one entry per `provides.*` category
+plus the `manifest`/`data` special cases). This collapsed the historical 11 near-identical
+per-category `copy_*` functions into one, so the symlink guard and permission handling hold for
+every category by construction. For the full descriptor table, function signatures, and
+parameters, see [Loader Reference](../../context/guides/loader-reference.md).
 
-**All 12 functions**:
+**Core functions**:
 
 | Function | Copy Semantics | Notes |
 |----------|----------------|-------|
-| `copy_simple_files(manifest, source_dir, target_dir, category, extension, agents_subdir)` | Flat .md files | Used for agents, commands, rules |
-| `copy_skill_dirs(manifest, source_dir, target_dir)` | Recursive directory copy | Preserves skill subdirectory structure |
-| `copy_context_dirs(manifest, source_dir, target_dir)` | Recursive, preserving structure | Copies entire context subtrees |
-| `copy_scripts(manifest, source_dir, target_dir)` | .sh files, permissions preserved | Reads and restores file mode bits |
-| `copy_hooks(manifest, source_dir, target_dir)` | Always sets execute perms | Unlike scripts, always chmod +x |
-| `copy_docs(manifest, source_dir, target_dir)` | Files or recursive directories | Handles both flat files and subdirs |
-| `copy_templates(manifest, source_dir, target_dir)` | Flat files, no exec perms | Template files only |
-| `copy_systemd(manifest, source_dir, target_dir)` | Flat unit files | Systemd service/timer files |
-| `copy_root_files(manifest, source_dir, target_dir)` | Files at target_dir root | Placed directly in .claude/ root |
-| `copy_data_dirs(manifest, source_dir, project_dir)` | Merge-copy semantics | Only copies files that don't exist; uses project_dir (not target_dir) |
+| `copy_category(category, manifest, source_dir, target_dir, protected_paths, opts)` | Descriptor-driven: flat file, recursive directory, or file-or-dir, per `CATEGORY_DESCRIPTORS[category]` | One function for all 13 category keys (11 `provides.*` + `manifest` + `data`) |
 | `check_conflicts(manifest, target_dir, project_dir)` | Detection only | Returns conflict list; data conflicts flagged with merge=true |
-| `remove_installed_files(installed_files, installed_dirs)` | Cleanup | Removes files first, then empty dirs |
+| `remove_installed_files(installed_files, installed_dirs, opts)` | Cleanup | Removes files first, then empty dirs; skips symlinked paths |
 
-**Provides Categories and Their Loader Functions**:
+**Provides Categories** (all copied via `copy_category`, distinguished only by their descriptor):
 
-| Category | Loader Function | Semantics |
-|----------|-----------------|-----------|
-| `agents` | `copy_simple_files()` | Flat .md files copied to agents/ |
-| `skills` | `copy_skill_dirs()` | Recursive directory copy to skills/ |
-| `commands` | `copy_simple_files()` | Flat .md files copied to commands/ |
-| `rules` | `copy_simple_files()` | Flat .md files copied to rules/ |
-| `context` | `copy_context_dirs()` | Recursive copy preserving structure |
-| `scripts` | `copy_scripts()` | .sh files with permission preservation |
-| `hooks` | `copy_hooks()` | Scripts with always-executable perms |
-| `data` | `copy_data_dirs()` | Merge-copy: only adds missing files |
-| `docs` | `copy_docs()` | Files or directories |
-| `templates` | `copy_templates()` | Flat files, no exec perms |
-| `systemd` | `copy_systemd()` | Flat unit files |
-| `root_files` | `copy_root_files()` | Files at .claude/ root |
+| Category | `entry_kind` | Semantics |
+|----------|--------------|-----------|
+| `agents` | `file` | Flat .md files copied to agents/ (or `agents_subdir` override) |
+| `skills` | `dir` | Recursive directory copy to skills/ |
+| `commands` | `file` | Flat .md files copied to commands/ |
+| `rules` | `file` | Flat .md files copied to rules/ |
+| `context` | `file_or_dir` | Recursive copy preserving structure |
+| `scripts` | `file` | .sh files with permission preservation (entries may be subdirectory-declared) |
+| `hooks` | `file` | Scripts with always-executable perms |
+| `data` | `dir` | Merge-copy: only adds missing files; lands under `project_dir`, not `target_dir` |
+| `docs` | `file_or_dir` | Files or directories |
+| `templates` | `file` | Flat files, no exec perms |
+| `systemd` | `file` | Flat unit files |
+| `root_files` | `file` | Files at .claude/ root; `settings.json`/`settings.local.json` are install-once |
 
 **Conflict Detection**:
-Before loading, `check_conflicts()` scans target paths for existing files. If conflicts are found, the loader counts them and presents a **confirmation dialog** asking the user whether to proceed. If the user confirms, loading continues and files are overwritten. Data directory conflicts are flagged informational-only (`merge=true`) since `copy_data_dirs()` uses merge-copy semantics (it will not overwrite). There is no unconditional abort.
+Before loading, `check_conflicts()` scans target paths for existing files. If conflicts are found, the loader counts them and presents a **confirmation dialog** asking the user whether to proceed. If the user confirms, loading continues and files are overwritten. Data directory conflicts are flagged informational-only (`merge=true`) since the `data` category uses merge-copy semantics (it will not overwrite). There is no unconditional abort.
 
 ### 3. Merger (merge.lua)
 
@@ -351,19 +347,20 @@ Configuration presets for different agent systems:
    - Count file conflicts; present confirmation dialog if any exist
    - User confirms to proceed or cancels; no unconditional abort
    - Data directory conflicts are informational only (merge-copy skips existing)
-4. Copy files:
-   a. copy_simple_files(agents)
-   b. copy_simple_files(commands)
-   c. copy_simple_files(rules)
-   d. copy_skill_dirs()
-   e. copy_context_dirs()
-   f. copy_scripts()
-   g. copy_hooks()
-   h. copy_data_dirs()
-   i. copy_docs()
-   j. copy_templates()
-   k. copy_systemd()
-   l. copy_root_files()
+4. Copy files (`copy_category(category, ...)` called once per category, in this order):
+   a. `copy_category("agents", ...)`
+   b. `copy_category("commands", ...)`
+   c. `copy_category("rules", ...)`
+   d. `copy_category("skills", ...)`
+   e. `copy_category("context", ...)`
+   f. `copy_category("scripts", ...)`
+   g. `copy_category("hooks", ...)`
+   h. `copy_category("docs", ...)`
+   i. `copy_category("templates", ...)`
+   j. `copy_category("systemd", ...)`
+   k. `copy_category("root_files", ...)`
+   l. `copy_category("manifest", ...)`
+   m. `copy_category("data", ...)`
 5. Pre-load index cleanup:
    a. Collect provides.context prefixes from already-loaded extensions
    b. remove_orphaned_index_entries() - remove stale project/ entries
@@ -545,13 +542,13 @@ Extension files are tracked by git. Use `git checkout HEAD -- agent-system/exten
 ### State Consistency
 - State is only updated after successful operations
 - Installed file/directory lists enable clean unload
-- `data_skeleton_files` tracks files created by `copy_data_dirs()` (merge-copy, non-overwriting)
+- `data_skeleton_files` tracks files created by `copy_category("data", ...)` (merge-copy, non-overwriting)
 
 ---
 
 ## Install-Once vs Always-Overwrite (root_files / settings)
 
-`copy_root_files()` (`loader.lua`) and the OpenCode root-file sync loop (`sync.lua`,
+`copy_category("root_files", ...)` (`loader.lua`) and the OpenCode root-file sync loop (`sync.lua`,
 `scan_all_artifacts()`'s `root_file_names` handling) both distinguish two categories of root-level
 file:
 
@@ -574,7 +571,10 @@ time is not sufficient on its own if unload deletes the file first.
 Install-once is necessarily silent about a wipe that deletes the file itself (there is no
 "existing project copy" left to protect at that point). For that case, see `settings_backup.lua`
 and the "Settings File Location" subsection of `../guides/permission-configuration.md`, which
-cover the true zero-loss `backup -> wipe -> regenerate -> restore` sequence.
+cover the true zero-loss `manager.wipe` sequence: `backup -> rm -rf base_dir -> manager.regenerate`
+(itself `restore -> per-extension load loop -> clear staging`, restore-BEFORE-load-loop so the
+loop's fresh settings-fragment merges land on top of the restored base rather than being
+overwritten by a later restore).
 
 ---
 

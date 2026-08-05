@@ -255,14 +255,17 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # Fail CLOSED (never fall back to an inline copy or skip the check) if the shared overlap-
 # predicate lib is unsourceable. Deployed path: .claude/scripts/lib/file-scope-overlap.sh;
 # source-store path: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh. A missing
-# copy at the deployed path is the known extension-loader gap where new files under an already-
-# loaded extension's scripts/ subdirectories are not copied by the headless "Load Core" sync for
-# already-loaded extensions -- remedy: re-run the loader's copy_scripts step for the core
-# extension (or redeploy from source) so the file reaches .claude/scripts/lib/.
+# copy at the deployed path most likely just means this repo's .claude/ predates this file's
+# addition to the core manifest and has not been regenerated since -- the historical defect class
+# where a subdirectory-declared scripts/hooks entry was silently dropped even on a resync (the
+# retired glob+allow-list sync engine's top-path-segment allow-list bug) is fixed: the deploy tree
+# is now driven by a single manifest-driven engine that addresses every declared entry by its
+# manifest path. Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries or
+# bash scripts/deploy-headless.sh so the file reaches .claude/scripts/lib/.
 if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
   echo "ERROR: orchestrate-batch-admit.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
   echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
-  echo "  Remedy: re-run the loader's copy_scripts step for the core extension, or redeploy from source." >&2
+  echo "  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash scripts/deploy-headless.sh." >&2
   echo "  Failing CLOSED: no fallback overlap check will run; batch admission is blocked." >&2
   exit 2
 fi

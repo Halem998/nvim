@@ -23,8 +23,8 @@ case "${__guard_dir%/*}" in
     echo "ERROR: ${0##*/} must run from a deployed scripts/ tree (.claude/scripts/ or" >&2
     echo "       .opencode/scripts/), not '${__guard_dir}'." >&2
     echo "       This looks like the agent-system source store, where '../..' resolves to a" >&2
-    echo "       bogus repo root. Deploy first via <leader>al ('Load Core' / 'Sync all'), then" >&2
-    echo "       run the deployed copy." >&2
+    echo "       bogus repo root. Deploy first via <leader>al ('Reload All' / 'Regenerate') or" >&2
+    echo "       'bash scripts/deploy-headless.sh', then run the deployed copy." >&2
     exit 1
     ;;
 esac

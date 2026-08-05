@@ -4,7 +4,7 @@
 #
 # WHY THE SOURCE STORE, NEVER THE DEPLOYED INDEX: `.claude/context/index.json` is a disposable
 # deploy artifact regenerated from `agent-system/extensions/*/index-entries.json` on every
-# "Load Core"/redeploy (see .claude/rules/source-store-deploy-boundary.md). A `line_count` fix
+# redeploy (see .claude/rules/source-store-deploy-boundary.md). A `line_count` fix
 # written only to the deployed copy would be silently discarded on the next redeploy. This
 # script therefore reads and (in --write mode) rewrites ONLY the source
 # `agent-system/extensions/<ext>/index-entries.json` files, resolving each entry's source file

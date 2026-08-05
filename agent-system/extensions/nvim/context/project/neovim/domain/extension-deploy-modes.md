@@ -69,9 +69,12 @@ Concretely, in `lua/neotex/plugins/ai/shared/extensions/loader.lua`:
 - `M.remove_installed_files` skips (does not delete) any path whose final component is a symlink,
   and any path reached through a symlinked ancestor directory (bounded by the caller-supplied
   `project_dir`), incrementing a `skipped_count` for reporting rather than deleting.
-- `M.copy_simple_files` and `M.copy_skill_dirs` check for a pre-existing symlink at the deployed
-  target *before* copying, and skip the copy entirely (not recording the path as owned) when the
-  target is already a symlink.
+- `M.copy_category`, the single descriptor-driven copier every category flows through, checks for
+  a pre-existing symlink at the deployed target *before* copying and skips the copy entirely (not
+  recording the path as owned) when the target is already a symlink -- gated by each category
+  descriptor's `symlink_guard` field in `CATEGORY_DESCRIPTORS`, `true` for exactly the categories
+  the former per-category copier functions (`copy_simple_files` for agents/commands/rules,
+  `copy_skill_dirs` for skills) used to guard individually.
 
 ### Why skip-and-warn rather than unlink-and-recreate
 
@@ -112,7 +115,8 @@ must budget for this same repair sequence, or rederive the relative path dynamic
 
 ## Consequence for future loader changes
 
-Any new copy or removal path added to `loader.lua` (a new `copy_*` function, or a new caller of
+Any new copy or removal path added to `loader.lua` (a new category descriptor in
+`CATEGORY_DESCRIPTORS`, a change to `M.copy_category` itself, or a new caller of
 `remove_installed_files`) must preserve the ownership rule: check `vim.fn.getftype()` on the
 deployed target before writing or deleting through it, and skip when the target is a symlink not
 owned by the copy engine. Treat this as a standing invariant, not a one-time fix.

@@ -1,0 +1,68 @@
+{
+  "phase": 8,
+  "phase_name": "Correct the stale prose and remediation instructions",
+  "started_at": "2026-08-05T20:20:00Z",
+  "last_updated": "2026-08-05T21:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Correct the 4 high-priority mis-diagnosis/advisory-string files named directly by the plan",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
+        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+        "agent-system/extensions/core/scripts/deploy-root-guard.sh",
+        "agent-system/extensions/core/scripts/check-extension-docs.sh"
+      ],
+      "note": "All 4 rewritten per plan guidance. check-extension-docs.sh had 10 distinct sites (more than the plan's prose implied)."
+    },
+    {
+      "id": 2,
+      "description": "Sweep the 7 lower-priority files the plan named",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/scripts/task-lock.sh",
+        "agent-system/extensions/core/scripts/generate-context-line-counts.sh",
+        "agent-system/extensions/core/docs/README.md",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "agent-system/extensions/core/merge-sources/claudemd.md"
+      ],
+      "note": "context/standards/task-management.md's grep hit ('Sync all tasks') confirmed a false positive (/task --sync command flag, unrelated) -- no edit needed there. task-lock.sh and orchestrate-batch-admit.sh both carried the same mis-diagnosis pattern as objective 1's rule-file fix and were rewritten, not just button-label-patched."
+    },
+    {
+      "id": 3,
+      "description": "Widened sweep for the 11 Phase-2-retired per-category copy_* function names (a staleness class the plan's own Scope Hypothesis grep pattern did not cover)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/nvim/context/project/neovim/domain/extension-deploy-modes.md",
+        "agent-system/extensions/core/context/guides/loader-reference.md",
+        "agent-system/extensions/core/docs/architecture/extension-system.md",
+        "agent-system/extensions/core/docs/guides/permission-configuration.md",
+        "agent-system/extensions/core/context/guides/extension-development.md",
+        "agent-system/extensions/core/context/architecture/context-layers.md",
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+      ],
+      "note": "loader-reference.md and extension-system.md's Loader section needed comprehensive rewrites (full API reference docs for the retired 11-function architecture). Also found and fixed a third staleness class: both permission-configuration.md and extension-system.md described the wipe sequence's restore step as running AFTER manager.regenerate, the pre-Phase-5 buggy ordering Phase 5 specifically fixed."
+    },
+    {
+      "id": 4,
+      "description": "Final grep sweeps (stale short-form module path, retired button labels, retired function names) and line-count regeneration for doc-lint",
+      "status": "done",
+      "files_touched": [],
+      "note": "grep -rn 'neotex.shared.extensions|neotex/shared/extensions' agent-system/extensions/ returns zero (the one occurrence was inside the objective-1 mis-diagnosis note, already corrected). generate-context-line-counts.sh --write (run from the deployed copy per its own root-guard) recomputed line_count for every file this phase changed, and as a side effect also fixed the one pre-existing formats/summary-format.md mismatch that predated this task. verify-deploy.sh now reports a full 16/16 PASS, 0 failures -- the first time in this task's lifetime."
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.scope-hypothesis",
+      "description": "Plan's Scope Hypothesis said 5 high-priority files plus 7 lower-priority sweeps, derived from a grep pattern (Load Core|Sync all|load_all_globally|shared/extensions)",
+      "type": "altered",
+      "reason": "That grep pattern does not match the 11 Phase-2-retired per-category copy_* function names (copy_simple_files, copy_skill_dirs, copy_context_dirs, copy_scripts, copy_hooks, copy_docs, copy_templates, copy_systemd, copy_root_files, copy_data_dirs, copy_manifest), which is a second, independent staleness class the plan did not anticipate. A broader sweep found and fixed 7 additional files, including two full reference-guide documents needing comprehensive rewrites.",
+      "annotation": "*(deviation: altered — scope widening, see plan Phase 8 notes)*"
+    }
+  ]
+}

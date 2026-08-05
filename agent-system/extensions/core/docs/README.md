@@ -131,7 +131,7 @@ The extension system provides task-type-specific support. Extensions are loaded 
 | present | Grant writing | Grant proposal development |
 | memory | Knowledge management | Learning and memory patterns |
 
-The `core` extension is the foundational layer. All other extensions declare `"dependencies": ["core"]` to ensure it is loaded first. Core files live in `agent-system/extensions/core/` and are installed to the standard `.claude/` layout when loaded. Sync (`Load Core Agent System`) sources core artifacts from `agent-system/extensions/core/` in the global repository.
+The `core` extension is the foundational layer. All other extensions declare `"dependencies": ["core"]` to ensure it is loaded first. Core files live in `agent-system/extensions/core/` and are installed to the standard `.claude/` layout when loaded. The picker's `[Reload All]`/`[Regenerate]` entries (or headlessly, `scripts/deploy-headless.sh`) source core artifacts from `agent-system/extensions/core/` in the global repository, via the manifest-driven extension loader (`neotex.plugins.ai.shared.extensions`).
 
 **Extension documentation**: [docs/architecture/extension-system.md](docs/architecture/extension-system.md)
 

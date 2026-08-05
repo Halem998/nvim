@@ -619,7 +619,7 @@
         "copy-engine"
       ],
       "summary": "Two deploy mechanisms (symlink installer, copy engine) for extension artifacts and their ownership rule",
-      "line_count": 118,
+      "line_count": 122,
       "load_when": {
         "agents": [
           "meta-builder-agent"

@@ -203,8 +203,9 @@ check_manifest_entries() {
   # Mirrors the agents/skills/commands/rules/scripts pattern above for the one manifest.provides
   # category previously left unchecked: context. A declared provides.context entry must exist on
   # disk under <ext_path>/context/<entry>; otherwise the extension's context never propagates
-  # through copy_context_dirs() / the "Load Core" allow-list, and downstream repos silently never
-  # receive it. Confirmed live in cslib's stale `lean` extension copy.
+  # through the manifest-driven descriptor copier (loader.lua's M.copy_category, category
+  # "context"), and downstream repos silently never receive it. Confirmed live in cslib's stale
+  # `lean` extension copy.
   local context_entries
   context_entries=$(jq -r '.provides.context[]? // empty' "$manifest" 2>/dev/null)
   local ce
@@ -217,9 +218,9 @@ check_manifest_entries() {
 
 # Rule F: Deployed-vs-source content drift for manifest.provides.scripts entries.
 #
-# copy_scripts()/copy_file() in lua/neotex/plugins/ai/shared/extensions/loader.lua performs a
-# byte-for-byte overwrite of .claude/scripts/<name> from <extension>/scripts/<name> on every
-# extension load/reload, with no path substitution or templating. If a script is later hotfixed
+# The manifest-driven descriptor copier (loader.lua's M.copy_category, category "scripts") uses
+# line-array read/write semantics with no path substitution or templating, so a deployed script's
+# content should always match its extension-source counterpart. If a script is later hotfixed
 # directly in the deployed .claude/scripts/ copy (instead of the extension source), that fix
 # silently regresses on the next sync. This check fails when a manifest.provides.scripts entry's
 # deployed copy differs in content from its extension-source copy.
@@ -307,7 +308,7 @@ check_settings_hook_registration_completeness() {
   jq empty "$source_settings" 2>/dev/null || return 0
 
   if [[ ! -f "$deployed_settings" ]]; then
-    advisory "deployed .claude/settings.json is missing entirely -- no hook registrations are live (regenerate via <leader>al 'Sync all')"
+    advisory "deployed .claude/settings.json is missing entirely -- no hook registrations are live (regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)"
     return 0
   fi
   jq empty "$deployed_settings" 2>/dev/null || return 0
@@ -322,7 +323,7 @@ check_settings_hook_registration_completeness() {
 
     for s in $src_scripts; do
       if ! grep -qxF "$s" <<< "$dep_scripts"; then
-        advisory "settings.json hook registration missing for event '$ev': $s (source declares it, deployed .claude/settings.json does not -- regenerate via <leader>al 'Sync all')"
+        advisory "settings.json hook registration missing for event '$ev': $s (source declares it, deployed .claude/settings.json does not -- regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)"
       fi
     done
 
@@ -339,10 +340,12 @@ check_settings_hook_registration_completeness() {
 # Sub-check of Rule O. Catches the specific, previously-unnoticed failure mode that let hook
 # registrations sit undeployed indefinitely while every other signal looked healthy.
 #
-# root-files/settings.json is INSTALL-ONCE: copy_root_files skips it whenever the target already
-# exists, so anything added only there can never reach an already-initialized repo, no matter how
-# many regenerations run. The file that DOES reach existing repos is the merge target declared in
-# manifest.json (merge_targets.settings.source, i.e. merge-sources/settings-hooks.json).
+# root-files/settings.json is INSTALL-ONCE: the root_files category's descriptor-driven copier
+# (loader.lua's M.copy_category, gated by CATEGORY_DESCRIPTORS.root_files.install_once) skips it
+# whenever the target already exists, so anything added only there can never reach an
+# already-initialized repo, no matter how many regenerations run. The file that DOES reach
+# existing repos is the merge target declared in manifest.json (merge_targets.settings.source,
+# i.e. merge-sources/settings-hooks.json).
 #
 # The sibling check above compares source-vs-deployed and would report such a hook as "missing
 # from the deployed settings.json" with a remediation of "regenerate" -- advice that cannot work
@@ -409,9 +412,9 @@ check_settings_merge_source_coverage() {
 # fully suppressed under --quiet), silently inverting that severity ordering.
 #
 # GUARDRAIL (binding, do not remove without re-reading the originating plan): core deploy drift
-# is resolved by regenerating the deploy tree -- either interactively via <leader>al "Sync all
-# (replace existing)" or headlessly via scripts/deploy-headless.sh. (An earlier revision of this
-# comment asserted there was no headless path; that was wrong. See
+# is resolved by regenerating the deploy tree -- either interactively via <leader>al "Reload All"
+# (or "Regenerate" for a full wipe+rebuild) or headlessly via scripts/deploy-headless.sh. (An
+# earlier revision of this comment asserted there was no headless path; that was wrong. See
 # context/patterns/regeneration-is-manual-only.md.) Regeneration is still an ACTION SOMEONE MUST
 # TAKE rather than something this gate can assume has happened, and one advisory class -- a hook
 # registered only in the install-once root-files/settings.json -- is not fixed by regenerating at
@@ -435,14 +438,14 @@ check_core_deploy_advisory() {
   scripts=$(jq -r '.provides.scripts[]? // empty' "$manifest" 2>/dev/null)
   for s in $scripts; do
     deployed="$REPO_ROOT/.claude/scripts/$s"
-    [[ -f "$deployed" ]] || advisory "core script never deployed: scripts/$s (regenerate via <leader>al 'Sync all (replace existing)')"
+    [[ -f "$deployed" ]] || advisory "core script never deployed: scripts/$s (regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)"
   done
 
   local hooks h
   hooks=$(jq -r '.provides.hooks[]? // empty' "$manifest" 2>/dev/null)
   for h in $hooks; do
     deployed="$REPO_ROOT/.claude/hooks/$h"
-    [[ -f "$deployed" ]] || advisory "core hook never deployed: hooks/$h (regenerate via <leader>al 'Sync all (replace existing)')"
+    [[ -f "$deployed" ]] || advisory "core hook never deployed: hooks/$h (regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)"
   done
 
   check_settings_hook_registration_completeness "$ext_path"
@@ -493,9 +496,9 @@ check_undeclared_skills() {
 #
 # Reverse direction of check_manifest_entries' rules loop, which only validates that declared
 # entries exist on disk. This catches the opposite bug: a rule file that exists on disk but was
-# never added to provides.rules, so copy_file()/the "Load Core" allow-list never deploys it and
-# consuming repos silently never receive it. Mirrors check_undeclared_skills (Rule A) for the
-# rules category.
+# never added to provides.rules, so the manifest-driven descriptor copier (loader.lua's
+# M.copy_category, category "rules") never deploys it and consuming repos silently never receive
+# it. Mirrors check_undeclared_skills (Rule A) for the rules category.
 #
 # Motivating case: core/rules/pr-prohibition.md existed on disk, was absent from core's
 # provides.rules, and was correspondingly absent from every consuming repo's .claude/rules/ --
@@ -1022,7 +1025,7 @@ check_referenced_scripts_declared() {
 # project's `.claude/` root, the reference is dangling -- this is the exact BimodalLogic/cslib
 # defect: a downstream repo's skill-orchestrate-hard referenced contracts absent from that
 # repo's deployed layer because core's `provides.context` never registered `contracts` (fixed in
-# Phase 1), so the contracts never propagated through "Load Core". This check is reference-driven
+# Phase 1), so the contracts never propagated through the deploy tree. This check is reference-driven
 # (only validates what deployed content actually cites in THIS project), never presence-driven,
 # so a project that references nothing missing passes even if it lacks some contracts files
 # entirely (e.g. a project not loading `lean`, correctly lacking lean-only contract overrides).
@@ -1094,7 +1097,8 @@ _git_deployed_files() {
 
 # Rules J/K/M: flat-category orphan check (agents, commands, scripts).
 #
-# "Flat" here means one directory level of copy_simple_files()/copy_scripts() semantics -- but
+# "Flat" here means one directory level of the manifest-driven descriptor copier's `entry_kind =
+# "file"` semantics (loader.lua's M.copy_category, categories agents/commands/scripts) -- but
 # for scripts, an individual provides.scripts entry may itself contain a "/" (e.g.
 # "lint/lint-postflight-boundary.sh", "tests/generate-test-fixtures.py"), so entries are matched
 # by their full relative path under the category root, not by basename alone.
@@ -1132,7 +1136,9 @@ check_flat_category_orphans() {
 # Rule L: context orphan check (recursive).
 #
 # provides.context entries are either a bare filename at context root (matches itself) or a
-# directory name (deployed recursively, preserving substructure, via copy_context_dirs()). The
+# directory name (deployed recursively, preserving substructure, via the manifest-driven
+# descriptor copier's `entry_kind = "file_or_dir"` handling -- loader.lua's M.copy_category,
+# category "context"). The
 # declared set must therefore be expanded to individual FILES, not just top-level entry names,
 # to correctly diff against a flat git-ls-files enumeration of .claude/context/. Multiple
 # extensions may legitimately declare the same directory-name entry (e.g. both core and
@@ -1331,7 +1337,8 @@ if [[ "$DEPLOY_DRIFT_ADVISORIES" -gt 0 ]]; then
   done
   echo
   echo "$DEPLOY_DRIFT_ADVISORIES advisory item(s) found. Resolve by regenerating the deploy tree,"
-  echo "either interactively (<leader>al -> 'Sync all (replace existing)') or headlessly:"
+  echo "either interactively (<leader>al -> 'Reload All', or 'Regenerate' for a full wipe+rebuild)"
+  echo "or headlessly:"
   echo "    bash .claude/scripts/deploy-headless.sh"
   echo "Then confirm with: bash .claude/scripts/verify-deploy.sh"
   echo "Note: advisories naming an install-once file (root-files/settings.json) are NOT fixed by"

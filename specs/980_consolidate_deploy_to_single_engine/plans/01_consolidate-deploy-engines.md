@@ -788,35 +788,86 @@ declaring a category outside this set must also be covered by the manifest-drive
 
 ---
 
-### Phase 8: Correct the stale prose and remediation instructions [NOT STARTED]
+### Phase 8: Correct the stale prose and remediation instructions [COMPLETED]
 
 **Goal**: Update every document and advisory string that names a retired entry point or records
 the superseded mis-diagnosis.
 
 **Tasks**:
-- [ ] Rewrite the mis-diagnosis in
+- [x] Rewrite the mis-diagnosis in
       `agent-system/extensions/core/rules/no-task-references-in-deliverables.md`'s deploy-mechanism
       gap section: the missing-scripts symptom was not an already-loaded skip in the manifest-driven
       loader — the retired glob+allow-list engine never ran the script copier for anyone, and its
       top-path-segment allow-list match dropped every subdirectory-declared entry on fresh and
       resync deploys alike. State the resolution (single engine, manifest-driven, subdirectory-safe).
-- [ ] Rewrite `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` — its
+      *(completed: rewrote the "Discovered deploy-mechanism gap" note as "Deploy-mechanism note",
+      correcting the second gap's diagnosis and stating the current-state resolution with a
+      pointer to the Phase 1 regression harness)*
+- [x] Rewrite `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` — its
       "Automated Exception" section is framed entirely around the retired entry point and needs a
-      rewrite, not a find-replace.
-- [ ] Update the user-facing error message in
-      `agent-system/extensions/core/scripts/deploy-root-guard.sh`.
-- [ ] Update the advisory strings in `agent-system/extensions/core/scripts/check-extension-docs.sh`
-      (the largest concentration of "Load Core / Sync all" remediation text).
-- [ ] Sweep the lower-priority mentions and update those that name a retired entry point:
+      rewrite, not a find-replace. *(completed: rewrote "The Headless Path", "When to Prefer
+      Which", and the "Merge Semantics" `copy_root_files` reference to describe the current
+      manager-direct-call design and the current `[Reload All]`/`[Regenerate]` picker entries;
+      the "Automated Exception" section itself needed no changes — its own content was already
+      entry-point-agnostic)*
+- [x] Update the user-facing error message in
+      `agent-system/extensions/core/scripts/deploy-root-guard.sh`. *(completed)*
+- [x] Update the advisory strings in `agent-system/extensions/core/scripts/check-extension-docs.sh`
+      (the largest concentration of "Load Core / Sync all" remediation text). *(completed: 10
+      distinct advisory/comment sites updated, including two references to Phase-2-retired
+      function names — `copy_context_dirs()`/`copy_scripts()` — the Scope Hypothesis's grep
+      pattern did not catch since it only searched for `Load Core`/`Sync all`/`load_all_globally`)*
+- [x] Sweep the lower-priority mentions and update those that name a retired entry point:
       `orchestrate-batch-admit.sh`, `generate-context-line-counts.sh`, `task-lock.sh`,
       `docs/README.md`, `context/patterns/batch-orchestration-guardrails.md`,
-      `context/standards/task-management.md`, `merge-sources/claudemd.md`.
-- [ ] Run a final `grep -rn 'shared/extensions' agent-system/extensions/` sweep for the stale path
+      `context/standards/task-management.md`, `merge-sources/claudemd.md`. *(completed for all 7;
+      `task-management.md`'s "Sync all tasks" hit confirmed a false positive — an unrelated
+      `/task --sync` command flag, no change needed. `task-lock.sh`/`orchestrate-batch-admit.sh`
+      both carried the SAME mis-diagnosis pattern as Task 1 above (a "known extension-loader gap"
+      describing the now-fixed defect as still open) and were rewritten accordingly, not just
+      button-label-patched)*
+- [x] Run a final `grep -rn 'shared/extensions' agent-system/extensions/` sweep for the stale path
       form the task description names. The research pass found no occurrences in the core extension
-      tree; confirm or find the outlier before closing this phase.
-- [ ] **DELIVERABLE RULE**: every edit in this phase names durable anchors (function names, entry
-      names, script names, section headings) and contains no task numbers.
-- [ ] **SOURCE-STORE RULE**: all edits land under `agent-system/extensions/**`. Never `.claude/**`.
+      tree; confirm or find the outlier before closing this phase. *(completed: the stale short
+      form `neotex.shared.extensions`/`neotex/shared/extensions` (missing `plugins/ai/`) had
+      exactly one occurrence, inside the Task 1 mis-diagnosis note itself, already corrected to
+      the full path as part of that rewrite. Zero occurrences remain)*
+- [x] **DELIVERABLE RULE**: every edit in this phase names durable anchors (function names, entry
+      names, script names, section headings) and contains no task numbers. *(confirmed by
+      re-running `check-task-references.sh` after every edit — no new findings)*
+- [x] **SOURCE-STORE RULE**: all edits land under `agent-system/extensions/**`. Never `.claude/**`.
+      *(confirmed: every edit target listed above is under `agent-system/extensions/**`)*
+
+**Scope widening (discovered during implementation, not anticipated by the plan)**: the plan's
+Scope Hypothesis grep (`Load Core\|Sync all\|load_all_globally\|shared/extensions`) does not match
+Phase 2's retired PER-CATEGORY function names (`copy_simple_files`, `copy_skill_dirs`,
+`copy_context_dirs`, `copy_scripts`, `copy_hooks`, `copy_docs`, `copy_templates`, `copy_systemd`,
+`copy_root_files`, `copy_data_dirs`, `copy_manifest`) at all — a second, independent staleness
+class this phase's own grep pattern was blind to. A broader sweep for these 11 names found
+substantial additional staleness beyond the plan's 5-high-priority-plus-7-lower-priority set: two
+full "reference guide" documents describing the retired 11-function architecture in detail
+(`context/guides/loader-reference.md` — comprehensively rewritten around `M.copy_category` +
+`CATEGORY_DESCRIPTORS`; `docs/architecture/extension-system.md`'s Loader section and Load/Unload
+Process step list — likewise rewritten, including correcting the copy-order list to match the
+actual current `init.lua` call order, where `data` is last, not 8th), plus five smaller
+function-name references (`docs/guides/permission-configuration.md`,
+`context/guides/extension-development.md`, `context/architecture/context-layers.md`,
+`context/standards/orchestrator-runtime-files.md`, and the same `extension-system.md`'s
+"Install-Once vs Always-Overwrite" section). The permission-configuration.md and
+extension-system.md fixes also corrected a THIRD, independent staleness class found during this
+sweep: both described the wipe sequence's restore step as running AFTER `manager.regenerate`
+(`backup -> rm -rf -> regenerate -> restore`), which is the pre-Phase-5 buggy ordering Phase 5
+specifically fixed (restore now runs BEFORE the load loop, inside `regenerate`, not after).
+
+**Line-count regeneration (mechanical, required by the doc-lint gate)**: every prose edit above
+that changed a source file's line count tripped `check-extension-docs.sh`'s Rule R
+(`index-entries.json` `line_count` mismatch) for that file. Resolved via the sanctioned
+`generate-context-line-counts.sh --write` (run from the deployed copy, per its own
+`deploy-root-guard.sh` precondition), which recomputed `line_count` for every changed entry AND,
+as a side effect, also corrected the one PRE-EXISTING mismatch
+(`formats/summary-format.md`) that predated this task and had been carried as the sole
+`verify-deploy.sh` failure since Phase 6 — `verify-deploy.sh` now reports a full 16/16 PASS with
+zero failures for the first time in this task's lifetime.
 
 **Timing**: 1 hour
 
@@ -827,19 +878,42 @@ the superseded mis-diagnosis.
 **Scope Hypothesis**: Asserts an edit set of 5 high-priority files plus 7 lower-priority sweeps.
 Confirm with `grep -rln 'Load Core\|Sync all\|load_all_globally\|shared/extensions' agent-system/extensions/`
 at implementation time and reconcile the list before editing; the confirmed set replaces this
-hypothesis.
+hypothesis. **Widened during implementation to also cover the 11 Phase-2-retired per-category
+function names — see "Scope widening" above.**
 
 **Files to modify**:
 - `agent-system/extensions/core/rules/no-task-references-in-deliverables.md` - mis-diagnosis corrected
 - `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` - rewritten around new entry points
 - `agent-system/extensions/core/scripts/deploy-root-guard.sh` - error message updated
 - `agent-system/extensions/core/scripts/check-extension-docs.sh` - advisory strings updated
-- (plus the confirmed lower-priority sweep set)
+- `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` - mis-diagnosis corrected (mirrors task-lock.sh)
+- `agent-system/extensions/core/scripts/task-lock.sh` - mis-diagnosis corrected
+- `agent-system/extensions/core/scripts/generate-context-line-counts.sh` - stray "Load Core" shorthand dropped
+- `agent-system/extensions/core/docs/README.md` - entry-point description updated
+- `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md` - button label updated
+- `agent-system/extensions/core/merge-sources/claudemd.md` - Syncprotect section updated
+- `agent-system/extensions/nvim/context/project/neovim/domain/extension-deploy-modes.md` - retired copier function names corrected
+- `agent-system/extensions/core/context/guides/loader-reference.md` - comprehensively rewritten around `M.copy_category`/`CATEGORY_DESCRIPTORS`
+- `agent-system/extensions/core/docs/architecture/extension-system.md` - Loader section, copy-order list, and wipe-sequence description corrected
+- `agent-system/extensions/core/docs/guides/permission-configuration.md` - function name and wipe-sequence ordering corrected
+- `agent-system/extensions/core/context/guides/extension-development.md` - two section headings and bodies rewritten around `copy_category`
+- `agent-system/extensions/core/context/architecture/context-layers.md` - function name corrected
+- `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md` - function name corrected
 
 **Verification**:
-- No surviving reference to a retired entry point in `agent-system/extensions/`.
-- The task-reference lint gate reports no new findings.
+- No surviving reference to a retired entry point in `agent-system/extensions/`. *(confirmed via
+  repeated `grep -rn` sweeps for both the button-label family and the 11 retired function names —
+  zero unexplained hits remain; all surviving hits are historical/past-tense references to the
+  retired mechanism, which is accurate documentation, not staleness)*
+- The task-reference lint gate reports no new findings. *(confirmed:
+  `check-task-references.sh --quiet` passes; `verify-deploy.sh` gate4 unchanged)*
 - Every changed hunk lies inside prose or a user-facing string — confirm by diff read-through.
+  *(confirmed: every edit is a comment, doc-lint advisory string, error message, or markdown
+  prose body; zero executable-logic changes in this phase)*
+- (added) `verify-deploy.sh` reports a full PASS after this phase's edits and the required
+  line-count regeneration — 16/16 checks, 0 failures, including the previously-pre-existing
+  `formats/summary-format.md` finding now also resolved.
+- (added) `test-deploy-propagation.sh` still `4 passed, 0 failed`; `sync_spec.lua`'s 5 cases still pass.
 
 ---
 
