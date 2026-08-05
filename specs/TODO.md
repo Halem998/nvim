@@ -26,7 +26,7 @@ next_project_number: 998
 
 ### Agent System
 
-948 [RESEARCHED] — Add a Stage 7 / final-metadata contract to ALL THREE cslib agents
+948 [PLANNED] — Add a Stage 7 / final-metadata contract to ALL THREE cslib agents
   └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
       └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
@@ -53,7 +53,7 @@ next_project_number: 998
 
 ### Literature
 
-994 [RESEARCHED] — Fix literature-extension tooling landmines surfaced by downstream
+994 [PLANNING] — Fix literature-extension tooling landmines surfaced by downstream
 
 ### Orchestration Concurrency
 
@@ -187,7 +187,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 994. Fix literature tooling landmines and sync pruning
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 980
@@ -1583,11 +1583,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 948. Add terminal-metadata contracts to all three cslib agents
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 963, Task 982
 - **Research**: [948_add_stage7_final_metadata_to_cslib_research_agent/reports/01_stage7-final-metadata-cslib-agents.md]
+- **Plan**: [948_add_stage7_final_metadata_to_cslib_research_agent/plans/01_stage7-cslib-agent-contracts.md]
 
 **Description**: Add a Stage 7 / final-metadata contract to ALL THREE cslib agents: agent-system/extensions/cslib/agents/cslib-research-agent.md (which currently has no terminal-metadata contract at all — this is the agent that actually failed in production), cslib-implementation-agent.md, and cslib-implementation-hard-agent.md. SCOPE WIDENED (post-review): the cslib-sibling artifacts-shape propagation formerly carried as item 5 of the handoff-unification task (and before that by the abandoned propagation task) lands HERE instead, so all cslib terminal-metadata work happens in one task and cannot collide with the handoff-unification task's file scope.
 

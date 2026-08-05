@@ -1,34 +1,21 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/948_add_stage7_final_metadata_to_cslib_research_agent/reports/01_stage7-final-metadata-cslib-agents.md",
-      "summary": "Confirms cslib-research-agent.md has no terminal-metadata stage at all (root cause of the research_complete incident), specifies mirrored Stage 7 text with artifacts-shape rationale for all three cslib agents, and settles the .orchestrator-handoff.json question as an explicit prohibition for the two non-hard agents and a two-gap fix (continuation_context->continuation_path, artifacts rationale) for the hard agent, per the now-completed handoff-unification and cslib summary-format prerequisite tasks."
+      "type": "plan",
+      "path": "specs/948_add_stage7_final_metadata_to_cslib_research_agent/plans/01_stage7-cslib-agent-contracts.md",
+      "summary": "Four-phase additive-only plan adding a terminal Stage 7 final-metadata contract to cslib-research-agent.md and cslib-implementation-agent.md, closing the two named continuation_path/artifacts-rationale gaps in cslib-implementation-hard-agent.md, and gating on a cross-file consistency and repo lint phase; includes verbatim drop-in text for every edit."
     }
   ],
-  "next_steps": "Run /plan 948 to create implementation plan",
+  "next_steps": "Run /implement 948 to execute the plan",
   "metadata": {
     "session_id": "sess_1785961976_f6b468_948",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 1.5,
+    "dependency_waves": [[1, 2, 3], [4]]
   },
-  "memory_candidates": [
-    {
-      "content": "When an agent's Stage 0 writes 'status: in_progress' but the file has no terminal Stage 7/final-metadata section, agents fabricate off-vocabulary status values (observed: 'research_complete') at return time rather than failing loudly. The fix is always additive: insert an explicit terminal-metadata stage naming the exact allowed status string(s) from return-metadata-file.md's normative vocabulary, plus the artifacts array-of-objects shape with its bare-string-array-breaks-.artifacts[0].path rationale, mirrored from general-research-agent.md's Stage 7 near-verbatim rather than paraphrased, to keep future drift-detection greppable.",
-      "category": "PATTERN",
-      "source_artifact": "specs/948_add_stage7_final_metadata_to_cslib_research_agent/reports/01_stage7-final-metadata-cslib-agents.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["return-meta.json", "status vocabulary", "Stage 7", "artifacts shape", "cslib agents", "off-vocabulary status"]
-    },
-    {
-      "content": "handoff-schema.md's 'Handoff Writers' table is the single settled source for whether an agent may write .orchestrator-handoff.json: it is formally hard-mode-implement-only. Research agents (any mode) and base-mode (non-hard) implementation agents must never write it -- they return exclusively via .return-meta.json. When auditing or fixing an extension's agent files for handoff-contract compliance, check this table first rather than inferring the rule from an individual agent file's existing (possibly wrong) behavior.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/948_add_stage7_final_metadata_to_cslib_research_agent/reports/01_stage7-final-metadata-cslib-agents.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrator-handoff.json", "handoff-schema.md", "hard-mode-implement-only", "handoff writers table", "continuation_path"]
-    }
-  ]
+  "memory_candidates": []
 }
