@@ -178,7 +178,7 @@ would invalidate Phases 2-4.
 
 ---
 
-### Phase 2: Sync validate-artifact.sh comments to the amended standard [NOT STARTED]
+### Phase 2: Sync validate-artifact.sh comments to the amended standard [COMPLETED]
 
 **Goal**: Make the validator's source self-documenting about sanctioned optional sections, so a
 future maintainer does not assume extra headings are unsafe — with zero change to validation
@@ -186,21 +186,21 @@ outcomes.
 
 **Tasks**:
 
-- [ ] Read the array-definition block of
+- [x] Read the array-definition block of
       `agent-system/extensions/core/scripts/validate-artifact.sh` (the `SUMMARY_METADATA` /
       `SUMMARY_SECTIONS` region and the explanatory `NOTE:` comment style already used for
-      `PLAN_METADATA`).
-- [ ] Add a `SUMMARY_SECTIONS_OPTIONAL=("Plan Deviations")` array immediately after
+      `PLAN_METADATA`). *(completed)*
+- [x] Add a `SUMMARY_SECTIONS_OPTIONAL=("Plan Deviations")` array immediately after
       `SUMMARY_SECTIONS`, with a comment stating it is **documentation-only**: it is deliberately
       not wired into `required_sections` and has no effect on validation, existing solely to keep
-      the script and `summary-format.md` from drifting.
-- [ ] Add a comment above `SUMMARY_SECTIONS` recording the enforcement semantics explicitly — the
+      the script and `summary-format.md` from drifting. *(completed)*
+- [x] Add a comment above `SUMMARY_SECTIONS` recording the enforcement semantics explicitly — the
       array is a required *minimum*; the check loop only reports missing entries and never
       enumerates document headings against a whitelist, so additional sections are accepted by
-      design, not by oversight.
-- [ ] Confirm the `case "$artifact_type" in ... summary)` branch is untouched and still assigns
-      only `SUMMARY_METADATA` and `SUMMARY_SECTIONS`.
-- [ ] Confirm no task-number citation was introduced.
+      design, not by oversight. *(completed)*
+- [x] Confirm the `case "$artifact_type" in ... summary)` branch is untouched and still assigns
+      only `SUMMARY_METADATA` and `SUMMARY_SECTIONS`. *(completed: verified via git diff --stat, additions only)*
+- [x] Confirm no task-number citation was introduced. *(completed: grep returned no matches)*
 
 **Timing**: 0.5 hours
 
