@@ -1,11 +1,61 @@
 {
-  "status": "in_progress",
+  "status": "partial",
+  "partial_progress": {
+    "stage": "phase_6_in_progress_checkpoint",
+    "details": "Phases 1-5 fully COMPLETED with empirical verification. Phase 6 (consolidate entry points; retire the second engine) is IN PROGRESS: the deploy-headless.sh rewrite (bootstrap-safe default resync + --wipe) is complete and verified -- the Phase 1 regression harness now passes 4/4 assertions (was 1/4). Remaining Phase 6 work: [Regenerate] picker entry, removal of the 6 dead is_load_all consumer sites, and removal of load_all_globally plus its 5 exclusively-owned sync.lua helpers (NOT scan_all_artifacts, which is non-exclusive -- see plan notes). See the handoff artifact for full continuation guidance including two significant discoveries made during implementation (a bootstrap-safety gap in the plan's literal Phase 6 wording, and scan_all_artifacts's non-exclusivity).",
+    "handoff_path": "specs/980_consolidate_deploy_to_single_engine/handoffs/phase-6-handoff-20260805T180724Z.md",
+    "phases_completed": 5,
+    "phases_total": 9
+  },
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/980_consolidate_deploy_to_single_engine/handoffs/phase-6-handoff-20260805T180724Z.md",
+      "summary": "Continuation handoff for the remainder of Phase 6 (picker [Regenerate] entry, is_load_all removal, sync.lua load_all_globally removal) plus Phases 7-9, with two documented deviations from the plan's literal wording discovered during implementation."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Completed Phases 1-5 of the deploy-engine consolidation (scratch-tree regression harness, table-driven copier collapse, force/resync mode with manager.resync_all, preserved-state snapshot/restore, and a corrected regenerate/wipe sequence), plus the highest-risk half of Phase 6 (deploy-headless.sh rewritten with a bootstrap-safe default and a --wipe flag). The core defect this task exists to fix is demonstrably closed: the Phase 1 regression harness now passes 4/4 assertions (was 1/4 at authorship), verified against both isolated scratch trees and this repository's own live redeploy."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+    "lua/neotex/plugins/ai/claude/commands/picker/init.lua",
+    "lua/neotex/plugins/ai/shared/extensions/init.lua",
+    "lua/neotex/plugins/ai/shared/extensions/loader.lua",
+    "lua/neotex/plugins/ai/shared/extensions/settings_backup.lua",
+    "specs/980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's deploy-engine (lua/neotex/plugins/ai/shared/extensions/), manager.resync_all only resyncs extensions already marked 'active' in a target repo's project-root .claude-extensions.json state file. The historical glob-based load_all_globally engine (retired) was stateless and never wrote that file, so any target repo only ever deployed via the old engine has NO active-extension entries. A bulk-resync entry point (e.g. deploy-headless.sh's default invocation) must therefore force-load the baseline extension (e.g. 'core') first via manager.load(name, {force=true}) before calling resync_all, or it silently deploys zero files on first use against such a repo. Verified empirically: a bare resync_all against a from-scratch scratch git repo deployed 0 files; force-load-core-then-resync_all deployed 339.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless", "manager.resync_all", "bootstrap-safety", "extension-state", "manager.load"]
+    },
+    {
+      "content": "test-deploy-propagation.sh (and similarly-shaped deploy-tree-first/source-store-fallback test harnesses) resolve deploy-headless.sh from the DEPLOYED copy (.claude/scripts/...) before falling back to the source-store copy (agent-system/extensions/core/scripts/...). Editing only the source-store script does not make such a harness observe the fix -- a redeploy of the repo's own .claude/ tree is required first. Running the repo's own deploy mechanism against itself (e.g. bash agent-system/extensions/core/scripts/deploy-headless.sh <repo-root>) to refresh .claude/ is a SANCTIONED use of the deploy mechanism, not a hand-edit violation of the source-store/deploy-boundary rule, since .claude/ is fully gitignored and the deploy process writing the entire tree by design is explicitly exempted.",
+      "category": "PATTERN",
+      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-tree-first-fallback", "test-deploy-propagation", "source-store-deploy-boundary", "redeploy", "verify-deploy"]
+    },
+    {
+      "content": "settings_backup.lua's helpers.ensure_directory (a thin wrapper over vim.fn.mkdir) can THROW a Lua error rather than return false when directory creation fails (e.g. a plain file already occupies the target path) -- discovered while testing manager.wipe's 'refuse to wipe when the snapshot step reports failure' requirement. Any caller relying on settings_backup.backup's documented (boolean, table) return contract to detect failure gracefully must pcall the call, since some of its underlying failure modes bypass that contract entirely and propagate as uncaught errors instead.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["settings_backup", "ensure_directory", "pcall", "error-handling", "manager.wipe"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785950363_553a84_980",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 5,
     "phases_total": 9
   }
 }
