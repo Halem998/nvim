@@ -201,7 +201,7 @@ count differs, record the actual set before proceeding.
 
 ---
 
-### Phase 2: One call site shape across all three commands [NOT STARTED]
+### Phase 2: One call site shape across all three commands [COMPLETED]
 
 **Goal**: Make `/research`, `/plan`, and `/implement` all resolve their skill through
 `command-route-skill.sh` with the `effort_flag` argument supplied, and delete the two inline

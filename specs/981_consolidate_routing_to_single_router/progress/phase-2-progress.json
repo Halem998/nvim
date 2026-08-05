@@ -1,0 +1,45 @@
+{
+  "phase": 2,
+  "phase_name": "One call site shape across all three commands",
+  "started_at": "2026-08-05T23:25:00Z",
+  "last_updated": "2026-08-05T23:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Fix implement.md's call site: add $EFFORT_FLAG as 4th argument",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/implement.md"]
+    },
+    {
+      "id": 2,
+      "description": "research.md STAGE 2: delete inline manifest loop, call command-route-skill.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/research.md"]
+    },
+    {
+      "id": 3,
+      "description": "plan.md STAGE 2: delete inline manifest loop, call command-route-skill.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/plan.md"]
+    },
+    {
+      "id": 4,
+      "description": "Materialize prose-parsed effort_flag as shell var, empty string not literal null",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/research.md",
+        "agent-system/extensions/core/commands/plan.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Keep human-facing routing tables as documentation",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -466,43 +466,26 @@ If `team_mode == true`:
 
 **Extension Routing** (when `--team` flag NOT present):
 
-Check extension manifests for task-type-specific plan routing:
+Resolve the skill through the single canonical router, `command-route-skill.sh` — this command
+does not hand-roll its own manifest loop. STAGE 1.5 parses `--hard`/`--fast` into the prose
+variable `effort_flag`, but (unlike `implement.md`, which exports a shell `EFFORT_FLAG` from
+`parse-command-args.sh` at gate-in) this command has no exported shell effort variable yet, so it
+must be materialized immediately before the `source` call — rendering the "no flag" case as an
+empty string, never the literal `null`:
 
 ```bash
 # task_type (may be simple "founder" or compound "founder:deck") comes from gate-in's
 # exported TASK_TYPE (CHECKPOINT 1) — no separate task_data lookup needed here.
 task_type="$TASK_TYPE"
 
-# Check extension routing for plan (skill_name starts empty)
-skill_name=""
-for manifest in .claude/extensions/*/manifest.json; do
-  if [ -f "$manifest" ]; then
-    ext_skill=$(jq -r --arg tt "$task_type" \
-      '.routing.plan[$tt] // empty' "$manifest")
-    if [ -n "$ext_skill" ]; then
-      skill_name="$ext_skill"
-      break
-    fi
-  fi
-done
+# Materialize STAGE 1.5's prose-parsed effort_flag as a shell variable. effort_flag is "fast",
+# "hard", or unset/null (never present as a shell export at this point) — the empty-string
+# fallback is required so command-route-skill.sh's $4 is never the literal string "null".
+shell_effort_flag="${effort_flag:-}"
+[ "$shell_effort_flag" = "null" ] && shell_effort_flag=""
 
-# Fallback: if compound key (contains ":"), try base task_type
-if [ -z "$skill_name" ] && echo "$task_type" | grep -q ":"; then
-  base_type=$(echo "$task_type" | cut -d: -f1)
-  for manifest in .claude/extensions/*/manifest.json; do
-    if [ -f "$manifest" ]; then
-      ext_skill=$(jq -r --arg tt "$base_type" \
-        '.routing.plan[$tt] // empty' "$manifest")
-      if [ -n "$ext_skill" ]; then
-        skill_name="$ext_skill"
-        break
-      fi
-    fi
-  done
-fi
-
-# Fallback to default planner if no extension routing found
-skill_name=${skill_name:-"skill-planner"}
+source .claude/scripts/command-route-skill.sh "plan" "$task_type" "skill-planner" "$shell_effort_flag"
+skill_name="$SKILL_NAME"
 ```
 
 **Extension-Based Routing Table**:
