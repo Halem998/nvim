@@ -101,7 +101,7 @@ run_deploy() {
     echo "$output" | sed 's/^/    /'
     return 1
   fi
-  info "$label: deploy completed ($(echo "$output" | grep -o 'Deployed [0-9]* artifact' || echo 'no count line'))"
+  info "$label: deploy completed ($(echo "$output" | grep -oE '(Resynced|Wiped and regenerated) [0-9]+ extension' || echo 'no count line'))"
   return 0
 }
 

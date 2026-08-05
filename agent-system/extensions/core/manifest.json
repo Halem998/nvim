@@ -160,6 +160,7 @@
       "tests/test-corroborate-phase-counts.sh",
       "tests/test-errors-append.sh",
       "tests/test-git-commit-scoped.sh",
+      "tests/test-deploy-propagation.sh",
       "tests/test-index-entries-schema.sh",
       "tests/test-orchestrate-triage-classify.sh",
       "tests/test-phase-heading-patterns.sh",

@@ -1,0 +1,53 @@
+{
+  "phase": 6,
+  "phase_name": "Consolidate entry points; retire the second engine",
+  "started_at": "2026-08-05T02:25:00Z",
+  "last_updated": "2026-08-05T03:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite deploy-headless.sh: default = bootstrap-safe force-load core + resync_all; --wipe = manager.wipe; header rewritten with durable anchors",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/deploy-headless.sh"
+      ],
+      "note": "Verified via dry-run, fresh-bootstrap deploy (339 files incl. scripts/lib/*), resync, and full --wipe round trip (settings.local.json + .syncprotect path survive) against scratch trees."
+    },
+    {
+      "id": 2,
+      "description": "Redeploy this repo's own .claude/ via the fixed deploy-headless.sh to prove the harness's deployed-copy resolution path exercises the fix; fix the manifest gap this surfaced (test-deploy-propagation.sh missing from provides.scripts)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh"
+      ],
+      "note": "verify-deploy.sh: 14/15 (1 pre-existing unrelated finding, formats/summary-format.md line_count, confirmed via git log to predate this task). test-deploy-propagation.sh: 4 passed, 0 failed (was 1 passed/3 failed)."
+    },
+    {
+      "id": 3,
+      "description": "Add [Regenerate] picker entry (entries.lua producer + init.lua handler behind confirmation) wired to manager.regenerate/manager.wipe",
+      "status": "not_started",
+      "files_touched": [],
+      "note": "Not started this dispatch. See plan Phase 6 Continuation Notes for design guidance."
+    },
+    {
+      "id": 4,
+      "description": "Remove is_load_all dead consumer sites (6 sites, not 5 as hypothesized: init.lua handler + 4 keymap guards + previewer.lua preview branch) and load_all_globally + its 5 exclusively-owned helpers from sync.lua (NOT scan_all_artifacts, which is non-exclusive -- see plan notes)",
+      "status": "not_started",
+      "files_touched": [],
+      "note": "Reconnaissance done (grep confirms exact site list and scan_all_artifacts's other live callers: previewer.lua:168, sync_spec.lua x5). Deletion itself not started."
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 1,
+  "deviations": [
+    {
+      "task_id": "6.1",
+      "description": "Rewire deploy-headless.sh's default (no-flag) invocation to manager.resync_all",
+      "type": "altered",
+      "reason": "A bare manager.resync_all default would silently deploy zero files on any target repo whose state file has no 'core' entry -- true of every repo only ever deployed via the retired stateless load_all_globally engine. Default is now manager.load('core', {force=true}) followed by manager.resync_all.",
+      "annotation": "*(deviation: altered — bootstrap-safety fix, see plan Phase 6 notes)*"
+    }
+  ]
+}

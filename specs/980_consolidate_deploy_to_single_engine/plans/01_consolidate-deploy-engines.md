@@ -452,29 +452,41 @@ ordered wipe sequence.
 
 ---
 
-### Phase 6: Consolidate entry points; retire the second engine [NOT STARTED]
+### Phase 6: Consolidate entry points; retire the second engine [IN PROGRESS]
 
 **Goal**: Point `deploy-headless.sh` at the manifest-driven engine, add its `--wipe` flag, expose a
 `[Regenerate]` picker entry, and delete the retired `load_all_globally` path and the dead
 `is_load_all` branch.
 
 **Tasks**:
-- [ ] Rewire `deploy-headless.sh`'s default (no-flag) invocation to `manager.resync_all` —
-      non-destructive, behaviorally closest to today's intent.
-- [ ] Add `--wipe` to `deploy-headless.sh` driving `manager.regenerate`'s full sequence. Document
-      it in the usage text and the `--dry-run` output as explicitly destructive.
-- [ ] Preserve the script's existing invariants: the `specs/.deploy-lock` mutex, `--dry-run`, the
+- [x] Rewire `deploy-headless.sh`'s default (no-flag) invocation to `manager.resync_all` —
+      non-destructive, behaviorally closest to today's intent. *(completed, WITH a
+      plan-deviating correction — see "Bootstrap-safety deviation" below: the default invocation
+      is `manager.load('core', {force=true})` THEN `manager.resync_all`, not a bare
+      `resync_all` call alone)*
+- [x] Add `--wipe` to `deploy-headless.sh` driving `manager.regenerate`'s full sequence. Document
+      it in the usage text and the `--dry-run` output as explicitly destructive. *(completed:
+      drives `manager.wipe`, the Phase 5 function that wires the complete snapshot -> rm -rf ->
+      regenerate sequence)*
+- [x] Preserve the script's existing invariants: the `specs/.deploy-lock` mutex, `--dry-run`, the
       git-repo and `nvim`-availability preconditions, and the "every exit path calls `exit`
-      explicitly" self-overwrite guard.
-- [ ] Update the script's header comments to describe the new entry points. Use durable anchors —
-      function and script names — and no task numbers.
+      explicitly" self-overwrite guard. *(completed, verified by re-reading every exit path in
+      the rewritten file)*
+- [x] Update the script's header comments to describe the new entry points. Use durable anchors —
+      function and script names — and no task numbers. *(completed)*
 - [ ] Add a `[Regenerate]` special entry to the picker's entry constructor and its handler,
-      wired to `manager.regenerate` behind a confirmation (it is destructive).
+      wired to `manager.regenerate` behind a confirmation (it is destructive). **NOT STARTED --
+      see Continuation Notes below.**
 - [ ] Remove `load_all_globally` and the allow-list post-filter it depends on from
       `picker/operations/sync.lua`, plus any now-unreachable scan helpers exclusive to it.
+      **NOT STARTED -- see "scan_all_artifacts non-exclusivity discovery" below, which changes
+      the scope of this item.**
 - [ ] Remove the dead `is_load_all` consumer sites in the picker (an Enter-key handler and four
-      keymap guards) — they have no producer and are unreachable.
-- [ ] Confirm no surviving caller of `load_all_globally` anywhere before deleting it.
+      keymap guards) — they have no producer and are unreachable. **NOT STARTED -- see
+      "is_load_all site-count correction" below.**
+- [x] Confirm no surviving caller of `load_all_globally` anywhere before deleting it.
+      *(completed as a reconnaissance step -- see the two discovery notes below; the deletion
+      itself is deferred to the continuation)*
 
 **Timing**: 2 hours
 
@@ -488,6 +500,89 @@ ordered wipe sequence.
 that `deploy-headless.sh` is the only non-picker caller of `load_all_globally`. Confirm with
 `grep -rn 'is_load_all\|load_all_globally' lua/ agent-system/` before deleting. Any additional
 caller must be rewired, not orphaned.
+
+**Scope Hypothesis reconciliation (performed)**: the hypothesized "5 `is_load_all` sites" is
+**off by one — the actual count is 6**: `picker/init.lua`'s Enter-key handler (line ~111-121, the
+one that calls `load_all_globally` directly) plus 4 keymap guard conditions (lines ~353, 377,
+401, 425), PLUS a 6th site in `picker/display/previewer.lua` (~line 751,
+`elseif entry.value.is_load_all then`) that the hypothesis's grep target (`lua/` recursively)
+would have caught but the plan's prose enumeration ("an Enter-key handler and four keymap
+guards") did not name. `picker/display/entries.lua` confirmed to have ZERO `is_load_all`
+producer (only `is_help` and `is_reload_all` are ever set) — the hypothesis's "zero producers"
+half holds exactly. All 6 sites are therefore genuinely dead/unreachable code and safe to delete
+in the continuation; the count correction is recorded here rather than silently reconciled.
+
+**Bootstrap-safety deviation (discovered during implementation, not anticipated by the plan)**:
+a literal `manager.resync_all` call as `deploy-headless.sh`'s default invocation is a **critical
+regression** the plan's own phrasing didn't anticipate. `manager.resync_all` only resyncs
+extensions a target repo's project-root state file (`.claude-extensions.json`) already marks
+`status = "active"`. The retired `load_all_globally` engine was **stateless** -- it never wrote
+that state file at all, being a glob+copy mechanism with no `manager` involvement. Consequently
+ANY target repo that has only ever been deployed via the old engine (the historically normal
+case -- this is exactly what "Load Core" / `deploy-headless.sh` have always driven) has **no
+`core` entry** in its state file, and a bare `resync_all` would silently deploy **zero files** on
+such a repo's first post-consolidation run -- reproduced empirically against a from-scratch
+scratch git repo before the fix (0 files) and after (339 files, correct). The fix: the default
+invocation force-loads `core` first (`manager.load('core', {force=true, confirm=false, ...})`,
+idempotent and safe whether or not core is already active), THEN calls `manager.resync_all` to
+also refresh any other extensions the target already has active. This closes the gap while
+remaining behaviorally closest to "Load All"'s historical unconditional-core-deploy intent --
+arguably closer to it than a bare `resync_all` would have been. See `deploy-headless.sh`'s own
+"Bootstrap safety" header section for the full rationale, written for a future reader with no
+access to this plan.
+
+**`scan_all_artifacts` non-exclusivity discovery (changes the scope of the sync.lua removal
+task)**: `M.scan_all_artifacts` (and the allow-list post-filter inside it) is **NOT exclusive**
+to `load_all_globally` as the plan assumed. Two other live consumers exist:
+`picker/display/previewer.lua:168` (used to compute accurate preview counts for the -- also
+dead, also being removed in this same phase -- `is_load_all` preview branch) and a dedicated
+`picker/operations/sync_spec.lua` with 5 test cases exercising `scan_all_artifacts` directly.
+`execute_sync`, `count_actions`, `audit_synced_content`, `reinject_loaded_extensions`, and
+`run_contract_drift_validator` (all module-local to `sync.lua`), by contrast, ARE exclusively
+called from within `load_all_globally` and become genuinely dead once it is removed -- confirmed
+by grep, no other call site anywhere. **Continuation guidance**: delete `load_all_globally`
+itself plus the 5 exclusively-owned helpers above; do NOT delete `scan_all_artifacts` or its
+allow-list filter without FIRST also deciding what happens to `sync_spec.lua` (delete/rewrite
+those 5 test cases) and confirming no other planned consumer needs it post-Phase-6 -- this is a
+second, smaller decision the continuation dispatch should make deliberately rather than
+inheriting by inertia. Note `previewer.lua`'s `is_load_all` branch (Task 6's "dead is_load_all
+consumer sites") is being deleted in the same phase regardless, which removes `scan_all_artifacts`'s
+other live caller -- so by the time this phase closes, `scan_all_artifacts` may end up
+referenced only by its own spec file. That outcome is fine (a tested utility with no current
+caller is not a defect) but should be a **deliberate** choice, recorded in the phase's completion
+notes, not an accident of what got deleted alongside it.
+
+**Verification performed for the completed sub-items** (see "Verification" below for the full
+phase bar, most of which is deferred with the phase):
+- `deploy-headless.sh --dry-run` against both a fresh and an already-populated scratch tree
+  reports the new entry points ("`manager.load('core', {force=true}) -> manager.resync_all()`"
+  default; "`manager.wipe() [DESTRUCTIVE...]`" for `--wipe`) and writes nothing.
+- Fresh bootstrap: `deploy-headless.sh` (no flags) against a from-scratch scratch git repo
+  deployed 339 files including `scripts/lib/*.sh` -- the exact defect class this task exists to
+  fix, now working through the DEFAULT headless entry point rather than only through direct Lua
+  `manager.load` calls.
+- Resync: a second `deploy-headless.sh` run against the same now-populated tree preserved the
+  canary file and reported success.
+- `--wipe`: full round trip against the same tree with a hand-edited `settings.local.json` and a
+  seeded `.syncprotect` path -- both survived byte-identical.
+- **`test-deploy-propagation.sh` (the Phase 1 harness): all 4 assertions now PASS** (previously
+  1 passed / 3 failed) -- `4 passed, 0 failed`. This is the plan's own stated Phase 6 success
+  criterion for Assertions A and B, achieved.
+- **This repository's own `.claude/` was redeployed** via the fixed `deploy-headless.sh` (a
+  sanctioned use of the deploy mechanism itself, not a hand-edit under `.claude/**` -- see
+  `.claude/rules/source-store-deploy-boundary.md`'s "the deploy/reload process... is not a
+  violation" exception) to pick up the corrected script and prove the harness's deployed-copy
+  resolution path (which the harness prefers over the source-store fallback) actually exercises
+  the fix. `verify-deploy.sh` reports 14/15 checks passing; the one failure
+  (`formats/summary-format.md` line_count mismatch) is a pre-existing, unrelated drift --
+  confirmed via `git log` to predate this task by several commits and touching a file this task
+  never edits.
+- A real gap this redeploy surfaced and fixed: the Phase 1 harness's own new test script,
+  `scripts/tests/test-deploy-propagation.sh`, was never added to the core manifest's
+  `provides.scripts` list, tripping `check-extension-docs.sh`'s "script file on disk NOT in
+  provides.scripts" gate. Fixed by adding the entry to
+  `agent-system/extensions/core/manifest.json` and redeploying again -- doc-lint now reports
+  only the pre-existing unrelated finding.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/deploy-headless.sh` - default retargeted, `--wipe` added, header rewritten
