@@ -27,14 +27,14 @@ next_project_number: 997
 
 ### Agent System
 
-963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+963 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 948 [NOT STARTED] — Add a Stage 7 / final-metadata contract to ALL THREE cslib agents
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
       └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
         └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
-990 [NOT STARTED] — Migrate all 19 extensions' index-entries.json to the reconciled i
+990 [RESEARCHED] — Migrate all 19 extensions' index-entries.json to the reconciled i
   └─ 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
     └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
       └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
@@ -59,7 +59,7 @@ next_project_number: 997
 
 ### Extensions
 
-980 [NOT STARTED] — Collapse the TWO independent deploy engines writing .claude/ into
+980 [RESEARCHED] — Collapse the TWO independent deploy engines writing .claude/ into
 
 ### Literature
 
@@ -164,10 +164,11 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 990. Migrate all 19 extensions index-entries.json to the reconciled schema shape
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 987
+- **Research**: [990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md]
 
 **Description**: Migrate all 19 extensions' index-entries.json to the reconciled index.schema.json shape landed by the prerequisite task. WORK: (1) fold each of the 166 description-bearing entries' (10 extensions: cslib, email, filetypes, latex, lean, nix, python, typst, web, z3) unique detail into summary rather than a blind delete -- spot-checked samples show description usually carries more detail than summary, so this is editorial, not mechanical; (2) rename tags to keywords (same 10 extensions); (3) migrate load_when.languages to load_when.task_types 1:1 using the prerequisite task's research report section 4's per-extension value map (languages->task_types renames for cslib, formal, latex, lean, nix, python, typst, web, z3, founder, present, nvim -- nvim's task_type string is 'neovim', not 'nvim', a pre-existing mismatch to preserve, not invent-around); (4) delete the two filetypes entries' load_when.skills arrays each containing only ["deck"]; (5) delete literature's (6 entries) and memory's (8 entries) load_when.skills arrays -- both extensions' entries already carry non-empty commands (/literature, /learn) on the same entries, so skills is fully redundant. CORRECTION TO THE PREREQUISITE TASK'S OWN SCOPE HYPOTHESIS: its Phase 2 predicted Rule T would fire for 14 of 19 extensions; the actual observed count when Rule T was implemented was 17 of 19 (only epidemiology and slidev are clean) -- the extra 3 (core, literature, memory) come from the load_when.skills violation the 14-count did not enumerate. Treat 17 as the true scope, not 14. VERIFICATION BAR (inherited from the prerequisite task, not met there): REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh reports zero Rule T advisories across all 19 extensions; grep -rn 'load_when.languages\|load_when.skills' across agent-system/extensions/*/index-entries.json returns zero declarations. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
@@ -448,10 +449,11 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 980. One deploy engine: idempotent manifest-driven load, wipe+regenerate, full-category verification
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 966
+- **Research**: [980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md]
 
 **Description**: Collapse the TWO independent deploy engines writing .claude/ into one, and make deploy idempotent and fully verified. This is the structural fix for the recurring deploy-propagation defect class; it SUBSUMES tasks 958 and 970 (both marked abandoned in favor of this task — read their descriptions first: they contain the empirical reproductions and the verification bars to preserve).
 
@@ -1066,10 +1068,11 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 963. Resolve the cslib implementation-summary format divergence from the core standard
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 972, Task 974
+- **Research**: [963_resolve_cslib_summary_format_divergence/reports/01_summary-format-divergence.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/**` and NEVER `.claude/**`.
 

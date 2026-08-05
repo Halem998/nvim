@@ -2806,7 +2806,7 @@
     {
       "project_number": 963,
       "project_name": "resolve_cslib_summary_format_divergence",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Resolve the cslib implementation-summary format divergence from the core standard",
@@ -2821,10 +2821,16 @@
         972,
         974
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/963_resolve_cslib_summary_format_divergence/reports/01_summary-format-divergence.md",
+          "type": "report",
+          "summary": "Confirms cslib findings (a)/(b), recommends Option (ii) -- formally admit ## Plan Deviations as an optional summary-format.md section given 11/16 implementation agents already use it -- and corrects the task's premise that web/lean-base already conform (they do not); audits all extension implementation agents for the same failure mode."
+        }
+      ],
       "created": "2026-07-29T14:29:13Z",
-      "last_updated": "2026-07-29T14:29:13Z",
-      "session_id": "sess_1785334778_2cd967",
+      "last_updated": "2026-08-05T17:27:30Z",
+      "session_id": "sess_1785950363_553a84_963",
       "next_artifact_number": null
     },
     {
@@ -3398,7 +3404,7 @@
       "project_number": 980,
       "project_name": "consolidate_deploy_to_single_engine",
       "title": "One deploy engine: idempotent manifest-driven load, wipe+regenerate, full-category verification",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "extensions",
       "dependencies": [
@@ -3412,8 +3418,15 @@
       ],
       "description": "Collapse the TWO independent deploy engines writing .claude/ into one, and make deploy idempotent and fully verified. This is the structural fix for the recurring deploy-propagation defect class; it SUBSUMES tasks 958 and 970 (both marked abandoned in favor of this task — read their descriptions first: they contain the empirical reproductions and the verification bars to preserve).\n\nROOT CAUSES ESTABLISHED BY THE REVIEW (specs/reviews/review-2026-07-29-agent-system.md, deploy-pipeline section; all verified with file:line evidence):\n  1. Engine A (lua/neotex/plugins/ai/shared/extensions/loader.lua + init.lua) is manifest-driven and handles subdirectory scripts correctly, but manager.load() HARD-ABORTS on already-loaded (init.lua ~line 252), so nothing propagates to an existing deploy except via destructive unload/reload.\n  2. Engine B (lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua load_all_globally) — the deploy-headless.sh path — never calls any loader copy function, is core-only, and its allow-list post-filter (~lines 1001-1016) matches provides.scripts entries by TOP directory segment while the manifest declares full relative paths, so EVERY scripts/lib|lint|tests entry is silently dropped on both fresh and existing deploys. This corrects the mis-diagnosis recorded in rules/no-task-references-in-deliverables.md (~lines 145-149): it is not an already-loaded skip — engine B never runs copy_scripts for anyone.\n  3. The interactive picker path that remediation docs tell users to run ('Load Core / Sync all') NO LONGER EXISTS: the is_load_all entry has consumers (picker/init.lua ~line 111) but no producer (entries.lua creates only is_help and is_reload_all).\n  4. manager.regenerate (init.lua ~line 972) — the wipe+regenerate design — has ZERO callers, and has a correctness bug: it calls settings_backup.restore AFTER manager.load has merged settings fragments, so the restore overwrites the fresh merge and new hook registrations are lost (the exact gap the wipe exists to fix). settings_backup.restore also never clears its staging dir, so a stale .claude-settings-backup/ silently reverts settings on every subsequent regenerate.\n  5. verify.lua verify_extension covers agents/skills/rules/context but has zero references to scripts, hooks, docs, templates, systemd, root_files — exactly the categories that break.\n  6. Engine A's 11 near-identical copy_* functions diverge internally: symlink guard in only 2 of 11, preserve_perms inconsistent, return arity differs.\n\nWORK:\n  1. Keep engine A. Add a force/resync mode to manager.load that skips the already-loaded abort and re-runs the (idempotent, overwrite-safe) copy sequence.\n  2. Rewire deploy-headless.sh to manager.regenerate or unload-all/load-all; retire sync.load_all_globally and the dead is_load_all branch. Expose a [Regenerate] picker entry and a --wipe flag on deploy-headless.sh: backup -> rm -rf .claude -> regenerate -> restore-as-merge-base -> re-apply settings fragments -> clear staging.\n  3. Fix the regenerate settings ordering bug and the staging-dir leak; wire settings_backup.backup (currently zero callers).\n  4. Give .syncprotect backup/restore semantics (snapshot protected paths before wipe, restore after) — it is currently overwrite-protection only, so a wipe would lose context/repo/project-overview.md.\n  5. Collapse the 11 copy_* functions into one table-driven copier ({category, source_subdir, target_subdir, recursive, preserve_perms, install_once}) so the symlink guard and perms handling hold for every category by construction.\n  6. Extend verify.lua to declared-vs-deployed parity + content-hash equality for EVERY provides.* category (this is the right layer for the parity gate the abandoned deploy tasks proposed for verify-deploy.sh).\n  7. Correct the stale prose: the wrong path lua/neotex/shared/extensions/init.lua and the mis-diagnosis in no-task-references-in-deliverables.md; every 'Load Core / Sync all' remediation instruction (deploy-root-guard.sh, check-extension-docs.sh advisory text, regeneration-is-manual-only.md) updated to the new entry points.\n\nSEQUENCING (binding, inherited from the review and from task 966's constraint): task 966 (verify-deploy baseline/delta semantics) must land FIRST — extending verification (item 6) will otherwise create new standing failures that convert multi-task /orchestrate into run-one-then-defer. The dependencies edge encodes this.\n\nVERIFICATION BAR (union of the two subsumed tasks' bars, preserved):\n  - A test declaring a new script under scripts/lib/ runs the real headless deploy against a scratch tree and asserts the file lands; same assertion for a re-sync of an already-loaded extension.\n  - Declared-vs-deployed parity over the FULL provides.* surface (not just scripts) after a single deploy pass; content-hash equality for a deliberately-staled deployed SKILL.md.\n  - Wipe+regenerate round-trip: protected files and settings.local.json survive; new merge-source hook registrations are present after; running it twice is byte-identical.\n  - No regression for already-correct entries; the two currently-stale deployed SKILL.md files (skill-orchestrate, skill-orchestrate-hard) are caught by the new verification before the fix and clean after.\n\nSOURCE-STORE RULE (binding): deploy machinery edits target lua/neotex/plugins/ai/**; script/rule edits target agent-system/extensions/**; never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**; use durable anchors (function names, entry names, script names).",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:29:18Z",
-      "session_id": "sess_1785353358_66268f"
+      "last_updated": "2026-08-05T17:27:36Z",
+      "session_id": "sess_1785950363_553a84_980",
+      "artifacts": [
+        {
+          "path": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
+          "type": "report",
+          "summary": "Confirms all six root causes from the review with fresh file:line evidence and a fully enumerated 11-function copy_* divergence table; includes concrete recommendations and risks for the implementation plan, including a third bulk-resync path (picker 'Reload All') the plan should also consolidate."
+        }
+      ]
     },
     {
       "project_number": 981,
@@ -3679,7 +3692,7 @@
     {
       "project_number": 990,
       "project_name": "index_entries_schema_migration",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Migrate all 19 extensions index-entries.json to the reconciled schema shape",
@@ -3691,9 +3704,15 @@
         987
       ],
       "created": "2026-07-30T01:55:17Z",
-      "last_updated": "2026-07-30T01:55:17Z",
-      "session_id": "sess_1785373759_72035f_987",
-      "artifacts": []
+      "last_updated": "2026-08-05T17:27:42Z",
+      "session_id": "sess_1785950363_553a84_990",
+      "artifacts": [
+        {
+          "path": "specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md",
+          "type": "report",
+          "summary": "Corrects and grounds the task's WORK-item scope against a live check-extension-docs.sh run: true description count 147, tags rename applies to 6 of 10 named extensions, one load_when.skills deletion exception, core and email also in scope, formal has 40 load_when.topics violations, founder needs array-union merge."
+        }
+      ]
     },
     {
       "project_number": 991,
