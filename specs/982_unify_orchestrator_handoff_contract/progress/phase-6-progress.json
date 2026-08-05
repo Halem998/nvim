@@ -1,0 +1,35 @@
+{
+  "phase": 6,
+  "phase_name": "Reader grep-audit and two-engine parity test",
+  "started_at": "2026-08-05T20:56:00Z",
+  "last_updated": "2026-08-05T21:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Grep-audit reader jq paths in both engines; confirm reconciled per research report",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Create test-handoff-reader-parity.sh with anchor-based extraction, shared fixture, allowlisted hard-only fields, schema-property lock-in",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Register in manifest.json; make base engine's blocker-escalation handoff read defensive with explanatory comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Full core/scripts/tests/ suite: 11/12 pass. The one failure (test-claude-refresh-matcher.sh, an is_live_inhibitor_target PID-liveness assertion) is pre-existing and unrelated -- confirmed via git diff showing zero changes to that script or its test across this task's entire commit range."
+}

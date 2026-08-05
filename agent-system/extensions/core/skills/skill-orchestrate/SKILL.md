@@ -1084,12 +1084,18 @@ Increment `blocker_escalation_count`. Log escalation attempt and blocker descrip
 | `prompt` | "Research this specific blocker for task $task_number: $blocker_desc. Find the root cause and a concrete solution path." |
 | `context` | `{ task_number, session_id, blocker: blocker_desc, orchestrator_mode: false }` |
 
-After Agent tool returns: read `$handoff_file` for research findings.
+After Agent tool returns: read the fork's own returned text for research findings.
 
-**Step 3: READ FINDINGS** — From handoff:
+**Step 3: READ FINDINGS** — The fork above is dispatched with `orchestrator_mode: false`, and by
+the decided one-channel-per-mode contract (see `docs/architecture/handoff-schema.md`'s "Handoff
+Writers" section) a dispatch with `orchestrator_mode: false` writes NO `.orchestrator-handoff.json`
+at all — only the hard-mode implementation agent ever writes that file. The fork's returned text
+IS the real findings channel here, not `$handoff_file`. The read below is defensive only (in case
+a stale handoff from an unrelated prior hard-mode dispatch happens to sit at that path) and is
+expected to fall through to the empty defaults on the common path:
 ```bash
-findings_summary=$(jq -r '.summary // "No findings"' "$handoff_file")
-findings_artifact=$(jq -r '.artifacts[0].path // ""' "$handoff_file")
+findings_summary=$(jq -r '.summary // "No findings"' "$handoff_file" 2>/dev/null || echo "No findings")
+findings_artifact=$(jq -r '.artifacts[0].path // ""' "$handoff_file" 2>/dev/null || echo "")
 ```
 
 **Step 4: REVISE PLAN** — Read latest plan path, then invoke the Agent tool:

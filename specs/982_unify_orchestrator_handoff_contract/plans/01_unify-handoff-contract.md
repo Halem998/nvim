@@ -479,36 +479,43 @@ the numbers above as a hypothesis; if the live counts differ, the live counts go
 
 ---
 
-### Phase 6: Reader grep-audit and two-engine parity test [NOT STARTED]
+### Phase 6: Reader grep-audit and two-engine parity test [COMPLETED]
 
 **Goal**: Prove and lock in the verification bar's two reader-side conditions.
 
 **Tasks**:
-- [ ] Grep-audit every handoff jq path in both engines: `.status`, `.summary`, `.artifacts[0].*`,
+- [x] Grep-audit every handoff jq path in both engines: `.status`, `.summary`, `.artifacts[0].*`,
       `.blockers*`, `.phases_completed`, `.phases_total`, `.plan_markers_verified`, `.skeleton`,
       `.sorry_inventory`, `.next_action_hint`, `.continuation_path`, `.continuation_context.*`.
-- [ ] For each distinct field name found, assert it appears in the Phase 1 schema's `properties`.
+      *(completed: confirmed both engines identical at every shared content site; hard engine adds
+      exactly the four allowlisted extra reads)*
+- [x] For each distinct field name found, assert it appears in the Phase 1 schema's `properties`.
       Any path naming a field absent from the schema is either a reader bug or a schema gap —
-      resolve it, do not paper over it.
-- [ ] Create `core/scripts/tests/test-handoff-reader-parity.sh`. It builds ONE shared handoff
+      resolve it, do not paper over it. *(completed: all 12 top-level field names confirmed present
+      in schema properties; encoded as a locked-in assertion in the parity test itself)*
+- [x] Create `core/scripts/tests/test-handoff-reader-parity.sh`. It builds ONE shared handoff
       fixture, extracts the reader jq expressions from both SKILL.md files, evaluates each against
       the fixture, and asserts the two engines produce identical values for every field both
       read. The hard engine additionally reading `.skeleton`, `.sorry_inventory`,
       `.blockers[0].target`, and `.blockers[0].verbatim_goal` is an expected, allowlisted
       hard-only difference, not a parity failure — encode the allowlist explicitly so a future
-      unlisted divergence fails the test.
-- [ ] Assert the fixture used by the parity test passes `validate-handoff.sh` — the same fixture
+      unlisted divergence fails the test. *(completed: extraction is anchor-based, not
+      hand-copied, so it catches real drift between the two shipped files; 18/18 assertions pass)*
+- [x] Assert the fixture used by the parity test passes `validate-handoff.sh` — the same fixture
       must satisfy both the validator and both readers, which is what "one schema" means
-      operationally.
-- [ ] Register `tests/test-handoff-reader-parity.sh` in `core/manifest.json`.
-- [ ] Address the base engine's blocker-escalation handoff read: Step 3 of the escalation flow in
+      operationally. *(completed)*
+- [x] Register `tests/test-handoff-reader-parity.sh` in `core/manifest.json`. *(completed)*
+- [x] Address the base engine's blocker-escalation handoff read: Step 3 of the escalation flow in
       `skill-orchestrate/SKILL.md` reads `.summary` and `.artifacts[0].path` from `$handoff_file`
       after dispatching a `fork` with `orchestrator_mode: false` — a dispatch that by contract
       writes no handoff, so the read silently yields empty findings. Minimal fix only: make the
       read explicitly defensive and add a comment stating that a `orchestrator_mode: false`
       dispatch produces no handoff and the fork's returned text is the real findings channel.
-      Do NOT rearchitect the escalation flow.
-- [ ] Run the full `core/scripts/tests/` suite.
+      Do NOT rearchitect the escalation flow. *(completed)*
+- [x] Run the full `core/scripts/tests/` suite. *(completed: 11/12 scripts pass; the one failure,
+      test-claude-refresh-matcher.sh, is pre-existing, unrelated (process-liveness/PID timing),
+      and untouched by any commit in this task — confirmed via `git diff` against the pre-task
+      commit showing zero changes to that script or its test)*
 
 **Timing**: 1.5 hours
 
