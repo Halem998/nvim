@@ -11,14 +11,14 @@ next_project_number: 997
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 980,982,991 | -- | agent-system, extensions, orchestration-concurrency |
-| 2 | 948,981,992,994 | 980,982,991 | agent-system, literature |
+| 1 | 982,991,994 | -- | agent-system, literature, orchestration-concurrency |
+| 2 | 948,981,992 | 982,991 | agent-system |
 | 3 | 959,989,993 | 948,981,992 | agent-system |
 | 4 | 960 | 959 | agent-system |
 | 5 | 961,988 | 960 | agent-system |
 | 6 | 962 | 961 | agent-system |
 | 7 | 952,984 | 962,988 | agent-system, status-marker-lifecycle |
-| 8 | 953,985 | 952,980,984,992 | agent-system |
+| 8 | 953,985 | 952,984,992 | agent-system |
 | 9 | 983 | 953 | agent-system |
 | 10 | 986,995 | 983,984,985,989 | agent-system |
 | 11 | 996 | 986,993,995 | agent-system |
@@ -53,10 +53,6 @@ next_project_number: 997
       └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
   └─ 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
-
-### Extensions
-
-980 [IMPLEMENTING] — Collapse the TWO independent deploy engines writing .claude/ into
 
 ### Literature
 
@@ -448,12 +444,13 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 980. One deploy engine: idempotent manifest-driven load, wipe+regenerate, full-category verification
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 966
 - **Research**: [980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md]
 - **Plan**: [980_consolidate_deploy_to_single_engine/plans/01_consolidate-deploy-engines.md]
+- **Summary**: [980_consolidate_deploy_to_single_engine/summaries/01_consolidate-deploy-engines-summary.md]
 
 **Description**: Collapse the TWO independent deploy engines writing .claude/ into one, and make deploy idempotent and fully verified. This is the structural fix for the recurring deploy-propagation defect class; it SUBSUMES tasks 958 and 970 (both marked abandoned in favor of this task — read their descriptions first: they contain the empirical reproductions and the verification bars to preserve).
 
