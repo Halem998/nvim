@@ -157,9 +157,12 @@ _events_append_observable() {
 }
 
 # ORCHESTRATOR MODE: Support for skill-orchestrate dispatch.
-# When orchestrator_mode=true in delegation context, skills call skill_write_orchestrator_handoff()
-# in their postflight to produce .orchestrator-handoff.json for the state machine loop.
-# See: .claude/docs/architecture/handoff-schema.md
+# .orchestrator-handoff.json is a hard-mode-implement-only artifact: only the hard-mode
+# implementation agent writes it (via the Write tool, per context/contracts/wrap-up.md's H9
+# contract). Base-mode research/plan/implement return via .return-meta.json, recovered by
+# orchestrate-recover-outcome.sh. Research agents never write a handoff at all.
+# See: .claude/docs/architecture/handoff-schema.md and
+# .claude/context/schemas/orchestrator-handoff-schema.json
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1: Validate input task number
@@ -540,129 +543,6 @@ skill_cleanup() {
   rm -f "${task_dir}/.postflight-pending" \
         "${task_dir}/.postflight-loop-guard" \
         "${task_dir}/.return-meta.json" 2>/dev/null || true
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Orchestrator Mode: Write .orchestrator-handoff.json for skill-orchestrate
-# Usage: skill_write_orchestrator_handoff "$orchestrator_mode" "$padded_num" "$project_name" \
-#          "$phase" "$status" "$summary" "$artifact_path" "$artifact_type" "$next_hint"
-#
-# Parameters:
-#   $1 = orchestrator_mode : "true" | "false" — write only if "true"
-#   $2 = padded_num        : zero-padded task number (e.g., "595")
-#   $3 = project_name      : task slug (e.g., "my_task_name")
-#   $4 = phase             : "research" | "plan" | "implement"
-#   $5 = status            : "researched" | "planned" | "implemented" | "partial" | "failed" | "blocked"
-#   $6 = summary           : 2-4 sentence summary (~100 token budget; truncated if needed)
-#   $7 = artifact_path     : path to primary artifact (may be empty string)
-#   $8 = artifact_type     : "report" | "plan" | "summary" (may be empty string)
-#   $9 = next_hint         : "plan" | "implement" | "revise" | "none"
-#
-# Optional (set before calling): ORCHESTRATOR_HANDOFF_CONTINUATION_JSON (JSON object or "null")
-#   Example: export ORCHESTRATOR_HANDOFF_CONTINUATION_JSON='{"handoff_path":"...","phases_completed":2,"phases_total":4}'
-# Optional (set before calling): ORCHESTRATOR_HANDOFF_PHASES_COMPLETED (integer, default 0)
-#   Example: export ORCHESTRATOR_HANDOFF_PHASES_COMPLETED=3
-# Optional (set before calling): ORCHESTRATOR_HANDOFF_PHASES_TOTAL (integer, default 0)
-#   Example: export ORCHESTRATOR_HANDOFF_PHASES_TOTAL=4
-#
-# Schema reference: .claude/docs/architecture/handoff-schema.md
-# Token budget: full object must be ≤400 tokens; summary is truncated at ~100 tokens.
-#
-# DISPOSITION (decided, comment-only): this function currently has ZERO callers anywhere in the
-# deployed tree (confirmed by grep across agent-system/extensions/ — only comments and doc
-# cross-references name it, no invocation). It is documented here rather than deleted or
-# rewired, for three reasons: (i) it has zero callers today; (ii) the nested `continuation_context`
-# object it would write (built from ORCHESTRATOR_HANDOFF_CONTINUATION_JSON above) is one of TWO
-# forms every continuation-pointer reader now accepts — the other being the flat top-level
-# `continuation_path` string that live H9 hard-mode wrap-up writers actually emit (see
-# docs/architecture/handoff-schema.md's "Two Accepted Forms" subsection and
-# scripts/orchestrate-triage-classify.sh's continuation_ok predicate); (iii) a future caller may
-# use this function as-is, because the readers were taught to accept its nested output rather than
-# narrowed to reject it. Deleting it would remove the only nested-form writer at the same moment
-# the readers are being taught to accept the nested form; rewiring it to also emit the flat form is
-# unjustified work on a codepath nothing calls. Do not delete or rewire without re-deriving this
-# reasoning first.
-skill_write_orchestrator_handoff() {
-  local orchestrator_mode="$1"
-  local padded_num="$2"
-  local project_name="$3"
-  local phase="$4"
-  local status="$5"
-  local summary="$6"
-  local artifact_path="$7"
-  local artifact_type="$8"
-  local next_hint="${9:-none}"
-
-  # Guard: only write when orchestrator_mode is explicitly "true"
-  if [ "$orchestrator_mode" != "true" ]; then
-    return 0
-  fi
-
-  # ABSOLUTE, not cwd-relative. A bare `specs/...` string written via the Bash redirect below
-  # lands wherever the shell's working directory happens to be at call time, which silently
-  # strands the handoff outside the task directory and leaves the orchestrator reading the
-  # previous cycle's file. SKILL_REPO_ROOT is resolved from BASH_SOURCE at source time.
-  local handoff_path="${SKILL_REPO_ROOT}/specs/${padded_num}_${project_name}/.orchestrator-handoff.json"
-  mkdir -p "$(dirname "$handoff_path")"
-
-  # Truncate summary at ~100 tokens (~400 chars) to respect token budget
-  local truncated_summary
-  if [ "${#summary}" -gt 400 ]; then
-    truncated_summary="${summary:0:397}..."
-  else
-    truncated_summary="$summary"
-  fi
-
-  # Build artifacts array (empty if no artifact_path)
-  local artifacts_json
-  if [ -n "$artifact_path" ] && [ -n "$artifact_type" ]; then
-    artifacts_json=$(printf '[{"type":"%s","path":"%s"}]' "$artifact_type" "$artifact_path")
-  else
-    artifacts_json='[]'
-  fi
-
-  # Continuation context (set externally if partial with handoff)
-  local continuation_json="${ORCHESTRATOR_HANDOFF_CONTINUATION_JSON:-null}"
-
-  # Phase counts (set externally by skill-implementer postflight)
-  local phases_completed="${ORCHESTRATOR_HANDOFF_PHASES_COMPLETED:-0}"
-  local phases_total="${ORCHESTRATOR_HANDOFF_PHASES_TOTAL:-0}"
-
-  # Write handoff JSON.
-  # NOTE: this is a Bash redirect, not a Write-tool call. The PostToolUse location hook
-  # (hooks/validate-handoff-location.sh) reads tool_input.file_path and therefore CANNOT see
-  # this write at all — a Bash tool_input carries the unexpanded command text, in which
-  # "$handoff_path" appears verbatim and its resolved value is unrecoverable. The absolute
-  # path constructed above, plus the orchestrator-side stray sweep in skill-orchestrate
-  # Stage 5, are what protect this code path. Do not weaken the absolute anchor on the
-  # assumption that the hook is a backstop here; it is not.
-  jq -n \
-    --arg schema "orchestrator-handoff-v1" \
-    --arg phase "$phase" \
-    --arg status "$status" \
-    --arg summary "$truncated_summary" \
-    --argjson artifacts "$artifacts_json" \
-    --arg next_hint "$next_hint" \
-    --argjson phases_completed "$phases_completed" \
-    --argjson phases_total "$phases_total" \
-    --argjson continuation "$continuation_json" \
-    '{
-      "$schema": $schema,
-      "phase": $phase,
-      "status": $status,
-      "summary": $summary,
-      "artifacts": $artifacts,
-      "phases_completed": $phases_completed,
-      "phases_total": $phases_total,
-      "blockers": [],
-      "next_action_hint": $next_hint,
-      "files_modified": [],
-      "decisions_made": [],
-      "dead_ends": [],
-      "continuation_context": $continuation
-    }' > "$handoff_path" && \
-    echo "[skill-base] Orchestrator handoff written: $handoff_path" || \
-    echo "[skill-base] WARNING: Failed to write orchestrator handoff to $handoff_path" >&2
 }
 
 # ───────────────────────────────────────────────────────────────────────────

@@ -285,33 +285,36 @@ surfaces, widen this phase's task list rather than proceeding.
 
 ---
 
-### Phase 3: Delete skill_write_orchestrator_handoff [NOT STARTED]
+### Phase 3: Delete skill_write_orchestrator_handoff [COMPLETED]
 
 **Goal**: Collapse to one writer channel by removing the zero-caller function, its env-var
 scaffolding, and the two comment-only cross-references outside the docs.
 
 **Tasks**:
-- [ ] Re-confirm zero callers immediately before deleting:
+- [x] Re-confirm zero callers immediately before deleting:
       `grep -rn 'skill_write_orchestrator_handoff' agent-system/extensions/` — every hit must be a
-      comment or documentation reference, never an invocation. If an invocation exists, STOP.
-- [ ] Delete the `skill_write_orchestrator_handoff()` function body from `skill-base.sh`.
-- [ ] Delete its usage header block and DISPOSITION comment, including the three
+      comment or documentation reference, never an invocation. If an invocation exists, STOP. *(completed:
+      confirmed zero invocations, only comments/docs)*
+- [x] Delete the `skill_write_orchestrator_handoff()` function body from `skill-base.sh`. *(completed)*
+- [x] Delete its usage header block and DISPOSITION comment, including the three
       `ORCHESTRATOR_HANDOFF_CONTINUATION_JSON` / `ORCHESTRATOR_HANDOFF_PHASES_COMPLETED` /
       `ORCHESTRATOR_HANDOFF_PHASES_TOTAL` "Optional (set before calling)" documentation lines.
-      These env vars are read nowhere else — confirm with a fresh grep before removing.
-- [ ] Update the `skill-base.sh` orchestrator-mode overview comment that currently says skills
+      These env vars are read nowhere else — confirm with a fresh grep before removing. *(completed:
+      grep confirms zero remaining ORCHESTRATOR_HANDOFF_* references)*
+- [x] Update the `skill-base.sh` orchestrator-mode overview comment that currently says skills
       "call `skill_write_orchestrator_handoff()` when `orchestrator_mode=true`" to state the
       decided contract instead: base-mode research/plan/implement return via `.return-meta.json`
       (recovered by `orchestrate-recover-outcome.sh`); only the hard-mode implementation agent
-      writes `.orchestrator-handoff.json`, via the Write tool.
-- [ ] Update the comment in `core/scripts/orchestrate-triage-classify.sh` that names the function
+      writes `.orchestrator-handoff.json`, via the Write tool. *(completed)*
+- [x] Update the comment in `core/scripts/orchestrate-triage-classify.sh` that names the function
       as the nested-form writer: state that the nested form now has NO writer and is retained on
-      the read side for backward compatibility only. Do not change the predicate's logic.
-- [ ] Update the comment in `core/hooks/validate-handoff-location.sh` that cites the function as
+      the read side for backward compatibility only. Do not change the predicate's logic. *(completed)*
+- [x] Update the comment in `core/hooks/validate-handoff-location.sh` that cites the function as
       the Bash-redirection write path example: the hook's structural blindness to Bash-redirect
       writes is still true and still worth stating, but the example writer no longer exists —
-      reword to describe the class, not the deleted function.
-- [ ] Verify `skill-base.sh` still sources cleanly and every remaining function is intact.
+      reword to describe the class, not the deleted function. *(completed)*
+- [x] Verify `skill-base.sh` still sources cleanly and every remaining function is intact. *(completed:
+      declare -F diff before/after shows only skill_write_orchestrator_handoff removed)*
 
 **Timing**: 0.75 hours
 

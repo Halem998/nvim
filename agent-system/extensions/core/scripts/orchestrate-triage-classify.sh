@@ -209,10 +209,11 @@ while [ "$idx" -lt "$lookup_count" ]; do
   # `continuation_context.handoff_path` is non-null OR the flat top-level `continuation_path` is
   # non-null. This codifies the precedent validate-handoff.sh already ships (it accepts
   # continuation_path OR continuation_context as two equally valid forms) rather than inventing a
-  # new contract. The nested form is written today only by the unreferenced
-  # skill_write_orchestrator_handoff; the flat form is what live H9 hard-mode wrap-up writers
-  # actually emit. Do not re-narrow this to one form without updating every reader in lockstep
-  # (see docs/architecture/handoff-schema.md's "Two Accepted Forms" subsection).
+  # new contract. The nested form now has NO writer -- it is retained on the read side only for
+  # backward compatibility with handoffs written before the nested-form writer was deleted; the
+  # flat continuation_path form is the one canonical, writable form every live writer emits. Do
+  # not re-narrow this to one form without updating every reader in lockstep (see
+  # docs/architecture/handoff-schema.md's "Two Accepted Forms" subsection).
   continuation_ok=$(jq -r '
     ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
     (.continuation_path // null) as $flat |

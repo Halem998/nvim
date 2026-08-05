@@ -1,0 +1,28 @@
+{
+  "phase": 3,
+  "phase_name": "Delete skill_write_orchestrator_handoff",
+  "started_at": "2026-08-05T19:57:00Z",
+  "last_updated": "2026-08-05T20:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-confirm zero callers, delete function body/header/env-var docs, correct overview comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/skill-base.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Reword cross-reference comments in orchestrate-triage-classify.sh and validate-handoff-location.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+        "agent-system/extensions/core/hooks/validate-handoff-location.sh"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

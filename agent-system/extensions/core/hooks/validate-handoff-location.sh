@@ -12,11 +12,11 @@
 #   This hook reads tool_input.file_path, which only Write and Edit tool calls carry. It
 #   therefore catches every agent-direct handoff write (the hard-mode wrap-up path — which is
 #   the path that actually broke). It is STRUCTURALLY BLIND to handoff writes performed by
-#   Bash redirection, as skill_write_orchestrator_handoff in scripts/skill-base.sh does via
-#   `jq -n ... > "$handoff_path"`: a Bash tool_input carries the raw, UNEXPANDED command text,
-#   in which "$handoff_path" appears verbatim; its resolved value is not present in the hook
-#   input and cannot be recovered by any amount of pattern matching. Adding a Bash matcher
-#   would produce false confidence, not coverage.
+#   Bash redirection, e.g. a shell function writing via `jq -n ... > "$handoff_path"`: a Bash
+#   tool_input carries the raw, UNEXPANDED command text, in which "$handoff_path" appears
+#   verbatim; its resolved value is not present in the hook input and cannot be recovered by
+#   any amount of pattern matching. Adding a Bash matcher would produce false confidence, not
+#   coverage.
 #   That path is protected instead by (a) skill-base.sh building an absolute path from
 #   SKILL_REPO_ROOT, and (b) the mechanism-agnostic stray-handoff sweep in
 #   skills/skill-orchestrate/SKILL.md Stage 5, which catches a misplaced handoff regardless of
