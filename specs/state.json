@@ -3477,7 +3477,7 @@
       "project_number": 982,
       "project_name": "unify_orchestrator_handoff_contract",
       "title": "One handoff schema, one writer, one validator",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "dependencies": [
@@ -3498,7 +3498,7 @@
       ],
       "description": "Unify the .orchestrator-handoff.json contract. FOUR disagreeing schemas currently coexist, and the nominal producer has zero callers. This SUBSUMES task 947 (marked abandoned in favor of this task — read its description first). Task 949's cslib-sibling propagation is SPUN OUT to the cslib terminal-metadata task (which depends on this one and encodes its decisions); this task's file scope deliberately excludes cslib agent files so it cannot collide with the cslib summary-format task. Related but NOT subsumed: task 968 (handoff-present corroboration gate — this task simplifies its terrain but 968's gate logic stays separate) and task 973 (reconcile-task-status safe recovery from malformed handoff status — that failure-mode handling stays; this task reduces its trigger frequency).\n\nTHE FOUR SCHEMAS (from the review, specs/reviews/review-2026-07-29-agent-system.md):\n  1. docs/architecture/handoff-schema.md (~lines 103-140): requires phase, status, summary, artifacts[]{type,path}; blockers as {description, phase, severity}; nested continuation_context.\n  2. context/contracts/wrap-up.md (~lines 35-53), what H9 hard-mode agents actually write: no phase/summary/artifacts; requires phases_completed/phases_total, skeleton, sorry_inventory; blockers as {phase, target, verbatim_goal, what_was_tried, why_it_failed}; flat continuation_path.\n  3. validate-handoff.sh (~line 106): requires status, phases_completed, phases_total, blockers — neither phase, summary, nor artifacts; validates blockers against the wrap-up shape. A handoff can PASS validation and still starve skill-orchestrate Stage 5 of artifacts[0].path.\n  4. The readers' union: both orchestrate engines read .summary, .artifacts[0].{path,type,summary} (artifacts[0].summary is documented NOWHERE), and the two engines read DIFFERENT blocker shapes (base: .blockers as a string from state.json; hard: .blockers[0].verbatim_goal from the handoff). The documented .description field is read by neither engine — dead.\n  5. The nominal writer skill_write_orchestrator_handoff (skill-base.sh ~line 585) has ZERO callers — its own header says so. The only live writer is prose in three hard-mode agent files. Base-mode /orchestrate never produces a handoff at all; orchestrate-recover-outcome.sh reconstructs from .return-meta.json. Three reader-side defenses (staleness gate, stray-handoff sweep, recovery bridge) exist solely to absorb this.\n\nWORK:\n  1. Decide the ONE schema (a JSON Schema file, like events-schema.json), covering the union the readers actually need: status, phase, summary, artifacts[]{type,path,summary}, phases_completed/total, plan_markers_verified, ONE blocker shape, one continuation form. Settle the research-phase writer question (do research dispatches write a handoff or not — pick one and align agent contracts, wrap-up.md, and the schema's writer table).\n  2. Make validate-handoff.sh enforce exactly that schema.\n  3. Pick ONE writer: either wire skill_write_orchestrator_handoff into the skills for all three phases (making base-mode handoffs real and retiring the recovery bridge), or delete it and declare .return-meta.json the single return channel with the handoff generated FROM it by the orchestrator. Do not keep both channels with a bridge.\n  4. Align both engines' reads (including the blockers divergence) and the three hard-mode agents' H9 prose to the schema. (The cslib agents are deliberately OUT of scope here — the downstream cslib terminal-metadata task propagates this task's decisions to them.)\n\nVERIFICATION BAR:\n  - validate-handoff.sh accepts a handoff written by the chosen writer and REJECTS one missing any reader-required field (test both directions).\n  - Both orchestrate engines extract identical fields from an identical handoff fixture; no reader jq path references a field absent from the schema (grep-audit).\n  - A full /orchestrate cycle on a scratch task produces a schema-valid handoff (or, if return-meta is chosen, no handoff and no recovery-bridge warnings).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-08-05T19:35:01Z",
+      "last_updated": "2026-08-05T20:09:29Z",
       "session_id": "sess_1785958454_710f14",
       "artifacts": [
         {
@@ -3510,8 +3510,14 @@
           "path": "specs/982_unify_orchestrator_handoff_contract/plans/01_unify-handoff-contract.md",
           "type": "plan",
           "summary": "Implementation plan: 01_unify-handoff-contract.md"
+        },
+        {
+          "path": "specs/982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md",
+          "type": "summary",
+          "summary": "Unified the four disagreeing .orchestrator-handoff.json descriptions around one JSON Schema, rewrote validate-handoff.sh, deleted the zero-caller nested-form writer, fixed the live artifact-linking defect, added a two-engine reader-parity test, and verified the redeployed tree end to end."
         }
-      ]
+      ],
+      "completion_summary": "Established context/schemas/orchestrator-handoff-schema.json as the single source of truth for .orchestrator-handoff.json, rewrote validate-handoff.sh and handoff-schema.md to match it, deleted the unreferenced skill_write_orchestrator_handoff (collapsing the continuation pointer to one canonical form), fixed the hard-mode writer's missing summary/artifacts fields, added bidirectional validator tests and a two-engine reader-parity test, and redeployed with a clean verify-deploy.sh pass."
     },
     {
       "project_number": 983,

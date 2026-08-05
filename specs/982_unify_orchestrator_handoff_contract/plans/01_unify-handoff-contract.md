@@ -1,7 +1,7 @@
 # Implementation Plan: Task #982
 
 - **Task**: 982 - One handoff schema, one writer, one validator
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: 974 (completed)
 - **Research Inputs**: specs/982_unify_orchestrator_handoff_contract/reports/01_unify-handoff-contract.md

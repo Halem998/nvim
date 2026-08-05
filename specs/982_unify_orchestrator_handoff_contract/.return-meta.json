@@ -34,29 +34,54 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["test-authoring", "reader-parity", "jq-extraction", "drift-detection", "two-engine-testing"]
+      "suggested_keywords": [
+        "test-authoring",
+        "reader-parity",
+        "jq-extraction",
+        "drift-detection",
+        "two-engine-testing"
+      ]
     },
     {
       "content": "This repo's test-validate-handoff.sh-style scripts under core/scripts/tests/ resolve their subject file via a candidate list checked in order; convention across the suite is deploy-tree-first when the subject is invoked identically to production runtime (e.g. skill-base.sh functions calling a hardcoded .claude/-relative path), but source-store-first when the test is meant to validate a script under ACTIVE DEVELOPMENT before a redeploy has happened -- deploy-first would silently test the stale pre-edit version during implementation.",
       "category": "PATTERN",
       "source_artifact": "specs/982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["test-resolution", "source-store", "deploy-tree", "candidate-path", "verify-deploy"]
+      "suggested_keywords": [
+        "test-resolution",
+        "source-store",
+        "deploy-tree",
+        "candidate-path",
+        "verify-deploy"
+      ]
     },
     {
       "content": "Editing a context/ prose doc's content changes its line count, which can silently drift the corresponding index-entries.json line_count declaration and fail verify-deploy.sh's doc-lint gate on the NEXT redeploy, even though the edit itself was correct. Run `bash .claude/scripts/generate-context-line-counts.sh --write` (source-store target) after any substantive content edit to a doc tracked in index-entries.json, before redeploying, to avoid a late-discovered doc-lint failure.",
       "category": "WORKFLOW",
       "source_artifact": "specs/982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["index-entries", "line-count", "doc-lint", "verify-deploy", "deploy-headless"]
+      "suggested_keywords": [
+        "index-entries",
+        "line-count",
+        "doc-lint",
+        "verify-deploy",
+        "deploy-headless"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785958454_710f14",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 1,
+    "final_state": "completed"
   }
 }

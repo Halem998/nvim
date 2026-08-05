@@ -11,48 +11,45 @@ next_project_number: 998
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 982,991,994,997 | -- | agent-system, literature, orchestration-concurrency |
-| 2 | 948,981,992 | 982,991 | agent-system |
-| 3 | 959,989,993 | 948,981,992 | agent-system |
-| 4 | 960 | 959 | agent-system |
-| 5 | 961,988 | 960 | agent-system |
-| 6 | 962 | 961 | agent-system |
-| 7 | 952,984 | 962,988 | agent-system, status-marker-lifecycle |
-| 8 | 953,985 | 952,984,992 | agent-system |
-| 9 | 983 | 953 | agent-system |
-| 10 | 986,995 | 983,984,985,989 | agent-system |
-| 11 | 996 | 986,993,995 | agent-system |
+| 1 | 948,981,991,994,997 | -- | agent-system, literature, orchestration-concurrency |
+| 2 | 959,989,992 | 948,981,991 | agent-system |
+| 3 | 960,993 | 959,992 | agent-system |
+| 4 | 961,988 | 960 | agent-system |
+| 5 | 962 | 961 | agent-system |
+| 6 | 952,984 | 962,988 | agent-system, status-marker-lifecycle |
+| 7 | 953,985 | 952,984,992 | agent-system |
+| 8 | 983 | 953 | agent-system |
+| 9 | 986,995 | 983,984,985,989 | agent-system |
+| 10 | 996 | 986,993,995 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
-  └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
-    └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
-      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-    └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
-      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 948 [NOT STARTED] — Add a Stage 7 / final-metadata contract to ALL THREE cslib agents
   └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
-    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
-952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
-  └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
-    └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
-      └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
-        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
-  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
-959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-  └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-    └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-      └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-        └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
-    └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
-      └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
+    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
-  └─ 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
+  └─ 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+    └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+      └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+        └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+          └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
+            └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
+              └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+                └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+                └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
+                  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+            └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
+              └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+      └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
+        └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
+991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
+  └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
+    └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
+    └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
+      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 
 ### Literature
 
@@ -60,7 +57,6 @@ next_project_number: 998
 
 ### Orchestration Concurrency
 
-982 [IMPLEMENTING] — Unify the .orchestrator-handoff.json contract. FOUR disagreeing s
 997 [NOT STARTED] — session_liveness() in scripts/task-lock.sh reports liveness_reaso
 
 ### Status Marker Lifecycle
@@ -464,12 +460,13 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 982. One handoff schema, one writer, one validator
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 974
 - **Research**: [982_unify_orchestrator_handoff_contract/reports/01_unify-handoff-contract.md]
 - **Plan**: [982_unify_orchestrator_handoff_contract/plans/01_unify-handoff-contract.md]
+- **Summary**: [982_unify_orchestrator_handoff_contract/summaries/01_unify-handoff-contract-summary.md]
 
 **Description**: Unify the .orchestrator-handoff.json contract. FOUR disagreeing schemas currently coexist, and the nominal producer has zero callers. This SUBSUMES task 947 (marked abandoned in favor of this task — read its description first). Task 949's cslib-sibling propagation is SPUN OUT to the cslib terminal-metadata task (which depends on this one and encodes its decisions); this task's file scope deliberately excludes cslib agent files so it cannot collide with the cslib summary-format task. Related but NOT subsumed: task 968 (handoff-present corroboration gate — this task simplifies its terrain but 968's gate logic stays separate) and task 973 (reconcile-task-status safe recovery from malformed handoff status — that failure-mode handling stays; this task reduces its trigger frequency).
 
