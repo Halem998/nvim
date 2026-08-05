@@ -370,3 +370,4 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 4. Use status value "completed" (triggers Claude stop behavior)
 5. Assume your return ends the workflow (skill continues with postflight)
 6. Skip Stage 0 early metadata creation
+7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

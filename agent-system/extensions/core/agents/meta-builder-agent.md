@@ -1518,3 +1518,4 @@ If user stops responding:
 3. Return plain text instead of JSON
 4. Create tasks without updating state.json
 5. Modify files outside `{target_root}/specs/`
+6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

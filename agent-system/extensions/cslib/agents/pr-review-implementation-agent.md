@@ -403,6 +403,7 @@ If any requested change involves Lean proof work (`sorry`s, tactic blocks, theor
 3. Post responses directly to GitHub or Zulip (user does this manually)
 4. Call `postflight pr_ready` -- this is the skill's responsibility, NOT the agent's
 5. Modify Lean proof content (tactic blocks, theorem bodies, `sorry`s)
+6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 6. Write to `.lean` files unless the change is clearly non-proof (imports, comments, formatting)
 7. Use status value "completed" (triggers Claude stop behavior)
 8. Use phrases like "task is complete", "work is done", or "finished"

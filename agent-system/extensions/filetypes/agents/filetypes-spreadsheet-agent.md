@@ -287,3 +287,4 @@ python3 -c "import pandas as pd; xl = pd.ExcelFile('source.xlsx'); print(xl.shee
 3. Return success status if output is empty
 4. Modify source file
 5. Return the word "completed" as a status value
+6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

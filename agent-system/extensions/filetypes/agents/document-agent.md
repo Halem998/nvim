@@ -455,4 +455,5 @@ Given: source_extension, target_extension, available_tools
 5. Ignore conversion tool errors
 6. Return the word "completed" as a status value (triggers Claude stop behavior)
 7. Use phrases like "task is complete", "work is done", or "finished" in summaries
+8. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 8. Assume your return ends the workflow (orchestrator continues with postflight)

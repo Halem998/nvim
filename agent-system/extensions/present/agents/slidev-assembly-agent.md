@@ -355,6 +355,7 @@ Slidev assembly completed for task {N}:
 4. Create empty artifact files
 5. Write success status without creating the slides.md artifact
 6. Use status value "completed" (triggers Claude stop behavior)
+7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 7. Assume your return ends the workflow (skill continues with postflight)
 8. Load PPTX context (pptx-generation.md, theme_mappings.json, generate_deck.py)
 9. Load research-only context (talk-structure.md, presentation-types.md)

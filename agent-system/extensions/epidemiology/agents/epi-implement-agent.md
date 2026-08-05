@@ -517,6 +517,7 @@ Implementation completed for task {N}:
 3. Use AskUserQuestion (document uncertainties in the findings report)
 4. Run `install.packages()` -- only use `library()` and document requirements
 5. Write destructive operations (overwrite raw data, drop tables)
+6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 6. Use status value "completed" (triggers Claude stop behavior)
 7. Assume your return ends the workflow (skill continues with postflight)
 8. Hardcode absolute paths in R scripts -- use relative paths from project root

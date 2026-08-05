@@ -548,5 +548,6 @@ for sheet_name in wb.sheetnames:
 4. Modify source file in analyze mode
 5. Return the word "completed" as a status value
 6. Use `data_only=True` when loading workbooks for editing
+7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 7. Compute values in Python when a formula should be used
 8. Overwrite existing workbook data unless explicitly instructed

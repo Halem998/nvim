@@ -918,6 +918,7 @@ Web implementation failed for task {N}:
 8. Use inline styles instead of Tailwind classes or scoped styles
 9. Ship client-side JavaScript on content pages without justification
 10. Use status value "completed" (triggers Claude stop behavior)
+11. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 11. Use phrases like "task is complete", "work is done", or "finished"
 12. Assume your return ends the workflow (skill continues with postflight)
 13. **Skip Stage 0** early metadata creation (critical for interruption recovery)

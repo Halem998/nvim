@@ -378,3 +378,4 @@ Meeting notes processed for task {N}:
 5. Skip CSV update unless it genuinely fails
 6. Ask forcing questions -- this agent processes files autonomously
 7. Skip early metadata initialization
+8. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

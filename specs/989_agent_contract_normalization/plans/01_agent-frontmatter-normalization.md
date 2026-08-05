@@ -323,33 +323,35 @@ before Phase 2 because four founder agents appear in both edit sets.
 
 ---
 
-### Phase 5: Roll the bullet out to the in-scope agents [NOT STARTED]
+### Phase 5: Roll the bullet out to the in-scope agents [COMPLETED]
 
 - **Goal**: Every agent matching Phase 4's classification rule carries the canonical bullet in its
   MUST NOT / Critical Requirements list.
 
 - **Tasks**:
-  - [ ] Enumerate the in-scope set by applying Phase 4's rule. Starting point: the 17 dispatchable
+  - [x] Enumerate the in-scope set by applying Phase 4's rule. Starting point: the 17 dispatchable
     implementation agents (`general-implementation`, `general-implementation-hard`,
     `cslib-implementation`, `cslib-implementation-hard`, `pr-review-implementation`,
     `email-implementation`, `epi-implement`, `founder-implement`, `latex-implementation`,
     `lean-implementation`, `lean-implementation-hard`, `nix-implementation`,
     `neovim-implementation`, `python-implementation`, `typst-implementation`,
     `web-implementation`, `z3-implementation`) plus `planner-agent`, `planner-hard-agent`,
-    `reviser-agent`, `meta-builder-agent`.
-  - [ ] Make and record an explicit include/exclude call for the document-authoring agents in
+    `reviser-agent`, `meta-builder-agent`. *(completed: confirmed exactly 21, matching hypothesis
+    — see progress file)*
+  - [x] Make and record an explicit include/exclude call for the document-authoring agents in
     `filetypes/`, `present/`, and `founder/` — they write files outside `specs/**` but of a
     non-prose kind. One line per agent; the call must be written down either way, not left
-    implicit.
-  - [ ] Skip the 4 agents already compliant (`general-implementation-agent`,
+    implicit. *(completed: 10 included, 20 excluded, full per-agent call recorded in
+    specs/989_agent_contract_normalization/progress/phase-5-progress.json)*
+  - [x] Skip the 4 agents already compliant (`general-implementation-agent`,
     `general-implementation-hard-agent`, `cslib-implementation-agent`,
     `cslib-implementation-hard-agent`) unless their bullet text has drifted from the fragment, in
-    which case correct it to match.
-  - [ ] Insert the bullet as the last numbered item of each target agent's existing MUST NOT list,
+    which case correct it to match. *(completed: verified no drift, left unchanged)*
+  - [x] Insert the bullet as the last numbered item of each target agent's existing MUST NOT list,
     matching the placement used in the four compliant agents. Where an agent has no MUST NOT list,
     add it to `## Critical Requirements` under a `**MUST NOT**:` heading rather than inventing a
-    new section shape.
-  - [ ] Do not renumber or reword any surrounding bullet.
+    new section shape. *(completed: all 27 target agents already had a MUST NOT list)*
+  - [x] Do not renumber or reword any surrounding bullet. *(completed)*
 
 - **Timing**: 1.5 hours
 

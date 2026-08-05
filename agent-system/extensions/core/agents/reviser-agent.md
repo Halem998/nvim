@@ -190,3 +190,4 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 6. Assume your return ends the workflow (skill continues with postflight)
 7. Skip Stage 0 early metadata creation
 8. Modify state.json or TODO.md directly (skill handles this in postflight)
+9. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

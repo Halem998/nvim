@@ -540,3 +540,4 @@ When plugins conflict:
 8. Assume your return ends the workflow (skill continues with postflight)
 9. **Skip Stage 0** early metadata creation (critical for interruption recovery)
 10. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+11. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

@@ -496,3 +496,4 @@ Given: available tools
 7. Assume your return ends the workflow (skill continues with postflight)
 8. Skip the forced question about tracked changes on first invocation
 9. Skip AppleScript save step when Word has the file open on macOS
+10. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

@@ -509,3 +509,4 @@ When `lake build` fails:
 9. Use status value "completed" (triggers Claude stop behavior)
 10. @-reference lean-implementation-agent (this agent is self-contained)
 11. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+12. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

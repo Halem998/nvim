@@ -440,6 +440,7 @@ When approaching context limit:
 13. **Create vacuous definitions to paper over inability to implement**: The following patterns are STRICTLY PROHIBITED and semantically equivalent to `sorry`:
     - `def X := True` / `def X := Unit` / `def X := trivial` / `def X := Trivial`
     - `theorem X := True` / `theorem X := trivial` / `theorem X := Trivial`
+14. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
     - `lemma X := True` / `lemma X := trivial` / `lemma X := Trivial`
     - `noncomputable def X := True` (and all `noncomputable` variants of the above)
     - `instance X := trivial` / `instance X := True`

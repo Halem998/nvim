@@ -1,0 +1,75 @@
+{
+  "phase": 5,
+  "phase_name": "Roll the bullet out to the in-scope agents",
+  "started_at": "2026-08-05T22:05:00Z",
+  "last_updated": "2026-08-05T22:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Enumerate the in-scope set by applying Phase 4's rule",
+      "status": "done",
+      "files_touched": [],
+      "note": "Confirmed set: 13 extension implementation agents not already compliant (pr-review-implementation, email-implementation, epi-implement, founder-implement, latex-implementation, lean-implementation, lean-implementation-hard, nix-implementation, neovim-implementation, python-implementation, typst-implementation, web-implementation, z3-implementation) + 4 core planning/meta agents (planner-agent, planner-hard-agent, reviser-agent, meta-builder-agent) = 17 edited this pass, plus 4 already-compliant (general-implementation-agent, general-implementation-hard-agent, cslib-implementation-agent, cslib-implementation-hard-agent) = 21 baseline total, matching the Scope Hypothesis exactly."
+    },
+    {
+      "id": 2,
+      "description": "Explicit include/exclude call for document-authoring agents in filetypes/, present/, founder/",
+      "status": "done",
+      "files_touched": [],
+      "note": "30 candidate agents assessed (7 filetypes + 14 founder + 9 present). INCLUDED (10, write outside specs/**): filetypes/document-agent, filetypes/docx-edit-agent, filetypes/filetypes-spreadsheet-agent, filetypes/presentation-agent, filetypes/scrape-agent, filetypes/sheet-agent (all write to caller-supplied absolute paths, not scoped to specs/); founder/deck-builder-agent (writes to strategy/{slug}-deck/); founder/meeting-agent (writes to same directory as user-supplied notes_path, typically outside specs/); present/pptx-assembly-agent and present/slidev-assembly-agent (both write to talks/{N}_{slug}/). EXCLUDED (20, recorded explicitly, not by oversight): filetypes/filetypes-router-agent (no Write tool -- pure Task-delegation router, does not author files itself); founder/analyze-agent, founder/deck-planner-agent, founder/deck-research-agent, founder/finance-agent, founder/financial-analysis-agent, founder/founder-plan-agent, founder/founder-spreadsheet-agent, founder/legal-analysis-agent, founder/legal-council-agent, founder/market-agent, founder/project-agent, founder/strategy-agent (all verified via grep of their MUST DO/Write bullets and body text: every deliverable -- report, XLSX, JSON metrics, plan, draft -- is written under specs/{NNN}_{SLUG}/, none write outside specs/**); present/budget-agent, present/funds-agent, present/grant-agent, present/slide-critic-agent, present/slide-planner-agent, present/slides-research-agent, present/timeline-agent (same: all outputs -- reports, XLSX, JSON, drafts, plans -- verified written under specs/{NNN}_{SLUG}/)."
+    },
+    {
+      "id": 3,
+      "description": "Skip the 4 already-compliant agents unless bullet text has drifted",
+      "status": "done",
+      "files_touched": [],
+      "note": "Verified byte-identical against the canonical fragment (grep -F check); no drift found, left unchanged."
+    },
+    {
+      "id": 4,
+      "description": "Insert bullet as last numbered MUST NOT item in each of the 27 target agents; no MUST NOT list absent (all 27 already had one)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
+        "agent-system/extensions/email/agents/email-implementation-agent.md",
+        "agent-system/extensions/epidemiology/agents/epi-implement-agent.md",
+        "agent-system/extensions/founder/agents/founder-implement-agent.md",
+        "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+        "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+        "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+        "agent-system/extensions/python/agents/python-implementation-agent.md",
+        "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+        "agent-system/extensions/web/agents/web-implementation-agent.md",
+        "agent-system/extensions/z3/agents/z3-implementation-agent.md",
+        "agent-system/extensions/core/agents/planner-agent.md",
+        "agent-system/extensions/core/agents/planner-hard-agent.md",
+        "agent-system/extensions/core/agents/reviser-agent.md",
+        "agent-system/extensions/core/agents/meta-builder-agent.md",
+        "agent-system/extensions/filetypes/agents/document-agent.md",
+        "agent-system/extensions/filetypes/agents/docx-edit-agent.md",
+        "agent-system/extensions/filetypes/agents/filetypes-spreadsheet-agent.md",
+        "agent-system/extensions/filetypes/agents/presentation-agent.md",
+        "agent-system/extensions/filetypes/agents/scrape-agent.md",
+        "agent-system/extensions/filetypes/agents/sheet-agent.md",
+        "agent-system/extensions/founder/agents/deck-builder-agent.md",
+        "agent-system/extensions/founder/agents/meeting-agent.md",
+        "agent-system/extensions/present/agents/pptx-assembly-agent.md",
+        "agent-system/extensions/present/agents/slidev-assembly-agent.md"
+      ],
+      "note": "planner-agent.md's MUST NOT list already contained a pre-existing duplicate-numbering defect (two items both numbered '4') before this edit; per the plan's 'Do not renumber or reword any surrounding bullet' instruction, the new bullet was appended continuing the existing sequence (as item 7, following the last visible number 6) without correcting the pre-existing duplicate. Not introduced by this phase; left as found."
+    },
+    {
+      "id": 5,
+      "description": "Verify: grep matches confirmed set; byte-identical; numbering contiguous; check-task-references.sh passes",
+      "status": "done",
+      "files_touched": [],
+      "note": "grep -rlF matched exactly 31 files (4 pre-existing + 27 new). All byte-identical (stripped of leading 'N. ' numbering) via automated check. check-task-references.sh run against the deployed .claude/ tree with REPO_ROOT scoping to include agent-system/extensions: PASS, 0 unexempted occurrences across all 4 tree roots -- the placeholder bullet text does not trip the gate."
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

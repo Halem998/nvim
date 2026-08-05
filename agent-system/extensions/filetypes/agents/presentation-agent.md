@@ -334,3 +334,4 @@ For Polylux/Touying:
 4. Modify source file
 5. Return the word "completed" as a status value
 6. Skip speaker notes extraction
+7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

@@ -153,3 +153,4 @@ Write to `specs/{N}_{SLUG}/.return-meta.json`
 3. Leave untested constraints
 4. Return completed without verification
 5. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

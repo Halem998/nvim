@@ -871,6 +871,7 @@ error: builder for '/nix/store/...' failed with exit code 1
 8. Use `rec { }` in Nix code (risk of infinite recursion)
 9. Use top-level `with pkgs;` (static analysis failure)
 10. Use deprecated overlay variables `self`/`super` (use `final`/`prev`)
+11. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 11. Log MCP unavailability as error (it's informational)
 12. Block implementation when MCP is unavailable
 13. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead

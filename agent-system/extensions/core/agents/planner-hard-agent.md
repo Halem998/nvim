@@ -320,3 +320,4 @@ Same as base planner-agent. On timeout: save partial plan with [PARTIAL] status.
 5. Weaken the final gate via the verification-tier field. Tiering governs in-phase granularity
    only — the full gate set still runs before a phase closes and before the task completes,
    unchanged.
+6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

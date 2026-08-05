@@ -325,6 +325,7 @@ Quick reference for mapping report slide types to PPTX components:
 6. Use status value "completed" (triggers Claude stop behavior)
 7. Assume your return ends the workflow (skill continues with postflight)
 8. Inline large code blocks from pptx-generation.md in the agent definition (reference instead)
+9. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 9. Skip the pip install check for python-pptx
 10. Hardcode theme colors in the script (always read from theme_mappings.json)
 11. Load research-only context (talk-structure.md, presentation-types.md, talk patterns)

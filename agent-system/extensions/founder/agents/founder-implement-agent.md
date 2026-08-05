@@ -1617,6 +1617,7 @@ When TRACK or REPORT mode is requested but no prior PLAN output exists:
 2. Generate numbers without sources from research
 3. Skip reading research report (even if plan has context)
 4. Skip red flags section
+5. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 5. Skip Typst source generation in Phase 4 (Typst is always primary, not conditional on typst CLI)
 6. Return "completed" as status value (use "implemented")
 7. Return JSON as console output

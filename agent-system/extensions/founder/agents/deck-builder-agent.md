@@ -555,5 +555,6 @@ Error: {export error message}
 4. Generate fictional content to fill `[MISSING]` gaps (use `[TODO:]` markers instead)
 5. Block task completion on slidev export failure
 6. Return "completed" as status value (use "implemented")
+7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 7. Skip early metadata initialization
 8. Hardcode any theme colors -- always use CSS variables
