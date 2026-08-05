@@ -20,6 +20,21 @@
 5. **Follow-ups** – bullets with owners/due dates if applicable.
 6. **References** – paths to artifacts informing the summary.
 
+These six entries are the **required minimum**: a summary MUST contain all six, and MAY contain
+additional sections beyond them. The gate-out validator (`validate-artifact.sh`) only reports a
+*missing* required section — it never enumerates a document's headings against a whitelist — so
+additional sections have never been rejected and are not an error.
+
+### Optional Sections
+
+- **Plan Deviations** – records plan-checklist deviations under a skipped/altered/deferred
+  taxonomy, a structured concern that `## Decisions` and `## Follow-ups` do not capture on their
+  own. Canonical position: after `## Decisions`, before `## Impacts`. Canonical empty value when
+  no deviations occurred: `- None (implementation followed plan)`. This section is admitted as a
+  named, recognized optional section because it is the dominant convention across
+  implementation-terminus agents and carries this distinct structured concern — see each such
+  agent's own summary-creation stage for the convention in practice.
+
 ## Writing Guidance
 - Keep concise (<= 1 page).
 - Use bullet lists for clarity.
@@ -46,6 +61,9 @@
 
 ## Decisions
 - ...
+
+## Plan Deviations
+- None (implementation followed plan)
 
 ## Impacts
 - ...

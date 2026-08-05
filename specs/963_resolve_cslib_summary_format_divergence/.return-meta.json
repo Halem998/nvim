@@ -1,45 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 963,
-  "task_type": "meta",
-  "session_id": "sess_1785950363_553a84_963",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/963_resolve_cslib_summary_format_divergence/plans/01_resolve-summary-format-divergence.md",
-      "summary": "Five-phase plan implementing research Option (ii): amend summary-format.md to admit '## Plan Deviations' as a recognized optional section and state that the required-section list is a minimum rather than a whitelist; sync validate-artifact.sh comments with zero enforcement change; add a direct summary-format.md reference plus a full summary skeleton to cslib-implementation-agent.md; align cslib-implementation-hard-agent.md Stage 6; then empirically verify zero errors and zero auto-repaired fields."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 3.5,
-  "dependency_waves": [[1], [2, 3, 4], [5]],
-  "plan_metadata": {
-    "phases": 5,
-    "total_effort_hours": 4,
-    "complexity": "medium",
-    "research_integrated": true,
-    "plan_version": 1,
-    "dependency_waves": [[1], [2, 3, 4], [5]],
-    "reports_integrated": [
-      {
-        "path": "reports/01_summary-format-divergence.md",
-        "integrated_in_plan_version": 1,
-        "integrated_date": "2026-08-05"
-      }
-    ],
-    "skeleton": false,
-    "follow_up_tasks": []
-  },
-  "memory_candidates": [
-    {
-      "content": "Agent-system failure mode: when an agent definition omits an @-reference to a format standard, the agent does not fail loudly -- it improvises headings into the vacuum and trips downstream format validators. The diagnostic tell is a validator reporting missing REQUIRED sections (heading replacement) rather than rejecting extra ones. Corollary about validator design: validate-artifact.sh only reports missing required fields/sections and never enumerates a document's headings against a whitelist, so extra sections have always been silently accepted. A section that is widely used but undocumented in the standard is therefore an ambiguity in the written spec, not a live gate failure -- diagnose which of the two you have before choosing between 'conform the outlier' and 'formalize the practice'. A base/hard agent asymmetry (hard variant references the standard, base variant does not) recurs across extensions and is worth checking as a pair whenever one is found.",
-      "category": "PATTERN",
-      "source_artifact": "specs/963_resolve_cslib_summary_format_divergence/plans/01_resolve-summary-format-divergence.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["agent-context-references", "format-validator", "summary-format", "improvisation-failure-mode", "base-hard-agent-asymmetry", "extension-conformance"]
-    }
-  ],
-  "next_steps": "Run /implement 963 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1785950363_553a84_963",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

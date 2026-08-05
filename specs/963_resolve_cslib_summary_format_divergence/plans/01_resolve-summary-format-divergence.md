@@ -1,7 +1,7 @@
 # Implementation Plan: Task #963
 
 - **Task**: 963 - Resolve the cslib implementation-summary format divergence from the core standard
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: 972, 974
 - **Research Inputs**: specs/963_resolve_cslib_summary_format_divergence/reports/01_summary-format-divergence.md
@@ -118,7 +118,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Amend summary-format.md to admit `## Plan Deviations` [NOT STARTED]
+### Phase 1: Amend summary-format.md to admit `## Plan Deviations` [COMPLETED]
 
 **Goal**: Record the Option (ii) decision in the shared core standard, making `## Plan Deviations`
 a recognized optional section and making the required-section list's minimum-not-whitelist
@@ -126,26 +126,26 @@ semantics explicit.
 
 **Tasks**:
 
-- [ ] Read `agent-system/extensions/core/context/formats/summary-format.md` in full (59 lines).
-- [ ] Under `## Structure`, keep the existing numbered list of six required sections unchanged, and
+- [x] Read `agent-system/extensions/core/context/formats/summary-format.md` in full (59 lines). *(completed)*
+- [x] Under `## Structure`, keep the existing numbered list of six required sections unchanged, and
       add a short paragraph directly beneath it stating that the six entries are the **required
       minimum**: a summary MUST contain all six, and MAY contain additional sections. State
       plainly that additional sections have never been rejected by the gate-out validator and are
-      not an error.
-- [ ] Add a new `### Optional Sections` subsection under `## Structure` naming `## Plan Deviations`
+      not an error. *(completed)*
+- [x] Add a new `### Optional Sections` subsection under `## Structure` naming `## Plan Deviations`
       as a recognized optional section, specifying: canonical position (after `## Decisions`,
       before `## Impacts`), purpose (records plan-checklist deviations under a
       skipped/altered/deferred taxonomy that `## Decisions` and `## Follow-ups` do not
       structurally capture), and the canonical empty value
-      `- None (implementation followed plan)`.
-- [ ] Add a one-sentence rationale note recording *why* the section is admitted rather than folded
+      `- None (implementation followed plan)`. *(completed: rationale note folded into same subsection)*
+- [x] Add a one-sentence rationale note recording *why* the section is admitted rather than folded
       away: it is the dominant convention across implementation agents and carries a distinct
       structured concern. Cite the durable anchor (the section name and the agents' Stage 6
-      convention), never a task number.
-- [ ] Update the `## Example Skeleton` block to show `## Plan Deviations` in its canonical position
+      convention), never a task number. *(completed)*
+- [x] Update the `## Example Skeleton` block to show `## Plan Deviations` in its canonical position
       with the `- None (implementation followed plan)` placeholder, so the skeleton and the prose
-      cannot drift.
-- [ ] Confirm no task-number citation was introduced anywhere in the file.
+      cannot drift. *(completed)*
+- [x] Confirm no task-number citation was introduced anywhere in the file. *(completed: grep returned no matches)*
 
 **Timing**: 0.5 hours
 
