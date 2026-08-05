@@ -1,35 +1,24 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md",
-      "summary": "Confirms item 1 (zotero-search.sh quoting gap) and item 3 (deprecated/README.md rationale gap) as real and fixable within file scope; empirically verifies item 2's deploy-hygiene premise is false for old-engine-bootstrapped repos and recommends spinning off a separate deploy-engine task rather than fixing it here."
+      "type": "plan",
+      "path": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/plans/01_literature-tooling-doc-fixes.md",
+      "summary": "7-phase, 2-hour plan covering items 1 and 3 only: the zotero-search.sh separate-arguments warning across four documentation surfaces (both USAGE copies, agent-exploration.md, literature-agent.md), the deprecated/README.md retirement rationale, and retirement of two stale zotero-index-add.sh stderr hints. Item 2 is recorded as an explicit out-of-scope deploy-engine finding with a ready-to-use follow-up task description; no fix and no parallel pruning mechanism is planned."
     }
   ],
-  "next_steps": "Run /plan 994 to create an implementation plan for items 1 and 3 (script header + agent-exploration.md + literature-agent.md fix, and deprecated/README.md rationale expansion). Item 2 needs a separate follow-up task targeting lua/neotex/plugins/ai/shared/extensions/init.lua's detect_legacy_core before any deploy-headless.sh run against PossibleWorlds or similar legacy repos.",
+  "next_steps": "Run /implement 994 to execute the plan. Item 2's deploy-engine defect (detect_legacy_core migrating only 'core' in lua/neotex/plugins/ai/shared/extensions/init.lua) needs a separate user-created task; do not run deploy-headless.sh --wipe against any repo lacking a root .claude-extensions.json until it lands.",
   "metadata": {
     "session_id": "sess_1785961976_f6b468_994",
-    "agent_type": "general-research-agent",
-    "duration_seconds": 2280,
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 3
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 2,
+    "dependency_waves": [[1, 4, 5], [2, 3], [6], [7]],
+    "complexity": "medium",
+    "research_integrated": true,
+    "plan_version": 1
   },
-  "memory_candidates": [
-    {
-      "content": "The deploy engine's manager.resync_all/manager.wipe (lua/neotex/plugins/ai/shared/extensions/init.lua) only operate over extensions listed in the ROOT .claude-extensions.json state file, not the per-base_dir .claude/extensions.json. detect_legacy_core() migrates only 'core' from a pre-migration (glob-engine) repo into the new state system; no equivalent exists for other extensions. On a repo bootstrapped entirely via the retired glob engine (no root state file, multiple active extensions), the first deploy-headless.sh (default) silently drops every non-core extension's CLAUDE.md contribution, and deploy-headless.sh --wipe deletes .claude/ and rebuilds nothing. Always verify against a scratch copy before running --wipe on any older downstream repo.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "manager.wipe", "resync_all", "detect_legacy_core", "extension-migration", "claude-extensions.json"]
-    },
-    {
-      "content": "zotero-search.sh requires each query word as a separate shell argument (OR-scored across terms internally); a single quoted multi-word phrase returns zero results even when every word matches individually. Internal callers (literature-discover.sh's tier2_search) already pass an array expansion correctly; the gap is purely in agent-facing documentation for direct/manual invocation.",
-      "category": "CONFIG",
-      "source_artifact": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["zotero-search.sh", "shell-argument-quoting", "literature-extension", "usage-gotcha"]
-    }
-  ]
+  "memory_candidates": []
 }

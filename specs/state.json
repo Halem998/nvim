@@ -5,12 +5,12 @@
     {
       "project_number": 994,
       "project_name": "fix_literature_tooling_landmines_and_sync_pruning",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "Fix literature-extension tooling landmines surfaced by downstream research in the PossibleWorlds paper repo (report: ~/Philosophy/Papers/PossibleWorlds/specs/054_ingest_presheaf_semantics_literature/reports/01_literature-acquisition-research.md). (1) Document zotero-search.sh multi-term argument behavior explicitly: usage is QUERY [QUERY...] with additive OR scoring per term, so multi-word queries must be passed as separate arguments and a single quoted phrase fails to match; add an explicit warning to the script's usage header and the literature extension context docs. (2) Deployment hygiene for retired scripts — REVISED (post-review) to verification-plus-gap-fill, not mechanism-building: zotero-index-add.sh was retired upstream (agent-system/extensions/literature/scripts/deprecated/) but deployed repos still carry it as an active script (.claude/scripts/zotero-index-add.sh) together with stale generated references (the .claude/CLAUDE.md Zotero Integration table row claiming it adds to specs/literature-index.json, and .claude/agents/literature-agent.md around line 172). The structural fix is the deploy-engine consolidation task this task now DEPENDS ON: its wipe+regenerate path prunes retired scripts and regenerates merged CLAUDE.md sections by construction. The work here is to run the consolidated deploy against an affected downstream repo (or scratch tree) and VERIFY the retired script is pruned and the stale generated references are regenerated; if any stale reference survives because its source-store origin still mentions the retired script, fix those source references. Do NOT build a parallel retirement/pruning mechanism. (3) Record the retirement rationale in deprecated/README.md if absent: the script writes a ~20-field Zotero metadata entry while literature-briefing.sh reads the simpler {doc_id, relevance, added, source} shape from specs/literature-index.json, and it depends on the zot CLI and an undefined /zotero --setup command, so repair would have required schema translation; sub-index registration should instead use the documented jq append pattern in skill-literature/SKILL.md.",
       "topic": "literature",
       "created": "2026-08-05T12:56:12Z",
-      "last_updated": "2026-08-05T20:41:41Z",
+      "last_updated": "2026-08-05T20:46:28Z",
       "dependencies": [
         980
       ],
@@ -24,6 +24,11 @@
           "path": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md",
           "type": "report",
           "summary": "Confirms item 1 (zotero-search.sh quoting gap) and item 3 (deprecated/README.md rationale gap) as real and fixable within file scope; empirically verifies item 2's deploy-hygiene premise is false for old-engine-bootstrapped repos and recommends spinning off a separate deploy-engine task rather than fixing it here."
+        },
+        {
+          "path": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/plans/01_literature-tooling-doc-fixes.md",
+          "type": "plan",
+          "summary": "7-phase, 2-hour plan covering items 1 and 3 only: the zotero-search.sh separate-arguments warning across four documentation surfaces (both USAGE copies, agent-exploration.md, literature-agent.md), the deprecated/README.md retirement rationale, and retirement of two stale zotero-index-add.sh stderr hints. Item 2 is recorded as an explicit out-of-scope deploy-engine finding with a ready-to-use follow-up task description; no fix and no parallel pruning mechanism is planned."
         }
       ]
     },
