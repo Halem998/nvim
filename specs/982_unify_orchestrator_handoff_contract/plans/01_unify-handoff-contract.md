@@ -209,44 +209,51 @@ explicit file ownership.
 
 ---
 
-### Phase 2: Rewrite validate-handoff.sh and add bidirectional tests [NOT STARTED]
+### Phase 2: Rewrite validate-handoff.sh and add bidirectional tests [COMPLETED]
 
 **Goal**: Make the validator enforce exactly the Phase 1 schema, proven in both directions by
 tests.
 
 **Tasks**:
-- [ ] Re-confirm the caller contract before editing: `grep -n 'validate-handoff.sh'
+- [x] Re-confirm the caller contract before editing: `grep -n 'validate-handoff.sh'
       core/scripts/skill-base.sh` and verify the invocation is still non-gating (`|| true`).
       Record the confirmation in the phase notes. If it is NOT non-gating, STOP and re-scope.
-- [ ] Expand `valid_statuses` from `("implemented" "partial" "blocked")` to the full six-value
-      vocabulary. Update the `--help` text's status line to match.
-- [ ] Add `artifacts` to the required-field logic with the conditional rule: the field must be
+      *(completed: confirmed at skill-base.sh:853, `bash .claude/scripts/validate-handoff.sh
+      "$handoff_path" >&2 || true` — still non-gating)*
+- [x] Expand `valid_statuses` from `("implemented" "partial" "blocked")` to the full six-value
+      vocabulary. Update the `--help` text's status line to match. *(completed)*
+- [x] Add `artifacts` to the required-field logic with the conditional rule: the field must be
       present and be a JSON array in all cases; it must additionally be non-empty when `status` is
       `researched`, `planned`, or `implemented`. An empty array is legal for `partial`, `blocked`,
-      and `failed`.
-- [ ] Add `summary` as a required, non-empty string field (both engines read
-      `.summary` unconditionally).
-- [ ] When `artifacts` is non-empty, check entry 0 has `type` and `path`; warn (do not fail) when
-      `summary` is absent from an entry, since it is optional in the schema.
-- [ ] Keep Check 7's `{phase, target}` blocker validation unchanged — the research verified it is
-      already aligned with the canonical shape.
-- [ ] Keep all skeleton / `sorry_inventory` logic (Check 3) behaviorally unchanged.
-- [ ] Update the `--help` block's "Required fields" / "Optional fields" lines and the
+      and `failed`. *(completed)*
+- [x] Add `summary` as a required, non-empty string field (both engines read
+      `.summary` unconditionally). *(completed)*
+- [x] When `artifacts` is non-empty, check entry 0 has `type` and `path`; warn (do not fail) when
+      `summary` is absent from an entry, since it is optional in the schema. *(completed)*
+- [x] Keep Check 7's `{phase, target}` blocker validation unchanged — the research verified it is
+      already aligned with the canonical shape. *(completed: left byte-for-byte unchanged)*
+- [x] Keep all skeleton / `sorry_inventory` logic (Check 3) behaviorally unchanged. *(completed:
+      left byte-for-byte unchanged)*
+- [x] Update the `--help` block's "Required fields" / "Optional fields" lines and the
       "Contract reference" header comment to name
-      `context/schemas/orchestrator-handoff-schema.json` as the authority alongside `wrap-up.md`.
-- [ ] Create `core/scripts/tests/test-validate-handoff.sh` following the structure and
-      pass/fail/info helpers used by `test-corroborate-phase-counts.sh`.
-- [ ] ACCEPT fixtures (validator must exit 0): a conformant hard-mode `implemented` handoff with
+      `context/schemas/orchestrator-handoff-schema.json` as the authority alongside `wrap-up.md`. *(completed)*
+- [x] Create `core/scripts/tests/test-validate-handoff.sh` following the structure and
+      pass/fail/info helpers used by `test-corroborate-phase-counts.sh`. *(completed; deviation:
+      candidate resolution ordered source-store-first rather than deploy-first, since this suite
+      exercises the validator under active development before the Phase 7 redeploy — see phase
+      notes)*
+- [x] ACCEPT fixtures (validator must exit 0): a conformant hard-mode `implemented` handoff with
       `summary` + non-empty `artifacts`; a `partial` handoff with `artifacts: []` and a non-null
       `continuation_path`; a `researched`-status handoff with a report artifact (this last one
-      would have FAILED the pre-change validator — it is the regression the fix exists to close).
-- [ ] REJECT fixtures (validator must exit non-zero): a handoff missing `artifacts` entirely; a
+      would have FAILED the pre-change validator — it is the regression the fix exists to close). *(completed)*
+- [x] REJECT fixtures (validator must exit non-zero): a handoff missing `artifacts` entirely; a
       handoff missing `summary`; an `implemented` handoff with `artifacts: []`; a handoff with an
-      off-vocabulary status such as `"done"`.
-- [ ] Register `tests/test-validate-handoff.sh` in `core/manifest.json`'s scripts array,
-      preserving the array's existing ordering convention.
-- [ ] Run the new test and the existing `test-corroborate-phase-counts.sh` (whose Fixture H
-      asserts validator behavior) — both must pass.
+      off-vocabulary status such as `"done"`. *(completed)*
+- [x] Register `tests/test-validate-handoff.sh` in `core/manifest.json`'s scripts array,
+      preserving the array's existing ordering convention. *(completed)*
+- [x] Run the new test and the existing `test-corroborate-phase-counts.sh` (whose Fixture H
+      asserts validator behavior) — both must pass. *(completed: both pass; full
+      core/scripts/tests/ suite of 12 scripts also passes)*
 
 **Timing**: 1.5 hours
 

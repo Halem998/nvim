@@ -5,7 +5,8 @@
 # and skill-orchestrate, checking JSON structure, required fields, and
 # status/continuation consistency.
 #
-# Contract reference: .claude/context/contracts/wrap-up.md (H9)
+# Contract reference: .claude/context/schemas/orchestrator-handoff-schema.json
+# (the machine-checkable authority) and .claude/context/contracts/wrap-up.md (H9, prose)
 #
 # Usage: validate-handoff.sh <handoff-file-path> [--help]
 #
@@ -30,15 +31,22 @@ while [[ $# -gt 0 ]]; do
     --help|-h)
       echo "Usage: validate-handoff.sh <handoff-file-path>"
       echo ""
-      echo "Validates an .orchestrator-handoff.json file against the H9 wrap-up contract schema."
+      echo "Validates an .orchestrator-handoff.json file against"
+      echo "context/schemas/orchestrator-handoff-schema.json (the machine-checkable authority;"
+      echo "see also wrap-up.md's H9 prose contract)."
       echo ""
-      echo "Required fields: status, phases_completed, phases_total, blockers"
-      echo "Optional fields: sorry_inventory, continuation_path, continuation_context, artifacts, summary"
+      echo "Required fields: status, summary, artifacts, phases_completed, phases_total, blockers"
+      echo "Optional fields: phase, plan_markers_verified, skeleton, sorry_inventory,"
+      echo "  continuation_path, continuation_context (deprecated, read-only), next_action_hint,"
+      echo "  git_checkpoint"
       echo "Conditionally-required field: skeleton (boolean, defaults to false)"
       echo ""
       echo "Validation rules:"
       echo "  - JSON must be parsable"
-      echo "  - status must be: implemented | partial | blocked"
+      echo "  - status must be: researched | planned | implemented | partial | failed | blocked"
+      echo "  - artifacts must be present and be a JSON array; non-empty required when status is"
+      echo "    researched, planned, or implemented (empty [] is legal for partial/blocked/failed)"
+      echo "  - summary must be present and a non-empty string"
       echo "  - When status is partial or blocked: continuation_path or continuation_context must be non-null"
       echo "  - When status is partial: phases_completed must be < phases_total"
       echo "  - skeleton=true requires status=='implemented', a non-empty sorry_inventory, and every"
@@ -112,6 +120,48 @@ for field in "${required_fields[@]}"; do
     log_pass "Required field present: $field"
   fi
 done
+
+# --- Check 2b: summary (required, non-empty string) ---
+summary_value=$(jq -r ".summary // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+if [[ "$summary_value" == "__MISSING__" ]] || [[ "$summary_value" == "null" ]] || [[ -z "$summary_value" ]]; then
+  log_fail "Required field missing or empty: summary"
+else
+  log_pass "Required field present: summary"
+fi
+
+# --- Check 2c: artifacts (required array; non-empty required for researched/planned/implemented) ---
+artifacts_is_array=$(jq -r "if has(\"artifacts\") and (.artifacts | type) == \"array\" then \"true\" else \"false\" end" "$HANDOFF_FILE" 2>/dev/null)
+if [[ "$artifacts_is_array" != "true" ]]; then
+  log_fail "Required field missing or not an array: artifacts"
+else
+  artifacts_count=$(jq -r ".artifacts | length" "$HANDOFF_FILE" 2>/dev/null || echo "0")
+  case "$status" in
+    researched|planned|implemented)
+      if [[ "$artifacts_count" -gt 0 ]]; then
+        log_pass "Required field present: artifacts ($artifacts_count entry(s), non-empty required for status='$status')"
+      else
+        log_fail "artifacts must be non-empty when status is researched/planned/implemented (found empty array for status='$status')"
+      fi
+      ;;
+    *)
+      log_pass "Required field present: artifacts ($artifacts_count entry(s); empty is legal for status='$status')"
+      ;;
+  esac
+
+  if [[ "$artifacts_count" -gt 0 ]]; then
+    entry0_type=$(jq -r ".artifacts[0].type // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+    entry0_path=$(jq -r ".artifacts[0].path // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+    entry0_summary=$(jq -r ".artifacts[0].summary // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+    if [[ "$entry0_type" == "__MISSING__" ]] || [[ "$entry0_path" == "__MISSING__" ]]; then
+      log_fail "artifacts[0] missing required field(s): type and/or path"
+    else
+      log_pass "artifacts[0] has required fields (type, path)"
+    fi
+    if [[ "$entry0_summary" == "__MISSING__" ]]; then
+      log_warn "artifacts[0].summary absent (optional per schema, but read by both orchestrate engines)"
+    fi
+  fi
+fi
 
 # --- Check 3: sorry_inventory validation (skeleton-aware) ---
 sorry_inventory_present=true
@@ -188,7 +238,7 @@ fi
 
 # --- Check 4: Status value validation ---
 status=$(jq -r ".status // \"\"" "$HANDOFF_FILE" 2>/dev/null)
-valid_statuses=("implemented" "partial" "blocked")
+valid_statuses=("researched" "planned" "implemented" "partial" "failed" "blocked")
 status_valid=false
 for valid in "${valid_statuses[@]}"; do
   if [[ "$status" == "$valid" ]]; then
@@ -200,7 +250,7 @@ done
 if [[ "$status_valid" == "true" ]]; then
   log_pass "Status value is valid: $status"
 else
-  log_fail "Status value invalid: '$status' (expected: implemented | partial | blocked)"
+  log_fail "Status value invalid: '$status' (expected: researched | planned | implemented | partial | failed | blocked)"
 fi
 
 # --- Check 5: Status/continuation consistency ---
