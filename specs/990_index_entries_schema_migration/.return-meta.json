@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md",
+      "summary": "Corrects and grounds the task's WORK-item scope against a live check-extension-docs.sh run: true description count is 147 (not 166), tags rename applies to only 6 of the 10 named extensions, WORK item 5's blanket 'safe to delete' premise has an exception (memory-troubleshooting.md), core (9 entries, 1 needing a replacement agents hook) and email (1 entry) are also in scope for load_when.skills deletion beyond what WORK item 5 names, formal has 40 load_when.topics violations not named in any WORK item, and founder's 11 entries need an array-union merge rather than an overwrite for WORK item 3."
+    }
+  ],
+  "next_steps": "Run /plan 990 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785950363_553a84_990",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 12
+  },
+  "memory_candidates": [
+    {
+      "content": "When a task description gives concrete WORK-item counts/scope for a mechanical migration (e.g. '166 entries', 'same 10 extensions'), re-derive those counts live against the actual gate/validator (e.g. check-extension-docs.sh's own advisory-line counts) rather than trusting the task description's summary numbers -- this task's description undercounted (166 vs actual 147) and overscoped (claimed tags exists in 10 extensions when it's really 6), and separately omitted 3 real violation sources (core's load_when.skills, email's 1 load_when.skills entry, formal's load_when.topics nesting) that are required by the verification bar but not named in any WORK item.",
+      "category": "PATTERN",
+      "source_artifact": "specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["index-entries.json", "check-extension-docs.sh", "Rule T", "task-scope-verification", "schema-migration"]
+    },
+    {
+      "content": "Before a blind field-deletion migration (e.g. deleting load_when.skills across many entries), check each entry's OTHER load_when keys individually -- a blanket per-extension justification ('these entries already carry non-empty commands') can still have per-entry exceptions. In this codebase, project/memory/memory-troubleshooting.md and core/patterns/lit-stage4a-flow.md each had skills as their ONLY reachability hook, so deleting skills without adding a replacement (commands or agents respectively) would have orphaned them from context-discovery.md's adaptive jq query.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/990_index_entries_schema_migration/reports/01_index-entries-schema-migration.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["load_when", "orphaned-entry", "context-discovery", "reachability-check", "index-entries.json"]
+    }
+  ]
+}
