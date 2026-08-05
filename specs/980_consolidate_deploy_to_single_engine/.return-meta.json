@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1785950363_553a84_980",
+  "task_number": 980,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
+      "summary": "Confirms all six root causes from the review with fresh file:line evidence: manager.load's already-loaded hard-abort (init.lua:253-254), deploy-headless.sh's exclusive dependence on Engine B (sync.lua load_all_globally), the allow-list top-path-segment mismatch dropping scripts/lib and scripts/tests entries, the dead is_load_all picker producer, manager.regenerate's settings-restore-after-merge ordering bug plus staging-dir leak, settings_backup.backup's zero callers, verify.lua's missing scripts/hooks/docs/templates/systemd/root_files coverage, and a fully enumerated 11-function copy_* divergence table (return arity, symlink guard, preserve_perms). Includes concrete recommendations and risks for the implementation plan, including a third bulk-resync path (picker 'Reload All') the plan should also consolidate."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's extension deploy system (lua/neotex/plugins/ai/shared/extensions/), manager.regenerate (init.lua:972-1035) already exists as a working wipe-safe reload loop with zero callers, and settings_backup.lua (backup/restore of settings.json+settings.local.json via a project-root staging dir) already exists with settings_backup.backup having zero callers. Before assuming new deploy-consolidation mechanism must be built from scratch, check for already-written-but-unwired functions like these -- the gap is often wiring/ordering bugs, not missing implementation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deploy-engine", "manager.regenerate", "settings_backup", "loader.lua", "unwired-function"]
+    },
+    {
+      "content": "picker/operations/sync.lua's load_all_globally allow-list post-filter (~sync.lua:1001-1042) matches provides.<category> manifest entries by TOP path segment only (rel_path:match(\"^([^/]+)\")), while manifest.json declares full relative paths for scripts/hooks (e.g. lib/foo.sh). This silently drops every subdirectory entry on both fresh and resync deploys. The code has a self-aware 'zero-result wipeout detector' (WARN only, non-blocking) at the same location that already flags this class of defect but doesn't fail loudly.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sync.lua", "allow-list", "load_all_globally", "deploy-headless", "scripts-propagation"]
+    },
+    {
+      "content": "The 11 copy_* functions in loader.lua diverge in return arity (2, 3, or 4 return values), symlink-guard presence (only copy_simple_files and copy_skill_dirs return a symlink_skipped_count), and preserve_perms (hardcoded true for scripts/hooks, false for context/systemd/docs/templates/root_files, conditional on .sh extension only in copy_simple_files/copy_skill_dirs). A future table-driven collapse should express copy_manifest's realpath self-load skip and copy_data_dirs' merge-copy-to-project-root semantics as additional table fields rather than forcing false uniformity, since both are meaningfully different in kind from the other 9 copiers.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/980_consolidate_deploy_to_single_engine/reports/01_consolidate-deploy-engines.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["loader.lua", "copy_functions", "table-driven-refactor", "deploy-consolidation"]
+    }
+  ],
+  "next_steps": "Run /plan 980 to create implementation plan"
+}
