@@ -1,0 +1,65 @@
+{
+  "phase": 7,
+  "phase_name": "Retire skill-orchestrator",
+  "started_at": "2026-08-06T01:50:00Z",
+  "last_updated": "2026-08-06T02:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite epi.md's dispatch to resolve via command-route-skill.sh, mirroring implement.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/epidemiology/commands/epi.md"]
+    },
+    {
+      "id": 2,
+      "description": "Update epi.md's earlier prose reference to skill-orchestrator",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/epidemiology/commands/epi.md"]
+    },
+    {
+      "id": 3,
+      "description": "Delete skills/skill-orchestrator/ (SKILL.md + SKILL.md.archived)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrator/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrator/SKILL.md.archived"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Remove skill-orchestrator from core manifest provides.skills",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 5,
+      "description": "Fix copy-claude-directory.md (3 references)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/guides/copy-claude-directory.md"]
+    },
+    {
+      "id": 6,
+      "description": "Fix adding-domains.md (architecture diagram + routing subsection + checklist item)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/guides/adding-domains.md"]
+    },
+    {
+      "id": 7,
+      "description": "Annotate historical audit row in context-protective-lead.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/context-protective-lead.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.5-7.6",
+      "description": "Both doc-guide fixes link to context/guides/manifest-routing-schema.md, which does not exist yet -- it is created in Phase 8",
+      "type": "deferred",
+      "reason": "Phase 7's own scope is retiring skill-orchestrator's references; Phase 8 is the dedicated phase for authoring the schema guide itself. The links are forward-references to a file this same task creates two phases later in the same run, not a dangling reference to something that will never exist.",
+      "annotation": "*(deviation: deferred — links to manifest-routing-schema.md resolve once Phase 8 creates it)*"
+    }
+  ]
+}

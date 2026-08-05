@@ -487,7 +487,7 @@ resolution works for all three commands.
 
 ---
 
-### Phase 7: Retire skill-orchestrator [NOT STARTED]
+### Phase 7: Retire skill-orchestrator [COMPLETED]
 
 **Goal**: Delete the vestigial sixth routing table, move its one live consumer onto the canonical
 path, and correct the two guides that still instruct authors to edit it.

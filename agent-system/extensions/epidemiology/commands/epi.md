@@ -246,7 +246,8 @@ fi
 ### Step 3: Handle Input Type
 
 **If task number**:
-Load existing task, validate task_type starts with "epi", then delegate to research via skill-orchestrator.
+Load existing task, validate task_type starts with "epi", then delegate to research via the
+canonical router (`command-route-skill.sh`).
 
 **If file path**:
 Read the file as study protocol or source material. Run Stage 0 forcing questions (Steps 0.1-0.10) with the file content as context. Then proceed to task creation.
@@ -349,6 +350,7 @@ When input is a task number, delegate to the appropriate research skill.
 task_data=$(jq -r --argjson num "$task_number" \
   '.active_projects[] | select(.project_number == $num)' \
   specs/state.json)
+task_type=$(echo "$task_data" | jq -r '.task_type')
 
 # Validate exists
 # Validate task_type starts with "epi"
@@ -357,11 +359,18 @@ task_data=$(jq -r --argjson num "$task_number" \
 
 ### Step 2: Delegate
 
-Route through skill-orchestrator which will select the appropriate epi research skill:
+Resolve the skill through the single canonical router, `command-route-skill.sh` — mirroring the
+shape `implement.md` uses, not a third mechanism. The epidemiology manifest declares `epi`,
+`epi:study`, and `epidemiology` as aliases all resolving to `skill-epi-research`.
+
+```bash
+source .claude/scripts/command-route-skill.sh "research" "$task_type" "skill-researcher" "${effort_flag:-}"
+skill_name="$SKILL_NAME"
+```
 
 **Invoke Skill tool**:
 ```
-skill: "skill-orchestrator"
+skill: "{skill_name}"
 args: "command=research task_number={N} session_id={session_id}"
 ```
 

@@ -131,7 +131,8 @@ To add a new domain (e.g., for a specific framework):
 1. Create directory: `.claude/context/project/your-domain/`
 2. Add context files following the existing patterns
 3. Create domain-specific agents if needed
-4. Update routing in `skill-orchestrator/SKILL.md`
+4. Declare `routing` / `routing_hard` / `routing_agents` in your extension's `manifest.json` (see
+   [Manifest Routing Schema](../../context/guides/manifest-routing-schema.md))
 
 See [Adding Domains Guide](adding-domains.md) for detailed instructions.
 
@@ -139,7 +140,8 @@ See [Adding Domains Guide](adding-domains.md) for detailed instructions.
 
 To support a new language type:
 
-1. Add entry to routing table in `skill-orchestrator/SKILL.md`
+1. Add `routing` and `routing_agents` entries to your extension's `manifest.json` (see
+   [Manifest Routing Schema](../../context/guides/manifest-routing-schema.md))
 2. Create `skill-{language}-research/SKILL.md`
 3. Create `skill-{language}-implementation/SKILL.md`
 4. Create corresponding agent files
@@ -249,7 +251,8 @@ After installation:
 
 ### Language routing issues
 
-Verify `skill-orchestrator/SKILL.md` has correct routing for your language.
+Verify your extension's `manifest.json` declares correct `routing` and `routing_agents` entries
+for your language (see [Manifest Routing Schema](../../context/guides/manifest-routing-schema.md)).
 
 ### Missing context
 

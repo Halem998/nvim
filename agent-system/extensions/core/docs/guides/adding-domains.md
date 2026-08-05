@@ -196,7 +196,7 @@ Use this approach only for the repository's primary domain (e.g., python for a P
 Command (/research, /implement)
     │
     ▼
-Orchestrator (skill-orchestrator)
+command-route-skill.sh (manifest routing ladder)
     │
     ├── task_type: your-domain → skill-your-domain-research / skill-your-domain-implementation
     ├── task_type: general    → skill-researcher / skill-implementer
@@ -360,18 +360,27 @@ Load for detailed patterns:
 
 ### Step 5: Update Routing
 
-#### Update skill-orchestrator
+#### Declare routing in your extension's manifest.json
 
-Edit `.claude/skills/skill-orchestrator/SKILL.md`:
+Core-approach domains route through the same `routing` / `routing_agents` manifest declarations
+as extension-approach domains — see
+[Manifest Routing Schema](../../context/guides/manifest-routing-schema.md) for the full contract
+(the single five-step first-match-wins ladder, core identification by `.name == "core"`, and the
+rule that agent names are declared, never derived):
 
-```markdown
-### Task-Type-Based Routing
-
-| Task Type | Research Skill | Implementation Skill |
-|----------|---------------|---------------------|
-| {domain} | skill-{domain}-research | skill-{domain}-implementation |
-| your-domain | skill-your-domain-research | skill-your-domain-implementation |
-| general | skill-researcher | skill-implementer |
+```json
+{
+  "routing": {
+    "research": { "your-domain": "skill-your-domain-research" },
+    "plan": { "your-domain": "skill-planner" },
+    "implement": { "your-domain": "skill-your-domain-implementation" }
+  },
+  "routing_agents": {
+    "research": { "your-domain": "your-domain-research-agent" },
+    "plan": { "your-domain": "planner-agent" },
+    "implement": { "your-domain": "your-domain-implementation-agent" }
+  }
+}
 ```
 
 #### Update CLAUDE.md
@@ -434,7 +443,7 @@ Add entries to `.claude/context/index.json`:
 - [ ] Research skill created
 - [ ] Implementation skill created
 - [ ] Rule file created
-- [ ] Orchestrator routing updated
+- [ ] `routing` / `routing_agents` declared in manifest.json
 - [ ] CLAUDE.md updated
 - [ ] Context index updated
 - [ ] Test with `/task "Test" --task-type your-domain`
