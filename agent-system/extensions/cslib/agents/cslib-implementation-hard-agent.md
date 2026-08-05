@@ -337,8 +337,14 @@ Session: {session_id}"
 
 ### Stage 6: Create Implementation Summary
 
-Write to `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`.
-Include `## Plan Deviations` section (required).
+Write to `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md` following
+`@.claude/context/formats/summary-format.md`: all six required sections
+(`## Overview`, `## What Changed`, `## Decisions`, `## Impacts`, `## Follow-ups`,
+`## References`) and the full required metadata block. Include `## Plan Deviations` — the
+standard's recognized optional section — positioned after `## Decisions`, using
+`- None (implementation followed plan)` when there were no deviations. See the base
+`cslib-implementation-agent.md`'s `## Create Implementation Summary` stage for a complete,
+copyable skeleton adapted to CSLib's CI pipeline.
 
 ### Stage 7: Write Metadata File
 

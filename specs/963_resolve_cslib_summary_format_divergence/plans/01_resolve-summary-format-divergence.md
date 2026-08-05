@@ -295,24 +295,24 @@ rather than adding a duplicate.
 
 ---
 
-### Phase 4: Align cslib-implementation-hard-agent.md Stage 6 [NOT STARTED]
+### Phase 4: Align cslib-implementation-hard-agent.md Stage 6 [COMPLETED]
 
 **Goal**: Make the hard agent's Stage 6 explicitly consistent with the amended standard, removing
 the ambiguity of mandating a section the standard previously did not document.
 
 **Tasks**:
 
-- [ ] Read Stage 6 (`### Stage 6: Create Implementation Summary`) of
-      `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md`.
-- [ ] Rewrite Stage 6's body to state that the summary follows `summary-format.md` — all six
+- [x] Read Stage 6 (`### Stage 6: Create Implementation Summary`) of
+      `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md`. *(completed)*
+- [x] Rewrite Stage 6's body to state that the summary follows `summary-format.md` — all six
       required sections and the full required metadata block — and that `## Plan Deviations` is
       included as the standard's recognized optional section, positioned after `## Decisions`,
-      using `- None (implementation followed plan)` when there were no deviations.
-- [ ] Keep the stage terse, matching the hard agent's existing compressed style. Do **not** paste
+      using `- None (implementation followed plan)` when there were no deviations. *(completed)*
+- [x] Keep the stage terse, matching the hard agent's existing compressed style. Do **not** paste
       the full skeleton here; point at the loaded standard and, where useful, at the base agent's
       stage. The hard agent already carries the `summary-format.md` context reference, so no
-      change to `## Context References` is needed — verify this rather than assuming.
-- [ ] Confirm no task-number citation and no `.claude/**` write target was introduced.
+      change to `## Context References` is needed — verify this rather than assuming. *(completed: confirmed via grep, no edit made there)*
+- [x] Confirm no task-number citation and no `.claude/**` write target was introduced. *(completed)*
 
 **Timing**: 0.5 hours
 
