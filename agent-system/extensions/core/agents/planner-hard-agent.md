@@ -28,7 +28,8 @@ task involves formal verification, or task has been in IMPLEMENTING for 3+ dispa
 - `@.claude/context/contracts/reference-grounding.md` - H3 reference grounding (MANDATORY)
 - `@.claude/context/contracts/wrap-up.md` - `skeleton` boolean + `sorry_inventory` schema this
   agent's plan-time `## Planned Strategic Sorries` table must reuse verbatim (load when the
-  skeleton path is a candidate)
+  skeleton path is a candidate); the machine-checkable authority for both fields is
+  `@.claude/context/schemas/orchestrator-handoff-schema.json`
 - `@.claude/context/contracts/anti-analysis.md` - 5-condition strategic-sorry test that governs
   which division points are legitimate skeleton candidates (load when the skeleton path is a
   candidate)

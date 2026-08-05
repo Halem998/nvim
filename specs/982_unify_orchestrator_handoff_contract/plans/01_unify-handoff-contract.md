@@ -400,46 +400,53 @@ deliberately deferred to Phase 5 and are NOT part of this hypothesis.
 
 ---
 
-### Phase 5: Rewrite handoff-schema.md and align hard-agent cross-references [NOT STARTED]
+### Phase 5: Rewrite handoff-schema.md and align hard-agent cross-references [COMPLETED]
 
 **Goal**: Make the authoritative prose document agree with the schema file, retire the dead
 shapes, and correct every reference to the deleted writer.
 
 **Tasks**:
-- [ ] Replace the "Complete JSON Schema" section's hand-maintained block with a pointer to
+- [x] Replace the "Complete JSON Schema" section's hand-maintained block with a pointer to
       `context/schemas/orchestrator-handoff-schema.json` plus a short illustrative example,
       mirroring how other schemas in `context/schemas/` are referenced from their owning docs.
-      The prose doc must stop being a second, independently-driftable schema.
-- [ ] Fold the previously-undocumented fields into the Field Definitions section: `skeleton`,
-      `sorry_inventory`, `git_checkpoint`, and `artifacts[].summary`.
-- [ ] Retire the `{description, phase, severity}` blocker shape from the `blockers` field
+      The prose doc must stop being a second, independently-driftable schema. *(completed)*
+- [x] Fold the previously-undocumented fields into the Field Definitions section: `skeleton`,
+      `sorry_inventory`, `git_checkpoint`, and `artifacts[].summary`. *(completed)*
+- [x] Retire the `{description, phase, severity}` blocker shape from the `blockers` field
       definition; replace it with the canonical `{phase, target, verbatim_goal, what_was_tried,
       why_it_failed}` shape, and state explicitly that `description` and `severity` were read by
-      no engine and are removed.
-- [ ] Rewrite the "Two Accepted Forms" section as one WRITE form with a deprecated READ-accepted
+      no engine and are removed. *(completed; also fixed the one remaining example that still used
+      the old shape — "Blocked with Escalation Required")*
+- [x] Rewrite the "Two Accepted Forms" section as one WRITE form with a deprecated READ-accepted
       form, per this plan's binding decision. Keep the reader-side dual-form resolution
-      documentation accurate — it still exists in both engines.
-- [ ] Update the "Handoff Writers" table: remove the `skill_write_orchestrator_handoff` row
+      documentation accurate — it still exists in both engines. *(completed: renamed to "One Write
+      Form, Deprecated-But-Accepted Read Form")*
+- [x] Update the "Handoff Writers" table: remove the `skill_write_orchestrator_handoff` row
       entirely (the function no longer exists), and make the table state the settled writer
       decision in one place — hard-mode implementation agent writes the handoff; research agents
       never do (preserving the existing Stage 3.6 Scoping Decision, not re-deciding it); base-mode
-      research/plan/implement return via `.return-meta.json`.
-- [ ] Rewrite or delete the "Partial with Continuation (nested form)" example, which is captioned
-      as the deleted function's shape.
-- [ ] Clear the remaining references to the deleted function throughout the document (research
+      research/plan/implement return via `.return-meta.json`. *(completed)*
+- [x] Rewrite or delete the "Partial with Continuation (nested form)" example, which is captioned
+      as the deleted function's shape. *(completed: rewritten, captioned as deprecated/no-live-writer)*
+- [x] Clear the remaining references to the deleted function throughout the document (research
       counted seven sites; re-derive the live count by grep rather than trusting that number).
-- [ ] Update the "Outcome Channels" section to state the decided one-channel-per-mode contract.
-- [ ] Update the three comment references to the deleted function in
+      *(completed: live count was 9, all reworded to generic "Bash-redirect helper function"
+      phrasing; final grep count is 0)*
+- [x] Update the "Outcome Channels" section to state the decided one-channel-per-mode contract. *(completed)*
+- [x] Update the three comment references to the deleted function in
       `core/skills/skill-orchestrate/SKILL.md` and `core/skills/skill-orchestrate-hard/SKILL.md`.
       These are comments inside bash blocks explaining WHY dual-form resolution exists and why the
       location hook cannot see Bash-redirect writes — reword to describe the class of writer, not
-      the deleted function. Do not change any jq or logic in this phase.
-- [ ] Verify `core/agents/general-research-hard-agent.md`'s Stage 3.6 Scoping Decision still reads
+      the deleted function. Do not change any jq or logic in this phase. *(completed; diff review
+      confirms comment-only changes)*
+- [x] Verify `core/agents/general-research-hard-agent.md`'s Stage 3.6 Scoping Decision still reads
       correctly against the new schema doc (it should need no change; if its cross-reference names
-      a section that was renamed, fix the reference only).
-- [ ] Verify `core/agents/planner-hard-agent.md`'s single `wrap-up.md` cross-reference (for the
+      a section that was renamed, fix the reference only). *(completed: verified, needs no change —
+      it already states research must not use wrap-up.md's H9 schema or the handoff file)*
+- [x] Verify `core/agents/planner-hard-agent.md`'s single `wrap-up.md` cross-reference (for the
       `skeleton` boolean and `sorry_inventory` schema) is still accurate after Phase 4's edits;
-      add a pointer to the schema file if the reference is bare.
+      add a pointer to the schema file if the reference is bare. *(completed: reference was bare,
+      added schema-file pointer)*
 
 **Timing**: 1.5 hours
 

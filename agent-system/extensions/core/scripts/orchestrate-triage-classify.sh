@@ -43,7 +43,7 @@
 #   1. a continuation pointer is present, in EITHER accepted form -- nested
 #      continuation_context.handoff_path non-null, OR flat top-level continuation_path non-null
 #      (dual-form acceptance, matching validate-handoff.sh's already-shipped precedent; see the
-#      "Two Accepted Forms" subsection of docs/architecture/handoff-schema.md)              -> `implement`
+#      "One Write Form, Deprecated-But-Accepted Read Form" subsection of docs/architecture/handoff-schema.md)              -> `implement`
 #   2. else blockers is non-empty                                  -> `needs_human`
 #   3. else (neither)                                               -> `implement` (both engines)
 #
@@ -213,7 +213,7 @@ while [ "$idx" -lt "$lookup_count" ]; do
   # backward compatibility with handoffs written before the nested-form writer was deleted; the
   # flat continuation_path form is the one canonical, writable form every live writer emits. Do
   # not re-narrow this to one form without updating every reader in lockstep (see
-  # docs/architecture/handoff-schema.md's "Two Accepted Forms" subsection).
+  # docs/architecture/handoff-schema.md's "One Write Form, Deprecated-But-Accepted Read Form" subsection).
   continuation_ok=$(jq -r '
     ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
     (.continuation_path // null) as $flat |

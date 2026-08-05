@@ -392,11 +392,12 @@ Read `.orchestrator-handoff.json` to determine sub-state:
 ```bash
 handoff=$(cat "$handoff_file" 2>/dev/null || echo '{}')
 blockers=$(echo "$handoff" | jq -c '.blockers // []')
-# Dual-form resolution + normalization: a continuation pointer may arrive as either the nested
-# continuation_context.handoff_path (written today only by the unreferenced
-# skill_write_orchestrator_handoff) OR the flat top-level continuation_path (what live H9
-# hard-mode wrap-up writers actually emit). Resolve either form and normalize into the single
-# shape the dispatch context below and context/patterns/subagent-continuation-loop.md both
+# Dual-form resolution + normalization: a continuation pointer may arrive as either the
+# deprecated, read-only-accepted nested continuation_context.handoff_path (no writer emits this
+# today -- its sole writer function has been deleted) OR the flat top-level continuation_path
+# (the one canonical form live H9 hard-mode wrap-up writers actually emit). Resolve either form
+# and normalize into the single shape the dispatch context below and
+# context/patterns/subagent-continuation-loop.md both
 # expect: { handoff_path, orchestrator_mode: true }, or null if neither form is present. This
 # mirrors scripts/orchestrate-triage-classify.sh's continuation_ok predicate exactly — do not let
 # this hand-applied copy drift from that script again.
@@ -596,8 +597,8 @@ fi
 # ── Stray-handoff sweep ───────────────────────────────────────────────────────
 # Mechanism-agnostic backstop. The validate-handoff-location.sh PostToolUse hook catches
 # Write/Edit-tool misplacements, but it is structurally unable to see a Bash-redirect write
-# (skill_write_orchestrator_handoff writes via `jq -n ... > "$handoff_path"`; a Bash tool_input
-# carries unexpanded command text, so the resolved destination is never visible to a hook).
+# (e.g. a shell function writing via `jq -n ... > "$handoff_path"`; a Bash tool_input carries
+# unexpanded command text, so the resolved destination is never visible to a hook).
 # This sweep catches a misplaced handoff no matter how it was written.
 #
 # Deliberately bounded to two exact paths — the repo root and specs/ — not a recursive find.

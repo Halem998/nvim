@@ -804,8 +804,8 @@ fi
 # ── Stray-handoff sweep ───────────────────────────────────────────────────────
 # Mechanism-agnostic backstop. The validate-handoff-location.sh PostToolUse hook catches
 # Write/Edit-tool misplacements, but it is structurally unable to see a Bash-redirect write
-# (skill_write_orchestrator_handoff writes via `jq -n ... > "$handoff_path"`; a Bash tool_input
-# carries unexpanded command text, so the resolved destination is never visible to a hook).
+# (e.g. a shell function writing via `jq -n ... > "$handoff_path"`; a Bash tool_input carries
+# unexpanded command text, so the resolved destination is never visible to a hook).
 # This sweep catches a misplaced handoff no matter how it was written.
 #
 # Deliberately bounded to two exact paths — the repo root and specs/ — not a recursive find.

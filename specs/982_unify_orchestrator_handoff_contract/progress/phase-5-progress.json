@@ -1,0 +1,38 @@
+{
+  "phase": 5,
+  "phase_name": "Rewrite handoff-schema.md and align hard-agent cross-references",
+  "started_at": "2026-08-05T20:22:00Z",
+  "last_updated": "2026-08-05T20:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite handoff-schema.md: schema pointer, field defs, blocker shape, one-write-form, writers table, examples, outcome channels",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Reword remaining deleted-function comment references in SKILL.md files and orchestrate-triage-classify.sh section-name cross-reference",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+        "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Verify general-research-hard-agent.md Stage 3.6 (no change needed); add schema pointer to planner-hard-agent.md's bare wrap-up.md reference",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/planner-hard-agent.md"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Went slightly beyond the plan's declared Scope Boundary file list by also rewording orchestrate-triage-classify.sh's second 'Two Accepted Forms' section-name cross-reference (comment-only, low-risk, prevents a dangling doc reference from the section rename). Left docs/architecture/orchestrate-state-machine.md's three 'Two Accepted Forms' references unchanged -- genuinely out of declared scope; noted as a minor follow-up."
+}
