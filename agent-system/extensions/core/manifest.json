@@ -128,6 +128,7 @@
       "lint/lint-agent-contracts.sh",
       "lint/lint-contract-compliance.sh",
       "lint/lint-postflight-boundary.sh",
+      "lint/lint-routing-wiring.sh",
       "literature-retrieve.sh",
       "manage-topics.sh",
       "memory-harvest.sh",

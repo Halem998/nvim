@@ -29,9 +29,18 @@
 #   - A miss is signalled by empty stdout, never by a non-zero exit status -- every function below
 #     always returns 0, on both hit and miss.
 #
-# Manifest source: `.claude/extensions/*/manifest.json` (the DEPLOYED tree, matching every
-# existing consumer this library replaces) -- not the agent-system/extensions/** source store.
-# Callers run post-deploy, from a working directory at the repo root.
+# Manifest source: `${ROUTE_MANIFEST_ROOT:-.claude}/extensions/*/manifest.json`. Every live
+# routing consumer (command-route-skill.sh, command-route-agent.sh, the orchestrate skills) runs
+# with the default unset, resolving against `.claude/extensions/*/manifest.json` -- the DEPLOYED
+# tree, matching every existing consumer this library replaces, not the
+# agent-system/extensions/** source store. Callers run post-deploy, from a working directory at
+# the repo root.
+#
+# Validation-only callers (lint-routing-wiring.sh, test-routing-resolution.sh) instead set
+# `ROUTE_MANIFEST_ROOT=agent-system` before sourcing, so the exact same ladder validates the
+# SOURCE STORE pre-deploy -- both roots share the identical `<root>/extensions/*/manifest.json`
+# shape, so no other code path changes. This is the one configuration knob this library exposes;
+# it changes WHERE manifests are read from, never the ladder's precedence logic.
 #
 # Usage:
 #   source .claude/scripts/lib/manifest-routing-lib.sh
@@ -55,7 +64,7 @@
 # unique to core (literature and slidev also set it), but .name is guaranteed unique.
 routing_core_manifest() {
   local _route_manifest _route_name
-  for _route_manifest in .claude/extensions/*/manifest.json; do
+  for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
     [ -f "$_route_manifest" ] || continue
     _route_name=$(jq -r '.name // empty' "$_route_manifest" 2>/dev/null)
     if [ "$_route_name" = "core" ]; then
@@ -77,7 +86,7 @@ routing_core_manifest() {
 routing_manifest_for_task_type() {
   local _route_task_type="$1"
   local _route_manifest _route_hit _route_base
-  for _route_manifest in .claude/extensions/*/manifest.json; do
+  for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
     [ -f "$_route_manifest" ] || continue
     _route_hit=$(jq -r --arg tt "$_route_task_type" \
       '([(.routing.research // {}), (.routing.plan // {}), (.routing.implement // {})][] | has($tt)) // false' \
@@ -90,7 +99,7 @@ routing_manifest_for_task_type() {
   done
   if printf '%s' "$_route_task_type" | grep -q ":"; then
     _route_base=$(printf '%s' "$_route_task_type" | cut -d: -f1)
-    for _route_manifest in .claude/extensions/*/manifest.json; do
+    for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
       [ -f "$_route_manifest" ] || continue
       _route_hit=$(jq -r --arg tt "$_route_base" \
         '([(.routing.research // {}), (.routing.plan // {}), (.routing.implement // {})][] | has($tt)) // false' \
@@ -124,7 +133,7 @@ routing_lookup() {
   _ROUTE_LAST_VIA="miss"
 
   # Step 1 -- non-core, exact match
-  for _route_manifest in .claude/extensions/*/manifest.json; do
+  for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
     [ -f "$_route_manifest" ] || continue
     _route_name=$(jq -r '.name // empty' "$_route_manifest" 2>/dev/null)
     [ "$_route_name" = "core" ] && continue
@@ -141,7 +150,7 @@ routing_lookup() {
   # Step 2 -- non-core, compound-base match
   if printf '%s' "$_route_task_type" | grep -q ":"; then
     _route_base=$(printf '%s' "$_route_task_type" | cut -d: -f1)
-    for _route_manifest in .claude/extensions/*/manifest.json; do
+    for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
       [ -f "$_route_manifest" ] || continue
       _route_name=$(jq -r '.name // empty' "$_route_manifest" 2>/dev/null)
       [ "$_route_name" = "core" ] && continue

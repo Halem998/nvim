@@ -31,16 +31,16 @@
 #      redeploy landed is in the same position as one that established it did not.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all five gates plus a
-#   gate0 "could not run" sentinel, printed to stdout after the final narrative PASS/FAIL line
-#   (including on a passing run, where an empty set is a valid, meaningful result). Every finding
-#   line begins with the literal token `FINDING ` followed by a gate label (`gate0`..`gate5`); the
-#   automated consumer is expected to invoke `verify-deploy.sh --findings --quiet`, filter with
-#   `grep '^FINDING ' | sort -u`, and diff two such captures rather than compare exit codes alone
-#   -- see the Checkpoint subsection above for why exit-code-only comparison masks a
-#   newly-introduced finding hiding inside an already-failing gate. This mode is purely additive:
-#   with --findings absent, default-mode narrative output and exit codes are byte-for-byte
-#   unchanged.
+#   Emits a normalized, one-per-line, machine-diffable findings set across all eight gates (gate0
+#   through gate7) plus a gate0 "could not run" sentinel, printed to stdout after the final
+#   narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
+#   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
+#   gate label (`gate0`..`gate7`); the automated consumer is expected to invoke
+#   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
+#   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
+#   why exit-code-only comparison masks a newly-introduced finding hiding inside an
+#   already-failing gate. This mode is purely additive: with --findings absent, default-mode
+#   narrative output and exit codes are byte-for-byte unchanged.
 
 set -uo pipefail
 
@@ -355,6 +355,32 @@ else
       while IFS= read -r agent_lint_line; do
         FINDINGS_LIST+=("FINDING gate6 ${agent_lint_line#*FAIL\] }")
       done < <(printf '%s\n' "$agent_lint_output" | grep -F '[FAIL]')
+    fi
+  fi
+fi
+
+# ── 7. Routing wiring lint gate ───────────────────────────────────────────────
+# Only meaningful in the source-store repo, mirroring gates 3-4/6's SKIP-if-not-source-store
+# precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
+# skips there.
+say "7. Routing wiring lint (lint-routing-wiring.sh --verbose)"
+CURRENT_GATE="gate7"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- routing wiring lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh" ]; then
+  fail "lint-routing-wiring.sh not found in source store"
+else
+  routing_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh" --verbose 2>&1)
+  routing_lint_status=$?
+  if [ "$routing_lint_status" -eq 0 ]; then
+    pass "routing wiring lint reports no failures"
+  else
+    fail "routing wiring lint reported failures" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r routing_lint_line; do
+        FINDINGS_LIST+=("FINDING gate7 ${routing_lint_line#*FAIL\] }")
+      done < <(printf '%s\n' "$routing_lint_output" | grep -F '[FAIL]')
     fi
   fi
 fi

@@ -1,0 +1,74 @@
+{
+  "phase": 5,
+  "phase_name": "Routing wiring-validation lint and verify-deploy gate7",
+  "started_at": "2026-08-06T00:40:00Z",
+  "last_updated": "2026-08-06T01:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create lint-routing-wiring.sh mirroring lint-agent-contracts.sh structure",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Check A: routing.{op} keys have routing_agents.{op} counterparts (FAIL on gap)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Check B: routing_agents/routing_agents_hard values name existing agent files (FAIL on miss)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Check C: routing_hard.{op} keys have routing_agents_hard.{op} counterparts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Check D: report (never fail) general-* agent declarations for auditability",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Source manifest-routing-lib.sh rather than re-derive; added ROUTE_MANIFEST_ROOT override so the same ladder validates the source store pre-deploy",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Wire as gate7 in verify-deploy.sh, mirroring gate6 block structure",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]
+    },
+    {
+      "id": 8,
+      "description": "Correct gate-range header prose (was stale at gate0-gate5 before this task; now gate0-gate7)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]
+    },
+    {
+      "id": 9,
+      "description": "Register lint-routing-wiring.sh in core manifest provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.6",
+      "description": "Added a ROUTE_MANIFEST_ROOT environment-variable override to manifest-routing-lib.sh (default unchanged: '.claude'), rather than leaving the four hardcoded '.claude/extensions/*/manifest.json' globs as-is",
+      "type": "altered",
+      "reason": "The plan instructs 'source the Phase 1 library rather than re-deriving the ladder, so the lint validates what the router actually does' -- but the library as written in Phase 1 hardcodes the DEPLOYED tree path, and the lint must validate the SOURCE STORE (agent-system/extensions/**) pre-deploy, matching lint-agent-contracts.sh's own convention. A configurable root (defaulting to the unchanged '.claude') lets both the live router and the lint/test share one ladder implementation without duplicating it, which is the literal point of the instruction. Verified via full baseline-diff replay that the default-unset behavior is byte-for-byte unchanged from before this edit.",
+      "annotation": "*(deviation: altered — added ROUTE_MANIFEST_ROOT override to manifest-routing-lib.sh, default unchanged)*"
+    }
+  ]
+}

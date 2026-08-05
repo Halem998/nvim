@@ -378,7 +378,7 @@ before and after; the post-state must show zero sed derivations and assignments 
 
 ---
 
-### Phase 5: Routing wiring-validation lint and verify-deploy gate7 [NOT STARTED]
+### Phase 5: Routing wiring-validation lint and verify-deploy gate7 [COMPLETED]
 
 **Goal**: Add a lint that fails when routing declarations are incomplete or point at
 non-existent agents, and wire it into the deploy gate sequence so the defect class cannot recur.
