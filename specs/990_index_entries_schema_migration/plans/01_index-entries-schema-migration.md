@@ -259,35 +259,35 @@ both files before editing.
 
 ---
 
-### Phase 4: `email` + `filetypes` — Full Migration (19 entries) [NOT STARTED]
+### Phase 4: `email` + `filetypes` — Full Migration (19 entries) [COMPLETED]
 
 **Goal**: Migrate both extensions whose `load_when.languages` arrays are deletions rather than
 renames, and fold in their `description` fields.
 
 **Tasks**:
-- [ ] Edit **`agent-system/extensions/email/index-entries.json`** and
+- [x] Edit **`agent-system/extensions/email/index-entries.json`** and
       **`agent-system/extensions/filetypes/index-entries.json`** only. Never `.claude/**`.
-- [ ] `email` (8 entries): fold each `description` into `summary` and delete `description`.
+- [x] `email` (8 entries): fold each `description` into `summary` and delete `description`.
       **6 of the 8 need a genuine rewrite**, not concatenation, because combined length exceeds
       the 200-char cap — notably `domain/staleness-detection.md` (359 + 150 = 509) and
       `domain/wrapper-contracts.md` (250 + 85 = 335), plus `email-preferences.md`,
       `domain/archive-mode-risk.md`, `patterns/bulk-bucket-review.md`, and
       `design/email-to-memory-preferences.md` in the 205-236 range. Pick and compress the more
       informative phrasing; do not truncate mid-sentence.
-- [ ] `email`: delete all 8 `load_when.languages` keys. **These arrays are empty (`[]`) — this is
+- [x] `email`: delete all 8 `load_when.languages` keys. **These arrays are empty (`[]`) — this is
       a deletion, not a rename to `task_types`.** All 8 entries already carry
       `task_types: ["email"]`.
-- [ ] `email`: delete `load_when.skills` from `design/email-to-memory-preferences.md` (the single
+- [x] `email`: delete `load_when.skills` from `design/email-to-memory-preferences.md` (the single
       skills entry). Safe outright — `task_types: ["email"]` already provides reachability.
-- [ ] `email` has no `tags` field on any entry; WORK item 2 is a no-op here.
-- [ ] `filetypes` (11 entries): fold each `description` into `summary` and delete `description`.
+- [x] `email` has no `tags` field on any entry; WORK item 2 is a no-op here.
+- [x] `filetypes` (11 entries): fold each `description` into `summary` and delete `description`.
       No entry exceeds the 200-char cap when merged, so these are straightforward merges.
-- [ ] `filetypes`: delete all 11 `load_when.languages` keys — 9 are empty (`[]`) and 2 are the
+- [x] `filetypes`: delete all 11 `load_when.languages` keys — 9 are empty (`[]`) and 2 are the
       dead `["deck"]` (`patterns/pitch-deck-structure.md`,
       `patterns/touying-pitch-deck-template.md`). Both `["deck"]` entries already carry 4 `agents`
       and `commands` (`/convert`, `/deck`), and no manifest declares a `deck` task_type, so the
       deletion is lossless. **Do not rename any of these to `task_types`.**
-- [ ] `filetypes` has no `tags` and no `load_when.skills`; WORK items 2 and 5 are no-ops here.
+- [x] `filetypes` has no `tags` and no `load_when.skills`; WORK items 2 and 5 are no-ops here.
 
 **Timing**: 1.25 hours
 
