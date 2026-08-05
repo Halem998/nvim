@@ -9,23 +9,6 @@ local previewers = require("telescope.previewers")
 -- Maximum lines for doc previews (to avoid performance issues)
 local MAX_PREVIEW_LINES = 150
 
---- Count operations by action type
---- @param files table Array of file sync info
---- @return number copy_count Number of copy operations
---- @return number replace_count Number of replace operations
-local function count_actions(files)
-  local copy_count = 0
-  local replace_count = 0
-  for _, file in ipairs(files) do
-    if file.action == "copy" then
-      copy_count = copy_count + 1
-    else
-      replace_count = replace_count + 1
-    end
-  end
-  return copy_count, replace_count
-end
-
 --- Create preview for heading entries (category headers)
 --- @param self table Telescope previewer state
 --- @param entry table Telescope entry
@@ -143,114 +126,16 @@ local function preview_help(self, config)
     "  Ctrl-e      - Edit file (all artifact types)",
     "                Preserves executable permissions for .sh files",
     "",
-    "  [Load Core] - Batch synchronizes core system artifacts",
-    "                (excludes extension-owned agents, skills, etc.)",
-    "                Replaces local with global artifacts with the same",
-    "                name while preserving local-only artifacts.",
+    "  [Reload All]  - Force-resyncs every currently loaded extension",
+    "                  in dependency order (non-destructive).",
+    "  [Regenerate]  - Wipes " .. base_dir .. "/ and rebuilds it from the",
+    "                  surviving extension manifest (destructive; snapshots",
+    "                  and restores settings.local.json and .syncprotect",
+    "                  paths automatically). Confirmation required.",
     "",
     "Notes: All artifacts loaded from both project and global directories",
     "       Local artifacts override global ones from " .. global_dir .. "/"
   })
-end
-
---- Create preview for Load Core Agent System entry
---- Uses sync.scan_all_artifacts for accurate counts matching actual sync operation
---- @param self table Telescope previewer state
---- @param config table|nil Picker configuration with base_dir
-local function preview_load_all(self, config)
-  local project_dir = vim.fn.getcwd()
-  local scan = require("neotex.plugins.ai.claude.commands.picker.utils.scan")
-  local sync_ops = require("neotex.plugins.ai.claude.commands.picker.operations.sync")
-  local global_dir = scan.get_global_dir()
-  local base_dir = (config and config.base_dir) or ".claude"
-
-  -- Use the same scan function as the actual sync operation
-  local all_artifacts = sync_ops.scan_all_artifacts(global_dir, project_dir, config)
-
-  -- Count actions for each category
-  local cmd_copy, cmd_replace = count_actions(all_artifacts.commands or {})
-  local hook_copy, hook_replace = count_actions(all_artifacts.hooks or {})
-  local skill_copy, skill_replace = count_actions(all_artifacts.skills or {})
-  local tmpl_copy, tmpl_replace = count_actions(all_artifacts.templates or {})
-  local lib_copy, lib_replace = count_actions(all_artifacts.lib or {})
-  local doc_copy, doc_replace = count_actions(all_artifacts.docs or {})
-  local script_copy, script_replace = count_actions(all_artifacts.scripts or {})
-  local test_copy, test_replace = count_actions(all_artifacts.tests or {})
-  local rule_copy, rule_replace = count_actions(all_artifacts.rules or {})
-  local sys_copy, sys_replace = count_actions(all_artifacts.systemd or {})
-  local set_copy, set_replace = count_actions(all_artifacts.settings or {})
-  local agent_copy, agent_replace = count_actions(all_artifacts.agents or {})
-  local ctx_copy, ctx_replace = count_actions(all_artifacts.context or {})
-  local root_copy, root_replace = count_actions(all_artifacts.root_files or {})
-
-  local total_copy = cmd_copy + hook_copy + skill_copy + tmpl_copy + lib_copy +
-                     doc_copy + script_copy + test_copy + rule_copy +
-                     sys_copy + set_copy + agent_copy + ctx_copy + root_copy
-  local total_replace = cmd_replace + hook_replace + skill_replace + tmpl_replace +
-                        lib_replace + doc_replace + script_replace + test_replace +
-                        rule_replace + sys_replace + set_replace + agent_replace +
-                        ctx_replace + root_replace
-
-  -- Load syncprotect to show protected files in preview
-  local sync_ops_mod = require("neotex.plugins.ai.claude.commands.picker.operations.sync")
-  local protected_paths = sync_ops_mod.load_syncprotect_for_preview(project_dir, base_dir)
-
-  local lines = {
-    "Load Core Agent System",
-    "",
-    "This action will sync core system artifacts from " .. global_dir .. "/" .. base_dir .. "/ to your",
-    "local project's " .. base_dir .. "/ directory (extensions excluded).",
-    "",
-  }
-
-  -- Show protected files section if any exist
-  if next(protected_paths) then
-    table.insert(lines, "**Protected Files** (.syncprotect):")
-    local sorted_paths = {}
-    for path, _ in pairs(protected_paths) do
-      table.insert(sorted_paths, path)
-    end
-    table.sort(sorted_paths)
-    for _, path in ipairs(sorted_paths) do
-      table.insert(lines, "  - " .. path .. " (skipped during sync)")
-    end
-    table.insert(lines, "")
-  end
-
-  if total_copy + total_replace > 0 then
-    table.insert(lines, "**Operations by Type:**")
-    table.insert(lines, string.format("  Commands:   %d new, %d replace", cmd_copy, cmd_replace))
-    table.insert(lines, string.format("  Hooks:      %d new, %d replace", hook_copy, hook_replace))
-    table.insert(lines, string.format("  Skills:     %d new, %d replace", skill_copy, skill_replace))
-    table.insert(lines, string.format("  Templates:  %d new, %d replace", tmpl_copy, tmpl_replace))
-    table.insert(lines, string.format("  Lib:        %d new, %d replace", lib_copy, lib_replace))
-    table.insert(lines, string.format("  Docs:       %d new, %d replace", doc_copy, doc_replace))
-    table.insert(lines, string.format("  Scripts:    %d new, %d replace", script_copy, script_replace))
-    table.insert(lines, string.format("  Tests:      %d new, %d replace", test_copy, test_replace))
-    table.insert(lines, string.format("  Rules:      %d new, %d replace", rule_copy, rule_replace))
-    table.insert(lines, string.format("  Agents:     %d new, %d replace", agent_copy, agent_replace))
-    table.insert(lines, string.format("  Context:    %d new, %d replace", ctx_copy, ctx_replace))
-    table.insert(lines, string.format("  Systemd:    %d new, %d replace", sys_copy, sys_replace))
-    table.insert(lines, string.format("  Settings:   %d new, %d replace", set_copy, set_replace))
-    table.insert(lines, string.format("  Root Files: %d new, %d replace", root_copy, root_replace))
-    table.insert(lines, "")
-    table.insert(lines, string.format("**Total:** %d new, %d replace", total_copy, total_replace))
-    table.insert(lines, "")
-    table.insert(lines, "**Note:** Extension-owned artifacts are excluded.")
-    table.insert(lines, "          Local-only artifacts will not be affected.")
-    table.insert(lines, "          Execute permissions preserved for .sh files.")
-  else
-    table.insert(lines, "**All artifacts already in sync!**")
-  end
-
-  table.insert(lines, "")
-  table.insert(lines, "**Current Status:**")
-  table.insert(lines, string.format("  Project directory: %s", project_dir))
-  table.insert(lines, "  Global directory:  " .. global_dir .. "/" .. base_dir .. "/")
-  table.insert(lines, "")
-  table.insert(lines, "Press Enter to proceed with confirmation, or Escape to cancel.")
-
-  vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
 end
 
 --- Create preview for skill entries
@@ -748,8 +633,6 @@ function M.create_command_previewer()
         preview_heading(self, entry)
       elseif entry.value.is_help then
         preview_help(self, entry_config)
-      elseif entry.value.is_load_all then
-        preview_load_all(self, entry_config)
       elseif entry.value.entry_type == "skill" then
         preview_skill(self, entry)
       elseif entry.value.entry_type == "hook_event" then

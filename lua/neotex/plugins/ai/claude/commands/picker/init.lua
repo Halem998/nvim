@@ -107,18 +107,51 @@ function M.show_commands_picker(opts, config)
           return
         end
 
-        -- Load All special entry
-        if selection.value.is_load_all then
-          local loaded = sync.load_all_globally(config)
-          -- Run post-load hook if configured (e.g., opencode installs base opencode.json)
-          if config and config.on_load_all then
-            config.on_load_all()
+        -- Regenerate special entry: destructive wipe + rebuild from the surviving
+        -- project-root extension manifest (manager.wipe: snapshot -> rm -rf base_dir ->
+        -- regenerate -> restore settings/.syncprotect -> clear staging). Replaces the
+        -- retired glob+allow-list "Load Core" entry point.
+        if selection.value.is_regenerate then
+          local confirmed = vim.fn.confirm(
+            "Regenerate " .. base_dir .. "/ from the extension manifest?\n\n"
+              .. "This deletes " .. base_dir .. "/ and rebuilds it from scratch.\n"
+              .. "settings.local.json and .syncprotect-listed paths are snapshotted\n"
+              .. "and restored automatically.",
+            "&Regenerate\n&Cancel",
+            2
+          )
+          if confirmed ~= 1 then
+            return
           end
-          if loaded > 0 then
+          local exts = require(extensions_module)
+          local wipe_ok, wipe_result = exts.wipe({ project_dir = vim.fn.getcwd() })
+          if wipe_ok then
+            local loaded_count = (wipe_result and wipe_result.loaded and #wipe_result.loaded) or 0
+            local failed = (wipe_result and wipe_result.failed) or {}
+            if #failed == 0 then
+              helpers.notify(
+                string.format("Regenerated %s (%d extension(s) reloaded)", base_dir, loaded_count),
+                "INFO"
+              )
+            else
+              local failed_list = {}
+              for _, f in ipairs(failed) do
+                table.insert(failed_list, (f.name or "?") .. ": " .. (f.error or "unknown"))
+              end
+              helpers.notify(
+                string.format(
+                  "Regenerated %s with %d error(s): %s",
+                  base_dir, #failed, table.concat(failed_list, ", ")
+                ),
+                "WARN"
+              )
+            end
             actions.close(prompt_bufnr)
             vim.defer_fn(function()
               M.show_commands_picker(opts, config)
             end, 50)
+          else
+            helpers.notify(tostring(wipe_result), "ERROR")
           end
           return
         end
@@ -350,7 +383,7 @@ function M.show_commands_picker(opts, config)
       -- Load artifact locally with Ctrl-l
       map("i", "<C-l>", function()
         local selection = action_state.get_selected_entry()
-        if not selection or selection.value.is_help or selection.value.is_load_all or selection.value.is_reload_all or selection.value.is_heading then
+        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_heading then
           return
         end
 
@@ -374,7 +407,7 @@ function M.show_commands_picker(opts, config)
       -- Update from global with Ctrl-u
       map("i", "<C-u>", function()
         local selection = action_state.get_selected_entry()
-        if not selection or selection.value.is_help or selection.value.is_load_all or selection.value.is_reload_all or selection.value.is_heading then
+        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_heading then
           return
         end
 
@@ -398,7 +431,7 @@ function M.show_commands_picker(opts, config)
       -- Save to global with Ctrl-s
       map("i", "<C-s>", function()
         local selection = action_state.get_selected_entry()
-        if not selection or selection.value.is_help or selection.value.is_load_all or selection.value.is_reload_all or selection.value.is_heading then
+        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_heading then
           return
         end
 
@@ -422,7 +455,7 @@ function M.show_commands_picker(opts, config)
       -- Edit file with Ctrl-e
       map("i", "<C-e>", function()
         local selection = action_state.get_selected_entry()
-        if not selection or selection.value.is_help or selection.value.is_load_all or selection.value.is_reload_all or selection.value.is_heading then
+        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_heading then
           return
         end
 

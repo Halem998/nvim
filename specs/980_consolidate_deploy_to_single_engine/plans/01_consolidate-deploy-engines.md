@@ -452,7 +452,7 @@ ordered wipe sequence.
 
 ---
 
-### Phase 6: Consolidate entry points; retire the second engine [IN PROGRESS]
+### Phase 6: Consolidate entry points; retire the second engine [COMPLETED]
 
 **Goal**: Point `deploy-headless.sh` at the manifest-driven engine, add its `--wipe` flag, expose a
 `[Regenerate]` picker entry, and delete the retired `load_all_globally` path and the dead
@@ -474,19 +474,44 @@ ordered wipe sequence.
       the rewritten file)*
 - [x] Update the script's header comments to describe the new entry points. Use durable anchors —
       function and script names — and no task numbers. *(completed)*
-- [ ] Add a `[Regenerate]` special entry to the picker's entry constructor and its handler,
-      wired to `manager.regenerate` behind a confirmation (it is destructive). **NOT STARTED --
-      see Continuation Notes below.**
-- [ ] Remove `load_all_globally` and the allow-list post-filter it depends on from
+- [x] Add a `[Regenerate]` special entry to the picker's entry constructor and its handler,
+      wired to `manager.wipe` behind a confirmation (it is destructive). *(completed:
+      `entries.lua`'s `create_special_entries` produces `is_regenerate = true`; `init.lua`'s
+      Enter-key dispatch adds a `vim.fn.confirm` gate then calls `exts.wipe` — the re-exported
+      `manager.wipe`, the same six-step snapshot -> rm -rf -> regenerate -> restore -> re-apply ->
+      clear-staging sequence `deploy-headless.sh --wipe` drives, per that function's own doc
+      comment naming both call sites. Verified against a scratch tree: bootstrap-loads `core`,
+      seeds a `settings.local.json` marker, calls `manager.wipe`, confirms the marker survives
+      and 1 extension reloads with 0 failures — the exact call path the picker handler uses)*
+- [x] Remove `load_all_globally` and the allow-list post-filter it depends on from
       `picker/operations/sync.lua`, plus any now-unreachable scan helpers exclusive to it.
-      **NOT STARTED -- see "scan_all_artifacts non-exclusivity discovery" below, which changes
-      the scope of this item.**
-- [ ] Remove the dead `is_load_all` consumer sites in the picker (an Enter-key handler and four
-      keymap guards) — they have no producer and are unreachable. **NOT STARTED -- see
-      "is_load_all site-count correction" below.**
+      *(completed, WIDER than the plan's own "5 exclusively-owned helpers" enumeration: tracing
+      each of those 5 helpers' own internal calls surfaced a second layer of transitively-dead
+      module-locals -- `sync_files`, `detect_untracked`, `count_by_depth` (called only from
+      `execute_sync`) and `strip_extension_sections`, `strip_extension_settings`,
+      `preserve_sections`, `restore_sections`, `read_json`, `read_file_string` (called only from
+      `sync_files`/`reinject_loaded_extensions`) -- all removed alongside the named 5, plus the
+      now-unused `CONFIG_MARKDOWN_FILES` module-local and the `state_mod`/`merge_mod` requires
+      they alone consumed. `M.scan_all_artifacts` and its allow-list post-filter are KEPT
+      (deliberate choice per the plan's own guidance): `operations/sync_spec.lua`'s 5 test cases
+      still exercise it directly and all 5 continue to pass unchanged. The module header comment
+      was rewritten to describe the module's post-retirement purpose (per-artifact update +
+      scan utility) rather than the retired bulk-sync engine it used to open with.)*
+- [x] Remove the dead `is_load_all` consumer sites in the picker (an Enter-key handler and four
+      keymap guards) — they have no producer and are unreachable. *(completed: the Enter-key
+      handler block is now the `[Regenerate]` handler above rather than a bare removal, since a
+      replacement entry point was needed there; the 4 keymap guards (Ctrl-l/u/s/e in `init.lua`)
+      had their `is_load_all` clause replaced with `is_regenerate`, consistent with how `is_help`
+      and `is_reload_all` are already excluded from those same guards. The 6th site the plan's own
+      reconciliation note below identifies, `previewer.lua`'s `elseif entry.value.is_load_all`
+      branch, is also removed, along with its now-fully-dead `preview_load_all` function and that
+      file's own now-unused local `count_actions` helper (previewer.lua's copy, distinct from
+      sync.lua's — both were exclusive to the removed preview). `previewer.lua`'s help-text listing
+      was also updated to describe `[Reload All]`/`[Regenerate]` instead of the retired
+      `[Load Core]` entry it still named.)*
 - [x] Confirm no surviving caller of `load_all_globally` anywhere before deleting it.
       *(completed as a reconnaissance step -- see the two discovery notes below; the deletion
-      itself is deferred to the continuation)*
+      itself is completed above)*
 
 **Timing**: 2 hours
 
@@ -584,11 +609,45 @@ phase bar, most of which is deferred with the phase):
   `agent-system/extensions/core/manifest.json` and redeploying again -- doc-lint now reports
   only the pre-existing unrelated finding.
 
+**Verification performed for the continuation sub-items** (picker consolidation):
+- `nvim --headless` module-load smoke test: `picker.init`, `picker.display.entries`,
+  `picker.display.previewer`, and `picker.operations.sync` all `require()` cleanly with zero
+  syntax/runtime errors after every deletion.
+- `picker.operations.sync_spec.lua` (5 cases covering the allow-list post-filter that
+  `M.scan_all_artifacts` still owns): all 5 pass unchanged, confirming the kept utility survived
+  the surrounding deletions intact.
+- `create_special_entries` returns both `is_reload_all` and `is_regenerate` entries with the
+  expected display strings; a full `create_picker_entries` build against this repo's real
+  artifact structure produces 247 entries including both, confirming `[Regenerate]` is reachable
+  by keyboard (default_selection_index navigation) exactly as `[Reload All]` already was.
+- `manager.wipe` round-trip against a scratch tree via the exact call path the `[Regenerate]`
+  handler uses (`exts.wipe({project_dir = ...})`): bootstrap-loads `core`, seeds a
+  `settings.local.json` marker, wipes, and confirms `wipe_ok = true`, 1 extension reloaded, 0
+  failures, and the marker survives byte-identical -- matching Phase 5's survival checks.
+- A second bug found and fixed while re-running Phase 1's harness for this phase's own
+  regression check: `test-deploy-propagation.sh`'s `REPO_ROOT` was computed via a single
+  fixed "5 levels up" guess that is only correct for the source-store invocation depth
+  (`agent-system/extensions/core/scripts/tests/`) and silently resolved to the wrong directory
+  (`/home/benjamin` instead of the repo root) when the harness's preferred deployed-copy
+  invocation (`.claude/scripts/tests/`, 3 levels below repo root) was used -- `MANIFEST` and
+  `CANARY_SOURCE` then pointed outside the repo entirely, aborting with exit 2 ("core manifest
+  not found"). Fixed by resolving `REPO_ROOT` via `git rev-parse --show-toplevel` first
+  (depth-independent), falling back to the original fixed-depth guess only when `SCRIPT_DIR` is
+  not inside a git work tree. Re-verified both invocation sites after the fix and after
+  redeploying this repo's own `.claude/` again: `4 passed, 0 failed` from BOTH the source-store
+  copy and the deployed copy.
+- `verify-deploy.sh` re-run after the final redeploy: still 14/15 passing, same single
+  pre-existing `formats/summary-format.md` line_count finding as before this phase's continuation
+  work -- no new findings introduced by the picker consolidation.
+
 **Files to modify**:
 - `agent-system/extensions/core/scripts/deploy-headless.sh` - default retargeted, `--wipe` added, header rewritten
-- `lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua` - `load_all_globally` and allow-list filter removed
-- `lua/neotex/plugins/ai/claude/commands/picker/init.lua` - dead `is_load_all` sites removed; `[Regenerate]` handler
+- `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` - `REPO_ROOT` resolution made depth-independent (git-toplevel first, fixed-depth fallback)
+- `lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua` - `load_all_globally`, its allow-list filter, and their exclusively-owned helper chain removed; module header rewritten
+- `lua/neotex/plugins/ai/claude/commands/picker/init.lua` - dead `is_load_all` sites removed; `[Regenerate]` handler added
 - `lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua` - `[Regenerate]` special entry produced
+- `lua/neotex/plugins/ai/claude/commands/picker/display/previewer.lua` - dead `is_load_all` preview branch, `preview_load_all`, and its local `count_actions` helper removed; help text updated
+- `lua/neotex/plugins/ai/claude/commands/README.md` - stale `load_all_globally()` doc entry replaced
 
 **Verification**:
 - `deploy-headless.sh --dry-run` reports the new entry point and does not write.

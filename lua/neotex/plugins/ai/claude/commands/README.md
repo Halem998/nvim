@@ -17,7 +17,7 @@ Categories appear in logical order with headings at the top: [Commands], [Agents
 - `create_command_previewer()` - Custom previewer showing artifact documentation and README content for category headings
 - `send_command_to_terminal(command)` - Inserts command into Claude Code terminal (command only, no placeholders)
 - `edit_command_file(command)` - Opens command markdown file in buffer (copies global commands to local first)
-- `load_all_globally()` - Batch syncs all artifact types from global to local directory
+- `[Reload All]` / `[Regenerate]` special entries - bulk resync/wipe+rebuild of the local `.claude/`, via the manifest-driven extension loader's `manager.resync_all`/`manager.wipe` (see `neotex.plugins.ai.shared.extensions`)
 
 **Features:**
 - Categorical organization with visual headings at top ([Commands], [Agents], [Hook Events], [TTS], [Templates], [Lib], [Docs])

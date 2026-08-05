@@ -2,7 +2,7 @@
   "phase": 6,
   "phase_name": "Consolidate entry points; retire the second engine",
   "started_at": "2026-08-05T02:25:00Z",
-  "last_updated": "2026-08-05T03:15:00Z",
+  "last_updated": "2026-08-05T19:40:00Z",
   "objectives": [
     {
       "id": 1,
@@ -25,20 +25,28 @@
     },
     {
       "id": 3,
-      "description": "Add [Regenerate] picker entry (entries.lua producer + init.lua handler behind confirmation) wired to manager.regenerate/manager.wipe",
-      "status": "not_started",
-      "files_touched": [],
-      "note": "Not started this dispatch. See plan Phase 6 Continuation Notes for design guidance."
+      "description": "Add [Regenerate] picker entry (entries.lua producer + init.lua handler behind confirmation) wired to manager.wipe",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua",
+        "lua/neotex/plugins/ai/claude/commands/picker/init.lua"
+      ],
+      "note": "is_regenerate special entry added to create_special_entries; Enter-key handler gates on vim.fn.confirm then calls exts.wipe (manager.wipe). Verified: create_special_entries returns the entry; a full create_picker_entries build against this repo's real structure includes it (247 total entries); a direct manager.wipe scratch-tree round trip via the same call path (exts.wipe({project_dir=...})) confirms settings.local.json survives and 1/1 extensions reload with 0 failures."
     },
     {
       "id": 4,
-      "description": "Remove is_load_all dead consumer sites (6 sites, not 5 as hypothesized: init.lua handler + 4 keymap guards + previewer.lua preview branch) and load_all_globally + its 5 exclusively-owned helpers from sync.lua (NOT scan_all_artifacts, which is non-exclusive -- see plan notes)",
-      "status": "not_started",
-      "files_touched": [],
-      "note": "Reconnaissance done (grep confirms exact site list and scan_all_artifacts's other live callers: previewer.lua:168, sync_spec.lua x5). Deletion itself not started."
+      "description": "Remove is_load_all dead consumer sites (6 sites: init.lua handler + 4 keymap guards + previewer.lua preview branch) and load_all_globally + its exclusively-owned helper chain from sync.lua (NOT scan_all_artifacts, which is non-exclusive -- see plan notes)",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/claude/commands/picker/init.lua",
+        "lua/neotex/plugins/ai/claude/commands/picker/display/previewer.lua",
+        "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+        "lua/neotex/plugins/ai/claude/commands/README.md"
+      ],
+      "note": "init.lua's Enter-key is_load_all block replaced by the [Regenerate] handler (objective 3); its 4 keymap guards had is_load_all swapped for is_regenerate. previewer.lua's is_load_all preview branch, preview_load_all, and its local count_actions helper removed; help text updated to describe [Reload All]/[Regenerate] instead of the retired [Load Core]. sync.lua: load_all_globally + the 5 named helpers (execute_sync, count_actions, audit_synced_content, reinject_loaded_extensions, run_contract_drift_validator) removed, PLUS a second layer of helpers discovered to be transitively exclusive to those 5 (sync_files, detect_untracked, count_by_depth, strip_extension_sections, strip_extension_settings, preserve_sections, restore_sections, read_json, read_file_string, CONFIG_MARKDOWN_FILES, and the state_mod/merge_mod requires) -- traced by following every internal call within each of the 5 named helpers. scan_all_artifacts KEPT deliberately per plan guidance (still tested by sync_spec.lua's 5 cases, all passing unchanged). README.md's stale load_all_globally() doc line replaced. grep -rn 'load_all_globally|is_load_all' lua/ returns nothing (plan's own verification bullet, satisfied literally)."
     }
   ],
-  "current_objective": 3,
+  "current_objective": 4,
   "approaches_tried": [],
   "handoff_count": 1,
   "deviations": [

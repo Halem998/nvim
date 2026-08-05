@@ -984,6 +984,21 @@ function M.create_special_entries(config)
     config = config,
   })
 
+  -- [Regenerate] appears just above [Reload All] (inserted after it due to descending sort).
+  -- Destructive: wipes base_dir and rebuilds it from the surviving project-root extension
+  -- manifest via manager.wipe (snapshot -> rm -rf -> regenerate -> restore -> clear staging).
+  table.insert(entries, {
+    is_regenerate = true,
+    name = "~~~regenerate",
+    display = string.format(
+      "%-40s %s",
+      "[Regenerate]",
+      "Wipe and rebuild from the extension manifest"
+    ),
+    entry_type = "special",
+    config = config,
+  })
+
   return entries
 end
 

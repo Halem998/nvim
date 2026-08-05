@@ -33,7 +33,18 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+# REPO_ROOT resolution must work from BOTH invocation sites this harness supports:
+# the source-store copy (agent-system/extensions/core/scripts/tests/, 5 directories
+# below repo root) and the deployed copy (.claude/scripts/tests/, only 3 directories
+# below repo root) -- see the DEPLOY_SCRIPT_CANDIDATES dual-lookup below, which already
+# treats the deployed copy as the preferred resolution path. A single fixed levels-up
+# count cannot be correct for both depths at once, so resolve via the git worktree root
+# first (depth-independent) and only fall back to the fixed-depth guess (matching the
+# source-store depth) when SCRIPT_DIR is not inside a git work tree.
+REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
+if [[ -z "$REPO_ROOT" ]]; then
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+fi
 
 DEPLOY_SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/deploy-headless.sh"
