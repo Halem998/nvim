@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md",
+      "summary": "Confirms item 1 (zotero-search.sh quoting gap) and item 3 (deprecated/README.md rationale gap) as real and fixable within file scope; empirically verifies item 2's deploy-hygiene premise is false for old-engine-bootstrapped repos and recommends spinning off a separate deploy-engine task rather than fixing it here."
+    }
+  ],
+  "next_steps": "Run /plan 994 to create an implementation plan for items 1 and 3 (script header + agent-exploration.md + literature-agent.md fix, and deprecated/README.md rationale expansion). Item 2 needs a separate follow-up task targeting lua/neotex/plugins/ai/shared/extensions/init.lua's detect_legacy_core before any deploy-headless.sh run against PossibleWorlds or similar legacy repos.",
+  "metadata": {
+    "session_id": "sess_1785961976_f6b468_994",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 2280,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 3
+  },
+  "memory_candidates": [
+    {
+      "content": "The deploy engine's manager.resync_all/manager.wipe (lua/neotex/plugins/ai/shared/extensions/init.lua) only operate over extensions listed in the ROOT .claude-extensions.json state file, not the per-base_dir .claude/extensions.json. detect_legacy_core() migrates only 'core' from a pre-migration (glob-engine) repo into the new state system; no equivalent exists for other extensions. On a repo bootstrapped entirely via the retired glob engine (no root state file, multiple active extensions), the first deploy-headless.sh (default) silently drops every non-core extension's CLAUDE.md contribution, and deploy-headless.sh --wipe deletes .claude/ and rebuilds nothing. Always verify against a scratch copy before running --wipe on any older downstream repo.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless", "manager.wipe", "resync_all", "detect_legacy_core", "extension-migration", "claude-extensions.json"]
+    },
+    {
+      "content": "zotero-search.sh requires each query word as a separate shell argument (OR-scored across terms internally); a single quoted multi-word phrase returns zero results even when every word matches individually. Internal callers (literature-discover.sh's tier2_search) already pass an array expansion correctly; the gap is purely in agent-facing documentation for direct/manual invocation.",
+      "category": "CONFIG",
+      "source_artifact": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/reports/01_literature-tooling-landmines-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["zotero-search.sh", "shell-argument-quoting", "literature-extension", "usage-gotcha"]
+    }
+  ]
+}
