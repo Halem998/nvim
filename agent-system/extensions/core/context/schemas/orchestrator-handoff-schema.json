@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.org/schemas/orchestrator-handoff.json",
+  "title": "Orchestrator Handoff JSON Schema (orchestrator-handoff-v1)",
+  "description": "JSON Schema for .orchestrator-handoff.json. Three binding decisions this schema encodes: (1) this artifact is hard-mode-implement-only -- base-mode research/plan/implement return via .return-meta.json plus orchestrate-recover-outcome.sh, never this file; (2) the only writable continuation form is the flat top-level continuation_path string -- the nested continuation_context form is deprecated, read-only-accepted for backward compatibility with pre-change in-flight handoffs, and MUST NOT be written; (3) the canonical blocker shape is the wrap-up/hard-mode shape {phase, target, verbatim_goal, what_was_tried, why_it_failed} -- the schema-doc's older {description, phase, severity} shape is retired because it is read by neither orchestrate engine.",
+  "type": "object",
+  "required": [
+    "status",
+    "summary",
+    "artifacts",
+    "phases_completed",
+    "phases_total",
+    "blockers"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["researched", "planned", "implemented", "partial", "failed", "blocked"],
+      "description": "Outcome of the dispatch. Six-value normative vocabulary shared with return-metadata-file.md and reconcile-task-status.sh's handoff_permits_promotion()."
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["research", "plan", "implement", "revise"],
+      "description": "Optional, informational. Names which lifecycle phase produced this handoff."
+    },
+    "summary": {
+      "type": "string",
+      "description": "One to two sentence human-readable summary. Read unconditionally by both orchestrate engines as dispatch_summary."
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "Artifacts produced by the dispatch. Both engines read artifacts[0].path/type/summary unconditionally to decide whether to call skill_link_artifacts. Non-empty is required when status is researched/planned/implemented; an empty array is legal for partial/failed/blocked.",
+      "items": {
+        "type": "object",
+        "required": ["type", "path"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Artifact kind, e.g. report, plan, summary, handoff."
+          },
+          "path": {
+            "type": "string",
+            "description": "Repo-relative or absolute path to the artifact."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Optional one-line description of the artifact's content. Documented here for the first time despite every reader site reading artifacts[0].summary."
+          }
+        }
+      }
+    },
+    "phases_completed": {
+      "type": "integer",
+      "description": "Count of plan phases completed by this dispatch. A zero-on-success value triggers an orchestrator corroboration pass against the plan's phase headings."
+    },
+    "phases_total": {
+      "type": "integer",
+      "description": "Total plan phases for the task."
+    },
+    "blockers": {
+      "type": "array",
+      "description": "Canonical wrap-up/hard-mode blocker shape. description and severity are retired -- verified read by neither engine.",
+      "items": {
+        "type": "object",
+        "required": ["phase", "target"],
+        "properties": {
+          "phase": {
+            "description": "Phase number or name the blocker occurred in."
+          },
+          "target": {
+            "type": "string",
+            "description": "The file, function, or artifact the blocker concerns. Read by the hard engine's H5 divergence audit and blocked-escalation flow."
+          },
+          "verbatim_goal": {
+            "type": "string",
+            "description": "The verbatim goal that could not be achieved. Read by the hard engine's blocked-escalation flow."
+          },
+          "what_was_tried": {
+            "type": "string",
+            "description": "What approach(es) were attempted before blocking."
+          },
+          "why_it_failed": {
+            "type": "string",
+            "description": "Why the attempted approach(es) did not succeed."
+          }
+        }
+      }
+    },
+    "plan_markers_verified": {
+      "type": ["boolean", "null"],
+      "description": "Whether the implementer confirmed plan phase-heading markers match the reported phase counts."
+    },
+    "skeleton": {
+      "type": "boolean",
+      "description": "Hard-mode-only field: whether a skeleton (stub/sorry-bearing) structure was produced. Read only by the hard engine."
+    },
+    "sorry_inventory": {
+      "type": "array",
+      "description": "Hard-mode-only field: inventory of unresolved sorry/stub markers. Read only by the hard engine."
+    },
+    "continuation_path": {
+      "type": ["string", "null"],
+      "description": "The single canonical, writable continuation pointer -- a path to a handoff or progress artifact the next dispatch should resume from. Null when there is nothing to continue."
+    },
+    "continuation_context": {
+      "deprecated": true,
+      "description": "Deprecated nested continuation form. Accepted on read for backward compatibility with handoffs written before this schema (both engines' dual-form resolution retains this read path deliberately). MUST NOT be written by any writer -- continuation_path is the only canonical write form."
+    },
+    "next_action_hint": {
+      "type": "string",
+      "description": "Optional short hint describing the immediate next step for a resuming dispatch."
+    },
+    "git_checkpoint": {
+      "description": "Optional git checkpoint reference (commit SHA, snapshot patch path, stash ref, or branch name) recorded at a context-pressure or phase-end handoff."
+    }
+  },
+  "additionalProperties": true
+}
