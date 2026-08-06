@@ -1,0 +1,30 @@
+{
+  "phase": 5,
+  "phase_name": "Full verification sweep",
+  "started_at": "2026-08-06T01:20:00Z",
+  "last_updated": "2026-08-06T01:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run test-loop-guard-staleness.sh, test-resume-scan-nonconformance.sh, bash -n on Stage 2 block, check-task-references.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run check-extension-docs.sh; fix the one line_count drift this task caused; confirm remaining FAILs are pre-existing and unrelated", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 3, "description": "Confirm no .claude/** modified; confirm modified-file set; record deviations in plan + Reasoned Exclusions", "status": "done", "files_touched": ["specs/961_add_freshness_detection_to_orchestrator_loop_guard/plans/01_loop-guard-staleness-detection.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5",
+      "description": "check-extension-docs.sh exit 0",
+      "type": "altered",
+      "reason": "Five pre-existing, task-961-unrelated FAILs remain (one plan-format.md line_count mismatch and four deployed-script content-drift FAILs), verified via git diff against commit c3323d116 (task 960 tip, immediately preceding task 961's first change). The one line_count mismatch this task's own Phase 1 edit caused (orchestrator-runtime-files.md) was corrected.",
+      "annotation": "*(deviation: altered — exits 1, not 0; see Reasoned Exclusions below...)*"
+    },
+    {
+      "task_id": "5",
+      "description": "modified-file set is exactly the four declared",
+      "type": "altered",
+      "reason": "A fifth file, agent-system/extensions/core/index-entries.json, was touched to correct the line_count entry for standards/orchestrator-runtime-files.md that this task's own Phase 1 edit made stale.",
+      "annotation": "*(deviation: altered — a fifth file ... was touched ...)*"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -388,29 +388,42 @@ summary.
 
 ---
 
-### Phase 5: Full verification sweep [NOT STARTED]
+### Phase 5: Full verification sweep [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Every gate the task's verification bar and the repo's standing rules impose is actually
 run, not asserted.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh` — expect
-      exit 0.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh` — the
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh` — expect
+      exit 0. *(completed: 28/28 assertions PASS, exit 0)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh` — the
       standing regression suite over the same SKILL.md; expect exit 0 (proves the new region did not
-      disturb the neighbouring sentinel region).
-- [ ] Extract the full Stage 2 fenced block and confirm `bash -n` clean.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` — expect exit 0 (all four modified files
-      are outside `specs/**`).
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` — expect exit 0 (manifest/README
-      cross-reference lint).
-- [ ] Confirm `git status --short` shows **no** modified path under `.claude/` — every edit must be
-      in `agent-system/extensions/core/**`.
-- [ ] Confirm the modified-file set is exactly the four declared in the Scope Extension table; any
-      fifth file is an unplanned expansion that must be justified in the summary.
-- [ ] Record in the summary: the mtime default chosen and why; the two deliberate deviations from
+      disturb the neighbouring sentinel region). *(completed: 39/39 assertions PASS, exit 0)*
+- [x] Extract the full Stage 2 fenced block and confirm `bash -n` clean. *(completed)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` — expect exit 0 (all four modified files
+      are outside `specs/**`). *(completed: exit 0)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` — expect exit 0 (manifest/README
+      cross-reference lint). *(deviation: altered — exits 1, not 0; see Reasoned Exclusions below.
+      The one `Rule R` line_count mismatch this task's own edit caused
+      (`standards/orchestrator-runtime-files.md`) was fixed via the sanctioned
+      `generate-context-line-counts.sh` maintenance path. Five remaining FAIL lines are
+      pre-existing and verified unrelated to this task — see Reasoned Exclusions.)*
+- [x] Confirm `git status --short` shows **no** modified path under `.claude/` — every edit must be
+      in `agent-system/extensions/core/**`. *(completed: confirmed, zero `.claude/**` paths modified)*
+- [x] Confirm the modified-file set is exactly the four declared in the Scope Extension table; any
+      fifth file is an unplanned expansion that must be justified in the summary. *(deviation:
+      altered — a fifth file, `agent-system/extensions/core/index-entries.json`, was touched to
+      correct the `line_count` entry for `standards/orchestrator-runtime-files.md` that this
+      task's own Phase 1 edit made stale; justified in the summary.)*
+- [x] Record in the summary: the mtime default chosen and why; the two deliberate deviations from
       the research report; the two scope extensions; and the explicit statement that base-mode
-      `skill-orchestrate/SKILL.md` retains the unguarded shape and was not changed.
+      `skill-orchestrate/SKILL.md` retains the unguarded shape and was not changed. *(completed)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `check-extension-docs.sh` exit 0 | The five remaining FAIL lines after this task's changes are pre-existing and unrelated to this task, verified by diffing against the commit immediately preceding this task's first change (`c3323d116`, "task 960: complete orchestration"). Fixing them would expand scope well beyond the four declared files (plus the one justified `index-entries.json` correction) into unrelated deploy-drift and documentation-drift territory this task never touched. | `git show c3323d116:agent-system/extensions/core/index-entries.json` already declared `formats/plan-format.md` at `line_count: 406` against an actual (then and now) 423 lines — this task never modified `plan-format.md`. `git diff c3323d116..HEAD --stat -- agent-system/extensions/core/scripts/command-route-skill.sh agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh agent-system/extensions/core/scripts/update-task-status.sh agent-system/extensions/core/scripts/verify-deploy.sh` produced zero output (no diff) — none of the four "deployed script content drift" FAILs were touched by this task; the deployed `.claude/` tree was already stale relative to the source store before this task began. |
 
 **Timing**: 0.5 hours
 
