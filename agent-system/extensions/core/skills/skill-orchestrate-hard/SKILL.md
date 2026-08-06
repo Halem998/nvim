@@ -512,23 +512,54 @@ fi
 # next_phase=$((phases_completed + 1)) integer increment (could not address N.1/N.2 sub-phase
 # headings, sparse numbering, or skeleton-exhaustion). Mirrors
 # skill-implementer-hard/SKILL.md Stage 3b's already-landed fix.
+#
+# Orchestration-loop posture: unlike a leaf worker's precondition check, this skill IS the
+# long-running orchestration loop, with its own established terminal-condition vocabulary
+# (`EXIT (partial, ...)` / `EXIT (success, ...)`, used at multiple other points in this file). A
+# raw `exit 1` here would be a nonlocal jump out of the whole `/orchestrate --hard` run with no
+# bookkeeping and no message shaped like this file's other terminal paths -- worse than the bug it
+# would replace. The inconclusive case below therefore routes to this file's own
+# `EXIT (partial, ...)` convention as a distinct FIRST branch, so it can never be mistaken for
+# skeleton-exhaustion or genuine full completion (both of which are false claims when the real
+# cause is a malformed plan).
 next_phase=""
+phase_scan_inconclusive=false
 if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
   # Sourced from the shared anchor (scripts/lib/phase-heading-patterns.sh) rather than re-derived
   # inline. Uses the library's OPEN alternation (NOT STARTED|IN PROGRESS|PARTIAL|BLOCKED) and
   # extract_phase_number so a non-conforming heading is never silently mis-selected or truncated.
   . .claude/scripts/lib/phase-heading-patterns.sh
-  next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_path" | head -1)
-  if [ -n "$next_heading" ]; then
-    next_phase=$(extract_phase_number "$next_heading") || next_phase=""
-    if [ -z "$next_phase" ]; then
-      warn_nonconforming "$plan_path" "orchestrate-hard-next-phase" || true
-      echo "[hard-orchestrate] H1: next-phase heading-scan found a non-conforming heading — refusing to guess a phase number; see warning above." >&2
+  # --- resume-scan-conformance-gate:begin ---
+  # Whole-file conformance check BEFORE the filtered scan below. PHASE_HEADING_ERE admits
+  # conforming headings only, so a non-conforming heading is not merely unmatched by that grep --
+  # it is INVISIBLE to it, and the scan would silently select the next conforming OPEN heading
+  # instead, dispatching out of order on top of unfinished work. has_nonconforming_phase_headings
+  # is the required boolean predicate; the `nonconforming_phase_headings | grep -q .` pipe form is
+  # forbidden (unsafe under pipefail).
+  if has_nonconforming_phase_headings "$plan_path"; then
+    warn_nonconforming "$plan_path" "orchestrate-hard-next-phase" || true
+    phase_scan_inconclusive=true
+  else
+    next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_path" | head -1)
+    if [ -n "$next_heading" ]; then
+      next_phase=$(extract_phase_number "$next_heading") || next_phase=""
+      if [ -z "$next_phase" ]; then
+        # Defense-in-depth only, and unreachable by construction: the grep above already
+        # guarantees this line matches PHASE_HEADING_ERE. Funnelled into the same sentinel so
+        # there is exactly one inconclusive path, never a second silent one.
+        phase_scan_inconclusive=true
+      fi
     fi
   fi
+  # --- resume-scan-conformance-gate:end ---
 fi
 
-if [ -n "$next_phase" ]; then
+if [ "$phase_scan_inconclusive" = "true" ]; then
+  echo "[hard-orchestrate] H1: non-conforming phase heading(s) in $plan_path — the filtered resume scan cannot see them, so the true next phase is UNKNOWN." >&2
+  echo "[hard-orchestrate] Refusing to dispatch, and refusing to claim skeleton-exhaustion or completion. Fix the plan's heading grammar (see plan-format.md's canonical phase-heading shape) and re-run." >&2
+  EXIT (partial, non-conforming phase heading — next phase unknown)
+
+elif [ -n "$next_phase" ]; then
   echo "[hard-orchestrate] H1: Per-phase dispatch — phase $next_phase (heading-scan)" >&2
 
   # Determine territory for this phase (single-phase dispatch, no parallel territory needed —

@@ -297,18 +297,18 @@ fi
 
 ---
 
-### Phase 3: Site A — `skill-orchestrate-hard` Dedicated Inconclusive Branch [IN PROGRESS]
+### Phase 3: Site A — `skill-orchestrate-hard` Dedicated Inconclusive Branch [COMPLETED]
 
 **Goal**: Replace the unsafe "leave `next_phase` empty and fall through" posture with a distinct
 first branch that terminates via this file's own `EXIT (partial, ...)` convention, so an
 inconclusive scan can never be mistaken for skeleton-exhaustion or full completion.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`, State
+- [x] In `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`, State
       `planned`/`implementing` Per-Phase Dispatch (H1), replace the `next_phase=""` ... `fi` scan
       region with the Phase 1 canonical snippet, label `"orchestrate-hard-next-phase"` (preserved
-      verbatim).
-- [ ] Restructure the cascade so the inconclusive branch is **first**:
+      verbatim). *(completed)*
+- [x] Restructure the cascade so the inconclusive branch is **first**: *(completed)*
 
 ```bash
 if [ "$phase_scan_inconclusive" = "true" ]; then
@@ -325,21 +325,27 @@ else
 fi
 ```
 
-- [ ] Confirm the branch does **not** remove `$loop_guard_file`. Verified against the file's other
+- [x] Confirm the branch does **not** remove `$loop_guard_file`. Verified against the file's other
       `EXIT (partial` sites (the "no handoff, no blockers" sub-state and the
       MAX_INFRA_FAILURES / MAX_CYCLES exits): none of them clean the loop guard — that cleanup is
       reserved for `EXIT (success...)` loop-termination paths. Matching this keeps the new branch
-      consistent with the established convention.
-- [ ] Confirm the branch performs **no** status transition and does **not** call
+      consistent with the established convention. *(completed: confirmed by grep, new branch body
+      contains neither `loop_guard_file` nor `update-task-status.sh`)*
+- [x] Confirm the branch performs **no** status transition and does **not** call
       `skill_preflight_update` — that call must remain inside the dispatch branch only, per the
-      existing comment stating it belongs to that branch exclusively.
-- [ ] Update the block's leading comment to record the orchestration-loop posture rationale from
+      existing comment stating it belongs to that branch exclusively. *(completed: confirmed by
+      grep, only occurrence within this cascade is inside the dispatch branch)*
+- [x] Update the block's leading comment to record the orchestration-loop posture rationale from
       Decision 3 and to state explicitly why `exit 1` is wrong here. No task-number citations.
+      *(completed)*
 - [ ] Optional consistency cleanup (non-blocking, take only if the diff stays clean): the
       `=== BEGIN/END 772 Item 5A ===` fence comments wrapping this region cite an ephemeral
       identifier. They do **not** trip the write-time guard (its pattern requires the literal word
       `task`), so purging them is not required. If purged, replace with the durable anchor
       `=== BEGIN/END heading-scan phase selection + skeleton-exhaustion routing ===`.
+      *(deviation: skipped — explicitly optional per the task's own wording; left unchanged to
+      keep the diff minimal and reduce risk of an unrelated cleanup interfering with the
+      structural edit)*
 
 **Timing**: 1 hour
 
@@ -363,7 +369,7 @@ fi
 
 ---
 
-### Phase 4: Audit-Derived Sites — Lean Clone (Site C) and `first_phase_heading` (Site D) [NOT STARTED]
+### Phase 4: Audit-Derived Sites — Lean Clone (Site C) and `first_phase_heading` (Site D) [IN PROGRESS]
 
 **Goal**: Execute Scope Decisions 1 and 2, closing the two sites the consumer audit found outside
 the declared `file_scope`.
