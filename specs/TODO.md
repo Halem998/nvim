@@ -23,7 +23,7 @@ next_project_number: 998
 
 ### Agent System
 
-961 [PLANNING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+961 [IMPLEMENTING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
       └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
@@ -1193,7 +1193,7 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 961. Add staleness detection to the orchestrator loop-guard resume path
-- **Status**: [PLANNING]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 960

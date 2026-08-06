@@ -1,7 +1,7 @@
 # Implementation Plan: Task #961
 
 - **Task**: 961 - Add staleness detection to the orchestrator loop-guard resume path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: 960 (established the sentinel-region + fixture-test pattern in the same SKILL.md; already complete)
 - **Research Inputs**: specs/961_add_freshness_detection_to_orchestrator_loop_guard/reports/01_loop-guard-staleness-detection.md
