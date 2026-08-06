@@ -108,19 +108,42 @@ fi
 # Read plan to find next incomplete phase. Sourced from the shared anchor
 # (scripts/lib/phase-heading-patterns.sh) rather than re-derived inline -- this also gains
 # decimal sub-phase support (e.g. "Phase 3.1"), which the prior digits-only pattern never had.
+#
+# Leaf-worker posture (same as skill-implementer-hard's Stage 3b): this check runs strictly
+# before any Agent tool dispatch, so no handoff write is owed here, and adopts this file's own
+# `return error` convention rather than a raw `exit`.
 . .claude/scripts/lib/phase-heading-patterns.sh
-next_phase_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_file" | head -1)
-
-# Extract phase number via the library's extract_phase_number rather than the prior PCRE-based
-# lookbehind extraction -- the PCRE grep flag is not available on every platform and was a
-# second, unnecessary divergence from every other consumer of this grammar.
 phase_number=""
-if [ -n "$next_phase_heading" ]; then
-  phase_number=$(extract_phase_number "$next_phase_heading") || phase_number=""
-  if [ -z "$phase_number" ]; then
-    warn_nonconforming "$plan_file" "lean-implementation-hard-next-phase" || true
-    return error "Non-conforming phase heading found during resume-scan -- refusing to guess a resume point. See warning above."
+phase_scan_inconclusive=false
+# --- resume-scan-conformance-gate:begin ---
+# Whole-file conformance check BEFORE the filtered scan below. PHASE_HEADING_ERE admits
+# conforming headings only, so a non-conforming heading is not merely unmatched by that grep --
+# it is INVISIBLE to it, and the scan would silently select the next conforming OPEN heading
+# instead, dispatching out of order on top of unfinished work. has_nonconforming_phase_headings
+# is the required boolean predicate; the `nonconforming_phase_headings | grep -q .` pipe form is
+# forbidden (unsafe under pipefail).
+if has_nonconforming_phase_headings "$plan_file"; then
+  warn_nonconforming "$plan_file" "lean-implementation-hard-next-phase" || true
+  phase_scan_inconclusive=true
+else
+  # Extract phase number via the library's extract_phase_number rather than the prior PCRE-based
+  # lookbehind extraction -- the PCRE grep flag is not available on every platform and was a
+  # second, unnecessary divergence from every other consumer of this grammar.
+  next_phase_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_file" | head -1)
+  if [ -n "$next_phase_heading" ]; then
+    phase_number=$(extract_phase_number "$next_phase_heading") || phase_number=""
+    if [ -z "$phase_number" ]; then
+      # Defense-in-depth only, and unreachable by construction: the grep above already
+      # guarantees this line matches PHASE_HEADING_ERE. Funnelled into the same sentinel so
+      # there is exactly one inconclusive path, never a second silent one.
+      phase_scan_inconclusive=true
+    fi
   fi
+fi
+# --- resume-scan-conformance-gate:end ---
+
+if [ "$phase_scan_inconclusive" = "true" ]; then
+  return error "Non-conforming phase heading(s) found during resume-scan -- the filtered scan cannot see them, so the resume point is UNKNOWN. Refusing to guess. See the named, line-numbered warning above."
 fi
 
 # Read handoff for per-phase dispatch context (territory, continuation_context)

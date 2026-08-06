@@ -369,7 +369,7 @@ fi
 
 ---
 
-### Phase 4: Audit-Derived Sites — Lean Clone (Site C) and `first_phase_heading` (Site D) [IN PROGRESS]
+### Phase 4: Audit-Derived Sites — Lean Clone (Site C) and `first_phase_heading` (Site D) [COMPLETED]
 
 **Goal**: Execute Scope Decisions 1 and 2, closing the two sites the consumer audit found outside
 the declared `file_scope`.
@@ -377,12 +377,12 @@ the declared `file_scope`.
 **Tasks**:
 
 Site C — `agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md`, Stage 3:
-- [ ] Replace the scan region with the Phase 1 canonical snippet, adapting the plan-path variable
+- [x] Replace the scan region with the Phase 1 canonical snippet, adapting the plan-path variable
       name to the site's existing `$plan_file` and preserving the label
       `"lean-implementation-hard-next-phase"` verbatim. Keep the site's existing variable names
       (`next_phase_heading`, `phase_number`) rather than renaming to the core sites' names — the
-      change under test is the ordering gate, not a rename.
-- [ ] Add the posture branch after the gate region, using this file's own convention:
+      change under test is the ordering gate, not a rename. *(completed)*
+- [x] Add the posture branch after the gate region, using this file's own convention: *(completed)*
 
 ```bash
 if [ "$phase_scan_inconclusive" = "true" ]; then
@@ -390,15 +390,15 @@ if [ "$phase_scan_inconclusive" = "true" ]; then
 fi
 ```
 
-- [ ] Delete the superseded `warn_nonconforming` + `return error` from the old inner
-      `if [ -z "$phase_number" ]` branch.
-- [ ] Add a one-line comment recording that this site adopts the leaf-worker posture for the same
-      reason as the core implementer-hard site. No task-number citations.
+- [x] Delete the superseded `warn_nonconforming` + `return error` from the old inner
+      `if [ -z "$phase_number" ]` branch. *(completed)*
+- [x] Add a one-line comment recording that this site adopts the leaf-worker posture for the same
+      reason as the core implementer-hard site. No task-number citations. *(completed)*
 
 Site D — `agent-system/extensions/core/scripts/update-task-status.sh`, plan-initialization
 convenience path:
-- [ ] Guard the `first_phase_heading` grep with the whole-file check, warn on a hit, and **skip**
-      the convenience entirely rather than guessing:
+- [x] Guard the `first_phase_heading` grep with the whole-file check, warn on a hit, and **skip**
+      the convenience entirely rather than guessing: *(completed)*
 
 ```bash
 if has_nonconforming_phase_headings "$plan_file"; then
@@ -409,12 +409,14 @@ else
 fi
 ```
 
-- [ ] Confirm no new sourcing is required — the library is already sourced at file scope (it backs
+- [x] Confirm no new sourcing is required — the library is already sourced at file scope (it backs
       the existing phase-check gate). If it is not in scope at this point in the script, stop and
       record Site D as out-of-scope follow-up rather than adding new plumbing to a self-documented
-      non-fatal path.
-- [ ] Preserve the path's non-fatal character exactly: no new `exit`, no new return code, no change
-      to the surrounding function's contract.
+      non-fatal path. *(completed: confirmed `has_nonconforming_phase_headings`/`warn_nonconforming`
+      are already in scope at this point in the script, backing the pre-existing D3 gate; no new
+      sourcing added)*
+- [x] Preserve the path's non-fatal character exactly: no new `exit`, no new return code, no change
+      to the surrounding function's contract. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -429,6 +431,14 @@ documented consumer-discovery command,
 non-doc, non-manifest hit for a filtered grep that feeds a selection or count without a preceding
 whole-file check. Research verified the remaining consumers are already correctly wired; if a new
 one has appeared, add it here or record it as follow-up — do not leave it silently unaddressed.
+**Confirmed at implementation time**: re-ran `grep -rl 'phase-heading-patterns.sh'
+agent-system/extensions`; the consumer list is unchanged from the research report's audit (same
+23 hits: the four now-fixed sites A/B/C/D, plus the already-correctly-wired sites
+`update-task-status.sh`'s D3 gate, `skill-base.sh`'s `skill_corroborate_phase_counts`,
+`validate-artifact.sh`, `general-implementation-agent.md`/`general-implementation-hard-agent.md`
+Stage 5a, `commands/task.md` Step 3, `skill-orchestrate/SKILL.md`'s recovery diagnostic, and the
+parameter-driven exception `update-phase-status.sh`, plus test/doc/manifest hits). No new consumer
+has appeared; no follow-up needed.
 
 **Files to modify**:
 - `agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md` — Stage 3 scan
@@ -445,7 +455,7 @@ one has appeared, add it here or record it as follow-up — do not leave it sile
 
 ---
 
-### Phase 5: Verification Harness Exercising the `4C` Bar [NOT STARTED]
+### Phase 5: Verification Harness Exercising the `4C` Bar [IN PROGRESS]
 
 **Goal**: Add the first executable regression test for these markdown-embedded scan blocks,
 asserting the task's verification bar directly rather than by inspection.

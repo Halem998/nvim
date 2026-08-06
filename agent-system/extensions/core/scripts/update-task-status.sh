@@ -513,18 +513,30 @@ update_plan_file() {
           # chain could not distinguish a non-conforming heading from "no match", where
           # extract_phase_number returns empty with a non-zero status instead of a truncated
           # prefix.
-          first_phase_heading=$(grep -m1 -E "${PHASE_HEADING_ERE}.*\[NOT STARTED\]" "$plan_file" || echo "")
-          first_phase=""
-          if [[ -n "$first_phase_heading" ]]; then
-            first_phase=$(extract_phase_number "$first_phase_heading") || first_phase=""
-          fi
-          if [[ -n "$first_phase" ]]; then
-            # Superseded by the base agent owning every per-phase transition directly; this
-            # call is a redundant convenience, recoverable via the agent's own explicit calls.
-            # Non-fatal, and its stderr is no longer discarded.
-            "$phase_script" "$task_number" "$project_name" "$first_phase" "IN_PROGRESS" || {
-              echo "Warning: phase status update failed (non-fatal)" >&2
-            }
+          #
+          # Whole-file conformance check BEFORE the filtered grep below (same ordering contract
+          # as the D3 gate above): a non-conforming heading is invisible to a
+          # PHASE_HEADING_ERE-filtered grep, so this convenience could silently mark a DIFFERENT
+          # phase IN_PROGRESS -- a wrong-phase write, not merely a missed convenience. Minimal
+          # guard only: on a hit, warn and skip the convenience entirely rather than guessing.
+          # The convenience's own non-fatal character is preserved exactly.
+          if has_nonconforming_phase_headings "$plan_file"; then
+            warn_nonconforming "$plan_file" "update-task-status-first-phase" || true
+            echo "[first-phase] Non-conforming phase heading(s) in $(basename "$plan_file") -- skipping the first-phase auto-advance convenience rather than advancing a wrong phase. Non-fatal; the dispatched agent owns every per-phase transition directly." >&2
+          else
+            first_phase_heading=$(grep -m1 -E "${PHASE_HEADING_ERE}.*\[NOT STARTED\]" "$plan_file" || echo "")
+            first_phase=""
+            if [[ -n "$first_phase_heading" ]]; then
+              first_phase=$(extract_phase_number "$first_phase_heading") || first_phase=""
+            fi
+            if [[ -n "$first_phase" ]]; then
+              # Superseded by the base agent owning every per-phase transition directly; this
+              # call is a redundant convenience, recoverable via the agent's own explicit calls.
+              # Non-fatal, and its stderr is no longer discarded.
+              "$phase_script" "$task_number" "$project_name" "$first_phase" "IN_PROGRESS" || {
+                echo "Warning: phase status update failed (non-fatal)" >&2
+              }
+            fi
           fi
         fi
       fi
