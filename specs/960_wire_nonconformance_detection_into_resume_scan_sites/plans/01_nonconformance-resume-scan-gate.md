@@ -248,18 +248,18 @@ library-code sub-step and the plan's "prose only" claim is superseded.
 
 ---
 
-### Phase 2: Site B — `skill-implementer-hard` Reachable Hard Stop [IN PROGRESS]
+### Phase 2: Site B — `skill-implementer-hard` Reachable Hard Stop [COMPLETED]
 
 **Goal**: Make the existing `exit 1` posture reachable, and place it above the entire cascade so
 the `else next_phase=1` false-re-dispatch path is gated too.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md` Stage 3b, replace
+- [x] In `agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md` Stage 3b, replace
       the `next_phase=""` ... `fi` scan region with the Phase 1 canonical snippet, label
       `"implementer-hard-next-phase"` (label preserved verbatim — it appears in operator-facing
-      warnings).
-- [ ] Insert the posture branch **immediately after** the gate region's closing `fi` and
-      **immediately before** the existing `if [ -n "$next_phase" ]` cascade:
+      warnings). *(completed)*
+- [x] Insert the posture branch **immediately after** the gate region's closing `fi` and
+      **immediately before** the existing `if [ -n "$next_phase" ]` cascade: *(completed)*
 
 ```bash
 if [ "$phase_scan_inconclusive" = "true" ]; then
@@ -268,14 +268,15 @@ if [ "$phase_scan_inconclusive" = "true" ]; then
 fi
 ```
 
-- [ ] Delete the now-superseded `warn_nonconforming` + `echo` + `exit 1` lines from the old inner
+- [x] Delete the now-superseded `warn_nonconforming` + `echo` + `exit 1` lines from the old inner
       `if [ -z "$next_phase" ]` branch (the canonical snippet replaces that branch body with the
-      sentinel assignment).
-- [ ] Update the block's leading comment to state the ordering contract and to record the
+      sentinel assignment). *(completed)*
+- [x] Update the block's leading comment to state the ordering contract and to record the
       leaf-worker posture rationale from Decision 3 in one or two sentences. No task-number
-      citations.
-- [ ] Confirm the cascade below is otherwise untouched: `if [ -n "$next_phase" ]` /
-      `elif ... skeleton ...` / `else next_phase=1` remain byte-identical.
+      citations. *(completed)*
+- [x] Confirm the cascade below is otherwise untouched: `if [ -n "$next_phase" ]` /
+      `elif ... skeleton ...` / `else next_phase=1` remain byte-identical. *(completed: confirmed
+      by diff -- only the scan region above the cascade changed)*
 
 **Timing**: 0.75 hours
 
@@ -296,7 +297,7 @@ fi
 
 ---
 
-### Phase 3: Site A — `skill-orchestrate-hard` Dedicated Inconclusive Branch [NOT STARTED]
+### Phase 3: Site A — `skill-orchestrate-hard` Dedicated Inconclusive Branch [IN PROGRESS]
 
 **Goal**: Replace the unsafe "leave `next_phase` empty and fall through" posture with a distinct
 first branch that terminates via this file's own `EXIT (partial, ...)` convention, so an

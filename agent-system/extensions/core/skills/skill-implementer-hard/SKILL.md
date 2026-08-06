@@ -145,23 +145,51 @@ if [ "$orchestrator_mode" = "true" ]; then
   # skeleton-exhaustion signal. Replaced with a heading-scan of the plan file itself, mirroring
   # the base agent's Stage 3 "Find Resume Point" pattern. This is a strict superset: dense
   # integer plans (1, 2, 3, ...) resolve identically to the old increment behavior.
+  # Scan phase headings top-to-bottom; first OPEN-alternation heading wins. Sourced from the
+  # shared anchor (scripts/lib/phase-heading-patterns.sh) rather than re-derived inline; a
+  # non-conforming heading is reported by name rather than silently resuming at a wrong or
+  # absent phase -- a silent wrong resume point is more damaging here than a loud stop.
+  # Heading form: "### Phase {N or N.1}: {name} [STATUS]"
+  #
+  # Leaf-worker posture: this check runs in this skill's own bash preamble, strictly before the
+  # first `Agent tool:` dispatch below. No subagent has run yet, so no handoff write is owed here
+  # (H9 wrap-up binds a dispatched agent's own termination, not this precondition check). The
+  # whole-file conformance gate below runs BEFORE the filtered scan, and BEFORE the `else
+  # next_phase=1` fallback -- a non-conforming heading is invisible to a PHASE_HEADING_ERE-filtered
+  # grep, so gating only the dead inner branch would still let this cascade re-dispatch phase 1
+  # when the only open phase in the whole file is non-conforming.
   next_phase=""
+  phase_scan_inconclusive=false
   if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
-    # Scan phase headings top-to-bottom; first OPEN-alternation heading wins. Sourced from the
-    # shared anchor (scripts/lib/phase-heading-patterns.sh) rather than re-derived inline; a
-    # non-conforming heading is reported by name rather than silently resuming at a wrong or
-    # absent phase -- a silent wrong resume point is more damaging here than a loud stop.
-    # Heading form: "### Phase {N or N.1}: {name} [STATUS]"
     . .claude/scripts/lib/phase-heading-patterns.sh
-    next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_path" | head -1)
-    if [ -n "$next_heading" ]; then
-      next_phase=$(extract_phase_number "$next_heading") || next_phase=""
-      if [ -z "$next_phase" ]; then
-        warn_nonconforming "$plan_path" "implementer-hard-next-phase" || true
-        echo "[hard-mode] STOP: resume-scan found a non-conforming phase heading -- refusing to guess a resume point. See warning above." >&2
-        exit 1
+    # --- resume-scan-conformance-gate:begin ---
+    # Whole-file conformance check BEFORE the filtered scan below. PHASE_HEADING_ERE admits
+    # conforming headings only, so a non-conforming heading is not merely unmatched by that grep --
+    # it is INVISIBLE to it, and the scan would silently select the next conforming OPEN heading
+    # instead, dispatching out of order on top of unfinished work. has_nonconforming_phase_headings
+    # is the required boolean predicate; the `nonconforming_phase_headings | grep -q .` pipe form is
+    # forbidden (unsafe under pipefail).
+    if has_nonconforming_phase_headings "$plan_path"; then
+      warn_nonconforming "$plan_path" "implementer-hard-next-phase" || true
+      phase_scan_inconclusive=true
+    else
+      next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_path" | head -1)
+      if [ -n "$next_heading" ]; then
+        next_phase=$(extract_phase_number "$next_heading") || next_phase=""
+        if [ -z "$next_phase" ]; then
+          # Defense-in-depth only, and unreachable by construction: the grep above already
+          # guarantees this line matches PHASE_HEADING_ERE. Funnelled into the same sentinel so
+          # there is exactly one inconclusive path, never a second silent one.
+          phase_scan_inconclusive=true
+        fi
       fi
     fi
+    # --- resume-scan-conformance-gate:end ---
+  fi
+
+  if [ "$phase_scan_inconclusive" = "true" ]; then
+    echo "[hard-mode] STOP: resume-scan found a non-conforming phase heading -- refusing to guess a resume point. See the named, line-numbered warning above." >&2
+    exit 1
   fi
 
   if [ -n "$next_phase" ]; then
