@@ -31,11 +31,11 @@
 #      redeploy landed is in the same position as one that established it did not.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all eight gates (gate0
-#   through gate7) plus a gate0 "could not run" sentinel, printed to stdout after the final
+#   Emits a normalized, one-per-line, machine-diffable findings set across all nine gates (gate0
+#   through gate8) plus a gate0 "could not run" sentinel, printed to stdout after the final
 #   narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
 #   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
-#   gate label (`gate0`..`gate7`); the automated consumer is expected to invoke
+#   gate label (`gate0`..`gate8`); the automated consumer is expected to invoke
 #   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
 #   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
@@ -381,6 +381,34 @@ else
       while IFS= read -r routing_lint_line; do
         FINDINGS_LIST+=("FINDING gate7 ${routing_lint_line#*FAIL\] }")
       done < <(printf '%s\n' "$routing_lint_output" | grep -F '[FAIL]')
+    fi
+  fi
+fi
+
+say ""
+
+# ── 8. Shell test suite runner (run-all.sh) ───────────────────────────────────
+# Only meaningful in the source-store repo, mirroring gates 3-4/6-7's SKIP-if-not-source-store
+# precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
+# skips there.
+say "8. Shell test suite runner (tests/run-all.sh)"
+CURRENT_GATE="gate8"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- run-all.sh does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" ]; then
+  fail "tests/run-all.sh not found in source store"
+else
+  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet 2>&1)
+  run_all_status=$?
+  if [ "$run_all_status" -eq 0 ]; then
+    pass "run-all.sh: all discovered suites passed"
+  else
+    fail "run-all.sh reported failing or undiscoverable suites (exit $run_all_status)" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r run_all_line; do
+        FINDINGS_LIST+=("FINDING gate8 ${run_all_line#\[FAIL\] }")
+      done < <(printf '%s\n' "$run_all_output" | grep -F '[FAIL]')
     fi
   fi
 fi

@@ -22,7 +22,7 @@ next_project_number: 998
 
 ### Agent System
 
-988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
+988 [IMPLEMENTING] — Consolidate shell-script boilerplate, settle the strict-mode conv
   └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
       └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
@@ -261,10 +261,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 988. Script hygiene: lib/common.sh, strict-mode convention, test runner wired into deploy
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 960, Task 964
+- **Research**: [988_script_hygiene_common_lib_and_test_runner/reports/01_shell-hygiene-common-lib.md]
+- **Plan**: [988_script_hygiene_common_lib_and_test_runner/plans/01_script-hygiene-common-lib.md]
 
 **Description**: Consolidate shell-script boilerplate, settle the strict-mode convention, and make the existing test suites actually run. From the shell-layer review (specs/reviews/review-2026-07-29-agent-system.md): 123 shell scripts; the shared-library posture is good where it exists (3 libs, all genuinely single-source) but thin.
 

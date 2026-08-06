@@ -158,6 +158,7 @@
       "test-state-write-concurrency.sh",
       "test-state-write-regen-timing.sh",
       "test-task-lock-reap.sh",
+      "tests/run-all.sh",
       "tests/test-census-count.sh",
       "tests/test-claude-refresh-matcher.sh",
       "tests/test-corroborate-phase-counts.sh",

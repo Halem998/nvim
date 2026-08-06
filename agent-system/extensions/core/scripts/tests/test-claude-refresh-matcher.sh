@@ -125,7 +125,14 @@ kill "$SLEEP_HELPER_PID" 2>/dev/null
 # under load on this machine for a backgrounded job in a non-interactive script. Reaping the
 # now-zombie child is left to the shell's normal exit-time cleanup rather than an explicit
 # `wait` here, so this step can never itself block the suite.
-for _ in 1 2 3 4 5 6 7 8 9 10; do
+#
+# Budget widened from 10x0.2s (2s) to 40x0.2s (8s): both this poll and is_live_inhibitor_target
+# itself use `kill -0`, which can still report a not-yet-reaped zombie as "alive" -- observed to
+# need more than 2s of headroom when run.sh:run-all.sh's suite-runner executes this suite
+# alongside ~25 concurrent others, each contending for CPU/process-table scheduling. This widens
+# only the test's own patience; it does not change is_live_inhibitor_target's production
+# semantics or its documented live-check trade-off.
+for _ in $(seq 1 40); do
   kill -0 "$SLEEP_HELPER_PID" 2>/dev/null || break
   sleep 0.2
 done

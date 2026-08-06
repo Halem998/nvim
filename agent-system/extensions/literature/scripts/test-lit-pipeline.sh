@@ -38,8 +38,29 @@ for arg in "$@"; do
 done
 
 # --- Script location and project root ---
+# Resolves correctly from two independent locations: the deployed copy
+# (.claude/scripts/test-lit-pipeline.sh, two levels above .claude/) and the source-store copy
+# (agent-system/extensions/literature/scripts/test-lit-pipeline.sh, four levels above the repo
+# root). Rather than hardcode either depth, walk upward from SCRIPT_DIR to the nearest ancestor
+# that contains a .claude/ directory -- true of the repo root in both cases.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT=""
+_candidate="$SCRIPT_DIR"
+for _ in 1 2 3 4 5 6; do
+  if [[ -d "$_candidate/.claude" ]]; then
+    PROJECT_ROOT="$_candidate"
+    break
+  fi
+  _parent="$(dirname "$_candidate")"
+  [[ "$_parent" == "$_candidate" ]] && break
+  _candidate="$_parent"
+done
+unset _candidate _parent
+if [[ -z "$PROJECT_ROOT" ]]; then
+  # Fall back to the historical two-levels-up assumption so the original failure mode/message
+  # is preserved when no ancestor has a .claude/ directory at all.
+  PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+fi
 
 # --- Logging helpers ---
 log_pass() {
@@ -96,6 +117,14 @@ section_a() {
   echo ""
   log_info "Section A: Script existence and syntax"
   echo "----------------------------------------"
+
+  # Check if the literature extension is loaded; if not, skip with info -- mirrors Section B/C's
+  # existing "extension not loaded" guard for cslib. Without this guard, a repo that simply never
+  # loaded the literature extension would hard-fail here instead of gracefully skipping.
+  if [[ ! -d "$PROJECT_ROOT/.claude/extensions/literature" ]]; then
+    log_info "Literature extension not loaded in this project — skipping Section A"
+    return
+  fi
 
   local scripts_dir="$PROJECT_ROOT/.claude/scripts"
 
@@ -249,6 +278,14 @@ section_d() {
     "skill-implementer"
   )
 
+  # Six skills now delegate Section D's branching to ONE shared, directly-executable block
+  # (context/patterns/lit-stage4a-flow.md) rather than each carrying its own inline copy of the
+  # literature-index.json / literature-create-setup-task checks -- see CLAUDE.md's "Interactive
+  # Sub-Index Setup Detection" section. A skill file satisfies each check below either directly
+  # (inline pattern present) or indirectly (it imports the shared flow file, which itself carries
+  # the pattern) -- both are valid wiring shapes.
+  local shared_flow_file="$PROJECT_ROOT/.claude/context/patterns/lit-stage4a-flow.md"
+
   for skill in "${skills[@]}"; do
     local skill_file="$PROJECT_ROOT/.claude/skills/$skill/SKILL.md"
 
@@ -257,18 +294,29 @@ section_d() {
       continue
     fi
 
-    # Check 1: literature-index.json sub-index detection
-    if grep -q 'literature-index\.json' "$skill_file" 2>/dev/null; then
-      log_pass "$skill: literature-index.json sub-index check found"
-    else
-      log_fail "$skill: literature-index.json sub-index check NOT found"
+    local imports_shared_flow=false
+    if grep -q 'lit-stage4a-flow\.md' "$skill_file" 2>/dev/null; then
+      imports_shared_flow=true
     fi
 
-    # Check 2: literature-create-setup-task reference
-    if grep -q 'literature-create-setup-task' "$skill_file" 2>/dev/null; then
-      log_pass "$skill: literature-create-setup-task reference found"
+    # Check 1: literature-index.json sub-index detection (direct or via shared flow import)
+    if grep -q 'literature-index\.json' "$skill_file" 2>/dev/null; then
+      log_pass "$skill: literature-index.json sub-index check found (inline)"
+    elif [[ "$imports_shared_flow" == "true" ]] && [[ -f "$shared_flow_file" ]] \
+        && grep -q 'literature-index\.json' "$shared_flow_file" 2>/dev/null; then
+      log_pass "$skill: literature-index.json sub-index check found (via lit-stage4a-flow.md import)"
     else
-      log_fail "$skill: literature-create-setup-task reference NOT found"
+      log_fail "$skill: literature-index.json sub-index check NOT found (inline or via shared flow import)"
+    fi
+
+    # Check 2: literature-create-setup-task reference (direct or via shared flow import)
+    if grep -q 'literature-create-setup-task' "$skill_file" 2>/dev/null; then
+      log_pass "$skill: literature-create-setup-task reference found (inline)"
+    elif [[ "$imports_shared_flow" == "true" ]] && [[ -f "$shared_flow_file" ]] \
+        && grep -q 'literature-create-setup-task' "$shared_flow_file" 2>/dev/null; then
+      log_pass "$skill: literature-create-setup-task reference found (via lit-stage4a-flow.md import)"
+    else
+      log_fail "$skill: literature-create-setup-task reference NOT found (inline or via shared flow import)"
     fi
   done
 }
