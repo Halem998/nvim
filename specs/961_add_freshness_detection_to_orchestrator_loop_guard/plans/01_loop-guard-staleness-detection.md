@@ -200,25 +200,25 @@ churn-state inheritance decision are documented as policy before any code depend
 
 ---
 
-### Phase 2: Add `plan_version` to the loop-guard schema [NOT STARTED]
+### Phase 2: Add `plan_version` to the loop-guard schema [COMPLETED]
 
 **Goal**: The guard persists which plan version the run that wrote it last observed, so the
 plan-lineage signal has something to compare against, and a mid-run plan revision never produces a
 false verdict on the next resume.
 
 **Tasks**:
-- [ ] Immediately after `mkdir -p "$TASK_DIR"` in Stage 2, compute the live reference value in a way
+- [x] Immediately after `mkdir -p "$TASK_DIR"` in Stage 2, compute the live reference value in a way
       that is safe when `plans/` does not exist yet:
       resolve the latest plan via the same `ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V |
       tail -1` idiom this file already uses elsewhere, take its `basename`, and fall back to the
       literal string `none` when empty. Assign to `current_plan_version`.
-- [ ] Add `"plan_version": $plan_version` (seeded from `current_plan_version`) to the fresh-init
+- [x] Add `"plan_version": $plan_version` (seeded from `current_plan_version`) to the fresh-init
       `jq -n` payload piped into `task-lock.sh init-marker "$loop_guard_file"`, threading it in with
       `--arg plan_version "$current_plan_version"`.
-- [ ] Refresh `plan_version` at the Stage 3b per-cycle guard update alongside `current_state`,
+- [x] Refresh `plan_version` at the Stage 3b per-cycle guard update alongside `current_state`,
       `last_updated`, and `cycle_count`, recomputing the latest-plan basename at that point so a
       revision landing mid-run is absorbed rather than treated as drift on the next resume.
-- [ ] Do NOT alter the lost-init-race fallback's resume-read (it reads counters from a guard another
+- [x] Do NOT alter the lost-init-race fallback's resume-read (it reads counters from a guard another
       writer just created with the field already present).
 
 **Timing**: 0.5 hours

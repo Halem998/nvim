@@ -231,6 +231,15 @@ churn_file="${TASK_DIR}/.orchestrator-churn-state.json"
 
 mkdir -p "$TASK_DIR"
 
+# Live plan-lineage reference for the loop-guard-staleness detector (Stage 2, below) and the
+# guard's own `plan_version` schema field. Safe when plans/ does not exist yet (task in
+# researching/planning status): the ls glob then matches nothing, `sort -V | tail -1` on empty
+# input yields an empty string, and `basename ""` also yields an empty string here, so the
+# explicit `:-none` fallback is required -- never treat an absent plans/ directory as evidence of
+# staleness.
+current_plan_version=$(basename "$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)" 2>/dev/null)
+current_plan_version="${current_plan_version:-none}"
+
 if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
   burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' "$loop_guard_file")
@@ -249,6 +258,7 @@ else
     --argjson max_cycles "$MAX_CYCLES" \
     --argjson max_infra_failures "$MAX_INFRA_FAILURES" \
     --arg started "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --arg plan_version "$current_plan_version" \
     '{
       "session_id": $session_id,
       "cycle_count": 0,
@@ -259,7 +269,8 @@ else
       "infra_failures": 0,
       "max_infra_failures": $max_infra_failures,
       "started": $started,
-      "last_updated": $started
+      "last_updated": $started,
+      "plan_version": $plan_version
     }' | bash .claude/scripts/task-lock.sh init-marker "$loop_guard_file"; then
     cycle_count=0
     burnout_signals_this_session=0
@@ -323,10 +334,16 @@ echo "[hard-orchestrate] Cycle $((cycle_count + 1))/$MAX_CYCLES — status: $cur
 
 **3b. Update loop guard**
 ```bash
+# Recompute the latest-plan basename at every cycle (not just at fresh-init) so a plan revision
+# landing mid-run is absorbed into the guard rather than left stale until the next resume — see
+# the loop-guard-staleness detector in Stage 2, which compares against exactly this field.
+current_plan_version=$(basename "$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)" 2>/dev/null)
+current_plan_version="${current_plan_version:-none}"
 jq --arg state "$current_status" \
    --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
    --argjson count "$cycle_count" \
-  '.current_state = $state | .last_updated = $updated | .cycle_count = $count' \
+   --arg plan_version "$current_plan_version" \
+  '.current_state = $state | .last_updated = $updated | .cycle_count = $count | .plan_version = $plan_version' \
   "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
 ```
 
