@@ -318,23 +318,23 @@ input and the input list must be corrected here rather than papered over with a 
 
 ---
 
-### Phase 4: Fixture test harness + manifest declaration [NOT STARTED]
+### Phase 4: Fixture test harness + manifest declaration [COMPLETED]
 
 **Goal**: The verification bar's positive and negative cases are proven by an executable test, and
 that test actually deploys.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh`, structurally
+- [x] Create `agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh`, structurally
       modeled on `scripts/tests/test-resume-scan-nonconformance.sh`: `pass()`/`fail()`/`info()`
       helpers, `PASSED`/`FAILED` counters, exit 0 all-pass / 1 any-fail / 2 environment error,
       `mktemp -d` workdir with an `EXIT` trap, and a loud failure (not a silent skip) if either
       sentinel marker is missing.
-- [ ] Resolve the SKILL.md from the **source store**
+- [x] Resolve the SKILL.md from the **source store**
       (`$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`), matching
       how the sibling suite resolves its sites.
-- [ ] Extract the `loop-guard-staleness` region with the same `awk` begin/end filter and assert
+- [x] Extract the `loop-guard-staleness` region with the same `awk` begin/end filter and assert
       `bash -n` cleanliness before running any behavioral fixture.
-- [ ] Drive the extracted region in a subshell against a fixture `TASK_DIR` for each case below,
+- [x] Drive the extracted region in a subshell against a fixture `TASK_DIR` for each case below,
       asserting on captured stderr, on the presence/absence of the archive files, and on
       `loop_guard_stale`:
 
@@ -350,16 +350,16 @@ that test actually deploys.
       | Churn co-archive | any stale case with a `.orchestrator-churn-state.json` present | Both archived, sharing the same timestamp suffix |
       | Churn absent | stale case with no churn file | Guard archived; no error, no empty churn archive created |
 
-- [ ] Add a cycle-0 assertion at the structural level: after a stale case, assert the guard path no
+- [x] Add a cycle-0 assertion at the structural level: after a stale case, assert the guard path no
       longer exists, so the unmodified `[ -f "$loop_guard_file" ]` test downstream must take the
       fresh-init branch. Document in the header that init itself is verified structurally (a grep
       that the init branch is unchanged and seeds `cycle_count: 0`) rather than by execution,
       because it depends on `task-lock.sh` — state this as an honest scope limit, mirroring how the
       sibling suite declares its own.
-- [ ] Add `"tests/test-loop-guard-staleness.sh"` to `provides.scripts` in
+- [x] Add `"tests/test-loop-guard-staleness.sh"` to `provides.scripts` in
       `agent-system/extensions/core/manifest.json`, placed to keep the `tests/` entries in their
       existing sorted position.
-- [ ] `chmod +x` the new script.
+- [x] `chmod +x` the new script.
 
 **Timing**: 1.5 hours
 

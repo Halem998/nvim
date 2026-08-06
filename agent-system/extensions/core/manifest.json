@@ -167,6 +167,7 @@
       "tests/test-handoff-reader-parity.sh",
       "tests/test-index-entries-schema.sh",
       "tests/test-lint-agent-contracts.sh",
+      "tests/test-loop-guard-staleness.sh",
       "tests/test-orchestrate-triage-classify.sh",
       "tests/test-phase-heading-patterns.sh",
       "tests/test-reconcile-handoff-status.sh",
