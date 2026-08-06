@@ -11,8 +11,8 @@ next_project_number: 998
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 962,988,991,997 | -- | agent-system, orchestration-concurrency |
-| 2 | 952,984,992 | 962,988,991 | agent-system, status-marker-lifecycle |
+| 1 | 988,991,997 | -- | agent-system, orchestration-concurrency |
+| 2 | 952,984,992 | 988,991 | agent-system, status-marker-lifecycle |
 | 3 | 953,985,993 | 952,984,992 | agent-system |
 | 4 | 983 | 953 | agent-system |
 | 5 | 986,995 | 983,984,985 | agent-system |
@@ -22,7 +22,7 @@ next_project_number: 998
 
 ### Agent System
 
-962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
   └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
       └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
@@ -32,8 +32,6 @@ next_project_number: 998
           └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
       └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
-988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
-  └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
   └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
@@ -1167,10 +1165,13 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 962. Correct the pr_ready skill text and docs to describe the actual resulting state
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 961
+- **Research**: [962_reconcile_pr_ready_policy_across_docs_and_skill_text/reports/01_pr-ready-policy-accuracy.md]
+- **Plan**: [962_reconcile_pr_ready_policy_across_docs_and_skill_text/plans/01_pr-ready-resting-state-accuracy.md]
+- **Summary**: [962_reconcile_pr_ready_policy_across_docs_and_skill_text/summaries/01_pr-ready-resting-state-accuracy-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 

@@ -22,22 +22,41 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/962_reconcile_pr_ready_policy_across_docs_and_skill_text/summaries/01_pr-ready-resting-state-accuracy-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "index-entries.json", "line_count", "status-markers.md", "documentation-lint"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "index-entries.json",
+        "line_count",
+        "status-markers.md",
+        "documentation-lint"
+      ]
     },
     {
       "content": "Before treating a lint/verification script's non-zero exit as evidence of a regression, compare against baseline via git stash + rerun. A script like check-extension-docs.sh can carry pre-existing, out-of-scope failures (deploy drift, unrelated line_count mismatches) that are indistinguishable from self-caused ones without an explicit baseline diff. This distinguishes 'this task broke something' from 'this was already broken' and prevents scope creep into fixing unrelated infrastructure debt.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/962_reconcile_pr_ready_policy_across_docs_and_skill_text/summaries/01_pr-ready-resting-state-accuracy-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["baseline-comparison", "git-stash", "verification", "reasoned-exclusions", "regression-detection"]
+      "suggested_keywords": [
+        "baseline-comparison",
+        "git-stash",
+        "verification",
+        "reasoned-exclusions",
+        "regression-detection"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786034121_8210c6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
-    "phases_total": 4
+    "phases_total": 4,
+    "cycles_used": 3,
+    "final_state": "completed"
   }
 }

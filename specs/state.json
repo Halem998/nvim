@@ -2871,7 +2871,7 @@
     {
       "project_number": 962,
       "project_name": "reconcile_pr_ready_policy_across_docs_and_skill_text",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Correct the pr_ready skill text and docs to describe the actual resulting state",
@@ -2884,11 +2884,28 @@
       "dependencies": [
         961
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/962_reconcile_pr_ready_policy_across_docs_and_skill_text/reports/01_pr-ready-policy-accuracy.md",
+          "type": "report",
+          "summary": "Confirms update-task-status.sh guard and postflight mapping are correct; isolates defect to skill-orchestrate-hard skeleton-exhaustion prose."
+        },
+        {
+          "path": "specs/962_reconcile_pr_ready_policy_across_docs_and_skill_text/plans/01_pr-ready-resting-state-accuracy.md",
+          "type": "plan",
+          "summary": "Four-phase prose-accuracy plan: canonical status-markers statement, SKILL.md branch correction, claudemd.md pointer, verification sweep."
+        },
+        {
+          "path": "specs/962_reconcile_pr_ready_policy_across_docs_and_skill_text/summaries/01_pr-ready-resting-state-accuracy-summary.md",
+          "type": "summary",
+          "summary": "Corrected skeleton-exhaustion prose and EXIT line to name the completed resting state; added status-markers definitions and a claudemd pointer."
+        }
+      ],
       "created": "2026-07-29T14:29:13Z",
-      "last_updated": "2026-07-29T14:29:13Z",
-      "session_id": "sess_1785334778_2cd967",
-      "next_artifact_number": null
+      "last_updated": "2026-08-06T16:55:04Z",
+      "session_id": "sess_1786034121_8210c6",
+      "next_artifact_number": null,
+      "completion_summary": "Corrected the pr_ready skeleton-exhaustion branch comment and EXIT line in skill-orchestrate-hard/SKILL.md to name the actual resting state (completed), added a [PR READY] marker definition plus a general Target Arguments vs. Resting States subsection to status-markers.md, and added a deferring pointer sentence to claudemd.md. update-task-status.sh is unchanged (verified empty diff)."
     },
     {
       "project_number": 963,
