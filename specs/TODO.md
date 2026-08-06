@@ -11,29 +11,27 @@ next_project_number: 998
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 961,988,991,997 | -- | agent-system, orchestration-concurrency |
-| 2 | 962,992 | 961,991 | agent-system |
-| 3 | 952,984,993 | 962,988,992 | agent-system, status-marker-lifecycle |
-| 4 | 953,985 | 952,984,992 | agent-system |
-| 5 | 983 | 953 | agent-system |
-| 6 | 986,995 | 983,984,985 | agent-system |
-| 7 | 996 | 986,993,995 | agent-system |
+| 1 | 962,988,991,997 | -- | agent-system, orchestration-concurrency |
+| 2 | 952,984,992 | 962,988,991 | agent-system, status-marker-lifecycle |
+| 3 | 953,985,993 | 952,984,992 | agent-system |
+| 4 | 983 | 953 | agent-system |
+| 5 | 986,995 | 983,984,985 | agent-system |
+| 6 | 996 | 986,993,995 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-961 [IMPLEMENTING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-  └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-    └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
-      └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
-        └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-          └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-            └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-          └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
-            └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
-      └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
-        └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
+    └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
+      └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+        └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+          └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
+        └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
+          └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+    └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
+      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
   └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
@@ -1193,12 +1191,13 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 961. Add staleness detection to the orchestrator loop-guard resume path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 960
 - **Research**: [961_add_freshness_detection_to_orchestrator_loop_guard/reports/01_loop-guard-staleness-detection.md]
 - **Plan**: [961_add_freshness_detection_to_orchestrator_loop_guard/plans/01_loop-guard-staleness-detection.md]
+- **Summary**: [961_add_freshness_detection_to_orchestrator_loop_guard/summaries/01_loop-guard-staleness-detection-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 

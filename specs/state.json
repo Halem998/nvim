@@ -2833,7 +2833,7 @@
     {
       "project_number": 961,
       "project_name": "add_freshness_detection_to_orchestrator_loop_guard",
-      "status": "planning",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add staleness detection to the orchestrator loop-guard resume path",
@@ -2855,12 +2855,18 @@
           "path": "specs/961_add_freshness_detection_to_orchestrator_loop_guard/plans/01_loop-guard-staleness-detection.md",
           "type": "plan",
           "summary": "5-phase plan adding OR-combined staleness detection (max_cycles drift, plan_version drift, 7-day mtime backstop) to the hard-mode Stage 2 loop-guard resume path, with archive-aside evidence preservation and a fixture test harness."
+        },
+        {
+          "path": "specs/961_add_freshness_detection_to_orchestrator_loop_guard/summaries/01_loop-guard-staleness-detection-summary.md",
+          "type": "summary",
+          "summary": "5-phase loop-guard operational-staleness detector added to Stage 2, documented in orchestrator-runtime-files.md, proven by a 28-assertion fixture suite."
         }
       ],
       "created": "2026-07-29T14:29:13Z",
-      "last_updated": "2026-08-06T15:53:34Z",
-      "session_id": "sess_1786031074_767c9c",
-      "next_artifact_number": null
+      "last_updated": "2026-08-06T16:23:55Z",
+      "session_id": "sess_1786032412_f59b85",
+      "next_artifact_number": null,
+      "completion_summary": "Added an OR-combined operational-staleness detector (max_cycles drift, plan_version drift, 7-day mtime backstop) to skill-orchestrate-hard/SKILL.md's Stage 2 loop-guard resume path, archiving a tripped guard and its co-archived churn-state file aside with a loud named notice before falling through to the unmodified fresh-init branch at cycle 0. Recorded the decision, thresholds, and anti-session_id defense in orchestrator-runtime-files.md, and proved the behavior (including the explicit ordinary-cross-turn-resume negative case) with a new 9-fixture, 28-assertion test suite wired into manifest.json."
     },
     {
       "project_number": 962,

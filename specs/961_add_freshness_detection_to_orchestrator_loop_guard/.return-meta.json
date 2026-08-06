@@ -3,7 +3,11 @@
   "task_number": 961,
   "session_id": "sess_1786032412_f59b85",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "artifacts": [
     {
       "type": "summary",
@@ -27,22 +31,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/961_add_freshness_detection_to_orchestrator_loop_guard/summaries/01_loop-guard-staleness-detection-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["staleness-detection", "loop-guard", "session_id-anti-pattern", "archive-aside", "orchestrator-runtime-files"]
+      "suggested_keywords": [
+        "staleness-detection",
+        "loop-guard",
+        "session_id-anti-pattern",
+        "archive-aside",
+        "orchestrator-runtime-files"
+      ]
     },
     {
       "content": "When check-extension-docs.sh's Rule R line_count check fails on multiple entries after an implementation task, diff each failing file's line_count mismatch against the commit immediately preceding the task's first change (git diff <pre-task-sha>..HEAD --stat -- <file>) before assuming the task caused it. Only fix the entry the task's own edit made stale (via the sanctioned generate-context-line-counts.sh maintenance script, scoped by hand-editing index-entries.json if the script itself has no per-entry mode); leave pre-existing, task-unrelated drift alone and record it as a Reasoned Exclusion rather than silently expanding scope to fix everything the check happens to flag.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/961_add_freshness_detection_to_orchestrator_loop_guard/summaries/01_loop-guard-staleness-detection-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["check-extension-docs", "line_count", "reasoned-exclusions", "scope-discipline", "index-entries.json"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "line_count",
+        "reasoned-exclusions",
+        "scope-discipline",
+        "index-entries.json"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786032412_f59b85",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
-    "phases_total": 5
+    "phases_total": 5,
+    "cycles_used": 3,
+    "final_state": "completed"
   }
 }
