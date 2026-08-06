@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Wire both exit paths to the helper (Defect B)",
+  "started_at": "2026-08-05T00:30:00Z",
+  "last_updated": "2026-08-05T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert propagation call in skeleton-exhaustion branch after status transition, before rm/EXIT", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 2, "description": "Refactor Stage 5 implemented tail to call the helper with cached recover_json", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 3, "description": "Read-through confirm single-reader invariant preserved", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

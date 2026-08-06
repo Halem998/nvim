@@ -582,6 +582,15 @@ elif [ "$last_skeleton" = "true" ]; then
   # task_type == "pr"; this skeleton-exhaustion branch is the sanctioned task-type-agnostic
   # exception (it runs for general/lean4/cslib hard-mode tasks, not just type=pr).
   bash .claude/scripts/update-task-status.sh postflight "$task_number" pr_ready "$session_id" --allow-pr-ready
+
+  # Propagate completion_summary/roadmap_items (Defect B fix). No precomputed JSON is passed —
+  # this branch has no cached $recover_json and needs a fresh read. dispatch_start_ts is still
+  # correct here: this branch is only entered on a cycle where no new dispatch occurred, so the
+  # variable still holds the last real per-phase implement dispatch's timestamp, which precedes
+  # that dispatch's .return-meta.json write — exactly the freshness window the recovery script's
+  # staleness gate expects.
+  hard_orchestrate_propagate_completion "$task_number" "$TASK_TYPE" "$TASK_DIR" "${dispatch_start_ts:-9999999999}"
+
   rm -f "$loop_guard_file"  # loop-termination-only cleanup — see Stage 8 note below
   EXIT (success, pr_ready — skeleton exhausted, ${follow_up_count} follow-up task(s): ${follow_up_tasks})
 
@@ -1143,31 +1152,16 @@ if [ "$have_outcome" = "true" ]; then
            "$plan_markers_verified" "[hard-orchestrate]"; then
         skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
 
-        # Populate completion_summary/roadmap_items. The handoff schema has no such field (H9
-        # wrap-up writes only status/summary/blockers/artifacts/phase counts — see
+        # Populate completion_summary/roadmap_items via the single shared propagation helper
+        # (defined alongside build_hard_mode_prompt_context() above). The handoff schema has no
+        # such field (H9 wrap-up writes only status/summary/blockers/artifacts/phase counts — see
         # docs/architecture/handoff-schema.md), and hard mode's implement dispatch ALWAYS writes a
         # handoff (H9), so this is the PRIMARY path here, not a fallback: `.return-meta.json`'s
-        # `completion_data` is the only source. Reuse this cycle's own `$recover_json` when the
-        # recovery branch above already ran (guarded on non-empty, never on control-flow
-        # position), otherwise issue one additional read through the same shared script so there
-        # is still only ONE reader of `.return-meta.json` in the codebase.
-        if [ -n "${recover_json:-}" ]; then
-          completion_json="$recover_json"
-        else
-          completion_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$TASK_DIR" "${dispatch_start_ts:-9999999999}" 2>/dev/null)
-        fi
-        # NOTE: default via `[ -z ] && completion_json='{}'`, never `"${completion_json:-{}}"` —
-        # bash parameter-expansion default-word matching stops at the FIRST unescaped `}`, so that
-        # inline idiom silently appends a stray trailing `}` to any non-empty value, corrupting the
-        # JSON and forcing every jq call below to fail closed to "" via `2>/dev/null`.
-        [ -z "${completion_json:-}" ] && completion_json='{}'
-        completion_summary=$(echo "$completion_json" | jq -r '.completion_summary // ""' 2>/dev/null) || completion_summary=""
-        roadmap_items=$(echo "$completion_json" | jq -c '.roadmap_items // []' 2>/dev/null) || roadmap_items="[]"
-        skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$TASK_TYPE"
-        if [ -z "$completion_summary" ]; then
-          completion_reason=$(echo "$completion_json" | jq -r '.reason // "unknown"' 2>/dev/null) || completion_reason="unknown"
-          echo "[hard-orchestrate] WARNING: task completed with empty completion_summary (reason=${completion_reason})" >&2
-        fi
+        # `completion_data` is the only source. Pass this cycle's own `$recover_json` as the
+        # precomputed-JSON argument when the recovery branch above already ran (the helper only
+        # uses it when non-empty), so there is still only ONE reader of `.return-meta.json` in the
+        # codebase.
+        hard_orchestrate_propagate_completion "$task_number" "$TASK_TYPE" "$TASK_DIR" "${dispatch_start_ts:-9999999999}" "${recover_json:-}"
       else
         echo "[hard-orchestrate] skeleton=${skeleton} at refusal." >&2
         # Leave state as `implementing` — Stage 3a re-enters the Per-Phase Dispatch handler

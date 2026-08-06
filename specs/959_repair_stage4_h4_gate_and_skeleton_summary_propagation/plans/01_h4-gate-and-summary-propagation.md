@@ -217,34 +217,38 @@ share it.
 
 ---
 
-### Phase 3: Wire both exit paths to the helper (Defect B) [NOT STARTED]
+### Phase 3: Wire both exit paths to the helper (Defect B) [COMPLETED]
 
 **Goal**: Call the helper from the Stage 4 skeleton-exhaustion branch before its `EXIT`, and
 refactor the Stage 5 `implemented` tail to call the same helper while preserving its
 `$recover_json` reuse optimization.
 
 **Tasks**:
-- [ ] In the `elif [ "$last_skeleton" = "true" ]` branch, insert the propagation call AFTER the
+- [x] In the `elif [ "$last_skeleton" = "true" ]` branch, insert the propagation call AFTER the
       `follow_up_tasks`/`follow_up_count` extraction and BEFORE
       `rm -f "$loop_guard_file"` / `EXIT`. Placement relative to the
       `update-task-status.sh postflight ... pr_ready` call should match the Stage 5 tail's ordering
       (propagate after the status transition), so both paths write state in the same order.
-- [ ] Pass no precomputed JSON from this site — the skeleton branch has no cached `$recover_json`
+      *(completed)*
+- [x] Pass no precomputed JSON from this site — the skeleton branch has no cached `$recover_json`
       and needs a fresh read:
       `hard_orchestrate_propagate_completion "$task_number" "$TASK_TYPE" "$TASK_DIR" "${dispatch_start_ts:-9999999999}"`
-- [ ] Add a comment at this call site explaining why `dispatch_start_ts` is still correct here: this
+      *(completed)*
+- [x] Add a comment at this call site explaining why `dispatch_start_ts` is still correct here: this
       branch is only entered on a cycle where no new dispatch occurred, so the variable still holds
       the last real per-phase implement dispatch's timestamp, which precedes that dispatch's
       `.return-meta.json` write — exactly the freshness window the recovery script's staleness gate
-      expects.
-- [ ] In the Stage 5 `implemented` tail, replace the inline block (the `if [ -n "${recover_json:-}" ]`
+      expects. *(completed)*
+- [x] In the Stage 5 `implemented` tail, replace the inline block (the `if [ -n "${recover_json:-}" ]`
       selection, the `[ -z ] && completion_json='{}'` default, the two `jq` extractions, the
       `skill_propagate_completion_summary` call, and the trailing empty-summary warning) with a
       single call passing the cached JSON as the optional fifth argument:
       `hard_orchestrate_propagate_completion "$task_number" "$TASK_TYPE" "$TASK_DIR" "${dispatch_start_ts:-9999999999}" "${recover_json:-}"`
-- [ ] Confirm by read-through that the refactored tail preserves the "only ONE reader of
+      *(completed)*
+- [x] Confirm by read-through that the refactored tail preserves the "only ONE reader of
       `.return-meta.json` per cycle" invariant: when `recover_json` is non-empty the helper must not
-      issue a second read.
+      issue a second read. *(completed: verified — helper only reads via orchestrate-recover-outcome.sh
+      when precomputed_json is empty)*
 
 **Timing**: 30 minutes
 
