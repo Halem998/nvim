@@ -39,6 +39,11 @@ Task management and agent orchestration for project development. For comprehensi
 - `[ABANDONED]`, `[EXPANDED]` - Terminal states (no further transitions)
 - `[BLOCKED]`, `[PARTIAL]` - Exception states (non-terminal; any command can resume from these)
 
+These are *resting* states. A status value passed to `update-task-status.sh` as a target argument
+is not always the value that persists — see `.claude/context/standards/status-markers.md`'s
+"Target Arguments vs. Resting States" subsection for the full rule and the concrete
+`postflight:pr_ready -> completed` mapping it names.
+
 ### Artifact Paths
 ```
 specs/{NNN}_{SLUG}/

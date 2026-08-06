@@ -704,10 +704,16 @@ elif [ "$last_skeleton" = "true" ]; then
   follow_up_count=$(jq -r '[.sorry_inventory[]?.follow_up_task | select(. != null)] | unique | length' "$handoff_file")
   echo "[hard-orchestrate] Skeleton plan exhausted — follow-up tasks pending: {${follow_up_tasks}}" >&2
 
-  # Transition to pr_ready via the centralized status script (never raw-edit state.json).
-  # --allow-pr-ready is required here because update-task-status.sh now restricts pr_ready to
-  # task_type == "pr"; this skeleton-exhaustion branch is the sanctioned task-type-agnostic
-  # exception (it runs for general/lean4/cslib hard-mode tasks, not just type=pr).
+  # This postflight call is routed through the pr_ready target argument (never raw-edit
+  # state.json). --allow-pr-ready is required here because update-task-status.sh now restricts
+  # pr_ready to task_type == "pr" unless explicitly overridden; this skeleton-exhaustion branch is
+  # the sanctioned task-type-agnostic exception to that guard (it runs for general/lean4/cslib
+  # hard-mode tasks, not just type=pr). Because this call is a postflight operation,
+  # update-task-status.sh's own postflight:pr_ready -> completed mapping (see
+  # context/standards/status-markers.md's "Target Arguments vs. Resting States" subsection)
+  # resolves the resting state to completed regardless of task type — the task never rests at
+  # pr_ready here; that resting state is reserved for the separate `#### State: pr_ready` handler
+  # below, reached only via a preflight:pr_ready call for real task_type == "pr" tasks.
   bash .claude/scripts/update-task-status.sh postflight "$task_number" pr_ready "$session_id" --allow-pr-ready
 
   # Propagate completion_summary/roadmap_items (Defect B fix). No precomputed JSON is passed —
@@ -719,7 +725,7 @@ elif [ "$last_skeleton" = "true" ]; then
   hard_orchestrate_propagate_completion "$task_number" "$TASK_TYPE" "$TASK_DIR" "${dispatch_start_ts:-9999999999}"
 
   rm -f "$loop_guard_file"  # loop-termination-only cleanup — see Stage 8 note below
-  EXIT (success, pr_ready — skeleton exhausted, ${follow_up_count} follow-up task(s): ${follow_up_tasks})
+  EXIT (success, completed — skeleton exhausted via pr_ready target argument, ${follow_up_count} follow-up task(s): ${follow_up_tasks})
 
 else
   # No incomplete phase heading remains and the last handoff was NOT a skeleton: all phases are

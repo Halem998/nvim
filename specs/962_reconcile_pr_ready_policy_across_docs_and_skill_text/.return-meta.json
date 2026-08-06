@@ -1,0 +1,43 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/962_reconcile_pr_ready_policy_across_docs_and_skill_text/summaries/01_pr-ready-resting-state-accuracy-summary.md",
+      "summary": "Corrected the skeleton-exhaustion branch's prose and EXIT line in skill-orchestrate-hard/SKILL.md to name the actual completed resting state, added a [PR READY] definition and a Target Arguments vs. Resting States subsection to status-markers.md, and added a pointer sentence in claudemd.md — no changes to update-task-status.sh."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Corrected the pr_ready skeleton-exhaustion branch comment and EXIT line in skill-orchestrate-hard/SKILL.md to name the actual resting state (completed), added a [PR READY] marker definition plus a general Target Arguments vs. Resting States subsection to status-markers.md, and added a deferring pointer sentence to claudemd.md. update-task-status.sh is unchanged (verified empty diff)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a status/policy accuracy fix grows a context/standards/*.md file that is tracked in index-entries.json, check for a companion line_count drift: check-extension-docs.sh's Rule R fails on ANY declared-vs-actual line count mismatch for the edited file, even when the prose content itself is fully correct. Run wc -l on the edited file and update its index-entries.json line_count entry (or run generate-context-line-counts.sh --write) as part of the same edit, not as an afterthought.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/962_reconcile_pr_ready_policy_across_docs_and_skill_text/summaries/01_pr-ready-resting-state-accuracy-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs", "index-entries.json", "line_count", "status-markers.md", "documentation-lint"]
+    },
+    {
+      "content": "Before treating a lint/verification script's non-zero exit as evidence of a regression, compare against baseline via git stash + rerun. A script like check-extension-docs.sh can carry pre-existing, out-of-scope failures (deploy drift, unrelated line_count mismatches) that are indistinguishable from self-caused ones without an explicit baseline diff. This distinguishes 'this task broke something' from 'this was already broken' and prevents scope creep into fixing unrelated infrastructure debt.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/962_reconcile_pr_ready_policy_across_docs_and_skill_text/summaries/01_pr-ready-resting-state-accuracy-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["baseline-comparison", "git-stash", "verification", "reasoned-exclusions", "regression-detection"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786034121_8210c6",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

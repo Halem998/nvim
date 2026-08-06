@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Add the transition-vs-resting pointer to the CLAUDE.md merge source",
+  "started_at": "2026-08-06T16:00:00Z",
+  "last_updated": "2026-08-06T16:50:56Z",
+  "objectives": [
+    {"id": 1, "description": "Add clarifying sentence after Status Markers bullet list", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 2, "description": "Point reader at status-markers.md", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 3, "description": "Leave existing eight bullets unchanged", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no task numbers in added sentence", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

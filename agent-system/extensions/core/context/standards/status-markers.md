@@ -92,6 +92,17 @@ This document defines the complete set of status markers used throughout this ag
 
 **Timestamps**: Always include `- **Implemented**: YYYY-MM-DD` when started
 
+#### `[PR READY]`
+**TODO.md Format**: `- **Status**: [PR READY]`  
+**state.json Value**: `"status": "pr_ready"`  
+**Meaning**: `task_type == "pr"` only. Implementation complete; the PR is awaiting a
+user-invoked `/merge` to submit it. This is a `task_type == "pr"`-only resting state — see the
+"Target Arguments vs. Resting States" subsection below for what happens when `pr_ready` is passed
+as a script argument for other task types.
+
+**Valid Transitions**: To `[COMPLETED]` after `/merge` submits the PR; back to `[IMPLEMENTING]` if
+PR review finds issues (re-dispatch).
+
 #### `[COMPLETED]`
 **TODO.md Format**: `- **Status**: [COMPLETED]`  
 **state.json Value**: `"status": "completed"`  
@@ -265,6 +276,24 @@ semantically-overlapping fourth marker would require re-touching every site
 
 **Preflight**: Status updated BEFORE work begins  
 **Postflight**: Status updated AFTER work completes
+
+---
+
+### Target Arguments vs. Resting States
+
+The status value passed to `update-task-status.sh` as `$target_status` is a **request**, not a
+guarantee. `update-task-status.sh`'s own `map_status()` function resolves the actual persisted
+status from the target argument AND the `preflight`/`postflight` operation together — the same
+target argument can resolve to different resting states depending on which operation it is paired
+with. The value that is actually written to `state.json` and `TODO.md` is the **resting state**;
+the two are not always equal.
+
+**Concrete instance**: `postflight:pr_ready` resolves to a `completed` resting state
+(`STATE_STATUS="completed"`), regardless of task type. A non-`pr` task can therefore pass
+`pr_ready` as the target argument to a `postflight` call — using `--allow-pr-ready` to pass the
+script's guard — and still come to rest at `[COMPLETED]`, never at `[PR READY]`. The `[PR READY]`
+resting state defined above is reachable only via a `preflight:pr_ready` call, which the guard
+permits unconditionally only for `task_type == "pr"`.
 
 ---
 
