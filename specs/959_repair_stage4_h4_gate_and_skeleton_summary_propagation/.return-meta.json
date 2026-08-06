@@ -20,22 +20,41 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/summaries/01_h4-gate-and-summary-propagation-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["grep", "shape-regex", "table-header-match", "adversarial-verification", "H4-gate"]
+      "suggested_keywords": [
+        "grep",
+        "shape-regex",
+        "table-header-match",
+        "adversarial-verification",
+        "H4-gate"
+      ]
     },
     {
       "content": "When multiple terminal exit paths in an orchestration state-machine skill need identical follow-up logic (e.g. propagating completion_summary/roadmap_items from .return-meta.json), extract one named helper function taking an optional precomputed-JSON parameter, rather than inlining the same block at each exit site. This both prevents omission at new exit paths and preserves a 'single reader of the source file per cycle' invariant when one call site already has the data cached.",
       "category": "PATTERN",
       "source_artifact": "specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/summaries/01_h4-gate-and-summary-propagation-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["shared-helper", "terminal-exit-paths", "completion-propagation", "orchestration", "optional-precomputed-arg"]
+      "suggested_keywords": [
+        "shared-helper",
+        "terminal-exit-paths",
+        "completion-propagation",
+        "orchestration",
+        "optional-precomputed-arg"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785985974_52cea3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
-    "phases_total": 4
+    "phases_total": 4,
+    "cycles_used": 3,
+    "final_state": "completed"
   }
 }

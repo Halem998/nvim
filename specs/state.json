@@ -2754,7 +2754,7 @@
     {
       "project_number": 959,
       "project_name": "repair_stage4_h4_gate_and_skeleton_summary_propagation",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Repair Stage 4 H4 gate recognition and skeleton-exhaustion completion-summary propagation",
@@ -2766,11 +2766,28 @@
         956,
         981
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/reports/01_h4-gate-and-skeleton-summary-propagation.md",
+          "type": "report",
+          "summary": "Research findings and concrete fix recommendations for both Stage 4 defects."
+        },
+        {
+          "path": "specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/plans/01_h4-gate-and-summary-propagation.md",
+          "type": "plan",
+          "summary": "4-phase sequential plan, 1.5h estimate, single-file scope, full verification bar coverage"
+        },
+        {
+          "path": "specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/summaries/01_h4-gate-and-summary-propagation-summary.md",
+          "type": "summary",
+          "summary": "Fixed the H4 shape-based adversarial-table matcher and wired both terminal exit paths through a new shared completion-propagation helper."
+        }
+      ],
       "created": "2026-07-29T14:29:13Z",
-      "last_updated": "2026-08-05T17:16:46Z",
-      "session_id": "sess_1785334778_2cd967",
-      "next_artifact_number": null
+      "last_updated": "2026-08-06T03:31:43Z",
+      "session_id": "sess_1785985974_52cea3",
+      "next_artifact_number": null,
+      "completion_summary": "Replaced the literal-string H4 adversarial-table grep with a verified shape regex tolerant of both known claim-table header formats, and added a shared hard_orchestrate_propagate_completion() helper wired into both the skeleton-exhaustion exit and the Stage 5 implemented tail so completion_summary/roadmap_items are always propagated from .return-meta.json. All changes confined to agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md."
     },
     {
       "project_number": 960,
