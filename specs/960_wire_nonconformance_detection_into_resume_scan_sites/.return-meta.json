@@ -1,12 +1,56 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md",
+      "summary": "All six plan phases completed: whole-file non-conformance gate wired into skill-implementer-hard, skill-orchestrate-hard, skill-lean-implementation-hard, and update-task-status.sh's first_phase_heading convenience, plus a new executable regression harness (39/39 passing, adversarially verified) and a plan-format.md contract note."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wired has_nonconforming_phase_headings whole-file gates ahead of every filtered PHASE_HEADING_ERE resume-scan at four sites (skill-implementer-hard, skill-orchestrate-hard, skill-lean-implementation-hard, update-task-status.sh), preserving each site's deliberately different posture (leaf-worker hard stop vs. orchestration-loop EXIT (partial, ...)), and added the first executable regression harness for these markdown-embedded scan blocks (39 assertions, adversarially verified to fail against the pre-fix ordering)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+    "specs/960_wire_nonconformance_detection_into_resume_scan_sites/plans/01_nonconformance-resume-scan-gate.md",
+    "specs/960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a fixed-shape sentinel-delimited region in a markdown-embedded bash block is extracted for testing (awk between BEGIN/END comment markers), any line the canonical snippet places immediately OUTSIDE the sentinel markers (e.g. a library-sourcing `. path/to/lib.sh` line placed just before `:begin` for readability) is NOT captured by extraction, even though it is logically a precondition of the region. Do not try to textually rewrite an in-region line that isn't actually there; instead have the test harness reproduce the precondition directly (source the library, initialize result variables) in its own execution wrapper before eval'ing the extracted region. This is behaviorally identical to what the live site does, since the region's own logic never re-sources the library itself.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["sentinel-region-extraction", "bash-in-markdown", "test-harness", "region-precondition", "awk-extraction"]
+    },
+    {
+      "content": "A repo-wide grep assertion that forbids a specific unsafe code pattern (e.g. `foo | grep -q` racy-under-pipefail idiom) will self-trip on its own documentation: any canonical snippet or header comment that quotes the forbidden form as an example of what NOT to do (wrapped in backticks per markdown convention) contains the literal forbidden substring. The fix is to exclude backtick-wrapped occurrences from the assertion (real invocation code is never backtick-wrapped), not to reword the documentation into something less precise. Also check the assertion script's OWN source for accidental literal occurrences in its pass/fail message strings -- use backticks there too, consistently with the doc-comment convention, or the assertion will fail against itself.",
+      "category": "PATTERN",
+      "source_artifact": "specs/960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["forbidden-pattern-grep", "self-referential-assertion", "backtick-exclusion", "repo-wide-lint", "documentation-vs-code"]
+    },
+    {
+      "content": "For an adversarial 'does the test actually test anything' verification, copy the target subtree to a scratch directory, revert exactly one site's fix to its pre-fix form there, and re-run the FULL test suite against the scratch copy (not a hand-written mini-reproduction) -- the suite's own REPO_ROOT-relative path resolution (computed from the running script's own location, not cwd) means a plain recursive directory copy of the subtree is sufficient; no special harness wiring is needed as long as the script derives all its paths relative to itself.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["adversarial-verification", "scratch-copy", "regression-test-validation", "mutation-testing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786028048_619ac7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

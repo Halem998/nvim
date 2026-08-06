@@ -1,7 +1,7 @@
 # Implementation Plan: Wire Non-Conformance Detection into the Hard-Mode Resume-Scan Sites
 
 - **Task**: 960 - Wire non-conformance detection into the hard-mode resume-scan sites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: Tasks 959 and 957 (both landed; verified live in the source store by research)
 - **Research Inputs**: `specs/960_wire_nonconformance_detection_into_resume_scan_sites/reports/01_wire-nonconformance-detection.md`
@@ -597,22 +597,31 @@ end-to-end, so a future reader need not re-derive whether the resume-scan sites 
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh` exits 0.
-- [ ] Verification bar, met explicitly: a plan containing `### Phase 4C: ... [IN PROGRESS]` followed
+- [x] `bash agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh` exits 0.
+      *(confirmed: 39 passed, 0 failed)*
+- [x] Verification bar, met explicitly: a plan containing `### Phase 4C: ... [IN PROGRESS]` followed
       by `### Phase 5: ... [NOT STARTED]` produces a loud, named warning identifying the `4C`
       heading **by line number**, and `next_phase` is empty — never `5` — at every wired site.
-- [ ] Happy-path invariance: a fully conforming plan resolves the identical next phase as before,
-      with empty stderr, at every wired site.
-- [ ] Decimal sub-phase (`3.1`) resolution preserved.
-- [ ] `bash -n` clean on `phase-heading-patterns.sh`, `update-task-status.sh`, and every
-      sentinel-delimited extracted region.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh` exits 0
-      (library behavior unchanged).
-- [ ] `jq . agent-system/extensions/core/manifest.json` parses.
-- [ ] Adversarial check recorded: the new suite demonstrably fails against pre-fix ordering.
-- [ ] Zero `nonconforming_phase_headings | grep -q` pipe forms under `agent-system/extensions/`.
-- [ ] Zero edits under `.claude/**`; every modified path is under `agent-system/extensions/**`.
-- [ ] No task-number citations introduced in any deliverable outside `specs/**`.
+      *(confirmed by Fixture A assertions at Sites A, B, C)*
+- [x] Happy-path invariance: a fully conforming plan resolves the identical next phase as before,
+      with empty stderr, at every wired site. *(confirmed by Fixture B assertions at Sites A, B, C)*
+- [x] Decimal sub-phase (`3.1`) resolution preserved. *(confirmed by Fixture C assertions at Sites
+      A, B, C)*
+- [x] `bash -n` clean on `phase-heading-patterns.sh`, `update-task-status.sh`, and every
+      sentinel-delimited extracted region. *(confirmed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh` exits 0
+      (library behavior unchanged). *(confirmed: 35 passed, 0 failed)*
+- [x] `jq . agent-system/extensions/core/manifest.json` parses. *(confirmed)*
+- [x] Adversarial check recorded: the new suite demonstrably fails against pre-fix ordering.
+      *(confirmed: scratch-reverted Site B fails with 5/39 failures, exit 1 -- see Phase 5's
+      Verification section for the full transcript)*
+- [x] Zero `nonconforming_phase_headings | grep -q` pipe forms under `agent-system/extensions/`.
+      *(confirmed, excluding backtick-quoted doc-comment references to the forbidden form)*
+- [x] Zero edits under `.claude/**`; every modified path is under `agent-system/extensions/**`.
+      *(confirmed: `git diff --name-only` across all six phase commits contains zero `.claude/`
+      paths)*
+- [x] No task-number citations introduced in any deliverable outside `specs/**`. *(confirmed via
+      `check-task-references.sh`, 0 unexempted occurrences across all scanned trees)*
 
 ## Artifacts & Outputs
 
