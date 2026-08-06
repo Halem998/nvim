@@ -52,7 +52,7 @@ info() {
 # --- Locate the real scripts to copy into the fixture ---
 # Deliberately NOT generate-todo.sh (see the file-header rationale above) and NOT
 # generate-task-order.sh (a dependency of the real generate-todo.sh only).
-for f in state-write.sh task-lock.sh deploy-root-guard.sh; do
+for f in state-write.sh task-lock.sh deploy-root-guard.sh lib/common.sh; do
   if [ ! -f "$SCRIPT_DIR/$f" ]; then
     echo "ERROR: expected $f alongside this script in $SCRIPT_DIR" >&2
     exit 1
@@ -67,11 +67,12 @@ cleanup_root() {
 }
 trap cleanup_root EXIT
 
-mkdir -p "$TMPROOT/.claude/scripts"
+mkdir -p "$TMPROOT/.claude/scripts/lib"
 mkdir -p "$TMPROOT/specs"
 cp "$SCRIPT_DIR/state-write.sh" "$TMPROOT/.claude/scripts/state-write.sh"
 cp "$SCRIPT_DIR/task-lock.sh" "$TMPROOT/.claude/scripts/task-lock.sh"
 cp "$SCRIPT_DIR/deploy-root-guard.sh" "$TMPROOT/.claude/scripts/deploy-root-guard.sh"
+cp "$SCRIPT_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
 
 # --- Controlled generate-todo.sh stub ---
 # Driven entirely by environment variables, never CLI flags, so it drop-in replaces the real

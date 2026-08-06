@@ -32,7 +32,8 @@ task_type="${2:-}"
 
 # --- Paths ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "${SCRIPT_DIR}/lib/common.sh"
+PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 LIT_DIR="$PROJECT_ROOT/specs/literature"
 INDEX_FILE="$LIT_DIR/index.json"

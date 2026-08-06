@@ -41,7 +41,8 @@ done
 
 # Get script directory and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+source "${SCRIPT_DIR}/../lib/common.sh"
+PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 3)"
 
 # If no paths provided, scan all skill files
 if [[ ${#SKILL_PATHS[@]} -eq 0 ]]; then

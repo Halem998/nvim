@@ -33,6 +33,10 @@ GUARD_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh"
   "$SCRIPT_DIR/../deploy-root-guard.sh"
 )
+COMMON_CANDIDATES=(
+  "$REPO_ROOT/.claude/scripts/lib/common.sh"
+  "$SCRIPT_DIR/../lib/common.sh"
+)
 
 SCRIPT_UNDER_TEST=""
 for candidate in "${SCRIPT_CANDIDATES[@]}"; do
@@ -48,6 +52,13 @@ for candidate in "${GUARD_CANDIDATES[@]}"; do
     break
   fi
 done
+COMMON_SCRIPT=""
+for candidate in "${COMMON_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]]; then
+    COMMON_SCRIPT="$candidate"
+    break
+  fi
+done
 
 if [[ -z "$SCRIPT_UNDER_TEST" ]]; then
   echo "ERROR: errors-append.sh not found at any of:" >&2
@@ -59,6 +70,13 @@ fi
 if [[ -z "$GUARD_SCRIPT" ]]; then
   echo "ERROR: deploy-root-guard.sh not found at any of:" >&2
   for candidate in "${GUARD_CANDIDATES[@]}"; do
+    echo "  $candidate" >&2
+  done
+  exit 2
+fi
+if [[ -z "$COMMON_SCRIPT" ]]; then
+  echo "ERROR: lib/common.sh not found at any of:" >&2
+  for candidate in "${COMMON_CANDIDATES[@]}"; do
     echo "  $candidate" >&2
   done
   exit 2
@@ -80,9 +98,10 @@ trap cleanup EXIT
 build_scratch() {
   local scratch
   scratch="$(mktemp -d -p "$TOP_WORKDIR")"
-  mkdir -p "$scratch/.claude/scripts" "$scratch/specs"
+  mkdir -p "$scratch/.claude/scripts/lib" "$scratch/specs"
   cp "$SCRIPT_UNDER_TEST" "$scratch/.claude/scripts/errors-append.sh"
   cp "$GUARD_SCRIPT" "$scratch/.claude/scripts/deploy-root-guard.sh"
+  cp "$COMMON_SCRIPT" "$scratch/.claude/scripts/lib/common.sh"
   chmod +x "$scratch/.claude/scripts/errors-append.sh"
   echo "$scratch"
 }

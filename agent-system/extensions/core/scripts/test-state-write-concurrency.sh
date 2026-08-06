@@ -48,7 +48,7 @@ info() {
 }
 
 # --- Locate the real scripts to copy into the fixture ---
-for f in state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh; do
+for f in state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh lib/common.sh; do
   if [ ! -f "$SCRIPT_DIR/$f" ]; then
     echo "ERROR: expected $f alongside this script in $SCRIPT_DIR" >&2
     exit 1
@@ -63,12 +63,13 @@ cleanup_root() {
 }
 trap cleanup_root EXIT
 
-mkdir -p "$TMPROOT/.claude/scripts"
+mkdir -p "$TMPROOT/.claude/scripts/lib"
 mkdir -p "$TMPROOT/specs"
 cp "$SCRIPT_DIR/state-write.sh" "$TMPROOT/.claude/scripts/state-write.sh"
 cp "$SCRIPT_DIR/task-lock.sh" "$TMPROOT/.claude/scripts/task-lock.sh"
 cp "$SCRIPT_DIR/generate-todo.sh" "$TMPROOT/.claude/scripts/generate-todo.sh"
 cp "$SCRIPT_DIR/deploy-root-guard.sh" "$TMPROOT/.claude/scripts/deploy-root-guard.sh"
+cp "$SCRIPT_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
 chmod +x "$TMPROOT/.claude/scripts/"*.sh
 
 SW="$TMPROOT/.claude/scripts/state-write.sh"

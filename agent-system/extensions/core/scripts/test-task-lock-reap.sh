@@ -45,9 +45,11 @@ info() {
   echo -e "${YELLOW}[INFO]${NC} $1"
 }
 
-# --- Locate the real task-lock.sh and deploy-root-guard.sh to copy into the fixture ---
-if [ ! -f "$SCRIPT_DIR/task-lock.sh" ] || [ ! -f "$SCRIPT_DIR/deploy-root-guard.sh" ]; then
-  echo "ERROR: expected task-lock.sh and deploy-root-guard.sh alongside this script in $SCRIPT_DIR" >&2
+# --- Locate the real task-lock.sh, deploy-root-guard.sh, and lib/common.sh to copy into the
+# fixture ---
+if [ ! -f "$SCRIPT_DIR/task-lock.sh" ] || [ ! -f "$SCRIPT_DIR/deploy-root-guard.sh" ] \
+    || [ ! -f "$SCRIPT_DIR/lib/common.sh" ]; then
+  echo "ERROR: expected task-lock.sh, deploy-root-guard.sh, and lib/common.sh alongside this script in $SCRIPT_DIR" >&2
   exit 1
 fi
 
@@ -59,10 +61,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
-mkdir -p "$TMPROOT/.claude/scripts"
+mkdir -p "$TMPROOT/.claude/scripts/lib"
 mkdir -p "$TMPROOT/specs/archive"
 cp "$SCRIPT_DIR/task-lock.sh" "$TMPROOT/.claude/scripts/task-lock.sh"
 cp "$SCRIPT_DIR/deploy-root-guard.sh" "$TMPROOT/.claude/scripts/deploy-root-guard.sh"
+cp "$SCRIPT_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
 chmod +x "$TMPROOT/.claude/scripts/task-lock.sh"
 
 TL="$TMPROOT/.claude/scripts/task-lock.sh"

@@ -29,6 +29,7 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOL_SRC="$SCRIPT_DIR/../orchestrate-triage-classify.sh"
 GUARD_SRC="$SCRIPT_DIR/../deploy-root-guard.sh"
+COMMON_SRC="$SCRIPT_DIR/../lib/common.sh"
 
 PASSED=0
 FAILED=0
@@ -47,6 +48,11 @@ if [ ! -f "$GUARD_SRC" ]; then
   exit 1
 fi
 
+if [ ! -f "$COMMON_SRC" ]; then
+  echo "ERROR: expected lib/common.sh at $COMMON_SRC" >&2
+  exit 1
+fi
+
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required by orchestrate-triage-classify.sh and this suite, and is not on PATH" >&2
   exit 1
@@ -56,9 +62,10 @@ WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-mkdir -p "$WORKDIR/.claude/scripts" "$WORKDIR/specs"
+mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/specs"
 cp "$TOOL_SRC" "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
 cp "$GUARD_SRC" "$WORKDIR/.claude/scripts/deploy-root-guard.sh"
+cp "$COMMON_SRC" "$WORKDIR/.claude/scripts/lib/common.sh"
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
 TOOL="$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
 

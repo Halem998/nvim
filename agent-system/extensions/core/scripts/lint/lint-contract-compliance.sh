@@ -68,7 +68,8 @@ done
 
 # Resolve project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+source "${SCRIPT_DIR}/../lib/common.sh"
+PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 3)"
 CLAUDE_DIR="$PROJECT_ROOT/.claude"
 
 # Counters

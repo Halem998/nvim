@@ -53,9 +53,10 @@ info() {
   echo -e "${YELLOW}[INFO]${NC} $1"
 }
 
-# --- Locate the real reap script and the instruction files this suite grep-asserts against ---
-if [ ! -f "$SCRIPT_DIR/reap-session-runtime-files.sh" ]; then
-  echo "ERROR: expected reap-session-runtime-files.sh alongside this script in $SCRIPT_DIR" >&2
+# --- Locate the real reap script, lib/common.sh, and the instruction files this suite
+# grep-asserts against ---
+if [ ! -f "$SCRIPT_DIR/reap-session-runtime-files.sh" ] || [ ! -f "$SCRIPT_DIR/lib/common.sh" ]; then
+  echo "ERROR: expected reap-session-runtime-files.sh and lib/common.sh alongside this script in $SCRIPT_DIR" >&2
   exit 1
 fi
 ORCHESTRATE_MD="$ROOT_DIR/commands/orchestrate.md"
@@ -76,9 +77,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-mkdir -p "$TMPROOT/.claude/scripts"
+mkdir -p "$TMPROOT/.claude/scripts/lib"
 mkdir -p "$TMPROOT/specs/000_probe"
 cp "$SCRIPT_DIR/reap-session-runtime-files.sh" "$TMPROOT/.claude/scripts/reap-session-runtime-files.sh"
+cp "$SCRIPT_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
 chmod +x "$TMPROOT/.claude/scripts/reap-session-runtime-files.sh"
 
 REAP="$TMPROOT/.claude/scripts/reap-session-runtime-files.sh"
