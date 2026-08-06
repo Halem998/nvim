@@ -212,20 +212,21 @@ chmod list to whatever is found rather than to these numbers.
 
 ---
 
-### Phase 2: Author scripts/lib/common.sh [NOT STARTED]
+### Phase 2: Author scripts/lib/common.sh [COMPLETED]
 
 **Goal**: A new shared library exists, is registered, and is covered by its own unit suite — with
 zero consumers migrated yet, so the library can be proven correct in isolation.
 
 **Tasks**:
-- [ ] Read `scripts/lib/manifest-routing-lib.sh`'s header in full and reproduce its contract
+- [x] Read `scripts/lib/manifest-routing-lib.sh`'s header in full and reproduce its contract
   structure for `common.sh`: "Sourced (never executed) by <consumer list>"; "Sets no shell options
   (no `set -e`, no `set -u`, no `set -o pipefail`) — sourcing this file must never change the
   calling shell's error-handling behavior"; every internal namespaced (`_common_*`) and unset
   before return; a miss signalled by empty output or a safe default, never by a nonzero exit.
-- [ ] Add an explicit **forbid local redefinition** clause: a consumer that sources `common.sh`
-  MUST NOT define its own copy of any function the library provides.
-- [ ] Implement the function set:
+  *(completed)*
+- [x] Add an explicit **forbid local redefinition** clause: a consumer that sources `common.sh`
+  MUST NOT define its own copy of any function the library provides. *(completed)*
+- [x] Implement the function set: *(completed)*
   - `common_repo_root <script_dir> <levels>` — one parameterized-depth root resolver serving
     `scripts/` (2), `scripts/lib/` (3), `scripts/tests/` (3), and `scripts/lint/` (3) callers.
     Must not absorb `lint-agent-contracts.sh`'s deliberately-different `git rev-parse` strategy.
@@ -240,17 +241,19 @@ zero consumers migrated yet, so the library can be proven correct in isolation.
   - `common_test_pass` / `common_test_fail` / `common_test_info` operating on `PASSED`/`FAILED`,
     matching `shell-script-testing.md`'s documented trio exactly. Document that these are
     core-local and that a sibling extension's `t_pass`/`t_fail` style remains valid there.
-- [ ] Note in the header that `SCRIPT_DIR` bootstrap stays inline at each consumer — it is
+- [x] Note in the header that `SCRIPT_DIR` bootstrap stays inline at each consumer — it is
   required to locate `common.sh` itself and is not a duplication this library removes.
-- [ ] Register `lib/common.sh` in `core/manifest.json`'s `provides.scripts`.
-- [ ] Write `scripts/tests/test-common-lib.sh` covering: root resolution at each supported depth
+  *(completed)*
+- [x] Register `lib/common.sh` in `core/manifest.json`'s `provides.scripts`. *(completed)*
+- [x] Write `scripts/tests/test-common-lib.sh` covering: root resolution at each supported depth
   against a `mktemp -d` fixture tree; session-ID shape (`^sess_[0-9]+_[0-9a-f]{6}$`) and absence
   of embedded whitespace/newline; each timestamp helper's format; log helpers' stream routing;
   the test trio's counter arithmetic; and — critically — that `$-` and the `set -o` state are
-  byte-for-byte identical before and after sourcing `common.sh`.
-- [ ] Register `tests/test-common-lib.sh` in `provides.scripts`.
-- [ ] Do NOT `chmod +x` `lib/common.sh`; match the other lib files, which are non-executable
-  because they are sourced.
+  byte-for-byte identical before and after sourcing `common.sh`. *(completed: 23 assertions, all
+  green)*
+- [x] Register `tests/test-common-lib.sh` in `provides.scripts`. *(completed)*
+- [x] Do NOT `chmod +x` `lib/common.sh`; match the other lib files, which are non-executable
+  because they are sourced. *(completed: confirmed non-executable)*
 
 **Timing**: 2 hours
 
