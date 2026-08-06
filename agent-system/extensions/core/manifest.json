@@ -170,6 +170,7 @@
       "tests/test-orchestrate-triage-classify.sh",
       "tests/test-phase-heading-patterns.sh",
       "tests/test-reconcile-handoff-status.sh",
+      "tests/test-resume-scan-nonconformance.sh",
       "tests/test-routing-resolution.sh",
       "tests/test-validate-handoff.sh",
       "tests/test-validate-no-task-references.sh",

@@ -455,50 +455,63 @@ has appeared; no follow-up needed.
 
 ---
 
-### Phase 5: Verification Harness Exercising the `4C` Bar [IN PROGRESS]
+### Phase 5: Verification Harness Exercising the `4C` Bar [COMPLETED]
 
 **Goal**: Add the first executable regression test for these markdown-embedded scan blocks,
 asserting the task's verification bar directly rather than by inspection.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh`,
       structurally modeled on the existing `tests/test-phase-heading-patterns.sh`
       (`pass()`/`fail()`/`info()` helpers, PASSED/FAILED counters, exit 0 all-pass / 1 any-fail /
       2 environment error, deploy-tree-first then source-store-fallback library resolution).
-- [ ] Implement region extraction: `awk` between `resume-scan-conformance-gate:begin` and
+      *(completed)*
+- [x] Implement region extraction: `awk` between `resume-scan-conformance-gate:begin` and
       `:end` from each of the three SKILL.md files; rewrite the
       `. .claude/scripts/lib/phase-heading-patterns.sh` line to the resolved `$LIB` path; `eval`
       the region in a subshell with `plan_path`/`plan_file` bound to a fixture. Fail with a clear
       message (not a silent skip) if a marker pair is missing from any of the three files.
-- [ ] Fixture A (the verification bar), a plan containing in order: a `[COMPLETED]` conforming
+      *(deviation: altered — the sourcing line sits immediately BEFORE the sentinel
+      `:begin` marker at all three sites, per the Phase 1 canonical snippet, so it is not
+      textually present inside the extracted region to rewrite. The harness instead sources
+      `$LIB` directly inside `run_region()`'s subshell before `eval`'ing the region and
+      initializes the result variable / `phase_scan_inconclusive`, which is behaviorally
+      identical to rewriting an in-region line since the region's own logic never re-sources the
+      library. Marker-missing detection is still a loud, clear failure via `extract_region()`.)*
+- [x] Fixture A (the verification bar), a plan containing in order: a `[COMPLETED]` conforming
       phase, `### Phase 4C: ... [IN PROGRESS]`, then `### Phase 5: ... [NOT STARTED]`. Assert, per
       site:
       - stderr contains a warning naming `4C`,
       - that warning carries the fixture **line number** of the `4C` heading,
       - `phase_scan_inconclusive` is `true`,
       - `next_phase` is empty — and specifically **not** `5`.
-- [ ] Fixture B (happy path), a fully conforming plan: phase 1 `[COMPLETED]`, phase 2
+      *(completed: all assertions pass at all three sites)*
+- [x] Fixture B (happy path), a fully conforming plan: phase 1 `[COMPLETED]`, phase 2
       `[IN PROGRESS]`, phase 3 `[NOT STARTED]`. Assert `next_phase` is exactly `2`,
       `phase_scan_inconclusive` is `false`, and stderr is empty. This is the no-behavior-change
-      assertion and is required, not optional.
-- [ ] Fixture C (decimal sub-phase), a conforming plan whose open phase is `3.1`. Assert
+      assertion and is required, not optional. *(completed: all assertions pass at all three
+      sites)*
+- [x] Fixture C (decimal sub-phase), a conforming plan whose open phase is `3.1`. Assert
       `next_phase` is `3.1` — guards against a regression that silently drops decimal support while
-      adding the gate.
-- [ ] `bash -n` assertion on every extracted region.
-- [ ] Structural assertions on the posture branches (which contain pseudo-syntax and cannot be
+      adding the gate. *(completed: passes at all three sites)*
+- [x] `bash -n` assertion on every extracted region. *(completed)*
+- [x] Structural assertions on the posture branches (which contain pseudo-syntax and cannot be
       executed): Site B's `exit 1` is guarded by `phase_scan_inconclusive` and precedes the
       cascade's first `elif`; Site A's `EXIT (partial` branch is guarded by
       `phase_scan_inconclusive` and is the **first** branch, preceding both `[ -n "$next_phase" ]`
-      and `last_skeleton`; Site C's `return error` is guarded by the sentinel.
-- [ ] Repo-wide assertion: zero occurrences of the racy `nonconforming_phase_headings | grep -q`
-      form under `agent-system/extensions/`.
-- [ ] Register the new script in `agent-system/extensions/core/manifest.json` under
+      and `last_skeleton`; Site C's `return error` is guarded by the sentinel. *(completed)*
+- [x] Repo-wide assertion: zero occurrences of the racy `nonconforming_phase_headings | grep -q`
+      form under `agent-system/extensions/`. *(completed: the assertion excludes backtick-quoted
+      doc-comment references to the forbidden form — e.g. the canonical gate snippet's own header
+      comment, which intentionally quotes it as documentation — since real invocation syntax is
+      never backtick-wrapped; this cannot hide a genuine violation)*
+- [x] Register the new script in `agent-system/extensions/core/manifest.json` under
       `provides.scripts` as `"tests/test-resume-scan-nonconformance.sh"`, keeping the existing
-      alphabetical ordering within the `tests/` group.
-- [ ] Record in the script header the honest scope limit: the enclosing markdown fences are **not**
+      alphabetical ordering within the `tests/` group. *(completed)*
+- [x] Record in the script header the honest scope limit: the enclosing markdown fences are **not**
       valid bash and never were (`Agent tool:`, `EXIT (...)` pseudo-syntax); this suite covers the
       sentinel-delimited executable regions plus structural assertions on the posture branches, and
-      Site D is covered by `bash -n` and structural grep only, not by execution.
+      Site D is covered by `bash -n` and structural grep only, not by execution. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -518,17 +531,24 @@ the assertion.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh` exits 0
-  with every case reported PASS.
+  with every case reported PASS. *(confirmed: 39 passed, 0 failed, exit 0)*
 - Adversarial check: temporarily revert one site's gate to the pre-fix ordering in a scratch copy
   and confirm the suite **fails** on Fixture A. A suite that passes against the pre-fix code
-  proves nothing; record the observed failure output in the phase completion note.
-- `jq . agent-system/extensions/core/manifest.json` parses.
+  proves nothing; record the observed failure output in the phase completion note. *(confirmed:
+  reverted Site B's `resume-scan-conformance-gate` region in a scratch copy of
+  `agent-system/extensions/` to the pre-fix filtered-grep-first ordering (no whole-file check
+  before the grep). Re-ran the suite against the scratch copy: exit code 1, "Results: 34 passed,
+  5 failed", with the 5 failures being exactly the Fixture A assertions for Site B — including
+  "Site B (skill-implementer-hard): Fixture A result variable was '5' -- phase 5 was silently
+  selected despite the non-conforming 4C heading". This is the exact silent-mis-selection bug the
+  fix eliminates. Scratch copy discarded after the check.)*
+- `jq . agent-system/extensions/core/manifest.json` parses. *(confirmed)*
 - `bash agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh` exits 0
-  (unchanged).
+  (unchanged). *(confirmed: 35 passed, 0 failed, exit 0 — identical result to before Phase 5)*
 
 ---
 
-### Phase 6: Record the Contract and Posture Asymmetry in `plan-format.md` [NOT STARTED]
+### Phase 6: Record the Contract and Posture Asymmetry in `plan-format.md` [IN PROGRESS]
 
 **Goal**: Make the document's "closed contract, not an aspiration" claim verifiably true
 end-to-end, so a future reader need not re-derive whether the resume-scan sites actually honor it.
