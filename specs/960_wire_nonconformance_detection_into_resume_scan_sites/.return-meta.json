@@ -28,29 +28,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["sentinel-region-extraction", "bash-in-markdown", "test-harness", "region-precondition", "awk-extraction"]
+      "suggested_keywords": [
+        "sentinel-region-extraction",
+        "bash-in-markdown",
+        "test-harness",
+        "region-precondition",
+        "awk-extraction"
+      ]
     },
     {
       "content": "A repo-wide grep assertion that forbids a specific unsafe code pattern (e.g. `foo | grep -q` racy-under-pipefail idiom) will self-trip on its own documentation: any canonical snippet or header comment that quotes the forbidden form as an example of what NOT to do (wrapped in backticks per markdown convention) contains the literal forbidden substring. The fix is to exclude backtick-wrapped occurrences from the assertion (real invocation code is never backtick-wrapped), not to reword the documentation into something less precise. Also check the assertion script's OWN source for accidental literal occurrences in its pass/fail message strings -- use backticks there too, consistently with the doc-comment convention, or the assertion will fail against itself.",
       "category": "PATTERN",
       "source_artifact": "specs/960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["forbidden-pattern-grep", "self-referential-assertion", "backtick-exclusion", "repo-wide-lint", "documentation-vs-code"]
+      "suggested_keywords": [
+        "forbidden-pattern-grep",
+        "self-referential-assertion",
+        "backtick-exclusion",
+        "repo-wide-lint",
+        "documentation-vs-code"
+      ]
     },
     {
       "content": "For an adversarial 'does the test actually test anything' verification, copy the target subtree to a scratch directory, revert exactly one site's fix to its pre-fix form there, and re-run the FULL test suite against the scratch copy (not a hand-written mini-reproduction) -- the suite's own REPO_ROOT-relative path resolution (computed from the running script's own location, not cwd) means a plain recursive directory copy of the subtree is sufficient; no special harness wiring is needed as long as the script derives all its paths relative to itself.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["adversarial-verification", "scratch-copy", "regression-test-validation", "mutation-testing"]
+      "suggested_keywords": [
+        "adversarial-verification",
+        "scratch-copy",
+        "regression-test-validation",
+        "mutation-testing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786028048_619ac7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
-    "phases_total": 6
+    "phases_total": 6,
+    "cycles_used": 3,
+    "final_state": "completed"
   }
 }

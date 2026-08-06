@@ -2792,7 +2792,7 @@
     {
       "project_number": 960,
       "project_name": "wire_nonconformance_detection_into_resume_scan_sites",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Wire non-conformance detection into the hard-mode resume-scan sites",
@@ -2817,12 +2817,18 @@
           "path": "specs/960_wire_nonconformance_detection_into_resume_scan_sites/plans/01_nonconformance-resume-scan-gate.md",
           "type": "plan",
           "summary": "Six-phase plan wiring whole-file non-conformance detection ahead of every hard-mode resume-scan selection"
+        },
+        {
+          "path": "specs/960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md",
+          "type": "summary",
+          "summary": "All six phases complete: whole-file non-conformance gate wired at four sites plus a new 39-assertion regression harness"
         }
       ],
       "created": "2026-07-29T14:29:13Z",
-      "last_updated": "2026-08-06T15:11:24Z",
+      "last_updated": "2026-08-06T15:29:03Z",
       "session_id": "sess_1786028048_619ac7",
-      "next_artifact_number": null
+      "next_artifact_number": null,
+      "completion_summary": "Wired has_nonconforming_phase_headings whole-file gates ahead of every filtered PHASE_HEADING_ERE resume-scan at four sites (skill-implementer-hard, skill-orchestrate-hard, skill-lean-implementation-hard, update-task-status.sh), preserving each site's deliberately different posture (leaf-worker hard stop vs. orchestration-loop EXIT (partial, ...)), and added the first executable regression harness for these markdown-embedded scan blocks (39 assertions, adversarially verified to fail against the pre-fix ordering)."
     },
     {
       "project_number": 961,

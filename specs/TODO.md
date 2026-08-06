@@ -11,33 +11,31 @@ next_project_number: 998
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 960,991,997 | -- | agent-system, orchestration-concurrency |
-| 2 | 961,988,992 | 960,991 | agent-system |
-| 3 | 962,993 | 961,992 | agent-system |
-| 4 | 952,984 | 962,988 | agent-system, status-marker-lifecycle |
-| 5 | 953,985 | 952,984,992 | agent-system |
-| 6 | 983 | 953 | agent-system |
-| 7 | 986,995 | 983,984,985 | agent-system |
-| 8 | 996 | 986,993,995 | agent-system |
+| 1 | 961,988,991,997 | -- | agent-system, orchestration-concurrency |
+| 2 | 962,992 | 961,991 | agent-system |
+| 3 | 952,984,993 | 962,988,992 | agent-system, status-marker-lifecycle |
+| 4 | 953,985 | 952,984,992 | agent-system |
+| 5 | 983 | 953 | agent-system |
+| 6 | 986,995 | 983,984,985 | agent-system |
+| 7 | 996 | 986,993,995 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-960 [IMPLEMENTING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-  └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-    └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-      └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
-        └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
-          └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-            └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-              └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-            └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
-              └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
-        └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
-          └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
-  └─ 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
-    └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
+961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+    └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
+      └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
+        └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+          └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+            └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
+          └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
+            └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+      └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
+        └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
+  └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into (see above)
 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
   └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
@@ -1219,12 +1217,13 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 960. Wire non-conformance detection into the hard-mode resume-scan sites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 959, Task 957
 - **Research**: [960_wire_nonconformance_detection_into_resume_scan_sites/reports/01_wire-nonconformance-detection.md]
 - **Plan**: [960_wire_nonconformance_detection_into_resume_scan_sites/plans/01_nonconformance-resume-scan-gate.md]
+- **Summary**: [960_wire_nonconformance_detection_into_resume_scan_sites/summaries/01_nonconformance-resume-scan-gate-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
