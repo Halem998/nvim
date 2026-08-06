@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Created a 4-phase implementation plan repairing the Stage 4 H4 adversarial-verification gate (literal-string grep replaced by a verified shape regex) and the skeleton-exhaustion exit's missing completion_summary/roadmap_items propagation (routed through one new shared helper called from both terminal exit paths). All edits confined to agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/plans/01_h4-gate-and-summary-propagation.md",
+      "summary": "4-phase sequential plan, 1.5h estimate, single-file scope, full verification bar coverage"
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": []
+}

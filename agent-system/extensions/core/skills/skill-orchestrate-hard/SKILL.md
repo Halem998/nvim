@@ -419,10 +419,15 @@ if [ "$adversarial_verified" = "false" ]; then
 
   if [ -n "$research_path" ] && [ -f "$research_path" ]; then
     # Check if adversarial verification section already exists in report, AND that it contains
-    # the required Claim Verification Table header (non-fatal structural strengthening; both
-    # checks must pass to skip re-dispatch).
+    # a claim-verification table matched by SHAPE, not by a fixed header string (non-fatal
+    # structural strengthening; both checks must pass to skip re-dispatch). Shape: a table-cell
+    # containing the word "claim" immediately followed by a cell containing both "source" and
+    # "counterexample" (case- and spacing-insensitive, tolerant of extra columns). Both known
+    # passing formats match: the canonical `| Claim | Source/Counterexample | ... |` header and
+    # the observed `| # | Claim under attack | Source / counterexample | Outcome |` header. An
+    # unrelated table does not match.
     if grep -q "## Adversarial Self-Verification" "$research_path" && \
-       grep -q "| Claim | Source/Counterexample" "$research_path"; then
+       grep -qiE '\|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b[^|]*\|' "$research_path"; then
       echo "[hard-orchestrate] H4: Adversarial verification section with Claim Verification Table found in report. Proceeding to planning." >&2
       adversarial_verified=true
     else
