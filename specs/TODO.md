@@ -24,7 +24,7 @@ next_project_number: 998
 
 ### Agent System
 
-960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+960 [IMPLEMENTING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
@@ -1219,10 +1219,12 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 960. Wire non-conformance detection into the hard-mode resume-scan sites
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 959, Task 957
+- **Research**: [960_wire_nonconformance_detection_into_resume_scan_sites/reports/01_wire-nonconformance-detection.md]
+- **Plan**: [960_wire_nonconformance_detection_into_resume_scan_sites/plans/01_nonconformance-resume-scan-gate.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 

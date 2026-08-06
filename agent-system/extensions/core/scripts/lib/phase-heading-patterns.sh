@@ -13,6 +13,21 @@
 # Usage: `source` this file, then use the exported constants/arrays directly with `grep -E`
 # (canonical forms) or plain `grep` (BRE compatibility aliases), and call `extract_phase_number`,
 # `nonconforming_phase_headings`, and `warn_nonconforming` as documented below.
+#
+# Ordering contract for filtered scans: PHASE_HEADING_ERE filters to conforming headings only, so
+# a non-conforming heading is not merely unmatched by a PHASE_HEADING_ERE-based grep -- it is
+# INVISIBLE to it. A consumer that derives a SELECTION or a COUNT from such a filtered grep
+# without checking the whole file first will silently select the next conforming candidate (or
+# undercount) instead of surfacing the non-conforming heading. Therefore: any consumer that
+# derives a selection or a count from a PHASE_HEADING_ERE-filtered grep MUST call
+# `has_nonconforming_phase_headings <file>` over the WHOLE FILE FIRST, before the filtered scan,
+# and take a named INCONCLUSIVE branch on a hit -- never merely a warning on the way to trusting
+# the filtered result anyway. Use the boolean predicate `has_nonconforming_phase_headings`; the
+# `nonconforming_phase_headings <file> | grep -q .` pipe form is FORBIDDEN (unsafe under
+# `pipefail` -- see that function's own header comment for the race). The reference
+# implementation of this ordering is `update-task-status.sh`'s phase-check (D3) gate: whole-file
+# check first, named INCONCLUSIVE branch second, filtered count/selection trusted only in the
+# else branch.
 
 # ─── Canonical grammar (ERE) ───────────────────────────────────────────────────────────────────
 # The phase-number token is an integer with at most one optional decimal sub-level: `3`, `3.1`;
