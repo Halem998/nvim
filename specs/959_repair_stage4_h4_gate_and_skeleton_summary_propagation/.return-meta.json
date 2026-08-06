@@ -1,9 +1,41 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/summaries/01_h4-gate-and-summary-propagation-summary.md",
+      "summary": "Fixed the H4 shape-based adversarial-table matcher (Defect A) and wired both terminal exit paths through a new shared completion-propagation helper (Defect B) in skill-orchestrate-hard/SKILL.md."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced the literal-string H4 adversarial-table grep with a verified shape regex tolerant of both known claim-table header formats, and added a shared hard_orchestrate_propagate_completion() helper wired into both the skeleton-exhaustion exit and the Stage 5 implemented tail so completion_summary/roadmap_items are always propagated from .return-meta.json. All changes confined to agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md.",
+    "roadmap_items": []
+  },
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a fixed-header-string grep gate that needs to tolerate header variants (extra columns, reordered prefix words), replace with a case-/spacing-insensitive shape regex like `grep -qiE '\\|[^|]*\\bWORD1\\b[^|]*\\|[^|]*\\bWORD2\\b[^|]*\\bWORD3\\b[^|]*\\|'` matching adjacent table cells by content rather than exact header text. Always verify against the real grep binary by absolute path (e.g. /run/current-system/sw/bin/grep) when the interactive shell's `grep` alias may resolve to a differently-behaving wrapper (e.g. ugrep).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/summaries/01_h4-gate-and-summary-propagation-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["grep", "shape-regex", "table-header-match", "adversarial-verification", "H4-gate"]
+    },
+    {
+      "content": "When multiple terminal exit paths in an orchestration state-machine skill need identical follow-up logic (e.g. propagating completion_summary/roadmap_items from .return-meta.json), extract one named helper function taking an optional precomputed-JSON parameter, rather than inlining the same block at each exit site. This both prevents omission at new exit paths and preserves a 'single reader of the source file per cycle' invariant when one call site already has the data cached.",
+      "category": "PATTERN",
+      "source_artifact": "specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/summaries/01_h4-gate-and-summary-propagation-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["shared-helper", "terminal-exit-paths", "completion-propagation", "orchestration", "optional-precomputed-arg"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785985974_52cea3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

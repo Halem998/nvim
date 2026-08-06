@@ -1,7 +1,7 @@
 # Implementation Plan: Repair Stage 4 H4 Gate and Skeleton Summary Propagation
 
 - **Task**: 959 - repair_stage4_h4_gate_and_skeleton_summary_propagation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/959_repair_stage4_h4_gate_and_skeleton_summary_propagation/reports/01_h4-gate-and-skeleton-summary-propagation.md
@@ -281,33 +281,38 @@ still satisfied; note the deviation and the reason in the implementation summary
 
 ---
 
-### Phase 4: Verification, syntax check, and scope confirmation [NOT STARTED]
+### Phase 4: Verification, syntax check, and scope confirmation [COMPLETED]
 
 **Goal**: Confirm the VERIFICATION BAR is met end to end, that no out-of-scope file was touched, and
 that no task-number citation leaked into the deliverable.
 
 **Tasks**:
-- [ ] Re-run all three Phase 1 fixtures against the final regex as it appears in the file, using
+- [x] Re-run all three Phase 1 fixtures against the final regex as it appears in the file, using
       `/run/current-system/sw/bin/grep` by absolute path. Both adversarial-table headers must match;
-      the unrelated table must not.
-- [ ] Extract every added/changed shell statement from both edited regions into one
+      the unrelated table must not. *(completed: re-extracted the regex verbatim from the file at
+      line 430 and re-ran all three fixtures — MATCH, MATCH, NOMATCH as expected)*
+- [x] Extract every added/changed shell statement from both edited regions into one
       function-wrapped scratch file under the scratchpad directory and run `bash -n` on it. Do not
       attempt `bash -n` over an entire fenced block — the blocks interleave literal shell with
-      `Agent tool:` and `EXIT (...)` pseudo-statements and will not parse.
-- [ ] Trace the skeleton-exhaustion path by read-through and confirm it now reaches
+      `Agent tool:` and `EXIT (...)` pseudo-statements and will not parse. *(completed: bash -n
+      clean on the combined scratch file covering the H4 gate, the new helper, and both call sites)*
+- [x] Trace the skeleton-exhaustion path by read-through and confirm it now reaches
       `skill_propagate_completion_summary` with a summary sourced from the current dispatch's
       `.return-meta.json`, and that `roadmap_items` is passed through as a JSON array (so
       `skill_propagate_completion_summary`'s `[ "$roadmap_items" != "[]" ]` guard admits it when
-      non-empty).
-- [ ] Confirm `git status --short` and the staged diff show changes ONLY under
+      non-empty). *(completed)*
+- [x] Confirm `git status --short` and the staged diff show changes ONLY under
       `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` (plus `specs/**`
-      artifacts). No `.claude/**` path may appear.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` (or scan the diff) to confirm no
-      task-number citation was introduced into the edited SKILL.md.
-- [ ] Record in the implementation summary the out-of-scope `orchestrate-recover-outcome.sh`
+      artifacts). No `.claude/**` path may appear. *(completed: confirmed via git diff --name-only
+      across the three phase commits)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` (or scan the diff) to confirm no
+      task-number citation was introduced into the edited SKILL.md. *(completed: PASS, 0
+      unexempted occurrences)*
+- [x] Record in the implementation summary the out-of-scope `orchestrate-recover-outcome.sh`
       doc/code mismatch surfaced by research (header claims `completion_summary`/`roadmap_items` are
       populated regardless of branch; the `STATUS_IN_PROGRESS`/`STATUS_NOT_SUCCESS` `emit` calls
-      hardcode `""`/`"[]"`) as a candidate follow-up. Do not fix it here.
+      hardcode `""`/`"[]"`) as a candidate follow-up. Do not fix it here. *(completed: recorded in
+      the implementation summary's Follow-ups section)*
 
 **Timing**: 20 minutes
 
@@ -328,20 +333,20 @@ that no task-number citation leaked into the deliverable.
 
 ## Testing & Validation
 
-- [ ] `| Claim | Source/Counterexample | Verification Method | Confidence |` satisfies the H4 gate.
-- [ ] `| # | Claim under attack | Source / counterexample | Outcome |` satisfies the H4 gate.
-- [ ] `| Some other table | with columns | not adversarial |` does NOT satisfy the H4 gate.
-- [ ] All fixture checks were run with `/run/current-system/sw/bin/grep`, not a shell alias.
-- [ ] The skeleton-exhaustion exit calls `skill_propagate_completion_summary` (via the shared
+- [x] `| Claim | Source/Counterexample | Verification Method | Confidence |` satisfies the H4 gate.
+- [x] `| # | Claim under attack | Source / counterexample | Outcome |` satisfies the H4 gate.
+- [x] `| Some other table | with columns | not adversarial |` does NOT satisfy the H4 gate.
+- [x] All fixture checks were run with `/run/current-system/sw/bin/grep`, not a shell alias.
+- [x] The skeleton-exhaustion exit calls `skill_propagate_completion_summary` (via the shared
       helper) with a non-empty `completion_summary` derived from the current dispatch's
       `.return-meta.json`.
-- [ ] `roadmap_items` reaches `skill_propagate_completion_summary` as a JSON array and is written
+- [x] `roadmap_items` reaches `skill_propagate_completion_summary` as a JSON array and is written
       when the return-meta supplies entries.
-- [ ] `bash -n` is clean on the extracted added/changed shell.
-- [ ] No `"${var:-{}}"` inline-default idiom appears in any new or edited line.
-- [ ] Diff touches only `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` and
+- [x] `bash -n` is clean on the extracted added/changed shell.
+- [x] No `"${var:-{}}"` inline-default idiom appears in any new or edited line.
+- [x] Diff touches only `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` and
       `specs/**`.
-- [ ] No task-number citation appears in the edited SKILL.md.
+- [x] No task-number citation appears in the edited SKILL.md.
 
 ## Artifacts & Outputs
 
