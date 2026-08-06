@@ -167,34 +167,38 @@ conditional and note the deviation in the summary.
 
 ---
 
-### Phase 2: Define the shared completion-propagation helper [NOT STARTED]
+### Phase 2: Define the shared completion-propagation helper [COMPLETED]
 
 **Goal**: Add one named helper to the file that reads `.return-meta.json` via the sanctioned single
 reader and calls `skill_propagate_completion_summary`, so both Stage 4 and Stage 5 exit paths can
 share it.
 
 **Tasks**:
-- [ ] Define `hard_orchestrate_propagate_completion()` in the same fenced helper block that holds
+- [x] Define `hard_orchestrate_propagate_completion()` in the same fenced helper block that holds
       `build_hard_mode_prompt_context()` (the file's one existing inline-helper location), or in an
       adjacent block if placement there would disturb the prompt-context block's readability.
-- [ ] Give it this parameter contract, mirroring `skill_propagate_completion_summary`'s own optional
+      *(completed: placed in the same fenced block, immediately after build_hard_mode_prompt_context())*
+- [x] Give it this parameter contract, mirroring `skill_propagate_completion_summary`'s own optional
       trailing-argument pattern:
       `hard_orchestrate_propagate_completion <task_number> <task_type> <task_dir> <dispatch_start_ts> [precomputed_json]`
-- [ ] Body: when `precomputed_json` is non-empty, use it directly; otherwise call
+      *(completed)*
+- [x] Body: when `precomputed_json` is non-empty, use it directly; otherwise call
       `bash .claude/scripts/orchestrate-recover-outcome.sh "$task_dir" "$dispatch_start_ts" 2>/dev/null`.
-      Guard the non-empty check on the value itself, never on control-flow position.
-- [ ] Default an empty result with `[ -z "${completion_json:-}" ] && completion_json='{}'` — never
+      Guard the non-empty check on the value itself, never on control-flow position. *(completed)*
+- [x] Default an empty result with `[ -z "${completion_json:-}" ] && completion_json='{}'` — never
       the `"${completion_json:-{}}"` inline idiom. Carry forward the existing explanatory NOTE
       comment about why that idiom corrupts JSON, so the hazard stays documented at the one place
-      the code now lives.
-- [ ] Extract `completion_summary` via `jq -r '.completion_summary // ""'` and `roadmap_items` via
+      the code now lives. *(completed)*
+- [x] Extract `completion_summary` via `jq -r '.completion_summary // ""'` and `roadmap_items` via
       `jq -c '.roadmap_items // []'`, each with `2>/dev/null` and a fail-closed `|| var=default`.
-- [ ] Call `skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"`.
-- [ ] Emit the existing empty-summary warning (`[hard-orchestrate] WARNING: task completed with
+      *(completed)*
+- [x] Call `skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"`.
+      *(completed)*
+- [x] Emit the existing empty-summary warning (`[hard-orchestrate] WARNING: task completed with
       empty completion_summary (reason=...)`, reading `.reason` from the JSON) from inside the
-      helper so BOTH call sites inherit it rather than only the Stage 5 tail.
-- [ ] Add a short comment stating that this helper is the single propagation path for every
-      terminal exit in this file, and that a new exit path must call it.
+      helper so BOTH call sites inherit it rather than only the Stage 5 tail. *(completed)*
+- [x] Add a short comment stating that this helper is the single propagation path for every
+      terminal exit in this file, and that a new exit path must call it. *(completed)*
 
 **Timing**: 25 minutes
 

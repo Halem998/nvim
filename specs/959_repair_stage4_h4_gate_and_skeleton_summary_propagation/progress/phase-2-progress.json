@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Define the shared completion-propagation helper",
+  "started_at": "2026-08-05T00:15:00Z",
+  "last_updated": "2026-08-05T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Define hard_orchestrate_propagate_completion() alongside build_hard_mode_prompt_context()", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 2, "description": "Verify helper is bash -n clean and parameter order matches call sites", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

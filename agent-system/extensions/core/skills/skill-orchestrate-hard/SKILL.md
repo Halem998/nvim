@@ -610,6 +610,48 @@ HARD MODE DISPATCH — CONTRACT SLOTS:
 PHASES COMPLETED: $phases_completed of $phases_total
 "
 }
+
+# Single propagation path for every terminal exit in this file. A new terminal exit path added
+# to this skill MUST call this helper rather than re-inlining a completion-propagation block.
+#
+# Usage: hard_orchestrate_propagate_completion <task_number> <task_type> <task_dir> \
+#          <dispatch_start_ts> [precomputed_json]
+#
+# When precomputed_json is non-empty, it is used directly (avoiding a second
+# .return-meta.json read within the same cycle — e.g. the Stage 5 `implemented` tail, which
+# already has $recover_json from the recovery branch above it). Otherwise this helper issues the
+# one read via orchestrate-recover-outcome.sh itself.
+hard_orchestrate_propagate_completion() {
+  local task_number="$1"
+  local task_type="$2"
+  local task_dir="$3"
+  local dispatch_start_ts_arg="$4"
+  local precomputed_json="${5:-}"
+
+  local completion_json
+  if [ -n "$precomputed_json" ]; then
+    completion_json="$precomputed_json"
+  else
+    completion_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$task_dir" "$dispatch_start_ts_arg" 2>/dev/null)
+  fi
+  # NOTE: default via `[ -z ] && completion_json='{}'`, never `"${completion_json:-{}}"` — bash
+  # parameter-expansion default-word matching stops at the FIRST unescaped `}`, so that inline
+  # idiom silently appends a stray trailing `}` to any non-empty value, corrupting the JSON and
+  # forcing every jq call below to fail closed to "" via `2>/dev/null`.
+  [ -z "${completion_json:-}" ] && completion_json='{}'
+
+  local completion_summary roadmap_items
+  completion_summary=$(echo "$completion_json" | jq -r '.completion_summary // ""' 2>/dev/null) || completion_summary=""
+  roadmap_items=$(echo "$completion_json" | jq -c '.roadmap_items // []' 2>/dev/null) || roadmap_items="[]"
+
+  skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
+
+  if [ -z "$completion_summary" ]; then
+    local completion_reason
+    completion_reason=$(echo "$completion_json" | jq -r '.reason // "unknown"' 2>/dev/null) || completion_reason="unknown"
+    echo "[hard-orchestrate] WARNING: task completed with empty completion_summary (reason=${completion_reason})" >&2
+  fi
+}
 ```
 
 After dispatch: read handoff (Stage 5). Check churn state (Stage 4b). Increment cycle_count.
