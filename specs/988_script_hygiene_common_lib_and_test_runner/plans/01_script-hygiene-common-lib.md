@@ -274,27 +274,36 @@ zero consumers migrated yet, so the library can be proven correct in isolation.
 
 ---
 
-### Phase 3: Migrate session-ID generation to the library [NOT STARTED]
+### Phase 3: Migrate session-ID generation to the library [COMPLETED]
 
 **Goal**: Session-ID generation exists in exactly one place, and `command-gate-in.sh`'s
 trailing-newline divergence is resolved as a side effect.
 
 **Tasks**:
-- [ ] Re-derive the live site list: `grep -rn 'sess_\$(date' --include="*.sh" agent-system/extensions/`.
-- [ ] For each site, add the `common.sh` source line after the existing `SCRIPT_DIR` bootstrap and
+- [x] Re-derive the live site list: `grep -rn 'sess_\$(date' --include="*.sh" agent-system/extensions/`.
+  *(completed: 8 sites across 7 files, exactly matching the Scope Hypothesis)*
+- [x] For each site, add the `common.sh` source line after the existing `SCRIPT_DIR` bootstrap and
   replace the inline generation with `common_session_id`. Note that these scripts live at
-  `scripts/` depth, so the source path is `"${SCRIPT_DIR}/lib/common.sh"`.
-- [ ] `skill-base.sh` has two call sites in different functions — migrate both.
-- [ ] `command-gate-in.sh` currently uses `tr -d ' \n'` while the rest use `tr -d ' '`. Confirm
+  `scripts/` depth, so the source path is `"${SCRIPT_DIR}/lib/common.sh"`. *(completed: 3 files —
+  manage-topics.sh, reconcile-artifacts.sh, orchestrate-predispatch-review.sh — had SCRIPT_DIR
+  already defined before the generation site, so the source line was added there; vault-operation.sh
+  and archive-task.sh had the generation site BEFORE their SCRIPT_DIR bootstrap, so a minimal local
+  `_EARLY_SCRIPT_DIR` was added at the generation site instead of reordering surrounding code;
+  command-gate-in.sh had no SCRIPT_DIR at all — added a top-level `_GATE_IN_REPO_ROOT` bootstrap)*
+- [x] `skill-base.sh` has two call sites in different functions — migrate both. *(completed: both
+  `skill_propagate_completion_summary` and `skill_link_artifacts` fallbacks migrated)*
+- [x] `command-gate-in.sh` currently uses `tr -d ' \n'` while the rest use `tr -d ' '`. Confirm
   the shared function's newline-stripping behavior, and record in the commit body that this
-  migration closes a live trailing-newline hazard rather than merely deduplicating.
-- [ ] `command-gate-in.sh` and `skill-base.sh` set no shell options at all. Sourcing `common.sh`
+  migration closes a live trailing-newline hazard rather than merely deduplicating. *(completed:
+  common_session_id uses the `tr -d ' \n'` form uniformly, closing the divergence for all 8 sites)*
+- [x] `command-gate-in.sh` and `skill-base.sh` set no shell options at all. Sourcing `common.sh`
   must not change that — confirm with `set -o` output before and after, exercising the library's
-  own contract.
-- [ ] Add a single-source assertion to `tests/test-common-lib.sh`: grep the extensions tree for
+  own contract. *(completed: both confirmed UNCHANGED via direct `set -o` before/after exercise)*
+- [x] Add a single-source assertion to `tests/test-common-lib.sh`: grep the extensions tree for
   inline `sess_$(date` generation outside `lib/common.sh` and fail if any match remains. This is
-  the mechanical form of the task's verification bar.
-- [ ] Update `common.sh`'s header consumer list to name the migrated scripts.
+  the mechanical form of the task's verification bar. *(completed: repo-wide grep assertion added,
+  passing — 24/24 assertions green)*
+- [x] Update `common.sh`'s header consumer list to name the migrated scripts. *(completed)*
 
 **Timing**: 1.5 hours
 

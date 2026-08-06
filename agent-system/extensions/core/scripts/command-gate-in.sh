@@ -30,12 +30,28 @@
 # Downstream dependencies:
 #   skill-base.sh will source this script.
 
+# ─────────────────────────────────────────────────────────────────────────────
+# SHARED LIBRARY: scripts/lib/common.sh (session-ID generation, repo-root resolution helpers,
+# timestamps, logging, test helpers). Sets no shell options of its own -- see its own header
+# contract. This file itself deliberately sets no shell options either (it is sourced into a
+# caller's shell -- see the module docstring above), so sourcing common.sh must not change that.
+# Two candidate paths: the deployed tree (this file's normal runtime context, tried first) and a
+# source-store-relative fallback so this file can also be sourced directly from
+# agent-system/extensions/core/scripts/ (e.g. by a test suite exercising it in isolation).
+_GATE_IN_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [ -f "${_GATE_IN_REPO_ROOT}/.claude/scripts/lib/common.sh" ]; then
+  source "${_GATE_IN_REPO_ROOT}/.claude/scripts/lib/common.sh"
+elif [ -f "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh" ]; then
+  source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
+fi
+unset _GATE_IN_REPO_ROOT
+
 gate_in() {
   local task_number="$1"
   local operation="$2"
 
   # Generate session ID
-  SESSION_ID="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' \n')"
+  SESSION_ID="$(common_session_id)"
 
   # Pad task number
   PADDED_NUM=$(printf "%03d" "$task_number")

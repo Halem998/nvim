@@ -41,6 +41,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
+source "${SCRIPT_DIR}/lib/common.sh"
 
 # --- Extract an optional --session-id SID anywhere in the argument list, leaving the rest of
 # the positional arguments (subcommand + its own args) in order. ---
@@ -65,7 +66,7 @@ done
 set -- "${ARGS[@]}"
 
 if [[ -z "$SESSION_ID" ]]; then
-  SESSION_ID="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+  SESSION_ID="$(common_session_id)"
 fi
 
 # --- Guard: state.json must exist ---

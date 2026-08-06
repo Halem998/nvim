@@ -128,6 +128,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
+source "${SCRIPT_DIR}/lib/common.sh"
 
 # --- argument parsing: --repair ahead of positional task_number validation ---
 repair_mode=false
@@ -158,7 +159,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ -z "$session_id" ]; then
-  session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+  session_id="$(common_session_id)"
 fi
 # NOTE: this auto-generated fallback exists ONLY for --repair's state-write.sh mutex
 # attribution (unchanged, pre-existing purpose) -- it is NEVER forwarded to

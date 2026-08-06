@@ -60,7 +60,11 @@ if [ -z "$task_number" ] || [ -z "$project_name" ]; then
 fi
 
 if [ -z "$session_id" ]; then
-  session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+  # shellcheck disable=SC2034  # _EARLY_SCRIPT_DIR is used immediately below, not unused
+  _EARLY_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source "${_EARLY_SCRIPT_DIR}/lib/common.sh"
+  unset _EARLY_SCRIPT_DIR
+  session_id="$(common_session_id)"
 fi
 
 # --- Paths ---

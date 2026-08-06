@@ -216,13 +216,29 @@ else
 fi
 
 # ── Single-source assertion: no inline sess_$(date generation outside lib/common.sh ──
-# This is the mechanical form of the task's verification bar; it is a light-touch check here
-# (this suite only asserts common.sh itself is the canonical generator) -- Phase 3 adds the
-# stronger repo-wide assertion once migration sites exist.
+# This is the mechanical form of the task's verification bar: session-ID generation must exist
+# in exactly one place. Scans the whole extensions tree (source-store shape: this suite lives at
+# agent-system/extensions/core/scripts/tests/, so three levels up is agent-system/extensions/)
+# for the inline generation pattern, and fails if anything other than lib/common.sh itself (or a
+# comment referencing it, e.g. in this suite's own source) still carries it.
 if grep -q 'sess_\$(date' "$LIB" 2>/dev/null; then
   pass "common.sh itself defines the canonical sess_\$(date generator"
 else
   fail "common.sh does not appear to define the canonical session-ID generator"
+fi
+
+EXTENSIONS_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+offending=$(grep -rl 'sess_\$(date' --include="*.sh" "$EXTENSIONS_ROOT" 2>/dev/null \
+  | grep -v -F "/lib/common.sh" \
+  | grep -v -F "/tests/test-common-lib.sh" \
+  || true)
+if [ -z "$offending" ]; then
+  pass "single-source assertion: no inline sess_\$(date generation outside lib/common.sh"
+else
+  fail "single-source assertion: inline sess_\$(date generation found outside lib/common.sh:"
+  while IFS= read -r off_line; do
+    [ -n "$off_line" ] && info "  $off_line"
+  done <<< "$offending"
 fi
 
 echo ""

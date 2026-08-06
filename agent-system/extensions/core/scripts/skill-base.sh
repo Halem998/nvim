@@ -33,6 +33,19 @@ SKILL_REPO_ROOT="${SKILL_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." 
 export SKILL_REPO_ROOT
 
 # ─────────────────────────────────────────────────────────────────────────────
+# SHARED LIBRARY: scripts/lib/common.sh (session-ID generation, repo-root resolution helpers,
+# timestamps, logging, test helpers). Sets no shell options of its own -- see its own header
+# contract. Two candidate paths: the deployed tree (this file's normal runtime context, hence
+# tried first) and a source-store-relative fallback so this file can also be sourced directly
+# from agent-system/extensions/core/scripts/ (e.g. by a future test suite exercising this file
+# in isolation).
+if [ -f "${SKILL_REPO_ROOT}/.claude/scripts/lib/common.sh" ]; then
+  source "${SKILL_REPO_ROOT}/.claude/scripts/lib/common.sh"
+elif [ -f "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh" ]; then
+  source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
 # EXTENSION HOOKS: Lifecycle hook invocation for loaded extensions.
 #
 # Extensions may declare hook scripts in manifest.json under a top-level
@@ -459,8 +472,9 @@ skill_postflight_update() {
 # invoked from inside an outer SCOPE_MUTEX_HELD=1 critical section (e.g.
 # orchestrator-postflight.sh's Stage 7-8a bracket, this function's normal calling context),
 # state-write.sh runs as a guest and never attempts a nested acquire regardless of which
-# session_id is passed. If omitted, a session_id is generated inline using the same portable
-# pattern command-gate-in.sh uses, so every existing caller keeps working unchanged.
+# session_id is passed. If omitted, a session_id is generated via the shared
+# scripts/lib/common.sh's common_session_id (the single source every session-ID call site now
+# shares -- see command-gate-in.sh), so every existing caller keeps working unchanged.
 skill_propagate_completion_summary() {
   local task_number="$1"
   local completion_summary="$2"
@@ -468,7 +482,7 @@ skill_propagate_completion_summary() {
   local task_type="$4"
   local session_id="${5:-}"
   if [ -z "$session_id" ]; then
-    session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+    session_id="$(common_session_id)"
   fi
   if [ -n "$completion_summary" ]; then
     "${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh" \
@@ -506,7 +520,7 @@ skill_link_artifacts() {
   local next_field="${6:-'**Description**'}"
   local session_id="${7:-}"
   if [ -z "$session_id" ]; then
-    session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+    session_id="$(common_session_id)"
   fi
   if [ -n "$artifact_path" ]; then
     # Step 1: Remove existing artifacts of same type (use "| not" pattern — Issue #1132 safe)

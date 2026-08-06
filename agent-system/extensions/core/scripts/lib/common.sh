@@ -52,8 +52,13 @@
 #   common_test_pass "case description"                    # increments caller's PASSED
 
 # Consumers (updated as each migration phase lands):
-#   (none yet -- this library is authored in isolation per this task's Phase 2; migration of
-#   session-ID and root-resolution call sites happens in subsequent phases.)
+#   Session-ID generation (common_session_id), migrated in Phase 3:
+#     scripts/archive-task.sh, scripts/command-gate-in.sh, scripts/manage-topics.sh,
+#     scripts/orchestrate-predispatch-review.sh, scripts/reconcile-artifacts.sh,
+#     scripts/skill-base.sh (two call sites), scripts/vault-operation.sh.
+#   command-gate-in.sh and skill-base.sh set no shell options at all (they are sourced into a
+#   caller's shell); sourcing common.sh is confirmed not to change that (see
+#   tests/test-common-lib.sh's $-/`set -o` assertions, exercised directly against both files).
 
 # common_repo_root <script_dir> <levels> -- echoes the resolved repo root, walking <levels>
 # directories up from <script_dir> and canonicalizing via `cd && pwd`. Serves scripts/ callers

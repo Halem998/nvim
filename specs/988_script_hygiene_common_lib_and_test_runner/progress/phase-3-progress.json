@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Migrate session-ID generation to the library",
+  "started_at": "2026-08-06T14:00:00Z",
+  "last_updated": "2026-08-06T14:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive live site list, migrate all 8 sites across 7 files", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/archive-task.sh",
+      "agent-system/extensions/core/scripts/command-gate-in.sh",
+      "agent-system/extensions/core/scripts/reconcile-artifacts.sh",
+      "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+      "agent-system/extensions/core/scripts/vault-operation.sh",
+      "agent-system/extensions/core/scripts/manage-topics.sh",
+      "agent-system/extensions/core/scripts/skill-base.sh"
+    ]},
+    {"id": 2, "description": "Confirm set -o unchanged for command-gate-in.sh and skill-base.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add single-source assertion to test-common-lib.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-common-lib.sh"]},
+    {"id": 4, "description": "Update common.sh consumer list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/common.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "All 8 session-ID generation sites migrated to common_session_id, closing command-gate-in.sh's tr -d ' \\n' divergence (common_session_id uses the newline-stripping form uniformly for all callers). grep -rn 'sess_$(date' now matches only lib/common.sh (plus a doc comment). test-common-lib.sh: 24/24 green including a new repo-wide single-source grep assertion. run-all.sh: 27/27 green. Full verify-deploy.sh: 19 checks, 0 failures."
+}
