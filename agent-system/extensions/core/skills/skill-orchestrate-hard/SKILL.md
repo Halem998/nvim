@@ -240,6 +240,76 @@ mkdir -p "$TASK_DIR"
 current_plan_version=$(basename "$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)" 2>/dev/null)
 current_plan_version="${current_plan_version:-none}"
 
+# --- loop-guard-staleness:begin ---
+# Operational-staleness detector: a genuinely-present, never-git-touched guard that is simply
+# superseded or old on disk (distinct from the git-restoration hazard the ephemeral/gitignored
+# classification protects against). Three OR-combined signals; any one tripping is sufficient.
+# See context/standards/orchestrator-runtime-files.md's "Operational staleness: a second,
+# orthogonal freshness axis" for the full policy, thresholds, and the anti-session_id defense.
+# No task-lock.sh dependency in this region -- it only reads, decides, and archives (mv), so it
+# is directly executable in a fixture harness. The pre-existing `if [ -f "$loop_guard_file" ]`
+# block immediately below this region, and the churn-state block below that, are left completely
+# unmodified: once a stale guard/churn file is mv'd aside, `[ -f ]` is false and each falls
+# through to its own existing fresh-init branch naturally, at cycle_count=0 / total_churn=0.
+loop_guard_stale=false
+if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
+  stale_reason=""
+
+  # Signal 1: schema/version drift.
+  guard_max_cycles=$(jq -r '.max_cycles // empty' "$loop_guard_file")
+  if [ -n "$guard_max_cycles" ] && [ "$guard_max_cycles" != "$MAX_CYCLES" ]; then
+    stale_reason="${stale_reason}max_cycles drift (guard=${guard_max_cycles}, live=${MAX_CYCLES}); "
+  fi
+
+  # Signal 2: plan-lineage drift. Skipped entirely when either side is empty or "none" -- a
+  # missing plan_version (old-format guard) or an absent plans/ directory is never itself
+  # evidence of staleness.
+  guard_plan_version=$(jq -r '.plan_version // "none"' "$loop_guard_file")
+  if [ -n "$guard_plan_version" ] && [ "$guard_plan_version" != "none" ] \
+     && [ -n "$current_plan_version" ] && [ "$current_plan_version" != "none" ] \
+     && [ "$guard_plan_version" != "$current_plan_version" ]; then
+    stale_reason="${stale_reason}plan_version drift (guard=${guard_plan_version}, live=${current_plan_version}); "
+  fi
+
+  # Signal 3: mtime-age backstop. An mtime of 0 (stat failed on both GNU and BSD forms) is
+  # treated as NOT stale -- an unreadable timestamp is not evidence.
+  guard_mtime=$(stat -c %Y "$loop_guard_file" 2>/dev/null || stat -f %m "$loop_guard_file" 2>/dev/null || echo 0)
+  stale_days="${ORCHESTRATOR_LOOP_GUARD_STALE_DAYS:-7}"
+  if [ "$guard_mtime" -gt 0 ]; then
+    now_ts=$(date -u +%s)
+    age_seconds=$((now_ts - guard_mtime))
+    stale_threshold_seconds=$((stale_days * 86400))
+    if [ "$age_seconds" -gt "$stale_threshold_seconds" ]; then
+      stale_reason="${stale_reason}mtime age (${age_seconds}s since last update, threshold ${stale_threshold_seconds}s / ${stale_days} days); "
+    fi
+  fi
+
+  if [ -n "$stale_reason" ]; then
+    loop_guard_stale=true
+    stale_ts=$(date -u +%s)
+    stale_guard_dest="${TASK_DIR}/.stale-loop-guard-${stale_ts}.json"
+    echo "[hard-orchestrate] ERROR: STALE LOOP GUARD — ${stale_reason}Archived to ${stale_guard_dest} for inspection; reinitializing fresh guard at cycle 0." >&2
+    if mv "$loop_guard_file" "$stale_guard_dest" 2>/dev/null; then
+      :
+    else
+      echo "[hard-orchestrate] WARNING: could not move stale guard aside to ${stale_guard_dest}; ${loop_guard_file} is still in place and must be removed manually before the next cycle." >&2
+    fi
+    # Co-archive the churn-state file under the loop guard's inherited verdict (not an
+    # independently-derived detector) and the same timestamp suffix, so the two archives are
+    # correlatable. Only when it exists -- never create an empty churn archive.
+    if [ -f "$churn_file" ]; then
+      stale_churn_dest="${TASK_DIR}/.stale-churn-state-${stale_ts}.json"
+      echo "[hard-orchestrate] Co-archiving churn state to ${stale_churn_dest} (inherits the loop guard's stale verdict)." >&2
+      if mv "$churn_file" "$stale_churn_dest" 2>/dev/null; then
+        :
+      else
+        echo "[hard-orchestrate] WARNING: could not move stale churn state aside to ${stale_churn_dest}; ${churn_file} is still in place and must be removed manually before the next cycle." >&2
+      fi
+    fi
+  fi
+fi
+# --- loop-guard-staleness:end ---
+
 if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
   burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' "$loop_guard_file")
@@ -313,6 +383,15 @@ adversarial_verified=false
 
 Note: MAX_CYCLES is increased from 5 to 13 in hard mode to accommodate per-phase dispatch.
 Each phase requires its own cycle; a 7-phase plan needs ~7 cycles minimum.
+
+**On the `loop-guard-staleness` region above**: it runs before the pre-existing
+`if [ -f "$loop_guard_file" ] ...` resume branch and only ever archives a stale guard aside — it
+never edits that branch or the churn-state block that follows it. When a stale guard is `mv`'d
+away, `[ -f "$loop_guard_file" ]` becomes false and the untouched fresh-init `else` branch runs
+naturally, seeding a new guard at `cycle_count: 0`; the same fall-through applies to the
+churn-state block if its file was co-archived. See
+`context/standards/orchestrator-runtime-files.md`'s "Operational staleness: a second, orthogonal
+freshness axis" for the full policy this region implements.
 
 ---
 

@@ -249,20 +249,20 @@ payload sites and must be left alone. If the classification finds a second paylo
 
 ---
 
-### Phase 3: Implement the staleness detector on the Stage 2 resume path [NOT STARTED]
+### Phase 3: Implement the staleness detector on the Stage 2 resume path [COMPLETED]
 
 **Goal**: A stale guard is detected, named, archived aside with its churn-state companion, and
 allowed to fall through to the existing fresh-init branch — with no change to that branch.
 
 **Tasks**:
-- [ ] Insert a new sentinel-delimited region between `mkdir -p "$TASK_DIR"` (plus the
+- [x] Insert a new sentinel-delimited region between `mkdir -p "$TASK_DIR"` (plus the
       `current_plan_version` computation from Phase 2) and the existing
       `if [ -f "$loop_guard_file" ] && jq empty ...` block. Mark it
       `# --- loop-guard-staleness:begin ---` / `# --- loop-guard-staleness:end ---`, matching the
       existing `resume-scan-conformance-gate` sentinel naming convention in this same file.
-- [ ] Inside the region, guard everything on the guard file existing and being valid JSON; a missing
+- [x] Inside the region, guard everything on the guard file existing and being valid JSON; a missing
       or unparseable guard is a no-op here (the existing block already handles both).
-- [ ] Initialize `stale_reason=""` and append a human-readable clause for each signal that trips
+- [x] Initialize `stale_reason=""` and append a human-readable clause for each signal that trips
       (naming the signal AND both compared values, so the notice is diagnostic, not just an alarm):
       - `max_cycles` drift: guard's `.max_cycles` vs. the live `$MAX_CYCLES`.
       - `plan_version` drift: guard's `.plan_version` (defaulted `// "none"`) vs.
@@ -271,25 +271,25 @@ allowed to fall through to the existing fresh-init branch — with no change to 
         idiom already in this file: `stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null ||
         echo 0`. Default the env var to 7 with `${ORCHESTRATOR_LOOP_GUARD_STALE_DAYS:-7}`. Treat an
         mtime of 0 (stat failed) as NOT stale — an unreadable timestamp is not evidence.
-- [ ] When `stale_reason` is non-empty, emit to stderr, matching the `STALE HANDOFF` /
+- [x] When `stale_reason` is non-empty, emit to stderr, matching the `STALE HANDOFF` /
       `STRAY HANDOFF` vocabulary already used in this file:
       `[hard-orchestrate] ERROR: STALE LOOP GUARD — <stale_reason>. Archived to <path> for
       inspection; reinitializing fresh guard at cycle 0.` plus a second line naming the co-archived
       churn-state path.
-- [ ] Archive with `mv "$loop_guard_file" "${TASK_DIR}/.stale-loop-guard-$(date -u +%s).json"`;
+- [x] Archive with `mv "$loop_guard_file" "${TASK_DIR}/.stale-loop-guard-$(date -u +%s).json"`;
       on `mv` failure emit `[hard-orchestrate] WARNING:` stating the guard is still in place and must
       be removed manually before the next cycle. Never `rm` the guard.
-- [ ] Archive the churn-state file under the same verdict and same timestamp suffix
+- [x] Archive the churn-state file under the same verdict and same timestamp suffix
       (`.stale-churn-state-$(date -u +%s).json`), only when it exists, with the same non-fatal
       fallback. Compute the timestamp **once** into a variable so both archives share it and are
       correlatable.
-- [ ] Set a `loop_guard_stale=true|false` variable in the region (unused by control flow — the `mv`
+- [x] Set a `loop_guard_stale=true|false` variable in the region (unused by control flow — the `mv`
       itself drives the fall-through — but asserted on by the fixture test and useful for a future
       caller).
-- [ ] Leave the existing `if [ -f "$loop_guard_file" ] ... else ... fi` and the churn-state block
+- [x] Leave the existing `if [ -f "$loop_guard_file" ] ... else ... fi` and the churn-state block
       **completely unmodified**: after the archive, `[ -f ]` is false and each falls to its own
       fresh-init branch naturally, at `cycle_count=0` / `total_churn=0`.
-- [ ] Add a short prose note immediately below the fenced block explaining the fall-through
+- [x] Add a short prose note immediately below the fenced block explaining the fall-through
       mechanism and pointing at `context/standards/orchestrator-runtime-files.md` for the policy.
 
 **Timing**: 1.25 hours

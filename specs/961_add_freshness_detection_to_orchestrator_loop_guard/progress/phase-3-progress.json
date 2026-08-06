@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Implement the staleness detector on the Stage 2 resume path",
+  "started_at": "2026-08-06T00:30:00Z",
+  "last_updated": "2026-08-06T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert loop-guard-staleness sentinel region with three OR-combined signals, archive-aside, notices, loop_guard_stale flag", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 2, "description": "Add explanatory prose paragraph below the fenced block", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "notes": "bash -n clean on extracted region; bash -u fixture with only the five declared inputs (TASK_DIR, loop_guard_file, churn_file, MAX_CYCLES, current_plan_version) confirmed no unbound-variable error. git diff confirms the pre-existing if [ -f \"$loop_guard_file\" ] line and churn-state block are byte-identical (purely additive diff). No rm -f added inside the new region.",
+  "handoff_count": 0
+}
