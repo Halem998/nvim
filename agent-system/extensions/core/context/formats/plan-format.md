@@ -126,6 +126,23 @@ closed contract, not an aspiration: `scripts/lib/phase-heading-patterns.sh` is t
 anchor implementing it, and every consumer site listed below either sources that library or is
 documented as deliberately parameter-driven.
 
+**Ordering obligation for filtered scans**: a `PHASE_HEADING_ERE`-filtered grep admits conforming
+headings only, so a non-conforming heading is not merely unmatched by it — it is **invisible** to
+it. A consumer that derives a **selection or a count** from such a filtered grep must therefore
+call `has_nonconforming_phase_headings` over the **whole file first**, before the filtered scan,
+and take a named INCONCLUSIVE branch on a hit; checking conformance only on the filtered result
+(rather than the whole file) leaves the check structurally unreachable. This is not a new rule —
+it is what "closed contract, not an aspiration" above requires end-to-end — but it is worth
+stating explicitly because the failure mode is silent: the resume-scan sites now run
+`has_nonconforming_phase_headings` before selection, closing the gap. Sites that stop hard on an
+inconclusive scan (`skill-implementer-hard`'s and `skill-lean-implementation-hard`'s resume-point
+scans, both single-shot leaf workers whose check runs strictly before any subagent is dispatched,
+so no handoff write is owed yet) are deliberately postured differently from the long-running
+orchestration loop (`skill-orchestrate-hard`), which instead routes an inconclusive scan to its
+own established `EXIT (partial, ...)` terminal-condition convention rather than a raw process
+exit — the difference is leaf-worker precondition vs. orchestration-loop terminal state, not an
+inconsistency.
+
 **`[DESCOPED]` is not a recognized phase-heading status marker and must not be used.** Whole-phase
 descoping uses `[COMPLETED WITH EXCLUSIONS]` with a `#### Reasoned Exclusions` record (below)
 enumerating 100% of the phase's remaining items — see `context/standards/status-markers.md`'s

@@ -548,30 +548,32 @@ the assertion.
 
 ---
 
-### Phase 6: Record the Contract and Posture Asymmetry in `plan-format.md` [IN PROGRESS]
+### Phase 6: Record the Contract and Posture Asymmetry in `plan-format.md` [COMPLETED]
 
 **Goal**: Make the document's "closed contract, not an aspiration" claim verifiably true
 end-to-end, so a future reader need not re-derive whether the resume-scan sites actually honor it.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/formats/plan-format.md`, "Canonical phase-heading
+- [x] In `agent-system/extensions/core/context/formats/plan-format.md`, "Canonical phase-heading
       shape" subsection, extend the "Non-conforming headings" paragraph with a short note recording
       the **ordering** obligation: every consumer that derives a selection or a count from a
       `PHASE_HEADING_ERE`-filtered grep runs `has_nonconforming_phase_headings` over the whole file
       **first**, because a non-conforming heading is invisible to — not merely unmatched by — that
-      grep.
-- [ ] Record the posture asymmetry in one or two sentences: leaf-worker resume scans stop hard;
+      grep. *(completed)*
+- [x] Record the posture asymmetry in one or two sentences: leaf-worker resume scans stop hard;
       the orchestration loop routes to its own `EXIT (partial, ...)` terminal convention. State
       that the difference is deliberate and name the reason (no subagent dispatched yet vs. a
-      long-running loop with established terminal-condition bookkeeping).
-- [ ] Leave the existing consumer-list sentence's structure intact — it already names the
+      long-running loop with established terminal-condition bookkeeping). *(completed)*
+- [x] Leave the existing consumer-list sentence's structure intact — it already names the
       resume-scan sites and the live `grep -rl` discovery mechanism. Do not convert it back to a
-      hand-maintained list.
-- [ ] Do **not** touch the letter-suffix prohibition, the canonical regex table, or any other
+      hand-maintained list. *(completed: confirmed byte-identical by diff)*
+- [x] Do **not** touch the letter-suffix prohibition, the canonical regex table, or any other
       grammar text. Verify by diff that the D1 decision paragraph is byte-identical after the edit.
-- [ ] No task-number citations anywhere in the edit — reference the fix by its mechanism ("the
+      *(completed: confirmed by `git diff` — the only hunk is a new, purely additive paragraph;
+      zero lines changed or removed anywhere else in the subsection)*
+- [x] No task-number citations anywhere in the edit — reference the fix by its mechanism ("the
       resume-scan sites run `has_nonconforming_phase_headings` before selection"), never by task
-      number.
+      number. *(completed: confirmed via `check-task-references.sh`, 0 unexempted occurrences)*
 
 **Timing**: 0.5 hours
 
