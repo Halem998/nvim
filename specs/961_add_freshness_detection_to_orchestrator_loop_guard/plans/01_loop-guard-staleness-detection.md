@@ -1,7 +1,7 @@
 # Implementation Plan: Task #961
 
 - **Task**: 961 - Add staleness detection to the orchestrator loop-guard resume path
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: 960 (established the sentinel-region + fixture-test pattern in the same SKILL.md; already complete)
 - **Research Inputs**: specs/961_add_freshness_detection_to_orchestrator_loop_guard/reports/01_loop-guard-staleness-detection.md
@@ -127,26 +127,26 @@ concurrently.
 
 ---
 
-### Phase 1: Record the staleness decision in `orchestrator-runtime-files.md` [NOT STARTED]
+### Phase 1: Record the staleness decision in `orchestrator-runtime-files.md` [COMPLETED]
 
 **Goal**: The chosen signals, their exact thresholds, the anti-`session_id` defense, and the
 churn-state inheritance decision are documented as policy before any code depends on them.
 
 **Tasks**:
-- [ ] Add a new subsection **after** (not replacing) `## Rationale: the freshness-gate asymmetry`,
+- [x] Add a new subsection **after** (not replacing) `## Rationale: the freshness-gate asymmetry`,
       titled to make clear it is a second, orthogonal axis — e.g. `### Operational staleness: a
       second, orthogonal freshness axis`.
-- [ ] State the two-axis distinction plainly: the existing ephemeral/gitignored classification
+- [x] State the two-axis distinction plainly: the existing ephemeral/gitignored classification
       protects against a **git-restored** stale copy and stays correct and unchanged; this new gate
       protects against a **genuinely-present, never-git-touched** guard that is simply superseded or
       old on disk. Both hazards are live; neither subsumes the other.
-- [ ] Record the three OR-combined signals (any one tripping is sufficient — each is independent
+- [x] Record the three OR-combined signals (any one tripping is sufficient — each is independent
       evidence the guard predates the live line of work):
       1. `guard.max_cycles != $MAX_CYCLES` (schema/version drift).
       2. `guard.plan_version != <current latest plans/*.md basename>`, evaluated **only when both
          sides are non-empty and neither is `none`**.
       3. `now - mtime(guard) > ORCHESTRATOR_LOOP_GUARD_STALE_DAYS` days (backstop).
-- [ ] Record the mtime default as **7 days**, with this rationale verbatim in substance: the guard
+- [x] Record the mtime default as **7 days**, with this rationale verbatim in substance: the guard
       is rewritten by the per-cycle Stage 3b update, so its mtime tracks last *cycle activity*, not
       creation. Seven days means no orchestration cycle touched it across an entire working week —
       far outside any plausible conversational-resume gap, and comfortably below the observed
@@ -155,28 +155,28 @@ churn-state inheritance decision are documented as policy before any code depend
       (`ORCHESTRATOR_LOOP_GUARD_STALE_DAYS`) and note that
       `ORCHESTRATOR_SESSION_REAP_MIN`'s 4-hour default is deliberately NOT a usable anchor — it
       protects a much shorter-lived class of file.
-- [ ] Write the explicit anti-`session_id` defense: `session_id` is regenerated on *every*
+- [x] Write the explicit anti-`session_id` defense: `session_id` is regenerated on *every*
       `/orchestrate` invocation regardless of whether any work progressed, so gating on it would
       flag every legitimate conversational resume — a 100% false-positive rate by construction, and
       directly contrary to the guard's purpose of surviving across turns. All three chosen signals
       lack that property: `MAX_CYCLES` changes only when the skill file itself is edited, the
       latest-plan basename changes only when a plan artifact is actually written, and mtime advances
       on every real cycle. None changes merely because a new invocation started.
-- [ ] Document the `.orchestrator-churn-state.json` decision (WORK item 4): it inherits the loop
+- [x] Document the `.orchestrator-churn-state.json` decision (WORK item 4): it inherits the loop
       guard's verdict rather than deriving its own detector, justified by the Class Table rows that
       already document its 1:1 lifecycle coupling (co-created in the same Stage 2 block, co-removed
       only at full-loop termination). It has no `max_cycles`-equivalent constant, and a second
       independently-derived lineage check would be needless surface area.
-- [ ] Update the `.orchestrator-loop-guard` Class Table row's **Reader** cell: replace
+- [x] Update the `.orchestrator-loop-guard` Class Table row's **Reader** cell: replace
       "unconditional trust, see Rationale" with a conditional-trust description pointing at the new
       subsection.
-- [ ] Update the `.orchestrator-churn-state.json` row's **Reader** cell to note it is archived aside
+- [x] Update the `.orchestrator-churn-state.json` row's **Reader** cell to note it is archived aside
       under the loop guard's inherited verdict.
-- [ ] Correct the now-partly-false sentence in the Rationale section ("with no `session_id`
+- [x] Correct the now-partly-false sentence in the Rationale section ("with no `session_id`
       comparison and no mtime/staleness check"): scope it explicitly to base-mode
       `skill-orchestrate/SKILL.md`, and state that hard mode now gates. Do not delete the sentence —
       base mode genuinely still has no gate and that must stay visible.
-- [ ] Add the timestamped archive filenames (`.stale-loop-guard-{ts}.json`,
+- [x] Add the timestamped archive filenames (`.stale-loop-guard-{ts}.json`,
       `.stale-churn-state-{ts}.json`) to the "Not classified here (reviewed and deliberately
       excluded)" paragraph alongside `.stray-handoff-{timestamp}.json`, for the same stated reason:
       they are preserved diagnostic evidence, not control-flow state.

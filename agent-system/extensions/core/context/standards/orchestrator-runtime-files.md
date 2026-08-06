@@ -25,8 +25,8 @@ Every runtime file falls into exactly one of two classes:
 
 | File | Writer | Reader | Cleanup site | Disposition |
 |------|--------|--------|---------------|-------------|
-| `.orchestrator-loop-guard` | `skill-orchestrate`/`skill-orchestrate-hard` Stage 2 (loop-guard init) | Same skills' Stage 2 resume branch (unconditional trust, see Rationale) | `rm -f` only at full-loop termination (base Stage 8; hard-mode equivalent) | **Ephemeral** |
-| `.orchestrator-churn-state.json` | `skill-orchestrate-hard` Stage 2 (`churn_file`) | Hard-mode convergence-policing (H6) reads | `rm -f` only at full-loop termination, alongside the loop guard | **Ephemeral** |
+| `.orchestrator-loop-guard` | `skill-orchestrate`/`skill-orchestrate-hard` Stage 2 (loop-guard init) | Base-mode Stage 2 resume branch: unconditional trust, see Rationale. Hard-mode Stage 2 resume branch: conditional trust — a `loop-guard-staleness` detector runs first; see "Operational staleness: a second, orthogonal freshness axis" below | `rm -f` only at full-loop termination (base Stage 8; hard-mode equivalent); a hard-mode guard that trips the staleness detector is instead archived aside before reinitialization, see below | **Ephemeral** |
+| `.orchestrator-churn-state.json` | `skill-orchestrate-hard` Stage 2 (`churn_file`) | Hard-mode convergence-policing (H6) reads; also archived aside alongside a stale loop guard, inheriting its verdict rather than deriving its own — see "Operational staleness" below | `rm -f` only at full-loop termination, alongside the loop guard; also archived aside (never deleted) when the loop guard it accompanies is found stale | **Ephemeral** |
 | `.lock/` (directory, e.g. `holder.json`) | `task-lock.sh` mutex primitives (see `context/patterns/task-lock.md`) | Lock-holder checks during an in-flight dispatch | Released (removed) when the mutex is released | **Ephemeral** |
 | `.drift-inspection.json` | `skill-orchestrate` Stage 5a (drift-inspection fork) | The same Stage 5a call, immediately after the fork returns | `rm -f` only at Stage 8 postflight (full-loop termination) — same timing class as the loop guard, not per-cycle | **Ephemeral** (newly identified by this audit — see note below) |
 | `.orchestrator-handoff.json` | Skills when `orchestrator_mode: true` (currently: the hard-mode implementation agent's H9 wrap-up; see `docs/architecture/handoff-schema.md`) | `skill-orchestrate`/`skill-orchestrate-hard` Stage 5 (single-task) and Stage MT-4 (multi-task) | Overwritten in place each dispatch cycle (static filename, never deleted) | **Durable provenance** |
@@ -38,14 +38,19 @@ Every runtime file falls into exactly one of two classes:
 | `.return-meta-*.json` (suffixed variants, e.g. `.return-meta-orchestrate.json`, `specs/.return-meta-multi-{session_id}.json`) | Distinct from the bare `.return-meta.json` above — see "The bare-vs-suffixed distinction" below | Varies by variant. **`specs/.return-meta-multi-{session_id}.json` has no reader anywhere in the source store today** — it is written for collision/audit hygiene only; a future reader-adder must add the read-time `session_id` verification check together with the reader, not separately | Varies | **Ephemeral** |
 | `specs/.sessions/{session_id}.json` | `task-lock.sh session-register`/`session-heartbeat` | **None in the source store today** — the in-flight session registry is produced but not yet consumed; a future reader-adder must add its own freshness/ownership checks together with the reader, not separately (mirrors the `specs/.return-meta-multi-{session_id}.json` row above) | `task-lock.sh session-release` at session end; `task-lock.sh session-reap` after `SESSION_REGISTRY_REAP_MIN` (or sooner via the pid-liveness-shortened `dead-pid` band, floored by `SESSION_REGISTRY_DEAD_PID_MIN`) | **Ephemeral** |
 
-**Not classified here (reviewed and deliberately excluded)**: `.stray-handoff-{timestamp}.json`.
+**Not classified here (reviewed and deliberately excluded)**: `.stray-handoff-{timestamp}.json`,
+and, for the identical reason, `.stale-loop-guard-{ts}.json` / `.stale-churn-state-{ts}.json`.
 Both orchestrate skills' stray-handoff sweep (`docs/architecture/handoff-schema.md`'s "Handoff
 Writers" section) moves a misplaced handoff aside into this timestamped name specifically to
 **preserve evidence of a bug** for a human to inspect — it is diagnostic output, not per-cycle
 control-flow state nothing reads back with unconditional trust. Silently gitignoring it would
-suppress the very evidence the sweep exists to surface. It is intentionally left out of both the
-ephemeral and durable-provenance classes above; if it recurs often enough to need policy, that
-policy belongs to the stray-handoff sweep mechanism itself, not this file-tracking split.
+suppress the very evidence the sweep exists to surface. `.stale-loop-guard-{ts}.json` and
+`.stale-churn-state-{ts}.json` (written by the hard-mode `loop-guard-staleness` detector described
+below) are the same shape of artifact: preserved diagnostic evidence of a superseded runtime file,
+never read back by anything, never itself a control-flow input. All three are intentionally left
+out of both the ephemeral and durable-provenance classes above; if any recurs often enough to need
+its own policy, that policy belongs to its own sweep/detector mechanism, not this file-tracking
+split.
 
 ### The bare-vs-suffixed `.return-meta.json` distinction
 
@@ -75,15 +80,20 @@ the two named durable files, not an exhaustive enumeration of every ephemeral na
 The two classes are not an arbitrary grouping — they track a real, verifiable difference in how
 each file is read back.
 
-The loop guard is read completely unconditionally
+The loop guard is read completely unconditionally in **base mode**
 (`skill-orchestrate/SKILL.md` Stage 2): `if [ -f "$loop_guard_file" ] && jq empty ...` resumes
 `cycle_count` and `infra_failures` from whatever is on disk, with **no `session_id` comparison and
 no mtime/staleness check**. Any syntactically valid guard at the expected path is trusted,
-regardless of its age or which session wrote it. The same is true of `.orchestrator-churn-state.json`
-(hard mode) and of `.drift-inspection.json` (trusted the instant its writer-fork returns, no
-independent freshness re-check). A committed-then-git-restored copy of any of these is a genuine
-correctness hazard: it would silently resume a stale cycle count, a stale churn history, or a
-stale drift signal.
+regardless of its age or which session wrote it. This sentence is scoped deliberately to base
+mode and stays true there — `skill-orchestrate/SKILL.md` is unchanged and still has no gate. **Hard
+mode now gates**: `skill-orchestrate-hard/SKILL.md` Stage 2 runs a `loop-guard-staleness` detector
+before this same unconditional-trust read, described in full in "Operational staleness: a second,
+orthogonal freshness axis" below. `.drift-inspection.json` (trusted the instant its writer-fork
+returns, no independent freshness re-check) is unaffected by either change. A committed-then-git-
+restored copy of any of these is a genuine correctness hazard: it would silently resume a stale
+cycle count, a stale churn history, or a stale drift signal — which is exactly the git-restoration
+hazard the ephemeral/gitignored classification below protects against, a distinct hazard from the
+operational staleness the new hard-mode detector addresses (see the two-axis distinction below).
 
 The handoff has the opposite contract. `docs/architecture/handoff-schema.md` states: "**Readers
 MUST check freshness.** ... Both orchestrators compare the file's mtime against
@@ -97,6 +107,84 @@ success," with the gate keyed on `meta_mtime` versus the current dispatch's `win
 **Ephemeral-and-ungated must be ignored; gated provenance is safe to track.** This is the
 mechanism-level justification for the settled split, independent of (and consistent with) the
 "durable audit trail" framing used to motivate it.
+
+### Operational staleness: a second, orthogonal freshness axis
+
+The ephemeral/gitignored classification above protects against exactly one hazard: a **git-
+restored** stale copy of the loop guard, churn state, or drift-inspection file silently
+reappearing on disk and being trusted. That classification stays correct and is unchanged by this
+section.
+
+There is a second, independent hazard it does **not** cover: a loop guard that is **genuinely
+present on disk, never touched by git at all**, but simply superseded — written by an earlier,
+now-obsolete line of work on the same task directory (a stale `max_cycles` from a since-edited
+skill file, a `plan_version` from a plan that has since been revised) or just old enough that no
+orchestration cycle has touched it in a very long time. Neither hazard subsumes the other: a file
+can be git-clean and operationally stale, or git-restored and operationally current (immediately
+after restoration, before any cycle runs). Both are live and both need a gate; this section
+documents the second one, which hard mode alone implements today.
+
+**Three OR-combined signals** (any one tripping is sufficient — each is independent evidence the
+guard predates the live line of work), checked by the `loop-guard-staleness` detector inserted
+into `skill-orchestrate-hard/SKILL.md` Stage 2, immediately before the pre-existing
+`if [ -f "$loop_guard_file" ] && jq empty ...` resume branch:
+
+1. **Schema/version drift**: `guard.max_cycles != $MAX_CYCLES`. `MAX_CYCLES` changes only when the
+   skill file itself is edited (e.g. the base-to-hard-mode bump from 5 to 13), so a mismatch means
+   the guard predates the currently-running skill definition.
+2. **Plan-lineage drift**: `guard.plan_version != <current latest plans/*.md basename>`, evaluated
+   **only when both sides are non-empty and neither is the literal string `none`** — a missing or
+   absent value is never itself evidence of staleness, it just means the check does not apply
+   (e.g. a guard written before this field existed, or a task with no `plans/` directory yet). The
+   latest-plan basename changes only when a plan artifact is actually written, so a mismatch means
+   the guard predates the current plan revision.
+3. **mtime-age backstop**: `now - mtime(guard) > ORCHESTRATOR_LOOP_GUARD_STALE_DAYS` days, default
+   **7**, env-overridable. The guard is rewritten by the per-cycle Stage 3b update, so its mtime
+   tracks last *cycle activity*, not creation — seven days means no orchestration cycle touched it
+   across an entire working week, far outside any plausible conversational-resume gap and
+   comfortably below the observed 13-day failure this detector was built to catch. It is a
+   backstop, not the primary gate: the two drift signals above catch a superseded guard regardless
+   of age. Note that `ORCHESTRATOR_SESSION_REAP_MIN`'s 4-hour default is deliberately **not** a
+   usable anchor for this threshold — it protects a much shorter-lived class of file (the in-flight
+   session registry), not a guard meant to survive across conversational turns spanning days.
+
+**Why not gate on `session_id` equality (the explicitly rejected design)**: `session_id` is
+regenerated on *every* `/orchestrate` invocation regardless of whether any work actually
+progressed, so a gate keyed on it would flag every legitimate conversational resume — a 100%
+false-positive rate by construction, and directly contrary to the loop guard's whole purpose of
+surviving across conversational turns (this repo's Stage 2 comments already document exactly this
+non-gating rationale for the churn file's own observational `session_id` tracking). All three
+chosen signals above are structurally different from `session_id` in the property that matters:
+none of them changes merely because a new invocation started. `MAX_CYCLES` changes only when the
+skill file itself is edited; the latest-plan basename changes only when a plan artifact is
+actually written; mtime advances only on a real cycle's Stage 3b update. An ordinary
+cross-conversational-turn resume — same skill version, same plan, a guard touched within the last
+`ORCHESTRATOR_LOOP_GUARD_STALE_DAYS` days — trips none of the three signals, by construction, even
+though it always carries a brand-new `session_id`.
+
+**On detection**: the tripped guard (and its lifecycle-coupled churn-state file, see below) is
+**archived aside, never deleted**, with a loud named notice identifying which signal tripped and
+where each file was preserved — the same "preserve the evidence" shape the pre-existing
+stray-handoff sweep in this same file already uses for a misplaced handoff (see the Class Table's
+stray-handoff exclusion note above). A fresh guard is then initialized at cycle 0 by the
+pre-existing, unmodified fresh-init branch, which the archive naturally falls through to (the
+`[ -f "$loop_guard_file" ]` test is false once the stale file has been moved aside). Never silently
+trust a stale guard and never silently reset it without saying so.
+
+**`.orchestrator-churn-state.json` inherits the loop guard's verdict** rather than deriving an
+independent staleness signal of its own. This is justified by the Class Table's already-documented
+1:1 lifecycle coupling between the two files: both are hard-mode-only, both are created in the same
+Stage 2 block, and both are removed together only at full-loop termination. The churn file has no
+`max_cycles`-equivalent schema constant and no lineage field of its own to drift-check — deriving a
+second, independent detector for it would be needless surface area duplicating a decision the loop
+guard's verdict already makes. When the loop guard is found stale, the churn file (if present) is
+archived alongside it under the same timestamp suffix, purely as a consequence of the guard's
+verdict, not its own judgment.
+
+**Base mode is explicitly out of scope.** `skill-orchestrate/SKILL.md` carries the byte-for-byte
+identical unconditional-trust shape in its own Stage 2 and is not changed by this detector — see
+the Class Table row and Rationale paragraph above, both of which now state this asymmetry
+explicitly rather than leaving it to be inferred.
 
 ## Consumer Repo Setup
 

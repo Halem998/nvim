@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Record the staleness decision in orchestrator-runtime-files.md",
+  "started_at": "2026-08-06T00:00:00Z",
+  "last_updated": "2026-08-06T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add new subsection on operational staleness", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]},
+    {"id": 2, "description": "Update Class Table cells and Rationale sentence, exclusion paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
