@@ -23,7 +23,7 @@ next_project_number: 998
 
 ### Agent System
 
-961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+961 [PLANNING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
       └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
@@ -1193,10 +1193,12 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 961. Add staleness detection to the orchestrator loop-guard resume path
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 960
+- **Research**: [961_add_freshness_detection_to_orchestrator_loop_guard/reports/01_loop-guard-staleness-detection.md]
+- **Plan**: [961_add_freshness_detection_to_orchestrator_loop_guard/plans/01_loop-guard-staleness-detection.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 

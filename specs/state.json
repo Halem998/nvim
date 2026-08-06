@@ -2833,7 +2833,7 @@
     {
       "project_number": 961,
       "project_name": "add_freshness_detection_to_orchestrator_loop_guard",
-      "status": "not_started",
+      "status": "planning",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add staleness detection to the orchestrator loop-guard resume path",
@@ -2845,10 +2845,21 @@
       "dependencies": [
         960
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/961_add_freshness_detection_to_orchestrator_loop_guard/reports/01_loop-guard-staleness-detection.md",
+          "type": "report",
+          "summary": "Full research findings, recommended staleness-signal design, archive-aside implementation shape, churn-state inheritance recommendation, and testing strategy for the Stage 2 loop-guard resume path."
+        },
+        {
+          "path": "specs/961_add_freshness_detection_to_orchestrator_loop_guard/plans/01_loop-guard-staleness-detection.md",
+          "type": "plan",
+          "summary": "5-phase plan adding OR-combined staleness detection (max_cycles drift, plan_version drift, 7-day mtime backstop) to the hard-mode Stage 2 loop-guard resume path, with archive-aside evidence preservation and a fixture test harness."
+        }
+      ],
       "created": "2026-07-29T14:29:13Z",
-      "last_updated": "2026-07-29T14:29:13Z",
-      "session_id": "sess_1785334778_2cd967",
+      "last_updated": "2026-08-06T15:53:34Z",
+      "session_id": "sess_1786031074_767c9c",
       "next_artifact_number": null
     },
     {

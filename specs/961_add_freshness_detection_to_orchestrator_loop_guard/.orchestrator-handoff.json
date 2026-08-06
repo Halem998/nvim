@@ -1,0 +1,35 @@
+{
+  "status": "success",
+  "task_number": 961,
+  "session_id": "sess_1786031074_767c9c",
+  "phase": "plan",
+  "agent_type": "planner-agent",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/961_add_freshness_detection_to_orchestrator_loop_guard/plans/01_loop-guard-staleness-detection.md",
+      "summary": "5-phase plan adding OR-combined staleness detection (max_cycles drift, plan_version drift, 7-day mtime backstop) to the hard-mode Stage 2 loop-guard resume path, with archive-aside evidence preservation and a fixture test harness."
+    }
+  ],
+  "modified_files": [
+    "specs/961_add_freshness_detection_to_orchestrator_loop_guard/plans/01_loop-guard-staleness-detection.md"
+  ],
+  "phase_count": 5,
+  "estimated_hours": 4.5,
+  "dependency_waves": [
+    [
+      1,
+      2
+    ],
+    [
+      3
+    ],
+    [
+      4
+    ],
+    [
+      5
+    ]
+  ],
+  "next_steps": "Run /implement 961 to execute the plan"
+}
