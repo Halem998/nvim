@@ -2086,6 +2086,34 @@
       }
     },
     {
+      "path": "standards/shell-strict-mode.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Three-class shell strict-mode convention (migrate/deliberately-uo/deliberately-unset) with the live per-file classification of every non-set-e script",
+      "line_count": 199,
+      "keywords": [
+        "standards",
+        "shell",
+        "strict-mode",
+        "set-e",
+        "pipefail",
+        "bash"
+      ],
+      "topics": [
+        "quality"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "task_types": [
+          "meta"
+        ],
+        "commands": []
+      }
+    },
+    {
       "path": "standards/status-markers.md",
       "domain": "core",
       "subdomain": "standards",

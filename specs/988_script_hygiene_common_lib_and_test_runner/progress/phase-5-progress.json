@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "Strict-mode audit, classification, and convention doc",
+  "started_at": "2026-08-06T23:55:19Z",
+  "last_updated": "2026-08-07T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive set-e/set-uo/no-set populations live and classify every non-e file into Class A/B/C", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/standards/shell-strict-mode.md",
+      "agent-system/extensions/core/index-entries.json"
+    ], "note": "78 set-euo, 67 set-uo, 18 no-set-line files found live. Full classification recorded in shell-strict-mode.md, grouped by cohort with per-cohort justification rather than a single 85-row table."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.7",
+      "description": "Run scripts/generate-context-line-counts.sh --write to set the new doc's line_count",
+      "type": "altered",
+      "reason": "The generator refuses to run from the source store (agent-system/extensions/core/scripts) by design -- it requires a deployed .claude/scripts/ tree, and deploying was out of scope for this dispatch (source-store-only edits). line_count was set by hand from a direct wc -l on the new file instead.",
+      "annotation": "*(deviation: altered — line_count set by hand-verified wc -l instead of running the deploy-only generator script)*"
+    }
+  ]
+}

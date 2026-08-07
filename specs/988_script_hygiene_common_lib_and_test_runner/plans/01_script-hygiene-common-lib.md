@@ -396,45 +396,50 @@ expanding scope.
 
 ---
 
-### Phase 5: Strict-mode audit, classification, and convention doc [IN PROGRESS]
+### Phase 5: Strict-mode audit, classification, and convention doc [COMPLETED]
 
 **Goal**: A written, evidence-backed classification of every shell script into one of three
 strict-mode classes, so Phases 6 and 7 flip only what is safe to flip. No behavior changes.
 
 **Tasks**:
-- [ ] Re-derive the populations live:
+- [x] Re-derive the populations live:
   `grep -rl '^set -euo pipefail' --include="*.sh" agent-system/extensions/`,
   `grep -rl '^set -uo pipefail' --include="*.sh" agent-system/extensions/`, and a loop emitting
-  files with no `^set -` line at all.
-- [ ] Classify every file in the non-`-e` populations into exactly one class, with a one-line
-  justification each:
-  - **Class A — migrate to `set -euo pipefail`**: ordinary scripts with no counter idiom and no
-    documented non-`-e` dependency.
-  - **Class B — deliberately `set -uo pipefail`, do not migrate**: counter-idiom harnesses whose
-    correctness requires continuing past a failure. This covers every `scripts/tests/test-*.sh`
-    and flat `scripts/test-*.sh` suite (mandated by `shell-script-testing.md`'s helper
-    convention), `verify-deploy.sh`, the `lint/*.sh` scripts, and the `check-*.sh` scripts.
-    Confirm each by locating its `PASSED`/`FAILED` or equivalent counter.
-  - **Class C — deliberately no `set` line, do not migrate**: the `scripts/lib/*.sh` files, whose
-    headers state that sourcing must not change the caller's shell-option state.
-- [ ] For every Class A candidate, audit for `-e`-hostile constructs before proposing the flip:
-  bespoke non-`if`-guarded command chains, functions whose nonzero return is expected, and
-  `grep`/`jq` calls whose empty result is normal. Record findings per file.
-- [ ] Confirm the `deploy-root-guard.sh` `|| exit 1` pattern is `-e`-safe by construction (a
-  command whose failure is tested by `||` does not trip the `-e` trap) and record that finding
-  explicitly, so Phases 6/7 do not re-litigate it.
-- [ ] Confirm `update-task-status.sh` already has `set -euo pipefail` and exclude it.
-- [ ] Write `agent-system/extensions/core/context/standards/shell-strict-mode.md` recording the
+  files with no `^set -` line at all. *(completed: 78 with `set -euo pipefail`, 67 with
+  `set -uo pipefail`, 18 with no `set` line — close to the Scope Hypothesis's ~78/~65/~17)*
+- [x] Classify every file in the non-`-e` populations into exactly one class, with a one-line
+  justification each. *(completed: full classification recorded in
+  `shell-strict-mode.md` — 27 Class B test suites + 6 Class B harness/report scripts + 35
+  individually-audited Class A candidates (5 of which are Phase 6's named batch, 11 EXTRA-CARE
+  hooks, 11 ordinary, 8 non-core-out-of-scope) from the `set -uo pipefail` population; 11 Class C
+  sourced files + 2 Class B report-everything/no-set-line files + 5 Class A ordinary hooks from
+  the no-set-line population)*
+- [x] For every Class A candidate, audit for `-e`-hostile constructs before proposing the flip.
+  *(completed: no unguarded -e-hostile construct found in any Class A candidate; every
+  conditionally-tolerated command is already `if`/`||`/`&&`-guarded. Findings recorded per
+  cohort in `shell-strict-mode.md`'s Class A sections)*
+- [x] Confirm the `deploy-root-guard.sh` `|| exit 1` pattern is `-e`-safe by construction.
+  *(completed: recorded in `shell-strict-mode.md`'s "Note on deploy-root-guard.sh's callers")*
+- [x] Confirm `update-task-status.sh` already has `set -euo pipefail` and exclude it.
+  *(completed: confirmed, excluded from both populations)*
+- [x] Write `agent-system/extensions/core/context/standards/shell-strict-mode.md` recording the
   three classes, the admission test for each, and the rule that a new script defaults to Class A
-  unless it can justify Class B or C. Cross-reference `shell-script-testing.md` (which owns the
-  Class B test-suite rationale) rather than restating it, mirroring that doc's "Related" pattern.
-- [ ] Register the new standards doc in the core extension's `index-entries.json` and
+  unless it can justify Class B or C. *(completed: 199 lines, cross-references
+  `shell-script-testing.md` rather than restating it)*
+- [x] Register the new standards doc in the core extension's `index-entries.json` and
   `provides` arrays as that extension's convention requires; run
-  `scripts/generate-context-line-counts.sh --write` if line counts are tracked.
-- [ ] Record the per-file classification in the phase's commit body or as a table inside the
-  standards doc — whichever the doc-lint gate accepts.
-- [ ] Do not use task numbers anywhere in the new standards doc; it is a deliverable outside
-  `specs/**`. Reference durable anchors (filenames, section headings) instead.
+  `scripts/generate-context-line-counts.sh --write` if line counts are tracked. *(completed:
+  index-entries.json entry added with `line_count: 199`, hand-verified against live `wc -l`.
+  No `manifest.json` change needed — `provides.context` already declares the whole `standards`
+  directory, not individual files. The line-count generator itself requires running from a
+  deployed `.claude/scripts/` tree per its own root-guard and was not invoked against the source
+  store; the manually-set count was cross-checked against `wc -l` directly instead)*
+- [x] Record the per-file classification in the phase's commit body or as a table inside the
+  standards doc — whichever the doc-lint gate accepts. *(completed: recorded as prose sections
+  with explicit file lists inside `shell-strict-mode.md`, per-cohort rather than a single table,
+  since the cohorts share one justification each)*
+- [x] Do not use task numbers anywhere in the new standards doc. *(completed: confirmed via
+  grep — zero task-number references in `shell-strict-mode.md`)*
 
 **Timing**: 2 hours
 
