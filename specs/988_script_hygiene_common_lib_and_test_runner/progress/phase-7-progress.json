@@ -2,7 +2,7 @@
   "phase": 7,
   "phase_name": "Strict-mode migration batch B (remaining Class A)",
   "started_at": "2026-08-07T00:00:00Z",
-  "last_updated": "2026-08-07T03:00:00Z",
+  "last_updated": "2026-08-07T04:00:00Z",
   "objectives": [
     {
       "id": 1,
@@ -55,8 +55,11 @@
     {
       "id": 5,
       "description": "Batch 5: hooks/validate-plan-write.sh, email/hooks/mail-guard.sh",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/hooks/validate-plan-write.sh",
+        "agent-system/extensions/email/hooks/mail-guard.sh"
+      ]
     }
   ],
   "current_objective": 5,

@@ -15,7 +15,7 @@
 # isolated and copy-liftable. Structural sibling: .claude/extensions/core/hooks/validate-meta-write.sh
 # (same stdin-JSON parsing pattern).
 
-set -uo pipefail
+set -euo pipefail
 
 # --- isolated, copy-liftable data arrays ----------------------------------------------------
 
@@ -45,12 +45,12 @@ AUDIT_LOG=".claude/tmp/mail-guard-audit.log"
 # --- parse tool_input.command from stdin (PreToolUse hook input) ---------------------------
 
 if [ -t 0 ]; then
-  COMMAND=$(echo "${CLAUDE_TOOL_INPUT:-}" 2>/dev/null | jq -r '.command // empty' 2>/dev/null)
+  COMMAND=$(echo "${CLAUDE_TOOL_INPUT:-}" 2>/dev/null | jq -r '.command // empty' 2>/dev/null) || true
 else
-  INPUT=$(cat)
-  COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+  INPUT=$(cat) || true
+  COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || true
   if [ -z "$COMMAND" ]; then
-    COMMAND=$(echo "${CLAUDE_TOOL_INPUT:-}" 2>/dev/null | jq -r '.command // empty' 2>/dev/null)
+    COMMAND=$(echo "${CLAUDE_TOOL_INPUT:-}" 2>/dev/null | jq -r '.command // empty' 2>/dev/null) || true
   fi
 fi
 
@@ -65,7 +65,7 @@ audit() {
   local manifest_hash
   manifest_hash=$(printf '%s' "$COMMAND" \
     | grep -oE -- '--confirm-manifest[[:space:]]+[a-f0-9]+' 2>/dev/null \
-    | awk '{print $2}' | head -n1)
+    | awk '{print $2}' | head -n1) || true
   printf '%s\t%s\t%s\t%s\n' "$(date -Iseconds)" "$decision" "${manifest_hash:-}" "$COMMAND" \
     >> "$AUDIT_LOG" 2>/dev/null || true
 }
