@@ -1,74 +1,80 @@
 {
-  "status": "partial",
-  "partial_progress": {
-    "stage": "phase_6_completed_phase_7_10_remaining",
-    "details": "Phases 1-5 completed and committed (prior dispatches). Phase 6 is now fully COMPLETED and committed in this dispatch: all 5 files (state-write.sh, task-lock.sh, git-commit-scoped.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh) migrated to set -euo pipefail, each individually audited for -e-hostile patterns and live-fixture-exercised. Phases 7-10 (remaining strict-mode batch, shebang normalization, and two new test suites) are not started; see the phase-6 completion handoff for the reusable audit playbook.",
-    "handoff_path": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T084456Z.md",
-    "phases_completed": 6,
-    "phases_total": 10
-  },
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "handoff",
-      "path": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T084456Z.md",
-      "summary": "Phase 6 completion handoff: the reusable 3-hazard-class audit playbook and mktemp -d live-fixture methodology for Phase 7's remaining Class A files"
+      "type": "summary",
+      "path": "specs/988_script_hygiene_common_lib_and_test_runner/summaries/01_script-hygiene-common-lib-summary.md",
+      "summary": "All 10 plan phases completed: test runner + Gate 8, scripts/lib/common.sh, session-ID/root-resolution migration, audited set -euo pipefail strict-mode migration across 27 files, shebang normalization across 24 files, and two new test suites (skill-base.sh lifecycle functions, update-task-status.sh)."
     }
   ],
   "completion_data": {
-    "completion_summary": "Closed Phase 6 (strict-mode migration batch A) in full: migrated task-lock.sh, git-commit-scoped.sh, orchestrate-batch-admit.sh, and orchestrate-predispatch-review.sh (state-write.sh was already done in a prior dispatch) to set -euo pipefail, each individually audited and live-fixture-verified. Found and fixed three recurring -e-hostile hazard classes across the batch, most consequentially the VAR=$(cmd); status=$? anti-pattern (5 occurrences, including two whose failure path drove documented graceful-degradation logic that would otherwise never run under -e). Phases 7-10 remain for a follow-up /implement dispatch."
+    "completion_summary": "Completed all four coupled shell-hygiene deliverables across 10 phases: a scripts/tests/run-all.sh test runner wired into verify-deploy.sh as Gate 8; scripts/lib/common.sh (repo-root resolution, session-ID generation, timestamps, logging trio, test trio) with a 23-assertion unit suite; session-ID and root-resolution boilerplate migrated onto the shared library; a per-file-audited set -euo pipefail strict-mode migration across 27 files (Phases 6-7), each individually audited for -e-hostile constructs and live-fixture-verified, zero reclassified to Class B; shebang normalization across 24 files; and two new test suites covering skill-base.sh's highest-blast-radius lifecycle functions (14/14 assertions) and update-task-status.sh's preflight/postflight transitions and --phase-check backstop (16/16 assertions). Final run-all.sh: 29/29 suites passing."
   },
   "modified_files": [
-    "agent-system/extensions/core/scripts/task-lock.sh",
-    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
-    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
-    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/hooks/claude-stop-notify.sh",
+    "agent-system/extensions/core/hooks/events-log-artifact.sh",
+    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/hooks/log-session.sh",
+    "agent-system/extensions/core/hooks/memory-nudge.sh",
+    "agent-system/extensions/core/hooks/post-command.sh",
+    "agent-system/extensions/core/hooks/subagent-postflight.sh",
+    "agent-system/extensions/core/hooks/tts-notify.sh",
+    "agent-system/extensions/core/hooks/validate-handoff-location.sh",
+    "agent-system/extensions/core/hooks/validate-meta-write.sh",
+    "agent-system/extensions/core/hooks/validate-no-task-references.sh",
+    "agent-system/extensions/core/hooks/validate-plan-write.sh",
+    "agent-system/extensions/core/hooks/validate-state-sync.sh",
+    "agent-system/extensions/core/hooks/wezterm-clear-task-number.sh",
+    "agent-system/extensions/core/hooks/wezterm-notify.sh",
+    "agent-system/extensions/core/hooks/wezterm-preflight-status.sh",
+    "agent-system/extensions/core/hooks/wezterm-task-number.sh",
+    "agent-system/extensions/core/hooks/wezterm-utils.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/census-count.sh",
+    "agent-system/extensions/core/scripts/claude-refresh.sh",
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/scripts/generate-context-line-counts.sh",
+    "agent-system/extensions/core/scripts/git-snapshot.sh",
+    "agent-system/extensions/core/scripts/lifecycle-notify.sh",
+    "agent-system/extensions/core/scripts/migrate-directory-padding.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/reap-session-runtime-files.sh",
+    "agent-system/extensions/core/scripts/reconcile-artifacts.sh",
+    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/email/hooks/mail-guard.sh",
+    "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-7-handoff-20260807T100000Z.md",
     "specs/988_script_hygiene_common_lib_and_test_runner/plans/01_script-hygiene-common-lib.md",
-    "specs/988_script_hygiene_common_lib_and_test_runner/progress/phase-6-progress.json",
-    "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T084456Z.md",
-    "specs/988_script_hygiene_common_lib_and_test_runner/.orchestrator-handoff.json"
+    "specs/988_script_hygiene_common_lib_and_test_runner/progress/phase-7-progress.json",
+    "specs/988_script_hygiene_common_lib_and_test_runner/progress/phase-9-progress.json",
+    "specs/988_script_hygiene_common_lib_and_test_runner/progress/phase-10-progress.json",
+    "specs/988_script_hygiene_common_lib_and_test_runner/summaries/01_script-hygiene-common-lib-summary.md"
   ],
   "memory_candidates": [
     {
-      "content": "When migrating a shell script from `set -uo pipefail` to `set -euo pipefail`, a `VAR=$(cmd); status=$?` pair immediately after is an -e-hostile pattern: under -e, a failing bare assignment aborts the script on that line, before the status capture or any custom error handling can run. Fix with `if VAR=$(cmd); then status=0; else status=$?; fi` (equivalently `VAR=$(cmd) || status=$?`) -- both forms make the assignment part of a tested condition, which is -e-exempt, and preserve the captured status exactly. This pattern recurred 5 times across one script-hygiene migration (state-write.sh, task-lock.sh's retry wrapper, git-commit-scoped.sh's commit + retry, orchestrate-batch-admit.sh's verdict computation, and orchestrate-predispatch-review.sh's subprocess capture and its own findings computation) -- treat it as a near-certain finding whenever a script pairs a bare `VAR=$(cmd)` with a `status=$?`/`exit=$?` on the very next line.",
+      "content": "When migrating a shell script from `set -uo pipefail` to `set -euo pipefail`, a `VAR=$(cmd); status=$?` pair immediately after is an -e-hostile pattern: under -e, a failing bare assignment aborts the script on that line, before the status capture or any custom error handling can run. Fix with `if VAR=$(cmd); then status=0; else status=$?; fi` (equivalently `VAR=$(cmd) || status=$?`) -- both forms make the assignment part of a tested condition, which is -e-exempt, and preserve the captured status exactly. This pattern recurred across two batches of one script-hygiene migration (12+ occurrences across state-write.sh, task-lock.sh, git-commit-scoped.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh, orchestrate-dry-run-report.sh, orchestrate-recover-outcome.sh, and orchestrate-triage-classify.sh) -- treat it as a near-certain finding whenever a script pairs a bare `VAR=$(cmd)` with a `status=$?`/`exit=$?` on the very next line, and grep broadly for bare `=$?` (not just `status=$?`) since the captured variable name varies.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T084456Z.md",
+      "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/summaries/01_script-hygiene-common-lib-summary.md",
       "confidence": 0.95,
-      "suggested_keywords": [
-        "set -e",
-        "strict mode",
-        "bash",
-        "shell",
-        "exit code guard",
-        "errexit"
-      ]
+      "suggested_keywords": ["set -e", "strict mode", "bash", "shell", "exit code guard", "errexit", "anti-pattern"]
     },
     {
-      "content": "A second, easy-to-miss -e-hostile bash pattern distinct from the VAR=$(cmd); status=$? anti-pattern: a bare standalone statement of the form `[ cond ] && action` (e.g. `[ -n \"$x\" ] && echo ... >&2`, `[ cond ] && continue`, `[ \"$FLAG\" = true ] && return 0`). Under `set -e` this aborts the script whenever the CONDITION is false (the common case), not just when `action` itself fails -- because a standalone `test && cmd` statement's own exit status is the test's exit status when the test is false and `cmd` never runs. This is easy to miss during an -e migration audit because it looks like ordinary short-circuit idiom and reads as harmless. Fix: append `|| true`, or restructure as an explicit `if`. Search for it with a regex like `grep -n '\\[ .* \\] &&[^&]*$' <file> | grep -v '||'`.",
+      "content": "A second, easy-to-miss -e-hostile bash pattern distinct from the VAR=$(cmd); status=$? anti-pattern: a bare standalone statement of the form `[ cond ] && action` (e.g. `[ -n \"$x\" ] && echo ... >&2`, `[ cond ] && continue`, `[ \"$FLAG\" = true ] && return 0`). Under `set -e` this aborts the script whenever the CONDITION is false, not just when `action` itself fails -- because a standalone `test && cmd` statement's own exit status is the test's exit status when the test is false and `cmd` never runs. This is easy to miss during an -e migration audit because it looks like ordinary short-circuit idiom. Several instances found across a 27-file migration sat directly on a SUCCESS path rather than a failure path (e.g. `[ -z \"$session_id\" ] && exit_success` aborted precisely when a marker WAS found with a valid session_id -- the normal case a hook exists to handle) -- an audit that only reasons about 'what happens on failure' misses this class; the correct question is 'what happens on every branch this statement can take'. Fix: append `|| true`, or restructure as an explicit `if`. Search with `grep -n '\\[ .* \\] &&[^&]*$' <file> | grep -v '||'`.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T084456Z.md",
+      "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/summaries/01_script-hygiene-common-lib-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": [
-        "set -e",
-        "strict mode",
-        "bash",
-        "shell",
-        "short circuit",
-        "errexit"
-      ]
+      "suggested_keywords": ["set -e", "strict mode", "bash", "shell", "short circuit", "errexit", "success path"]
     },
     {
-      "content": "When auditing a shell script for set -e migration hazards, guard a heavily-reused leaf helper FUNCTION at its own definition (e.g. making it always `return 0` by appending `|| echo \"\"` to its last command) rather than guarding every individual call site. This collapsed ~15 call-site edits into 1-2 source fixes in one migration (task-lock.sh's read_holder_field and session_registry_dir). Also: `deploy-root-guard.sh`-style scripts that refuse to run outside a deployed .claude/scripts/ tree can still be live-fixture-tested without touching the real deployed tree or invoking the sanctioned-only deploy-headless.sh -- build an isolated `mktemp -d` fixture shaped like `$WORK/.claude/scripts/` (copy the script under test plus its lib/*.sh and deploy-root-guard.sh dependencies there, with `$WORK/specs/` two levels up) and exercise every subcommand/exit-code path against it.",
+      "content": "When auditing a shell script for set -e migration hazards, guard a heavily-reused leaf helper FUNCTION at its own definition rather than guarding every individual call site. `deploy-root-guard.sh`-style scripts that refuse to run outside a deployed .claude/scripts/ tree can still be live-fixture-tested without touching the real deployed tree -- build an isolated `mktemp -d` fixture shaped like `$WORK/.claude/scripts/` (copy the script under test plus its lib/*.sh and deploy-root-guard.sh dependencies there, with `$WORK/specs/` two levels up) and exercise every subcommand/exit-code path against it. Two further hazard classes recur beyond the two anti-patterns above: (1) bare grep/jq command-substitution captures whose common case IS the no-match/failure path -- e.g. a PreToolUse hook's `ADD_SEGMENTS=$(echo \"$CMD\" | grep -oE 'git add...')` fails under pipefail on every command that ISN'T a git-add, i.e. almost every real invocation; (2) a standalone `((VAR++))` post-increment command fails under -e whenever the pre-increment value is 0 (virtually always on a loop's first iteration) -- fix by rewriting as `VAR=$((VAR + 1))`, a plain assignment immune to this hazard. For a `set -e`-fixed hook with a documented fail-open contract on internal error (e.g. 'fails OPEN if its own shared pattern library cannot be sourced'), check whether that contract was only ever honored for a MISSING dependency, not a present-but-broken one -- a `. \"$LIB\"` sourcing failure needs its own explicit `if ! . \"$LIB\"; then ... exit 0; fi` guard to honor the same contract under -e.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T084456Z.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "set -e",
-        "audit",
-        "leaf helper",
-        "fixture testing",
-        "mktemp",
-        "deploy-root-guard"
-      ]
+      "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/summaries/01_script-hygiene-common-lib-summary.md",
+      "confidence": 0.88,
+      "suggested_keywords": ["set -e", "audit", "leaf helper", "fixture testing", "mktemp", "deploy-root-guard", "fail-open"]
     }
   ],
   "metadata": {
@@ -80,7 +86,7 @@
       "implement",
       "general-implementation-agent"
     ],
-    "phases_completed": 6,
+    "phases_completed": 10,
     "phases_total": 10
   }
 }

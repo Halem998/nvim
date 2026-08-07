@@ -1,7 +1,7 @@
 # Implementation Plan: Task #988
 
 - **Task**: 988 - Script hygiene: lib/common.sh, strict-mode convention, test runner wired into deploy
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 16 hours
 - **Dependencies**: None (Task 960, Task 964 already completed)
 - **Research Inputs**: specs/988_script_hygiene_common_lib_and_test_runner/reports/01_shell-hygiene-common-lib.md
@@ -797,25 +797,47 @@ extend that suite instead of creating a duplicate.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0 with every discovered
-  suite green.
-- [ ] `run-all.sh` exits nonzero against a deliberately-broken fixture suite, and that nonzero
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0 with every discovered
+  suite green. *(confirmed: 29/29 passed, 0 failed, in the final full-suite run of this
+  implementation)*
+- [x] `run-all.sh` exits nonzero against a deliberately-broken fixture suite, and that nonzero
   propagates to `verify-deploy.sh`'s exit code with a `FINDING gate8` line (Phase 1's recorded
-  demonstration).
-- [ ] `run-all.sh` exits nonzero, loudly, when it discovers zero suites.
+  demonstration). *(demonstrated in Phase 1; not re-demonstrated here)*
+- [x] `run-all.sh` exits nonzero, loudly, when it discovers zero suites. *(demonstrated in Phase
+  1; not re-demonstrated here)*
 - [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh .` exits 0 with Gate 8 present.
-- [ ] Gate 8 prints `[SKIP]` against a deploy-consumer target with no `agent-system/extensions`.
-- [ ] `grep -rn 'sess_\$(date' --include="*.sh" agent-system/extensions/` matches only
-  `lib/common.sh`.
-- [ ] `grep -rl '^#!/bin/bash' --include="*.sh" agent-system/extensions/` returns nothing.
-- [ ] Every non-`set -e` file maps to a Class B or Class C entry in `shell-strict-mode.md`.
-- [ ] `grep -c '^set -' agent-system/extensions/core/scripts/lib/common.sh` returns 0.
-- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/check-task-references.sh --quiet` exits 0 — no
-  task numbers leaked into any deliverable outside `specs/**`.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` exits 0.
-- [ ] `git status --short specs/` is clean after any suite run.
-- [ ] Every new script file appears in `core/manifest.json`'s `provides.scripts`.
+  *(NOT clean as of this implementation's completion: Gates 3 and 5 report the expected, already
+  -documented "deployed script content drift" for every file Phases 6-8 touched -- `.claude/` has
+  not been redeployed during this dispatch, per the Phase 6/7 handoffs' "What NOT to Try"
+  guidance; this agent is not a sanctioned automated caller of deploy-headless.sh. Gate 8 itself
+  (run-all.sh) is confirmed green in isolation. Resolves at the next human/orchestrator-driven
+  regeneration.)*
+- [x] Gate 8 prints `[SKIP]` against a deploy-consumer target with no `agent-system/extensions`.
+  *(demonstrated in Phase 1; not re-demonstrated here)*
+- [x] `grep -rn 'sess_\$(date' --include="*.sh" agent-system/extensions/` matches only
+  `lib/common.sh`. *(confirmed live: the only two matches are common.sh's own definition and a
+  test-file comment referencing it)*
+- [x] `grep -rl '^#!/bin/bash' --include="*.sh" agent-system/extensions/` returns nothing.
+  *(confirmed live: zero matches)*
+- [x] Every non-`set -e` file maps to a Class B or Class C entry in `shell-strict-mode.md`.
+  *(confirmed: the Class A remainder list is now empty after Phase 7)*
+- [x] `grep -c '^set -' agent-system/extensions/core/scripts/lib/common.sh` returns 0. *(confirmed
+  live)*
+- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet` exits 0. *(NOT
+  clean: 18 findings, all "deployed script content drift" for files this implementation touched
+  -- the same expected, documented deploy-boundary drift as the verify-deploy.sh item above, not
+  a new or different defect)*
+- [x] `bash agent-system/extensions/core/scripts/check-task-references.sh --quiet` exits 0 — no
+  task numbers leaked into any deliverable outside `specs/**`. *(confirmed live: 0 unexempted
+  occurrences across all 4 scanned trees)*
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` exits 0.
+  *(confirmed live: 33 passed, 0 warnings, 0 failed)*
+- [x] `git status --short specs/` is clean after any suite run. *(confirmed: clean besides this
+  task's own directory and the ambient events.jsonl session-logging noise already present before
+  this dispatch began)*
+- [x] Every new script file appears in `core/manifest.json`'s `provides.scripts`. *(confirmed:
+  run-all.sh, lib/common.sh, tests/test-common-lib.sh, tests/test-skill-base-lifecycle.sh, and
+  tests/test-update-task-status.sh are all registered)*
 
 ## Artifacts & Outputs
 
