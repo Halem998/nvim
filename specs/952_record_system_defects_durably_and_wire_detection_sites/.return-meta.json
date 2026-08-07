@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1786116524_d6ecd7",
   "task_number": 952,
   "artifacts": [
@@ -32,21 +36,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/summaries/01_defect-recorder-and-wiring-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["common.sh", "session-id", "single-source", "test-common-lib", "verify-deploy"]
+      "suggested_keywords": [
+        "common.sh",
+        "session-id",
+        "single-source",
+        "test-common-lib",
+        "verify-deploy"
+      ]
     },
     {
       "content": "system-defect-record.sh's dedup rule keys on {defect_class}:{attributed_source_path} but only suppresses when a PRIOR matching row's detail.linked_task_number resolves to a non-terminal task in state.json. linked_task_number is always written as null at record time (recording never promotes to a task) -- so to test/verify dedup suppression, you must manually set linked_task_number on a prior row to a real non-terminal task number before re-recording; a bare re-run of the identical call is, by design, NOT a duplicate (it produces a fresh row) since nothing is currently tracking the defect. See context/patterns/system-defect-discrimination.md's 'deduplication rule' section for the three-way classification (no prior match / prior match with non-terminal linked task / prior match with no or terminal linked task).",
       "category": "INSIGHT",
       "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/summaries/01_defect-recorder-and-wiring-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["system-defect-record", "dedup", "linked_task_number", "system_defect", "events.jsonl"]
+      "suggested_keywords": [
+        "system-defect-record",
+        "dedup",
+        "linked_task_number",
+        "system_defect",
+        "events.jsonl"
+      ]
     },
     {
       "content": "After editing any file under agent-system/extensions/*/context/** (or reference/**), re-run bash .claude/scripts/generate-context-line-counts.sh --write (against the DEPLOYED .claude/scripts/ copy, not the source-store copy -- it refuses to run from the source store) before considering the phase closed. check-extension-docs.sh / verify-deploy.sh enforce index-entries.json's declared line_count exactly, and it is easy to edit a context doc in a late phase without noticing the earlier-declared count silently going stale, which only surfaces as a gate failure much later.",
       "category": "WORKFLOW",
       "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/summaries/01_defect-recorder-and-wiring-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["index-entries.json", "line_count", "generate-context-line-counts", "check-extension-docs", "verify-deploy"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "generate-context-line-counts",
+        "check-extension-docs",
+        "verify-deploy"
+      ]
     }
   ],
   "completion_data": {
@@ -56,8 +78,14 @@
     "session_id": "sess_1786116524_d6ecd7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
-    "phases_total": 8
+    "phases_total": 8,
+    "cycles_used": 5,
+    "final_state": "completed"
   }
 }

@@ -2550,7 +2550,7 @@
     {
       "project_number": 952,
       "project_name": "record_system_defects_durably_and_wire_detection_sites",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Record detected system defects durably and wire the ready detection sites",
@@ -2573,7 +2573,7 @@
         988
       ],
       "created": "2026-07-28T00:00:00Z",
-      "last_updated": "2026-08-07T15:45:03Z",
+      "last_updated": "2026-08-07T17:09:35Z",
       "session_id": "sess_1786116524_d6ecd7",
       "artifacts": [
         {
@@ -2585,8 +2585,14 @@
           "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/plans/01_defect-recorder-and-wiring.md",
           "type": "plan",
           "summary": "Eight-phase plan: vocabulary+registry, recorder, deploy-verify gate, three wiring classes, matched positive/negative end-to-end verification."
+        },
+        {
+          "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/summaries/01_defect-recorder-and-wiring-summary.md",
+          "type": "summary",
+          "summary": "Defect recorder built and all ready detection sites wired; matched positive/negative end-to-end verification passed."
         }
-      ]
+      ],
+      "completion_summary": "Wired non-fatal system-defect recording into all five ephemeral PostToolUse hooks (Deliverable 2c) and completed the Phase 8 end-to-end acceptance test: a synthetic ARTIFACTS_SHAPE_MISMATCH produces exactly one correctly-attributed specs/events.jsonl row while schema-conformant failed/partial outcomes produce zero, dedup semantics confirmed, and the full repository gate set (verify-deploy.sh, check-task-references.sh, check-extension-docs.sh, lint-agent-contracts.sh, lint-routing-wiring.sh) passes cleanly after fixing two pre-existing, unrelated defects (index-entries.json line_count drift and a non-single-source session-id generator) discovered by the gate run."
     },
     {
       "project_number": 953,

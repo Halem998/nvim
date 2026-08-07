@@ -11,28 +11,26 @@ next_project_number: 998
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 952,984,991,997 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
-| 2 | 953,992 | 952,991 | agent-system |
-| 3 | 983,985,993 | 952,953,984,992 | agent-system |
-| 4 | 986,995 | 983,984,985 | agent-system |
+| 1 | 953,984,991,997 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
+| 2 | 983,992 | 953,991 | agent-system |
+| 3 | 985,993,995 | 983,984,992 | agent-system |
+| 4 | 986 | 983,985 | agent-system |
 | 5 | 996 | 986,993,995 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-952 [IMPLEMENTING] — Build the recorder that turns a detected agent-system defect into
-  └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
-    └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-      └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
-        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
-  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
-    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
+  └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
+    └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
+      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
   └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
-    └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review  (see above)
+    └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
+      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
     └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
       └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 
@@ -1448,12 +1446,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 952. Record detected system defects durably and wire the ready detection sites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 951, Task 962, Task 988
 - **Research**: [952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md]
 - **Plan**: [952_record_system_defects_durably_and_wire_detection_sites/plans/01_defect-recorder-and-wiring.md]
+- **Summary**: [952_record_system_defects_durably_and_wire_detection_sites/summaries/01_defect-recorder-and-wiring-summary.md]
 
 **Description**: Build the recorder that turns a detected agent-system defect into a durable, deduplicated record, then wire the detection sites the prerequisite task's registry classifies as ready. Today NO site anywhere converts a detected agent-system defect into a task, an errors.json entry, or any durable record -- every one of them terminates in EXIT (partial), a failed_tasks entry, or an 'mv ... for inspection'.
 
