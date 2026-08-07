@@ -1,18 +1,18 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 952,
   "session_id": "sess_1786116524_d6ecd7",
   "phases_completed": 0,
-  "phases_total": 0,
-  "plan_markers_verified": "absent",
+  "phases_total": 8,
+  "plan_markers_verified": "true",
   "blockers": [],
-  "next_action_hint": "Run /plan 952 to create the implementation plan from the research report.",
+  "next_action_hint": "Run /implement 952 to execute the 8-phase plan. Phases 4, 5, and 6 are serialized on a territory conflict (all three edit skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md), not a data dependency; Phase 7 (hooks only) may run alongside Phase 4.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md",
-      "summary": "Re-verified all citations against current file text, extracted the prerequisite task's four established answers, confirmed events.jsonl substrate mechanics, and enumerated current wiring-site line numbers for both wiring classes and all five Class-(c) hooks."
+      "type": "plan",
+      "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/plans/01_defect-recorder-and-wiring.md",
+      "summary": "Eight-phase implementation plan: Signal A vocabulary extension and recursion-guard registry (P1), the system-defect-record.sh recorder (P2), standalone recorder verification behind a deploy (P3), ARTIFACTS_SHAPE_MISMATCH consumer wiring (P4), Tier C off-schema and completion-claim gate (P5), stale/stray handoff (P6), the five ephemeral hooks (P7), and matched positive/negative end-to-end verification (P8)."
     }
   ],
-  "dispatch_summary": "Research complete for task 952. All task-description citations were confirmed stale and re-verified against current file text (see report). Extracted task 951's predicate/registry/recursion-guard/dedup answers for the plan to encode directly. Confirmed events.jsonl substrate claims (schema, flock, --cwd semantics, category enum) and the non-existence of system-defect-record.sh. No implementation performed -- research only."
+  "dispatch_summary": "Plan complete for task 952. 8 phases, 11 estimated hours, 7 dependency waves. All edits target agent-system/extensions/** (source store); zero .claude/** hand-authoring. The plan encodes the prerequisite's four established answers rather than re-deriving them, and uses the research report's re-verified grep anchors (the task description's line numbers were confirmed stale). Five binding design decisions resolve the research report's open questions: (D1) the recursion guard must match a recursion_guard:true SUBSET of orchestrator-critical-paths.json, since the full list contains skill-orchestrate/SKILL.md and skill-base.sh whose defects must stay recordable -- a defect the research did not surface; (D2) the completion-claim gate attributes via a fixed log_prefix two-entry lookup, firing only on the Case 3/3 refuse branch and never on Case 1; (D3) five new Signal A instances are added as an explicit documented decision rather than stretching existing instances and corrupting the dedup identity key; (D4) a per-hook attribution-outcome table records that three of five hooks are expected to log-only under Signal B, which is the predicate working as designed; (D5) the recorder synthesizes a session id when hooks supply only Claude Code's native UUID. Also encoded: deploy-root-guard.sh makes the recorder unrunnable from the source store, so Phase 3 exists as an explicit deploy-then-verify gate. Phase 8 satisfies the task's verification requirement with a matched positive (bare-string artifacts array fires ARTIFACTS_SHAPE_MISMATCH, exactly one attributed row) and two negatives (schema-conformant failed and partial produce zero rows). No AskUserQuestion anywhere; no task creation; no surfacing to the user -- all downstream scope."
 }

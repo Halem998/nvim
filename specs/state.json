@@ -2550,7 +2550,7 @@
     {
       "project_number": 952,
       "project_name": "record_system_defects_durably_and_wire_detection_sites",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Record detected system defects durably and wire the ready detection sites",
@@ -2573,13 +2573,18 @@
         988
       ],
       "created": "2026-07-28T00:00:00Z",
-      "last_updated": "2026-08-07T15:35:16Z",
+      "last_updated": "2026-08-07T15:44:53Z",
       "session_id": "sess_1786116524_d6ecd7",
       "artifacts": [
         {
           "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md",
           "type": "report",
           "summary": "Re-verified all citations against current file text, extracted the prerequisite task's four established answers, confirmed events.jsonl substrate mechanics, and enumerated current wiring-site line numbers."
+        },
+        {
+          "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/plans/01_defect-recorder-and-wiring.md",
+          "type": "plan",
+          "summary": "Eight-phase plan: vocabulary+registry, recorder, deploy-verify gate, three wiring classes, matched positive/negative end-to-end verification."
         }
       ]
     },
