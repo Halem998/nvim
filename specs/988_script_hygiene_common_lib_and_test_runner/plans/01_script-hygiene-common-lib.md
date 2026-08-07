@@ -560,27 +560,44 @@ has already been migrated or was classified Class B, drop it from the batch and 
 
 ---
 
-### Phase 7: Strict-mode migration batch B (remaining Class A) [IN PROGRESS]
+### Phase 7: Strict-mode migration batch B (remaining Class A) [COMPLETED]
 
 **Goal**: Every remaining Class A file from Phase 5's classification carries `set -euo pipefail`,
 migrated in small batches with suites green after each.
 
 **Tasks**:
-- [ ] Work from Phase 5's Class A list minus the five files completed in Phase 6.
-- [ ] Migrate in batches of at most 5 files, running `run-all.sh` after each batch and committing
-  each green batch.
-- [ ] Apply the same per-file `-e`-hostility audit as Phase 6 — this batch is lower-risk, not
-  no-risk.
-- [ ] Treat the hooks under `core/hooks/` with particular care: several are PreToolUse gates whose
+- [x] Work from Phase 5's Class A list minus the five files completed in Phase 6. *(completed:
+  22 files — 11 ordinary core scripts, 5 notification hooks, 6 EXTRA CARE PreToolUse/PostToolUse
+  gates)*
+- [x] Migrate in batches of at most 5 files, running `run-all.sh` after each batch and committing
+  each green batch. *(completed: 5 batches of 5/5/5/5/2, each committed separately with 27/27
+  run-all.sh green after every batch)*
+- [x] Apply the same per-file `-e`-hostility audit as Phase 6 — this batch is lower-risk, not
+  no-risk. *(completed: every file individually audited; found and fixed the classic
+  `VAR=$(cmd); status=$?` anti-pattern in orchestrate-dry-run-report.sh (4 sites),
+  orchestrate-recover-outcome.sh (3 sites), and orchestrate-triage-classify.sh (3 sites); a
+  standalone `((tab_index++))` arithmetic hazard in tts-notify.sh; numerous bare
+  `[ cond ] && action` hazards across nearly every file, several sitting directly on success
+  paths (events-log-lifecycle.sh, task-lock.sh check consumer); and bare grep/jq capture
+  assignments whose common-case no-match/failure would abort under -e in
+  guard-destructive-git.sh, census-count.sh, git-snapshot.sh, and others)*
+- [x] Treat the hooks under `core/hooks/` with particular care: several are PreToolUse gates whose
   exit codes are load-bearing (`guard-destructive-git.sh` and `validate-no-task-references.sh`
   both use `exit 2` to deny, and `validate-no-task-references.sh` is documented to fail OPEN if
   its pattern library cannot be sourced). Adding `-e` must not convert a fail-open path into a
   fail-closed one. If a hook cannot be shown safe, reclassify it Class B with a recorded
-  justification and update the standards doc rather than forcing the flip.
-- [ ] If any file resists migration, record it as a Class B reclassification in
+  justification and update the standards doc rather than forcing the flip. *(completed:
+  guard-destructive-git.sh comprehensively live-tested across every guarded destructive pattern,
+  every safe pass-through, and both fresh/stale/malformed snapshot-marker cases — all produce the
+  exact expected exit code. validate-no-task-references.sh's fail-open contract was extended to
+  cover a present-but-syntax-broken shared library, not just a missing one, and live-verified with
+  a deliberately broken library file. No hook resisted migration or required reclassification.)*
+- [x] If any file resists migration, record it as a Class B reclassification in
   `shell-strict-mode.md` with evidence — do not leave it silently unmigrated and unexplained.
-- [ ] Confirm the final state: every non-`-e` file is either Class B or Class C with a written
-  justification.
+  *(completed: no file resisted migration; no reclassification was needed)*
+- [x] Confirm the final state: every non-`-e` file is either Class B or Class C with a written
+  justification. *(completed: confirmed — the Class A remainder list is now empty; every file
+  named in shell-strict-mode.md's Phase 7 remainder sections now carries set -euo pipefail)*
 
 **Timing**: 2 hours
 
@@ -605,7 +622,7 @@ migrate anything not on that list.
 
 ---
 
-### Phase 8: Shebang normalization [NOT STARTED]
+### Phase 8: Shebang normalization [IN PROGRESS]
 
 **Goal**: Every shell script uses `#!/usr/bin/env bash`.
 
