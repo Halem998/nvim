@@ -47,9 +47,18 @@
       "description": "Full repository gate set: check-task-references.sh, check-extension-docs.sh, lint-agent-contracts.sh, lint-routing-wiring.sh, bash -n on all modified .sh, verify-deploy.sh",
       "status": "done",
       "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Fix two pre-existing defects discovered by the gate run so verify-deploy.sh reaches 0 failures: (a) stale index-entries.json line_count for two Phase-1-touched files, corrected via generate-context-line-counts.sh --write; (b) system-defect-record.sh's inline sess_$(date...) generator violated the single-source-of-truth assertion (test-common-lib.sh), fixed by switching to the already-sourced common_session_id",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/scripts/system-defect-record.sh"
+      ]
     }
   ],
-  "current_objective": 8,
+  "current_objective": 9,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": [],
