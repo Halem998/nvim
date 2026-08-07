@@ -326,43 +326,45 @@ paths.
 
 ---
 
-### Phase 2: Build `scripts/system-defect-record.sh` [NOT STARTED]
+### Phase 2: Build `scripts/system-defect-record.sh` [COMPLETED]
 
 **Goal**: Deliver the recorder — a house-style wrapper over `events-append.sh` implementing the
 predicate's Signal B check, the recursion guard, and the dedup rule.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/events-append.sh` in full as the house-style
+- [x] Read `agent-system/extensions/core/scripts/events-append.sh` in full as the house-style
       template (documented usage heredoc, exit-code header table, `set -euo pipefail`, `jq -c -n`
-      only, validate-before-write).
-- [ ] Read `agent-system/extensions/core/scripts/events-query.sh` header (the dedup read side) and
+      only, validate-before-write). *(completed)*
+- [x] Read `agent-system/extensions/core/scripts/events-query.sh` header (the dedup read side) and
       `agent-system/extensions/core/scripts/lib/file-scope-overlap.sh` (the
-      `FILE_SCOPE_OVERLAP_JQ_DEFS` / `self_mod_match($cscope; $crit)` contract).
-- [ ] Create `agent-system/extensions/core/scripts/system-defect-record.sh` with this interface:
+      `FILE_SCOPE_OVERLAP_JQ_DEFS` / `self_mod_match($cscope; $crit)` contract). *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/system-defect-record.sh` with this interface:
       ```
       system-defect-record.sh --defect-class CLASS --detecting-site SITE --message "..."
         (--attributed-path PATH | --dispatched-agent NAME)
         [--attributed-path PATH] [--dispatched-agent NAME] [--task N] [--session SESSION_ID]
         [--cwd PATH] [--cc-session-id VALUE] [--extra-detail-json '{...}']
-      ```
-- [ ] Validate `--defect-class` against the ten-value enum established in Phase 1, failing loudly
+      ``` *(completed)*
+- [x] Validate `--defect-class` against the ten-value enum established in Phase 1, failing loudly
       (exit 1) on an unknown value — mirroring `events-append.sh`'s `--category` enum check.
-- [ ] Implement Signal B resolution: use `--attributed-path` when given; otherwise resolve
+      *(completed)*
+- [x] Implement Signal B resolution: use `--attributed-path` when given; otherwise resolve
       `--dispatched-agent NAME` mechanically to `agent-system/extensions/<ext>/agents/<NAME>.md`
       by globbing the source store. Additionally implement the deploy→source transform
       (`.claude/X` → `agent-system/extensions/core/X`; `.claude/extensions/<ext>/X` →
       `agent-system/extensions/<ext>/X`) so callers may pass a deploy path. If nothing resolves to
       a path under `agent-system/extensions/**`, **log only and refuse to record** (exit 3) —
-      Signal B's governing rule.
-- [ ] Implement the recursion guard: read `context/reference/orchestrator-critical-paths.json`,
+      Signal B's governing rule. *(completed)*
+- [x] Implement the recursion guard: read `context/reference/orchestrator-critical-paths.json`,
       filter to `recursion_guard == true` (D1), splice `FILE_SCOPE_OVERLAP_JQ_DEFS` into a
       `jq -n` program, call `self_mod_match([$normalized_attributed_path]; $crit)`. Normalize the
       attributed path by stripping any leading `scope_roots` prefix before matching (registry
-      entries are scope-root-relative; attributed paths are repo-relative).
-- [ ] Implement the guard's **loud degradation**: if the data file is missing or `jq empty` fails,
+      entries are scope-root-relative; attributed paths are repo-relative). *(completed)*
+- [x] Implement the guard's **loud degradation**: if the data file is missing or `jq empty` fails,
       emit a `[SYSTEM-DEFECT RECORDER] REFUSING: recursion status indeterminate (...)` stderr line
       and exit 2 **without recording**. Never fall through, never fail open, never silent.
-- [ ] Implement the dedup rule: identity key `defect_key = "{defect_class}:{attributed_source_path}"`.
+      *(completed)*
+- [x] Implement the dedup rule: identity key `defect_key = "{defect_class}:{attributed_source_path}"`.
       Query prior rows via `events-query.sh --event-type system_defect --format json-array`, then
       `jq`-filter client-side on `.detail.defect_key == $key` (`events-query.sh` has no
       `detail`-field filter). For each match resolve `.detail.linked_task_number` against
@@ -373,23 +375,25 @@ predicate's Signal B check, the recursion guard, and the dedup rule.
         `SUPPRESSED:duplicate`;
       - match with no `linked_task_number`, or a terminal one → not a duplicate, record.
       `events-query.sh` tolerates an absent `specs/events.jsonl` (exit 0, empty) — rely on that,
-      do not add an existence check that could diverge.
-- [ ] Build the `--detail-json` payload with `jq -c -n` **only** (never string concatenation),
+      do not add an existence check that could diverge. *(completed)*
+- [x] Build the `--detail-json` payload with `jq -c -n` **only** (never string concatenation),
       carrying at minimum: `defect_class`, `attributed_source_path`, `detecting_site`,
       `dispatched_agent` (null when absent), `defect_key`, and `linked_task_number: null`. Merge
       `--extra-detail-json` (validated as parseable JSON first) so a future detector can extend
-      the payload without reshaping this interface.
-- [ ] Call `events-append.sh` **relative to the recorder's own `SCRIPT_DIR`**, with
+      the payload without reshaping this interface. *(completed)*
+- [x] Call `events-append.sh` **relative to the recorder's own `SCRIPT_DIR`**, with
       `--event-type system_defect --category deviation`, threading `--cwd`, `--cc-session-id`,
       `--task`, and `--session` (D5 fallback) through unchanged. Never compute an `events.jsonl`
-      path.
-- [ ] Write the header exit-code table:
+      path. *(completed)*
+- [x] Write the header exit-code table:
       `0` recorded, or deliberately suppressed with a logged reason (stdout: the `event_id`, or
       `SUPPRESSED:<reason>`); `1` argument/validation error; `2` refused — recursion status
       indeterminate (loud degradation); `3` refused — Signal B attribution unresolvable (log only).
-- [ ] Add a header note: the script is **not runnable from the source store**
+      *(completed)*
+- [x] Add a header note: the script is **not runnable from the source store**
       (`deploy-root-guard.sh` in the `events-append.sh` it calls fails loudly there); deploy first.
-- [ ] `chmod +x` the file (mirror sibling scripts' mode).
+      *(completed)*
+- [x] `chmod +x` the file (mirror sibling scripts' mode). *(completed)*
 
 **Timing**: 2.5 hours
 
