@@ -285,12 +285,12 @@ resolve_task_dir() {
 
 # --- now_epoch: current UTC epoch seconds ---
 now_epoch() {
-  date -u +%s
+  common_timestamp_epoch
 }
 
 # --- iso_now: current UTC ISO8601 timestamp ---
 iso_now() {
-  date -u +%Y-%m-%dT%H:%M:%SZ
+  common_timestamp_iso
 }
 
 # --- write_holder: tmp-file-rename write of holder.json (atomic replace) ---

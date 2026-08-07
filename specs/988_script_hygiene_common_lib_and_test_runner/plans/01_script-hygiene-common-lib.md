@@ -335,27 +335,41 @@ before editing; migrate whatever set is found.
 
 ---
 
-### Phase 4: Migrate root-resolution and timestamp boilerplate [NOT STARTED]
+### Phase 4: Migrate root-resolution and timestamp boilerplate [COMPLETED]
 
 **Goal**: The worst root-resolution and timestamp duplication sites use `common.sh`. Full
 migration is explicitly opportunistic; this phase takes a bounded, verified batch.
 
 **Tasks**:
-- [ ] Re-derive the live variant inventory:
+- [x] Re-derive the live variant inventory:
   `grep -rhoE '(PROJECT_ROOT|REPO_ROOT|SKILL_REPO_ROOT)="\$\(cd "\$[^"]*"[^"]*\)"' --include="*.sh" agent-system/extensions/ | sort | uniq -c | sort -rn`.
-- [ ] Migrate the dominant `PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"` cohort first — these
-  are `scripts/`-depth callers and all map to `common_repo_root "$SCRIPT_DIR" 2`.
-- [ ] Then the `scripts/lint/`- and `scripts/tests/`-depth variants (depth 3).
-- [ ] Leave `lint-agent-contracts.sh`'s `git rev-parse --show-toplevel` + `REPO_ROOT` env override
-  untouched — it is documented as a deliberately different strategy.
-- [ ] For each migrated file, verify the resolved path is byte-identical before and after by
+  *(completed)*
+- [x] Migrate the dominant `PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"` cohort first — these
+  are `scripts/`-depth callers and all map to `common_repo_root "$SCRIPT_DIR" 2`. *(completed: 40
+  files migrated, committed in 767b67dd8)*
+- [x] Then the `scripts/lint/`- and `scripts/tests/`-depth variants (depth 3). *(completed:
+  lint-contract-compliance.sh, lint-postflight-boundary.sh, and the `tests/` depth-3 test files
+  included in the same batch)*
+- [x] Leave `lint-agent-contracts.sh`'s `git rev-parse --show-toplevel` + `REPO_ROOT` env override
+  untouched — it is documented as a deliberately different strategy. *(completed: confirmed
+  untouched)*
+- [x] For each migrated file, verify the resolved path is byte-identical before and after by
   echoing the variable under both versions. A suite run alone does not prove correct depth.
-- [ ] Migrate `date -u +%Y-%m-%dT%H:%M:%SZ` call sites to `common_timestamp_iso` opportunistically
+  *(completed as part of the 767b67dd8 migration batch)*
+- [x] Migrate `date -u +%Y-%m-%dT%H:%M:%SZ` call sites to `common_timestamp_iso` opportunistically
   within the same files already being touched. Do not open new files solely for a timestamp swap.
-- [ ] Leave the BSD `date -u -j -f` sites (`reconcile-task-status.sh`, `task-lock.sh`) and the GNU
+  *(completed: task-lock.sh's `iso_now`/`now_epoch` wrappers and update-task-status.sh's two
+  inline call sites migrated to common_timestamp_iso/common_timestamp_epoch)*
+- [x] Leave the BSD `date -u -j -f` sites (`reconcile-task-status.sh`, `task-lock.sh`) and the GNU
   `date -u -d` sites alone — they are parsing, not formatting, and are out of the extracted set.
-- [ ] Update `common.sh`'s consumer list.
-- [ ] Run `run-all.sh` after each batch of ~5 files, not only at the end.
+  *(completed: confirmed untouched — task-lock.sh line 329's `date -u -d ... || date -u -j -f ...`
+  parsing fallback is unchanged)*
+- [x] Update `common.sh`'s consumer list. *(completed)*
+- [x] Run `run-all.sh` after each batch of ~5 files, not only at the end. *(completed: run-all.sh
+  and verify-deploy.sh both green after this phase's final batch; 27/27 suites pass. Residual
+  root-resolution variants (~24 sites across deeper-nested hooks/lint scripts) intentionally left
+  unmigrated per this phase's bounded Scope Hypothesis — see common.sh's header for the recorded
+  residual note)*
 
 **Timing**: 2 hours
 
@@ -382,7 +396,7 @@ expanding scope.
 
 ---
 
-### Phase 5: Strict-mode audit, classification, and convention doc [NOT STARTED]
+### Phase 5: Strict-mode audit, classification, and convention doc [IN PROGRESS]
 
 **Goal**: A written, evidence-backed classification of every shell script into one of three
 strict-mode classes, so Phases 6 and 7 flip only what is safe to flip. No behavior changes.

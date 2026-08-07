@@ -361,7 +361,7 @@ fi
 # ============================================================
 update_state_json() {
   local ts
-  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  ts="$(common_timestamp_iso)"
 
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "[dry-run] state.json: task $task_number status '$current_state_status' -> '$STATE_STATUS'"
@@ -399,7 +399,7 @@ update_state_json() {
   if [[ "$operation" == "preflight" ]]; then
     local marker_session_key="${CLAUDE_CODE_SESSION_ID:-$session_id}"
     mkdir -p "$SCRIPT_DIR/../tmp"
-    echo "$task_number $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCRIPT_DIR/../tmp/workflow-active-${marker_session_key}"
+    echo "$task_number $(common_timestamp_iso)" > "$SCRIPT_DIR/../tmp/workflow-active-${marker_session_key}"
   fi
 
   if ! "$SCRIPT_DIR/state-write.sh" \
