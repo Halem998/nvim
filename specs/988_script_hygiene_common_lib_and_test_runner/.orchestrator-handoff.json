@@ -1,17 +1,12 @@
 {
   "status": "partial",
-  "summary": "Completed phases 1-5 of the 10-phase plan (test runner + Gate 8, scripts/lib/common.sh, session-ID migration, root-resolution/timestamp migration, and the shell-strict-mode.md classification doc). Phase 6 (strict-mode migration batch A) is partial: state-write.sh migrated to set -euo pipefail, audited, and verified with a live fixture exercise plus its two concurrency test suites; the remaining 4 files (task-lock.sh, git-commit-scoped.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh) were deliberately deferred rather than rushed, since task-lock.sh alone is a 1644-line, concurrency-critical mutex script with dozens of unguarded VAR=$(jq/ps/stat) sites requiring individual audit. Phases 7-10 (remaining strict-mode batch, shebang normalization, and two new test suites) are not started. All committed work is green: run-all.sh passes 27/27 on a clean run (one pre-existing, documented flaky suite -- tests/test-claude-refresh-matcher.sh -- intermittently fails under concurrent-suite load, unrelated to this task's changes).",
+  "summary": "Completed phases 1-6 of the 10-phase plan. Phases 1-5 (test runner + Gate 8, scripts/lib/common.sh, session-ID migration, root-resolution/timestamp migration, and the shell-strict-mode.md classification doc) were done in prior dispatches. Phase 6 (strict-mode migration batch A) is now fully closed in this dispatch: all 5 files (state-write.sh, task-lock.sh, git-commit-scoped.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh) carry set -euo pipefail, each individually audited for -e-hostile patterns and live-fixture-exercised. Three hazard classes were found and fixed across the batch: bare VAR=$(jq/ps/stat/cat/date/find ...) assignments with no guard, the VAR=$(cmd); status=$? anti-pattern (found and fixed 5 times -- most consequentially in orchestrate-predispatch-review.sh's admit_output/admit_exit capture, whose failure path drives a documented graceful-degradation report section that would otherwise never run under -e), and a [ cond ] && action bare-statement class that is -e-hostile whenever the condition is false. Phases 7-10 (remaining strict-mode batch, shebang normalization, and two new test suites) are not started. All committed work is green: run-all.sh passes 27/27 on a clean run (one pre-existing, documented flaky suite -- tests/test-claude-refresh-matcher.sh -- intermittently fails under concurrent-suite load, confirmed unrelated to this task's changes both before and after). Two benign pre-existing-mechanism findings, not defects: verify-deploy.sh gates 3/5 report expected source-vs-deployed content drift for the 5 files this phase touched (resolves at next human/orchestrator-driven .claude/ regeneration, which this agent is not a sanctioned automated caller of); and test-task-lock-reap.sh / tests/test-git-commit-scoped.sh, named in the plan's Phase 6 Verification bullet, do not exist in scripts/tests/ -- a stale planning assumption, not a gap this dispatch introduced.",
   "blockers": [],
   "artifacts": [
     {
       "type": "source",
       "path": "agent-system/extensions/core/scripts/lib/common.sh",
       "summary": "Shared shell library: common_repo_root, common_session_id, timestamp helpers, log/test trios; consumer list documents all migrated call sites"
-    },
-    {
-      "type": "source",
-      "path": "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
-      "summary": "Unit suite for common.sh, including the repo-wide single-source session-ID assertion"
     },
     {
       "type": "source",
@@ -29,12 +24,32 @@
       "summary": "Migrated to set -euo pipefail; two -e-hostile VAR=$(jq) sites fixed with the VAR=$(cmd) || status=$? guard"
     },
     {
+      "type": "source",
+      "path": "agent-system/extensions/core/scripts/task-lock.sh",
+      "summary": "Migrated to set -euo pipefail; full 1644-line audit found and fixed ~68 hazard sites across three classes (bare VAR=$(cmd), bare non-assignment statements, and [ cond ] && action); live-fixture-verified across every documented subcommand/exit code"
+    },
+    {
+      "type": "source",
+      "path": "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+      "summary": "Migrated to set -euo pipefail; fixed the VAR=$(cmd); status=$? anti-pattern twice (primary commit + index.lock retry)"
+    },
+    {
+      "type": "source",
+      "path": "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+      "summary": "Migrated to set -euo pipefail; fixed the VAR=$(cmd); status=$? anti-pattern at the verdicts/jq_exit capture plus 4 lesser guard sites"
+    },
+    {
+      "type": "source",
+      "path": "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+      "summary": "Migrated to set -euo pipefail; fixed the VAR=$(cmd); status=$? anti-pattern twice (ab_findings/jq_exit and admit_output/admit_exit), the [ cond ] && action class, plus ~9 lesser guard sites"
+    },
+    {
       "type": "handoff",
-      "path": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T074312Z.md",
-      "summary": "Resume point for Phase 6's remaining 4 files, naming the exact guard pattern and hazard sites found in task-lock.sh"
+      "path": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T084456Z.md",
+      "summary": "Phase 6 completion handoff: the reusable 3-hazard-class audit playbook and mktemp -d live-fixture methodology for Phase 7's remaining Class A files"
     }
   ],
-  "phases_completed": 5,
+  "phases_completed": 6,
   "phases_total": 10,
   "plan_markers_verified": true
 }
