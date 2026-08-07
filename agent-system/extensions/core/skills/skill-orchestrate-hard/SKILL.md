@@ -67,7 +67,11 @@ even to "verify" a phase before or after dispatch.
    anchor both uses (and their base-mode and multi-task mirrors) now share, in the same way
    `scripts/lib/phase-heading-patterns.sh` is the single grammar anchor every phase-heading
    consumer sources rather than re-deriving. Any other use of these files is outside the
-   allowlist.
+   allowlist. (The recovered=true branch's site also carries a sibling `elif` arm on
+   `evidence_reason="ARTIFACTS_SHAPE_MISMATCH"` — Deliverable 2(a), a non-fatal
+   `system-defect-record.sh` consumer call. It shares the `recovered=true` precondition but
+   performs no `grep -c` of any kind and calls no new Read, so it is not a fifth bounded use of
+   this allowlist.)
 4. `.claude/context/contracts/*.md` and `.claude/docs/architecture/*.md` (this skill's own
    contracts and architecture docs, per Context References above).
 
@@ -1059,6 +1063,19 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
       phases_completed="${cpc_a#phases_completed=}"
       phases_total="${cpc_b#phases_total=}"
       plan_markers_verified="${cpc_c#plan_markers_verified=}"
+    elif [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then
+      # Deliverable 2(a) mirror of base-mode Stage 5's arm above. No dispatched-agent-name
+      # variable is in scope at this shared, stage-agnostic postflight block, so attribution
+      # names this detecting site's own SKILL.md per Signal B's "or, for orchestrator-internal
+      # sites, from the detecting site itself" allowance.
+      echo "[hard-orchestrate] EVIDENCE: recovered .return-meta.json reports status=$dispatch_status with a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — this is proof of a shape mismatch (e.g. a bare-string artifacts array), not proof of \"no artifacts\"." >&2
+      bash .claude/scripts/system-defect-record.sh \
+        --defect-class ARTIFACTS_SHAPE_MISMATCH \
+        --detecting-site "skill-orchestrate-hard/SKILL.md:stage-5-recovered" \
+        --task "$task_number" --session "$session_id" \
+        --message "recovered return-meta carried a non-empty artifacts array yielding no path" \
+        --attributed-path "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+        >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
     fi
   else
     if [ "$handoff_stale" = "true" ]; then

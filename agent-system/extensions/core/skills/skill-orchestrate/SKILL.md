@@ -652,6 +652,14 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
     # skill_corroborate_phase_counts is defined in scripts/skill-base.sh; source it defensively
     # here (idempotent) since this Stage 5 code fence has no earlier explicit source line of its
     # own to depend on.
+    #
+    # A sibling ARTIFACTS_SHAPE_MISMATCH arm follows immediately after the PHASES_ZERO_ON_SUCCESS
+    # arm below (same if/elif ladder, same recovered=true precondition, same $evidence_suspect/
+    # $evidence_reason variables) — it gives the discrimination pipeline's ARTIFACTS_SHAPE_MISMATCH
+    # signal (see context/patterns/system-defect-discrimination.md) a consumer via a non-fatal
+    # system-defect-record.sh call. It does not call skill_corroborate_phase_counts and does not
+    # touch phases_completed/phases_total/plan_markers_verified — those remain exclusively the
+    # PHASES_ZERO_ON_SUCCESS arm's concern.
     source .claude/scripts/skill-base.sh
     evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
     evidence_reason=$(echo "$recover_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || evidence_reason="NONE"
@@ -669,6 +677,23 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
       phases_completed="${cpc_a#phases_completed=}"
       phases_total="${cpc_b#phases_total=}"
       plan_markers_verified="${cpc_c#plan_markers_verified=}"
+    elif [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then
+      # Deliverable 2(a): give ARTIFACTS_SHAPE_MISMATCH a consumer. orchestrate-recover-outcome.sh
+      # already computes this signal (a non-empty artifacts array yielding no resolvable path is
+      # proof of a shape mismatch, e.g. a bare-string array, not proof of "no artifacts") — this
+      # arm only reads it; the computation itself is untouched. No dispatched-agent-name variable
+      # is in scope at this shared, stage-agnostic postflight block (Stage 5 runs identically
+      # after research, plan, and implement dispatches), so attribution names this detecting
+      # site's own SKILL.md per Signal B's "or, for orchestrator-internal sites, from the
+      # detecting site itself" allowance.
+      echo "[orchestrate] EVIDENCE: recovered .return-meta.json reports status=$dispatch_status with a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — this is proof of a shape mismatch (e.g. a bare-string artifacts array), not proof of \"no artifacts\"." >&2
+      bash .claude/scripts/system-defect-record.sh \
+        --defect-class ARTIFACTS_SHAPE_MISMATCH \
+        --detecting-site "skill-orchestrate/SKILL.md:stage-5-recovered" \
+        --task "$task_number" --session "$session_id" \
+        --message "recovered return-meta carried a non-empty artifacts array yielding no path" \
+        --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+        >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
     fi
   else
     if [ "$handoff_stale" = "true" ]; then
@@ -1838,6 +1863,13 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
    another task's in the same wave. Empty handoff-path argument (4th arg omitted): there is no
    handoff to validate on the recovery path.
 
+   A sibling `elif` arm on `evidence_reason="ARTIFACTS_SHAPE_MISMATCH"` mirrors the single-task
+   Stage 5 arm of the same name: a non-fatal `system-defect-record.sh` call, scoped to this
+   task's own `task_num`/`session_id`, attributed to this SKILL.md's own path (no
+   dispatched-agent-name variable is unambiguously in scope for this shared per-task loop, which
+   spans `research_tasks`, `plan_tasks`, and `implement_tasks` uniformly). It does not call
+   `skill_corroborate_phase_counts` and does not touch phase accounting.
+
    Deliberate convergence (recorded, not silent): the pre-migration banner here read
    `[UNVERIFIED PHASES CORROBORATED] Task #${task_num}: recovery reported status=...` — a
    capitalized `Task #` form distinct from both single-task engines' lowercase `task
@@ -1859,6 +1891,21 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      phases_completed="${cpc_a#phases_completed=}"
      phases_total="${cpc_b#phases_total=}"
      plan_markers_verified="${cpc_c#plan_markers_verified=}"
+   elif [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then
+     # Deliverable 2(a) mirror of the single-task Stage 5 arm above. The dispatched agent for
+     # this task_num varies by which group it belongs to (research_agents[task_num],
+     # the literal "planner-agent", or implement_agents[task_num]) and this shared per-task
+     # postflight loop runs after all three groups without tracking which group each task_num
+     # came from here, so (identically to the single-task arm) attribution names this detecting
+     # site's own SKILL.md rather than guessing the wrong array.
+     echo "[orchestrate] Task #${task_num}: EVIDENCE — recovered .return-meta.json reports status=$dispatch_status with a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — this is proof of a shape mismatch (e.g. a bare-string artifacts array), not proof of \"no artifacts\"." >&2
+     bash .claude/scripts/system-defect-record.sh \
+       --defect-class ARTIFACTS_SHAPE_MISMATCH \
+       --detecting-site "skill-orchestrate/SKILL.md:stage-mt4-recovered" \
+       --task "$task_num" --session "${session_id}_${task_num}" \
+       --message "recovered return-meta carried a non-empty artifacts array yielding no path" \
+       --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+       >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
    fi
    ```
 
@@ -2310,6 +2357,16 @@ against the plan file's `### Phase N: {name} [STATUS]` heading lines to recover
   branches is a routine per-cycle read, and none is a substitute for reading a handoff that is
   present and fresh with populated accounting — the normal path (fresh handoff,
   `phases_total > 0` or `plan_markers_verified` already set) never reaches any of them.
+  **Still exactly three, not four**: branch (2)'s recovered=true site also carries a sibling
+  `elif` arm on `evidence_reason="ARTIFACTS_SHAPE_MISMATCH"` (Deliverable 2(a), a
+  `system-defect-record.sh` consumer call) — it shares branch (2)'s `recovered=true`
+  precondition but never calls `skill_corroborate_phase_counts` and performs no `grep -c` of any
+  kind, so it does not add a fourth reachable branch to this phase-marker-recovery enumeration.
+  **Known residual gap (recorded, not fixed here)**: branch (3), the handoff-present path
+  (Stage 5's `else`), never calls `orchestrate-recover-outcome.sh`, so `ARTIFACTS_SHAPE_MISMATCH`
+  is never *computed* there at all — the new consumer arm above covers only the recovered-path
+  occurrence of this signal. Closing that detection hole is out of scope for this work; it is
+  named here so a future reader does not assume full coverage.
 - **Diagnostic in branch (1), evidence-based escalation in branches (2) and (3)**: in branch (1)
   the recovered counts are logged and recorded in the loop guard only — they never synthesize a
   `dispatch_status` and never drive a status transition, since there is no recoverable outcome

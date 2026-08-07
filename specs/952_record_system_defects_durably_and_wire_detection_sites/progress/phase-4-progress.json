@@ -1,0 +1,36 @@
+{
+  "phase": 4,
+  "phase_name": "Wire Deliverable 2(a) -- give ARTIFACTS_SHAPE_MISMATCH a consumer",
+  "started_at": "2026-08-07T01:35:00Z",
+  "last_updated": "2026-08-07T02:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-grep evidence_reason/evidence_suspect anchors in both SKILL.md files",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add elif ARTIFACTS_SHAPE_MISMATCH arm at three code branches (skill-orchestrate Stage 5, Stage MT-4; skill-orchestrate-hard Stage 5), each with a banner and non-fatal recorder call, attributed via --attributed-path to the detecting site's own SKILL.md (no dispatched-agent variable in scope at any of the three)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Update four prose specification sites (Three reachable branches spec, Stage-5 comment, Stage MT-4 precondition prose, Read-allowlist spec) plus the residual-gap note, all additive",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

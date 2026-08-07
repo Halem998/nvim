@@ -520,7 +520,7 @@ invocation, never against the number 904 — confirm the live count first.
 
 ---
 
-### Phase 4: Wire Deliverable 2(a) — give `ARTIFACTS_SHAPE_MISMATCH` a consumer [NOT STARTED]
+### Phase 4: Wire Deliverable 2(a) — give `ARTIFACTS_SHAPE_MISMATCH` a consumer [COMPLETED]
 
 **Goal**: The single highest-value wiring. `orchestrate-recover-outcome.sh` already computes
 `ARTIFACTS_SHAPE_MISMATCH`; every consumer branches only on the sibling `PHASES_ZERO_ON_SUCCESS`
@@ -528,15 +528,15 @@ and discards it. Add the missing arm. **This needs a consumer, not a new detecto
 touch the computation.
 
 **Tasks**:
-- [ ] Re-grep the anchors (do not trust the numbers in the table above):
+- [x] Re-grep the anchors (do not trust the numbers in the table above):
       `grep -n 'evidence_reason' agent-system/extensions/core/skills/skill-orchestrate/SKILL.md
-      agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`
-- [ ] At each of the **three code branches** (`skill-orchestrate/SKILL.md` Stage 5 single-task and
+      agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` *(completed)*
+- [x] At each of the **three code branches** (`skill-orchestrate/SKILL.md` Stage 5 single-task and
       Stage MT-4; `skill-orchestrate-hard/SKILL.md` Stage 5), add an `elif [ "$evidence_suspect" =
       "true" ] && [ "$evidence_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then` arm **beside** the
       existing `PHASES_ZERO_ON_SUCCESS` `if`. Do not alter the existing condition, its body, or
-      any banner text.
-- [ ] In each new arm: emit a short banner in the file's existing voice, then call the recorder
+      any banner text. *(completed)*
+- [x] In each new arm: emit a short banner in the file's existing voice, then call the recorder
       non-fatally:
       ```bash
       bash .claude/scripts/system-defect-record.sh \
@@ -548,20 +548,24 @@ touch the computation.
         >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
       ```
       Use each site's own `log_prefix` voice (`[orchestrate]` / `[hard-orchestrate]`) for the
-      banner and its own real variable names.
-- [ ] Determine whether a dispatched-agent-name variable is in scope at each branch (grep for
+      banner and its own real variable names. *(completed)*
+- [x] Determine whether a dispatched-agent-name variable is in scope at each branch (grep for
       `agent_name`, `AGENT_NAME`, `dispatch_agent`, `AGENT` in the enclosing stage). If one
       exists, pass `--dispatched-agent`. If none exists, pass `--attributed-path` naming the
       detecting site's own SKILL.md — Signal B explicitly sanctions attribution "from the
-      detecting site itself" for orchestrator-internal sites.
-- [ ] Update the **four prose specification sites** that enumerate the reachable branches so the
+      detecting site itself" for orchestrator-internal sites. *(completed: no dispatched-agent
+      variable is in scope at any of the three sites — Stage 5 in both engines is shared,
+      stage-agnostic postflight code, and Stage MT-4's per-task loop spans three differently
+      routed agent groups without tracking which one a given task_num came from; all three arms
+      use `--attributed-path` naming their own detecting SKILL.md)*
+- [x] Update the **four prose specification sites** that enumerate the reachable branches so the
       new arm is documented and the specs stay truthful: `skill-orchestrate/SKILL.md` (the
       "Three reachable branches" spec, the Stage-5 comment, and the Stage MT-4 precondition prose)
-      and `skill-orchestrate-hard/SKILL.md` (the Read-allowlist spec). Additive only.
-- [ ] Add a one-line residual note at the "Three reachable branches" spec recording the known gap:
+      and `skill-orchestrate-hard/SKILL.md` (the Read-allowlist spec). Additive only. *(completed)*
+- [x] Add a one-line residual note at the "Three reachable branches" spec recording the known gap:
       branch (3), the handoff-present path, never calls `orchestrate-recover-outcome.sh`, so
       `ARTIFACTS_SHAPE_MISMATCH` is never *computed* there — out of scope here, named so a future
-      reader does not assume full coverage.
+      reader does not assume full coverage. *(completed)*
 
 **Timing**: 1.5 hours
 
