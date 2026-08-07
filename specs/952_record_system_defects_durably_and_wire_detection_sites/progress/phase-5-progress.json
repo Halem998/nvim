@@ -1,0 +1,35 @@
+{
+  "phase": 5,
+  "phase_name": "Wire Deliverable 2(b) part 1 -- off-schema Tier C and the completion-claim gate",
+  "started_at": "2026-08-07T02:15:00Z",
+  "last_updated": "2026-08-07T02:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-grep anchors; add recorder call at Tier C single-task, hard mode, and multi-task prose",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add recorder call to completion-claim gate Case 3/3 refuse with D2 log_prefix-derived attribution; verify all four gate branches with a stub-counter scratch harness (deployed and re-tested after discovering the deployed copy was stale)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/skill-base.sh"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Tested the four gate branches by sourcing .claude/scripts/skill-base.sh without redeploying first",
+      "result": "failed",
+      "reason": "the deployed copy was stale (pre-dated this phase's edit), so the recorder call was never reached; fixed by running bash .claude/scripts/deploy-headless.sh before the scratch-harness test"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

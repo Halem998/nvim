@@ -977,6 +977,17 @@ if [ "$have_outcome" = "true" ]; then
       offschema_display="${dispatch_status:-<empty>}"
       echo "[OFF-SCHEMA DISPATCH STATUS - '${offschema_display}' is not in the handoff status vocabulary (researched|planned|implemented|partial|failed|blocked); the dispatch may have SUCCEEDED but its outcome cannot be trusted or applied]" >&2
       echo "[orchestrate] ERROR: handoff $handoff_file carries an off-schema dispatch_status. Inferred phase (from artifacts[0].type, naming only — not a success signal): $inferred_phase. Remedy: inspect the handoff and the dispatch's own .return-meta.json by hand, then re-run /orchestrate $task_number." >&2
+      # Deliverable 2(b): record this Class (a) "loud but unactioned" detection. No
+      # dispatched-agent-name variable is unambiguously in scope at this shared, stage-agnostic
+      # Tier C arm, so attribution names this detecting site's own SKILL.md per Signal B's
+      # "detecting site itself" allowance.
+      bash .claude/scripts/system-defect-record.sh \
+        --defect-class OFF_SCHEMA_STATUS \
+        --detecting-site "skill-orchestrate/SKILL.md:stage-5-tier-c" \
+        --task "$task_number" --session "$session_id" \
+        --message "handoff dispatch_status '${offschema_display}' is off-schema" \
+        --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+        >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
       ;;
   esac
 
@@ -2059,7 +2070,15 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      interpolated value) to stderr, with the same `artifacts[0].type`-derived phase inference
      scoped to phase identification only (never a success-vs-partial signal — see Stage 5's own
      MUST-NOT comment on this same inference). Perform no postflight update. This task is charged
-     to `failed_tasks` in step 5 below rather than halting the whole wave.
+     to `failed_tasks` in step 5 below rather than halting the whole wave. **Deliverable 2(b),
+     recording**: identically to Stage 5's Tier C arm, also call the recorder non-fatally —
+     `bash .claude/scripts/system-defect-record.sh --defect-class OFF_SCHEMA_STATUS
+     --detecting-site "skill-orchestrate/SKILL.md:stage-mt4-tier-c" --task "$task_num" --session
+     "${session_id}_${task_num}" --message "handoff dispatch_status off-schema" --attributed-path
+     "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" >/dev/null 2>&1 || echo
+     "Note: system-defect recording failed (non-fatal)" >&2` — scoped to this task's own
+     `task_num`/`session_id`, attributed to this SKILL.md's own path since no dispatched-agent-name
+     variable is unambiguously in scope for this shared per-task loop.
 4. Call `skill_link_artifacts` if artifact path is present (same field mapping as Stage 5).
 5. Re-read fresh status from `state.json` (postflight may have updated it). Update `mt_state_file.current_statuses[task_num]`:
    - If `fresh_status = "completed"`: also add to `completed_tasks`.

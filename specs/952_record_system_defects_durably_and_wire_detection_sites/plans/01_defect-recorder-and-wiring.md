@@ -593,41 +593,49 @@ record it.
 
 ---
 
-### Phase 5: Wire Deliverable 2(b) part 1 — off-schema Tier C and the completion-claim gate [NOT STARTED]
+### Phase 5: Wire Deliverable 2(b) part 1 — off-schema Tier C and the completion-claim gate [COMPLETED]
 
 **Goal**: Add recorder calls beside the two loudest existing banners: the off-schema Tier C arms
 and the completion-claim gate's Case 3/3 refuse.
 
 **Tasks**:
-- [ ] Re-grep `[OFF-SCHEMA DISPATCH STATUS` and `handoff-writer defect suspected` before editing.
-- [ ] **Tier C, single-task** (`skill-orchestrate/SKILL.md`): add a non-fatal recorder call after
+- [x] Re-grep `[OFF-SCHEMA DISPATCH STATUS` and `handoff-writer defect suspected` before editing.
+      *(completed)*
+- [x] **Tier C, single-task** (`skill-orchestrate/SKILL.md`): add a non-fatal recorder call after
       the two existing `echo` lines in the `*)` Tier C arm. `--defect-class OFF_SCHEMA_STATUS`,
       `--detecting-site "skill-orchestrate/SKILL.md:stage-5-tier-c"`. Attribute via
       `--dispatched-agent` if an agent-name variable is in scope; else `--attributed-path` naming
       this SKILL.md. **Do not touch `offschema_display`, the banner strings, `inferred_phase`, or
-      the ERROR line.**
-- [ ] **Tier C, hard mode** (`skill-orchestrate-hard/SKILL.md`): identical treatment at its mirror
+      the ERROR line.** *(completed: no dispatched-agent variable in scope, used --attributed-path)*
+- [x] **Tier C, hard mode** (`skill-orchestrate-hard/SKILL.md`): identical treatment at its mirror
       arm, with `--detecting-site "skill-orchestrate-hard/SKILL.md:tier-c"` and the
-      `[hard-orchestrate]` voice.
-- [ ] **Tier C, multi-task** (`skill-orchestrate/SKILL.md` Stage MT-4 step 3, third bullet): this
+      `[hard-orchestrate]` voice. *(completed)*
+- [x] **Tier C, multi-task** (`skill-orchestrate/SKILL.md` Stage MT-4 step 3, third bullet): this
       site is **prose specification**, not a code fence. Add the recorder call as a prose
       instruction in the same specification voice, so the MT path's OFF-SCHEMA handling records
       identically to Stage 5's. There is no hard-mode multi-task copy to mirror — hard mode
-      delegates MT handling to the base engine.
-- [ ] **Completion-claim gate** (`scripts/skill-base.sh`, `skill_gate_completion_claim()`): add
+      delegates MT handling to the base engine. *(completed)*
+- [x] **Completion-claim gate** (`scripts/skill-base.sh`, `skill_gate_completion_claim()`): add
       the recorder call immediately before the **Case 3/3 refuse** `return 1`, on the branch that
       already logs `handoff-writer defect suspected`. Use `--defect-class
       META_MISSING_AFTER_NARRATION` (the discrimination document's own registry assignment for
       this site). Resolve `--attributed-path` from `log_prefix` per D2's two-entry table; on an
       unrecognized prefix pass nothing resolvable and let the recorder refuse (exit 3), absorbed
-      non-fatally.
-- [ ] Add a short comment above the gate's recorder call recording D2's decision and its rejected
-      alternative (6th parameter), so a future reader does not re-open the question.
-- [ ] Confirm **no recorder call is added** to Case 1, Case 2, or the Case 3 allow branch. Case 1
+      non-fatally. *(completed: an unrecognized prefix resolves to the deliberately-unresolvable
+      placeholder "unresolved:${log_prefix}" rather than omitting --attributed-path entirely,
+      since omitting it outright would hit the recorder's own "at least one of --attributed-path
+      or --dispatched-agent is required" exit-1 usage error instead of the intended exit-3 Signal
+      B refusal — both are absorbed non-fatally either way, but this matches the plan's stated
+      exit-3 intent precisely)*
+- [x] Add a short comment above the gate's recorder call recording D2's decision and its rejected
+      alternative (6th parameter), so a future reader does not re-open the question. *(completed)*
+- [x] Confirm **no recorder call is added** to Case 1, Case 2, or the Case 3 allow branch. Case 1
       (phase accounting present but incomplete) is ordinary incomplete work — recording it would
-      violate "a schema-conformant failure is always task work."
-- [ ] Confirm the gate's `return 0` / `return 1` values are unchanged on every branch, and that
+      violate "a schema-conformant failure is always task work." *(completed; verified via the
+      scratch-harness stub-counter test below)*
+- [x] Confirm the gate's `return 0` / `return 1` values are unchanged on every branch, and that
       the recorder call cannot alter them (it precedes `return 1` and is `||`-guarded).
+      *(completed; verified via the scratch-harness stub-counter test below)*
 
 **Timing**: 1.5 hours
 

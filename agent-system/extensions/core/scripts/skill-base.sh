@@ -620,6 +620,29 @@ skill_gate_completion_claim() {
     return 0
   fi
 
+  # Deliverable 2(b): record this Case 3/3 refuse (handoff-writer defect suspected). Attribution
+  # is derived mechanically from log_prefix via a fixed two-entry lookup (D2's decision, recorded
+  # here so a future reader does not re-open the question): the handoff-write contract each
+  # engine imposes on its own dispatches genuinely lives in that engine's own SKILL.md. A 6th
+  # `dispatched_agent` parameter on this shared function was considered and rejected as
+  # disproportionate — it would change a shared function's signature at three call sites for a
+  # marginal attribution gain; this mechanical log_prefix-derived lookup gets the same signal
+  # without doing so. An unrecognized log_prefix resolves to a deliberately unresolvable
+  # placeholder, so the recorder itself refuses (Signal B attribution unresolvable) and the note
+  # below is absorbed non-fatally — this function's own return value is never affected either way.
+  case "$log_prefix" in
+    "[orchestrate]")      gate_attributed_path="agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" ;;
+    "[hard-orchestrate]") gate_attributed_path="agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" ;;
+    *)                    gate_attributed_path="unresolved:${log_prefix}" ;;
+  esac
+  bash .claude/scripts/system-defect-record.sh \
+    --defect-class META_MISSING_AFTER_NARRATION \
+    --detecting-site "scripts/skill-base.sh:skill_gate_completion_claim" \
+    --task "$task_number" \
+    --message "completion-claim gate case 3/3 refuse: phase accounting absent and plan_markers_verified is not true" \
+    --attributed-path "$gate_attributed_path" \
+    >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
+
   echo "${log_prefix} COMPLETION-CLAIM GATE case 3/3 (phase accounting absent, plan_markers_verified=${plan_markers_verified}) task ${task_number}: refusing completion — handoff-writer defect suspected; task stays implementing." >&2
   return 1
 }

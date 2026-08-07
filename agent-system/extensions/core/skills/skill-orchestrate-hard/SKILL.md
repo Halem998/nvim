@@ -1349,6 +1349,17 @@ if [ "$have_outcome" = "true" ]; then
       offschema_display="${dispatch_status:-<empty>}"
       echo "[OFF-SCHEMA DISPATCH STATUS - '${offschema_display}' is not in the handoff status vocabulary (researched|planned|implemented|partial|failed|blocked); the dispatch may have SUCCEEDED but its outcome cannot be trusted or applied]" >&2
       echo "[hard-orchestrate] ERROR: handoff $handoff_file carries an off-schema dispatch_status. Inferred phase (from artifacts[0].type, naming only — not a success signal): $inferred_phase. Remedy: inspect the handoff and the dispatch's own .return-meta.json by hand, then re-run /orchestrate $task_number --hard." >&2
+      # Deliverable 2(b): record this Class (a) "loud but unactioned" detection. No
+      # dispatched-agent-name variable is unambiguously in scope at this shared, stage-agnostic
+      # Tier C arm, so attribution names this detecting site's own SKILL.md per Signal B's
+      # "detecting site itself" allowance.
+      bash .claude/scripts/system-defect-record.sh \
+        --defect-class OFF_SCHEMA_STATUS \
+        --detecting-site "skill-orchestrate-hard/SKILL.md:tier-c" \
+        --task "$task_number" --session "$session_id" \
+        --message "handoff dispatch_status '${offschema_display}' is off-schema" \
+        --attributed-path "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+        >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
       ;;
   esac
 
