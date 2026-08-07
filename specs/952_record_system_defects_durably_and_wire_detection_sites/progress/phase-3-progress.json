@@ -1,0 +1,84 @@
+{
+  "phase": 3,
+  "phase_name": "Deploy and verify the recorder standalone",
+  "started_at": "2026-08-07T00:50:00Z",
+  "last_updated": "2026-08-07T01:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Deploy via deploy-headless.sh; add system-defect-record.sh to manifest.json scripts array (deploy engine copies only manifest-declared entries)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Positive test attributed to skill-base.sh; found and fixed two recorder bugs (jq . rebinding in scope-root stripping; missing -n on two jq calls reading empty stdin)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/system-defect-record.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Recursion guard suppression test (attributed to system-defect-record.sh itself)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Dedup test (suppress with non-terminal linked_task_number; record when unlinked); found and fixed ARG_MAX bug reading state.json via --argjson, switched to --slurpfile",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/system-defect-record.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Loud degradation test (missing critical-paths file, exit 2)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Signal B refusal test (exit 3) and non-fatal contract scratch-harness test",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Restore specs/events.jsonl to pre-phase baseline (911 lines); git diff --stat shows zero diff",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {
+      "approach": "jq map(select($p == . or ($p | startswith(. + \"/\")))) for scope-root stripping",
+      "result": "failed",
+      "reason": "the piped startswith(. + \"/\") argument rebinds . to $p before evaluating the argument, so the intended per-element root reference is lost -- fixed via map(. as $r | ...)"
+    },
+    {
+      "approach": "jq -r --arg ... '...' (no -n flag) for normalized_attributed_path and sm_hit",
+      "result": "failed",
+      "reason": "no stdin document was supplied and -n was omitted, so the invocation silently produced empty output under $(...) substitution -- fixed by adding -n"
+    },
+    {
+      "approach": "jq -n --argjson state \"$(jq -c '.' state.json)\" for the dedup lookup",
+      "result": "failed",
+      "reason": "state.json is large (hundreds of historical tasks); passing its content as a command-line argument exceeded ARG_MAX (\"Argument list too long\") -- fixed via --slurpfile state_arr \"$STATE_FILE\""
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Deploy engine requires manifest-declared scripts; system-defect-record.sh was not yet declared",
+      "type": "altered",
+      "reason": "Necessary correction to make Phase 2's deliverable deployable; discovered during Phase 3's own deploy step",
+      "annotation": "*(deviation: altered -- added manifest.json entry, in-scope correction)*"
+    }
+  ]
+}

@@ -151,6 +151,7 @@
       "setup-lean-mcp.sh",
       "skill-base.sh",
       "state-write.sh",
+      "system-defect-record.sh",
       "task-lock.sh",
       "test-conflict-predicate.sh",
       "test-four-tier-conflict.sh",

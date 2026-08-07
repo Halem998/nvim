@@ -415,42 +415,51 @@ predicate's Signal B check, the recursion guard, and the dedup rule.
 
 ---
 
-### Phase 3: Deploy and verify the recorder standalone [NOT STARTED]
+### Phase 3: Deploy and verify the recorder standalone [COMPLETED]
 
 **Goal**: Prove the recorder's four behavioral contracts in isolation, before any wiring depends
 on them. This is the gate that makes every later phase's `|| echo ... (non-fatal)` idiom safe.
 
 **Tasks**:
-- [ ] Determine and run the correct deploy invocation so
+- [x] Determine and run the correct deploy invocation so
       `agent-system/extensions/core/scripts/system-defect-record.sh` lands at
       `.claude/scripts/system-defect-record.sh` and the Phase 1 registry/doc edits propagate.
       `deploy-headless.sh` exists at both `agent-system/extensions/core/scripts/deploy-headless.sh`
       and `.claude/scripts/deploy-headless.sh`; confirm which is the operator entry point before
-      running.
-- [ ] Confirm the deployed copy is present and executable, and that the deployed
+      running. *(completed: used `bash .claude/scripts/deploy-headless.sh` (resync mode) as the
+      operator entry point; also required adding `system-defect-record.sh` to
+      `agent-system/extensions/core/manifest.json`'s `scripts` array — the deploy engine copies
+      only manifest-declared entries, and the new script was not yet declared; see Deviations)*
+- [x] Confirm the deployed copy is present and executable, and that the deployed
       `orchestrator-critical-paths.json` carries the four `recursion_guard: true` entries.
-- [ ] Snapshot `wc -l specs/events.jsonl` before each check (904 lines at research time) so every
-      assertion below is a measured delta, not an eyeball.
-- [ ] **Positive**: record a synthetic defect attributed to `scripts/skill-base.sh` (an ordinary
+      *(completed)*
+- [x] Snapshot `wc -l specs/events.jsonl` before each check (904 lines at research time) so every
+      assertion below is a measured delta, not an eyeball. *(completed: 911 lines at phase-3
+      execution time, not 904 — used the live count per this phase's own Scope Hypothesis)*
+- [x] **Positive**: record a synthetic defect attributed to `scripts/skill-base.sh` (an ordinary
       orchestrator file, deliberately NOT recursion-guarded). Assert exactly one new line, with
       `event_type == "system_defect"`, `category == "deviation"`, and a `detail` object carrying
       `defect_class`, `attributed_source_path`, `detecting_site`, `dispatched_agent`, `defect_key`.
-- [ ] **Recursion guard suppression**: record the same class attributed to
+      *(completed; found and fixed two recorder bugs along the way — see Deviations)*
+- [x] **Recursion guard suppression**: record the same class attributed to
       `scripts/system-defect-record.sh`. Assert **zero** new lines and a visible suppression
-      message.
-- [ ] **Dedup**: re-record the Phase-3 positive case's exact `{defect_class}:{attributed_path}`
+      message. *(completed)*
+- [x] **Dedup**: re-record the Phase-3 positive case's exact `{defect_class}:{attributed_path}`
       pair after manually setting a `linked_task_number` on the first row pointing at a
       non-terminal `active_projects` entry. Assert zero new lines and `SUPPRESSED:duplicate`.
-      Then assert the no-`linked_task_number` case DOES record a second row.
-- [ ] **Loud degradation**: temporarily move the deployed
+      Then assert the no-`linked_task_number` case DOES record a second row. *(completed)*
+- [x] **Loud degradation**: temporarily move the deployed
       `context/reference/orchestrator-critical-paths.json` aside, invoke the recorder, assert exit
-      2, a loud stderr refusal, and **zero** new lines. Restore the file.
-- [ ] **Signal B refusal**: invoke with an attributed path outside `agent-system/extensions/**`
+      2, a loud stderr refusal, and **zero** new lines. Restore the file. *(completed)*
+- [x] **Signal B refusal**: invoke with an attributed path outside `agent-system/extensions/**`
       and no resolvable `--dispatched-agent`. Assert exit 3, a logged reason, zero new lines.
-- [ ] **Non-fatal contract**: confirm every nonzero exit above is absorbed by the
+      *(completed)*
+- [x] **Non-fatal contract**: confirm every nonzero exit above is absorbed by the
       `|| echo "Note: ... (non-fatal)" >&2` idiom under `set -euo pipefail` in a scratch harness.
-- [ ] Remove every synthetic row this phase appended to `specs/events.jsonl`, restoring the
-      original line count, and record the before/after counts in the phase notes.
+      *(completed)*
+- [x] Remove every synthetic row this phase appended to `specs/events.jsonl`, restoring the
+      original line count, and record the before/after counts in the phase notes. *(completed:
+      911 -> 913 -> 911; `git diff --stat specs/events.jsonl` shows zero diff after restore)*
 
 **Timing**: 1.5 hours
 
@@ -464,12 +473,50 @@ invocation, never against the number 904 — confirm the live count first.
 
 **Files to modify**:
 - None in the source store. `.claude/**` changes only as deploy output; `specs/events.jsonl` is
-  mutated by the tests and restored.
+  mutated by the tests and restored. *(deviation: two source-store files were touched during this
+  phase — see Phase Notes / Deviations below)*
 
 **Verification**:
 - All six behavioral checks above pass with the stated line-count deltas
 - `specs/events.jsonl` line count is restored to its pre-phase value
 - `git status --short` shows no unintended tracked-file modification
+
+**Phase Notes / Deviations**:
+- **`agent-system/extensions/core/manifest.json`**: the deploy engine copies only files declared
+  in a manifest's `scripts`/`hooks` arrays (no glob). `system-defect-record.sh` was created in
+  Phase 2 but never added to `manifest.json`'s `scripts` array, so the first deploy attempt in
+  this phase silently produced no `.claude/scripts/system-defect-record.sh`. Fixed by inserting
+  `"system-defect-record.sh"` in alphabetical position between `"state-write.sh"` and
+  `"task-lock.sh"`. This is an in-scope correction to make Phase 2's deliverable deployable, not
+  a scope expansion.
+- **`agent-system/extensions/core/scripts/system-defect-record.sh`**: two bugs were found and
+  fixed while exercising the standalone behavioral checks, both real defects in the Phase 2
+  script (not scope creep):
+  1. The scope-root-stripping normalization used `map(select($p == . or ($p | startswith(. +
+     "/"))))` — inside the piped `startswith(. + "/")` argument, `.` had already been rebound to
+     `$p` by the preceding `$p |`, so it never referred to the current array element. Fixed by
+     capturing the element into `$r` first: `map(. as $r | select($p == $r or ($p |
+     startswith($r + "/"))))`. Symptom before the fix: every attributed path normalized to the
+     empty string, which coincidentally matched `self_mod_match`'s empty-string comparison
+     against a guarded entry's `path`-prefix check when both sides degenerated to trivial
+     strings, causing every attributed path (including ordinary, non-guarded files like
+     `scripts/skill-base.sh`) to be wrongly suppressed as a false recursion-guard hit.
+  2. Two `jq` invocations (`normalized_attributed_path` and `sm_hit`) omitted the `-n` flag while
+     also supplying no file argument, so each call blocked on/read from the process's inherited
+     stdin instead of running query-only — under the non-interactive shell here, stdin resolved
+     to no documents and the substitution silently captured an empty string. Fixed by adding `-n`
+     to both. Neither bug was visible from `bash -n` or the Phase 2 unit checks (missing
+     arguments, unknown `--defect-class`) — both were caught only by Phase 3's live behavioral
+     checks, which is exactly the gate this phase exists to provide.
+  3. (Found during the dedup check, not the two above) The dedup lookup originally read
+     `specs/state.json` into a bash variable and passed it via `--argjson`, which exceeded the
+     shell's `ARG_MAX` on this repo's `state.json` (hundreds of historical tasks) and failed with
+     `Argument list too long`. Fixed by switching to `jq -n --slurpfile state_arr "$STATE_FILE"`,
+     which reads the file directly rather than via a command-line argument.
+
+  All three fixes are corrections to Phase 2's deliverable discovered by Phase 3's own
+  verification tasks, not new scope. The script was re-`bash -n`-checked and redeployed after
+  each fix before its corresponding behavioral check was (re-)run.
 
 ---
 

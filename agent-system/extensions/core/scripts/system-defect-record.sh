@@ -260,12 +260,12 @@ guard_crit_json="$(jq -c '[.critical_paths[]? | select(.recursion_guard == true)
 
 # Normalize the attributed path by stripping any leading scope_roots prefix before matching
 # (registry entries are scope-root-relative; attributed paths are repo-relative).
-normalized_attributed_path="$(jq -r --arg p "$resolved_path" --argjson roots "$scope_roots_json" '
-  ($roots | map(select($p == . or ($p | startswith(. + "/"))))) as $hit |
+normalized_attributed_path="$(jq -rn --arg p "$resolved_path" --argjson roots "$scope_roots_json" '
+  ($roots | map(. as $r | select($p == $r or ($p | startswith($r + "/"))))) as $hit |
   if ($hit | length) > 0 then ($p | ltrimstr(($hit[0]) + "/")) else $p end
 ')"
 
-sm_hit="$(jq -c \
+sm_hit="$(jq -cn \
   --argjson cscope "[\"$normalized_attributed_path\"]" \
   --argjson crit "$guard_crit_json" \
   "${FILE_SCOPE_OVERLAP_JQ_DEFS}"'
@@ -288,21 +288,22 @@ if [ -z "$matches_json" ]; then
   matches_json='[]'
 fi
 
-state_json='{"active_projects":[]}'
+# state.json can be large (hundreds of tasks); read it via --slurpfile (a file argument) rather
+# than --argjson over a captured bash variable, which would blow past ARG_MAX on this repo.
 if [ -f "$STATE_FILE" ]; then
-  state_json="$(jq -c '.' "$STATE_FILE" 2>/dev/null)" || state_json='{"active_projects":[]}'
+  is_duplicate="$(jq -n \
+    --argjson matches "$matches_json" \
+    --slurpfile state_arr "$STATE_FILE" \
+    '
+    def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
+    (($state_arr[0].active_projects) // []) as $all |
+    ([$matches[] | .detail.linked_task_number // empty]) as $linked_nums |
+    ([$linked_nums[] as $ln | ($all[] | select(.project_number == $ln) | (.status // "")) ]) as $linked_statuses |
+    ([$linked_statuses[] | select(is_terminal | not)] | length) > 0
+    ' 2>/dev/null)" || is_duplicate="false"
+else
+  is_duplicate="false"
 fi
-
-is_duplicate="$(jq -n \
-  --argjson matches "$matches_json" \
-  --argjson state "$state_json" \
-  '
-  def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
-  ($state.active_projects // []) as $all |
-  ([$matches[] | .detail.linked_task_number // empty]) as $linked_nums |
-  ([$linked_nums[] as $ln | ($all[] | select(.project_number == $ln) | (.status // "")) ]) as $linked_statuses |
-  ([$linked_statuses[] | select(is_terminal | not)] | length) > 0
-  ')"
 
 if [ "$is_duplicate" = "true" ]; then
   echo "[SYSTEM-DEFECT RECORDER] SUPPRESSED: duplicate of an already-tracked defect (defect_key='$defect_key' has a non-terminal linked task). Not recording." >&2
