@@ -81,6 +81,11 @@ decision, not silently done by a detection site):
 | `HANDOFF_MISLOCATED` — a handoff written outside its task directory | the stray-handoff sweep, see registry below |
 | `META_MISSING_AFTER_NARRATION` — a `.return-meta.json` missing or unparseable after a dispatch that produced subagent-authored narration (i.e., not the infra-failure case — see [infra-failure-discrimination.md](infra-failure-discrimination.md) for that adjacent, already-solved discrimination) | the completion-claim gate, see registry below |
 | `ARTIFACTS_MISSING_ON_SUCCESS` — a `null`, absent, or empty `artifacts` field accompanying a success status (`researched\|planned\|implemented`), where both owning schemas mark the field required ([return-metadata-file.md](../formats/return-metadata-file.md)'s `### artifacts (required)` section and [handoff-schema.md](../../docs/architecture/handoff-schema.md)'s `### \`artifacts\` (required)` section) | **not currently computed anywhere** — see the detection hole recorded under Class (b) below |
+| `HANDOFF_STALE_OR_ABSENT` — a handoff whose mtime predates the dispatch window (or is otherwise absent when expected), as detected by the stale-handoff gate | the stale-handoff gate, see registry below |
+| `SOURCE_STORE_BOUNDARY_VIOLATION` — a direct write under `.claude/**` instead of the source store (`agent-system/extensions/**`) | `hooks/validate-meta-write.sh` |
+| `TASK_REFERENCE_IN_DELIVERABLE` — a task-number citation in a deliverable outside `specs/**` | `hooks/validate-no-task-references.sh` |
+| `ARTIFACT_FORMAT_VIOLATION` — an artifact write under `specs/*/{plans,reports,summaries}/*.md` that fails format validation | `hooks/validate-plan-write.sh` |
+| `STATE_SYNC_DIVERGENCE` — `state.json`/`TODO.md` desynchronization | `hooks/validate-state-sync.sh` |
 
 Not every instance above yet has a working detector — see the `ARTIFACTS_MISSING_ON_SUCCESS` row:
 it defines what counts as a violation of this kind, not what currently fires. Building a detector
@@ -113,6 +118,18 @@ A missing required field is a schema *violation*, not a conformant failure — s
 schema-conformant failure is always task work" below; this new instance does not weaken that
 invariant, it names a previously-unlisted violation of the same kind the other four instances
 already cover.
+
+### Extending the Signal A vocabulary is an explicit decision, not a silent act
+
+Per this section's own opening clause — "a closed, extensible list — extending it is a future
+task's decision, not silently done by a detection site" — the five instances added above
+(`HANDOFF_STALE_OR_ABSENT`, `SOURCE_STORE_BOUNDARY_VIOLATION`, `TASK_REFERENCE_IN_DELIVERABLE`,
+`ARTIFACT_FORMAT_VIOLATION`, `STATE_SYNC_DIVERGENCE`) were added deliberately, by downstream work
+that wires a recorder to sites this document's own registry already names as ready (Class (a)'s
+stale-handoff gate and Class (c)'s five hooks). None of the five pre-existing instances was
+reworded or reinterpreted to cover a new site; each new instance names a site that previously
+mapped to no Signal A instance at all. This is recorded here, in the document that owns the
+enum, rather than left implicit in a recorder's validation logic.
 
 ### Signal B — attribution
 
@@ -168,22 +185,22 @@ Already emits a clear, human-legible signal at the point of detection, but nothi
 converts that signal into a durable record or task. These sites need **a recorder call added
 beside the existing banner** — the diagnosis is already in hand.
 
-| Site | File:line | What it detects |
-|------|-----------|------------------|
-| Off-schema Tier C (single-task) | `skills/skill-orchestrate/SKILL.md:977` | `dispatch_status` outside the accept-list — `OFF_SCHEMA_STATUS` |
-| Off-schema Tier C (hard mode) | `skills/skill-orchestrate-hard/SKILL.md:1186` | same, hard-mode mirror |
-| Off-schema (multi-task) | `skills/skill-orchestrate/SKILL.md:2028-2038` | same, Stage MT-4 prose specification |
-| Stale-handoff gate | `skills/skill-orchestrate/SKILL.md:590-591` | handoff mtime predates the dispatch window — may indicate a stale write, a hung writer, or a writer bug |
-| Stray-handoff sweep | `skills/skill-orchestrate/SKILL.md:606-612` | `HANDOFF_MISLOCATED` — a writer produced the handoff outside its task directory (moved to `.stray-handoff-{ts}.json` for inspection, never actioned further) |
-| Completion-claim gate, Case 3/3 refuse | `scripts/skill-base.sh:729` | `META_MISSING_AFTER_NARRATION`-shaped: phase accounting absent/malformed AND no corroborating plan-marker signal — already logs the phrase `handoff-writer defect suspected` verbatim |
+| Site | File:line | What it detects | Defect class |
+|------|-----------|------------------|--------------|
+| Off-schema Tier C (single-task) | `skills/skill-orchestrate/SKILL.md:977` | `dispatch_status` outside the accept-list — `OFF_SCHEMA_STATUS` | `OFF_SCHEMA_STATUS` |
+| Off-schema Tier C (hard mode) | `skills/skill-orchestrate-hard/SKILL.md:1186` | same, hard-mode mirror | `OFF_SCHEMA_STATUS` |
+| Off-schema (multi-task) | `skills/skill-orchestrate/SKILL.md:2028-2038` | same, Stage MT-4 prose specification | `OFF_SCHEMA_STATUS` |
+| Stale-handoff gate | `skills/skill-orchestrate/SKILL.md:590-591` | handoff mtime predates the dispatch window — may indicate a stale write, a hung writer, or a writer bug | `HANDOFF_STALE_OR_ABSENT` |
+| Stray-handoff sweep | `skills/skill-orchestrate/SKILL.md:606-612` | `HANDOFF_MISLOCATED` — a writer produced the handoff outside its task directory (moved to `.stray-handoff-{ts}.json` for inspection, never actioned further) | `HANDOFF_MISLOCATED` |
+| Completion-claim gate, Case 3/3 refuse | `scripts/skill-base.sh:729` | `META_MISSING_AFTER_NARRATION`-shaped: phase accounting absent/malformed AND no corroborating plan-marker signal — already logs the phrase `handoff-writer defect suspected` verbatim | `META_MISSING_AFTER_NARRATION` |
 
 ### Class (b) — computed but discarded
 
-`ARTIFACTS_SHAPE_MISMATCH` is the sole current instance: `scripts/orchestrate-recover-outcome.sh`
-already computes and emits it (line 205), and the five consumer sites enumerated under "The
-dead-signal finding" above already read `evidence_reason` — they simply branch only on the
-sibling value. These sites need **a consumer, not a new detector**: the mechanical work is
-already done; what is missing is a conditional arm.
+`ARTIFACTS_SHAPE_MISMATCH` is the sole current instance (defect class: `ARTIFACTS_SHAPE_MISMATCH`):
+`scripts/orchestrate-recover-outcome.sh` already computes and emits it (line 205), and the five
+consumer sites enumerated under "The dead-signal finding" above already read `evidence_reason` —
+they simply branch only on the sibling value. These sites need **a consumer, not a new detector**:
+the mechanical work is already done; what is missing is a conditional arm.
 
 **Detection hole, distinct from all three classes above**: all five sites listed under "The dead-signal
 finding" sit on the **recovered** (`.return-meta.json`, via `orchestrate-recover-outcome.sh`)
@@ -205,13 +222,13 @@ Five `PostToolUse` advisory hooks in `hooks/`, each of which emits `additionalCo
 exactly one agent's context and **persists nothing** — the signal exists only for the duration of
 that single tool-call turn:
 
-| Hook | Detects |
-|------|---------|
-| `validate-meta-write.sh` | a direct write under `.claude/**` during `/meta`-adjacent work |
-| `validate-handoff-location.sh` | a handoff written outside its task directory (Write/Edit-tool path only — structurally blind to the Bash-redirection write path, by design; see the hook's own header) |
-| `validate-no-task-references.sh` | a task-number citation in a deliverable outside `specs/**` (blocking, not advisory — the one hook in this class that denies the write rather than merely annotating context) |
-| `validate-plan-write.sh` | an artifact write under `specs/*/{plans,reports,summaries}/*.md` that fails format validation |
-| `validate-state-sync.sh` | `state.json`/`TODO.md` desynchronization |
+| Hook | Detects | Defect class |
+|------|---------|--------------|
+| `validate-meta-write.sh` | a direct write under `.claude/**` during `/meta`-adjacent work | `SOURCE_STORE_BOUNDARY_VIOLATION` |
+| `validate-handoff-location.sh` | a handoff written outside its task directory (Write/Edit-tool path only — structurally blind to the Bash-redirection write path, by design; see the hook's own header) | `HANDOFF_MISLOCATED` |
+| `validate-no-task-references.sh` | a task-number citation in a deliverable outside `specs/**` (blocking, not advisory — the one hook in this class that denies the write rather than merely annotating context) | `TASK_REFERENCE_IN_DELIVERABLE` |
+| `validate-plan-write.sh` | an artifact write under `specs/*/{plans,reports,summaries}/*.md` that fails format validation | `ARTIFACT_FORMAT_VIOLATION` |
+| `validate-state-sync.sh` | `state.json`/`TODO.md` desynchronization | `STATE_SYNC_DIVERGENCE` |
 
 `validate-meta-write.sh` already names the correct source-store target in its own message (`"Edit
 the source store instead: agent-system/extensions/core/** for core system files, or
@@ -258,11 +275,31 @@ not yet exist):
 | `context/patterns/system-defect-discrimination.md` | system-defect discrimination contract (this document) |
 | `context/reference/orchestrator-critical-paths.json` | orchestrator critical-path registry (self-reference) |
 | `scripts/orchestrate-recover-outcome.sh` | return-meta evidence-signal computation (`PHASES_ZERO_ON_SUCCESS` / `ARTIFACTS_SHAPE_MISMATCH`) |
+| `scripts/system-defect-record.sh` | system-defect recorder (recursion-guard self-reference) |
 
-**Forward reference (binding on downstream work, not implemented here)**: when the recorder script
-(`scripts/system-defect-record.sh`) is created, its own path MUST be appended to this same list as
-a fourth entry — the recorder guarding itself against recursive self-recording is the single
-sharpest instance of this rule, and it cannot be added before the file exists.
+**Forward reference — discharged.** The recorder script (`scripts/system-defect-record.sh`) has
+been created and its own path has been appended to `orchestrator-critical-paths.json` as the
+fourth entry above — the recorder guarding itself against recursive self-recording is the single
+sharpest instance of this rule.
+
+**The guard matches a labeled SUBSET of `critical_paths`, never the whole list.** All four entries
+above, and only those four, carry an additional `"recursion_guard": true` boolean field in
+`orchestrator-critical-paths.json`. The recorder filters
+`.critical_paths | map(select(.recursion_guard == true))` **before** calling `self_mod_match` — it
+never matches against the unfiltered list. This is deliberate and load-bearing: `critical_paths`
+already contains `skills/skill-orchestrate/SKILL.md`, `skills/skill-orchestrate-hard/SKILL.md`,
+and `scripts/skill-base.sh`, and matching the whole list would suppress every defect attributed to
+those files — the exact opposite of this section's own stated intent above ("most of the Class (a)
+detection sites ... are ordinary orchestrator machinery whose defects are exactly the kind of thing
+this mechanism should record normally, not exempt"). The field is additive and backward-compatible:
+`orchestrate-batch-admit.sh` reads only `.path`/`.label` for its self-modification-hazard check and
+ignores unknown keys, so that consumer's behavior is unchanged by the field's presence. The
+`$schema` value `orchestrator-critical-paths-v1` stays as-is — an added optional field is not a
+breaking revision.
+
+**Rejected alternative (unchanged from the original decision above): a sibling data file listing
+only the four pipeline paths.** Rejected for the same DRY reason already stated in this section's
+"Decision" paragraph, and it would additionally require hand-syncing two lists rather than one.
 
 **Considered and excluded**: `context/formats/return-metadata-file.md` (the schema Signal A
 checks against) and the five Class (c) hooks were both considered for inclusion and left out.

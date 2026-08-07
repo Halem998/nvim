@@ -48,15 +48,23 @@
     },
     {
       "path": "context/patterns/system-defect-discrimination.md",
-      "label": "system-defect discrimination contract (recursion-guard self-reference)"
+      "label": "system-defect discrimination contract (recursion-guard self-reference)",
+      "recursion_guard": true
     },
     {
       "path": "context/reference/orchestrator-critical-paths.json",
-      "label": "orchestrator critical-path registry (self-reference)"
+      "label": "orchestrator critical-path registry (self-reference)",
+      "recursion_guard": true
     },
     {
       "path": "scripts/orchestrate-recover-outcome.sh",
-      "label": "return-meta evidence-signal computation (PHASES_ZERO_ON_SUCCESS / ARTIFACTS_SHAPE_MISMATCH)"
+      "label": "return-meta evidence-signal computation (PHASES_ZERO_ON_SUCCESS / ARTIFACTS_SHAPE_MISMATCH)",
+      "recursion_guard": true
+    },
+    {
+      "path": "scripts/system-defect-record.sh",
+      "label": "system-defect recorder (recursion-guard self-reference)",
+      "recursion_guard": true
     }
   ]
 }

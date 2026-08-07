@@ -21,7 +21,7 @@ next_project_number: 998
 
 ### Agent System
 
-952 [PLANNED] — Build the recorder that turns a detected agent-system defect into
+952 [IMPLEMENTING] — Build the recorder that turns a detected agent-system defect into
   └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
     └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
       └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
@@ -1448,7 +1448,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 952. Record detected system defects durably and wire the ready detection sites
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 951, Task 962, Task 988

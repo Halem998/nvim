@@ -2550,7 +2550,7 @@
     {
       "project_number": 952,
       "project_name": "record_system_defects_durably_and_wire_detection_sites",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Record detected system defects durably and wire the ready detection sites",
@@ -2573,7 +2573,7 @@
         988
       ],
       "created": "2026-07-28T00:00:00Z",
-      "last_updated": "2026-08-07T15:44:53Z",
+      "last_updated": "2026-08-07T15:45:03Z",
       "session_id": "sess_1786116524_d6ecd7",
       "artifacts": [
         {

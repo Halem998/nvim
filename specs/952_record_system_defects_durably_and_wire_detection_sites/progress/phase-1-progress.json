@@ -1,0 +1,42 @@
+{
+  "phase": 1,
+  "phase_name": "Extend the Signal A vocabulary and the recursion-guard registry",
+  "started_at": "2026-08-07T00:00:00Z",
+  "last_updated": "2026-08-07T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read system-defect-discrimination.md in full",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Extend Signal A table with five new instances, add explicit-decision subsection",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add recursion_guard: true to three existing pipeline entries and append fourth entry for system-defect-record.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Update recursion-guard rule section (D1 subset-matching) and detection-point registry with defect-class column",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"
+      ]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

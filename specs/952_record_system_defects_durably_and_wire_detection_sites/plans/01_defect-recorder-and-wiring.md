@@ -1,7 +1,7 @@
 # Implementation Plan: Task #952
 
 - **Task**: 952 - Record detected system defects durably and wire the ready detection sites
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: 951 (completed, prerequisite contract), 962, 988
 - **Research Inputs**: specs/952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md
@@ -263,36 +263,38 @@ touches only `hooks/**` and is therefore safe to run alongside Phase 4.
 
 ---
 
-### Phase 1: Extend the Signal A vocabulary and the recursion-guard registry [NOT STARTED]
+### Phase 1: Extend the Signal A vocabulary and the recursion-guard registry [COMPLETED]
 
 **Goal**: Establish the defect-class enum and the recursion-guard data the recorder will validate
 against, before the recorder exists. Discharges the prerequisite's binding forward reference.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/context/patterns/system-defect-discrimination.md` in
-      full (345 lines) — it is the contract being extended, not re-derived.
-- [ ] Extend the **Signal A — schema violation instances** table with the five new instances from
+- [x] Read `agent-system/extensions/core/context/patterns/system-defect-discrimination.md` in
+      full (345 lines) — it is the contract being extended, not re-derived. *(completed)*
+- [x] Extend the **Signal A — schema violation instances** table with the five new instances from
       D3: `HANDOFF_STALE_OR_ABSENT`, `SOURCE_STORE_BOUNDARY_VIOLATION`,
       `TASK_REFERENCE_IN_DELIVERABLE`, `ARTIFACT_FORMAT_VIOLATION`, `STATE_SYNC_DIVERGENCE`. Each
       row states what it is and where it is computed. Preserve the existing five rows verbatim.
-- [ ] Add a short subsection recording that the extension is an **explicit decision** made by
+      *(completed)*
+- [x] Add a short subsection recording that the extension is an **explicit decision** made by
       downstream work, per the table's own "extending it is a future task's decision, not silently
-      done by a detection site" clause. Do not reword the existing clause.
-- [ ] Add `"recursion_guard": true` to the three existing pipeline entries in
+      done by a detection site" clause. Do not reword the existing clause. *(completed)*
+- [x] Add `"recursion_guard": true` to the three existing pipeline entries in
       `agent-system/extensions/core/context/reference/orchestrator-critical-paths.json`
       (`context/patterns/system-defect-discrimination.md`,
       `context/reference/orchestrator-critical-paths.json`,
       `scripts/orchestrate-recover-outcome.sh`). Leave every other entry untouched (no field added).
-- [ ] Append the fourth entry `{"path": "scripts/system-defect-record.sh", "label": "system-defect
+      *(completed)*
+- [x] Append the fourth entry `{"path": "scripts/system-defect-record.sh", "label": "system-defect
       recorder (recursion-guard self-reference)", "recursion_guard": true}` — the prerequisite's
-      binding forward reference.
-- [ ] Update the discrimination document's **recursion guard rule** section to record D1: the
+      binding forward reference. *(completed)*
+- [x] Update the discrimination document's **recursion guard rule** section to record D1: the
       guard matches the `recursion_guard: true` subset, not the whole `critical_paths` list, and
       why (naming `skill-orchestrate/SKILL.md` and `skill-base.sh` as files that must remain
       recordable). Record the "sibling file" rejected alternative already stated there — do not
-      duplicate it, cross-reference it.
-- [ ] Update the discrimination document's **detection-point registry** with a site → defect-class
-      mapping column so every wiring phase has one authoritative table to read from.
+      duplicate it, cross-reference it. *(completed)*
+- [x] Update the discrimination document's **detection-point registry** with a site → defect-class
+      mapping column so every wiring phase has one authoritative table to read from. *(completed)*
 
 **Timing**: 1 hour
 

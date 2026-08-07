@@ -1,28 +1,18 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "session_id": "sess_1786116524_d6ecd7",
   "task_number": 952,
-  "phase_count": 8,
-  "estimated_hours": 11,
-  "dependency_waves": [[1], [2], [3], [4, 7], [5], [6], [8]],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/plans/01_defect-recorder-and-wiring.md",
-      "summary": "Eight-phase plan for the system-defect recorder and the ready-site wiring. Phase 1 extends the Signal A instance vocabulary and adds recursion_guard flags plus the recorder's own entry to orchestrator-critical-paths.json (discharging the prerequisite's binding forward reference). Phase 2 builds scripts/system-defect-record.sh in events-append.sh house style with Signal B attribution, the recursion guard, and the dedup rule. Phase 3 deploys and verifies the recorder standalone (six behavioral checks) since deploy-root-guard.sh makes it unrunnable from the source store. Phases 4-7 wire Deliverable 2(a) (ARTIFACTS_SHAPE_MISMATCH consumer), 2(b) (Tier C off-schema, completion-claim gate, stale/stray handoff), and 2(c) (five hooks). Phase 8 proves the matched positive/negative end-to-end path. Five binding design decisions resolve the research report's open questions, including the recursion guard's subset-matching requirement and the completion-claim gate's log_prefix-derived attribution."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "context/reference/orchestrator-critical-paths.json serves TWO consumers with incompatible scopes, and matching the whole critical_paths list is wrong for one of them. Consumer 1 (orchestrate-batch-admit.sh's self-modification hazard check) correctly wants every entry. Consumer 2 (a recursion guard for a defect-recording pipeline) must match only the files implementing that pipeline -- the list already contains skill-orchestrate/SKILL.md, skill-orchestrate-hard/SKILL.md, and skill-base.sh, which are ordinary orchestrator machinery whose defects MUST stay recordable. Matching the full list would silently suppress exactly the defects the mechanism exists to catch. The resolution pattern: add an optional per-entry boolean (e.g. recursion_guard: true) and have the narrower consumer filter on it before calling self_mod_match; unknown keys are ignored by the existing consumer, so the addition is backward compatible and needs no schema version bump. General lesson: when a second consumer reuses a shared registry, check whether it needs the whole set or a labeled subset before wiring it up.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/plans/01_defect-recorder-and-wiring.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrator-critical-paths", "self_mod_match", "recursion-guard", "shared-registry", "second-consumer", "subset-matching"]
-    }
-  ],
-  "next_steps": "Run /implement 952 to execute the plan",
-  "partial_progress": null
+  "artifacts": [],
+  "modified_files": [],
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1786116524_d6ecd7",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }
