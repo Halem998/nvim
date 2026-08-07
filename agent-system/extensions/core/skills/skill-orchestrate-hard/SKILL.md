@@ -964,6 +964,16 @@ if [ -f "$handoff_file" ]; then
     handoff_stale=true
     echo "[hard-orchestrate] ERROR: STALE HANDOFF — $handoff_file has mtime $handoff_mtime, older than this dispatch window ($stale_window_start)." >&2
     echo "[hard-orchestrate] This dispatch did not write it. Treating as a missing handoff, not a successful read." >&2
+    # Deliverable 2(b): record this Class (a) "loud but unactioned" detection. No
+    # dispatched-agent-name variable is unambiguously in scope at this shared, stage-agnostic
+    # block, so attribution names this detecting site's own SKILL.md.
+    bash .claude/scripts/system-defect-record.sh \
+      --defect-class HANDOFF_STALE_OR_ABSENT \
+      --detecting-site "skill-orchestrate-hard/SKILL.md:stage-5-stale-handoff" \
+      --task "$task_number" --session "$session_id" \
+      --message "handoff mtime $handoff_mtime predates this dispatch window ($stale_window_start)" \
+      --attributed-path "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+      >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
   fi
 fi
 
@@ -981,6 +991,18 @@ for stray in "${sweep_root}/.orchestrator-handoff.json" "${sweep_root}/specs/.or
   if [ -e "$stray" ]; then
     echo "[hard-orchestrate] ERROR: STRAY HANDOFF at $stray — a writer produced the handoff outside its task directory." >&2
     echo "[hard-orchestrate] The correct destination is $handoff_file." >&2
+    # Deliverable 2(b): record this Class (a) "loud but unactioned" detection, BEFORE the mv
+    # below so the record is written even if the move fails. HANDOFF_MISLOCATED is an existing
+    # Signal A instance (no vocabulary extension needed). The stray path is carried in
+    # --extra-detail-json for forensics.
+    bash .claude/scripts/system-defect-record.sh \
+      --defect-class HANDOFF_MISLOCATED \
+      --detecting-site "skill-orchestrate-hard/SKILL.md:stage-5-stray-handoff" \
+      --task "$task_number" --session "$session_id" \
+      --message "stray handoff found at $stray, outside its task directory" \
+      --attributed-path "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+      --extra-detail-json "$(jq -c -n --arg stray "$stray" '{stray_path: $stray}')" \
+      >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
     # Move aside rather than delete: preserves the evidence while ensuring no later
     # cwd-relative read can pick it up.
     mv "$stray" "${TASK_DIR}/.stray-handoff-$(date -u +%s).json" 2>/dev/null \

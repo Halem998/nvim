@@ -659,26 +659,30 @@ and the completion-claim gate's Case 3/3 refuse.
 
 ---
 
-### Phase 6: Wire Deliverable 2(b) part 2 — stale-handoff gate and stray-handoff sweep [NOT STARTED]
+### Phase 6: Wire Deliverable 2(b) part 2 — stale-handoff gate and stray-handoff sweep [COMPLETED]
 
 **Goal**: Record the two handoff-integrity detections that today move evidence aside and log, but
 persist nothing.
 
 **Tasks**:
-- [ ] Re-grep `ERROR: STALE HANDOFF` and `ERROR: STRAY HANDOFF` in both SKILL.md files.
-- [ ] **Stale-handoff gate**, both engines: add a non-fatal recorder call after the two existing
+- [x] Re-grep `ERROR: STALE HANDOFF` and `ERROR: STRAY HANDOFF` in both SKILL.md files.
+      *(completed)*
+- [x] **Stale-handoff gate**, both engines: add a non-fatal recorder call after the two existing
       `echo` lines inside `if [ "$handoff_mtime" -lt "$stale_window_start" ]`. `--defect-class
       HANDOFF_STALE_OR_ABSENT` (added in Phase 1 per D3). Attribute via `--dispatched-agent` when
       an agent-name variable is in scope, else `--attributed-path` naming the detecting engine's
       own SKILL.md. **Do not alter `handoff_stale=true`, the fail-closed `9999999999` default, or
-      either message.**
-- [ ] **Stray-handoff sweep**, both engines: add a non-fatal recorder call inside the `if [ -e
+      either message.** *(completed: no agent-name variable in scope, used --attributed-path)*
+- [x] **Stray-handoff sweep**, both engines: add a non-fatal recorder call inside the `if [ -e
       "$stray" ]` block, **before** the `mv`, so the record is written even if the move fails.
       `--defect-class HANDOFF_MISLOCATED` (an existing Signal A instance — no vocabulary
       extension needed). Include the stray path in `--extra-detail-json` for forensics.
       **Do not alter the `mv`, its `&&`/`||` arms, or the two-path bounded sweep list.**
-- [ ] Verify the added calls do not perturb `$?` in a way that changes the `mv` chain's
-      `&& echo ... || echo ...` outcome.
+      *(completed)*
+- [x] Verify the added calls do not perturb `$?` in a way that changes the `mv` chain's
+      `&& echo ... || echo ...` outcome. *(completed: verified via scratch-harness test with a
+      real stray file and a stubbed recorder — the stray was still moved aside and the recorder
+      was invoked exactly once)*
 
 **Timing**: 1 hour
 

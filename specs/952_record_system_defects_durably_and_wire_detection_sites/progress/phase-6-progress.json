@@ -1,0 +1,30 @@
+{
+  "phase": 6,
+  "phase_name": "Wire Deliverable 2(b) part 2 -- stale-handoff gate and stray-handoff sweep",
+  "started_at": "2026-08-07T02:55:00Z",
+  "last_updated": "2026-08-07T03:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-grep anchors; add recorder call to stale-handoff gate (both engines)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add recorder call to stray-handoff sweep before the mv (both engines), with stray path in --extra-detail-json; verified via scratch harness with a real stray file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
