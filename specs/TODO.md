@@ -21,7 +21,7 @@ next_project_number: 998
 
 ### Agent System
 
-952 [NOT STARTED] — Build the recorder that turns a detected agent-system defect into
+952 [RESEARCHED] — Build the recorder that turns a detected agent-system defect into
   └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
     └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
       └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
@@ -1448,10 +1448,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 952. Record detected system defects durably and wire the ready detection sites
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 951, Task 962, Task 988
+- **Research**: [952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md]
 
 **Description**: Build the recorder that turns a detected agent-system defect into a durable, deduplicated record, then wire the detection sites the prerequisite task's registry classifies as ready. Today NO site anywhere converts a detected agent-system defect into a task, an errors.json entry, or any durable record -- every one of them terminates in EXIT (partial), a failed_tasks entry, or an 'mv ... for inspection'.
 

@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786116524_d6ecd7",
+  "task_number": 952,
+  "findings_count": 12,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md",
+      "summary": "Re-verified every citation from the task description and from the prerequisite task's deliverable against current file text (all had drifted); extracted the prerequisite's four established answers (predicate, three-class detection-point registry plus a named fourth undetected outcome, recursion-guard mechanics via self_mod_match, dedup identity key); confirmed the events.jsonl substrate (schema, --cwd is provenance-only not a write-redirect, category enum, flock guard, 904 live lines); enumerated current line numbers for all Deliverable-2 wiring sites across both classes (a) and (b), and confirmed registration status of all five Class-(c) hooks across both settings sources."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "events-append.sh resolves PROJECT_ROOT as two levels up from its OWN script location (common_repo_root \"$SCRIPT_DIR\" 2, guarded by deploy-root-guard.sh), not from any --cwd argument. --cwd is written into the JSON row purely as a provenance field; it never redirects where the event line is appended. A script that wraps events-append.sh from within a per-repo deployed .claude/scripts/ tree therefore always writes to THAT repo's own specs/events.jsonl, regardless of what --cwd value it threads through.",
+      "category": "PATTERN",
+      "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["events-append.sh", "cwd", "PROJECT_ROOT", "events.jsonl", "provenance"]
+    },
+    {
+      "content": "root-files/settings.json is install-only (never re-applied to an already-deployed repo), while merge-sources/settings-hooks.json is add-only and re-applied on every deploy/resync. A hook can be fully functional in a live deployed repo (validate-plan-write.sh, validate-state-sync.sh) while being registered ONLY in root-files/settings.json -- meaning new repos or a from-scratch redeploy get it, but the registration itself is not something a merge-sources edit can add/change for already-deployed repos. When auditing hook wiring, check BOTH settings sources, not just settings-hooks.json.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["root-files/settings.json", "settings-hooks.json", "hooks", "deploy", "install-only"]
+    },
+    {
+      "content": "self_mod_match (scripts/lib/file-scope-overlap.sh) is a reusable jq def, shared via a heredoc-captured variable (FILE_SCOPE_OVERLAP_JQ_DEFS) that consumers splice into their own jq -n programs. It matches a candidate scope array against a static critical-paths list (exact or directory-prefix match after trimming trailing slashes) and returns the first {path,label} hit or null. orchestrate-batch-admit.sh is the existing consumer for admission-time self-modification hazard checks; the same predicate is the documented mechanism for a recursion guard checking single attributed paths, not just whole file_scope arrays.",
+      "category": "PATTERN",
+      "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["self_mod_match", "file-scope-overlap.sh", "recursion-guard", "critical-paths", "jq"]
+    }
+  ],
+  "next_steps": "Run /plan 952 to create implementation plan",
+  "partial_progress": null
+}

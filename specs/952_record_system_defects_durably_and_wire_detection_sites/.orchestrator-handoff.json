@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "task_number": 952,
+  "session_id": "sess_1786116524_d6ecd7",
+  "phases_completed": 0,
+  "phases_total": 0,
+  "plan_markers_verified": "absent",
+  "blockers": [],
+  "next_action_hint": "Run /plan 952 to create the implementation plan from the research report.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md",
+      "summary": "Re-verified all citations against current file text, extracted the prerequisite task's four established answers, confirmed events.jsonl substrate mechanics, and enumerated current wiring-site line numbers for both wiring classes and all five Class-(c) hooks."
+    }
+  ],
+  "dispatch_summary": "Research complete for task 952. All task-description citations were confirmed stale and re-verified against current file text (see report). Extracted task 951's predicate/registry/recursion-guard/dedup answers for the plan to encode directly. Confirmed events.jsonl substrate claims (schema, flock, --cwd semantics, category enum) and the non-existence of system-defect-record.sh. No implementation performed -- research only."
+}
