@@ -1,0 +1,40 @@
+{
+  "status": "partial",
+  "summary": "Completed phases 1-5 of the 10-phase plan (test runner + Gate 8, scripts/lib/common.sh, session-ID migration, root-resolution/timestamp migration, and the shell-strict-mode.md classification doc). Phase 6 (strict-mode migration batch A) is partial: state-write.sh migrated to set -euo pipefail, audited, and verified with a live fixture exercise plus its two concurrency test suites; the remaining 4 files (task-lock.sh, git-commit-scoped.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh) were deliberately deferred rather than rushed, since task-lock.sh alone is a 1644-line, concurrency-critical mutex script with dozens of unguarded VAR=$(jq/ps/stat) sites requiring individual audit. Phases 7-10 (remaining strict-mode batch, shebang normalization, and two new test suites) are not started. All committed work is green: run-all.sh passes 27/27 on a clean run (one pre-existing, documented flaky suite -- tests/test-claude-refresh-matcher.sh -- intermittently fails under concurrent-suite load, unrelated to this task's changes).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "source",
+      "path": "agent-system/extensions/core/scripts/lib/common.sh",
+      "summary": "Shared shell library: common_repo_root, common_session_id, timestamp helpers, log/test trios; consumer list documents all migrated call sites"
+    },
+    {
+      "type": "source",
+      "path": "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
+      "summary": "Unit suite for common.sh, including the repo-wide single-source session-ID assertion"
+    },
+    {
+      "type": "source",
+      "path": "agent-system/extensions/core/scripts/tests/run-all.sh",
+      "summary": "Test runner discovering both documented suite locations, wired as verify-deploy.sh Gate 8"
+    },
+    {
+      "type": "standard",
+      "path": "agent-system/extensions/core/context/standards/shell-strict-mode.md",
+      "summary": "Three-class strict-mode convention with the full live classification of every non-set-e script in the extensions tree"
+    },
+    {
+      "type": "source",
+      "path": "agent-system/extensions/core/scripts/state-write.sh",
+      "summary": "Migrated to set -euo pipefail; two -e-hostile VAR=$(jq) sites fixed with the VAR=$(cmd) || status=$? guard"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T074312Z.md",
+      "summary": "Resume point for Phase 6's remaining 4 files, naming the exact guard pattern and hazard sites found in task-lock.sh"
+    }
+  ],
+  "phases_completed": 5,
+  "phases_total": 10,
+  "plan_markers_verified": true
+}

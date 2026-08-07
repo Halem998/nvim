@@ -1,7 +1,71 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 988,
-  "session_id": "sess_1786046335_4648b5",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "partial",
+  "partial_progress": {
+    "stage": "phase_6_deferred_remainder",
+    "details": "Phases 1-5 completed and committed. Phase 6: state-write.sh migrated (1/5 files); task-lock.sh, git-commit-scoped.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh deferred to a follow-up dispatch rather than rushed, per the resume handoff. Phases 7-10 not started.",
+    "handoff_path": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T074312Z.md",
+    "phases_completed": 5,
+    "phases_total": 10
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T074312Z.md",
+      "summary": "Resume handoff for the remaining Phase 6 files and unfinished Phases 7-10"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Completed phases 1-5 (test runner/Gate 8, scripts/lib/common.sh, session-ID and root-resolution/timestamp migration, and the shell-strict-mode.md classification doc) and migrated state-write.sh (phase 6, file 1 of 5) to set -euo pipefail with a live fixture exercise and two green concurrency suites. Remaining phase-6 files and phases 7-10 are deferred to a follow-up /implement dispatch, documented in a resume handoff."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/state-write.sh",
+    "agent-system/extensions/core/context/standards/shell-strict-mode.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/988_script_hygiene_common_lib_and_test_runner/plans/01_script-hygiene-common-lib.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When migrating a shell script from `set -uo pipefail` to `set -euo pipefail`, a `VAR=$(cmd); status=$?` pair immediately after is an -e-hostile pattern: under -e, a failing bare assignment aborts the script on that line, before the status capture or any custom error handling can run. Fix with `VAR=$(cmd) || status=$?` -- the assignment is not the last command in the `||` list, so it is -e-exempt, and `$?` inside the `||` branch still holds the real failing exit code.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/handoffs/phase-6-handoff-20260807T074312Z.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "set -e",
+        "strict mode",
+        "bash",
+        "shell",
+        "exit code guard"
+      ]
+    },
+    {
+      "content": "A shared shell library meant to be sourced (not executed) must set zero shell options on its own -- sourcing must never change the calling shell's error-handling behavior. Verify this with a suite asserting `$-`/`set -o` output is byte-identical before and after sourcing the library, exercised directly against callers that themselves set no options (e.g. a hook or command-dispatch script sourced mid-shell).",
+      "category": "PATTERN",
+      "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/plans/01_script-hygiene-common-lib.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "shell library",
+        "sourcing",
+        "shell options",
+        "bash",
+        "contract"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786086208_65dc5a",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 10,
+    "cycles_used": 5,
+    "final_state": "implementing"
+  }
 }
