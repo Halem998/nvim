@@ -733,22 +733,46 @@ uncovered count in the commit body.
 
 ---
 
-### Phase 10: Test coverage for update-task-status.sh [NOT STARTED]
+### Phase 10: Test coverage for update-task-status.sh [COMPLETED]
 
 **Goal**: A dedicated suite covers `update-task-status.sh`'s preflight/postflight transitions and
 its `--phase-check` backstop.
 
 **Tasks**:
-- [ ] Confirm no existing dedicated suite covers it:
-  `ls agent-system/extensions/core/scripts/tests/ | grep -i task-status`.
-- [ ] Write `scripts/tests/test-update-task-status.sh` following `shell-script-testing.md`.
-- [ ] Cover: preflight and postflight transitions for a representative operation; the refusal path
+- [x] Confirm no existing dedicated suite covers it:
+  `ls agent-system/extensions/core/scripts/tests/ | grep -i task-status`. *(completed: confirmed
+  no match, live)*
+- [x] Write `scripts/tests/test-update-task-status.sh` following `shell-script-testing.md`.
+  *(completed: modeled on test-corroborate-phase-counts.sh / test-skill-base-lifecycle.sh's
+  structural shape)*
+- [x] Cover: preflight and postflight transitions for a representative operation; the refusal path
   on terminal statuses; `generate-todo.sh` regeneration being invoked; the `--phase-check`
   backstop's `warn` (logs loudly, proceeds) versus `refuse` (exits 4, writes nothing) behaviors;
   and its interaction with `lib/phase-heading-patterns.sh`'s non-conforming-heading detection.
-- [ ] Build a complete fake `specs/` tree (state.json plus a plan file with conforming phase
+  *(completed with one finding: live inspection of update-task-status.sh's full 564 lines found
+  NO terminal-status (completed/abandoned/expanded) refusal logic anywhere in the script — it has
+  no awareness of terminal statuses at all and will flip any task's status field regardless of
+  its current value; enforcement of state-management.md's permissive-transition model, if it
+  exists, lives in a calling layer, never in this script. This is a stale planning assumption
+  (the same class of finding recorded in this task's Phase 7 closing commit for a different
+  file); no fabricated test case was written for nonexistent behavior. Every other named item is
+  covered: preflight/postflight transitions (research: not_started->researching->researched),
+  TODO.md regeneration (including the self-healing-on-retry idempotent-replay case),
+  --phase-check=warn (proceeds with a WARNING) and --phase-check=refuse (exits 4, verified BOTH
+  that state.json stays at 'implementing' AND that the plan file's top-level Status is not
+  stamped [COMPLETED]), and the non-conforming-heading interaction (a `[DESCOPED]` heading makes
+  the phase count INCONCLUSIVE, passing through even under --phase-check=refuse). 16/16
+  assertions pass.)*
+- [x] Build a complete fake `specs/` tree (state.json plus a plan file with conforming phase
   headings) inside the `mktemp -d` workdir. The suite must never mutate the real `specs/` tree.
-- [ ] Register `tests/test-update-task-status.sh` in `provides.scripts` and set its exec bit.
+  *(completed: full isolated fixture repo per case — real deployed
+  update-task-status.sh/state-write.sh/task-lock.sh/generate-todo.sh/generate-task-order.sh/
+  update-plan-status.sh/update-phase-status.sh/deploy-root-guard.sh/lib copied in, plus a private
+  state.json and, for the phase-check cases, a plan file with the needed heading shape. A
+  delta-based contamination guard (same pattern as test-skill-base-lifecycle.sh) confirms the
+  real specs/ tree's status is byte-identical before and after.)*
+- [x] Register `tests/test-update-task-status.sh` in `provides.scripts` and set its exec bit.
+  *(completed)*
 
 **Timing**: 2.5 hours
 

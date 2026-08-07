@@ -177,6 +177,7 @@
       "tests/test-resume-scan-nonconformance.sh",
       "tests/test-routing-resolution.sh",
       "tests/test-skill-base-lifecycle.sh",
+      "tests/test-update-task-status.sh",
       "tests/test-validate-handoff.sh",
       "tests/test-validate-no-task-references.sh",
       "tier-selection.sh",
