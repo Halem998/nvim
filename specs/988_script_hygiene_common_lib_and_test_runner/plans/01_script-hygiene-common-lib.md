@@ -466,24 +466,42 @@ is not complete while any file in the non-`-e` populations is unclassified.
 
 ---
 
-### Phase 6: Strict-mode migration batch A (highest-risk state mutators) [NOT STARTED]
+### Phase 6: Strict-mode migration batch A (highest-risk state mutators) [PARTIAL]
 
 **Goal**: The five confirmed highest-risk Class A scripts carry `set -euo pipefail`, each audited
 individually and each landing green.
 
 **Tasks**:
-- [ ] Confirm each target is still Class A per Phase 5's classification and still lacks `-e`.
+- [x] Confirm each target is still Class A per Phase 5's classification and still lacks `-e`.
+  *(completed for state-write.sh: confirmed Class A, `set -uo pipefail` prior to this phase)*
 - [ ] Migrate one file at a time, in this order, running `run-all.sh` after each:
   `state-write.sh`, `task-lock.sh`, `git-commit-scoped.sh`, `orchestrate-batch-admit.sh`,
-  `orchestrate-predispatch-review.sh`.
-- [ ] For each, before flipping: walk every command whose nonzero exit is currently tolerated and
+  `orchestrate-predispatch-review.sh`. *(partial: state-write.sh done and committed. task-lock.sh,
+  git-commit-scoped.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh remain
+  `set -uo pipefail`, not yet migrated — deliberately deferred, not skipped: task-lock.sh alone is
+  1644 lines with dozens of `VAR=$(jq/ps/stat ...)` sites feeding a concurrency-critical mutex, and
+  a rushed audit risks a silent regression in the one script every task-management operation in
+  this repo depends on. Left for a follow-up `/implement` dispatch with a fresh, focused context
+  budget rather than forced through here.)*
+- [x] For each, before flipping: walk every command whose nonzero exit is currently tolerated and
   confirm it is either inside an `if`/`&&`/`||`/`while` condition (already `-e`-exempt) or
   explicitly guarded with `|| true` / `|| handler`. Add the explicit guard where it is not.
-- [ ] Exercise each script's primary path manually against a `mktemp -d` fixture, not only via its
-  suite — `state-write.sh` and `task-lock.sh` have concurrency behavior that the suites cover but
-  the manual path confirms end to end.
-- [ ] Commit each file separately once its suite run is green, per the commit-per-green-substep
-  mandate.
+  *(completed for state-write.sh: found and fixed 2 unguarded `VAR=$(jq ...)` sites — see below)*
+- [x] Exercise each script's primary path manually against a `mktemp -d` fixture, not only via its
+  suite. *(completed for state-write.sh: live fixture exercise of valid write, dry-run valid,
+  dry-run invalid filter (exit 3), and real invalid filter (exit 3, file left untouched) — see
+  Phase 6 progress file, objective 1)*
+- [x] Commit each file separately once its suite run is green, per the commit-per-green-substep
+  mandate. *(completed for state-write.sh only; committed separately per-file as mandated)*
+
+**state-write.sh findings** (recorded here since Phase 6 is not yet fully closed): two
+`transform_err=$(jq ...)` / `dryrun_err=$(jq ...)` sites assigned the jq exit status to a separate
+`... =$?` line immediately after. Under `set -e` this is `-e`-hostile: a failing bare assignment
+aborts the script on that line, before the status capture or this script's own documented
+exit-code-3 error message can run. Fixed via the standard `VAR=$(cmd) || status=$?` guard, which
+is `-e`-exempt (the assignment is not the last command in the `||` list) and preserves the
+captured status exactly. Verified live against both the syntax-invalid dry-run path and a real
+invalid-filter write, confirming the file is left untouched and exit code 3 is still returned.
 
 **Timing**: 2 hours
 

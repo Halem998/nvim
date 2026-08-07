@@ -2,12 +2,26 @@
   "phase": 6,
   "phase_name": "Strict-mode migration batch A (highest-risk state mutators)",
   "started_at": "2026-08-07T01:10:00Z",
-  "last_updated": "2026-08-07T01:10:00Z",
+  "last_updated": "2026-08-07T01:35:00Z",
   "objectives": [
-    {"id": 1, "description": "Migrate state-write.sh to set -euo pipefail", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"], "note": "Found and fixed 2 -e-hostile VAR=$(cmd) assignments (dry-run and real transform branches) that would have silently short-circuited past the documented exit-3 error message under -e. Fixed via the standard `VAR=$(cmd) || status=$?` guard. Verified with a live mktemp-fixture exercise (valid write, dry-run valid, dry-run invalid filter exit 3, real invalid filter exit 3 with file left untouched) plus test-state-write-concurrency.sh (9/9) and test-state-write-regen-timing.sh (3/3), both green."}
+    {"id": 1, "description": "Migrate state-write.sh to set -euo pipefail", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"], "note": "Found and fixed 2 -e-hostile VAR=$(cmd) assignments (dry-run and real transform branches) that would have silently short-circuited past the documented exit-3 error message under -e. Fixed via the standard `VAR=$(cmd) || status=$?` guard. Verified with a live mktemp-fixture exercise (valid write, dry-run valid, dry-run invalid filter exit 3, real invalid filter exit 3 with file left untouched) plus test-state-write-concurrency.sh (9/9) and test-state-write-regen-timing.sh (3/3), both green. Committed separately (task 988 phase 6.1)."},
+    {"id": 2, "description": "Migrate task-lock.sh to set -euo pipefail", "status": "blocked", "files_touched": [], "note": "Audited: 1644 lines with dozens of unguarded `VAR=$(jq/ps/stat ...)` assignments feeding a concurrency-critical mutex (e.g. resolve_task_dir's project_name lookup, read_holder_field's many call sites, session-registry reads). Several are documented as intentional graceful-degradation-on-failure paths (see resolve_task_dir's and get_file_scope's header comments), meaning a bare set -e flip would convert an intended fallback into an abrupt abort. A correct fix requires guarding each site individually with the same VAR=$(cmd) || ... pattern used in state-write.sh, then re-exercising test-task-lock-reap.sh plus a live concurrent-acquire fixture. Deliberately deferred to a follow-up dispatch with a full context budget rather than rushed."},
+    {"id": 3, "description": "Migrate git-commit-scoped.sh to set -euo pipefail", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Migrate orchestrate-batch-admit.sh to set -euo pipefail", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "Migrate orchestrate-predispatch-review.sh to set -euo pipefail", "status": "not_started", "files_touched": []}
   ],
   "current_objective": 2,
-  "approaches_tried": [],
-  "handoff_count": 0,
-  "deviations": []
+  "approaches_tried": [
+    {"approach": "Full -e-hostility audit of task-lock.sh in this same dispatch", "result": "deferred", "reason": "File is 1644 lines with dozens of hazard sites in a concurrency-critical mutex script; correctness risk of a rushed pass outweighs finishing the batch in one dispatch. See objective 2 note."}
+  ],
+  "handoff_count": 1,
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "Migrate task-lock.sh, git-commit-scoped.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh in this dispatch",
+      "type": "deferred",
+      "reason": "Context/time budget for this dispatch was better spent completing state-write.sh correctly (with a full audit and live fixture exercise) than rushing four more files, one of which (task-lock.sh) is the highest-blast-radius file in the whole plan.",
+      "annotation": "*(deviation: deferred to a follow-up /implement dispatch)*"
+    }
+  ]
 }
