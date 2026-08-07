@@ -1,18 +1,63 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "session_id": "sess_1786116524_d6ecd7",
   "task_number": 952,
-  "artifacts": [],
-  "modified_files": [],
-  "memory_candidates": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/952_record_system_defects_durably_and_wire_detection_sites/summaries/01_defect-recorder-and-wiring-summary.md",
+      "summary": "Recorder wiring complete: all five ephemeral hooks (Phase 7) verified and closed, and Phase 8's matched positive/negative end-to-end proof plus full repository gate set pass (19/19 checks), with two pre-existing unrelated defects (index-entries.json line_count drift, non-single-source session-id generator) fixed along the way."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
+    "agent-system/extensions/core/hooks/validate-handoff-location.sh",
+    "agent-system/extensions/core/hooks/validate-meta-write.sh",
+    "agent-system/extensions/core/hooks/validate-no-task-references.sh",
+    "agent-system/extensions/core/hooks/validate-plan-write.sh",
+    "agent-system/extensions/core/hooks/validate-state-sync.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/system-defect-record.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shell script under agent-system/extensions/core/scripts/ needs a Claude-Code-style session ID (sess_<epoch>_<6hex>), always call the shared common_session_id() from lib/common.sh rather than re-implementing the sess_$(date +%s)_$(od ...) formula inline. The repo enforces this as a hard invariant via tests/test-common-lib.sh's single-source assertion (a grep across the whole extensions tree for the inline pattern outside lib/common.sh), which is part of tests/run-all.sh and therefore part of verify-deploy.sh's gate. A newly-authored script that re-implements this inline will pass bash -n and its own unit checks but silently fail this repo-wide gate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/summaries/01_defect-recorder-and-wiring-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["common.sh", "session-id", "single-source", "test-common-lib", "verify-deploy"]
+    },
+    {
+      "content": "system-defect-record.sh's dedup rule keys on {defect_class}:{attributed_source_path} but only suppresses when a PRIOR matching row's detail.linked_task_number resolves to a non-terminal task in state.json. linked_task_number is always written as null at record time (recording never promotes to a task) -- so to test/verify dedup suppression, you must manually set linked_task_number on a prior row to a real non-terminal task number before re-recording; a bare re-run of the identical call is, by design, NOT a duplicate (it produces a fresh row) since nothing is currently tracking the defect. See context/patterns/system-defect-discrimination.md's 'deduplication rule' section for the three-way classification (no prior match / prior match with non-terminal linked task / prior match with no or terminal linked task).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/summaries/01_defect-recorder-and-wiring-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["system-defect-record", "dedup", "linked_task_number", "system_defect", "events.jsonl"]
+    },
+    {
+      "content": "After editing any file under agent-system/extensions/*/context/** (or reference/**), re-run bash .claude/scripts/generate-context-line-counts.sh --write (against the DEPLOYED .claude/scripts/ copy, not the source-store copy -- it refuses to run from the source store) before considering the phase closed. check-extension-docs.sh / verify-deploy.sh enforce index-entries.json's declared line_count exactly, and it is easy to edit a context doc in a late phase without noticing the earlier-declared count silently going stale, which only surfaces as a gate failure much later.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/952_record_system_defects_durably_and_wire_detection_sites/summaries/01_defect-recorder-and-wiring-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["index-entries.json", "line_count", "generate-context-line-counts", "check-extension-docs", "verify-deploy"]
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wired non-fatal system-defect recording into all five ephemeral PostToolUse hooks (Deliverable 2c) and completed the Phase 8 end-to-end acceptance test: a synthetic ARTIFACTS_SHAPE_MISMATCH produces exactly one correctly-attributed specs/events.jsonl row while schema-conformant failed/partial outcomes produce zero, dedup semantics confirmed, and the full repository gate set (verify-deploy.sh, check-task-references.sh, check-extension-docs.sh, lint-agent-contracts.sh, lint-routing-wiring.sh) passes cleanly after fixing two pre-existing, unrelated defects (index-entries.json line_count drift and a non-single-source session-id generator) discovered by the gate run."
+  },
   "metadata": {
     "session_id": "sess_1786116524_d6ecd7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 8,
     "phases_total": 8
   }
 }
