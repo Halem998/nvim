@@ -673,29 +673,43 @@ Re-derive with the `grep -rl` above; the phase is complete when that grep return
 
 ---
 
-### Phase 9: Test coverage for skill-base.sh lifecycle functions [NOT STARTED]
+### Phase 9: Test coverage for skill-base.sh lifecycle functions [COMPLETED]
 
 **Goal**: A new suite covers `skill-base.sh`'s state-mutating lifecycle functions, closing the
 largest coverage gap in the source store.
 
 **Tasks**:
-- [ ] Confirm the live function inventory: `grep -n '^[a-z_]*()' scripts/skill-base.sh`. The
+- [x] Confirm the live function inventory: `grep -n '^[a-z_]*()' scripts/skill-base.sh`. The
   current set is 17 top-level functions of which only `skill_corroborate_phase_counts` is covered
-  (by `tests/test-corroborate-phase-counts.sh`).
-- [ ] Write `scripts/tests/test-skill-base-lifecycle.sh` following `shell-script-testing.md`
+  (by `tests/test-corroborate-phase-counts.sh`). *(completed: confirmed live, 17 functions,
+  matching the Scope Hypothesis exactly)*
+- [x] Write `scripts/tests/test-skill-base-lifecycle.sh` following `shell-script-testing.md`
   exactly: `set -uo pipefail`, `PASSED`/`FAILED` counters, `pass`/`fail`/`info`, `mktemp -d`
   workdir with `trap ... EXIT`, inline heredoc fixtures, loud-skip discipline, exit 1 when
-  `FAILED` is nonzero.
-- [ ] Prefer sourcing `common.sh`'s `common_test_*` trio if it is a drop-in for the local
+  `FAILED` is nonzero. *(completed: modeled directly on test-corroborate-phase-counts.sh's
+  structural shape — deploy-tree-first/source-store-fallback candidate resolution, sourced not
+  subprocessed)*
+- [x] Prefer sourcing `common.sh`'s `common_test_*` trio if it is a drop-in for the local
   definitions; if the existing suites' inline trio reads more clearly, keep the inline form and
-  note why — the trio is available, not mandatory.
-- [ ] Cover the highest-blast-radius state mutators first: `skill_preflight_update`,
+  note why — the trio is available, not mandatory. *(completed: kept the inline trio, matching
+  test-corroborate-phase-counts.sh's own precedent for this exact function set)*
+- [x] Cover the highest-blast-radius state mutators first: `skill_preflight_update`,
   `skill_postflight_update`, `skill_gate_completion_claim`, `skill_link_artifacts`,
-  `skill_cleanup`.
-- [ ] Every fixture must live in the `mktemp -d` workdir. The suite must never touch the real
-  `specs/` tree, real `state.json`, or real task locks.
-- [ ] Register `tests/test-skill-base-lifecycle.sh` in `core/manifest.json`'s `provides.scripts`
-  and set its exec bit.
+  `skill_cleanup`. *(completed: all 5 covered, 14/14 assertions passing. skill_preflight_update
+  and skill_postflight_update hardcode a bare `.claude/scripts/update-task-status.sh` path
+  (not SKILL_REPO_ROOT-qualified) — the suite builds a full isolated fixture repo (real deployed
+  update-task-status.sh/state-write.sh/task-lock.sh/generate-todo.sh/deploy-root-guard.sh/lib
+  copied in) and cd's into it for those two functions specifically; skill_link_artifacts is
+  isolated via a SKILL_REPO_ROOT override instead, since it IS SKILL_REPO_ROOT-qualified;
+  skill_gate_completion_claim and skill_cleanup need no external-script fixture at all)*
+- [x] Every fixture must live in the `mktemp -d` workdir. The suite must never touch the real
+  `specs/` tree, real `state.json`, or real task locks. *(completed: a delta-based contamination
+  guard — baseline `git status --short specs/` captured before any group runs, compared against
+  the same check after — confirms the real specs/ tree's status is byte-identical before and
+  after; an earlier absolute-emptiness version of this check produced a false positive against
+  this session's own ambient events.jsonl hook-logging noise, corrected to the delta form)*
+- [x] Register `tests/test-skill-base-lifecycle.sh` in `core/manifest.json`'s `provides.scripts`
+  and set its exec bit. *(completed)*
 
 **Timing**: 2.5 hours
 
