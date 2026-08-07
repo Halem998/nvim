@@ -1180,7 +1180,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, and dedup rule",
-      "line_count": 345,
+      "line_count": 382,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -2960,7 +2960,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Declared orchestrator-critical paths and scope roots driving the self-modification defer verdict",
-      "line_count": 62,
+      "line_count": 70,
       "keywords": [
         "reference",
         "orchestrate",

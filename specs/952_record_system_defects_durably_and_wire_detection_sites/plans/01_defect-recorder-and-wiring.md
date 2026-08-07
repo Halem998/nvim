@@ -1,7 +1,7 @@
 # Implementation Plan: Task #952
 
 - **Task**: 952 - Record detected system defects durably and wire the ready detection sites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: 951 (completed, prerequisite contract), 962, 988
 - **Research Inputs**: specs/952_record_system_defects_durably_and_wire_detection_sites/reports/01_recorder-and-wiring-research.md
@@ -780,47 +780,48 @@ change. Confirm with `git diff --name-only` at phase close: five paths under
 
 ---
 
-### Phase 8: End-to-end verification — matched positive and negative [NOT STARTED]
+### Phase 8: End-to-end verification — matched positive and negative [COMPLETED]
 
 **Goal**: Prove at least one complete path from induced defect to durable, correctly-attributed
 record, **and** prove that a schema-conformant failure produces no record. The negative test is as
 important as the positive one.
 
 **Tasks**:
-- [ ] Re-deploy so every source-store edit from Phases 4-7 is live in `.claude/**`.
-- [ ] Record `wc -l specs/events.jsonl` as the baseline before each check.
-- [ ] **Positive (required)**: construct a synthetic `.return-meta.json` with a malformed
+- [x] Re-deploy so every source-store edit from Phases 4-7 is live in `.claude/**`. *(completed: `bash agent-system/extensions/core/scripts/deploy-headless.sh` run multiple times across this phase, each followed by a re-verify)*
+- [x] Record `wc -l specs/events.jsonl` as the baseline before each check. *(completed)*
+- [x] **Positive (required)**: construct a synthetic `.return-meta.json` with a malformed
       `artifacts` array — use the bare-string form `{"status":"planned","artifacts":["some/path.md"]}`,
       which the research confirmed fires `ARTIFACTS_SHAPE_MISMATCH` via the `jq_artifact_failure`
       arm. Run `orchestrate-recover-outcome.sh` against it, confirm
       `evidence_reason == "ARTIFACTS_SHAPE_MISMATCH"`, then drive the Phase-4 consumer arm and
       assert **exactly one** new `specs/events.jsonl` line with `event_type == "system_defect"`,
       `category == "deviation"`, and a `detail.attributed_source_path` under
-      `agent-system/extensions/**` matching the expected attribution.
-- [ ] **Negative (required)**: construct a schema-conformant failure —
+      `agent-system/extensions/**` matching the expected attribution. *(completed: delta=1, event_type=system_defect, category=deviation, attributed_source_path=agent-system/extensions/core/skills/skill-orchestrate/SKILL.md)*
+- [x] **Negative (required)**: construct a schema-conformant failure —
       `{"status":"failed","artifacts":[{"type":"report","path":"specs/.../x.md","summary":"..."}]}`
       — run the identical path and assert **zero** new lines. This is the "a schema-conformant
-      failure is always task work" invariant; a nonzero delta here is a hard failure of the task.
-- [ ] **Negative, second form**: a well-formed `partial` outcome with a well-formed non-empty
-      `artifacts` array. Assert zero new lines.
-- [ ] Confirm `detail.defect_key` on the positive row equals
+      failure is always task work" invariant; a nonzero delta here is a hard failure of the task. *(completed: evidence_suspect=false, evidence_reason=NONE, delta=0)*
+- [x] **Negative, second form**: a well-formed `partial` outcome with a well-formed non-empty
+      `artifacts` array. Assert zero new lines. *(completed: evidence_suspect=false, evidence_reason=NONE, delta=0)*
+- [x] Confirm `detail.defect_key` on the positive row equals
       `{defect_class}:{attributed_source_path}` exactly, and re-running the positive case
-      suppresses (per Phase 3's dedup semantics) rather than duplicating.
-- [ ] Restore `specs/events.jsonl` to its pre-phase line count and record the before/after counts.
-- [ ] Run the full repository gate set:
+      suppresses (per Phase 3's dedup semantics) rather than duplicating. *(completed: defect_key confirmed exact; dedup suppression verified by reproducing Phase 3's own test shape — manually promoting the prior row's `linked_task_number` to a non-terminal task (952) and re-recording, which correctly returned `SUPPRESSED:duplicate` with delta=0. Note: a bare re-run with no promotion is NOT a duplicate by design — `linked_task_number` is always `null` at write time (Signal B never promotes to a task per this task's own scope), and the discrimination doc's own rule states a match with no `linked_task_number` is "not a duplicate" — confirmed this also produces a fresh delta=1 row, matching spec)*
+- [x] Restore `specs/events.jsonl` to its pre-phase line count and record the before/after counts. *(completed: 913 -> (914/915 during tests) -> 913, restored via `git show HEAD:specs/events.jsonl > specs/events.jsonl`; `git diff --stat` confirms zero diff after each restore)*
+- [x] Run the full repository gate set:
       - `bash .claude/scripts/verify-deploy.sh`
       - `bash .claude/scripts/check-task-references.sh`
       - `bash .claude/scripts/check-extension-docs.sh`
       - `bash .claude/scripts/lint/lint-agent-contracts.sh`
       - `bash .claude/scripts/lint/lint-routing-wiring.sh`
       - `bash -n` on every modified `.sh`
-- [ ] Assert the source-store boundary held: `git status --short` shows changes **only** under
-      `agent-system/extensions/**` (plus `specs/**` task artifacts). No tracked `.claude/**` change.
-- [ ] Record the D4 attribution-outcome table's **actual** results (which hooks attributed, which
+      *(completed: all six pass — `verify-deploy.sh` PASS 19/19 (0 failures) after two pre-existing, out-of-Phase-7-scope defects discovered by this phase's own gate run were fixed: (1) `index-entries.json` line_count drift for two Phase-1-touched files, corrected via `generate-context-line-counts.sh --write`; (2) `system-defect-record.sh`'s inline `sess_$(date...)` session-id generator violated the repo's single-source-of-truth assertion (`test-common-lib.sh`), fixed by switching to the already-sourced `common_session_id` from `lib/common.sh` — see Deviations)*
+- [x] Assert the source-store boundary held: `git status --short` shows changes **only** under
+      `agent-system/extensions/**` (plus `specs/**` task artifacts). No tracked `.claude/**` change. *(completed: confirmed — the only tracked changes are under `agent-system/extensions/**` and `specs/**`; the three unrelated dirty files (`.claude-extensions.json`, `lua/neotex/config/options.lua`, `lua/neotex/plugins/editor/which-key.lua`) predate this session and are untouched by this task)*
+- [x] Record the D4 attribution-outcome table's **actual** results (which hooks attributed, which
       logged only) in the implementation summary, so a future reader does not read log-only as
-      breakage.
-- [ ] Record the known residual gaps in the summary: the handoff-present detection hole, and
-      `ARTIFACTS_MISSING_ON_SUCCESS` having no detector anywhere.
+      breakage. *(completed: see implementation summary)*
+- [x] Record the known residual gaps in the summary: the handoff-present detection hole, and
+      `ARTIFACTS_MISSING_ON_SUCCESS` having no detector anywhere. *(completed: see implementation summary, plus one additional residual gap discovered this phase — validate-plan-write.sh's pre-existing exit-code-capture bug)*
 
 **Timing**: 1.5 hours
 

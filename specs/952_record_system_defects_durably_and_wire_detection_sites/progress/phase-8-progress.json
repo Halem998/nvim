@@ -1,0 +1,57 @@
+{
+  "phase": 8,
+  "phase_name": "End-to-end verification -- matched positive and negative",
+  "started_at": "2026-08-07T16:52:00Z",
+  "last_updated": "2026-08-07T17:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-deploy so every source-store edit from Phases 4-7 is live in .claude/**, and confirm hooks/skill-orchestrate/skill-base carry the wiring",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Positive: synthetic malformed .return-meta.json (bare-string artifacts array) drives orchestrate-recover-outcome.sh -> ARTIFACTS_SHAPE_MISMATCH -> Phase-4 consumer arm -> exactly one correctly-attributed system_defect row",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Negative (failed) and Negative (partial): schema-conformant outcomes produce zero new rows, because recovered=false short-circuits the consumer arm's outer if-block entirely",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Dedup re-run: defect_key format confirmed; suppression confirmed only when a prior matching row carries a linked_task_number pointing at a non-terminal active_projects entry (per Phase 3 semantics), not on a bare re-run",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "D4 hook attribution-outcome table: exercised all five hooks with synthetic stdin, confirmed 2 attributable (validate-meta-write, validate-no-task-references-in-scope) and 2 genuinely log-only-by-design (validate-handoff-location, validate-state-sync); found validate-plan-write.sh's branch is presently UNREACHABLE due to a pre-existing, unrelated exit-code-capture bug (documented by Phase 7, not fixed -- out of this task's scope)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Cleanup: remove every synthetic events.jsonl row injected by this phase's tests, restore pre-phase line count (914), verify via git diff",
+      "status": "done",
+      "files_touched": [
+        "specs/events.jsonl"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Full repository gate set: check-task-references.sh, check-extension-docs.sh, lint-agent-contracts.sh, lint-routing-wiring.sh, bash -n on all modified .sh, verify-deploy.sh",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "See implementation summary for the full D4 attribution-outcome table and the residual-gap record (handoff-present detection hole, ARTIFACTS_MISSING_ON_SUCCESS no-detector, and the validate-plan-write.sh pre-existing exit-code-capture bug)."
+}

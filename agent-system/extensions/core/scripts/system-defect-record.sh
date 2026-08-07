@@ -53,10 +53,10 @@
 # exercise the deployed .claude/scripts/system-defect-record.sh copy.
 #
 # D5 session-id fallback: events-append.sh requires --session. When --session is omitted, this
-# script synthesizes sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ') -- the
-# codebase's portable generator (rules/git-workflow.md) -- and threads any real Claude Code UUID
-# through --cc-session-id unchanged as the correlation key. Never invents a fake sess_ value that
-# could collide with a real one -- the synthesized value is freshly random.
+# script synthesizes one via the shared lib/common.sh common_session_id (sess_<epoch>_<6hex>,
+# the codebase's single-source generator -- rules/git-workflow.md) -- and threads any real Claude
+# Code UUID through --cc-session-id unchanged as the correlation key. Never invents a fake sess_
+# value that could collide with a real one -- the synthesized value is freshly random.
 #
 # Exit codes:
 #   0 - Recorded, or deliberately suppressed with a logged reason.
@@ -329,8 +329,11 @@ detail_json="$(jq -c -n \
   } * $extra')"
 
 # ─── D5: session-id fallback ──────────────────────────────────────────────────────────────────
+# Uses the shared common_session_id (lib/common.sh, already sourced above) rather than an inline
+# copy -- the codebase's single-source-of-truth generator (see that function's own header) for
+# the same sess_<epoch>_<6hex> form this script's own header comment documents.
 if [ -z "$session_arg" ]; then
-  session_arg="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+  session_arg="$(common_session_id)"
 fi
 
 # ─── Append via events-append.sh, relative to this script's own SCRIPT_DIR ───────────────────
