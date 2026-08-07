@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # PostToolUse hook: log unified-event-store events for Write/Edit calls that touch a
 # task's .return-meta.json or specs/errors.json.
 #

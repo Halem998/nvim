@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # verify-deploy.sh - Check that a deployed .claude/ tree actually reflects its source store.
 #
 # This is the first of the two gates that any claim about deployed behavior has to clear. It

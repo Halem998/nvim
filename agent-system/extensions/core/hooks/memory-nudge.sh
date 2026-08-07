@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Memory nudge hook for Claude Code Stop events
 # Detects completed lifecycle operations and displays a one-line reminder
 # suggesting /learn --task N for memory capture.

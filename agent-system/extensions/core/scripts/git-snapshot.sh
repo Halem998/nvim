@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # git-snapshot.sh
 # Sanctioned snapshot helper for agent git-safety: preserve uncommitted work.
 #

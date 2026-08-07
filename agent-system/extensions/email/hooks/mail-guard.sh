@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # PreToolUse hook (Bash matcher): agent-side enforcement layer for the email wrapper contract.
 # Allowlists ONLY the five agent wrapper binaries; denies raw mail-mutation commands.
 #

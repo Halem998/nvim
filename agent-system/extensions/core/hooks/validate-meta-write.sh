@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # PostToolUse hook: detect direct writes to .claude/ paths during /meta execution
 # Triggers on Write/Edit targeting .claude/ system files
 # Returns additionalContext (advisory) with corrective message - does NOT block

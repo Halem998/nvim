@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Shared WezTerm utility functions for Claude Code hooks
 #
 # Usage: source this file in WezTerm hooks to get shared TTY discovery and OSC write functions

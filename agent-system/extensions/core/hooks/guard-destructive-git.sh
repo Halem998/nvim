@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # guard-destructive-git.sh
 # PreToolUse Bash hook: block destructive git commands when the working tree is dirty,
 # unless a fresh git-snapshot.sh marker exists (see .claude/scripts/git-snapshot.sh for

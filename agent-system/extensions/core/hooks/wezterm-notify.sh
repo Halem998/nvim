@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # WezTerm tab notification hook for Claude Code completion
 # Sets CLAUDE_STATUS user variable via OSC 1337 when Claude stops
 #

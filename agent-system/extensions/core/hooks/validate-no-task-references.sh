@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # PreToolUse hook: BLOCKS task-number citations in authored deliverables via exit code 2.
 # Triggers on Write/Edit to any path outside specs/** (task-management artifacts are exempt --
 # task numbers are expected there). Blocking: denies the write via exit 2 + stderr message when

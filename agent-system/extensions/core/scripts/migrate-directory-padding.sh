@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # migrate-directory-padding.sh - Migrate unpadded task directories to 3-digit padded format
 #
 # Usage:

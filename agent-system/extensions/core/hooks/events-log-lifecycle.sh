@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Combined Stop/SubagentStop hook: log a lifecycle event into the unified event store.
 #
 # Registered under BOTH the Stop and SubagentStop matchers in root-files/settings.json.

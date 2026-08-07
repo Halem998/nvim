@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # TTS notification hook for Claude Code events
 # Announces WezTerm tab number via piper neural TTS for lifecycle transitions
 # and interactive prompts requiring user input.

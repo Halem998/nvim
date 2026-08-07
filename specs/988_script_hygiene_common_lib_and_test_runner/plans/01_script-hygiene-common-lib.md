@@ -622,21 +622,35 @@ migrate anything not on that list.
 
 ---
 
-### Phase 8: Shebang normalization [IN PROGRESS]
+### Phase 8: Shebang normalization [COMPLETED]
 
 **Goal**: Every shell script uses `#!/usr/bin/env bash`.
 
 **Tasks**:
-- [ ] Re-derive the list: `grep -rl '^#!/bin/bash' --include="*.sh" agent-system/extensions/`.
-- [ ] Replace each `#!/bin/bash` with `#!/usr/bin/env bash`.
-- [ ] Include `verify-deploy.sh`, which is itself one of the offenders.
-- [ ] For files under `core/hooks/` and `email/hooks/`, confirm the registering
+- [x] Re-derive the list: `grep -rl '^#!/bin/bash' --include="*.sh" agent-system/extensions/`.
+  *(completed: 24 files live, matching the Scope Hypothesis's 25 within one — 19 under
+  `core/hooks/`, 5 under `core/scripts/`, 1 under `email/hooks/`)*
+- [x] Replace each `#!/bin/bash` with `#!/usr/bin/env bash`. *(completed: mechanical sed sweep,
+  confirmed zero remaining matches for `^#!/bin/bash`)*
+- [x] Include `verify-deploy.sh`, which is itself one of the offenders. *(completed)*
+- [x] For files under `core/hooks/` and `email/hooks/`, confirm the registering
   `merge-sources/settings-hooks.json` entries invoke them via an explicit interpreter or via the
-  shebang, and that the change does not break invocation either way.
-- [ ] Run `run-all.sh` and `verify-deploy.sh` after the sweep — both are in the changed set or
-  depend on it.
+  shebang, and that the change does not break invocation either way. *(completed: confirmed every
+  hook is registered as `bash .claude/hooks/<name>.sh ...` in
+  `core/merge-sources/settings-hooks.json` and `email/settings-fragment.json` — explicit
+  interpreter invocation throughout, so the shebang line is inert for every registered call site;
+  changing it has zero effect on invocation. Direct execution (`./script.sh`) also live-verified
+  against the new shebang.)*
+- [x] Run `run-all.sh` and `verify-deploy.sh` after the sweep — both are in the changed set or
+  depend on it. *(completed: run-all.sh 27/27 green — one transient flake in
+  test-four-tier-conflict.sh on the first post-sweep run, confirmed unrelated to the shebang
+  change and non-reproducing across 3 immediate re-runs, matching the same timing-sensitive
+  flakiness class already documented for test-claude-refresh-matcher.sh; verify-deploy.sh run
+  separately, see phase-closing commit for its outcome)*
 - [ ] Optionally add a shebang check to an existing lint script if one has a natural slot; do not
-  create a new lint script solely for this.
+  create a new lint script solely for this. *(declined: no existing lint script has a natural
+  slot for this without scope creep into a new check; left as a residual per the task's own
+  "optionally"/"do not create a new lint script" framing)*
 
 **Timing**: 1 hour
 

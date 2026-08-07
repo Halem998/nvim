@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # WezTerm preflight status hook for Claude Code
 # Sets CLAUDE_STATUS user variable via OSC 1337 when user submits a lifecycle command,
 # providing immediate in-progress tab coloring before Claude begins processing.

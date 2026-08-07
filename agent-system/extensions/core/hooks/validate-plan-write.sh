@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # PostToolUse hook: validate artifact writes against format standards
 # Triggers on Write/Edit to specs/*/plans/*.md, specs/*/reports/*.md, specs/*/summaries/*.md
 # Returns additionalContext with corrective message on validation failure

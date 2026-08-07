@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Validate state.json and TODO.md are synchronized
 # Called after writes to specs/
 

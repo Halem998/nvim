@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # SubagentStop hook to prevent premature workflow termination
 # Called when a subagent session is about to stop
 #

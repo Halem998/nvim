@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # lifecycle-notify.sh - Bridge script for orchestrator phase transition notifications
 #
 # Usage:

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # deploy-headless.sh - Regenerate a repo's .claude/ deploy tree without an interactive picker.
 #
 # Drives the manifest-driven extension loader (neotex.plugins.ai.shared.extensions.init's

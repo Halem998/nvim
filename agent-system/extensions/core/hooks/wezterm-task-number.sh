@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # WezTerm task number hook for Claude Code
 # Sets TASK_NUMBER user variable via OSC 1337 when Claude commands include task numbers
 #

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # PostToolUse hook: reject Write/Edit-tool writes of .orchestrator-handoff.json that land
 # outside a specs/{NNN}_{SLUG}/ task directory.
 #

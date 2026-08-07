@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Post-command cleanup and logging
 # Called on Stop event
 

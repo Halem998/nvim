@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Clear TASK_NUMBER user variable for WezTerm tab title
 # Called from SessionStart hook to reset task number on session events
 #

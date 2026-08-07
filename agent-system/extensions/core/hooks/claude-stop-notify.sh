@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Unified Stop hook for Claude Code: workflow-active marker suppress pattern
 #
 # Architecture:
