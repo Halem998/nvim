@@ -2,17 +2,61 @@
   "phase": 6,
   "phase_name": "Strict-mode migration batch A (highest-risk state mutators)",
   "started_at": "2026-08-07T01:10:00Z",
-  "last_updated": "2026-08-07T08:20:00Z",
+  "last_updated": "2026-08-07T08:45:00Z",
   "objectives": [
-    {"id": 1, "description": "Migrate state-write.sh to set -euo pipefail", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"], "note": "Found and fixed 2 -e-hostile VAR=$(cmd) assignments (dry-run and real transform branches) that would have silently short-circuited past the documented exit-3 error message under -e. Fixed via the standard `VAR=$(cmd) || status=$?` guard. Verified with a live mktemp-fixture exercise (valid write, dry-run valid, dry-run invalid filter exit 3, real invalid filter exit 3 with file left untouched) plus test-state-write-concurrency.sh (9/9) and test-state-write-regen-timing.sh (3/3), both green. Committed separately (task 988 phase 6.1)."},
-    {"id": 2, "description": "Migrate task-lock.sh to set -euo pipefail", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"], "note": "Full -e-hostility audit of all 1644 lines. Found three hazard classes: (1) ~50 bare `VAR=$(jq/ps/stat/cat/date/find ...)` command-substitution assignments with no explicit `||` guard; (2) 4 bare non-assignment statements whose failure was tolerated (`mkdir -p` x2, `cat > tmp_file`, `rm -f`/`rm -rf` x2); (3) a distinct and easy-to-miss `[ cond ] && action` bare-statement class (e.g. `[ -n \"$x\" ] && echo ... >&2`, `[ cond ] && continue`, `[ \"$LOADED\" = true ] && return 0`) that is `-e`-hostile whenever the CONDITION is false (the common case), not just when the guarded action fails -- this class was not called out by name in the plan and is worth flagging for the remaining Phase 6/7 files. Also found and fixed one true `VAR=$(cmd); status=$?` anti-pattern in cmd_acquire_retry (captured_stderr/rc), converted to the sanctioned `if VAR=$(cmd); then rc=0; else rc=$?; fi` idiom. Fixed the two heaviest-reused leaf helpers (read_holder_field, session_registry_dir) at their single definition site so every call site inherited the fix, rather than guarding each of their ~15 call sites individually. Verified via 27/27 run-all.sh (one pre-existing, documented-unrelated flaky failure in test-claude-refresh-matcher.sh reproduced identically both before and after this file's changes -- confirmed not a regression) plus an extensive live mktemp-fixture exercise covering every subcommand and every documented exit code: acquire (fresh/same-session-reentry/refuse/stale-override), acquire-retry (budget exhaustion), heartbeat, release (wrong-session warn, correct-session), check (free/held-fresh/held-stale), reap (dry-run, corrupt-holder skip, real reap), session-register/session-list/session-heartbeat/session-reap/session-release, scope-acquire/scope-release, commit-acquire/commit-release, and init-marker (fresh create + already-exists path). One pre-existing, zero-caller behavior quirk found in cmd_init_marker (a second call after a first successful call silently overwrites rather than returning 1, since init_dir is no longer held) -- confirmed present byte-for-byte in the pre-migration committed version via git diff, so NOT introduced by this migration; left unfixed as out of scope (init-marker has no live callers anywhere in agent-system/extensions/**) and flagged here as a residual finding for a future task."},
-    {"id": 3, "description": "Migrate git-commit-scoped.sh to set -euo pipefail", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Migrate orchestrate-batch-admit.sh to set -euo pipefail", "status": "not_started", "files_touched": []},
-    {"id": 5, "description": "Migrate orchestrate-predispatch-review.sh to set -euo pipefail", "status": "not_started", "files_touched": []}
+    {
+      "id": 1,
+      "description": "Migrate state-write.sh to set -euo pipefail",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/state-write.sh"
+      ],
+      "note": "Found and fixed 2 -e-hostile VAR=$(cmd) assignments (dry-run and real transform branches) that would have silently short-circuited past the documented exit-3 error message under -e. Fixed via the standard `VAR=$(cmd) || status=$?` guard. Verified with a live mktemp-fixture exercise (valid write, dry-run valid, dry-run invalid filter exit 3, real invalid filter exit 3 with file left untouched) plus test-state-write-concurrency.sh (9/9) and test-state-write-regen-timing.sh (3/3), both green. Committed separately (task 988 phase 6.1)."
+    },
+    {
+      "id": 2,
+      "description": "Migrate task-lock.sh to set -euo pipefail",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/task-lock.sh"
+      ],
+      "note": "Full -e-hostility audit of all 1644 lines. Found three hazard classes: (1) ~50 bare `VAR=$(jq/ps/stat/cat/date/find ...)` command-substitution assignments with no explicit `||` guard; (2) 4 bare non-assignment statements whose failure was tolerated (`mkdir -p` x2, `cat > tmp_file`, `rm -f`/`rm -rf` x2); (3) a distinct and easy-to-miss `[ cond ] && action` bare-statement class (e.g. `[ -n \"$x\" ] && echo ... >&2`, `[ cond ] && continue`, `[ \"$LOADED\" = true ] && return 0`) that is `-e`-hostile whenever the CONDITION is false (the common case), not just when the guarded action fails -- this class was not called out by name in the plan and is worth flagging for the remaining Phase 6/7 files. Also found and fixed one true `VAR=$(cmd); status=$?` anti-pattern in cmd_acquire_retry (captured_stderr/rc), converted to the sanctioned `if VAR=$(cmd); then rc=0; else rc=$?; fi` idiom. Fixed the two heaviest-reused leaf helpers (read_holder_field, session_registry_dir) at their single definition site so every call site inherited the fix, rather than guarding each of their ~15 call sites individually. Verified via 27/27 run-all.sh (one pre-existing, documented-unrelated flaky failure in test-claude-refresh-matcher.sh reproduced identically both before and after this file's changes -- confirmed not a regression) plus an extensive live mktemp-fixture exercise covering every subcommand and every documented exit code: acquire (fresh/same-session-reentry/refuse/stale-override), acquire-retry (budget exhaustion), heartbeat, release (wrong-session warn, correct-session), check (free/held-fresh/held-stale), reap (dry-run, corrupt-holder skip, real reap), session-register/session-list/session-heartbeat/session-reap/session-release, scope-acquire/scope-release, commit-acquire/commit-release, and init-marker (fresh create + already-exists path). One pre-existing, zero-caller behavior quirk found in cmd_init_marker (a second call after a first successful call silently overwrites rather than returning 1, since init_dir is no longer held) -- confirmed present byte-for-byte in the pre-migration committed version via git diff, so NOT introduced by this migration; left unfixed as out of scope (init-marker has no live callers anywhere in agent-system/extensions/**) and flagged here as a residual finding for a future task."
+    },
+    {
+      "id": 3,
+      "description": "Migrate git-commit-scoped.sh to set -euo pipefail",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+      ],
+      "note": "Full -e-hostility audit of all 292 lines. Found and fixed the same `VAR=$(cmd); status=$?` anti-pattern as task-lock.sh's cmd_acquire_retry, twice: the primary `git commit` call and its index.lock-contention retry both captured `commit_output=$(git commit ...)` followed by a bare `commit_exit=$?` on the next line -- since git commit's documented exit code 1 (\"nothing to commit\") is a routine, non-error outcome, a bare failing assignment there would have aborted the script under -e before the retry logic, the NOTE message, or this script's own documented exit-code contract could run. Fixed both sites via the sanctioned `if VAR=$(cmd); then status=0; else status=$?; fi` idiom. No other hazards found: every other bare-looking command substitution/pipeline in this file is already the condition of an if/while, or already carries an explicit `||` guard; the `[ cond ] && action` bare-statement class found in task-lock.sh does not occur here. Verified via 27/27 run-all.sh plus a live git-fixture exercise (isolated mktemp -d git repo, not the real repo) covering: a normal commit, the nothing-to-commit exit-1 path (the exact hazard just fixed -- confirmed the NOTE message now prints and exit 1 is returned cleanly), the V3 exclude-only refusal (exit 2), the V2 unmatched-pathspec drop-with-warning path, and the --honest-index-rows addendum.",
+      "current": null
+    },
+    {
+      "id": 4,
+      "description": "Migrate orchestrate-batch-admit.sh to set -euo pipefail",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Migrate orchestrate-predispatch-review.sh to set -euo pipefail",
+      "status": "not_started",
+      "files_touched": []
+    }
   ],
-  "current_objective": 3,
+  "current_objective": 4,
   "approaches_tried": [
-    {"approach": "Full -e-hostility audit of task-lock.sh in this same dispatch", "result": "success", "reason": "Completed in this dispatch: full audit, ~54 guard sites fixed (line-number-targeted sed for `|| true` appends plus 2 structural fixes), set -euo pipefail flipped, 27/27 run-all.sh green (1 pre-existing unrelated flaky failure), and a full live fixture exercise across every subcommand. See objective 2 note for the complete finding set."}
+    {
+      "approach": "Full -e-hostility audit of task-lock.sh in this same dispatch",
+      "result": "success",
+      "reason": "Completed in this dispatch: full audit, ~54 guard sites fixed (line-number-targeted sed for `|| true` appends plus 2 structural fixes), set -euo pipefail flipped, 27/27 run-all.sh green (1 pre-existing unrelated flaky failure), and a full live fixture exercise across every subcommand. See objective 2 note for the complete finding set."
+    },
+    {
+      "approach": "Full -e-hostility audit of git-commit-scoped.sh in this same dispatch",
+      "result": "success",
+      "reason": "Completed: found and fixed 2 VAR=$(cmd); status=$? anti-pattern sites, flipped to set -euo pipefail, 27/27 run-all.sh green, full live git-fixture exercise across every documented exit code and gate."
+    }
   ],
   "handoff_count": 1,
   "deviations": [

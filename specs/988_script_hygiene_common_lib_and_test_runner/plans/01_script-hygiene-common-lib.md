@@ -476,16 +476,18 @@ individually and each landing green.
   *(completed for state-write.sh: confirmed Class A, `set -uo pipefail` prior to this phase)*
 - [ ] Migrate one file at a time, in this order, running `run-all.sh` after each:
   `state-write.sh`, `task-lock.sh`, `git-commit-scoped.sh`, `orchestrate-batch-admit.sh`,
-  `orchestrate-predispatch-review.sh`. *(partial: state-write.sh and task-lock.sh done and
-  committed (2 of 5). task-lock.sh's full audit found ~68 unguarded hazard sites -- bare
-  `VAR=$(jq/ps/stat/cat/date/find ...)` assignments, four bare `mkdir -p`/`cat >`/`rm -f`/`rm -rf`
-  statements, and a distinct `[ cond ] && action` bare-statement class (e.g.
-  `[ -n "$x" ] && echo ... >&2`, `[ cond ] && continue`) that fails under `-e` whenever the
-  condition is false, not just when the guarded command fails -- each guarded with `|| true` or,
-  for `read_holder_field`/`session_registry_dir`, fixed once at the shared-helper source so every
-  call site inherited the fix. git-commit-scoped.sh, orchestrate-batch-admit.sh,
-  orchestrate-predispatch-review.sh remain `set -uo pipefail`, not yet migrated -- left for a
-  follow-up `/implement` dispatch.)*
+  `orchestrate-predispatch-review.sh`. *(partial: state-write.sh, task-lock.sh, and
+  git-commit-scoped.sh done and committed (3 of 5). task-lock.sh's full audit found ~68 unguarded
+  hazard sites -- bare `VAR=$(jq/ps/stat/cat/date/find ...)` assignments, four bare
+  `mkdir -p`/`cat >`/`rm -f`/`rm -rf` statements, and a distinct `[ cond ] && action`
+  bare-statement class (e.g. `[ -n "$x" ] && echo ... >&2`, `[ cond ] && continue`) that fails
+  under `-e` whenever the condition is false, not just when the guarded command fails -- each
+  guarded with `|| true` or, for `read_holder_field`/`session_registry_dir`, fixed once at the
+  shared-helper source so every call site inherited the fix. git-commit-scoped.sh's audit found
+  the classic `VAR=$(cmd); status=$?` anti-pattern twice (the primary commit and its index.lock
+  retry), fixed via the sanctioned `if VAR=$(cmd); then status=0; else status=$?; fi` idiom.
+  orchestrate-batch-admit.sh and orchestrate-predispatch-review.sh remain `set -uo pipefail`, not
+  yet migrated -- left for a follow-up `/implement` dispatch.)*
 - [x] For each, before flipping: walk every command whose nonzero exit is currently tolerated and
   confirm it is either inside an `if`/`&&`/`||`/`while` condition (already `-e`-exempt) or
   explicitly guarded with `|| true` / `|| handler`. Add the explicit guard where it is not.

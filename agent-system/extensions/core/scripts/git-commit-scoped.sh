@@ -51,7 +51,7 @@
 #        pathspec list contains zero positive entries, both before and after V2 filtering (since
 #        filtering itself can produce a degenerate list).
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -272,15 +272,28 @@ Session: ${session_id}
 
 # --- git commit, with one bounded retry (short randomized backoff) specifically for an
 # index.lock failure — the residual race that remains when the mutex fails open above. ---
-commit_output=$(git commit -m "$full_message" -- "${pathspecs[@]}" 2>&1)
-commit_exit=$?
+# `if VAR=$(cmd); then ... else status=$?; fi` rather than a bare `VAR=$(cmd)` followed by
+# `status=$?`: git commit's exit code 1 ("nothing to commit") is a DOCUMENTED, routine outcome
+# (see this script's own header), not an error -- under `set -e` a bare failing assignment would
+# abort the script on this line, before commit_exit could ever be captured, the index.lock retry
+# could run, or this script's own documented exit-code contract could be honored. Wrapping the
+# assignment in the `if` test is `-e`-exempt and preserves the captured status exactly, mirroring
+# the same fix applied to state-write.sh and task-lock.sh's cmd_acquire_retry.
+if commit_output=$(git commit -m "$full_message" -- "${pathspecs[@]}" 2>&1); then
+  commit_exit=0
+else
+  commit_exit=$?
+fi
 
 if [ "$commit_exit" -ne 0 ] && echo "$commit_output" | grep -qi 'index\.lock'; then
   echo "$commit_output" >&2
   echo "NOTE: git commit hit index.lock contention; retrying once after a short backoff." >&2
   sleep "0.$(( (RANDOM % 5) + 1 ))"
-  commit_output=$(git commit -m "$full_message" -- "${pathspecs[@]}" 2>&1)
-  commit_exit=$?
+  if commit_output=$(git commit -m "$full_message" -- "${pathspecs[@]}" 2>&1); then
+    commit_exit=0
+  else
+    commit_exit=$?
+  fi
 fi
 
 echo "$commit_output"
