@@ -117,7 +117,7 @@
 # scoped to THIS process's own mktemp path plus mutex release, so one process's exit can never
 # delete another's in-flight staging file.
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -270,12 +270,17 @@ fi
 
 # --- Dry run: validate filter syntax only, write nothing, acquire nothing ---
 if [ "$DRY_RUN" = true ]; then
+  # `if VAR=$(cmd); then ... else dryrun_status=$?; fi` rather than a bare `VAR=$(cmd)` followed
+  # by `dryrun_status=$?`: under `set -e`, a bare failing assignment would abort the script on
+  # this line, before the status could ever be captured or the custom error message printed.
+  # Wrapping the assignment itself in the `if` test is `-e`-exempt and preserves both the
+  # captured non-zero status and this script's documented exit-code contract.
+  dryrun_status=0
   if [ "$INIT_MODE" = true ]; then
-    dryrun_err=$(jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" 2>&1 > /dev/null)
+    dryrun_err=$(jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" 2>&1 > /dev/null) || dryrun_status=$?
   else
-    dryrun_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > /dev/null)
+    dryrun_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > /dev/null) || dryrun_status=$?
   fi
-  dryrun_status=$?
   if [ "$dryrun_status" -ne 0 ]; then
     echo "Error: [dry-run] jq filter failed syntax/apply check:" >&2
     [ -n "$dryrun_err" ] && echo "$dryrun_err" >&2
@@ -334,12 +339,15 @@ STAGE_FILE=$(mktemp "$TMP_DIR/state-write.XXXXXX") || {
 }
 
 # --- Apply the caller's jq filter with forwarded bindings ---
+# Same `|| transform_status=$?` guard as the dry-run branch above: a bare `VAR=$(cmd)` followed
+# by a separate `transform_status=$?` line is `-e`-hostile (the assignment's own failure would
+# abort the script before the status line or the custom error message ever ran).
+transform_status=0
 if [ "$INIT_MODE" = true ]; then
-  transform_err=$(jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" 2>&1 > "$STAGE_FILE")
+  transform_err=$(jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" 2>&1 > "$STAGE_FILE") || transform_status=$?
 else
-  transform_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > "$STAGE_FILE")
+  transform_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > "$STAGE_FILE") || transform_status=$?
 fi
-transform_status=$?
 if [ "$transform_status" -ne 0 ]; then
   echo "Error: jq transform failed; $STATE_FILE left untouched." >&2
   [ -n "$transform_err" ] && echo "$transform_err" >&2

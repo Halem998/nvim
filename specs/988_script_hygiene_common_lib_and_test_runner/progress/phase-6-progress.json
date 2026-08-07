@@ -1,0 +1,13 @@
+{
+  "phase": 6,
+  "phase_name": "Strict-mode migration batch A (highest-risk state mutators)",
+  "started_at": "2026-08-07T01:10:00Z",
+  "last_updated": "2026-08-07T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Migrate state-write.sh to set -euo pipefail", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"], "note": "Found and fixed 2 -e-hostile VAR=$(cmd) assignments (dry-run and real transform branches) that would have silently short-circuited past the documented exit-3 error message under -e. Fixed via the standard `VAR=$(cmd) || status=$?` guard. Verified with a live mktemp-fixture exercise (valid write, dry-run valid, dry-run invalid filter exit 3, real invalid filter exit 3 with file left untouched) plus test-state-write-concurrency.sh (9/9) and test-state-write-regen-timing.sh (3/3), both green."}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
