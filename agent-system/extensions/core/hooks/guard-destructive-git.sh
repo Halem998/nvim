@@ -46,12 +46,12 @@
 # boundary -- it never appears in tool_input.command. Any future legitimate need to bypass
 # these detectors must be wrapped in a script the same way, never special-cased in this file.
 
-set -uo pipefail
+set -euo pipefail
 
 FRESHNESS_WINDOW=120
 
-INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+INPUT=$(cat) || true
+COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || true
 
 # Allow through if command is empty (non-Bash tool or parse failure).
 if [ -z "$COMMAND" ]; then
@@ -73,10 +73,10 @@ fi
 OVERSTAGE_REASON=""
 
 # git add -A / --all / bare "." pathspec
-ADD_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+add[^;&|]*')
+ADD_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+add[^;&|]*') || true
 if [ -n "$ADD_SEGMENTS" ]; then
   while IFS= read -r seg; do
-    [ -z "$seg" ] && continue
+    [ -z "$seg" ] && continue || true
     seg_scan=$(echo "$seg" | sed -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g")
     if echo "$seg_scan" | grep -qE -- '(^|[^-])-[a-zA-Z]*A[a-zA-Z]*([[:space:]]|$)|--all([[:space:]]|$)'; then
       OVERSTAGE_REASON="git add -A (or --all) stages the entire working tree; stage explicit task-scoped paths instead"
@@ -92,10 +92,10 @@ fi
 # git commit -a / -am / --all (bare -a is as hazardous as -am: both implicitly stage all
 # tracked modifications, per git-staging-scope.md)
 if [ -z "$OVERSTAGE_REASON" ]; then
-  COMMIT_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+commit[^;&|]*')
+  COMMIT_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+commit[^;&|]*') || true
   if [ -n "$COMMIT_SEGMENTS" ]; then
     while IFS= read -r seg; do
-      [ -z "$seg" ] && continue
+      [ -z "$seg" ] && continue || true
       seg_scan=$(echo "$seg" | sed -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g")
       if echo "$seg_scan" | grep -qE -- '(^|[^-])-[a-zA-Z]*a[a-zA-Z]*([[:space:]]|$)|--all([[:space:]]|$)'; then
         OVERSTAGE_REASON="git commit -a/-am (or --all) implicitly stages all tracked-file modifications; stage explicit paths and commit without -a"
@@ -130,10 +130,10 @@ fi
 
 # git restore <path>  (without --staged; --staged only unstages and is safe)
 if [ "$MATCHED" = "0" ]; then
-  RESTORE_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+restore[^;&|]*')
+  RESTORE_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+restore[^;&|]*') || true
   if [ -n "$RESTORE_SEGMENTS" ]; then
     while IFS= read -r seg; do
-      [ -z "$seg" ] && continue
+      [ -z "$seg" ] && continue || true
       if ! echo "$seg" | grep -q -- '--staged'; then
         MATCHED=1
         REASON="git restore <path> (without --staged) discards uncommitted working-tree changes"
@@ -145,14 +145,14 @@ fi
 
 # git clean -f -d (any order/clustering, e.g. -fd, -df, -f -d, -xfd)
 if [ "$MATCHED" = "0" ]; then
-  CLEAN_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+clean[^;&|]*')
+  CLEAN_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+clean[^;&|]*') || true
   if [ -n "$CLEAN_SEGMENTS" ]; then
     while IFS= read -r seg; do
-      [ -z "$seg" ] && continue
+      [ -z "$seg" ] && continue || true
       HAS_F=0
       HAS_D=0
-      echo "$seg" | grep -qE -- '(^|[^-])-[a-zA-Z]*f[a-zA-Z]*([[:space:]]|$)|--force' && HAS_F=1
-      echo "$seg" | grep -qE -- '(^|[^-])-[a-zA-Z]*d[a-zA-Z]*([[:space:]]|$)' && HAS_D=1
+      echo "$seg" | grep -qE -- '(^|[^-])-[a-zA-Z]*f[a-zA-Z]*([[:space:]]|$)|--force' && HAS_F=1 || true
+      echo "$seg" | grep -qE -- '(^|[^-])-[a-zA-Z]*d[a-zA-Z]*([[:space:]]|$)' && HAS_D=1 || true
       if [ "$HAS_F" = "1" ] && [ "$HAS_D" = "1" ]; then
         MATCHED=1
         REASON="git clean -f -d permanently deletes untracked files and directories"
@@ -170,10 +170,10 @@ fi
 
 # forced git checkout / git switch (-f / --force) -- can silently overwrite local changes
 if [ "$MATCHED" = "0" ]; then
-  FORCED_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+(checkout|switch)[^;&|]*')
+  FORCED_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+(checkout|switch)[^;&|]*') || true
   if [ -n "$FORCED_SEGMENTS" ]; then
     while IFS= read -r seg; do
-      [ -z "$seg" ] && continue
+      [ -z "$seg" ] && continue || true
       if echo "$seg" | grep -qE -- '(^|[^-])-[a-zA-Z]*f[a-zA-Z]*([[:space:]]|$)|--force'; then
         MATCHED=1
         REASON="forced git checkout/switch (-f/--force) can silently overwrite uncommitted changes"
@@ -191,11 +191,11 @@ fi
 NOW=$(date +%s)
 BEST_MARKER=""
 BEST_TS=0
-MARKERS=$(find specs -maxdepth 3 -name ".git-snapshot-marker" -type f 2>/dev/null)
+MARKERS=$(find specs -maxdepth 3 -name ".git-snapshot-marker" -type f 2>/dev/null) || true
 if [ -n "$MARKERS" ]; then
   while IFS= read -r m; do
-    [ -z "$m" ] && continue
-    ts=$(grep -m1 '^TIMESTAMP=' "$m" 2>/dev/null | cut -d= -f2)
+    [ -z "$m" ] && continue || true
+    ts=$(grep -m1 '^TIMESTAMP=' "$m" 2>/dev/null | cut -d= -f2) || true
     if [[ "$ts" =~ ^[0-9]+$ ]] && [ "$ts" -gt "$BEST_TS" ]; then
       BEST_TS="$ts"
       BEST_MARKER="$m"

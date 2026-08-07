@@ -26,16 +26,16 @@
 # prevent the file from existing; it surfaces stderr to the model as an error so the stray is
 # actually removed and rewritten, rather than silently ignored.
 
-set -uo pipefail
+set -euo pipefail
 
 # Parse file path from stdin (PostToolUse hook input), with env-var fallback.
 if [ -t 0 ]; then
-  FILE=$(printf '%s' "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null)
+  FILE=$(printf '%s' "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null) || true
 else
-  INPUT=$(cat)
-  FILE=$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+  INPUT=$(cat) || true
+  FILE=$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null) || true
   if [ -z "$FILE" ]; then
-    FILE=$(printf '%s' "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null)
+    FILE=$(printf '%s' "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null) || true
   fi
 fi
 

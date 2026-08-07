@@ -22,7 +22,7 @@
 # -- this hook consumes that taxonomy mechanically via strip_exempt_regions, never re-implementing
 # exemption logic of its own.
 
-set -uo pipefail
+set -euo pipefail
 
 # ─── Shared pattern/exemption library ────────────────────────────────────────────────────────
 # Sourced from the hook's own directory (siblings under .claude/: hooks/ and scripts/), so
@@ -37,22 +37,29 @@ if [ ! -f "$LIB" ]; then
   exit 0
 fi
 # shellcheck disable=SC1090
-. "$LIB"
+# Explicit fail-open on a sourcing failure (e.g. a syntax error in the library), not just a
+# missing file -- honors this hook's own documented "fails OPEN if its own shared pattern
+# library cannot be sourced" contract (see header) even under set -e, where an unguarded `.`
+# failure would otherwise abort the whole hook rather than falling through to exit 0.
+if ! . "$LIB"; then
+  echo "WARNING: validate-no-task-references.sh: shared library at $LIB failed to source -- failing open (not blocking)" >&2
+  exit 0
+fi
 
 # ─── Parse tool input from stdin (PreToolUse hook input), env-var fallback ───────────────────
 # Mirrors guard-destructive-git.sh's stdin parsing pattern; the CLAUDE_TOOL_INPUT env fallback
 # preserves the prior PostToolUse-era parsing shape for callers that still set it.
 
 if [ -t 0 ]; then
-  FILE=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null)
-  CONTENT=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.content // .new_string // empty' 2>/dev/null)
+  FILE=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null) || true
+  CONTENT=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.content // .new_string // empty' 2>/dev/null) || true
 else
-  INPUT=$(cat)
-  FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-  CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.new_string // empty' 2>/dev/null)
+  INPUT=$(cat) || true
+  FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null) || true
+  CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.new_string // empty' 2>/dev/null) || true
   if [ -z "$FILE" ]; then
-    FILE=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null)
-    CONTENT=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.content // .new_string // empty' 2>/dev/null)
+    FILE=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null) || true
+    CONTENT=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.content // .new_string // empty' 2>/dev/null) || true
   fi
 fi
 
@@ -75,7 +82,7 @@ fi
 
 # Strip marker-exempted regions (Exemption Taxonomy categories 2-4, 6-7) before matching, exactly
 # as check-task-references.sh does -- neither consumer implements exemption filtering itself.
-SCANNABLE="$(printf '%s' "$CONTENT" | strip_exempt_regions)"
+SCANNABLE="$(printf '%s' "$CONTENT" | strip_exempt_regions)" || true
 
 if printf '%s' "$SCANNABLE" | grep -qiE "$PHASE_PATTERN"; then
   echo "BLOCKED: $FILE appears to cite a task-qualified phase reference (e.g. 'task N phase P' or 'phase P of task N')." >&2

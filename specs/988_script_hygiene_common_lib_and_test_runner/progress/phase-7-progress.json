@@ -2,7 +2,7 @@
   "phase": 7,
   "phase_name": "Strict-mode migration batch B (remaining Class A)",
   "started_at": "2026-08-07T00:00:00Z",
-  "last_updated": "2026-08-07T02:00:00Z",
+  "last_updated": "2026-08-07T03:00:00Z",
   "objectives": [
     {
       "id": 1,
@@ -43,8 +43,14 @@
     {
       "id": 4,
       "description": "Batch 4: hooks/events-log-lifecycle.sh, hooks/guard-destructive-git.sh, hooks/validate-no-task-references.sh, hooks/validate-handoff-location.sh, hooks/validate-meta-write.sh",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+        "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+        "agent-system/extensions/core/hooks/validate-no-task-references.sh",
+        "agent-system/extensions/core/hooks/validate-handoff-location.sh",
+        "agent-system/extensions/core/hooks/validate-meta-write.sh"
+      ]
     },
     {
       "id": 5,
@@ -53,7 +59,7 @@
       "files_touched": []
     }
   ],
-  "current_objective": 4,
+  "current_objective": 5,
   "approaches_tried": [],
   "handoff_count": 0
 }

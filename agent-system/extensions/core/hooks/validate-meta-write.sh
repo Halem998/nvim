@@ -5,17 +5,17 @@
 #
 # This mirrors validate-plan-write.sh but for the /meta anti-bypass pattern.
 
-set -uo pipefail
+set -euo pipefail
 
 # Parse file path from stdin (PostToolUse hook input)
 if [ -t 0 ]; then
   # Fallback: try env var
-  FILE=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null)
+  FILE=$(echo "${CLAUDE_TOOL_INPUT:-}" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null) || true
 else
-  INPUT=$(cat)
-  FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+  INPUT=$(cat) || true
+  FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null) || true
   if [ -z "$FILE" ]; then
-    FILE=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null)
+    FILE=$(echo "${CLAUDE_TOOL_INPUT:-}" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null) || true
   fi
 fi
 

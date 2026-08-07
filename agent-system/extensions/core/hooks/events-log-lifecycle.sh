@@ -46,7 +46,7 @@
 # to the caller or stall the session, while still producing a distinguishable, durable signal
 # instead of the prior bare `|| true` silent failure.
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EVENTS_APPEND="$SCRIPT_DIR/../scripts/events-append.sh"
@@ -106,7 +106,7 @@ if read -t 0.1 -r line; then
     STDIN_JSON="${STDIN_JSON}${more}"
   done
 fi
-[ -z "$STDIN_JSON" ] && STDIN_JSON='{}'
+[ -z "$STDIN_JSON" ] && STDIN_JSON='{}' || true
 
 AGENT_ID=$(echo "$STDIN_JSON" | jq -r '.agent_id // empty' 2>/dev/null || echo "")
 # Claude Code hook stdin carries a top-level .cwd field alongside .agent_id -- capture it once
@@ -122,12 +122,12 @@ if [ -n "$AGENT_ID" ]; then
   # ─────────────────────────────────────────────────────────────────────────
   # SubagentStop path: marker-file correlation
   # ─────────────────────────────────────────────────────────────────────────
-  MARKER_FILE=$(find specs -maxdepth 3 -name ".postflight-pending" -type f 2>/dev/null | head -1)
-  [ -z "$MARKER_FILE" ] && exit_success
+  MARKER_FILE=$(find specs -maxdepth 3 -name ".postflight-pending" -type f 2>/dev/null | head -1) || true
+  [ -z "$MARKER_FILE" ] && exit_success || true
   jq empty "$MARKER_FILE" 2>/dev/null || exit_success
 
   session_id=$(jq -r '.session_id // empty' "$MARKER_FILE" 2>/dev/null)
-  [ -z "$session_id" ] && exit_success
+  [ -z "$session_id" ] && exit_success || true
 
   skill=$(jq -r '.skill // empty' "$MARKER_FILE" 2>/dev/null)
   operation=$(jq -r '.operation // empty' "$MARKER_FILE" 2>/dev/null)
@@ -141,9 +141,9 @@ if [ -n "$AGENT_ID" ]; then
   event_args=(--event-type subagent_stop --category milestone --checkpoint postflight \
     --session "$session_id" \
     --message "Subagent stop for ${skill:-unknown} (${operation:-unknown})")
-  [ -n "$task" ] && event_args+=(--task "$task")
-  [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
-  [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID")
+  [ -n "$task" ] && event_args+=(--task "$task") || true
+  [ -n "$CWD" ] && event_args+=(--cwd "$CWD") || true
+  [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID") || true
 
   _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   exit_success
@@ -171,7 +171,7 @@ if [ -z "$task" ]; then
 fi
 
 # No task recovered -- there is no reliable session_id source without it; exit cleanly.
-[ -z "$task" ] && exit_success
+[ -z "$task" ] && exit_success || true
 
 # Neither correlation source carries session_id directly; recover it from the task's
 # current state.json entry (populated by update-task-status.sh on every preflight).
@@ -181,12 +181,12 @@ jq empty specs/state.json 2>/dev/null || exit_success
 session_id=$(jq -r --argjson num "$task" \
   '.active_projects[]? | select(.project_number == $num) | .session_id // empty' \
   specs/state.json 2>/dev/null)
-[ -z "$session_id" ] && exit_success
+[ -z "$session_id" ] && exit_success || true
 
 event_args=(--event-type session_stop --category milestone --session "$session_id" \
   --task "$task" --message "Session stop observed for task ${task}")
-[ -n "$CWD" ] && event_args+=(--cwd "$CWD")
-[ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID")
+[ -n "$CWD" ] && event_args+=(--cwd "$CWD") || true
+[ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID") || true
 
 _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
 exit_success
