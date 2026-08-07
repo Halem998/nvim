@@ -83,7 +83,7 @@
 #   (an agent about to run a destructive git command) does NOT proceed believing a
 #   snapshot exists.
 
-set -uo pipefail
+set -euo pipefail
 
 MODE="default"
 TASK_ARG=""
@@ -159,7 +159,7 @@ resolve_task_dir() {
     if [[ "$arg" =~ ^[0-9]+$ ]]; then
       local padded dir
       padded=$(printf "%03d" "$arg")
-      dir=$(find specs -maxdepth 1 -type d -name "${padded}_*" 2>/dev/null | head -1)
+      dir=$(find specs -maxdepth 1 -type d -name "${padded}_*" 2>/dev/null | head -1) || true
       if [ -n "$dir" ]; then
         echo "$dir"
         return 0
@@ -186,7 +186,7 @@ resolve_task_dir() {
   fi
 
   local nums count
-  nums=$(jq -r '.active_projects[] | select(.status=="implementing") | .project_number' specs/state.json 2>/dev/null)
+  nums=$(jq -r '.active_projects[] | select(.status=="implementing") | .project_number' specs/state.json 2>/dev/null) || true
   count=$(printf '%s\n' "$nums" | grep -c '^[0-9]\+$' || true)
 
   if [ "$count" = "0" ]; then
@@ -197,7 +197,7 @@ resolve_task_dir() {
   if [ "$count" = "1" ]; then
     local padded dir
     padded=$(printf "%03d" "$nums")
-    dir=$(find specs -maxdepth 1 -type d -name "${padded}_*" 2>/dev/null | head -1)
+    dir=$(find specs -maxdepth 1 -type d -name "${padded}_*" 2>/dev/null | head -1) || true
     if [ -n "$dir" ]; then
       echo "$dir"
       return 0
@@ -310,7 +310,7 @@ elif [ "$MODE" = "no-revert" ]; then
   if [ -n "$UNTRACKED_LIST" ]; then
     UNTRACKED_BACKUP="${TASK_DIR}/untracked-backup-${TS}"
     while IFS= read -r f; do
-      [ -z "$f" ] && continue
+      [ -z "$f" ] && continue || true
       dest="${UNTRACKED_BACKUP}/${f}"
       if ! mkdir -p "$(dirname "$dest")" >/dev/null 2>&1 || ! cp -p "$f" "$dest" >/dev/null 2>&1; then
         echo "git-snapshot.sh: failed to back up untracked file '$f' to $dest (no-revert mode)" >&2

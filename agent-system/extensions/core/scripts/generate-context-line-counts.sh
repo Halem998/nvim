@@ -40,7 +40,7 @@
 # per entry within a file) to know which entry a given line_count replacement or insertion
 # belongs to.
 
-set -uo pipefail
+set -euo pipefail
 
 # Same REPO_ROOT-bypass pattern as check-extension-docs.sh: the deploy-root-guard only fires
 # when REPO_ROOT is unset, so a deliberate source-store invocation

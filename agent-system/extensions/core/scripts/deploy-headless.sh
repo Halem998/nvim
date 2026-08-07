@@ -67,7 +67,7 @@
 #   1  usage error, target is not a git repository, or nvim unavailable
 #   2  the headless Neovim invocation failed, reported no result, or (--wipe only) the pre-wipe
 #      snapshot was refused
-set -uo pipefail
+set -euo pipefail
 
 EXT_CONFIG_MODULE="neotex.plugins.ai.shared.extensions.config"
 EXT_INIT_MODULE="neotex.plugins.ai.shared.extensions.init"
@@ -151,7 +151,7 @@ main() {
     mutex_status="acquired (this invocation, pid $$)"
   else
     local claimed_at="" age=999999
-    claimed_at="$(grep -o 'claimed_at=[0-9]*' "$deploy_lock_dir/owner" 2>/dev/null | cut -d= -f2)"
+    claimed_at="$(grep -o 'claimed_at=[0-9]*' "$deploy_lock_dir/owner" 2>/dev/null | cut -d= -f2)" || true
     if [ -n "$claimed_at" ]; then
       age=$(( $(date +%s) - claimed_at ))
     fi
@@ -202,11 +202,11 @@ main() {
   if [ "$WIPE" = "true" ]; then
     output=$(cd "$TARGET" && nvim --headless \
       -c "lua local ok1, ext_config = pcall(require, '${EXT_CONFIG_MODULE}'); local ok2, ext_init = pcall(require, '${EXT_INIT_MODULE}'); if not (ok1 and ok2) then print('DEPLOY_ERROR require: ' .. tostring(ok1 and ext_init or ext_config)) else local manager = ext_init.create(ext_config.claude()); local pok, wok, result = pcall(manager.wipe, {project_dir = '${TARGET}'}); if not pok then print('DEPLOY_ERROR call: ' .. tostring(wok)) elseif not wok then print('DEPLOY_ERROR wipe-refused: ' .. tostring(result)) elseif #result.failed > 0 then local msgs = {}; for _, f in ipairs(result.failed) do table.insert(msgs, f.name .. ': ' .. tostring(f.error)) end; print('DEPLOY_ERROR wipe-partial: ' .. table.concat(msgs, '; ')) else print('DEPLOY_COUNT=' .. tostring(#result.loaded)) end end" \
-      -c "qa!" 2>&1)
+      -c "qa!" 2>&1) || true
   else
     output=$(cd "$TARGET" && nvim --headless \
       -c "lua local ok1, ext_config = pcall(require, '${EXT_CONFIG_MODULE}'); local ok2, ext_init = pcall(require, '${EXT_INIT_MODULE}'); if not (ok1 and ok2) then print('DEPLOY_ERROR require: ' .. tostring(ok1 and ext_init or ext_config)) else local manager = ext_init.create(ext_config.claude()); local bok, bsucc, berr = pcall(manager.load, 'core', {confirm = false, force = true, project_dir = '${TARGET}'}); if not bok then print('DEPLOY_ERROR bootstrap-call: ' .. tostring(bsucc)) elseif not bsucc then print('DEPLOY_ERROR bootstrap: ' .. tostring(berr)) else local rok, result = pcall(manager.resync_all, {project_dir = '${TARGET}'}); if not rok then print('DEPLOY_ERROR resync-call: ' .. tostring(result)) elseif #result.failed > 0 then local msgs = {}; for _, f in ipairs(result.failed) do table.insert(msgs, f.name .. ': ' .. tostring(f.error)) end; print('DEPLOY_ERROR resync-partial: ' .. table.concat(msgs, '; ')) else print('DEPLOY_COUNT=' .. tostring(#result.succeeded)) end end end" \
-      -c "qa!" 2>&1)
+      -c "qa!" 2>&1) || true
   fi
 
   if echo "$output" | grep -q 'DEPLOY_ERROR'; then
@@ -216,7 +216,7 @@ main() {
   fi
 
   local count
-  count=$(echo "$output" | grep -o 'DEPLOY_COUNT=[0-9]*' | head -1 | cut -d= -f2)
+  count=$(echo "$output" | grep -o 'DEPLOY_COUNT=[0-9]*' | head -1 | cut -d= -f2) || true
 
   if [ -z "$count" ]; then
     echo "ERROR: headless deploy produced no result count; treating as failure." >&2

@@ -71,7 +71,7 @@
 # Exit codes: 0 on success (occurrences, membership always; cross-check only on MATCH); 1 on
 # cross-check MISMATCH; 64 on usage error (missing subcommand, missing required flag, bad path).
 
-set -uo pipefail
+set -euo pipefail
 
 usage() {
   cat <<'USAGE'
@@ -194,11 +194,11 @@ cmd_occurrences() {
 
   local naive_total=0 real_total=0 naive_n real_n
   for f in "${files[@]}"; do
-    naive_n="$(grep -oE "$pattern" "$f" 2>/dev/null | wc -l | tr -d ' ')"
+    naive_n="$(grep -oE "$pattern" "$f" 2>/dev/null | wc -l | tr -d ' ')" || true
     naive_total=$((naive_total + naive_n))
 
     strip_comments "$f" "$comment_style" > "$workdir/stripped.txt"
-    real_n="$(grep -oE "$pattern" "$workdir/stripped.txt" 2>/dev/null | wc -l | tr -d ' ')"
+    real_n="$(grep -oE "$pattern" "$workdir/stripped.txt" 2>/dev/null | wc -l | tr -d ' ')" || true
     real_total=$((real_total + real_n))
   done
 
@@ -236,14 +236,14 @@ cmd_membership() {
   local workdir
   workdir="$(mktemp -d)"
 
-  bash -c "$tree_cmd" | sort -u > "$workdir/tree.txt"
-  bash -c "$declared_cmd" | sort -u > "$workdir/declared.txt"
+  bash -c "$tree_cmd" | sort -u > "$workdir/tree.txt" || true
+  bash -c "$declared_cmd" | sort -u > "$workdir/declared.txt" || true
 
   local tree_count declared_count only_tree only_declared
-  tree_count="$(wc -l < "$workdir/tree.txt" | tr -d ' ')"
-  declared_count="$(wc -l < "$workdir/declared.txt" | tr -d ' ')"
-  only_tree="$(comm -23 "$workdir/tree.txt" "$workdir/declared.txt")"
-  only_declared="$(comm -13 "$workdir/tree.txt" "$workdir/declared.txt")"
+  tree_count="$(wc -l < "$workdir/tree.txt" | tr -d ' ')" || true
+  declared_count="$(wc -l < "$workdir/declared.txt" | tr -d ' ')" || true
+  only_tree="$(comm -23 "$workdir/tree.txt" "$workdir/declared.txt")" || true
+  only_declared="$(comm -13 "$workdir/tree.txt" "$workdir/declared.txt")" || true
 
   rm -rf "$workdir"
 
@@ -254,9 +254,9 @@ cmd_membership() {
   echo "declared_count: ${declared_count}"
   echo "declared_command: ${declared_cmd}"
   echo "ONLY_IN_TREE:"
-  [[ -n "$only_tree" ]] && echo "$only_tree"
+  [[ -n "$only_tree" ]] && echo "$only_tree" || true
   echo "ONLY_IN_DECLARED:"
-  [[ -n "$only_declared" ]] && echo "$only_declared"
+  [[ -n "$only_declared" ]] && echo "$only_declared" || true
   echo "note: checks DECLARED membership only, never transitive reachability"
   echo "=== end record ==="
 }
@@ -279,11 +279,11 @@ cmd_cross_check() {
   fi
 
   local a_out b_out a_count b_count
-  a_out="$(bash -c "$a_cmd")"
-  b_out="$(bash -c "$b_cmd")"
+  a_out="$(bash -c "$a_cmd")" || true
+  b_out="$(bash -c "$b_cmd")" || true
 
-  a_count="$(echo "$a_out" | grep -oE '[0-9]+' | tail -1)"
-  b_count="$(echo "$b_out" | grep -oE '[0-9]+' | tail -1)"
+  a_count="$(echo "$a_out" | grep -oE '[0-9]+' | tail -1)" || true
+  b_count="$(echo "$b_out" | grep -oE '[0-9]+' | tail -1)" || true
   a_count="${a_count:-<none>}"
   b_count="${b_count:-<none>}"
 

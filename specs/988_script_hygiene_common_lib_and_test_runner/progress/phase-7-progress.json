@@ -1,0 +1,22 @@
+{
+  "phase": 7,
+  "phase_name": "Strict-mode migration batch B (remaining Class A)",
+  "started_at": "2026-08-07T00:00:00Z",
+  "last_updated": "2026-08-07T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Batch 1: census-count.sh, claude-refresh.sh, deploy-headless.sh, generate-context-line-counts.sh, git-snapshot.sh", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/census-count.sh",
+      "agent-system/extensions/core/scripts/claude-refresh.sh",
+      "agent-system/extensions/core/scripts/deploy-headless.sh",
+      "agent-system/extensions/core/scripts/generate-context-line-counts.sh",
+      "agent-system/extensions/core/scripts/git-snapshot.sh"
+    ]},
+    {"id": 2, "description": "Batch 2: lifecycle-notify.sh, orchestrate-dry-run-report.sh, orchestrate-recover-outcome.sh, orchestrate-triage-classify.sh, reap-session-runtime-files.sh", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "Batch 3: reconcile-artifacts.sh, hooks/claude-stop-notify.sh, hooks/memory-nudge.sh, hooks/tts-notify.sh, hooks/events-log-artifact.sh", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Batch 4: hooks/events-log-lifecycle.sh, hooks/guard-destructive-git.sh, hooks/validate-no-task-references.sh, hooks/validate-handoff-location.sh, hooks/validate-meta-write.sh", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "Batch 5: hooks/validate-plan-write.sh, email/hooks/mail-guard.sh", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

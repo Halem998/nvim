@@ -44,7 +44,7 @@
 #   fails), this script refuses to run rather than silently falling back to the old,
 #   unsafe argv-substring behavior. See validate_cgroup_support() below.
 
-set -uo pipefail
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -200,7 +200,7 @@ take_snapshot() {
 # this platform's `ps` does not support the cgroup column the safety predicates require.
 validate_cgroup_support() {
     local self_cgroup
-    self_cgroup=$(ps -eo cgroup:200 --no-headers -p "$$" 2>/dev/null | tr -d ' ')
+    self_cgroup=$(ps -eo cgroup:200 --no-headers -p "$$" 2>/dev/null | tr -d ' ') || true
     if [ -z "$self_cgroup" ]; then
         echo "ERROR: 'ps -o cgroup' returned no data for this process." >&2
         echo "This platform's ps may not support the cgroup column that claude-refresh.sh's" >&2
@@ -254,7 +254,7 @@ main() {
     local orphan_details=()
 
     while IFS= read -r line; do
-        [ -z "$line" ] && continue
+        [ -z "$line" ] && continue || true
 
         local pid ppid uid tty etimes rss comm cgroup args
         read -r pid ppid uid tty etimes rss comm cgroup args <<< "$line"
