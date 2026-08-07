@@ -21,7 +21,7 @@
 #   PIPER_VOICE  - Path to piper .onnx voice model
 #                  (default: $HOME/.local/share/piper/en_US-lessac-medium.onnx)
 
-set -uo pipefail
+set -euo pipefail
 
 # Configuration with defaults
 TTS_ENABLED="${TTS_ENABLED:-1}"
@@ -52,10 +52,10 @@ get_tab_prefix() {
     local tab_prefix="Tab"
     if [[ -n "${WEZTERM_PANE:-}" ]] && command -v wezterm &>/dev/null; then
         local all_panes current_tab_id unique_tab_ids tab_index position tab_num
-        all_panes=$(wezterm cli list --format=json 2>/dev/null)
+        all_panes=$(wezterm cli list --format=json 2>/dev/null) || true
         current_tab_id=$(echo "$all_panes" | jq -r ".[] | select(.pane_id == $WEZTERM_PANE) | .tab_id" 2>/dev/null || echo "")
         if [[ -n "$current_tab_id" ]] && ! [[ "$current_tab_id" == "null" ]]; then
-            unique_tab_ids=$(echo "$all_panes" | jq -r '[.[].tab_id] | unique | .[]')
+            unique_tab_ids=$(echo "$all_panes" | jq -r '[.[].tab_id] | unique | .[]') || true
             tab_index=0
             position=0
             while IFS= read -r tab_id; do
@@ -63,7 +63,7 @@ get_tab_prefix() {
                     position=$tab_index
                     break
                 fi
-                ((tab_index++))
+                tab_index=$((tab_index + 1))
             done <<< "$unique_tab_ids"
             tab_num=$((position + 1))
             tab_prefix="Tab $tab_num"

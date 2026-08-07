@@ -34,7 +34,7 @@
 #
 # See: simplify_notification_pipeline_merge_vocabulary
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

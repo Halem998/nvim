@@ -21,7 +21,7 @@
 #   0 - Success (no-op or backfill applied)
 #   1 - Error (state.json missing or unreadable)
 
-set -uo pipefail
+set -euo pipefail
 
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -124,7 +124,7 @@ tasks_with_backfill=0
 
 # --- Main loop: iterate over all active tasks ---
 while IFS='|' read -r task_num task_slug; do
-  [[ -z "$task_num" ]] && continue
+  [[ -z "$task_num" ]] && continue || true
 
   if [[ -n "$TASK_FILTER" ]] && [[ "$task_num" -ne "$TASK_FILTER" ]]; then
     continue

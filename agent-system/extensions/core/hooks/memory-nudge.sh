@@ -13,7 +13,7 @@
 #   - Outputs systemMessage JSON on stdout
 #   - Always exits 0 (never blocks Claude)
 
-set -uo pipefail
+set -euo pipefail
 
 # Cooldown configuration (seconds)
 NUDGE_COOLDOWN="${NUDGE_COOLDOWN:-300}"
@@ -117,10 +117,10 @@ else
 fi
 
 # Ensure cooldown directory exists
-mkdir -p "$(dirname "$COOLDOWN_FILE")"
+mkdir -p "$(dirname "$COOLDOWN_FILE")" 2>/dev/null || true
 
 # Update cooldown timestamp
-date +%s > "$COOLDOWN_FILE"
+date +%s > "$COOLDOWN_FILE" 2>/dev/null || true
 
 # Output systemMessage JSON
 echo "{\"systemMessage\": \"$NUDGE_MSG\"}"

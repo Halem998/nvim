@@ -2,7 +2,7 @@
   "phase": 7,
   "phase_name": "Strict-mode migration batch B (remaining Class A)",
   "started_at": "2026-08-07T00:00:00Z",
-  "last_updated": "2026-08-07T01:00:00Z",
+  "last_updated": "2026-08-07T02:00:00Z",
   "objectives": [
     {
       "id": 1,
@@ -31,8 +31,14 @@
     {
       "id": 3,
       "description": "Batch 3: reconcile-artifacts.sh, hooks/claude-stop-notify.sh, hooks/memory-nudge.sh, hooks/tts-notify.sh, hooks/events-log-artifact.sh",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/reconcile-artifacts.sh",
+        "agent-system/extensions/core/hooks/claude-stop-notify.sh",
+        "agent-system/extensions/core/hooks/memory-nudge.sh",
+        "agent-system/extensions/core/hooks/tts-notify.sh",
+        "agent-system/extensions/core/hooks/events-log-artifact.sh"
+      ]
     },
     {
       "id": 4,
@@ -47,7 +53,7 @@
       "files_touched": []
     }
   ],
-  "current_objective": 3,
+  "current_objective": 4,
   "approaches_tried": [],
   "handoff_count": 0
 }

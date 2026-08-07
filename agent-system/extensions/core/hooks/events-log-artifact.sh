@@ -16,7 +16,7 @@
 #
 # See context/formats/events-format.md for the event field contract.
 
-set -uo pipefail
+set -euo pipefail
 
 # Observable-but-non-fatal wrapper around events-append.sh -- see the identical helper in
 # scripts/skill-base.sh and scripts/orchestrator-postflight.sh for the full contract comment.
@@ -136,9 +136,9 @@ if [ "$match_type" = "return_meta" ]; then
 
     event_args=(--event-type artifact_write --category "$category" --session "$session_id" \
       --message "Artifact metadata written with status '${status:-unknown}'")
-    [ -n "$task" ] && event_args+=(--task "$task")
-    [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
-    [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID")
+    [ -n "$task" ] && event_args+=(--task "$task") || true
+    [ -n "$CWD" ] && event_args+=(--cwd "$CWD") || true
+    [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID") || true
 
     _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   fi
@@ -158,10 +158,10 @@ elif [ "$match_type" = "errors_json" ]; then
 
     event_args=(--event-type error_logged --category "$category" --session "$session_id" \
       --message "Error entry logged to specs/errors.json")
-    [ -n "$task" ] && [ "$task" != "null" ] && event_args+=(--task "$task")
-    [ -n "$error_id" ] && event_args+=(--error-ref "$error_id")
-    [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
-    [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID")
+    { [ -n "$task" ] && [ "$task" != "null" ]; } && event_args+=(--task "$task") || true
+    [ -n "$error_id" ] && event_args+=(--error-ref "$error_id") || true
+    [ -n "$CWD" ] && event_args+=(--cwd "$CWD") || true
+    [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID") || true
 
     _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   fi
