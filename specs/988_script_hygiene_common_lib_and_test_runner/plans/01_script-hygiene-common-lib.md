@@ -476,8 +476,9 @@ individually and each landing green.
   *(completed for state-write.sh: confirmed Class A, `set -uo pipefail` prior to this phase)*
 - [ ] Migrate one file at a time, in this order, running `run-all.sh` after each:
   `state-write.sh`, `task-lock.sh`, `git-commit-scoped.sh`, `orchestrate-batch-admit.sh`,
-  `orchestrate-predispatch-review.sh`. *(partial: state-write.sh, task-lock.sh, and
-  git-commit-scoped.sh done and committed (3 of 5). task-lock.sh's full audit found ~68 unguarded
+  `orchestrate-predispatch-review.sh`. *(partial: state-write.sh, task-lock.sh,
+  git-commit-scoped.sh, and orchestrate-batch-admit.sh done and committed (4 of 5). task-lock.sh's
+  full audit found ~68 unguarded
   hazard sites -- bare `VAR=$(jq/ps/stat/cat/date/find ...)` assignments, four bare
   `mkdir -p`/`cat >`/`rm -f`/`rm -rf` statements, and a distinct `[ cond ] && action`
   bare-statement class (e.g. `[ -n "$x" ] && echo ... >&2`, `[ cond ] && continue`) that fails
@@ -486,8 +487,10 @@ individually and each landing green.
   shared-helper source so every call site inherited the fix. git-commit-scoped.sh's audit found
   the classic `VAR=$(cmd); status=$?` anti-pattern twice (the primary commit and its index.lock
   retry), fixed via the sanctioned `if VAR=$(cmd); then status=0; else status=$?; fi` idiom.
-  orchestrate-batch-admit.sh and orchestrate-predispatch-review.sh remain `set -uo pipefail`, not
-  yet migrated -- left for a follow-up `/implement` dispatch.)*
+  orchestrate-batch-admit.sh's audit found the SAME anti-pattern at its single most important line
+  (`verdicts=$(jq -n -c ...)` / `jq_exit=$?`), fixed the same way, plus 4 lesser guard sites.
+  orchestrate-predispatch-review.sh remains `set -uo pipefail`, not yet migrated -- left for a
+  follow-up `/implement` dispatch.)*
 - [x] For each, before flipping: walk every command whose nonzero exit is currently tolerated and
   confirm it is either inside an `if`/`&&`/`||`/`while` condition (already `-e`-exempt) or
   explicitly guarded with `|| true` / `|| handler`. Add the explicit guard where it is not.

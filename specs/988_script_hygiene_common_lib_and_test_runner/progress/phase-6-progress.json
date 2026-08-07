@@ -2,7 +2,7 @@
   "phase": 6,
   "phase_name": "Strict-mode migration batch A (highest-risk state mutators)",
   "started_at": "2026-08-07T01:10:00Z",
-  "last_updated": "2026-08-07T08:45:00Z",
+  "last_updated": "2026-08-07T09:10:00Z",
   "objectives": [
     {
       "id": 1,
@@ -35,8 +35,11 @@
     {
       "id": 4,
       "description": "Migrate orchestrate-batch-admit.sh to set -euo pipefail",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"
+      ],
+      "note": "Full -e-hostility audit of all 538 lines. Found and fixed the SAME critical `VAR=$(cmd); status=$?` anti-pattern as git-commit-scoped.sh's git-commit capture, at the script's single most important line: `verdicts=$(jq -n -c ... 2>&1)` followed by a bare `jq_exit=$?` on the next line -- a jq failure (documented routine exit code 2) would have aborted the script under -e before jq_exit could be captured or the clean ERROR message could print. Fixed via the sanctioned if/then/else idiom. Also found and guarded 4 bare `VAR=$(jq/paste ...)` assignments feeding the degraded-critical-path-file warning path (critical_raw_json, critical_expanded_json), the session-registry read (sessions_json), and the candidates-array build (candidates_json) -- each already had a downstream empty/null check that needed to actually run rather than being bypassed by an early -e abort. No `[ cond ] && action` bare-statement hazards found (unlike task-lock.sh). Verified via 27/27 run-all.sh (1 confirmed pre-existing unrelated flaky failure on first run, clean on immediate rerun) plus a live fixture exercise (isolated mktemp -d specs/ + critical-paths.json) covering: a normal file_scope_collision defer, an edge-excluded non-collision admit, an unknown-task admit, 3 usage-error paths (no args, non-integer task_number, missing state.json -- all exit 2), a self_modifying co-dispatched defer, and -- directly exercising the exact hazards just fixed -- a malformed critical-paths.json (degraded warning + graceful continue, not abort), a missing critical-paths.json (same), and a malformed state.json (jq failure -> clean ERROR message + exit 2, not a bash errexit trace)."
     },
     {
       "id": 5,
@@ -45,7 +48,7 @@
       "files_touched": []
     }
   ],
-  "current_objective": 4,
+  "current_objective": 5,
   "approaches_tried": [
     {
       "approach": "Full -e-hostility audit of task-lock.sh in this same dispatch",
@@ -56,6 +59,11 @@
       "approach": "Full -e-hostility audit of git-commit-scoped.sh in this same dispatch",
       "result": "success",
       "reason": "Completed: found and fixed 2 VAR=$(cmd); status=$? anti-pattern sites, flipped to set -euo pipefail, 27/27 run-all.sh green, full live git-fixture exercise across every documented exit code and gate."
+    },
+    {
+      "approach": "Full -e-hostility audit of orchestrate-batch-admit.sh in this same dispatch",
+      "result": "success",
+      "reason": "Completed: found and fixed the critical verdicts=$(jq...); jq_exit=$? anti-pattern plus 4 guard sites, flipped to set -euo pipefail, 27/27 run-all.sh green, full live fixture exercise including the malformed/missing critical-paths.json and malformed state.json hazard paths."
     }
   ],
   "handoff_count": 1,

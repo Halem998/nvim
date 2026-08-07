@@ -247,7 +247,7 @@
 #       STATE_FILE missing/unparseable). Nothing is printed on stdout in either case; a single
 #       loud line naming the reason goes to stderr.
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -348,7 +348,7 @@ if [ ! -f "$CRITICAL_PATHS_FILE" ]; then
   echo "WARNING: orchestrate-batch-admit.sh: critical-path data file not found at $CRITICAL_PATHS_FILE; self-modification check DEGRADED (self_modifying will be null on every verdict)." >&2
   degraded="true"
 else
-  critical_raw_json=$(jq -c '.' "$CRITICAL_PATHS_FILE" 2>/dev/null)
+  critical_raw_json=$(jq -c '.' "$CRITICAL_PATHS_FILE" 2>/dev/null) || true
   if [ -z "$critical_raw_json" ] || [ "$critical_raw_json" = "null" ]; then
     echo "WARNING: orchestrate-batch-admit.sh: critical-path data file at $CRITICAL_PATHS_FILE is unparseable; self-modification check DEGRADED (self_modifying will be null on every verdict)." >&2
     degraded="true"
@@ -357,7 +357,7 @@ else
       (.scope_roots // []) as $roots |
       (.critical_paths // []) as $paths |
       [ $roots[] as $r | $paths[] as $p | {path: ($r + "/" + $p.path), label: $p.label} ]
-    ' <<<"$critical_raw_json" 2>/dev/null)
+    ' <<<"$critical_raw_json" 2>/dev/null) || true
     if [ -z "$critical_expanded_json" ]; then
       echo "WARNING: orchestrate-batch-admit.sh: critical-path data file at $CRITICAL_PATHS_FILE failed to expand (unexpected shape); self-modification check DEGRADED (self_modifying will be null on every verdict)." >&2
       degraded="true"
@@ -370,7 +370,7 @@ fi
 # degrades visibly, never silently) ---
 sessions_json='[]'
 if [ -n "$session_id_arg" ]; then
-  sessions_json=$("$SCRIPT_DIR/task-lock.sh" session-list 2>/dev/null | jq -s -c '.' 2>/dev/null)
+  sessions_json=$("$SCRIPT_DIR/task-lock.sh" session-list 2>/dev/null | jq -s -c '.' 2>/dev/null) || true
   if [ -z "$sessions_json" ]; then
     sessions_json='[]'
   fi
@@ -379,12 +379,18 @@ else
 fi
 
 # Build the candidates JSON array (preserves input order, including duplicates if given).
-candidates_json="[$(printf '%s\n' "${task_args[@]}" | paste -sd, -)]"
+candidates_json="[$(printf '%s\n' "${task_args[@]}" | paste -sd, -)]" || true
 
 # Single read of STATE_FILE via --slurpfile, feeding one jq program that computes every
 # candidate's verdict and prints NDJSON in input order. No second read, no wildcard expansion,
 # and no repo-wide filesystem walk of any kind.
-verdicts=$(jq -n -c \
+# `if VAR=$(cmd); then jq_exit=0; else jq_exit=$?; fi` rather than a bare `VAR=$(cmd)` followed
+# by `jq_exit=$?`: a jq failure here is a DOCUMENTED, routine outcome (exit 2, per this script's
+# own header) -- under `set -e` a bare failing assignment would abort the script on this line,
+# before jq_exit could ever be captured or the clean ERROR message below could print. Wrapping
+# the assignment in the `if` test is `-e`-exempt and preserves the captured status exactly,
+# mirroring the fix applied to state-write.sh, task-lock.sh, and git-commit-scoped.sh.
+if verdicts=$(jq -n -c \
   --argjson candidates "$candidates_json" \
   --slurpfile state_arr "$STATE_FILE" \
   --argjson critical_expanded "$critical_expanded_json" \
@@ -525,8 +531,11 @@ verdicts=$(jq -n -c \
       end
     end
   end
-  ' 2>&1)
-jq_exit=$?
+  ' 2>&1); then
+  jq_exit=0
+else
+  jq_exit=$?
+fi
 
 if [ "$jq_exit" -ne 0 ]; then
   echo "ERROR: orchestrate-batch-admit.sh: failed to evaluate admission against $STATE_FILE (jq exit $jq_exit)." >&2
