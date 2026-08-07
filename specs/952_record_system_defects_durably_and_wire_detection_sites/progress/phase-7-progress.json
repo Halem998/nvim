@@ -1,0 +1,31 @@
+{
+  "phase": 7,
+  "phase_name": "Wire Deliverable 2(c) -- the five ephemeral hooks",
+  "started_at": "2026-08-07T00:00:00Z",
+  "last_updated": "2026-08-07T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Inspect prior in-flight edits to all five hooks (git diff), confirm resolution idiom, additive contracts, and exit codes preserved exactly",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/hooks/validate-meta-write.sh",
+        "agent-system/extensions/core/hooks/validate-handoff-location.sh",
+        "agent-system/extensions/core/hooks/validate-no-task-references.sh",
+        "agent-system/extensions/core/hooks/validate-plan-write.sh",
+        "agent-system/extensions/core/hooks/validate-state-sync.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Exit-contract regression via synthetic stdin JSON for all five hooks: clean and detecting paths, fail-open on missing shared library, no settings.json/.claude touched",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "All five hooks' recorder wiring was found already correctly authored in the working tree by the prior dispatch. This phase's work was inspection, exit-contract regression testing (bash -n, synthetic stdin for clean/detecting/fail-open paths), and plan/progress bookkeeping -- no hook logic needed further edits. Discovered during verification: validate-plan-write.sh has a PRE-EXISTING, unrelated bug (output=$(cmd) || true; exit_code=$? always yields exit_code=0 due to bash command-substitution exit-status semantics), making its case-1/case-2 branches dead code today. This predates this task and is out of scope to fix; recorded as a known residual gap for Phase 8."
+}

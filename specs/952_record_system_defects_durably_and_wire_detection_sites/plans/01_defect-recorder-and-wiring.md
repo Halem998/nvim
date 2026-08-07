@@ -708,46 +708,46 @@ from the base engine, enumerate the difference before editing rather than patter
 
 ---
 
-### Phase 7: Wire Deliverable 2(c) — the five ephemeral hooks [NOT STARTED]
+### Phase 7: Wire Deliverable 2(c) — the five ephemeral hooks [COMPLETED]
 
 **Goal**: Make hook detections outlive the single agent turn. **Preserve each hook's advisory,
 non-blocking, exit-0 contract EXACTLY** — and preserve `validate-no-task-references.sh`'s blocking
 exit-2 contract exactly.
 
 **Tasks**:
-- [ ] Read all five hooks in full before editing:
-      `hooks/{validate-meta-write,validate-handoff-location,validate-no-task-references,validate-plan-write,validate-state-sync}.sh`.
-- [ ] Determine how a hook locates a sibling script, by reading how `hooks/events-log-lifecycle.sh`
+- [x] Read all five hooks in full before editing:
+      `hooks/{validate-meta-write,validate-handoff-location,validate-no-task-references,validate-plan-write,validate-state-sync}.sh`. *(completed)*
+- [x] Determine how a hook locates a sibling script, by reading how `hooks/events-log-lifecycle.sh`
       resolves `events-append.sh`, and reuse that exact idiom for
-      `.claude/scripts/system-defect-record.sh`. Do not invent a second resolution scheme.
-- [ ] `validate-meta-write.sh`: capture the `FILE` it already resolves and pass it as
+      `.claude/scripts/system-defect-record.sh`. Do not invent a second resolution scheme. *(completed: all five hooks use the identical `SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` + relative `../scripts/` idiom)*
+- [x] `validate-meta-write.sh`: capture the `FILE` it already resolves and pass it as
       `--attributed-path` (the recorder applies the deploy→source transform).
       `--defect-class SOURCE_STORE_BOUNDARY_VIOLATION`. **Keep the `additionalContext` JSON output
-      and `exit 0` byte-identical**; the recorder call is added before the output, `||`-guarded.
-- [ ] `validate-handoff-location.sh`: add the call **before** the existing `exit 2`, `||`-guarded,
+      and `exit 0` byte-identical**; the recorder call is added before the output, `||`-guarded. *(completed: verified byte-identical additionalContext output and exit 0 on both clean and detecting synthetic stdin)*
+- [x] `validate-handoff-location.sh`: add the call **before** the existing `exit 2`, `||`-guarded,
       with an explicit `exit 2` following on its own line so the exit code is set unconditionally.
       `--defect-class HANDOFF_MISLOCATED`. Per D4 this site is expected to be **log-only**
-      (attribution unresolvable) — that is correct behavior, not a bug.
-- [ ] `validate-no-task-references.sh`: **highest-risk edit.** Add the call at each of the two
+      (attribution unresolvable) — that is correct behavior, not a bug. *(completed: verified exit 2 preserved on mismatch)*
+- [x] `validate-no-task-references.sh`: **highest-risk edit.** Add the call at each of the two
       `exit 2` sites, `>/dev/null 2>&1 || echo "Note: ... (non-fatal)" >&2`, each immediately
       followed by an explicit `exit 2` on its own line. `--defect-class
       TASK_REFERENCE_IN_DELIVERABLE`, `--attributed-path` = the offending file. Do **not** wrap
       the script, do **not** add a trailing `|| true` at file scope, do **not** change the
       fail-open behavior when the shared pattern library cannot be sourced, and do **not** change
-      the final `exit 0`.
-- [ ] `validate-plan-write.sh`: add a `CWD=$(echo "$INPUT" | jq -r '.cwd // empty')`-style capture
+      the final `exit 0`. *(completed: verified clean exit 0, citation exit 2 at both sites, and fail-open exit 0 with LIB temporarily removed)*
+- [x] `validate-plan-write.sh`: add a `CWD=$(echo "$INPUT" | jq -r '.cwd // empty')`-style capture
       (mirroring `hooks/events-log-lifecycle.sh`'s existing pattern) — the script does not read
       `.cwd` today — then add the `||`-guarded call. `--defect-class ARTIFACT_FORMAT_VIOLATION`.
-      Expected **log-only** per D4. Keep advisory `exit 0` unchanged.
-- [ ] `validate-state-sync.sh`: same `.cwd` capture (this script does no stdin parsing at all
+      Expected **log-only** per D4. Keep advisory `exit 0` unchanged. *(completed; see Phase 8 summary note on a pre-existing, unrelated exit-code-capture defect in this same script that makes this branch presently unreachable in practice)*
+- [x] `validate-state-sync.sh`: same `.cwd` capture (this script does no stdin parsing at all
       today; add only the capture needed for `--cwd`, nothing more — its relative-path
       `STATE_FILE`/`TODO_FILE` assumptions are out of scope here). `--defect-class
-      STATE_SYNC_DIVERGENCE`. Expected **log-only** per D4. Keep advisory `exit 0` unchanged.
-- [ ] Pass `--cc-session-id` from hook stdin's `.session_id` at every hook, and omit `--session`
-      (the recorder synthesizes one per D5).
-- [ ] Confirm **no `settings.json` file is touched** — all five hooks are already registered
+      STATE_SYNC_DIVERGENCE`. Expected **log-only** per D4. Keep advisory `exit 0` unchanged. *(completed: verified malformed-JSON path still exits 1 and success path still exits 0)*
+- [x] Pass `--cc-session-id` from hook stdin's `.session_id` at every hook, and omit `--session`
+      (the recorder synthesizes one per D5). *(completed)*
+- [x] Confirm **no `settings.json` file is touched** — all five hooks are already registered
       (three via `merge-sources/settings-hooks.json`, two via install-only
-      `root-files/settings.json`).
+      `root-files/settings.json`). *(completed: `git diff --name-only` shows no settings.json path)*
 
 **Timing**: 1.5 hours
 

@@ -7,7 +7,12 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SYSTEM_DEFECT_RECORD="$SCRIPT_DIR/../scripts/system-defect-record.sh"
+
 # Parse file path from stdin (PostToolUse hook input)
+CC_SESSION_ID=""
+CWD=""
 if [ -t 0 ]; then
   # Fallback: try env var
   FILE=$(echo "${CLAUDE_TOOL_INPUT:-}" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null) || true
@@ -17,6 +22,8 @@ else
   if [ -z "$FILE" ]; then
     FILE=$(echo "${CLAUDE_TOOL_INPUT:-}" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null) || true
   fi
+  CC_SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty' 2>/dev/null) || CC_SESSION_ID=""
+  CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null) || CWD=""
 fi
 
 # Early exit for empty path (~1ms)
@@ -69,6 +76,19 @@ if [ "$is_meta_path" = "false" ]; then
   echo '{}'
   exit 0
 fi
+
+# Deliverable 2(c): record this detection. Signal B's attribution work is largely already done
+# here -- FILE is the deploy path already resolved above; the recorder applies the deploy→source
+# transform itself. --session omitted (D5 fallback synthesizes one); CC_SESSION_ID threaded as
+# the correlation key.
+bash "$SYSTEM_DEFECT_RECORD" \
+  --defect-class SOURCE_STORE_BOUNDARY_VIOLATION \
+  --detecting-site "hooks/validate-meta-write.sh" \
+  --message "direct write to .claude/ system file detected: $FILE" \
+  --attributed-path "$FILE" \
+  ${CC_SESSION_ID:+--cc-session-id "$CC_SESSION_ID"} \
+  ${CWD:+--cwd "$CWD"} \
+  >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
 
 # Path matches a .claude/ system file - inject corrective context
 # This is ADVISORY only (additionalContext), not blocking

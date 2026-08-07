@@ -28,7 +28,12 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SYSTEM_DEFECT_RECORD="$SCRIPT_DIR/../scripts/system-defect-record.sh"
+
 # Parse file path from stdin (PostToolUse hook input), with env-var fallback.
+CC_SESSION_ID=""
+CWD=""
 if [ -t 0 ]; then
   FILE=$(printf '%s' "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null) || true
 else
@@ -37,6 +42,8 @@ else
   if [ -z "$FILE" ]; then
     FILE=$(printf '%s' "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null) || true
   fi
+  CC_SESSION_ID=$(printf '%s' "$INPUT" | jq -r '.session_id // empty' 2>/dev/null) || CC_SESSION_ID=""
+  CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // empty' 2>/dev/null) || CWD=""
 fi
 
 # Early exit for empty path (~1ms on the overwhelming majority of Write/Edit calls).
@@ -81,4 +88,17 @@ Never write a bare '.orchestrator-handoff.json' filename: it resolves against wh
 ambient working directory happens to be when the Write tool runs.
 EOF
 
+# Deliverable 2(c): record this detection. Per D4, no writer identity is available at this
+# PostToolUse hook — the misplaced handoff is under specs/**, not a source-store file — so this
+# is EXPECTED to be a log-only outcome (Signal B attribution unresolvable), not a bug. The
+# placeholder below deliberately fails Signal B resolution rather than guessing an attribution.
+bash "$SYSTEM_DEFECT_RECORD" \
+  --defect-class HANDOFF_MISLOCATED \
+  --detecting-site "hooks/validate-handoff-location.sh" \
+  --message "misplaced orchestrator handoff detected: $FILE" \
+  --attributed-path "unresolved:hooks/validate-handoff-location.sh" \
+  --extra-detail-json "$(jq -c -n --arg f "$FILE" '{misplaced_path: $f}' 2>/dev/null || echo '{}')" \
+  ${CC_SESSION_ID:+--cc-session-id "$CC_SESSION_ID"} \
+  ${CWD:+--cwd "$CWD"} \
+  >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
 exit 2
