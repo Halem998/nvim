@@ -466,7 +466,7 @@ is not complete while any file in the non-`-e` populations is unclassified.
 
 ---
 
-### Phase 6: Strict-mode migration batch A (highest-risk state mutators) [IN PROGRESS]
+### Phase 6: Strict-mode migration batch A (highest-risk state mutators) [COMPLETED]
 
 **Goal**: The five confirmed highest-risk Class A scripts carry `set -euo pipefail`, each audited
 individually and each landing green.
@@ -474,10 +474,9 @@ individually and each landing green.
 **Tasks**:
 - [x] Confirm each target is still Class A per Phase 5's classification and still lacks `-e`.
   *(completed for state-write.sh: confirmed Class A, `set -uo pipefail` prior to this phase)*
-- [ ] Migrate one file at a time, in this order, running `run-all.sh` after each:
+- [x] Migrate one file at a time, in this order, running `run-all.sh` after each:
   `state-write.sh`, `task-lock.sh`, `git-commit-scoped.sh`, `orchestrate-batch-admit.sh`,
-  `orchestrate-predispatch-review.sh`. *(partial: state-write.sh, task-lock.sh,
-  git-commit-scoped.sh, and orchestrate-batch-admit.sh done and committed (4 of 5). task-lock.sh's
+  `orchestrate-predispatch-review.sh`. *(completed: all 5 of 5 done and committed. task-lock.sh's
   full audit found ~68 unguarded
   hazard sites -- bare `VAR=$(jq/ps/stat/cat/date/find ...)` assignments, four bare
   `mkdir -p`/`cat >`/`rm -f`/`rm -rf` statements, and a distinct `[ cond ] && action`
@@ -489,18 +488,43 @@ individually and each landing green.
   retry), fixed via the sanctioned `if VAR=$(cmd); then status=0; else status=$?; fi` idiom.
   orchestrate-batch-admit.sh's audit found the SAME anti-pattern at its single most important line
   (`verdicts=$(jq -n -c ...)` / `jq_exit=$?`), fixed the same way, plus 4 lesser guard sites.
-  orchestrate-predispatch-review.sh remains `set -uo pipefail`, not yet migrated -- left for a
-  follow-up `/implement` dispatch.)*
+  orchestrate-predispatch-review.sh's audit found the SAME anti-pattern twice more (Class A/B's
+  `ab_findings`/`jq_exit`, and -- most consequentially -- the `admit_output`/`admit_exit` capture
+  of its orchestrate-batch-admit.sh subprocess call, whose documented graceful-degradation path
+  for Classes C/D/E would otherwise never run under `-e`), plus the `[ cond ] && action` class and
+  ~9 lesser guard sites. Every file verified via 27/27 `run-all.sh` (one pre-existing,
+  documented-unrelated flaky failure in `test-claude-refresh-matcher.sh`, confirmed identical
+  before/after and unrelated to any file this phase touched) plus an extensive live `mktemp -d`
+  fixture exercise per file covering every documented subcommand/exit-code path, including the
+  exact hazard just fixed in each case (a `nothing-to-commit` exit 1, a malformed/missing
+  critical-paths.json degraded path, a simulated orchestrate-batch-admit.sh failure, etc.). Two
+  benign, pre-existing-mechanism findings, NOT defects introduced by this phase: (1)
+  `verify-deploy.sh` gates 3 and 5 report "content differs from source" / "deployed script content
+  drift" for these 5 files plus a missing `shell-strict-mode.md` copy -- expected and inherent to
+  the source-store/deploy-boundary architecture (`.claude/` has not been redeployed since these
+  edits; this agent is not a sanctioned automated caller of `deploy-headless.sh`, so this
+  resolves at the next human/orchestrator-driven regeneration, not here); (2) `test-task-lock-reap.sh`
+  and `test-git-commit-scoped.sh`, named in this phase's own Verification bullet below, do not
+  exist anywhere in `scripts/tests/` -- a stale assumption from earlier planning, not something
+  this phase's implementer introduced; the equivalent ground is covered by `run-all.sh`'s 27
+  existing suites plus the live fixture exercises above.)*
 - [x] For each, before flipping: walk every command whose nonzero exit is currently tolerated and
   confirm it is either inside an `if`/`&&`/`||`/`while` condition (already `-e`-exempt) or
   explicitly guarded with `|| true` / `|| handler`. Add the explicit guard where it is not.
-  *(completed for state-write.sh: found and fixed 2 unguarded `VAR=$(jq ...)` sites — see below)*
+  *(completed for all 5 files — see the task above for the per-file hazard-class summary)*
 - [x] Exercise each script's primary path manually against a `mktemp -d` fixture, not only via its
-  suite. *(completed for state-write.sh: live fixture exercise of valid write, dry-run valid,
-  dry-run invalid filter (exit 3), and real invalid filter (exit 3, file left untouched) — see
-  Phase 6 progress file, objective 1)*
+  suite. *(completed for all 5 files: state-write.sh (valid write, dry-run valid, dry-run invalid
+  filter exit 3, real invalid filter exit 3 with file left untouched), task-lock.sh (every
+  subcommand and documented exit code, including stale-override, corrupt-holder, and corrupt
+  session-registry-entry paths), git-commit-scoped.sh (normal commit, nothing-to-commit exit 1,
+  V2/V3 gates, --honest-index-rows), orchestrate-batch-admit.sh (collision defer, edge-excluded
+  admit, self-modifying defer, malformed/missing critical-paths.json degraded path, malformed
+  state.json jq-failure path), orchestrate-predispatch-review.sh (report mode with real Class
+  B/D findings, --repair mode's actual state-write.sh-mediated write, usage errors, and a
+  simulated orchestrate-batch-admit.sh failure exercising the Class C/D/E graceful-degradation
+  path) — see Phase 6 progress file for full per-objective detail)*
 - [x] Commit each file separately once its suite run is green, per the commit-per-green-substep
-  mandate. *(completed for state-write.sh only; committed separately per-file as mandated)*
+  mandate. *(completed: all 5 files committed separately as mandated)*
 
 **state-write.sh findings** (recorded here since Phase 6 is not yet fully closed): two
 `transform_err=$(jq ...)` / `dryrun_err=$(jq ...)` sites assigned the jq exit status to a separate

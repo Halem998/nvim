@@ -122,7 +122,7 @@
 #       (mutex ABORT, jq transform failure, or invalid-JSON validation failure -- state.json is
 #       left untouched on every one of those paths; see state-write.sh's own exit-code table).
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -194,12 +194,17 @@ if [ ! -f "$STATE_FILE" ]; then
   exit 2
 fi
 
-candidates_json="[$(printf '%s\n' "${task_args[@]}" | paste -sd, -)]"
+candidates_json="[$(printf '%s\n' "${task_args[@]}" | paste -sd, -)]" || true
 
 # ---------------------------------------------------------------------------
 # Classes A and B: single read of STATE_FILE via --slurpfile, one jq program.
 # ---------------------------------------------------------------------------
-ab_findings=$(jq -n -c \
+# `if VAR=$(cmd); then jq_exit=0; else jq_exit=$?; fi` rather than a bare `VAR=$(cmd)` followed
+# by `jq_exit=$?`: a jq failure here is a routine, handled outcome (see the exit-2 branch just
+# below) -- under `set -e` a bare failing assignment would abort the script before jq_exit could
+# ever be captured, mirroring the fix applied to state-write.sh, task-lock.sh,
+# git-commit-scoped.sh, and orchestrate-batch-admit.sh.
+if ab_findings=$(jq -n -c \
   --argjson candidates "$candidates_json" \
   --slurpfile state_arr "$STATE_FILE" \
   '
@@ -232,8 +237,11 @@ ab_findings=$(jq -n -c \
     | select(($entry | has($field)) and ($entry[$field] == null))
     | {class: "B", task_number: $c, field: $field, project_name: ($entry.project_name // "")}
   )
-  ' 2>&1)
-jq_exit=$?
+  ' 2>&1); then
+  jq_exit=0
+else
+  jq_exit=$?
+fi
 if [ "$jq_exit" -ne 0 ]; then
   echo "ERROR: orchestrate-predispatch-review.sh: failed to evaluate Class A/B findings against $STATE_FILE (jq exit $jq_exit): $ab_findings" >&2
   exit 2
@@ -247,12 +255,12 @@ if [ "$repair_mode" = true ]; then
   any_write=false
   if [ -n "$ab_findings" ]; then
     while IFS= read -r finding; do
-      [ -z "$finding" ] && continue
-      cls=$(printf '%s' "$finding" | jq -r '.class')
+      [ -z "$finding" ] && continue || true
+      cls=$(printf '%s' "$finding" | jq -r '.class') || true
       [ "$cls" = "B" ] || continue
-      pn=$(printf '%s' "$finding" | jq -r '.task_number')
-      field=$(printf '%s' "$finding" | jq -r '.field')
-      proj_name=$(printf '%s' "$finding" | jq -r '.project_name')
+      pn=$(printf '%s' "$finding" | jq -r '.task_number') || true
+      field=$(printf '%s' "$finding" | jq -r '.field') || true
+      proj_name=$(printf '%s' "$finding" | jq -r '.project_name') || true
       case "$field" in
         dependencies|file_scope)
           any_write=true
@@ -286,13 +294,16 @@ if [ "$repair_mode" = true ]; then
   # jq would raise "Cannot index array with string \"project_number\"". Binding the scalar via
   # `as` first (as Class A/B above already does with `$d`) keeps "." on the task object.
   echo "--repair: before/after diff of every field this repair will change:"
+  # `|| true`: this is a purely informational preview print, distinct from the actual
+  # mutex-guarded write below via state-write.sh -- a jq hiccup here must never abort the script
+  # before the real write is attempted.
   jq -r --argjson candidates "$candidates_json" '
     ($candidates) as $cands |
     .active_projects[] | select(.project_number as $pn | ($cands | index($pn)) != null) |
     select(.dependencies == null or .file_scope == null) |
     "  #\(.project_number): dependencies " + (.dependencies | tojson) + " -> " + ((.dependencies // []) | tojson) +
     "  ;  file_scope " + (.file_scope | tojson) + " -> " + ((.file_scope // []) | tojson)
-  ' "$STATE_FILE"
+  ' "$STATE_FILE" || true
 
   if ! "$SCRIPT_DIR/state-write.sh" \
     '($candidates) as $cands |
@@ -321,10 +332,20 @@ admit_session_id_args=()
 if [ "$session_id_explicit" = true ]; then
   admit_session_id_args=(--session-id "$session_id")
 fi
-admit_stderr_file=$(mktemp)
-admit_output=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" --invocation-count "${#task_args[@]}" "${admit_session_id_args[@]}" "${task_args[@]}" 2>"$admit_stderr_file")
-admit_exit=$?
-admit_stderr=$(cat "$admit_stderr_file" 2>/dev/null)
+admit_stderr_file=$(mktemp) || true
+# `if VAR=$(cmd); then admit_exit=0; else admit_exit=$?; fi` rather than a bare `VAR=$(cmd)`
+# followed by `admit_exit=$?`: orchestrate-batch-admit.sh exiting non-zero (e.g. its own usage or
+# state-unavailable errors) is a routine, explicitly-handled outcome (see the admit_checked=false
+# branch just below, which drives Classes C/D/E to a graceful SKIPPED report rather than aborting
+# this script) -- under `set -e` a bare failing assignment would abort the whole script here,
+# before that degradation path could ever run, losing even the Class A/B report already computed
+# above. Mirrors the same fix applied earlier in this file and in the other Phase 6 scripts.
+if admit_output=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" --invocation-count "${#task_args[@]}" "${admit_session_id_args[@]}" "${task_args[@]}" 2>"$admit_stderr_file"); then
+  admit_exit=0
+else
+  admit_exit=$?
+fi
+admit_stderr=$(cat "$admit_stderr_file" 2>/dev/null) || true
 rm -f "$admit_stderr_file"
 if [ "$admit_exit" -ne 0 ]; then
   admit_checked=false
@@ -333,7 +354,7 @@ fi
 
 cd_findings=""
 if [ "$admit_checked" = true ]; then
-  verdicts_json=$(printf '%s\n' "$admit_output" | jq -s -c '.' 2>/dev/null)
+  verdicts_json=$(printf '%s\n' "$admit_output" | jq -s -c '.' 2>/dev/null) || true
   if [ -z "$verdicts_json" ]; then
     verdicts_json='[]'
   fi
@@ -382,7 +403,7 @@ if [ "$admit_checked" = true ]; then
          colliding_task_number: $v.colliding_task_number, overlapping_path: $v.overlapping_path,
          session_liveness_reason: $v.session_liveness_reason}
     )
-    ' 2>&1)
+    ' 2>&1) || true
 fi
 
 # ===========================================================================
@@ -400,7 +421,7 @@ if [ -n "$ab_findings" ]; then
     select(.class == "A")
     | "#\(.task_number) depends on #\(.dependency): \(.bucket)" +
       (if .dependency_status then " (status: \(.dependency_status))" else "" end)
-  ' 2>/dev/null)
+  ' 2>/dev/null) || true
 fi
 if [ -z "$class_a_lines" ]; then
   echo "0 findings (every raw dependency edge is intra-batch, or this invocation carries no out-of-batch/nonexistent targets)."
@@ -415,13 +436,13 @@ if [ -n "$ab_findings" ]; then
   class_b_lines=$(printf '%s\n' "$ab_findings" | jq -r '
     select(.class == "B")
     | "#\(.task_number): field \"\(.field)\" is null"
-  ' 2>/dev/null)
+  ' 2>/dev/null) || true
 fi
 if [ -z "$class_b_lines" ]; then
   echo "0 findings (no candidate has a literal-null dependencies/file_scope/title/topic field)."
 else
   printf '%s\n' "$class_b_lines"
-  repairable=$(printf '%s\n' "$ab_findings" | jq -r 'select(.class == "B" and (.field == "dependencies" or .field == "file_scope")) | .task_number' 2>/dev/null | sort -un | tr '\n' ' ')
+  repairable=$(printf '%s\n' "$ab_findings" | jq -r 'select(.class == "B" and (.field == "dependencies" or .field == "file_scope")) | .task_number' 2>/dev/null | sort -un | tr '\n' ' ') || true
   if [ -n "$repairable" ]; then
     echo ""
     echo "To normalize the dependencies/file_scope null field(s) above (never title/topic — those are WARN-only), run directly:"
@@ -444,7 +465,7 @@ else
          else
            " -- declared scope entry \"\(.matched_scope_entry)\" already names the file exactly (not a coarse declaration)"
          end)
-    ' 2>/dev/null)
+    ' 2>/dev/null) || true
   fi
   if [ -z "$class_c_lines" ]; then
     echo "0 findings (no candidate's file_scope names an orchestrator-critical path)."
@@ -464,7 +485,7 @@ else
       select(.class == "D")
       | "#\(.task_number): file_scope collision with out-of-batch task #\(.colliding_task_number) (status: \(.colliding_task_status)) at \(.overlapping_path) -- suggest adding #\(.suggested_predecessor) as a dependencies[] entry on #\(.suggested_dependent) to serialize them" +
         (if ((.corroborated_by // []) | index("session_registry")) then " [corroborated by a live registered session]" else "" end)
-    ' 2>/dev/null)
+    ' 2>/dev/null) || true
   fi
   if [ -z "$class_d_lines" ]; then
     echo "0 findings (no missing cross-batch serializing edges detected)."
@@ -485,7 +506,7 @@ else
     class_e_lines=$(printf '%s\n' "$cd_findings" | jq -r '
       select(.class == "E")
       | "#\(.task_number): live registered session \(.session_id) (liveness: \(.session_liveness_reason)) covers task #\(.colliding_task_number) whose file_scope overlaps this candidate at \(.overlapping_path)"
-    ' 2>/dev/null)
+    ' 2>/dev/null) || true
   fi
   if [ -z "$class_e_lines" ]; then
     echo "0 findings (no candidate's file_scope overlaps a live registered session's covered scope)."

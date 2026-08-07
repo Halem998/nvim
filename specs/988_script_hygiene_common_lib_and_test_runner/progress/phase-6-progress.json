@@ -2,7 +2,7 @@
   "phase": 6,
   "phase_name": "Strict-mode migration batch A (highest-risk state mutators)",
   "started_at": "2026-08-07T01:10:00Z",
-  "last_updated": "2026-08-07T09:10:00Z",
+  "last_updated": "2026-08-07T09:50:00Z",
   "objectives": [
     {
       "id": 1,
@@ -44,11 +44,14 @@
     {
       "id": 5,
       "description": "Migrate orchestrate-predispatch-review.sh to set -euo pipefail",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"
+      ],
+      "note": "Full -e-hostility audit of all 497 lines. Found and fixed the SAME critical `VAR=$(cmd); status=$?` anti-pattern twice: (1) `ab_findings=$(jq -n -c ...)` / `jq_exit=$?` for the Class A/B computation, and (2) `admit_output=$(bash orchestrate-batch-admit.sh ...)` / `admit_exit=$?` -- the second is the most consequential fix in this file, since orchestrate-batch-admit.sh exiting non-zero is an explicitly-designed, routine degradation path (the admit_checked=false branch drives Classes C/D/E to a graceful SKIPPED report rather than aborting the whole script). Also found and fixed the `[ cond ] && action` bare-statement hazard class (`[ -z \"$finding\" ] && continue` inside the --repair loop) plus ~9 lesser `VAR=$(jq ...)` guard sites across the repair loop, the before/after diff print, and every report-section jq call (Classes A/B/C/D/E line generation plus the repairable task-number list). Verified via 27/27 run-all.sh plus a live git-fixture exercise (isolated mktemp -d git repo with state-write.sh, task-lock.sh, and orchestrate-batch-admit.sh copied alongside) covering: report mode with a real Class B (null dependencies/file_scope) and Class D (cross-batch collision) finding, --repair mode's before/after diff and actual state-write.sh-mediated write (verified via python3 -m json.tool that null became []), a second --repair run correctly reporting nothing-to-normalize, both usage-error paths (exit 2), and -- directly exercising the most critical fix -- a simulated orchestrate-batch-admit.sh failure (exit 2), which correctly degraded Classes C/D/E to SKIPPED while Classes A/B still printed and the script still exited 0, exactly as documented, instead of aborting under -e as it would have before this fix."
     }
   ],
-  "current_objective": 5,
+  "current_objective": null,
   "approaches_tried": [
     {
       "approach": "Full -e-hostility audit of task-lock.sh in this same dispatch",
@@ -64,6 +67,11 @@
       "approach": "Full -e-hostility audit of orchestrate-batch-admit.sh in this same dispatch",
       "result": "success",
       "reason": "Completed: found and fixed the critical verdicts=$(jq...); jq_exit=$? anti-pattern plus 4 guard sites, flipped to set -euo pipefail, 27/27 run-all.sh green, full live fixture exercise including the malformed/missing critical-paths.json and malformed state.json hazard paths."
+    },
+    {
+      "approach": "Full -e-hostility audit of orchestrate-predispatch-review.sh in this same dispatch",
+      "result": "success",
+      "reason": "Completed: found and fixed 2 VAR=$(cmd); status=$? anti-patterns (the second being the most consequential fix in the file), the [ cond ] && action hazard class, and ~9 lesser guard sites. Flipped to set -euo pipefail, 27/27 run-all.sh green, full live fixture exercise including a simulated orchestrate-batch-admit.sh failure confirming the graceful-degradation contract now actually holds under -e."
     }
   ],
   "handoff_count": 1,
