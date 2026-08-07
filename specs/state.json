@@ -3808,7 +3808,7 @@
       "project_number": 988,
       "project_name": "script_hygiene_common_lib_and_test_runner",
       "title": "Script hygiene: lib/common.sh, strict-mode convention, test runner wired into deploy",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -3822,8 +3822,8 @@
       ],
       "description": "Consolidate shell-script boilerplate, settle the strict-mode convention, and make the existing test suites actually run. From the shell-layer review (specs/reviews/review-2026-07-29-agent-system.md): 123 shell scripts; the shared-library posture is good where it exists (3 libs, all genuinely single-source) but thin.\n\nWHAT IS WRONG:\n  1. Repo-root boilerplate duplicated 75x (SCRIPT_DIR) / 30x (PROJECT_ROOT) with at least 6 divergent ../.. depth variants and three variable names (PROJECT_ROOT, REPO_ROOT, SKILL_REPO_ROOT).\n  2. Session-ID generation copied verbatim 5x with a live divergence: command-gate-in.sh uses tr -d ' \\n' while the other four use tr -d ' ' (trailing-newline hazard).\n  3. Timestamps: 17x GNU date -u ISO calls plus BSD-style date -u -j -f in 2 files alongside GNU date -u -d in 6 — inconsistent portability assumptions.\n  4. No logging convention: bare 'ERROR:'/'Error:'/'[postflight]'/'[reconcile]'/'ABORT:'/'WARNING:' prefixes, no shared emitter; the pass/fail/info test-helper trio is duplicated in ~12 test files (codified as convention in shell-script-testing.md rather than extracted).\n  5. set -e is a coin flip: 73 files use set -euo pipefail, 45 use set -uo pipefail (no -e) — concentrated in the HIGHEST-risk scripts (state-write.sh, task-lock.sh, update-task-status.sh, orchestrate-*.sh, git-commit-scoped.sh) — and 5 have no set at all. deploy-root-guard.sh's own header documents that it compensates for callers lacking -e.\n  6. Twelve good test suites exist (concurrency, pattern-matching) but there is NO runner — no run-all script, no deploy wiring; nothing enforces they pass. tests/test-git-commit-scoped.sh is not executable while its five siblings are. Ten large high-blast-radius scripts have zero tests (check-extension-docs.sh 1128L, generate-task-order.sh 972L, skill-base.sh 858L with 1 of 18 functions tested, roadmap-integration.sh 818L, update-task-status.sh 551L, orchestrator-postflight.sh 547L, generate-todo.sh 428L).\n  7. Five #!/bin/bash shebangs vs 118 #!/usr/bin/env bash.\n\nWORK (sequence matters):\n  1. scripts/tests/run-all.sh iterating both test locations (the split is deliberate per shell-script-testing.md — preserve it), wired into verify-deploy.sh or the deploy path so suites run on every deploy. Fix the exec bit.\n  2. Extract scripts/lib/common.sh: repo-root resolution (one function, parameterized depth), session-ID generation, UTC timestamp helpers, log_error/log_warn/log_info, and the test pass/fail/info trio. Follow the existing lib/ header convention (name consumers, forbid local redefinition).\n  3. Migrate the 5 session-ID copies and the worst boilerplate sites to the lib (mechanical; full 75-file migration can be opportunistic).\n  4. THEN settle set -euo pipefail as the convention, migrating the 45 non--e files with the test runner as the regression net (adding -e to a script that relies on non-zero returns is itself a regression risk — per-file audit, run suites after each batch).\n  5. Normalize the 5 shebangs.\n  6. Add test coverage for the top uncovered scripts, starting with skill-base.sh's lifecycle functions and update-task-status.sh (the state-machinery tasks add more).\n\nVERIFICATION BAR:\n  - run-all.sh exits nonzero when any suite fails and is invoked by the deploy verification path (demonstrate with a deliberately-broken fixture).\n  - Session-ID generation exists in exactly one place (grep).\n  - All migrated scripts pass their suites; set -e migration batches each land green.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-08-06T20:12:04Z",
-      "session_id": "sess_1786046335_4648b5",
+      "last_updated": "2026-08-07T10:17:28Z",
+      "session_id": "sess_1786089515_90cab1",
       "artifacts": [
         {
           "path": "specs/988_script_hygiene_common_lib_and_test_runner/reports/01_shell-hygiene-common-lib.md",
@@ -3834,8 +3834,14 @@
           "path": "specs/988_script_hygiene_common_lib_and_test_runner/plans/01_script-hygiene-common-lib.md",
           "type": "plan",
           "summary": "10-phase plan: test runner + Gate 8, lib/common.sh, session-ID single-sourcing, audited strict-mode migration, shebangs, new test coverage."
+        },
+        {
+          "path": "specs/988_script_hygiene_common_lib_and_test_runner/summaries/01_script-hygiene-common-lib-summary.md",
+          "type": "summary",
+          "summary": "All 10 plan phases completed: test runner + Gate 8, scripts/lib/common.sh, session-ID/root-resolution migration, audited set -euo pipefail strict-mode migration across 27 files, shebang normalization across 24 files, and two new test suites."
         }
-      ]
+      ],
+      "completion_summary": "Completed all four coupled shell-hygiene deliverables across 10 phases: a scripts/tests/run-all.sh test runner wired into verify-deploy.sh as Gate 8; scripts/lib/common.sh (repo-root resolution, session-ID generation, timestamps, logging trio, test trio) with a 23-assertion unit suite; session-ID and root-resolution boilerplate migrated onto the shared library; a per-file-audited set -euo pipefail strict-mode migration across 27 files (Phases 6-7), each individually audited for -e-hostile constructs and live-fixture-verified, zero reclassified to Class B; shebang normalization across 24 files; and two new test suites covering skill-base.sh's highest-blast-radius lifecycle functions (14/14 assertions) and update-task-status.sh's preflight/postflight transitions and --phase-check backstop (16/16 assertions). Final run-all.sh: 29/29 suites passing."
     },
     {
       "project_number": 989,

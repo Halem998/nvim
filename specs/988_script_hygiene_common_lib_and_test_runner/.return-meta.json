@@ -60,21 +60,45 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/summaries/01_script-hygiene-common-lib-summary.md",
       "confidence": 0.95,
-      "suggested_keywords": ["set -e", "strict mode", "bash", "shell", "exit code guard", "errexit", "anti-pattern"]
+      "suggested_keywords": [
+        "set -e",
+        "strict mode",
+        "bash",
+        "shell",
+        "exit code guard",
+        "errexit",
+        "anti-pattern"
+      ]
     },
     {
       "content": "A second, easy-to-miss -e-hostile bash pattern distinct from the VAR=$(cmd); status=$? anti-pattern: a bare standalone statement of the form `[ cond ] && action` (e.g. `[ -n \"$x\" ] && echo ... >&2`, `[ cond ] && continue`, `[ \"$FLAG\" = true ] && return 0`). Under `set -e` this aborts the script whenever the CONDITION is false, not just when `action` itself fails -- because a standalone `test && cmd` statement's own exit status is the test's exit status when the test is false and `cmd` never runs. This is easy to miss during an -e migration audit because it looks like ordinary short-circuit idiom. Several instances found across a 27-file migration sat directly on a SUCCESS path rather than a failure path (e.g. `[ -z \"$session_id\" ] && exit_success` aborted precisely when a marker WAS found with a valid session_id -- the normal case a hook exists to handle) -- an audit that only reasons about 'what happens on failure' misses this class; the correct question is 'what happens on every branch this statement can take'. Fix: append `|| true`, or restructure as an explicit `if`. Search with `grep -n '\\[ .* \\] &&[^&]*$' <file> | grep -v '||'`.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/summaries/01_script-hygiene-common-lib-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["set -e", "strict mode", "bash", "shell", "short circuit", "errexit", "success path"]
+      "suggested_keywords": [
+        "set -e",
+        "strict mode",
+        "bash",
+        "shell",
+        "short circuit",
+        "errexit",
+        "success path"
+      ]
     },
     {
       "content": "When auditing a shell script for set -e migration hazards, guard a heavily-reused leaf helper FUNCTION at its own definition rather than guarding every individual call site. `deploy-root-guard.sh`-style scripts that refuse to run outside a deployed .claude/scripts/ tree can still be live-fixture-tested without touching the real deployed tree -- build an isolated `mktemp -d` fixture shaped like `$WORK/.claude/scripts/` (copy the script under test plus its lib/*.sh and deploy-root-guard.sh dependencies there, with `$WORK/specs/` two levels up) and exercise every subcommand/exit-code path against it. Two further hazard classes recur beyond the two anti-patterns above: (1) bare grep/jq command-substitution captures whose common case IS the no-match/failure path -- e.g. a PreToolUse hook's `ADD_SEGMENTS=$(echo \"$CMD\" | grep -oE 'git add...')` fails under pipefail on every command that ISN'T a git-add, i.e. almost every real invocation; (2) a standalone `((VAR++))` post-increment command fails under -e whenever the pre-increment value is 0 (virtually always on a loop's first iteration) -- fix by rewriting as `VAR=$((VAR + 1))`, a plain assignment immune to this hazard. For a `set -e`-fixed hook with a documented fail-open contract on internal error (e.g. 'fails OPEN if its own shared pattern library cannot be sourced'), check whether that contract was only ever honored for a MISSING dependency, not a present-but-broken one -- a `. \"$LIB\"` sourcing failure needs its own explicit `if ! . \"$LIB\"; then ... exit 0; fi` guard to honor the same contract under -e.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/988_script_hygiene_common_lib_and_test_runner/summaries/01_script-hygiene-common-lib-summary.md",
       "confidence": 0.88,
-      "suggested_keywords": ["set -e", "audit", "leaf helper", "fixture testing", "mktemp", "deploy-root-guard", "fail-open"]
+      "suggested_keywords": [
+        "set -e",
+        "audit",
+        "leaf helper",
+        "fixture testing",
+        "mktemp",
+        "deploy-root-guard",
+        "fail-open"
+      ]
     }
   ],
   "metadata": {
@@ -87,6 +111,8 @@
       "general-implementation-agent"
     ],
     "phases_completed": 10,
-    "phases_total": 10
+    "phases_total": 10,
+    "cycles_used": 2,
+    "final_state": "completed"
   }
 }
