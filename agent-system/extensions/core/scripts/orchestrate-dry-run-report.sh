@@ -119,7 +119,7 @@
 #   2 - usage error (no task numbers, a non-integer task number, jq missing) or unreadable
 #       specs/state.json, or every candidate was not-found/terminal (nothing left to report on).
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -307,9 +307,12 @@ if [ "${#validated_tasks[@]}" -gt 0 ]; then
     admit_session_id_args=(--session-id "$session_id")
   fi
   admit_stderr_file=$(mktemp)
-  admit_output=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" --invocation-count "${#validated_tasks[@]}" "${admit_session_id_args[@]}" "${validated_tasks[@]}" 2>"$admit_stderr_file")
-  admit_exit=$?
-  admit_stderr=$(cat "$admit_stderr_file" 2>/dev/null)
+  if admit_output=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" --invocation-count "${#validated_tasks[@]}" "${admit_session_id_args[@]}" "${validated_tasks[@]}" 2>"$admit_stderr_file"); then
+    admit_exit=0
+  else
+    admit_exit=$?
+  fi
+  admit_stderr=$(cat "$admit_stderr_file" 2>/dev/null) || true
   rm -f "$admit_stderr_file"
   if [ "$admit_exit" -ne 0 ]; then
     admit_checked=false
@@ -320,7 +323,7 @@ fi
 if [ "$admit_checked" = true ]; then
   for t in "${validated_tasks[@]}"; do
     verdict=$(printf '%s\n' "$admit_output" | jq -c --argjson tn "$t" 'select(.task_number == $tn)' 2>/dev/null | head -1)
-    [ -z "$verdict" ] && continue
+    [ -z "$verdict" ] && continue || true
     # NOTE: `.self_modifying // "null"` would be WRONG here — jq's `//` treats a literal `false`
     # value as falsy too, so a perfectly valid (non-degraded) `self_modifying: false` verdict
     # would be misread as the degraded "null" case. Use `-c` (compact) with no `//` fallback so
@@ -379,14 +382,17 @@ fi
 lock_checked=true
 lock_degraded_tasks=()
 for t in "${validated_tasks[@]}"; do
-  lock_out=$(bash "$SCRIPT_DIR/task-lock.sh" check "$t" 2>/dev/null)
-  lock_exit=$?
+  if lock_out=$(bash "$SCRIPT_DIR/task-lock.sh" check "$t" 2>/dev/null); then
+    lock_exit=0
+  else
+    lock_exit=$?
+  fi
   case "$lock_exit" in
     0)
       : # free — no effect
       ;;
     1)
-      holder_session=$(printf '%s' "$lock_out" | grep -oE 'session=[^ ]*' | cut -d= -f2-)
+      holder_session=$(printf '%s' "$lock_out" | grep -oE 'session=[^ ]*' | cut -d= -f2-) || true
       if [ -n "$session_id" ] && [ "$holder_session" = "$session_id" ]; then
         notes+=("Task #$t: lock is held-fresh by the SUPPLIED --session ($session_id) — self-held, not an exclusion.")
       else
@@ -414,7 +420,7 @@ for t in "${validated_tasks[@]}"; do
       continue
     fi
     dep_data=$(jq -c --argjson num "$d" '.active_projects[] | select(.project_number == $num)' "$STATE_FILE" 2>/dev/null | head -1)
-    [ -z "$dep_data" ] || [ "$dep_data" = "null" ] && continue
+    { [ -z "$dep_data" ] || [ "$dep_data" = "null" ]; } && continue || true
     dep_status=$(echo "$dep_data" | jq -r '.status // ""')
     case "$(echo "$dep_status" | tr '[:upper:]' '[:lower:]')" in
       completed|abandoned|expanded)
@@ -441,9 +447,12 @@ triage_degraded_reason=""
 triage_output=""
 if [ "${#validated_tasks[@]}" -gt 0 ]; then
   triage_stderr_file=$(mktemp)
-  triage_output=$(bash "$SCRIPT_DIR/orchestrate-triage-classify.sh" "$engine" "${validated_tasks[@]}" 2>"$triage_stderr_file")
-  triage_exit=$?
-  triage_stderr=$(cat "$triage_stderr_file" 2>/dev/null)
+  if triage_output=$(bash "$SCRIPT_DIR/orchestrate-triage-classify.sh" "$engine" "${validated_tasks[@]}" 2>"$triage_stderr_file"); then
+    triage_exit=0
+  else
+    triage_exit=$?
+  fi
+  triage_stderr=$(cat "$triage_stderr_file" 2>/dev/null) || true
   rm -f "$triage_stderr_file"
   if [ "$triage_exit" -ne 0 ]; then
     triage_checked=false
@@ -455,7 +464,7 @@ if [ "$triage_checked" = true ]; then
   for t in "${validated_tasks[@]}"; do
     [ -n "${t_exclude_reason[$t]:-}" ] && trow_skip_exclude=true || trow_skip_exclude=false
     trow=$(printf '%s\n' "$triage_output" | jq -c --argjson tn "$t" 'select(.task_number == $tn)' 2>/dev/null | head -1)
-    [ -z "$trow" ] && continue
+    [ -z "$trow" ] && continue || true
     group=$(echo "$trow" | jq -r '.group // ""')
     case "$group" in
       needs_human)
@@ -494,9 +503,12 @@ if [ "${#validated_tasks[@]}" -gt 0 ]; then
     predispatch_session_id_args=(--session-id "$session_id")
   fi
   predispatch_stderr_file=$(mktemp)
-  predispatch_output=$(bash "$SCRIPT_DIR/orchestrate-predispatch-review.sh" "${predispatch_session_id_args[@]}" "${validated_tasks[@]}" 2>"$predispatch_stderr_file")
-  predispatch_exit=$?
-  predispatch_stderr=$(cat "$predispatch_stderr_file" 2>/dev/null)
+  if predispatch_output=$(bash "$SCRIPT_DIR/orchestrate-predispatch-review.sh" "${predispatch_session_id_args[@]}" "${validated_tasks[@]}" 2>"$predispatch_stderr_file"); then
+    predispatch_exit=0
+  else
+    predispatch_exit=$?
+  fi
+  predispatch_stderr=$(cat "$predispatch_stderr_file" 2>/dev/null) || true
   rm -f "$predispatch_stderr_file"
   if [ "$predispatch_exit" -ne 0 ]; then
     predispatch_checked=false
@@ -509,8 +521,8 @@ fi
 # ---------------------------------------------------------------------------
 declare -a admitted_tasks=()
 for t in "${validated_tasks[@]}"; do
-  [ -n "${t_skip_reason[$t]:-}" ] && continue
-  [ -n "${t_exclude_reason[$t]:-}" ] && continue
+  [ -n "${t_skip_reason[$t]:-}" ] && continue || true
+  [ -n "${t_exclude_reason[$t]:-}" ] && continue || true
   admitted_tasks+=("$t")
 done
 
@@ -624,7 +636,7 @@ else
         fi
       done
     done
-    [ "${#admitted_in_wave[@]}" -eq 0 ] && continue
+    [ "${#admitted_in_wave[@]}" -eq 0 ] && continue || true
     echo "Wave $i: ${admitted_in_wave[*]}"
   done
 fi

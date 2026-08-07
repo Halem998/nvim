@@ -113,7 +113,7 @@
 #       unavailable (jq missing, or STATE_FILE missing/unparseable). Nothing is printed on
 #       stdout in either case; a single loud line naming the reason goes to stderr.
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -160,14 +160,17 @@ candidates_json="[$(printf '%s\n' "$@" | paste -sd, -)]"
 
 # Single read of STATE_FILE to resolve each candidate's status/project_name — needed up front so
 # we know, per candidate, whether (and where) to read a handoff file below.
-lookup_json=$(jq -n -c --argjson candidates "$candidates_json" --slurpfile state_arr "$STATE_FILE" '
+if lookup_json=$(jq -n -c --argjson candidates "$candidates_json" --slurpfile state_arr "$STATE_FILE" '
   ($state_arr[0].active_projects // []) as $all |
   [ $candidates[] as $c |
     ([$all[] | select(.project_number == $c)] | first) as $entry |
     { task_number: $c, status: ($entry.status // null), project_name: ($entry.project_name // null) }
   ]
-' 2>&1)
-lookup_exit=$?
+' 2>&1); then
+  lookup_exit=0
+else
+  lookup_exit=$?
+fi
 if [ "$lookup_exit" -ne 0 ]; then
   echo "ERROR: orchestrate-triage-classify.sh: failed to evaluate state lookup against $STATE_FILE (jq exit $lookup_exit): $lookup_json" >&2
   exit 2
@@ -203,7 +206,7 @@ while [ "$idx" -lt "$lookup_count" ]; do
     continue
   fi
 
-  blocker_count=$(jq -r '(.blockers // []) | length' "$handoff_path" 2>/dev/null)
+  blocker_count=$(jq -r '(.blockers // []) | length' "$handoff_path" 2>/dev/null) || true
   case "$blocker_count" in ''|*[!0-9]*) blocker_count=0 ;; esac
 
   # Dual-form acceptance (Option B): a continuation pointer is present when EITHER the nested
@@ -219,7 +222,7 @@ while [ "$idx" -lt "$lookup_count" ]; do
     ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
     (.continuation_path // null) as $flat |
     if ($nested != null) or ($flat != null) then "true" else "false" end
-  ' "$handoff_path" 2>/dev/null)
+  ' "$handoff_path" 2>/dev/null) || true
   [ "$continuation_ok" = "true" ] || continuation_ok="false"
 
   mtime=$(stat -c %Y "$handoff_path" 2>/dev/null || stat -f %m "$handoff_path" 2>/dev/null || echo "")
@@ -234,7 +237,7 @@ while [ "$idx" -lt "$lookup_count" ]; do
     '. + {($t|tostring): {state: "present", blocker_count: $bc, continuation: $cont, age_min: $age}}')
 done
 
-verdicts=$(jq -n -c \
+if verdicts=$(jq -n -c \
   --arg engine "$engine" \
   --argjson candidates "$candidates_json" \
   --argjson handoff_info "$handoff_info_json" \
@@ -298,8 +301,11 @@ verdicts=$(jq -n -c \
      reason:("task #" + ($c|tostring) + " status \"" + $status + "\" is transitional/unknown; skip")}
   end
   end
-  ' 2>&1)
-verdicts_exit=$?
+  ' 2>&1); then
+  verdicts_exit=0
+else
+  verdicts_exit=$?
+fi
 
 if [ "$verdicts_exit" -ne 0 ]; then
   echo "ERROR: orchestrate-triage-classify.sh: failed to evaluate triage against $STATE_FILE (jq exit $verdicts_exit): $verdicts" >&2

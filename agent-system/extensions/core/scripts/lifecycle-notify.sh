@@ -25,7 +25,7 @@
 #       fires TTS (via tts-notify.sh integration)
 #     - orchestrate paused/blocked: orchestrate-active cleared by Stage 8 partial -> Stop hook fires TTS
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOKS_DIR="$SCRIPT_DIR/../hooks"

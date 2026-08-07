@@ -44,7 +44,7 @@
 #       the caller for "nothing to do")
 #   2 - usage error
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -82,7 +82,7 @@ extract_session_id() {
   sid="${sid#.return-meta-multi-}"
   sid="${sid%.json}"
   if [ "$sid" = "$base" ] || [ -z "$sid" ]; then
-    sid=$(jq -r '.session_id // "unknown"' "$f" 2>/dev/null)
+    sid=$(jq -r '.session_id // "unknown"' "$f" 2>/dev/null) || true
     [ -n "$sid" ] || sid="unknown"
   fi
   echo "$sid"
@@ -103,7 +103,7 @@ for f in "${candidates[@]}"; do
   total_count=$(( total_count + 1 ))
 
   session_id=$(extract_session_id "$f")
-  file_mtime=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null)
+  file_mtime=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null) || true
   if [ -z "$file_mtime" ]; then
     echo "SKIP: $f (could not stat mtime)" >&2
     continue
@@ -116,7 +116,7 @@ for f in "${candidates[@]}"; do
     if [ "$dry_run" = true ]; then
       echo "would reap: $rel_path session=$session_id age_min=$age_min"
     else
-      rm -f "$f" 2>/dev/null
+      rm -f "$f" 2>/dev/null || true
       echo "reaped: $rel_path session=$session_id age_min=$age_min"
     fi
   fi

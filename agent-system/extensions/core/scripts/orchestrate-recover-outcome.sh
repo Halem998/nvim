@@ -102,7 +102,7 @@
 #   2 — usage error (wrong argument count) or jq unavailable. Nothing is printed on stdout;
 #       callers MUST treat exit 2 identically to exit 1 (fail closed).
 
-set -uo pipefail
+set -euo pipefail
 
 task_dir="${1:-}"
 window_start_ts="${2:-}"
@@ -174,12 +174,21 @@ fi
 status=$(echo "$meta_json" | jq -r '.status // "unknown"')
 phases_completed=$(echo "$meta_json" | jq -r '.metadata.phases_completed // .partial_progress.phases_completed // 0')
 phases_total=$(echo "$meta_json" | jq -r '.metadata.phases_total // .partial_progress.phases_total // 0')
-artifact_path=$(echo "$meta_json" | jq -r '.artifacts[0].path // ""')
-artifact_path_rc=$?
-artifact_type=$(echo "$meta_json" | jq -r '.artifacts[0].type // ""')
-artifact_type_rc=$?
-artifact_summary=$(echo "$meta_json" | jq -r '.artifacts[0].summary // ""')
-artifact_summary_rc=$?
+if artifact_path=$(echo "$meta_json" | jq -r '.artifacts[0].path // ""'); then
+  artifact_path_rc=0
+else
+  artifact_path_rc=$?
+fi
+if artifact_type=$(echo "$meta_json" | jq -r '.artifacts[0].type // ""'); then
+  artifact_type_rc=0
+else
+  artifact_type_rc=$?
+fi
+if artifact_summary=$(echo "$meta_json" | jq -r '.artifacts[0].summary // ""'); then
+  artifact_summary_rc=0
+else
+  artifact_summary_rc=$?
+fi
 completion_summary=$(echo "$meta_json" | jq -r '.completion_data.completion_summary // ""')
 roadmap_items=$(echo "$meta_json" | jq -c '.completion_data.roadmap_items // []')
 
