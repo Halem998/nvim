@@ -466,7 +466,7 @@ is not complete while any file in the non-`-e` populations is unclassified.
 
 ---
 
-### Phase 6: Strict-mode migration batch A (highest-risk state mutators) [PARTIAL]
+### Phase 6: Strict-mode migration batch A (highest-risk state mutators) [IN PROGRESS]
 
 **Goal**: The five confirmed highest-risk Class A scripts carry `set -euo pipefail`, each audited
 individually and each landing green.
@@ -476,13 +476,16 @@ individually and each landing green.
   *(completed for state-write.sh: confirmed Class A, `set -uo pipefail` prior to this phase)*
 - [ ] Migrate one file at a time, in this order, running `run-all.sh` after each:
   `state-write.sh`, `task-lock.sh`, `git-commit-scoped.sh`, `orchestrate-batch-admit.sh`,
-  `orchestrate-predispatch-review.sh`. *(partial: state-write.sh done and committed. task-lock.sh,
-  git-commit-scoped.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh remain
-  `set -uo pipefail`, not yet migrated — deliberately deferred, not skipped: task-lock.sh alone is
-  1644 lines with dozens of `VAR=$(jq/ps/stat ...)` sites feeding a concurrency-critical mutex, and
-  a rushed audit risks a silent regression in the one script every task-management operation in
-  this repo depends on. Left for a follow-up `/implement` dispatch with a fresh, focused context
-  budget rather than forced through here.)*
+  `orchestrate-predispatch-review.sh`. *(partial: state-write.sh and task-lock.sh done and
+  committed (2 of 5). task-lock.sh's full audit found ~68 unguarded hazard sites -- bare
+  `VAR=$(jq/ps/stat/cat/date/find ...)` assignments, four bare `mkdir -p`/`cat >`/`rm -f`/`rm -rf`
+  statements, and a distinct `[ cond ] && action` bare-statement class (e.g.
+  `[ -n "$x" ] && echo ... >&2`, `[ cond ] && continue`) that fails under `-e` whenever the
+  condition is false, not just when the guarded command fails -- each guarded with `|| true` or,
+  for `read_holder_field`/`session_registry_dir`, fixed once at the shared-helper source so every
+  call site inherited the fix. git-commit-scoped.sh, orchestrate-batch-admit.sh,
+  orchestrate-predispatch-review.sh remain `set -uo pipefail`, not yet migrated -- left for a
+  follow-up `/implement` dispatch.)*
 - [x] For each, before flipping: walk every command whose nonzero exit is currently tolerated and
   confirm it is either inside an `if`/`&&`/`||`/`while` condition (already `-e`-exempt) or
   explicitly guarded with `|| true` / `|| handler`. Add the explicit guard where it is not.
@@ -528,7 +531,7 @@ has already been migrated or was classified Class B, drop it from the batch and 
 
 ---
 
-### Phase 7: Strict-mode migration batch B (remaining Class A) [NOT STARTED]
+### Phase 7: Strict-mode migration batch B (remaining Class A) [IN PROGRESS]
 
 **Goal**: Every remaining Class A file from Phase 5's classification carries `set -euo pipefail`,
 migrated in small batches with suites green after each.

@@ -165,7 +165,7 @@
 # checks holder.json's session_id BEFORE ever treating an existing lock as a refusal
 # — matching session_id always succeeds and just refreshes the heartbeat.
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
@@ -190,7 +190,7 @@ STATE_FILE="$PROJECT_ROOT/specs/state.json"
 # `bash scripts/deploy-headless.sh` so the file reaches .claude/scripts/lib/.
 FILE_SCOPE_OVERLAP_LIB_LOADED="false"
 ensure_file_scope_overlap_lib() {
-  [ "$FILE_SCOPE_OVERLAP_LIB_LOADED" = "true" ] && return 0
+  [ "$FILE_SCOPE_OVERLAP_LIB_LOADED" = "true" ] && return 0 || true
   if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
     echo "ERROR: task-lock.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
     echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
@@ -255,7 +255,7 @@ resolve_task_dir() {
   if [ -f "$STATE_FILE" ] && command -v jq >/dev/null 2>&1; then
     project_name=$(jq -r --argjson num "$task_number" \
       '.active_projects[]? | select(.project_number == $num) | .project_name // empty' \
-      "$STATE_FILE" 2>/dev/null)
+      "$STATE_FILE" 2>/dev/null) || true
     if [ -n "$project_name" ]; then
       dir="$PROJECT_ROOT/specs/${padded}_${project_name}"
       if [ -d "$dir" ]; then
@@ -266,14 +266,14 @@ resolve_task_dir() {
     fi
   fi
 
-  dir=$(find "$PROJECT_ROOT/specs" -maxdepth 1 -type d -name "${padded}_*" 2>/dev/null | head -1)
+  dir=$(find "$PROJECT_ROOT/specs" -maxdepth 1 -type d -name "${padded}_*" 2>/dev/null | head -1) || true
   if [ -n "$dir" ]; then
     echo "$dir"
     return 0
   fi
 
   if [ "$create_mode" = "create" ] && [ -n "$state_dir" ]; then
-    mkdir -p "$state_dir/reports" "$state_dir/plans" "$state_dir/summaries" 2>/dev/null
+    mkdir -p "$state_dir/reports" "$state_dir/plans" "$state_dir/summaries" 2>/dev/null || true
     if [ -d "$state_dir" ]; then
       echo "$state_dir"
       return 0
@@ -306,7 +306,7 @@ write_holder() {
     --arg heartbeat_at "$heartbeat_at" \
     --arg command "$command" \
     '{session_id: $session_id, task_number: $task_number, operation: $operation, acquired_at: $acquired_at, heartbeat_at: $heartbeat_at, command: $command}' \
-    > "$tmp_file"
+    > "$tmp_file" || true
 
   if [ ! -s "$tmp_file" ]; then
     echo "ERROR: failed to write holder.json (jq produced empty output)" >&2
@@ -318,15 +318,20 @@ write_holder() {
 }
 
 # --- read_holder_field: read a single field from holder.json ---
+# Guarded to always return 0: under set -e, every bare `VAR=$(read_holder_field ...)` call
+# site (there are many, across cmd_acquire/cmd_heartbeat/cmd_release/cmd_check/cmd_reap) would
+# otherwise abort the script on a missing/unreadable/corrupt holder.json -- a condition every
+# caller already treats as "empty field, degrade gracefully" via `${var:-...}` or `[ -n "$var" ]`
+# checks, never as fatal.
 read_holder_field() {
   local lock_dir="$1" field="$2"
-  jq -r --arg f "$field" '.[$f] // empty' "$lock_dir/holder.json" 2>/dev/null
+  jq -r --arg f "$field" '.[$f] // empty' "$lock_dir/holder.json" 2>/dev/null || echo ""
 }
 
 # --- age_minutes: minutes elapsed since an ISO8601 timestamp ---
 age_minutes() {
   local ts="$1" then_epoch now
-  then_epoch=$(date -u -d "$ts" +%s 2>/dev/null || date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ts" +%s 2>/dev/null)
+  then_epoch=$(date -u -d "$ts" +%s 2>/dev/null || date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ts" +%s 2>/dev/null) || true
   if [ -z "$then_epoch" ]; then
     echo "999999"
     return 0
@@ -344,7 +349,7 @@ get_file_scope() {
   if [ -f "$STATE_FILE" ] && command -v jq >/dev/null 2>&1; then
     result=$(jq -c --argjson num "$task_number" \
       '(.active_projects[]? | select(.project_number == $num) | .file_scope) // empty' \
-      "$STATE_FILE" 2>/dev/null)
+      "$STATE_FILE" 2>/dev/null) || true
     if [ -n "$result" ] && [ "$result" != "null" ]; then
       echo "$result"
       return 0
@@ -368,7 +373,7 @@ find_held_locks() {
   local exclude_dir="$1" dir
   find "$PROJECT_ROOT/specs" -mindepth 2 -maxdepth 2 -type d -name ".lock" 2>/dev/null |
     while IFS= read -r dir; do
-      [ "$dir" = "$exclude_dir" ] && continue
+      [ "$dir" = "$exclude_dir" ] && continue || true
       [ -f "$dir/holder.json" ] || continue
       jq -e . "$dir/holder.json" >/dev/null 2>&1 || continue
       echo "$dir"
@@ -391,7 +396,7 @@ session_registry_dir() {
   local create="${1:-false}"
   local dir="$PROJECT_ROOT/specs/.sessions"
   if [ "$create" = "true" ]; then
-    mkdir -p "$dir" 2>/dev/null
+    mkdir -p "$dir" 2>/dev/null || true
   fi
   echo "$dir"
 }
@@ -424,19 +429,19 @@ resolve_session_pid() {
 
   local pid="$$" hop comm ppid
   for hop in 1 2 3 4 5 6 7 8 9 10; do
-    comm=$(ps -o comm= -p "$pid" 2>/dev/null)
+    comm=$(ps -o comm= -p "$pid" 2>/dev/null) || true
     if [ -n "$comm" ] && [[ "$comm" == *claude* ]]; then
       echo "$pid ancestor-claude"
       return 0
     fi
-    ppid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+    ppid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ') || true
     if [ -z "$ppid" ] || [ "$ppid" = "1" ]; then
       break
     fi
     pid="$ppid"
   done
 
-  ppid=$(ps -o ppid= -p "$$" 2>/dev/null | tr -d ' ')
+  ppid=$(ps -o ppid= -p "$$" 2>/dev/null | tr -d ' ') || true
   if [ -n "$ppid" ]; then
     echo "$ppid ppid"
     return 0
@@ -464,7 +469,7 @@ write_session_entry() {
     --arg started_at "$started_at" \
     --arg heartbeat_at "$heartbeat_at" \
     '{session_id: $session_id, pid: $pid, pid_source: $pid_source, command: $command, task_numbers: $task_numbers, file_scope: $file_scope, started_at: $started_at, heartbeat_at: $heartbeat_at}' \
-    > "$tmp_file"
+    > "$tmp_file" || true
 
   if [ ! -s "$tmp_file" ]; then
     echo "ERROR: failed to write session registry entry $target (jq produced empty output)" >&2
@@ -510,9 +515,9 @@ acquire_named_mutex() {
       return 0
     fi
 
-    claimed_at=$(cat "$mutex_dir/claimed_at" 2>/dev/null)
+    claimed_at=$(cat "$mutex_dir/claimed_at" 2>/dev/null) || true
     now=$(now_epoch)
-    holder_stale_sec=$(cat "$mutex_dir/stale_sec" 2>/dev/null)
+    holder_stale_sec=$(cat "$mutex_dir/stale_sec" 2>/dev/null) || true
     if ! [[ "$holder_stale_sec" =~ ^[0-9]+$ ]]; then
       holder_stale_sec="$default_stale_sec"
     fi
@@ -629,11 +634,11 @@ cmd_acquire() {
       # Skip: unreadable holder, defensive self-match, or same-session bypass (report
       # Decisions — a session's own concurrent work never blocks itself).
       [ -n "$other_task" ] || continue
-      [ "$other_task" = "$task_number" ] && continue
-      [ "$other_session" = "$session_id" ] && continue
+      [ "$other_task" = "$task_number" ] && continue || true
+      [ "$other_session" = "$session_id" ] && continue || true
 
       other_scope=$(get_file_scope "$other_task")
-      overlap_path=$(scopes_overlap "$own_scope" "$other_scope")
+      overlap_path=$(scopes_overlap "$own_scope" "$other_scope") || true
       if [ -n "$overlap_path" ]; then
         other_heartbeat=$(read_holder_field "$held_dir" "heartbeat_at")
         other_age=$(age_minutes "$other_heartbeat")
@@ -660,20 +665,20 @@ cmd_acquire() {
     # Read-only: cmd_session_list and STATE_FILE are only ever read here, the session registry is
     # never mutated -- exactly like the held-lock pass never mutates a foreign lock.
     local sessions_json all_json sess_hit
-    sessions_json=$(cmd_session_list | jq -s -c '.' 2>/dev/null)
-    [ -z "$sessions_json" ] && sessions_json='[]'
-    all_json=$(jq -c '.active_projects // []' "$STATE_FILE" 2>/dev/null)
-    [ -z "$all_json" ] && all_json='[]'
+    sessions_json=$(cmd_session_list | jq -s -c '.' 2>/dev/null) || true
+    [ -z "$sessions_json" ] && sessions_json='[]' || true
+    all_json=$(jq -c '.active_projects // []' "$STATE_FILE" 2>/dev/null) || true
+    [ -z "$all_json" ] && all_json='[]' || true
     sess_hit=$(jq -n -c --argjson cscope "$own_scope" --argjson cnum "$task_number" \
       --arg own_sid "$session_id" --argjson all "$all_json" --argjson sessions "$sessions_json" \
       "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
-session_contention($cscope; $cnum; $own_sid; $all; $sessions)' 2>/dev/null)
+session_contention($cscope; $cnum; $own_sid; $all; $sessions)' 2>/dev/null) || true
     if [ -n "$sess_hit" ] && [ "$sess_hit" != "null" ]; then
       local sess_session_id sess_covered_num sess_overlap_path sess_liveness
-      sess_session_id=$(jq -r '.session_id' <<<"$sess_hit" 2>/dev/null)
-      sess_covered_num=$(jq -r '.covered_task_number' <<<"$sess_hit" 2>/dev/null)
-      sess_overlap_path=$(jq -r '.overlapping_path' <<<"$sess_hit" 2>/dev/null)
-      sess_liveness=$(jq -r '.liveness_reason' <<<"$sess_hit" 2>/dev/null)
+      sess_session_id=$(jq -r '.session_id' <<<"$sess_hit" 2>/dev/null) || true
+      sess_covered_num=$(jq -r '.covered_task_number' <<<"$sess_hit" 2>/dev/null) || true
+      sess_overlap_path=$(jq -r '.overlapping_path' <<<"$sess_hit" 2>/dev/null) || true
+      sess_liveness=$(jq -r '.liveness_reason' <<<"$sess_hit" 2>/dev/null) || true
       echo "ABORT: Task $task_number's file_scope overlaps registered session $sess_session_id's file_scope at \"$sess_overlap_path\" (session covers task #$sess_covered_num, liveness: $sess_liveness). The session registry is only ever read here, never mutated." >&2
       echo "  Wait for that session to finish or release, or coordinate with it before retrying." >&2
       return 1
@@ -772,17 +777,20 @@ cmd_acquire_retry() {
   local captured_stderr rc
 
   while true; do
-    captured_stderr=$(cmd_acquire "$@" 2>&1 1>/dev/null)
-    rc=$?
+    if captured_stderr=$(cmd_acquire "$@" 2>&1 1>/dev/null); then
+      rc=0
+    else
+      rc=$?
+    fi
 
     if [ "$rc" -eq 0 ]; then
-      [ -n "$captured_stderr" ] && echo "$captured_stderr" >&2
+      [ -n "$captured_stderr" ] && echo "$captured_stderr" >&2 || true
       return 0
     fi
 
     if [ "$rc" -eq 2 ]; then
       # Error, not contention: never retried, surfaced immediately.
-      [ -n "$captured_stderr" ] && echo "$captured_stderr" >&2
+      [ -n "$captured_stderr" ] && echo "$captured_stderr" >&2 || true
       return 2
     fi
 
@@ -790,7 +798,7 @@ cmd_acquire_retry() {
     if [ "$waited_ms" -ge "$TASK_LOCK_RETRY_BUDGET_MS" ]; then
       # Budget exhausted: emit the LAST attempt's captured ABORT text verbatim (Tier-3 handoff)
       # and refuse, exactly like plain `acquire` would for this same final-attempt fixture.
-      [ -n "$captured_stderr" ] && echo "$captured_stderr" >&2
+      [ -n "$captured_stderr" ] && echo "$captured_stderr" >&2 || true
       return 1
     fi
 
@@ -962,7 +970,7 @@ cmd_reap() {
       session_id="unknown"
       operation="unknown"
       local dir_mtime
-      dir_mtime=$(stat -c %Y "$lock_dir" 2>/dev/null || stat -f %m "$lock_dir" 2>/dev/null)
+      dir_mtime=$(stat -c %Y "$lock_dir" 2>/dev/null || stat -f %m "$lock_dir" 2>/dev/null) || true
       if [ -n "$dir_mtime" ]; then
         age=$(( ( $(now_epoch) - dir_mtime ) / 60 ))
       else
@@ -976,7 +984,7 @@ cmd_reap() {
       if [ "$dry_run" = true ]; then
         echo "would reap: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age${reason_suffix}"
       else
-        rm -rf "$lock_dir" 2>/dev/null
+        rm -rf "$lock_dir" 2>/dev/null || true
         echo "reaped: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age${reason_suffix}"
       fi
     elif [ -n "$reason_suffix" ]; then
@@ -1013,8 +1021,8 @@ cmd_scope_acquire() {
 
   if ! acquire_scope_mutex "$stale_sec"; then
     local holder_session holder_pid
-    holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null)
-    holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null)
+    holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null) || true
+    holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null) || true
     echo "ERROR: timed out waiting for specs/.scope-lock mutex (session=$session_id); current holder: session=${holder_session:-unknown} pid=${holder_pid:-unknown}." >&2
     return 2
   fi
@@ -1030,7 +1038,7 @@ cmd_scope_acquire() {
     --argjson claimed_epoch "$claimed_epoch" \
     --arg token "$token" \
     '{session_id: $session_id, pid: $pid, claimed_epoch: $claimed_epoch, token: $token}' \
-    > "$mutex_dir/owner" 2>/dev/null
+    > "$mutex_dir/owner" 2>/dev/null || true
 
   echo "$token"
   return 0
@@ -1056,7 +1064,7 @@ cmd_scope_release() {
   fi
 
   local owner_token
-  owner_token=$(jq -r '.token // empty' "$mutex_dir/owner" 2>/dev/null)
+  owner_token=$(jq -r '.token // empty' "$mutex_dir/owner" 2>/dev/null) || true
 
   if [ "$owner_token" != "$token" ]; then
     echo "WARN: scope-release token mismatch (given=$token current-holder=${owner_token:-unknown}); NOT releasing. This means the critical section overran its declared staleness window and a concurrent writer may have reclaimed the mutex -- investigate rather than ignore." >&2
@@ -1080,8 +1088,8 @@ cmd_commit_acquire() {
 
   if ! acquire_commit_mutex "$stale_sec"; then
     local holder_session holder_pid
-    holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null)
-    holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null)
+    holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null) || true
+    holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null) || true
     echo "ERROR: timed out waiting for specs/.commit-lock mutex (session=$session_id); current holder: session=${holder_session:-unknown} pid=${holder_pid:-unknown}." >&2
     return 2
   fi
@@ -1097,7 +1105,7 @@ cmd_commit_acquire() {
     --argjson claimed_epoch "$claimed_epoch" \
     --arg token "$token" \
     '{session_id: $session_id, pid: $pid, claimed_epoch: $claimed_epoch, token: $token}' \
-    > "$mutex_dir/owner" 2>/dev/null
+    > "$mutex_dir/owner" 2>/dev/null || true
 
   echo "$token"
   return 0
@@ -1119,7 +1127,7 @@ cmd_commit_release() {
   fi
 
   local owner_token
-  owner_token=$(jq -r '.token // empty' "$mutex_dir/owner" 2>/dev/null)
+  owner_token=$(jq -r '.token // empty' "$mutex_dir/owner" 2>/dev/null) || true
 
   if [ "$owner_token" != "$token" ]; then
     echo "WARN: commit-release token mismatch (given=$token current-holder=${owner_token:-unknown}); NOT releasing. This means the critical section overran its declared staleness window and a concurrent writer may have reclaimed the mutex -- investigate rather than ignore." >&2
@@ -1152,7 +1160,7 @@ cmd_init_marker() {
     if mkdir "$init_dir" 2>/dev/null; then
       # Won the exclusivity claim: write stdin payload via tmp-file + mv
       # (atomic replace), then release the claim directory.
-      cat > "$tmp_file"
+      cat > "$tmp_file" || true
       if [ ! -s "$tmp_file" ]; then
         echo "ERROR: init-marker failed to write $file_path (stdin produced empty output)" >&2
         rm -f "$tmp_file"
@@ -1223,7 +1231,7 @@ cmd_session_register() {
   sessions_dir=$(session_registry_dir "true")
 
   local task_numbers_json
-  task_numbers_json=$(echo "$task_numbers_csv" | jq -R -c 'split(",") | map(select(length > 0) | tonumber)' 2>/dev/null)
+  task_numbers_json=$(echo "$task_numbers_csv" | jq -R -c 'split(",") | map(select(length > 0) | tonumber)' 2>/dev/null) || true
   if [ -z "$task_numbers_json" ]; then
     echo "ERROR: session-register could not parse task_numbers_csv \"$task_numbers_csv\" as a CSV of integers" >&2
     return 2
@@ -1233,9 +1241,9 @@ cmd_session_register() {
   scopes_tmp=$(mktemp) || { echo "ERROR: session-register could not create a temp file" >&2; return 2; }
   echo "$task_numbers_json" | jq -c '.[]' 2>/dev/null | while IFS= read -r tn; do
     get_file_scope "$tn"
-  done > "$scopes_tmp"
+  done > "$scopes_tmp" || true
   local file_scope_json
-  file_scope_json=$(jq -s -c 'add | unique' "$scopes_tmp" 2>/dev/null)
+  file_scope_json=$(jq -s -c 'add | unique' "$scopes_tmp" 2>/dev/null) || true
   rm -f "$scopes_tmp"
   [ -n "$file_scope_json" ] && [ "$file_scope_json" != "null" ] || file_scope_json="[]"
 
@@ -1246,8 +1254,8 @@ cmd_session_register() {
   local existing="$sessions_dir/${session_id}.json"
   if [ -f "$existing" ] && jq -e . "$existing" >/dev/null 2>&1; then
     local prior_started
-    prior_started=$(jq -r '.started_at // empty' "$existing" 2>/dev/null)
-    [ -n "$prior_started" ] && started_at="$prior_started"
+    prior_started=$(jq -r '.started_at // empty' "$existing" 2>/dev/null) || true
+    [ -n "$prior_started" ] && started_at="$prior_started" || true
   fi
 
   write_session_entry "$sessions_dir" "$session_id" "$pid" "$pid_source" "$command" "$task_numbers_json" "$file_scope_json" "$started_at" "$heartbeat_at" || return 2
@@ -1271,12 +1279,12 @@ cmd_session_heartbeat() {
   fi
 
   local pid pid_source command task_numbers_json file_scope_json started_at
-  pid=$(jq -r '.pid // empty' "$target" 2>/dev/null)
-  pid_source=$(jq -r '.pid_source // empty' "$target" 2>/dev/null)
-  command=$(jq -r '.command // empty' "$target" 2>/dev/null)
-  task_numbers_json=$(jq -c '.task_numbers // []' "$target" 2>/dev/null)
-  file_scope_json=$(jq -c '.file_scope // []' "$target" 2>/dev/null)
-  started_at=$(jq -r '.started_at // empty' "$target" 2>/dev/null)
+  pid=$(jq -r '.pid // empty' "$target" 2>/dev/null) || true
+  pid_source=$(jq -r '.pid_source // empty' "$target" 2>/dev/null) || true
+  command=$(jq -r '.command // empty' "$target" 2>/dev/null) || true
+  task_numbers_json=$(jq -c '.task_numbers // []' "$target" 2>/dev/null) || true
+  file_scope_json=$(jq -c '.file_scope // []' "$target" 2>/dev/null) || true
+  started_at=$(jq -r '.started_at // empty' "$target" 2>/dev/null) || true
   [ -n "$pid" ] || pid=0
 
   write_session_entry "$sessions_dir" "$session_id" "$pid" "$pid_source" "$command" "$task_numbers_json" "$file_scope_json" "$started_at" "$(iso_now)" || return 2
@@ -1324,7 +1332,7 @@ session_liveness() {
 
   if ! jq -e . "$f" >/dev/null 2>&1; then
     local file_mtime
-    file_mtime=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null)
+    file_mtime=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null) || true
     if [ -n "$file_mtime" ]; then
       age=$(( ( $(now_epoch) - file_mtime ) / 60 ))
     else
@@ -1334,7 +1342,7 @@ session_liveness() {
     return 0
   fi
 
-  pid=$(jq -r '.pid // empty' "$f" 2>/dev/null)
+  pid=$(jq -r '.pid // empty' "$f" 2>/dev/null) || true
   age=$(age_minutes "$(jq -r '.heartbeat_at // empty' "$f" 2>/dev/null)")
 
   if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
@@ -1404,9 +1412,9 @@ cmd_session_reap() {
         task_numbers_csv="unknown"
         reason_suffix=" (missing/unparseable entry; age is the file's own mtime)"
       else
-        session_id=$(jq -r '.session_id // empty' "$f" 2>/dev/null)
-        command=$(jq -r '.command // empty' "$f" 2>/dev/null)
-        task_numbers_csv=$(jq -r '.task_numbers // [] | join(",")' "$f" 2>/dev/null)
+        session_id=$(jq -r '.session_id // empty' "$f" 2>/dev/null) || true
+        command=$(jq -r '.command // empty' "$f" 2>/dev/null) || true
+        task_numbers_csv=$(jq -r '.task_numbers // [] | join(",")' "$f" 2>/dev/null) || true
       fi
 
       local reason=""
@@ -1432,7 +1440,7 @@ cmd_session_reap() {
         if [ "$dry_run" = true ]; then
           echo "would reap: specs/.sessions/$(basename "$f") session=$session_id command=$command tasks=$task_numbers_csv age_min=$age reason=$reason${reason_suffix}"
         else
-          rm -f "$f" 2>/dev/null
+          rm -f "$f" 2>/dev/null || true
           echo "reaped: specs/.sessions/$(basename "$f") session=$session_id command=$command tasks=$task_numbers_csv age_min=$age reason=$reason${reason_suffix}"
         fi
       elif [ -n "$reason_suffix" ]; then
