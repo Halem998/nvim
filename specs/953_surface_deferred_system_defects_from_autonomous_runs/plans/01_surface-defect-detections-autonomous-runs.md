@@ -1,7 +1,7 @@
 # Implementation Plan: Task #953
 
 - **Task**: 953 - Surface deferred system-defect detections from autonomous runs
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: prerequisite recorder task (`system-defect-record.sh` + wired detection sites) — already merged
 - **Research Inputs**: specs/953_surface_deferred_system_defects_from_autonomous_runs/reports/01_surface-deferred-system-defects.md

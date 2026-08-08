@@ -11,9 +11,9 @@ next_project_number: 998
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 953,984,991,997 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
-| 2 | 983,992 | 953,991 | agent-system |
-| 3 | 985,993,995 | 983,984,992 | agent-system |
+| 1 | 983,984,991,997 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
+| 2 | 992,995 | 983,984,991 | agent-system |
+| 3 | 985,993 | 984,992 | agent-system |
 | 4 | 986 | 983,985 | agent-system |
 | 5 | 996 | 986,993,995 | agent-system |
 
@@ -21,12 +21,11 @@ next_project_number: 998
 
 ### Agent System
 
-953 [PLANNING] — Resolve the autonomy conflict: make system-defect detections visi
-  └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-    └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
-      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+  └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
+  └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
+    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
   └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
@@ -1412,12 +1411,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 953. Surface deferred system-defect detections from autonomous runs
-- **Status**: [PLANNING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 952
 - **Research**: [953_surface_deferred_system_defects_from_autonomous_runs/reports/01_surface-deferred-system-defects.md]
 - **Plan**: [953_surface_deferred_system_defects_from_autonomous_runs/plans/01_surface-defect-detections-autonomous-runs.md]
+- **Summary**: [953_surface_deferred_system_defects_from_autonomous_runs/summaries/01_surface-defect-detections-autonomous-runs-summary.md]
 
 **Description**: Resolve the autonomy conflict: make system-defect detections visible when they occur during a run in which no human can be prompted. This is a genuine blocker for the motivating case, not a detail.
 

@@ -2597,7 +2597,7 @@
     {
       "project_number": 953,
       "project_name": "surface_deferred_system_defects_from_autonomous_runs",
-      "status": "planning",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Surface deferred system-defect detections from autonomous runs",
@@ -2611,8 +2611,8 @@
         952
       ],
       "created": "2026-07-28T00:00:00Z",
-      "last_updated": "2026-08-08T18:08:38Z",
-      "session_id": "sess_1786211829_b2a0d7",
+      "last_updated": "2026-08-08T19:32:33Z",
+      "session_id": "sess_1786215934_432698",
       "artifacts": [
         {
           "path": "specs/953_surface_deferred_system_defects_from_autonomous_runs/reports/01_surface-deferred-system-defects.md",
@@ -2623,8 +2623,14 @@
           "path": "specs/953_surface_deferred_system_defects_from_autonomous_runs/plans/01_surface-defect-detections-autonomous-runs.md",
           "type": "plan",
           "summary": "Eight-phase plan adding an append-only detected_defects observation log to both /orchestrate engines."
+        },
+        {
+          "path": "specs/953_surface_deferred_system_defects_from_autonomous_runs/summaries/01_surface-defect-detections-autonomous-runs-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
         }
-      ]
+      ],
+      "completion_summary": "Added an append-only detected_defects observation log to both /orchestrate engines: a canonical Stage MT-1 contract declaration, loop-guard and mt_state_file accumulators, all eleven detection sites wired with immediate [system-defect:auto] notices, postflight metadata propagation on all four output paths (including a net-new hard-mode Stage 8 metadata merge that previously did not exist), and enumerated System Defects Detected rendering for both batch and single-task output. Base/hard parity audited with recorded numbers; no task created, no interactive step added, no AskUserQuestion call sites introduced."
     },
     {
       "project_number": 954,
