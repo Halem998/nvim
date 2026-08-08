@@ -1,17 +1,53 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 953,
   "session_id": "sess_1786215934_432698",
   "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
-  "artifacts": [],
-  "modified_files": [],
-  "memory_candidates": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/953_surface_deferred_system_defects_from_autonomous_runs/summaries/01_surface-defect-detections-autonomous-runs-summary.md",
+      "summary": "Implementation summary for the append-only detected_defects observation log added to both /orchestrate engines, including the recorded Phase 8 base/hard parity audit numbers."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an append-only detected_defects observation log to both /orchestrate engines: a canonical Stage MT-1 contract declaration, loop-guard and mt_state_file accumulators, all eleven detection sites wired with immediate [system-defect:auto] notices, postflight metadata propagation on all four output paths (including a net-new hard-mode Stage 8 metadata merge that previously did not exist), and enumerated System Defects Detected rendering for both batch and single-task output. Base/hard parity audited with recorded numbers; no task created, no interactive step added, no AskUserQuestion call sites introduced."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding a field to both /orchestrate engines, the two files are NOT a wrapper pair: skill-orchestrate-hard has no multi-task (MT-1..MT-5) implementation and delegates entirely to base's MT stages, so MT wiring is done once in skill-orchestrate/SKILL.md and automatically covers /orchestrate --hard batches. The single-task stages (2, 5, 8) ARE separately reimplemented and must be mirrored explicitly, but a mirrored edit is rarely a verbatim copy: base's skill_gate_completion_claim call had no else branch while hard's already had one, and hard's Stage 8 had NO .return-meta.json metadata merge at all where base had two. The cheap guard is a dedicated final phase that counts every new token per file and asserts the two single-task numbers match; it caught nothing here only because the plan pre-split base and hard into separate phases so neither could be silently skipped.",
+      "category": "PATTERN",
+      "source_artifact": "specs/953_surface_deferred_system_defects_from_autonomous_runs/summaries/01_surface-defect-detections-autonomous-runs-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "hard-mode", "base-hard-parity", "multi-task-stages", "parity-audit"]
+    },
+    {
+      "content": "In this repo the `grep` command is shadowed by a shell function that proxies to the claude binary and fails with 'claude native binary not installed' on many invocations (notably multi-file `grep -c`). Any agent doing verification greps in Bash here must use `command grep` explicitly; a bare `grep` can return empty output that reads as a passing zero-count check when it actually errored. This is a silent-false-negative hazard for exactly the count-based audit checks that verification phases rely on.",
+      "category": "CONFIG",
+      "source_artifact": "specs/953_surface_deferred_system_defects_from_autonomous_runs/summaries/01_surface-defect-detections-autonomous-runs-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["grep", "shell-function-shadowing", "verification", "bash", "false-negative"]
+    },
+    {
+      "content": "Editing agent-system/extensions/core/** makes verify-deploy.sh gate 5 (manifest-driven content-hash equality) fail with one 'Content differs from source' finding per edited file. This is the expected deploy-pending state, not a defect in the change. The correct remedy is `bash .claude/scripts/deploy-headless.sh` followed by re-running verify-deploy.sh; .claude/ is gitignored so the deploy produces no git diff. Never hand-author .claude/** to make the gate pass -- that violates the source-store/deploy boundary and is wiped by the next regeneration anyway.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/953_surface_deferred_system_defects_from_autonomous_runs/summaries/01_surface-defect-detections-autonomous-runs-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy", "deploy-headless", "source-store-boundary", "gate5", "content-hash"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786215934_432698",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "phases_completed": 0,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 8,
     "phases_total": 8
   }
 }

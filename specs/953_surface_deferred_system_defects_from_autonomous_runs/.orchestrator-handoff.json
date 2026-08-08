@@ -1,15 +1,15 @@
 {
   "task_number": 953,
-  "session_id": "sess_1786211829_b2a0d7",
-  "dispatch_status": "planned",
-  "summary": "Created an 8-phase implementation plan surfacing system-defect detections during autonomous /orchestrate runs via an append-only detected_defects observation log mirroring defer_ledger, with per-detection [system-defect:auto] notices and an enumerated postflight summary section. Scope held to the three declared source-store files.",
+  "session_id": "sess_1786215934_432698",
+  "status": "implemented",
+  "summary": "Completed all 8 phases. Added an append-only detected_defects observation log to both /orchestrate engines: a canonical Stage MT-1 contract declaration (entry shape, unconditional-append rule, [system-defect:auto] notice format, no-AskUserQuestion constraint, never-a-gate and never-merged MUST-NOTs); loop-guard and mt_state_file accumulators wired at fresh-init and every read path in both files; all eleven detection sites appending and announcing (5 base single-task, 5 hard single-task, 3 MT), with the shared scripts/skill-base.sh site covered from its callers via a Case-3/3 discriminant so that script stays unmodified; postflight metadata propagation on all four output paths, including a net-new hard-mode Stage 8 metadata merge where the stage previously had none; and enumerated System Defects Detected rendering for both batch and single-task output. Phase 8 parity audit recorded actual per-file numbers with base and hard identical on every single-task row. verify-deploy.sh passes 19 checks, 0 failures after the sanctioned deploy. No task created, no interactive step added, no AskUserQuestion call sites introduced, nothing hand-authored under .claude/**.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/953_surface_deferred_system_defects_from_autonomous_runs/plans/01_surface-defect-detections-autonomous-runs.md"
+      "type": "summary",
+      "path": "specs/953_surface_deferred_system_defects_from_autonomous_runs/summaries/01_surface-defect-detections-autonomous-runs-summary.md"
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 8,
   "phases_total": 8
 }

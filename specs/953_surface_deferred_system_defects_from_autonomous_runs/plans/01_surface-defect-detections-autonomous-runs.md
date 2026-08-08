@@ -593,47 +593,47 @@ present on disk. Confirm all three anchors before inserting.
 
 ---
 
-### Phase 8: Base/hard parity audit and end-to-end consistency verification [NOT STARTED]
+### Phase 8: Base/hard parity audit and end-to-end consistency verification [COMPLETED]
 
 **Goal**: Prove the mechanism is complete, symmetric across the base/hard pair, and free of the
 specific failure modes named in the Risks table — the "fix landing in only one file" class above
 all.
 
 **Tasks**:
-- [ ] **Parity check.** For each of the two skill files, enumerate: number of
+- [x] **Parity check.** For each of the two skill files, enumerate: number of
       `append_detected_defect` call sites, presence of the Stage 2 fresh-init field, number of
       Stage 2 read paths carrying the field, and presence of a Stage 8 metadata merge carrying the
       field. Base and hard must each report 5 single-task call sites, a fresh-init field, all read
       paths wired, and a Stage 8 merge. Record the actual numbers; any asymmetry is a defect to fix
       before closing this phase, not a note to file.
-- [ ] **MT coverage check.** Confirm the three MT-4 wiring points exist in the base file only, and
+- [x] **MT coverage check.** Confirm the three MT-4 wiring points exist in the base file only, and
       that the base file carries the explicit note that MT stages serve hard-mode batches too, so a
       future reader does not "fix" the intentional absence in the hard file.
-- [ ] **Never-a-gate check.** Grep both skill files and `commands/orchestrate.md` for every
+- [x] **Never-a-gate check.** Grep both skill files and `commands/orchestrate.md` for every
       occurrence of `detected_defects` and classify each as declaration, append, read-for-metadata,
       read-for-render, or prose. Assert zero occurrences inside an eligibility check, all-terminal
       check, circuit breaker, convergence guard, admission branch, or `exit_status` branch.
-- [ ] **Unconditional-append check.** Assert no `append_detected_defect` call is nested inside a
+- [x] **Unconditional-append check.** Assert no `append_detected_defect` call is nested inside a
       conditional on `record_result`, on the recorder's exit status, or on a `SUPPRESSED:` value.
-- [ ] **No-interactive check.** Assert `grep -c AskUserQuestion` on each of the three files equals
+- [x] **No-interactive check.** Assert `grep -c AskUserQuestion` on each of the three files equals
       the pre-change baseline (0 for the base skill and the command doc; the pre-existing Stage 6
       count for the hard skill), proving this change added none.
-- [ ] **Vocabulary check.** Assert no new top-level `status` value was introduced: the values
+- [x] **Vocabulary check.** Assert no new top-level `status` value was introduced: the values
       written are `"implemented"` / `"partial"` in single-task Stage 8 (both files) and
       `$exit_status` unchanged in MT-5.
-- [ ] **jq validity check.** Extract every `jq`/`jq -n` program touched by Phases 1-6 and confirm
+- [x] **jq validity check.** Extract every `jq`/`jq -n` program touched by Phases 1-6 and confirm
       each parses (e.g. `jq -n '<program>' </dev/null` or `echo '{}' | jq '<program>'` with
       arguments stubbed), so no malformed filter ships in a spec file.
-- [ ] **Source-store boundary check.** Run `git status --short` and assert every modified path is
+- [x] **Source-store boundary check.** Run `git status --short` and assert every modified path is
       under `agent-system/extensions/core/` and that nothing under `.claude/` was written.
-- [ ] **Deliverable-hygiene check.** Run `bash .claude/scripts/check-task-references.sh` (or grep
+- [x] **Deliverable-hygiene check.** Run `bash .claude/scripts/check-task-references.sh` (or grep
       the three modified files) and confirm no task-number citation was introduced — the example
       rows in the rendering tables must use `#{N}` placeholders, not concrete task numbers.
-- [ ] **Doc-lint.** Run `bash .claude/scripts/verify-deploy.sh` (or at minimum
+- [x] **Doc-lint.** Run `bash .claude/scripts/verify-deploy.sh` (or at minimum
       `check-extension-docs.sh`) and confirm no new finding relative to the pre-change baseline.
       Record the baseline first: a pre-existing failure is not this change's to fix, and must be
       reported as pre-existing rather than silently absorbed.
-- [ ] Record every count and check result in the phase's completion notes so the audit is
+- [x] Record every count and check result in the phase's completion notes so the audit is
       reproducible, not merely asserted.
 
 **Timing**: 0.75 hours
@@ -658,23 +658,23 @@ disk. A mismatch means an earlier phase under- or over-delivered and must be cor
 
 ## Testing & Validation
 
-- [ ] Both skill files and the command doc parse as valid markdown and their fenced bash/jq blocks
+- [x] Both skill files and the command doc parse as valid markdown and their fenced bash/jq blocks
       are syntactically valid.
-- [ ] `detected_defects` is declared in exactly two accumulator homes and never conflated with
+- [x] `detected_defects` is declared in exactly two accumulator homes and never conflated with
       `defer_ledger` or `verify_deploy_baseline_notices`; those two fields' declarations and
       consumers are byte-for-byte unchanged.
-- [ ] All eleven detection sites append and announce; the shared `skill-base.sh` site is covered at
+- [x] All eleven detection sites append and announce; the shared `skill-base.sh` site is covered at
       all three of its callers via the caller-side discriminant, with `scripts/skill-base.sh`
       unmodified.
-- [ ] Case 1 refusals of `skill_gate_completion_claim` (`phases_total > 0`, incomplete) do NOT
+- [x] Case 1 refusals of `skill_gate_completion_claim` (`phases_total > 0`, incomplete) do NOT
       append — only Case 3/3 does.
-- [ ] `.return-meta.json` and `.return-meta-multi.json` carry `metadata.detected_defects`; neither
+- [x] `.return-meta.json` and `.return-meta-multi.json` carry `metadata.detected_defects`; neither
       top-level `status` vocabulary gained a value.
-- [ ] The consolidated summary renders the defects table on an `"implemented"` batch, not only on a
+- [x] The consolidated summary renders the defects table on an `"implemented"` batch, not only on a
       `"partial"` one.
-- [ ] Single-task base and single-task hard both surface detections; neither path is wired alone.
-- [ ] No `AskUserQuestion` was added anywhere.
-- [ ] No file under `.claude/**` was hand-authored.
+- [x] Single-task base and single-task hard both surface detections; neither path is wired alone.
+- [x] No `AskUserQuestion` was added anywhere.
+- [x] No file under `.claude/**` was hand-authored.
 
 ## Artifacts & Outputs
 

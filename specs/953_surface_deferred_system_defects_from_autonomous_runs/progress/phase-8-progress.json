@@ -1,0 +1,86 @@
+{
+  "phase": 8,
+  "phase_name": "Base/hard parity audit and end-to-end consistency verification",
+  "started_at": "2026-08-08T13:26:00Z",
+  "last_updated": "2026-08-08T13:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run all ten audit checks and record actual numbers", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "8.5",
+      "description": "No-interactive check: assert grep -c AskUserQuestion equals the pre-change baseline on each of the three files",
+      "type": "altered",
+      "reason": "Phase 1 mandates naming the AskUserQuestion constraint in the MT-1 declaration, which is itself one prose occurrence. Base skill raw count went 0 -> 1; CALL sites remain 0. The check's intent (this change added no interactive step) holds. Both numbers are recorded rather than asserting raw equality.",
+      "annotation": "*(deviation: altered — raw-count equality replaced by call-site-count equality; both numbers recorded)*"
+    },
+    {
+      "task_id": "8.10",
+      "description": "Doc-lint: confirm no new finding relative to the pre-change baseline",
+      "type": "altered",
+      "reason": "verify-deploy.sh gate 5 (manifest content-hash equality) reported exactly 3 findings, all 'Content differs from source' naming exactly the three edited files -- the expected deploy-pending state, not a defect. Resolved via the sanctioned deploy path (deploy-headless.sh), never by hand-authoring .claude/**. Post-deploy: 19 checks, 0 failures.",
+      "annotation": "*(deviation: altered — gate 5 deploy-pending findings resolved by running the sanctioned deploy)*"
+    }
+  ],
+  "handoff_count": 0,
+  "audit": {
+    "check_1_parity": {
+      "base": {"helper_definitions": 1, "single_task_call_sites": 5, "stage2_fresh_init_field": 1, "stage2_read_paths_wired": 2, "stage2_fresh_init_var": 1, "stage8_merge_key_sites": 2},
+      "hard": {"helper_definitions": 1, "single_task_call_sites": 5, "stage2_fresh_init_field": 1, "stage2_read_paths_wired": 2, "stage2_fresh_init_var": 1, "stage8_merge_key_sites": 2},
+      "verdict": "SYMMETRIC — no asymmetry found"
+    },
+    "check_2_mt_coverage": {
+      "base_mt_idiom_definitions": 1,
+      "base_mt_wiring_points": 3,
+      "hard_mt_occurrences": 0,
+      "base_serves_hard_batches_note_present": true,
+      "verdict": "PASS — MT wiring exists in the base file only, with the explicit note that it serves hard-mode batches"
+    },
+    "check_3_never_a_gate": {
+      "total_occurrences": {"base": 24, "hard": 16, "command_doc": 4},
+      "occurrences_inside_eligibility_terminal_breaker_convergence_admission_or_exit_status_construct": 0,
+      "never_consulted_prose_statements": 2,
+      "verdict": "PASS"
+    },
+    "check_4_unconditional_append": {
+      "appends_nested_in_record_result_or_SUPPRESSED_conditional": 0,
+      "only_conditional_preceding_an_append": "the Case-3/3 discriminant (phases_total -eq 0 && plan_markers_verified != true), which selects WHICH gate case fired, not the recorder outcome",
+      "verdict": "PASS"
+    },
+    "check_5_no_interactive": {
+      "base": {"baseline": 0, "now": 1, "call_sites": 0, "note": "single occurrence is the prose MUST-NOT in the MT-1 declaration"},
+      "hard": {"baseline": 3, "now": 3, "call_sites": 3, "note": "all three pre-existing, Stage 6 blocker escalation, untouched"},
+      "command_doc": {"baseline": 0, "now": 0},
+      "verdict": "PASS on call-site count; see deviation 8.5"
+    },
+    "check_6_vocabulary": {
+      "base_stage8_status_values": ["implemented", "partial"],
+      "hard_stage8_status_values": ["implemented", "partial"],
+      "mt5_top_level_status": "$exit_status (unchanged)",
+      "verdict": "PASS — no new top-level status value introduced"
+    },
+    "check_7_jq_validity": {
+      "programs_tested": 6,
+      "results": "all parse and execute correctly (base+hard fresh-init, // [] read, append filter, Stage 8 merge, MT-5 jq -n)",
+      "verdict": "PASS"
+    },
+    "check_8_source_store_boundary": {
+      "modified_tracked_paths_under_claude": 0,
+      "modified_tracked_paths_under_agent_system": 3,
+      "verdict": "PASS — .claude/ is gitignored and was only written by the sanctioned deploy, never hand-authored"
+    },
+    "check_9_deliverable_hygiene": {
+      "check_task_references_exit": 0,
+      "findings": 0,
+      "table_placeholders": "#{N} in both rendering tables",
+      "verdict": "PASS"
+    },
+    "check_10_doc_lint": {
+      "pre_deploy": "19 checks, 1 failure (gate 5: 3 content-differs-from-source findings naming exactly the 3 edited files)",
+      "post_deploy": "19 checks, 0 failures",
+      "verdict": "PASS after the sanctioned deploy; see deviation 8.10"
+    }
+  }
+}
