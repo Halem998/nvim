@@ -675,21 +675,39 @@ retrying resolved it and a clean `PASS -- 20 check(s), 0 failure(s)` run is reco
 
 ---
 
-### Phase 8: Collapse the remaining domain skills [NOT STARTED]
+### Phase 8: Collapse the remaining domain skills [COMPLETED]
 
 **Goal**: The remaining domain research/implementation skills (z3, python, web, email, epi) join the
 shared skeleton, so no task type is left without Stage 4a.
 
 **Tasks**:
-- [ ] Enumerate the remaining domain skill files at implementation time rather than trusting a
+- [x] Enumerate the remaining domain skill files at implementation time rather than trusting a
       plan-time list (see Scope Hypothesis). Expected families: z3, python, web, email, epidemiology.
-- [ ] Apply the identical conversion Phase 7 established — the four Phase 3 imports plus the
+      *(completed: `grep -rL "lit-stage4a-flow" agent-system/extensions/{z3,python,web,email,epidemiology}/skills/*/SKILL.md`
+      measured exactly 9 files — skill-z3-{research,implementation}, skill-python-{research,implementation},
+      skill-web-{research,implementation}, skill-email-implementation, skill-epi-{research,implement}.
+      skill-email-cleanup and skill-email-sync were correctly excluded — direct-execution skills
+      per CLAUDE.md's skill-agent mapping, never delegating to a subagent, so Stage 4a does not apply)*
+- [x] Apply the identical conversion Phase 7 established — the four Phase 3 imports plus the
       `lit-stage4a-flow.md` Stage 4a import — reusing Phase 7's converted files as the worked
-      reference rather than re-deriving the pattern.
-- [ ] Restore `## Error Handling` to the z3 and python skills, which the report confirms lack it,
-      sourcing from the latex/typst reference.
-- [ ] Normalize Stage numbering onto the core convention, as in Phase 7.
-- [ ] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      reference rather than re-deriving the pattern. *(completed)*
+- [x] Restore `## Error Handling` to the z3 and python skills, which the report confirms lack it,
+      sourcing from the latex/typst reference. *(completed: `grep -c '^## Error Handling'` returns
+      1 for all four files)*
+- [x] Normalize Stage numbering onto the core convention, as in Phase 7. *(completed: skill-web-implementation's
+      prior `0. Preflight` / `1-4.` / `5.` / `6.` layout was renumbered onto the core Stage-N
+      skeleton; skill-epi-research/skill-epi-implement's `meta_status` local variable was renamed
+      to `status` to match the shared block's precondition naming)*
+- [x] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(completed: `git status --short` shows zero `.claude/` modifications;
+      `check-task-references.sh` passes)*
+
+**Verification note (environmental flake, same class as Phases 6-7)**: `verify-deploy.sh` gate 8
+intermittently failed on `test-four-tier-conflict.sh` (a `task-lock.sh` `/tmp`-fixture concurrency
+test, unrelated to any file this phase touches) under concurrent session load. Confirmed via
+direct `run-all.sh --quiet` retries (one clean 31/31 pass recorded during this phase) and via the
+in-scope checks (`lint-postflight-boundary.sh`, `check-extension-docs.sh --quiet`,
+`check-task-references.sh`) all passing consistently.
 
 **Timing**: 2 hours
 

@@ -23,11 +23,19 @@ This skill activates when:
 
 Validate task_number exists, task_type is "email", and an implementation plan is present.
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update status to "implementing" BEFORE invoking the subagent.
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
-### Stage 3: $PATH Precondition Check (contract §9)
+```bash
+source .claude/scripts/skill-base.sh
+padded_num=$(printf "%03d" "$task_number")
+skill_name="skill-email-implementation"
+operation="implement"
+```
+
+### Stage 3a: $PATH Precondition Check (contract §9)
 
 Before dispatching, verify the five wrapper binaries are on `$PATH`:
 
@@ -39,6 +47,20 @@ command -v email-census email-classify email-archive-confirmed email-delete-conf
 If any are missing, do NOT dispatch. Write `status: "failed"` metadata naming the missing
 binary and instructing the user to run `home-manager switch --flake .#<user>` to activate the
 generation containing `modules/home/email/agent-tools.nix`.
+
+### Stage 4a: Memory Retrieval and Literature Detection
+
+**Skip memory retrieval if**: `clean_flag` is true (from `--clean`).
+
+```bash
+if [ "$clean_flag" != "true" ]; then
+  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "" 2>/dev/null) || memory_context=""
+fi
+```
+
+Follow `@.claude/context/patterns/lit-stage4a-flow.md` in full to resolve `--lit` and set
+`lit_context`, exactly as `skill-implementer` does. This skill supplies the shared block's
+preconditions: `lit_flag`, `description`, `orchestrator_mode` (default `"false"` when unset).
 
 ### Stage 4: Prepare Delegation Context
 
@@ -66,38 +88,30 @@ Domain-specific context for `email-implementation-agent`:
 }
 ```
 
+If `memory_context` and/or `lit_context` from Stage 4a are non-empty, include them in the prompt
+(memory context first, then literature briefing). Do NOT inject an empty block for either.
+
 ### Stage 5: Invoke Subagent
 
 Use Agent tool with subagent_type: "email-implementation-agent".
 
 ### Stage 5b: Self-Execution Fallback
 
-**CRITICAL**: If you performed work above WITHOUT using the Agent tool, you MUST write a
-`.return-meta.json` file now before proceeding to postflight, per `return-metadata-file.md`.
-This is not expected for email tasks — the wrapper-only contract is agent-owned, so the fallback
-path here must still respect Stage 3's `$PATH` check and never invoke a wrapper binary directly
-from this skill.
-
-If you DID use the Agent tool, skip this stage.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"implemented"`. This path is not expected for
+email tasks — the wrapper-only contract is agent-owned — but if it is reached, it must still
+respect Stage 3a's `$PATH` check and never invoke a wrapper binary directly from this skill.
 
 ## Postflight (ALWAYS EXECUTE)
 
 ### Stage 6: Parse Subagent Return
 
-Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`.
+Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`, including `memory_candidates`.
 
-### Stage 7: Update Task Status (Postflight)
+### Stage 7, 7a, 8, 8a, 9: Postflight Status, Memory Candidates, Artifact Linking, Notify, Cleanup
 
-Update state.json and TODO.md based on result.
-
-### Stage 8: Link Artifacts
-
-Add artifact to state.json with summary. Update TODO.md per
-`@.claude/context/patterns/artifact-linking-todo.md`.
-
-### Stage 9: Git Commit
-
-Commit changes with session ID.
+Follow `@.claude/context/patterns/skill-postflight-flow.md` in full: `field_name=**Summary**`,
+`next_field=**Description**`.
 
 ### Stage 10: Return Brief Summary
 

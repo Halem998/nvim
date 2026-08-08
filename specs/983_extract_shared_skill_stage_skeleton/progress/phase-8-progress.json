@@ -1,0 +1,31 @@
+{
+  "phase": 8,
+  "phase_name": "Collapse the remaining domain skills",
+  "started_at": "2026-08-08T00:00:00Z",
+  "last_updated": "2026-08-08T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert skill-z3-research and skill-z3-implementation", "status": "done", "files_touched": [
+      "agent-system/extensions/z3/skills/skill-z3-research/SKILL.md",
+      "agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md"
+    ]},
+    {"id": 2, "description": "Convert skill-python-research and skill-python-implementation", "status": "done", "files_touched": [
+      "agent-system/extensions/python/skills/skill-python-research/SKILL.md",
+      "agent-system/extensions/python/skills/skill-python-implementation/SKILL.md"
+    ]},
+    {"id": 3, "description": "Convert skill-web-research and skill-web-implementation", "status": "done", "files_touched": [
+      "agent-system/extensions/web/skills/skill-web-research/SKILL.md",
+      "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md"
+    ]},
+    {"id": 4, "description": "Convert skill-email-implementation", "status": "done", "files_touched": [
+      "agent-system/extensions/email/skills/skill-email-implementation/SKILL.md"
+    ]},
+    {"id": 5, "description": "Convert skill-epi-research and skill-epi-implement", "status": "done", "files_touched": [
+      "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md",
+      "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md"
+    ]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

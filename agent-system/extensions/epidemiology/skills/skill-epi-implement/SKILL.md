@@ -74,43 +74,39 @@ fi
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-| state.json status | TODO.md marker |
-|------------------|----------------|
-| implementing | [IMPLEMENTING] |
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "implementing" \
-   --arg sid "$session_id" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+source .claude/scripts/skill-base.sh
+padded_num=$(printf "%03d" "$task_number")
+skill_name="skill-epi-implement"
+operation="implement"
 ```
+
+`operation="implement"` (not `"epi_implement"`) is required here: `update-task-status.sh`'s
+`target_status` vocabulary has no `epi_implement` value, so this skill maps onto the plain
+`implement` operation, same as `skill-implementer`. The marker's `operation` field now reads
+`"implement"` rather than `"epi_implement"` — a byte-for-byte Shape A key set, matching what this
+skill's marker already carried (`created`, `stop_hook_active`) before this conversion.
 
 ---
 
-### Stage 3: Create Postflight Marker
+### Stage 4a: Memory Retrieval and Literature Detection
+
+**Skip memory retrieval if**: `clean_flag` is true (from `--clean`).
 
 ```bash
-padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-epi-implement",
-  "task_number": ${task_number},
-  "operation": "epi_implement",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
+if [ "$clean_flag" != "true" ]; then
+  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "" 2>/dev/null) || memory_context=""
+fi
 ```
+
+Follow `@.claude/context/patterns/lit-stage4a-flow.md` in full to resolve `--lit` and set
+`lit_context`, exactly as `skill-implementer` does. This skill supplies the shared block's
+preconditions: `lit_flag`, `description`, `orchestrator_mode` (default `"false"` when unset).
 
 ---
 
@@ -183,47 +179,55 @@ subagent or inline (Stage 5b). Do NOT skip these stages for any reason.
 metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
-    meta_status=$(jq -r '.status' "$metadata_file")
+    status=$(jq -r '.status' "$metadata_file")
     artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
-    artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
+    artifact_type=$(jq -r '.artifacts[0].type // "summary"' "$metadata_file")
     artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+    memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
     # Schema: .claude/context/formats/return-metadata-file.md
     completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
     roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
 else
     echo "Error: Invalid or missing metadata file"
-    meta_status="failed"
+    status="failed"
 fi
 ```
 
+**Note**: renamed the local variable from `meta_status` to `status` to match the
+`skill-postflight-flow.md` shared block's precondition naming used below.
+
 ---
 
-### Stage 7: Update Task Status (Postflight)
+### Stage 7, 7a, 8, 8a: Postflight Status, Memory Candidates, Artifact Linking, Notify
 
 **MUST NOT cross the postflight boundary**: The subagent MUST NOT update state.json or TODO.md status.
 Only this skill performs postflight status transitions.
 
-| Meta Status | Final state.json | Final TODO.md |
-|-------------|-----------------|---------------|
-| completed | completed | [COMPLETED] |
-| partial | implementing | [IMPLEMENTING] |
-| failed | (keep preflight) | (keep preflight marker) |
+Follow `@.claude/context/patterns/skill-postflight-flow.md` for Stage 7 (postflight status
+update), Stage 7a (memory-candidate propagation), Stage 8 (artifact linking; artifact type
+`"summary"`, an implementation summary with R script paths), and Stage 8a (TTS notify).
+`skill_propagate_completion_summary` (already routed through `skill-base.sh` before this
+conversion, sourced once at Stage 2 + Stage 3 above) is preserved as a "not covered by the shared
+block" call:
 
 ```bash
-if [ "$meta_status" = "implemented" ] || [ "$meta_status" = "completed" ]; then
-    source .claude/scripts/skill-base.sh
+field_name='**Summary**'
+next_field='**Description**'
+skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
+if [ "$status" = "implemented" ] || [ "$status" = "completed" ]; then
     skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
 fi
+skill_propagate_memory_candidates "$task_number" "$memory_candidates" "$session_id"
+skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" \
+  "$field_name" "$next_field" "$session_id"
+skill_lifecycle_notify "$STATE_STATUS"
 ```
 
----
-
-### Stage 8: Link Artifacts
-
-Add artifact to state.json with summary. Use the two-step jq pattern to avoid Issue #1132.
-Artifact type: "summary" (implementation summary with R script paths).
-
-**Update TODO.md**: Link artifact using count-aware format. Apply the four-case Edit logic from `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Summary**`, `next_field=**Description**`.
+| status | Final state.json | Final TODO.md |
+|-------------|-----------------|---------------|
+| completed | completed | [COMPLETED] |
+| partial | implementing (unchanged — `skill_postflight_update` no-ops) | [IMPLEMENTING] |
+| failed | (keep preflight, unchanged) | (keep preflight marker) |
 
 ---
 
@@ -248,10 +252,10 @@ Session: ${session_id}"
 
 ### Stage 10: Cleanup
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
+
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ---

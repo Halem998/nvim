@@ -30,58 +30,12 @@ This skill activates when:
 
 ---
 
-## Execution
+## Execution Flow
 
-### 0. Preflight Status Update
+**Stage numbering note**: this file previously used a `0. Preflight` / `1-4.` / `5.` / `6.`
+layout, not the core Stage-N skeleton the other converted skills use. Renumbered here to match.
 
-Before delegating to the subagent, update task status to "implementing".
-
-**Update state.json**:
-```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "implementing" \
-   --arg sid "$session_id" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    session_id: $sid,
-    started: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-```
-
-**Update TODO.md**: Use Edit tool to change status marker from `[PLANNED]` to `[IMPLEMENTING]`.
-
-**Update plan file** (if exists): Update the Status field in plan metadata:
-```bash
-# Find latest plan file
-plan_file=$(ls -1 "specs/${padded_num}_${project_name}/plans/"*.md 2>/dev/null | sort -V | tail -1)
-if [ -n "$plan_file" ] && [ -f "$plan_file" ]; then
-    sed -i "s/^\- \*\*Status\*\*: \[.*\]$/- **Status**: [IMPLEMENTING]/" "$plan_file"
-fi
-```
-
-**Create Postflight Marker**:
-```bash
-# Ensure task directory exists
-padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-web-implementation",
-  "task_number": ${task_number},
-  "operation": "implement",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
-```
-
----
-
-### 1. Input Validation
+### Stage 1: Input Validation
 
 Validate required inputs:
 - `task_number` - Must be provided and exist in state.json
@@ -115,9 +69,52 @@ if [ "$status" = "completed" ]; then
 fi
 ```
 
-### 2. Context Preparation
+---
 
-Prepare delegation context:
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
+
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
+
+```bash
+source .claude/scripts/skill-base.sh
+padded_num=$(printf "%03d" "$task_number")
+skill_name="skill-web-implementation"
+operation="implement"
+```
+
+**Routing fix**: this call replaces a hand-rolled raw-`jq` status write with
+`update-task-status.sh preflight` (via `skill_preflight_update`), and the raw
+`cat > .../.postflight-pending` heredoc with `skill_create_postflight_marker`.
+
+**Update plan file** (if exists): Update the Status field in plan metadata (not covered by the
+shared block — this skill's own domain step):
+```bash
+plan_file=$(ls -1 "specs/${padded_num}_${project_name}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+if [ -n "$plan_file" ] && [ -f "$plan_file" ]; then
+    sed -i "s/^\- \*\*Status\*\*: \[.*\]$/- **Status**: [IMPLEMENTING]/" "$plan_file"
+fi
+```
+
+---
+
+### Stage 4a: Memory Retrieval and Literature Detection
+
+**Skip memory retrieval if**: `clean_flag` is true (from `--clean`).
+
+```bash
+if [ "$clean_flag" != "true" ]; then
+  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "" 2>/dev/null) || memory_context=""
+fi
+```
+
+Follow `@.claude/context/patterns/lit-stage4a-flow.md` in full to resolve `--lit` and set
+`lit_context`, exactly as `skill-implementer` does. This skill supplies the shared block's
+preconditions: `lit_flag`, `description`, `orchestrator_mode` (default `"false"` when unset).
+
+---
+
+### Stage 4: Prepare Delegation Context
 
 ```json
 {
@@ -136,7 +133,12 @@ Prepare delegation context:
 }
 ```
 
-### 3. Invoke Subagent
+If `memory_context` and/or `lit_context` from Stage 4a are non-empty, include them in the prompt
+(memory context first, then literature briefing). Do NOT inject an empty block for either.
+
+---
+
+### Stage 5: Invoke Subagent
 
 **CRITICAL**: You MUST use the **Agent** tool to spawn the subagent.
 
@@ -164,7 +166,9 @@ The subagent will:
 - Write metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
 - Return a brief text summary (NOT JSON)
 
-### 3a. Validate Subagent Return Format
+---
+
+### Stage 5a: Validate Subagent Return Format
 
 **IMPORTANT**: Check if subagent accidentally returned JSON to console (v1 pattern) instead of writing to file (v2 pattern).
 
@@ -186,23 +190,21 @@ This validation:
 - Indicates the subagent instructions need updating
 - Allows graceful handling of mixed v1/v2 agents
 
-### 3b. Self-Execution Fallback
+---
 
-**CRITICAL**: If you performed the work above WITHOUT using the Agent tool (i.e., you read files,
-wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
-`.return-meta.json` file now before proceeding to postflight. Use the schema from
-`return-metadata-file.md` with status value "implemented".
+### Stage 5b: Self-Execution Fallback
 
-If you DID use the Agent tool, skip this stage -- the subagent already wrote the metadata.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"implemented"`.
 
 ---
 
 ## Postflight (ALWAYS EXECUTE)
 
 The following stages MUST execute after work is complete, whether the work was done by a
-subagent or inline (Stage 3b). Do NOT skip these stages for any reason.
+subagent or inline (Stage 5b). Do NOT skip these stages for any reason.
 
-### 4. Parse Subagent Return (Read Metadata File)
+### Stage 6: Parse Subagent Return (Read Metadata File)
 
 Read the metadata file:
 
@@ -212,10 +214,11 @@ metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     status=$(jq -r '.status' "$metadata_file")
     artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
-    artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
+    artifact_type=$(jq -r '.artifacts[0].type // "summary"' "$metadata_file")
     artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
     phases_completed=$(jq -r '.metadata.phases_completed // 0' "$metadata_file")
     phases_total=$(jq -r '.metadata.phases_total // 0' "$metadata_file")
+    memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
 
     # Extract completion_data fields (if present)
     completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
@@ -232,53 +235,27 @@ Validate the metadata contains required fields:
 - Artifacts array present (source files, summary)
 - Metadata contains session_id, agent_type, delegation info
 
-### 5. Postflight Status Update
+---
 
-After implementation, update task status based on result.
+### Stage 7, 7a, 8, 8a: Postflight Status, Memory Candidates, Artifact Linking, Notify
 
-**If result.status == "implemented"**:
+**If `status == "implemented"`**: follow `@.claude/context/patterns/skill-postflight-flow.md` for
+Stage 7 (postflight status update), Stage 7a (memory-candidate propagation), Stage 8 (artifact
+linking), and Stage 8a (TTS notify):
 
-Update state.json to "completed" and add completion_data fields (two-step pattern):
 ```bash
-# Step 1: Update status and timestamps
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "completed" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    completed: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-
-# Step 2: Add completion_summary (always required for completed tasks)
-if [ -n "$completion_summary" ]; then
-    jq --arg summary "$completion_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).completion_summary = $summary' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-fi
-
-# Step 3: Add roadmap_items (if present and non-empty)
-if [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
-    jq --argjson items "$roadmap_items" \
-      '(.active_projects[] | select(.project_number == '$task_number')).roadmap_items = $items' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-fi
-
-# Step 4: Filter out existing summary artifacts (use "| not" pattern to avoid != escaping)
-jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-    [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "summary" | not)]' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-
-# Step 5: Add new summary artifact
-jq --arg path "$artifact_path" \
-  '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": "summary"}]' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+field_name='**Summary**'
+next_field='**Description**'
+skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
+skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
+skill_propagate_memory_candidates "$task_number" "$memory_candidates" "$session_id"
+skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" \
+  "$field_name" "$next_field" "$session_id"
+skill_lifecycle_notify "$STATE_STATUS"
 ```
 
-Update TODO.md:
-- Change status marker from `[IMPLEMENTING]` to `[COMPLETED]`
-- Link artifact using count-aware format: apply the four-case Edit logic from `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Summary**`, `next_field=**Description**`
-
-**Update plan file** (if exists): Update the Status field to `[COMPLETED]`:
+**Update plan file** (if exists): Update the Status field to `[COMPLETED]` (not covered by the
+shared block):
 ```bash
 plan_file=$(ls -1 "specs/${padded_num}_${project_name}/plans/"*.md 2>/dev/null | sort -V | tail -1)
 if [ -n "$plan_file" ] && [ -f "$plan_file" ]; then
@@ -286,16 +263,19 @@ if [ -n "$plan_file" ] && [ -f "$plan_file" ]; then
 fi
 ```
 
-**If result.status == "partial"**:
+**If `status == "partial"`**:
 
-Update state.json with resume point (keep status as "implementing"):
+Update state.json with resume point (keep status as "implementing") — the
+`skill_postflight_update` call above already no-ops for a non-success status, so the resume-point
+write stays a direct `state-write.sh` call:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg phase "$completed_phase" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     last_updated: $ts,
     resume_phase: ($phase | tonumber + 1)
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg phase "$completed_phase"
 ```
 
 TODO.md stays as `[IMPLEMENTING]`.
@@ -308,9 +288,13 @@ if [ -n "$plan_file" ] && [ -f "$plan_file" ]; then
 fi
 ```
 
-**On failed**: Do NOT run postflight. Keep status as "implementing" for retry. Do not update plan file (leave as `[IMPLEMENTING]` for retry).
+**On failed**: Do NOT run postflight linking. Keep status as "implementing" for retry (the shared
+`skill_postflight_update` call no-ops automatically). Do not update plan file (leave as
+`[IMPLEMENTING]` for retry).
 
-### 6. Git Commit
+---
+
+### Stage 9: Git Commit
 
 Apply the `implement` scope from `.claude/context/standards/git-staging-scope.md` — targeted
 staging, never a repo-wide add — then commit with session ID:
@@ -324,20 +308,22 @@ done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
 git add "${stage_paths[@]}"
 git commit -m "task ${task_number}: complete implementation
 
-Session: ${session_id}
+Session: ${session_id}"
 ```
 
-### 7. Cleanup
+---
 
-Remove marker and metadata files after postflight processing:
+### Stage 10: Cleanup
+
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
 
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
-### 8. Return Brief Summary
+---
+
+### Stage 11: Return Brief Summary
 
 Return a brief text summary (NOT JSON) describing the implementation results.
 

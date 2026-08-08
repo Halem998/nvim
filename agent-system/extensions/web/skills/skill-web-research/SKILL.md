@@ -54,43 +54,38 @@ description=$(echo "$task_data" | jq -r '.description // ""')
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status to "researching" BEFORE invoking subagent.
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
-**Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researching" \
-   --arg sid "$session_id" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+source .claude/scripts/skill-base.sh
+padded_num=$(printf "%03d" "$task_number")
+skill_name="skill-web-research"
+operation="research"
 ```
 
-**Update TODO.md**: Use Edit tool to change status marker to `[RESEARCHING]`.
+**Routing fix**: this call replaces a hand-rolled raw-`jq` status write with
+`update-task-status.sh preflight` (via `skill_preflight_update`), and the raw
+`cat > .../.postflight-pending` heredoc (which previously dropped `stop_hook_active`) with
+`skill_create_postflight_marker`, which emits the full Shape A key set.
 
 ---
 
-### Stage 3: Create Postflight Marker
+### Stage 4a: Memory Retrieval and Literature Detection
+
+**Skip memory retrieval if**: `clean_flag` is true (from `--clean`).
 
 ```bash
-padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-web-research",
-  "task_number": ${task_number},
-  "operation": "research",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
+if [ "$clean_flag" != "true" ]; then
+  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "$focus_prompt" 2>/dev/null) || memory_context=""
+fi
 ```
+
+Follow `@.claude/context/patterns/lit-stage4a-flow.md` in full to resolve `--lit` and set
+`lit_context`, exactly as `skill-researcher` does. This skill supplies the shared block's
+preconditions: `lit_flag`, `description`, `orchestrator_mode` (default `"false"` when unset).
 
 ---
 
@@ -165,6 +160,7 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
     artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
     artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+    memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
 else
     status="failed"
 fi
@@ -172,38 +168,25 @@ fi
 
 ---
 
-### Stage 7: Update Task Status (Postflight)
+### Stage 7, 7a, 8, 8a: Postflight Status, Memory Candidates, Artifact Linking, Notify
 
-If status is "researched", update state.json and TODO.md.
-
----
-
-### Stage 8: Link Artifacts
-
-Add artifact to state.json with summary.
-
-**IMPORTANT**: Use two-step jq pattern to avoid escaping issues.
+Follow `@.claude/context/patterns/skill-postflight-flow.md` for Stage 7 (postflight status
+update), Stage 7a (memory-candidate propagation), Stage 8 (artifact linking), and Stage 8a (TTS
+notify):
 
 ```bash
-if [ -n "$artifact_path" ]; then
-    # Step 1: Filter out existing research artifacts (use "| not" pattern)
-    jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-        [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "research" | not)]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-
-    # Step 2: Add new research artifact
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-fi
+field_name='**Research**'
+next_field='**Plan**'
+skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
+skill_propagate_memory_candidates "$task_number" "$memory_candidates" "$session_id"
+skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" \
+  "$field_name" "$next_field" "$session_id"
+skill_lifecycle_notify "$STATE_STATUS"
 ```
 
-**Update TODO.md**: Link artifact using count-aware format.
-
-Apply the four-case Edit logic from `@.claude/context/patterns/artifact-linking-todo.md`
-with `field_name=**Research**`, `next_field=**Plan**`.
+**Routing fix**: this replaces both the raw-`jq` two-step artifact-linking pattern (previously
+hand-rolled per-call, bypassing `state-write.sh`'s mutex) and the missing memory-candidate
+propagation (this skill never read or propagated `memory_candidates` before this conversion).
 
 ---
 
@@ -227,10 +210,10 @@ Session: ${session_id}
 
 ### Stage 10: Cleanup
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
+
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ---
