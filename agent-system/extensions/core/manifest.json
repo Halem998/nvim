@@ -174,6 +174,7 @@
       "tests/test-loop-guard-staleness.sh",
       "tests/test-orchestrate-triage-classify.sh",
       "tests/test-phase-heading-patterns.sh",
+      "tests/test-postflight-marker-schema.sh",
       "tests/test-reconcile-handoff-status.sh",
       "tests/test-resume-scan-nonconformance.sh",
       "tests/test-routing-resolution.sh",

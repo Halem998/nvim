@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "task_number": 983,
+  "session_id": "sess_1786219295_397818",
+  "phase": "plan",
+  "agent_type": "planner-agent",
+  "orchestrator_mode": true,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
+      "summary": "11-phase, 5-wave plan to collapse the skill lifecycle onto a single skill-base.sh-backed skeleton."
+    }
+  ],
+  "plan_path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
+  "phase_count": 11,
+  "estimated_hours": 23.5,
+  "dependency_waves": [[1, 2], [3], [4, 6, 7], [5, 8, 9, 10], [11]],
+  "blockers": [],
+  "next_steps": "Run /implement 983 to execute the plan"
+}

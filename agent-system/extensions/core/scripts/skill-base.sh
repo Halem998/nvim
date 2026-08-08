@@ -235,6 +235,15 @@ skill_preflight_update() {
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3: Create postflight-pending marker file
 # Usage: skill_create_postflight_marker "$padded_num" "$project_name" "$session_id" "$skill_name" "$operation"
+#
+# SHAPE A (the settled, canonical marker schema -- the single production writer of
+# .postflight-pending): session_id, skill, task_number, operation, reason, created,
+# stop_hook_active. This is the fullest shape observed across the pre-unification corpus (six
+# mutually incompatible shapes), so unifying onto it loses no field. `task_number` is derived
+# from the already-passed `padded_num` (stripped of leading zeros) rather than added as a new
+# 6th parameter -- the function signature stays 5-arg so the 9 existing `source`-sites are
+# unaffected. `stop_hook_active` is retained as `false` because it is a behavioral field the
+# hard-mode variants had dropped by drift, not by deliberate design.
 skill_create_postflight_marker() {
   local padded_num="$1"
   local project_name="$2"
@@ -242,11 +251,14 @@ skill_create_postflight_marker() {
   local skill_name="$4"
   local operation="$5"
   local task_dir="specs/${padded_num}_${project_name}"
+  # Strip leading zeros (avoids octal interpretation) to derive the unpadded task_number.
+  local task_number=$((10#$padded_num))
   mkdir -p "$task_dir"
   cat > "${task_dir}/.postflight-pending" << EOF
 {
   "session_id": "${session_id}",
   "skill": "${skill_name}",
+  "task_number": ${task_number},
   "operation": "${operation}",
   "reason": "Postflight pending: status update, artifact linking, git commit",
   "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -446,6 +458,42 @@ skill_postflight_update() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Stage 7a: Propagate memory candidates to state.json
+# Usage: skill_propagate_memory_candidates "$task_number" "$memory_candidates_json" ["$session_id"]
+#
+# Reads the `memory_candidates` array a subagent emitted in the task's `.return-meta.json` (the
+# caller extracts it via `skill_read_metadata` or an equivalent `jq -c '.memory_candidates // []'`
+# read) and appends it to the task's state.json entry using append semantics -- merged with any
+# existing candidates from prior operations, never overwritten. This is a distinct function from
+# `skill_propagate_completion_summary` below, which does NOT handle `memory_candidates` today;
+# the two propagate different `.return-meta.json` fields and are kept separate rather than
+# folded together; keeping them distinct means an existing `skill_propagate_completion_summary`
+# call site is never accidentally widened to also start writing `memory_candidates`.
+#
+# Follows `skill_propagate_completion_summary`'s established conventions: writes are routed
+# through "${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh" (SKILL_REPO_ROOT-qualified, not a
+# bare relative path, so this keeps working when invoked from a fixture repo via SKILL_REPO_ROOT
+# override), and session_id (3rd arg, optional) is self-generated via `common_session_id` when
+# omitted, exactly as that function's 5th-arg session_id handling.
+skill_propagate_memory_candidates() {
+  local task_number="$1"
+  local memory_candidates="$2"
+  local session_id="${3:-}"
+  if [ -z "$session_id" ]; then
+    session_id="$(common_session_id)"
+  fi
+  if [ -n "$memory_candidates" ] && [ "$memory_candidates" != "[]" ]; then
+    "${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh" \
+      '(.active_projects[] | select(.project_number == $num)).memory_candidates =
+        ((.active_projects[] | select(.project_number == $num)).memory_candidates // []) + $new_candidates' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --argjson new_candidates "$memory_candidates" \
+      || echo "WARNING: state-write.sh failed to write memory_candidates (non-blocking)" >&2
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Stage 7b: Propagate completion_summary + roadmap_items to state.json
 # Usage: skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type" ["$session_id"]
 #
@@ -542,6 +590,23 @@ skill_link_artifacts() {
       || echo "WARNING: state-write.sh failed adding artifact entry (non-blocking)" >&2
     # Regenerate TODO.md from state.json (replaces link-artifact-todo.sh call)
     bash "${SKILL_REPO_ROOT}/.claude/scripts/generate-todo.sh" || echo "WARNING: generate-todo.sh failed (non-fatal)"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 8a: Lifecycle TTS notification
+# Usage: skill_lifecycle_notify "$state_status"
+#
+# Single shared implementation of the TTS + WezTerm tab-coloring notification body every
+# lifecycle skill's Stage 8a hand-copies today (11 near-identical inline blocks pre-unification).
+# Guards on the notify script's presence, backgrounds the invocation, and never blocks --
+# exactly the shape every existing inline copy already shares (see e.g.
+# `skill-researcher/SKILL.md`'s "Stage 8a: Lifecycle TTS Notification").
+skill_lifecycle_notify() {
+  local state_status="$1"
+  local lifecycle_script=".claude/scripts/lifecycle-notify.sh"
+  if [ -f "$lifecycle_script" ]; then
+    bash "$lifecycle_script" "$state_status" &
   fi
 }
 

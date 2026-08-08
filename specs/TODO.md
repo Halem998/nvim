@@ -21,7 +21,7 @@ next_project_number: 998
 
 ### Agent System
 
-983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+983 [IMPLEMENTING] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
   └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
   └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
@@ -412,10 +412,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 983. Extract shared skill stage blocks as imports; route all skills through skill-base.sh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 951, Task 952, Task 953, Task 959, Task 960, Task 961, Task 962, Task 964, Task 969, Task 981, Task 982, Task 988
+- **Research**: [983_extract_shared_skill_stage_skeleton/reports/01_shared-skill-stage-inventory.md]
+- **Plan**: [983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md]
 
 **Description**: Apply the lit-stage4a-flow.md pattern (ONE shared, directly-executable block imported by @-reference — the single best-factored block in the system, whose own header documents the drift class it fixed) to the rest of the skill lifecycle, and make skills call the skill-base.sh functions that already exist instead of hand-copying them.
 

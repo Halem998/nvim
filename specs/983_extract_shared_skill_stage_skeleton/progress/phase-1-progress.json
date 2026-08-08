@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Settle the marker schema and complete skill-base.sh",
+  "started_at": "2026-08-08T13:30:00Z",
+  "last_updated": "2026-08-08T13:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm Scope Hypothesis (no content readers of marker)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Update skill_create_postflight_marker to Shape A", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 3, "description": "Add skill_lifecycle_notify (Stage 8a)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 4, "description": "Add skill_propagate_memory_candidates (Stage 7a)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 5, "description": "Create test-postflight-marker-schema.sh fixture test", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh"]},
+    {"id": 6, "description": "Register test in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,0 +1,8 @@
+{
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "task_number": 983,
+  "session_id": "sess_1786219295_397818",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "plan_path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md"
+}
