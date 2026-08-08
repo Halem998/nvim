@@ -433,3 +433,24 @@ rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
 rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
 rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 ```
+
+---
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns, this skill MUST NOT:
+
+1. **Edit source files** - All planning work is done by agent
+2. **Run build/test commands** - Verification is done by agent
+3. **Use research tools** - Web/codebase search is for agent use only
+4. **Analyze task requirements** - Analysis is agent work
+5. **Write plan files** - Artifact creation is agent work
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Updating status via `update-task-status.sh` (handles state.json + TODO.md atomically)
+- Linking artifacts in state.json
+- Git commit
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md

@@ -1,0 +1,44 @@
+{
+  "phase": 2,
+  "phase_name": "Restore the MUST NOT boundary and make the lint enforce presence",
+  "started_at": "2026-08-08T00:00:00Z",
+  "last_updated": "2026-08-08T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add MUST NOT (Postflight Boundary) to three core hard skills", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md"
+    ]},
+    {"id": 2, "description": "Add section to skill-orchestrate and skill-orchestrate-hard", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+      "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+    ]},
+    {"id": 3, "description": "Add section-presence check to lint-postflight-boundary.sh, tightened does_skill_delegate()", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh"
+    ]},
+    {"id": 4, "description": "Create test-lint-postflight-boundary.sh with both polarities, register in manifest.json", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh",
+      "agent-system/extensions/core/manifest.json"
+    ]},
+    {"id": 5, "description": "Wire lint-postflight-boundary.sh into verify-deploy.sh as new gate", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/verify-deploy.sh"
+    ]},
+    {"id": 6, "description": "Extend to 3 additional deployed-corpus files found by tightened predicate (email-implementation, nix-research, neovim-research)", "status": "done", "files_touched": [
+      "agent-system/extensions/email/skills/skill-email-implementation/SKILL.md",
+      "agent-system/extensions/nix/skills/skill-nix-research/SKILL.md",
+      "agent-system/extensions/nvim/skills/skill-neovim-research/SKILL.md"
+    ]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "does_skill_delegate() predicate and MUST NOT presence check anchor",
+      "type": "altered",
+      "reason": "Original predicate (Agent tool|subagent_type|subagent|Invoke Subagent) false-positived on negated prose and on any-MUST-NOT-heading presence; tightened to require positive delegation marker and anchor on the specific '## MUST NOT (Postflight Boundary)' heading. This revealed 3 additional files needing the section beyond the plan-time 5.",
+      "annotation": "*(altered: also tightened does_skill_delegate() itself and switched the presence check to the specific ## MUST NOT (Postflight Boundary) heading — see deviation note below)*"
+    }
+  ]
+}

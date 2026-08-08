@@ -2637,6 +2637,29 @@ everywhere, and item 2 stays fully in force outside these three branches. The no
 fresh handoff with `phases_total > 0` or an already-populated `plan_markers_verified` — reads no
 plan file at all, so the ~450-tokens-per-cycle flatness invariant is unaffected there.
 
+---
+
+## MUST NOT (Postflight Boundary)
+
+This section is distinct from, and additive to, the Context Flatness Constraint above: that
+section bounds what this skill reads between dispatches; this section bounds what this skill
+does. After each stage dispatch (research/plan/implement) returns, this skill MUST NOT:
+
+1. **Edit source files** - All research, planning, and implementation work is done by the
+   dispatched skill/agent, never by the orchestrator's own state-machine loop
+2. **Run build/test commands** - Verification is done by the dispatched skill/agent
+3. **Use MCP/WebSearch/domain tools** - Domain tools are for the dispatched skill/agent's use only
+4. **Analyze or grep source** - Analysis is dispatched-skill work
+5. **Write reports/plans/summaries** - Artifact creation is dispatched-skill work
+
+The per-dispatch postflight phase is LIMITED TO:
+- Reading the dispatch's `.orchestrator-handoff.json` (or the bounded return-meta/phase-marker
+  recovery exceptions documented above)
+- Driving the state-machine transition to the next stage
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md
+
 ## Skill-to-Agent Mapping
 
 | Operation | `subagent_type` | Notes |

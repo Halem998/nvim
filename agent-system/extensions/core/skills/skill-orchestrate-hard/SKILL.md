@@ -1785,3 +1785,32 @@ subsection — referenced here, not restated in full.
 | Parallel dispatch | None | Disabled — single blocking phase per cycle (772) |
 | Agents used | Base agents | Hard-mode agents |
 | Prompt construction | Simple | Contract-slot injection |
+
+---
+
+## MUST NOT (Postflight Boundary)
+
+This section names, in the same vocabulary `skill-orchestrate`'s equivalent section and every
+delegating core skill's postflight-boundary section use, the same restrictions the "Tool
+Constraints (Pure Dispatcher)" section above already enforces structurally (via the
+`allowed-tools: Agent, Bash, Read` frontmatter scoping — `Edit` intentionally absent). After each
+stage dispatch (research/plan/implement) returns, this skill MUST NOT:
+
+1. **Edit source files** - This skill never holds the `Edit` tool at all; all research, planning,
+   and implementation work is done by the dispatched agent
+2. **Run build/test/compiler/linter commands** - Forbidden Bash Operations above names the
+   specific denylist (`lake build`, `lean`/`lean-lsp`, `nvim --headless`, `npm`/`pytest`/
+   `cargo test`/`go test`, or any equivalent tool); these belong exclusively to the dispatched
+   `$IMPLEMENT_AGENT`
+3. **Use MCP/WebSearch/domain tools** - Domain tools are for the dispatched agent's use only
+4. **Analyze or grep implementation source** - the Read allowlist above explicitly forbids
+   reading `lua/**`, `after/**`, or any per-project source root; grep is bounded to the three
+   named plan/report uses only
+5. **Write reports/plans/summaries** - Artifact creation is dispatched-agent work
+
+The per-dispatch postflight phase is LIMITED TO the same bounded set the Context-Flatness-style
+read allowlist above already defines: reading `.orchestrator-handoff.json` (or its bounded
+return-meta/phase-marker recovery exceptions), driving the state-machine transition to the next
+cycle, and cleanup of temp/marker/churn-state files.
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md

@@ -31,11 +31,11 @@
 #      redeploy landed is in the same position as one that established it did not.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all nine gates (gate0
-#   through gate8) plus a gate0 "could not run" sentinel, printed to stdout after the final
+#   Emits a normalized, one-per-line, machine-diffable findings set across all ten gates (gate0
+#   through gate9) plus a gate0 "could not run" sentinel, printed to stdout after the final
 #   narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
 #   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
-#   gate label (`gate0`..`gate8`); the automated consumer is expected to invoke
+#   gate label (`gate0`..`gate9`); the automated consumer is expected to invoke
 #   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
 #   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
@@ -385,8 +385,6 @@ else
   fi
 fi
 
-say ""
-
 # ── 8. Shell test suite runner (run-all.sh) ───────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gates 3-4/6-7's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
@@ -409,6 +407,43 @@ else
       while IFS= read -r run_all_line; do
         FINDINGS_LIST+=("FINDING gate8 ${run_all_line#\[FAIL\] }")
       done < <(printf '%s\n' "$run_all_output" | grep -F '[FAIL]')
+    fi
+  fi
+fi
+
+say ""
+
+# ── 9. Postflight boundary lint gate ──────────────────────────────────────────
+# Only meaningful in the source-store repo, mirroring gate 6's SKIP-if-not-source-store
+# precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
+# skips there. UNLIKE gates 6-7, this gate invokes the DEPLOYED copy of the script
+# ($TARGET/.claude/scripts/lint/lint-postflight-boundary.sh), not the source-store one: the
+# script's own PROJECT_ROOT resolution (common_repo_root "$SCRIPT_DIR" 3) assumes a 3-levels-up
+# depth that only lands on the repo root from the deployed path
+# (.claude/scripts/lint -> .claude/scripts -> .claude -> repo root); invoking the source-store
+# copy would resolve PROJECT_ROOT to agent-system/extensions instead and silently scan nothing.
+# This also matches the script's own default scan targets ($PROJECT_ROOT/.claude/skills,
+# $PROJECT_ROOT/.claude/extensions) -- it is designed to audit deployed content, not source.
+say "9. Postflight boundary lint (lint-postflight-boundary.sh, full corpus)"
+CURRENT_GATE="gate9"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- postflight boundary lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh" ]; then
+  fail "lint-postflight-boundary.sh not found in source store"
+elif [ ! -f "$TARGET/.claude/scripts/lint/lint-postflight-boundary.sh" ]; then
+  fail "lint-postflight-boundary.sh not found in deployed tree (run deploy-headless.sh first)"
+else
+  postflight_lint_output=$(cd "$TARGET" && bash "$TARGET/.claude/scripts/lint/lint-postflight-boundary.sh" --verbose 2>&1)
+  postflight_lint_status=$?
+  if [ "$postflight_lint_status" -eq 0 ]; then
+    pass "postflight boundary lint reports no failures (full corpus)"
+  else
+    fail "postflight boundary lint reported failures" \
+         "re-run for detail: bash .claude/scripts/lint/lint-postflight-boundary.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r postflight_lint_line; do
+        FINDINGS_LIST+=("FINDING gate9 ${postflight_lint_line#*VIOLATION\] }")
+      done < <(printf '%s\n' "$postflight_lint_output" | grep -F '[VIOLATION]')
     fi
   fi
 fi

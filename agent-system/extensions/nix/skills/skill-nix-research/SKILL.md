@@ -78,6 +78,26 @@ Commit changes with session ID.
 
 ### Stage 9: Return Brief Summary
 
+---
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns, this skill MUST NOT:
+
+1. **Edit source files** - All research work is done by agent
+2. **Run build/test commands** - Verification is done by agent
+3. **Use MCP-NixOS/WebSearch tools** - Research tools are for agent use only
+4. **Analyze or grep source** - Analysis is agent work
+5. **Write reports** - Artifact creation is agent work
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Calling `update-task-status.sh` for status updates (state.json + TODO.md)
+- Linking artifacts in state.json
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md
+
 ## Return Format
 
 Brief text summary (NOT JSON).

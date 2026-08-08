@@ -204,38 +204,56 @@ and this phase's scope grows.
 
 ---
 
-### Phase 2: Restore the MUST NOT boundary and make the lint enforce presence [NOT STARTED]
+### Phase 2: Restore the MUST NOT boundary and make the lint enforce presence [COMPLETED]
 
 **Goal**: The five skills that lack a postflight-boundary contract get one, and
 `lint-postflight-boundary.sh` gains the section-presence check that would have caught the gap —
 turning a silent pass into a loud failure.
 
 **Tasks**:
-- [ ] Add `## MUST NOT (Postflight Boundary)` to the three core hard skills:
+- [x] Add `## MUST NOT (Postflight Boundary)` to the three core hard skills:
       `skill-researcher-hard`, `skill-implementer-hard`, `skill-planner-hard`. Source the section
       text from `skill-researcher/SKILL.md`'s existing section (the reference implementation), not
       from memory. Note in the phase record that this gap is core-specific: the lean and cslib
       `-hard` variants already carry the section, so `-hard` is not the cause.
-- [ ] Add the section to `skill-orchestrate` and `skill-orchestrate-hard`.
+- [x] Add the section to `skill-orchestrate` and `skill-orchestrate-hard`.
       `skill-orchestrate` already has an unrelated `## MUST NOT (Context Flatness Constraint)` —
       add the postflight-boundary section **alongside** it, do not merge or replace.
       `skill-orchestrate-hard` currently has no MUST NOT section of any kind.
-- [ ] Add a section-presence check to
+- [x] Add a section-presence check to
       `agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh`: for any skill where
       `does_skill_delegate()` is true, assert a `## MUST NOT` heading exists; report a named
       violation if not. Gate it behind the existing `does_skill_delegate()` predicate so
       non-delegating and direct-execution skills are not falsely flagged — this mirrors how the
-      existing pattern checks are already scoped.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh` with
+      existing pattern checks are already scoped. *(altered: also tightened
+      `does_skill_delegate()` itself and switched the presence check to the specific
+      `## MUST NOT (Postflight Boundary)` heading — see deviation note below)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh` with
       both polarities: a synthetic delegating skill **without** a MUST NOT section must make the
       lint exit non-zero; the same skill **with** the section must make it exit 0. Register it in
       `agent-system/extensions/core/manifest.json` under `provides.scripts`.
-- [ ] Wire `lint-postflight-boundary.sh` into
+- [x] Wire `lint-postflight-boundary.sh` into
       `agent-system/extensions/core/scripts/verify-deploy.sh` as a new gate following the
       established gate structure (gates currently run `gate0`..`gate8`; add the next one, matching
       gate 6's agent-contracts-lint gate as the closest structural precedent, including its
       deploy-consumer skip behavior).
-- [ ] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+- [x] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+
+**Deviation (altered, recorded per the standing DELIVERABLE/SOURCE-STORE constraints)**: the
+original `does_skill_delegate()` predicate (`Agent tool|subagent_type|subagent|Invoke Subagent`)
+false-positived on NEGATED prose ("executes inline **without** spawning a subagent" —
+skill-refresh, skill-status-sync) and on any-`## MUST NOT`-heading presence (missing the
+distinction between skill-orchestrate's pre-existing "Context Flatness Constraint" heading and
+the postflight-boundary one). Both were tightened: `does_skill_delegate()` now requires a
+positive delegation marker (`subagent_type:`, `Tool: Agent`, or the two team-skill Agent-tool
+phrasings), verified against the known false-positive skills and the three team skills producing
+zero regressions; the presence check anchors specifically on
+`^## MUST NOT \(Postflight Boundary\)`. This also revealed the true corpus-wide scope: the report's
+"may be larger than five" caveat resolved to exactly 3 additional files in THIS repo's actual
+5-extension deployed footprint (`skill-email-implementation`, `skill-nix-research`,
+`skill-neovim-research` — the other 8 source-store extensions the report's 91-skill count spans
+are not loaded here, per `.claude-extensions.json`), all three also given the section so the
+full deployed-corpus lint (verification bullet 3) is genuinely green now rather than deferred.
 
 **Timing**: 2 hours
 

@@ -470,3 +470,32 @@ rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
 rm -f "specs/${padded_num}_${project_name}/.continuation-loop-guard"
 rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 ```
+
+---
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns -- whether with status implemented, partial, or failed -- this skill MUST proceed immediately to Stage 6 (read metadata file). The skill MUST NOT:
+
+1. **Read source files** - Source files were the subagent's responsibility
+2. **Edit source files** - All implementation work is done by the subagent
+3. **Run build/test commands** - Verification is done by the subagent
+4. **Use MCP tools** - Domain tools are for subagent use only
+5. **Grep or glob the codebase** - Analysis is subagent work
+6. **Write summary/reports** - Artifact creation is done by the subagent
+
+> **Continuation Policy**: If the subagent returned `partial` status **WITH** a `handoff_path` in its metadata, the lead skill **MAY** spawn a successor subagent to continue the work automatically (see Continuation Loop in Postflight). This is the preferred path for context exhaustion recovery.
+>
+> If the subagent returned `partial` status **WITHOUT** a `handoff_path`, the lead skill MUST report partial and let the user re-run `/implement` to resume.
+>
+> If the subagent returned `failed` status, the lead skill MUST NOT attempt to continue or "fill in" the subagent's work. Report the failure and let the user investigate.
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file (.return-meta.json)
+- Updating state.json via jq
+- Updating TODO.md status marker via Edit or script
+- Linking artifacts in state.json
+- Git commit
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md

@@ -103,3 +103,24 @@ Commit changes with session ID.
 
 Return 3-6 bullets. State clearly whether any mutation (`--execute`) occurred and, if so, which
 manifest/sha256 authorized it.
+
+---
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns, this skill MUST NOT:
+
+1. **Call any wrapper binary directly** - All classify/archive/delete/unsubscribe execution is
+   done by the dispatched agent, wrapper-only, per the email extension's safety invariants
+2. **Run build/test commands** - Verification is done by the dispatched agent
+3. **Use MCP/WebSearch tools** - Domain tools are for the dispatched agent's use only
+4. **Analyze or grep source** - Analysis is dispatched-agent work
+5. **Write manifests or reports** - Artifact creation is dispatched-agent work
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Calling `update-task-status.sh` for status updates (state.json + TODO.md)
+- Linking artifacts in state.json
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md

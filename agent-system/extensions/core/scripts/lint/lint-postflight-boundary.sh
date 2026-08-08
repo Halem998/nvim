@@ -53,11 +53,34 @@ fi
 VIOLATIONS=0
 FILES_CHECKED=0
 FILES_WITH_VIOLATIONS=0
+MISSING_SECTION_COUNT=0
 
 # Check if a skill delegates to a subagent
+#
+# TIGHTENED (see the shared-skill-stage-skeleton report's MUST-NOT-presence finding): the prior
+# pattern (`Agent tool|subagent_type|subagent|Invoke Subagent`) matched bare substring mentions
+# of "subagent" anywhere in the file -- including NEGATED prose like "executes inline without
+# spawning a subagent" (skill-refresh, skill-status-sync) or "Direct execution without subagent
+# overhead" (skill-status-sync). Those are direct-execution skills that explicitly do NOT
+# delegate; the loose predicate falsely counted them as needing a postflight-boundary section.
+# The four alternatives below are all POSITIVE delegation markers observed across every skill
+# that already carries a legitimate MUST NOT (Postflight Boundary) section (29/32 via
+# `subagent_type:`, the remaining 3 team skills via the "Agent tool for team coordination" /
+# "Spawn teammates using Agent tool" phrasing) and were verified to produce zero false positives
+# against the known direct-execution skills (skill-status-sync, skill-refresh, skill-tag,
+# skill-git-workflow, skill-zulip, skill-todo).
 does_skill_delegate() {
     local file="$1"
-    grep -qE 'Agent tool|subagent_type|subagent|Invoke Subagent' "$file" 2>/dev/null
+    grep -qE 'subagent_type[[:space:]]*:|Tool:[[:space:]]*Agent\b|Spawn teammates using Agent tool|Agent tool for team coordination' "$file" 2>/dev/null
+}
+
+# Check for the specific "## MUST NOT (Postflight Boundary)" heading -- NOT any "## MUST NOT"
+# heading. A skill may carry an unrelated MUST NOT section (e.g. skill-orchestrate's
+# "## MUST NOT (Context Flatness Constraint)") without carrying the postflight-boundary one;
+# treating any-heading as sufficient would silently pass a skill that lacks the actual contract.
+has_postflight_boundary_section() {
+    local file="$1"
+    grep -qE '^## MUST NOT \(Postflight Boundary\)' "$file" 2>/dev/null
 }
 
 # Check for prohibited patterns in postflight section
@@ -137,6 +160,17 @@ for skill_file in "${SKILL_PATHS[@]}"; do
 
     $VERBOSE && echo "Checking: $skill_file"
 
+    # Section-presence check: a delegating skill without the specific
+    # "## MUST NOT (Postflight Boundary)" heading is a named violation. This turns the prior
+    # silent pass (a skill could lack the section entirely and the pattern checks below would
+    # simply find nothing to complain about) into a loud, named failure.
+    if ! has_postflight_boundary_section "$skill_file"; then
+        echo -e "${RED}[VIOLATION]${NC} $skill_file: missing '## MUST NOT (Postflight Boundary)' section"
+        ((MISSING_SECTION_COUNT++)) || true
+        ((VIOLATIONS++)) || true
+        ((FILES_WITH_VIOLATIONS++)) || true
+    fi
+
     # Check for violations - capture return value
     set +e
     check_postflight_violations "$skill_file"
@@ -146,7 +180,7 @@ for skill_file in "${SKILL_PATHS[@]}"; do
     if [[ $file_violations -gt 0 ]]; then
         ((FILES_WITH_VIOLATIONS++)) || true
         ((VIOLATIONS+=file_violations)) || true
-    else
+    elif has_postflight_boundary_section "$skill_file"; then
         $VERBOSE && echo -e "${GREEN}[PASS]${NC} $skill_file"
     fi
 done
@@ -158,6 +192,7 @@ echo "Postflight Boundary Check Summary"
 echo "================================"
 echo "Files checked: $FILES_CHECKED"
 echo "Files with violations: $FILES_WITH_VIOLATIONS"
+echo "Missing '## MUST NOT (Postflight Boundary)' section: $MISSING_SECTION_COUNT"
 echo "Total violations: $VIOLATIONS"
 
 if [[ $VIOLATIONS -eq 0 ]]; then
