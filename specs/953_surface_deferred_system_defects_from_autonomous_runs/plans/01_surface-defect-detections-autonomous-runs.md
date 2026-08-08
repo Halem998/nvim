@@ -526,24 +526,24 @@ report describes, so the read can be placed before cleanup.
 
 ---
 
-### Phase 7: Render the enumerated section in `commands/orchestrate.md` [NOT STARTED]
+### Phase 7: Render the enumerated section in `commands/orchestrate.md` [COMPLETED]
 
 **Goal**: Make the accumulated detections visible to the operator at batch postflight and at
 single-task completion, in the same table style as the existing Deferred sections.
 
 **Tasks**:
-- [ ] Insert a new `### System Defects Detected` section in the "Batch Orchestrate Results"
+- [x] Insert a new `### System Defects Detected` section in the "Batch Orchestrate Results"
       consolidated-output template, positioned immediately after
       `### Pre-Existing Deploy-Verify Failures (Not Deferred)` and immediately before
       `### Next Steps`.
-- [ ] Give it a parenthetical gating note copied in structure from its neighbour: rendered only
+- [x] Give it a parenthetical gating note copied in structure from its neighbour: rendered only
       when `detected_defects` is non-empty; populated from `mt_state_file.detected_defects` /
       `.return-meta-multi.json`'s `metadata.detected_defects`; one row per entry; **renders on a
       SUCCEEDED (`"implemented"`) batch just as readily as a `"partial"` one** — an observation,
       never a failure signal. Reference
       `context/patterns/system-defect-discrimination.md` for the underlying predicate. Do not gate
       on `exit_status` in any form.
-- [ ] Give it the table, in the same style as `### Deferred (other admission exclusions)`:
+- [x] Give it the table, in the same style as `### Deferred (other admission exclusions)`:
       ```markdown
       | Task | Defect Class | Attributed Source Path | Detecting Site | Detail |
       |------|--------------|-------------------------|------------------|--------|
@@ -552,18 +552,18 @@ single-task completion, in the same table style as the existing Deferred section
       The three columns the required behaviour names — defect class, attributed source-store path
       under `agent-system/extensions/**`, and detecting site — are mandatory; Task and Detail are
       the contextual columns.
-- [ ] Add an operator-remedy line beneath the table: these rows name a defect in the agent system
+- [x] Add an operator-remedy line beneath the table: these rows name a defect in the agent system
       itself, not in the task's work; the remedy is a fix in the named source-store path, and the
       durable record is already in `specs/events.jsonl`. State that no task was excluded and no
       task status was mutated because of these rows.
-- [ ] Add the single-task counterpart in the `## Output` section, beneath the existing
+- [x] Add the single-task counterpart in the `## Output` section, beneath the existing
       Completion / Partial / Blocked lines: a **System Defects Detected** block gated identically
       (non-empty `metadata.detected_defects` read from the task's `.return-meta.json`), using the
       same table shape as the batch section so the two renderings stay visually consistent. State
       that it renders on a Completion outcome as readily as on a Partial one.
-- [ ] Add a sentence to the single-task block noting it applies to `/orchestrate --hard` runs
+- [x] Add a sentence to the single-task block noting it applies to `/orchestrate --hard` runs
       identically, since hard mode writes the same `metadata.detected_defects` key (from Phase 5).
-- [ ] Confirm the new sections introduce no `AskUserQuestion` and no interactive step of any kind,
+- [x] Confirm the new sections introduce no `AskUserQuestion` and no interactive step of any kind,
       and create no task.
 
 **Timing**: 1 hour

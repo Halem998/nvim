@@ -659,6 +659,26 @@ See `context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle 
 Checkpoint` subsection (Failure contract branch (c), Baseline mechanism, and Exit-2 resolution)
 for the full contract; not restated here.
 
+### System Defects Detected
+
+(Rendered only when `detected_defects` is non-empty — populated from
+`mt_state_file.detected_defects` / `.return-meta-multi.json`'s `metadata.detected_defects`, one
+row per entry. Renders on a SUCCEEDED (`"implemented"`) batch just as readily as a `"partial"`
+one: a detection is an OBSERVATION about the agent system, never a failure signal about the
+batch, and is never omitted merely because the batch otherwise completed cleanly. Placed
+immediately after `### Pre-Existing Deploy-Verify Failures (Not Deferred)`, before
+`### Next Steps`. See `context/patterns/system-defect-discrimination.md` for the underlying
+predicate.)
+
+| Task | Defect Class | Attributed Source Path | Detecting Site | Detail |
+|------|--------------|-------------------------|------------------|--------|
+| #{N} | OFF_SCHEMA_STATUS | agent-system/extensions/core/skills/skill-orchestrate/SKILL.md | skill-orchestrate/SKILL.md:stage-mt4-tier-c | handoff dispatch_status is off-schema |
+
+These rows name a defect in the agent system itself, not in any task's work. Operator remedy: fix
+the named source-store path under `agent-system/extensions/**`; the durable record of each firing
+is already in `specs/events.jsonl`. **No task was excluded and no task status was mutated because
+of these rows** — unlike every Deferred section above, this one costs the batch nothing.
+
 ### Next Steps
 - Re-run failed tasks: /orchestrate {failed_task_numbers}
 - **When ZERO DISPATCH fired**: there are no failed tasks to re-run — point at the re-run
@@ -786,6 +806,20 @@ Commit failure is non-blocking (log and continue).
 **Partial**: `Orchestration paused for Task #{N}` | Status: `[{STATUS}]` | Cycles: M/5 | `Next: /orchestrate {N}`
 
 **Blocked**: `Task #{N} requires manual intervention` | Blocker description | Suggested actions
+
+**System Defects Detected**: rendered only when `metadata.detected_defects` in the task's
+`.return-meta.json` is non-empty. It renders on a **Completion** outcome as readily as on a
+**Partial** one — a detection is an observation about the agent system, never a verdict on the
+task. This applies to `/orchestrate --hard` runs identically: hard mode writes the same
+`metadata.detected_defects` key from its own Stage 8 metadata merge. Same table shape as the
+batch section above, so the two renderings stay visually consistent:
+
+| Task | Defect Class | Attributed Source Path | Detecting Site | Detail |
+|------|--------------|-------------------------|------------------|--------|
+| #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/skills/skill-orchestrate/SKILL.md | skill-orchestrate/SKILL.md:stage-5-stale-handoff | handoff mtime predates this dispatch window |
+
+Operator remedy: fix the named source-store path under `agent-system/extensions/**`; the durable
+record is already in `specs/events.jsonl`. No task status was mutated because of these rows.
 
 **`--dry-run`**: the printed admission report only — no status transition, no cycle consumed, no commit. The invocation ends after the report; nothing else in this Output section applies to a `--dry-run` run.
 
