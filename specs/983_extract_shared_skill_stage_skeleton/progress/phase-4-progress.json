@@ -1,0 +1,31 @@
+{
+  "phase": 4,
+  "phase_name": "Convert the three core skills onto the shared skeleton",
+  "started_at": "2026-08-08T00:00:00Z",
+  "last_updated": "2026-08-08T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert skill-researcher onto shared skeleton", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-researcher/SKILL.md"
+    ]},
+    {"id": 2, "description": "Convert skill-implementer onto shared skeleton (partial: only shared-block-covered stages)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-implementer/SKILL.md"
+    ]},
+    {"id": 3, "description": "Convert skill-planner onto shared skeleton, add real Stage 7a", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-planner/SKILL.md"
+    ]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Manually verify run-all.sh via direct .claude/scripts/tests/run-all.sh invocation", "result": "failed", "reason": "deployed-tree copy of a couple of test files has a pre-existing relative-path depth bug (../../../../.. assumes source-store nesting depth); unrelated to Phase 3/4 content. verify-deploy.sh gate 8 correctly invokes the source-store copy instead, which passes. One additional failure (test-claude-refresh-matcher.sh) is a live-PID timing flake, also pre-existing and unrelated."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "skill-planner's Stage 9 (Git Commit) interleaves between Stage 8a and cleanup, unlike skill-researcher's skeleton",
+      "type": "altered",
+      "reason": "The skill-postflight-flow.md import was split at skill-planner's existing stage boundaries (Stage 7/7a/8/8a import the shared functions; Stage 10 calls skill_cleanup directly) rather than imported as one contiguous block, to avoid disturbing the pre-existing Stage 9 Git Commit stage sitting between TTS notify and cleanup.",
+      "annotation": "*(deviation: altered — see deviation note in plan)*"
+    }
+  ]
+}

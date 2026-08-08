@@ -366,7 +366,7 @@ what Rule S actually reads.
 
 ---
 
-### Phase 4: Convert the three core skills onto the shared skeleton [NOT STARTED]
+### Phase 4: Convert the three core skills onto the shared skeleton [COMPLETED]
 
 **Goal**: `skill-researcher`, `skill-planner`, and `skill-implementer` — the reference
 implementations that today call **zero** `skill-base.sh` functions — import the shared blocks and
@@ -374,24 +374,42 @@ route every lifecycle stage through `skill-base.sh`. `skill-planner` gains the S
 had, closing the dropped-`memory_candidates` gap.
 
 **Tasks**:
-- [ ] In `skill-researcher/SKILL.md`, replace the hand-written Stage 2, Stage 3, Stage 5b, Stage 7,
+- [x] In `skill-researcher/SKILL.md`, replace the hand-written Stage 2, Stage 3, Stage 5b, Stage 7,
       Stage 7a, Stage 8, Stage 8a, and Stage 9 bodies with `@`-imports of the three Phase 3 blocks.
       Preserve the file's existing Stage numbering and its `## Postflight (ALWAYS EXECUTE)` marker —
       that numbering is the convention Phase 11 will document, not something to change here.
-      Preserve Stage 4a's existing `lit-stage4a-flow.md` import untouched.
-- [ ] Do the same for `skill-implementer/SKILL.md`. Note its divergences from the researcher
+      Preserve Stage 4a's existing `lit-stage4a-flow.md` import untouched. *(completed)*
+- [x] Do the same for `skill-implementer/SKILL.md`. Note its divergences from the researcher
       skeleton (Stage 7 embeds researcher's 7+7a as "Steps 1-4"; it has a continuation loop, Stage
       5a/5c, a Stage 6b commit-inside-loop, and a Stage 9 Git Commit distinct from Stage 10 Cleanup).
       Convert only what the shared blocks cover; leave the implementer-specific stages alone and
-      record which ones were deliberately not touched.
-- [ ] In `skill-planner/SKILL.md`, replace the hand-written stages **and add a real Stage 7a**
+      record which ones were deliberately not touched. *(completed: Stage 9 Git Commit and Stages
+      5a/5c/6b left untouched as implementer-specific; Stage 7's memory-candidate Step 4 and
+      Stage 8/8a converted to shared-function calls; a redundant duplicate `source
+      skill-base.sh` at old Stage 7 Steps 2-3 was removed since Stage 2+3 now sources it once)*
+- [x] In `skill-planner/SKILL.md`, replace the hand-written stages **and add a real Stage 7a**
       between its existing Stage 7 and Stage 8, calling `skill_propagate_memory_candidates`. This is
       an intentional behavior fix, not a refactor artifact: `skill-planner` has no Stage 7a today and
       `grep memory_candidates skill-planner/SKILL.md` currently returns zero hits, so candidates
-      emitted by `planner-agent` are silently discarded.
-- [ ] Verify each converted skill still `source`s `skill-base.sh` exactly once, near the top of its
-      first bash-bearing stage.
-- [ ] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      emitted by `planner-agent` are silently discarded. *(completed: added `memory_candidates` read
+      at Stage 6, a real `### Stage 7a: Propagate Memory Candidates` heading, and kept Stage 9 Git
+      Commit / Stage 10 Cleanup as this skill's own interleaved stages, per deviation note below)*
+- [x] Verify each converted skill still `source`s `skill-base.sh` exactly once, near the top of its
+      first bash-bearing stage. *(completed: confirmed via
+      `grep -c '^source .claude/scripts/skill-base.sh'` returning 1 for all three)*
+- [x] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(completed: `git status --short` shows zero `.claude/` modifications;
+      `check-task-references.sh` passes)*
+
+**Deviation (altered)**: `skill-planner`'s Stage 9 (Git Commit) sits between Stage 8a (TTS notify)
+and Stage 10 (Cleanup) in its existing numbering, unlike `skill-researcher`'s skeleton where
+cleanup follows notify directly. The `skill-postflight-flow.md` import was therefore split at its
+natural stage boundaries rather than imported as one contiguous block: Stage 7/7a/8/8a import the
+shared block's corresponding stages, and Stage 10 calls `skill_cleanup` directly (documented as
+reusing the shared block's Stage 9 behavior from a different physical location) rather than
+importing the whole fragment verbatim at one site. This is a structural accommodation, not a
+scope or behavior change — every function call the shared block specifies is still made exactly
+once, in the same order, just split across this skill's pre-existing stage boundaries.
 
 **Timing**: 2.5 hours
 

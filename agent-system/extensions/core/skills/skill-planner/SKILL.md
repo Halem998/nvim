@@ -69,41 +69,22 @@ fi
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status to "planning" BEFORE invoking subagent.
-
-The centralized script handles state.json, TODO.md task entry status marker, and TODO.md Task Order status marker atomically:
-
-```bash
-bash .claude/scripts/update-task-status.sh preflight $task_number plan $session_id
-```
-
-If the script exits non-zero, stop execution and return error. Exit code 2 indicates state.json failure; exit code 3 indicates TODO.md failure.
-
----
-
-### Stage 3: Create Postflight Marker
-
-Create the marker file to prevent premature termination:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
-# Ensure task directory exists
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-planner",
-  "task_number": ${task_number},
-  "operation": "plan",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
+skill_name="skill-planner"
+operation="plan"
 ```
+
+This skill supplies the shared block's preconditions: `task_number`, `padded_num`,
+`project_name`, `session_id`, `operation`, `skill_name`. Follow the shared block's ordering and
+failure-semantics rules exactly — do not re-inline the `update-task-status.sh preflight` call or
+the `.postflight-pending` heredoc here.
 
 ---
 
@@ -306,12 +287,8 @@ The subagent will:
 
 ### Stage 5b: Self-Execution Fallback
 
-**CRITICAL**: If you performed the work above WITHOUT using the Agent tool (i.e., you read files,
-wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
-`.return-meta.json` file now before proceeding to postflight. Use the schema from
-`return-metadata-file.md` with status value `"planned"` and the appropriate artifact information.
-
-If you DID use the Agent tool (Stage 5), skip this stage -- the subagent already wrote the metadata.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"planned"`.
 
 ---
 
@@ -332,11 +309,17 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
     artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
     artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+    memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
 else
     echo "Error: Invalid or missing metadata file"
     status="failed"
+    memory_candidates="[]"
 fi
 ```
+
+**Note**: `memory_candidates` is read here so Stage 7a below can propagate it — this read did not
+exist before this skill was converted onto the shared skeleton, closing a gap where
+`planner-agent`-emitted candidates were silently discarded.
 
 ---
 
@@ -359,63 +342,46 @@ fi
 
 ### Stage 7: Update Task Status (Postflight)
 
-If subagent status is "planned", update state.json and TODO.md atomically using the centralized script:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 7 (postflight status update):
 
 ```bash
-bash .claude/scripts/update-task-status.sh postflight $task_number plan $session_id
+skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
 ```
 
-If the script exits non-zero, log a warning but continue with artifact linking and git commit (postflight errors are non-blocking).
-
-**On partial/failed**: Keep status as "planning" for resume (do not call the script).
+**On partial/failed**: Keep status as "planning" for resume — `skill_postflight_update` already
+no-ops on a non-success status.
 
 ---
 
-### Stage 8: Link Artifacts
+### Stage 7a: Propagate Memory Candidates
 
-Add artifact to state.json with summary.
-
-**IMPORTANT**: Use two-step jq pattern to avoid Issue #1132 escaping bug. See `jq-escaping-workarounds.md`.
-
-```bash
-if [ -n "$artifact_path" ]; then
-    # Step 1: Filter out existing plan artifacts (use "| not" pattern to avoid != escaping - Issue #1132)
-    bash .claude/scripts/state-write.sh \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-        [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "plan" | not)]' \
-      --session-id "$session_id"
-
-    # Step 2: Add new plan artifact
-    bash .claude/scripts/state-write.sh \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      --session-id "$session_id" \
-      --arg path "$artifact_path" --arg type "$artifact_type" --arg summary "$artifact_summary"
-fi
-```
-
-**Update TODO.md**: Regenerate from state.json (state.json artifact update was done in the previous step):
+**New for this skill** — see the Stage 6 note above: `skill-planner` had no Stage 7a before this
+conversion, and `planner-agent`-emitted `memory_candidates` were silently discarded. Follow
+`@.claude/context/patterns/skill-postflight-flow.md`'s Stage 7a:
 
 ```bash
-bash .claude/scripts/generate-todo.sh || echo "WARNING: generate-todo.sh failed (non-fatal)" >&2
+skill_propagate_memory_candidates "$task_number" "$memory_candidates" "$session_id"
 ```
-
-If the script exits non-zero, log a warning but continue (regeneration errors are non-blocking).
 
 ---
 
-### Stage 8a: Lifecycle TTS Notification
+### Stage 8, 8a: Artifact Linking, Lifecycle Notify
 
-Fire TTS and WezTerm tab coloring after artifact linking is complete:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8 (artifact linking) and
+Stage 8a (TTS notify):
 
 ```bash
-lifecycle_script=".claude/scripts/lifecycle-notify.sh"
-if [ -f "$lifecycle_script" ]; then
-    bash "$lifecycle_script" "$STATE_STATUS" &
-fi
+field_name='**Plan**'
+next_field='**Description**'
+skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" \
+  "$field_name" "$next_field" "$session_id"
+skill_lifecycle_notify "$STATE_STATUS"
 ```
 
-Non-blocking: called in background after artifacts are linked. Speaks "Tab N STATUS"
-(e.g., "Tab 3 planned") to announce the lifecycle transition.
+**Not covered here**: the shared block's own Stage 9 (cleanup) is deliberately NOT invoked at
+this point — this skill's numbering interleaves a Git Commit stage (below) between TTS notify and
+cleanup, so cleanup is called explicitly at the existing **Stage 10: Cleanup** heading below
+instead of through this import.
 
 ---
 
@@ -438,12 +404,13 @@ bash .claude/scripts/git-commit-scoped.sh \
 
 ### Stage 10: Cleanup
 
-Remove marker and metadata files:
+Remove marker and metadata files via the shared function (see
+`@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 for the full behavior — called
+here rather than at that block's own import point because this skill's Stage 9 is Git Commit,
+not cleanup):
 
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ---

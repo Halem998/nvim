@@ -68,41 +68,27 @@ fi
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status to "implementing" BEFORE invoking subagent.
-
-Run the centralized status update script, which atomically updates state.json, TODO.md (task entry + Task Order), and the plan file:
-
-```bash
-bash .claude/scripts/update-task-status.sh preflight "$task_number" implement "$session_id"
-```
-
-**Note**: The script handles all three updates (state.json status/timestamps/session_id, TODO.md `[PLANNED]` -> `[IMPLEMENTING]` in both task entry and Task Order, and plan file status -> `[IMPLEMENTING]`) in a single call. No additional Edit or jq operations are needed.
-
----
-
-### Stage 3: Create Postflight Marker
-
-Create the marker file to prevent premature termination:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
-# Ensure task directory exists
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-implementer",
-  "task_number": ${task_number},
-  "operation": "implement",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
+skill_name="skill-implementer"
+operation="implement"
 ```
+
+This skill supplies the shared block's preconditions: `task_number`, `padded_num`,
+`project_name`, `session_id`, `operation`, `skill_name`. Follow the shared block's ordering and
+failure-semantics rules exactly — do not re-inline the `update-task-status.sh preflight` call or
+the `.postflight-pending` heredoc here.
+
+**Note**: `update-task-status.sh preflight implement` also updates the plan file status to
+`[IMPLEMENTING]`, in addition to the state.json/TODO.md updates `skill_preflight_update`
+documents generically — this is existing `update-task-status.sh` behavior for the `implement`
+operation, unchanged by this conversion.
 
 ---
 
@@ -293,12 +279,8 @@ If the subagent's text return parses as valid JSON, log a warning (v1 pattern in
 
 ### Stage 5b: Self-Execution Fallback
 
-**CRITICAL**: If you performed the work above WITHOUT using the Agent tool (i.e., you read files,
-wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
-`.return-meta.json` file now before proceeding to postflight. Use the schema from
-`return-metadata-file.md` with status value `"implemented"` and the appropriate artifact information.
-
-If you DID use the Agent tool (Stage 5), skip this stage -- the subagent already wrote the metadata.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"implemented"`.
 
 ---
 
@@ -487,25 +469,21 @@ fi
 writer (`skill_propagate_completion_summary` in `scripts/skill-base.sh`), which implements the
 same guarded write both steps used to duplicate inline (non-empty-guarded `completion_summary`;
 `task_type != "meta"` AND non-empty/non-`"[]"`-guarded `roadmap_items`) — this is one of six
-call sites that converge on that single function:
+call sites that converge on that single function (`skill-base.sh` is already sourced once at
+Stage 2 + Stage 3 above, so it is not re-sourced here):
 ```bash
-source .claude/scripts/skill-base.sh
 skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
 ```
 
-**Step 4**: Propagate memory candidates (if any) with append semantics:
+**Step 4**: Propagate memory candidates (if any) via the shared function (Stage 7a in the
+`skill-postflight-flow.md` skeleton — folded into this Step 4 rather than a separate heading,
+since this skill's postflight status update is itself embedded inside the continuation loop's
+per-status branches, not a standalone Stage 7):
 ```bash
-if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
-    # Append new candidates to existing array (append semantics, not overwrite)
-    bash .claude/scripts/state-write.sh \
-      '(.active_projects[] | select(.project_number == '$task_number')).memory_candidates =
-        ((.active_projects[] | select(.project_number == '$task_number')).memory_candidates // []) + $new_candidates' \
-      --session-id "$session_id" \
-      --argjson new_candidates "$memory_candidates"
-fi
+skill_propagate_memory_candidates "$task_number" "$memory_candidates" "$session_id"
 ```
 
-**Note**: Uses `// []` fallback and `+` append so research candidates (from skill-researcher) and implementation candidates coexist on the same task entry.
+**Note**: Append semantics (never overwrite) so research candidates (from skill-researcher) and implementation candidates coexist on the same task entry.
 
 **Break loop** — proceed to Stage 8 (Link Artifacts).
 
@@ -588,45 +566,26 @@ done  # End Continuation Loop
 
 ### Stage 8: Link Artifacts
 
-Add artifact to state.json with summary.
-
-**IMPORTANT**: Use two-step jq pattern to avoid Issue #1132 escaping bug. See `jq-escaping-workarounds.md`.
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8 (artifact linking):
 
 ```bash
-if [ -n "$artifact_path" ]; then
-    # Step 1: Filter out existing summary artifacts (use "| not" pattern to avoid != escaping - Issue #1132)
-    bash .claude/scripts/state-write.sh \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-        [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "summary" | not)]' \
-      --session-id "$session_id"
-
-    # Step 2: Add new summary artifact
-    bash .claude/scripts/state-write.sh \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      --session-id "$session_id" \
-      --arg path "$artifact_path" --arg type "$artifact_type" --arg summary "$artifact_summary"
-fi
+field_name='**Summary**'
+next_field='**Description**'
+skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" \
+  "$field_name" "$next_field" "$session_id"
 ```
 
-**Update TODO.md** (if implemented): Regenerate from state.json (state.json artifact update was done in the previous step):
-
-```bash
-bash .claude/scripts/generate-todo.sh || echo "WARNING: generate-todo.sh failed (non-fatal)" >&2
-```
-
-If the script exits non-zero, log a warning but continue (regeneration errors are non-blocking).
+Performs the two-step jq pattern internally (Issue #1132-safe) and regenerates TODO.md when
+`artifact_path` is non-empty — do not re-inline that pattern here.
 
 ---
 
 ### Stage 8a: Lifecycle TTS Notification
 
-Fire TTS and WezTerm tab coloring after artifact linking is complete:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8a (TTS notify):
 
 ```bash
-lifecycle_script=".claude/scripts/lifecycle-notify.sh"
-if [ -f "$lifecycle_script" ]; then
-    bash "$lifecycle_script" "$STATE_STATUS" &
-fi
+skill_lifecycle_notify "$STATE_STATUS"
 ```
 
 Non-blocking: called in background after artifacts are linked. Speaks "Tab N STATUS"
@@ -680,13 +639,13 @@ description — no longer diverges.
 
 Cleanup runs **after** the continuation loop exits. The `.postflight-pending` marker persists across loop iterations to ensure the SubagentStop hook fires correctly.
 
-Remove marker, metadata, and loop-guard files:
+Remove marker and metadata files via the shared function (`skill-postflight-flow.md`'s Stage 9),
+then remove the implementer-specific continuation-loop guard separately — `skill_cleanup` stays a
+2-arg function shared by every importer and does not know about this implementer-only file:
 
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
+skill_cleanup "$padded_num" "$project_name"
 rm -f "specs/${padded_num}_${project_name}/.continuation-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 ```
 
 ---

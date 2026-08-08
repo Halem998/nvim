@@ -63,39 +63,22 @@ description=$(echo "$task_data" | jq -r '.description // ""')
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status to "researching" BEFORE invoking subagent.
-
-```bash
-.claude/scripts/update-task-status.sh preflight "$task_number" research "$session_id"
-```
-
-This atomically updates state.json (status, timestamps, session_id), TODO.md task entry, and TODO.md Task Order section. If the script exits non-zero, abort and keep current status.
-
----
-
-### Stage 3: Create Postflight Marker
-
-Create the marker file to prevent premature termination:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
-# Ensure task directory exists
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-researcher",
-  "task_number": ${task_number},
-  "operation": "research",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
+skill_name="skill-researcher"
+operation="research"
 ```
+
+This skill supplies the shared block's preconditions: `task_number`, `padded_num`,
+`project_name`, `session_id`, `operation`, `skill_name`. Follow the shared block's ordering and
+failure-semantics rules exactly — do not re-inline the `update-task-status.sh preflight` call or
+the `.postflight-pending` heredoc here.
 
 ---
 
@@ -284,12 +267,8 @@ The subagent will:
 
 ### Stage 5b: Self-Execution Fallback
 
-**CRITICAL**: If you performed the work above WITHOUT using the Agent tool (i.e., you read files,
-wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
-`.return-meta.json` file now before proceeding to postflight. Use the schema from
-`return-metadata-file.md` with status value `"researched"` and the appropriate artifact information.
-
-If you DID use the Agent tool (Stage 5), skip this stage -- the subagent already wrote the metadata.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"researched"`.
 
 ---
 
@@ -336,105 +315,37 @@ fi
 
 ---
 
-### Stage 7: Update Task Status (Postflight)
+### Stage 7, 7a, 8, 8a, 9: Postflight Status, Memory Candidates, Artifact Linking, Notify, Cleanup
 
-If status is "researched", update status and increment artifact number:
+Follow `@.claude/context/patterns/skill-postflight-flow.md` in full for Stage 7 (postflight status
+update), Stage 7a (memory-candidate propagation), Stage 8 (artifact linking), Stage 8a (TTS
+notify), and Stage 9 (cleanup):
 
 ```bash
-# Step 1: Update status (state.json, TODO.md task entry, TODO.md Task Order)
+field_name='**Research**'
+next_field='**Plan**'
+```
+
+This skill supplies the shared block's preconditions: `task_number`, `padded_num`,
+`project_name`, `session_id`, `operation`, `status`, `artifact_path`, `artifact_type`,
+`artifact_summary`, `memory_candidates`, `field_name`, `next_field`.
+
+**Research-specific addition, NOT covered by the shared block**: research is the only operation
+that increments `next_artifact_number` (plan and implement stay at `current - 1` to share the
+same round). Run this immediately after the shared block's Stage 7 call, guarded the same way:
+
+```bash
 if [ "$status" = "researched" ]; then
-  .claude/scripts/update-task-status.sh postflight "$task_number" research "$session_id"
-fi
-
-# Step 2: Increment next_artifact_number (research advances the sequence)
-bash .claude/scripts/state-write.sh \
-  '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
-    (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
-  --session-id "$session_id"
-```
-
-**Note**: Research is the only operation that increments `next_artifact_number`. Plan and implement use `(current - 1)` to stay in the same "round".
-
-**On partial/failed**: Keep status as "researching" for resume (do not call the script).
-
----
-
-### Stage 7a: Propagate Memory Candidates
-
-If the agent emitted memory candidates, append them to the task's state.json entry using append semantics (merge with any existing candidates from prior operations).
-
-```bash
-if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
-    # Append new candidates to existing array (append semantics, not overwrite)
-    bash .claude/scripts/state-write.sh \
-      '(.active_projects[] | select(.project_number == '$task_number')).memory_candidates =
-        ((.active_projects[] | select(.project_number == '$task_number')).memory_candidates // []) + $new_candidates' \
-      --session-id "$session_id" \
-      --argjson new_candidates "$memory_candidates"
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
+      (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
+    --session-id "$session_id"
 fi
 ```
 
-**Note**: Uses `// []` fallback so this works whether or not the task already has candidates. Append semantics ensure research and implementation candidates coexist.
-
----
-
-### Stage 8: Link Artifacts
-
-Add artifact to state.json with summary.
-
-**IMPORTANT**: Use two-step jq pattern to avoid Issue #1132 escaping bug. See `jq-escaping-workarounds.md`.
-
-```bash
-if [ -n "$artifact_path" ]; then
-    # Step 1: Filter out existing research artifacts (use "| not" pattern to avoid != escaping - Issue #1132)
-    bash .claude/scripts/state-write.sh \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-        [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "research" | not)]' \
-      --session-id "$session_id"
-
-    # Step 2: Add new research artifact
-    bash .claude/scripts/state-write.sh \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      --session-id "$session_id" \
-      --arg path "$artifact_path" --arg type "$artifact_type" --arg summary "$artifact_summary"
-fi
-```
-
-**Regenerate TODO.md** from state.json (state.json artifact update was done in the step above):
-
-```bash
-bash .claude/scripts/generate-todo.sh || echo "WARNING: generate-todo.sh failed (non-fatal)" >&2
-```
-
-This regenerates TODO.md from state.json with correct bracket-only `[path]` format artifact links. Never use markdown `[name](path)` format for artifact links. If the script exits non-zero, log a warning but continue (regeneration errors are non-blocking).
-
----
-
-### Stage 8a: Lifecycle TTS Notification
-
-Fire TTS and WezTerm tab coloring after artifact linking is complete:
-
-```bash
-lifecycle_script=".claude/scripts/lifecycle-notify.sh"
-if [ -f "$lifecycle_script" ]; then
-    bash "$lifecycle_script" "$STATE_STATUS" &
-fi
-```
-
-Non-blocking: called in background after artifacts are linked. Speaks "Tab N STATUS"
-(e.g., "Tab 3 researched") to announce the lifecycle transition.
-
----
-
-### Stage 9: Cleanup
-
-Remove marker and metadata files:
-
-```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
-```
+**On partial/failed**: Keep status as "researching" for resume (`skill_postflight_update` already
+no-ops on a non-success status; the artifact-number increment above is separately guarded on
+`status = "researched"`).
 
 ---
 
