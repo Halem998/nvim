@@ -3160,6 +3160,88 @@
       }
     },
     {
+      "path": "patterns/skill-preflight-flow.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Shared Stage 2 + Stage 3 preflight status update and postflight-marker-creation block imported by lifecycle skills",
+      "line_count": 78,
+      "keywords": [
+        "preflight",
+        "postflight-pending",
+        "marker",
+        "skill-base"
+      ],
+      "topics": [
+        "orchestration",
+        "lifecycle"
+      ],
+      "load_when": {
+        "agents": [
+          "general-research-agent",
+          "general-research-hard-agent",
+          "general-implementation-agent",
+          "general-implementation-hard-agent",
+          "planner-agent",
+          "planner-hard-agent"
+        ]
+      }
+    },
+    {
+      "path": "patterns/skill-postflight-flow.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Shared Stage 7/7a/8/8a/9 postflight status update, memory-candidate propagation, artifact linking, TTS notify, and cleanup block imported by lifecycle skills",
+      "line_count": 126,
+      "keywords": [
+        "postflight",
+        "memory_candidates",
+        "artifact-linking",
+        "cleanup",
+        "skill-base"
+      ],
+      "topics": [
+        "orchestration",
+        "lifecycle"
+      ],
+      "load_when": {
+        "agents": [
+          "general-research-agent",
+          "general-research-hard-agent",
+          "general-implementation-agent",
+          "general-implementation-hard-agent",
+          "planner-agent",
+          "planner-hard-agent"
+        ]
+      }
+    },
+    {
+      "path": "patterns/skill-self-execution-fallback.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Shared Stage 5b self-execution fallback block: the .return-meta.json write obligation when a skill performs work without spawning a subagent",
+      "line_count": 62,
+      "keywords": [
+        "fallback",
+        "return-meta",
+        "self-execution",
+        "skill-base"
+      ],
+      "topics": [
+        "orchestration",
+        "lifecycle"
+      ],
+      "load_when": {
+        "agents": [
+          "general-research-agent",
+          "general-research-hard-agent",
+          "general-implementation-agent",
+          "general-implementation-hard-agent",
+          "planner-agent",
+          "planner-hard-agent"
+        ]
+      }
+    },
+    {
       "path": "patterns/subagent-continuation-loop.md",
       "domain": "core",
       "subdomain": "patterns",

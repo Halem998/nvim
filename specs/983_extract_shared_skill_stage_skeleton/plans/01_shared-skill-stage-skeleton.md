@@ -289,7 +289,7 @@ rather than leaving the new lint gate red.
 
 ---
 
-### Phase 3: Author the shared @-imported lifecycle blocks [NOT STARTED]
+### Phase 3: Author the shared @-imported lifecycle blocks [COMPLETED]
 
 **Goal**: The three shared prose blocks exist, each carrying the `lit-stage4a-flow.md` header
 convention (placement rationale, single-canonical-source statement, named drift class it fixes,
@@ -298,35 +298,53 @@ naming the variables the importing skill must already have in scope) — so conv
 something to import.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/context/patterns/lit-stage4a-flow.md` in full and treat
+- [x] Read `agent-system/extensions/core/context/patterns/lit-stage4a-flow.md` in full and treat
       its header structure as the template. Every new block reproduces: the placement rationale,
       the "SINGLE canonical block" statement naming its importers, the specific drift class being
       fixed (cite the measured divergence — six marker shapes, eleven duplicated TTS blocks, etc.),
-      the directly-executable contract, and a `## Preconditions` section.
-- [ ] Create `agent-system/extensions/core/context/patterns/skill-preflight-flow.md` — Stage 2
+      the directly-executable contract, and a `## Preconditions` section. *(completed)*
+- [x] Create `agent-system/extensions/core/context/patterns/skill-preflight-flow.md` — Stage 2
       (preflight status update) + Stage 3 (marker creation). The bash bodies are **calls to**
       `skill_preflight_update` and `skill_create_postflight_marker`, not re-inlined logic; the
       block's prose covers sourcing `skill-base.sh`, ordering, and the failure semantics.
-- [ ] Create `agent-system/extensions/core/context/patterns/skill-postflight-flow.md` — Stage 7
+      *(completed)*
+- [x] Create `agent-system/extensions/core/context/patterns/skill-postflight-flow.md` — Stage 7
       (postflight status update), Stage 7a (memory-candidate propagation), Stage 8 (artifact
       linking), Stage 8a (TTS notify), Stage 9 (cleanup). Again: calls to `skill_postflight_update`,
       `skill_propagate_completion_summary`, `skill_propagate_memory_candidates`,
       `skill_link_artifacts`, `skill_lifecycle_notify`, `skill_cleanup`. Document the
-      `## Postflight (ALWAYS EXECUTE)` marker's placement relative to the block.
-- [ ] Create `agent-system/extensions/core/context/patterns/skill-self-execution-fallback.md` —
+      `## Postflight (ALWAYS EXECUTE)` marker's placement relative to the block. *(completed:
+      `skill_propagate_completion_summary` is documented as NOT part of this shared block —
+      see deviation note below — the block covers the other five functions)*
+- [x] Create `agent-system/extensions/core/context/patterns/skill-self-execution-fallback.md` —
       Stage 5b. This one is genuinely prose (agent instructions, not shell), so it stays an
       `@`-import rather than becoming a function. It must state the `.return-meta.json`
       write obligation explicitly, since the report found the team skills' degraded path produces no
-      return metadata at all.
-- [ ] Record in each block's header which skills are expected to import it, and state the rule that
-      a skill importing the block must not also keep an inline copy of the same stage.
-- [ ] No manifest change is needed: `provides.context` lists `patterns` as a **directory**, so new
+      return metadata at all. *(completed)*
+- [x] Record in each block's header which skills are expected to import it, and state the rule that
+      a skill importing the block must not also keep an inline copy of the same stage. *(completed)*
+- [x] No manifest change is needed: `provides.context` lists `patterns` as a **directory**, so new
       files under `context/patterns/` deploy automatically. Confirm this by inspecting
-      `agent-system/extensions/core/manifest.json` rather than assuming.
-- [ ] Follow `lit-stage4a-flow.md`'s precedent of **not** registering these blocks in
+      `agent-system/extensions/core/manifest.json` rather than assuming. *(completed: confirmed via
+      `jq -r '.provides.context' agent-system/extensions/core/manifest.json`)*
+- [x] Follow `lit-stage4a-flow.md`'s precedent of **not** registering these blocks in
       `index-entries.json`: they are reached by direct `@`-import from a skill body, not by context
       discovery. (`skill-lifecycle.md` in Phase 11 is the opposite case and *is* registered.)
-- [ ] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(deviation: altered — see deviation note below)*
+- [x] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(completed: `git status --short` shows zero `.claude/` modifications;
+      `check-task-references.sh` passes)*
+
+**Deviation (altered)**: the task list's premise that `lit-stage4a-flow.md` is NOT registered in
+`index-entries.json` was factually wrong — it IS registered (`agent-system/extensions/core/index-entries.json`,
+path `patterns/lit-stage4a-flow.md`), and `check-extension-docs.sh`'s Rule S enforces that every
+deployed `context/**/*.md` file has an index entry (verified empirically: registering none of the
+three new files produced three Rule S `FAIL`s under `verify-deploy.sh` gate 3). All three new
+blocks were therefore registered in `agent-system/extensions/core/index-entries.json` following
+the exact `load_when.agents` set `lit-stage4a-flow.md` already uses, and
+`generate-context-line-counts.sh --check` confirms exact `line_count` values for all three. This
+does not touch `manifest.json` (script/test registration) — only `index-entries.json`, which is
+what Rule S actually reads.
 
 **Timing**: 2 hours
 
