@@ -1279,6 +1279,9 @@ cycle) must independently exclude both rather than rely on this `rm` alone. See
 `context/standards/orchestrator-runtime-files.md`.
 
 ```bash
+# Read the run's system-defect observation log BEFORE cleanup below removes the loop guard —
+# ordering is load-bearing here (the metadata merge further down consumes this value).
+detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file" 2>/dev/null || echo '[]')
 # Remove loop guard on success
 rm -f "$loop_guard_file"
 # Clean up drift inspection artifact if present
@@ -1314,11 +1317,13 @@ echo "$existing_meta" | jq \
   --arg status "implemented" \
   --argjson cycles "$cycle_count" \
   --arg final_state "$current_status" \
+  --argjson detected_defects "$detected_defects" \
   '. * {
     "status": $status,
     "metadata": {
       "cycles_used": $cycles,
-      "final_state": $final_state
+      "final_state": $final_state,
+      "detected_defects": $detected_defects
     }
   }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
 ```
@@ -1332,16 +1337,21 @@ mkdir -p "${TASK_DIR}/summaries"
 # path, and a later writer MUST NOT clobber fields it does not own.
 meta_file="${TASK_DIR}/.return-meta.json"
 existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
+# The loop guard is PRESERVED on partial exit, so ordering is not load-bearing here — but the
+# two blocks are kept structurally identical to the clean-exit variant on purpose.
+detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file" 2>/dev/null || echo '[]')
 tmp_meta=$(mktemp)
 echo "$existing_meta" | jq \
   --arg status "partial" \
   --argjson cycles "$cycle_count" \
   --arg final_state "$current_status" \
+  --argjson detected_defects "$detected_defects" \
   '. * {
     "status": $status,
     "metadata": {
       "cycles_used": $cycles,
-      "final_state": $final_state
+      "final_state": $final_state,
+      "detected_defects": $detected_defects
     }
   }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
 ```
@@ -2384,7 +2394,8 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
 
 1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `deferred_self_modifying`,
    `deferred_deploy_checkpoint`, `dispatch_start_ts`, `defer_ledger`,
-   `verify_deploy_baseline_notices`, `current_statuses`, `cycles_used`, counts. `current_statuses`
+   `verify_deploy_baseline_notices`, `detected_defects`, `current_statuses`, `cycles_used`,
+   counts. `current_statuses`
    (refreshed every cycle by Stage MT-3 step 1) is what step 3 below consults to determine, per
    task in `deferred_self_modifying`, whether it reached a terminal state by loop exit.
 2. **Compute the forward-progress invariant** (full contract in
@@ -2437,6 +2448,13 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
    deliberate decision, stated here so a later pass does not "fix" it into a `"partial"`. Only
    `deferred_deploy_checkpoint` (a genuine, non-empty exclusion set) affects this resolution;
    `verify_deploy_baseline_notices` is a pure observation log with no bearing on `exit_status`.
+
+   **`detected_defects` is likewise NEVER consulted by this branch selection.** A batch that
+   completed its work successfully and also observed one or more system-defect detections is
+   `"implemented"`. A detection names a defect in the agent system itself, not unfinished work in
+   the batch: it excludes no task and mutates no task status, so it cannot make an otherwise
+   successful batch partial. This too is a deliberate decision, stated here so a later pass does
+   not "fix" it into a `"partial"`.
 4. Report `deferred_self_modifying` tasks in the consolidated summary as **deferred at least one
    cycle by the self-modification gate** — an OBSERVATION, not an outstanding-work category. For
    each task in the log, report its FINAL status at loop exit alongside the note: a task that
@@ -2461,6 +2479,14 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
    operator-visible state and must be announced just as loudly as an outright failure, on a
    `"partial"` batch or an `"implemented"` one alike.
 
+   Whenever `detected_defects` is non-empty, it MUST likewise be reported as its own **distinct**
+   category — never folded into any defer category, never merged with
+   `verify_deploy_baseline_notices`, and never omitted merely because the batch otherwise
+   succeeded (see `commands/orchestrate.md`'s `### System Defects Detected` section for the
+   actual rendering — this stage only supplies the data). Its operator remedy is different again
+   from every category above: the fix belongs in the named source-store path under
+   `agent-system/extensions/**`, not in any task's own work.
+
    **Additive requirement**: when `forward_progress_violated` is true, the consolidated summary
    MUST additionally lead with the zero-dispatch banner and enumerate every `defer_ledger` entry
    with its `defer_reason` (see `commands/orchestrate.md` Step 5 for the actual rendering — this
@@ -2477,6 +2503,7 @@ jq -n \
   --argjson tasks_deferred_deploy_checkpoint "$deferred_deploy_checkpoint" \
   --argjson forward_progress_violated "$forward_progress_violated" \
   --argjson defer_ledger "$defer_ledger" \
+  --argjson detected_defects "$detected_defects" \
   --argjson verify_deploy_baseline_notices "$verify_deploy_baseline_notices" \
   --argjson cycles_used "$cycles_used" \
   '{
@@ -2489,6 +2516,7 @@ jq -n \
       "tasks_deferred_deploy_checkpoint": $tasks_deferred_deploy_checkpoint,
       "forward_progress_violated": $forward_progress_violated,
       "defer_ledger": $defer_ledger,
+      "detected_defects": $detected_defects,
       "verify_deploy_baseline_notices": $verify_deploy_baseline_notices,
       "cycles_used": $cycles_used,
       "multi_task_mode": true
@@ -2496,8 +2524,8 @@ jq -n \
   }' > "specs/.return-meta-multi-${session_id}.json"
 ```
 The top-level `status` field keeps its existing closed vocabulary (`"implemented"` / `"partial"`
-/ `"failed"`) and gains no new value; `forward_progress_violated` is carried only inside
-`metadata`, never as a `status` value itself.
+/ `"failed"`) and gains no new value; `forward_progress_violated` and `detected_defects` are
+carried only inside `metadata`, never as `status` values themselves.
 
 6. **In-flight session registry release**: alongside the `mt_state_file` remove/preserve handling
    above (step 3), release the batch's session registry entry — unconditionally, regardless of

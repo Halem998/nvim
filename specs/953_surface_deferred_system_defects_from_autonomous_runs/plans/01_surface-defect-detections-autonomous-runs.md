@@ -462,39 +462,39 @@ must be re-scoped to a field addition instead of a net-new block.
 
 ---
 
-### Phase 6: Propagate `detected_defects` through base-mode postflight [NOT STARTED]
+### Phase 6: Propagate `detected_defects` through base-mode postflight [COMPLETED]
 
 **Goal**: Carry the accumulator into `.return-meta.json` (single-task) and
 `.return-meta-multi-${session_id}.json` (batch) alongside `defer_ledger`, with no change to either
 file's top-level `status` vocabulary.
 
 **Tasks**:
-- [ ] Base Stage 8, clean-exit block: read
+- [x] Base Stage 8, clean-exit block: read
       `detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file" 2>/dev/null || echo '[]')`
       **before** the `rm -f "$loop_guard_file"` line, add `--argjson detected_defects
       "$detected_defects"` and a `"detected_defects": $detected_defects` key inside the existing
       `metadata` object next to `cycles_used`/`final_state`. Add a comment noting the read must
       precede cleanup.
-- [ ] Base Stage 8, partial-exit block: same addition. The loop guard is preserved on partial exit,
+- [x] Base Stage 8, partial-exit block: same addition. The loop guard is preserved on partial exit,
       so ordering is not load-bearing there, but keep the two blocks structurally identical.
-- [ ] Base Stage MT-5 step 1: add `detected_defects` to the enumerated read-list from
+- [x] Base Stage MT-5 step 1: add `detected_defects` to the enumerated read-list from
       `mt_state_file` (currently `completed_tasks, failed_tasks, deferred_self_modifying,
       deferred_deploy_checkpoint, dispatch_start_ts, defer_ledger, verify_deploy_baseline_notices,
       current_statuses, cycles_used, counts`).
-- [ ] Base Stage MT-5 step 5: add `--argjson detected_defects "$detected_defects"` and a
+- [x] Base Stage MT-5 step 5: add `--argjson detected_defects "$detected_defects"` and a
       `"detected_defects": $detected_defects` key inside the existing `metadata` object, positioned
       immediately after `defer_ledger`. Leave `--arg status "$exit_status"` and the top-level
       `status` key untouched.
-- [ ] Immediately after that `jq -n` block, extend the existing paragraph ("The top-level `status`
+- [x] Immediately after that `jq -n` block, extend the existing paragraph ("The top-level `status`
       field keeps its existing closed vocabulary... and gains no new value") to name
       `detected_defects` alongside `forward_progress_violated` as carried only inside `metadata`,
       never as a `status` value.
-- [ ] Base Stage MT-5 step 3: add an explicit sentence, modelled on the existing
+- [x] Base Stage MT-5 step 3: add an explicit sentence, modelled on the existing
       "**`verify_deploy_baseline_notices` is NEVER consulted by this branch selection**" paragraph,
       stating that `detected_defects` is likewise never consulted by `exit_status` branch selection.
       A batch that completed its work successfully and also observed a defect is `"implemented"`.
       State that this is a deliberate decision so a later pass does not "fix" it into `"partial"`.
-- [ ] Base Stage MT-5 step 4: add a short reporting instruction, parallel to the existing
+- [x] Base Stage MT-5 step 4: add a short reporting instruction, parallel to the existing
       `verify_deploy_baseline_notices` paragraph, stating that whenever `detected_defects` is
       non-empty it MUST be reported as its own distinct category — never folded into any defer
       category and never omitted merely because the batch otherwise succeeded — and pointing at
