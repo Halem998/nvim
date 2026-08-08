@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 983,
   "session_id": "sess_1786219295_397818",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "plan_path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
   "partial_progress": {
     "stage": "phase_8_of_11_complete",
@@ -68,29 +72,73 @@
       "category": "PATTERN",
       "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
       "confidence": 0.9,
-      "suggested_keywords": ["index-entries.json", "Rule S", "context/patterns", "check-extension-docs.sh", "@-import"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "Rule S",
+        "context/patterns",
+        "check-extension-docs.sh",
+        "@-import"
+      ]
     },
     {
       "content": "agent-system/extensions/core/scripts/test-four-tier-conflict.sh is an intermittently flaky test under concurrent session load: it exercises task-lock.sh's four-tier conflict resolution against a /tmp scratch fixture, and occasionally fails with 'ERROR: failed to write holder.json (jq produced empty output)' due to a filesystem race, unrelated to any content change. It reliably passes when run standalone or under light system load. Treat a lone gate-8 failure on this specific test as a candidate environmental flake before assuming a regression -- verify by running the suite standalone 1-2 more times.",
       "category": "INSIGHT",
       "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
       "confidence": 0.75,
-      "suggested_keywords": ["test-four-tier-conflict.sh", "flaky test", "task-lock.sh", "verify-deploy.sh gate 8", "concurrency"]
+      "suggested_keywords": [
+        "test-four-tier-conflict.sh",
+        "flaky test",
+        "task-lock.sh",
+        "verify-deploy.sh gate 8",
+        "concurrency"
+      ]
     },
     {
       "content": "update-task-status.sh's target_status vocabulary is exactly research/plan/implement/pr_ready/partial/blocked -- there is no per-caller-family value like 'team-research' or 'epi_research'. When converting a caller with a domain-specific or team-specific operation name onto update-task-status.sh (via skill_preflight_update/skill_postflight_update in skill-base.sh), map it onto the nearest plain operation (team-research -> research, epi_implement -> implement, etc.) rather than trying to add a new target_status value -- the marker's own 'operation' field can safely change to match, since no consumer branches on it (confirmed empirically: skill_cleanup only rm -f's by path, skill-refresh only checks mtime).",
       "category": "PATTERN",
       "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
       "confidence": 0.85,
-      "suggested_keywords": ["update-task-status.sh", "target_status", "skill_preflight_update", "operation mapping", "team skills"]
+      "suggested_keywords": [
+        "update-task-status.sh",
+        "target_status",
+        "skill_preflight_update",
+        "operation mapping",
+        "team skills"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786219295_397818",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 8,
-    "phases_total": 11
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 9,
+    "phases_total": 11,
+    "cycles_used": 5,
+    "final_state": "implementing",
+    "detected_defects": [
+      {
+        "task": 983,
+        "defect_class": "HANDOFF_STALE_OR_ABSENT",
+        "attributed_source_path": "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "detecting_site": "skill-orchestrate/SKILL.md:stage-5-stale-handoff",
+        "cycle": 2,
+        "detail": "handoff mtime predates dispatch window; implement dispatch stopped without wrap-up",
+        "record_result": "evt_1786222175836_ZkDL3K"
+      },
+      {
+        "task": 983,
+        "defect_class": "HANDOFF_STALE_OR_ABSENT",
+        "attributed_source_path": "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "detecting_site": "skill-orchestrate/SKILL.md:stage-5-stale-handoff",
+        "cycle": 4,
+        "detail": "agent stalled mid-phase-10; no wrap-up written",
+        "record_result": "evt_1786231038222_2wFztz"
+      }
+    ]
   }
 }
