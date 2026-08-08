@@ -76,30 +76,22 @@ fi
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
+
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
-bash .claude/scripts/update-task-status.sh preflight "$task_number" implement "$session_id"
-```
-
----
-
-### Stage 3: Create Postflight Marker
-
-```bash
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-implementer-hard",
-  "task_number": ${task_number},
-  "operation": "implement",
-  "reason": "Hard-mode implementation in progress: per-phase dispatch, anti-analysis contract, status update pending"
-}
-EOF
+skill_name="skill-implementer-hard"
+operation="implement"
 ```
+
+**Marker unification note**: this skill's marker previously dropped `created` and
+`stop_hook_active` (Shape C) — a drift, not a hard-mode design decision. Routing through
+`skill_create_postflight_marker` restores both fields as part of this conversion, matching every
+other importer's Shape A schema.
 
 ---
 
@@ -311,7 +303,8 @@ This is a hard-mode parallel dispatch. Territory rules are mandatory:
 
 ### Stage 5b: Self-Execution Fallback
 
-If Agent tool not used, write `.return-meta.json` with `status: "implemented"` before postflight.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"implemented"`.
 
 ---
 
@@ -422,53 +415,55 @@ fi
 Equivalent to `skill-implementer` Stage 7, Steps 2-4 (completion_summary write, guarded
 roadmap_items write, memory_candidates append). Only runs when Stage 7 did not refuse
 completion (see Step 1a there — on refusal, completion_summary/roadmap_items are skipped since
-the task is not yet complete):
+the task is not yet complete). `skill-base.sh` is already sourced at Stage 2 + Stage 3 above:
 
 ```bash
 # Steps 2-3: completion_summary + roadmap_items, via the shared writer (one of six converged
 # call sites — see skill_propagate_completion_summary's header comment in skill-base.sh)
-source .claude/scripts/skill-base.sh
 skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
 
-# Step 4: memory_candidates (append semantics)
-if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
-    bash .claude/scripts/state-write.sh \
-      '(.active_projects[] | select(.project_number == '$task_number')).memory_candidates =
-        ((.active_projects[] | select(.project_number == '$task_number')).memory_candidates // []) + $new_candidates' \
-      --session-id "$session_id" \
-      --argjson new_candidates "$memory_candidates"
-fi
+# Step 4: memory_candidates, via the shared writer (Stage 7a in the skill-postflight-flow.md
+# skeleton — folded into this Step 4 rather than a separate heading, matching skill-implementer's
+# own Stage 7 Step 4 structure)
+skill_propagate_memory_candidates "$task_number" "$memory_candidates" "$session_id"
 ```
 
 ---
 
 ### Stage 8: Link Artifacts
 
-Two-step jq pattern (Issue #1132 safety):
-1. Filter out existing summary artifacts
-2. Add new summary artifact
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8 (artifact linking):
 
-Regenerate TODO.md after linking.
+```bash
+field_name='**Summary**'
+next_field='**Description**'
+skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" \
+  "$field_name" "$next_field" "$session_id"
+```
+
+Performs the two-step jq pattern internally (Issue #1132-safe) and regenerates TODO.md when
+`artifact_path` is non-empty.
 
 ---
 
 ### Stage 8a: Lifecycle TTS Notification
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8a (TTS notify):
+
 ```bash
-if [ -f ".claude/scripts/lifecycle-notify.sh" ]; then
-  bash .claude/scripts/lifecycle-notify.sh "$STATE_STATUS" &
-fi
+skill_lifecycle_notify "$STATE_STATUS"
 ```
 
 ---
 
 ### Stage 9: Cleanup
 
+Remove marker and metadata files via the shared function (`skill-postflight-flow.md`'s Stage 9),
+then remove the implementer-specific continuation-loop guard separately:
+
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
+skill_cleanup "$padded_num" "$project_name"
 rm -f "specs/${padded_num}_${project_name}/.continuation-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 ```
 
 ---

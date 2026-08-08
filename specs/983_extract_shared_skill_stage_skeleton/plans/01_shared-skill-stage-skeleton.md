@@ -441,27 +441,31 @@ sites than the report found, reconcile rather than overwrite.
 
 ---
 
-### Phase 5: Convert the three core hard skills and replace the prose cross-references [NOT STARTED]
+### Phase 5: Convert the three core hard skills and replace the prose cross-references [COMPLETED]
 
 **Goal**: `skill-researcher-hard`, `skill-planner-hard`, and `skill-implementer-hard` share the same
 skeleton as their standard counterparts, and the three `Same as skill-X Stage N` prose
 cross-references become real imports that cannot drift.
 
 **Tasks**:
-- [ ] Convert all three core `-hard` skills to import the Phase 3 blocks, exactly as Phase 4 did for
+- [x] Convert all three core `-hard` skills to import the Phase 3 blocks, exactly as Phase 4 did for
       the standard skills. Their marker heredocs are "Shape C" (dropping `created` and
       `stop_hook_active`); the conversion restores those fields via the shared function — note this
       as an intended unification, since the report found the drop was drift, not a hard-mode design
-      decision.
-- [ ] Replace `skill-researcher-hard/SKILL.md`'s two cross-references ("Same as `skill-researcher`
+      decision. *(completed)*
+- [x] Replace `skill-researcher-hard/SKILL.md`'s two cross-references ("Same as `skill-researcher`
       Stage 7a", "Same as `skill-researcher` Stage 8") with imports of the shared postflight block.
-      Both targets are currently **valid**, so this is drift-proofing, not a bug fix.
-- [ ] Replace `skill-planner-hard/SKILL.md`'s cross-reference ("Same as `skill-planner` Stage 7a
+      Both targets are currently **valid**, so this is drift-proofing, not a bug fix. *(completed)*
+- [x] Replace `skill-planner-hard/SKILL.md`'s cross-reference ("Same as `skill-planner` Stage 7a
       pattern") with an import. This one is currently **drifted and functionally broken**: its
       target did not exist until Phase 4 created it. Verify the import resolves to the same shared
-      block `skill-planner` now uses.
-- [ ] Confirm the Phase 2 MUST NOT sections added to these same three files survived the rewrite.
-- [ ] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      block `skill-planner` now uses. *(completed: import resolves to
+      skill-postflight-flow.md's Stage 7a, the same block skill-planner's own Stage 7a now uses)*
+- [x] Confirm the Phase 2 MUST NOT sections added to these same three files survived the rewrite.
+      *(completed: `grep -c '^## MUST NOT (Postflight Boundary)'` returns 1 for all three)*
+- [x] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(completed: `git status --short` shows zero `.claude/` modifications;
+      `check-task-references.sh` passes)*
 
 **Timing**: 2 hours
 

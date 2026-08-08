@@ -70,34 +70,22 @@ fi
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status to "researching" BEFORE invoking subagent.
-
-```bash
-.claude/scripts/update-task-status.sh preflight "$task_number" research "$session_id"
-```
-
----
-
-### Stage 3: Create Postflight Marker
-
-Create marker file:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-researcher-hard",
-  "task_number": ${task_number},
-  "operation": "research",
-  "reason": "Hard-mode research in progress: adversarial verification, status update, git commit pending"
-}
-EOF
+skill_name="skill-researcher-hard"
+operation="research"
 ```
+
+**Marker unification note**: this skill's marker previously dropped `created` and
+`stop_hook_active` (Shape C) — a drift, not a hard-mode design decision. Routing through
+`skill_create_postflight_marker` restores both fields as part of this conversion, matching every
+other importer's Shape A schema.
 
 ---
 
@@ -193,8 +181,8 @@ Include format specification, memory context, and literature briefing in prompt 
 
 ### Stage 5b: Self-Execution Fallback
 
-If Agent tool was not used (inline execution path), write `.return-meta.json` with status
-`"researched"` before proceeding to postflight.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"researched"`.
 
 ---
 
@@ -236,48 +224,33 @@ fi
 
 ---
 
-### Stage 7: Update Task Status (Postflight)
+### Stage 7, 7a, 8, 8a, 9: Postflight Status, Memory Candidates, Artifact Linking, Notify, Cleanup
+
+Follow `@.claude/context/patterns/skill-postflight-flow.md` in full for Stage 7 (postflight status
+update), Stage 7a (memory-candidate propagation), Stage 8 (artifact linking), Stage 8a (TTS
+notify), and Stage 9 (cleanup). Real imports replace the prior `Same as skill-researcher Stage 7a`
+/ `Stage 8` prose cross-references — both targets were valid, so this is drift-proofing (a
+cross-reference can silently go stale; an `@`-import cannot):
+
+```bash
+field_name='**Research**'
+next_field='**Plan**'
+```
+
+This skill supplies the shared block's preconditions: `task_number`, `padded_num`,
+`project_name`, `session_id`, `operation`, `status`, `artifact_path`, `artifact_type`,
+`artifact_summary`, `memory_candidates`, `field_name`, `next_field`.
+
+**Research-specific addition, NOT covered by the shared block**: increment `next_artifact_number`
+immediately after the shared block's Stage 7 call, guarded the same way as `skill-researcher`:
 
 ```bash
 if [ "$status" = "researched" ]; then
-  .claude/scripts/update-task-status.sh postflight "$task_number" research "$session_id"
-
   bash .claude/scripts/state-write.sh \
     '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
       (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
     --session-id "$session_id"
 fi
-```
-
----
-
-### Stage 7a: Propagate Memory Candidates
-
-Same as `skill-researcher` Stage 7a.
-
----
-
-### Stage 8: Link Artifacts
-
-Same as `skill-researcher` Stage 8 (two-step jq pattern for Issue #1132 safety).
-
----
-
-### Stage 8a: Lifecycle TTS Notification
-
-```bash
-lifecycle_script=".claude/scripts/lifecycle-notify.sh"
-if [ -f "$lifecycle_script" ]; then bash "$lifecycle_script" "$STATE_STATUS" & fi
-```
-
----
-
-### Stage 9: Cleanup
-
-```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 ```
 
 ---

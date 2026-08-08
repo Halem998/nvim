@@ -66,30 +66,22 @@ fi
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
+
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
-bash .claude/scripts/update-task-status.sh preflight "$task_number" plan "$session_id"
-```
-
----
-
-### Stage 3: Create Postflight Marker
-
-```bash
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-planner-hard",
-  "task_number": ${task_number},
-  "operation": "plan",
-  "reason": "Hard-mode planning in progress: phase sizing, postmortem constraints, status update pending"
-}
-EOF
+skill_name="skill-planner-hard"
+operation="plan"
 ```
+
+**Marker unification note**: this skill's marker previously dropped `created` and
+`stop_hook_active` (Shape C) — a drift, not a hard-mode design decision. Routing through
+`skill_create_postflight_marker` restores both fields as part of this conversion, matching every
+other importer's Shape A schema.
 
 ---
 
@@ -211,7 +203,8 @@ If `lit_context` is non-empty, inject it as a `<literature-briefing>` block afte
 
 ### Stage 5b: Self-Execution Fallback
 
-If Agent tool not used, write `.return-meta.json` with `status: "planned"` before postflight.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"planned"`.
 
 ---
 
@@ -392,46 +385,59 @@ fi
 
 ### Stage 7: Update Task Status (Postflight)
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 7 (postflight status update):
+
 ```bash
-if [ "$status" = "planned" ]; then
-  bash .claude/scripts/update-task-status.sh postflight "$task_number" plan "$session_id"
-fi
+skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
 ```
 
 ---
 
 ### Stage 7a: Propagate Memory Candidates
 
-Same as `skill-planner` Stage 7a pattern.
+Was a `Same as skill-planner Stage 7a pattern` prose cross-reference pointing at a target that
+did not exist until `skill-planner` gained a real Stage 7a — drifted and functionally broken, not
+cosmetic. Now a real import of `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 7a,
+resolving to the identical shared block `skill-planner` itself uses:
+
+```bash
+skill_propagate_memory_candidates "$task_number" "$memory_candidates" "$session_id"
+```
 
 ---
 
 ### Stage 8: Link Artifacts
 
-Two-step jq pattern (Issue #1132 safety):
-1. Filter out existing plan artifacts
-2. Add new plan artifact
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8 (artifact linking):
 
-Regenerate TODO.md after linking.
+```bash
+field_name='**Plan**'
+next_field='**Description**'
+skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" \
+  "$field_name" "$next_field" "$session_id"
+```
+
+Performs the two-step jq pattern internally (Issue #1132-safe) and regenerates TODO.md when
+`artifact_path` is non-empty.
 
 ---
 
 ### Stage 8a: Lifecycle TTS Notification
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8a (TTS notify):
+
 ```bash
-if [ -f ".claude/scripts/lifecycle-notify.sh" ]; then
-  bash .claude/scripts/lifecycle-notify.sh "$STATE_STATUS" &
-fi
+skill_lifecycle_notify "$STATE_STATUS"
 ```
 
 ---
 
 ### Stage 9: Cleanup
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
+
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ---
