@@ -1,0 +1,41 @@
+{
+  "status": "partial",
+  "agent_type": "planner-agent",
+  "task_number": 953,
+  "session_id": "sess_1786211829_b2a0d7",
+  "delegation_path": [
+    "orchestrator",
+    "plan",
+    "planner-agent"
+  ],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/953_surface_deferred_system_defects_from_autonomous_runs/plans/01_surface-defect-detections-autonomous-runs.md",
+      "summary": "Eight-phase plan adding an append-only detected_defects observation log to both /orchestrate engines: accumulator declaration in mt_state_file and .orchestrator-loop-guard, wiring of all 11 detection sites (including the skill-base.sh site via a caller-side discriminant), postflight metadata propagation, a net-new hard-mode Stage 8 metadata merge, and enumerated rendering in commands/orchestrate.md."
+    }
+  ],
+  "metadata": {
+    "phase_count": 8,
+    "estimated_hours": 8,
+    "dependency_waves": 6,
+    "cycles_used": 1,
+    "final_state": "planning"
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent system, skill-orchestrate and skill-orchestrate-hard are NOT a wrapper pair: hard mode has no multi-task (MT-1..MT-5) implementation of its own and delegates entirely to base's MT stages, while its single-task stages (2, 5, 8) are a structurally separate reimplementation. The practical planning rule: a change to any MT stage is wired once in skill-orchestrate/SKILL.md and automatically covers /orchestrate --hard batches; a change to any single-task stage MUST be mirrored in both files or it silently applies to only one engine (a named recurring defect class in this codebase). The two single-task paths have also drifted structurally -- e.g. base's Stage 8 carries a .return-meta.json metadata merge that hard's Stage 8 lacks entirely, and base's skill_gate_completion_claim call has no else branch while hard's does -- so a mirrored edit is rarely a verbatim copy and needs a per-file anchor check before editing. A parity audit phase that counts new tokens per file is the cheap guard.",
+      "category": "PATTERN",
+      "source_artifact": "specs/953_surface_deferred_system_defects_from_autonomous_runs/plans/01_surface-defect-detections-autonomous-runs.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "orchestrate",
+        "hard-mode",
+        "base-hard-parity",
+        "multi-task-stages",
+        "skill-mirroring"
+      ]
+    }
+  ],
+  "next_steps": "Run /implement 953 to execute the plan"
+}

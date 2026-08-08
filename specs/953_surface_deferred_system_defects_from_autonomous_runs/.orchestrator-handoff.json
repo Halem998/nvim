@@ -1,0 +1,15 @@
+{
+  "task_number": 953,
+  "session_id": "sess_1786211829_b2a0d7",
+  "dispatch_status": "planned",
+  "summary": "Created an 8-phase implementation plan surfacing system-defect detections during autonomous /orchestrate runs via an append-only detected_defects observation log mirroring defer_ledger, with per-detection [system-defect:auto] notices and an enumerated postflight summary section. Scope held to the three declared source-store files.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/953_surface_deferred_system_defects_from_autonomous_runs/plans/01_surface-defect-detections-autonomous-runs.md"
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 8
+}

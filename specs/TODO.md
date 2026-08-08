@@ -6,7 +6,7 @@ next_project_number: 998
 
 ## Task Order
 
-*Updated 2026-08-07. Generated from state.json dependency graph.*
+*Updated 2026-08-08. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -21,7 +21,7 @@ next_project_number: 998
 
 ### Agent System
 
-953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
+953 [PLANNING] — Resolve the autonomy conflict: make system-defect detections visi
   └─ 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
       └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
@@ -1412,10 +1412,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 953. Surface deferred system-defect detections from autonomous runs
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 952
+- **Research**: [953_surface_deferred_system_defects_from_autonomous_runs/reports/01_surface-deferred-system-defects.md]
+- **Plan**: [953_surface_deferred_system_defects_from_autonomous_runs/plans/01_surface-defect-detections-autonomous-runs.md]
 
 **Description**: Resolve the autonomy conflict: make system-defect detections visible when they occur during a run in which no human can be prompted. This is a genuine blocker for the motivating case, not a detail.
 
