@@ -1,0 +1,23 @@
+{
+  "phase": 6,
+  "phase_name": "Route the team skills through update-task-status.sh and give them a real fallback",
+  "started_at": "2026-08-08T00:00:00Z",
+  "last_updated": "2026-08-08T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert skill-team-research: preflight/postflight status, marker, fallback, cleanup", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-team-research/SKILL.md"
+    ]},
+    {"id": 2, "description": "Convert skill-team-plan: preflight/postflight status, marker, fallback, cleanup", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-team-plan/SKILL.md"
+    ]},
+    {"id": 3, "description": "Convert skill-team-implement: preflight/postflight status, marker, fallback, cleanup", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-team-implement/SKILL.md"
+    ]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Rely on verify-deploy.sh gate 8 as sole test-suite confirmation", "result": "failed", "reason": "test-four-tier-conflict.sh (a task-lock.sh /tmp-fixture concurrency test, unrelated to skill-team-*.md) is intermittently flaky under concurrent session load. Confirmed unrelated via standalone pass (11/11) and two full-suite passes (31/31 each) during this phase."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -75,47 +75,33 @@ team_size=4
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status to "researching" BEFORE spawning teammates.
-
-**Update state.json**:
-```bash
-bash .claude/scripts/state-write.sh \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    session_id: $sid
-  }' \
-  --session-id "$session_id" \
-  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --arg status "researching" \
-  --arg sid "$session_id"
-```
-
-**Update TODO.md**: Change status marker to `[RESEARCHING]`.
-
----
-
-### Stage 3: Create Postflight Marker
-
-Create marker file to prevent premature termination:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-team-research",
-  "task_number": ${task_number},
-  "operation": "team-research",
-  "team_size": ${team_size},
-  "reason": "Team research in progress: synthesis, status update, git commit pending"
-}
-EOF
+skill_name="skill-team-research"
+operation="research"
 ```
+
+**Routing fix**: this call replaces a hand-rolled `state-write.sh` status write with
+`update-task-status.sh preflight` (via `skill_preflight_update`), which regenerates TODO.md
+internally — TODO.md's Task Order block is therefore no longer stale for the whole duration of a
+team run, since it is now refreshed at preflight, not only at postflight.
+
+`operation="research"` (not `"team-research"`) is required here: `update-task-status.sh`'s
+`target_status` vocabulary is `research`/`plan`/`implement`/`pr_ready`/`partial`/`blocked` — there
+is no `team-research` value, so this skill maps onto the plain `research` operation, same as
+`skill-researcher`.
+
+**Marker unification note**: this skill's marker previously carried "Shape D" — a `team_size`
+field and no `created`/`stop_hook_active`. `skill_create_postflight_marker`'s fixture test asserts
+an EXACT Shape A key set, so `team_size` is dropped here rather than carried as an extra field;
+the marker's `operation` field now reads `"research"` (matching `$operation` above) rather than
+`"team-research"`.
 
 ---
 
@@ -138,11 +124,43 @@ fi
 
 If team mode is unavailable:
 
-1. Log warning about degradation
-2. Invoke `skill-researcher` via Skill tool
-3. Pass original parameters
-4. Add `degraded_to_single: true` to metadata
-5. Continue with postflight
+1. Log warning about degradation.
+2. Invoke the underlying single-agent subagent **directly** via the Agent tool
+   (`subagent_type: "general-research-agent"`, the same subagent `skill-researcher`'s own Stage 5
+   invokes) — passing the same task_context/delegation_context/format-specification this skill
+   would otherwise have assembled per-teammate. **Do NOT invoke the whole `skill-researcher`
+   skill** (via Skill tool or otherwise): that would re-run its own full preflight/postflight
+   lifecycle on top of this skill's, double-writing status and markers. Invoking the subagent
+   directly is the fix for the defect this stage previously carried — a wholesale re-delegation
+   to `skill-researcher` produced no return metadata of this skill's own, since `skill-researcher`
+   consumed and cleaned up its own copy before this skill's postflight ever ran.
+3. Add `degraded_to_single: true` to the metadata the subagent writes is not possible (the
+   subagent's `.return-meta.json` schema does not carry this field) — instead, record the
+   degradation via a distinct marker this skill controls: append a JSON line to
+   `specs/${padded_num}_${project_name}/.degraded-fallback-note.json` before invoking the
+   subagent (`{"degraded_to_single": true, "reason": "team mode unavailable"}`), and merge that
+   flag into Stage 11's metadata-write content when composing the final team execution summary.
+4. Follow `@.claude/context/patterns/skill-self-execution-fallback.md`'s write obligation as
+   Stage 4c below describes: the directly-invoked subagent already writes `.return-meta.json`
+   (satisfying the obligation), so Stage 4c is a no-op in the direct-subagent case — it exists as
+   the actual write path only for the rarer case where this skill performs work inline without
+   invoking any subagent at all.
+5. Continue with postflight — the resulting `.return-meta.json` is read exactly like the normal
+   team-synthesis path (Stage 10 onward).
+
+---
+
+### Stage 4c: Self-Execution Fallback
+
+**Heading-collision note**: this skill's existing Stage 5b is "Task Type Routing Decision", an
+unrelated concept — the self-execution fallback is placed here at Stage 4c instead, immediately
+after Stage 4a/Stage 4 (degraded-path detection), to avoid reusing that number.
+
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"researched"`. As Stage 4a Step 4 notes, this
+stage is reached in its "real write" capacity only when this skill performed work inline without
+invoking any subagent at all — the normal team-wave path (Stage 5 onward) and the degraded direct-
+subagent path (Stage 4a) both already produce their own `.return-meta.json`.
 
 ---
 
@@ -464,31 +482,31 @@ Output to: `specs/{NNN}_{SLUG}/reports/{RR}_team-research.md`
 
 ### Stage 10: Update Status (Postflight)
 
-Update task status to "researched":
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 7 (postflight status update):
 
-**Update state.json** (includes incrementing `next_artifact_number`):
 ```bash
-# Step 1: Update status and timestamps
-bash .claude/scripts/state-write.sh \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    researched: $ts
-  }' \
-  --session-id "$session_id" \
-  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --arg status "researched"
+skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
+```
 
-# Step 2: Increment next_artifact_number (team research advances the sequence)
-bash .claude/scripts/state-write.sh \
-  '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
-    (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
-  --session-id "$session_id"
+This replaces the hand-rolled status write with `update-task-status.sh postflight` (via
+`skill_postflight_update`), which also regenerates TODO.md internally — the manual "Update TODO.md
+via Edit tool" step below no longer applies, since `update-task-status.sh` is the sole authorized
+TODO.md-status writer per `state-management.md`.
+
+**Research-specific addition, NOT covered by the shared block**: increment `next_artifact_number`
+immediately after the shared block's Stage 7 call, guarded the same way as `skill-researcher` and
+`skill-researcher-hard`:
+
+```bash
+if [ "$status" = "researched" ]; then
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
+      (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
+    --session-id "$session_id"
+fi
 ```
 
 **Note**: Team research (like single-agent research) is the only operation that increments `next_artifact_number`. Team plan and team implement use `(current - 1)` to stay in the same "round".
-
-**Update TODO.md**: Change status marker from `[RESEARCHING]` to `[RESEARCHED]` via Edit tool.
 
 **Link artifact in state.json**:
 Fold `--regen-todo` in — this write is immediately followed by nothing but the TODO.md regen:
@@ -569,13 +587,12 @@ Session: ${session_id}
 
 ### Stage 13: Cleanup
 
-Remove marker and temporary files:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
 
 ```bash
-padded_num=$(printf "%03d" "$task_number")
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
-# Keep teammate findings files for reference
+skill_cleanup "$padded_num" "$project_name"
+# Teammate findings files are intentionally NOT removed by skill_cleanup — it only removes
+# .postflight-pending, .postflight-loop-guard, and .return-meta.json; findings stay for reference.
 ```
 
 ---

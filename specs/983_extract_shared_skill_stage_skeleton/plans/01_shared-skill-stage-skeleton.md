@@ -493,41 +493,74 @@ differs from three, resolve each additional hit the same way rather than leaving
 
 ---
 
-### Phase 6: Route the team skills through update-task-status.sh and give them a real fallback [NOT STARTED]
+### Phase 6: Route the team skills through update-task-status.sh and give them a real fallback [COMPLETED]
 
 **Goal**: `skill-team-research`, `skill-team-plan`, and `skill-team-implement` stop hand-rolling
 state writes, so TODO.md's Task Order block is no longer stale for the whole duration of a team run,
 and their degraded path produces return metadata instead of silently re-delegating.
 
 **Tasks**:
-- [ ] **First**, read `agent-system/extensions/core/scripts/update-task-status.sh`'s argument
+- [x] **First**, read `agent-system/extensions/core/scripts/update-task-status.sh`'s argument
       contract in full. Its `target_status` vocabulary is `research`/`plan`/`implement`/`pr_ready`/
       `partial`/`blocked` — there is no `team-research` value — and it regenerates TODO.md
       internally via `generate-todo.sh` (there is no `--regen-todo` flag on it, unlike the
       `state-write.sh` calls the team skills currently make). Map each team-skill call site to a
-      supported target status before changing anything.
-- [ ] Replace the preflight `state-write.sh` call in each of the three team skills with an
+      supported target status before changing anything. *(completed: mapped team-research->research,
+      team-plan->plan, team-implement->implement)*
+- [x] Replace the preflight `state-write.sh` call in each of the three team skills with an
       `update-task-status.sh preflight` call using the mapped target status. This is the fix for the
       stale-Task-Order finding: TODO.md is regenerated at preflight, not only at postflight.
-- [ ] Replace the postflight `state-write.sh` call in each with `update-task-status.sh postflight`.
-- [ ] If any call site has no safe mapping (e.g. a multi-teammate intermediate write with no
+      *(completed, via `skill_preflight_update`)*
+- [x] Replace the postflight `state-write.sh` call in each with `update-task-status.sh postflight`.
+      *(completed, via `skill_postflight_update`; skill-team-implement's call site had no
+      partial/failed branch to preserve — it unconditionally wrote "completed" — so the literal
+      success value "implemented" is passed to satisfy `skill_postflight_update`'s case-guard,
+      preserving the original unconditional-write behavior)*
+- [x] If any call site has no safe mapping (e.g. a multi-teammate intermediate write with no
       single-task equivalent), leave it on `state-write.sh` and record it as a
       `#### Reasoned Exclusions` entry under this phase with the evidence that forced it. Do not
-      force-fit a mapping.
-- [ ] Give each team skill a real self-execution fallback importing
+      force-fit a mapping. *(completed: no exclusion needed — all three preflight/postflight status
+      call sites mapped cleanly; the remaining state-write.sh call sites in each file are
+      artifact-linking and next_artifact_number bookkeeping, explicitly out of this phase's scope
+      per the Scope Hypothesis and left untouched)*
+- [x] Give each team skill a real self-execution fallback importing
       `skill-self-execution-fallback.md`. It must write `.return-meta.json` itself rather than
       re-delegating wholesale to `skill-researcher`/`skill-planner`/`skill-implementer`, which is
-      what the current "Stage 4a: Fallback to Single Agent" does.
-- [ ] **Heading-collision guard**: `skill-team-plan` already uses the heading "Stage 5b" for an
+      what the current "Stage 4a: Fallback to Single Agent" does. *(completed: Stage 4a now invokes
+      the underlying single-agent SUBAGENT directly via the Agent tool — general-research-agent /
+      planner-agent / general-implementation-agent — instead of the whole wrapping skill, closing
+      the double-postflight-lifecycle defect the wholesale re-delegation caused; a new Stage 4c
+      imports the shared fallback block for the rarer fully-inline case)*
+- [x] **Heading-collision guard**: `skill-team-plan` already uses the heading "Stage 5b" for an
       unrelated concept ("Load Research Context"). Do not reuse that number in that file; place the
       fallback under a non-colliding heading and add an inline note recording the collision.
-- [ ] Route the three team skills' marker creation and cleanup through the Phase 3 blocks (their
+      *(completed: used Stage 4c in all three files for consistency; skill-team-research was ALSO
+      found to have a Stage 5b collision — "Task Type Routing Decision" — not named in the plan's
+      hypothesis, confirmed and handled the same way)*
+- [x] Route the three team skills' marker creation and cleanup through the Phase 3 blocks (their
       current markers are "Shape D", adding `team_size` and dropping `created`/`stop_hook_active`).
       Decide and record whether `team_size` survives as an extra field or is dropped — the canonical
-      Shape A does not include it, and the fixture test asserts an exact key set.
-- [ ] Do **not** add `## MUST NOT (Postflight Boundary)` — all three already have it (the task
+      Shape A does not include it, and the fixture test asserts an exact key set. *(completed:
+      `team_size` is DROPPED — `skill_create_postflight_marker`'s signature is fixed 5-arg and the
+      fixture test asserts an exact key set, so no extra field can survive; each marker's
+      `operation` field now reads the mapped value — "research"/"plan"/"implement" — rather than
+      the team-prefixed literal)*
+- [x] Do **not** add `## MUST NOT (Postflight Boundary)` — all three already have it (the task
       description's framing here does not hold). Verify it survived the rewrite instead.
-- [ ] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(completed: `grep -c '^## MUST NOT (Postflight Boundary)'` returns 1 for all three)*
+- [x] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(completed: `git status --short` shows zero `.claude/` modifications;
+      `check-task-references.sh` passes)*
+
+**Verification note (environmental flake, not a regression)**: `bash .claude/scripts/verify-deploy.sh`
+gate 8 (`tests/run-all.sh`) intermittently reported `test-four-tier-conflict.sh` failing with
+`ERROR: failed to write holder.json (jq produced empty output)` inside a `/tmp` scratch fixture —
+a `task-lock.sh` four-tier-conflict concurrency test, unrelated to any file this phase touches.
+Confirmed as a pre-existing, load-sensitive flake: the same suite run standalone
+(`bash agent-system/extensions/core/scripts/test-four-tier-conflict.sh`) passed 11/11, and the
+full `run-all.sh --quiet` suite passed 31/31 on two separate direct invocations during this phase.
+The static, in-scope checks (`lint-postflight-boundary.sh`, `test-skill-base-lifecycle.sh`, the
+grep-based verification bullets below, and `check-task-references.sh`) all passed consistently.
 
 **Timing**: 2.5 hours
 

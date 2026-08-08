@@ -82,47 +82,32 @@ team_size=${team_size:-2}
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status to "planning" BEFORE spawning teammates.
-
-**Update state.json**:
-```bash
-bash .claude/scripts/state-write.sh \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    session_id: $sid
-  }' \
-  --session-id "$session_id" \
-  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --arg status "planning" \
-  --arg sid "$session_id"
-```
-
-**Update TODO.md**: Change status marker to `[PLANNING]`.
-
----
-
-### Stage 3: Create Postflight Marker
-
-Create marker file to prevent premature termination:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-team-plan",
-  "task_number": ${task_number},
-  "operation": "team-plan",
-  "team_size": ${team_size},
-  "reason": "Team planning in progress: synthesis, status update, git commit pending"
-}
-EOF
+skill_name="skill-team-plan"
+operation="plan"
 ```
+
+**Routing fix**: this call replaces a hand-rolled `state-write.sh` status write with
+`update-task-status.sh preflight` (via `skill_preflight_update`), which regenerates TODO.md
+internally — TODO.md's Task Order block is therefore no longer stale for the whole duration of a
+team run, since it is now refreshed at preflight, not only at postflight.
+
+`operation="plan"` (not `"team-plan"`) is required here: `update-task-status.sh`'s
+`target_status` vocabulary has no `team-plan` value, so this skill maps onto the plain `plan`
+operation, same as `skill-planner`.
+
+**Marker unification note**: this skill's marker previously carried "Shape D" — a `team_size`
+field and no `created`/`stop_hook_active`. `skill_create_postflight_marker`'s fixture test asserts
+an EXACT Shape A key set, so `team_size` is dropped here rather than carried as an extra field;
+the marker's `operation` field now reads `"plan"` (matching `$operation` above) rather than
+`"team-plan"`.
 
 ---
 
@@ -144,11 +129,36 @@ fi
 
 If team mode is unavailable:
 
-1. Log warning about degradation
-2. Invoke `skill-planner` via Skill tool
-3. Pass original parameters
-4. Add `degraded_to_single: true` to metadata
-5. Continue with postflight
+1. Log warning about degradation.
+2. Invoke the underlying single-agent subagent **directly** via the Agent tool
+   (`subagent_type: "planner-agent"`, the same subagent `skill-planner`'s own Stage 5 invokes) —
+   passing the same task_context/delegation_context/format-specification this skill would
+   otherwise have assembled per-teammate. **Do NOT invoke the whole `skill-planner` skill**: that
+   would re-run its own full preflight/postflight lifecycle on top of this skill's, double-writing
+   status and markers, and is the defect this stage previously carried.
+3. Add `degraded_to_single: true` to the metadata: record it via
+   `specs/${padded_num}_${project_name}/.degraded-fallback-note.json`
+   (`{"degraded_to_single": true, "reason": "team mode unavailable"}`) before invoking the
+   subagent, and merge that flag into Stage 11's metadata-write content when composing the final
+   team execution summary.
+4. Follow `@.claude/context/patterns/skill-self-execution-fallback.md`'s write obligation as
+   Stage 4c below describes: the directly-invoked subagent already writes `.return-meta.json`
+   (satisfying the obligation), so Stage 4c is a no-op in the direct-subagent case.
+5. Continue with postflight — the resulting `.return-meta.json` is read exactly like the normal
+   team-synthesis path.
+
+---
+
+### Stage 4c: Self-Execution Fallback
+
+**Heading-collision note**: this skill's existing Stage 5b is "Load Research Context", an
+unrelated concept — the self-execution fallback is placed here at Stage 4c instead, immediately
+after Stage 4a/Stage 4 (degraded-path detection), to avoid reusing that number.
+
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"planned"`. As Stage 4a Step 4 notes, this
+stage is reached in its "real write" capacity only when this skill performed work inline without
+invoking any subagent at all.
 
 ---
 
@@ -451,22 +461,15 @@ Output to: `specs/{NNN}_{SLUG}/plans/{RR}_implementation-plan.md`
 
 ### Stage 10: Update Status (Postflight)
 
-Update task status to "planned":
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 7 (postflight status update):
 
-**Update state.json**:
 ```bash
-bash .claude/scripts/state-write.sh \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    planned: $ts
-  }' \
-  --session-id "$session_id" \
-  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --arg status "planned"
+skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
 ```
 
-**Update TODO.md**: Change status marker to `[PLANNED]`.
+This replaces the hand-rolled status write with `update-task-status.sh postflight` (via
+`skill_postflight_update`), which also regenerates TODO.md internally — the manual "Update TODO.md"
+step no longer applies.
 
 **Link artifact**. Fold `--regen-todo` in — this write is immediately followed by nothing but the TODO.md regen:
 ```bash
@@ -539,13 +542,12 @@ Session: ${session_id}
 
 ### Stage 13: Cleanup
 
-Remove marker and temporary files:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
 
 ```bash
-padded_num=$(printf "%03d" "$task_number")
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
-# Keep candidate plans for reference
+skill_cleanup "$padded_num" "$project_name"
+# Candidate plans are intentionally NOT removed by skill_cleanup — it only removes
+# .postflight-pending, .postflight-loop-guard, and .return-meta.json.
 ```
 
 ---
