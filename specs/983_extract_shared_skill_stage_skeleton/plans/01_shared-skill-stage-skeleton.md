@@ -590,7 +590,7 @@ this phase and must not be converted — only task-status writes.
 
 ---
 
-### Phase 7: Collapse the nix/nvim and latex/typst domain pairs [NOT STARTED]
+### Phase 7: Collapse the nix/nvim and latex/typst domain pairs [COMPLETED]
 
 **Goal**: The four most-duplicated domain skills pairs (86-90% pairwise identical) move onto the
 shared skeleton and each gains the Stage 4a import, so `--lit`, `--clean`, and memory retrieval stop
@@ -598,25 +598,46 @@ being silent no-ops for nix, neovim, latex, and typst tasks. The two nix/nvim im
 additionally gain premature-termination protection they have never had.
 
 **Tasks**:
-- [ ] Convert the eight files to the shared skeleton: import
+- [x] Convert the eight files to the shared skeleton: import
       `lit-stage4a-flow.md` (Stage 4a), `skill-preflight-flow.md`, `skill-postflight-flow.md`, and
       `skill-self-execution-fallback.md`. Preserve each skill's genuinely domain-specific content
-      (build/verification commands, domain context imports, agent routing) verbatim.
-- [ ] **Intentional behavior fix, flagged**: `skill-nix-implementation` and
+      (build/verification commands, domain context imports, agent routing) verbatim. *(completed)*
+- [x] **Intentional behavior fix, flagged**: `skill-nix-implementation` and
       `skill-neovim-implementation` currently write **no** `.postflight-pending` marker at all — they
       have zero premature-termination protection. Adding the Phase 3 preflight block gives them one.
       This is a deliberate fix carried inside a refactor, not an incidental side effect; record it in
-      the phase notes and in the implementation summary so review does not miss it.
-- [ ] These two files are also the only domain skills that already call a `skill-base.sh` function
+      the phase notes and in the implementation summary so review does not miss it. *(completed —
+      see deviation note below: the true scope was all 8 domain skills, not 2)*
+- [x] These two files are also the only domain skills that already call a `skill-base.sh` function
       (`skill_propagate_completion_summary`). Preserve that call; the shared postflight block should
-      subsume it rather than duplicate it.
-- [ ] Restore `## Error Handling` to `skill-nix-research`, `skill-nix-implementation`,
+      subsume it rather than duplicate it. *(completed: preserved as a "not covered by shared block"
+      call after the Stage 7/7a/8/8a/9 import, no longer re-sourcing skill-base.sh)*
+- [x] Restore `## Error Handling` to `skill-nix-research`, `skill-nix-implementation`,
       `skill-neovim-research`, and `skill-neovim-implementation`, sourcing the section from the
       latex/typst skills that still have it — the report confirms these four lost it to drift.
-- [ ] Normalize each pair's Stage numbering onto the core convention. The nix/nvim implementation
+      *(completed: `grep -c '^## Error Handling'` returns 1 for all four)*
+- [x] Normalize each pair's Stage numbering onto the core convention. The nix/nvim implementation
       skills currently use a third, thinner numbering (Stage 4b for the fallback, no Stage 3a/4a/8a);
       align them with the core Stage-N skeleton so Phase 11's documentation describes one shape.
-- [ ] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(completed: all 8 files now use Stage 2+3 (combined preflight/marker), Stage 4a (memory+lit),
+      Stage 4, Stage 5, Stage 5b (fallback), Stage 6, Stage 7/7a/8/8a/9 (combined postflight))*
+- [x] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(completed: `git status --short` shows zero `.claude/` modifications;
+      `check-task-references.sh` passes)*
+
+**Deviation (scope correction, not an alteration of intent)**: the plan's premise — that only
+`skill-nix-implementation` and `skill-neovim-implementation` lacked a `.postflight-pending`
+marker — was contradicted by measurement: `grep -l "postflight-pending"
+agent-system/extensions/{nix,nvim,latex,typst}/skills/*/SKILL.md` returned **zero** hits across
+all eight files, meaning the two research skills (`skill-nix-research`,
+`skill-neovim-research`) and both latex/typst pairs also had zero premature-termination
+protection before this phase. All eight now gain a marker via the Stage 2 + Stage 3 import — a
+strictly larger application of the same intentional fix the plan already flagged as deliberate,
+not a new behavior class.
+
+**Verification note (environmental flake, transient)**: `verify-deploy.sh` gate 8 intermittently
+failed on unrelated tests during this phase (same load-sensitive class documented in Phase 6);
+retrying resolved it and a clean `PASS -- 20 check(s), 0 failure(s)` run is recorded below.
 
 **Timing**: 2.5 hours
 

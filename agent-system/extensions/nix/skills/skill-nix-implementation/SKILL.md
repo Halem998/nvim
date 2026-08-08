@@ -20,10 +20,36 @@ This skill activates when:
 ### Stage 1: Input Validation
 Validate task_number exists, task_type is "nix", and an implementation plan is present.
 
-### Stage 2: Preflight Status Update
-Update status to "implementing" BEFORE invoking subagent.
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-### Stage 3: Prepare Delegation Context
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
+
+```bash
+source .claude/scripts/skill-base.sh
+padded_num=$(printf "%03d" "$task_number")
+skill_name="skill-nix-implementation"
+operation="implement"
+```
+
+**Intentional behavior fix**: this skill previously wrote no `.postflight-pending` marker at
+all — zero premature-termination protection. This import gives it one.
+
+### Stage 4a: Memory Retrieval and Literature Detection
+
+**Skip memory retrieval if**: `clean_flag` is true (from `--clean`).
+
+```bash
+if [ "$clean_flag" != "true" ]; then
+  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "" 2>/dev/null) || memory_context=""
+fi
+```
+
+Follow `@.claude/context/patterns/lit-stage4a-flow.md` in full to resolve `--lit` and set
+`lit_context`, exactly as `skill-implementer` does. This skill supplies the shared block's
+preconditions: `lit_flag`, `description`, `orchestrator_mode` (default `"false"` when unset).
+
+### Stage 4: Prepare Delegation Context
 
 Domain-specific context for the nix-implementation-agent:
 - Nix style guide from `.claude/extensions/nix/context/`
@@ -47,30 +73,27 @@ Domain-specific context for the nix-implementation-agent:
 }
 ```
 
-### Stage 4: Invoke Subagent
+If `memory_context` and/or `lit_context` from Stage 4a are non-empty, include them in the prompt
+(memory context first, then literature briefing), after the delegation context and before
+task-specific instructions. Do NOT inject an empty block for either.
+
+### Stage 5: Invoke Subagent
 Use Agent tool with subagent_type: "nix-implementation-agent".
 
-### Stage 4b: Self-Execution Fallback
+### Stage 5b: Self-Execution Fallback
 
-**CRITICAL**: If you performed the work above WITHOUT using the Agent tool (i.e., you read files,
-wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
-`.return-meta.json` file now before proceeding to postflight. Use the schema from
-`return-metadata-file.md` with the appropriate status value for this operation.
-
-If you DID use the Agent tool, skip this stage -- the subagent already wrote the metadata.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"implemented"`.
 
 ## Postflight (ALWAYS EXECUTE)
 
 The following stages MUST execute after work is complete, whether the work was done by a
-subagent or inline (Stage 4b). Do NOT skip these stages for any reason.
+subagent or inline (Stage 5b). Do NOT skip these stages for any reason.
 
-### Stage 5: Parse Subagent Return
+### Stage 6: Parse Subagent Return
 Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`.
 
 ```bash
-padded_num=$(printf "%03d" "$task_number")
-project_name=$(jq -r --argjson num "$task_number" \
-  '.active_projects[] | select(.project_number == $num) | .project_name' specs/state.json)
 metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
@@ -78,6 +101,7 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
     artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
     artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+    memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
     # Schema: .claude/context/formats/return-metadata-file.md
     completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
     roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
@@ -87,24 +111,41 @@ else
 fi
 ```
 
-### Stage 6: Update Task Status (Postflight)
-Update state.json and TODO.md based on result.
+### Stage 7, 7a, 8, 8a, 9: Postflight Status, Memory Candidates, Artifact Linking, Notify, Cleanup
+
+Follow `@.claude/context/patterns/skill-postflight-flow.md` in full:
+
+```bash
+field_name='**Summary**'
+next_field='**Description**'
+```
+
+**Not covered by the shared block**: `completion_summary`/`roadmap_items` propagation via
+`skill_propagate_completion_summary`, preserved from before this conversion (already routed
+through `skill-base.sh`, which is now sourced once at Stage 2 + Stage 3 above rather than
+re-sourced here):
 
 ```bash
 if [ "$status" = "implemented" ] || [ "$status" = "completed" ]; then
-    source .claude/scripts/skill-base.sh
     # Literal "nix" (deliberate): this skill's Trigger Conditions hardcode a single task_type.
     skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "nix"
 fi
 ```
 
-### Stage 7: Link Artifacts
-Add artifact to state.json with summary. Update TODO.md per `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Summary**`, `next_field=**Description**`.
+## Error Handling
 
-### Stage 8: Git Commit
-Commit changes with session ID.
+### Input Validation Errors
+Return immediately if task not found.
 
-### Stage 9: Return Brief Summary
+### Metadata File Missing
+Keep status as "implementing", report error.
+
+### Subagent Returns Partial/Failed
+Do not attempt to continue, complete, or "fill in" the subagent's work. Report the status and let
+the user re-run `/implement` to resume.
+
+### Git Commit Failure
+Non-blocking: Log failure but continue.
 
 ## MUST NOT (Postflight Boundary)
 

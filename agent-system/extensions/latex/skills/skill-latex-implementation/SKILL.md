@@ -20,42 +20,57 @@ This skill activates when:
 ### Stage 1: Input Validation
 Validate task_number exists and language is "latex".
 
-### Stage 2: Preflight Status Update
-Update status to "implementing" BEFORE invoking subagent.
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-### Stage 3: Prepare Delegation Context
-Include task_context, plan_path, metadata_file_path.
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
-### Stage 4: Invoke Subagent
+```bash
+source .claude/scripts/skill-base.sh
+padded_num=$(printf "%03d" "$task_number")
+skill_name="skill-latex-implementation"
+operation="implement"
+```
+
+### Stage 4a: Memory Retrieval and Literature Detection
+
+**Skip memory retrieval if**: `clean_flag` is true (from `--clean`).
+
+```bash
+if [ "$clean_flag" != "true" ]; then
+  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "" 2>/dev/null) || memory_context=""
+fi
+```
+
+Follow `@.claude/context/patterns/lit-stage4a-flow.md` in full to resolve `--lit` and set
+`lit_context`, exactly as `skill-implementer` does. This skill supplies the shared block's
+preconditions: `lit_flag`, `description`, `orchestrator_mode` (default `"false"` when unset).
+
+### Stage 4: Prepare Delegation Context
+Include task_context, plan_path, metadata_file_path. If `memory_context` and/or `lit_context`
+from Stage 4a are non-empty, include them in the prompt (memory context first, then literature
+briefing). Do NOT inject an empty block for either.
+
+### Stage 5: Invoke Subagent
 Use Agent tool with subagent_type: "latex-implementation-agent".
 
-### Stage 4b: Self-Execution Fallback
+### Stage 5b: Self-Execution Fallback
 
-**CRITICAL**: If you performed the work above WITHOUT using the Agent tool (i.e., you read files,
-wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
-`.return-meta.json` file now before proceeding to postflight. Use the schema from
-`return-metadata-file.md` with the appropriate status value for this operation.
-
-If you DID use the Agent tool, skip this stage -- the subagent already wrote the metadata.
+Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
+status value for that block's write obligation is `"implemented"`.
 
 ## Postflight (ALWAYS EXECUTE)
 
 The following stages MUST execute after work is complete, whether the work was done by a
-subagent or inline (Stage 4b). Do NOT skip these stages for any reason.
+subagent or inline (Stage 5b). Do NOT skip these stages for any reason.
 
-### Stage 5: Parse Subagent Return
-Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`.
+### Stage 6: Parse Subagent Return
+Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`, including `memory_candidates`.
 
-### Stage 6: Update Task Status (Postflight)
-Update state.json and TODO.md based on result.
+### Stage 7, 7a, 8, 8a, 9: Postflight Status, Memory Candidates, Artifact Linking, Notify, Cleanup
 
-### Stage 7: Link Artifacts
-Add artifact to state.json with summary. Update TODO.md per `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Summary**`, `next_field=**Description**`.
-
-### Stage 8: Git Commit
-Commit changes with session ID.
-
-### Stage 9: Return Brief Summary
+Follow `@.claude/context/patterns/skill-postflight-flow.md` in full: `field_name=**Summary**`,
+`next_field=**Description**`.
 
 ## Error Handling
 

@@ -1,0 +1,36 @@
+{
+  "phase": 7,
+  "phase_name": "Collapse the nix/nvim and latex/typst domain pairs",
+  "started_at": "2026-08-08T00:00:00Z",
+  "last_updated": "2026-08-08T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert skill-nix-research and skill-nix-implementation onto shared skeleton", "status": "done", "files_touched": [
+      "agent-system/extensions/nix/skills/skill-nix-research/SKILL.md",
+      "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md"
+    ]},
+    {"id": 2, "description": "Convert skill-neovim-research and skill-neovim-implementation onto shared skeleton", "status": "done", "files_touched": [
+      "agent-system/extensions/nvim/skills/skill-neovim-research/SKILL.md",
+      "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md"
+    ]},
+    {"id": 3, "description": "Convert skill-latex-research and skill-latex-implementation onto shared skeleton", "status": "done", "files_touched": [
+      "agent-system/extensions/latex/skills/skill-latex-research/SKILL.md",
+      "agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md"
+    ]},
+    {"id": 4, "description": "Convert skill-typst-research and skill-typst-implementation onto shared skeleton", "status": "done", "files_touched": [
+      "agent-system/extensions/typst/skills/skill-typst-research/SKILL.md",
+      "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md"
+    ]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.2",
+      "description": "Marker-fix scope was all 8 domain skills, not just the 2 implementation skills the plan named",
+      "type": "altered",
+      "reason": "grep -l postflight-pending across all 8 files returned zero hits, not just for the 2 implementation skills — the plan's premise was contradicted by measurement. All 8 gain a marker via this phase's Stage 2+3 import.",
+      "annotation": "*(completed — see deviation note below: the true scope was all 8 domain skills, not 2)*"
+    }
+  ]
+}
