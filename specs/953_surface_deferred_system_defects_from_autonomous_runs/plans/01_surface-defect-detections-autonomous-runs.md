@@ -204,13 +204,13 @@ every one found rather than exactly three.
 
 ---
 
-### Phase 2: Wire the four base single-task Stage 5 detection sites [NOT STARTED]
+### Phase 2: Wire the four base single-task Stage 5 detection sites [COMPLETED]
 
 **Goal**: Every detection reachable from `skill-orchestrate/SKILL.md`'s single-task Stage 5
 appends to the loop guard's `detected_defects` and emits the `[system-defect:auto]` notice.
 
 **Tasks**:
-- [ ] Define, once near the top of Stage 5 in this file, the append idiom to reuse at each site —
+- [x] Define, once near the top of Stage 5 in this file, the append idiom to reuse at each site —
       matching the file's own existing loop-guard mutation idiom
       (`jq ... "$loop_guard_file" > "${loop_guard_file}.tmp" && mv ...`):
       ```bash
@@ -229,23 +229,23 @@ appends to the loop guard's `detected_defects` and emits the `[system-defect:aut
       }
       ```
       The helper emits the notice itself so no site can append without announcing.
-- [ ] Site 1 — stale-handoff gate (`HANDOFF_STALE_OR_ABSENT`, detecting-site
+- [x] Site 1 — stale-handoff gate (`HANDOFF_STALE_OR_ABSENT`, detecting-site
       `skill-orchestrate/SKILL.md:stage-5-stale-handoff`): after the existing
       `system-defect-record.sh` call, call the helper. Capture the recorder's stdout into
       `record_result` by dropping only the `>/dev/null` half of the existing
       `>/dev/null 2>&1` redirect (keep stderr discarded and keep the `|| echo "Note: ..."`
       non-fatal tail intact).
-- [ ] Site 2 — stray-handoff sweep (`HANDOFF_MISLOCATED`, `...:stage-5-stray-handoff`): same
+- [x] Site 2 — stray-handoff sweep (`HANDOFF_MISLOCATED`, `...:stage-5-stray-handoff`): same
       treatment. The append must run BEFORE the `mv "$stray" ...` line, for the same reason the
       existing recorder call does — the observation must survive a failed move. Carry the stray
       path into `detail`.
-- [ ] Site 3 — recovered-path evidence arm (`ARTIFACTS_SHAPE_MISMATCH`, `...:stage-5-recovered`):
+- [x] Site 3 — recovered-path evidence arm (`ARTIFACTS_SHAPE_MISMATCH`, `...:stage-5-recovered`):
       same treatment, inside the existing
       `elif [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]`
       arm.
-- [ ] Site 4 — Tier C off-schema arm (`OFF_SCHEMA_STATUS`, `...:stage-5-tier-c`): same treatment.
+- [x] Site 4 — Tier C off-schema arm (`OFF_SCHEMA_STATUS`, `...:stage-5-tier-c`): same treatment.
       Carry `$offschema_display` into `detail`.
-- [ ] Site 11a — the `META_MISSING_AFTER_NARRATION` caller-side discriminant. The
+- [x] Site 11a — the `META_MISSING_AFTER_NARRATION` caller-side discriminant. The
       `if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total"
       "$plan_markers_verified" "[orchestrate]"; then ... fi` block in this file currently has **no
       `else` branch** (it closes at `fi` followed by the "On refuse: no status transition" comment).
@@ -267,7 +267,7 @@ appends to the loop guard's `detected_defects` and emits the `[system-defect:aut
       ```
       `record_result` is empty here: the recorder was invoked inside the function, not by this
       caller, so its stdout is not observable from here. State that in a comment.
-- [ ] Confirm no edit in this phase alters control flow: every append is additive and no existing
+- [x] Confirm no edit in this phase alters control flow: every append is additive and no existing
       branch condition, `echo`, `case` arm, or status transition is changed.
 
 **Timing**: 1.25 hours

@@ -551,6 +551,33 @@ Never read the full research report, plan, or implementation summary — only th
 # Reset the per-cycle exemption flag before any branch can set it.
 infra_exempt_cycle=false
 
+# ── System-defect observation log ─────────────────────────────────────────────
+# One append idiom, reused at every detection site in this stage, matching this file's own
+# loop-guard mutation idiom (`jq ... "$loop_guard_file" > "${loop_guard_file}.tmp" && mv ...`).
+# The full contract — entry shape, unconditional-append rule, notice format, MUST-NOTs — is
+# defined ONCE in Stage MT-1's `detected_defects` declaration and is not restated here.
+#
+# The helper emits the `[system-defect:auto]` notice itself, so no site can append without
+# announcing. The append is UNCONDITIONAL: never gated on the recorder's exit code, nor on a
+# `SUPPRESSED:recursion_guard`/`SUPPRESSED:duplicate` value on its stdout. `record_result`
+# records that outcome for the operator; it never decides whether the entry exists.
+#
+# `.detected_defects += [...]` is safe against a guard file written before the field existed:
+# jq's `null + [x]` is `[x]`, so the log self-heals rather than erroring.
+append_detected_defect() {  # class, attributed_path, site, detail, record_result
+  jq --argjson entry "$(jq -c -n \
+        --argjson task "$task_number" --arg class "$1" --arg path "$2" \
+        --arg site "$3" --argjson cycle "${cycle_count:-0}" --arg detail "$4" \
+        --arg rr "${5:-}" \
+        '{task:$task, defect_class:$class, attributed_source_path:$path,
+          detecting_site:$site, cycle:$cycle, detail:$detail,
+          record_result: (if $rr == "" then null else $rr end)}')" \
+      '.detected_defects += [$entry]' \
+      "$loop_guard_file" > "${loop_guard_file}.tmp" \
+    && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+  echo "[orchestrate] [system-defect:auto] queued for postflight summary — defect_class=$1 attributed_path=$2 detecting_site=$3" >&2
+}
+
 # ── Staleness gate ────────────────────────────────────────────────────────────
 # A handoff sitting at the correct path does NOT prove this dispatch wrote it. If the current
 # dispatch wrote nothing (or wrote somewhere else), the PREVIOUS cycle's file is still there,
@@ -576,13 +603,21 @@ if [ -f "$handoff_file" ]; then
     # Deliverable 2(b): record this Class (a) "loud but unactioned" detection. No
     # dispatched-agent-name variable is unambiguously in scope at this shared, stage-agnostic
     # block, so attribution names this detecting site's own SKILL.md.
-    bash .claude/scripts/system-defect-record.sh \
+    # Recorder stdout is captured (only the `>/dev/null` half of the old `>/dev/null 2>&1` is
+    # dropped; stderr stays discarded and the non-fatal `|| echo` tail is intact) so its
+    # dedup/suppression outcome can be carried into the ledger entry below as `record_result`.
+    record_result=$(bash .claude/scripts/system-defect-record.sh \
       --defect-class HANDOFF_STALE_OR_ABSENT \
       --detecting-site "skill-orchestrate/SKILL.md:stage-5-stale-handoff" \
       --task "$task_number" --session "$session_id" \
       --message "handoff mtime $handoff_mtime predates this dispatch window ($stale_window_start)" \
       --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
-      >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
+      2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+    append_detected_defect "HANDOFF_STALE_OR_ABSENT" \
+      "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+      "skill-orchestrate/SKILL.md:stage-5-stale-handoff" \
+      "handoff mtime $handoff_mtime predates this dispatch window ($stale_window_start)" \
+      "$record_result"
   fi
 fi
 
@@ -604,14 +639,21 @@ for stray in "${sweep_root}/.orchestrator-handoff.json" "${sweep_root}/specs/.or
     # below so the record is written even if the move fails. HANDOFF_MISLOCATED is an existing
     # Signal A instance (no vocabulary extension needed). The stray path is carried in
     # --extra-detail-json for forensics.
-    bash .claude/scripts/system-defect-record.sh \
+    record_result=$(bash .claude/scripts/system-defect-record.sh \
       --defect-class HANDOFF_MISLOCATED \
       --detecting-site "skill-orchestrate/SKILL.md:stage-5-stray-handoff" \
       --task "$task_number" --session "$session_id" \
       --message "stray handoff found at $stray, outside its task directory" \
       --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
       --extra-detail-json "$(jq -c -n --arg stray "$stray" '{stray_path: $stray}')" \
-      >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
+      2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+    # Append BEFORE the mv below, for the same reason the recorder call above sits there: the
+    # observation must survive a failed move.
+    append_detected_defect "HANDOFF_MISLOCATED" \
+      "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+      "skill-orchestrate/SKILL.md:stage-5-stray-handoff" \
+      "stray handoff found at $stray, outside its task directory" \
+      "$record_result"
     # Move aside rather than delete: preserves the evidence while ensuring no later
     # cwd-relative read can pick it up.
     mv "$stray" "${TASK_DIR}/.stray-handoff-$(date -u +%s).json" 2>/dev/null \
@@ -716,13 +758,18 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
       # site's own SKILL.md per Signal B's "or, for orchestrator-internal sites, from the
       # detecting site itself" allowance.
       echo "[orchestrate] EVIDENCE: recovered .return-meta.json reports status=$dispatch_status with a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — this is proof of a shape mismatch (e.g. a bare-string artifacts array), not proof of \"no artifacts\"." >&2
-      bash .claude/scripts/system-defect-record.sh \
+      record_result=$(bash .claude/scripts/system-defect-record.sh \
         --defect-class ARTIFACTS_SHAPE_MISMATCH \
         --detecting-site "skill-orchestrate/SKILL.md:stage-5-recovered" \
         --task "$task_number" --session "$session_id" \
         --message "recovered return-meta carried a non-empty artifacts array yielding no path" \
         --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
-        >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      append_detected_defect "ARTIFACTS_SHAPE_MISMATCH" \
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+        "skill-orchestrate/SKILL.md:stage-5-recovered" \
+        "recovered return-meta carried a non-empty artifacts array yielding no path" \
+        "$record_result"
     fi
   else
     if [ "$handoff_stale" = "true" ]; then
@@ -969,6 +1016,24 @@ if [ "$have_outcome" = "true" ]; then
           completion_reason=$(echo "$completion_json" | jq -r '.reason // "unknown"' 2>/dev/null) || completion_reason="unknown"
           echo "[orchestrate] WARNING: task completed with empty completion_summary (reason=${completion_reason})" >&2
         fi
+      else
+        # `skill_gate_completion_claim`'s Case 3/3 (phases_total == 0 AND plan_markers_verified
+        # != "true") already called system-defect-record.sh internally. Re-derive that case here
+        # from variables this caller already holds, so the observation reaches this run's ledger
+        # without reading or editing scripts/skill-base.sh. Case 1 (phases_total > 0, incomplete)
+        # is an ordinary refuse and is NOT a defect — it must not append.
+        #
+        # `record_result` is empty here: the recorder was invoked inside the gate function, not
+        # by this caller, so its stdout is not observable from this scope.
+        #
+        # This branch ONLY observes. It performs no skill_postflight_update and no state
+        # transition — the no-transition semantics documented immediately below are unchanged.
+        if [ "${phases_total:-0}" -eq 0 ] && [ "${plan_markers_verified:-}" != "true" ]; then
+          append_detected_defect "META_MISSING_AFTER_NARRATION" \
+            "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+            "scripts/skill-base.sh:skill_gate_completion_claim" \
+            "completion claimed with phases_total=0 and unverified plan markers" ""
+        fi
       fi
       # On refuse: no status transition. State stays `implementing`, the gate already logged which
       # case fired, `cycle_count` still increments at the end of this stage, and Stage 4
@@ -1010,13 +1075,18 @@ if [ "$have_outcome" = "true" ]; then
       # dispatched-agent-name variable is unambiguously in scope at this shared, stage-agnostic
       # Tier C arm, so attribution names this detecting site's own SKILL.md per Signal B's
       # "detecting site itself" allowance.
-      bash .claude/scripts/system-defect-record.sh \
+      record_result=$(bash .claude/scripts/system-defect-record.sh \
         --defect-class OFF_SCHEMA_STATUS \
         --detecting-site "skill-orchestrate/SKILL.md:stage-5-tier-c" \
         --task "$task_number" --session "$session_id" \
         --message "handoff dispatch_status '${offschema_display}' is off-schema" \
         --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
-        >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      append_detected_defect "OFF_SCHEMA_STATUS" \
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+        "skill-orchestrate/SKILL.md:stage-5-tier-c" \
+        "handoff dispatch_status '${offschema_display}' is off-schema" \
+        "$record_result"
       ;;
   esac
 

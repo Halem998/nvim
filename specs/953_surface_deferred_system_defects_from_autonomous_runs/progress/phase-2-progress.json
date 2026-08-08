@@ -1,0 +1,32 @@
+{
+  "phase": 2,
+  "phase_name": "Wire the four base single-task Stage 5 detection sites",
+  "started_at": "2026-08-08T12:22:00Z",
+  "last_updated": "2026-08-08T12:32:00Z",
+  "objectives": [
+    {"id": 1, "description": "Define append_detected_defect helper at top of base Stage 5", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Sites 1-4: stale-handoff, stray-handoff, recovered, tier-c", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Site 11a: gate discriminant else branch", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "8.5",
+      "description": "Phase 8 no-interactive check asserts grep -c AskUserQuestion on the base skill equals its pre-change baseline of 0",
+      "type": "altered",
+      "reason": "Phase 1 mandates stating the absolute constraint by name, which introduces one PROSE occurrence of the token in the MT-1 declaration. Raw count goes 0 -> 1 in the base skill; CALL sites remain 0. Phase 8 records both numbers explicitly rather than asserting raw equality.",
+      "annotation": "*(deviation: altered — raw-count equality replaced by call-site-count equality; both numbers recorded)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification": {
+    "helper_definition": 1,
+    "call_sites": 5,
+    "system_defect_auto_emit_sites": 1,
+    "nonfatal_tails_retained": 6,
+    "askuserquestion_call_sites": 0,
+    "askuserquestion_prose_mentions": 1,
+    "helper_runtime_test": "passes; self-heals on absent field; record_result null-vs-string correct"
+  }
+}
