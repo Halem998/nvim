@@ -1584,7 +1584,73 @@ fi
 
 ---
 
-### Stage 8: Cleanup
+### Stage 8: Postflight and Cleanup
+
+**Write metadata file.** `status` here is the `.return-meta.json` skill-status vocabulary defined
+normatively in `context/formats/return-metadata-file.md` — it is NOT the state.json task-status
+vocabulary (`current_status` below, where `"completed"` is correct); do not "correct" this value
+back to `"completed"`. **No new top-level status value is introduced by the `detected_defects`
+mechanism**: a run that observed a defect but otherwise completed is still `"implemented"`.
+
+This subsection MUST run BEFORE the `rm -f` block below — `detected_defects` is read out of the
+loop guard, so the guard must still exist when the read happens.
+
+`cycles_used` and `final_state` are written here because a merge block mirroring base mode's
+Stage 8 would be structurally incomplete without them; closing the broader hard-mode metadata
+gap is not this change's purpose, and nothing else about hard-mode metadata is being backfilled.
+
+On clean exit:
+
+```bash
+mkdir -p "${TASK_DIR}/summaries"
+# Merge onto the existing file rather than overwrite wholesale: an earlier writer (the
+# implementation agent) already populated modified_files/completion_data/etc. on this same
+# path, and a later writer MUST NOT clobber fields it does not own.
+meta_file="${TASK_DIR}/.return-meta.json"
+existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
+# Read the run's system-defect observation log while the loop guard still exists.
+detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file" 2>/dev/null || echo '[]')
+tmp_meta=$(mktemp)
+echo "$existing_meta" | jq \
+  --arg status "implemented" \
+  --argjson cycles "$cycle_count" \
+  --arg final_state "$current_status" \
+  --argjson detected_defects "$detected_defects" \
+  '. * {
+    "status": $status,
+    "metadata": {
+      "cycles_used": $cycles,
+      "final_state": $final_state,
+      "detected_defects": $detected_defects
+    }
+  }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
+```
+
+On partial exit:
+
+```bash
+mkdir -p "${TASK_DIR}/summaries"
+# Same merge-onto-existing discipline as the clean-exit variant above.
+meta_file="${TASK_DIR}/.return-meta.json"
+existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
+detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file" 2>/dev/null || echo '[]')
+tmp_meta=$(mktemp)
+echo "$existing_meta" | jq \
+  --arg status "partial" \
+  --argjson cycles "$cycle_count" \
+  --arg final_state "$current_status" \
+  --argjson detected_defects "$detected_defects" \
+  '. * {
+    "status": $status,
+    "metadata": {
+      "cycles_used": $cycles,
+      "final_state": $final_state,
+      "detected_defects": $detected_defects
+    }
+  }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
+```
+
+**Cleanup.**
 
 **Both `.orchestrator-loop-guard` and `.orchestrator-churn-state.json` are ephemeral, gitignored,
 and removed only at full-loop termination — never between cycles.** Every `stage_paths`/`git add`

@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Add hard mode's missing single-task Stage 8 metadata merge",
+  "started_at": "2026-08-08T12:54:00Z",
+  "last_updated": "2026-08-08T13:02:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm on disk: Stage 8 had only rm -f, cycles_used/final_state count 0", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert net-new clean-exit + partial-exit metadata merge before rm -f", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 3, "description": "Retitle stage to 'Postflight and Cleanup', preserve ephemerality paragraph verbatim", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification": {
+    "cycles_used_final_state_precount": 0,
+    "stage8_detected_defects_hits": 8,
+    "stage8_detected_defects_breakdown": "2 reads + 2 argjson + 2 keys = 6 code hits, plus 2 prose mentions",
+    "merge_precedes_rm_f": true,
+    "merge_semantics_dot_star": 2,
+    "status_values": ["implemented", "partial"],
+    "ephemerality_paragraph_and_trailing_note_survive": true,
+    "jq_merge_runtime_test": "passes; preserves pre-existing modified_files and metadata.agent_type"
+  }
+}

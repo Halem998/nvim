@@ -405,35 +405,35 @@ since, wire it as code in that block's own idiom.
 
 ---
 
-### Phase 5: Add hard mode's missing single-task Stage 8 metadata merge [NOT STARTED]
+### Phase 5: Add hard mode's missing single-task Stage 8 metadata merge [COMPLETED]
 
 **Goal**: Give `detected_defects` somewhere to land on the hard-mode single-task path by adding the
 `.return-meta.json` metadata-merge subsection that Stage 8 currently lacks entirely.
 
 **Tasks**:
-- [ ] Confirm on disk that hard mode's Stage 8 ("Cleanup") contains only `rm -f "$loop_guard_file"`
+- [x] Confirm on disk that hard mode's Stage 8 ("Cleanup") contains only `rm -f "$loop_guard_file"`
       and `rm -f "$churn_file"`, and that `cycles_used` and `final_state` occur nowhere in the file.
-- [ ] Insert a new "Write metadata file" subsection into hard mode's Stage 8, **before** the `rm -f`
+- [x] Insert a new "Write metadata file" subsection into hard mode's Stage 8, **before** the `rm -f`
       block (the loop guard must still exist when `detected_defects` is read from it), mirroring
       base mode's Stage 8 structure: a clean-exit variant and a partial-exit variant, each doing a
       merge-onto-existing (`existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')`,
       `jq ... '. * {...}' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"`), never a wholesale
       overwrite — carrying base mode's own comment about not clobbering fields an earlier writer
       owns.
-- [ ] In both variants, read `detected_defects=$(jq -c '.detected_defects // []'
+- [x] In both variants, read `detected_defects=$(jq -c '.detected_defects // []'
       "$loop_guard_file" 2>/dev/null || echo '[]')` and pass it as
       `--argjson detected_defects "$detected_defects"` into a
       `"detected_defects": $detected_defects` key inside the same `metadata` object.
-- [ ] Set `status` to `"implemented"` on the clean-exit variant and `"partial"` on the partial-exit
+- [x] Set `status` to `"implemented"` on the clean-exit variant and `"partial"` on the partial-exit
       variant — the same two values base mode's Stage 8 writes. Carry base mode's comment that this
       is the `.return-meta.json` skill-status vocabulary, NOT the state.json task-status
       vocabulary, and must not be "corrected" to `"completed"`. **No new top-level status value is
       introduced**: a run that observed a defect but otherwise completed is still `"implemented"`.
-- [ ] Include `cycles_used` and `final_state` in the same `metadata` object, matching base mode's
+- [x] Include `cycles_used` and `final_state` in the same `metadata` object, matching base mode's
       shape. Add an in-place comment stating that these two are written here because a merge block
       mirroring base mode's would be structurally incomplete without them, and that closing the
       broader hard-mode metadata gap is not this change's purpose.
-- [ ] Retitle the stage from "Cleanup" to something covering both responsibilities (e.g. "Postflight
+- [x] Retitle the stage from "Cleanup" to something covering both responsibilities (e.g. "Postflight
       and Cleanup"), and preserve verbatim the existing paragraph about both runtime files being
       ephemeral, gitignored, and removed only at full-loop termination, plus the trailing "(Only on
       successful completion. Leave loop guard and churn state on partial for resume.)" note.
