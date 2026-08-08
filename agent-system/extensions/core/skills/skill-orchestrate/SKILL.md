@@ -1862,6 +1862,36 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 
 > **COMPLETION SEQUENCING**: After ALL Agent tool calls complete (Claude Code returns control after all calls in the single message finish), read handoffs for every dispatched task. Do NOT read handoffs interleaved with dispatches. Per-task postflight (below) now includes a scoped git commit (step 5.5); these commits serialize naturally in program order because postflight is a sequential loop within this same orchestrator turn, so the `specs/.commit-lock/` mutex is needed only against a concurrently-running separate dispatch, never against this loop's own iterations.
 
+**System-defect observation log (MT append idiom)** — the multi-task counterpart of single-task
+Stage 5's `append_detected_defect` helper, targeting `$mt_state_file` instead of the loop guard
+(an MT run has no loop guard) and scoped to each task's own `$task_num` /
+`${session_id}_${task_num}`. It matches the same `jq ... > "${mt_state_file}.tmp" && mv ...`
+idiom the existing `defer_ledger` appends in Stages MT-3/MT-4 use, so the two read as the same
+kind of write. The full contract — entry shape, unconditional-append rule, notice format,
+MUST-NOTs — is defined ONCE in Stage MT-1's `detected_defects` declaration and is not restated
+here.
+
+**These MT sites serve `/orchestrate --hard` batches too.** Exactly as Stage MT-1 already records
+for `defer_ledger`, `skill-orchestrate-hard/SKILL.md` has no MT-stage implementation of its own
+and delegates to these same stages, so the wiring below needs no hard-file mirror. The absence of
+a hard-mode MT counterpart is intentional; do not "fix" it.
+
+```bash
+append_detected_defect_mt() {  # task_num, class, attributed_path, site, detail, record_result
+  jq --argjson entry "$(jq -c -n \
+        --argjson task "$1" --arg class "$2" --arg path "$3" \
+        --arg site "$4" --argjson cycle "${cycle_count:-0}" --arg detail "$5" \
+        --arg rr "${6:-}" \
+        '{task:$task, defect_class:$class, attributed_source_path:$path,
+          detecting_site:$site, cycle:$cycle, detail:$detail,
+          record_result: (if $rr == "" then null else $rr end)}')" \
+      '.detected_defects += [$entry]' \
+      "$mt_state_file" > "${mt_state_file}.tmp" \
+    && mv "${mt_state_file}.tmp" "$mt_state_file"
+  echo "[orchestrate] Task #${1}: [system-defect:auto] queued for postflight summary — defect_class=$2 attributed_path=$3 detecting_site=$4" >&2
+}
+```
+
 **Classifier call** — before grouping, call the shared handoff-triage classifier so this stage's
 routing reads the SAME rule the read-only dry-run report reads, rather than a second,
 independently-maintained copy of it:
@@ -2052,13 +2082,18 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      # came from here, so (identically to the single-task arm) attribution names this detecting
      # site's own SKILL.md rather than guessing the wrong array.
      echo "[orchestrate] Task #${task_num}: EVIDENCE — recovered .return-meta.json reports status=$dispatch_status with a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — this is proof of a shape mismatch (e.g. a bare-string artifacts array), not proof of \"no artifacts\"." >&2
-     bash .claude/scripts/system-defect-record.sh \
+     record_result=$(bash .claude/scripts/system-defect-record.sh \
        --defect-class ARTIFACTS_SHAPE_MISMATCH \
        --detecting-site "skill-orchestrate/SKILL.md:stage-mt4-recovered" \
        --task "$task_num" --session "${session_id}_${task_num}" \
        --message "recovered return-meta carried a non-empty artifacts array yielding no path" \
        --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
-       >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
+       2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+     append_detected_defect_mt "$task_num" "ARTIFACTS_SHAPE_MISMATCH" \
+       "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+       "skill-orchestrate/SKILL.md:stage-mt4-recovered" \
+       "recovered return-meta carried a non-empty artifacts array yielding no path" \
+       "$record_result"
    fi
    ```
 
@@ -2162,6 +2197,22 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      the per-task lock is still released. The task stays eligible in Stage MT-3's next cycle and
      is re-dispatched, bounded by `MAX_CYCLES_MT`.
 
+     **Additionally, on a refuse, evaluate the caller-side defect discriminant** — the multi-task
+     counterpart of single-task Stage 5's own. `skill_gate_completion_claim`'s Case 3/3
+     (`phases_total` is 0 AND `plan_markers_verified` is not `"true"`) already called
+     `system-defect-record.sh` internally; re-derive that case here from the variables this
+     caller already holds, so the observation reaches this run's ledger without reading or
+     editing `scripts/skill-base.sh`. Case 1 (`phases_total > 0`, incomplete) is an ordinary
+     refuse and is NOT a defect — it must not append. When the discriminant holds, call
+     `append_detected_defect_mt "$task_num" "META_MISSING_AFTER_NARRATION"
+     "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+     "scripts/skill-base.sh:skill_gate_completion_claim" "completion claimed with phases_total=0
+     and unverified plan markers" ""` (empty `record_result`: the recorder ran inside the gate
+     function, so its stdout is not observable from this scope). **This changes nothing about the
+     refuse path's existing behavior**: steps 4-6 still run unchanged, the task still stays at
+     `implementing`, and it still stays eligible for re-dispatch bounded by `MAX_CYCLES_MT`. The
+     append only observes.
+
      **On allow**, immediately after that `skill_postflight_update` call, resolve and propagate
      THIS task's completion data — re-resolved per task on every iteration, never carried over
      from a previous task in the same wave (the same caution already given above for
@@ -2220,7 +2271,16 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" >/dev/null 2>&1 || echo
      "Note: system-defect recording failed (non-fatal)" >&2` — scoped to this task's own
      `task_num`/`session_id`, attributed to this SKILL.md's own path since no dispatched-agent-name
-     variable is unambiguously in scope for this shared per-task loop.
+     variable is unambiguously in scope for this shared per-task loop. Capture the recorder's
+     stdout into `record_result` by dropping only the `>/dev/null` half of that redirect (keep
+     stderr discarded and the non-fatal `|| echo` tail intact), then append to this run's
+     observation log via the MT append idiom defined at the top of this stage —
+     `append_detected_defect_mt "$task_num" "OFF_SCHEMA_STATUS"
+     "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+     "skill-orchestrate/SKILL.md:stage-mt4-tier-c" "handoff dispatch_status
+     '${offschema_display}' is off-schema" "$record_result"` — which also emits the
+     `[system-defect:auto]` notice. The append is UNCONDITIONAL: it never depends on the
+     recorder's exit code or on a `SUPPRESSED:` value in `record_result`.
 4. Call `skill_link_artifacts` if artifact path is present (same field mapping as Stage 5).
 5. Re-read fresh status from `state.json` (postflight may have updated it). Update `mt_state_file.current_statuses[task_num]`:
    - If `fresh_status = "completed"`: also add to `completed_tasks`.

@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the base multi-task Stage MT-4 detection sites",
+  "started_at": "2026-08-08T12:44:00Z",
+  "last_updated": "2026-08-08T12:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "MT-scoped append idiom + hard-mode-batch coverage note at MT-4 start", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Site 5 (MT-4 step 1 recovered) and site 6 (MT-4 step 3 tier-c prose)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Site 11c: MT-4 step 3 gate refuse discriminant (prose register)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification": {
+    "mt_idiom_definitions": 1,
+    "mt_wiring_points": 3,
+    "appends_targeting_loop_guard_in_mt": 0,
+    "defer_ledger_appends_unchanged": true,
+    "mt_jq_runtime_test": "passes; SUPPRESSED record_result recorded without gating the append"
+  }
+}

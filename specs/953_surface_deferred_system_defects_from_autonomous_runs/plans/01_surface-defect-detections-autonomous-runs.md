@@ -348,28 +348,28 @@ and read its full `if/else/fi` before adding anything.
 
 ---
 
-### Phase 4: Wire the base multi-task Stage MT-4 detection sites [NOT STARTED]
+### Phase 4: Wire the base multi-task Stage MT-4 detection sites [COMPLETED]
 
 **Goal**: The two multi-task detection sites — which serve `/orchestrate` and `/orchestrate --hard`
 batches alike, since hard mode has no MT implementation of its own — append to
 `mt_state_file.detected_defects`.
 
 **Tasks**:
-- [ ] Add an MT-scoped append idiom near Stage MT-4's start, targeting `$mt_state_file` and using
+- [x] Add an MT-scoped append idiom near Stage MT-4's start, targeting `$mt_state_file` and using
       `$task_num` (not `$task_number`) and this stage's `${session_id}_${task_num}` convention.
       Match the idiom the existing `defer_ledger` appends in Stages MT-3/MT-4 already use so the
       two read as the same kind of write. The notice prefix is `[orchestrate]` and the message
       names the task: `[orchestrate] Task #${task_num}: [system-defect:auto] queued for postflight
       summary — defect_class=... attributed_path=... detecting_site=...`.
-- [ ] Site 5 — MT-4 step 1 recovered-path evidence arm (`ARTIFACTS_SHAPE_MISMATCH`,
+- [x] Site 5 — MT-4 step 1 recovered-path evidence arm (`ARTIFACTS_SHAPE_MISMATCH`,
       `skill-orchestrate/SKILL.md:stage-mt4-recovered`): append + notice after the existing
       recorder call, inside the same `elif` arm.
-- [ ] Site 6 — MT-4 step 3 off-schema arm (`OFF_SCHEMA_STATUS`,
+- [x] Site 6 — MT-4 step 3 off-schema arm (`OFF_SCHEMA_STATUS`,
       `skill-orchestrate/SKILL.md:stage-mt4-tier-c`): this site is currently specified as prose
       naming an inline recorder invocation rather than as a fenced code block. Extend that prose
       with the append and notice in the same register, keeping the existing "scoped to this task's
       own `task_num`/`session_id`" and "attributed to this SKILL.md's own path" clauses intact.
-- [ ] Site 11c — the MT-4 step 3 gate discriminant. Step 3's `implemented` arm calls
+- [x] Site 11c — the MT-4 step 3 gate discriminant. Step 3's `implemented` arm calls
       `skill_gate_completion_claim "$task_num" "$phases_completed" "$phases_total"
       "$plan_markers_verified" "[orchestrate]"` and its refuse path is specified in prose ("On a
       refuse, **skip the postflight call**... leave the task at `implementing`"). Add, in the same
@@ -380,7 +380,7 @@ batches alike, since hard mode has no MT implementation of its own — append to
       nothing about the refuse path's existing behavior — steps 4-6 still run unchanged, the task
       still stays at `implementing` and still stays eligible for re-dispatch bounded by
       `MAX_CYCLES_MT`.
-- [ ] Add a note at Stage MT-4 recording, as Stage MT-1 already does for `defer_ledger`, that these
+- [x] Add a note at Stage MT-4 recording, as Stage MT-1 already does for `defer_ledger`, that these
       MT sites serve hard-mode batches too and need no hard-file mirror.
 
 **Timing**: 1 hour
