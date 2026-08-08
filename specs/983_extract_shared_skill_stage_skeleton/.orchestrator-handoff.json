@@ -1,21 +1,23 @@
 {
-  "status": "planned",
+  "status": "partial",
   "task_number": 983,
   "session_id": "sess_1786219295_397818",
-  "phase": "plan",
-  "agent_type": "planner-agent",
+  "phase": "implement",
+  "agent_type": "general-implementation-agent",
   "orchestrator_mode": true,
+  "summary": "Phases 1-8 of 11 completed and committed onto the shared skill-base.sh lifecycle skeleton (marker schema, MUST NOT lint enforcement, 3 shared @-import blocks, and 27 SKILL.md conversions across core/core-hard/team/nix/nvim/latex/typst/z3/python/web/email/epi). Phases 9-11 (founder/present family, remaining marker writers, final skill-lifecycle.md rewrite + full verification bar) remain.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
-      "summary": "11-phase, 5-wave plan to collapse the skill lifecycle onto a single skill-base.sh-backed skeleton."
+      "type": "handoff",
+      "path": "specs/983_extract_shared_skill_stage_skeleton/handoffs/phase-8-handoff-20260808T000000Z.md",
+      "summary": "Phase 8/11 checkpoint handoff with resume point, key decisions, deviations, and continuation guidance"
     }
   ],
   "plan_path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
-  "phase_count": 11,
-  "estimated_hours": 23.5,
-  "dependency_waves": [[1, 2], [3], [4, 6, 7], [5, 8, 9, 10], [11]],
+  "phases_completed": 8,
+  "phases_total": 11,
   "blockers": [],
-  "next_steps": "Run /implement 983 to execute the plan"
+  "continuation_path": "specs/983_extract_shared_skill_stage_skeleton/handoffs/phase-8-handoff-20260808T000000Z.md",
+  "plan_markers_verified": true,
+  "next_steps": "Run /implement 983 to resume at Phase 9 (Convert the founder/present marker family). See the continuation_path handoff for the exact resume point, worked-reference files, and cumulative deviations from phases 1-8."
 }

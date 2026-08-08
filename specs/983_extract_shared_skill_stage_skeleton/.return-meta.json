@@ -1,8 +1,96 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "agent_type": "general-implementation-agent",
   "task_number": 983,
   "session_id": "sess_1786219295_397818",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "plan_path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md"
+  "plan_path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
+  "partial_progress": {
+    "stage": "phase_8_of_11_complete",
+    "details": "Phases 1-8 of 11 are genuinely COMPLETED and committed (one commit per phase). Phases 9 (founder/present Shape B marker family, ~15 files), 10 (remaining marker writers: skill-spawn, skill-reviser, cslib family, ~7 files), and 11 (skill-lifecycle.md rewrite + full verification bar) remain NOT STARTED. See the orchestrator handoff for the exact resume point and continuation guidance.",
+    "handoff_path": "specs/983_extract_shared_skill_stage_skeleton/.orchestrator-handoff.json",
+    "phases_completed": 8,
+    "phases_total": 11
+  },
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/983_extract_shared_skill_stage_skeleton/.orchestrator-handoff.json",
+      "summary": "Phase 8/11 checkpoint handoff with resume point and per-remaining-phase guidance"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Settled the .postflight-pending marker schema (Shape A) in skill-base.sh, added skill_lifecycle_notify and skill_propagate_memory_candidates, restored MUST NOT (Postflight Boundary) sections and made lint-postflight-boundary.sh enforce presence, authored three shared @-imported lifecycle blocks, and converted 27 SKILL.md files (3 core, 3 core-hard, 3 team, 8 nix/nvim/latex/typst domain, 9 z3/python/web/email/epi domain) onto the shared skeleton with zero inline marker heredocs remaining in any converted file. Phases 9-11 (founder/present family, remaining marker writers, and the final skill-lifecycle.md rewrite plus full verification bar) remain for a follow-up dispatch."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/skill-postflight-flow.md",
+    "agent-system/extensions/core/context/patterns/skill-preflight-flow.md",
+    "agent-system/extensions/core/context/patterns/skill-self-execution-fallback.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+    "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-plan/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-research/SKILL.md",
+    "agent-system/extensions/email/skills/skill-email-implementation/SKILL.md",
+    "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
+    "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md",
+    "agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md",
+    "agent-system/extensions/latex/skills/skill-latex-research/SKILL.md",
+    "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
+    "agent-system/extensions/nix/skills/skill-nix-research/SKILL.md",
+    "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md",
+    "agent-system/extensions/nvim/skills/skill-neovim-research/SKILL.md",
+    "agent-system/extensions/python/skills/skill-python-implementation/SKILL.md",
+    "agent-system/extensions/python/skills/skill-python-research/SKILL.md",
+    "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md",
+    "agent-system/extensions/typst/skills/skill-typst-research/SKILL.md",
+    "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
+    "agent-system/extensions/web/skills/skill-web-research/SKILL.md",
+    "agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md",
+    "agent-system/extensions/z3/skills/skill-z3-research/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo, context/patterns/*.md files that are @-imported directly from a skill body (not reached via context-discovery) still MUST be registered in the owning extension's index-entries.json. check-extension-docs.sh's Rule S scans every deployed context/**/*.md file and fails if it lacks an index.json entry, regardless of whether the file's real access path is direct @-import. Before assuming a new context/patterns/*.md file can skip index-entries.json registration (e.g. following a stated 'not registered' precedent), grep the precedent file itself in index-entries.json to confirm -- a stated precedent can be factually wrong.",
+      "category": "PATTERN",
+      "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["index-entries.json", "Rule S", "context/patterns", "check-extension-docs.sh", "@-import"]
+    },
+    {
+      "content": "agent-system/extensions/core/scripts/test-four-tier-conflict.sh is an intermittently flaky test under concurrent session load: it exercises task-lock.sh's four-tier conflict resolution against a /tmp scratch fixture, and occasionally fails with 'ERROR: failed to write holder.json (jq produced empty output)' due to a filesystem race, unrelated to any content change. It reliably passes when run standalone or under light system load. Treat a lone gate-8 failure on this specific test as a candidate environmental flake before assuming a regression -- verify by running the suite standalone 1-2 more times.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["test-four-tier-conflict.sh", "flaky test", "task-lock.sh", "verify-deploy.sh gate 8", "concurrency"]
+    },
+    {
+      "content": "update-task-status.sh's target_status vocabulary is exactly research/plan/implement/pr_ready/partial/blocked -- there is no per-caller-family value like 'team-research' or 'epi_research'. When converting a caller with a domain-specific or team-specific operation name onto update-task-status.sh (via skill_preflight_update/skill_postflight_update in skill-base.sh), map it onto the nearest plain operation (team-research -> research, epi_implement -> implement, etc.) rather than trying to add a new target_status value -- the marker's own 'operation' field can safely change to match, since no consumer branches on it (confirmed empirically: skill_cleanup only rm -f's by path, skill-refresh only checks mtime).",
+      "category": "PATTERN",
+      "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["update-task-status.sh", "target_status", "skill_preflight_update", "operation mapping", "team skills"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786219295_397818",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 11
+  }
 }
