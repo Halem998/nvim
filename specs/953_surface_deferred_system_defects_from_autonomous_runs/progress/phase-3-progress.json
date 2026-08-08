@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Wire the four hard single-task Stage 5 detection sites",
+  "started_at": "2026-08-08T12:34:00Z",
+  "last_updated": "2026-08-08T12:42:00Z",
+  "objectives": [
+    {"id": 1, "description": "Define hard-mode twin of append_detected_defect helper", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 2, "description": "Sites 7-10: stale-handoff, stray-handoff, recovered, tier-c", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 3, "description": "Site 11b: extend existing gate else branch with discriminant", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification": {
+    "helper_definition": 1,
+    "call_sites": 5,
+    "notice_prefix": "[hard-orchestrate]",
+    "askuserquestion_count": 3,
+    "askuserquestion_baseline": 3,
+    "nonfatal_tails_retained": 4,
+    "stage6_blocker_escalation_unchanged": true,
+    "tier_c_detecting_site": "skill-orchestrate-hard/SKILL.md:tier-c (on-disk string reused, not normalized)"
+  }
+}

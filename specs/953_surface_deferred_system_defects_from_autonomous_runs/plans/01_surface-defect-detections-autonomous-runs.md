@@ -297,33 +297,33 @@ differ, wire what is on disk.
 
 ---
 
-### Phase 3: Wire the four hard single-task Stage 5 detection sites [NOT STARTED]
+### Phase 3: Wire the four hard single-task Stage 5 detection sites [COMPLETED]
 
 **Goal**: Mirror Phase 2 in `skill-orchestrate-hard/SKILL.md`, whose single-task Stage 5 is a
 structurally separate implementation, not a thin wrapper.
 
 **Tasks**:
-- [ ] Define the same `append_detected_defect` helper in this file's Stage 5, with the
+- [x] Define the same `append_detected_defect` helper in this file's Stage 5, with the
       `[hard-orchestrate]` notice prefix. Add a comment stating it is the hard-mode twin of the
       base-file helper and that the two must stay in sync — this is the file pair where a one-sided
       fix is a known recurring defect class.
-- [ ] Site 7 — stale-handoff gate (`HANDOFF_STALE_OR_ABSENT`,
+- [x] Site 7 — stale-handoff gate (`HANDOFF_STALE_OR_ABSENT`,
       `skill-orchestrate-hard/SKILL.md:stage-5-stale-handoff`), attributed path
       `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`.
-- [ ] Site 8 — stray-handoff sweep (`HANDOFF_MISLOCATED`, `...:stage-5-stray-handoff`), append
+- [x] Site 8 — stray-handoff sweep (`HANDOFF_MISLOCATED`, `...:stage-5-stray-handoff`), append
       before the `mv "$stray" ...` line.
-- [ ] Site 9 — recovered-path evidence arm (`ARTIFACTS_SHAPE_MISMATCH`, `...:stage-5-recovered`).
-- [ ] Site 10 — Tier C off-schema arm (`OFF_SCHEMA_STATUS`, detecting-site `...:tier-c` — note this
+- [x] Site 9 — recovered-path evidence arm (`ARTIFACTS_SHAPE_MISMATCH`, `...:stage-5-recovered`).
+- [x] Site 10 — Tier C off-schema arm (`OFF_SCHEMA_STATUS`, detecting-site `...:tier-c` — note this
       file's existing recorder call uses `tier-c`, not `stage-5-tier-c`; reuse the string already
       on disk rather than normalizing it, so the ledger's `detecting_site` matches the durable
       `events.jsonl` record for the same firing).
-- [ ] Site 11b — the gate discriminant. Unlike base mode, this file's
+- [x] Site 11b — the gate discriminant. Unlike base mode, this file's
       `if skill_gate_completion_claim ... "[hard-orchestrate]"; then ... else ... fi` **already has
       an `else` branch** (it echoes `skeleton=${skeleton} at refusal.`). Extend that existing branch
       with the same `phases_total -eq 0 && plan_markers_verified != "true"` discriminant and append;
       do not add a second `else`, and do not remove or reorder the existing `skeleton=` echo or the
       "Leave state as `implementing`" comment.
-- [ ] Capture `record_result` at the four in-file sites by the same `>/dev/null`-drop as Phase 2.
+- [x] Capture `record_result` at the four in-file sites by the same `>/dev/null`-drop as Phase 2.
 
 **Timing**: 1.25 hours
 
