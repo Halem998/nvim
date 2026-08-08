@@ -318,6 +318,12 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
   burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' "$loop_guard_file")
   infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
+  # System-defect observation log for this run. Its entry shape, unconditional-append rule,
+  # notice format, and MUST-NOTs are defined ONCE in `skill-orchestrate/SKILL.md`'s Stage MT-1
+  # `detected_defects` declaration and are deliberately not restated here, so the base and
+  # hard engines cannot drift apart. `// []` is the forward-compatible read for a guard file
+  # written before the field existed, matching the `// 0` idiom above.
+  detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
   echo "[hard-orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (burnout signals so far: $burnout_signals_this_session, infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
 else
   # Fresh start: create guard atomically via init-marker. A plain
@@ -342,6 +348,7 @@ else
       "burnout_signals_this_session": 0,
       "infra_failures": 0,
       "max_infra_failures": $max_infra_failures,
+      "detected_defects": [],
       "started": $started,
       "last_updated": $started,
       "plan_version": $plan_version
@@ -349,10 +356,12 @@ else
     cycle_count=0
     burnout_signals_this_session=0
     infra_failures=0
+    detected_defects='[]'
   else
     cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
     burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' "$loop_guard_file")
     infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
+    detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
     echo "[hard-orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES (burnout signals so far: $burnout_signals_this_session, infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
   fi
 fi

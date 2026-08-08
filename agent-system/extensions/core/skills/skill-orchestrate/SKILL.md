@@ -114,6 +114,10 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   # this is precisely why a git-restorable guard would corrupt the cycle budget.
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
   infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
+  # System-defect observation log for this run (contract: Stage MT-1's `detected_defects`
+  # declaration). `// []` is the forward-compatible read for a guard file written before this
+  # field existed, matching the `// 0` idiom above.
+  detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
   # Observational-only session_id tracking (NEVER a gate — see Ephemeral note above and
   # context/standards/status-markers.md's rationale: SESSION_ID is regenerated per /orchestrate
   # invocation, while this guard is explicitly designed to survive across conversational turns.
@@ -142,17 +146,20 @@ else
       "infra_failures": 0,
       "max_infra_failures": $max_infra_failures,
       "current_state": "reading",
+      "detected_defects": [],
       "started": $started,
       "last_updated": $started
     }' | bash .claude/scripts/task-lock.sh init-marker "$loop_guard_file"; then
     cycle_count=0
     infra_failures=0
+    detected_defects='[]'
     echo "[orchestrate] Starting fresh — MAX_CYCLES=$MAX_CYCLES, MAX_INFRA_FAILURES=$MAX_INFRA_FAILURES"
   else
     # Lost the creation race: another writer won. Resume from their guard, reading BOTH
-    # counters — not just cycle_count.
+    # counters — not just cycle_count — and the system-defect observation log alongside them.
     cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
     infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
+    detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
     echo "[orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
   fi
 fi
@@ -1382,6 +1389,49 @@ subsection):
   `deferred_deploy_checkpoint`, not a replacement: a self-modifying defer appends to BOTH the
   existing observation log and the ledger, and the two existing fields keep their current
   semantics, consumers, and Stage MT-5 role byte-for-byte.
+- `detected_defects: []` — an APPEND-ONLY OBSERVATION LOG of every system-defect detection that
+  fired during this run. This declaration is the SINGLE canonical definition of the field's
+  contract; `skill-orchestrate-hard/SKILL.md` points back here rather than restating it, so the
+  two engines cannot drift.
+
+  **Entry shape**:
+  `{"task": <int>, "defect_class": <string>, "attributed_source_path": <string>, "detecting_site": <string>, "cycle": <int>, "detail": <string>, "record_result": <string|null>}`.
+  Unlike `defer_ledger`'s MT-only `task`, `task` here is ALWAYS populated: a task number
+  (`$task_number` in single-task stages, `$task_num` in MT stages) is in scope at every detection
+  site in both engines.
+
+  **Unconditional-append rule**: the append fires whenever the caller's own detection fires, and
+  is NEVER gated on `system-defect-record.sh`'s exit code, nor on a `SUPPRESSED:recursion_guard`
+  or `SUPPRESSED:duplicate` value on its stdout. `record_result` records that outcome for the
+  operator; it never decides whether the entry exists. Rationale: the recorder's dedup key is
+  cross-run, while this log answers "what fired during THIS run" — a detection suppressed as a
+  cross-run duplicate still fired here and must still be surfaced. This mirrors `defer_ledger`'s
+  existing unconditional-append discipline.
+
+  **Notice format** (modelled on the literature `AUTONOMOUS_GLOBAL` directive's `[lit:auto]`
+  notice): immediately after each append, at every site, emit
+  `[orchestrate] [system-defect:auto] queued for postflight summary — defect_class=<CLASS> attributed_path=<PATH> detecting_site=<SITE>`
+  (`[hard-orchestrate]` prefix in the hard-mode file; MT sites additionally name the task). Its
+  purpose is the same "never a silent no-op" principle that directive states: a detection that
+  only lands in a file the operator never opens is indistinguishable from no detection at all.
+
+  **Absolute constraint**: no site in this mechanism may call `AskUserQuestion`. When
+  `orchestrator_mode` is true there is no human to prompt, so accumulate-then-render is the
+  deterministic default — exactly as `AUTONOMOUS_GLOBAL` prescribes for the same situation. This
+  mechanism surfaces detections; it creates no task and adds no interactive step.
+
+  **MUST NOT**: the log is never read by any eligibility check, all-terminal check, circuit
+  breaker, convergence guard, or admission branch. It is written for reporting and read only at
+  Stage MT-5 and by `commands/orchestrate.md`. It is not an admission gate and must never become
+  one. It is likewise never consulted by `exit_status` branch selection: a batch that succeeded
+  and also observed a defect is still a successful batch.
+
+  **ADDITIVE, never merged**: `detected_defects` is ADDITIVE to `defer_ledger` and is never
+  merged into it — `defer_ledger`'s `defer_reason` vocabulary is load-bearing for admission
+  reporting, and a system-defect detection excludes nothing and has no `defer_reason`. It is
+  likewise never merged into `verify_deploy_baseline_notices`, which is a different observation
+  log for a different concern (pre-existing deploy-verify failures). Three separate logs, three
+  separate operator remedies.
 - `forward_progress_violated: false` — initialized false, computed and written once at Stage MT-5
   from `dispatch_start_ts`. Never read by any loop condition.
 

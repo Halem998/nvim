@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Declare the detected_defects accumulator and its shared contract",
+  "started_at": "2026-08-08T12:10:00Z",
+  "last_updated": "2026-08-08T12:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Stage MT-1 detected_defects declaration in base SKILL.md", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Base Stage 2 loop-guard fresh-init + two read paths", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Hard Stage 2 loop-guard fresh-init + two read paths + contract pointer", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification": {
+    "base_detected_defects_hits": 7,
+    "hard_detected_defects_hits": 5,
+    "jq_fresh_init_parse": "both OK",
+    "defer_ledger_declaration_unchanged": true
+  }
+}

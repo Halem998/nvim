@@ -1,7 +1,7 @@
 # Implementation Plan: Task #953
 
 - **Task**: 953 - Surface deferred system-defect detections from autonomous runs
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: prerequisite recorder task (`system-defect-record.sh` + wired detection sites) — already merged
 - **Research Inputs**: specs/953_surface_deferred_system_defects_from_autonomous_runs/reports/01_surface-deferred-system-defects.md
@@ -121,14 +121,14 @@ phase with one hard-file phase, so the two members of a wave never touch the sam
 
 ---
 
-### Phase 1: Declare the `detected_defects` accumulator and its shared contract [NOT STARTED]
+### Phase 1: Declare the `detected_defects` accumulator and its shared contract [COMPLETED]
 
 **Goal**: Establish the new field in both accumulator homes and write, once, the canonical
 contract (entry shape, append discipline, notice format, MUST-NOTs) that Phases 2-6 refer back to
 instead of restating.
 
 **Tasks**:
-- [ ] In `skill-orchestrate/SKILL.md` Stage MT-1, immediately after the `defer_ledger: []`
+- [x] In `skill-orchestrate/SKILL.md` Stage MT-1, immediately after the `defer_ledger: []`
       declaration bullet and before `forward_progress_violated: false`, add a
       `detected_defects: []` bullet. Carry `defer_ledger`'s MUST-NOT **verbatim**: "never read by
       any eligibility check, all-terminal check, circuit breaker, convergence guard, or admission
@@ -137,29 +137,29 @@ instead of restating.
       `defer_ledger`'s `defer_reason` vocabulary is load-bearing for admission reporting; and that
       it is likewise never merged into `verify_deploy_baseline_notices`, a different observation
       log for a different concern.
-- [ ] In the same declaration, fix the entry shape as
+- [x] In the same declaration, fix the entry shape as
       `{"task": <int>, "defect_class": <string>, "attributed_source_path": <string>,
       "detecting_site": <string>, "cycle": <int>, "detail": <string>,
       "record_result": <string|null>}`. Note that `task` is ALWAYS populated (unlike
       `defer_ledger`'s MT-only `task`), because `$task_number`/`$task_num` is in scope at every one
       of the eleven sites.
-- [ ] In the same declaration, state the **unconditional-append rule**: the append fires whenever
+- [x] In the same declaration, state the **unconditional-append rule**: the append fires whenever
       the caller's own detection fires, and is NEVER gated on `system-defect-record.sh`'s exit code
       or on a `SUPPRESSED:recursion_guard` / `SUPPRESSED:duplicate` stdout value. `record_result`
       records that outcome for the operator; it never decides whether the entry exists. Rationale:
       the recorder's dedup key is cross-run, and the goal here is "surface what fired this run."
       This mirrors `defer_ledger`'s existing unconditional-append discipline.
-- [ ] In the same declaration, fix the **notice format**, modelled on the literature
+- [x] In the same declaration, fix the **notice format**, modelled on the literature
       `AUTONOMOUS_GLOBAL` directive's `[lit:auto]`:
       `[orchestrate] [system-defect:auto] queued for postflight summary — defect_class=<CLASS> attributed_path=<PATH> detecting_site=<SITE>`
       (`[hard-orchestrate]` prefix in the hard file). State that it is emitted immediately after
       the append, at every site, and that its purpose is the same "never a silent no-op" principle
       the literature directive states.
-- [ ] In the same declaration, state the **absolute constraint**: no site in this mechanism may
+- [x] In the same declaration, state the **absolute constraint**: no site in this mechanism may
       call `AskUserQuestion`. When `orchestrator_mode` is true there is no human to prompt; the
       accumulate-then-render design is the deterministic default, exactly as `AUTONOMOUS_GLOBAL`
       prescribes.
-- [ ] In `skill-orchestrate/SKILL.md` Stage 2, add `"detected_defects": []` to the fresh-start
+- [x] In `skill-orchestrate/SKILL.md` Stage 2, add `"detected_defects": []` to the fresh-start
       `jq -n` loop-guard object (the one ending `}' | bash .claude/scripts/task-lock.sh
       init-marker "$loop_guard_file"`), and add
       `detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")` to BOTH read paths:
@@ -167,12 +167,12 @@ instead of restating.
       `else` branch (which the file's own comment insists must read all counters, not just
       `cycle_count`). The `// []` default is the forward-compatible read for guard files written
       before this field existed, matching the `// 0` idiom already used there.
-- [ ] Mirror the same three Stage 2 insertions in `skill-orchestrate-hard/SKILL.md`'s "Loop Guard
+- [x] Mirror the same three Stage 2 insertions in `skill-orchestrate-hard/SKILL.md`'s "Loop Guard
       and Churn State Initialization". Its fresh-init object is larger (it carries
       `burnout_signals_this_session`) and its resume branch reads three counters — add the field
       and the read to each without disturbing the surrounding churn-state handling, and do not
       touch `$churn_file`.
-- [ ] In the hard file, add a one-line pointer at its Stage 2 insertion stating that the entry
+- [x] In the hard file, add a one-line pointer at its Stage 2 insertion stating that the entry
       shape, unconditional-append rule, notice format, and MUST-NOTs are defined once in
       `skill-orchestrate/SKILL.md`'s Stage MT-1 `detected_defects` declaration and are not restated
       here, so the two cannot drift.
