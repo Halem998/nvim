@@ -1,0 +1,91 @@
+{
+  "phase": 9,
+  "phase_name": "Convert the founder/present marker family",
+  "started_at": "2026-08-08T22:00:00Z",
+  "last_updated": "2026-08-08T22:54:20Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Enumerate the Shape B writers at implementation time (measured set, not plan-time list)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Replace each file's inline marker heredoc and inline cleanup block with the Phase 3 shared blocks (marker, cleanup, preflight, TTS only; no domain-body restructuring)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/founder/skills/skill-analyze/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-deck-plan/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-deck-implement/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-meeting/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-deck-research/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-strategy/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-founder-plan/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-founder-spreadsheet/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-legal/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-finance/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-founder-implement/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-market/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-project/SKILL.md",
+        "agent-system/extensions/present/skills/skill-budget/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slide-critic/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slide-planning/SKILL.md",
+        "agent-system/extensions/present/skills/skill-timeline/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slides/SKILL.md",
+        "agent-system/extensions/present/skills/skill-grant/SKILL.md",
+        "agent-system/extensions/present/skills/skill-funds/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add MUST NOT (Postflight Boundary) section to any delegating file missing it",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/founder/skills/skill-analyze/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-deck-plan/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-meeting/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-deck-research/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-strategy/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-founder-plan/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-founder-spreadsheet/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-legal/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-finance/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-market/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-project/SKILL.md",
+        "agent-system/extensions/present/skills/skill-budget/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slide-critic/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slide-planning/SKILL.md",
+        "agent-system/extensions/present/skills/skill-timeline/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slides/SKILL.md",
+        "agent-system/extensions/present/skills/skill-grant/SKILL.md",
+        "agent-system/extensions/present/skills/skill-funds/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Confirm no .claude/** file edited and no task-number reference in any changed file",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.1",
+      "description": "Enumerate the Shape B writers at implementation time",
+      "type": "altered",
+      "reason": "Measured set was 20 files, not the plan's 15; skill-financial-analysis excluded (reserved for Phase 10 per that phase's own file list), leaving 19 files converted here plus skill-funds which the plan's file-name list omitted entirely.",
+      "annotation": "*(deviation: altered — measured 20 files via grep, converted 19 after excluding skill-financial-analysis for Phase 10)*"
+    },
+    {
+      "task_id": "9.2",
+      "description": "Replace each file's inline marker heredoc and inline cleanup block with the Phase 3 shared blocks",
+      "type": "altered",
+      "reason": "skill-slides and skill-grant have genuinely conditional per-workflow-type preflight status logic (including true no-status-change branches in skill-grant). Converting their Stage 2 status dispatch to skill_preflight_update would either force a status transition where none was intended (skill-grant's progress_track/fix_it_scan) or paper over a latent missing-case bug (skill-slides' missing 'plan' case) -- both would be domain-body restructuring, explicitly out of scope. These two files got marker+cleanup conversion only, with their conditional Stage 2 left untouched.",
+      "annotation": "*(deviation: altered — skill-slides and skill-grant converted marker+cleanup only, Stage 2 conditional status logic intentionally left untouched)*"
+    }
+  ]
+}

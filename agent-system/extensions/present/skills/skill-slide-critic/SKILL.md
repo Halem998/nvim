@@ -87,42 +87,24 @@ talk_type=$(echo "$forcing_data" | jq -r '.talk_type // "CONFERENCE"')
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2: Preflight Status Update and Postflight Marker
 
-Update task status to `researching` BEFORE invoking subagent.
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
 task_dir="specs/${padded_num}_${project_name}"
 mkdir -p "$task_dir"
-
-# Update state.json
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg sid "$session_id" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: "researching",
-    last_updated: $ts,
-    session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-
-# Update TODO.md marker to [RESEARCHING]
+skill_name="skill-slide-critic"
+operation="research"
 ```
 
-Create postflight marker:
-
-```bash
-cat > "${task_dir}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-slide-critic",
-  "task_number": ${task_number},
-  "operation": "slides_critique",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
-```
+`operation="research"` (not `"slides_critique"`) is required here: `update-task-status.sh`'s
+`target_status` vocabulary has no `slides_critique` value, so this skill maps onto the plain
+`research` operation (this skill is invoked from `/research` on `workflow_type: "slides_critique"`
+tasks). The marker's `operation` field now reads `"research"` rather than `"slides_critique"`.
 
 ---
 
@@ -460,10 +442,10 @@ Session: ${session_id}"
 
 ### Stage 12: Cleanup
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
+
 ```bash
-rm -f "${task_dir}/.postflight-pending"
-rm -f "${task_dir}/.postflight-loop-guard"
-rm -f "${task_dir}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ---
@@ -527,6 +509,32 @@ Accept all remaining unaddressed issues. Proceed to filtered report generation. 
 
 ### Git commit failure
 Non-blocking. Log failure but continue.
+
+---
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns -- whether with status researched, partial, or failed -- this skill MUST
+proceed immediately to postflight (Stage 6). The skill MUST NOT:
+
+1. **Edit source/report files** - All research work is done by agent
+2. **Run domain analysis or calculations** - Analysis is agent work
+3. **Use MCP or WebSearch tools** - Research tools are for agent use only
+4. **Analyze or grep source** - Analysis is agent work
+5. **Write reports** - Artifact creation is done by agent
+
+> **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
+> attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
+> status and let the user re-run `/research` to resume.
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Calling `update-task-status.sh` for status updates (state.json + TODO.md)
+- Linking artifacts in state.json
+- Git commit
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md
 
 ---
 

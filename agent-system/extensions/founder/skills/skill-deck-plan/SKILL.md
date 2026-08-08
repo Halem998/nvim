@@ -64,43 +64,21 @@ if [ -z "$session_id" ]; then
 fi
 ```
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status to "planning" in state.json:
-
-```bash
-jq --argjson num "$task_number" \
-   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   '(.active_projects[] | select(.project_number == $num)) += {
-     status: "planning",
-     last_updated: $ts
-   }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-```
-
-Update TODO.md status marker to [PLANNING].
-
-### Stage 3: Create Postflight Marker
-
-Create marker file to signal postflight operations needed:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
 project_name=$(jq -r --argjson num "$task_number" \
   '.active_projects[] | select(.project_number == $num) | .project_name' \
   specs/state.json)
 task_dir="specs/${padded_num}_${project_name}"
 mkdir -p "$task_dir"
-
-cat > "$task_dir/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-deck-plan",
-  "task_number": ${task_number},
-  "operation": "plan",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
+skill_name="skill-deck-plan"
+operation="plan"
 ```
 
 ### Stage 4: Context Preparation
@@ -482,17 +460,41 @@ EOF
 
 ### Stage 9: Cleanup
 
-Remove postflight markers and metadata:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
 
 ```bash
-rm -f "$task_dir/.postflight-pending"
-rm -f "$task_dir/.postflight-loop-guard"
-rm -f "$task_dir/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ### Stage 10: Return Brief Summary
 
 Return brief text summary to caller.
+
+---
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns -- whether with status planned, partial, or failed -- this skill MUST
+proceed immediately to postflight (Stage 6). The skill MUST NOT:
+
+1. **Edit plan/report files** - All plan generation is done by agent
+2. **Run domain analysis or calculations** - Analysis is agent work
+3. **Use MCP or WebSearch tools** - Domain tools are for agent use only
+4. **Analyze or grep source** - Analysis is agent work
+5. **Write plan artifacts** - Artifact creation is done by agent
+
+> **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
+> attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
+> status and let the user re-run `/plan` to resume.
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Calling `update-task-status.sh` for status updates (state.json + TODO.md)
+- Linking artifacts in state.json
+- Git commit
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md
 
 ---
 

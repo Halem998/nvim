@@ -95,55 +95,30 @@ fi
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status based on workflow type BEFORE invoking subagent.
+Map `workflow_type` onto `update-task-status.sh`'s `research`/`plan` vocabulary, then source
+`skill-base.sh` once and follow `@.claude/context/patterns/skill-preflight-flow.md` in full for
+Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
+source .claude/scripts/skill-base.sh
+padded_num=$(printf "%03d" "$task_number")
+skill_name="skill-timeline"
 case "$workflow_type" in
   timeline_research)
-    preflight_status="researching"
-    preflight_marker="[RESEARCHING]"
+    operation="research"
     ;;
   timeline_plan)
-    preflight_status="planning"
-    preflight_marker="[PLANNING]"
+    operation="plan"
     ;;
 esac
-
-# Update state.json
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "$preflight_status" \
-   --arg sid "$session_id" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
-**Update TODO.md**: Use Edit tool to change status marker to the in-progress state.
-
----
-
-### Stage 3: Create Postflight Marker
-
-```bash
-padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-timeline",
-  "task_number": ${task_number},
-  "operation": "${workflow_type}",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
-```
+`operation` (not the raw `"${workflow_type}"`) is required here: `update-task-status.sh`'s
+`target_status` vocabulary has no `timeline_research`/`timeline_plan` values, so this skill maps
+onto the plain `research`/`plan` operations. The marker's `operation` field now reads `"research"`
+or `"plan"` rather than the raw workflow-type string.
 
 ---
 
@@ -340,10 +315,10 @@ Session: ${session_id}
 
 ### Stage 10: Cleanup
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
+
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ---
@@ -395,6 +370,34 @@ Keep status at preflight level, preserve postflight marker, report error with re
 
 ### Git Commit Failure
 Non-blocking. Log failure but continue with success response.
+
+---
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns -- whether with a success, partial, or failed status -- this skill MUST
+proceed immediately to postflight (Stage 6). This applies across all of this skill's
+`workflow_type` variants (research, plan, and assemble/implementation alike). The skill MUST NOT:
+
+1. **Edit source/report/deck files** - All workflow-type-specific work is done by agent
+2. **Run domain analysis or calculations** - Analysis is agent work
+3. **Use MCP or WebSearch tools** - Domain tools are for agent use only
+4. **Analyze or grep source** - Analysis is agent work
+5. **Write artifacts** - Artifact creation is done by agent
+
+> **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
+> attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
+> status and let the user re-run the triggering command to resume.
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Calling `update-task-status.sh` for status updates (state.json + TODO.md), per the
+  workflow-type-specific mapping documented in this skill's own preflight stage
+- Linking artifacts in state.json
+- Git commit
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md
 
 ---
 

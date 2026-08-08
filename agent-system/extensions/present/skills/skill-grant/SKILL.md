@@ -182,24 +182,17 @@ fi
 
 ### Stage 3: Create Postflight Marker
 
-Create the marker file to prevent premature termination:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md`'s
+Stage 3 (marker creation) — the preceding Stage 2 status transition is intentionally left as its
+own conditional block above (per-workflow-type dispatch, including the `progress_track` and
+`fix_it_scan` no-status-change cases, is a domain-specific behavior this conversion does not
+restructure), only the marker write itself moves onto the shared function:
 
 ```bash
-# Ensure task directory exists
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-grant",
-  "task_number": ${task_number},
-  "operation": "${workflow_type}",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
+skill_name="skill-grant"
+skill_create_postflight_marker "$padded_num" "$project_name" "$session_id" "$skill_name" "$workflow_type"
 ```
 
 ---
@@ -522,12 +515,10 @@ Session: ${session_id}
 
 ### Stage 10: Cleanup
 
-Remove marker and metadata files:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
 
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ---
@@ -1018,6 +1009,34 @@ Grant fix-it scan completed for task {N}:
 - [Warning] Git commit failed: {error}
 - Manual commit recommended: git add specs/ && git commit
 ```
+
+---
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns -- whether with a success, partial, or failed status -- this skill MUST
+proceed immediately to postflight (Stage 6). This applies across all of this skill's
+`workflow_type` variants (research, plan, and assemble/implementation alike). The skill MUST NOT:
+
+1. **Edit source/report/deck files** - All workflow-type-specific work is done by agent
+2. **Run domain analysis or calculations** - Analysis is agent work
+3. **Use MCP or WebSearch tools** - Domain tools are for agent use only
+4. **Analyze or grep source** - Analysis is agent work
+5. **Write artifacts** - Artifact creation is done by agent
+
+> **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
+> attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
+> status and let the user re-run the triggering command to resume.
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Calling `update-task-status.sh` for status updates (state.json + TODO.md), per the
+  workflow-type-specific mapping documented in this skill's own preflight stage
+- Linking artifacts in state.json
+- Git commit
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md
 
 ---
 

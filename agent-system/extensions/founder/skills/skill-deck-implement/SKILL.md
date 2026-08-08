@@ -67,43 +67,21 @@ if [ -z "$plan_path" ] || [ ! -f "$plan_path" ]; then
 fi
 ```
 
-### 2. Preflight Status Update
+### 2 + 3. Preflight Status Update and Postflight Marker
 
-Update task status to "implementing" in state.json:
-
-```bash
-jq --argjson num "$task_number" \
-   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   '(.active_projects[] | select(.project_number == $num)) += {
-     status: "implementing",
-     last_updated: $ts
-   }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-```
-
-Update TODO.md status marker to [IMPLEMENTING].
-
-### 3. Create Postflight Marker
-
-Create marker file to signal postflight operations needed:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
 project_name=$(jq -r --argjson num "$task_number" \
   '.active_projects[] | select(.project_number == $num) | .project_name' \
   specs/state.json)
 task_dir="specs/${padded_num}_${project_name}"
 mkdir -p "$task_dir"
-
-cat > "$task_dir/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-deck-implement",
-  "task_number": ${task_number},
-  "operation": "implement",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
+skill_name="skill-deck-implement"
+operation="implement"
 ```
 
 ### 4. Context Preparation
@@ -260,12 +238,10 @@ EOF
 
 ### 9. Cleanup and Return
 
-Remove postflight markers and metadata:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
 
 ```bash
-rm -f "$task_dir/.postflight-pending"
-rm -f "$task_dir/.postflight-loop-guard"
-rm -f "$task_dir/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 Return brief text summary to caller.

@@ -740,26 +740,46 @@ and convert every hit — the true count governs, not the estimate.
 
 ---
 
-### Phase 9: Convert the founder/present marker family [NOT STARTED]
+### Phase 9: Convert the founder/present marker family [COMPLETED]
 
 **Goal**: The 15-file "Shape B" family (`task_number` + `created`, no `stop_hook_active`) — the
 variant the task description's four-shape framing missed entirely — moves onto the shared marker
 path.
 
 **Tasks**:
-- [ ] Enumerate the Shape B writers at implementation time. The report names: `skill-founder-implement`,
+- [x] Enumerate the Shape B writers at implementation time. The report names: `skill-founder-implement`,
       `skill-budget`, `skill-web-research`, `skill-deck-plan`, `skill-deck-research`, `skill-finance`,
       `skill-analyze`, `skill-founder-plan`, `skill-project`, `skill-deck-implement`, `skill-meeting`,
       `skill-founder-spreadsheet`, `skill-legal`, `skill-strategy`, `skill-market`. Note
       `skill-web-research` may already be handled by Phase 8 — de-duplicate against that phase's
-      actual output rather than converting twice.
-- [ ] Replace each file's inline marker heredoc and inline cleanup block with the Phase 3 shared
+      actual output rather than converting twice. *(completed: measured set was 20 files via
+      `grep -rl "postflight-pending" agent-system/extensions/{founder,present}/skills/*/SKILL.md`,
+      not the plan's 15; `skill-web-research` indeed already converted in Phase 8;
+      `skill-financial-analysis` deliberately excluded here and reserved for Phase 10 per that
+      phase's own explicit file list, leaving 19 files converted in this phase)*
+- [x] Replace each file's inline marker heredoc and inline cleanup block with the Phase 3 shared
       blocks. These are largely non-lifecycle content skills, so convert **only** the marker,
-      cleanup, preflight, and TTS stages; do not restructure their domain bodies.
-- [ ] For any file in this family where `does_skill_delegate()` is true but no
+      cleanup, preflight, and TTS stages; do not restructure their domain bodies. *(completed:
+      16 single-workflow files fully converted (Stage 2+3 merge onto
+      `skill_preflight_update`/`skill_create_postflight_marker`, cleanup onto `skill_cleanup`);
+      `skill-timeline` converted with a workflow_type-to-operation case mapping (both branches
+      map cleanly, no no-op case); `skill-slides` and `skill-grant` converted marker+cleanup
+      only, deliberately leaving their conditional per-workflow-type Stage 2 status logic
+      untouched — including `skill-grant`'s true `progress_track`/`fix_it_scan` no-status-change
+      cases — since restructuring that conditional dispatch is out of this phase's scope. No
+      Shape B file had an inline TTS stage to convert (verified via grep across all 20 files
+      before conversion), so the TTS leg of this task was a no-op)*
+- [x] For any file in this family where `does_skill_delegate()` is true but no
       `## MUST NOT (Postflight Boundary)` section exists, add one — Phase 2's lint gate will
-      otherwise fail the corpus scan.
-- [ ] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      otherwise fail the corpus scan. *(completed: all 20 converted files delegate via the Agent
+      tool; 18 lacked the section and got one added (research/plan/mixed-workflow template
+      variants matched to each file's operation); `skill-deck-implement` and
+      `skill-founder-implement` already carried it. `lint-postflight-boundary.sh` now passes
+      across the full corpus)*
+- [x] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+      *(completed: `git status --short .claude/` reports nothing — `.claude/` is gitignored and
+      untouched by direct edit; `grep` for task-number citation patterns across the 20 changed
+      files found none)*
 
 **Timing**: 2 hours
 
