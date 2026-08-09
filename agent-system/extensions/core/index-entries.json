@@ -556,11 +556,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "synthesis-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -1372,11 +1372,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "synthesis-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -1607,11 +1607,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "synthesis-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -1630,11 +1630,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
-        ],
-        "commands": []
-      }
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     },
     {
       "path": "repo/project-overview.md",
@@ -1722,11 +1721,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
-        ],
-        "commands": []
-      }
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     },
     {
       "path": "schemas/errors-schema.json",
@@ -1900,11 +1898,12 @@
         "devops"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -1996,11 +1995,12 @@
         "devops"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -2018,11 +2018,12 @@
         "devops"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -2068,11 +2069,12 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -2448,11 +2450,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
-        ],
-        "commands": []
-      }
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     },
     {
       "path": "workflows/command-lifecycle.md",

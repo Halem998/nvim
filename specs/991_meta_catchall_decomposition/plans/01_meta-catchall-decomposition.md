@@ -527,26 +527,26 @@ movement is a defect.
 
 ---
 
-### Phase 6: Real hooks for meta-only groups G4, G5, G6 [NOT STARTED]
+### Phase 6: Real hooks for meta-only groups G4, G5, G6 [COMPLETED]
 
 **Goal**: Finish the meta-only set — including the three entries that are deliberately dropped to
 grep-only, which is where Phase 4's `on_demand` marker earns its existence.
 
 **Tasks**:
-- [ ] **G4, team mode** (3 entries, 657 lines) — `patterns/team-orchestration.md`,
+- [x] **G4, team mode** (3 entries, 657 lines) — `patterns/team-orchestration.md`, *(completed)*
       `reference/team-wave-helpers.md`, `formats/team-metadata-extension.md`.
       Set `agents: ["synthesis-agent"]`, `commands: []`, `task_types: []`. `synthesis-agent` is
       uncapped, so this is budget-free. Recorded limitation: the team skills are not agents and
       `--team` is a flag rather than a command, so `synthesis-agent` is the only hook the schema
       can currently express for this group.
-- [ ] **G5, git / CI / commit discipline** (4 entries, 1,139 lines) — `standards/git-safety.md`,
+- [x] **G5, git / CI / commit discipline** (4 entries, 1,139 lines) — `standards/git-safety.md`, *(completed)*
       `standards/git-integration.md`, `standards/ci-workflow.md`,
       `standards/postflight-tool-restrictions.md`.
       Set `agents: ["general-implementation-agent", "general-implementation-hard-agent"]`,
       `commands: []`, `task_types: []`. Explicitly excludes every research agent. This is the
       single largest budget impact of the whole task and is accepted deliberately: the hook is
       correct, and correctness outranks the cap per the bar section.
-- [ ] **G6, quick-reference, drop to grep-only** (3 entries, 285 lines) — `routing.md`,
+- [x] **G6, quick-reference, drop to grep-only** (3 entries, 285 lines) — `routing.md`, *(completed)*
       `validation.md`, `reference/workflow-diagrams.md`.
       Set all `load_when` arrays empty **and** add `"on_demand": true` to each. Omitting the
       marker would trip the Dead Entry Check — which is the intended behavior, and the reason
