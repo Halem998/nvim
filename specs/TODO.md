@@ -14,7 +14,8 @@ next_project_number: 1003
 | 1 | 984,992,997,998 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
 | 2 | 985,993,995,1000,1002 | 984,992,998 | agent-system |
 | 3 | 986,1001 | 985,1000 | agent-system |
-| 4 | 996,999 | 986,993,995,1002 | agent-system |
+| 4 | 999 | 986,1002 | agent-system |
+| 5 | 996 | 993,995,999 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,8 +24,8 @@ next_project_number: 1003
 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
       └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
+        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
   └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
   └─ 1000 [NOT STARTED] — Give the cslib extension its own copy of the adversarial-verifica
@@ -355,7 +356,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 985, Task 986, Task 993, Task 995
+- **Dependencies**: Task 985, Task 986, Task 993, Task 995, Task 999
 
 **Description**: Capstone acceptance gate for the agent-system refactor: verify the COMPOSED system end-to-end after all structural waves land. Every prior refactor task carries its own verification bar; nothing yet verifies the composition — a fresh deploy, all gates at their hardened defaults, and a live orchestrate cycle exercising routing, handoff, gate-out, and defect-recording together. This task fixes nothing structural itself: any failure is recorded (errors.json entry and/or spawned follow-up task) and the gate re-runs after the fix lands.
 
