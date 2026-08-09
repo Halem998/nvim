@@ -300,36 +300,36 @@ not a harness bug, and must be recorded before proceeding.
 
 ---
 
-### Phase 2: Derive tier algorithmically at all four `.tier` call sites [NOT STARTED]
+### Phase 2: Derive tier algorithmically at all four `.tier` call sites [COMPLETED]
 
 **Goal**: Replace every read of the never-populated authored `tier` field with a derivation from
 `load_when` shape, and restate the two checks whose meaning changes as a result.
 
 **Tasks**:
-- [ ] Add a single `derived_tier` jq function, defined once and reused, with a header comment
+- [x] Add a single `derived_tier` jq function, defined once and reused, with a header comment *(completed)*
       stating the rule table and citing `index.schema.json`'s `$comment` as the reason the field
       is derived rather than authored:
       `always == true` -> 1; non-empty `agents` -> 2; non-empty `commands` or `task_types` -> 3;
       all hooks empty -> 4.
-- [ ] **Call site 1** (verbose per-agent listing): replace `\(.tier // "?")` with the derived
+- [x] **Call site 1** (verbose per-agent listing): replace `\(.tier // "?")` with the derived *(completed)*
       value, so verbose output prints real tiers instead of `Tier ?`.
-- [ ] **Call site 2** (Tier Classification Check): stop counting `.tier == null`. Report the
+- [x] **Call site 2** (Tier Classification Check): stop counting `.tier == null`. Report the *(completed)*
       derived tier distribution (counts per tier 1/2/3/4) and total entries. Status is `OK`
       whenever every entry classifies — which, given a total function over the four cases, is
       always. Keep the section heading and the `OK`/`FAIL` line shape so the output stays
       diffable against the baseline.
-- [ ] **Call site 3** (Dead Entry Check): replace `.tier != 4` with the explicit-intent predicate
+- [x] **Call site 3** (Dead Entry Check): replace `.tier != 4` with the explicit-intent predicate *(completed)*
       `((.on_demand // false) != true)` in **both** the count query and the listing query. Update
       the section's comment to state that emptiness alone no longer exempts an entry.
       Note: this phase leaves the check reporting 3 violations; Phase 4 marks those entries.
-- [ ] **Call site 4** (Double-Loading Check): drop the `.tier == 3` term entirely — under
+- [x] **Call site 4** (Double-Loading Check): drop the `.tier == 3` term entirely — under *(completed)*
       derivation it is unsatisfiable, so keeping it would make the check structurally rather than
       accidentally dead. Restate as
       `select((.load_when.agents // [] | length) > 0 and (.load_when.commands // [] | length) > 0)`.
       Increment `WARNINGS`, **not** `VIOLATIONS`. Print the count unconditionally and the list
       under `--verbose`. Add a comment recording why it is a warning: the restatement surfaces 49
       pre-existing matches at once, and triaging them is separate work.
-- [ ] Leave `CAPS` and `EXCEPTIONS` byte-identical. Do not touch them.
+- [x] Leave `CAPS` and `EXCEPTIONS` byte-identical. Do not touch them. *(completed)*
 
 **Timing**: 1.5 hours
 

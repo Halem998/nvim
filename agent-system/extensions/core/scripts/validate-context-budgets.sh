@@ -17,7 +17,13 @@ REPO_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 INDEX_FILE="${REPO_ROOT}/.claude/context/index.json"
 VERBOSE=false
 VIOLATIONS=0
+# WARNINGS is the total count of non-fatal findings across every check.
+# EXCEPTIONS_APPLIED counts only the subset that are documented per-agent budget exceptions
+# (the OK* rows). The two were the same counter until the Double-Loading Check was restated as a
+# warning; keeping them separate is what stops a double-loading warning from being narrated as a
+# "documented exception" in the summary.
 WARNINGS=0
+EXCEPTIONS_APPLIED=0
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -49,6 +55,35 @@ if ! jq empty "$INDEX_FILE" 2>/dev/null; then
   echo "ERROR: index.json is not valid JSON" >&2
   exit 1
 fi
+
+# --- Tier derivation -------------------------------------------------------------------------
+# Tier is DERIVED from load_when shape, never read from an authored `tier` field. The entry
+# schema (context/index.schema.json) deliberately omits `tier` and records in its $comment that
+# the value "is meant to be derived algorithmically from load_when shape rather than
+# hand-authored, since no entry in practice ever populated it accurately" -- and, with
+# `additionalProperties: false` on the entry shape, an authored `tier` is not even schema-legal.
+# This function is the single definition of that derivation; it is prepended to every jq program
+# below that needs a tier, so there is exactly one rule table in this file.
+#
+#   Rule table (first match wins, total over all entries):
+#     load_when.always == true                        -> Tier 1  (always loaded)
+#     load_when.agents non-empty                      -> Tier 2  (agent-scoped)
+#     load_when.commands or task_types non-empty      -> Tier 3  (command/task-type-scoped)
+#     every hook empty                                -> Tier 4  (on-demand / grep-only)
+#
+# Because case 4 is a fallthrough on emptiness, "all hooks empty" now DERIVES to Tier 4 rather
+# than being an authored claim. That is what makes the old Dead Entry Check ("not Tier 4 but
+# never loaded") a tautology, and why that check is keyed on the explicit `on_demand` marker
+# instead -- see the Dead Entry Check section below.
+DERIVED_TIER='
+def derived_tier:
+  if (.load_when.always == true) then 1
+  elif ((.load_when.agents // []) | length) > 0 then 2
+  elif (((.load_when.commands // []) | length) > 0
+        or ((.load_when.task_types // []) | length) > 0) then 3
+  else 4
+  end;
+'
 
 echo "=== Context Budget Validation ==="
 echo "Index: $INDEX_FILE"
@@ -103,6 +138,7 @@ for agent in "${!CAPS[@]}"; do
     status="OK (exception)"
     printf "%-35s %8s %8s %12s\n" "$agent" "$total_tokens" "$cap" "OK*"
     WARNINGS=$((WARNINGS + 1))
+    EXCEPTIONS_APPLIED=$((EXCEPTIONS_APPLIED + 1))
     if [[ "$VERBOSE" == "true" ]]; then
       echo "    * Documented exception: $exception_reason"
     fi
@@ -114,8 +150,8 @@ for agent in "${!CAPS[@]}"; do
 
   if [[ "$VERBOSE" == "true" ]]; then
     echo "  Entries for $agent:"
-    jq -r --arg agent "$agent" \
-      '.entries[] | select(any(.load_when.agents[]?; . == $agent)) | "    Tier \(.tier // "?") \(.line_count * 8) tok  \(.path)"' \
+    jq -r --arg agent "$agent" "${DERIVED_TIER}"'
+      .entries[] | select(any(.load_when.agents[]?; . == $agent)) | "    Tier \(derived_tier) \(.line_count * 8) tok  \(.path)"' \
       "$INDEX_FILE" | sort -t' ' -k3 -rn
     echo ""
   fi
@@ -142,65 +178,83 @@ if [[ "$VERBOSE" == "true" ]]; then
 fi
 echo ""
 
-# All entries have tier field
+# Every entry classifies under the derived tier rule table
+# `derived_tier` is a total function over the four load_when cases, so an entry can never fail to
+# classify. The check therefore reports the resulting distribution (which is real, diffable
+# signal about index shape) rather than counting a never-populated authored field.
 echo "--- Tier Classification Check ---"
-missing_tier=$(jq '[.entries[] | select(.tier == null)] | length' "$INDEX_FILE")
 total_entries=$(jq '.entries | length' "$INDEX_FILE")
+unclassified=$(jq "${DERIVED_TIER}"'[.entries[] | select((derived_tier | IN(1,2,3,4)) | not)] | length' "$INDEX_FILE")
+tier_dist=$(jq -r "${DERIVED_TIER}"'
+  [.entries[] | derived_tier] | group_by(.) | map("Tier \(.[0]): \(length)") | join(", ")' "$INDEX_FILE")
 echo "Total entries: $total_entries"
-echo "Entries with tier field: $((total_entries - missing_tier))"
-if [[ $missing_tier -eq 0 ]]; then
-  echo "Status: OK (all entries have tier)"
+echo "Derived tier distribution: $tier_dist"
+if [[ $unclassified -eq 0 ]]; then
+  echo "Status: OK (all entries classify via derived_tier)"
 else
-  echo "Status: FAIL ($missing_tier entries missing tier field)"
+  echo "Status: FAIL ($unclassified entries fail to classify)"
   VIOLATIONS=$((VIOLATIONS + 1))
   if [[ "$VERBOSE" == "true" ]]; then
-    echo "Missing tier:"
-    jq -r '.entries[] | select(.tier == null) | "  \(.path)"' "$INDEX_FILE"
+    echo "Unclassified:"
+    jq -r "${DERIVED_TIER}"'.entries[] | select((derived_tier | IN(1,2,3,4)) | not) | "  \(.path)"' "$INDEX_FILE"
   fi
 fi
 echo ""
 
-# No dead entries (never-loaded, not Tier 4)
-# Dead = not Tier 4, not always-loaded, no agents, no commands, no task_types, no skills, no languages
-echo "--- Dead Entry Check ---"
-dead_count=$(jq '
-  [.entries[] | select(
-    .tier != 4 and
-    (.load_when.always == false or (.load_when.always == null)) and
+# No dead entries (never auto-loaded and not explicitly marked on-demand)
+# Dead = every load_when hook empty AND no explicit `on_demand: true` marker.
+#
+# This check was formerly keyed on the authored tier field being other than 4 ("not Tier 4 but
+# never loaded"). Under algorithmic derivation an all-hooks-empty
+# entry ALWAYS derives to Tier 4, so that predicate is unsatisfiable and the check would silently
+# become a tautology that can never fire. Emptiness alone therefore no longer exempts an entry:
+# the exemption must be stated explicitly by the entry author via `on_demand: true` (declared as
+# a property in context/index.schema.json). That keeps "deliberately grep-only" distinguishable
+# from "someone forgot to hook this up", which is the only signal this check ever carried.
+DEAD_PRED='
+  select(
+    (((.on_demand // false) == true) | not) and
+    ((.load_when.always == true) | not) and
     ((.load_when.agents // []) | length) == 0 and
     ((.load_when.commands // []) | length) == 0 and
     ((.load_when.task_types // []) | length) == 0 and
     ((.load_when.skills // []) | length) == 0 and
     ((.load_when.languages // []) | length) == 0
-  )] | length' "$INDEX_FILE")
+  )
+'
+echo "--- Dead Entry Check ---"
+dead_count=$(jq "[.entries[] | ${DEAD_PRED}] | length" "$INDEX_FILE")
 if [[ $dead_count -eq 0 ]]; then
-  echo "Dead entries (never auto-loaded, not Tier 4): 0 -- OK"
+  echo "Dead entries (all hooks empty, not marked on_demand): 0 -- OK"
 else
   echo "Dead entries found: $dead_count"
   VIOLATIONS=$((VIOLATIONS + 1))
-  jq -r '
-    .entries[] | select(
-      .tier != 4 and
-      (.load_when.always == false or (.load_when.always == null)) and
-      ((.load_when.agents // []) | length) == 0 and
-      ((.load_when.commands // []) | length) == 0 and
-      ((.load_when.task_types // []) | length) == 0 and
-      ((.load_when.skills // []) | length) == 0 and
-      ((.load_when.languages // []) | length) == 0
-    ) | "  \(.path) (Tier \(.tier // "?"))"' "$INDEX_FILE"
+  jq -r "${DERIVED_TIER}"'.entries[] | '"${DEAD_PRED}"' | "  \(.path) (Tier \(derived_tier))"' "$INDEX_FILE"
 fi
 echo ""
 
-# No Tier 3 entries with both agents AND commands
+# Entries reachable through both an agent hook and a command hook
+#
+# Formerly required the authored tier field to equal 3 alongside `agents > 0 and commands > 0`.
+# That conjunction is unsatisfiable under
+# derivation -- any entry with a non-empty `agents` array derives to Tier 2, never 3 -- so keeping
+# the tier term would make this check structurally dead rather than merely accidentally so. It is
+# restated on the load_when shape alone, which is what "double-loaded" always meant.
+#
+# Reported as a WARNING, not a violation, and deliberately so: the restatement surfaces a large
+# set of pre-existing matches in one go (49 of 187 entries at the time of the restatement).
+# Triaging them is real work with per-entry judgement calls, separate from making the check
+# honest. Counting them as violations would fail every run from day one and the signal would be
+# turned off rather than acted on. The count prints unconditionally so the number stays visible.
 echo "--- Double-Loading Check ---"
-double_loaded=$(jq '[.entries[] | select(.tier == 3 and (.load_when.agents | length) > 0 and (.load_when.commands | length) > 0)] | length' "$INDEX_FILE")
+double_loaded=$(jq '[.entries[] | select(((.load_when.agents // []) | length) > 0 and ((.load_when.commands // []) | length) > 0)] | length' "$INDEX_FILE")
 if [[ $double_loaded -eq 0 ]]; then
-  echo "Tier 3 entries with both agents and commands: 0 -- OK"
+  echo "Entries with both agents and commands hooks: 0 -- OK"
 else
-  echo "Double-loaded Tier 3 entries: $double_loaded (VIOLATION)"
-  VIOLATIONS=$((VIOLATIONS + 1))
+  echo "Entries with both agents and commands hooks: $double_loaded (WARNING -- pending triage)"
+  WARNINGS=$((WARNINGS + 1))
   if [[ "$VERBOSE" == "true" ]]; then
-    jq -r '.entries[] | select(.tier == 3 and (.load_when.agents | length) > 0 and (.load_when.commands | length) > 0) | "  \(.path)"' "$INDEX_FILE"
+    jq -r '.entries[] | select(((.load_when.agents // []) | length) > 0 and ((.load_when.commands // []) | length) > 0) | "  \(.path)"' "$INDEX_FILE"
   fi
 fi
 echo ""
@@ -209,7 +263,10 @@ echo ""
 echo "=== Summary ==="
 echo "Violations: $VIOLATIONS"
 if [[ $WARNINGS -gt 0 ]]; then
-  echo "Documented exceptions: $WARNINGS (OK* entries)"
+  echo "Warnings: $WARNINGS"
+fi
+if [[ $EXCEPTIONS_APPLIED -gt 0 ]]; then
+  echo "Documented exceptions: $EXCEPTIONS_APPLIED (OK* entries)"
   echo "  * general-implementation-agent: 8,048 tokens vs 8,000 cap"
   echo "    Minimum essential set cannot be reduced below this value:"
   echo "    - formats/return-metadata-file.md (4,016 tok) -- critical for all subagents"
