@@ -1505,7 +1505,8 @@
         "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "reference/README.md",
@@ -2542,7 +2543,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "JSON Schema for context index.json validation",
-      "line_count": 128,
+      "line_count": 133,
       "keywords": [
         "schema",
         "index",
@@ -2645,7 +2646,8 @@
         "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "contracts/orchestrator-discipline.md",
@@ -2669,7 +2671,8 @@
         "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "contracts/recovery.md",

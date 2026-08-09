@@ -33,7 +33,7 @@
   "$defs": {
     "entry": {
       "type": "object",
-      "$comment": "description, tags, and tier are deliberately ABSENT from this entry shape, not oversights: 'description' duplicates 'summary' and its unique detail is meant to be folded into 'summary' (not carried as a second free-text field); 'tags' is a naming mismatch for the already-declared 'keywords' property below (use 'keywords'); 'tier' is meant to be derived algorithmically from load_when shape rather than hand-authored, since no entry in practice ever populated it accurately. additionalProperties stays false so these cannot silently reappear.",
+      "$comment": "description, tags, and tier are deliberately ABSENT from this entry shape, not oversights: 'description' duplicates 'summary' and its unique detail is meant to be folded into 'summary' (not carried as a second free-text field); 'tags' is a naming mismatch for the already-declared 'keywords' property below (use 'keywords'); 'tier' is meant to be derived algorithmically from load_when shape rather than hand-authored, since no entry in practice ever populated it accurately. additionalProperties stays false so these cannot silently reappear. The 'on_demand' property below is the explicit-intent marker consumed by validate-context-budgets.sh's Dead Entry Check, and it exists precisely BECAUSE tier is derived: deriving Tier 4 from an all-empty load_when means 'never auto-loaded' can no longer be distinguished from 'not Tier 4', which would reduce that check to a tautology that can never fire. Requiring the author to state the intent keeps 'deliberately grep-only' separable from 'someone forgot to hook this up'.",
       "required": ["path", "domain", "summary", "line_count"],
       "additionalProperties": false,
       "properties": {
@@ -121,6 +121,11 @@
         "replacement": {
           "type": "string",
           "description": "Path to replacement file if deprecated"
+        },
+        "on_demand": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, this entry is deliberately reachable only on demand (grep/explicit Read), not through any automatic load_when hook. Optional; absence means false. Set it ONLY on an entry whose load_when hooks are all empty by design -- it is the explicit-intent marker that exempts such an entry from validate-context-budgets.sh's Dead Entry Check. An all-hooks-empty entry WITHOUT this marker is still reported as dead, which is the intended signal."
         }
       }
     }

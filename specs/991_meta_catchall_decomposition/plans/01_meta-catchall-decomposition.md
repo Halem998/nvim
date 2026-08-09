@@ -411,23 +411,23 @@ for the path. If cslib already has an entry, merge into it rather than adding a 
 
 ---
 
-### Phase 4: Declare `on_demand` in the schema and mark the existing all-empty entries [NOT STARTED]
+### Phase 4: Declare `on_demand` in the schema and mark the existing all-empty entries [COMPLETED]
 
 **Goal**: Restore real signal to the Dead Entry Check by making "deliberately grep-only"
 expressible and schema-legal, so it stays distinguishable from "someone forgot to hook this".
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/index.schema.json`, add an `on_demand` property to
+- [x] In `agent-system/extensions/core/context/index.schema.json`, add an `on_demand` property to *(completed)*
       the `$defs.entry` shape: `{"type": "boolean", "description": "..."}`. It is optional;
       absence means `false`. Do **not** relax `additionalProperties: false`.
-- [ ] Extend that entry's existing `$comment` (do not replace it — it is the load-bearing record
+- [x] Extend that entry's existing `$comment` (do not replace it — it is the load-bearing record *(completed)*
       that `tier` is derived, not authored) with a sentence explaining that `on_demand` is the
       explicit-intent marker consumed by the Dead Entry Check, and that it exists precisely
       because deriving Tier 4 from emptiness would otherwise make that check a tautology.
-- [ ] In `agent-system/extensions/core/index-entries.json`, add `"on_demand": true` to the three
+- [x] In `agent-system/extensions/core/index-entries.json`, add `"on_demand": true` to the three *(completed)*
       entries that are all-hooks-empty today: `reference/artifact-templates.md`,
       `contracts/convergence.md`, `contracts/orchestrator-discipline.md`.
-- [ ] Confirm no other extension owns an all-hooks-empty entry; if the harness reports one
+- [x] Confirm no other extension owns an all-hooks-empty entry; if the harness reports one *(completed)*
       outside core, stop and record it rather than editing a file outside this plan's scope.
 
 **Timing**: 0.75 hours
@@ -450,6 +450,27 @@ editing rather than trusting this count; if it is not 3, or any is outside core,
 - Per-agent budget block byte-identical to the previous phase (marking changes no hook).
 - **Negative test** (required, not optional): temporarily remove `on_demand` from one of the three entries, re-run the harness, confirm the Dead Entry Check reports 1 violation naming that entry, then restore it. This proves the check still has signal rather than having become a tautology.
 - `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet` reports no new Rule T findings.
+
+**Deviation recorded — `meta-builder-agent` moved +40 tokens (130,360 -> 130,400):**
+
+The phase predicted a byte-identical per-agent block. It is not, and the difference is real,
+exact, and fully traced rather than papered over:
+
+1. `index.schema.json` is itself an indexed context entry, and its `load_when.agents` names
+   `meta-builder-agent`. The plan did not account for the schema file being hooked to the very
+   agent whose number the bar tracks.
+2. This phase's own mandated edit — "Extend that entry's existing `$comment`" plus the new
+   `on_demand` property — grew the file from 128 to 133 lines.
+3. `check-extension-docs.sh` Rule R is a hard gate on `line_count` accuracy and failed with
+   `line_count mismatch: declared 128, actual 133`, so correcting the declared count to 133 was
+   mandatory, not optional.
+4. 5 lines x 8 tokens = 40 tokens; 130,360 + 40 = 130,400 exactly. No other capped agent moved.
+
+The delta is a correct measurement of real content growth, not a dropped or misrouted hook, so
+the instrument behaved exactly as intended. Shrinking the `$comment` to restore 128 lines was
+rejected: that would be tuning the artifact to flatter the number. **The chosen bar's
+`meta-builder-agent` row is therefore restated as 130,400**, and Phase 8 attests against that
+value with this justification attached.
 
 ---
 
