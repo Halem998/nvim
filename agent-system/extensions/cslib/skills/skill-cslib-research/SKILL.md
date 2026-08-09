@@ -105,6 +105,21 @@ subagent or inline (Stage 4b). Do NOT skip these stages for any reason.
 ### Stage 5: Parse Subagent Return
 Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`.
 
+**Expected `status` vocabulary**: `researched` on success; otherwise `partial`, `failed`, or
+`blocked`. This is a closed set (`@.claude/context/formats/return-metadata-file.md` is
+normative) and near-synonyms are not accepted — see the `status` note in
+`cslib-research-agent.md`'s Stage 7 for the three consumers a variant breaks and the
+stranded-task failure mode it produces. If the value read here is outside the set, do NOT
+proceed to Stage 6 as if it were a success: report it and stop, so the task is not promoted on
+an unrecognized outcome.
+
+**No `.orchestrator-handoff.json`**: research agents never write one, in any mode, including
+under `orchestrator_mode: true` (`cslib-research-agent.md` Stage 7 states this as a
+prohibition). A dispatching orchestrator MUST NOT instruct this skill's subagent to write one
+either — `.return-meta.json` is the sole status channel for research, and
+`skill-orchestrate`'s Stage 5 already treats an absent handoff from a research dispatch as the
+expected outcome and recovers through `scripts/orchestrate-recover-outcome.sh`.
+
 ### Stage 6: Update Task Status (Postflight)
 Update state.json and TODO.md based on result.
 

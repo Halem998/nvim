@@ -251,6 +251,24 @@ Write to `specs/{N}_{SLUG}/.return-meta.json` with `"status": "researched"`. Inc
 `memory_candidates` if any reusable CSLib patterns were discovered. Set `next_steps` to
 `"Run /plan {N} to create implementation plan"`.
 
+**`status` is a CLOSED vocabulary — never invent a variant.** The only legal values are
+`researched`, `partial`, `failed`, and `blocked` (see
+`@.claude/context/formats/return-metadata-file.md`, which is normative). A near-synonym such as
+`research_complete`, `research_completed`, or `complete` is NOT accepted anywhere and fails
+silently in three separate consumers at once:
+
+- `scripts/orchestrate-recover-outcome.sh` recovers an outcome only for
+  `researched`/`planned`/`implemented`, so an off-vocabulary value makes a completed research
+  dispatch indistinguishable from one that produced nothing;
+- `scripts/reconcile-task-status.sh` refuses to promote `researching -> researched` unless the
+  status matches exactly, so the task is left stranded in the in-flight state on every
+  subsequent run, not just the current one;
+- `skill-orchestrate`'s Stage 5 routes the value to its off-schema arm and halts the
+  orchestration loop.
+
+The failure mode is a task stuck at `[RESEARCHING]` with a complete report on disk, repairable
+only by hand. Emit `researched` verbatim.
+
 **`artifacts` shape (required)**: `artifacts` is a **required array of objects**, each with
 `type`, `path`, and `summary` keys — **never an array of bare path strings**. A bare-string array
 parses as valid JSON but silently breaks the orchestrator's artifact-linking read
