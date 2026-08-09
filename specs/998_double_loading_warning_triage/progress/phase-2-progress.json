@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Re-key the Double-Loading Check in the source script",
+  "started_at": "2026-08-09T00:15:00Z",
+  "last_updated": "2026-08-09T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace the Double-Loading Check section and comment block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"]},
+    {"id": 2, "description": "Add live route derivation (never hardcoded agent names)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"]},
+    {"id": 3, "description": "Add [DEGRADED ROUTE DERIVATION] precondition assertion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"]},
+    {"id": 4, "description": "Define direct-command roster and /orchestrate special case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"]},
+    {"id": 5, "description": "Implement three-bucket partition and reporting, promote redundant to VIOLATIONS", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"]},
+    {"id": 6, "description": "Rewrite comment block with criterion/exemption/coverage boundary", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"]},
+    {"id": 7, "description": "Update WARNINGS/EXCEPTIONS_APPLIED separation comment at top of file", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "bash -n parses clean. shellcheck not available in this environment (acceptable per plan's conditional wording). grep confirms no literal agent name in the new section's code (only pre-existing budget-cap table entries elsewhere in the file).",
+    "Added env-var overrides (VALIDATE_BUDGETS_MANIFEST_OVERRIDE, VALIDATE_BUDGETS_META_SKILL_OVERRIDE, VALIDATE_BUDGETS_SPAWN_SKILL_OVERRIDE, VALIDATE_BUDGETS_REVISE_SKILL_OVERRIDE), unset in normal operation, so Phase 5's degraded-derivation test case can stub an unreadable route source against the real deployed script without touching real deployed files.",
+    "Behavioral verification (running the deployed copy) deferred to Phase 4 per the plan's dependency graph -- deploy-root-guard.sh blocks execution from the source store."
+  ]
+}

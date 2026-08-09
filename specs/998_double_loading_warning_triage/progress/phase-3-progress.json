@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Narrow the redundant entries in the core index",
+  "started_at": "2026-08-09T00:30:00Z",
+  "last_updated": "2026-08-09T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Take Phase 1 redundant path list as input", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Apply jq transformation setting load_when.commands=[] on redundant paths", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 3, "description": "Verify surgical diff (entry count, only-key-changed, exact path set)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-run classifier, confirm core redundant count is 0", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm memory index-entries.json untouched", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm no line_count/keywords/topics/summary/ordering changed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Entry count 136 before and after. 36 entries changed, every diff confined to load_when.commands. Dual-hook count in core index-entries.json: 47 -> 11 (matches plan's Scope Hypothesis exactly).",
+    "generate-context-line-counts.sh --check: 467/467 exact match, 0 mismatch across all extensions.",
+    "memory/index-entries.json confirmed untouched via git diff --stat (no output).",
+    "Observed unrelated pre-existing uncommitted changes in the working tree (core/README.md, docs/architecture/extension-system.md, docs/guides/adding-domains.md, docs/reference/standards/extension-slim-standard.md, scripts/check-extension-docs.sh) -- these belong to the sibling EXTENSION.md-editing task per delegation territory notes and were left untouched."
+  ]
+}

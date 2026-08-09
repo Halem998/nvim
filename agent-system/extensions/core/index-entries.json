@@ -19,9 +19,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -65,9 +63,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -206,9 +202,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -230,9 +224,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -304,9 +296,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -350,9 +340,7 @@
           "planner-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/plan"
-        ]
+        "commands": []
       }
     },
     {
@@ -374,9 +362,7 @@
           "general-implementation-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       }
     },
     {
@@ -398,9 +384,7 @@
           "general-research-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/research"
-        ]
+        "commands": []
       }
     },
     {
@@ -491,9 +475,7 @@
           "general-implementation-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       }
     },
     {
@@ -517,10 +499,7 @@
           "spawn-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta",
-          "/spawn"
-        ]
+        "commands": []
       }
     },
     {
@@ -564,9 +543,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -614,9 +591,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -638,9 +613,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -661,9 +634,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -986,9 +957,7 @@
           "general-implementation-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       }
     },
     {
@@ -1010,9 +979,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -1080,9 +1047,7 @@
           "general-implementation-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       }
     },
     {
@@ -1344,9 +1309,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -1368,9 +1331,7 @@
           "general-implementation-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       }
     },
     {
@@ -1392,9 +1353,7 @@
           "planner-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/plan"
-        ]
+        "commands": []
       }
     },
     {
@@ -1416,9 +1375,7 @@
           "general-research-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/research"
-        ]
+        "commands": []
       }
     },
     {
@@ -1733,9 +1690,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -1758,9 +1713,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2124,9 +2077,7 @@
           "general-implementation-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       }
     },
     {
@@ -2148,9 +2099,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2171,9 +2120,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2194,9 +2141,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2239,9 +2184,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2286,9 +2229,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2310,9 +2251,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2446,10 +2385,7 @@
           "spawn-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/plan",
-          "/spawn"
-        ]
+        "commands": []
       }
     },
     {
@@ -2472,9 +2408,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2780,9 +2714,7 @@
         "agents": [
           "meta-builder-agent"
         ],
-        "commands": [
-          "/meta"
-        ],
+        "commands": [],
         "task_types": []
       }
     },
@@ -2808,9 +2740,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2906,9 +2836,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {
@@ -2932,9 +2860,7 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": [
-          "/meta"
-        ]
+        "commands": []
       }
     },
     {

@@ -189,41 +189,45 @@ is a finding to reconcile in this phase, not a number to overwrite.
 
 ---
 
-### Phase 2: Re-key the Double-Loading Check in the source script [NOT STARTED]
+### Phase 2: Re-key the Double-Loading Check in the source script [COMPLETED]
 
 **Goal**: Replace the shape-only predicate with the three-bucket mechanical predicate, promote the
 redundant bucket to a violation, and make degraded route derivation loud.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/validate-context-budgets.sh`, replace the
+- [x] In `agent-system/extensions/core/scripts/validate-context-budgets.sh`, replace the
       `--- Double-Loading Check ---` section (its `double_loaded` computation, WARNING branch, and
-      the preceding comment block explaining the deliberate warning downgrade).
-- [ ] Add the route derivation, lifted from the Phase 1 scratch classifier: read
+      the preceding comment block explaining the deliberate warning downgrade). *(completed)*
+- [x] Add the route derivation, lifted from the Phase 1 scratch classifier: read
       `routing_agents.{research,plan,implement}` from `${REPO_ROOT}/.claude/extensions/core/manifest.json`
       and the sole `subagent_type:` line from each of the three singleton skills. Never hardcode an
-      agent name as a literal.
-- [ ] Add the precondition assertion: if any of the six routes resolves empty (missing file,
+      agent name as a literal. *(completed: `_dlc_route_agents`/`_dlc_subagent_type` helpers, plus
+      env-var overrides for test stubbing, e.g. `VALIDATE_BUDGETS_MANIFEST_OVERRIDE`)*
+- [x] Add the precondition assertion: if any of the six routes resolves empty (missing file,
       changed key, reworded line), print a loud named `[DEGRADED ROUTE DERIVATION]` line naming which
       route(s) failed, increment `WARNINGS`, and treat the affected command(s) as unclassifiable --
-      never as "direct" and never as a silent no-op.
-- [ ] Define the direct-command roster as a literal list (`/review`, `/errors`, `/task`, `/todo`,
+      never as "direct" and never as a silent no-op. *(completed)*
+- [x] Define the direct-command roster as a literal list (`/review`, `/errors`, `/task`, `/todo`,
       `/refresh`, `/fix-it`, `/learn`, `/distill`, `/literature`, `/project-overview`, `/tag`,
       `/merge`, `/cite`) plus `/orchestrate` handled as its own never-subsuming case, with a comment
       explaining why `/orchestrate` can never make an entry redundant (union reach across three
-      skills' agent resolution).
-- [ ] Implement the three-bucket partition and its reporting:
+      skills' agent resolution). *(completed)*
+- [x] Implement the three-bucket partition and its reporting:
       - `redundant` -> add to `VIOLATIONS`, list every offending path **unconditionally** (not gated
         on `--verbose`, so the failure is actionable from a bare run).
       - `legitimate-dual` -> informational line only; never touches `WARNINGS` or `VIOLATIONS`.
       - `unclassifiable-command` -> informational line naming the count and, under `--verbose`, the
         paths and the specific unrecognized command tokens.
-- [ ] Rewrite the section's comment block: state the criterion, state that the exemption is the
+      *(completed)*
+- [x] Rewrite the section's comment block: state the criterion, state that the exemption is the
       predicate's own false result (no allowlist), and state the coverage boundary (extension
       command names are not mechanically routable today, hence the third bucket). Reference durable
-      anchors -- script names, manifest keys, section headings -- never a task number.
-- [ ] Confirm the `WARNINGS` / `EXCEPTIONS_APPLIED` separation comment at the top of the script is
+      anchors -- script names, manifest keys, section headings -- never a task number. *(completed)*
+- [x] Confirm the `WARNINGS` / `EXCEPTIONS_APPLIED` separation comment at the top of the script is
       still accurate now that this check no longer produces a routine warning; update it if its
-      stated rationale has gone stale.
+      stated rationale has gone stale. *(completed: updated to describe the current WARNINGS
+      sources -- OK* budget exceptions, degraded route derivation -- and points to the
+      Double-Loading Check section for the current criterion)*
 
 **Timing**: 1.5 hours
 
@@ -246,25 +250,34 @@ redundant bucket to a violation, and make degraded route derivation loud.
 
 ---
 
-### Phase 3: Narrow the redundant entries in the core index [NOT STARTED]
+### Phase 3: Narrow the redundant entries in the core index [COMPLETED]
 
 **Goal**: Drop `load_when.commands` on exactly the entries Phase 1 classified as redundant, keeping
 `load_when.agents` and every other field untouched.
 
 **Tasks**:
-- [ ] Take the Phase 1 `redundant` path list as input (do not re-type it from the report).
-- [ ] Apply a single `jq` transformation to `agent-system/extensions/core/index-entries.json`
+- [x] Take the Phase 1 `redundant` path list as input (do not re-type it from the report).
+      *(completed: consumed from the Phase 1 scratch classifier's saved partition JSON)*
+- [x] Apply a single `jq` transformation to `agent-system/extensions/core/index-entries.json`
       setting `load_when.commands` to `[]` for exactly the paths in that list, writing to a temp file
-      and moving into place only after `jq empty` validates the result.
-- [ ] Verify the transformation is surgical: compare before/after with a structural diff confirming
+      and moving into place only after `jq empty` validates the result. *(completed)*
+- [x] Verify the transformation is surgical: compare before/after with a structural diff confirming
       (a) `.entries | length` is unchanged, (b) the only differing key anywhere is
       `load_when.commands`, and (c) it differs on exactly the redundant-list paths and no others.
-- [ ] Re-run the Phase 1 scratch classifier against a locally merged preview of the index (or
+      *(completed: 136 entries before and after; 36 changed entries, every one's only differing
+      top-level key is `load_when` and only differing load_when sub-key is `commands`; the
+      changed-to-`[]` path set is byte-identical to the redundant-list set)*
+- [x] Re-run the Phase 1 scratch classifier against a locally merged preview of the index (or
       directly against the modified `index-entries.json`) and confirm the redundant count for core
-      is now 0 and the legitimate-dual set is unchanged.
-- [ ] Confirm `agent-system/extensions/memory/index-entries.json` is NOT modified -- both of its
-      dual-hook entries are legitimate.
-- [ ] Confirm no `line_count`, `keywords`, `topics`, `summary`, or ordering changed.
+      is now 0 and the legitimate-dual set is unchanged. *(completed: dual-hook count in
+      index-entries.json dropped from 47 to 11, matching the plan's own prediction; full
+      cross-index re-classification against the merged deployed index.json happens in Phase 4
+      after deploy)*
+- [x] Confirm `agent-system/extensions/memory/index-entries.json` is NOT modified -- both of its
+      dual-hook entries are legitimate. *(completed: `git diff --stat` shows no change to that file)*
+- [x] Confirm no `line_count`, `keywords`, `topics`, `summary`, or ordering changed. *(completed:
+      entry order preserved path-for-path; `generate-context-line-counts.sh --check` reports
+      467/467 exact match across all extensions, 0 mismatch)*
 
 **Timing**: 1 hour
 

@@ -19,9 +19,12 @@ VERBOSE=false
 VIOLATIONS=0
 # WARNINGS is the total count of non-fatal findings across every check.
 # EXCEPTIONS_APPLIED counts only the subset that are documented per-agent budget exceptions
-# (the OK* rows). The two were the same counter until the Double-Loading Check was restated as a
-# warning; keeping them separate is what stops a double-loading warning from being narrated as a
-# "documented exception" in the summary.
+# (the OK* rows). The two are kept separate so a non-fatal finding (an OK* budget exception, an
+# unclassifiable-command informational count, or a degraded route derivation) is never narrated
+# as a "documented exception" in the summary. The Double-Loading Check itself no longer produces
+# a routine warning -- it is keyed on the mechanical redundancy predicate below, and its
+# redundant bucket contributes to VIOLATIONS, not WARNINGS. See the Double-Loading Check section
+# for the current criterion.
 WARNINGS=0
 EXCEPTIONS_APPLIED=0
 
@@ -235,26 +238,151 @@ echo ""
 
 # Entries reachable through both an agent hook and a command hook
 #
-# Formerly required the authored tier field to equal 3 alongside `agents > 0 and commands > 0`.
-# That conjunction is unsatisfiable under
-# derivation -- any entry with a non-empty `agents` array derives to Tier 2, never 3 -- so keeping
-# the tier term would make this check structurally dead rather than merely accidentally so. It is
-# restated on the load_when shape alone, which is what "double-loaded" always meant.
+# Redundancy criterion (mechanical, not shape-only): an entry with non-empty
+# `load_when.agents` and non-empty `load_when.commands` is REDUNDANT iff every command in
+# `commands[]` is agent-routed to an agent already present in that entry's own `agents[]`. The
+# exemption for the legitimately dual-addressed shape is the predicate's own FALSE result --
+# re-derived from deployed artifacts on every run -- never an allowlist file and never a frozen
+# count in a comment.
 #
-# Reported as a WARNING, not a violation, and deliberately so: the restatement surfaces a large
-# set of pre-existing matches in one go (49 of 187 entries at the time of the restatement).
-# Triaging them is real work with per-entry judgement calls, separate from making the check
-# honest. Counting them as violations would fail every run from day one and the signal would be
-# turned off rather than acted on. The count prints unconditionally so the number stays visible.
+# Six commands route to exactly one agent apiece and are derivable live from deployed artifacts
+# (never a hardcoded literal agent name):
+#   /research, /plan, /implement  <- manifest.json's routing_agents.{research,plan,implement}
+#   /meta, /spawn, /revise        <- the sole `subagent_type:` line in skill-meta's,
+#                                     skill-spawn's, and skill-reviser's SKILL.md
+# `/orchestrate` can never make an entry redundant: its reach is the union of the research,
+# plan, and implement agents, so it can only collapse onto a single already-listed agent if all
+# three of those were the same agent, which they are not.
+#
+# A command outside those six routes and outside the literal direct-command roster below is
+# UNCLASSIFIABLE: most are extension commands (e.g. /grant, /epi, /deck, /convert) whose
+# command-name-to-agent route is not mechanically derivable from any manifest today (an
+# extension's routing/routing_agents block is keyed by task type, not command name).
+# Unclassifiable is informational, not a violation -- under-detection is the safe direction
+# here -- but it is named and counted rather than silently folded into "legitimate", so the
+# check's own coverage boundary stays visible in its output rather than buried in a comment.
+#
+# Route sources are overridable via env vars (unset in normal operation; used only by
+# test-double-loading-check.sh to stub an unreadable route source for the degraded-derivation
+# case, without touching the real deployed manifest/skill files).
 echo "--- Double-Loading Check ---"
-double_loaded=$(jq '[.entries[] | select(((.load_when.agents // []) | length) > 0 and ((.load_when.commands // []) | length) > 0)] | length' "$INDEX_FILE")
-if [[ $double_loaded -eq 0 ]]; then
-  echo "Entries with both agents and commands hooks: 0 -- OK"
-else
-  echo "Entries with both agents and commands hooks: $double_loaded (WARNING -- pending triage)"
+
+MANIFEST_FILE="${VALIDATE_BUDGETS_MANIFEST_OVERRIDE:-${REPO_ROOT}/.claude/extensions/core/manifest.json}"
+META_SKILL_FILE="${VALIDATE_BUDGETS_META_SKILL_OVERRIDE:-${REPO_ROOT}/.claude/skills/skill-meta/SKILL.md}"
+SPAWN_SKILL_FILE="${VALIDATE_BUDGETS_SPAWN_SKILL_OVERRIDE:-${REPO_ROOT}/.claude/skills/skill-spawn/SKILL.md}"
+REVISE_SKILL_FILE="${VALIDATE_BUDGETS_REVISE_SKILL_OVERRIDE:-${REPO_ROOT}/.claude/skills/skill-reviser/SKILL.md}"
+
+_dlc_route_agents() {
+  # $1 = routing_agents.<op> key; unique agent names, newline-joined; empty on any failure.
+  jq -r --arg op "$1" '.routing_agents[$op] // {} | to_entries[].value' "$MANIFEST_FILE" 2>/dev/null | sort -u
+}
+_dlc_subagent_type() {
+  # $1 = SKILL.md path; the sole `subagent_type: "..."` value; empty on any failure.
+  grep -oP 'subagent_type:\s*"\K[^"]+' "$1" 2>/dev/null | head -1
+}
+
+dlc_research_route="$(_dlc_route_agents research)"
+dlc_plan_route="$(_dlc_route_agents plan)"
+dlc_implement_route="$(_dlc_route_agents implement)"
+dlc_meta_route="$(_dlc_subagent_type "$META_SKILL_FILE")"
+dlc_spawn_route="$(_dlc_subagent_type "$SPAWN_SKILL_FILE")"
+dlc_revise_route="$(_dlc_subagent_type "$REVISE_SKILL_FILE")"
+
+dlc_degraded=()
+[[ -z "$dlc_research_route" ]] && dlc_degraded+=("/research")
+[[ -z "$dlc_plan_route" ]] && dlc_degraded+=("/plan")
+[[ -z "$dlc_implement_route" ]] && dlc_degraded+=("/implement")
+[[ -z "$dlc_meta_route" ]] && dlc_degraded+=("/meta")
+[[ -z "$dlc_spawn_route" ]] && dlc_degraded+=("/spawn")
+[[ -z "$dlc_revise_route" ]] && dlc_degraded+=("/revise")
+
+if [[ ${#dlc_degraded[@]} -gt 0 ]]; then
+  echo "[DEGRADED ROUTE DERIVATION] failed to resolve: ${dlc_degraded[*]} -- affected command(s) treated as unclassifiable, never as direct"
   WARNINGS=$((WARNINGS + 1))
-  if [[ "$VERBOSE" == "true" ]]; then
-    jq -r '.entries[] | select(((.load_when.agents // []) | length) > 0 and ((.load_when.commands // []) | length) > 0) | "  \(.path)"' "$INDEX_FILE"
+fi
+
+dlc_route_table=$(jq -n \
+  --arg research "$dlc_research_route" --arg plan "$dlc_plan_route" --arg implement "$dlc_implement_route" \
+  --arg meta "$dlc_meta_route" --arg spawn "$dlc_spawn_route" --arg revise "$dlc_revise_route" \
+  '{
+    "/research": (if $research == "" then [] else ($research | split("\n")) end),
+    "/plan": (if $plan == "" then [] else ($plan | split("\n")) end),
+    "/implement": (if $implement == "" then [] else ($implement | split("\n")) end),
+    "/meta": (if $meta == "" then [] else [$meta] end),
+    "/spawn": (if $spawn == "" then [] else [$spawn] end),
+    "/revise": (if $revise == "" then [] else [$revise] end)
+  }')
+
+# Direct commands never route to an agent (their skill executes directly), so a command hook
+# naming one of these can never make an entry redundant.
+dlc_direct_commands='["/review","/errors","/task","/todo","/refresh","/fix-it","/learn","/distill","/literature","/project-overview","/tag","/merge","/cite"]'
+
+# Note: jq's `index(.)` rebinds `.` to its own piped-in input, so `$arr | index(.)` does NOT
+# test membership of the value from an outer context -- a documented jq footgun. Membership
+# tests below always bind the value to a named variable first and use `any(. == $var)`.
+dlc_partition=$(jq -n \
+  --argjson route_table "$dlc_route_table" \
+  --argjson direct "$dlc_direct_commands" \
+  --slurpfile idx "$INDEX_FILE" \
+  '
+  ($idx[0].entries) as $entries |
+  ($entries | map(select(
+      (.load_when.agents // [] | length > 0) and
+      (.load_when.commands // [] | length > 0)
+    ))) as $dual |
+  ($dual | map(
+      . as $e |
+      ($e.load_when.commands) as $cmds |
+      ($e.load_when.agents) as $agents |
+      {
+        path: $e.path,
+        is_redundant: ($cmds | all(. as $c |
+            if $c == "/orchestrate" then false
+            elif ($direct | any(. == $c)) then false
+            elif ($route_table[$c] // null) == null then false
+            else (($route_table[$c] - $agents) | length) == 0
+            end
+          )),
+        unclassifiable_tokens: [$cmds[] | . as $c | select(
+            $c != "/orchestrate" and
+            (($direct | any(. == $c)) | not) and
+            (($route_table[$c] // null) == null)
+          )]
+      }
+    )) as $classified |
+  {
+    redundant: [$classified[] | select(.is_redundant) | .path],
+    unclassifiable: [$classified[] | select((.is_redundant | not) and (.unclassifiable_tokens | length > 0)) | {path: .path, tokens: .unclassifiable_tokens}],
+    legitimate: [$classified[] | select((.is_redundant | not) and (.unclassifiable_tokens | length == 0)) | .path],
+    total: ($dual | length)
+  }
+  ')
+
+dlc_total=$(echo "$dlc_partition" | jq '.total')
+dlc_redundant_count=$(echo "$dlc_partition" | jq '.redundant | length')
+dlc_legitimate_count=$(echo "$dlc_partition" | jq '.legitimate | length')
+dlc_unclassifiable_count=$(echo "$dlc_partition" | jq '.unclassifiable | length')
+
+echo "Entries with both agents and commands hooks: $dlc_total"
+if [[ $dlc_total -eq 0 ]]; then
+  echo "Status: OK"
+else
+  if [[ $dlc_redundant_count -eq 0 ]]; then
+    echo "Redundant (commands[] fully subsumed by agents[]): 0 -- OK"
+  else
+    echo "Redundant (commands[] fully subsumed by agents[]): $dlc_redundant_count -- VIOLATION"
+    VIOLATIONS=$((VIOLATIONS + 1))
+    # Offending paths are listed unconditionally (not gated on --verbose) so the failure is
+    # actionable from a bare run.
+    echo "$dlc_partition" | jq -r '.redundant[] | "  \(.)"'
+  fi
+  echo "Legitimately dual-addressed (informational, not a violation): $dlc_legitimate_count"
+  if [[ "$VERBOSE" == "true" && $dlc_legitimate_count -gt 0 ]]; then
+    echo "$dlc_partition" | jq -r '.legitimate[] | "  \(.)"'
+  fi
+  echo "Unclassifiable-command (informational; route not mechanically derivable, e.g. extension commands): $dlc_unclassifiable_count"
+  if [[ "$VERBOSE" == "true" && $dlc_unclassifiable_count -gt 0 ]]; then
+    echo "$dlc_partition" | jq -r '.unclassifiable[] | "  \(.path) (unrecognized: \(.tokens | join(", ")))"'
   fi
 fi
 echo ""
