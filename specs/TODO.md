@@ -11,8 +11,8 @@ next_project_number: 1004
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 984,992,997,998,1003 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
-| 2 | 985,993,995,1000,1002 | 984,992,998 | agent-system |
+| 1 | 984,992,997,1002,1003 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
+| 2 | 985,993,995,1000 | 984,992 | agent-system |
 | 3 | 986,1001 | 985,1000 | agent-system |
 | 4 | 999 | 986,1002 | agent-system |
 | 5 | 996 | 993,995,999 | agent-system |
@@ -30,9 +30,8 @@ next_project_number: 1004
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
   └─ 1000 [NOT STARTED] — Give the cslib extension its own copy of the adversarial-verifica
     └─ 1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
-998 [IMPLEMENTING] — Triage the 49 entries the Double-Loading Check now names, and dec
-  └─ 1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
-    └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
+1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
+  └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
 1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
@@ -318,12 +317,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 998. Triage the 49 Double-Loading context-index warnings
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991
 - **Research**: [998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md]
 - **Plan**: [998_double_loading_warning_triage/plans/01_double-loading-check-rekey.md]
+- **Summary**: [998_double_loading_warning_triage/summaries/01_double-loading-check-rekey-summary.md]
 
 **Description**: Triage the 49 entries the Double-Loading Check now names, and decide whether the check is a defect detector or a shape it should stop flagging. The check was restated on load_when shape (from a predicate that keyed off the never-populated authored tier field) by the meta-catch-all decomposition task and DELIBERATELY downgraded to a warning so it would not block that task; the 49 matches are pre-existing, not introduced there. A warning nobody triages is a check that has quietly stopped working -- the same failure mode that task just repaired in the Dead Entry Check, so leaving this at "WARNING -- pending triage" indefinitely re-creates the defect one layer over.
 

@@ -5,7 +5,7 @@
     {
       "project_number": 998,
       "project_name": "double_loading_warning_triage",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Triage the 49 Double-Loading context-index warnings",
@@ -18,7 +18,7 @@
         991
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-09T23:29:00Z",
+      "last_updated": "2026-08-09T23:58:51Z",
       "artifacts": [
         {
           "path": "specs/998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md",
@@ -29,9 +29,15 @@
           "path": "specs/998_double_loading_warning_triage/plans/01_double-loading-check-rekey.md",
           "type": "plan",
           "summary": "Six-phase plan re-keying the Double-Loading Check on a mechanically derived three-bucket redundancy predicate (redundant/legitimate-dual/unclassifiable-command), narrowing the redundant core index entries, promoting the redundant bucket to an exit-code-contributing violation, and committing a five-case regression test that proves the check still fires."
+        },
+        {
+          "path": "specs/998_double_loading_warning_triage/summaries/01_double-loading-check-rekey-summary.md",
+          "type": "summary",
+          "summary": "Re-keyed the Double-Loading Check onto a mechanical three-bucket redundancy predicate, narrowed 36 core index entries, promoted redundant to a violation, and committed a passing five-case regression test with a live inversion self-check."
         }
       ],
-      "session_id": "sess_1786316975_3658f6_998"
+      "session_id": "sess_1786316975_3658f6_998",
+      "completion_summary": "Re-keyed validate-context-budgets.sh's Double-Loading Check onto a mechanically derived three-bucket redundancy predicate (redundant/legitimate-dual/unclassifiable-command), narrowed 36 redundant load_when.commands entries in the core index (47 -> 11 dual-hook), promoted the redundant bucket to an exit-code-contributing violation, and committed a five-case regression test (16/16 assertions, including a live inversion self-check) plus hook-shape authoring policy documentation. Final verification bar: 0 redundant / 13 legitimate / 0 unclassifiable dual-hook entries on the deployed index."
     },
     {
       "project_number": 999,

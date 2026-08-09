@@ -1,7 +1,7 @@
 # Implementation Plan: Double-Loading Check Triage and Re-Keying
 
 - **Task**: 998 - Triage the 49 Double-Loading context-index warnings
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: 991 (satisfied -- the restatement work that produced the warning)
 - **Research Inputs**: specs/998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md
