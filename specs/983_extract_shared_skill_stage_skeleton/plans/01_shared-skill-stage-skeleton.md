@@ -803,26 +803,46 @@ per-file heredoc field probe rather than trusting the list — e.g. for each can
 
 ---
 
-### Phase 10: Convert the remaining marker writers [NOT STARTED]
+### Phase 10: Convert the remaining marker writers [COMPLETED]
 
 **Goal**: Every remaining inline marker writer — the core stragglers, the cslib family, and the two
 `touch`-only skills — is converted, so the zero-inline-heredoc assertion becomes claimable.
 
 **Tasks**:
-- [ ] Enumerate every remaining inline writer at implementation time (see Scope Hypothesis).
+- [x] Enumerate every remaining inline writer at implementation time (see Scope Hypothesis).
       Expected remainder: `skill-spawn`, `skill-reviser`, `skill-financial-analysis`, the cslib
       `-hard` skills (`skill-cslib-research-hard`, `skill-cslib-implementation-hard`),
       `skill-pr-implementation`, and the two `touch`-only cslib pr-review skills.
-- [ ] Convert the JSON-heredoc writers to the shared marker block.
-- [ ] Convert the two `touch`-only writers (`skill-pr-review-implementation`,
+- [x] Convert the JSON-heredoc writers to the shared marker block.
+- [x] Convert the two `touch`-only writers (`skill-pr-review-implementation`,
       `skill-pr-review-research`) — they create an empty marker file with no metadata inside. Moving
       them to `skill_create_postflight_marker` gives them the full Shape A payload; confirm their
       matching `rm -f` cleanup still targets the same path.
-- [ ] Exclude `skill-refresh` explicitly: it only *reads and deletes* orphaned markers as part of its
+- [x] Exclude `skill-refresh` explicitly: it only *reads and deletes* orphaned markers as part of its
       cleanup sweep and never writes one. It is a false positive in the raw 41-file grep. Record this
       as a `#### Reasoned Exclusions` entry with the evidence (its `find ... -delete` / `rm -f` call
       sites and the absence of any `cat >` marker write).
-- [ ] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+- [x] Confirm no `.claude/**` file was edited and no task number appears in any changed file.
+
+#### Reasoned Exclusions
+
+Two files named in the Scope Hypothesis were measured as non-members of the conversion set rather
+than as work left undone. The phase goal — zero inline marker writers, making the
+zero-inline-heredoc assertion claimable — is fully met.
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `core/skills/skill-refresh` | Reads and deletes orphaned markers as part of its cleanup sweep; never writes one. False positive in the raw grep. | `find specs -maxdepth 3 -name ".postflight-pending" -mmin +60 -type f` (line 56), `-delete` (line 78), `rm -f specs/.postflight-pending` (line 82); no `cat >` marker write anywhere in the file. |
+| `cslib/skills/skill-pr-implementation` | Named in the plan's "Files to modify" list, but has no marker write of any kind — nothing to convert. | `grep -nE 'postflight-pending\|skill_create_postflight_marker'` over the file returns no matches. |
+
+**Measured-set deviation from the Scope Hypothesis**: the hypothesis predicted `skill-pr-implementation`
+would need converting. Measurement showed it never wrote a marker, so the converted set is the seven
+files listed under "Files to modify" minus that one. Per the hypothesis's own rule, the measured set
+governs.
+
+A further two files match a naive `cat > .*postflight-pending` grep but are also non-members:
+`web/skills/skill-web-implementation` and `web/skills/skill-web-research` carry that string only
+inside prose drift-history headers describing the heredoc that was replaced, not as live shell.
 
 **Timing**: 2 hours
 

@@ -69,31 +69,16 @@ fi
 
 ---
 
-### Stage 2: Preflight Status Update
+### Stage 2 + Stage 3: Preflight Status Update and Postflight Marker
 
-Update task status to "researching" BEFORE invoking subagent:
-
-```bash
-bash .claude/scripts/update-task-status.sh preflight "$task_number" research "$session_id"
-```
-
----
-
-### Stage 3: Create Postflight Marker
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md` in
+full for Stage 2 (preflight status update) and Stage 3 (marker creation):
 
 ```bash
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-cslib-research-hard",
-  "task_number": ${task_number},
-  "operation": "research",
-  "reason": "Hard-mode CSLib research in progress: adversarial verification, BibKey check, status update pending"
-}
-EOF
+skill_name="skill-cslib-research-hard"
+operation="research"
 ```
 
 ---
@@ -273,8 +258,33 @@ if [ -f "$lifecycle_script" ]; then bash "$lifecycle_script" "$STATE_STATUS" & f
 
 ### Stage 9: Cleanup
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
+
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
+
+---
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns -- whether with status researched, partial, or failed -- this skill MUST
+proceed immediately to postflight (Stage 6). The skill MUST NOT:
+
+1. **Edit Lean/report files** - All research work is done by agent
+2. **Run `lake build` or other Lean tooling** - Verification is agent work
+3. **Use MCP or WebSearch tools** - Research tools are for agent use only
+4. **Analyze or grep source** - Analysis is agent work
+5. **Write reports** - Artifact creation is done by agent
+
+> **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
+> attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
+> status and let the user re-run `/research --hard` to resume.
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Calling `update-task-status.sh` for status updates (state.json + TODO.md)
+- Linking artifacts in state.json
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md

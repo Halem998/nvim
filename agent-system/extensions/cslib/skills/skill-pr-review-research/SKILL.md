@@ -57,8 +57,20 @@ bash .claude/scripts/update-task-status.sh preflight "$task_number" research "$s
 
 ### Stage 3: Create Postflight Marker
 
+This skill previously wrote a bare, metadata-free marker via `touch`. Source `skill-base.sh` and
+derive `padded_num`/`project_name` (not previously derived anywhere in this skill), then follow
+`@.claude/context/patterns/skill-preflight-flow.md`'s Stage 3 (marker creation) so this skill's
+marker carries the full Shape A payload, matching every other lifecycle skill:
+
 ```bash
-touch "specs/{NNN}_{SLUG}/.postflight-pending"
+source .claude/scripts/skill-base.sh
+padded_num=$(printf "%03d" "$task_number")
+project_name=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .project_name' \
+  specs/state.json)
+skill_name="skill-pr-review-research"
+operation="research"
+skill_create_postflight_marker "$padded_num" "$project_name" "$session_id" "$skill_name" "$operation"
 ```
 
 ### Stage 3a: Read Artifact Number
@@ -231,9 +243,11 @@ bash .claude/scripts/lifecycle-notify.sh "research" "$task_number" "researched" 
 
 ### Stage 9: Cleanup Marker Files
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup), reusing the
+`padded_num`/`project_name` derived at Stage 3:
+
 ```bash
-rm -f "specs/{NNN}_{SLUG}/.postflight-pending"
-rm -f "specs/{NNN}_{SLUG}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ### Stage 10: Return Brief Text Summary
@@ -245,6 +259,31 @@ Return 3-6 bullet points summarizing:
 - Key findings (open questions count, requested changes count)
 
 Do NOT return JSON.
+
+## MUST NOT (Postflight Boundary)
+
+After the agent returns -- whether with status researched, partial, or failed -- this skill MUST
+proceed immediately to postflight (Stage 6). The skill MUST NOT:
+
+1. **Edit source/report files** - All research work is done by agent
+2. **Run domain analysis or calculations** - Analysis is agent work
+3. **Use MCP or WebSearch tools** - Research tools are for agent use only
+4. **Analyze or grep source** - Analysis is agent work
+5. **Write reports** - Artifact creation is done by agent
+
+> **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
+> attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
+> status and let the user re-run `/research` to resume.
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Calling `update-task-status.sh` for status updates (state.json + TODO.md)
+- Linking artifacts in state.json
+- Cleanup of temp/marker files
+
+Reference: @.claude/context/standards/postflight-tool-restrictions.md
+
+---
 
 ## Return Format
 

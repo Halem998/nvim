@@ -126,22 +126,19 @@ The state.json update in Stage 2 already sets status to "blocked". TODO.md will 
 
 ### Stage 4: Create Postflight Marker
 
-Create the marker file to prevent premature termination:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md`'s
+Stage 3 (marker creation) — Stage 2 above is intentionally left untouched (it writes `status:
+"blocked"` directly via `state-write.sh`, a genuinely custom transition outside the
+`research`/`plan`/`implement` vocabulary `skill_preflight_update` requires), only the marker
+write itself moves onto the shared function. `operation` stays `"spawn"` here, an opaque string
+with no vocabulary requirement for the marker (see `skill_create_postflight_marker`'s signature
+in `skill-base.sh`):
 
 ```bash
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-spawn",
-  "task_number": ${task_number},
-  "operation": "spawn",
-  "reason": "Postflight pending: task creation, dependency linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
+source .claude/scripts/skill-base.sh
+skill_name="skill-spawn"
+operation="spawn"
+skill_create_postflight_marker "$padded_num" "$project_name" "$session_id" "$skill_name" "$operation"
 ```
 
 ---
@@ -498,13 +495,12 @@ Commit failure is non-blocking (log and continue).
 
 ### Stage 16: Cleanup
 
-Remove temporary files:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup); this skill also
+removes `.spawn-return.json`, which is spawn-specific and not folded into `skill_cleanup`:
 
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
+skill_cleanup "$padded_num" "$project_name"
 rm -f "specs/${padded_num}_${project_name}/.spawn-return.json"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 ```
 
 ---

@@ -70,24 +70,19 @@ No intermediate "revising" status is needed for revision. The task transitions d
 
 ### Stage 3: Create Postflight Marker
 
-Create the marker file to prevent premature termination:
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md`'s
+Stage 3 (marker creation). `operation` stays `"revise"` here (not remapped to `research`/`plan`/
+`implement`): unlike Stage 2's preflight status update (intentionally skipped above, so there is
+no `update-task-status.sh` vocabulary constraint in play for this skill), the marker's `operation`
+field is an opaque string with no vocabulary requirement — see
+`skill_create_postflight_marker`'s signature in `skill-base.sh`.
 
 ```bash
-# Ensure task directory exists
+source .claude/scripts/skill-base.sh
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-reviser",
-  "task_number": ${task_number},
-  "operation": "revise",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "stop_hook_active": false
-}
-EOF
+skill_name="skill-reviser"
+operation="revise"
+skill_create_postflight_marker "$padded_num" "$project_name" "$session_id" "$skill_name" "$operation"
 ```
 
 ---
@@ -455,12 +450,10 @@ Commit failure is non-blocking (log and continue).
 
 ### Stage 10: Cleanup
 
-Remove marker and metadata files:
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup):
 
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+skill_cleanup "$padded_num" "$project_name"
 ```
 
 ---

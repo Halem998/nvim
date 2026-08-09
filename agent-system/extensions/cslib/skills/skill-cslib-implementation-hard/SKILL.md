@@ -80,8 +80,15 @@ fi
 
 ### Stage 2: Preflight Status Update
 
+Source `skill-base.sh` once, then follow `@.claude/context/patterns/skill-preflight-flow.md`'s
+Stage 2 (preflight status update):
+
 ```bash
-bash .claude/scripts/update-task-status.sh preflight "$task_number" implement "$session_id"
+source .claude/scripts/skill-base.sh
+padded_num=$(printf "%03d" "$task_number")
+skill_name="skill-cslib-implementation-hard"
+operation="implement"
+skill_preflight_update "$task_number" "$operation" "$session_id"
 ```
 
 ---
@@ -101,19 +108,10 @@ completes in ~1-2 minutes and prevents 30-45 minute Mathlib rebuilds during CI v
 
 ### Stage 3: Create Postflight Marker
 
-```bash
-padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
+Follow `@.claude/context/patterns/skill-preflight-flow.md`'s Stage 3 (marker creation):
 
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-cslib-implementation-hard",
-  "task_number": ${task_number},
-  "operation": "implement",
-  "reason": "Hard-mode CSLib implementation in progress: per-phase dispatch, sorry_inventory, CI verification pending"
-}
-EOF
+```bash
+skill_create_postflight_marker "$padded_num" "$project_name" "$session_id" "$skill_name" "$operation"
 ```
 
 ---
@@ -332,11 +330,13 @@ fi
 
 ### Stage 9: Cleanup
 
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup); this skill also
+removes `.continuation-loop-guard`, which is implementer-specific and not folded into
+`skill_cleanup`:
+
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
+skill_cleanup "$padded_num" "$project_name"
 rm -f "specs/${padded_num}_${project_name}/.continuation-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 ```
 
 ## MUST NOT (Postflight Boundary)
