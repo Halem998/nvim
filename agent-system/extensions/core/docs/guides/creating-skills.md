@@ -223,6 +223,14 @@ There are two skill patterns depending on where the skill lives.
 
 Core skills (skill-researcher, skill-planner, skill-implementer, etc.) use `skill-base.sh` lifecycle functions directly and invoke agents with explicit `subagent_type` to inject structured context:
 
+> **Division of labor note**: this claim was aspirational when first written — at the time, no
+> core skill actually called these functions, and each hand-rolled its own preflight/postflight
+> logic inline. The conversion that made it true is documented stage-by-stage (which shared
+> `@`-import or `skill-base.sh` function implements which numbered stage, and where core skills
+> still diverge from that mapping) in `@.claude/context/patterns/skill-lifecycle.md`. This guide
+> keeps the function table and authoring walkthrough below; that document owns the Stage-N
+> skeleton and shared-block map — check both when one changes.
+
 ```yaml
 ---
 name: skill-{name}
@@ -651,6 +659,8 @@ allowed-tools: Agent
 - [Component Selection](component-selection.md) - When to create a skill
 - [Creating Agents](creating-agents.md) - Creating the agent that skill delegates to
 - [Creating Commands](creating-commands.md) - Creating commands that invoke skills
+- `.claude/context/patterns/skill-lifecycle.md` - Stage-N skeleton and shared-block map (the
+  division-of-labor counterpart to this guide's function table and authoring walkthrough)
 - `.claude/context/templates/thin-wrapper-skill.md` - Skill template
 - `.claude/context/formats/subagent-return.md` - Return format schema
 

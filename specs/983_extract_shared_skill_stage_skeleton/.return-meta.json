@@ -1,5 +1,5 @@
 {
-  "status": "partial",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 983,
   "session_id": "sess_1786219295_397818",
@@ -9,101 +9,62 @@
     "general-implementation-agent"
   ],
   "plan_path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
-  "partial_progress": {
-    "stage": "phase_8_of_11_complete",
-    "details": "Phases 1-8 of 11 are genuinely COMPLETED and committed (one commit per phase). Phases 9 (founder/present Shape B marker family, ~15 files), 10 (remaining marker writers: skill-spawn, skill-reviser, cslib family, ~7 files), and 11 (skill-lifecycle.md rewrite + full verification bar) remain NOT STARTED. See the orchestrator handoff for the exact resume point and continuation guidance.",
-    "handoff_path": "specs/983_extract_shared_skill_stage_skeleton/.orchestrator-handoff.json",
-    "phases_completed": 8,
-    "phases_total": 11
-  },
   "artifacts": [
     {
-      "type": "handoff",
-      "path": "specs/983_extract_shared_skill_stage_skeleton/.orchestrator-handoff.json",
-      "summary": "Phase 8/11 checkpoint handoff with resume point and per-remaining-phase guidance"
+      "type": "summary",
+      "path": "specs/983_extract_shared_skill_stage_skeleton/summaries/01_shared-skill-stage-skeleton-summary.md",
+      "summary": "Phase 11 implementation summary: skill-lifecycle.md rewrite, creating-skills.md/postflight-tool-restrictions.md reconciliation, index registration refresh, and full verification-bar command output with one Reasoned Exclusion recorded"
     }
   ],
   "completion_data": {
-    "completion_summary": "Settled the .postflight-pending marker schema (Shape A) in skill-base.sh, added skill_lifecycle_notify and skill_propagate_memory_candidates, restored MUST NOT (Postflight Boundary) sections and made lint-postflight-boundary.sh enforce presence, authored three shared @-imported lifecycle blocks, and converted 27 SKILL.md files (3 core, 3 core-hard, 3 team, 8 nix/nvim/latex/typst domain, 9 z3/python/web/email/epi domain) onto the shared skeleton with zero inline marker heredocs remaining in any converted file. Phases 9-11 (founder/present family, remaining marker writers, and the final skill-lifecycle.md rewrite plus full verification bar) remain for a follow-up dispatch."
+    "completion_summary": "Phase 11 (final phase) rewrote skill-lifecycle.md into an accurate 320-line Stage-N skeleton map documenting the shared preflight/postflight blocks and the two distinct postflight shapes (collapsed vs. split git-commit), reconciled creating-skills.md and postflight-tool-restrictions.md to match, refreshed the index-entries.json registration, and ran the full verification bar with recorded command output. Phase 11 closes [COMPLETED WITH EXCLUSIONS] for one pre-existing, root-caused test-infrastructure gap (deployed-tree run-all.sh REPO_ROOT depth bug in 4 scripts, unrelated to this phase's file scope) with the equivalent authoritative source-store invocation passing cleanly. All 11 of 11 plan phases are now complete."
   },
   "modified_files": [
-    "agent-system/extensions/core/context/patterns/skill-postflight-flow.md",
-    "agent-system/extensions/core/context/patterns/skill-preflight-flow.md",
-    "agent-system/extensions/core/context/patterns/skill-self-execution-fallback.md",
+    "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+    "agent-system/extensions/core/docs/guides/creating-skills.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
     "agent-system/extensions/core/index-entries.json",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh",
-    "agent-system/extensions/core/scripts/skill-base.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
-    "agent-system/extensions/core/scripts/verify-deploy.sh",
-    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
-    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
-    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
-    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-    "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
-    "agent-system/extensions/core/skills/skill-planner/SKILL.md",
-    "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
-    "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
-    "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
-    "agent-system/extensions/core/skills/skill-team-plan/SKILL.md",
-    "agent-system/extensions/core/skills/skill-team-research/SKILL.md",
-    "agent-system/extensions/email/skills/skill-email-implementation/SKILL.md",
-    "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
-    "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md",
-    "agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md",
-    "agent-system/extensions/latex/skills/skill-latex-research/SKILL.md",
-    "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
-    "agent-system/extensions/nix/skills/skill-nix-research/SKILL.md",
-    "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md",
-    "agent-system/extensions/nvim/skills/skill-neovim-research/SKILL.md",
-    "agent-system/extensions/python/skills/skill-python-implementation/SKILL.md",
-    "agent-system/extensions/python/skills/skill-python-research/SKILL.md",
-    "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md",
-    "agent-system/extensions/typst/skills/skill-typst-research/SKILL.md",
-    "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
-    "agent-system/extensions/web/skills/skill-web-research/SKILL.md",
-    "agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md",
-    "agent-system/extensions/z3/skills/skill-z3-research/SKILL.md"
+    "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
+    "specs/983_extract_shared_skill_stage_skeleton/summaries/01_shared-skill-stage-skeleton-summary.md"
   ],
   "memory_candidates": [
     {
-      "content": "In this repo, context/patterns/*.md files that are @-imported directly from a skill body (not reached via context-discovery) still MUST be registered in the owning extension's index-entries.json. check-extension-docs.sh's Rule S scans every deployed context/**/*.md file and fails if it lacks an index.json entry, regardless of whether the file's real access path is direct @-import. Before assuming a new context/patterns/*.md file can skip index-entries.json registration (e.g. following a stated 'not registered' precedent), grep the precedent file itself in index-entries.json to confirm -- a stated precedent can be factually wrong.",
+      "content": "In this repo, before trusting a dispatch prompt's 'VERIFIED STARTING FACTS' claim that a context/patterns/*.md file is 'NOT registered' in an extension's index-entries.json, re-run the jq query yourself against the correct path. The core extension's index-entries.json lives at agent-system/extensions/core/index-entries.json (one level shallower than context/index-entries.json, which does not exist) -- entries' `path` field is relative to context/. A prior dispatch's stated fact can be wrong even when phrased as freshly verified.",
       "category": "PATTERN",
-      "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
-      "confidence": 0.9,
-      "suggested_keywords": [
-        "index-entries.json",
-        "Rule S",
-        "context/patterns",
-        "check-extension-docs.sh",
-        "@-import"
-      ]
-    },
-    {
-      "content": "agent-system/extensions/core/scripts/test-four-tier-conflict.sh is an intermittently flaky test under concurrent session load: it exercises task-lock.sh's four-tier conflict resolution against a /tmp scratch fixture, and occasionally fails with 'ERROR: failed to write holder.json (jq produced empty output)' due to a filesystem race, unrelated to any content change. It reliably passes when run standalone or under light system load. Treat a lone gate-8 failure on this specific test as a candidate environmental flake before assuming a regression -- verify by running the suite standalone 1-2 more times.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
-      "confidence": 0.75,
-      "suggested_keywords": [
-        "test-four-tier-conflict.sh",
-        "flaky test",
-        "task-lock.sh",
-        "verify-deploy.sh gate 8",
-        "concurrency"
-      ]
-    },
-    {
-      "content": "update-task-status.sh's target_status vocabulary is exactly research/plan/implement/pr_ready/partial/blocked -- there is no per-caller-family value like 'team-research' or 'epi_research'. When converting a caller with a domain-specific or team-specific operation name onto update-task-status.sh (via skill_preflight_update/skill_postflight_update in skill-base.sh), map it onto the nearest plain operation (team-research -> research, epi_implement -> implement, etc.) rather than trying to add a new target_status value -- the marker's own 'operation' field can safely change to match, since no consumer branches on it (confirmed empirically: skill_cleanup only rm -f's by path, skill-refresh only checks mtime).",
-      "category": "PATTERN",
-      "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
+      "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/summaries/01_shared-skill-stage-skeleton-summary.md",
       "confidence": 0.85,
       "suggested_keywords": [
-        "update-task-status.sh",
-        "target_status",
-        "skill_preflight_update",
-        "operation mapping",
-        "team skills"
+        "index-entries.json",
+        "path resolution",
+        "verified-starting-facts",
+        "jq -e",
+        "core extension"
+      ]
+    },
+    {
+      "content": "Four test scripts in this repo (test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh, test-skill-base-lifecycle.sh, test-update-task-status.sh) compute REPO_ROOT via a fixed `$(cd \"$SCRIPT_DIR/../../../../..\" && pwd)` (5-levels-up) walk calibrated for the source-store depth (agent-system/extensions/core/scripts/tests/, 4 levels below repo root). This resolves incorrectly when the deployed-tree copy (.claude/scripts/tests/, only 2 levels below repo root) is invoked directly -- bash .claude/scripts/tests/run-all.sh will show these 4 as failing with paths missing the repo's subdirectory prefix. The authoritative invocation is the source-store one (bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet, run from repo root), which is exactly what verify-deploy.sh gate 8 runs. Treat a deployed-path run-all.sh failure limited to these 4 scripts as this known gap, not a regression, before investigating further.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/summaries/01_shared-skill-stage-skeleton-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "REPO_ROOT",
+        "run-all.sh",
+        "deployed tree vs source store",
+        "test infrastructure",
+        "verify-deploy.sh gate 8"
+      ]
+    },
+    {
+      "content": "When a plan's verification bar calls for a live `/research`/`/plan`/`/implement` slash-command smoke test but the executing agent is itself a Bash/Read/Write/Edit-only implementation subagent (no ability to invoke Claude Code slash commands), the honest substitute is a direct mechanical trace of the exact scripts/shared-blocks the target skill's relevant stage imports -- e.g. for a `--lit` Stage 4a check, run the named resolver script (literature-lit-flag-resolve.sh) followed by the directive-specific next script (literature-briefing-invoke.sh --global) exactly as the shared flow doc (lit-stage4a-flow.md) prescribes for the returned directive, and cite the grep confirming the target skill actually imports that block. This produces real output evidence without fabricating a slash-command transcript.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/983_extract_shared_skill_stage_skeleton/summaries/01_shared-skill-stage-skeleton-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "mechanical trace",
+        "--lit",
+        "verification bar",
+        "slash command limitation",
+        "lit-stage4a-flow"
       ]
     }
   ],
@@ -116,29 +77,7 @@
       "implement",
       "general-implementation-agent"
     ],
-    "phases_completed": 9,
-    "phases_total": 11,
-    "cycles_used": 5,
-    "final_state": "implementing",
-    "detected_defects": [
-      {
-        "task": 983,
-        "defect_class": "HANDOFF_STALE_OR_ABSENT",
-        "attributed_source_path": "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "detecting_site": "skill-orchestrate/SKILL.md:stage-5-stale-handoff",
-        "cycle": 2,
-        "detail": "handoff mtime predates dispatch window; implement dispatch stopped without wrap-up",
-        "record_result": "evt_1786222175836_ZkDL3K"
-      },
-      {
-        "task": 983,
-        "defect_class": "HANDOFF_STALE_OR_ABSENT",
-        "attributed_source_path": "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "detecting_site": "skill-orchestrate/SKILL.md:stage-5-stale-handoff",
-        "cycle": 4,
-        "detail": "agent stalled mid-phase-10; no wrap-up written",
-        "record_result": "evt_1786231038222_2wFztz"
-      }
-    ]
+    "phases_completed": 11,
+    "phases_total": 11
   }
 }

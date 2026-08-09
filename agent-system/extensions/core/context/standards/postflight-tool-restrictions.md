@@ -91,24 +91,35 @@ The postflight phase **MUST NOT** perform any work that belongs in the agent, in
 
 ### Correct Postflight (skill-researcher pattern)
 
+Reflects the actual converted `skill-researcher/SKILL.md` shape — see
+`@.claude/context/patterns/skill-lifecycle.md` for the full Stage-N skeleton and the "Two
+Postflight Shapes" section explaining why this collapsed form has no inline git-commit stage
+(the command-level batch commit owns that instead, for this skill family):
+
 ```markdown
 ### Stage 6: Parse Subagent Return (Read Metadata File)
 - Read specs/{NNN}_{SLUG}/.return-meta.json
 - Extract status, artifacts, summary
 
-### Stage 7: Update Task Status (Postflight)
-- Call `update-task-status.sh postflight` (updates state.json and regenerates TODO.md)
+### Stage 6a: Validate Artifact Content
+- Non-blocking `validate-artifact.sh --fix` pass over the report artifact
 
-### Stage 8: Link Artifacts
-- `state-write.sh` add artifact to state.json
-- Call `generate-todo.sh` to reflect artifact links in TODO.md
+### Stage 7, 7a, 8, 8a, 9: Postflight Status, Memory Candidates, Artifact Linking, Notify, Cleanup
+- `skill_postflight_update()` — call `update-task-status.sh postflight` (updates state.json and
+  regenerates TODO.md), only on a success status
+- `skill_propagate_memory_candidates()` — append any memory candidates the agent emitted
+- `skill_link_artifacts()` — two-step `jq` add-artifact pattern, then `generate-todo.sh`
+- `skill_lifecycle_notify()` — background TTS/tab-color notification
+- `skill_cleanup()` — rm -f metadata and marker files
 
-### Stage 9: Git Commit
-- git add/commit
-
-### Stage 10: Cleanup
-- rm -f metadata and marker files
+### Stage 10: Return Brief Summary
+- Return a 3-6 bullet text summary (not JSON)
 ```
+
+**Git commit**: this skill has no inline commit stage — the command-level batch commit
+(`/research`'s CHECKPOINT 3) is the sole git-commit mechanism for this collapsed-shape family.
+`skill-planner` and `skill-implementer` instead interleave an explicit inline Stage 9: Git Commit
+before cleanup — see `skill-lifecycle.md`'s "Two Postflight Shapes" for both variants.
 
 ### Incorrect Postflight (VIOLATION)
 

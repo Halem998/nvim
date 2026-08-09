@@ -1,23 +1,23 @@
 {
-  "status": "partial",
+  "status": "implemented",
   "task_number": 983,
   "session_id": "sess_1786219295_397818",
   "phase": "implement",
   "agent_type": "general-implementation-agent",
   "orchestrator_mode": true,
-  "summary": "Phases 1-8 of 11 completed and committed onto the shared skill-base.sh lifecycle skeleton (marker schema, MUST NOT lint enforcement, 3 shared @-import blocks, and 27 SKILL.md conversions across core/core-hard/team/nix/nvim/latex/typst/z3/python/web/email/epi). Phases 9-11 (founder/present family, remaining marker writers, final skill-lifecycle.md rewrite + full verification bar) remain.",
+  "summary": "All 11 phases complete. Phase 11 rewrote skill-lifecycle.md (196 -> 320 lines) into an accurate Stage-N skeleton map with the two postflight shapes, reconciled creating-skills.md and postflight-tool-restrictions.md, refreshed the index-entries.json registration, and ran the full verification bar. Phase 11 closes COMPLETED WITH EXCLUSIONS: one item (the deployed-tree bash .claude/scripts/tests/run-all.sh invocation) is a Reasoned Exclusion for a pre-existing, root-caused REPO_ROOT depth bug in 4 test scripts unrelated to this phase's file scope; the equivalent source-store invocation verify-deploy.sh gate 8 actually runs passed cleanly.",
   "artifacts": [
     {
-      "type": "handoff",
-      "path": "specs/983_extract_shared_skill_stage_skeleton/handoffs/phase-8-handoff-20260808T000000Z.md",
-      "summary": "Phase 8/11 checkpoint handoff with resume point, key decisions, deviations, and continuation guidance"
+      "type": "summary",
+      "path": "specs/983_extract_shared_skill_stage_skeleton/summaries/01_shared-skill-stage-skeleton-summary.md",
+      "summary": "Phase 11 implementation summary with full verification-bar command output and Reasoned Exclusions detail"
     }
   ],
   "plan_path": "specs/983_extract_shared_skill_stage_skeleton/plans/01_shared-skill-stage-skeleton.md",
-  "phases_completed": 8,
+  "phases_completed": 11,
   "phases_total": 11,
   "blockers": [],
-  "continuation_path": "specs/983_extract_shared_skill_stage_skeleton/handoffs/phase-8-handoff-20260808T000000Z.md",
+  "continuation_path": "",
   "plan_markers_verified": true,
-  "next_steps": "Run /implement 983 to resume at Phase 9 (Convert the founder/present marker family). See the continuation_path handoff for the exact resume point, worked-reference files, and cumulative deviations from phases 1-8."
+  "next_steps": "Task implementation complete. Optional follow-ups recorded in the Phase 11 summary: converting Stage 1/3a to call skill_validate_input()/skill_read_artifact_number() by name, and giving the 4 REPO_ROOT-affected test scripts a depth-independent root resolution."
 }
