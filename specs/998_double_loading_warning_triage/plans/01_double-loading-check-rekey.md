@@ -388,37 +388,61 @@ finding to resolve in this phase.
 
 ---
 
-### Phase 5: Negative test proving the check still fires [NOT STARTED]
+### Phase 5: Negative test proving the check still fires [COMPLETED]
 
 **Goal**: Commit a regression test that fails if the check ever stops discriminating -- the durable
 guard against this defect recurring.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-double-loading-check.sh` following the
+- [x] Create `agent-system/extensions/core/scripts/tests/test-double-loading-check.sh` following the
       conventions of the existing tests under that directory (exit codes, assertion helpers, output
-      style).
-- [ ] Build fixture index files in a temp directory, invoking the **deployed**
+      style). *(completed)*
+- [x] Build fixture index files in a temp directory, invoking the **deployed**
       `.claude/scripts/validate-context-budgets.sh --index <fixture>` (the source copy is blocked by
-      `deploy-root-guard.sh`).
-- [ ] **Positive case (the check still fires)**: fixture entry with
+      `deploy-root-guard.sh`). *(completed: dual-mode REPO_ROOT detection so the suite resolves the
+      deployed script correctly whether it itself runs from the source store or the deploy tree)*
+- [x] **Positive case (the check still fires)**: fixture entry with
       `agents: ["meta-builder-agent"]`, `commands: ["/meta"]` -- the most common redundant shape.
       Assert the redundant count is >= 1, the offending path is named in the output, and the exit
-      code is non-zero.
-- [ ] **Discrimination case (it is not trivially firing)**: fixture entry with
+      code is non-zero. *(completed: 3/3 assertions pass)*
+- [x] **Discrimination case (it is not trivially firing)**: fixture entry with
       `agents: ["meta-builder-agent"]`, `commands: ["/review"]` -- a direct command. Assert it does
-      NOT increment the redundant count and does not affect the exit code.
-- [ ] **Orchestrate case**: fixture entry with `agents: ["meta-builder-agent"]`,
+      NOT increment the redundant count and does not affect the exit code. *(completed: 2/2
+      assertions pass)*
+- [x] **Orchestrate case**: fixture entry with `agents: ["meta-builder-agent"]`,
       `commands: ["/meta", "/orchestrate"]`. Assert it lands in the legitimate-dual bucket, pinning
-      the documented decision that `/orchestrate` never subsumes an entry's `agents[]`.
-- [ ] **Unclassifiable case**: fixture entry pairing an extension command with an extension agent.
+      the documented decision that `/orchestrate` never subsumes an entry's `agents[]`. *(completed:
+      3/3 assertions pass)*
+- [x] **Unclassifiable case**: fixture entry pairing an extension command with an extension agent.
       Assert it lands in the named `unclassifiable-command` bucket and does not contribute to the
       exit code -- pinning the coverage boundary so a future change cannot silently reclassify it.
-- [ ] **Degraded-derivation case**: run against a stubbed environment where one route source is
+      *(completed: 3/3 assertions pass, using `/grant`+`grant-agent`)*
+- [x] **Degraded-derivation case**: run against a stubbed environment where one route source is
       unreadable; assert the `[DEGRADED ROUTE DERIVATION]` banner appears and the affected command is
-      treated as unclassifiable, never as direct.
-- [ ] Declare the test in `agent-system/extensions/core/manifest.json` `provides.scripts` (matching
+      treated as unclassifiable, never as direct. *(completed: 3/3 assertions pass, via the
+      `VALIDATE_BUDGETS_MANIFEST_OVERRIDE` env var pointed at a nonexistent path -- this case caught
+      and fixed a real bug during authoring: the route table originally represented a degraded
+      route as an empty array rather than an absent key, which made the redundancy subset test
+      `[] - $agents == []` vacuously true instead of routing the command to unclassifiable. Fixed
+      by omitting degraded routes from the table entirely so `$route_table[$c] // null` resolves to
+      `null` for them. A second, independent bug surfaced by this same case: the route-derivation
+      helper functions' pipelines propagated `jq`'s non-zero exit (missing manifest) through
+      `pipefail` into the enclosing `var="$(...)"` command substitution, aborting the whole script
+      under `set -e` instead of degrading gracefully -- fixed with `|| true` on each pipeline.)*
+- [x] Declare the test in `agent-system/extensions/core/manifest.json` `provides.scripts` (matching
       how sibling tests under `scripts/tests/` are declared) so it reaches the deploy tree.
-- [ ] Redeploy and run the test from `.claude/scripts/tests/`; confirm all cases pass.
+      *(completed)*
+- [x] Redeploy and run the test from `.claude/scripts/tests/`; confirm all cases pass. *(completed:
+      16/16 assertions pass running from `.claude/scripts/tests/test-double-loading-check.sh`, and
+      also verified passing when run from the source-store copy directly)*
+
+**Inversion self-check** (not originally itemized as a separate task above, but required by this
+phase's own Verification and the task's binding VERIFICATION BAR): the suite patches a throwaway
+copy of the deployed script, inverting the `is_redundant` predicate's sense, and re-runs the
+positive and discrimination cases against it inside a fabricated `.claude/scripts/` tree (required
+because `deploy-root-guard.sh` and `common_repo_root()` both depend on the real deploy-tree shape).
+Confirmed: under inversion, Case 1 (positive) flips to non-redundant and Case 2 (discrimination)
+flips to falsely-redundant -- proving the two live assertions are not vacuously true.
 
 **Timing**: 1.25 hours
 

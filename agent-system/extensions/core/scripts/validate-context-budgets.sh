@@ -274,11 +274,19 @@ REVISE_SKILL_FILE="${VALIDATE_BUDGETS_REVISE_SKILL_OVERRIDE:-${REPO_ROOT}/.claud
 
 _dlc_route_agents() {
   # $1 = routing_agents.<op> key; unique agent names, newline-joined; empty on any failure.
-  jq -r --arg op "$1" '.routing_agents[$op] // {} | to_entries[].value' "$MANIFEST_FILE" 2>/dev/null | sort -u
+  # `|| true` on the pipeline itself is required under `set -e -o pipefail`: a missing/unreadable
+  # MANIFEST_FILE makes `jq` exit non-zero, and pipefail propagates that through `sort -u` into
+  # this whole statement's exit status -- which, called inside a `var="$(...)"` command
+  # substitution, would otherwise abort the entire script instead of degrading gracefully into
+  # the [DEGRADED ROUTE DERIVATION] path below. `|| true` must sit on the pipeline itself, not
+  # merely on a later `return 0`: under `set -e` the abort happens at the failing statement,
+  # before a subsequent `return 0` would ever run.
+  jq -r --arg op "$1" '.routing_agents[$op] // {} | to_entries[].value' "$MANIFEST_FILE" 2>/dev/null | sort -u || true
 }
 _dlc_subagent_type() {
-  # $1 = SKILL.md path; the sole `subagent_type: "..."` value; empty on any failure.
-  grep -oP 'subagent_type:\s*"\K[^"]+' "$1" 2>/dev/null | head -1
+  # $1 = SKILL.md path; the sole `subagent_type: "..."` value; empty on any failure. Same
+  # pipefail/set -e hazard as _dlc_route_agents above -- an unreadable path must degrade, not abort.
+  grep -oP 'subagent_type:\s*"\K[^"]+' "$1" 2>/dev/null | head -1 || true
 }
 
 dlc_research_route="$(_dlc_route_agents research)"
@@ -301,17 +309,24 @@ if [[ ${#dlc_degraded[@]} -gt 0 ]]; then
   WARNINGS=$((WARNINGS + 1))
 fi
 
+# A degraded (empty-string) route is OMITTED from the table entirely, never represented as an
+# empty array. `$route_table[$c]` for an omitted key is `null` via the `// null` default used
+# throughout the partition logic below, which correctly routes a degraded command into
+# "unclassifiable" rather than vacuously satisfying the redundancy subset test (`[] - $agents`
+# is always `[]`, which would silently make an unroutable command look redundant instead of
+# unclassifiable -- the exact silent-no-op this check must not produce).
 dlc_route_table=$(jq -n \
   --arg research "$dlc_research_route" --arg plan "$dlc_plan_route" --arg implement "$dlc_implement_route" \
   --arg meta "$dlc_meta_route" --arg spawn "$dlc_spawn_route" --arg revise "$dlc_revise_route" \
-  '{
-    "/research": (if $research == "" then [] else ($research | split("\n")) end),
-    "/plan": (if $plan == "" then [] else ($plan | split("\n")) end),
-    "/implement": (if $implement == "" then [] else ($implement | split("\n")) end),
-    "/meta": (if $meta == "" then [] else [$meta] end),
-    "/spawn": (if $spawn == "" then [] else [$spawn] end),
-    "/revise": (if $revise == "" then [] else [$revise] end)
-  }')
+  '
+  {}
+  + (if $research == "" then {} else {"/research": ($research | split("\n"))} end)
+  + (if $plan == "" then {} else {"/plan": ($plan | split("\n"))} end)
+  + (if $implement == "" then {} else {"/implement": ($implement | split("\n"))} end)
+  + (if $meta == "" then {} else {"/meta": [$meta]} end)
+  + (if $spawn == "" then {} else {"/spawn": [$spawn]} end)
+  + (if $revise == "" then {} else {"/revise": [$revise]} end)
+  ')
 
 # Direct commands never route to an agent (their skill executes directly), so a command hook
 # naming one of these can never make an entry redundant.

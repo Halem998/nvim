@@ -168,6 +168,7 @@
       "tests/test-errors-append.sh",
       "tests/test-git-commit-scoped.sh",
       "tests/test-deploy-propagation.sh",
+      "tests/test-double-loading-check.sh",
       "tests/test-handoff-reader-parity.sh",
       "tests/test-index-entries-schema.sh",
       "tests/test-lint-agent-contracts.sh",

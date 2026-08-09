@@ -1,0 +1,29 @@
+{
+  "phase": 5,
+  "phase_name": "Negative test proving the check still fires",
+  "started_at": "2026-08-09T01:15:00Z",
+  "last_updated": "2026-08-09T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-double-loading-check.sh following sibling test conventions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-double-loading-check.sh"]},
+    {"id": 2, "description": "Positive case fixture and assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-double-loading-check.sh"]},
+    {"id": 3, "description": "Discrimination case fixture and assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-double-loading-check.sh"]},
+    {"id": 4, "description": "Orchestrate case fixture and assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-double-loading-check.sh"]},
+    {"id": 5, "description": "Unclassifiable case fixture and assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-double-loading-check.sh"]},
+    {"id": 6, "description": "Degraded-derivation case (env-var route override) and assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-double-loading-check.sh", "agent-system/extensions/core/scripts/validate-context-budgets.sh"]},
+    {"id": 7, "description": "Declare test in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 8, "description": "Redeploy and run test from .claude/scripts/tests/, confirm all pass", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Inversion self-check proving assertions are live (not vacuously true)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-double-loading-check.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Copy the deployed script directly into $WORKDIR (flat, no .claude/ wrapper) for the inversion self-check", "result": "failed", "reason": "deploy-root-guard.sh hard-exits unless the script's own parent directory is literally named .claude or .opencode, and common_repo_root() derives REPO_ROOT by walking up a fixed number of levels from the script's own location -- a bare copy in an arbitrary tmp dir satisfies neither. Fixed by fabricating a full $WORKDIR/fake-deploy/.claude/scripts/{,lib/} tree with the script plus its lib/common.sh and deploy-root-guard.sh siblings copied alongside it, and pointing route derivation at the REAL manifest/skill files via the VALIDATE_BUDGETS_*_OVERRIDE env vars so only the predicate is under test."},
+    {"approach": "Hardcode a single 5-level-up REPO_ROOT computation in the test's own SCRIPT_DIR resolution", "result": "failed", "reason": "correct only when the test itself runs from the source store (agent-system/extensions/core/scripts/tests/, 5 levels above repo root); wrong when run from the deployed tree (.claude/scripts/tests/, only 3 levels above repo root) -- resolved DEPLOYED_SCRIPT to a bogus path outside the repo entirely when run post-deploy. Fixed with the same core/manifest.json-presence dual-mode detection run-all.sh already uses."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "16/16 assertions pass, both invoking the suite from the source-store location and from the deployed .claude/scripts/tests/ location.",
+    "Two real bugs in validate-context-budgets.sh were found and fixed during this phase's authoring, both triggered specifically by the degraded-derivation case: (1) a degraded route represented as [] rather than an absent key made the redundancy subset test vacuously true; (2) pipefail + set -e caused a missing-manifest jq failure to abort the whole script instead of degrading gracefully. See phase-2-progress.json's addendum note for full detail. Both fixes were re-verified against the real deployed index (still 0 redundant / 13 legitimate / 0 unclassifiable, unchanged from Phase 4's result) before proceeding.",
+    "OPERATIONAL INCIDENT during this phase: to sanity-check whether the run-all.sh suite's 8 pre-existing unrelated failures predated this task's changes, a bare `git stash` was run. This scooped up ALL uncommitted tracked changes repo-wide (not scoped to this task), including a concurrently-running sibling task's in-flight edits to several EXTENSION.md/index-entries.json files. The sibling session modified those same files again before `git stash pop` was attempted, causing the pop to abort with conflicts (git's designed-safe behavior: it left both the stash and the working tree untouched rather than overwriting). Recovery: used `git show stash@{0}:<path>` to extract only this task's two affected files (validate-context-budgets.sh, manifest.json) from the stash and restored them via direct file copy, without running `git stash pop` or `git stash drop` -- the stash (stash@{0}) was left in place, untouched, so the sibling task's in-flight work is not at risk. Both restored files were diffed byte-for-byte against the pre-stash content and confirmed identical before proceeding. Lesson: never run a bare, unscoped `git stash`/`git stash pop` when other sessions may be concurrently dirtying the same working tree -- this is now recorded as a memory candidate."
+  ]
+}
