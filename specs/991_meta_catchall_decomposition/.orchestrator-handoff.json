@@ -1,19 +1,15 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 991,
   "session_id": "sess_1786307992_f01eb5",
-  "summary": "Research complete: 25 meta-only / 86 meta-tagged entries measured (description's 123 is a key-presence mis-read), section-5 grouping located and concretized into per-group hooks, four .tier call sites identified with a Tier-4 fallthrough decision, 2 broken agent names isolated to one core entry, validator baseline recorded at 10 violations.",
+  "summary": "8-phase plan created. Sequencing: Phase 1 builds and proves a redeploy-free shadow validator harness against the recorded baseline (exit 1, 10 violations); Wave 2 runs the two mechanical items in parallel (Phase 2 converts all four .tier call sites to a derived_tier function and downgrades the restated Double-Loading check to a warning covering its 49 pre-existing matches; Phase 3 fixes the two broken agent names in core's contracts/adversarial-verification.md and adds a union-valued cslib mirror entry); Phase 4 declares an on_demand property in index.schema.json and marks the 3 all-empty entries, preserving Dead Entry Check signal against the Tier-4 tautology; Phases 5-6 give all 25 meta-only entries real hooks (G1-G7); Phase 7 trims \"meta\" from the remaining 61 core + 1 nvim entries; Phase 8 attests the bar. The unreachable 'zero budget violations' bar is explicitly re-scoped (option b) to: tier check passes via derivation, dead-entry check passes via on_demand, double-loading reported as warning, and exactly 8 pre-existing per-agent violations remain with general-implementation-agent at exactly 68,560 and planner-agent at exactly 31,848 tokens (the documented +1,470/+331 line increases from items 1). Raising CAPS was considered and rejected: it would permanently retire the budget check as an instrument.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/991_meta_catchall_decomposition/reports/01_meta-catchall-decomposition.md",
-      "summary": "Measured meta catch-all inventory, per-group hook proposals, trimming rule, tier-derivation spec, broken-agent fix, and verbatim validator before-state."
+      "type": "plan",
+      "path": "specs/991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md",
+      "summary": "8-phase plan: shadow verification harness, algorithmic tier derivation at all 4 .tier call sites, broken-agent fix with cslib mirror, on_demand schema marker, real hooks for 25 meta-only entries, trim of 62 meta-tagged entries; re-scopes the unreachable verification bar to a checkable 8-violation criterion"
     }
   ],
-  "notes": [
-    "Verification bar as written ('zero per-agent budget violations') is not reachable by this task's file_scope: 8 of the 10 baseline violations are load_when.agents breadth across core/nvim/nix, and task_types trimming provably does not move them. Plan must use the bar's documented-cap-change escape clause or re-scope the bar.",
-    "S2 work (giving the 25 meta-only entries real hooks) increases general-implementation-agent's budget by ~1,470 lines; it does not reduce any agent's total.",
-    "Restating the Double-Loading Check without its tier predicate surfaces 49 matches immediately -- plan must triage or downgrade to warning."
-  ]
+  "modified_files": []
 }

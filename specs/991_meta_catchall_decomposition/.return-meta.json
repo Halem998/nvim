@@ -1,40 +1,28 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 991,
-  "agent_type": "general-research-agent",
+  "agent_type": "planner-agent",
   "session_id": "sess_1786307992_f01eb5",
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
-  "findings_count": 6,
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/991_meta_catchall_decomposition/reports/01_meta-catchall-decomposition.md",
-      "summary": "Measured meta catch-all inventory (25 meta-only / 86 meta-tagged, correcting the description's 123), concrete per-group hook proposals from the prerequisite's section 5, a checkable trimming rule, the four .tier call sites plus a Tier-4 fallthrough decision, the 2 broken agent names, and the verbatim validator baseline."
+      "type": "plan",
+      "path": "specs/991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md",
+      "summary": "8-phase plan: shadow verification harness, algorithmic tier derivation at all 4 .tier call sites, broken-agent fix with cslib mirror, on_demand schema marker, real hooks for 25 meta-only entries, trim of 62 meta-tagged entries; re-scopes the unreachable verification bar to a checkable 8-violation criterion"
     }
   ],
   "modified_files": [],
+  "phase_count": 8,
+  "estimated_hours": 6,
+  "dependency_waves": [[1], [2, 3], [4], [5], [6], [7], [8]],
+  "next_steps": "Run /implement 991 to execute the plan",
   "memory_candidates": [
     {
-      "content": "In .claude context index censuses, distinguish three different jq predicates: key-presence (`.load_when|has(\"task_types\")`), non-empty (`(.load_when.task_types//[])|length>0`), and contains-value (`(.load_when.task_types//[])|index(\"meta\")`). A prior agent-system census reported '123 of 129 core entries carrying task_types:[\"meta\"]' when it had actually measured key-presence; the true contains-\"meta\" count was 86, and 40 entries carried an empty task_types array. Always state which predicate a reported count used.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/991_meta_catchall_decomposition/reports/01_meta-catchall-decomposition.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["jq", "index-entries", "census", "load_when", "task_types", "counting-methodology"]
-    },
-    {
-      "content": "validate-context-budgets.sh's per-agent budget check counts ONLY load_when.agents matches -- it never reads load_when.task_types or load_when.commands. Consequence: trimming task_types hooks reduces what the documented adaptive context-discovery query actually loads, but moves the validator's reported per-agent token totals not at all. Any task whose verification bar is 'zero per-agent budget violations' must change load_when.agents breadth or the CAPS table; task_type trimming alone cannot satisfy it.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/991_meta_catchall_decomposition/reports/01_meta-catchall-decomposition.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["validate-context-budgets", "context-budget", "load_when", "agents", "verification-bar"]
-    },
-    {
-      "content": "Core (always-loaded) index-entries.json must not name extension-owned agents in load_when.agents: when the extension is not loaded, the agent .md never reaches .claude/agents/ and the reference dangles. The established pattern is for the extension to declare its OWN index entry for the same core-owned file path with its own agents array (as lean/index-entries.json does for contracts/adversarial-verification.md). Caveat: this produces two entries for one path when the extension is loaded, so confirm loader dedup-by-path behavior before adding such an entry.",
+      "content": "In this repo the deployed .claude/context/index.json is reconstructible offline from the source store: it is exactly the union of each ACTIVE extension's agent-system/extensions/<ext>/index-entries.json entries, merged by merge.lua's append_index_entries, which UPSERTS by `path` (replace-in-place, never duplicate-append; last extension processed wins a contested path). Because active extensions currently declare no overlapping paths, a plain `jq -s '{entries: [.[].entries[]]}'` concatenation over the active set is path-set-identical to the deployed index (verified: 187 entries, empty diff). This enables a redeploy-free verification harness: build the shadow index, assemble a shadow tree whose scripts/ parent basename is `.claude` (to satisfy deploy-root-guard.sh), drop the SOURCE-STORE script in, and run it with --index. Valuable because deploy-headless.sh has exactly one sanctioned automated caller (skill-orchestrate Stage MT-3 step 7), so agents editing source-store scripts otherwise have no way to test them. The harness must assert zero duplicate paths, or the concatenation stops being equivalent to a real merge.",
       "category": "PATTERN",
-      "source_artifact": "specs/991_meta_catchall_decomposition/reports/01_meta-catchall-decomposition.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["extensions", "index-entries", "load_when-agents", "core-extension-boundary", "deploy"]
+      "source_artifact": "specs/991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries", "shadow-index", "deploy-root-guard", "source-store-verification", "upsert-by-path", "context-index"]
     }
-  ],
-  "next_steps": "Run /plan 991 to create implementation plan"
+  ]
 }
