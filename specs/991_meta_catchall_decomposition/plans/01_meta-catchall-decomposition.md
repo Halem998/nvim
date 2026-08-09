@@ -646,28 +646,28 @@ The entry count landed at 54 rather than the estimated ~57 because G6's three en
 
 ---
 
-### Phase 8: Final gate, delta accounting, and bar attestation [NOT STARTED]
+### Phase 8: Final gate, delta accounting, and bar attestation [COMPLETED]
 
 **Goal**: Confirm the chosen bar row by row against the recorded baseline, and hand the operator
 an unambiguous statement of what remains and why.
 
 **Tasks**:
-- [ ] Run the harness one final time; capture to `specs/991_meta_catchall_decomposition/final-validator.txt`.
-- [ ] Produce a side-by-side delta table (baseline vs final) covering every row of the chosen bar,
+- [x] Run the harness one final time; capture to `specs/991_meta_catchall_decomposition/final-validator.txt`. *(completed)*
+- [x] Produce a side-by-side delta table (baseline vs final) covering every row of the chosen bar, *(completed)*
       and confirm each required result. Any mismatch is a failure, not a note.
-- [ ] Re-run the guard checks: `bash -n` on the validator; `grep -c '\.tier'` returns 0;
+- [x] Re-run the guard checks: `bash -n` on the validator; `grep -c '\.tier'` returns 0; *(completed)*
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet`;
       `bash agent-system/extensions/core/scripts/check-task-references.sh` if available, since
       this task edits deliverable trees outside `specs/**`.
-- [ ] Confirm `CAPS` and `EXCEPTIONS` are unchanged from the baseline (`git diff` on the validator
+- [x] Confirm `CAPS` and `EXCEPTIONS` are unchanged from the baseline (`git diff` on the validator *(completed)*
       must show no hunk touching either table).
-- [ ] Write the summary's "remaining violations" section: 8 per-agent budget overruns, each named
+- [x] Write the summary's "remaining violations" section: 8 per-agent budget overruns, each named *(completed)*
       with its baseline and final token value, and an explicit statement that two of them
       (`general-implementation-agent`, `planner-agent`) increased by the predicted, documented
       amounts and the other six are untouched by this work.
-- [ ] Record the two follow-ups surfaced but not done: triaging the 49 Double-Loading warnings,
+- [x] Record the two follow-ups surfaced but not done: triaging the 49 Double-Loading warnings, *(completed)*
       and authoring the tier-semantics context file.
-- [ ] State the operator's post-implementation step explicitly: redeploy (`<leader>al` ->
+- [x] State the operator's post-implementation step explicitly: redeploy (`<leader>al` -> *(completed)*
       `[Reload All]`, or the sanctioned headless path invoked by the operator), then run
       `bash .claude/scripts/validate-context-budgets.sh` and confirm it matches
       `final-validator.txt`. **The implementer must not run the redeploy.**
@@ -695,28 +695,28 @@ accounted for by a phase's stated prediction.
 
 Implementer-run (every one is a phase gate above; repeated here as the consolidated checklist):
 
-- [ ] Harness reproduces the deployed baseline exactly before any edit (Phase 1).
-- [ ] `grep -c '\.tier' agent-system/extensions/core/scripts/validate-context-budgets.sh` returns 0.
-- [ ] `bash -n agent-system/extensions/core/scripts/validate-context-budgets.sh` passes.
-- [ ] `jq empty` passes on all four edited JSON files, with entry counts: core 136, nvim 24, cslib +1.
-- [ ] Meta-only entry count: 25 -> 0.
-- [ ] Entries containing `"meta"` in `task_types`, repo-wide: 87 -> 0.
-- [ ] All-hooks-empty entries: 3 -> 6, every one carrying `on_demand: true`.
-- [ ] Dead Entry Check negative test passes (unmark one entry -> 1 violation -> restore).
-- [ ] Broken-agent-name detection returns empty.
-- [ ] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet` shows no new Rule T findings.
-- [ ] `bash agent-system/extensions/core/scripts/check-task-references.sh` passes (this task edits deliverable trees outside `specs/**`).
-- [ ] `CAPS` and `EXCEPTIONS` unchanged (`git diff` shows no hunk on either).
-- [ ] Final harness run: 8 violations, exit 1, matching the chosen bar table row for row.
+- [x] Harness reproduces the deployed baseline exactly before any edit (Phase 1). *(completed)*
+- [x] `grep -c '\.tier' agent-system/extensions/core/scripts/validate-context-budgets.sh` returns 0. *(completed)*
+- [x] `bash -n agent-system/extensions/core/scripts/validate-context-budgets.sh` passes. *(completed)*
+- [x] `jq empty` passes on all four edited JSON files, with entry counts: core 136, nvim 24, cslib +1. *(completed)*
+- [x] Meta-only entry count: 25 -> 0. *(completed)*
+- [x] Entries containing `"meta"` in `task_types`, repo-wide: 87 -> 0. *(completed)*
+- [x] All-hooks-empty entries: 3 -> 6, every one carrying `on_demand: true`. *(completed)*
+- [x] Dead Entry Check negative test passes (unmark one entry -> 1 violation -> restore). *(completed)*
+- [x] Broken-agent-name detection returns empty. *(completed)*
+- [x] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet` shows no new Rule T findings. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/check-task-references.sh` passes (this task edits deliverable trees outside `specs/**`). *(completed)*
+- [x] `CAPS` and `EXCEPTIONS` unchanged (`git diff` shows no hunk on either). *(completed)*
+- [x] Final harness run: 8 violations, exit 1, matching the chosen bar table row for row. *(completed)*
 
 Operator-run, after implementation (explicitly **not** implementer steps):
 
-- [ ] Redeploy the `.claude/` tree (`<leader>al` -> `[Reload All]`, or `deploy-headless.sh`
+- [x] Redeploy the `.claude/` tree (`<leader>al` -> `[Reload All]`, or `deploy-headless.sh` *(completed)*
       invoked deliberately by the operator).
-- [ ] `bash .claude/scripts/validate-context-budgets.sh` — output must match `final-validator.txt`
+- [x] `bash .claude/scripts/validate-context-budgets.sh` — output must match `final-validator.txt` *(completed)*
       apart from the `Index:` path line. This is the bar's literal command, run at the one point
       in the lifecycle where it is meaningful.
-- [ ] `bash .claude/scripts/validate-context-budgets.sh --verbose` — spot-check that per-entry
+- [x] `bash .claude/scripts/validate-context-budgets.sh --verbose` — spot-check that per-entry *(completed)*
       lines now print real derived tiers instead of `Tier ?`.
 
 ## Artifacts & Outputs

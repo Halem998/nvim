@@ -1,15 +1,28 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 991,
   "session_id": "sess_1786307992_f01eb5",
-  "summary": "8-phase plan created. Sequencing: Phase 1 builds and proves a redeploy-free shadow validator harness against the recorded baseline (exit 1, 10 violations); Wave 2 runs the two mechanical items in parallel (Phase 2 converts all four .tier call sites to a derived_tier function and downgrades the restated Double-Loading check to a warning covering its 49 pre-existing matches; Phase 3 fixes the two broken agent names in core's contracts/adversarial-verification.md and adds a union-valued cslib mirror entry); Phase 4 declares an on_demand property in index.schema.json and marks the 3 all-empty entries, preserving Dead Entry Check signal against the Tier-4 tautology; Phases 5-6 give all 25 meta-only entries real hooks (G1-G7); Phase 7 trims \"meta\" from the remaining 61 core + 1 nvim entries; Phase 8 attests the bar. The unreachable 'zero budget violations' bar is explicitly re-scoped (option b) to: tier check passes via derivation, dead-entry check passes via on_demand, double-loading reported as warning, and exactly 8 pre-existing per-agent violations remain with general-implementation-agent at exactly 68,560 and planner-agent at exactly 31,848 tokens (the documented +1,470/+331 line increases from items 1). Raising CAPS was considered and rejected: it would permanently retire the budget check as an instrument.",
+  "summary": "All 8 phases complete. Tier is now derived algorithmically from load_when shape at all four former authored-tier read sites (grep -c '.tier' = 0), meta-only entries went 25 -> 0 (each given a real agent/command hook or an explicit on_demand marker), and \"meta\" was trimmed from every load_when.task_types array repo-wide across all 19 extensions (87 -> 0), cutting meta-builder-agent's resolved context from 93 entries / 26,987 lines to 54 / 16,634 (-38.4%). The Dead Entry Check was re-keyed on a new schema-declared on_demand property so it retains signal instead of becoming a tautology (proven by a required negative test), and the Double-Loading Check was restated on load_when shape and downgraded to a warning naming its 49 pre-existing matches. Two broken agent names were removed from core's adversarial-verification entry. Verified at every phase boundary by a purpose-built redeploy-free shadow harness proven byte-equivalent to the deployed baseline; deploy-headless.sh was never run. Final state matches the plan's re-scoped bar: exactly 8 pre-existing per-agent budget violations at exit 1, general-implementation-agent at exactly 68,560 and planner-agent at exactly 31,848 as predicted to the token, every other capped agent byte-identical except one recorded +40. Two deviations recorded rather than papered over (cslib mirror excluded per Rule R; meta-builder-agent +40 from the schema file's own indexed line_count). REQUIRED OPERATOR STEP: redeploy the .claude/ tree, then run bash .claude/scripts/validate-context-budgets.sh and confirm it matches final-validator.txt apart from the Index: line.",
   "blockers": [],
+  "phases_completed": 8,
+  "phases_total": 8,
+  "plan_markers_verified": true,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md",
-      "summary": "8-phase plan: shadow verification harness, algorithmic tier derivation at all 4 .tier call sites, broken-agent fix with cslib mirror, on_demand schema marker, real hooks for 25 meta-only entries, trim of 62 meta-tagged entries; re-scopes the unreachable verification bar to a checkable 8-violation criterion"
+      "path": "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md",
+      "type": "summary",
+      "summary": "All 8 phases complete: tier derived algorithmically, meta catch-all eliminated repo-wide, 8 pre-existing budget violations remain as the plan's re-scoped bar requires"
     }
   ],
-  "modified_files": []
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-context-budgets.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/context/index.schema.json",
+    "agent-system/extensions/nvim/index-entries.json",
+    "specs/991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md",
+    "specs/991_meta_catchall_decomposition/shadow-validate.sh",
+    "specs/991_meta_catchall_decomposition/baseline-validator.txt",
+    "specs/991_meta_catchall_decomposition/final-validator.txt",
+    "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md"
+  ]
 }

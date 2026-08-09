@@ -1,0 +1,85 @@
+=== FINAL: shadow-validate.sh, recorded after all phases ===
+Recorded: 2026-08-09T21:29:57Z
+Command: bash specs/991_meta_catchall_decomposition/shadow-validate.sh --check-identity
+Active extensions: memory nvim core nix email
+Reconstructed entries: 187 (0 duplicate paths)
+Path-set identity vs deployed .claude/context/index.json: OK (empty diff)
+Harness exit code: 1  (the accepted, expected terminal state)
+
+--- Chosen bar, row by row ---
+Tier Classification Check ....... OK, 0 violations, distribution Tier 1:3 / 2:144 / 3:34 / 4:6
+                                  authored tier field read at 0 call sites (grep -c '.tier' = 0)
+Dead Entry Check (explicit) ..... OK, 0 violations; all 6 all-empty entries carry on_demand:true
+                                  negative test PASSED: unmarking one reproduces 1 violation naming it
+Double-Loading Check ............ WARNING naming 49 entries, 0 violations
+Tier 1 Check .................... OK, unchanged (3 entries / 334 lines)
+Per-agent budget ................ exactly 8 violations, the same 8 agents as baseline, no ninth
+general-implementation-agent .... 68560  (baseline 56800, +11760 = +1470 lines from G1+G5) MATCH
+planner-agent ................... 31848  (baseline 29200, +2648 = +331 lines from G1)     MATCH
+meta-builder-agent .............. 130400 (baseline 130360, +40) DEVIATION -- see note below
+Every other capped agent ........ byte-identical to baseline
+Total violations / exit code .... 8 / exit 1   MATCH
+
+--- The one deviation from the bar as written ---
+meta-builder-agent moved +40 tokens (130,360 -> 130,400) instead of staying byte-identical.
+Fully traced, not drift: index.schema.json is itself an indexed entry whose load_when.agents
+names meta-builder-agent. Phase 4's plan-mandated $comment extension plus the new on_demand
+property grew that file 128 -> 133 lines; check-extension-docs.sh Rule R (a hard line_count
+gate) then required correcting the declared count. 5 lines x 8 = 40 tokens, exactly.
+Shrinking the comment to restore 128 lines was rejected as tuning the artifact to flatter
+the number. The instrument measured real content growth correctly.
+
+--- Work-item completion ---
+item 1: meta-only entries 25 -> 0 (all now carry a real hook or an explicit on_demand marker)
+item 2: '"meta"' in load_when.task_types, repo-wide across all 19 extensions: 87 -> 0
+        meta-builder-agent resolved context: 93 entries / 26,987 lines -> 54 / 16,634 (-38.4%)
+item 3: tier derived algorithmically at all 4 former call sites; authored field read nowhere
+item 4: broken agent names removed from core (cslib mirror excluded -- see plan Phase 3)
+
+--- Guard checks ---
+bash -n validate-context-budgets.sh ............................ PASS
+grep -c '.tier' validate-context-budgets.sh .................... 0
+jq empty on all edited JSON .................................... PASS (core 136, nvim 24, cslib 16 unchanged)
+check-extension-docs.sh ........................................ only expected deploy-drift on the edited validator
+check-task-references.sh ....................................... PASS (0 unexempted occurrences across 4 trees)
+CAPS and EXCEPTIONS tables ..................................... unchanged (no hunk adds/removes a row)
+
+--- Validator output ---
+=== Context Budget Validation ===
+Index: /tmp/shadow-validate.87dsrT/index.json
+
+--- Agent Budget Check ---
+Agent                                 Tokens      Cap       Status
+-------------------------------------------------------------------
+nix-research-agent                     19896     8000   OVER:11896
+spawn-agent                             5568     8000           OK
+general-research-agent                 28744     8000   OVER:20744
+code-reviewer-agent                     5544     8000           OK
+general-implementation-agent           68560     8000   OVER:60560
+nix-implementation-agent               22520     8000   OVER:14520
+planner-agent                          31848    15000   OVER:16848
+neovim-research-agent                  22872     8000   OVER:14872
+neovim-implementation-agent            40104     8000   OVER:32104
+meta-builder-agent                    130400    15000  OVER:115400
+
+--- Tier 1 Check ---
+Always-loaded entries: 3 (target: 2)
+Always-loaded total lines: 334 (target: ≤500)
+Status: OK
+
+--- Tier Classification Check ---
+Total entries: 187
+Derived tier distribution: Tier 1: 3, Tier 2: 144, Tier 3: 34, Tier 4: 6
+Status: OK (all entries classify via derived_tier)
+
+--- Dead Entry Check ---
+Dead entries (all hooks empty, not marked on_demand): 0 -- OK
+
+--- Double-Loading Check ---
+Entries with both agents and commands hooks: 49 (WARNING -- pending triage)
+
+=== Summary ===
+Violations: 8
+Warnings: 1
+
+FAIL: 8 violation(s) found

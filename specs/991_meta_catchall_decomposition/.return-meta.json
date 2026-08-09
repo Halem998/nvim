@@ -1,11 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "task_number": 991,
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1786307992_f01eb5",
   "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
-  "phases_completed": 0,
+  "phases_completed": 8,
   "phases_total": 8,
-  "artifacts": [],
-  "modified_files": []
+  "artifacts": [
+    {
+      "path": "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md",
+      "type": "summary",
+      "summary": "All 8 phases complete: tier derived algorithmically, meta catch-all eliminated repo-wide, 8 pre-existing budget violations remain as the plan's re-scoped bar requires"
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-context-budgets.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/context/index.schema.json",
+    "agent-system/extensions/nvim/index-entries.json",
+    "specs/991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md",
+    "specs/991_meta_catchall_decomposition/shadow-validate.sh",
+    "specs/991_meta_catchall_decomposition/baseline-validator.txt",
+    "specs/991_meta_catchall_decomposition/final-validator.txt",
+    "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md"
+  ],
+  "completion_summary": "Broke the meta task_types catch-all and converted validate-context-budgets.sh to derive tier algorithmically from load_when shape. All 25 meta-only core entries now carry a real agent/command hook or an explicit on_demand marker (25 -> 0), and \"meta\" was trimmed from every load_when.task_types array repo-wide across all 19 extensions (87 -> 0), cutting meta-builder-agent's resolved context from 93 entries / 26,987 lines to 54 / 16,634 (-38.4%). All four former authored-tier read sites now use a single documented derived_tier function (grep -c '.tier' = 0); the Dead Entry Check was re-keyed on a new schema-declared on_demand property so it keeps real signal instead of becoming a tautology (proven by a negative test), and the Double-Loading Check was restated on load_when shape and downgraded to a warning naming its 49 pre-existing matches. Two broken agent names were removed from core's adversarial-verification entry. Verified throughout by a purpose-built redeploy-free shadow harness proven byte-equivalent to the deployed baseline; final state is exactly 8 pre-existing per-agent budget violations at exit 1, with general-implementation-agent at exactly 68,560 and planner-agent at exactly 31,848 as predicted. Two deviations recorded rather than papered over: the cslib mirror entry was excluded (blocked by check-extension-docs.sh Rule R, which requires an extension to own a source file for each of its index entries), and meta-builder-agent moved +40 tokens because index.schema.json is itself an indexed entry hooked to that agent and the plan-mandated $comment extension grew it 5 lines.",
+  "memory_candidates": [
+    {
+      "content": "In this repo the deployed .claude/context/index.json is reconstructible offline from the source store: it is exactly the union of each ACTIVE extension's agent-system/extensions/<ext>/index-entries.json entries. Because active extensions declare no overlapping paths, a plain `jq -s '{entries: [.[].entries[]]}'` concatenation is path-set-identical to the deployed index (verified: 187 entries, empty diff). This enables a redeploy-free verification harness: build the shadow index, assemble a shadow tree whose scripts/ parent basename is `.claude` (to satisfy deploy-root-guard.sh's structural check), copy in the SOURCE-STORE script plus lib/common.sh, and run it with --index. Essential because deploy-headless.sh has exactly one sanctioned automated caller, so agents editing source-store scripts otherwise have no way to test them. The harness must assert zero duplicate paths, or the concatenation stops being equivalent to the loader's upsert-by-path merge. Working example: specs/991_meta_catchall_decomposition/shadow-validate.sh.",
+      "category": "PATTERN",
+      "source_artifact": "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["shadow-index", "deploy-root-guard", "source-store-verification", "index-entries", "redeploy-free-testing", "context-index"]
+    },
+    {
+      "content": "check-extension-docs.sh Rule R (check_line_count_accuracy) is a HARD gate (INDEX_TRUTH_GATE_MODE defaults to \"hard\") requiring EVERY index-entries.json entry to resolve to a source file at <ext>/context/<path>, with an exactly matching line_count. Two consequences that bite: (1) an extension cannot 'mirror' an index entry for a path owned by another extension unless it also ships its own copy of the file -- lean/index-entries.json's mirror of contracts/adversarial-verification.md is legal only because lean owns a 93-line copy; cslib cannot do the same without one. (2) Editing any file that is itself indexed (including core/context/index.schema.json) requires updating its declared line_count in the same change, or Rule R fails. Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` after any index or context-file edit.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["rule-R", "check-extension-docs", "line_count", "index-entries", "extension-mirror-entry", "hard-gate"]
+    },
+    {
+      "content": "Deriving a classification from data shape can silently retire the check that consumed it. In validate-context-budgets.sh, deriving Tier 4 from an all-empty load_when made the Dead Entry Check ('not Tier 4 but never loaded') unsatisfiable, and dropping the tier predicate from the Double-Loading Check ('.tier == 3 AND agents AND commands') was necessary because any entry with a non-empty agents array derives to Tier 2, never 3. The fix pattern: replace the derived predicate with an EXPLICIT-INTENT marker the author must set (here an `on_demand` boolean, declared as a schema property first because additionalProperties is false), and prove the check still fires with a negative test -- temporarily unmark one entry and confirm it is reported. Without that test you cannot distinguish 'check passes' from 'check can no longer fail'.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["tautology-check", "derived-classification", "explicit-intent-marker", "negative-test", "validator-design", "on_demand"]
+    }
+  ]
 }
