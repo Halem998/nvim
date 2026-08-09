@@ -5,7 +5,7 @@
     {
       "project_number": 998,
       "project_name": "double_loading_warning_triage",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Triage the 49 Double-Loading context-index warnings",
@@ -18,7 +18,7 @@
         991
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-09T23:22:37Z",
+      "last_updated": "2026-08-09T23:23:09Z",
       "artifacts": [
         {
           "path": "specs/998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md",
@@ -269,7 +269,7 @@
     {
       "project_number": 992,
       "project_name": "extension_md_slim_down",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones",
@@ -291,13 +291,18 @@
         991
       ],
       "created": "2026-07-30T01:55:17Z",
-      "last_updated": "2026-08-09T23:21:51Z",
+      "last_updated": "2026-08-09T23:27:58Z",
       "session_id": "sess_1786316975_3658f6_992",
       "artifacts": [
         {
           "path": "specs/992_extension_md_slim_down/reports/01_extension_md_slim_down.md",
           "type": "report",
           "summary": "Migration map for the 6 over-length EXTENSION.md files (Rule U) plus dead-file evidence and delete-vs-redefine decision for core/slidev EXTENSION.md"
+        },
+        {
+          "path": "specs/992_extension_md_slim_down/plans/01_extension-md-slim-down.md",
+          "type": "plan",
+          "summary": "8-phase plan: 6 parallel EXTENSION.md trim phases with per-extension context-file migration and index entries, 1 phase making check-extension-docs.sh merge_targets.claudemd.source-authoritative and deleting both dead files, 1 final zero-Rule-U-advisory gate phase"
         }
       ]
     },

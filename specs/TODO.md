@@ -21,7 +21,7 @@ next_project_number: 1003
 
 ### Agent System
 
-992 [RESEARCHED] — Bring every EXTENSION.md into conformance with extension-slim-sta
+992 [PLANNED] — Bring every EXTENSION.md into conformance with extension-slim-sta
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
       └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
@@ -30,7 +30,7 @@ next_project_number: 1003
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
   └─ 1000 [NOT STARTED] — Give the cslib extension its own copy of the adversarial-verifica
     └─ 1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
-998 [RESEARCHED] — Triage the 49 entries the Double-Loading Check now names, and dec
+998 [PLANNING] — Triage the 49 entries the Double-Loading Check now names, and dec
   └─ 1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
     └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
@@ -229,7 +229,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 998. Triage the 49 Double-Loading context-index warnings
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991
@@ -404,11 +404,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 992. Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 987, Task 990, Task 991
 - **Research**: [992_extension_md_slim_down/reports/01_extension_md_slim_down.md]
+- **Plan**: [992_extension_md_slim_down/plans/01_extension-md-slim-down.md]
 
 **Description**: Bring every EXTENSION.md into conformance with extension-slim-standard.md and Rule U (check-extension-docs.sh, check_extension_md_length), so the gate-promotion follow-on can flip SCHEMA_CONFORMANCE_GATE_MODE to hard without standing failures. Two sub-scopes:
 

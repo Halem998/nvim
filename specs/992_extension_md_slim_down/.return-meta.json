@@ -1,41 +1,27 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 992,
+  "session_id": "sess_1786316975_3658f6_992",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/992_extension_md_slim_down/reports/01_extension_md_slim_down.md",
-      "summary": "Migration map for the 6 over-length EXTENSION.md files (Rule U) plus dead-file evidence and delete-vs-redefine decision for core/slidev EXTENSION.md"
+      "type": "plan",
+      "path": "specs/992_extension_md_slim_down/plans/01_extension-md-slim-down.md",
+      "summary": "8-phase plan: 6 parallel EXTENSION.md trim phases with per-extension context-file migration and index entries, 1 phase making check-extension-docs.sh merge_targets.claudemd.source-authoritative and deleting both dead files, 1 final zero-Rule-U-advisory gate phase"
     }
   ],
-  "next_steps": "Run /plan 992 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1786316975_3658f6_992",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 8
-  },
+  "phase_count": 8,
+  "estimated_hours": 8.75,
+  "dependency_waves": [[1, 2, 3, 4, 5, 6, 7], [8]],
   "memory_candidates": [
     {
-      "content": "check-extension-docs.sh's required-file check (`check_file \"$ext_path/EXTENSION.md\" \"EXTENSION.md\"`) is an unconditional hard fail() for every extension, independent of SCHEMA_CONFORMANCE_GATE_MODE and independent of merge_targets.claudemd.source. Two extensions (core, slidev) have EXTENSION.md files that generate_claudemd() (merge.lua lines 807-838) never reads, because core's merge_targets.claudemd.source points at merge-sources/claudemd.md and slidev has no merge_targets.claudemd key at all. Any future doc-lint change to EXTENSION.md requirements must read merge_targets.claudemd.source as the authority, not assume the filename is fixed.",
+      "content": "When a lint gate hardcodes a required filename (e.g. 'every extension must have EXTENSION.md'), and that filename is actually consumed only via a manifest declaration (merge_targets.claudemd.source), the gate's authority is misplaced: it will demand and length-check files that no code path ever reads, producing 'dead conformance' work. The general fix is to make the gate read the manifest declaration that determines consumption, and require/check the file only for extensions whose manifest names it. Two guards make this safe rather than a silent loosening: (1) emit an advisory (never a silent skip) when the manifest key is absent for a component that is NOT genuinely resource-only, so an accidental omission is distinguishable from an intentional design; (2) verify after the change that the gate still hard-fails for a component that DOES declare the file but is missing it, proving the gate was narrowed and not disabled. Structural evidence that a file is dead (no code path reads it) should be gathered before deciding to trim vs. delete -- trimming a dead file is the one strictly wrong outcome.",
       "category": "PATTERN",
-      "source_artifact": "specs/992_extension_md_slim_down/reports/01_extension_md_slim_down.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs.sh", "EXTENSION.md", "merge_targets", "claudemd", "dead file", "Rule U"]
-    },
-    {
-      "content": "docs/guides/creating-extensions.md already documents a 'Resource-Only Extensions' pattern (using slidev as its own worked example) stating resource-only extensions should have no EXTENSION.md and no claudemd merge target at all. When an extension's actual manifest/files diverge from the project's own already-written guidance, check whether the guidance already prescribes the fix before treating it as a novel design decision.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/992_extension_md_slim_down/reports/01_extension_md_slim_down.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["resource-only extension", "slidev", "documentation drift", "creating-extensions.md"]
-    },
-    {
-      "content": "email/EXTENSION.md's Safety Invariants section cites `domain/index-architecture.md` at agent-system/extensions/email/context/project/email/domain/, but that file does not exist on disk (only archive-mode-risk.md, staleness-detection.md, wrapper-contracts.md exist there). This is a dangling cross-reference outside check-extension-docs.sh's Rule G scope (Rule G only scans .claude/context/contracts/*.md references), so it is not caught by any existing lint.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/992_extension_md_slim_down/reports/01_extension_md_slim_down.md",
+      "source_artifact": "specs/992_extension_md_slim_down/plans/01_extension-md-slim-down.md",
       "confidence": 0.75,
-      "suggested_keywords": ["email extension", "dangling reference", "index-architecture.md", "domain files"]
+      "suggested_keywords": ["lint-gate", "manifest-authority", "dead-file", "extension-system", "conformance", "check-extension-docs"]
     }
-  ]
+  ],
+  "next_steps": "Run /implement 992 to execute the plan"
 }
