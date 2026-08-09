@@ -5,7 +5,7 @@
     {
       "project_number": 998,
       "project_name": "double_loading_warning_triage",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Triage the 49 Double-Loading context-index warnings",
@@ -18,8 +18,14 @@
         991
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-09T23:10:25Z",
-      "artifacts": [],
+      "last_updated": "2026-08-09T23:22:37Z",
+      "artifacts": [
+        {
+          "path": "specs/998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md",
+          "type": "report",
+          "summary": "Full enumeration, attribution, classification criterion, per-entry classification table (36 redundant / 13 legitimate), and mechanical check re-keying design for the Double-Loading Check."
+        }
+      ],
       "session_id": "sess_1786316975_3658f6_998"
     },
     {
