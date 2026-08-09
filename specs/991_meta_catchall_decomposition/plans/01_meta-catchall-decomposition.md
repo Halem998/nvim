@@ -1,7 +1,7 @@
 # Implementation Plan: Break the meta task_types catch-all, derive tier algorithmically
 
 - **Task**: 991 - meta_catchall_decomposition
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/991_meta_catchall_decomposition/reports/01_meta-catchall-decomposition.md`

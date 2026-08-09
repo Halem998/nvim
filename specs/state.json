@@ -117,7 +117,7 @@
     {
       "project_number": 991,
       "project_name": "meta_catchall_decomposition",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Break the meta task_types catch-all and derive tier algorithmically",
@@ -131,7 +131,7 @@
         990
       ],
       "created": "2026-07-30T01:55:17Z",
-      "last_updated": "2026-08-09T21:09:51Z",
+      "last_updated": "2026-08-09T21:32:28Z",
       "session_id": "sess_1786307992_f01eb5",
       "artifacts": [
         {
@@ -145,8 +145,15 @@
           "path": "specs/991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md",
           "summary": "8-phase plan: shadow verification harness, algorithmic tier derivation, broken-agent fix with cslib mirror, on_demand schema marker, real hooks for 25 meta-only entries, trim of 62 meta-tagged entries; re-scoped verification bar",
           "created": "2026-08-09T21:09:53Z"
+        },
+        {
+          "type": "summary",
+          "path": "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md",
+          "summary": "All 8 phases complete: tier derived algorithmically, meta catch-all eliminated repo-wide, 8 pre-existing budget violations remain per the re-scoped bar",
+          "created": "2026-08-09T21:32:36Z"
         }
-      ]
+      ],
+      "completion_summary": "Broke the meta task_types catch-all and converted validate-context-budgets.sh to derive tier algorithmically from load_when shape. All 25 meta-only core entries now carry a real agent/command hook or an explicit on_demand marker (25 -> 0), and \"meta\" was trimmed from every load_when.task_types array repo-wide across all 19 extensions (87 -> 0), cutting meta-builder-agent's resolved context from 93 entries / 26,987 lines to 54 / 16,634 (-38.4%). All four former authored-tier read sites now use a single documented derived_tier function (grep -c '.tier' = 0); the Dead Entry Check was re-keyed on a new schema-declared on_demand property so it keeps real signal instead of becoming a tautology (proven by a negative test), and the Double-Loading Check was restated on load_when shape and downgraded to a warning naming its 49 pre-existing matches. Two broken agent names were removed from core's adversarial-verification entry. Verified throughout by a purpose-built redeploy-free shadow harness proven byte-equivalent to the deployed baseline; final state is exactly 8 pre-existing per-agent budget violations at exit 1, with general-implementation-agent at exactly 68,560 and planner-agent at exactly 31,848 as predicted. Two deviations recorded rather than papered over: the cslib mirror entry was excluded (blocked by check-extension-docs.sh Rule R, which requires an extension to own a source file for each of its index entries), and meta-builder-agent moved +40 tokens because index.schema.json is itself an indexed entry hooked to that agent and the plan-mandated $comment extension grew it 5 lines."
     },
     {
       "project_number": 992,

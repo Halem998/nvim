@@ -3,7 +3,12 @@
   "task_number": 991,
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1786307992_f01eb5",
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "orchestrate",
+    "skill-orchestrate",
+    "general-implementation-agent"
+  ],
   "phases_completed": 8,
   "phases_total": 8,
   "artifacts": [
@@ -31,21 +36,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["shadow-index", "deploy-root-guard", "source-store-verification", "index-entries", "redeploy-free-testing", "context-index"]
+      "suggested_keywords": [
+        "shadow-index",
+        "deploy-root-guard",
+        "source-store-verification",
+        "index-entries",
+        "redeploy-free-testing",
+        "context-index"
+      ]
     },
     {
       "content": "check-extension-docs.sh Rule R (check_line_count_accuracy) is a HARD gate (INDEX_TRUTH_GATE_MODE defaults to \"hard\") requiring EVERY index-entries.json entry to resolve to a source file at <ext>/context/<path>, with an exactly matching line_count. Two consequences that bite: (1) an extension cannot 'mirror' an index entry for a path owned by another extension unless it also ships its own copy of the file -- lean/index-entries.json's mirror of contracts/adversarial-verification.md is legal only because lean owns a 93-line copy; cslib cannot do the same without one. (2) Editing any file that is itself indexed (including core/context/index.schema.json) requires updating its declared line_count in the same change, or Rule R fails. Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` after any index or context-file edit.",
       "category": "INSIGHT",
       "source_artifact": "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["rule-R", "check-extension-docs", "line_count", "index-entries", "extension-mirror-entry", "hard-gate"]
+      "suggested_keywords": [
+        "rule-R",
+        "check-extension-docs",
+        "line_count",
+        "index-entries",
+        "extension-mirror-entry",
+        "hard-gate"
+      ]
     },
     {
       "content": "Deriving a classification from data shape can silently retire the check that consumed it. In validate-context-budgets.sh, deriving Tier 4 from an all-empty load_when made the Dead Entry Check ('not Tier 4 but never loaded') unsatisfiable, and dropping the tier predicate from the Double-Loading Check ('.tier == 3 AND agents AND commands') was necessary because any entry with a non-empty agents array derives to Tier 2, never 3. The fix pattern: replace the derived predicate with an EXPLICIT-INTENT marker the author must set (here an `on_demand` boolean, declared as a schema property first because additionalProperties is false), and prove the check still fires with a negative test -- temporarily unmark one entry and confirm it is reported. Without that test you cannot distinguish 'check passes' from 'check can no longer fail'.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["tautology-check", "derived-classification", "explicit-intent-marker", "negative-test", "validator-design", "on_demand"]
+      "suggested_keywords": [
+        "tautology-check",
+        "derived-classification",
+        "explicit-intent-marker",
+        "negative-test",
+        "validator-design",
+        "on_demand"
+      ]
     }
-  ]
+  ],
+  "metadata": {
+    "cycles_used": 5,
+    "final_state": "completed",
+    "detected_defects": []
+  }
 }

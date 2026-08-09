@@ -11,23 +11,21 @@ next_project_number: 998
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 984,991,997 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
-| 2 | 992,995 | 984,991 | agent-system |
-| 3 | 985,993 | 984,992 | agent-system |
-| 4 | 986 | 985 | agent-system |
-| 5 | 996 | 986,993,995 | agent-system |
+| 1 | 984,992,997 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
+| 2 | 985,993,995 | 984,992 | agent-system |
+| 3 | 986 | 985 | agent-system |
+| 4 | 996 | 986,993,995 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-991 [PLANNED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
-  └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
-    └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
-      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-    └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
-      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
+  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
+    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
+  └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
+    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 
@@ -191,12 +189,13 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 991. Break the meta task_types catch-all and derive tier algorithmically
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 987, Task 990
 - **Research**: [991_meta_catchall_decomposition/reports/01_meta-catchall-decomposition.md]
 - **Plan**: [991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md]
+- **Summary**: [991_meta_catchall_decomposition/summaries/01_meta-catchall-decomposition-summary.md]
 
 **Description**: Break the meta task_types catch-all. WORK: (1) give the ~24 core/index-entries.json entries whose ONLY load_when hook is task_types:["meta"] real agents/commands hooks, grouped thematically per the prerequisite task's research report section 5; (2) trim the wider 123-entry task_types:["meta"] set so meta-builder-agent's resolved context stops including everything tagged meta regardless of relevance; (3) derive the tier classification algorithmically inside validate-context-budgets.sh from load_when shape (always==true -> Tier 1, non-empty agents -> Tier 2, non-empty commands/task_types only -> Tier 3) instead of querying the never-populated authored tier field (0 of 470 entries anywhere carry it, confirmed by the prerequisite task's research); (4) fix the 2 load_when.agents values across all extensions that name agents not present in this deploy. VERIFICATION BAR: bash .claude/scripts/validate-context-budgets.sh reports zero per-agent budget violations (or each remaining violation carries a documented, deliberate cap change); its 'entries with tier field' check passes via the new derivation logic rather than the authored field. SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
