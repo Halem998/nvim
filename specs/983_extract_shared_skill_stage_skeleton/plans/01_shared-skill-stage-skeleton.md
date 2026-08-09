@@ -1,7 +1,7 @@
 # Implementation Plan: Task #983
 
 - **Task**: 983 - Extract shared skill stage blocks as imports; route all skills through skill-base.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 23.5 hours
 - **Dependencies**: None blocking (state.json lists 951, 952, 953, 959, 960, 961, 962, 964, 969, 981, 982, 988 as prior agent-system tasks; all are completed or independent)
 - **Research Inputs**: `specs/983_extract_shared_skill_stage_skeleton/reports/01_shared-skill-stage-inventory.md`

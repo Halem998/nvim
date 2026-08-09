@@ -6,32 +6,30 @@ next_project_number: 998
 
 ## Task Order
 
-*Updated 2026-08-08. Generated from state.json dependency graph.*
+*Updated 2026-08-09. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 983,984,991,997 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
-| 2 | 992,995 | 983,984,991 | agent-system |
+| 1 | 984,991,997 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
+| 2 | 992,995 | 984,991 | agent-system |
 | 3 | 985,993 | 984,992 | agent-system |
-| 4 | 986 | 983,985 | agent-system |
+| 4 | 986 | 985 | agent-system |
 | 5 | 996 | 986,993,995 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-983 [IMPLEMENTING] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-  └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-  └─ 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
-    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
   └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
-      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does  (see above)
+      └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
     └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
       └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
+  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 
 ### Orchestration Concurrency
 
@@ -412,7 +410,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 983. Extract shared skill stage blocks as imports; route all skills through skill-base.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 951, Task 952, Task 953, Task 959, Task 960, Task 961, Task 962, Task 964, Task 969, Task 981, Task 982, Task 988
