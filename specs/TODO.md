@@ -21,7 +21,7 @@ next_project_number: 998
 
 ### Agent System
 
-991 [NOT STARTED] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
+991 [RESEARCHING] — Break the meta task_types catch-all. WORK: (1) give the ~24 core/
   └─ 992 [NOT STARTED] — Bring every EXTENSION.md into conformance with extension-slim-sta
     └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
       └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
@@ -191,7 +191,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 991. Break the meta task_types catch-all and derive tier algorithmically
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 987, Task 990

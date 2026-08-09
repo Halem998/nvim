@@ -50,13 +50,33 @@
         992
       ],
       "file_scope": [
-        "agent-system/extensions/core/scripts/",
-        "agent-system/extensions/core/rules/",
-        "agent-system/extensions/core/manifest.json"
+        "agent-system/extensions/core/scripts/archive-task.sh",
+        "agent-system/extensions/core/scripts/check-vault-threshold.sh",
+        "agent-system/extensions/core/scripts/claude-project-cleanup.sh",
+        "agent-system/extensions/core/scripts/install-aliases.sh",
+        "agent-system/extensions/core/scripts/install-systemd-timer.sh",
+        "agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh",
+        "agent-system/extensions/core/scripts/migrate-directory-padding.sh",
+        "agent-system/extensions/core/scripts/orphan-detection.sh",
+        "agent-system/extensions/core/scripts/rename-session.sh",
+        "agent-system/extensions/core/scripts/roadmap-sync.sh",
+        "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+        "agent-system/extensions/core/scripts/test-session-runtime-files.sh",
+        "agent-system/extensions/core/scripts/validate-extension-index.sh",
+        "agent-system/extensions/core/scripts/vault-operation.sh",
+        "agent-system/extensions/core/scripts/verify-lean-mcp.sh",
+        "agent-system/extensions/core/scripts/deprecated/",
+        "agent-system/extensions/core/rules/pr-prohibition.md",
+        "agent-system/extensions/core/rules/project-overview-detection.md",
+        "agent-system/extensions/core/rules/deprecated/",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/literature/scripts/literature-decode-font-offset.py",
+        "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+        ".syncprotect"
       ],
       "description": "Quarantine (never silently delete) the dead machinery the review inventoried, mirroring the literature extension's existing scripts/deprecated/ + README-with-per-file-rationale precedent. DEPENDS ON the deploy-engine consolidation task landing first, because that task decides the fate of several items below (manager.regenerate and settings_backup get WIRED there, not quarantined; sync.lua's status changes there).\n\nINVENTORY (from specs/reviews/review-2026-07-29-agent-system.md; re-verify each at implementation time — the sibling reviews undercounted twice):\n  1. Sixteen core scripts referenced ONLY by manifest.json with no caller in any command, skill, hook, doc, script, or Lua: check-vault-threshold.sh, claude-project-cleanup.sh, install-aliases.sh, install-systemd-timer.sh, lint/lint-contract-compliance.sh, migrate-directory-padding.sh, orphan-detection.sh, rename-session.sh, roadmap-sync.sh, test-four-tier-conflict.sh, test-session-runtime-files.sh, validate-context-budgets.sh, validate-extension-index.sh, vault-operation.sh, verify-lean-mcp.sh (+ literature-decode-font-offset.py in literature). TRIAGE, don't bulk-quarantine: install-aliases/install-systemd-timer/migrate-directory-padding are plausibly legitimate one-shot operator tools needing only a doc note; the two test-*.sh belong to the test-runner effort; validate-context-budgets is consumed by the context-budget task. vault-operation.sh deserves special note: it is dead AND the worst remaining state.json corruption hazard (unmutexed fixed-temp-path writes, no dependency/artifact renumbering, sed against a generated file) while skill-todo/SKILL.md carries the better prose implementation — quarantine the script and record that the prose is authoritative, OR extract the prose into a safe script; do not leave three divergent vault implementations.\n  2. archive-task.sh and orphan-detection.sh: dead scripts whose logic skill-todo/commands/todo.md reimplement in prose. Either wire the scripts in or quarantine them with the prose declared authoritative — one owner per operation.\n  3. Dead rules: pr-prohibition.md (96L, references cslib /pr commands not in this deploy) and project-overview-detection.md (28L) are deployed but wired to nothing (.claude/rules/ is not auto-loaded; only CLAUDE.md @-imports pull rules in, and neither is imported). Decide: wire into the @-import list or quarantine.\n  4. skill-orchestrator/SKILL.md.archived — byte-identical twin of the live file (the routing task retires the skill itself; this task removes the twin).\n  5. The dead .syncprotect entry (output/implementation-001.md) and the empty artifacts.settings/lib/tests glob targets in sync.lua IF the deploy task leaves sync.lua alive.\n  6. Two dead EXTENSION.md files (core/EXTENSION.md — manifest points claudemd at merge-sources/claudemd.md instead; slidev/EXTENSION.md — no claudemd merge target at all). SCOPE ADJUSTMENT (post-review): this item is now DECIDED AND EXECUTED by the EXTENSION.md slim-down task, which this task depends on — that task resolves the dead-file status (delete, or teach check-extension-docs.sh that merge_targets.claudemd.source is the authority) as part of its doc-lint lane so the gate-promotion task is not blocked behind this sweep. Here, only RE-VERIFY its outcome during the caller-graph re-grep; do not re-decide or re-touch those files.\n\nVERIFICATION BAR:\n  - Every quarantined file sits under a deprecated/ dir with a README rationale line (literature's format); manifest provides.* no longer declares it; check-extension-docs.sh passes.\n  - A caller-graph re-grep at implementation time confirms zero live references for each quarantined item (and finds any this inventory missed).\n  - Deploy after the sweep produces a .claude/ tree with no quarantined file present.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-08-05T17:17:00Z",
+      "last_updated": "2026-08-09T00:00:00Z",
       "session_id": "sess_1785353358_66268f"
     },
     {
@@ -97,7 +117,7 @@
     {
       "project_number": 991,
       "project_name": "meta_catchall_decomposition",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Break the meta task_types catch-all and derive tier algorithmically",
@@ -111,8 +131,8 @@
         990
       ],
       "created": "2026-07-30T01:55:17Z",
-      "last_updated": "2026-08-05T17:16:46Z",
-      "session_id": "sess_1785373759_72035f_987",
+      "last_updated": "2026-08-09T19:22:12Z",
+      "session_id": "sess_1786303212_adf3e3",
       "artifacts": []
     },
     {
@@ -233,11 +253,11 @@
     "status": "healthy"
   },
   "memory_health": {
-    "last_distilled": null,
-    "distill_count": 0,
-    "total_memories": 3,
-    "never_retrieved": 2,
-    "health_score": 100,
+    "last_distilled": "2026-08-09T00:00:00Z",
+    "distill_count": 1,
+    "total_memories": 33,
+    "never_retrieved": 25,
+    "health_score": 90,
     "status": "healthy"
   },
   "active_topics": [
