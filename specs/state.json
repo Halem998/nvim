@@ -5,7 +5,7 @@
     {
       "project_number": 998,
       "project_name": "double_loading_warning_triage",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Triage the 49 Double-Loading context-index warnings",
@@ -18,8 +18,9 @@
         991
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-09T21:57:14Z",
-      "artifacts": []
+      "last_updated": "2026-08-09T23:10:25Z",
+      "artifacts": [],
+      "session_id": "sess_1786316975_3658f6_998"
     },
     {
       "project_number": 999,
@@ -262,7 +263,7 @@
     {
       "project_number": 992,
       "project_name": "extension_md_slim_down",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones",
@@ -284,9 +285,15 @@
         991
       ],
       "created": "2026-07-30T01:55:17Z",
-      "last_updated": "2026-08-05T17:17:00Z",
-      "session_id": "sess_1785373759_72035f_987",
-      "artifacts": []
+      "last_updated": "2026-08-09T23:21:51Z",
+      "session_id": "sess_1786316975_3658f6_992",
+      "artifacts": [
+        {
+          "path": "specs/992_extension_md_slim_down/reports/01_extension_md_slim_down.md",
+          "type": "report",
+          "summary": "Migration map for the 6 over-length EXTENSION.md files (Rule U) plus dead-file evidence and delete-vs-redefine decision for core/slidev EXTENSION.md"
+        }
+      ]
     },
     {
       "project_number": 993,
