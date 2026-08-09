@@ -1,18 +1,13 @@
 {
   "status": "partial",
-  "session_id": "sess_1786303212_adf3e3",
+  "task_number": 991,
   "agent_type": "general-research-agent",
   "delegation_path": [
     "orchestrator",
-    "orchestrate",
-    "skill-orchestrate",
+    "research",
     "general-research-agent"
   ],
-  "task_context": {
-    "task_number": 991,
-    "task_name": "meta_catchall_decomposition",
-    "task_type": "meta"
-  },
+  "session_id": "sess_1786305783_90b5f9",
   "metadata": {
     "cycles_used": 1,
     "final_state": "researching",
