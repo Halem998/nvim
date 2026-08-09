@@ -1,9 +1,61 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/998_double_loading_warning_triage/summaries/01_double-loading-check-rekey-summary.md",
+      "summary": "Re-keyed the Double-Loading Check onto a mechanical three-bucket redundancy predicate, narrowed 36 core index entries, promoted redundant to a violation, and committed a passing five-case regression test with a live inversion self-check."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Re-keyed validate-context-budgets.sh's Double-Loading Check onto a mechanically derived three-bucket redundancy predicate (redundant/legitimate-dual/unclassifiable-command), narrowed 36 redundant load_when.commands entries in the core index (47 -> 11 dual-hook), promoted the redundant bucket to an exit-code-contributing violation, and committed a five-case regression test (16/16 assertions, including a live inversion self-check) plus hook-shape authoring policy documentation. Final verification bar: 0 redundant / 13 legitimate / 0 unclassifiable dual-hook entries on the deployed index."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-context-budgets.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/tests/test-double-loading-check.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/context/patterns/context-discovery.md",
+    "agent-system/extensions/core/context/index.schema.json",
+    "agent-system/extensions/core/context/guides/extension-development.md",
+    "specs/998_double_loading_warning_triage/summaries/01_double-loading-check-rekey-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "jq footgun: `$arr | index(.)` (or any `X | index(.)` / `X | any(. == .)` pattern piped into a builtin) rebinds `.` to the piped-in value INSIDE the argument expression, so it does not test membership of the outer context's `.` -- it silently tests the array against itself. Always bind the value to a named variable first (`. as $c | ...`) and compare with `any(. == $c)` or `index($c)` instead of relying on bare `.` inside a piped builtin's argument.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/998_double_loading_warning_triage/summaries/01_double-loading-check-rekey-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["jq", "index", "pipe", "rebinding", "footgun", "membership-test"]
+    },
+    {
+      "content": "Under `set -euo pipefail`, a helper function whose body is a pipeline (e.g. `jq ... | sort -u`) that may legitimately fail (missing file, bad input) will abort the ENTIRE calling script if invoked inside a `var=\"$(fn)\"` command substitution -- pipefail propagates the failing command's exit status through the pipeline, and set -e treats that as the whole statement failing. A later `return 0` inside the function does not help; the abort happens before it runs. Fix by appending `|| true` directly to the pipeline itself (not merely wrapping the function call), so the degrade-gracefully path is reachable.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/998_double_loading_warning_triage/summaries/01_double-loading-check-rekey-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "set-e", "pipefail", "command-substitution", "error-handling"]
+    },
+    {
+      "content": "Never run a bare, unscoped `git stash` / `git stash pop` in a repo where other sessions may be concurrently editing files -- it scoops up every uncommitted tracked change repo-wide, not just the caller's own work, and a concurrent edit landing between stash and pop can cause the pop to abort with conflicts (git's safe default: it leaves both the stash and the working tree untouched). If a stash is taken by mistake, recover only the caller's own affected files via `git show stash@{N}:<path>` and a direct file write/copy, leaving the stash entry itself untouched (never `git stash drop`/`pop`) so concurrent sessions' in-flight work is never at risk.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/998_double_loading_warning_triage/summaries/01_double-loading-check-rekey-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git", "stash", "concurrent-sessions", "recovery", "multi-agent"]
+    },
+    {
+      "content": "When representing an optional/degraded lookup result as a jq object built from bash variables, prefer OMITTING the key when the value is absent (`{} + (if $v == \"\" then {} else {key: $v} end)`) rather than setting the key to an empty array/string. An empty array is a valid, present value that can vacuously satisfy set-difference or subset tests (`[] - $x == []` is always true), silently misclassifying \"missing/degraded\" as \"present but empty\" wherever the consumer checks `.key // null == null` to detect absence.",
+      "category": "PATTERN",
+      "source_artifact": "specs/998_double_loading_warning_triage/summaries/01_double-loading-check-rekey-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["jq", "null-handling", "degraded-state", "vacuous-truth", "schema-design"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786316975_3658f6_998",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
