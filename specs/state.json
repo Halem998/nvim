@@ -117,7 +117,7 @@
     {
       "project_number": 991,
       "project_name": "meta_catchall_decomposition",
-      "status": "researching",
+      "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Break the meta task_types catch-all and derive tier algorithmically",
@@ -131,7 +131,7 @@
         990
       ],
       "created": "2026-07-30T01:55:17Z",
-      "last_updated": "2026-08-09T19:22:12Z",
+      "last_updated": "2026-08-09T19:58:27Z",
       "session_id": "sess_1786303212_adf3e3",
       "artifacts": []
     },
