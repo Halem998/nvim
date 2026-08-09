@@ -150,7 +150,11 @@ For a complete step-by-step creation guide with file templates, agent templates,
 1. `mkdir -p agent-system/extensions/{name}/{agents,skills,rules,context/project/{domain}}`
 2. Create `manifest.json` (see Manifest Format above)
 3. Create `EXTENSION.md` with routing tables and skill-agent mapping
-4. Create `index-entries.json` with context load conditions
+4. Create `index-entries.json` with context load conditions -- when deciding between `agents[]`,
+   `commands[]`, or both on an entry's `load_when`, see
+   `context/patterns/context-discovery.md`'s Hook-Shape Policy section: a `commands[]` hook whose
+   every command already routes to an agent already listed in that entry's own `agents[]` is a
+   redundant duplicate hook that `validate-context-budgets.sh`'s Double-Loading Check rejects.
 5. Create agents in `agents/` and skills in `skills/`
 6. Load via the extension picker
 

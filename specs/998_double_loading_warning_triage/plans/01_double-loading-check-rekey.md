@@ -468,31 +468,43 @@ is not a test. Also confirm the manifest declaration is the correct propagation 
 
 ---
 
-### Phase 6: Document the criterion and close out [NOT STARTED]
+### Phase 6: Document the criterion and close out [COMPLETED]
 
 **Goal**: Record the criterion where a future entry author will find it, and confirm no deliverable
 rule was violated.
 
 **Tasks**:
-- [ ] Document the hook-shape policy in
+- [x] Document the hook-shape policy in
       `agent-system/extensions/core/context/patterns/context-discovery.md` (which already discusses
       `load_when` query patterns and references this validator): state when an entry should carry
       `agents[]` only, `commands[]` only, or both; state that a `commands[]` hook whose route is
       already covered by `agents[]` is redundant and will fail validation; point to the check as the
-      enforcement mechanism.
-- [ ] Update the `agent-system/extensions/core/context/index.schema.json` `load_when` field
+      enforcement mechanism. *(completed: new "Hook-Shape Policy" section added between "Priority
+      Loading Strategy" and "Validation")*
+- [x] Update the `agent-system/extensions/core/context/index.schema.json` `load_when` field
       documentation if it describes `agents`/`commands` semantics, so the schema and the policy
-      agree.
-- [ ] Check whether `check-extension-docs.sh` or the extension-development guide documents index
-      entry authoring and needs the same policy pointer; add it if so.
-- [ ] Update `line_count` for any context file whose length changed:
+      agree. *(completed: `commands` property description extended with the redundancy rule and a
+      pointer to the Hook-Shape Policy section)*
+- [x] Check whether `check-extension-docs.sh` or the extension-development guide documents index
+      entry authoring and needs the same policy pointer; add it if so. *(completed:
+      `check-extension-docs.sh`'s Rules R/T check line_count accuracy and schema field-presence
+      only, not agents/commands authoring semantics -- out of scope, no change needed. Added a
+      pointer to `extension-development.md`'s "Creating an Extension" quick-checklist step 4,
+      where an extension author decides an entry's hook shape)*
+- [x] Update `line_count` for any context file whose length changed:
       `bash .claude/scripts/generate-context-line-counts.sh --write`, then re-verify with `--check`.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm no task-number citation was
-      introduced anywhere outside `specs/**`.
-- [ ] Run `bash .claude/scripts/lint/lint-agent-contracts.sh` and
-      `bash .claude/scripts/lint/lint-routing-wiring.sh` to confirm no lint regression.
-- [ ] Redeploy and run the full verification bar one final time: the check reports 0 redundant, the
-      regression test passes, `check-extension-docs.sh` passes.
+      *(completed: 2 entries corrected -- guides/extension-development.md 267->271,
+      patterns/context-discovery.md 311->355 -- `--check` now reports 0 mismatch)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm no task-number citation was
+      introduced anywhere outside `specs/**`. *(completed: PASS, 0 unexempted occurrences across 4
+      scanned trees)*
+- [x] Run `bash .claude/scripts/lint/lint-agent-contracts.sh` and
+      `bash .claude/scripts/lint/lint-routing-wiring.sh` to confirm no lint regression. *(completed:
+      both PASS -- 33/33 and 323/323 checks respectively)*
+- [x] Redeploy and run the full verification bar one final time: the check reports 0 redundant, the
+      regression test passes, `check-extension-docs.sh` passes. *(completed: redundant=0/legitimate=13/
+      unclassifiable=0; regression test 16/16; check-extension-docs.sh PASS across all 20
+      extensions, project-wide)*
 
 **Timing**: 0.75 hours
 
@@ -515,17 +527,17 @@ rule was violated.
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/validate-context-budgets.sh` reports 0 redundant dual-hook entries.
-- [ ] The redundant bucket contributes to `VIOLATIONS` and the exit code (demonstrated by the
+- [x] `bash .claude/scripts/validate-context-budgets.sh` reports 0 redundant dual-hook entries.
+- [x] The redundant bucket contributes to `VIOLATIONS` and the exit code (demonstrated by the
       positive fixture case, not merely asserted in a comment).
-- [ ] The legitimately dual-addressed entries are exempt by the predicate's own false result, with
+- [x] The legitimately dual-addressed entries are exempt by the predicate's own false result, with
       no allowlist file and no hardcoded count anywhere in the script.
-- [ ] `test-double-loading-check.sh` passes all five cases from `.claude/scripts/tests/`.
-- [ ] Inverting the predicate makes the positive and discrimination cases fail.
-- [ ] `validate-index.sh`, `validate-context-index.sh`, `validate-extension-index.sh`,
+- [x] `test-double-loading-check.sh` passes all five cases from `.claude/scripts/tests/`.
+- [x] Inverting the predicate makes the positive and discrimination cases fail.
+- [x] `validate-index.sh`, `validate-context-index.sh`, `validate-extension-index.sh`,
       `validate-wiring.sh`, `check-extension-docs.sh` all exit as at baseline.
-- [ ] `check-task-references.sh` exits 0.
-- [ ] Every edit landed in `agent-system/extensions/**`; `.claude/**` changed only via deploy.
+- [x] `check-task-references.sh` exits 0.
+- [x] Every edit landed in `agent-system/extensions/**`; `.claude/**` changed only via deploy.
 
 ## Artifacts & Outputs
 

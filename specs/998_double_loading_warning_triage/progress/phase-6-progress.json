@@ -1,0 +1,24 @@
+{
+  "phase": 6,
+  "phase_name": "Document the criterion and close out",
+  "started_at": "2026-08-09T02:15:00Z",
+  "last_updated": "2026-08-09T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Document hook-shape policy in context-discovery.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/context-discovery.md"]},
+    {"id": 2, "description": "Update index.schema.json load_when documentation", "status": "done", "files_touched": ["agent-system/extensions/core/context/index.schema.json"]},
+    {"id": 3, "description": "Check check-extension-docs.sh / extension-development.md for policy pointer need", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]},
+    {"id": 4, "description": "Update line_count for changed context files", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "Run check-task-references.sh", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run lint-agent-contracts.sh and lint-routing-wiring.sh", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Redeploy and run full verification bar one final time", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "check-extension-docs.sh's Rules R/T (line_count accuracy, schema field-presence) do not document agents/commands authoring semantics -- left unchanged, out of scope for a hook-shape policy pointer.",
+    "generate-context-line-counts.sh --write touched exactly 2 lines in agent-system/extensions/core/index-entries.json (the two edited files' line_count values); confirmed via git diff that no other extension's index-entries.json was touched by this run, despite several being concurrently dirty from an unrelated sibling task.",
+    "Final verification bar: validate-context-budgets.sh reports 0 redundant / 13 legitimate / 0 unclassifiable dual-hook entries; test-double-loading-check.sh passes all 16 assertions (including the inversion self-check); check-task-references.sh PASS; lint-agent-contracts.sh PASS (33/33); lint-routing-wiring.sh PASS (323/323); check-extension-docs.sh PASS across all 20 extensions plus project-wide (pre-existing WARN/ADVISORY lines are unrelated deploy-drift/routing-target notices, informational only, do not affect the PASS verdict)."
+  ]
+}

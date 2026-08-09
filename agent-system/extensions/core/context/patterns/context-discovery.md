@@ -228,6 +228,50 @@ jq -r '.entries[] |
 5. Project memory (from `.memory/`)
 6. Topic-specific files (as needed for task)
 
+## Hook-Shape Policy: `agents[]` vs. `commands[]` vs. Both
+
+An entry's `load_when.agents` and `load_when.commands` arrays are two independent reach hooks,
+not two names for the same thing:
+
+- **`agents[]`**: the entry loads whenever a listed agent is dispatched, no matter which command
+  triggered the dispatch.
+- **`commands[]`**: the entry loads whenever a listed command runs, no matter which agent (if
+  any) that command goes on to dispatch.
+
+**When to author each shape**:
+
+- **`agents[]` only** (the common case for agent-scoped content): the content is specific to an
+  agent's job -- e.g. `general-implementation-agent`'s write conventions -- and should load for
+  that agent regardless of which command dispatched it. Most entries belong here.
+- **`commands[]` only**: the content is command-level workflow guidance not tied to any single
+  agent -- e.g. a direct-execution command like `/todo` or `/task` that never dispatches a
+  subagent at all, so there is no agent to hook onto.
+- **Both, legitimately**: only when the command's real dispatch reach is WIDER than the agents
+  already listed -- most commonly `/orchestrate`, whose reach is the union of the research, plan,
+  and implement agents across a task's lifecycle, or a command that dispatches to a genuinely
+  different agent than the ones already in `agents[]`.
+
+**When both is redundant, not legitimate**: if an entry's `commands[]` array contains only
+commands that ALL route to an agent already present in that same entry's `agents[]`, the
+`commands[]` hook adds no reach beyond what `agents[]` already provides -- it is a redundant
+duplicate hook, not a legitimate dual-addressed shape. The fix is to drop `commands[]` (set it to
+`[]`) and keep `agents[]` alone; the entry's actual load reach is unchanged by doing so, since
+`agents[]` already covered every case `commands[]` was adding.
+
+**Enforcement**: this is not merely documented policy -- `validate-context-budgets.sh`'s
+Double-Loading Check enforces it mechanically. It derives the current command-to-agent routing
+table live from deployed artifacts (`manifest.json`'s `routing_agents` block for `/research`,
+`/plan`, `/implement`, and the sole `subagent_type:` line in each of `skill-meta`,
+`skill-spawn`, `skill-reviser`'s `SKILL.md` for `/meta`, `/spawn`, `/revise`) and classifies
+every entry carrying both hooks into one of three buckets: **redundant** (a build-breaking
+violation), **legitimate-dual** (informational only), or **unclassifiable-command** (a command
+outside the known six-command route table and the literal direct-command roster -- most often an
+extension command whose route is not mechanically derivable from any manifest today;
+informational only, never silently folded into "legitimate"). See that script's own
+`--- Double-Loading Check ---` section and its preceding comment block for the current criterion,
+command roster, and bucket definitions -- this document states the authoring policy those buckets
+exist to enforce, not a second copy of the criterion itself.
+
 ## Validation
 
 ### Validate Index with Script

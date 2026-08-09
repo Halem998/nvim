@@ -529,7 +529,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Guide for creating new extensions",
-      "line_count": 267,
+      "line_count": 271,
       "keywords": [
         "guide",
         "extension",
@@ -965,7 +965,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context discovery query patterns",
-      "line_count": 311,
+      "line_count": 355,
       "keywords": [
         "patterns",
         "context",
