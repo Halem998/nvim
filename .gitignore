@@ -39,6 +39,7 @@
 **/.return-meta-*.json
 **/.events.lock
 **/.errors.lock
+**/.commit-lock/
 **/.sessions/
 # Note: specs/events.jsonl and specs/errors.json are deliberately NOT ignored — they are
 # durable stores (see .claude/context/formats/events-format.md and errors-format.md). Do not
