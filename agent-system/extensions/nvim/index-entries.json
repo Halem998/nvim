@@ -624,9 +624,7 @@
         "agents": [
           "meta-builder-agent"
         ],
-        "task_types": [
-          "meta"
-        ]
+        "task_types": []
       }
     }
   ]

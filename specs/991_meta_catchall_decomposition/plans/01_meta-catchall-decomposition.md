@@ -574,26 +574,26 @@ lines (+9,112 tokens) to `general-implementation-agent` only**. Confirm by harne
 
 ---
 
-### Phase 7: Trim `"meta"` from the wider meta-tagged set [NOT STARTED]
+### Phase 7: Trim `"meta"` from the wider meta-tagged set [COMPLETED]
 
 **Goal**: Make `"meta"` disappear from every `load_when.task_types` array in the source store, so
 `meta-builder-agent`'s resolved context stops sweeping in everything tagged meta regardless of
 relevance.
 
 **Tasks**:
-- [ ] **Class 1 — 49 core entries with `"meta"` plus at least one `agents` hook**: drop `"meta"`
+- [x] **Class 1 — 49 core entries with `"meta"` plus at least one `agents` hook**: drop `"meta"` *(completed)*
       from `task_types`, leaving `agents` untouched. Redundant where `agents` already names
       `meta-builder-agent`; wrong where it does not (the entry is agent-scoped and `"meta"`
       re-broadens it to every meta-typed dispatch). Prefer a `jq` bulk rewrite over hand-editing.
-- [ ] **Class 2 — 12 core entries with `"meta"` plus a `commands` hook and no `agents`**: read
+- [x] **Class 2 — 12 core entries with `"meta"` plus a `commands` hook and no `agents`**: read *(completed)*
       each one and decide whether it is genuinely meta-specific. The measured command sets are
       `/todo`, `/task`, `/errors`, `/fix-it`, `/orchestrate`, `/research,/plan,/implement` — none
       obviously meta-specific, so the expected outcome is "drop `"meta"`, add `/meta` to none".
       Where a genuine meta-specific entry is found, add `"/meta"` to its `commands` in the same
       edit. Record the per-entry decision.
-- [ ] **The one nvim entry** carrying `"meta"`: it also carries other hooks, so it falls in
+- [x] **The one nvim entry** carrying `"meta"`: it also carries other hooks, so it falls in *(completed)*
       class 1 — drop `"meta"`, change nothing else.
-- [ ] Assert no entry was left with all hooks empty by this trim. If one appears, it means an
+- [x] Assert no entry was left with all hooks empty by this trim. If one appears, it means an *(completed)*
       entry's only hook really was `"meta"` and Phases 5-6 missed it — halt and record rather
       than papering over it with `on_demand`.
 
@@ -619,6 +619,30 @@ not do what they claimed and this phase must halt.
 - `meta-builder-agent`'s resolved-context adaptive query (`always` OR `agents` OR `task_types` OR `commands: /meta`) against the reconstructed index returns approximately **57 entries / ~16,600 lines**, down from 93 / 26,987 — the ~38% reduction. Record the exact measured pair.
 - Harness run: every capped-agent token value **byte-identical to Phase 6**, including `meta-builder-agent` still at 130,360. This identity is the phase's most important assertion: it is the direct empirical proof that the trim moves resolved context without moving the validator's per-agent number, exactly as the research predicted. A change here would mean the validator reads `task_types` after all and the plan's whole model is wrong.
 - Violations still **8**; exit 1.
+
+**Measured results:**
+
+| Assertion | Predicted | Measured |
+|-----------|-----------|----------|
+| core meta-tagged before trim | 61 | 61 (49 class 1 + 12 class 2) |
+| nvim meta-tagged before trim | 1 | 1 |
+| `"meta"` in `task_types` repo-wide after | 0 | 0 (checked across all 19 extensions, not only core) |
+| all-hooks-empty entries after | 6, all `on_demand` | 6, all `on_demand: true` — trim created no orphans |
+| per-agent block vs Phase 6 | byte-identical | byte-identical |
+| `meta-builder-agent` resolved context | ~57 entries / ~16,600 lines | **54 entries / 16,634 lines** (from 93 / 26,987 = **38.4%** reduction) |
+
+Class 2 per-entry decision (all 12): `"meta"` dropped, `/meta` added to **none**. Each of the 12
+already carries a command hook reaching its real consumer (`/task`, `/todo`, `/errors`,
+`/fix-it`, `/orchestrate`, `/research,/plan,/implement`), and all 12 are task-management, state,
+or orchestration infrastructure rather than system-builder material. The two closest calls were
+`repo/self-healing-implementation-details.md` and `reference/orchestrator-critical-paths.json`
+(both touch system self-modification), but each is already hooked to the command that actually
+consumes it — `/errors,/fix-it` and `/orchestrate` respectively — so neither needed `/meta`.
+
+The entry count landed at 54 rather than the estimated ~57 because G6's three entries
+(`routing.md`, `validation.md`, `reference/workflow-diagrams.md`) became deliberately hookless
+`on_demand` entries in Phase 6 and so leave the resolved set entirely. The line total (16,634 vs
+~16,600 predicted) confirms the estimate was sound.
 
 ---
 
