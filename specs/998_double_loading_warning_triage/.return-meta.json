@@ -1,33 +1,44 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1786316975_3658f6_998",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 998,
-  "summary": "Enumerated and attributed all 49 Double-Loading Check entries (47 in agent-system/extensions/core/index-entries.json, 2 in agent-system/extensions/memory/index-entries.json). Found load_when.commands/agents have no live runtime consumer (only validators read load_when), so the 'double-loading' the check catches is structural index redundancy, not an observed duplicate-read bug. Designed and applied a decidable criterion: an entry is redundant iff every command in commands[] is agent-routed (via the core manifest's routing_agents table or a skill's sole subagent_type line) to an agent already in the entry's own agents[]; any direct-execution command (/review, /errors, /task, /todo, /refresh, /fix-it, /learn, /distill, /literature, /project-overview, /tag, /merge, /cite) or /orchestrate (broader union reach) makes an entry legitimately dual instead. Classified 36 entries as redundant (fix: drop commands[], keep agents[]) and 13 as legitimately dual-addressed (keep both hooks, exempt by construction). Designed a mechanical re-keying of validate-context-budgets.sh's Double-Loading Check that derives the routing table live from deployed .claude/extensions/core/manifest.json and the three singleton skills' subagent_type lines (no hardcoded allowlist), promotes the redundant-count to a violation, and reports the dual/exempt count as informational only.",
-  "findings_count": 49,
+  "session_id": "sess_1786316975_3658f6_998",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md",
-      "summary": "Full enumeration, attribution, classification criterion, per-entry classification table (36 redundant / 13 legitimate), and mechanical check re-keying design for the Double-Loading Check."
+      "type": "plan",
+      "path": "specs/998_double_loading_warning_triage/plans/01_double-loading-check-rekey.md",
+      "summary": "Six-phase plan re-keying the Double-Loading Check on a mechanically derived three-bucket redundancy predicate (redundant/legitimate-dual/unclassifiable-command), narrowing the redundant core index entries, promoting the redundant bucket to an exit-code-contributing violation, and committing a five-case regression test that proves the check still fires."
     }
   ],
+  "phase_count": 6,
+  "estimated_hours": 6,
+  "dependency_waves": [[1], [2, 3], [4], [5], [6]],
+  "plan_metadata": {
+    "phases": 6,
+    "total_effort_hours": 6,
+    "complexity": "medium",
+    "research_integrated": true,
+    "plan_version": 1,
+    "dependency_waves": [[1], [2, 3], [4], [5], [6]],
+    "reports_integrated": [
+      {
+        "path": "reports/01_double_loading_warning_triage.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-08-09"
+      }
+    ],
+    "skeleton": false,
+    "follow_up_tasks": []
+  },
   "memory_candidates": [
     {
-      "content": "In this repo's .claude/context/index.json, load_when.commands and load_when.agents have NO live runtime consumer -- every script touching load_when (validate-context-budgets.sh, validate-index.sh, validate-wiring.sh, check-extension-docs.sh, lint-contract-compliance.sh, install-extension.sh) is a validator/linter, not a context injector. Dispatchable agents instead carry a hand-authored 'Context References' @-list in their own .md file, which does not auto-resolve at spawn -- it is a manual Read instruction. Any future 'double-loading' or 'context injection' analysis on this index must account for this: the index is a discovery/documentation/budget-estimation artifact, not a live pipeline.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["load_when", "index.json", "context-discovery", "double-loading", "runtime-consumer"]
-    },
-    {
-      "content": "Command-to-agent routing in this repo has two tiers: /research, /plan, /implement (and -hard variants) are task-type-routed via manifest.json's routing_agents/routing_agents_hard tables; /meta, /spawn, /revise are single, unconditional, non-branching subagent_type: lines in skill-meta/skill-spawn/skill-reviser's SKILL.md (grep-derivable, no manifest entry). All other commands (/review, /errors, /task, /todo, /refresh, /fix-it, /learn, /distill, /literature, /project-overview, /tag, /merge, /cite) are direct-execution with no dispatched agent at all -- code-reviewer-agent in particular exists but is currently dormant (no skill calls it). /orchestrate's effective agent reach is the union of research+plan+implement routes, never a single agent.",
+      "content": "When a validator check is deliberately downgraded to a non-blocking warning because it surfaces a large set of pre-existing matches, the durable repair is a three-bucket predicate rather than a two-bucket one: violation (mechanically proven bad), exempt-by-construction (predicate evaluates false, no allowlist file), and explicitly-named-unclassifiable (the predicate's coverage boundary, reported by count and path). The two-bucket design silently folds everything the predicate cannot resolve into the exempt bucket, which recreates the original 'check has quietly stopped working' failure one layer over. Making the unresolvable set visible in the check's own output is what keeps under-detection honest. Corollary: derive every identifier the predicate needs live from deployed artifacts (manifest routing tables, a skill's sole subagent_type line) rather than hardcoding a second copy, and emit a loud named DEGRADED banner when a derivation resolves empty -- an empty derivation table otherwise neuters the check with no observable output change.",
       "category": "PATTERN",
-      "source_artifact": "specs/998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md",
+      "source_artifact": "specs/998_double_loading_warning_triage/plans/01_double-loading-check-rekey.md",
       "confidence": 0.85,
-      "suggested_keywords": ["routing", "subagent_type", "manifest.json", "command-agent-mapping", "code-reviewer-agent"]
+      "suggested_keywords": ["validator-design", "warning-triage", "exemption-mechanism", "coverage-boundary", "derived-not-hardcoded", "fail-loud"]
     }
   ],
-  "next_steps": "Run /plan 998 to create implementation plan"
+  "next_steps": "Run /implement 998 to execute the plan"
 }
