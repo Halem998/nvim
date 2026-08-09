@@ -97,7 +97,7 @@ exactly one extension directory. No two Wave 1 phases write the same file.
 
 ---
 
-### Phase 1: Resolve the two dead EXTENSION.md files [IN PROGRESS]
+### Phase 1: Resolve the two dead EXTENSION.md files [COMPLETED]
 
 **Goal**: Make `check-extension-docs.sh` treat `merge_targets.claudemd.source` as the authority for
 whether an extension must have (and be length-checked on) an `EXTENSION.md`, then delete both dead

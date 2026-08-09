@@ -19,11 +19,14 @@
     {
       "id": 2,
       "description": "Delete core/EXTENSION.md and slidev/EXTENSION.md; confirm manifests do not declare EXTENSION.md in provides; re-run checker to confirm clean for core/slidev",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/EXTENSION.md",
+        "agent-system/extensions/slidev/EXTENSION.md"
+      ]
     }
   ],
-  "current_objective": 2,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": [
@@ -31,8 +34,8 @@
       "task_id": "1.6",
       "description": "Run REPO_ROOT=$(pwd) bash check-extension-docs.sh and confirm it still passes with both dead files still present",
       "type": "altered",
-      "reason": "Editing check-extension-docs.sh in the source store necessarily desyncs it from the already-deployed .claude/scripts/check-extension-docs.sh copy (Rule F script-drift check), producing a FAIL for 'core' that is orthogonal to Rule U / the required-file gate this phase targets. Confirmed via git-stash A/B test that core passed cleanly before this edit and only this specific drift check fails after. Regenerating .claude/ is out of scope (source-store-deploy-boundary.md; deploy-headless.sh is restricted to skill-orchestrate's Stage MT-3 and not sanctioned for this agent to invoke). Verified instead that: (a) zero Rule U lines appear for core, (b) no missing-file FAIL appears for core or slidev, (c) a synthetic test (temporarily removing python/EXTENSION.md, which IS its claudemd source) still produces the expected missing-file FAIL, proving the gate was narrowed and not disabled.",
-      "annotation": "*(deviation: altered -- verified narrower success criteria than a full exit-0 run due to expected self-referential script-drift; see phase progress file for the A/B proof)*"
+      "reason": "At the moment of the sub-step commit, editing check-extension-docs.sh in the source store appeared to desync it from the already-deployed .claude/scripts/check-extension-docs.sh copy (Rule F script-drift check), producing a transient FAIL for 'core' orthogonal to Rule U / the required-file gate this phase targets. Verified via git-stash A/B test that core passed cleanly before the edit. A PostToolUse hook evidently auto-syncs the deployed copy shortly after an Edit/Write to the extension source (confirmed by re-diffing .claude/scripts/check-extension-docs.sh against the source moments later -- byte-identical, no manual sync performed), so by the time both dead files were deleted and the checker was re-run, core and slidev both showed full PASS with zero Rule U lines and zero missing-file failures. A synthetic test (temporarily removing python/EXTENSION.md, which IS its claudemd source) confirmed the gate still hard-fails correctly, proving the gate was narrowed rather than disabled.",
+      "annotation": "*(deviation: altered -- transient drift self-resolved via an apparent auto-sync hook; final state is a full clean PASS, not merely the narrower criteria first verified)*"
     }
   ]
 }
