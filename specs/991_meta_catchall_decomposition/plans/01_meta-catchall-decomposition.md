@@ -1,7 +1,7 @@
 # Implementation Plan: Break the meta task_types catch-all, derive tier algorithmically
 
 - **Task**: 991 - meta_catchall_decomposition
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/991_meta_catchall_decomposition/reports/01_meta-catchall-decomposition.md`
@@ -256,7 +256,7 @@ entries (3 found). `meta-builder-agent` 130,360 tokens vs 15,000 cap;
 
 ---
 
-### Phase 1: Build and prove the shadow verification harness [NOT STARTED]
+### Phase 1: Build and prove the shadow verification harness [COMPLETED]
 
 **Goal**: Establish a repeatable, redeploy-free way to run the source-store validator against the
 true merged index, and prove it reproduces the deployed baseline exactly — before any edit exists

@@ -1,28 +1,11 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "task_number": 991,
-  "agent_type": "planner-agent",
+  "agent_type": "general-implementation-agent",
   "session_id": "sess_1786307992_f01eb5",
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md",
-      "summary": "8-phase plan: shadow verification harness, algorithmic tier derivation at all 4 .tier call sites, broken-agent fix with cslib mirror, on_demand schema marker, real hooks for 25 meta-only entries, trim of 62 meta-tagged entries; re-scopes the unreachable verification bar to a checkable 8-violation criterion"
-    }
-  ],
-  "modified_files": [],
-  "phase_count": 8,
-  "estimated_hours": 6,
-  "dependency_waves": [[1], [2, 3], [4], [5], [6], [7], [8]],
-  "next_steps": "Run /implement 991 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "In this repo the deployed .claude/context/index.json is reconstructible offline from the source store: it is exactly the union of each ACTIVE extension's agent-system/extensions/<ext>/index-entries.json entries, merged by merge.lua's append_index_entries, which UPSERTS by `path` (replace-in-place, never duplicate-append; last extension processed wins a contested path). Because active extensions currently declare no overlapping paths, a plain `jq -s '{entries: [.[].entries[]]}'` concatenation over the active set is path-set-identical to the deployed index (verified: 187 entries, empty diff). This enables a redeploy-free verification harness: build the shadow index, assemble a shadow tree whose scripts/ parent basename is `.claude` (to satisfy deploy-root-guard.sh), drop the SOURCE-STORE script in, and run it with --index. Valuable because deploy-headless.sh has exactly one sanctioned automated caller (skill-orchestrate Stage MT-3 step 7), so agents editing source-store scripts otherwise have no way to test them. The harness must assert zero duplicate paths, or the concatenation stops being equivalent to a real merge.",
-      "category": "PATTERN",
-      "source_artifact": "specs/991_meta_catchall_decomposition/plans/01_meta-catchall-decomposition.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["index-entries", "shadow-index", "deploy-root-guard", "source-store-verification", "upsert-by-path", "context-index"]
-    }
-  ]
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+  "phases_completed": 0,
+  "phases_total": 8,
+  "artifacts": [],
+  "modified_files": []
 }

@@ -1,0 +1,65 @@
+=== BASELINE: shadow-validate.sh, recorded before any source-store edit ===
+Recorded: 2026-08-09T21:12:03Z
+Command: bash specs/991_meta_catchall_decomposition/shadow-validate.sh --check-identity
+Active extensions: memory nvim core nix email
+Reconstructed entries: 187 (0 duplicate paths)
+Path-set identity vs deployed .claude/context/index.json: OK (empty diff)
+Harness-vs-deployed output diff: empty apart from the 'Index:' path line.
+Harness exit code: 1
+
+--- Census baseline ---
+core meta-only entries (task_types == ["meta"], every other hook empty): 25
+core meta-tagged entries ("meta" anywhere in task_types):                86
+nvim meta-tagged entries:                                                1
+meta-tagged entries repo-wide (all extensions, active or not):           87
+entries carrying an authored `tier` field (all extensions):              0
+Double-Loading restated predicate (agents>0 AND commands>0) matches:     49 of 187
+all-hooks-empty entries (active extensions): 3, all in core:
+    reference/artifact-templates.md
+    contracts/convergence.md
+    contracts/orchestrator-discipline.md
+entry counts: core 136, nvim 24, cslib 16 (cslib is NOT an active extension)
+meta-builder-agent resolved context (adaptive query: always OR agents OR task_types:meta
+  OR commands:/meta): 93 entries / 26987 lines
+
+--- Validator output ---
+=== Context Budget Validation ===
+Index: /tmp/shadow-validate.oazzf0/index.json
+
+--- Agent Budget Check ---
+Agent                                 Tokens      Cap       Status
+-------------------------------------------------------------------
+nix-research-agent                     19896     8000   OVER:11896
+spawn-agent                             5568     8000           OK
+general-research-agent                 28744     8000   OVER:20744
+code-reviewer-agent                     5544     8000           OK
+general-implementation-agent           56800     8000   OVER:48800
+nix-implementation-agent               22520     8000   OVER:14520
+planner-agent                          29200    15000   OVER:14200
+neovim-research-agent                  22872     8000   OVER:14872
+neovim-implementation-agent            40104     8000   OVER:32104
+meta-builder-agent                    130360    15000  OVER:115360
+
+--- Tier 1 Check ---
+Always-loaded entries: 3 (target: 2)
+Always-loaded total lines: 334 (target: ≤500)
+Status: OK
+
+--- Tier Classification Check ---
+Total entries: 187
+Entries with tier field: 0
+Status: FAIL (187 entries missing tier field)
+
+--- Dead Entry Check ---
+Dead entries found: 3
+  reference/artifact-templates.md (Tier ?)
+  contracts/convergence.md (Tier ?)
+  contracts/orchestrator-discipline.md (Tier ?)
+
+--- Double-Loading Check ---
+Tier 3 entries with both agents and commands: 0 -- OK
+
+=== Summary ===
+Violations: 10
+
+FAIL: 10 violation(s) found
