@@ -474,27 +474,27 @@ value with this justification attached.
 
 ---
 
-### Phase 5: Real hooks for meta-only groups G1, G2+G7, G3 [NOT STARTED]
+### Phase 5: Real hooks for meta-only groups G1, G2+G7, G3 [COMPLETED]
 
 **Goal**: Give 15 of the 25 meta-only entries the hooks their actual consumers imply, and remove
 `"meta"` from each in the same edit — the hook and its replacement land together so no entry is
 ever hookless.
 
 **Tasks**:
-- [ ] **G1, checkpoint lifecycle** (3 entries, 331 lines) — `checkpoints/checkpoint-gate-in.md`,
+- [x] **G1, checkpoint lifecycle** (3 entries, 331 lines) — `checkpoints/checkpoint-gate-in.md`, *(completed)*
       `checkpoints/checkpoint-commit.md`, `checkpoints/checkpoint-gate-out.md`.
       Set `agents: ["general-implementation-agent", "general-implementation-hard-agent",
       "planner-agent", "planner-hard-agent"]`, `commands: []`, `task_types: []`.
       Deliberately excludes `meta-builder-agent` and the research agents: `/meta` creates tasks,
       it does not run the commit lifecycle.
-- [ ] **G2 + G7, error/event records** (5 entries, 1,020 lines) — `formats/errors-format.md`,
+- [x] **G2 + G7, error/event records** (5 entries, 1,020 lines) — `formats/errors-format.md`, *(completed)*
       `formats/events-format.md`, `schemas/errors-schema.json`, `schemas/events-schema.json`, and
       `patterns/system-defect-discrimination.md` (the entry added after the prerequisite census;
       folded into G2 per the research's decision).
       Set `commands: ["/errors", "/orchestrate"]`, `agents: []`, `task_types: []`.
       Command-scoped because these are consumed by whoever is *writing* a record at that moment —
       a command-phase fact, not an agent identity. Zero capped-agent cost.
-- [ ] **G3, orchestration + handoff** (7 entries, 1,638 lines) — `formats/handoff-artifact.md`,
+- [x] **G3, orchestration + handoff** (7 entries, 1,638 lines) — `formats/handoff-artifact.md`, *(completed)*
       `orchestration/sessions.md`, `orchestration/subagent-validation.md`,
       `patterns/file-metadata-exchange.md`, `patterns/infra-failure-discrimination.md`,
       `patterns/mcp-tool-recovery.md`, `patterns/postflight-control.md`.
@@ -502,7 +502,7 @@ ever hookless.
       **Command-scoped, contra the prerequisite's tentative "plus every research/plan/implement
       agent" suggestion**: enumerating those agents would add ~1,638 lines each to six agents
       already over budget, for reachability the `/orchestrate` command hook already provides.
-- [ ] Verify every touched entry ends with at least one non-empty hook before moving on.
+- [x] Verify every touched entry ends with at least one non-empty hook before moving on. *(completed)*
 
 **Timing**: 1 hour
 

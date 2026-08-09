@@ -115,11 +115,14 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent",
+          "planner-agent",
+          "planner-hard-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -137,11 +140,14 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent",
+          "planner-agent",
+          "planner-hard-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -159,11 +165,14 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [],
-        "task_types": [
-          "meta"
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent",
+          "planner-agent",
+          "planner-hard-agent"
         ],
-        "commands": []
+        "commands": [],
+        "task_types": []
       }
     },
     {
@@ -256,10 +265,11 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/errors",
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -280,10 +290,11 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/errors",
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -328,10 +339,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -882,10 +893,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -928,10 +939,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -1094,10 +1105,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -1169,10 +1180,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -1195,10 +1206,11 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/errors",
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -1217,10 +1229,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -1290,10 +1302,10 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -1735,10 +1747,11 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/errors",
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
@@ -1759,10 +1772,11 @@
       ],
       "load_when": {
         "agents": [],
-        "task_types": [
-          "meta"
+        "commands": [
+          "/errors",
+          "/orchestrate"
         ],
-        "commands": []
+        "task_types": []
       }
     },
     {
