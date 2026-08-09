@@ -11,6 +11,28 @@ Rule U flags any EXTENSION.md exceeding 60 lines (severity controlled by
 `SCHEMA_CONFORMANCE_GATE_MODE`, defaulting `advisory`) -- run the lint for the current violator
 count rather than trusting a hand-maintained total, which goes stale as extensions are added.
 
+## Resource-Only / Non-EXTENSION.md-Source Extensions
+
+This standard applies only to an extension whose manifest names `EXTENSION.md` as its
+`merge_targets.claudemd.source` -- the file `generate_claudemd()` actually reads when composing
+`.claude/CLAUDE.md`. Both the required-file check and Rule U in `check-extension-docs.sh` are
+manifest-authoritative on this field (see that script's `claudemd_source_for` helper and its
+rationale comment), not a hardcoded "every extension must have EXTENSION.md" assumption. Two
+cases fall outside this standard's scope entirely:
+
+- **A different claudemd source**: `core` points `merge_targets.claudemd.source` at
+  `merge-sources/claudemd.md` instead of `EXTENSION.md`, and has no `EXTENSION.md` file at all.
+- **No claudemd source (resource-only extensions)**: an extension with zero
+  `provides.skills`/`provides.commands` that shares only context (e.g. `slidev`) may omit
+  `merge_targets.claudemd` entirely, per `creating-extensions.md`'s "Resource-Only Extensions"
+  section. `check-extension-docs.sh` emits an advisory (never a silent skip) if a NON-resource-only
+  extension (non-empty `provides.skills` or `provides.commands`) omits `merge_targets.claudemd`,
+  distinguishing an accidental omission from this intentional pattern.
+
+Both `core/EXTENSION.md` and `slidev/EXTENSION.md` were deleted (not trimmed) because each was a
+100% content subset of its own `README.md` and neither was reachable from `generate_claudemd()`'s
+actual merge path.
+
 ## Required Sections
 
 EXTENSION.md must contain only these four sections:

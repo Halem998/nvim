@@ -729,17 +729,49 @@ check_index_entries_schema() {
   done
 }
 
+# claudemd_source_for(): resolves the manifest's declared claudemd merge source for an extension.
+# Prints the value of .merge_targets.claudemd.source, or an empty string if the key is absent.
+#
+# RATIONALE (why the manifest is the authority, and why both core/EXTENSION.md and
+# slidev/EXTENSION.md were DELETED rather than trimmed): generate_claudemd() (core's
+# merge.lua) builds CLAUDE.md by reading, for each loaded extension, whatever file
+# merge_targets.claudemd.source names -- NOT an unconditionally-assumed "EXTENSION.md". Before
+# this helper existed, both the required-file check below and Rule U (check_extension_md_length)
+# hardcoded the filename "EXTENSION.md", so an extension whose manifest declares a DIFFERENT
+# claudemd source (core, which merges from merge-sources/claudemd.md) or NO claudemd source at
+# all (slidev, a context-only extension with zero skills/commands) was still forced to carry an
+# EXTENSION.md and have it length-checked -- a file no code path ever reads. That is "dead
+# conformance" work: effort spent trimming a file that was never live. A live audit at
+# implementation time confirmed core/EXTENSION.md and slidev/EXTENSION.md were each a 100%
+# content subset of that extension's own README.md, with zero references to either file from
+# generate_claudemd()'s actual merge path -- so both were deleted outright, and this helper makes
+# the checker's required-file/length-check gate manifest-authoritative instead of
+# filename-authoritative. See core/docs/reference/standards/extension-slim-standard.md's
+# "Resource-Only / Non-EXTENSION.md-Source Extensions" note and
+# core/docs/guides/creating-extensions.md's resource-only extension pattern for the general case
+# this generalizes.
+claudemd_source_for() {
+  local ext_path="$1"
+  jq -r '.merge_targets.claudemd.source // empty' "$ext_path/manifest.json" 2>/dev/null
+}
+
 # Rule U: EXTENSION.md length limit, per extension.
 #
 # extension-slim-standard.md's 60-line maximum for EXTENSION.md was, until this rule, unenforced
 # prose. Reports (never silently skips) when the file exceeds 60 lines; a missing EXTENSION.md is
 # already covered by check_file's own required-file FAIL and is not double-reported here.
+#
+# Manifest-authoritative (see claudemd_source_for's rationale comment above): only length-checks
+# an EXTENSION.md that is actually this extension's declared claudemd merge source. A file that
+# happens to exist on disk but is not the designated source (e.g. a stray leftover) is not
+# length-checked -- narrower than a blanket "every EXTENSION.md on disk" scan, by design.
 check_extension_md_length() {
   local ext_path="$1"
   local ext_md="$ext_path/EXTENSION.md"
   local actual
 
   [[ -f "$ext_md" ]] || return 0
+  [[ "$(claudemd_source_for "$ext_path")" == "EXTENSION.md" ]] || return 0
 
   actual=$(wc -l < "$ext_md")
   actual=${actual// /}
@@ -1275,8 +1307,28 @@ for ext_path in "$EXT_DIR"/*/; do
 
   # Required files
   check_file "$ext_path/manifest.json" "manifest.json"
-  check_file "$ext_path/EXTENSION.md" "EXTENSION.md"
   check_file "$ext_path/README.md" "README.md"
+
+  # EXTENSION.md is required only when the manifest names it as the claudemd merge source (see
+  # claudemd_source_for's rationale comment near Rule U). When merge_targets.claudemd is absent
+  # entirely, emit an advisory (never a silent skip) unless the extension is genuinely
+  # resource-only (zero skills and zero commands) -- distinguishes an accidental omission from an
+  # intentional design.
+  if [[ -f "$ext_path/manifest.json" ]] && jq empty "$ext_path/manifest.json" 2>/dev/null; then
+    ext_claudemd_source=$(claudemd_source_for "$ext_path")
+    if [[ "$ext_claudemd_source" == "EXTENSION.md" ]]; then
+      check_file "$ext_path/EXTENSION.md" "EXTENSION.md"
+    elif [[ -z "$ext_claudemd_source" ]]; then
+      ext_skill_count=$(jq -r '(.provides.skills // []) | length' "$ext_path/manifest.json" 2>/dev/null)
+      ext_cmd_count=$(jq -r '(.provides.commands // []) | length' "$ext_path/manifest.json" 2>/dev/null)
+      if [[ "${ext_skill_count:-0}" -gt 0 || "${ext_cmd_count:-0}" -gt 0 ]]; then
+        advisory "manifest has no merge_targets.claudemd but declares $ext_skill_count skill(s)/$ext_cmd_count command(s) -- confirm this is intentional (resource-only extensions should declare none) or add merge_targets.claudemd"
+      fi
+    fi
+    # else: claudemd_source names a file other than "EXTENSION.md" (e.g. core's
+    # merge-sources/claudemd.md) -- that file's own required-file/length checking is out of
+    # scope for this rule; its existence is governed by merge_targets.claudemd itself.
+  fi
 
   # Manifest entry validation (only if manifest exists and is valid)
   if [[ -f "$ext_path/manifest.json" ]]; then

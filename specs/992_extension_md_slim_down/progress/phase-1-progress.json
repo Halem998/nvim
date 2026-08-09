@@ -1,0 +1,38 @@
+{
+  "phase": 1,
+  "phase_name": "Resolve the two dead EXTENSION.md files",
+  "started_at": "2026-08-09T00:00:00Z",
+  "last_updated": "2026-08-09T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Make check-extension-docs.sh manifest-authoritative on merge_targets.claudemd.source (required-file gate, Rule U gate, accidental-omission advisory, rationale comment) and repoint the 3 stale doc cross-references plus the extension-slim-standard.md note",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/check-extension-docs.sh",
+        "agent-system/extensions/core/README.md",
+        "agent-system/extensions/core/docs/architecture/extension-system.md",
+        "agent-system/extensions/core/docs/guides/adding-domains.md",
+        "agent-system/extensions/core/docs/reference/standards/extension-slim-standard.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Delete core/EXTENSION.md and slidev/EXTENSION.md; confirm manifests do not declare EXTENSION.md in provides; re-run checker to confirm clean for core/slidev",
+      "status": "not_started",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.6",
+      "description": "Run REPO_ROOT=$(pwd) bash check-extension-docs.sh and confirm it still passes with both dead files still present",
+      "type": "altered",
+      "reason": "Editing check-extension-docs.sh in the source store necessarily desyncs it from the already-deployed .claude/scripts/check-extension-docs.sh copy (Rule F script-drift check), producing a FAIL for 'core' that is orthogonal to Rule U / the required-file gate this phase targets. Confirmed via git-stash A/B test that core passed cleanly before this edit and only this specific drift check fails after. Regenerating .claude/ is out of scope (source-store-deploy-boundary.md; deploy-headless.sh is restricted to skill-orchestrate's Stage MT-3 and not sanctioned for this agent to invoke). Verified instead that: (a) zero Rule U lines appear for core, (b) no missing-file FAIL appears for core or slidev, (c) a synthetic test (temporarily removing python/EXTENSION.md, which IS its claudemd source) still produces the expected missing-file FAIL, proving the gate was narrowed and not disabled.",
+      "annotation": "*(deviation: altered -- verified narrower success criteria than a full exit-0 run due to expected self-referential script-drift; see phase progress file for the A/B proof)*"
+    }
+  ]
+}

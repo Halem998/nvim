@@ -64,7 +64,8 @@ Agent definitions include an `agents/README.md` documenting the shared agent fro
 ```
 core/
 ├── manifest.json              # Extension configuration
-├── EXTENSION.md               # CLAUDE.md merge content
+├── merge-sources/claudemd.md  # CLAUDE.md merge content (core has no EXTENSION.md -- see
+│                               #   merge_targets.claudemd.source in manifest.json)
 ├── index-entries.json         # Context discovery entries
 ├── README.md                  # This file
 │
@@ -173,8 +174,10 @@ The following sections common to domain extension READMEs are omitted because th
 
 ## Related Documentation
 
-- `.claude/CLAUDE.md` - Agent system configuration and command reference
-- `agent-system/extensions/core/EXTENSION.md` - Detailed capability inventory
+- `.claude/CLAUDE.md` - Agent system configuration and command reference (core's claudemd merge
+  source is `agent-system/extensions/core/merge-sources/claudemd.md`, not an `EXTENSION.md` --
+  core has none; see `docs/reference/standards/extension-slim-standard.md`'s "Resource-Only /
+  Non-EXTENSION.md-Source Extensions" note)
 - `.claude/docs/README.md` - Standards documentation index
 - `.claude/context/index.json` - Context discovery index
 - `.claude-extensions.json` (project root) - Extension registry

@@ -86,7 +86,11 @@ Each extension lives in `agent-system/extensions/{name}/`:
 ```
 agent-system/extensions/{name}/
 ├── manifest.json              # Extension metadata (REQUIRED)
-├── EXTENSION.md               # Content included via generate_claudemd() (REQUIRED)
+├── EXTENSION.md               # Content included via generate_claudemd() (REQUIRED only when
+│                               #   manifest.merge_targets.claudemd.source == "EXTENSION.md";
+│                               #   core instead points claudemd.source at merge-sources/claudemd.md
+│                               #   and has no EXTENSION.md, and a resource-only extension may
+│                               #   declare no claudemd merge target at all)
 ├── index-entries.json         # Context index entries (optional)
 ├── settings-fragment.json     # Settings/MCP config fragment (optional)
 ├── agents/                    # Agent definitions (.md files)

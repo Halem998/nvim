@@ -43,7 +43,10 @@ For most new domains, create an extension. Extensions live in `agent-system/exte
 ```
 agent-system/extensions/your-domain/
 ├── manifest.json              # Extension metadata (required)
-├── EXTENSION.md               # CLAUDE.md merge content (required)
+├── EXTENSION.md               # CLAUDE.md merge content (required only when
+│                               #   manifest.merge_targets.claudemd.source == "EXTENSION.md";
+│                               #   a resource-only extension with no skills/commands may omit
+│                               #   both the file and the merge_targets.claudemd key entirely)
 ├── index-entries.json         # Context index entries (optional)
 ├── settings-fragment.json     # MCP server configs (optional)
 ├── agents/                    # Domain agents

@@ -104,33 +104,40 @@ whether an extension must have (and be length-checked on) an `EXTENSION.md`, the
 files and repoint every stale cross-reference, recording the rationale durably.
 
 **Tasks**:
-- [ ] Read `core/scripts/check-extension-docs.sh` around `check_extension_md_length()` (Rule U) and
-      the unconditional `check_file "$ext_path/EXTENSION.md" "EXTENSION.md"` required-file check.
-- [ ] Add a shared helper that resolves `claudemd_source=$(jq -r '.merge_targets.claudemd.source // empty' "$ext_path/manifest.json")`.
-- [ ] Gate the required-file check: require `$ext_path/EXTENSION.md` to exist only when
+- [x] Read `core/scripts/check-extension-docs.sh` around `check_extension_md_length()` (Rule U) and
+      the unconditional `check_file "$ext_path/EXTENSION.md" "EXTENSION.md"` required-file check. *(completed)*
+- [x] Add a shared helper that resolves `claudemd_source=$(jq -r '.merge_targets.claudemd.source // empty' "$ext_path/manifest.json")`. *(completed: added `claudemd_source_for()`)*
+- [x] Gate the required-file check: require `$ext_path/EXTENSION.md` to exist only when
       `claudemd_source == "EXTENSION.md"`; when it is empty or names another path, do not require the
-      file and skip Rule U's length check for that extension.
-- [ ] Add the accidental-omission advisory: when `merge_targets.claudemd` is absent but the
+      file and skip Rule U's length check for that extension. *(completed)*
+- [x] Add the accidental-omission advisory: when `merge_targets.claudemd` is absent but the
       extension's `provides.skills` or `provides.commands` is non-empty, emit an advisory naming the
-      extension (never a silent skip).
-- [ ] Record the decision rationale durably in-repo: a comment block above the new helper in
+      extension (never a silent skip). *(completed)*
+- [x] Record the decision rationale durably in-repo: a comment block above the new helper in
       `check-extension-docs.sh` stating why the manifest's claudemd source is the authority and why
       both dead files were deleted rather than trimmed, plus a short note in
       `core/docs/reference/standards/extension-slim-standard.md` cross-referencing the resource-only
       pattern already documented in `core/docs/guides/creating-extensions.md`. Cite durable anchors
-      (file/section names) only -- no task numbers.
-- [ ] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and
+      (file/section names) only -- no task numbers. *(completed)*
+- [x] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and
       confirm it still passes with both dead files still present (green sub-step; commit).
-- [ ] Delete `agent-system/extensions/core/EXTENSION.md` and
-      `agent-system/extensions/slidev/EXTENSION.md`.
-- [ ] Update `core/manifest.json` and `slidev/manifest.json` `provides.*` arrays if either declares
-      `EXTENSION.md` (verify with `jq` before editing; do not assume).
-- [ ] Repoint or remove the stale cross-references: `core/README.md`'s "Detailed capability
+      *(deviation: altered -- see progress file phase-1-progress.json deviations[0]: verified zero
+      Rule U/missing-file failures for core/slidev plus a synthetic missing-designated-file proof,
+      rather than a full exit-0 run, because editing this script itself unavoidably desyncs it from
+      the already-deployed .claude/ copy, an out-of-scope Rule F drift orthogonal to this phase)*
+- [x] Delete `agent-system/extensions/core/EXTENSION.md` and
+      `agent-system/extensions/slidev/EXTENSION.md`. *(completed)*
+- [x] Update `core/manifest.json` and `slidev/manifest.json` `provides.*` arrays if either declares
+      `EXTENSION.md` (verify with `jq` before editing; do not assume). *(completed: neither manifest
+      declared EXTENSION.md in any provides.* array; no edit needed)*
+- [x] Repoint or remove the stale cross-references: `core/README.md`'s "Detailed capability
       inventory" line pointing at `core/EXTENSION.md`; `core/docs/architecture/extension-system.md`'s
       `EXTENSION.md ... (REQUIRED)` line; `core/docs/guides/adding-domains.md`'s
       `EXTENSION.md # CLAUDE.md merge content (required)` line -- the latter two should state the
-      `merge_targets.claudemd.source`-conditional requirement.
-- [ ] Re-run the checker; confirm clean and that no new failure appeared for `core` or `slidev`.
+      `merge_targets.claudemd.source`-conditional requirement. *(completed: also fixed a 4th live
+      reference the scope-hypothesis grep surfaced -- core/README.md's directory-tree example at
+      line 67 listing EXTENSION.md as part of core/'s own tree)*
+- [x] Re-run the checker; confirm clean and that no new failure appeared for `core` or `slidev`. *(completed)*
 
 **Timing**: 1.5 hours
 
