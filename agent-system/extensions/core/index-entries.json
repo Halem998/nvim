@@ -2586,9 +2586,7 @@
       ],
       "load_when": {
         "agents": [
-          "general-research-hard-agent",
-          "cslib-research-hard-agent",
-          "lean-research-hard-agent"
+          "general-research-hard-agent"
         ],
         "commands": [],
         "task_types": []

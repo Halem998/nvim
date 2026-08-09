@@ -354,14 +354,14 @@ edit — it must return zero matches. A non-zero result means a site was missed.
 
 ---
 
-### Phase 3: Fix the two broken agent names and add the cslib mirror [NOT STARTED]
+### Phase 3: Fix the two broken agent names and add the cslib mirror [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: No `load_when.agents` value in the deployed index names an agent absent from this
 deploy, without silently un-indexing the contract for cslib.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/index-entries.json`, entry `contracts/adversarial-verification.md`: set `load_when.agents` to `["general-research-hard-agent"]`, dropping `cslib-research-hard-agent` and `lean-research-hard-agent`. Leave `commands` and `task_types` as they are (both empty).
-- [ ] In `agent-system/extensions/cslib/index-entries.json`, add a mirror entry for
+- [x] In `agent-system/extensions/core/index-entries.json`, entry `contracts/adversarial-verification.md`: set `load_when.agents` to `["general-research-hard-agent"]`, dropping `cslib-research-hard-agent` and `lean-research-hard-agent`. Leave `commands` and `task_types` as they are (both empty). *(completed)*
+- [ ] In `agent-system/extensions/cslib/index-entries.json`, add a mirror entry for *(deviation: skipped — blocked by check-extension-docs.sh Rule R, a hard source-level gate requiring every index entry to have a source file at `<ext>/context/<path>`; cslib ships no copy of this contract. See this phase's Reasoned Exclusions.)*
       `contracts/adversarial-verification.md` following the shape `lean/index-entries.json`
       already uses for the same path. Set
       `load_when.agents = ["general-research-hard-agent", "cslib-research-hard-agent"]` — the
@@ -369,7 +369,24 @@ deploy, without silently un-indexing the contract for cslib.
       hook. Set `task_types: ["cslib"]` to match cslib's declared routing task type. Populate
       `path`, `domain`, `subdomain`, `summary`, `line_count`, `keywords` per the schema's required
       set; take `line_count` from the actual file, not from core's copy.
-- [ ] Do **not** edit `lean/index-entries.json` or any other extension's existing references to these two agent names — the research established they are correct in context.
+- [x] Do **not** edit `lean/index-entries.json` or any other extension's existing references to these two agent names — the research established they are correct in context. *(completed)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| cslib mirror entry for `contracts/adversarial-verification.md` | `check-extension-docs.sh` Rule R (`check_line_count_accuracy`, a HARD gate — `INDEX_TRUTH_GATE_MODE` defaults to `hard`) requires every `index-entries.json` entry to resolve to a source file at `<ext>/context/<path>`. cslib ships no copy of this contract, so the mirror entry is structurally illegal regardless of its `load_when` shape. The plan cited `lean/index-entries.json` as shape precedent, but lean's mirror is legal only because lean also owns `lean/context/contracts/adversarial-verification.md` (93 lines, lean-specialized) — a fact the plan did not account for. Making the cslib entry legal would require authoring a cslib-specialized ~103-line copy of a core-owned contract: new content, a new file outside the declared Scope Expansion, and precisely the "guessing at a shape" the phase's own contingency forbids. | Added the entry, ran `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`; it reported `[cslib] FAIL: Rule R: index-entries.json entry 'contracts/adversarial-verification.md' has no source file at context/contracts/adversarial-verification.md`. Reverted; `git diff` on `cslib/index-entries.json` is now empty and the extension re-reports PASS. Rule R source: `check-extension-docs.sh` lines 600-644. |
+
+Taken under this phase's own documented contingency: "Keep the core removal — it is correct on
+its own — and record the cslib mirror as unfinished rather than guessing at a shape." The core
+removal landed and is verified. Recorded follow-up: for cslib to hook this contract, cslib must
+first own a copy at `cslib/context/contracts/adversarial-verification.md` (mirroring how lean
+does it); the index entry is the second step, not the first.
+
+Known consequence, stated rather than hidden: in a cslib-loaded deploy the contract was
+previously reachable for `cslib-research-hard-agent` via core's entry, and now is not. The plan
+ranked these explicitly — "A core entry naming an absent agent is the defect being fixed; an
+absent cslib entry is a lesser, recorded gap" — and this outcome follows that ranking.
 
 **Timing**: 0.75 hours
 
