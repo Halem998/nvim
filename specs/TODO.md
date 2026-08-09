@@ -1,5 +1,5 @@
 ---
-next_project_number: 998
+next_project_number: 1003
 ---
 
 # TODO
@@ -11,10 +11,10 @@ next_project_number: 998
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 984,992,997 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
-| 2 | 985,993,995 | 984,992 | agent-system |
-| 3 | 986 | 985 | agent-system |
-| 4 | 996 | 986,993,995 | agent-system |
+| 1 | 984,992,997,998 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
+| 2 | 985,993,995,1000,1002 | 984,992,998 | agent-system |
+| 3 | 986,1001 | 985,1000 | agent-system |
+| 4 | 996,999 | 986,993,995,1002 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,8 +24,14 @@ next_project_number: 998
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
       └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
+      └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
   └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+  └─ 1000 [NOT STARTED] — Give the cslib extension its own copy of the adversarial-verifica
+    └─ 1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
+998 [NOT STARTED] — Triage the 49 entries the Double-Loading Check now names, and dec
+  └─ 1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
+    └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 
@@ -38,6 +44,231 @@ next_project_number: 998
 984 [NOT STARTED] — Give specs/state.json a machine-enforced schema and make the stat
 
 ## Tasks
+
+### 1002. Author the context tier-semantics standard for the derived tier classification
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 991, Task 998
+
+**Description**: Author a context file that states the tier-classification semantics for context index entries. The meta-catch-all decomposition task converted validate-context-budgets.sh from reading a never-populated authored `tier` field to deriving tier algorithmically from load_when shape, at all four former read sites. The derivation is now real and load-bearing, but its ONLY authority is the derived_tier jq function and its header comment inside that one script -- there is no context file a human or an agent can read to learn what the tiers mean or why an entry lands in one.
+
+THE SEMANTICS TO DOCUMENT (as landed; verify against the script rather than trusting this summary):
+  Tier 1  load_when.always == true                                   -- always loaded, every prompt
+  Tier 2  non-empty load_when.agents                                 -- loaded for named agents
+  Tier 3  non-empty commands/task_types only                         -- loaded for named commands
+  Tier 4  all hooks empty                                            -- reachable only on demand
+  Current deployed distribution: Tier 1: 3, Tier 2: 144, Tier 3: 34, Tier 4: 6 (187 entries).
+
+WORK:
+  1. Write the context file (a standards/ file under core context is the natural home) covering:
+     what each tier means operationally, the derivation rule, why the authored `tier` field was
+     abandoned (index.schema.json sets additionalProperties:false on entries AND carries a $comment
+     stating tier is deliberately absent because it is meant to be derived from load_when shape --
+     the schema already asserts this design, the doc should make it discoverable), and the cost of
+     the Tier 4 fallthrough decision.
+  2. Cover the on_demand marker and why it exists: with Tier 4 defined as all-hooks-empty, the Dead
+     Entry Check would become a tautology, so an explicit schema-declared on_demand:true property
+     marks intent and preserves the check's signal. A reader needs to know when to set it -- this is
+     the single most likely thing for a future entry author to get wrong.
+  3. Add the index entry for the new file, with an accurate line_count (Rule R gates it) and a
+     load_when hook narrow enough not to worsen any agent's budget.
+  4. Point the derived_tier function's header comment at the new file so the two do not drift.
+
+SEQUENCING NOTE: this file lands in core context/, which the docs truth sweep also claims wholesale.
+It is deliberately NOT gated behind that sweep -- the knowledge is fresh now and the file is small --
+so if both are in flight the runtime file-scope check will simply defer one. The sweep should treat
+this file as current truth rather than re-deciding it.
+
+VERIFICATION BAR: the new file exists with a schema-conformant index entry whose declared line_count
+matches; check-extension-docs.sh passes (Rules R and T); bash .claude/scripts/validate-context-budgets.sh
+introduces no new budget violation and its tier distribution is unchanged apart from the one added
+entry.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 1001. Fix lean mirror entry load-order defect; audit duplicated index paths
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 991, Task 992, Task 1000
+
+**Description**: Fix the dormant load-order defect in lean/index-entries.json's mirror entry for contracts/adversarial-verification.md. The entry names ONLY lean-research-hard-agent in its load_when.agents. The extension loader upserts index entries BY PATH (merge.lua, append_index_entries) with last-extension-processed winning the WHOLE entry -- so in a lean-loaded deploy where lean is processed after core, lean's single-agent entry REPLACES core's and silently drops general-research-hard-agent's hook on that path. The agent keeps working; it just stops receiving a contract it is supposed to receive, with no error anywhere.
+
+STATUS: dormant, not currently biting -- lean is not loaded in this deploy, so the replacement never
+happens here. It was observed and deliberately left out of scope by the meta-catch-all decomposition
+task, and recorded in that task's summary so it would not be lost. It is cheap to fix now and
+genuinely unpleasant to diagnose later, since the symptom is a silently absent context file rather
+than a failure.
+
+WORK:
+  1. Change lean's mirror entry to a UNION-valued load_when.agents covering every agent that should
+     reach this path -- at minimum general-research-hard-agent alongside lean-research-hard-agent.
+     Apply the same pattern the sibling cslib task establishes; this task is sequenced after it so
+     there is one pattern, not two.
+  2. Audit for the same shape elsewhere: any index entry whose path is ALSO declared by another
+     extension (core especially) and whose load_when is narrower than the union of both declarations
+     is the same latent defect. Enumerate every duplicated path across all extensions'
+     index-entries.json and report the set, even if this task only fixes the lean instance.
+  3. Consider whether the loader's silent last-writer-wins upsert on a duplicated path deserves a
+     warning of its own; if so, record it as a follow-up rather than widening this task.
+
+VERIFICATION BAR: a simulated lean-loaded merge (lean processed after core) yields an entry for
+contracts/adversarial-verification.md whose load_when.agents contains BOTH agents -- demonstrated by
+actually running the merge or its reconstruction, not by reading the JSON and asserting it. The
+duplicated-path audit from item 2 is recorded in the task summary. check-extension-docs.sh passes.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 1000. Give cslib its own adversarial-verification contract copy and union-valued index entry
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 991, Task 992
+
+**Description**: Give the cslib extension its own copy of the adversarial-verification contract and a union-valued index entry for it, closing a recorded regression. The meta-catch-all decomposition task removed two agent names -- cslib-research-hard-agent and lean-research-hard-agent -- from core's index entry for contracts/adversarial-verification.md, because both name agents that exist in the source store but belong to unloaded extensions and so never reach .claude/agents/ in this deploy. That removal was correct and is not to be reverted. Its recorded consequence is this task's subject: the contract is now unreachable for cslib-research-hard-agent in a cslib-loaded deploy.
+
+WHY THE OBVIOUS ONE-LINE FIX DOES NOT WORK (established, do not re-discover):
+  Adding a mirror entry to cslib/index-entries.json alone is REJECTED by check-extension-docs.sh
+  Rule R, a hard gate requiring every index entry to resolve to a source file at
+  <ext>/context/<path>. The lean extension's precedent works only because lean owns its own copy of
+  the file (a ~93-line lean/context/contracts/adversarial-verification.md); cslib owns none. The
+  decomposition task took its phase contingency and recorded the gap rather than authoring a
+  ~103-line cslib copy outside its approved scope. Ordering is therefore load-bearing: the source
+  file first, the index entry second.
+
+WORK:
+  1. Author agent-system/extensions/cslib/context/contracts/adversarial-verification.md. Decide
+     deliberately whether it is a verbatim copy of the core contract, a cslib-specialized variant,
+     or (better, if the machinery allows) a mechanism that avoids a third divergent copy of the same
+     contract entirely -- three copies of one contract is itself a defect worth not creating. Record
+     the rationale.
+  2. Add the corresponding cslib/index-entries.json entry with a load_when.agents value that is the
+     UNION of every agent that should reach this path, never a single-agent value. The loader
+     upserts index entries BY PATH (merge.lua, append_index_entries) and the last extension
+     processed wins the whole entry -- so a naive single-agent mirror would REPLACE core's entry and
+     silently drop general-research-hard-agent's hook. This is the same load-order hazard the sibling
+     lean task addresses; this task establishes the union-valued pattern that one applies.
+  3. Verify the entry's declared line_count matches the authored file (Rule R gates it).
+
+VERIFICATION BAR: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh
+passes with the new file and entry present; a cslib-loaded deploy resolves the contract for
+cslib-research-hard-agent AND still resolves it for general-research-hard-agent (prove the union
+survived the upsert, do not assume it); bash .claude/scripts/validate-context-budgets.sh shows no new
+budget violation introduced.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 999. Reduce the 8 per-agent context budget overruns
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 991, Task 992, Task 986, Task 998, Task 1002
+
+**Description**: Reduce the 8 standing per-agent context budget overruns that validate-context-budgets.sh reports, so the budget check can become an instrument that passes rather than one whose failure is permanently expected. The meta-catch-all decomposition task established the diagnosis and deliberately did NOT attempt the reduction: its verification bar was re-scoped (option b) precisely because these 8 violations are load_when.agents breadth across core/nvim/nix and lay outside that task's file_scope. Raising CAPS was considered there and REJECTED with reasoning that binds this task too -- a cap set to current usage can never fail, which retires the check as an instrument. Do not resolve this task by raising caps to meet current usage.
+
+MEASURED BASELINE (re-measure at implementation time; these are post-decomposition, deployed):
+  meta-builder-agent            130400 tok  cap  15000  OVER:115400
+  general-implementation-agent   68560 tok  cap   8000  OVER:60560
+  neovim-implementation-agent    40104 tok  cap   8000  OVER:32104
+  planner-agent                  31848 tok  cap  15000  OVER:16848
+  general-research-agent         28744 tok  cap   8000  OVER:20744
+  neovim-research-agent          22872 tok  cap   8000  OVER:14872
+  nix-implementation-agent       22520 tok  cap   8000  OVER:14520
+  nix-research-agent             19896 tok  cap   8000  OVER:11896
+  (OK: spawn-agent 5568, code-reviewer-agent 5544)
+
+WHAT THE PRIOR WORK ALREADY PROVED, so this task does not re-derive it:
+  - The per-agent budget check reads ONLY load_when.agents. It never reads task_types. Trimming
+    task_types therefore cannot move any number above -- this was confirmed empirically when the
+    repo-wide meta trim (87 -> 0 occurrences) left the per-agent block byte-identical. The lever is
+    load_when.agents breadth alone.
+  - meta-builder-agent's RESOLVED context under the documented adaptive query did fall 93 entries /
+    26,987 lines -> 54 / 16,634 (-38.4%) from that trim, while its budget-check number moved only
+    +40. The two measurements answer different questions; this task must be explicit about which one
+    it is moving, and should consider whether the check's own query is the right measure of an
+    agent's real prompt cost.
+
+WORK:
+  1. Per over-budget agent, enumerate the entries its load_when.agents hook pulls in, ranked by
+     line_count, and classify each as genuinely needed by that agent vs. hooked out of convenience.
+  2. Narrow the hooks. Where a file is genuinely needed by many agents, consider whether it belongs
+     behind a command hook, an on_demand marker, or a smaller extracted core rather than a broad
+     agents list.
+  3. Where a remaining overrun is deliberate and defensible, the cap may be adjusted ONLY with a
+     written per-agent justification recorded next to the CAPS table stating why that agent's
+     working set is legitimately that large -- never as a bulk adjustment to silence the check.
+  4. Treat meta-builder-agent (8.7x its cap) as the anchor case; it likely needs decomposition of
+     what "meta" work actually requires rather than incremental trimming, and may warrant being
+     split into its own follow-up if the analysis shows it is a task-sized problem on its own.
+
+SEQUENCING: depends on the EXTENSION.md slim-down (which authors NEW context files and index
+entries, moving these numbers upward) and on the docs truth sweep (which consolidates four
+validation docs and relocates ~250+ lines out of the claudemd merge source, moving them downward).
+Measuring before both land would target numbers that are about to change materially. Also depends on
+the double-loading triage and the tier-semantics doc, which share this task's file_scope.
+
+VERIFICATION BAR: bash .claude/scripts/validate-context-budgets.sh reports zero per-agent budget
+violations, OR each surviving violation carries a written per-agent justification adjacent to the
+CAPS table and the count of violations has strictly decreased from 8. A before/after table of all 10
+capped agents is recorded in the task summary.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 998. Triage the 49 Double-Loading context-index warnings
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 991
+
+**Description**: Triage the 49 entries the Double-Loading Check now names, and decide whether the check is a defect detector or a shape it should stop flagging. The check was restated on load_when shape (from a predicate that keyed off the never-populated authored tier field) by the meta-catch-all decomposition task and DELIBERATELY downgraded to a warning so it would not block that task; the 49 matches are pre-existing, not introduced there. A warning nobody triages is a check that has quietly stopped working -- the same failure mode that task just repaired in the Dead Entry Check, so leaving this at "WARNING -- pending triage" indefinitely re-creates the defect one layer over.
+
+CURRENT STATE (verify at implementation time, the number moves as entries are added):
+  bash .claude/scripts/validate-context-budgets.sh reports
+  "Entries with both agents and commands hooks: 49 (WARNING -- pending triage)", 0 violations from
+  this check, and it does not contribute to the exit code.
+
+WORK:
+  1. Enumerate the 49 entries (jq over the merged .claude/context/index.json, and per-extension over
+     agent-system/extensions/*/index-entries.json so each is attributed to its owning source file).
+  2. Classify each. The question is whether an entry carrying BOTH an agents hook and a commands
+     hook is (a) legitimately dual-addressed -- a file that genuinely must load both for a named
+     agent and for a named command that a different agent runs -- or (b) an over-broad hook that
+     loads the file twice into the same resolved context, which is what the check was written to
+     catch. Produce a written criterion that separates the two, not a per-entry verdict list only.
+  3. Act on the classification: fix the (b) entries by narrowing a hook; for the (a) shape, decide
+     whether the check should exempt it (and encode the exemption mechanically, not by lowering the
+     count in a comment).
+  4. Re-key the check on the outcome: either it reaches 0 and is promoted from warning back to a
+     violation-producing check, or it retains a documented, mechanically-enforced exemption set and
+     the warning names only genuinely-untriaged entries. Do NOT resolve this by deleting the check
+     or by permanently freezing it at warning with no exemption mechanism.
+
+SEQUENCING NOTE: this task establishes the hook-shape policy that later entry-authoring work should
+follow; it deliberately does not wait on the EXTENSION.md trim work, which will author new entries
+and would rather have the policy in hand than be retrofitted to it.
+
+VERIFICATION BAR: bash .claude/scripts/validate-context-budgets.sh reports either 0 double-loading
+matches, or a count consisting solely of entries covered by the recorded exemption criterion, with
+the criterion enforced by the script rather than asserted in prose. A negative test proves the check
+still fires: introducing one genuinely over-broad dual-hooked entry into a fixture makes it reappear.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 997. Report a confirmably-dead pid within the grace floor as its own liveness reason
 - **Status**: [NOT STARTED]
