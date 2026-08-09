@@ -304,34 +304,66 @@ changed entries in the structural diff and by re-running the classifier; if the 
 
 ---
 
-### Phase 4: Deploy and run the verification bar [NOT STARTED]
+### Phase 4: Deploy and run the verification bar [COMPLETED]
 
 **Goal**: Propagate both source-store changes into the deploy tree and confirm the deployed check
 reports 0 redundant entries and contributes to the exit code.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` (or the picker's Reload All / Regenerate path)
-      to regenerate the deploy tree.
-- [ ] Verify propagation explicitly rather than assuming it: diff
+- [x] Run `bash .claude/scripts/deploy-headless.sh` (or the picker's Reload All / Regenerate path)
+      to regenerate the deploy tree. *(completed: "Resynced 5 extension(s)")*
+- [x] Verify propagation explicitly rather than assuming it: diff
       `agent-system/extensions/core/scripts/validate-context-budgets.sh` against
       `.claude/scripts/validate-context-budgets.sh` and confirm they match; confirm
-      `.claude/context/index.json` now shows the narrowed `load_when.commands` arrays.
-- [ ] Run `bash .claude/scripts/validate-context-budgets.sh` and `--verbose`. Capture both outputs.
-- [ ] Confirm: redundant count is 0; the legitimate-dual informational line reports the expected
+      `.claude/context/index.json` now shows the narrowed `load_when.commands` arrays. *(completed:
+      byte-identical diff; deployed index.json shows 13 dual-hook entries, down from 49, and
+      `meta/meta-guide.md`'s `load_when.commands` is now `[]`)*
+- [x] Run `bash .claude/scripts/validate-context-budgets.sh` and `--verbose`. Capture both outputs.
+      *(completed)*
+- [x] Confirm: redundant count is 0; the legitimate-dual informational line reports the expected
       count; the `unclassifiable-command` line reports its count; no `[DEGRADED ROUTE DERIVATION]`
-      banner appears.
-- [ ] Confirm the exit code and Summary block: the redundant bucket now contributes to `VIOLATIONS`
+      banner appears. *(completed: redundant=0, legitimate=13 -- path-for-path identical to the
+      Phase 1 legitimate-dual list -- unclassifiable=0, no degraded banner)*
+- [x] Confirm the exit code and Summary block: the redundant bucket now contributes to `VIOLATIONS`
       (demonstrated in Phase 5 against a fixture; here confirm the run is clean and the exit code is
-      unchanged-from-baseline-or-better).
-- [ ] Confirm no other check in the script regressed: compare the full output against the Phase 1
+      unchanged-from-baseline-or-better). *(completed: Violations stayed at 8 (all pre-existing
+      Agent Budget Check overages, unrelated to this check); the prior "Warnings: 1" line is now
+      gone since the Double-Loading Check no longer contributes a routine warning)*
+- [x] Confirm no other check in the script regressed: compare the full output against the Phase 1
       baseline capture, section by section (tier caps, Dead Entry Check, documented exceptions).
-- [ ] Measure the cross-extension blast radius: run the predicate over every
+      *(completed: full-section diff between the baseline and the post-deploy `--verbose` capture
+      is byte-identical for every section except Double-Loading Check)*
+- [x] Measure the cross-extension blast radius: run the predicate over every
       `agent-system/extensions/*/index-entries.json` and record per-extension bucket counts. Record
       the finding (expected: extension entries land in `unclassifiable-command`, so loading another
-      extension set does not newly fail the check). Do not mass-edit those files.
-- [ ] Run the adjacent validators that read the same index to confirm no collateral breakage:
+      extension set does not newly fail the check). Do not mass-edit those files. *(completed --
+      see the "Cross-extension blast radius" table below)*
+- [x] Run the adjacent validators that read the same index to confirm no collateral breakage:
       `validate-index.sh`, `validate-context-index.sh`, `validate-extension-index.sh`,
-      `validate-wiring.sh`, `check-extension-docs.sh`.
+      `validate-wiring.sh`, `check-extension-docs.sh`. *(completed: all five pass in `.claude`
+      scope. `validate-wiring.sh --all`'s 41 failures are entirely in the unrelated `.opencode`
+      tree -- pre-existing "Missing context file" drift, confirmed independent of this task's
+      changes by running `--claude` alone (0 failures, 1 pre-existing warning) vs. `--opencode`
+      alone (same 41 failures) in isolation)*
+
+**Cross-extension blast radius** (measured, not assumed):
+
+| Extension | Dual-hook | Redundant | Legitimate | Unclassifiable |
+|---|---|---|---|---|
+| core (loaded) | 11 | 0 | 11 | 0 |
+| memory (loaded) | 2 | 0 | 2 | 0 |
+| literature (loaded) | 6 | 0 | 6 | 0 |
+| email, nix, nvim (loaded) | 0 | 0 | 0 | 0 |
+| present | 36 | 0 | 0 | 36 |
+| founder | 25 | 0 | 0 | 25 |
+| epidemiology | 15 | 0 | 0 | 15 |
+| slidev | 15 | 0 | 0 | 15 |
+| filetypes | 10 | 0 | 0 | 10 |
+| cslib, formal, latex, lean, python, typst, web, z3 | 0 | 0 | 0 | 0 |
+
+Every non-loaded extension's dual-hook entries land entirely in `unclassifiable-command` -- 0
+redundant anywhere outside `core`. Confirms the plan's Deployment-scope prediction: loading
+another extension set does not newly fail the check under the new predicate.
 
 **Timing**: 0.75 hours
 

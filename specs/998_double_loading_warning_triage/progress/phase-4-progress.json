@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy and run the verification bar",
+  "started_at": "2026-08-09T00:50:00Z",
+  "last_updated": "2026-08-09T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh to regenerate deploy tree", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Verify propagation (script byte-identical, index.json narrowed)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run validate-context-budgets.sh (bare and --verbose), capture outputs", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm redundant=0, legitimate/unclassifiable counts, no degraded banner", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm exit code / Summary unchanged-or-better vs baseline", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Section-by-section regression diff against Phase 1 baseline", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Measure cross-extension blast radius", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run 5 adjacent validators", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "validate-context-budgets.sh: redundant=0, legitimate=13 (path-for-path identical to Phase 1's legitimate-dual list), unclassifiable=0, no [DEGRADED ROUTE DERIVATION] banner. Violations stayed at 8 (all pre-existing Agent Budget Check overages, unrelated). The prior routine 'Warnings: 1' line is gone.",
+    "Full-section diff (Agent Budget Check, Tier 1 Check, Tier Classification Check, Dead Entry Check) between Phase 1 baseline and post-deploy --verbose capture is byte-identical.",
+    "Cross-extension measurement: every non-loaded extension's dual-hook entries land in unclassifiable-command (0 redundant anywhere outside core). present=36, founder=25, epidemiology=15, slidev=15, filetypes=10 all-unclassifiable; core=11/memory=2/literature=6 all-legitimate (currently loaded); remaining extensions have 0 dual-hook entries.",
+    "validate-wiring.sh --all reported 41 failures, but isolated to the .opencode tree (pre-existing 'Missing context file' drift) -- confirmed unrelated to this task by running --claude alone (0 failures, 1 pre-existing warning) vs --opencode alone (same 41 failures)."
+  ]
+}
