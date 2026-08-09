@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Reproduce the partition mechanically before editing anything",
+  "started_at": "2026-08-09T00:00:00Z",
+  "last_updated": "2026-08-09T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture baseline validate-context-budgets.sh --verbose output", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write standalone scratch classifier deriving six-command route table", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Print derived route table and eyeball against CLAUDE.md mapping", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Apply three-way partition to index.json", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Emit sorted bucket path lists, confirm counts sum to baseline", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Diff redundant/legitimate lists against report tables, reconcile divergence", "status": "done", "files_touched": [], "note": "Found and fixed a jq bug (index(.) rebinds '.' when piped through a variable, a known jq footgun) in the scratch classifier; after the fix the partition (36/13/0) is byte-identical to the report's tables."},
+    {"id": 7, "description": "Attribute every redundant path to its owning index-entries.json", "status": "done", "files_touched": [], "note": "All 36 redundant paths confirmed owned exclusively by agent-system/extensions/core/index-entries.json; 0 in any other extension."}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "jq set-difference partition using `$direct | index(.)` for direct-command membership test", "result": "failed", "reason": "jq rebinds `.` to the piped-in array inside index()'s argument, so index(.) does not test membership of the original current value; produced 0 redundant / 49 legitimate instead of the expected 36/13. Fixed by using `$direct | any(. == $c)` with an explicitly bound variable instead."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

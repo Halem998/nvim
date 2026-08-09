@@ -133,32 +133,37 @@ concurrently.
 
 ---
 
-### Phase 1: Reproduce the partition mechanically before editing anything [IN PROGRESS]
+### Phase 1: Reproduce the partition mechanically before editing anything [COMPLETED]
 
 **Goal**: Prove the coded predicate reproduces the report's classification against the live
 deployed index, and surface any divergence *before* a single source file is edited.
 
 **Tasks**:
-- [ ] Capture the baseline: run `bash .claude/scripts/validate-context-budgets.sh --verbose`, save
+- [x] Capture the baseline: run `bash .claude/scripts/validate-context-budgets.sh --verbose`, save
       full output (including the current dual-hook count and the verbose entry listing) to the
-      scratch directory as the before-state.
-- [ ] Write a standalone scratch classifier (scratch directory only -- not a deliverable, not under
+      scratch directory as the before-state. *(completed: 49 dual-hook entries at baseline, WARNING branch, 8 violations/1 warning overall)*
+- [x] Write a standalone scratch classifier (scratch directory only -- not a deliverable, not under
       `agent-system/**`) that derives the six-command route table from
       `.claude/extensions/core/manifest.json` (`routing_agents.{research,plan,implement}.{general,meta,markdown}`,
       uniqued) and the sole `subagent_type:` line in each of `.claude/skills/skill-meta/SKILL.md`,
-      `.claude/skills/skill-spawn/SKILL.md`, `.claude/skills/skill-reviser/SKILL.md`.
-- [ ] Print the derived route table and eyeball it against CLAUDE.md's Skill-to-Agent Mapping.
-- [ ] Apply the three-way partition to `.claude/context/index.json`: `redundant` (every command
+      `.claude/skills/skill-spawn/SKILL.md`, `.claude/skills/skill-reviser/SKILL.md`. *(completed)*
+- [x] Print the derived route table and eyeball it against CLAUDE.md's Skill-to-Agent Mapping.
+      *(completed: /research->general-research-agent, /plan->planner-agent, /implement->general-implementation-agent, /meta->meta-builder-agent, /spawn->spawn-agent, /revise->reviser-agent -- matches CLAUDE.md)*
+- [x] Apply the three-way partition to `.claude/context/index.json`: `redundant` (every command
       agent-routed and its route contained in `agents[]`), `unclassifiable-command` (at least one
       command not in the route table and not a known direct command), `legitimate-dual` (remainder).
-- [ ] Emit each bucket as a sorted path list; confirm the three counts sum to the baseline dual-hook
-      total.
-- [ ] Diff the `redundant` path list against the research report's 36-row table and the
+      *(completed)*
+- [x] Emit each bucket as a sorted path list; confirm the three counts sum to the baseline dual-hook
+      total. *(completed: 36 + 13 + 0 = 49)*
+- [x] Diff the `redundant` path list against the research report's 36-row table and the
       `legitimate-dual` list against its 13-row table. Record any divergence and reconcile it
-      (report error vs. predicate error) before proceeding.
-- [ ] Attribute every `redundant` path to its owning source `index-entries.json` by looking each up
+      (report error vs. predicate error) before proceeding. *(completed: initial classifier had a jq
+      bug -- `X | index(.)` rebinds `.` to the piped array, a known jq footgun -- that silently
+      produced 0/49 instead of 36/13; fixed with an explicit `any(. == $c)` membership test, after
+      which both path sets are byte-identical to the report's tables, zero divergence)*
+- [x] Attribute every `redundant` path to its owning source `index-entries.json` by looking each up
       against every `agent-system/extensions/*/index-entries.json` `.entries[].path`; confirm the
-      set of owning files.
+      set of owning files. *(completed: all 36 owned exclusively by agent-system/extensions/core/index-entries.json, 0 in any other extension)*
 
 **Timing**: 0.75 hours
 
