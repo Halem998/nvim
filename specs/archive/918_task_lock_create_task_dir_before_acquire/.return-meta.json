@@ -28,22 +28,47 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/918_task_lock_create_task_dir_before_acquire/summaries/01_task-lock-create-task-dir-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-root-guard", "isolated-fixture", "mktemp", "source-store", "bash-testing", "task-lock"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "isolated-fixture",
+        "mktemp",
+        "source-store",
+        "bash-testing",
+        "task-lock"
+      ]
     },
     {
       "content": "When adding create-if-missing behavior to a resolver function with multiple resolution strategies (authoritative source lookup, then a fallback scan), attempt creation only AFTER every read-only fallback has been tried and failed, never inside an early branch that would short-circuit later fallbacks. Placing creation inside an early branch risks creating a second, divergent artifact when the authoritative source has drifted from what the fallback would have found (e.g. a renamed/relocated on-disk directory), silently splitting state across two locations instead of resolving the existing one.",
       "category": "PATTERN",
       "source_artifact": "specs/918_task_lock_create_task_dir_before_acquire/summaries/01_task-lock-create-task-dir-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["resolver-fallback", "create-if-missing", "drift", "idempotent-resolution", "slug-drift"]
+      "suggested_keywords": [
+        "resolver-fallback",
+        "create-if-missing",
+        "drift",
+        "idempotent-resolution",
+        "slug-drift"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785166809_2598b7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

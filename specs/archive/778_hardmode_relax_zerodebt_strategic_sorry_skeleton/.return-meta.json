@@ -48,22 +48,48 @@
       "category": "PATTERN",
       "source_artifact": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton/summaries/01_strategic-sorry-skeleton-policy-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["hard-mode", "contracts", "status-enum", "boolean-field", "schema-extension", "sorry-inventory"]
+      "suggested_keywords": [
+        "hard-mode",
+        "contracts",
+        "status-enum",
+        "boolean-field",
+        "schema-extension",
+        "sorry-inventory"
+      ]
     },
     {
       "content": "When editing dual-tracked skill/agent files (deployed .claude/skills|agents/ copy + .claude/extensions/core/ source copy) in this repo, diff the pair BEFORE editing -- pre-existing unrelated divergences (e.g. from other concurrently-landed tasks) are common and must not be conflated with divergence introduced by your own edit. Scope the post-edit diff check to 'no NEW differences beyond the pre-existing baseline' rather than assuming byte-identity was true before you started.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton/summaries/01_strategic-sorry-skeleton-policy-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["dual-copy", "extensions-core", "diff", "byte-identity", "territory", "parallel-agents"]
+      "suggested_keywords": [
+        "dual-copy",
+        "extensions-core",
+        "diff",
+        "byte-identity",
+        "territory",
+        "parallel-agents"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1783090407_348a96_778",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1784991755_1b4381_893",
   "task_number": 893,
   "task_name": "close_stranded_status_detection_gap_for_not_started",
@@ -27,22 +31,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["reconcile", "stranded-status", "mtime-guard", "auto-promotion", "false-positive", "state-recovery"]
+      "suggested_keywords": [
+        "reconcile",
+        "stranded-status",
+        "mtime-guard",
+        "auto-promotion",
+        "false-positive",
+        "state-recovery"
+      ]
     },
     {
       "content": "When verifying a bash script change via sandbox execution, self-referential comment text (a header note that says 'see helper_name below') inflates a naive grep -c 'helper_name' count beyond what a plan's stated verification step may anticipate. This is harmless to functional correctness but worth checking for directly (grep -n, not just grep -c) before treating a count mismatch as a real defect.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md",
       "confidence": 0.6,
-      "suggested_keywords": ["grep-count", "verification", "self-reference", "sandbox-testing"]
+      "suggested_keywords": [
+        "grep-count",
+        "verification",
+        "self-reference",
+        "sandbox-testing"
+      ]
     },
     {
       "content": "In a shared repository with multiple concurrent agents committing to agent-system/ (or any shared source tree) simultaneously, a `git add <scoped paths>` followed by `git commit` can appear to fail with 'no changes added to commit' even though the content was genuinely committed -- because a race with another agent's own commit (which staged and committed overlapping working-tree state first) already carried the intended changes into history, just under a different commit message/attribution. Verify via `git log --oneline -- <path>` and `git show <commit>:<path>` diffed against the pre-change baseline, rather than assuming a nonzero exit from `git commit` means data loss.",
       "category": "INSIGHT",
       "source_artifact": "specs/893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["concurrent-agents", "git-race", "commit-bundling", "multi-agent-repo"]
+      "suggested_keywords": [
+        "concurrent-agents",
+        "git-race",
+        "commit-bundling",
+        "multi-agent-repo"
+      ]
     }
   ],
-  "next_steps": "Task complete. User must re-deploy via <leader>al (\"Load Core\" / \"Sync all\") for the fix to take effect in .claude/scripts/reconcile-task-status.sh."
+  "next_steps": "Task complete. User must re-deploy via <leader>al (\"Load Core\" / \"Sync all\") for the fix to take effect in .claude/scripts/reconcile-task-status.sh.",
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

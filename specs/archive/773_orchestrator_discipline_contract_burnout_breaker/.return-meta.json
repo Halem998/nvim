@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 773,
   "session_id": "sess_1783096045_wnia2f_773",
   "started_at": "2026-07-03T16:24:00Z",
@@ -44,14 +48,35 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["dual-copy", "SKILL.md", "diff -q", "extensions/core", "byte-identical"]
+      "suggested_keywords": [
+        "dual-copy",
+        "SKILL.md",
+        "diff -q",
+        "extensions/core",
+        "byte-identical"
+      ]
     },
     {
       "content": "A contract that governs the ORCHESTRATOR loop itself (not a sub-agent dispatch prompt) is wired via reference-plus-inline-directive at loop-top sub-stages of skill-orchestrate-hard (a once-per-invocation preamble stage plus an every-cycle gate stage), NOT via a build_hard_mode_prompt_context contract slot, because the orchestrator's own turns have no prompt string to inject into. Its self-monitoring 'forced handoff' reuses existing dispatch/escalation paths (e.g. the churn-detection divergence-audit dispatch shape, and the standard blocker-escalation stage) plus a scalar counter piggybacked on an existing loop-guard state file, avoiding any new artifact type.",
       "category": "PATTERN",
       "source_artifact": "specs/773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["orchestrator-contract", "burnout", "loop-top-gate", "hard-mode", "self-monitoring", "circuit-breaker"]
+      "suggested_keywords": [
+        "orchestrator-contract",
+        "burnout",
+        "loop-top-gate",
+        "hard-mode",
+        "self-monitoring",
+        "circuit-breaker"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

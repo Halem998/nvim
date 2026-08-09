@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 790,
   "task_slug": "reevaluate_model_tiering_sonnet5",
   "started_at": "2026-06-30T00:00:00Z",
@@ -25,14 +29,34 @@
       "category": "INSIGHT",
       "source_artifact": "specs/790_reevaluate_model_tiering_sonnet5/summaries/01_reevaluate-tiering-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["dotfiles", "auto-commit", "external-process", "git-workflow", "uncommitted-edits"]
+      "suggested_keywords": [
+        "dotfiles",
+        "auto-commit",
+        "external-process",
+        "git-workflow",
+        "uncommitted-edits"
+      ]
     },
     {
       "content": "The Edit tool can occasionally report 'has been updated successfully' for a file edit that does not persist to disk, when multiple Edit calls to different files are batched in one message and one of them targets a file not yet Read in the current session (a sibling call in the same batch fails with 'File has not been read yet' but the successful-looking one may not have actually written). Always verify high-stakes batched edits with a follow-up grep or git diff rather than trusting the tool's success message alone, especially after mixed-success batches.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/790_reevaluate_model_tiering_sonnet5/summaries/01_reevaluate-tiering-summary.md",
       "confidence": 0.6,
-      "suggested_keywords": ["edit-tool", "batched-edits", "verification", "silent-failure", "grep-after-edit"]
+      "suggested_keywords": [
+        "edit-tool",
+        "batched-edits",
+        "verification",
+        "silent-failure",
+        "grep-after-edit"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

@@ -41,29 +41,57 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/783_fix_sorry_census_exclude_comments/summaries/01_sorry-census-comment-stripper-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["lean4", "comment-stripping", "sorry-census", "nested-comments", "depth-counting"]
+      "suggested_keywords": [
+        "lean4",
+        "comment-stripping",
+        "sorry-census",
+        "nested-comments",
+        "depth-counting"
+      ]
     },
     {
       "content": "For an opt-in compiler cross-check flag that reuses `lake build` output (e.g. `--cross-check` invoking `lake build 2>&1 | grep -c \"declaration uses 'sorry'\"`), make the flag self-contained (run its own `lake build` inside the check) rather than assuming a build already ran earlier in the same call site's step sequence -- call-site step ordering varies across agents (some run the build before the check, some after) and a self-contained flag works correctly regardless.",
       "category": "PATTERN",
       "source_artifact": "specs/783_fix_sorry_census_exclude_comments/summaries/01_sorry-census-comment-stripper-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["lake-build", "cross-check", "verification", "lean4"]
+      "suggested_keywords": [
+        "lake-build",
+        "cross-check",
+        "verification",
+        "lean4"
+      ]
     },
     {
       "content": "In this repo's .claude/ extension deployment model: deployed cslib agents in .claude/agents/ are symlinks into .claude/extensions/cslib/agents/, so editing extension-source auto-propagates (verify with `readlink`). lean agents are NOT deployed to .claude/agents/ in this repo. install-extension.sh deploys agents/commands/skills but NOT scripts -- .claude/scripts/ is a real, version-controlled directory that is the canonical home for shared scripts referenced by any agent; for extension-packaging completeness, place a source-of-truth copy in the owning extension's scripts/ dir and register it in that extension's manifest.json provides.scripts.",
       "category": "CONFIG",
       "source_artifact": "specs/783_fix_sorry_census_exclude_comments/summaries/01_sorry-census-comment-stripper-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["extension-deployment", "symlinks", "provides.scripts", "install-extension"]
+      "suggested_keywords": [
+        "extension-deployment",
+        "symlinks",
+        "provides.scripts",
+        "install-extension"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_783_orchestrator",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

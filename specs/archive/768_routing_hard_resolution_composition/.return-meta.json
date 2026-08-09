@@ -2,7 +2,11 @@
   "status": "implemented",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1782320124_aa5841_768",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 768,
   "task_type": "meta",
   "plan_path": "specs/768_routing_hard_resolution_composition/plans/01_hard-routing-resolution.md",
@@ -61,7 +65,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/768_routing_hard_resolution_composition/summaries/01_hard-routing-resolution-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["routing_hard", "hard-mode", "extension-override", "SKILL.md", "safety-gate", "command-route-skill"]
+      "suggested_keywords": [
+        "routing_hard",
+        "hard-mode",
+        "extension-override",
+        "SKILL.md",
+        "safety-gate",
+        "command-route-skill"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

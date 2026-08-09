@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 910,
   "session_id": "sess_1785116996_862366_910",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "plan_path": "specs/910_fix_roadmap_annotation_silent_noop/plans/01_roadmap-annotation-signal.md",
   "phases_completed": 6,
   "phases_total": 6,
@@ -64,21 +68,46 @@
       "category": "PATTERN",
       "source_artifact": "specs/910_fix_roadmap_annotation_silent_noop/summaries/01_roadmap-annotation-signal-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["silent-noop", "structure-marker", "loud-banner", "additive-json", "diagnostic-signal"]
+      "suggested_keywords": [
+        "silent-noop",
+        "structure-marker",
+        "loud-banner",
+        "additive-json",
+        "diagnostic-signal"
+      ]
     },
     {
       "content": "When a script must locate and rewrite a specific line it parsed earlier (not just search for it again), capture a (line_index, raw_line) reference pair at parse time and use it -- never re-derive location from content text, which can collide across rows with identical text. Before writing, re-verify the on-disk line at that index still equals the captured raw_line; treat any mismatch as a recorded skip, never a blind write. This pattern generalizes beyond markdown table rows to any text-rewriting pipeline with a parse-then-annotate split.",
       "category": "PATTERN",
       "source_artifact": "specs/910_fix_roadmap_annotation_silent_noop/summaries/01_roadmap-annotation-signal-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["line-reference", "safe-rewrite", "parse-then-annotate", "text-mutation", "collision-safe"]
+      "suggested_keywords": [
+        "line-reference",
+        "safe-rewrite",
+        "parse-then-annotate",
+        "text-mutation",
+        "collision-safe"
+      ]
     },
     {
       "content": "A dry-run mode that increments a 'would succeed' counter without confirming the target actually exists over-reports success. Fix by gating the dry-run increment on the exact same existence/agreement check the real apply path performs, so dry-run and apply can never diverge on what counts as achievable.",
       "category": "INSIGHT",
       "source_artifact": "specs/910_fix_roadmap_annotation_silent_noop/summaries/01_roadmap-annotation-signal-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["dry-run", "over-report", "existence-check", "shared-gate"]
+      "suggested_keywords": [
+        "dry-run",
+        "over-report",
+        "existence-check",
+        "shared-gate"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1785200970_1df081_887",
   "phases_completed": 12,
   "phases_total": 12,
@@ -35,21 +39,46 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/887_research_telemetry_source_architecture_and_distill_redesign/summaries/01_distill-telemetry-redesign-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "extension-reload", "skill-deploy", "stale-deploy", "manager.reload"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "extension-reload",
+        "skill-deploy",
+        "stale-deploy",
+        "manager.reload"
+      ]
     },
     {
       "content": "When splitting a large SKILL.md into two skills at a fixed line boundary, verify line-count reconciliation immediately after each cut-and-paste move (old_total == new_total_across_all_pieces) and diff each relocated block against its pre-move extraction to confirm byte-identical relocation before adding any new header/registration content. This caught the exact boundary (2941 = 1062 + 1879) and confirmed zero content loss across a later multi-step reorder (moving a 453-line block earlier in the same file) with simple sed-based extraction/reassembly plus diff, rather than relying on visual inspection of a huge file.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/887_research_telemetry_source_architecture_and_distill_redesign/summaries/01_distill-telemetry-redesign-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["line-count-reconciliation", "file-split", "skill-md-split", "mechanical-relocation", "diff-verify"]
+      "suggested_keywords": [
+        "line-count-reconciliation",
+        "file-split",
+        "skill-md-split",
+        "mechanical-relocation",
+        "diff-verify"
+      ]
     },
     {
       "content": "When a plan instructs reusing an existing sub-mode's content 'in substance unchanged' as the seed for new sub-modes (e.g. splitting an overloaded 'dream' mode into --revise and --meta), read the full existing section first to extract the exact reusable content (event ingestion, classification logic, JSON payloads) before drafting the new sections, rather than re-deriving similar-sounding content from scratch. This preserves verified-correct algorithmic detail (three-strikes thresholds, JSON schemas) and makes the 'fully contains the migrated content' verification step trivial.",
       "category": "PATTERN",
       "source_artifact": "specs/887_research_telemetry_source_architecture_and_distill_redesign/summaries/01_distill-telemetry-redesign-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["content-migration", "sub-mode-split", "reuse-not-rederive", "dream-redefinition"]
+      "suggested_keywords": [
+        "content-migration",
+        "sub-mode-split",
+        "reuse-not-rederive",
+        "dream-redefinition"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

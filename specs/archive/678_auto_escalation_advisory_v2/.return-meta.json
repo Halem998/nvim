@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1781288710_ad1e5a_678",
   "task_number": 678,
   "phases_completed": 3,
@@ -23,7 +27,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/678_auto_escalation_advisory_v2/summaries/01_auto-escalation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["skill-orchestrate", "loop-guard", "advisory", "churn-detection", "stage-5", "selective-merge"]
+      "suggested_keywords": [
+        "skill-orchestrate",
+        "loop-guard",
+        "advisory",
+        "churn-detection",
+        "stage-5",
+        "selective-merge"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 680,
   "session_id": "sess_20260612_680",
   "started_at": "2026-06-12T00:00:00Z",
@@ -21,7 +25,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/680_fix_stop_hook_tts/summaries/01_implementation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["tts", "cooldown", "dedup", "claude-stop-notify", "tts-notify", "notification"]
+      "suggested_keywords": [
+        "tts",
+        "cooldown",
+        "dedup",
+        "claude-stop-notify",
+        "tts-notify",
+        "notification"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

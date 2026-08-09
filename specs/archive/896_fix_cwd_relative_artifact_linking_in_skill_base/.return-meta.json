@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1784998517_0638c7_896",
   "task_number": 896,
   "plan_path": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/plans/01_cwd-relative-artifact-linking-fix.md",
@@ -27,14 +31,33 @@
       "category": "PATTERN",
       "source_artifact": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/summaries/01_cwd-relative-artifact-linking-fix-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["cwd-relative-paths", "SKILL_REPO_ROOT", "bash-anchor-pattern", "mkdir-p-guard", "atomic-jq-writeback"]
+      "suggested_keywords": [
+        "cwd-relative-paths",
+        "SKILL_REPO_ROOT",
+        "bash-anchor-pattern",
+        "mkdir-p-guard",
+        "atomic-jq-writeback"
+      ]
     },
     {
       "content": "Converting a bash `for arg in \"$@\"; do case \"$arg\" in ... esac; done` argument parser to accept a flag with a value (e.g. `--task N`) requires switching to `while [[ $# -gt 0 ]]; do case \"$1\" in ... shift [N]; done` -- the for-loop form iterates positional args by value and cannot consume/shift a following token, so a naive addition of a value-taking flag causes the flag's value to fall through to the catch-all and abort. Support both two-token (`--flag value`, shift 2) and single-token (`--flag=value`, shift 1) forms for compatibility.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/summaries/01_cwd-relative-artifact-linking-fix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash-arg-parsing", "while-shift-loop", "flag-with-value", "getopts-alternative"]
+      "suggested_keywords": [
+        "bash-arg-parsing",
+        "while-shift-loop",
+        "flag-with-value",
+        "getopts-alternative"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

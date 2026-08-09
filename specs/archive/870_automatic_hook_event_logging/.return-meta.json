@@ -12,7 +12,11 @@
     "session_id": "sess_1784102843_ae113e_870",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   },
@@ -25,21 +29,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["errors.json", "jq", "schema", "cross-link", "error_ref"]
+      "suggested_keywords": [
+        "errors.json",
+        "jq",
+        "schema",
+        "cross-link",
+        "error_ref"
+      ]
     },
     {
       "content": "Claude Code Stop/SubagentStop hook stdin never carries a workflow session_id or task number directly. The established correlation chain in this repo is: SubagentStop -> find the .postflight-pending marker file (which DOES carry session_id/skill/operation) via `find specs -maxdepth 3 -name \".postflight-pending\"`; Stop -> read .claude/tmp/workflow-active (format: \"<task_number> <timestamp>\", written by update-task-status.sh preflight) for a task number, falling back to a task-number regex over last_assistant_message (mirror memory-nudge.sh), then resolve session_id by looking up that task number against specs/state.json's active_projects[].session_id (populated on every preflight). If no session_id can be resolved this way, exit {} cleanly rather than emitting a sessionless event.",
       "category": "PATTERN",
       "source_artifact": "specs/870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["Stop hook", "SubagentStop", "session_id correlation", "workflow-active", "postflight-pending"]
+      "suggested_keywords": [
+        "Stop hook",
+        "SubagentStop",
+        "session_id correlation",
+        "workflow-active",
+        "postflight-pending"
+      ]
     },
     {
       "content": "To verify a batch of JSONL event lines against context/schemas/events-schema.json in a scratch e2e test, use Python's jsonschema.Draft7Validator(schema).iter_errors(obj) per parsed line rather than hand-rolled jq field checks -- it directly enforces the pattern/enum/required constraints (e.g. event_id's evt_{ms}_{6} pattern, session_id's sess_{ts}_{alnum} pattern, category's closed enum) with precise error messages, catching test-fixture mistakes (like a non-conforming session_id) immediately.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["jsonschema", "JSON Schema validation", "events.jsonl", "e2e testing", "Draft7Validator"]
+      "suggested_keywords": [
+        "jsonschema",
+        "JSON Schema validation",
+        "events.jsonl",
+        "e2e testing",
+        "Draft7Validator"
+      ]
     }
   ],
   "modified_files": [
@@ -50,5 +72,13 @@
     "agent-system/extensions/core/manifest.json",
     "agent-system/extensions/core/root-files/settings.json",
     "agent-system/extensions/core/EXTENSION.md"
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

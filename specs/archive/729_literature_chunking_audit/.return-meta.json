@@ -1,14 +1,18 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1750091400_b72e3f_729",
   "started_at": "2026-06-16T00:00:00Z",
   "completed_at": "2026-06-16T01:00:00Z",
   "phases_completed": 4,
   "phases_total": 4,
   "completion_data": {
-    "completion_summary": "Generated chunking quality manifest for 23 Literature/ subdirectories and 30 flat files. Renamed 13 arbitrarily-named chunk files across 3 directories (burgess_1984, doets_1989, reynolds_1994) to semantic names and updated index.json. Phase 3 (cslib) skipped — cslib has no specs/literature/ directory.",
+    "completion_summary": "Generated chunking quality manifest for 23 Literature/ subdirectories and 30 flat files. Renamed 13 arbitrarily-named chunk files across 3 directories (burgess_1984, doets_1989, reynolds_1994) to semantic names and updated index.json. Phase 3 (cslib) skipped \u2014 cslib has no specs/literature/ directory.",
     "roadmap_items": []
   },
   "memory_candidates": [
@@ -17,7 +21,13 @@
       "category": "PATTERN",
       "source_artifact": "specs/729_literature_chunking_audit/summaries/01_chunking-audit-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["literature", "chunking", "semantic-naming", "pdf-scan", "index-json"]
+      "suggested_keywords": [
+        "literature",
+        "chunking",
+        "semantic-naming",
+        "pdf-scan",
+        "index-json"
+      ]
     }
   ],
   "artifacts": [
@@ -36,5 +46,13 @@
       "path": "specs/729_literature_chunking_audit/summaries/01_chunking-audit-summary.md",
       "summary": "Implementation summary for task 729"
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

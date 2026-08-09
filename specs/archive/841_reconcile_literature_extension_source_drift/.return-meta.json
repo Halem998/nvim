@@ -4,7 +4,11 @@
     "session_id": "sess_1783723116_10f020_841",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   },
@@ -49,15 +53,34 @@
       "category": "INSIGHT",
       "source_artifact": "specs/841_reconcile_literature_extension_source_drift/summaries/01_reconciliation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "self-referential-drift", "provides.scripts", "core-extension"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "self-referential-drift",
+        "provides.scripts",
+        "core-extension"
+      ]
     },
     {
       "content": "check-extension-docs.sh in this repo has pre-existing, long-standing FAIL entries unrelated to any specific task: core reports 3 undeclared-script-reference failures (literature-briefing-invoke.sh, orchestrator-postflight.sh, task-lock.sh referenced in docs but not in provides.scripts) and lean reports 2 routing_hard-target-not-deployed failures (skill-lean-research-hard, skill-lean-implementation-hard). Verified via git stash (task 841) that these exist identically with and without unrelated changes. Do not assume script-wide exit 1 means your own change broke something -- check whether the specific extension section you touched is PASS.",
       "category": "INSIGHT",
       "source_artifact": "specs/841_reconcile_literature_extension_source_drift/summaries/01_reconciliation-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["check-extension-docs", "pre-existing-failures", "core-extension", "lean-extension", "doc-lint-baseline"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "pre-existing-failures",
+        "core-extension",
+        "lean-extension",
+        "doc-lint-baseline"
+      ]
     }
   ],
-  "next_steps": "Task complete. Recommend future task to address the 5 pre-existing unrelated check-extension-docs.sh failures in core (3 undeclared script references) and lean (2 routing_hard undeployed targets), out of scope for task 841."
+  "next_steps": "Task complete. Recommend future task to address the 5 pre-existing unrelated check-extension-docs.sh failures in core (3 undeclared script references) and lean (2 routing_hard undeployed targets), out of scope for task 841.",
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

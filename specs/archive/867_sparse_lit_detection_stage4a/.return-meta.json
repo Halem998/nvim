@@ -12,7 +12,11 @@
     "session_id": "sess_1784097580_894630_867",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   },
@@ -25,21 +29,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/867_sparse_lit_detection_stage4a/summaries/01_sparse-lit-stage4a-wiring-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["extension-architecture", "shared-context", "drift-elimination", "core-context", "at-import"]
+      "suggested_keywords": [
+        "extension-architecture",
+        "shared-context",
+        "drift-elimination",
+        "core-context",
+        "at-import"
+      ]
     },
     {
       "content": "When a delegation-context boolean flag (e.g. orchestrator_mode) is reused for a SECOND, unrelated gating purpose beyond its original meaning, add an explicit dual-consumer cross-reference note at both consumer sites (not just one) -- a future edit to either consumer's semantics needs to see the other consumer to avoid silently regressing it.",
       "category": "PATTERN",
       "source_artifact": "specs/867_sparse_lit_detection_stage4a/summaries/01_sparse-lit-stage4a-wiring-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["dual-consumer", "delegation-context", "orchestrator_mode", "cross-reference", "regression-prevention"]
+      "suggested_keywords": [
+        "dual-consumer",
+        "delegation-context",
+        "orchestrator_mode",
+        "cross-reference",
+        "regression-prevention"
+      ]
     },
     {
       "content": "The no-task-references-in-deliverables rule is easy to violate accidentally when writing skill/doc prose that names a dependency bridge or prior task's deliverable by habit (e.g. \"the task-866 bridge\"). Grep the full diff for task-number patterns (grep -rniE 'task[ -]?[0-9]{2,4}\\b') across every file touched outside specs/** as a final pre-commit check, not just the files you remember editing.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/867_sparse_lit_detection_stage4a/summaries/01_sparse-lit-stage4a-wiring-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["task-references", "durable-anchors", "pre-commit-check", "grep-verification"]
+      "suggested_keywords": [
+        "task-references",
+        "durable-anchors",
+        "pre-commit-check",
+        "grep-verification"
+      ]
     }
   ],
   "modified_files": [
@@ -59,5 +80,13 @@
     "agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md",
     "agent-system/extensions/literature/scripts/literature-briefing.sh",
     "agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh"
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

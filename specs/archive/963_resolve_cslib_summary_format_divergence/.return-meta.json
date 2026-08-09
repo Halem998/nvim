@@ -22,22 +22,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/963_resolve_cslib_summary_format_divergence/summaries/01_resolve-summary-format-divergence-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["summary-format", "validate-artifact", "optional-section", "minimum-not-whitelist", "agent-context-references", "format-standard-drift"]
+      "suggested_keywords": [
+        "summary-format",
+        "validate-artifact",
+        "optional-section",
+        "minimum-not-whitelist",
+        "agent-context-references",
+        "format-standard-drift"
+      ]
     },
     {
       "content": "A base/hard agent pair implementing the same domain (e.g. cslib-implementation-agent.md vs cslib-implementation-hard-agent.md) commonly diverges in whether each references a shared format standard: the hard variant often already has the @-reference and a terse pointer-style stage, while the base variant lacks the reference entirely and has no equivalent stage at all -- not just a shorter one. When fixing this asymmetry, give the base agent the FULL skeleton (since it has nothing to fall back on) and keep the hard agent's fix terse, pointing at the base agent's skeleton rather than duplicating it, consistent with the hard agent's existing compressed style.",
       "category": "PATTERN",
       "source_artifact": "specs/963_resolve_cslib_summary_format_divergence/summaries/01_resolve-summary-format-divergence-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["base-hard-agent-asymmetry", "agent-skeleton", "context-references", "extension-agents", "cslib"]
+      "suggested_keywords": [
+        "base-hard-agent-asymmetry",
+        "agent-skeleton",
+        "context-references",
+        "extension-agents",
+        "cslib"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785950363_553a84_963",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

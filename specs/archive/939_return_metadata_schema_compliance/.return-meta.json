@@ -31,22 +31,45 @@
       "category": "PATTERN",
       "source_artifact": "specs/939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["schema-drift", "field-name-collision", "return-meta", "silent-degradation", "evidence-based-detection"]
+      "suggested_keywords": [
+        "schema-drift",
+        "field-name-collision",
+        "return-meta",
+        "silent-degradation",
+        "evidence-based-detection"
+      ]
     },
     {
       "content": "A plan's own 'Scope Hypothesis' field, when written as an explicit contingency instruction ('if the grep finds X, add it to this phase rather than deferring it'), should be followed literally during implementation even when it widens a phase's declared file-edit list beyond what was originally enumerated -- the widening is pre-authorized by the plan itself, not an implementer's independent scope decision, and should still be recorded explicitly (in the phase's progress file deviations array and the final summary) so the widening is visible rather than silent.",
       "category": "PATTERN",
       "source_artifact": "specs/939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["scope-hypothesis", "plan-format", "footprint-widening", "implementation-fidelity"]
+      "suggested_keywords": [
+        "scope-hypothesis",
+        "plan-format",
+        "footprint-widening",
+        "implementation-fidelity"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785251682_61201e_939",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

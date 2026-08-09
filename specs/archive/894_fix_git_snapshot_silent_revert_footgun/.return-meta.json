@@ -2,7 +2,11 @@
   "status": "implemented",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1784991755_1b4381_894",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 894,
   "task_name": "fix_git_snapshot_silent_revert_footgun",
   "artifacts": [
@@ -21,7 +25,24 @@
   "phases_completed": 6,
   "phases_total": 6,
   "estimated_hours": 5.5,
-  "dependency_waves": [[1], [2], [3, 4], [5], [6]],
+  "dependency_waves": [
+    [
+      1
+    ],
+    [
+      2
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      5
+    ],
+    [
+      6
+    ]
+  ],
   "research_inputs": [
     "specs/894_fix_git_snapshot_silent_revert_footgun/reports/01_git-snapshot-revert-footgun.md"
   ],
@@ -47,15 +68,36 @@
       "category": "PATTERN",
       "source_artifact": "specs/894_fix_git_snapshot_silent_revert_footgun/plans/01_git-snapshot-revert-footgun.md",
       "confidence": 0.85,
-      "suggested_keywords": ["call-site-families", "default-behavior-change", "git-stash-create", "non-destructive-snapshot", "subshell-variable-loss", "shared-helper-script"]
+      "suggested_keywords": [
+        "call-site-families",
+        "default-behavior-change",
+        "git-stash-create",
+        "non-destructive-snapshot",
+        "subshell-variable-loss",
+        "shared-helper-script"
+      ]
     },
     {
       "content": "When a phased plan gives literal anchor-and-replace edit instructions across sequential phases that touch the same region of a file, a later phase's anchor text may no longer be contiguous after an earlier phase already inserted content in between. Detect this before applying the edit (diff the anchor against the file's current state, not the plan's assumed prior state) and split the edit into multiple smaller Edit calls that individually preserve each earlier phase's insertion, rather than doing one large contiguous replacement that would silently delete the earlier phase's work. Applies generally to any multi-phase implementation plan with pre-written replacement-text blocks for a shared file.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/894_fix_git_snapshot_silent_revert_footgun/summaries/01_git-snapshot-revert-footgun-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["phased-plan-execution", "anchor-drift", "sequential-edits", "edit-tool", "plan-replacement-text"]
+      "suggested_keywords": [
+        "phased-plan-execution",
+        "anchor-drift",
+        "sequential-edits",
+        "edit-tool",
+        "plan-replacement-text"
+      ]
     }
   ],
-  "next_steps": "None. Task complete; all 6 phases implemented, committed, and verified."
+  "next_steps": "None. Task complete; all 6 phases implemented, committed, and verified.",
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

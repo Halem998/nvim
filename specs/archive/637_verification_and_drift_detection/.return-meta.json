@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1780939217_912b75",
   "task_number": 637,
   "task_slug": "verification_and_drift_detection",
@@ -23,7 +27,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/637_verification_and_drift_detection/summaries/01_verification-fix-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["opencode", "agent-paths", "extension-agents", "opencode-agents.json", "port", "drift"]
+      "suggested_keywords": [
+        "opencode",
+        "agent-paths",
+        "extension-agents",
+        "opencode-agents.json",
+        "port",
+        "drift"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

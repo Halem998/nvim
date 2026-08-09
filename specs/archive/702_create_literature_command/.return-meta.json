@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1781482254_239635_702",
   "task_number": 702,
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "phases_completed": 4,
   "phases_total": 4,
   "completed_at": "2026-06-14T18:30:00Z",
@@ -34,11 +38,26 @@
   },
   "memory_candidates": [
     {
-      "content": "The /literature command follows the direct-execution pattern (Pattern B) like /distill and /fix-it: command.md parses args and delegates to skill-literature via the Skill tool; skill-literature runs inline with AskUserQuestion — no agent subagent is spawned. pdftotext (poppler, available) is the primary conversion tool; djvutxt (djvulibre) is not installed and requires graceful degradation. Token counting: chars/4 + 20 (same as memory-harvest.sh). Chunking: 10 pages per chunk = ~4000 tokens.",
+      "content": "The /literature command follows the direct-execution pattern (Pattern B) like /distill and /fix-it: command.md parses args and delegates to skill-literature via the Skill tool; skill-literature runs inline with AskUserQuestion \u2014 no agent subagent is spawned. pdftotext (poppler, available) is the primary conversion tool; djvutxt (djvulibre) is not installed and requires graceful degradation. Token counting: chars/4 + 20 (same as memory-harvest.sh). Chunking: 10 pages per chunk = ~4000 tokens.",
       "category": "PATTERN",
       "source_artifact": "specs/702_create_literature_command/summaries/01_lit-command-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["literature", "pdf", "convert", "direct-execution", "pdftotext", "chunking"]
+      "suggested_keywords": [
+        "literature",
+        "pdf",
+        "convert",
+        "direct-execution",
+        "pdftotext",
+        "chunking"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

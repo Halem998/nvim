@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1785180513_6ef9d7_929",
   "task_number": 929,
   "phases_completed": 6,
@@ -48,21 +52,45 @@
       "category": "PATTERN",
       "source_artifact": "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["rule-file", "agent-contract", "MUST-NOT-pointer", "source-store", "duplicate-prose-collapse"]
+      "suggested_keywords": [
+        "rule-file",
+        "agent-contract",
+        "MUST-NOT-pointer",
+        "source-store",
+        "duplicate-prose-collapse"
+      ]
     },
     {
       "content": "A PostToolUse hook (e.g. validate-meta-write.sh) only receives a file_path argument and can never know task type, lifecycle stage, or repository identity. It is structurally an advisory nudge on path SHAPE only, never a backstop for target-root correctness. When writing or reviewing such hooks, never let their advisory message overclaim enforcement -- state the limitation explicitly in both the hook's own comments and any rule file that references it.",
       "category": "INSIGHT",
       "source_artifact": "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["posttooluse-hook", "advisory-limitation", "hook-enforcement", "file_path-only"]
+      "suggested_keywords": [
+        "posttooluse-hook",
+        "advisory-limitation",
+        "hook-enforcement",
+        "file_path-only"
+      ]
     },
     {
       "content": "This repo's .claude/ tree is regenerated from agent-system/extensions/** by a Lua file-copy engine (lua/neotex/plugins/ai/shared/extensions/loader.lua), not through the Claude Code Write/Edit tool call path. Any PostToolUse hook gated on Write|Edit therefore structurally cannot fire during a deploy/reload, so widening such a hook's path coverage carries no risk of interfering with deploy -- no carve-out is ever needed for the loader itself.",
       "category": "INSIGHT",
       "source_artifact": "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["deploy-loader", "file-copy-engine", "posttooluse-scope", "extension-loader"]
+      "suggested_keywords": [
+        "deploy-loader",
+        "file-copy-engine",
+        "posttooluse-scope",
+        "extension-loader"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

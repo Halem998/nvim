@@ -2,7 +2,11 @@
   "status": "implemented",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1781284922_643662_673",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 673,
   "phases_completed": 3,
   "phases_total": 3,
@@ -25,7 +29,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/673_pr_task_type_routing/summaries/01_implementation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["cslib", "extension", "routing", "task-type", "manifest", "pr"]
+      "suggested_keywords": [
+        "cslib",
+        "extension",
+        "routing",
+        "task-type",
+        "manifest",
+        "pr"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

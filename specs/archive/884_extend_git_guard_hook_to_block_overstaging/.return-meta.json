@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 884,
   "session_id": "sess_1784155855_f90cfe_884",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "phases_completed": 4,
   "phases_total": 4,
   "artifacts": [
@@ -27,14 +31,33 @@
       "category": "PATTERN",
       "source_artifact": "specs/884_extend_git_guard_hook_to_block_overstaging/summaries/01_extend-git-guard-overstaging-summary.md",
       "confidence": 0.6,
-      "suggested_keywords": ["plan-verification-conflict", "literal-grep-check", "remediation-wording", "deviation-annotation"]
+      "suggested_keywords": [
+        "plan-verification-conflict",
+        "literal-grep-check",
+        "remediation-wording",
+        "deviation-annotation"
+      ]
     },
     {
       "content": "On a shared/concurrent working tree (multiple orchestrator tasks running in parallel), a scoped 'git add <task-dir>/' immediately followed by 'git commit' can still sweep in unrelated files if another session staged them in the shared index between the add and commit, or earlier. Caught via git show --stat on the resulting commit; fixed non-destructively with 'git reset' (mixed, NOT --hard) which unstages without discarding any content, then re-staged precisely and re-committed. Always spot-check 'git show --stat' immediately after a commit in a concurrent-task environment, not just 'git status --short' before staging.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/884_extend_git_guard_hook_to_block_overstaging/summaries/01_extend-git-guard-overstaging-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["concurrent-tasks", "over-staging", "git-reset-mixed", "shared-index", "post-commit-verification"]
+      "suggested_keywords": [
+        "concurrent-tasks",
+        "over-staging",
+        "git-reset-mixed",
+        "shared-index",
+        "post-commit-verification"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

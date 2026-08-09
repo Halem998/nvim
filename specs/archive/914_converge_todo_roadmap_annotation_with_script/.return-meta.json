@@ -2,7 +2,11 @@
   "status": "implemented",
   "task_number": 914,
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1785180513_6ef9d7_914",
   "phases_completed": 6,
   "phases_total": 6,
@@ -27,14 +31,33 @@
       "category": "PATTERN",
       "source_artifact": "specs/914_converge_todo_roadmap_annotation_with_script/summaries/01_converge-todo-roadmap-annotation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["filtered-snapshot", "shared-script-reuse", "roadmap-integration", "scratch-state-json", "caller-contract"]
+      "suggested_keywords": [
+        "filtered-snapshot",
+        "shared-script-reuse",
+        "roadmap-integration",
+        "scratch-state-json",
+        "caller-contract"
+      ]
     },
     {
       "content": "When a plan's Overview flags a research report's premise as inaccurate (verified live against the actual repo), that correction must be re-verified during implementation, not just read once: it is easy to accidentally copy the ORIGINAL inaccurate premise into new spec prose while writing plausible-sounding illustrative text, even after having read the correction. A dedicated cross-spec/self-consistency sweep phase (this plan's Phase 6) is what actually caught the defect here, not the initial drafting care.",
       "category": "INSIGHT",
       "source_artifact": "specs/914_converge_todo_roadmap_annotation_with_script/summaries/01_converge-todo-roadmap-annotation-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["consistency-sweep", "research-report-correction", "self-verification", "plan-overview"]
+      "suggested_keywords": [
+        "consistency-sweep",
+        "research-report-correction",
+        "self-verification",
+        "plan-overview"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

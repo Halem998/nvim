@@ -1,27 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 992,
   "session_id": "sess_1786316975_3658f6_992",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/992_extension_md_slim_down/plans/01_extension-md-slim-down.md",
-      "summary": "8-phase plan: 6 parallel EXTENSION.md trim phases with per-extension context-file migration and index entries, 1 phase making check-extension-docs.sh merge_targets.claudemd.source-authoritative and deleting both dead files, 1 final zero-Rule-U-advisory gate phase"
-    }
-  ],
-  "phase_count": 8,
-  "estimated_hours": 8.75,
-  "dependency_waves": [[1, 2, 3, 4, 5, 6, 7], [8]],
-  "memory_candidates": [
-    {
-      "content": "When a lint gate hardcodes a required filename (e.g. 'every extension must have EXTENSION.md'), and that filename is actually consumed only via a manifest declaration (merge_targets.claudemd.source), the gate's authority is misplaced: it will demand and length-check files that no code path ever reads, producing 'dead conformance' work. The general fix is to make the gate read the manifest declaration that determines consumption, and require/check the file only for extensions whose manifest names it. Two guards make this safe rather than a silent loosening: (1) emit an advisory (never a silent skip) when the manifest key is absent for a component that is NOT genuinely resource-only, so an accidental omission is distinguishable from an intentional design; (2) verify after the change that the gate still hard-fails for a component that DOES declare the file but is missing it, proving the gate was narrowed and not disabled. Structural evidence that a file is dead (no code path reads it) should be gathered before deciding to trim vs. delete -- trimming a dead file is the one strictly wrong outcome.",
-      "category": "PATTERN",
-      "source_artifact": "specs/992_extension_md_slim_down/plans/01_extension-md-slim-down.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["lint-gate", "manifest-authority", "dead-file", "extension-system", "conformance", "check-extension-docs"]
-    }
-  ],
-  "next_steps": "Run /implement 992 to execute the plan"
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }

@@ -15,7 +15,11 @@
     "session_id": "sess_1783727261_4a4b8c_842",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   },
@@ -25,21 +29,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["literature-chunk.sh", "chunks.json", "multi-file-doc-id", "literature-build-index.sh", "distinct-subdirectory-chunking"]
+      "suggested_keywords": [
+        "literature-chunk.sh",
+        "chunks.json",
+        "multi-file-doc-id",
+        "literature-build-index.sh",
+        "distinct-subdirectory-chunking"
+      ]
     },
     {
       "content": "In the literature pipeline, .claude/skills/skill-literature/SKILL.md is a symlink to ../extensions/literature/skills/skill-literature/SKILL.md (not a separate copy). Editing the extension source automatically keeps the deployed path in sync -- `cp` + `diff -q` checks pass trivially. `git add`/`git status` on the symlinked deployed path errors with 'beyond a symbolic link'; stage only the extension source path in commits.",
       "category": "CONFIG",
       "source_artifact": "specs/842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["skill-literature", "symlink", "deployed-copy", "drift-guard", "git-add-symlink-error"]
+      "suggested_keywords": [
+        "skill-literature",
+        "symlink",
+        "deployed-copy",
+        "drift-guard",
+        "git-add-symlink-error"
+      ]
     },
     {
       "content": "literature-search.sh's default ranked output excludes docs without a provenance_fidelity stamp (fail-open to 'unverified'), because that field is written by a separate literature-fidelity-audit.sh --write pass, not by handle_convert()/literature-ingest.sh at conversion/chunk time. A freshly chunked+indexed doc is immediately present in chunks_data and findable via `--include-unverified`, but invisible to default search until fidelity-audited. This is expected, pre-existing behavior, not a coverage bug.",
       "category": "INSIGHT",
       "source_artifact": "specs/842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["literature-search.sh", "provenance_fidelity", "literature-fidelity-audit.sh", "include-unverified", "search-default-filtering"]
+      "suggested_keywords": [
+        "literature-search.sh",
+        "provenance_fidelity",
+        "literature-fidelity-audit.sh",
+        "include-unverified",
+        "search-default-filtering"
+      ]
     }
   ],
   "modified_files": [
@@ -52,5 +74,13 @@
     "specs/842_literature_convert_chunk_index_coverage/progress/phase-4-progress.json",
     "specs/842_literature_convert_chunk_index_coverage/progress/phase-5-progress.json",
     "specs/842_literature_convert_chunk_index_coverage/.orchestrator-handoff.json"
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

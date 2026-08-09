@@ -1,1 +1,67 @@
-{"status": "implemented", "artifacts": [{"type": "plan", "path": "specs/520_remove_oc_prefix_opencode_documentation/plans/01_oc-prefix-removal-plan.md", "summary": "Implementation plan with 4 phases for removing OC_ prefix from 18 file groups and extension mirrors"}, {"type": "summary", "path": "specs/520_remove_oc_prefix_opencode_documentation/summaries/01_oc-prefix-removal-summary.md", "summary": "Summary of OC_ prefix removal across documentation, standards, skills, and extension mirrors"}], "next_steps": "Task complete", "completion_data": {"completion_summary": "Removed all OC_ prefix references from OpenCode documentation and standards across 18+ file groups and extension mirrors. Updated path conventions, bash script examples, regex patterns, and task management standards to use plain numbers consistently."}, "memory_candidates": [{"content": "When removing deprecated prefixes from documentation, parallel directory structures (context/ vs context/core/) and extension mirrors require separate passes. Using sed for bulk replacements followed by targeted Edit tool for complex changes provides the best balance of speed and precision.", "category": "WORKFLOW", "source_artifact": "specs/520_remove_oc_prefix_opencode_documentation/summaries/01_oc-prefix-removal-summary.md", "confidence": 0.85, "suggested_keywords": ["prefix removal", "parallel directories", "bulk sed", "extension mirrors"]}], "metadata": {"session_id": "session-520-521-522-combined", "agent_type": "general-implementation-agent", "duration_seconds": 9000, "delegation_depth": 2, "delegation_path": ["orchestrator", "implement", "general-implementation-agent"], "phase_count": 4, "phases_completed": 4, "estimated_hours": 3, "dependency_waves": [[1], [2, 3], [4]]}}
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/520_remove_oc_prefix_opencode_documentation/plans/01_oc-prefix-removal-plan.md",
+      "summary": "Implementation plan with 4 phases for removing OC_ prefix from 18 file groups and extension mirrors"
+    },
+    {
+      "type": "summary",
+      "path": "specs/520_remove_oc_prefix_opencode_documentation/summaries/01_oc-prefix-removal-summary.md",
+      "summary": "Summary of OC_ prefix removal across documentation, standards, skills, and extension mirrors"
+    }
+  ],
+  "next_steps": "Task complete",
+  "completion_data": {
+    "completion_summary": "Removed all OC_ prefix references from OpenCode documentation and standards across 18+ file groups and extension mirrors. Updated path conventions, bash script examples, regex patterns, and task management standards to use plain numbers consistently."
+  },
+  "memory_candidates": [
+    {
+      "content": "When removing deprecated prefixes from documentation, parallel directory structures (context/ vs context/core/) and extension mirrors require separate passes. Using sed for bulk replacements followed by targeted Edit tool for complex changes provides the best balance of speed and precision.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/520_remove_oc_prefix_opencode_documentation/summaries/01_oc-prefix-removal-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "prefix removal",
+        "parallel directories",
+        "bulk sed",
+        "extension mirrors"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "session-520-521-522-combined",
+    "agent_type": "general-implementation-agent",
+    "duration_seconds": 9000,
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phase_count": 4,
+    "phases_completed": 4,
+    "estimated_hours": 3,
+    "dependency_waves": [
+      [
+        1
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        4
+      ]
+    ]
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
+}

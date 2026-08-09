@@ -4,7 +4,11 @@
   "task_type": "meta",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1783196275_db6362",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "timestamp": "2026-07-04T21:50:00Z",
   "plan_path": "specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md",
   "artifacts": [
@@ -48,14 +52,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
       "confidence": 0.78,
-      "suggested_keywords": ["multi-account", "account-resolution", "gate-scoping", "pilot-gate", "drift-prevention"]
+      "suggested_keywords": [
+        "multi-account",
+        "account-resolution",
+        "gate-scoping",
+        "pilot-gate",
+        "drift-prevention"
+      ]
     },
     {
       "content": "This nvim config repo drives .claude/CLAUDE.md generation via a Neovim-plugin extension picker (lua/neotex/plugins/ai/shared/extensions/merge.lua's generate_claudemd), not a standalone bash script. It regenerates the ENTIRE CLAUDE.md by concatenating each LOADED extension's EXTENSION.md (per .claude/extensions.json's loaded set) in dependency order. Editing an extension's EXTENSION.md alone does not propagate to CLAUDE.md until a user runs the picker's load/sync action for that extension. When verifying 'does this propagate to CLAUDE.md', check whether the extension is actually in .claude/extensions.json's loaded set first -- if not, propagation is unobservable and that is a pre-existing condition, not a defect in the edit.",
       "category": "CONFIG",
       "source_artifact": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["extension-picker", "generate_claudemd", "extensions.json", "merge-pipeline", "claudemd-propagation"]
+      "suggested_keywords": [
+        "extension-picker",
+        "generate_claudemd",
+        "extensions.json",
+        "merge-pipeline",
+        "claudemd-propagation"
+      ]
     }
   ],
   "modified_files": [
@@ -67,13 +83,25 @@
     "specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md",
     "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md"
   ],
-  "next_steps": "Phase 6 remains [BLOCKED] pending .dotfiles task 79 landing + home-manager switch. Recommend spawning a follow-up task (e.g. /spawn 815 or a new /task) once task 79 lands, scoped to: email-census --help flag re-confirmation, live /email --logos end-to-end verification, and the wrapper-contracts.md §2/§11 refresh.",
+  "next_steps": "Phase 6 remains [BLOCKED] pending .dotfiles task 79 landing + home-manager switch. Recommend spawning a follow-up task (e.g. /spawn 815 or a new /task) once task 79 lands, scoped to: email-census --help flag re-confirmation, live /email --logos end-to-end verification, and the wrapper-contracts.md \u00a72/\u00a711 refresh.",
   "metadata": {
     "session_id": "sess_1783196275_db6362",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 6
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

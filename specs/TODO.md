@@ -1,5 +1,5 @@
 ---
-next_project_number: 1003
+next_project_number: 1004
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 1003
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 984,992,997,998 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
+| 1 | 984,992,997,998,1003 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
 | 2 | 985,993,995,1000,1002 | 984,992,998 | agent-system |
 | 3 | 986,1001 | 985,1000 | agent-system |
 | 4 | 999 | 986,1002 | agent-system |
@@ -21,7 +21,7 @@ next_project_number: 1003
 
 ### Agent System
 
-992 [PLANNED] — Bring every EXTENSION.md into conformance with extension-slim-sta
+992 [IMPLEMENTING] — Bring every EXTENSION.md into conformance with extension-slim-sta
   └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
     └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
       └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
@@ -30,9 +30,10 @@ next_project_number: 1003
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
   └─ 1000 [NOT STARTED] — Give the cslib extension its own copy of the adversarial-verifica
     └─ 1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
-998 [PLANNED] — Triage the 49 entries the Double-Loading Check now names, and dec
+998 [IMPLEMENTING] — Triage the 49 entries the Double-Loading Check now names, and dec
   └─ 1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
     └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
+1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 
@@ -45,6 +46,94 @@ next_project_number: 1003
 984 [NOT STARTED] — Give specs/state.json a machine-enforced schema and make the stat
 
 ## Tasks
+
+### 1003. Fix lean-sorry-census.sh double-counting warn.sorry suppression annotations
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: lean-sorry-census.sh counts every `set_option warn.sorry false in` suppression annotation as a
+phantom extra sorry, on top of the real sorry that annotation exists to suppress. The census is
+therefore inflated by exactly the number of own-line suppression annotations in the scanned scope.
+
+ROOT CAUSE (agent-system/extensions/lean/scripts/lean-sorry-census.sh, line 144):
+    sorry_re = re.compile(r'\bsorry\b')
+`.` is a non-word character, so `\b` matches between `warn` and `.sorry`. The regex therefore
+matches the "sorry" substring inside "warn.sorry" -- and inside any other dotted-qualified name
+ending in `.sorry`. The script's comment/docstring/string-literal stripper runs BEFORE this scan
+and correctly removes commented-out and string-literal sorries; the stripper is not the problem.
+The final regex match is the only broken piece.
+
+COUNTING IS PER-LINE, NOT PER-OCCURRENCE (line 158):
+    if sorry_re.search(line): total += 1
+This detail was discovered while verifying the bug and materially shapes the fix and its test.
+Consequences:
+  - Phantom inflation occurs ONLY when `set_option warn.sorry false in` sits on its own line.
+    All 18 instances in the reference corpus do, which is why the observed delta equals the
+    occurrence count there.
+  - When the annotation shares a line with the sorry it suppresses
+    (`set_option warn.sorry false in theorem foo : P := sorry`), the buggy regex and a correct
+    regex BOTH yield 1 for that line, so this form does not currently inflate the count -- but a
+    careless fix (e.g. skipping any line containing `warn.sorry`) would wrongly drop it to 0.
+    The fix must not regress this case.
+
+EVIDENCE (independently verified twice, most recently 2026-08-09 against ~/Projects/cslib):
+  - Repo-wide census: 45 reported = 27 real + 18 phantom.
+  - Cslib/Logics/Bimodal: 41 reported = 23 real + 18 phantom.
+  - The 27 and 23 figures independently match the pre-existing ROADMAP.md census and a separate
+    hand-audited scope.
+  - Direct regex comparison over Cslib/**/*.lean (pre-stripping, hence higher absolute numbers):
+    naive `\bsorry\b` = 199, corrected `(?<![.\w])sorry\b` = 181, delta = 18, and the count of
+    `warn.sorry` occurrences = 18. Exact match.
+  - A naive grep-style count that skips the block-comment/docstring stripper gives 152 repo-wide,
+    confirming the stripper itself is correct and valuable.
+
+WORK:
+  1. Replace the line-144 regex with the negative-lookbehind form `(?<![.\w])sorry\b` (verified
+     working by two independent parties). The `\w` term is redundant with the existing `\b` and is
+     retained only for explicitness; excluding a preceding `.` is the substantive change, and it
+     correctly covers every dotted-qualified `*.sorry` name, not just `warn.sorry`.
+     An equivalent accepted alternative is a line-level pre-filter that skips any line whose
+     stripped content is exactly the `set_option warn.sorry false in` directive -- but note this
+     alternative must still handle the same-line form above, so the regex fix is preferred.
+  2. PRESERVE strip_lean_comments() (lines 91-141) BYTE-UNCHANGED. It is correct and is the
+     script's valuable part. However, its docstring at line 96 explicitly references "the
+     \bsorry\b scan" it feeds; that one reference must be updated to name the corrected regex so
+     the docstring does not go stale. This is a comment-text edit inside the function's docstring,
+     not a change to the stripping logic -- the logic body stays byte-identical.
+  3. Add a regression fixture. None exists today: `find agent-system -iname "*sorry*"` returns only
+     the script itself, so this is new test scaffolding under agent-system/extensions/lean/.
+     The fixture MUST cover BOTH forms:
+       (a) own-line annotation:
+             set_option warn.sorry false in
+             theorem foo : P := sorry
+           -> must count as exactly 1 (today: 2)
+       (b) same-line annotation:
+             set_option warn.sorry false in theorem bar : Q := sorry
+           -> must count as exactly 1 (not 0, not 2) -- this pins the per-line semantics and
+              guards against an over-aggressive line-skipping fix.
+     Include N annotations and M real sorries and assert the census reports M. Also include at
+     least one commented-out sorry and one string-literal sorry so the fixture simultaneously
+     guards the stripper against future regression.
+  4. Verify with the script's own `--cross-check` flag, which already exists (flag parsing at
+     line 53, comparison logic at lines 179-189) and is the intended verification oracle. It
+     compares the stripper count against `lake build`'s "declaration uses 'sorry'" warning count,
+     which is comment- and annotation-immune by construction. A post-fix run must report
+     `cross_check: MATCH` on a scope where it previously reported MISMATCH.
+
+PRIOR STATE: the only recent commit touching this script is 8dcb6d92e, a task-number-reference
+purge (3 files, 3 insertions / 3 deletions, rewriting a citation string in a comment). It did not
+touch the matching logic. The bug is live in the source store.
+
+PROVENANCE: this originated in the cslib repository, where the target path pointed outside that
+repo. It is recreated in this global root because the source store lives here; a fix applied under
+cslib's gitignored .claude/ deploy tree would be wiped on the next regeneration.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 1002. Author the context tier-semantics standard for the derived tier classification
 - **Status**: [NOT STARTED]
@@ -229,7 +318,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 998. Triage the 49 Double-Loading context-index warnings
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991
@@ -405,7 +494,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 992. Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 987, Task 990, Task 991

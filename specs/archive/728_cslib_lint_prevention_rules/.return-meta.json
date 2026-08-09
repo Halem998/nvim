@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1781569603_28a6dc_728",
   "task_number": 728,
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "phases_completed": 4,
   "phases_total": 4,
   "started_at": "2026-06-15T00:00:00Z",
@@ -17,7 +21,13 @@
       "category": "INSIGHT",
       "source_artifact": "specs/728_cslib_lint_prevention_rules/summaries/01_lint-prevention-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["cslib", "lake-lint", "environment-linters", "ci-gap", "lint-prevention"]
+      "suggested_keywords": [
+        "cslib",
+        "lake-lint",
+        "environment-linters",
+        "ci-gap",
+        "lint-prevention"
+      ]
     }
   ],
   "artifacts": [
@@ -31,5 +41,13 @@
       "path": ".claude/extensions/cslib/context/project/cslib/standards/lint-prevention-rules.md",
       "summary": "7 lint prevention rules context file for cslib agents"
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

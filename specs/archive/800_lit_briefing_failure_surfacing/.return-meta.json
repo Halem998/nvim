@@ -22,7 +22,11 @@
     "session_id": "sess_1782936248_41a19c_800",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   },
@@ -35,14 +39,34 @@
       "category": "PATTERN",
       "source_artifact": "specs/800_lit_briefing_failure_surfacing/summaries/01_lit-briefing-failure-surfacing-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["silent-failure", "wrapper-script", "stderr-surfacing", "fallback-preservation", "exit-code"]
+      "suggested_keywords": [
+        "silent-failure",
+        "wrapper-script",
+        "stderr-surfacing",
+        "fallback-preservation",
+        "exit-code"
+      ]
     },
     {
       "content": "When multiple identically-worded comment blocks exist in the same file for different subsystems (e.g. memory_context vs lit_context both ending in '# - script exited with error'), disambiguate Edit tool old_string matches using the distinguishing header line above the comment block (e.g. '# lit_context will be empty string if:' vs '# memory_context will be empty string if:'), not just the trailing line, to avoid accidentally editing the wrong occurrence or triggering a non-unique-match error.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/800_lit_briefing_failure_surfacing/summaries/01_lit-briefing-failure-surfacing-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["edit-tool", "disambiguation", "duplicate-comment", "skill-md", "targeted-replace"]
+      "suggested_keywords": [
+        "edit-tool",
+        "disambiguation",
+        "duplicate-comment",
+        "skill-md",
+        "targeted-replace"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

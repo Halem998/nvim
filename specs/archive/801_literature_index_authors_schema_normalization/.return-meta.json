@@ -52,7 +52,11 @@
     "session_id": "sess_1782936248_41a19c_801",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   },
@@ -65,21 +69,47 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/801_literature_index_authors_schema_normalization/summaries/01_authors-schema-normalization-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["jq", "heuristic", "authors", "comma-joined", "name-parsing"]
+      "suggested_keywords": [
+        "jq",
+        "heuristic",
+        "authors",
+        "comma-joined",
+        "name-parsing"
+      ]
     },
     {
       "content": "This repo's doc-lint (.claude/scripts/check-extension-docs.sh) requires any script referenced from an extension's SKILL.md/agent docs to be (a) listed in that extension's manifest.json provides.scripts array AND (b) physically present on disk under .claude/extensions/{ext}/scripts/, in addition to any canonical copy under .claude/scripts/. Both are required or the extension FAILs the lint.",
       "category": "CONFIG",
       "source_artifact": "specs/801_literature_index_authors_schema_normalization/summaries/01_authors-schema-normalization-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["check-extension-docs", "manifest.json", "provides.scripts", "doc-lint", "extensions"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "manifest.json",
+        "provides.scripts",
+        "doc-lint",
+        "extensions"
+      ]
     },
     {
       "content": "When a task's scope explicitly forbids writing to an external/sibling repo (e.g. ~/Projects/Literature), verify non-mutation empirically at each step (md5sum of the specific files read, git status/diff content review to rule out pre-existing unrelated dirty state from a separate project sharing the same directory tree) rather than assuming read-only tool usage was sufficient. Sibling repos can have their own independent .claude/ Claude Code config that coincidentally resembles the current repo's files.",
       "category": "WORKFLOW",
       "source_artifact": "specs/801_literature_index_authors_schema_normalization/summaries/01_authors-schema-normalization-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["external-repo", "read-only", "verification", "cross-repo-boundary", "md5sum"]
+      "suggested_keywords": [
+        "external-repo",
+        "read-only",
+        "verification",
+        "cross-repo-boundary",
+        "md5sum"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

@@ -1,7 +1,11 @@
 {
   "status": "partial",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 789,
   "task_slug": "pin_sonnet_tier_model",
   "plan_path": "specs/789_pin_sonnet_tier_model/plans/01_pin-sonnet-tier.md",
@@ -32,7 +36,21 @@
       "category": "CONFIG",
       "source_artifact": "specs/789_pin_sonnet_tier_model/summaries/01_pin-sonnet-tier-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["home-manager", "claude settings.json", "ANTHROPIC_DEFAULT_SONNET_MODEL", "dotfiles", "model pin"]
+      "suggested_keywords": [
+        "home-manager",
+        "claude settings.json",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL",
+        "dotfiles",
+        "model pin"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

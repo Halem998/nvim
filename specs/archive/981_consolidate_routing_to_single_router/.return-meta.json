@@ -52,7 +52,7 @@
   ],
   "memory_candidates": [
     {
-      "content": "When a shared bash library function needs to return TWO outputs to its caller (a value plus metadata like 'which precedence step matched'), do not use `$(function_call)` command substitution for the metadata side-channel — command substitution forks a subshell, so any non-local variable the function sets is invisible to the caller once the subshell exits. Under `set -u`, the caller's later reference to that now-unset variable is a hard error that silently kills the sourcing shell with zero output, which is very hard to diagnose (looks like the whole pipeline hung or produced nothing). Fix: have the function set both outputs as plain (non-subshelled) globals and have the caller invoke it directly (not via `$(...)`), reading both outputs immediately after the call — the same pattern used for constructs like SKILL_NAME/AGENT_NAME exports.",
+      "content": "When a shared bash library function needs to return TWO outputs to its caller (a value plus metadata like 'which precedence step matched'), do not use `$(function_call)` command substitution for the metadata side-channel \u2014 command substitution forks a subshell, so any non-local variable the function sets is invisible to the caller once the subshell exits. Under `set -u`, the caller's later reference to that now-unset variable is a hard error that silently kills the sourcing shell with zero output, which is very hard to diagnose (looks like the whole pipeline hung or produced nothing). Fix: have the function set both outputs as plain (non-subshelled) globals and have the caller invoke it directly (not via `$(...)`), reading both outputs immediately after the call \u2014 the same pattern used for constructs like SKILL_NAME/AGENT_NAME exports.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/981_consolidate_routing_to_single_router/summaries/01_routing-consolidation-summary.md",
       "confidence": 0.9,
@@ -78,7 +78,7 @@
       ]
     },
     {
-      "content": "When ground-truthing which agent a routing table's skill name actually dispatches to (rather than deriving it via string transformation, e.g. sed 's/^skill-//' + '-agent'), grep each candidate skill's SKILL.md for its literal `subagent_type:`/`subagent_type =` dispatch line rather than trusting the skill-name-to-agent-name naming convention to hold universally. In a real manifest set, roughly 15-20% of entries broke a naive derivation (compound multi-stage skills that pick an agent dynamically at runtime, skills whose agent name doesn't follow the skill-name pattern, skills that are direct-execution with no agent at all). A cross-check against provides.agents alone is not sufficient either — a manifest's routing.{op} value can point to a DIFFERENT skill than the one whose agent name superficially matches the task_type (e.g. a 'document' sub-key routing to the SAME generic skill/agent as the parent key, not a document-specific one).",
+      "content": "When ground-truthing which agent a routing table's skill name actually dispatches to (rather than deriving it via string transformation, e.g. sed 's/^skill-//' + '-agent'), grep each candidate skill's SKILL.md for its literal `subagent_type:`/`subagent_type =` dispatch line rather than trusting the skill-name-to-agent-name naming convention to hold universally. In a real manifest set, roughly 15-20% of entries broke a naive derivation (compound multi-stage skills that pick an agent dynamically at runtime, skills whose agent name doesn't follow the skill-name pattern, skills that are direct-execution with no agent at all). A cross-check against provides.agents alone is not sufficient either \u2014 a manifest's routing.{op} value can point to a DIFFERENT skill than the one whose agent name superficially matches the task_type (e.g. a 'document' sub-key routing to the SAME generic skill/agent as the parent key, not a document-specific one).",
       "category": "TECHNIQUE",
       "source_artifact": "specs/981_consolidate_routing_to_single_router/summaries/01_routing-consolidation-summary.md",
       "confidence": 0.85,
@@ -104,5 +104,13 @@
     "phases_total": 8,
     "cycles_used": 3,
     "final_state": "completed"
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

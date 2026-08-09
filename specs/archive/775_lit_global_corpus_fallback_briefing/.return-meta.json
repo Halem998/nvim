@@ -17,11 +17,34 @@
     "session_id": "sess_1782923730_e38a8e_775",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phase_count": 6,
     "phases_completed": 6,
     "estimated_hours": 5.5,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
+    "dependency_waves": [
+      [
+        1
+      ],
+      [
+        2
+      ],
+      [
+        3
+      ],
+      [
+        4
+      ],
+      [
+        5
+      ],
+      [
+        6
+      ]
+    ]
   },
   "completion_data": {
     "completion_summary": "Added a live global-corpus briefing mode to literature-briefing.sh, a shared literature-lit-flag-resolve.sh directive helper, and rewrote Stage 4a in all six --lit-aware skills (standard + hard) to a non-silent three-option flow with a deterministic, visibly-logged autonomous default; updated claudemd.md's Interactive Sub-Index Setup Detection section to match."
@@ -32,14 +55,36 @@
       "category": "PATTERN",
       "source_artifact": "specs/775_lit_global_corpus_fallback_briefing/summaries/01_lit-global-corpus-briefing-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shared-helper", "directive-token", "AskUserQuestion", "orchestrator_mode", "no-silent-fallback", "stage-4a", "mirror-consistency"]
+      "suggested_keywords": [
+        "shared-helper",
+        "directive-token",
+        "AskUserQuestion",
+        "orchestrator_mode",
+        "no-silent-fallback",
+        "stage-4a",
+        "mirror-consistency"
+      ]
     },
     {
       "content": "literature-search.sh already implements its own zero-filtered-results retry-unfiltered fallback internally (confirmed by source read, lines ~269-349) when called with --project. Callers building on top of it (e.g. literature-briefing.sh --global) should call it once with --project and rely on this internal fallback rather than re-implementing the retry logic themselves.",
       "category": "INSIGHT",
       "source_artifact": "specs/775_lit_global_corpus_fallback_briefing/summaries/01_lit-global-corpus-briefing-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["literature-search.sh", "project-filter", "fallback", "BM25", "literature-briefing"]
+      "suggested_keywords": [
+        "literature-search.sh",
+        "project-filter",
+        "fallback",
+        "BM25",
+        "literature-briefing"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

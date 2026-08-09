@@ -46,21 +46,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["staleness-threshold", "cleanup", "reap", "override-vs-reap", "two-band"]
+      "suggested_keywords": [
+        "staleness-threshold",
+        "cleanup",
+        "reap",
+        "override-vs-reap",
+        "two-band"
+      ]
     },
     {
       "content": "To test a script protected by deploy-root-guard.sh (requires its own directory's parent to be named .claude or .opencode) in an isolated temp root without adding any testability hook to production code: build $TMPROOT/.claude/scripts/ and copy the real script plus deploy-root-guard.sh into it by relative sibling path from the test script's own location. The copied script resolves PROJECT_ROOT fresh from its new location and passes the guard naturally; the test script itself never sources the guard or computes a PROJECT_ROOT of its own, so it needs no environment-variable override to be testable.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-root-guard", "test-fixture", "isolated-temp-root", "testability", "shell-testing"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "test-fixture",
+        "isolated-temp-root",
+        "testability",
+        "shell-testing"
+      ]
     },
     {
       "content": "When a cleanup sweep's per-item output includes both 'removed' and 'skipped, still present' lines, keep the fully-routine case (valid, well within threshold) completely silent rather than emitting a line for it. Reserve explicit output for anything actionable: removed, would-be-removed, or skipped-with-a-reason (e.g. a corrupt state file that isn't yet stale by a fallback signal). This keeps a script runnable at any frequency without the output volume scaling with the number of healthy resources.",
       "category": "INSIGHT",
       "source_artifact": "specs/923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["cleanup-reporting", "signal-vs-noise", "cli-output", "sweep"]
+      "suggested_keywords": [
+        "cleanup-reporting",
+        "signal-vs-noise",
+        "cli-output",
+        "sweep"
+      ]
     }
   ],
   "modified_files": [
@@ -76,8 +93,20 @@
   "metadata": {
     "session_id": "sess_1785173027_25410e",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

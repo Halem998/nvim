@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1784998517_0638c7_898",
   "task_number": 898,
   "phases_completed": 5,
@@ -22,14 +26,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/898_completion_claim_verification_gate/summaries/01_completion-claim-verification-gate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["skill-base.sh", "additive-function", "drift-prevention", "shared-gate", "bash-unification"]
+      "suggested_keywords": [
+        "skill-base.sh",
+        "additive-function",
+        "drift-prevention",
+        "shared-gate",
+        "bash-unification"
+      ]
     },
     {
       "content": "For a fail-closed evidence gate with 3+ cases and multiple call sites, a bash unit harness sourcing the function directly (export SKILL_REPO_ROOT then `source skill-base.sh`) and asserting both the return code AND a greppable log-line token per case gives fast, precise regression coverage without needing to exercise the full orchestrator state machine.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/898_completion_claim_verification_gate/summaries/01_completion-claim-verification-gate-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["unit-harness", "bash-testing", "fail-closed-gate", "greppable-logs", "skill-base"]
+      "suggested_keywords": [
+        "unit-harness",
+        "bash-testing",
+        "fail-closed-gate",
+        "greppable-logs",
+        "skill-base"
+      ]
     }
   ],
   "modified_files": [
@@ -40,5 +56,13 @@
     "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
     "specs/898_completion_claim_verification_gate/plans/01_completion-claim-verification-gate.md",
     "specs/898_completion_claim_verification_gate/summaries/01_completion-claim-verification-gate-summary.md"
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

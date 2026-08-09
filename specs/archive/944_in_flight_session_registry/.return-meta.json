@@ -36,29 +36,58 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["pid-resolution", "ancestor-walk", "process-liveness", "task-lock", "bash"]
+      "suggested_keywords": [
+        "pid-resolution",
+        "ancestor-walk",
+        "process-liveness",
+        "task-lock",
+        "bash"
+      ]
     },
     {
       "content": "When a new per-entity registry file is keyed by a globally-unique caller-generated id (e.g. session_id), no mkdir-exclusivity gate is needed for writes -- each writer touches only its own path, so a plain tmp-file-write-then-mv (the write_holder pattern) is already race-free. Reserve mkdir-exclusivity primitives for cases where multiple writers could contend for the SAME path.",
       "category": "PATTERN",
       "source_artifact": "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["atomic-write", "tmp-file-rename", "concurrency", "registry-design"]
+      "suggested_keywords": [
+        "atomic-write",
+        "tmp-file-rename",
+        "concurrency",
+        "registry-design"
+      ]
     },
     {
       "content": "Two-signal staleness for a reap/cleanup feature: evaluate a fast-but-fallible liveness check (e.g. kill -0 pid) FIRST but only let it shorten the wait below a floor constant (never let 'process confirmably alive' count as proof of liveness on its own); always fall through to a slower, more conservative heartbeat-age threshold as the real backstop. This makes an unreliable fast signal safe to use opportunistically.",
       "category": "PATTERN",
       "source_artifact": "specs/944_in_flight_session_registry/summaries/01_in-flight-session-registry-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["reap", "staleness", "liveness-check", "two-signal", "floor-constant"]
+      "suggested_keywords": [
+        "reap",
+        "staleness",
+        "liveness-check",
+        "two-signal",
+        "floor-constant"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785282438_f1034e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 10,
     "phases_total": 10
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

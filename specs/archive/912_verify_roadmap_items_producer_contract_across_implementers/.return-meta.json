@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 912,
   "session_id": "sess_1785116996_862366_912",
   "phases_completed": 5,
@@ -29,14 +33,34 @@
       "category": "PATTERN",
       "source_artifact": "specs/912_verify_roadmap_items_producer_contract_across_implementers/summaries/01_roadmap-items-producer-fix-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["completion_data", "roadmap_items", "producer-consumer-contract", "schema-pointer", "skill-agent-drift"]
+      "suggested_keywords": [
+        "completion_data",
+        "roadmap_items",
+        "producer-consumer-contract",
+        "schema-pointer",
+        "skill-agent-drift"
+      ]
     },
     {
       "content": "In a multi-agent session where several /implement dispatches run concurrently against the same repo, specs/state.json and specs/TODO.md legitimately carry other in-flight tasks' current index rows when committed, because they are shared, wholesale-regenerated files. The honest way to handle this (per git-staging-scope.md) is to stage them normally and append a commit-message line naming which other tasks' rows are carried (e.g. 'Also carries current index rows for tasks: 910, 911') rather than trying to surgically split the diff.",
       "category": "WORKFLOW",
       "source_artifact": "specs/912_verify_roadmap_items_producer_contract_across_implementers/summaries/01_roadmap-items-producer-fix-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["concurrent-agents", "state.json", "git-staging-scope", "shared-index-files", "commit-honesty"]
+      "suggested_keywords": [
+        "concurrent-agents",
+        "state.json",
+        "git-staging-scope",
+        "shared-index-files",
+        "commit-honesty"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

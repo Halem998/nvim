@@ -21,7 +21,11 @@
   "metadata": {
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "session_id": "sess_1783092185_cd6c84_772",
     "phases_completed": 6,
     "phases_total": 6
@@ -35,21 +39,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/772_hardmode_orchestrator_pure_dispatcher/summaries/01_orchestrator-pure-dispatcher-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["allowed-tools", "frontmatter", "skill-definition", "tool-scoping", "Claude-Code"]
+      "suggested_keywords": [
+        "allowed-tools",
+        "frontmatter",
+        "skill-definition",
+        "tool-scoping",
+        "Claude-Code"
+      ]
     },
     {
       "content": "When a skill's state-machine prose mixes multiple '#### State: X' handlers for the same state (e.g. a primary handler plus an 'optional' parallel variant), verification scripts/graders that grep for 'exactly one handler' will fail unless the alternate path's heading is removed entirely (not just its body/code-block). Disabling a feature documented as its own heading should demote it to a plain paragraph without a heading, not just mark the heading 'DISABLED'.",
       "category": "PATTERN",
       "source_artifact": "specs/772_hardmode_orchestrator_pure_dispatcher/summaries/01_orchestrator-pure-dispatcher-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["skill-orchestrate-hard", "state-machine", "verification", "disabling-features"]
+      "suggested_keywords": [
+        "skill-orchestrate-hard",
+        "state-machine",
+        "verification",
+        "disabling-features"
+      ]
     },
     {
-      "content": "wrap-up.md's orchestrator handoff schema (H9 contract) canonical sorry_inventory entry schema is {file, line, statement, strategic, assumption, why_deferred, follow_up_task} at the array level, with a top-level `skeleton` boolean on the handoff itself. `follow_up_task` (singular, per sorry_inventory entry) is the actually-shipped field for routing skeleton-exhaustion follow-ups — NOT a top-level `.follow_up_tasks` (plural) field, which some skills (e.g. skill-implementer-hard Stage 3b) optimistically read but which wrap-up.md never populates. Any orchestrator logic deriving follow-up tasks from a skeleton handoff must read `[.sorry_inventory[]?.follow_up_task | select(. != null)] | unique`.",
+      "content": "wrap-up.md's orchestrator handoff schema (H9 contract) canonical sorry_inventory entry schema is {file, line, statement, strategic, assumption, why_deferred, follow_up_task} at the array level, with a top-level `skeleton` boolean on the handoff itself. `follow_up_task` (singular, per sorry_inventory entry) is the actually-shipped field for routing skeleton-exhaustion follow-ups \u2014 NOT a top-level `.follow_up_tasks` (plural) field, which some skills (e.g. skill-implementer-hard Stage 3b) optimistically read but which wrap-up.md never populates. Any orchestrator logic deriving follow-up tasks from a skeleton handoff must read `[.sorry_inventory[]?.follow_up_task | select(. != null)] | unique`.",
       "category": "CONFIG",
       "source_artifact": "specs/772_hardmode_orchestrator_pure_dispatcher/summaries/01_orchestrator-pure-dispatcher-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["wrap-up.md", "sorry_inventory", "follow_up_task", "skeleton", "handoff-schema", "H9"]
+      "suggested_keywords": [
+        "wrap-up.md",
+        "sorry_inventory",
+        "follow_up_task",
+        "skeleton",
+        "handoff-schema",
+        "H9"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

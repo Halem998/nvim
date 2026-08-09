@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1781729302_ae67df_741",
   "task_number": 741,
   "phases_completed": 2,
@@ -15,7 +19,13 @@
       "category": "PATTERN",
       "source_artifact": "specs/741_todo_artifact_markdown_links/summaries/01_markdown-links-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["generate-todo", "artifact-links", "markdown-links", "TODO.md", "printf-format"]
+      "suggested_keywords": [
+        "generate-todo",
+        "artifact-links",
+        "markdown-links",
+        "TODO.md",
+        "printf-format"
+      ]
     }
   ],
   "artifacts": [
@@ -24,5 +34,13 @@
       "path": "specs/741_todo_artifact_markdown_links/summaries/01_markdown-links-summary.md",
       "summary": "Execution summary for task 741 markdown link conversion"
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

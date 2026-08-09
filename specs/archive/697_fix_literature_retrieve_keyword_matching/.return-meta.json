@@ -13,7 +13,11 @@
     "agent_type": "general-research-agent",
     "duration_seconds": 300,
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "research",
+      "general-research-agent"
+    ],
     "findings_count": 8
   },
   "memory_candidates": [
@@ -22,7 +26,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/697_fix_literature_retrieve_keyword_matching/reports/01_literature-retrieve-research.md",
       "confidence": 0.95,
-      "suggested_keywords": ["manifest", "provides.scripts", "sync", "extension", "load-core", "literature-retrieve"]
+      "suggested_keywords": [
+        "manifest",
+        "provides.scripts",
+        "sync",
+        "extension",
+        "load-core",
+        "literature-retrieve"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

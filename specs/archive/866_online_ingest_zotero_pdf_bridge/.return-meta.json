@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 866,
   "session_id": "sess_1784098603_866impl",
   "started": "2026-07-15T06:56:43Z",
@@ -31,21 +35,49 @@
       "category": "PATTERN",
       "source_artifact": "specs/866_online_ingest_zotero_pdf_bridge/summaries/01_online-ingest-zotero-bridge-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "grep-extraction", "log-prefix", "silent-failure", "doc_id", "delegate-script"]
+      "suggested_keywords": [
+        "bash",
+        "grep-extraction",
+        "log-prefix",
+        "silent-failure",
+        "doc_id",
+        "delegate-script"
+      ]
     },
     {
       "content": "Before binding a mock HTTP server to a well-known local port (e.g. 127.0.0.1:23119 for Zotero's local API) to test a script against a simulated live-API dependency, check whether the real service is already running on this machine. A failed bind (Address already in use) can reveal a genuinely live, real-data-backed instance of the dependency being mocked -- discovered here when a bind attempt to 23119 returned the user's actual Zotero library contents instead of a clean connection-refused. Treat this as a hard stop for further mocking on that port, not just a retry-on-different-port situation, since the risk is touching real user state, not merely a test-infra inconvenience.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/866_online_ingest_zotero_pdf_bridge/summaries/01_online-ingest-zotero-bridge-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["testing", "mock-server", "port-collision", "live-service-detection", "zotero", "safety"]
+      "suggested_keywords": [
+        "testing",
+        "mock-server",
+        "port-collision",
+        "live-service-detection",
+        "zotero",
+        "safety"
+      ]
     },
     {
       "content": "A wrapper script that adds a CREATE-item operation alongside several existing MUTATE-existing-item operations (each requiring a mandatory KEY positional argument) needs its argument parser to special-case the new operation's name in the KEY-requirement check, not just add a new case arm in the dispatch -- otherwise the parser will demand a KEY that the create-operation's actual first argument (typically a flag like --pdf) can never satisfy. Grep for how -h/--help are already excluded from a KEY requirement as the template for adding the new exclusion.",
       "category": "PATTERN",
       "source_artifact": "specs/866_online_ingest_zotero_pdf_bridge/summaries/01_online-ingest-zotero-bridge-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["bash", "argument-parsing", "cli-wrapper", "create-vs-mutate-operations", "case-arm"]
+      "suggested_keywords": [
+        "bash",
+        "argument-parsing",
+        "cli-wrapper",
+        "create-vs-mutate-operations",
+        "case-arm"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

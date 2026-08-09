@@ -2,7 +2,11 @@
   "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 780,
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "artifacts": [
     {
       "path": ".claude/scripts/git-snapshot.sh",
@@ -71,21 +75,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/780_agent_git_safety_preserve_uncommitted_work/summaries/01_guard-destructive-git-hook-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["hooks", "PreToolUse", "exit-code-blocking", "settings.json", "bash-fallback-semantics"]
+      "suggested_keywords": [
+        "hooks",
+        "PreToolUse",
+        "exit-code-blocking",
+        "settings.json",
+        "bash-fallback-semantics"
+      ]
     },
     {
       "content": "When a helper script must snapshot a dirty git tree via 'git diff HEAD > <path-under-repo>' followed by 'git stash push -u', write the diff to a scratch mktemp file OUTSIDE the repo first and move it into place only AFTER the stash step. Writing it directly into the target directory first makes it an untracked file that 'git stash push -u' immediately sweeps away, and can even delete an otherwise-empty target directory (git does not track empty dirs), breaking any subsequent write into that directory.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/780_agent_git_safety_preserve_uncommitted_work/summaries/01_guard-destructive-git-hook-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-stash", "git-snapshot", "mktemp", "untracked-files", "ordering-bug"]
+      "suggested_keywords": [
+        "git-stash",
+        "git-snapshot",
+        "mktemp",
+        "untracked-files",
+        "ordering-bug"
+      ]
     },
     {
       "content": "Dual-copy wiring for .claude/ agent-system artifacts (rule/hook/script living in both the deployed .claude/ tree and .claude/extensions/core/ source tree) can be verified end-to-end within the SAME session that implements it: after registering a new PreToolUse hook in settings.json, the hook becomes live for the implementing agent's own subsequent Bash tool calls. This is strong, direct proof of correct registration (versus only structural jq/diff checks) but requires care -- any literal destructive-command substring anywhere in a later multi-line Bash tool call (even inside a heredoc/test-harness script meant for a disposable directory) will be evaluated by the hook against the REAL repo's git status, not the script's intended target directory. Write such test scripts to a file and invoke via 'bash <file>' to avoid tripping the guard on your own tooling.",
       "category": "INSIGHT",
       "source_artifact": "specs/780_agent_git_safety_preserve_uncommitted_work/summaries/01_guard-destructive-git-hook-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["dual-copy-wiring", "hook-verification", "live-testing", "grep-line-anchoring", "self-test-gotcha"]
+      "suggested_keywords": [
+        "dual-copy-wiring",
+        "hook-verification",
+        "live-testing",
+        "grep-line-anchoring",
+        "self-test-gotcha"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

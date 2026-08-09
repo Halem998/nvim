@@ -2,7 +2,11 @@
   "status": "implemented",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1785280916_d6cc03",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 943,
   "artifacts": [
     {
@@ -38,18 +42,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/943_session_scope_orchestration_metadata/summaries/01_session-scope-orchestration-metadata-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["test-suite", "isolated-temp-root", "reap-script", "mtime", "task-lock-reap-pattern"]
+      "suggested_keywords": [
+        "test-suite",
+        "isolated-temp-root",
+        "reap-script",
+        "mtime",
+        "task-lock-reap-pattern"
+      ]
     },
     {
       "content": "deploy-headless.sh does not re-run copy_scripts/copy_manifest for an already-loaded extension, so a brand-new script file AND a manifest.json provides.scripts array update can both silently fail to propagate to .claude/ on redeploy -- even after running deploy-headless.sh. Verified empirically: two new scripts plus a manifest.json edit all needed a direct one-off file copy workaround. This is a third empirical instance of the gap already documented in .claude/rules/no-task-references-in-deliverables.md's \"Discovered deploy-mechanism gap\" section.",
       "category": "INSIGHT",
       "source_artifact": "specs/943_session_scope_orchestration_metadata/summaries/01_session-scope-orchestration-metadata-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "loader-gap", "manifest.json", "provides.scripts", "new-file-propagation"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "loader-gap",
+        "manifest.json",
+        "provides.scripts",
+        "new-file-propagation"
+      ]
     }
   ],
   "metadata": {
     "phases_completed": 7,
     "phases_total": 7
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

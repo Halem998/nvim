@@ -16,21 +16,39 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/940_summary_metadata_header_compliance/summaries/01_summary-header-template-fix-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash", "set -e", "pipefail", "grep", "silent-abort", "shell-scripting"]
+      "suggested_keywords": [
+        "bash",
+        "set -e",
+        "pipefail",
+        "grep",
+        "silent-abort",
+        "shell-scripting"
+      ]
     },
     {
       "content": "When an agent/skill instruction file embeds a concrete, ready-to-copy Markdown/code skeleton for an artifact, that inline skeleton wins over a separately-documented format spec even when the spec is force-injected into every dispatch prompt and a real-time hook also checks compliance after every write. Advisory cross-references and even in-band hooks lose to a concrete, later, copy-pasteable instruction in the same file the agent is actively following. When a generated artifact diverges from its own format spec across many historical instances, look first for a competing inline template in the generating agent's own instructions, and fix that template in place rather than adding a third cross-reference or check.",
       "category": "PATTERN",
       "source_artifact": "specs/940_summary_metadata_header_compliance/summaries/01_summary-header-template-fix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["agent-template", "format-drift", "advisory-check-desensitization", "inline-skeleton"]
+      "suggested_keywords": [
+        "agent-template",
+        "format-drift",
+        "advisory-check-desensitization",
+        "inline-skeleton"
+      ]
     },
     {
       "content": "A whole-document `grep -qF \"**Field**:\"` style metadata-presence check can pass on prose that merely quotes the field name in running text (e.g. a Verification section describing 'the old `**Completed**:` header'), even when the real metadata block has been deleted. This is a real edge case for validators that check field presence by simple substring match rather than by scoping to a metadata block; a negative-control test on such a validator can produce a smaller-than-expected missing-field list for this reason, which is a validator characteristic to note honestly rather than a test failure.",
       "category": "INSIGHT",
       "source_artifact": "specs/940_summary_metadata_header_compliance/summaries/01_summary-header-template-fix-summary.md",
       "confidence": 0.6,
-      "suggested_keywords": ["validate-artifact.sh", "grep -qF", "whole-document-check", "false-positive", "metadata-block-scoping"]
+      "suggested_keywords": [
+        "validate-artifact.sh",
+        "grep -qF",
+        "whole-document-check",
+        "false-positive",
+        "metadata-block-scoping"
+      ]
     }
   ],
   "modified_files": [
@@ -47,8 +65,20 @@
     "session_id": "sess_1785251682_61201e_940",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

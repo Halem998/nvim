@@ -3,7 +3,11 @@
   "project_name": "prior_implementation_context_injection",
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_20260504_496",
   "phases_completed": 4,
   "phases_total": 4,
@@ -18,21 +22,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/496_prior_implementation_context_injection/summaries/01_prior-context-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["context injection", "prompt ordering", "subagent prompt", "research workflow", "prior implementation"]
+      "suggested_keywords": [
+        "context injection",
+        "prompt ordering",
+        "subagent prompt",
+        "research workflow",
+        "prior implementation"
+      ]
     },
     {
       "content": "For artifact collection with line budget caps, use a temp-file-free approach with bash string accumulation and `echo -e | wc -l` for line counting, then `echo -e | head -n` for truncation. Prioritize artifact types by value: summaries (200 lines) > handoffs (150 lines) > progress (50 lines) > plans (100 lines). Always append a truncation notice when content exceeds the budget.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/496_prior_implementation_context_injection/summaries/01_prior-context-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["artifact collection", "line budget", "truncation", "bash string accumulation", "context budget"]
+      "suggested_keywords": [
+        "artifact collection",
+        "line budget",
+        "truncation",
+        "bash string accumulation",
+        "context budget"
+      ]
     },
     {
       "content": "When a skill system has two parallel implementations (.opencode/ and .claude/), check existing stage numbering in both before adding new stages. The .claude/ skill-researcher already had Stage 4c (Roadmap Consultation), so the new prior-context stage was added as Stage 4d to avoid conflicts. Always verify both file versions to maintain consistency.",
       "category": "WORKFLOW",
       "source_artifact": "specs/496_prior_implementation_context_injection/summaries/01_prior-context-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["dual system", "stage numbering", "opencode claude parity", "skill versioning", "conflict avoidance"]
+      "suggested_keywords": [
+        "dual system",
+        "stage numbering",
+        "opencode claude parity",
+        "skill versioning",
+        "conflict avoidance"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

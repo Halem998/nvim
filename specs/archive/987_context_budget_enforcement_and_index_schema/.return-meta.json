@@ -3,7 +3,12 @@
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1785373759_72035f_987",
   "task_number": 987,
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "orchestrate",
+    "skill-orchestrate",
+    "general-implementation-agent"
+  ],
   "artifacts": [
     {
       "type": "summary",
@@ -33,23 +38,48 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["check-extension-docs", "fixture-test", "source-store", "deploy-tree", "test-resolution"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "fixture-test",
+        "source-store",
+        "deploy-tree",
+        "test-resolution"
+      ]
     },
     {
       "content": "When a plan's Scope Hypothesis predicts a violation count for a new hand-written jq lint predicate (e.g. 'Rule T fires for 14 of 19 extensions'), verify the prediction's OWN enumeration completeness before assuming a mismatch means the predicate is wrong. In this task, the actual count (17) differed from the predicted count (14) not because the predicate was buggy, but because the prediction's source research only tallied one violation type (load_when.languages) and omitted a second, independent violation type (load_when.skills) that flags 3 additional extensions with zero languages usage. Always decompose an unexpected count by violation-type before concluding the code is wrong.",
       "category": "INSIGHT",
       "source_artifact": "specs/987_context_budget_enforcement_and_index_schema/summaries/01_schema-authority-tier1-budget-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["scope-hypothesis", "lint-rule", "verification", "check-extension-docs", "reconciliation"]
+      "suggested_keywords": [
+        "scope-hypothesis",
+        "lint-rule",
+        "verification",
+        "check-extension-docs",
+        "reconciliation"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785373759_72035f_987",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   },
-  "next_steps": "None -- task complete. Four follow-on tasks (990 index_entries_schema_migration, 991 meta_catchall_decomposition, 992 extension_md_slim_down, 993 promote_schema_gates_to_hard) exist in state.json/TODO.md for the deferred bulk work, per the plan's own scope decision."
+  "next_steps": "None -- task complete. Four follow-on tasks (990 index_entries_schema_migration, 991 meta_catchall_decomposition, 992 extension_md_slim_down, 993 promote_schema_gates_to_hard) exist in state.json/TODO.md for the deferred bulk work, per the plan's own scope decision.",
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

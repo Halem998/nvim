@@ -2,7 +2,11 @@
   "status": "implemented",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1781130828_de7a25_649",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "phases_completed": 5,
   "phases_total": 5,
   "artifacts": [
@@ -17,18 +21,40 @@
   },
   "memory_candidates": [
     {
-      "content": "When replacing link-artifact-todo.sh calls across a codebase, also check .claude/extensions/core/skills/ in addition to .claude/skills/ — both directories contain separate active SKILL.md files that need to be updated independently.",
+      "content": "When replacing link-artifact-todo.sh calls across a codebase, also check .claude/extensions/core/skills/ in addition to .claude/skills/ \u2014 both directories contain separate active SKILL.md files that need to be updated independently.",
       "category": "INSIGHT",
       "source_artifact": "specs/649_simplify_state_update_pipeline/summaries/01_pipeline-simplification-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["extensions", "skill-base", "link-artifact-todo", "generate-todo", "pipeline", "SKILL.md"]
+      "suggested_keywords": [
+        "extensions",
+        "skill-base",
+        "link-artifact-todo",
+        "generate-todo",
+        "pipeline",
+        "SKILL.md"
+      ]
     },
     {
       "content": "The PIPELINE_MODE environment variable pattern enables safe rollback during script migrations: PIPELINE_MODE=new (default) uses new logic; PIPELINE_MODE=legacy falls back to old code. Add deprecation logging only in the legacy path so normal operation produces no log noise. Test log creation with: PIPELINE_MODE=legacy bash script.sh --dry-run",
       "category": "PATTERN",
       "source_artifact": "specs/649_simplify_state_update_pipeline/summaries/01_pipeline-simplification-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["PIPELINE_MODE", "migration", "rollback", "deprecation-logging", "feature-flag", "shell-script"]
+      "suggested_keywords": [
+        "PIPELINE_MODE",
+        "migration",
+        "rollback",
+        "deprecation-logging",
+        "feature-flag",
+        "shell-script"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

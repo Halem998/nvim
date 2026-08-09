@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1780358127_d1657f",
   "task_number": 631,
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "started_at": "2026-06-01T00:00:00Z",
   "completed_at": "2026-06-01T01:00:00Z",
   "phases_completed": 5,
@@ -24,7 +28,22 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/631_cleanup_stale_status_docs/summaries/01_stale-status-docs-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["cleanup", "deletion", "extensions", "mirrors", "references", "grep"]
+      "suggested_keywords": [
+        "cleanup",
+        "deletion",
+        "extensions",
+        "mirrors",
+        "references",
+        "grep"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

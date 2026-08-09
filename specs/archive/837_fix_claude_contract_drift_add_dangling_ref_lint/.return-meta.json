@@ -16,7 +16,11 @@
     "session_id": "sess_1783879475_193202_837",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   },
@@ -47,14 +51,33 @@
       "category": "PATTERN",
       "source_artifact": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["provides.context", "extension-sync", "copy_context_dirs", "Load Core", "dangling-reference"]
+      "suggested_keywords": [
+        "provides.context",
+        "extension-sync",
+        "copy_context_dirs",
+        "Load Core",
+        "dangling-reference"
+      ]
     },
     {
       "content": "check-extension-docs.sh doc-lint pattern: per-extension checks live in functions invoked inside the for-loop over EXT_DIR/*/  (using CURRENT_EXT + EXTENSION_STATUS[] + fail()/info() helpers). Project-wide checks that are NOT scoped to a single extension (e.g. scanning ALL deployed skills/agents/rules for a pattern) should set CURRENT_EXT to a synthetic bucket name (e.g. 'project-wide'), register it in EXTENSION_STATUS before calling the check function, and invoke it once after the per-extension loop, before the summary table -- this reuses the same fail()/exit-code machinery without conflating project-wide FAILs with a specific extension's status.",
       "category": "PATTERN",
       "source_artifact": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["check-extension-docs.sh", "doc-lint", "project-wide-check", "bash-validator-pattern"]
+      "suggested_keywords": [
+        "check-extension-docs.sh",
+        "doc-lint",
+        "project-wide-check",
+        "bash-validator-pattern"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

@@ -3,7 +3,12 @@
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1785373759_72035f_973",
   "delegation_depth": 2,
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "orchestrate",
+    "skill-orchestrate",
+    "general-implementation-agent"
+  ],
   "task_number": 973,
   "task_name": "recover_reconcile_from_malformed_handoff_status",
   "task_type": "meta",
@@ -30,15 +35,34 @@
       "category": "PATTERN",
       "source_artifact": "specs/973_recover_reconcile_from_malformed_handoff_status/summaries/01_malformed-handoff-recovery-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-root-guard", "sandbox test harness", "source-store-first", "stale deploy mirror", "reconcile-task-status"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "sandbox test harness",
+        "source-store-first",
+        "stale deploy mirror",
+        "reconcile-task-status"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785373759_72035f_973",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
   }
 }

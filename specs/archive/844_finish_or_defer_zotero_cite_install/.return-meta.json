@@ -12,7 +12,11 @@
     "session_id": "sess_1783728731_72f337_844",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   },
@@ -38,14 +42,33 @@
       "category": "PATTERN",
       "source_artifact": "specs/844_finish_or_defer_zotero_cite_install/summaries/01_install-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "drift-guard", "manifest", "provides.scripts", "deploy"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "drift-guard",
+        "manifest",
+        "provides.scripts",
+        "deploy"
+      ]
     },
     {
       "content": "Before trusting a research report's claim that a file is 'never deployed' or 'source-only', re-verify against the live filesystem at implementation time -- research and implementation can be separated by unrelated commits from other tasks that change deployment state (e.g. task 763 deployed test-lit-pipeline.sh independently of the zotero/cite research in task 844, making an earlier finding stale).",
       "category": "INSIGHT",
       "source_artifact": "specs/844_finish_or_defer_zotero_cite_install/summaries/01_install-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["research-staleness", "verification", "deployment-state", "drift"]
+      "suggested_keywords": [
+        "research-staleness",
+        "verification",
+        "deployment-state",
+        "drift"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

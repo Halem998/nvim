@@ -30,15 +30,32 @@
       "category": "PATTERN",
       "source_artifact": "specs/994_fix_literature_tooling_landmines_and_sync_pruning/summaries/01_literature-tooling-doc-fixes-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["scope-hypothesis", "plan-deviation", "grep-verification", "implementer-discretion"]
+      "suggested_keywords": [
+        "scope-hypothesis",
+        "plan-deviation",
+        "grep-verification",
+        "implementer-discretion"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785961976_f6b468_994",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
   }
 }

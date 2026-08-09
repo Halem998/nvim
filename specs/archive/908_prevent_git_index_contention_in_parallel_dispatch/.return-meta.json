@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 908,
   "session_id": "sess_1785143135_b5536f",
   "artifacts": [
@@ -30,14 +34,28 @@
       "category": "PATTERN",
       "source_artifact": "specs/908_prevent_git_index_contention_in_parallel_dispatch/summaries/01_git-index-contention-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["git-index-contention", "scoped-commit", "index-lock-race", "pathspec-exclude-only", "mutex-serialization", "concurrent-dispatch"]
+      "suggested_keywords": [
+        "git-index-contention",
+        "scoped-commit",
+        "index-lock-race",
+        "pathspec-exclude-only",
+        "mutex-serialization",
+        "concurrent-dispatch"
+      ]
     },
     {
       "content": "When adding a second mutex sibling to an existing named-mutex pattern (e.g. a new specs/.commit-lock/ alongside an existing specs/.scope-lock/), the reentrancy-flag collision is the decisive design constraint, not call-frequency: a single global env flag like SCOPE_MUTEX_HELD=1 means 'an outer holder already owns THIS mutex', so reusing the same mutex directory for a second, unrelated critical section would make an inherited flag either silently skip serialization it should apply, or force a nested acquire on a documented non-reentrant primitive. Two independent critical sections always need two independent held-flags, which in turn requires two mutex directories -- refactor the underlying acquire/release logic into a name-parameterized primitive (e.g. acquire_named_mutex(dirname, ...)) so both mutexes share one implementation without duplicating the mkdir/staleness/wait-budget logic.",
       "category": "PATTERN",
       "source_artifact": "specs/908_prevent_git_index_contention_in_parallel_dispatch/summaries/01_git-index-contention-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["reentrancy-flag", "named-mutex", "mutex-sibling", "task-lock", "scope-lock", "commit-lock"]
+      "suggested_keywords": [
+        "reentrancy-flag",
+        "named-mutex",
+        "mutex-sibling",
+        "task-lock",
+        "scope-lock",
+        "commit-lock"
+      ]
     }
   ],
   "modified_files": [
@@ -55,5 +73,13 @@
     "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
     "specs/908_prevent_git_index_contention_in_parallel_dispatch/reports/02_commit-site-inventory.md",
     "specs/908_prevent_git_index_contention_in_parallel_dispatch/summaries/01_git-index-contention-summary.md"
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

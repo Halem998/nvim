@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1749673500_a3b2c1_665",
   "started_at": "2026-06-11T00:00:00Z",
   "completed_at": "2026-06-11T00:20:00Z",
@@ -34,7 +38,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/665_create_cslib_skills/summaries/01_skills-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["cslib", "extension-skills", "thin-wrapper", "pattern-b", "skill-template", "delegation-context"]
+      "suggested_keywords": [
+        "cslib",
+        "extension-skills",
+        "thin-wrapper",
+        "pattern-b",
+        "skill-template",
+        "delegation-context"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

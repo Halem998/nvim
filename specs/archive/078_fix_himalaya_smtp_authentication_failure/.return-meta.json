@@ -13,7 +13,11 @@
     "agent_type": "neovim-research-agent",
     "duration_seconds": 900,
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "neovim-research-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "research",
+      "neovim-research-agent"
+    ],
     "findings_count": 7
   },
   "memory_candidates": [
@@ -22,14 +26,35 @@
       "category": "CONFIG",
       "source_artifact": "specs/078_fix_himalaya_smtp_authentication_failure/reports/02_himalaya-smtp-auth-recheck.md",
       "confidence": 0.9,
-      "suggested_keywords": ["home-manager", "nix-store-symlink", "himalaya", "secret-tool", "dotfiles"]
+      "suggested_keywords": [
+        "home-manager",
+        "nix-store-symlink",
+        "himalaya",
+        "secret-tool",
+        "dotfiles"
+      ]
     },
     {
       "content": "Gmail SMTP auth for himalaya/mbsync uses a consumer-account app password stored in the keyring (service gmail-app-password); OAuth2/XOAUTH2 was abandoned 2026-07-02 (task 72) because Testing-mode refresh tokens expire in 7 days and Production verification of the restricted mail.google.com scope requires a paid CASA Tier 2 audit. A live AUTH PLAIN probe via openssl s_client to smtp.gmail.com:465 is a safe read-only way to verify SMTP credentials without sending mail.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/078_fix_himalaya_smtp_authentication_failure/reports/02_himalaya-smtp-auth-recheck.md",
       "confidence": 0.85,
-      "suggested_keywords": ["gmail", "smtp", "app-password", "oauth2", "auth-probe", "openssl"]
+      "suggested_keywords": [
+        "gmail",
+        "smtp",
+        "app-password",
+        "oauth2",
+        "auth-probe",
+        "openssl"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

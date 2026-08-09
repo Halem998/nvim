@@ -22,7 +22,14 @@
       "category": "PATTERN",
       "source_artifact": "specs/725_add_pr_ready_push_zulip/summaries/01_pr-ready-push-zulip-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["pr-command", "cslib", "pr_ready", "early-exit", "sources", "detection"]
+      "suggested_keywords": [
+        "pr-command",
+        "cslib",
+        "pr_ready",
+        "early-exit",
+        "sources",
+        "detection"
+      ]
     }
   ],
   "metadata": {
@@ -30,8 +37,20 @@
     "agent_type": "general-implementation-agent",
     "duration_seconds": 1200,
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
   }
 }

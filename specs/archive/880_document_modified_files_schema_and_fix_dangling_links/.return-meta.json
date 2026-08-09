@@ -31,7 +31,13 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/880_document_modified_files_schema_and_fix_dangling_links/summaries/01_modified-files-schema-docs-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["added-lines-diff", "verification-scope", "pre-existing-defect", "deliverable-rule", "git-diff-sweep"]
+      "suggested_keywords": [
+        "added-lines-diff",
+        "verification-scope",
+        "pre-existing-defect",
+        "deliverable-rule",
+        "git-diff-sweep"
+      ]
     }
   ],
   "modified_files": [
@@ -44,8 +50,20 @@
     "session_id": "sess_1784155855_f90cfe_880",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
   }
 }

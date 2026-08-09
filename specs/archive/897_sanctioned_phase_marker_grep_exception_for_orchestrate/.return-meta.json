@@ -25,21 +25,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["grep verification", "plan phase verification", "case-sensitive", "bash comment blocks", "cross-file consistency"]
+      "suggested_keywords": [
+        "grep verification",
+        "plan phase verification",
+        "case-sensitive",
+        "bash comment blocks",
+        "cross-file consistency"
+      ]
     },
     {
       "content": "When a plan's Phase N verification step scans a whole directory tree for a contradicting pattern (e.g. `grep -rn \"NEVER reads\" docs/ context/`), check for other occurrences of that pattern beyond the specific file(s) named in that phase's task list -- a phase-scoped fix can leave a sibling doc section with the same stale claim, which then fails the phase's own repo-wide verification even though the named tasks were completed correctly.",
       "category": "INSIGHT",
       "source_artifact": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verification scope", "doc reconciliation", "repo-wide grep check", "plan tasks vs verification"]
+      "suggested_keywords": [
+        "verification scope",
+        "doc reconciliation",
+        "repo-wide grep check",
+        "plan tasks vs verification"
+      ]
     },
     {
       "content": "Under the git-workflow concurrency constraint (another implementation agent running on different files in the same repo), git status/diff will show files this agent never touched. Scope every git audit command (git diff --stat, task-reference grep, etc.) to this task's own declared file list rather than the whole tree, and document any unscoped discrepancy as a concurrency-attributable deviation rather than treating it as a defect.",
       "category": "WORKFLOW",
       "source_artifact": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["concurrent agents", "git audit scoping", "source-store audit", "multi-agent implementation"]
+      "suggested_keywords": [
+        "concurrent agents",
+        "git audit scoping",
+        "source-store audit",
+        "multi-agent implementation"
+      ]
     }
   ],
   "modified_files": [
@@ -56,5 +72,13 @@
     "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/handoffs/phase-1-handoff-20260725T170931Z.md",
     "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/handoffs/phase-2-handoff-20260725T172000Z.md",
     "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/.orchestrator-handoff.json"
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

@@ -1,44 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 998,
-  "session_id": "sess_1786316975_3658f6_998",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/998_double_loading_warning_triage/plans/01_double-loading-check-rekey.md",
-      "summary": "Six-phase plan re-keying the Double-Loading Check on a mechanically derived three-bucket redundancy predicate (redundant/legitimate-dual/unclassifiable-command), narrowing the redundant core index entries, promoting the redundant bucket to an exit-code-contributing violation, and committing a five-case regression test that proves the check still fires."
-    }
-  ],
-  "phase_count": 6,
-  "estimated_hours": 6,
-  "dependency_waves": [[1], [2, 3], [4], [5], [6]],
-  "plan_metadata": {
-    "phases": 6,
-    "total_effort_hours": 6,
-    "complexity": "medium",
-    "research_integrated": true,
-    "plan_version": 1,
-    "dependency_waves": [[1], [2, 3], [4], [5], [6]],
-    "reports_integrated": [
-      {
-        "path": "reports/01_double_loading_warning_triage.md",
-        "integrated_in_plan_version": 1,
-        "integrated_date": "2026-08-09"
-      }
-    ],
-    "skeleton": false,
-    "follow_up_tasks": []
-  },
-  "memory_candidates": [
-    {
-      "content": "When a validator check is deliberately downgraded to a non-blocking warning because it surfaces a large set of pre-existing matches, the durable repair is a three-bucket predicate rather than a two-bucket one: violation (mechanically proven bad), exempt-by-construction (predicate evaluates false, no allowlist file), and explicitly-named-unclassifiable (the predicate's coverage boundary, reported by count and path). The two-bucket design silently folds everything the predicate cannot resolve into the exempt bucket, which recreates the original 'check has quietly stopped working' failure one layer over. Making the unresolvable set visible in the check's own output is what keeps under-detection honest. Corollary: derive every identifier the predicate needs live from deployed artifacts (manifest routing tables, a skill's sole subagent_type line) rather than hardcoding a second copy, and emit a loud named DEGRADED banner when a derivation resolves empty -- an empty derivation table otherwise neuters the check with no observable output change.",
-      "category": "PATTERN",
-      "source_artifact": "specs/998_double_loading_warning_triage/plans/01_double-loading-check-rekey.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["validator-design", "warning-triage", "exemption-mechanism", "coverage-boundary", "derived-not-hardcoded", "fail-loud"]
-    }
-  ],
-  "next_steps": "Run /implement 998 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786316975_3658f6_998",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

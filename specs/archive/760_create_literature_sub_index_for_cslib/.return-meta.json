@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1782255422_7edccd_760",
   "task_number": 760,
   "phases_completed": 4,
@@ -21,11 +25,26 @@
   ],
   "memory_candidates": [
     {
-      "content": "AskUserQuestion cannot be invoked from bash scripts — it must be called inline in SKILL.md as Claude executes the skill. When a skill needs user interaction, embed the AskUserQuestion call as pseudocode/prose instructions in the SKILL.md, and extract all bash side effects into a separate shared script. This pattern was implemented in Stage 4a of 6 skill SKILL.md files for the --lit flag detection flow.",
+      "content": "AskUserQuestion cannot be invoked from bash scripts \u2014 it must be called inline in SKILL.md as Claude executes the skill. When a skill needs user interaction, embed the AskUserQuestion call as pseudocode/prose instructions in the SKILL.md, and extract all bash side effects into a separate shared script. This pattern was implemented in Stage 4a of 6 skill SKILL.md files for the --lit flag detection flow.",
       "category": "PATTERN",
       "source_artifact": "specs/760_create_literature_sub_index_for_cslib/summaries/01_lit-setup-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["AskUserQuestion", "SKILL.md", "inline", "bash", "skill-execution", "interactive"]
+      "suggested_keywords": [
+        "AskUserQuestion",
+        "SKILL.md",
+        "inline",
+        "bash",
+        "skill-execution",
+        "interactive"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

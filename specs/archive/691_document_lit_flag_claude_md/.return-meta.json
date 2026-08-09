@@ -1,6 +1,10 @@
 {
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "status": "implemented",
   "task_number": 691,
   "session_id": "sess_20260612_691_impl",
@@ -25,7 +29,22 @@
       "category": "CONFIG",
       "source_artifact": "specs/691_document_lit_flag_claude_md/summaries/01_document-lit-flag-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["--lit", "literature-retrieve", "specs/literature", "--clean", "context injection", "literature mode"]
+      "suggested_keywords": [
+        "--lit",
+        "literature-retrieve",
+        "specs/literature",
+        "--clean",
+        "context injection",
+        "literature mode"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

@@ -31,23 +31,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/951_define_system_defect_discrimination_predicate/summaries/01_system-defect-discrimination-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["consistency-check", "enumeration-drift", "final-gate", "self-review", "documentation-maintenance"]
+      "suggested_keywords": [
+        "consistency-check",
+        "enumeration-drift",
+        "final-gate",
+        "self-review",
+        "documentation-maintenance"
+      ]
     },
     {
       "content": "For a verification-and-gap-closure plan (deliverables already written and committed by an earlier research phase; the plan only records verification and plans the gap closures), re-independently reproducing every claimed jq/grep/sed evidence command at implementation time -- not trusting the planner's verification table at face value -- is cheap (each check is a single command) and catches citation drift between planning and implementation. In this task every row still held, but the same discipline is what the document itself argues for (citations must be re-verified, never trusted from a prior report) and applying it recursively to the plan's own verification table is consistent, not redundant.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/951_define_system_defect_discrimination_predicate/summaries/01_system-defect-discrimination-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["citation-verification", "gap-closure-plan", "re-verify-dont-trust", "mechanical-checks"]
+      "suggested_keywords": [
+        "citation-verification",
+        "gap-closure-plan",
+        "re-verify-dont-trust",
+        "mechanical-checks"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785373759_72035f_951",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "task_number": 951,
     "phases_completed": 4,
     "phases_total": 4
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 906,
   "session_id": "sess_1785139168_cefcd3",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "summary": "Fixed the validate-artifact.sh call-arity bug (extracted a shared skill_validate_task_artifacts helper into skill-base.sh, wired into command-gate-out.sh) and the forbidden \"completed\" status vocabulary in skill-orchestrate Stage 8 and Stage MT-5 (changed to \"implemented\"). Both fixes demonstrated live against a disposable fixture; documentation updated to establish return-metadata-file.md as the single normative vocabulary source.",
   "artifacts": [
     {
@@ -17,18 +21,30 @@
   },
   "memory_candidates": [
     {
-      "content": "In this agent system, command-gate-out.sh's operation=orchestrate defensive status-correction branch reads .return-meta.json's status field and only proceeds for the accept-list {implemented, researched, planned} (never \"completed\", which is forbidden in that file's vocabulary per return-metadata-file.md). If a skill writer emits the state.json-vocabulary word \"completed\" into .return-meta.json by mistake, the branch silently never fires — it is not an error, just a permanently-skipped no-op. To verify such a branch is actually reachable, build a disposable fixture, desync state.json, write a status matching the accept-list via the FIXED writer's own jq snippet (not hand-authored), and confirm the diagnostic echo line appears; then re-run with the old/wrong value as a negative control to prove the fix (not something else) caused reachability.",
+      "content": "In this agent system, command-gate-out.sh's operation=orchestrate defensive status-correction branch reads .return-meta.json's status field and only proceeds for the accept-list {implemented, researched, planned} (never \"completed\", which is forbidden in that file's vocabulary per return-metadata-file.md). If a skill writer emits the state.json-vocabulary word \"completed\" into .return-meta.json by mistake, the branch silently never fires \u2014 it is not an error, just a permanently-skipped no-op. To verify such a branch is actually reachable, build a disposable fixture, desync state.json, write a status matching the accept-list via the FIXED writer's own jq snippet (not hand-authored), and confirm the diagnostic echo line appears; then re-run with the old/wrong value as a negative control to prove the fix (not something else) caused reachability.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/906_fix_gate_out_validation_arity_and_status_vocabulary/summaries/01_gate-out-arity-and-status-vocabulary-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["command-gate-out.sh", "return-meta.json", "status-vocabulary", "fixture-verification", "defensive-correction"]
+      "suggested_keywords": [
+        "command-gate-out.sh",
+        "return-meta.json",
+        "status-vocabulary",
+        "fixture-verification",
+        "defensive-correction"
+      ]
     },
     {
-      "content": "Bash arity bugs in non-blocking (\"|| true\"-suppressed) call sites are easy to miss because they never surface as a failure — they surface as a misleading side-channel message instead. In this codebase, validate-artifact.sh's <path> <type> --fix contract was called as validate-artifact.sh \"$task_dir\" --fix (missing the type argument), so \"--fix\" silently bound to the type positional and the directory bound to artifact_path, producing a `[FAIL] File not found: <dir>` on stdout that `2>/dev/null` could not suppress, while `|| true` swallowed the actual exit code. The fix pattern: extract ONE shared per-directory-sweep helper function into the shared library (skill-base.sh) rather than trying to patch the inline call, so the correct 3-token form is enforced structurally at a single call site instead of hand-copied.",
+      "content": "Bash arity bugs in non-blocking (\"|| true\"-suppressed) call sites are easy to miss because they never surface as a failure \u2014 they surface as a misleading side-channel message instead. In this codebase, validate-artifact.sh's <path> <type> --fix contract was called as validate-artifact.sh \"$task_dir\" --fix (missing the type argument), so \"--fix\" silently bound to the type positional and the directory bound to artifact_path, producing a `[FAIL] File not found: <dir>` on stdout that `2>/dev/null` could not suppress, while `|| true` swallowed the actual exit code. The fix pattern: extract ONE shared per-directory-sweep helper function into the shared library (skill-base.sh) rather than trying to patch the inline call, so the correct 3-token form is enforced structurally at a single call site instead of hand-copied.",
       "category": "PATTERN",
       "source_artifact": "specs/906_fix_gate_out_validation_arity_and_status_vocabulary/summaries/01_gate-out-arity-and-status-vocabulary-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["bash", "arity-bug", "validate-artifact.sh", "non-blocking", "shared-helper"]
+      "suggested_keywords": [
+        "bash",
+        "arity-bug",
+        "validate-artifact.sh",
+        "non-blocking",
+        "shared-helper"
+      ]
     }
   ],
   "modified_files": [
@@ -44,5 +60,13 @@
   "metadata": {
     "phases_completed": 7,
     "phases_total": 7
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

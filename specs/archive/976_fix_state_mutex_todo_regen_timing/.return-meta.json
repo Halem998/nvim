@@ -28,29 +28,61 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash", "read", "mapfile", "IFS", "delimiter", "unit-separator", "field-splitting"]
+      "suggested_keywords": [
+        "bash",
+        "read",
+        "mapfile",
+        "IFS",
+        "delimiter",
+        "unit-separator",
+        "field-splitting"
+      ]
     },
     {
       "content": "When eliminating a per-item subprocess-spawn storm (e.g. N jq calls per loop iteration), encoding each extracted FIELD separately with @base64 and decoding each with its own subprocess call does not remove the spawn-count cost -- it only trades one subprocess type for another (jq spawns become base64 spawns) of the same order of magnitude. Instead, join all fields for one record with a safe delimiter FIRST, then base64-encode the WHOLE joined record ONCE, so decode is a single subprocess spawn per record rather than one per field.",
       "category": "PATTERN",
       "source_artifact": "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["jq", "base64", "subprocess-spawn", "performance", "shell-scripting"]
+      "suggested_keywords": [
+        "jq",
+        "base64",
+        "subprocess-spawn",
+        "performance",
+        "shell-scripting"
+      ]
     },
     {
       "content": "In this repo, `agent-system/extensions/core/scripts/deploy-headless.sh` (the non-interactive .claude/ redeploy mechanism) has exactly one sanctioned automated caller: skill-orchestrate's Stage MT-3 step 7 inter-cycle redeploy checkpoint, documented in context/patterns/regeneration-is-manual-only.md's Automated Exception subsection. Any other agent (including a general-implementation-agent /implement dispatch) must NOT invoke it directly, even when a plan explicitly directs a Phase 5-style redeploy-and-verify step -- the correct response is to verify everything possible via an isolated throwaway root (matching the existing test-suite convention) and record the actual redeploy as a documented Reasoned Exclusion, deferring to a human-invoked interactive Load Core sync.",
       "category": "INSIGHT",
       "source_artifact": "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "regeneration-is-manual-only", "orchestrator-critical-paths", "source-store", "policy"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "regeneration-is-manual-only",
+        "orchestrator-critical-paths",
+        "source-store",
+        "policy"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785355598_1f68c0_976",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

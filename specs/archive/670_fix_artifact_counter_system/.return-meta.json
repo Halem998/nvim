@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1781461813_4483e1_670",
   "task_number": 670,
   "task_type": "meta",
@@ -23,7 +27,21 @@
       "category": "PATTERN",
       "source_artifact": "specs/670_fix_artifact_counter_system/summaries/03_execution-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["artifact-counter", "reconciliation", "disk-scan", "legacy-drift", "bash"]
+      "suggested_keywords": [
+        "artifact-counter",
+        "reconciliation",
+        "disk-scan",
+        "legacy-drift",
+        "bash"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

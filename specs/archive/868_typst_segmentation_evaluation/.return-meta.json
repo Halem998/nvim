@@ -17,11 +17,22 @@
     "session_id": "sess_1784097580_894630_868",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 2,
     "phases_total": 2,
     "estimated_hours": 1.25,
-    "dependency_waves": [[1], [2]]
+    "dependency_waves": [
+      [
+        1
+      ],
+      [
+        2
+      ]
+    ]
   },
   "completion_data": {
     "completion_summary": "Recorded a durable, task-number-free NO-GO decision on typst literature segmentation (markdown retained as the sole convert/chunk/index format) at format-decision.md, registered it in index-entries.json, and referenced it from EXTENSION.md. Documentation-only: no scripts/ or generated CLAUDE.md changes; check-extension-docs.sh confirms literature PASS."
@@ -32,14 +43,35 @@
       "category": "INSIGHT",
       "source_artifact": "specs/868_typst_segmentation_evaluation/summaries/01_markdown-retention-decision-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["literature", "format", "markdown", "typst", "format-agnostic", "index"]
+      "suggested_keywords": [
+        "literature",
+        "format",
+        "markdown",
+        "typst",
+        "format-agnostic",
+        "index"
+      ]
     },
     {
       "content": "`source_format` in the literature index (specs/literature/index.json and the global index.json) is a document-level provenance field with values pdf/djvu/manual describing the original source document type. It is NOT a column on literature-schema.sql's chunks_data/FTS5 table and carries no information about chunk markup dialect (markdown vs. any alternative). Any future proposal conflating the two should be corrected against this distinction.",
       "category": "INSIGHT",
       "source_artifact": "specs/868_typst_segmentation_evaluation/summaries/01_markdown-retention-decision-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["source_format", "literature-schema", "index", "chunks_data", "provenance"]
+      "suggested_keywords": [
+        "source_format",
+        "literature-schema",
+        "index",
+        "chunks_data",
+        "provenance"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

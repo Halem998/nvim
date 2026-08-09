@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 915,
   "session_id": "sess_1785176230_b4221f_915",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "artifacts": [
     {
       "type": "summary",
@@ -32,14 +36,35 @@
       "category": "PATTERN",
       "source_artifact": "specs/915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["postflight", "completion_data", "producer-consumer", "status-gate", "return-meta", "skill-base"]
+      "suggested_keywords": [
+        "postflight",
+        "completion_data",
+        "producer-consumer",
+        "status-gate",
+        "return-meta",
+        "skill-base"
+      ]
     },
     {
       "content": "When a skill's postflight stage has no bash blocks at all (pure prose, no bound variables), an inserted bash block must be fully self-contained rather than assuming task_number/project_name/padded_num exist as caller-scoped variables. Bind padded_num via printf \"%03d\" and project_name via a jq lookup against specs/state.json inside the inserted block itself, mirroring the idiom other bash-containing skills use in their own early stages. skill-base.sh self-defaults SKILL_REPO_ROOT at source time, so sourcing it needs no caller-side setup beyond the source line.",
       "category": "PATTERN",
       "source_artifact": "specs/915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["self-contained-bash", "skill-base.sh", "padded_num", "project_name", "prose-only-skill"]
+      "suggested_keywords": [
+        "self-contained-bash",
+        "skill-base.sh",
+        "padded_num",
+        "project_name",
+        "prose-only-skill"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

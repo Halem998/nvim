@@ -49,22 +49,46 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/977_extension_manifest_quick_fixes/summaries/01_manifest-quick-fixes-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["jq", "json-formatting", "diff-churn", "manifest-sweep", "git-revert"]
+      "suggested_keywords": [
+        "jq",
+        "json-formatting",
+        "diff-churn",
+        "manifest-sweep",
+        "git-revert"
+      ]
     },
     {
       "content": "For a manifest field consumed via `{ '<key>': { 'keywords': [...] } }` shape (e.g. keyword_overrides consumed by task.md's routing jq), a sibling manifest with a bare string-valued shape (`{'<key>': 'value'}`) will crash the consumer jq with 'Cannot index string with string' and exit 5 -- and if the caller redirects stderr to /dev/null, this failure is completely silent, so the feature simply never routes anything and nobody notices. When auditing manifest-driven config across an extension system, always test the consumer's actual jq/parsing invocation directly against each declaring manifest (without stderr suppression) rather than trusting that a present field means a working feature.",
       "category": "INSIGHT",
       "source_artifact": "specs/977_extension_manifest_quick_fixes/summaries/01_manifest-quick-fixes-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["silent-failure", "jq-crash", "manifest-shape", "keyword-overrides", "stderr-suppression"]
+      "suggested_keywords": [
+        "silent-failure",
+        "jq-crash",
+        "manifest-shape",
+        "keyword-overrides",
+        "stderr-suppression"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785355598_1f68c0_977",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

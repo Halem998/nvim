@@ -2,7 +2,11 @@
   "status": "implemented",
   "session_id": "sess_1784991755_1b4381_903",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_context": {
     "task_number": 903,
     "task_name": "phase_accounting_backstop_in_update_task_status",
@@ -31,25 +35,42 @@
   ],
   "memory_candidates": [
     {
-      "content": "When a bash script must resolve its repo-root relative to a source-store deploy tree (e.g. .claude/scripts/ deployed from agent-system/extensions/core/scripts/), guard scripts against direct execution from the source store with a deploy-root-guard.sh check — running from the source store makes SCRIPT_DIR/../.. resolve to a bogus repo root, silently corrupting any relative path derivation. When live-testing such a script's behavior without a full deploy, temporarily copy the modified source file over the deployed copy (which is gitignored/disposable), run the test, then restore — this preserves correct PROJECT_ROOT resolution without violating a source-store-only edit constraint.",
+      "content": "When a bash script must resolve its repo-root relative to a source-store deploy tree (e.g. .claude/scripts/ deployed from agent-system/extensions/core/scripts/), guard scripts against direct execution from the source store with a deploy-root-guard.sh check \u2014 running from the source store makes SCRIPT_DIR/../.. resolve to a bogus repo root, silently corrupting any relative path derivation. When live-testing such a script's behavior without a full deploy, temporarily copy the modified source file over the deployed copy (which is gitignored/disposable), run the test, then restore \u2014 this preserves correct PROJECT_ROOT resolution without violating a source-store-only edit constraint.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/903_phase_accounting_backstop_in_update_task_status/summaries/01_phase-accounting-backstop-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["deploy-root-guard", "source-store", "bash testing", "PROJECT_ROOT", "gitignored deploy artifact"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "source-store",
+        "bash testing",
+        "PROJECT_ROOT",
+        "gitignored deploy artifact"
+      ]
     },
     {
       "content": "guard-destructive-git.sh's over-staging heuristic for 'git commit -a/-am' scans the entire commit command text (including multi-line -m message bodies, but only the first line since it's extracted via a single-line grep -oE) for a regex matching '-<letters>a<letters>' bounded by whitespace/start/end. Hyphenated compound words in a commit message's first line, like 'zero-gate' (the '-gate' suffix contains 'a' and looks like a flag), trigger a false positive BLOCKED error even though no -a flag was passed. Workaround: avoid hyphenated words in the first line of commit messages, or rephrase (e.g. 'zero-gate' -> 'zero gate').",
       "category": "INSIGHT",
       "source_artifact": "specs/903_phase_accounting_backstop_in_update_task_status/summaries/01_phase-accounting-backstop-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["guard-destructive-git.sh", "git commit hook false positive", "commit message regex", "over-staging guard"]
+      "suggested_keywords": [
+        "guard-destructive-git.sh",
+        "git commit hook false positive",
+        "commit message regex",
+        "over-staging guard"
+      ]
     },
     {
       "content": "For a phase-accounting or completion backstop that must add a hard REFUSE mode, gate the refuse rollout behind an empirical validation phase that samples real historical completed-task artifacts (e.g. plan files) and checks the assumed invariant (e.g. 'phase headings converge to COMPLETED on genuine completion') holds at a set threshold (e.g. >=80%) before wiring refuse anywhere. If the gate fails, downgrade every planned refuse site to warn-only and record the gap as a follow-up blocker rather than shipping an unverified hard-refusal path.",
       "category": "PATTERN",
       "source_artifact": "specs/903_phase_accounting_backstop_in_update_task_status/summaries/01_phase-accounting-backstop-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["empirical validation gate", "refuse vs warn", "backstop rollout", "phase accounting", "completion gate"]
+      "suggested_keywords": [
+        "empirical validation gate",
+        "refuse vs warn",
+        "backstop rollout",
+        "phase accounting",
+        "completion gate"
+      ]
     }
   ],
   "artifacts": [
@@ -58,5 +79,13 @@
       "path": "specs/903_phase_accounting_backstop_in_update_task_status/summaries/01_phase-accounting-backstop-summary.md",
       "summary": "Implementation summary for the phase-accounting backstop"
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

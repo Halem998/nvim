@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1785284456_e91a9c",
   "task_number": 945,
   "task_name": "converge_conflict_detection_predicate",
@@ -45,29 +49,62 @@
       "category": "INSIGHT",
       "source_artifact": "specs/945_converge_conflict_detection_predicate/summaries/01_converge-conflict-predicate-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["manifest.json", "provides.scripts", "deploy-headless", "loader-gap", "check-extension-docs", "extension-loader"]
+      "suggested_keywords": [
+        "manifest.json",
+        "provides.scripts",
+        "deploy-headless",
+        "loader-gap",
+        "check-extension-docs",
+        "extension-loader"
+      ]
     },
     {
       "content": "When a script sources a shared lib unconditionally at the top of a multi-subcommand CLI (e.g. task-lock.sh's acquire/heartbeat/release/check/reap/session-* dispatch), a missing/broken lib breaks EVERY subcommand, not just the ones that actually use it -- this is a strictly larger blast radius than the lib had before extraction, and can silently break isolated-temp-root test fixtures that copy the main script but not its new dependency (since the fixture never knew about the new dependency). Prefer a lazy loader function (idempotent, guarded by a loaded flag) called only at the specific call site(s) that need the shared code, so unrelated subcommands remain unaffected by the dependency's availability.",
       "category": "PATTERN",
       "source_artifact": "specs/945_converge_conflict_detection_predicate/summaries/01_converge-conflict-predicate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["lazy-loading", "shared-library", "multi-subcommand-cli", "test-fixture-isolation", "blast-radius"]
+      "suggested_keywords": [
+        "lazy-loading",
+        "shared-library",
+        "multi-subcommand-cli",
+        "test-fixture-isolation",
+        "blast-radius"
+      ]
     },
     {
       "content": "In jq, `generator | first` (a bare pipe into the `first` filter, which is defined as `.[0]`) is NOT the idiom for 'take the first output of a generator, or null if empty' -- it pipes EACH output of the generator through `.[0]` individually (erroring on a non-array output) and produces ZERO outputs, never a null fallback, when the generator itself yields nothing. The correct idiom, used consistently elsewhere in this codebase, is `[ generator ] | first`: wrap in an array comprehension first, then index -- `[][0]` is `null` in jq, giving exactly the desired null-on-empty behavior from a single evaluation. Also watch for the related bug: inside `map(select(. != $x and (($arr | index(.)) == null)))`, the `.` inside `index(.)` refers to whatever value is piped through `$arr |`, i.e. `$arr` itself, NOT the map element -- bind the element to a named variable first (`map(. as $el | select(...))`) before using it inside a nested pipe.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/945_converge_conflict_detection_predicate/summaries/01_converge-conflict-predicate-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["jq", "first", "generator", "null-fallback", "index", "dot-rebinding", "array-comprehension"]
+      "suggested_keywords": [
+        "jq",
+        "first",
+        "generator",
+        "null-fallback",
+        "index",
+        "dot-rebinding",
+        "array-comprehension"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785284456_e91a9c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 9,
     "phases_total": 9
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

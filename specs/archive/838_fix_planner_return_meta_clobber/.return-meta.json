@@ -16,14 +16,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["postflight", "memory_candidates", "skill-parity", "return-meta", "audit"]
+      "suggested_keywords": [
+        "postflight",
+        "memory_candidates",
+        "skill-parity",
+        "return-meta",
+        "audit"
+      ]
     },
     {
       "content": "In this repo's hard-mode skills (skill-researcher-hard, skill-planner-hard, skill-implementer-hard), a terse 'Same as `skill-{base}` Stage N' cross-reference is the established house style for postflight stages that are structurally identical to the base skill (e.g. Stage 7a memory_candidates propagation, Stage 8 artifact linking) -- inlining a duplicate block in the hard variant would be inconsistent with this convention, not an improvement.",
       "category": "CONFIG",
       "source_artifact": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["skill-hard", "postflight", "cross-reference", "house-style", "stage-7a"]
+      "suggested_keywords": [
+        "skill-hard",
+        "postflight",
+        "cross-reference",
+        "house-style",
+        "stage-7a"
+      ]
     }
   ],
   "modified_files": [
@@ -36,8 +48,20 @@
     "session_id": "sess_1783879475_193202_838",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

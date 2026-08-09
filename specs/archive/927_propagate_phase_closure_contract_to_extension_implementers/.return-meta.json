@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1785176230_b4221f_927",
   "task_number": 927,
   "phases_completed": 6,
@@ -31,25 +35,51 @@
   ],
   "memory_candidates": [
     {
-      "content": "When a plan's Context References list ends in a markdown table or a `---` separator rather than a plain bullet, append new pointer bullets directly after the last existing content line and before the next structural element (heading or separator) — do not invent a new subheading just to hold the appended bullets. Keeps additive diffs to exactly the specified lines with no extra structure.",
+      "content": "When a plan's Context References list ends in a markdown table or a `---` separator rather than a plain bullet, append new pointer bullets directly after the last existing content line and before the next structural element (heading or separator) \u2014 do not invent a new subheading just to hold the appended bullets. Keeps additive diffs to exactly the specified lines with no extra structure.",
       "category": "PATTERN",
       "source_artifact": "specs/927_propagate_phase_closure_contract_to_extension_implementers/summaries/01_propagate-phase-closure-contract-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["context-references", "pointer-bullet", "markdown-edit", "placement-rule", "diff-shape"]
+      "suggested_keywords": [
+        "context-references",
+        "pointer-bullet",
+        "markdown-edit",
+        "placement-rule",
+        "diff-shape"
+      ]
     },
     {
-      "content": "For a source-store repo where agent-system/extensions/** is authoritative and .claude/** is a gitignored deploy artifact, `@`-reference bullet text in source-store files still names the deploy-time `.claude/context/...` path (not the source-store path) — this asymmetry is intentional, matching what gets deployed, and should not be corrected to the source-store path.",
+      "content": "For a source-store repo where agent-system/extensions/** is authoritative and .claude/** is a gitignored deploy artifact, `@`-reference bullet text in source-store files still names the deploy-time `.claude/context/...` path (not the source-store path) \u2014 this asymmetry is intentional, matching what gets deployed, and should not be corrected to the source-store path.",
       "category": "INSIGHT",
       "source_artifact": "specs/927_propagate_phase_closure_contract_to_extension_implementers/summaries/01_propagate-phase-closure-contract-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["source-store", "deploy-path", "at-reference", "agent-system", "contracts"]
+      "suggested_keywords": [
+        "source-store",
+        "deploy-path",
+        "at-reference",
+        "agent-system",
+        "contracts"
+      ]
     },
     {
-      "content": "When auditing for prose-copy leaks via grep for distinctive contract phrases, a hit in a metadata/index file (e.g. index-entries.json's `summary` field) that predates the current task and isn't one of the task's actual edit targets is out of scope — distinguish index/registry metadata describing a contract from an actual consumer-file prose copy before treating a grep hit as a defect.",
+      "content": "When auditing for prose-copy leaks via grep for distinctive contract phrases, a hit in a metadata/index file (e.g. index-entries.json's `summary` field) that predates the current task and isn't one of the task's actual edit targets is out of scope \u2014 distinguish index/registry metadata describing a contract from an actual consumer-file prose copy before treating a grep hit as a defect.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/927_propagate_phase_closure_contract_to_extension_implementers/summaries/01_propagate-phase-closure-contract-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["audit", "anti-copy-paste", "grep", "index-entries", "false-positive"]
+      "suggested_keywords": [
+        "audit",
+        "anti-copy-paste",
+        "grep",
+        "index-entries",
+        "false-positive"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

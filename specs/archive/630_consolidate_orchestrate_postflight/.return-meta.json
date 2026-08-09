@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1780357272_59e91f",
   "task_number": 630,
   "task_type": "meta",
@@ -19,11 +23,26 @@
   },
   "memory_candidates": [
     {
-      "content": "When extracting duplicate bash case blocks into a shared helper function in skill-base.sh, use the in-memory variable pattern (pass the JSON string as a parameter) rather than reading the file again — both Stage 5 and Stage MT-4 in skill-orchestrate already have the handoff content in a $handoff variable.",
+      "content": "When extracting duplicate bash case blocks into a shared helper function in skill-base.sh, use the in-memory variable pattern (pass the JSON string as a parameter) rather than reading the file again \u2014 both Stage 5 and Stage MT-4 in skill-orchestrate already have the handoff content in a $handoff variable.",
       "category": "PATTERN",
       "source_artifact": "specs/630_consolidate_orchestrate_postflight/summaries/01_consolidate-postflight-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["skill-base.sh", "bash", "helper function", "handoff", "artifact linking", "orchestrate"]
+      "suggested_keywords": [
+        "skill-base.sh",
+        "bash",
+        "helper function",
+        "handoff",
+        "artifact linking",
+        "orchestrate"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_20260608_641_impl",
   "task_number": 641,
   "phases_completed": 3,
@@ -18,11 +22,24 @@
   },
   "memory_candidates": [
     {
-      "content": "When meta-builder-agent.md and .claude/extensions/core/agents/meta-builder-agent.md diverge, both files need to be updated in parallel — the extension copy is a mirror and must stay in sync with the main agent file.",
+      "content": "When meta-builder-agent.md and .claude/extensions/core/agents/meta-builder-agent.md diverge, both files need to be updated in parallel \u2014 the extension copy is a mirror and must stay in sync with the main agent file.",
       "category": "PATTERN",
       "source_artifact": "specs/641_meta_builder_topic_picker/summaries/01_topic-picker-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["meta-builder-agent", "extension-mirror", "sync", "agent-files"]
+      "suggested_keywords": [
+        "meta-builder-agent",
+        "extension-mirror",
+        "sync",
+        "agent-files"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

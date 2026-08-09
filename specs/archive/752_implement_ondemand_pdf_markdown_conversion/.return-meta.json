@@ -1,7 +1,11 @@
 {
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1781910367_99f70a_752",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 752,
   "status": "implemented",
   "phases_completed": 3,
@@ -32,14 +36,36 @@
       "category": "PATTERN",
       "source_artifact": "specs/752_implement_ondemand_pdf_markdown_conversion/summaries/01_pdf-conversion-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shell-script", "index-lookup", "dependency-avoidance", "jq", "pdf-path", "zotero"]
+      "suggested_keywords": [
+        "shell-script",
+        "index-lookup",
+        "dependency-avoidance",
+        "jq",
+        "pdf-path",
+        "zotero"
+      ]
     },
     {
       "content": "When calling literature-convert.sh from a downstream script, the output markdown filename is derived from the input PDF's basename (not from a citation key or custom name). To locate the output reliably, glob for *.md in the output directory after the call: `shopt -s nullglob; md_files=(\"$TMP_DIR\"/*.md); shopt -u nullglob`. This pattern works even if the PDF filename differs from the citation key.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/752_implement_ondemand_pdf_markdown_conversion/summaries/01_pdf-conversion-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["literature-convert", "glob", "output-filename", "markdown", "bash", "pdf-conversion"]
+      "suggested_keywords": [
+        "literature-convert",
+        "glob",
+        "output-filename",
+        "markdown",
+        "bash",
+        "pdf-conversion"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

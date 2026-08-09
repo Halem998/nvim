@@ -20,14 +20,26 @@
       "category": "INSIGHT",
       "source_artifact": "specs/834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["git", "gitignore", "tracked-files", "backup-verification", "deletion-safety"]
+      "suggested_keywords": [
+        "git",
+        "gitignore",
+        "tracked-files",
+        "backup-verification",
+        "deletion-safety"
+      ]
     },
     {
       "content": "For irreversible/destructive cross-repo cleanup tasks (deleting large gitignored data outside the working repo), the safe pattern is: (1) record a full sha256 manifest and re-verify equivalence against the surviving source-of-truth immediately before any destructive action -- treat ANY mismatch or missing file as a hard abort, not a partial success; (2) create a backup and independently re-hash it against the pre-delete manifest before deleting anything; (3) delete only the exact target path; (4) re-run any read-only regression check (e.g. a briefing/resolution script) before and after, diffing the two outputs for byte-identical output as the zero-cost check; (5) commit the tracked-file deletion locally only, never push/PR from an automated agent.",
       "category": "PATTERN",
       "source_artifact": "specs/834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["backup-then-verify-then-delete", "data-safety", "sha256-verification", "cross-repo-cleanup", "irreversible-operations"]
+      "suggested_keywords": [
+        "backup-then-verify-then-delete",
+        "data-safety",
+        "sha256-verification",
+        "cross-repo-cleanup",
+        "irreversible-operations"
+      ]
     }
   ],
   "modified_files": [
@@ -45,8 +57,20 @@
   "metadata": {
     "session_id": "sess_1783620265_b5399e_834",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

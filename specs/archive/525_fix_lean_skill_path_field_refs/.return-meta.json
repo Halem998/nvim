@@ -2,7 +2,11 @@
   "artifact_id": "525_fix_lean_skill_path_field_refs",
   "artifact_number": 525,
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "status": "implemented",
   "started_at": "2026-05-04T00:00:00Z",
   "completed_at": "2026-05-04T00:00:00Z",
@@ -21,14 +25,34 @@
       "category": "WORKFLOW",
       "source_artifact": "specs/525_fix_lean_skill_path_field_refs/summaries/01_lean-skill-fix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["skill-fix", "path-prefix", "cross-tree", "grep-verification", "scope-creep"]
+      "suggested_keywords": [
+        "skill-fix",
+        "path-prefix",
+        "cross-tree",
+        "grep-verification",
+        "scope-creep"
+      ]
     },
     {
       "content": "Lean skills use `padded_num` variable in metadata/git paths but never declare it. This is a latent bug that will break postflight when the variable is undefined. Fix: derive padded_num from task_number with zero-padding (e.g., printf '%03d').",
       "category": "INSIGHT",
       "source_artifact": "specs/525_fix_lean_skill_path_field_refs/summaries/01_lean-skill-fix-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["lean-skill", "padded_num", "undefined-variable", "postflight", "bug"]
+      "suggested_keywords": [
+        "lean-skill",
+        "padded_num",
+        "undefined-variable",
+        "postflight",
+        "bug"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

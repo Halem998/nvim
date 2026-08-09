@@ -12,18 +12,31 @@
   },
   "memory_candidates": [
     {
-      "content": "When a new free-text object field must be written into a shared JSON state file (like state.json) alongside existing fields written via a python3 triple-quote bash-interpolation pattern, don't extend that pattern to the new field. Use `jq --argjson VAR \"$json_var\"` instead — it passes the JSON value as a genuine argument rather than string-interpolating it into script source, so embedded quotes/newlines in free text can never break the write.",
+      "content": "When a new free-text object field must be written into a shared JSON state file (like state.json) alongside existing fields written via a python3 triple-quote bash-interpolation pattern, don't extend that pattern to the new field. Use `jq --argjson VAR \"$json_var\"` instead \u2014 it passes the JSON value as a genuine argument rather than string-interpolating it into script source, so embedded quotes/newlines in free text can never break the write.",
       "category": "PATTERN",
       "source_artifact": "specs/871_completion_time_reflective_harvest/summaries/01_reflective-harvest-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["jq", "argjson", "state.json", "free-text", "bash-interpolation", "python3-triple-quote"]
+      "suggested_keywords": [
+        "jq",
+        "argjson",
+        "state.json",
+        "free-text",
+        "bash-interpolation",
+        "python3-triple-quote"
+      ]
     },
     {
       "content": "When adding a new top-level metadata field alongside an existing append-semantics field (e.g. memory_candidates), state its overwrite-vs-append semantics explicitly in both the producer-side format doc (return-metadata-file.md) and the consumer-side schema doc (state-management-schema.md), mirroring the existing field's documentation structure exactly. This keeps producer/consumer docs mechanically consistent and makes the semantic difference (overwrite vs append) impossible to miss during future edits.",
       "category": "WORKFLOW",
       "source_artifact": "specs/871_completion_time_reflective_harvest/summaries/01_reflective-harvest-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["documentation", "schema-sync", "overwrite-semantics", "append-semantics", "return-meta"]
+      "suggested_keywords": [
+        "documentation",
+        "schema-sync",
+        "overwrite-semantics",
+        "append-semantics",
+        "return-meta"
+      ]
     }
   ],
   "modified_files": [
@@ -44,8 +57,20 @@
     "session_id": "sess_1784102843_ae113e_871",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

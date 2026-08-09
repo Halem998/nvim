@@ -3,11 +3,15 @@
   "task_number": 816,
   "session_id": "sess_1783200919_fce5b6",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "phases_completed": 3,
   "phases_total": 3,
   "completion_data": {
-    "completion_summary": "Discharged task 815's Phase 6 (email/ extension multi-account) documentation closure: refreshed wrapper-contracts.md §2/§11 with the confirmed --account <gmail|logos> enum and per-account folder-token + mbsync-channel tables verbatim from .dotfiles task 80's closure report, generalized archive-mode-risk.md's illustrative Gmail-only tokens to be account-neutral, and flipped task 815's Phase 6 marker from [BLOCKED] to [COMPLETED] across all coupled edit sites. Task 815 is now fully closed across all six phases."
+    "completion_summary": "Discharged task 815's Phase 6 (email/ extension multi-account) documentation closure: refreshed wrapper-contracts.md \u00a72/\u00a711 with the confirmed --account <gmail|logos> enum and per-account folder-token + mbsync-channel tables verbatim from .dotfiles task 80's closure report, generalized archive-mode-risk.md's illustrative Gmail-only tokens to be account-neutral, and flipped task 815's Phase 6 marker from [BLOCKED] to [COMPLETED] across all coupled edit sites. Task 815 is now fully closed across all six phases."
   },
   "memory_candidates": [
     {
@@ -15,14 +19,25 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/816_close_task815_phase6_wrapper_contract_docs/summaries/01_phase6-docs-closure-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verification-criterion", "grep-check", "whole-file-scope", "plan-closure", "status-marker"]
+      "suggested_keywords": [
+        "verification-criterion",
+        "grep-check",
+        "whole-file-scope",
+        "plan-closure",
+        "status-marker"
+      ]
     },
     {
       "content": "check-extension-docs.sh can exit 1 due to pre-existing failures in unrelated extensions (e.g. core script-reference drift, lean hard-mode skill targets undeployed) even when the extension actually being edited reports PASS. Before treating a nonzero exit as a regression, use `git stash` / `git stash pop` to diff the script's output before and after your edits -- if the same FAILs appear in both runs, they predate your change and are out of scope.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/816_close_task815_phase6_wrapper_contract_docs/summaries/01_phase6-docs-closure-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["check-extension-docs", "pre-existing-failure", "git-stash-diff", "regression-isolation"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "pre-existing-failure",
+        "git-stash-diff",
+        "regression-isolation"
+      ]
     }
   ],
   "modified_files": [
@@ -44,5 +59,13 @@
       "path": "specs/816_close_task815_phase6_wrapper_contract_docs/summaries/01_phase6-docs-closure-summary.md",
       "summary": "Implementation summary for task 816's 3-phase documentation closure of task 815's Phase 6."
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

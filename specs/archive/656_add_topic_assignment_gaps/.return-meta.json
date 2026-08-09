@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1749607200_a3b2c1_656",
   "task_number": 656,
   "started_at": "2026-06-10T00:00:00Z",
@@ -30,7 +34,21 @@
       "category": "PATTERN",
       "source_artifact": "specs/656_add_topic_assignment_gaps/summaries/01_add-topic-gaps-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["manage-topics.sh", "topic-assignment", "active_topics", "state.json", "task-creation"]
+      "suggested_keywords": [
+        "manage-topics.sh",
+        "topic-assignment",
+        "active_topics",
+        "state.json",
+        "task-creation"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

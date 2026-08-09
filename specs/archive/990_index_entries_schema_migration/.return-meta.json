@@ -4,7 +4,11 @@
   "task_number": 990,
   "task_type": "meta",
   "session_id": "sess_1785950363_553a84_990",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "orchestrator_mode": true,
   "artifacts": [
     {
@@ -41,29 +45,59 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/990_index_entries_schema_migration/summaries/01_index-entries-schema-migration-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["index-entries-migration", "description-fold", "jq-transform", "schema-migration", "dupe-detection"]
+      "suggested_keywords": [
+        "index-entries-migration",
+        "description-fold",
+        "jq-transform",
+        "schema-migration",
+        "dupe-detection"
+      ]
     },
     {
       "content": "A `path` field in a JSON entry array is not guaranteed unique -- an index-entries.json corpus can legitimately carry two entries sharing one path (e.g. cslib's standards/ci-pipeline.md, one entry per agent variant: cslib-implementation-agent vs. cslib-implementation-hard-agent). A jq transform that targets a specific entry by `.path == \"...\"` alone will silently apply to both, corrupting the one not intended. Disambiguate by matching on a second, entry-specific field (here, membership in the `load_when.agents` array) before applying a per-entry rewrite.",
       "category": "PATTERN",
       "source_artifact": "specs/990_index_entries_schema_migration/summaries/01_index-entries-schema-migration-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["jq", "json-array", "duplicate-path", "index-entries", "disambiguation"]
+      "suggested_keywords": [
+        "jq",
+        "json-array",
+        "duplicate-path",
+        "index-entries",
+        "disambiguation"
+      ]
     },
     {
       "content": "A plan's corpus-wide invariant check (e.g. 'zero summary fields over 200 chars across all 19 files') can be broader than what the task's own edits could have violated, if pre-existing violations exist in files the task touches for an unrelated reason (here: files edited only to delete a load_when.skills key, never to fold a description, still carried pre-existing over-cap summaries in entries this task never wrote to). When a corpus-wide sweep in a verification phase catches such a case, confirm via a pre-edit backup diff that the violating entries are unchanged by this task's own edits before treating the finding as a regression -- then record it as a documented deviation against the task's *actual* binding verification bar (the one named in the task description) rather than silently fixing unrelated pre-existing content as unplanned scope creep, or silently ignoring a real corpus-wide check.",
       "category": "INSIGHT",
       "source_artifact": "specs/990_index_entries_schema_migration/summaries/01_index-entries-schema-migration-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verification-bar", "scope-creep", "pre-existing-violation", "plan-deviation", "backup-diff"]
+      "suggested_keywords": [
+        "verification-bar",
+        "scope-creep",
+        "pre-existing-violation",
+        "plan-deviation",
+        "backup-diff"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785950363_553a84_990",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 11,
     "phases_total": 11
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

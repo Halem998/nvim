@@ -1,11 +1,11 @@
 {
   "version": "1.1.0",
-  "next_project_number": 1003,
+  "next_project_number": 1004,
   "active_projects": [
     {
       "project_number": 998,
       "project_name": "double_loading_warning_triage",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Triage the 49 Double-Loading context-index warnings",
@@ -18,7 +18,7 @@
         991
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-09T23:28:23Z",
+      "last_updated": "2026-08-09T23:29:00Z",
       "artifacts": [
         {
           "path": "specs/998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md",
@@ -274,7 +274,7 @@
     {
       "project_number": 992,
       "project_name": "extension_md_slim_down",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones",
@@ -296,7 +296,7 @@
         991
       ],
       "created": "2026-07-30T01:55:17Z",
-      "last_updated": "2026-08-09T23:27:58Z",
+      "last_updated": "2026-08-09T23:28:57Z",
       "session_id": "sess_1786316975_3658f6_992",
       "artifacts": [
         {
@@ -389,6 +389,23 @@
       "description": "session_liveness() in scripts/task-lock.sh reports liveness_reason \"pid-alive\" for a pid that\n`kill -0` just proved is GONE, whenever the entry's age is below SESSION_REGISTRY_DEAD_PID_MIN\n(default 10 min). Observed live: `task-lock.sh session-list` emitted\n{\"pid\":793539,\"live\":true,\"liveness_reason\":\"pid-alive\",\"age_min\":9} for a batch session whose\nprocess did not exist (`kill -0 793539` -> \"No such process\").\n\nROOT CAUSE (scripts/task-lock.sh, session_liveness(), the five-branch reason ladder):\n  if [ -n \"$pid\" ] && [[ \"$pid\" =~ ^[0-9]+$ ]]; then\n    if ! kill -0 \"$pid\" 2>/dev/null; then\n      if [ \"$age\" -gt \"$SESSION_REGISTRY_DEAD_PID_MIN\" ]; then reason=\"dead-pid\"; fi\n    fi\n  fi\n  ...\n  if [ -z \"$reason\" ]; then\n    if [ -n \"$pid\" ] && [[ \"$pid\" =~ ^[0-9]+$ ]]; then reason=\"pid-alive\"; else reason=\"undeterminable\"; fi\n  fi\nWhen `kill -0` FAILS but age <= the grace floor, `reason` is left empty, and the final else-branch\nassigns \"pid-alive\" on the sole basis that the pid field is NUMERIC -- it never re-consults the\n`kill -0` result it already computed. The dead-pid probe's outcome is discarded below the floor.\n\nWHAT IS AND IS NOT THE BUG:\n  - The VERDICT (`live: true`) is CORRECT and must not change. The grace floor exists so a\n    just-registered session is not reaped before its pid is observable (see the floor's rationale\n    at the SESSION_REGISTRY_DEAD_PID_MIN definition and in context/patterns/task-lock.md's\n    \"Two-Signal Liveness\" section). Conservative contention is the intended behavior.\n  - The REASON STRING is WRONG. It positively asserts the process is alive when the script has\n    just proved the opposite. This is a fifth state (\"confirmably dead, still within the grace\n    floor\") being reported under a label that means the opposite.\n\nWHY IT MATTERS (not merely cosmetic): liveness_reason is not internal-only -- it is propagated\nverbatim into operator-facing output.\n  1. scripts/orchestrate-batch-admit.sh (~lines 488-489) copies it into the session_active defer\n     verdict's `session_liveness_reason` field AND interpolates it into the human-readable\n     `reason` string.\n  2. commands/orchestrate.md and skills/skill-orchestrate/SKILL.md both render it in the\n     session_active defer warning (\"liveness: {session_liveness_reason}\"). An operator diagnosing\n     a deferred task is told a dead session is \"pid-alive\", which points debugging in exactly the\n     wrong direction -- toward hunting a live process that does not exist, instead of waiting out\n     or reaping a stale entry.\n\nTHE DOCS CARRY THE SAME DEFECT (they describe the buggy behavior as if intended, so fixing code\nalone would leave them contradicting the fix):\n  - context/patterns/task-lock.md ~line 842 defines `pid-alive` as \"not dead-pid, not\n    stale-heartbeat, and pid is a parseable integer for which `kill -0` succeeded\" -- the\n    `kill -0` succeeded clause is false in exactly this window.\n  - docs/architecture/batch-admit-schema.md ~line 119 enumerates \"session_liveness()'s five\n    reasons\" and constrains the session_active case to pid-alive/corrupt/undeterminable.\n\nWORK:\n  1. Add a distinct sixth reason (suggested: `dead-pid-within-grace`) for \"pid confirmably gone,\n     age <= SESSION_REGISTRY_DEAD_PID_MIN\". Restructure the ladder so the `kill -0` result is\n     carried forward rather than discarded when the floor check fails.\n  2. PRESERVE the verdict exactly: the new reason MUST map to `live: true` in cmd_session_list's\n     `dead-pid|stale-heartbeat) live_flag=\"false\"` case, and MUST NOT be reaped by\n     cmd_session_reap (whose reap set stays {dead-pid, stale-heartbeat}). Confirm\n     session_contention()'s contend-set is unchanged: the entry still contends.\n  3. Update the two docs above, plus the five-reasons count wherever it is stated, and the\n     session_active allowed-value list in batch-admit-schema.md.\n  4. Check whether any consumer branches on the literal string `pid-alive` (grep both trees); the\n     known consumers interpolate it as an opaque placeholder, but verify rather than assume.\n\nVERIFICATION BAR:\n  - A registry entry with a dead pid and age below the floor reports the new reason with\n    `live: true`, and `session-reap --dry-run` does not select it.\n  - A registry entry with a dead pid and age above the floor still reports `dead-pid` with\n    `live: false` and IS selected by reap (no regression to the existing path).\n  - A registry entry with a live pid still reports `pid-alive`.\n  - scripts/test-conflict-predicate.sh and the session-registry reap tests still pass.\n  - `bash .claude/scripts/verify-deploy.sh` passes, including the task-reference lint gate.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-08-05T19:38:33Z",
       "last_updated": "2026-08-05T19:38:33Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 1003,
+      "project_name": "fix_lean_sorry_census_warn_sorry_double_count",
+      "title": "Fix lean-sorry-census.sh double-counting warn.sorry suppression annotations",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/lean/scripts/lean-sorry-census.sh",
+        "agent-system/extensions/lean/"
+      ],
+      "description": "lean-sorry-census.sh counts every `set_option warn.sorry false in` suppression annotation as a\nphantom extra sorry, on top of the real sorry that annotation exists to suppress. The census is\ntherefore inflated by exactly the number of own-line suppression annotations in the scanned scope.\n\nROOT CAUSE (agent-system/extensions/lean/scripts/lean-sorry-census.sh, line 144):\n    sorry_re = re.compile(r'\\bsorry\\b')\n`.` is a non-word character, so `\\b` matches between `warn` and `.sorry`. The regex therefore\nmatches the \"sorry\" substring inside \"warn.sorry\" -- and inside any other dotted-qualified name\nending in `.sorry`. The script's comment/docstring/string-literal stripper runs BEFORE this scan\nand correctly removes commented-out and string-literal sorries; the stripper is not the problem.\nThe final regex match is the only broken piece.\n\nCOUNTING IS PER-LINE, NOT PER-OCCURRENCE (line 158):\n    if sorry_re.search(line): total += 1\nThis detail was discovered while verifying the bug and materially shapes the fix and its test.\nConsequences:\n  - Phantom inflation occurs ONLY when `set_option warn.sorry false in` sits on its own line.\n    All 18 instances in the reference corpus do, which is why the observed delta equals the\n    occurrence count there.\n  - When the annotation shares a line with the sorry it suppresses\n    (`set_option warn.sorry false in theorem foo : P := sorry`), the buggy regex and a correct\n    regex BOTH yield 1 for that line, so this form does not currently inflate the count -- but a\n    careless fix (e.g. skipping any line containing `warn.sorry`) would wrongly drop it to 0.\n    The fix must not regress this case.\n\nEVIDENCE (independently verified twice, most recently 2026-08-09 against ~/Projects/cslib):\n  - Repo-wide census: 45 reported = 27 real + 18 phantom.\n  - Cslib/Logics/Bimodal: 41 reported = 23 real + 18 phantom.\n  - The 27 and 23 figures independently match the pre-existing ROADMAP.md census and a separate\n    hand-audited scope.\n  - Direct regex comparison over Cslib/**/*.lean (pre-stripping, hence higher absolute numbers):\n    naive `\\bsorry\\b` = 199, corrected `(?<![.\\w])sorry\\b` = 181, delta = 18, and the count of\n    `warn.sorry` occurrences = 18. Exact match.\n  - A naive grep-style count that skips the block-comment/docstring stripper gives 152 repo-wide,\n    confirming the stripper itself is correct and valuable.\n\nWORK:\n  1. Replace the line-144 regex with the negative-lookbehind form `(?<![.\\w])sorry\\b` (verified\n     working by two independent parties). The `\\w` term is redundant with the existing `\\b` and is\n     retained only for explicitness; excluding a preceding `.` is the substantive change, and it\n     correctly covers every dotted-qualified `*.sorry` name, not just `warn.sorry`.\n     An equivalent accepted alternative is a line-level pre-filter that skips any line whose\n     stripped content is exactly the `set_option warn.sorry false in` directive -- but note this\n     alternative must still handle the same-line form above, so the regex fix is preferred.\n  2. PRESERVE strip_lean_comments() (lines 91-141) BYTE-UNCHANGED. It is correct and is the\n     script's valuable part. However, its docstring at line 96 explicitly references \"the\n     \\bsorry\\b scan\" it feeds; that one reference must be updated to name the corrected regex so\n     the docstring does not go stale. This is a comment-text edit inside the function's docstring,\n     not a change to the stripping logic -- the logic body stays byte-identical.\n  3. Add a regression fixture. None exists today: `find agent-system -iname \"*sorry*\"` returns only\n     the script itself, so this is new test scaffolding under agent-system/extensions/lean/.\n     The fixture MUST cover BOTH forms:\n       (a) own-line annotation:\n             set_option warn.sorry false in\n             theorem foo : P := sorry\n           -> must count as exactly 1 (today: 2)\n       (b) same-line annotation:\n             set_option warn.sorry false in theorem bar : Q := sorry\n           -> must count as exactly 1 (not 0, not 2) -- this pins the per-line semantics and\n              guards against an over-aggressive line-skipping fix.\n     Include N annotations and M real sorries and assert the census reports M. Also include at\n     least one commented-out sorry and one string-literal sorry so the fixture simultaneously\n     guards the stripper against future regression.\n  4. Verify with the script's own `--cross-check` flag, which already exists (flag parsing at\n     line 53, comparison logic at lines 179-189) and is the intended verification oracle. It\n     compares the stripper count against `lake build`'s \"declaration uses 'sorry'\" warning count,\n     which is comment- and annotation-immune by construction. A post-fix run must report\n     `cross_check: MATCH` on a scope where it previously reported MISMATCH.\n\nPRIOR STATE: the only recent commit touching this script is 8dcb6d92e, a task-number-reference\npurge (3 files, 3 insertions / 3 deletions, rewriting a citation string in a comment). It did not\ntouch the matching logic. The bug is live in the source store.\n\nPROVENANCE: this originated in the cslib repository, where the target path pointed outside that\nrepo. It is recreated in this global root because the source store lives here; a fix applied under\ncslib's gitignored .claude/ deploy tree would be wiped on the next regeneration.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "created": "2026-08-09T23:31:11Z",
+      "last_updated": "2026-08-09T23:31:11Z",
       "artifacts": []
     }
   ],

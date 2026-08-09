@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1780333741_6b6a4e",
   "task_number": 620,
   "phases_completed": 3,
@@ -27,7 +31,22 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/620_fix_task_order_generation/summaries/01_fix-task-order-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["generate-task-order", "un-slugify", "project_name", "description", "task-order", "bash"]
+      "suggested_keywords": [
+        "generate-task-order",
+        "un-slugify",
+        "project_name",
+        "description",
+        "task-order",
+        "bash"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

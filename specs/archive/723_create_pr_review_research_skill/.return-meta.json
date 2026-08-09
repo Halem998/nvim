@@ -10,7 +10,11 @@
   "metadata": {
     "session_id": "sess_1781547115_2dc6c5_723",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   },
@@ -24,7 +28,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/723_create_pr_review_research_skill/summaries/01_pr-review-research-skill-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["github", "pr", "review", "zulip", "gh-api", "research-agent"]
+      "suggested_keywords": [
+        "github",
+        "pr",
+        "review",
+        "zulip",
+        "gh-api",
+        "research-agent"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

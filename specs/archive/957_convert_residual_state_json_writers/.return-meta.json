@@ -10,30 +10,78 @@
   "completion_data": {
     "completion_summary": "Converted all in-scope inline hand-rolled specs/state.json write blocks across 16 core skill/command files and 7 documentation files to the mutex-guarded state-write.sh, leaving specs/archive/state.json and vault-root sites deliberately hand-rolled per scope. All 10 plan phases completed; verification bar (repo-wide grep, bash -n, both mutex regression suites, check-task-references.sh, check-extension-docs.sh, zero .claude/** writes) passes without weakening."
   },
-  "modified_files": ["agent-system/extensions/core/commands/task.md","agent-system/extensions/core/commands/todo.md","agent-system/extensions/core/context/patterns/file-metadata-exchange.md","agent-system/extensions/core/context/patterns/inline-status-update.md","agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md","agent-system/extensions/core/context/standards/postflight-tool-restrictions.md","agent-system/extensions/core/context/troubleshooting/workflow-interruptions.md","agent-system/extensions/core/context/workflows/preflight-postflight.md","agent-system/extensions/core/docs/guides/creating-skills.md","agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md","agent-system/extensions/core/skills/skill-implementer/SKILL.md","agent-system/extensions/core/skills/skill-planner-hard/SKILL.md","agent-system/extensions/core/skills/skill-planner/SKILL.md","agent-system/extensions/core/skills/skill-project-overview/SKILL.md","agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md","agent-system/extensions/core/skills/skill-researcher/SKILL.md","agent-system/extensions/core/skills/skill-reviser/SKILL.md","agent-system/extensions/core/skills/skill-spawn/SKILL.md","agent-system/extensions/core/skills/skill-status-sync/SKILL.md","agent-system/extensions/core/skills/skill-team-implement/SKILL.md","agent-system/extensions/core/skills/skill-team-plan/SKILL.md","agent-system/extensions/core/skills/skill-team-research/SKILL.md","agent-system/extensions/core/skills/skill-todo/SKILL.md"],
+  "modified_files": [
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/patterns/file-metadata-exchange.md",
+    "agent-system/extensions/core/context/patterns/inline-status-update.md",
+    "agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/context/troubleshooting/workflow-interruptions.md",
+    "agent-system/extensions/core/context/workflows/preflight-postflight.md",
+    "agent-system/extensions/core/docs/guides/creating-skills.md",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+    "agent-system/extensions/core/skills/skill-project-overview/SKILL.md",
+    "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+    "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+    "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+    "agent-system/extensions/core/skills/skill-status-sync/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-plan/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-research/SKILL.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md"
+  ],
   "memory_candidates": [
     {
       "content": "When converting a mechanical write-idiom across many files where a plan's pre-implementation site-count hypothesis is used to size phases, expect substantial per-file overcounts when prose-only descriptions of a write (numbered-list steps describing what to update, without a literal code fence) are mistaken for literal grep-matchable sites during research/planning. In this task, 3 of 8 conversion-phase files had actual site counts 40-60% below the plan's hypothesis (task.md: 5 vs 6, todo.md: 3 vs 6, skill-todo/SKILL.md: 5 vs 12) because the bulk of their archival logic was pure prose/pseudocode. Always re-grep per-file immediately before editing rather than trusting the plan's count, and record the delta explicitly rather than silently converting a different number of sites than claimed.",
       "category": "PATTERN",
       "source_artifact": "specs/957_convert_residual_state_json_writers/summaries/01_convert-residual-state-writers-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["mechanical conversion", "scope hypothesis", "prose vs code", "site-count overcount", "pre-edit inventory"]
+      "suggested_keywords": [
+        "mechanical conversion",
+        "scope hypothesis",
+        "prose vs code",
+        "site-count overcount",
+        "pre-edit inventory"
+      ]
     },
     {
       "content": "git-commit-scoped.sh's auto-injected ephemeral-exclusion set for a specs/{NNN}_{SLUG}/ task directory pathspec (triggered when the positive pathspec ends with a trailing slash matching specs/[0-9][0-9][0-9]_*/) can trigger git's 'The following paths are ignored by one of your .gitignore files' hard failure when the directory's .lock subdirectory is itself gitignored -- passing an explicit :(exclude) pathspec for an already-ignored path causes git to treat it as an explicit reference and refuse the whole add, even though a plain (non-excluded) recursive add of the same parent directory silently skips the ignored path with no complaint. Workaround: pass the task directory pathspec WITHOUT a trailing slash (e.g. 'specs/957_foo' not 'specs/957_foo/') to git-commit-scoped.sh, which avoids matching the auto-exclusion regex and lets git's normal ignore-skipping behavior apply instead.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/957_convert_residual_state_json_writers/summaries/01_convert-residual-state-writers-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["git-commit-scoped.sh", "gitignore", "pathspec exclude", "trailing slash", "commit staging"]
+      "suggested_keywords": [
+        "git-commit-scoped.sh",
+        "gitignore",
+        "pathspec exclude",
+        "trailing slash",
+        "commit staging"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785337600_a52f75_957",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 10,
     "phases_total": 10,
     "plan_markers_verified": true
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1781495628_8ba2f3_707",
   "task_number": 707,
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "started_at": "2026-06-14T00:00:00Z",
   "completed_at": "2026-06-14T21:45:00Z",
   "phases_completed": 4,
@@ -13,11 +17,18 @@
   },
   "memory_candidates": [
     {
-      "content": "The .claude/skills/skill-literature/SKILL.md and .claude/extensions/literature/skills/skill-literature/SKILL.md are hardlinked (same inode). Similarly, .claude/agents/literature-agent.md and .claude/commands/literature.md are symlinks to their extension counterparts. Edits to extension source files automatically propagate to synced copies — no separate mirror step needed.",
+      "content": "The .claude/skills/skill-literature/SKILL.md and .claude/extensions/literature/skills/skill-literature/SKILL.md are hardlinked (same inode). Similarly, .claude/agents/literature-agent.md and .claude/commands/literature.md are symlinks to their extension counterparts. Edits to extension source files automatically propagate to synced copies \u2014 no separate mirror step needed.",
       "category": "INSIGHT",
       "source_artifact": "specs/707_refactor_literature_conventions/summaries/01_literature-conventions-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["literature", "extension", "symlink", "hardlink", "sync", "mirror"]
+      "suggested_keywords": [
+        "literature",
+        "extension",
+        "symlink",
+        "hardlink",
+        "sync",
+        "mirror"
+      ]
     }
   ],
   "artifacts": [
@@ -26,5 +37,13 @@
       "path": "specs/707_refactor_literature_conventions/summaries/01_literature-conventions-summary.md",
       "summary": "Implementation summary for all 4 phases of literature convention refactoring"
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

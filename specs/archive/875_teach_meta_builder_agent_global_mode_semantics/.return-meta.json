@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1784135810_7e6755_875",
   "task_number": 875,
   "phases_completed": 6,
@@ -33,14 +37,33 @@
       "category": "PATTERN",
       "source_artifact": "specs/875_teach_meta_builder_agent_global_mode_semantics/summaries/01_global-mode-semantics-meta-builder-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["target-root", "path-qualification", "bash-source", "multi-repo", "global-mode"]
+      "suggested_keywords": [
+        "target-root",
+        "path-qualification",
+        "bash-source",
+        "multi-repo",
+        "global-mode"
+      ]
     },
     {
       "content": "Static @-file-reference syntax in agent definitions cannot be parameterized by a runtime variable (e.g. target_root) -- it always resolves against the current session's own deployment. Any context-loading instruction that must read a runtime-resolved path must be rewritten as an explicit runtime Read {variable}/... instruction instead of @-syntax.",
       "category": "INSIGHT",
       "source_artifact": "specs/875_teach_meta_builder_agent_global_mode_semantics/summaries/01_global-mode-semantics-meta-builder-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["at-reference", "context-loading", "runtime-path", "agent-definition"]
+      "suggested_keywords": [
+        "at-reference",
+        "context-loading",
+        "runtime-path",
+        "agent-definition"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

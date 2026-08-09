@@ -4,7 +4,7 @@
     {
       "type": "summary",
       "path": "specs/962_reconcile_pr_ready_policy_across_docs_and_skill_text/summaries/01_pr-ready-resting-state-accuracy-summary.md",
-      "summary": "Corrected the skeleton-exhaustion branch's prose and EXIT line in skill-orchestrate-hard/SKILL.md to name the actual completed resting state, added a [PR READY] definition and a Target Arguments vs. Resting States subsection to status-markers.md, and added a pointer sentence in claudemd.md — no changes to update-task-status.sh."
+      "summary": "Corrected the skeleton-exhaustion branch's prose and EXIT line in skill-orchestrate-hard/SKILL.md to name the actual completed resting state, added a [PR READY] definition and a Target Arguments vs. Resting States subsection to status-markers.md, and added a pointer sentence in claudemd.md \u2014 no changes to update-task-status.sh."
     }
   ],
   "completion_data": {
@@ -58,5 +58,13 @@
     "phases_total": 4,
     "cycles_used": 3,
     "final_state": "completed"
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

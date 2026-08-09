@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1783092185_cd6c84_781",
   "phases_completed": 5,
   "phases_total": 5,
@@ -23,18 +27,38 @@
   "partial_progress": null,
   "memory_candidates": [
     {
-      "content": "When adding a shared behavior to N agent files that must stay byte-identical across deployed (.claude/agents/) and extension-source (.claude/extensions/core/agents/) copies, edit the deployed copy first, verify with Edit, then `cp` it over the extension-source copy and `diff` immediately — cheaper and less error-prone than editing both copies in parallel and reconciling drift afterward.",
+      "content": "When adding a shared behavior to N agent files that must stay byte-identical across deployed (.claude/agents/) and extension-source (.claude/extensions/core/agents/) copies, edit the deployed copy first, verify with Edit, then `cp` it over the extension-source copy and `diff` immediately \u2014 cheaper and less error-prone than editing both copies in parallel and reconciling drift afterward.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/781_agent_context_overflow_checkpoint_handoff/summaries/01_checkpoint-before-overflow-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["dual-copy", "extension-source", "parity-gate", "agent-files", "byte-identical"]
+      "suggested_keywords": [
+        "dual-copy",
+        "extension-source",
+        "parity-gate",
+        "agent-files",
+        "byte-identical"
+      ]
     },
     {
       "content": "When two territory-adjacent tasks will edit the same agent file (e.g. task 781's checkpoint sub-section vs. a future task 779's recovery-reference section in general-implementation-hard-agent.md), give each task's addition its own clearly labeled markdown sub-heading (e.g. '#### Checkpoint Sub-Section: ...') rather than interleaving prose into existing stages. This makes the disjointness verifiable by grep/diff even before the second task exists.",
       "category": "PATTERN",
       "source_artifact": "specs/781_agent_context_overflow_checkpoint_handoff/summaries/01_checkpoint-before-overflow-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["territory", "H7", "sub-section", "disjoint-edits", "agent-files"]
+      "suggested_keywords": [
+        "territory",
+        "H7",
+        "sub-section",
+        "disjoint-edits",
+        "agent-files"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

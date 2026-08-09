@@ -43,29 +43,58 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/978_fix_index_validators_and_line_counts/summaries/01_index-validation-truth-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["jq", "json-formatting", "surgical-edit", "diff-review", "mass-edit"]
+      "suggested_keywords": [
+        "jq",
+        "json-formatting",
+        "surgical-edit",
+        "diff-review",
+        "mass-edit"
+      ]
     },
     {
       "content": "A doc-lint/orphan-detection helper that enumerates 'deployed files' via `git ls-files` (tracked-files-only) is silently vacuous against a deploy target that is entirely gitignored (e.g. a repo where `/.claude/` is blanket-excluded in .gitignore with no tracked exceptions) -- the enumeration always returns zero results, so the check can never fail regardless of real violations, and this is easy to miss because the gate still reports PASS. Verify empirically before trusting such a helper: place a scratch file at the target path and confirm it appears in the enumeration's output, not just in `git status --ignored`. When the deploy target is untracked, enumerate the filesystem directly (find/ls) instead of git.",
       "category": "INSIGHT",
       "source_artifact": "specs/978_fix_index_validators_and_line_counts/summaries/01_index-validation-truth-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-ls-files", "gitignore", "orphan-detection", "doc-lint", "vacuous-check"]
+      "suggested_keywords": [
+        "git-ls-files",
+        "gitignore",
+        "orphan-detection",
+        "doc-lint",
+        "vacuous-check"
+      ]
     },
     {
       "content": "Pattern for letting a source-store script validate a deployed artifact from its own source-store location (pre-redeploy, without needing to invoke the deployed copy): `[[ -n \"${REPO_ROOT:-}\" ]] || . \"$(dirname \"${BASH_SOURCE[0]}\")/deploy-root-guard.sh\" || exit 1` followed by `REPO_ROOT=\"${REPO_ROOT:-$(cd \"$(dirname \"${BASH_SOURCE[0]}\")/../..\" && pwd)}\"`. The deploy-root-guard fires only when REPO_ROOT is unset, so `REPO_ROOT=$(pwd) bash agent-system/extensions/<ext>/scripts/<script>.sh` deliberately bypasses the guard and points the script at the real repo root, letting it read/write the deployed `.claude/` tree from the source-store invocation path. Already established in check-extension-docs.sh; worth applying to any other core script that needs the same capability.",
       "category": "PATTERN",
       "source_artifact": "specs/978_fix_index_validators_and_line_counts/summaries/01_index-validation-truth-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["repo-root-bypass", "deploy-root-guard", "source-store", "verification-invocation"]
+      "suggested_keywords": [
+        "repo-root-bypass",
+        "deploy-root-guard",
+        "source-store",
+        "verification-invocation"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785364948_8d0801",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate"
+    ],
     "phases_completed": 9,
     "phases_total": 9
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

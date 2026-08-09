@@ -1,1 +1,71 @@
-{"status": "implemented", "artifacts": [{"type": "plan", "path": "specs/522_fix_claude_code_references_opencode/plans/01_fix-refs-plan.md", "summary": "Implementation plan with 5 phases for fixing 334 Claude Code references across 42 files in 8 categories plus extension mirrors"}, {"type": "summary", "path": "specs/522_fix_claude_code_references_opencode/summaries/01_fix-refs-summary.md", "summary": "Summary of Claude Code reference fixes across commands, skills, context, docs, rules, and all extensions"}], "next_steps": "Task complete", "completion_data": {"completion_summary": "Replaced all .claude/ path references, Claude Code brand text, and CLAUDE_CODE_* environment variables with OpenCode equivalents across 42+ files and all extension mirrors. Applied safe batch replacements first (env vars, paths, issue prefixes), then targeted individual files for contextual brand text changes."}, "memory_candidates": [{"content": "For large-scale brand migrations, apply replacements in waves: (1) unambiguous global sed for env vars and path prefixes, (2) batch sed on files where ALL occurrences should change, (3) individual Edit tool for files with mixed legitimate/historical references, (4) extension mirrors via find+sed, (5) final grep verification. Watch for parallel directory structures (context/ vs context/core/) that duplicate content.", "category": "WORKFLOW", "source_artifact": "specs/522_fix_claude_code_references_opencode/summaries/01_fix-refs-summary.md", "confidence": 0.9, "suggested_keywords": ["brand migration", "Claude Code", "OpenCode", "parallel directories", "extension mirrors"]}], "metadata": {"session_id": "session-520-521-522-combined", "agent_type": "general-implementation-agent", "duration_seconds": 7200, "delegation_depth": 2, "delegation_path": ["orchestrator", "implement", "general-implementation-agent"], "phase_count": 5, "phases_completed": 5, "estimated_hours": 4, "dependency_waves": [[1], [2, 3], [4], [5]]}}
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/522_fix_claude_code_references_opencode/plans/01_fix-refs-plan.md",
+      "summary": "Implementation plan with 5 phases for fixing 334 Claude Code references across 42 files in 8 categories plus extension mirrors"
+    },
+    {
+      "type": "summary",
+      "path": "specs/522_fix_claude_code_references_opencode/summaries/01_fix-refs-summary.md",
+      "summary": "Summary of Claude Code reference fixes across commands, skills, context, docs, rules, and all extensions"
+    }
+  ],
+  "next_steps": "Task complete",
+  "completion_data": {
+    "completion_summary": "Replaced all .claude/ path references, Claude Code brand text, and CLAUDE_CODE_* environment variables with OpenCode equivalents across 42+ files and all extension mirrors. Applied safe batch replacements first (env vars, paths, issue prefixes), then targeted individual files for contextual brand text changes."
+  },
+  "memory_candidates": [
+    {
+      "content": "For large-scale brand migrations, apply replacements in waves: (1) unambiguous global sed for env vars and path prefixes, (2) batch sed on files where ALL occurrences should change, (3) individual Edit tool for files with mixed legitimate/historical references, (4) extension mirrors via find+sed, (5) final grep verification. Watch for parallel directory structures (context/ vs context/core/) that duplicate content.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/522_fix_claude_code_references_opencode/summaries/01_fix-refs-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "brand migration",
+        "Claude Code",
+        "OpenCode",
+        "parallel directories",
+        "extension mirrors"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "session-520-521-522-combined",
+    "agent_type": "general-implementation-agent",
+    "duration_seconds": 7200,
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phase_count": 5,
+    "phases_completed": 5,
+    "estimated_hours": 4,
+    "dependency_waves": [
+      [
+        1
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        4
+      ],
+      [
+        5
+      ]
+    ]
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
+}

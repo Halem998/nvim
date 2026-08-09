@@ -21,14 +21,24 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/919_reference_normative_status_vocabulary_in_agents/summaries/01_reference-normative-status-vocab-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["mechanical-edit", "anchor-verification", "agent-prompt-template", "structural-uniformity"]
+      "suggested_keywords": [
+        "mechanical-edit",
+        "anchor-verification",
+        "agent-prompt-template",
+        "structural-uniformity"
+      ]
     },
     {
       "content": "git-commit-scoped.sh's automatic ephemeral-runtime-file exclusion (:(exclude) entries for .lock/, .orchestrator-loop-guard, etc.) does not suppress git's ignored-file warning/failure when the positive pathspec is the task directory itself (specs/{NNN}_{SLUG}/) as a directory glob -- git still emits 'The following paths are ignored... hint: Use -f' and the wrapping `if ! git add` check treats that as a failure, aborting before any commit. Workaround: stage the task directory's known subdirectories/files explicitly (plans/, progress/, reports/, summaries/, .return-meta.json) instead of the trailing-slash directory glob, which stages cleanly without touching gitignored paths.",
       "category": "CONFIG",
       "source_artifact": "specs/919_reference_normative_status_vocabulary_in_agents/summaries/01_reference-normative-status-vocab-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["git-commit-scoped", "gitignore", "task-directory-staging", "git-add-failure"]
+      "suggested_keywords": [
+        "git-commit-scoped",
+        "gitignore",
+        "task-directory-staging",
+        "git-add-failure"
+      ]
     }
   ],
   "modified_files": [
@@ -53,8 +63,20 @@
     "session_id": "sess_1785168250_e71e86",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

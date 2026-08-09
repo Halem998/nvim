@@ -20,21 +20,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/675_lean4_extension_hard_mode_variants/summaries/01_lean4-hard-mode-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["lean4", "hard-mode", "contracts", "anti-analysis", "reference-grounding", "H2", "H3"]
+      "suggested_keywords": [
+        "lean4",
+        "hard-mode",
+        "contracts",
+        "anti-analysis",
+        "reference-grounding",
+        "H2",
+        "H3"
+      ]
     },
     {
       "content": "When creating hard-mode extension agents, make them self-contained with NO @-references to their base agent files. Include all lean-specific sections (blocked tools, allowed tools, search decision tree, zero-debt policy) inline. This prevents accidental base agent override and ensures the hard-mode contracts are the only behavioral layer active.",
       "category": "PATTERN",
       "source_artifact": "specs/675_lean4_extension_hard_mode_variants/summaries/01_lean4-hard-mode-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["hard-mode", "agent", "self-contained", "extension", "behavioral-contracts"]
+      "suggested_keywords": [
+        "hard-mode",
+        "agent",
+        "self-contained",
+        "extension",
+        "behavioral-contracts"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1781288710_ad1e5a_675",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

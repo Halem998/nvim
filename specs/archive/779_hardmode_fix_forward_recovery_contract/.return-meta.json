@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 779,
   "session_id": "sess_1783092185_cd6c84_779",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "artifacts": [
     {
       "path": ".claude/context/contracts/recovery.md",
@@ -68,18 +72,37 @@
   },
   "memory_candidates": [
     {
-      "content": "When a hard-mode task 772 disables a dispatch call site (e.g. Parallel Wave Dispatch) that an earlier plan referenced as a target for a shared edit, the remaining single call site still satisfies 'every dispatch gets X' intent — record this as an altered deviation rather than treating it as a plan failure.",
+      "content": "When a hard-mode task 772 disables a dispatch call site (e.g. Parallel Wave Dispatch) that an earlier plan referenced as a target for a shared edit, the remaining single call site still satisfies 'every dispatch gets X' intent \u2014 record this as an altered deviation rather than treating it as a plan failure.",
       "category": "PATTERN",
       "source_artifact": "specs/779_hardmode_fix_forward_recovery_contract/summaries/01_recovery-contract-fix-forward-summary.md",
       "confidence": 0.6,
-      "suggested_keywords": ["hard-mode", "dispatch-slot", "deviation", "plan-drift", "orchestrate-hard"]
+      "suggested_keywords": [
+        "hard-mode",
+        "dispatch-slot",
+        "deviation",
+        "plan-drift",
+        "orchestrate-hard"
+      ]
     },
     {
       "content": "Inserting a new entry into .claude/context/index.json cleanly (matching existing indentation/formatting) is best done via a small Python script that loads with json.load(object_pairs_hook=OrderedDict), inserts at a computed index adjacent to a sibling entry, and re-dumps with indent=2 plus a trailing newline -- this avoids reformatting the whole file and keeps the git diff minimal.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/779_hardmode_fix_forward_recovery_contract/summaries/01_recovery-contract-fix-forward-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["index.json", "json-edit", "minimal-diff", "context-registration"]
+      "suggested_keywords": [
+        "index.json",
+        "json-edit",
+        "minimal-diff",
+        "context-registration"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

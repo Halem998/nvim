@@ -11,7 +11,11 @@
     "session_id": "sess_1783731064_fd2024_848",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   },
@@ -24,21 +28,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/848_fix_baier_katoen_section07_chunk_anomaly/summaries/01_section07-chunk-anomaly-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["literature-chunk", "subdivide_chunk", "atomic block", "chunker", "pdf artifact"]
+      "suggested_keywords": [
+        "literature-chunk",
+        "subdivide_chunk",
+        "atomic block",
+        "chunker",
+        "pdf artifact"
+      ]
     },
     {
       "content": "literature-build-index.sh --global is a full from-scratch rebuild: it writes a fresh .literature.db.tmp from every on-disk chunks.json manifest and atomically renames it over the live DB. It does NOT perform an incremental INSERT-OR-REPLACE against the existing DB's prior contents. Any manual DELETE against the live DB immediately before running --global is superseded by the rebuild and has no lasting effect -- to remove a stale row, the correct source of truth to edit is the manifest (chunks.json) on disk, not the DB directly.",
       "category": "INSIGHT",
       "source_artifact": "specs/848_fix_baier_katoen_section07_chunk_anomaly/summaries/01_section07-chunk-anomaly-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["literature-build-index", "--global", "full rebuild", "chunk_id", "literature corpus"]
+      "suggested_keywords": [
+        "literature-build-index",
+        "--global",
+        "full rebuild",
+        "chunk_id",
+        "literature corpus"
+      ]
     },
     {
       "content": "literature-chunk.sh's chunk_id is NOT a full-content hash; it is deterministic on doc_id/section_path/title (or similar structural fields), so two chunks with different content but the same section_path/title (e.g. the same opening line) can regenerate the identical chunk_id. When verifying that a 'stale' chunk row has been replaced, check the row's content/token_count rather than asserting the chunk_id itself is absent.",
       "category": "INSIGHT",
       "source_artifact": "specs/848_fix_baier_katoen_section07_chunk_anomaly/summaries/01_section07-chunk-anomaly-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["chunk_id", "literature-chunk", "hash collision", "content verification"]
+      "suggested_keywords": [
+        "chunk_id",
+        "literature-chunk",
+        "hash collision",
+        "content verification"
+      ]
     }
   ],
   "modified_files": [
@@ -53,5 +74,13 @@
     "specs/848_fix_baier_katoen_section07_chunk_anomaly/progress/phase-5-progress.json",
     "specs/state.json",
     "specs/TODO.md"
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

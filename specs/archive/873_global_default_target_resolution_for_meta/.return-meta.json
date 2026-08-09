@@ -17,7 +17,11 @@
     "session_id": "sess_1784135810_7e6755_873",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 5
   },
@@ -28,22 +32,35 @@
     "phases_total": 5
   },
   "completion_data": {
-    "completion_summary": "Implemented global-default target resolution for /meta: LOCAL_FLAG added to parse-command-args.sh, GLOBAL_ROOT resolution/threading/chained postflight commit added to skill-meta/SKILL.md, and semantics documented in commands/meta.md. Phases 1-4 verified live (shell-level chained-cd mechanism proven). Phase 5's live cross-repo /meta invocation is BLOCKED by Claude Code's non-interactive workspace-trust gate — honestly reported as unverified rather than inferred, with a manual verification procedure provided."
+    "completion_summary": "Implemented global-default target resolution for /meta: LOCAL_FLAG added to parse-command-args.sh, GLOBAL_ROOT resolution/threading/chained postflight commit added to skill-meta/SKILL.md, and semantics documented in commands/meta.md. Phases 1-4 verified live (shell-level chained-cd mechanism proven). Phase 5's live cross-repo /meta invocation is BLOCKED by Claude Code's non-interactive workspace-trust gate \u2014 honestly reported as unverified rather than inferred, with a manual verification procedure provided."
   },
   "memory_candidates": [
     {
-      "content": "Claude Code's non-interactive `claude -p` invocations from a fresh/scratch working directory are blocked by a workspace-trust-dialog gate (\"this workspace has not been trusted\") that fires BEFORE tool permissions, mode detection, or any skill/agent dispatch. This is more fundamental than any AskUserQuestion confirmation gate downstream. It cannot be cleared non-interactively except by pre-setting `projects[\"<path>\"].hasTrustDialogAccepted: true` in `~/.claude.json` — a real, global, user-wide config file, not something to mutate for a throwaway scratch-dir test. Any future headless/live verification of a slash command in a fresh scratch directory should account for this gate up front (e.g., pre-configure trust, or accept the test will be BLOCKED at this gate and plan for a manual fallback).",
+      "content": "Claude Code's non-interactive `claude -p` invocations from a fresh/scratch working directory are blocked by a workspace-trust-dialog gate (\"this workspace has not been trusted\") that fires BEFORE tool permissions, mode detection, or any skill/agent dispatch. This is more fundamental than any AskUserQuestion confirmation gate downstream. It cannot be cleared non-interactively except by pre-setting `projects[\"<path>\"].hasTrustDialogAccepted: true` in `~/.claude.json` \u2014 a real, global, user-wide config file, not something to mutate for a throwaway scratch-dir test. Any future headless/live verification of a slash command in a fresh scratch directory should account for this gate up front (e.g., pre-configure trust, or accept the test will be BLOCKED at this gate and plan for a manual fallback).",
       "category": "INSIGHT",
       "source_artifact": "specs/873_global_default_target_resolution_for_meta/summaries/01_global-default-target-resolution-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["claude-code", "workspace-trust", "headless", "claude -p", "hasTrustDialogAccepted", "live-verification"]
+      "suggested_keywords": [
+        "claude-code",
+        "workspace-trust",
+        "headless",
+        "claude -p",
+        "hasTrustDialogAccepted",
+        "live-verification"
+      ]
     },
     {
-      "content": "Bash tool cwd from a `cd` in one Bash tool invocation does NOT persist into a later, separate Bash tool invocation — confirmed empirically (not just by prior GitHub issue reference) by chaining `cd \"$TARGET\" && pwd` in one call, then a bare `pwd` in a separate call, which reverted to the session's default cwd. Any cross-repo/root-relative shell mechanism (e.g. `cd \"$GLOBAL_ROOT\" && git commit ...`) must re-derive and chain the target root inline, as a single Bash call, every time it's used — never split across calls assuming persistence.",
+      "content": "Bash tool cwd from a `cd` in one Bash tool invocation does NOT persist into a later, separate Bash tool invocation \u2014 confirmed empirically (not just by prior GitHub issue reference) by chaining `cd \"$TARGET\" && pwd` in one call, then a bare `pwd` in a separate call, which reverted to the session's default cwd. Any cross-repo/root-relative shell mechanism (e.g. `cd \"$GLOBAL_ROOT\" && git commit ...`) must re-derive and chain the target root inline, as a single Bash call, every time it's used \u2014 never split across calls assuming persistence.",
       "category": "PATTERN",
       "source_artifact": "specs/873_global_default_target_resolution_for_meta/summaries/01_global-default-target-resolution-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash-cwd", "chained-cd", "single-invocation", "shell-state", "git-commit-scope"]
+      "suggested_keywords": [
+        "bash-cwd",
+        "chained-cd",
+        "single-invocation",
+        "shell-state",
+        "git-commit-scope"
+      ]
     }
   ],
   "modified_files": [
@@ -59,5 +76,13 @@
     "specs/873_global_default_target_resolution_for_meta/summaries/01_global-default-target-resolution-summary.md"
   ],
   "phases_completed": 4,
-  "phases_total": 5
+  "phases_total": 5,
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

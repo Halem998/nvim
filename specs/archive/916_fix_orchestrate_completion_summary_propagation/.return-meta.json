@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 916,
   "session_id": "sess_1785137007_a53849",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "artifacts": [
     {
       "path": "specs/916_fix_orchestrate_completion_summary_propagation/summaries/01_completion-summary-propagation-summary.md",
@@ -20,18 +24,30 @@
   },
   "memory_candidates": [
     {
-      "content": "Bash pitfall: `\"${var:-{}}\"` (using a literal `{}` as a parameter-expansion default) does NOT do what it looks like. Bash's `${var:-word}` default-word matching stops at the FIRST unescaped `}`, so on a non-empty `$var` it silently appends a stray trailing `}` after the expansion, corrupting downstream JSON and making a piped `jq ... 2>/dev/null` call fail closed to empty/default rather than erroring loudly. Safe replacement: `[ -z \"${var:-}\" ] && var='{}'` as a separate guard statement before use. This is easy to miss with `bash -n` (pure syntax check) — it requires a functional simulation with a non-empty value to catch.",
+      "content": "Bash pitfall: `\"${var:-{}}\"` (using a literal `{}` as a parameter-expansion default) does NOT do what it looks like. Bash's `${var:-word}` default-word matching stops at the FIRST unescaped `}`, so on a non-empty `$var` it silently appends a stray trailing `}` after the expansion, corrupting downstream JSON and making a piped `jq ... 2>/dev/null` call fail closed to empty/default rather than erroring loudly. Safe replacement: `[ -z \"${var:-}\" ] && var='{}'` as a separate guard statement before use. This is easy to miss with `bash -n` (pure syntax check) \u2014 it requires a functional simulation with a non-empty value to catch.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/916_fix_orchestrate_completion_summary_propagation/summaries/01_completion-summary-propagation-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash", "parameter-expansion", "brace-matching", "jq", "default-value-bug"]
+      "suggested_keywords": [
+        "bash",
+        "parameter-expansion",
+        "brace-matching",
+        "jq",
+        "default-value-bug"
+      ]
     },
     {
-      "content": "When adding or testing a new skill_-prefixed function in scripts/skill-base.sh, override SKILL_REPO_ROOT to a temp fixture directory before sourcing the file (`export SKILL_REPO_ROOT=\"$TMP\"; source scripts/skill-base.sh`). Every skill_ write function resolves its state.json path relative to SKILL_REPO_ROOT (not a hardcoded 'specs/state.json'), so this lets you exercise real read-modify-write logic — including adversarial-string round-tripping — against a disposable fixture repo without ever touching the real repo's specs/state.json. Confirm via `stat -c %Y` before/after that the real file's mtime is unchanged.",
+      "content": "When adding or testing a new skill_-prefixed function in scripts/skill-base.sh, override SKILL_REPO_ROOT to a temp fixture directory before sourcing the file (`export SKILL_REPO_ROOT=\"$TMP\"; source scripts/skill-base.sh`). Every skill_ write function resolves its state.json path relative to SKILL_REPO_ROOT (not a hardcoded 'specs/state.json'), so this lets you exercise real read-modify-write logic \u2014 including adversarial-string round-tripping \u2014 against a disposable fixture repo without ever touching the real repo's specs/state.json. Confirm via `stat -c %Y` before/after that the real file's mtime is unchanged.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/916_fix_orchestrate_completion_summary_propagation/summaries/01_completion-summary-propagation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["skill-base.sh", "fixture-testing", "SKILL_REPO_ROOT", "state.json", "verification"]
+      "suggested_keywords": [
+        "skill-base.sh",
+        "fixture-testing",
+        "SKILL_REPO_ROOT",
+        "state.json",
+        "verification"
+      ]
     }
   ],
   "modified_files": [
@@ -45,5 +61,13 @@
     "agent-system/extensions/core/commands/orchestrate.md",
     "agent-system/extensions/core/docs/architecture/handoff-schema.md",
     "agent-system/extensions/core/context/formats/return-metadata-file.md"
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1784151328_c3716f_879",
   "task_number": 879,
   "phases_completed": 5,
@@ -26,14 +30,34 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/879_wire_reconcile_task_status_safety_net/summaries/01_wire-reconcile-safety-net-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "set -euo pipefail", "ls glob", "pipefail", "empty directory"]
+      "suggested_keywords": [
+        "bash",
+        "set -euo pipefail",
+        "ls glob",
+        "pipefail",
+        "empty directory"
+      ]
     },
     {
       "content": "When wiring a caller to a script whose live mode is silent on no-op (only prints under --dry-run), bracket every live call: capture combined output, echo it verbatim when non-empty, and print an explicit no-op notice when empty. This is the pattern used across /task --sync, /orchestrate entry, and skill-todo in this codebase's reconcile-task-status.sh wiring -- a silent successful no-op is indistinguishable from 'never ran' without it.",
       "category": "PATTERN",
       "source_artifact": "specs/879_wire_reconcile_task_status_safety_net/summaries/01_wire-reconcile-safety-net-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["visibility", "silent no-op", "bracket call", "reconcile", "orchestrate"]
+      "suggested_keywords": [
+        "visibility",
+        "silent no-op",
+        "bracket call",
+        "reconcile",
+        "orchestrate"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

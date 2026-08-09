@@ -1,7 +1,7 @@
 # Implementation Plan: Double-Loading Check Triage and Re-Keying
 
 - **Task**: 998 - Triage the 49 Double-Loading context-index warnings
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: 991 (satisfied -- the restatement work that produced the warning)
 - **Research Inputs**: specs/998_double_loading_warning_triage/reports/01_double_loading_warning_triage.md
@@ -133,7 +133,7 @@ concurrently.
 
 ---
 
-### Phase 1: Reproduce the partition mechanically before editing anything [NOT STARTED]
+### Phase 1: Reproduce the partition mechanically before editing anything [IN PROGRESS]
 
 **Goal**: Prove the coded predicate reproduces the report's classification against the live
 deployed index, and surface any divergence *before* a single source file is edited.

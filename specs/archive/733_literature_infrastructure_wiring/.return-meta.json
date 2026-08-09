@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1750091400_b72e3f_733",
   "task_number": 733,
   "started_at": "2026-06-16T00:00:00Z",
@@ -25,7 +29,22 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/733_literature_infrastructure_wiring/summaries/01_infrastructure-wiring-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["literature", "chunks.json", "FTS5", "index.json", "manifest", "generation"]
+      "suggested_keywords": [
+        "literature",
+        "chunks.json",
+        "FTS5",
+        "index.json",
+        "manifest",
+        "generation"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

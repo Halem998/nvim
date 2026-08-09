@@ -36,15 +36,33 @@
       "category": "INSIGHT",
       "source_artifact": "specs/776_lit_adhoc_dispatch_navigation_doc_sync/summaries/01_lit-adhoc-navigation-doc-sync-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["merge-source", "skill-mirror", "extension-sync", "drift", "core-skills"]
+      "suggested_keywords": [
+        "merge-source",
+        "skill-mirror",
+        "extension-sync",
+        "drift",
+        "core-skills"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1782923730_e38a8e_776",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
   }
 }

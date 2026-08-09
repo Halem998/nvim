@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 770,
   "session_id": "sess_1782320124_aa5841_770",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "started_at": "2026-06-24T00:00:00Z",
   "completed_at": "2026-06-24T01:30:00Z",
   "phases_completed": 3,
@@ -34,7 +38,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/770_redeploy_core_hard_sync_docs/summaries/01_redeploy-core-hard-sync-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["extension-deploy", "install-extension.sh", "Ctrl-l", "extension-loader", "update-procedure", "symlink-vs-copy"]
+      "suggested_keywords": [
+        "extension-deploy",
+        "install-extension.sh",
+        "Ctrl-l",
+        "extension-loader",
+        "update-procedure",
+        "symlink-vs-copy"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

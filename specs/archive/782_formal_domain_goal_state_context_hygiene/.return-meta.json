@@ -57,27 +57,56 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/782_formal_domain_goal_state_context_hygiene/summaries/01_context-hygiene-contract-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["contract-wiring", "drift-prevention", "self-contained-agents", "verbatim-text", "md5sum-verification"]
+      "suggested_keywords": [
+        "contract-wiring",
+        "drift-prevention",
+        "self-contained-agents",
+        "verbatim-text",
+        "md5sum-verification"
+      ]
     },
     {
       "content": "Extension-local agents (e.g. .claude/extensions/{ext}/agents/*.md) deploy to .claude/agents/ via symlinks for some extensions (cslib) but may be entirely absent from .claude/agents/ for others (lean, observed in this repo) -- always verify actual symlink/deployment state with `ls -la .claude/agents/` and `readlink -f` before assuming a canonical-source edit will reach the deployed agent; edit the canonical extension source regardless, since that is authoritative.",
       "category": "PATTERN",
       "source_artifact": "specs/782_formal_domain_goal_state_context_hygiene/summaries/01_context-hygiene-contract-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["extension-deployment", "symlinks", "canonical-source", "agents-directory"]
+      "suggested_keywords": [
+        "extension-deployment",
+        "symlinks",
+        "canonical-source",
+        "agents-directory"
+      ]
     },
     {
       "content": "Extensions consumed by a separate repo (e.g. /home/benjamin/Projects/cslib consuming .claude/extensions/lean and .claude/extensions/cslib) use file-copy installation via .claude/scripts/install-extension.sh, not a live link -- any edit to shared extension context/agents/index-entries.json in the authoring repo requires a manual re-run of install-extension.sh inside each consuming repo to propagate; this must be explicitly flagged in the implementation summary/handoff rather than assumed to sync automatically.",
       "category": "CONFIG",
       "source_artifact": "specs/782_formal_domain_goal_state_context_hygiene/summaries/01_context-hygiene-contract-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["cross-repo-sync", "install-extension", "source_dir", "extension-consumers", "flagged-manual-step"]
+      "suggested_keywords": [
+        "cross-repo-sync",
+        "install-extension",
+        "source_dir",
+        "extension-consumers",
+        "flagged-manual-step"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1783091711_10490",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

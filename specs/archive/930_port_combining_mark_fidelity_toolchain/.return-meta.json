@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 930,
   "session_id": "sess_1785176230_b4221f_930",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "plan_path": "specs/930_port_combining_mark_fidelity_toolchain/plans/01_port-combining-mark-toolchain.md",
   "artifacts": [
     {
@@ -33,14 +37,34 @@
       "category": "PATTERN",
       "source_artifact": "specs/930_port_combining_mark_fidelity_toolchain/summaries/01_port-combining-mark-toolchain-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "manifest registration", "provides.scripts", "deploy simulation", "source-store rule"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "manifest registration",
+        "provides.scripts",
+        "deploy simulation",
+        "source-store rule"
+      ]
     },
     {
       "content": "To verify a manifest-driven deploy without writing into .claude/**, simulate it in a scratch directory: iterate provides.scripts entries, copy each with shutil.copy2 (preserves executable mode) from the extension scripts/ source to <scratch>/<entry>, then run any --self-test entrypoint from the scratch copy to exercise deployed-path sys.path.insert resolution. This catches import/path failures a source-tree run would mask, entirely outside .claude/**.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/930_port_combining_mark_fidelity_toolchain/summaries/01_port-combining-mark-toolchain-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["scratch deploy", "self-test", "sys.path.insert", "deploy simulation", "shutil.copy2"]
+      "suggested_keywords": [
+        "scratch deploy",
+        "self-test",
+        "sys.path.insert",
+        "deploy simulation",
+        "shutil.copy2"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

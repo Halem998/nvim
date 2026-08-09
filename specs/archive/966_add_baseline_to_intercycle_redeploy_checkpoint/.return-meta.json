@@ -24,22 +24,46 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/summaries/01_redeploy-checkpoint-baseline-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash", "pipestatus", "command-substitution", "exit-code", "pipeline-subshell"]
+      "suggested_keywords": [
+        "bash",
+        "pipestatus",
+        "command-substitution",
+        "exit-code",
+        "pipeline-subshell"
+      ]
     },
     {
       "content": "When a caller needs to extend fail()/error-recording helper to also feed a machine-diffable findings accumulator, giving the helper an optional Nth argument that OVERRIDES (or, if passed empty string, SUPPRESSES) the default recorded text is more robust than assuming the human-facing message is always fit for machine comparison. Two recurring needs surfaced: (1) a message embedding a numeric count must be normalized count-free before use as a diff key, since magnitude drift inside an already-failing check must not manufacture a spurious 'new' finding; (2) an aggregate 'N things failed, see detail' message should be suppressed in favor of N separately-extracted per-underlying-finding lines, to avoid one redundant generic finding riding alongside the real ones. Distinguish 'argument omitted' from 'argument passed empty' via $# inside the function, not just truthiness of the value, so both behaviors (override vs. suppress) are reachable through one optional parameter.",
       "category": "PATTERN",
       "source_artifact": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/summaries/01_redeploy-checkpoint-baseline-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["error-handling", "findings-accumulator", "bash-function-design", "diffable-output", "count-normalization"]
+      "suggested_keywords": [
+        "error-handling",
+        "findings-accumulator",
+        "bash-function-design",
+        "diffable-output",
+        "count-normalization"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785355598_1f68c0_966",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

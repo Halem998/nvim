@@ -27,14 +27,26 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
       "confidence": 0.8,
-      "suggested_keywords": ["allow-list", "silent-drop", "deploy-tree-staleness", "scratch-tree-verification", "sync-scan"]
+      "suggested_keywords": [
+        "allow-list",
+        "silent-drop",
+        "deploy-tree-staleness",
+        "scratch-tree-verification",
+        "sync-scan"
+      ]
     },
     {
       "content": "Neovim's M.load_all_globally-style interactive sync entry points that call vim.fn.confirm(...) can be driven non-interactively from a headless nvim --headless -c \"luafile ...\" script by overriding vim.fn.confirm = function(...) return N end before calling the public function -- this works because vim.fn's metatable only implements __index, so assigning a field directly shadows the dynamic vimscript-function dispatch for subsequent lookups. Useful whenever the only public/exported entry point that performs a mutation is gated behind an interactive confirm dialog and there is no lower-level unexported function to call instead.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
       "confidence": 0.75,
-      "suggested_keywords": ["vim.fn.confirm", "headless-nvim", "non-interactive-testing", "monkeypatch", "load_all_globally"]
+      "suggested_keywords": [
+        "vim.fn.confirm",
+        "headless-nvim",
+        "non-interactive-testing",
+        "monkeypatch",
+        "load_all_globally"
+      ]
     }
   ],
   "reflection": {
@@ -54,8 +66,20 @@
     "agent_type": "neovim-implementation-agent",
     "duration_seconds": 4200,
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "neovim-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

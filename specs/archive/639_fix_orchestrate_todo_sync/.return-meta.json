@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1780943406_504cdf",
   "task_number": 639,
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "phases_completed": 3,
   "phases_total": 3,
   "completion_data": {
@@ -23,7 +27,22 @@
       "category": "INSIGHT",
       "source_artifact": "specs/639_fix_orchestrate_todo_sync/summaries/01_fix-summary.md",
       "confidence": 0.95,
-      "suggested_keywords": ["skill-orchestrate", "SKILL.md", "skill-base.sh", "bash functions", "agent guidance", "update-task-status"]
+      "suggested_keywords": [
+        "skill-orchestrate",
+        "SKILL.md",
+        "skill-base.sh",
+        "bash functions",
+        "agent guidance",
+        "update-task-status"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

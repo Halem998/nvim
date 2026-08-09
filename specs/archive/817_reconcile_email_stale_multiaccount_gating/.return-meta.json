@@ -11,7 +11,11 @@
     "session_id": "sess_1783227911_33260c_817",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "plan_path": "specs/817_reconcile_email_stale_multiaccount_gating/plans/01_reconcile-multiaccount-gating.md",
     "phases_completed": 5,
     "phases_total": 5
@@ -30,11 +34,25 @@
   ],
   "memory_candidates": [
     {
-      "content": "When a grep-sweep-as-completeness-gate includes a bare identifier like a task/issue number (e.g. 'task 79'), converting stale pending-tense prose to past tense (\"task 79 lands\" -> \"task 79 landed\") is NOT sufficient to pass the sweep — the literal substring still matches. Either remove the identifier from the passage entirely (describe the change without naming the task) or narrow the sweep pattern to the pending-tense phrasing specifically, not the bare identifier.",
+      "content": "When a grep-sweep-as-completeness-gate includes a bare identifier like a task/issue number (e.g. 'task 79'), converting stale pending-tense prose to past tense (\"task 79 lands\" -> \"task 79 landed\") is NOT sufficient to pass the sweep \u2014 the literal substring still matches. Either remove the identifier from the passage entirely (describe the change without naming the task) or narrow the sweep pattern to the pending-tense phrasing specifically, not the bare identifier.",
       "category": "PATTERN",
       "source_artifact": "specs/817_reconcile_email_stale_multiaccount_gating/summaries/01_reconcile-multiaccount-gating-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["grep-sweep", "completeness-gate", "stale-docs", "doc-reconciliation", "regex-substring-match"]
+      "suggested_keywords": [
+        "grep-sweep",
+        "completeness-gate",
+        "stale-docs",
+        "doc-reconciliation",
+        "regex-substring-match"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

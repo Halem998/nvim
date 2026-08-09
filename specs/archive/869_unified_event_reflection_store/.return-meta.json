@@ -24,11 +24,29 @@
     "session_id": "sess_1784102843_ae113e_869",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phase_count": 5,
     "phases_completed": 5,
     "estimated_hours": 4.5,
-    "dependency_waves": [[1], [2, 3], [4], [5]]
+    "dependency_waves": [
+      [
+        1
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        4
+      ],
+      [
+        5
+      ]
+    ]
   },
   "phases_completed": 5,
   "phases_total": 5,
@@ -50,22 +68,48 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/869_unified_event_reflection_store/summaries/01_event-store-plumbing-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "pipefail", "sigpipe", "set -e", "random-id"]
+      "suggested_keywords": [
+        "bash",
+        "pipefail",
+        "sigpipe",
+        "set -e",
+        "random-id"
+      ]
     },
     {
       "content": "Bash parameter expansion default values containing a literal brace pair corrupt non-empty values: `${var:-{}}` used to default an empty JSON-object string to `{}` (e.g. for `jq --argjson`) appends a stray trailing `}` when `var` is already non-empty, producing invalid JSON. Resolve the default via a separate variable assignment (`x=\"$var\"; [ -z \"$x\" ] && x='{}'`) before passing it to `--argjson` rather than inlining `${var:-{}}`.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/869_unified_event_reflection_store/summaries/01_event-store-plumbing-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "parameter-expansion", "jq", "argjson", "default-value"]
+      "suggested_keywords": [
+        "bash",
+        "parameter-expansion",
+        "jq",
+        "argjson",
+        "default-value"
+      ]
     },
     {
       "content": "Scripts under agent-system/extensions/core/scripts/ that resolve PROJECT_ROOT via SCRIPT_DIR/../.. (the memory-harvest.sh/memory-retrieve.sh convention) are only correct at their eventual .claude/scripts/ deployment depth (two directories below repo root), not at their three-deep source location under agent-system/extensions/core/scripts/. When verifying a newly authored script of this kind during a meta implementation task, exercise it via a temporary local harness at repo-root-plus-one depth (mirroring .claude/scripts/) rather than running it directly from the source tree, and never copy it into .claude/ or .opencode/ to test it -- those are synced deployment copies out of scope for source-tree edits.",
       "category": "PATTERN",
       "source_artifact": "specs/869_unified_event_reflection_store/summaries/01_event-store-plumbing-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["agent-system", "extension", "script-root-resolution", "verification", "sync-mechanism"]
+      "suggested_keywords": [
+        "agent-system",
+        "extension",
+        "script-root-resolution",
+        "verification",
+        "sync-mechanism"
+      ]
     }
   ],
-  "errors": []
+  "errors": [],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

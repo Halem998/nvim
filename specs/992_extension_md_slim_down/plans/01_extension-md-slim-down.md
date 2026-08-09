@@ -1,7 +1,7 @@
 # Implementation Plan: Task #992
 
 - **Task**: 992 - Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.75 hours
 - **Dependencies**: 987, 990, 991 (index-entries.json schema reconciliation -- research confirms this has landed; a live Rule T run reports 0 violations across all 19 extensions)
 - **Research Inputs**: specs/992_extension_md_slim_down/reports/01_extension_md_slim_down.md
@@ -97,7 +97,7 @@ exactly one extension directory. No two Wave 1 phases write the same file.
 
 ---
 
-### Phase 1: Resolve the two dead EXTENSION.md files [NOT STARTED]
+### Phase 1: Resolve the two dead EXTENSION.md files [IN PROGRESS]
 
 **Goal**: Make `check-extension-docs.sh` treat `merge_targets.claudemd.source` as the authority for
 whether an extension must have (and be length-checked on) an `EXTENSION.md`, then delete both dead

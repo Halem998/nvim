@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_20260504_497_impl",
   "task_id": "497",
   "task_slug": "per_phase_plan_item_checkoff",
@@ -16,14 +20,34 @@
       "category": "WORKFLOW",
       "source_artifact": "specs/497_per_phase_plan_item_checkoff/summaries/01_checkoff-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["agent-sync", "mirror-copies", "general-implementation-agent", "line-count-difference", "claude-opencode-sync"]
+      "suggested_keywords": [
+        "agent-sync",
+        "mirror-copies",
+        "general-implementation-agent",
+        "line-count-difference",
+        "claude-opencode-sync"
+      ]
     },
     {
       "content": "Plan file checklist syntax convention: Use `- [ ] **Task {P}.{N}**: {description}` format within phase Tasks sections. Agents convert `- [ ]` to `- [x]` during implementation, optionally appending `*(completed: brief note)*`. The JSON progress file remains the primary machine-readable source; plan check-off is human-readable augmentation only.",
       "category": "PATTERN",
       "source_artifact": "specs/497_per_phase_plan_item_checkoff/summaries/01_checkoff-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["plan-checklist", "task-checkoff", "progress-tracking", "human-readable-progress", "plan-format"]
+      "suggested_keywords": [
+        "plan-checklist",
+        "task-checkoff",
+        "progress-tracking",
+        "human-readable-progress",
+        "plan-format"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

@@ -23,22 +23,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/967_fix_git_commit_scoped_lock_exclude_abort/summaries/01_lock-exclude-abort-fix-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["git-pathspec", "exclude-pathspec", "gitignore", "check-ignore", "git-add-abort", "scoped-commit"]
+      "suggested_keywords": [
+        "git-pathspec",
+        "exclude-pathspec",
+        "gitignore",
+        "check-ignore",
+        "git-add-abort",
+        "scoped-commit"
+      ]
     },
     {
       "content": "When a headless deploy (deploy-headless.sh) updates an EXISTING script correctly but silently fails to copy a brand-new script file added under an already-loaded extension's scripts/ tree, this is the documented copy_scripts gap (already-loaded extensions skip the per-extension copy_scripts/copy_manifest re-run during headless 'Load Core' sync). The sanctioned one-off workaround -- never hand-authoring the .claude/** target -- is a direct nvim --headless -u NONE -c 'luafile ...' invocation calling loader_mod.copy_scripts(manifest, source_dir, target_dir, protected_paths) and loader_mod.copy_manifest(...) directly against the specific extension's source_dir (agent-system/extensions/<ext>) and target_dir (.claude), with the manifest table loaded via vim.json.decode of the source manifest.json. Verify success by checking the target file exists and re-running the deployed test suite, not by trusting the deploy command's exit code alone.",
       "category": "WORKFLOW",
       "source_artifact": "specs/967_fix_git_commit_scoped_lock_exclude_abort/summaries/01_lock-exclude-abort-fix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless", "copy_scripts-gap", "loader-workaround", "extension-loader", "manifest-sync"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "copy_scripts-gap",
+        "loader-workaround",
+        "extension-loader",
+        "manifest-sync"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785345004_a2ccbc_967",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

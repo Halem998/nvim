@@ -2,7 +2,11 @@
   "status": "implemented",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1780334724_ddfd2d",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 623,
   "phases_completed": 3,
   "phases_total": 3,
@@ -24,7 +28,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/623_orchestrate_multi_task_dispatch/summaries/01_multi-task-orchestrate-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["orchestrate", "wave-dispatch", "kahn", "multi-task", "dependency", "parallel"]
+      "suggested_keywords": [
+        "orchestrate",
+        "wave-dispatch",
+        "kahn",
+        "multi-task",
+        "dependency",
+        "parallel"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

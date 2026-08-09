@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 872,
   "session_id": "sess_1784102843_ae113e_872",
   "phases_completed": 6,
@@ -26,21 +30,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/872_distill_review_revise_dream_mode/summaries/01_distill-dream-mode-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["dispatch-chain", "flag-ordering", "distill", "sub-mode", "first-match-wins"]
+      "suggested_keywords": [
+        "dispatch-chain",
+        "flag-ordering",
+        "distill",
+        "sub-mode",
+        "first-match-wins"
+      ]
     },
     {
       "content": "To verify a no-task-references-in-deliverables rule check without false positives from pre-existing violations, scope the check to the task's own commit range (git diff <base>..HEAD -- <touched-files>) rather than the whole working tree diff, and filter added lines only (git diff | grep '^+'). Unchanged pre-existing violating rows in the same file will otherwise show up as false failures.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/872_distill_review_revise_dream_mode/summaries/01_distill-dream-mode-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["no-task-references", "git-diff", "lint-verification", "false-positive"]
+      "suggested_keywords": [
+        "no-task-references",
+        "git-diff",
+        "lint-verification",
+        "false-positive"
+      ]
     },
     {
       "content": ".claude/ (and .opencode/) are gitignored deploy targets synced from agent-system/extensions/*/ source -- git-based before/after worktree comparisons of check-extension-docs.sh cannot see them. To confirm a doc-lint FAIL is pre-existing rather than caused by the current task, use git log/git status --porcelain scoped to the source extension directories instead of a git worktree checkout of an older commit.",
       "category": "INSIGHT",
       "source_artifact": "specs/872_distill_review_revise_dream_mode/summaries/01_distill-dream-mode-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["deploy-tree", "gitignore", "check-extension-docs", "drift", "worktree"]
+      "suggested_keywords": [
+        "deploy-tree",
+        "gitignore",
+        "check-extension-docs",
+        "drift",
+        "worktree"
+      ]
     }
   ],
   "artifacts": [
@@ -49,5 +70,13 @@
       "path": "specs/872_distill_review_revise_dream_mode/summaries/01_distill-dream-mode-summary.md",
       "summary": "Implementation summary for /distill --dream mode across six memory-extension files"
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

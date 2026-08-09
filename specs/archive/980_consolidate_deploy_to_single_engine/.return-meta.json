@@ -52,36 +52,72 @@
       "category": "INSIGHT",
       "source_artifact": "specs/980_consolidate_deploy_to_single_engine/summaries/01_consolidate-deploy-engines-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "manager.resync_all", "bootstrap-safety", "extension-state", "manager.load"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "manager.resync_all",
+        "bootstrap-safety",
+        "extension-state",
+        "manager.load"
+      ]
     },
     {
       "content": "When a Lua copy engine reads/writes files via vim.fn.readfile/writefile (line-array semantics, not raw byte streams), writefile() unconditionally appends a trailing newline after the last line unless called with the 'b' binary flag. A source file lacking a final trailing newline will therefore always gain one when copied through such an engine -- this is faithful copying BY THAT ENGINE'S OWN DEFINITION, not corruption. Any downstream content-hash/diff verifier built against the same copy engine must hash/compare the same line-joined representation (e.g. table.concat(vim.fn.readfile(path), '\\n')) rather than raw file bytes, or it will report a false-positive 'content differs from source' finding on every such file, even on a completely clean deploy.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/980_consolidate_deploy_to_single_engine/summaries/01_consolidate-deploy-engines-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["vim.fn.writefile", "vim.fn.readfile", "content-hash", "trailing-newline", "false-positive"]
+      "suggested_keywords": [
+        "vim.fn.writefile",
+        "vim.fn.readfile",
+        "content-hash",
+        "trailing-newline",
+        "false-positive"
+      ]
     },
     {
       "content": "nvim --headless invocations in this environment can prepend a terminal OSC7 cwd-reporting escape sequence to the very first line of stdout, with no newline separator before the actual program output. A start-of-line-anchored grep pattern (e.g. grep -c '^TOKEN ') against captured $(nvim --headless ... 2>&1) output can silently match zero lines even when the token is genuinely present, because the escape sequence occupies column 1. Use unanchored grep (grep -c 'TOKEN ', grep -o 'TOKEN .*') when parsing headless-nvim stdout captured this way, and strip-to-first-match (bash's ${var#*TOKEN } not ${var#TOKEN }) when extracting the payload.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/980_consolidate_deploy_to_single_engine/summaries/01_consolidate-deploy-engines-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["nvim --headless", "OSC7", "grep anchoring", "shell-parsing", "escape-sequence"]
+      "suggested_keywords": [
+        "nvim --headless",
+        "OSC7",
+        "grep anchoring",
+        "shell-parsing",
+        "escape-sequence"
+      ]
     },
     {
       "content": "When retiring one of two independent bulk-sync/deploy mechanisms in favor of the other, check whether the retired one performed any first-run bootstrap side effect (e.g. auto-seeding a config file with a sane default) that the surviving mechanism never needed because the retired one always ran first historically. Retiring the mechanism that used to run first can silently drop that bootstrap step for any consumer that starts fresh with only the surviving mechanism, even though every already-established consumer (which already has the seeded artifact from a prior run) never notices the gap. Found via a from-scratch scratch-tree wipe+regenerate round-trip test specifically -- an already-deployed test repo would never have surfaced it.",
       "category": "INSIGHT",
       "source_artifact": "specs/980_consolidate_deploy_to_single_engine/summaries/01_consolidate-deploy-engines-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["engine-retirement", "bootstrap-side-effect", "auto-seed", "scratch-tree-testing", "first-run-gap"]
+      "suggested_keywords": [
+        "engine-retirement",
+        "bootstrap-side-effect",
+        "auto-seed",
+        "scratch-tree-testing",
+        "first-run-gap"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785950363_553a84_980",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 9,
     "phases_total": 9
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 4
   }
 }

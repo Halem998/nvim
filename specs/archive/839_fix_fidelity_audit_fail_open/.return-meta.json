@@ -11,7 +11,11 @@
     "session_id": "sess_1783638490_ebbf91_839",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   },
@@ -31,21 +35,46 @@
       "category": "PATTERN",
       "source_artifact": "specs/839_fix_fidelity_audit_fail_open/summaries/01_fix-fidelity-audit-fail-open-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["fail-open", "fail-closed", "classifier design", "enum", "signal absence"]
+      "suggested_keywords": [
+        "fail-open",
+        "fail-closed",
+        "classifier design",
+        "enum",
+        "signal absence"
+      ]
     },
     {
       "content": "In the ~/Projects/Literature corpus, `chunk_NNNN.md` files under sources/<dir>/ are index-only re-splits of the canonical document .md (generated for FTS5 search), not additional content. Any script computing a whole-document metric (word count, ratio, hash) over sources/<dir>/*.md must exclude chunk_*.md via a filter like `not re.match(r'^chunk_\\d+\\.md$', e, re.IGNORECASE)`, or the canonical content gets double-counted. Documented in .claude/context/project/literature/patterns/chunk-file-conventions.md.",
       "category": "CONFIG",
       "source_artifact": "specs/839_fix_fidelity_audit_fail_open/summaries/01_fix-fidelity-audit-fail-open-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["literature corpus", "chunk files", "word count", "double-count", "fidelity audit"]
+      "suggested_keywords": [
+        "literature corpus",
+        "chunk files",
+        "word count",
+        "double-count",
+        "fidelity audit"
+      ]
     },
     {
       "content": "jq's test() function raises a hard error (exit code 5, aborting remaining stream processing state but sometimes still emitting partial output) when applied to a null field, e.g. `select(.id|test(\"pattern\"))` on an entry where .id is null. In corpora with heterogeneous/legacy entries, always guard with `select((.id // \"\")|test(\"pattern\"))` to avoid null-related jq crashes when scanning large JSON arrays like ~/Projects/Literature/index.json.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/839_fix_fidelity_audit_fail_open/summaries/01_fix-fidelity-audit-fail-open-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["jq", "null safety", "test regex", "exit code 5"]
+      "suggested_keywords": [
+        "jq",
+        "null safety",
+        "test regex",
+        "exit code 5"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

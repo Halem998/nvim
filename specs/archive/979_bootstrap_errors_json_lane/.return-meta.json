@@ -30,22 +30,46 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/979_bootstrap_errors_json_lane/summaries/01_errors-json-lane-bootstrap-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless", "copy_scripts", "sync-scan-gap", "loader-primitive", "scripts-subdirectory"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "copy_scripts",
+        "sync-scan-gap",
+        "loader-primitive",
+        "scripts-subdirectory"
+      ]
     },
     {
       "content": "When a plan's verification bar says 'grep for pattern X returns zero hits' but the very artifact the plan builds (a canonical writer script) legitimately CONTAINS pattern X as its own sanctioned internal implementation, the literal grep will never return zero once the plan's own work is done -- the correct reading is 'zero hits outside the canonical writer,' which is usually stated correctly in the plan's own Goal/Overview prose ('X is the only writer') even when a later verification bullet inherited unqualified wording. Don't treat this as a defect to chase; verify the qualified claim (zero hits outside the sanctioned location), record the literal grep's real count as a reported finding, and move on -- re-deriving live numbers and reporting where they diverge from the plan's literal text is the correct behavior, not silently 'fixing' the grep result to match stale wording.",
       "category": "PATTERN",
       "source_artifact": "specs/979_bootstrap_errors_json_lane/summaries/01_errors-json-lane-bootstrap-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verification-bar", "self-referential-grep", "plan-wording-gap", "scope-hypothesis"]
+      "suggested_keywords": [
+        "verification-bar",
+        "self-referential-grep",
+        "plan-wording-gap",
+        "scope-hypothesis"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785368489_e9acfc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

@@ -33,29 +33,59 @@
       "category": "PATTERN",
       "source_artifact": "specs/946_auto_sequence_conflicting_work/summaries/01_four-tier-conflict-response-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bounded-retry", "mutex", "wrapper-pattern", "task-lock", "acquire-retry"]
+      "suggested_keywords": [
+        "bounded-retry",
+        "mutex",
+        "wrapper-pattern",
+        "task-lock",
+        "acquire-retry"
+      ]
     },
     {
       "content": "A collision-detection predicate built on a periodic state.json STATUS read (rather than a live lock scan) only clears once the colliding entity reaches a genuinely TERMINAL status. A resequencing/retry mechanism layered on top of such a predicate will only converge if the interfering work's natural completion actually transitions it to that terminal status within the retry window -- if the natural terminus is a non-terminal intermediate status, the retry will structurally never converge and must gracefully degrade to a bounded-give-up outcome rather than assuming convergence is guaranteed. Always check what the underlying predicate actually keys on (lock existence vs. status field) before assuming a second attempt will succeed.",
       "category": "INSIGHT",
       "source_artifact": "specs/946_auto_sequence_conflicting_work/summaries/01_four-tier-conflict-response-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["convergence", "state-machine", "terminal-status", "collision-detection", "bounded-retry"]
+      "suggested_keywords": [
+        "convergence",
+        "state-machine",
+        "terminal-status",
+        "collision-detection",
+        "bounded-retry"
+      ]
     },
     {
       "content": "git-commit-scoped.sh (and a bare `git add`) treats a trailing-slash task-directory pathspec as failing when the directory contains gitignored dotfiles/subdirectories, even when explicit `:(exclude)...` pathspecs are also passed for those exact paths -- git still emits its ignored-paths warning and returns a non-zero exit for the whole `git add` invocation, which the wrapper script (correctly, defensively) treats as a hard failure and aborts the commit. Workaround: pass explicit file paths instead of the trailing-slash directory (e.g. list `plans/01_x.md`, `.return-meta.json` individually rather than `specs/NNN_slug/`) to avoid git's directory-recursion-into-ignored-paths warning entirely.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/946_auto_sequence_conflicting_work/summaries/01_four-tier-conflict-response-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["git-commit-scoped", "git-add", "gitignore", "staging", "task-directory"]
+      "suggested_keywords": [
+        "git-commit-scoped",
+        "git-add",
+        "gitignore",
+        "staging",
+        "task-directory"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785296102_18bc9a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

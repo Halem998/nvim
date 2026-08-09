@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1781547115_2dc6c5_722",
   "task_number": 722,
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "started_at": "2026-06-15T00:00:00Z",
   "completed_at": "2026-06-15T00:30:00Z",
   "phases_completed": 3,
@@ -29,7 +33,22 @@
       "category": "PATTERN",
       "source_artifact": "specs/722_add_pr_review_flag/summaries/01_pr-review-flag-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["command", "early-exit", "flag", "step-0", "pattern", "pr"]
+      "suggested_keywords": [
+        "command",
+        "early-exit",
+        "flag",
+        "step-0",
+        "pattern",
+        "pr"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

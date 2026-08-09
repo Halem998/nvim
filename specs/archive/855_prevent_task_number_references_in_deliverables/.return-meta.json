@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 855,
   "session_id": "sess_1783968617_ea7ceb",
   "plan_path": "specs/855_prevent_task_number_references_in_deliverables/plans/01_prevent-task-references.md",
@@ -47,14 +51,33 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/855_prevent_task_number_references_in_deliverables/summaries/01_prevent-task-references-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["symlink", "Edit-tool", "grep-recursive", "agent-files", "cslib-extension"]
+      "suggested_keywords": [
+        "symlink",
+        "Edit-tool",
+        "grep-recursive",
+        "agent-files",
+        "cslib-extension"
+      ]
     },
     {
       "content": "For a hook that must reference the very pattern it forbids (e.g. an anti-task-number-citation rule whose own rule text needs to give a 'before' example of a task-number citation), phrase the illustrative example inside a markdown code fence under a 'Before'/'Bad example' label using letter-only placeholders (\"task N\", \"tasks N-M\") rather than a real digit-bearing citation in prose -- this satisfies both the dogfooding constraint (the rule file itself must not read as a real citation) and keeps the regex-based advisory hook from mis-firing outside its intended illustrative-example fencing.",
       "category": "PATTERN",
       "source_artifact": "specs/855_prevent_task_number_references_in_deliverables/summaries/01_prevent-task-references-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["self-referential-rule", "advisory-hook", "dogfooding", "regex-design"]
+      "suggested_keywords": [
+        "self-referential-rule",
+        "advisory-hook",
+        "dogfooding",
+        "regex-design"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

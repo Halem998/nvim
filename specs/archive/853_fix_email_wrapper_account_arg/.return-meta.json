@@ -31,7 +31,17 @@
     "phases_completed": 3,
     "phases_total": 3,
     "estimated_hours": 1,
-    "dependency_waves": [[1], [2], [3]]
+    "dependency_waves": [
+      [
+        1
+      ],
+      [
+        2
+      ],
+      [
+        3
+      ]
+    ]
   },
   "completion_data": {
     "completion_summary": "Fixed the silent-wrong-account bug in ~/.dotfiles/modules/home/email/agent-tools/lib.nix's shared mkPreamble arg loop by adding an ACCOUNT_EXPLICIT-gated gmail|logos positional-alias case arm with a loud log() NOTE; verified via nix-instantiate eval, a real writeShellScriptBin build through the live flake, bash -n, and an in-session functional exercise of all 5 verification-matrix scenarios. The home-manager rebuild to deploy the fix is a user-applied step, documented as a checklist in the summary."
@@ -79,5 +89,13 @@
         "pre-deployment-verification"
       ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

@@ -22,7 +22,11 @@
     "agent_type": "planner-agent",
     "duration_seconds": 3600,
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "plan",
+      "planner-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   },
@@ -32,7 +36,21 @@
       "category": "PATTERN",
       "source_artifact": "specs/526_port_lean_extension_to_claude/summaries/01_lean-port-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["extension", "porting", "opencode-agents.json", "path-bug", "parity"]
+      "suggested_keywords": [
+        "extension",
+        "porting",
+        "opencode-agents.json",
+        "path-bug",
+        "parity"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

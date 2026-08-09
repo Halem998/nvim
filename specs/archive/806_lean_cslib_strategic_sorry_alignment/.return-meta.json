@@ -22,24 +22,48 @@
     "session_id": "sess_1783099196_7b6d2a_806",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   },
   "memory_candidates": [
     {
-      "content": "When a plan names specific line-numbered anchor occurrences for a rename sweep (e.g. next_dispatch -> follow_up_task), still grep the whole file/repo for the pattern after applying the named edits — related field-description or inline-usage occurrences at unlisted locations are easy to miss, and Phase-4-style repo-wide verification greps will catch them anyway. Better to catch during the phase than at final verification.",
+      "content": "When a plan names specific line-numbered anchor occurrences for a rename sweep (e.g. next_dispatch -> follow_up_task), still grep the whole file/repo for the pattern after applying the named edits \u2014 related field-description or inline-usage occurrences at unlisted locations are easy to miss, and Phase-4-style repo-wide verification greps will catch them anyway. Better to catch during the phase than at final verification.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/806_lean_cslib_strategic_sorry_alignment/summaries/01_strategic-sorry-alignment-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["rename-sweep", "grep-verification", "field-rename", "hard-mode-contracts", "sorry_inventory"]
+      "suggested_keywords": [
+        "rename-sweep",
+        "grep-verification",
+        "field-rename",
+        "hard-mode-contracts",
+        "sorry_inventory"
+      ]
     },
     {
       "content": "Pattern for relaxing a categorical hard-mode prohibition into a conditional exception: (1) identify every file that inline-restates the policy rather than @-referencing it, (2) establish canonical wording in the base/override contract file first, (3) propagate consistent wording to each restating agent file, (4) run repo-wide greps for both the old absolute phrasing and the old field names as the final verification gate. Used successfully to reconcile lean/cslib hard-mode contracts with a relaxed core zero-debt policy (task 806, building on task 778).",
       "category": "PATTERN",
       "source_artifact": "specs/806_lean_cslib_strategic_sorry_alignment/summaries/01_strategic-sorry-alignment-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["contract-alignment", "self-contained-agents", "policy-relaxation", "meta-task", "consistency-verification"]
+      "suggested_keywords": [
+        "contract-alignment",
+        "self-contained-agents",
+        "policy-relaxation",
+        "meta-task",
+        "consistency-verification"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

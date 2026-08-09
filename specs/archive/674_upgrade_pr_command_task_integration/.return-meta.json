@@ -2,7 +2,11 @@
   "status": "implemented",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1781284922_643662_674",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 674,
   "started_at": "2026-06-12T00:00:00Z",
   "completed_at": "2026-06-12T00:45:00Z",
@@ -35,14 +39,36 @@
       "category": "PATTERN",
       "source_artifact": "specs/674_upgrade_pr_command_task_integration/summaries/01_implementation-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["pr command", "multi-mode", "task-mode", "conditional", "has_pr_description", "pr workflow"]
+      "suggested_keywords": [
+        "pr command",
+        "multi-mode",
+        "task-mode",
+        "conditional",
+        "has_pr_description",
+        "pr workflow"
+      ]
     },
     {
       "content": "When adding pr_ready status support to a project's update-task-status.sh: (1) update the validation guard to include 'pr_ready', (2) add preflight:pr_ready -> pr_ready/PR READY and postflight:pr_ready -> completed/COMPLETED to map_status(). Also add pr_ready) printf '%s' \"PR READY\" to generate-todo.sh format_status() to avoid the uppercase catch-all rendering PR_READY incorrectly.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/674_upgrade_pr_command_task_integration/summaries/01_implementation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["pr_ready", "update-task-status", "generate-todo", "format_status", "map_status", "status lifecycle"]
+      "suggested_keywords": [
+        "pr_ready",
+        "update-task-status",
+        "generate-todo",
+        "format_status",
+        "map_status",
+        "status lifecycle"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

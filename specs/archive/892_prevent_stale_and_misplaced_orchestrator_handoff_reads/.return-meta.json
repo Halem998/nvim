@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1784991755_1b4381_892",
   "task_number": 892,
   "phases_completed": 8,
@@ -34,25 +38,51 @@
   },
   "memory_candidates": [
     {
-      "content": "For a shared PostToolUse hook that must be an error (not advisory), omit the sibling hooks' `2>/dev/null || echo '{}'` suffix in settings-hooks.json — that suffix is what forces exit 0 and swallows stderr; without it, a hook's exit 2 and stderr text reach the model as a real tool error.",
+      "content": "For a shared PostToolUse hook that must be an error (not advisory), omit the sibling hooks' `2>/dev/null || echo '{}'` suffix in settings-hooks.json \u2014 that suffix is what forces exit 0 and swallows stderr; without it, a hook's exit 2 and stderr text reach the model as a real tool error.",
       "category": "PATTERN",
       "source_artifact": "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/summaries/01_stale-misplaced-handoff-reads-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["PostToolUse", "hook", "settings-hooks.json", "exit code", "advisory vs blocking"]
+      "suggested_keywords": [
+        "PostToolUse",
+        "hook",
+        "settings-hooks.json",
+        "exit code",
+        "advisory vs blocking"
+      ]
     },
     {
-      "content": "A PostToolUse hook matched on Write|Edit reads tool_input.file_path and is structurally blind to any write performed via Bash redirection (e.g. `jq -n ... > \"$path\"`), because a Bash tool_input carries only the unexpanded command text — the variable name appears literally, never its resolved value. When a script can also write the same artifact via Bash redirect, the hook covers only the agent-direct path; pair it with an absolute-path fix at the script layer plus a reader-side sweep as the mechanism-agnostic backstop.",
+      "content": "A PostToolUse hook matched on Write|Edit reads tool_input.file_path and is structurally blind to any write performed via Bash redirection (e.g. `jq -n ... > \"$path\"`), because a Bash tool_input carries only the unexpanded command text \u2014 the variable name appears literally, never its resolved value. When a script can also write the same artifact via Bash redirect, the hook covers only the agent-direct path; pair it with an absolute-path fix at the script layer plus a reader-side sweep as the mechanism-agnostic backstop.",
       "category": "INSIGHT",
       "source_artifact": "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/summaries/01_stale-misplaced-handoff-reads-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["PostToolUse", "Bash redirect", "hook blind spot", "tool_input", "coverage boundary"]
+      "suggested_keywords": [
+        "PostToolUse",
+        "Bash redirect",
+        "hook blind spot",
+        "tool_input",
+        "coverage boundary"
+      ]
     },
     {
-      "content": "Resolve a script's repo root from BASH_SOURCE (`cd \"$(dirname \"${BASH_SOURCE[0]}\")/../..\" && pwd`) rather than the ambient cwd or `git rev-parse --show-toplevel` — it stays correct regardless of caller cwd and inside git worktrees/nested repos where `git rev-parse` answers a different question. Export it once (e.g. SKILL_REPO_ROOT) and build all absolute downstream paths from it.",
+      "content": "Resolve a script's repo root from BASH_SOURCE (`cd \"$(dirname \"${BASH_SOURCE[0]}\")/../..\" && pwd`) rather than the ambient cwd or `git rev-parse --show-toplevel` \u2014 it stays correct regardless of caller cwd and inside git worktrees/nested repos where `git rev-parse` answers a different question. Export it once (e.g. SKILL_REPO_ROOT) and build all absolute downstream paths from it.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/summaries/01_stale-misplaced-handoff-reads-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["BASH_SOURCE", "repo root", "absolute path", "worktree", "cwd-independent"]
+      "suggested_keywords": [
+        "BASH_SOURCE",
+        "repo root",
+        "absolute path",
+        "worktree",
+        "cwd-independent"
+      ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }

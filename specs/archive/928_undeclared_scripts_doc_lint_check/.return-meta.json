@@ -27,7 +27,11 @@
     "session_id": "sess_1785180513_6ef9d7_928",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   },
   "completion_data": {
     "completion_summary": "Added Rule Q (check_undeclared_scripts) to check-extension-docs.sh and declared the 3 previously-undeployable nix/nvim lifecycle-hook scripts in provides.scripts, resolving all 3 baseline findings; the doc-lint's full-tree exit remains 1 due to 2 unrelated Rule F content-drift hits (this task's own unavoidable check-extension-docs.sh self-drift, plus a concurrent sibling task's roadmap-integration.sh drift), both disclosed rather than silently fixed or hidden."
@@ -38,14 +42,27 @@
       "category": "PATTERN",
       "source_artifact": "specs/928_undeclared_scripts_doc_lint_check/summaries/01_undeclared-scripts-doc-lint-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["check-extension-docs", "doc-lint", "trailing-slash", "ext_path", "prefix-strip"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "doc-lint",
+        "trailing-slash",
+        "ext_path",
+        "prefix-strip"
+      ]
     },
     {
       "content": "Rule F (check_deployed_script_drift) in check-extension-docs.sh applies uniformly to every extension including core, treating any deployed-vs-source content mismatch as a hard FAIL -- unlike Rule O (check_core_deploy_advisory), which downgrades a MISSING core deployment to an ADVISORY specifically because forcing a hard FAIL there would brick the gate for every caller until a manual deploy-tree regeneration. Consequence: any source-store edit to check-extension-docs.sh's own file will register as a Rule F self-drift FAIL against the (unregenerated) deployed .claude/scripts/ copy until someone runs the manual regeneration step. This is a structural, currently-undocumented asymmetry between Rule F and Rule O worth knowing before assuming a non-zero doc-lint exit after any core-script edit indicates a defect in the edit itself.",
       "category": "INSIGHT",
       "source_artifact": "specs/928_undeclared_scripts_doc_lint_check/summaries/01_undeclared-scripts-doc-lint-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "Rule F", "Rule O", "content-drift", "core-extension", "deploy-tree-regeneration"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "Rule F",
+        "Rule O",
+        "content-drift",
+        "core-extension",
+        "deploy-tree-regeneration"
+      ]
     }
   ],
   "modified_files": [
@@ -54,5 +71,13 @@
     "agent-system/extensions/nvim/manifest.json"
   ],
   "phases_completed": 3,
-  "phases_total": 3
+  "phases_total": 3,
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

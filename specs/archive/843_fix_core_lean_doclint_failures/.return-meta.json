@@ -3,7 +3,11 @@
   "metadata": {
     "session_id": "sess_1783728731_72f337_843",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   },
@@ -27,19 +31,41 @@
   },
   "memory_candidates": [
     {
-      "content": "In this .claude/ agent system, check-extension-docs.sh is itself a core provides.scripts entry, so any edit to it must be applied byte-identically to BOTH .claude/scripts/check-extension-docs.sh (deployed) and .claude/extensions/core/scripts/check-extension-docs.sh (source), or the #841 Rule F deployed-vs-source drift guard fails. Safest mechanism: edit the deployed copy first, verify with bash -n and a manual diff against the pre-edit source to confirm no other content differs, then `cp` the fully-edited deployed file over the source copy rather than hand-editing both independently — this guarantees byte-identity by construction instead of by double independent editing.",
+      "content": "In this .claude/ agent system, check-extension-docs.sh is itself a core provides.scripts entry, so any edit to it must be applied byte-identically to BOTH .claude/scripts/check-extension-docs.sh (deployed) and .claude/extensions/core/scripts/check-extension-docs.sh (source), or the #841 Rule F deployed-vs-source drift guard fails. Safest mechanism: edit the deployed copy first, verify with bash -n and a manual diff against the pre-edit source to confirm no other content differs, then `cp` the fully-edited deployed file over the source copy rather than hand-editing both independently \u2014 this guarantees byte-identity by construction instead of by double independent editing.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/843_fix_core_lean_doclint_failures/summaries/01_doclint-fix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "drift-guard", "deployed-vs-source", "byte-identical", "core-manifest", "doc-lint"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "drift-guard",
+        "deployed-vs-source",
+        "byte-identical",
+        "core-manifest",
+        "doc-lint"
+      ]
     },
     {
-      "content": "The recurring core doc-lint bug class in .claude/ is 'referenced-but-unpackaged script': a script exists deployed under .claude/scripts/ and is referenced by skills/agents/docs, but was never added to core's provides.scripts (or never backported into .claude/extensions/core/scripts/ as source-of-truth). Fix pattern (per task #793 precedent, reapplied by #843): copy deployed content into .claude/extensions/core/scripts/ FIRST via `cp` (never hand-edit — it's the sole in-use version), verify with diff -q, THEN register in provides.scripts. A manifest-only edit without the source backport trips a NEW 'manifest script entry missing on disk' FAIL.",
+      "content": "The recurring core doc-lint bug class in .claude/ is 'referenced-but-unpackaged script': a script exists deployed under .claude/scripts/ and is referenced by skills/agents/docs, but was never added to core's provides.scripts (or never backported into .claude/extensions/core/scripts/ as source-of-truth). Fix pattern (per task #793 precedent, reapplied by #843): copy deployed content into .claude/extensions/core/scripts/ FIRST via `cp` (never hand-edit \u2014 it's the sole in-use version), verify with diff -q, THEN register in provides.scripts. A manifest-only edit without the source backport trips a NEW 'manifest script entry missing on disk' FAIL.",
       "category": "PATTERN",
       "source_artifact": "specs/843_fix_core_lean_doclint_failures/summaries/01_doclint-fix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["provides.scripts", "backport", "extension-source", "missing-on-disk", "core-manifest", "doc-lint"]
+      "suggested_keywords": [
+        "provides.scripts",
+        "backport",
+        "extension-source",
+        "missing-on-disk",
+        "core-manifest",
+        "doc-lint"
+      ]
     }
   ],
-  "errors": []
+  "errors": [],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

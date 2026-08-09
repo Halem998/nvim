@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1781640194_13c186",
   "task_number": 735,
   "completed_at": "2026-06-16T00:00:00Z",
@@ -17,7 +21,14 @@
       "category": "PATTERN",
       "source_artifact": "specs/735_literature_project_aware_filtering/summaries/01_project-aware-filtering-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["literature", "FTS5", "project-filter", "doc_id", "fallback", "index.json"]
+      "suggested_keywords": [
+        "literature",
+        "FTS5",
+        "project-filter",
+        "doc_id",
+        "fallback",
+        "index.json"
+      ]
     }
   ],
   "artifacts": [
@@ -26,5 +37,13 @@
       "path": "specs/735_literature_project_aware_filtering/summaries/01_project-aware-filtering-summary.md",
       "summary": "Implementation summary for project-aware literature filtering"
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 1
+  }
 }

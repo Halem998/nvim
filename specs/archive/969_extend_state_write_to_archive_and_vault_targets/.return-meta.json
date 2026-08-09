@@ -30,29 +30,59 @@
       "category": "INSIGHT",
       "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verification-grep", "baseline-check", "shell-variables", "false-negative", "regression-proof"]
+      "suggested_keywords": [
+        "verification-grep",
+        "baseline-check",
+        "shell-variables",
+        "false-negative",
+        "regression-proof"
+      ]
     },
     {
       "content": "check-extension-docs.sh's 'deployed script content drift' finding (deployed .claude/scripts/X differs from agent-system/extensions/*/scripts/X) is the EXPECTED, transient state of any source-store-only edit before the next redeploy cycle -- it is NOT a defect for a general-implementation-agent to fix by invoking deploy-headless.sh, whose own header restricts automated invocation to skill-orchestrate's inter-cycle redeploy checkpoint only. Distinguish this from a genuinely actionable check-extension-docs.sh failure like a stale index-entries.json line_count (Rule R), which IS a source-store fix within an implementer's scope, via generate-context-line-counts.sh --write.",
       "category": "WORKFLOW",
       "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-drift", "source-store-boundary", "check-extension-docs", "deploy-headless", "line_count"]
+      "suggested_keywords": [
+        "deploy-drift",
+        "source-store-boundary",
+        "check-extension-docs",
+        "deploy-headless",
+        "line_count"
+      ]
     },
     {
       "content": "Scripts guarded by deploy-root-guard.sh (e.g. generate-context-line-counts.sh) refuse to run when invoked directly from the agent-system/extensions/*/scripts/ source-store location, even when their actual read/write target is a source-store file (like index-entries.json) rather than anything under .claude/**. This is because they resolve PROJECT_ROOT via SCRIPT_DIR/../.., which only lands correctly two levels under a deployed .claude/scripts/ or .opencode/scripts/ tree. Invoke such scripts via their DEPLOYED path (bash .claude/scripts/<name>.sh) even when the fix itself belongs in the source store.",
       "category": "CONFIG",
       "source_artifact": "specs/969_extend_state_write_to_archive_and_vault_targets/summaries/01_extend-state-write-archive-vault-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["deploy-root-guard", "PROJECT_ROOT", "source-store", "script-invocation"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "PROJECT_ROOT",
+        "source-store",
+        "script-invocation"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785373759_72035f_969",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

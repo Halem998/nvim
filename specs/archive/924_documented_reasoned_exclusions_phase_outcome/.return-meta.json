@@ -61,21 +61,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["atomic-batch", "commit-mode", "negative-fixture", "phase-accounting", "status-marker"]
+      "suggested_keywords": [
+        "atomic-batch",
+        "commit-mode",
+        "negative-fixture",
+        "phase-accounting",
+        "status-marker"
+      ]
     },
     {
       "content": "Before executing a plan's fixture verification for a shell-block change embedded in an agent .md file (e.g. Stage 5a's marker-repair loop), extract the code fence verbatim from the deployed file and execute it against a throwaway fixture rather than retyping the logic. This tests the shipped text, not the author's mental model of it, and catches transcription drift immediately (e.g. a byte-identity check across two agent files' embedded blocks is only meaningful if both extractions are exact).",
       "category": "TECHNIQUE",
       "source_artifact": "specs/924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["fixture-testing", "verbatim-extraction", "stage-5a", "byte-identity", "agent-markdown"]
+      "suggested_keywords": [
+        "fixture-testing",
+        "verbatim-extraction",
+        "stage-5a",
+        "byte-identity",
+        "agent-markdown"
+      ]
     },
     {
       "content": "A plan's Scope Hypothesis census can find MORE than what it declared; the plan's own escalate-vs-absorb rule (fix a discovered same-pattern one-line site inline, escalate substantive rewrites to a follow-up note) is the right default for implementers rather than silently ignoring the discovery or silently expanding scope without a rationale. Recording the correction explicitly in the summary keeps the plan's declared scope auditable against what was actually touched.",
       "category": "WORKFLOW",
       "source_artifact": "specs/924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["scope-hypothesis", "census", "escalate-vs-absorb", "plan-deviation"]
+      "suggested_keywords": [
+        "scope-hypothesis",
+        "census",
+        "escalate-vs-absorb",
+        "plan-deviation"
+      ]
     }
   ],
   "modified_files": [
@@ -98,8 +115,20 @@
     "session_id": "sess_1785171084_0f7c36",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
   }
 }

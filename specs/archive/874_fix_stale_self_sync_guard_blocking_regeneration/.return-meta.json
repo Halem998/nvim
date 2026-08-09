@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 874,
   "task_type": "meta",
   "session_id": "sess_1784135810_7e6755_874",
@@ -30,7 +34,9 @@
     "phase_count": 5,
     "estimated_hours": 2.75,
     "dependency_waves": 4,
-    "file_scope": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]
+    "file_scope": [
+      "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"
+    ]
   },
   "memory_candidates": [
     {
@@ -38,15 +44,35 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/874_fix_stale_self_sync_guard_blocking_regeneration/summaries/01_remove-stale-self-sync-guard-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["headless-testing", "vim.fn.confirm", "nvim-headless", "verification-layer", "sync-picker"]
+      "suggested_keywords": [
+        "headless-testing",
+        "vim.fn.confirm",
+        "nvim-headless",
+        "verification-layer",
+        "sync-picker"
+      ]
     },
     {
       "content": "For self-referential sync/copy operations (source dir == destination dir), keep categories with a genuinely distinct source unconditionally synced, and add a narrow, explicitly-flagged skip (an underscore-prefixed metadata key) only for categories whose source and destination paths are byte-identical. Surface the skip in any user-facing summary so a resulting zero-count never reads as a complete/successful operation.",
       "category": "PATTERN",
       "source_artifact": "specs/874_fix_stale_self_sync_guard_blocking_regeneration/summaries/01_remove-stale-self-sync-guard-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["self-load", "sync-guard", "degenerate-copy", "non-silent-skip", "metadata-key"]
+      "suggested_keywords": [
+        "self-load",
+        "sync-guard",
+        "degenerate-copy",
+        "non-silent-skip",
+        "metadata-key"
+      ]
     }
   ],
-  "next_steps": "Task 874 implementation complete."
+  "next_steps": "Task 874 implementation complete.",
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
+  }
 }

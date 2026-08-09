@@ -21,22 +21,49 @@
       "category": "PATTERN",
       "source_artifact": "specs/975_fix_generated_claudemd_double_body/summaries/01_claudemd-hook-dedup-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deep_merge", "hook-event-array", "matcher-aware-merge", "settings.json", "claude-stop-notify", "extension-loader", "idempotent-normalize"]
+      "suggested_keywords": [
+        "deep_merge",
+        "hook-event-array",
+        "matcher-aware-merge",
+        "settings.json",
+        "claude-stop-notify",
+        "extension-loader",
+        "idempotent-normalize"
+      ]
     },
     {
       "content": "When verifying a deploy-time defect (e.g. duplicated content in a regenerated file) is actually fixed, capturing the CURRENT live artifact before the fix is not sufficient evidence if the artifact self-heals on regeneration (a full-overwrite computed artifact can look clean between runs even with the bug present). Instead, capture a baseline immediately before the verification deploy runs, run the fixed code path, and diff/inspect the result -- and separately confirm the pre-fix live state still reproduced the defect at the start of verification (e.g. by inspecting a settings.json left over from a prior redeploy that ran before the code fix landed) as independent evidence the test would have caught the bug had the fix not been applied.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/975_fix_generated_claudemd_double_body/summaries/01_claudemd-hook-dedup-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["verification", "self-healing-artifact", "regression-testing", "deploy-cycle", "baseline-capture"]
+      "suggested_keywords": [
+        "verification",
+        "self-healing-artifact",
+        "regression-testing",
+        "deploy-cycle",
+        "baseline-capture"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1785362998_047bfe",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
+  },
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 2
   }
 }

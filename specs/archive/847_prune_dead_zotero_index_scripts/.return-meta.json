@@ -17,7 +17,7 @@
       "summary": "Quarantined zotero-index-add.sh/zotero-index-remove.sh into scripts/deprecated/ via git mv, removed both from manifest.json provides.scripts, and reconciled all Rule-E-scanned doc surfaces (README.md, EXTENSION.md, agents/literature-agent.md, skills/skill-literature/SKILL.md). check-extension-docs.sh exits 0 with literature PASS."
     }
   ],
-  "next_steps": "None — task complete. Optional future cleanup: stale non-invoking path comment at literature-normalize-authors.sh:9 references the pre-move zotero-index-add.sh path.",
+  "next_steps": "None \u2014 task complete. Optional future cleanup: stale non-invoking path comment at literature-normalize-authors.sh:9 references the pre-move zotero-index-add.sh path.",
   "completion_data": {
     "completion_summary": "Quarantined zotero-index-add.sh and zotero-index-remove.sh (zero live callers) into a new scripts/deprecated/ subdirectory via git mv, removed both from manifest.json provides.scripts, and reconciled README.md/EXTENSION.md/literature-agent.md/SKILL.md so check-extension-docs.sh Rule E remains PASS."
   },
@@ -44,7 +44,18 @@
     ],
     "phase_count": 4,
     "estimated_hours": 1,
-    "dependency_waves": [[1, 2], [3], [4]]
+    "dependency_waves": [
+      [
+        1,
+        2
+      ],
+      [
+        3
+      ],
+      [
+        4
+      ]
+    ]
   },
   "memory_candidates": [
     {
@@ -88,5 +99,13 @@
         "QUARANTINE-NEVER-DELETE"
       ]
     }
-  ]
+  ],
+  "memory_candidates_harvested": {
+    "harvested": true,
+    "harvested_at": "2026-08-09T00:00:00Z",
+    "harvested_by": "/distill --learn",
+    "run_id": "learn_harvest_20260809",
+    "disposition": "reviewed; folded into consolidated cross-task memories",
+    "candidate_count": 3
+  }
 }
