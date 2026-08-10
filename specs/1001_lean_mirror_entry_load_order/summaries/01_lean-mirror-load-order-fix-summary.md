@@ -1,9 +1,9 @@
 # Implementation Summary: Lean Mirror Entry Load-Order Fix
 
 - **Task**: 1001 - Fix lean mirror entry load-order defect; audit duplicated index paths
-- **Status**: [IN PROGRESS]
+- **Status**: [COMPLETED]
 - **Started**: 2026-08-09T00:00:00Z
-- **Completed**: (pending Phase 4 closing gate)
+- **Completed**: 2026-08-09T00:00:00Z
 - **Effort**: 2 hours (estimated)
 - **Dependencies**: Task 1000 (completed -- establishes and proves the union-valued pattern)
 - **Artifacts**: plans/01_lean-mirror-load-order-fix.md
@@ -159,10 +159,20 @@ Non-Goals.
 - Build: N/A (JSON configuration edit, no build step)
 - Tests: N/A -- verified via executed headless-Neovim merge reconstruction (see Verification
   Method above); pre-edit failure and post-edit success both demonstrated
-- Files verified: Yes (`jq empty` on the edited file after each phase's edits; `git diff` confined
-  to `agents` arrays each time)
-- `check-extension-docs.sh` / `generate-context-line-counts.sh --check`: recorded in Phase 4 (see
-  Phase 4 checklist in the plan for the closing-gate results)
+- Files verified: Yes (`jq empty` on the edited file after each phase's edits and on every
+  `agent-system/extensions/*/index-entries.json` file at the closing gate; `git diff` confined to
+  `agents` arrays each time)
+- `check-extension-docs.sh`: `lean PASS`. Overall exit code is 1 due to a pre-existing, unrelated
+  FAIL ("deployed script content drift" on `agent-system/extensions/core/scripts/validate-context-budgets.sh`),
+  confirmed by `git status --short -- .claude/` and `git status --short -- agent-system/extensions/core/scripts/validate-context-budgets.sh`
+  to be untouched by this task's diff -- attributed explicitly here rather than absorbed silently.
+- `generate-context-line-counts.sh --check`: `CHECK PASSED: all line_count values are exact` across
+  all 479 entries (19 extensions) -- no new mismatch; this task changed no file contents, only
+  `load_when.agents` arrays, so no `line_count` regression was expected or found.
+- `git status --short -- .claude/`: empty -- no source-store boundary violation.
+- Each of this task's three commits verified individually (`git show --stat`) to touch only
+  `agent-system/extensions/lean/index-entries.json` and `specs/1001_lean_mirror_entry_load_order/**`.
+- Scratch reconstruction script and scratch index file deleted before task close.
 
 ## Impacts
 

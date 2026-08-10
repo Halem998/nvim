@@ -1,24 +1,30 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Created a 4-phase implementation plan. Research found 4 findings, not 1: the named lean/core contracts/adversarial-verification.md pair, two further identical-shape lean/core pairs (reference-grounding.md, anti-analysis.md), and a same-file duplicate inside cslib's own index. The plan resolves both scope boundaries explicitly: the two sibling lean pairs are IN scope (they live in the declared file_scope file and WORK item 1 says 'at minimum'), fixed in a separate phase after the mandated one; the cslib finding is OUT of scope for any fix (different file, outside file_scope, different collision mechanism) but recorded per WORK item 2. Verification is an executed merge reconstruction plus a proof it fails pre-edit, never a JSON read.",
+  "status": "implemented",
+  "phase": "implement",
+  "summary": "Union-valued all three lean/core duplicated contract entries in agent-system/extensions/lean/index-entries.json (contracts/adversarial-verification.md, contracts/reference-grounding.md, contracts/anti-analysis.md). Proved by an EXECUTED headless-Neovim reconstruction of the actual core-then-lean merge (neotex.plugins.ai.shared.extensions.merge.append_index_entries against the real on-disk index files): the pre-edit run demonstrably failed the union assertion (only lean's narrower agent list survived), and the post-edit run showed all three merged entries carrying their full expected unions. No static-JSON-read substitution was used; the harness was available throughout. Also re-ran the duplicated-path audit fresh across all 19 extensions (479 total entries, cslib is the only extension with an internal duplicate, three cross-extension duplicated paths confirmed -- one of which, contracts/adversarial-verification.md, turned out to also be declared by cslib and already fixed by a prior task), recorded the cslib project/cslib/standards/ci-pipeline.md disposition explicitly (out of file_scope, different collision mechanism, not fixed), and recorded two follow-up candidates (a new check-extension-docs.sh lint rule at the next available letter, Rule V; and the content-level context/contracts/*.md override collision underneath the fixed hooks) without implementing either. Closing gate: check-extension-docs.sh shows lean PASS (overall exit 1 is a pre-existing, unrelated FAIL on a core script untouched by this task's diff); generate-context-line-counts.sh --check passes with no new mismatch; jq empty passes on all 19 index-entries.json files; git status --short -- .claude/ is empty (no source-store boundary violation); scratch reconstruction script and scratch index deleted.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md",
-      "summary": "Four-phase plan: union-value the named entry, extend to two siblings in the same file, record the audit and two follow-up candidates, closing gate"
+      "summary": "Four-phase plan, all phases marked [COMPLETED]: union-value the named entry, extend to two siblings in the same file, record the audit and two follow-up candidates, closing gate"
+    },
+    {
+      "type": "summary",
+      "path": "specs/1001_lean_mirror_entry_load_order/summaries/01_lean-mirror-load-order-fix-summary.md",
+      "summary": "Implementation summary with the merge-reconstruction verification evidence, the fresh duplicated-path audit table, the cslib disposition, and both follow-up candidates"
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
   "continuation_path": null,
-  "next_action_hint": "Dispatch /implement 1001. Phase 1 is the mandated fix and must be verified by an executed merge reconstruction (core entries processed first, lean second) whose assertion is on the merged output, not on the edited JSON.",
+  "next_action_hint": "No further action required for this task's declared scope. Follow-up candidates recorded in the summary (a new check-extension-docs.sh lint rule; the content-level context/contracts/*.md override collision) and the cslib ci-pipeline.md internal duplicate are all explicitly out of scope for this task and would each warrant a separate task if pursued.",
   "decisions_made": [
-    "IN SCOPE: contracts/reference-grounding.md and contracts/anti-analysis.md lean entries also get union-valued load_when.agents -- they are in agent-system/extensions/lean/index-entries.json, which is the entire declared file_scope, and WORK item 1's phrasing is a floor ('at minimum'), not a ceiling. Isolated in Phase 2 so the mandated Phase 1 fix lands and is independently verifiable first.",
-    "OUT OF SCOPE for fix, IN SCOPE for the record: the cslib project/cslib/standards/ci-pipeline.md internal duplicate. agent-system/extensions/cslib/index-entries.json is outside this task's file_scope (a prospective lock-overlap declaration), and the same-file array-order collision is a different mechanism warranting its own verification. Phase 3 records it per WORK item 2's 'even if this task only fixes the lean instance'.",
-    "WORK item 3 (loader warning / lint rule) is recorded as a follow-up candidate only, not implemented, per the task's explicit instruction to record rather than widen.",
-    "Second follow-up candidate surfaced at plan time: lean's manifest provides.context includes 'contracts' and copy_category copies by path, so lean's context/contracts/*.md copies overwrite core's at the same deploy paths. The union index entry restores the HOOK for general-research-hard-agent but that agent then receives lean's lean4-specialized content, not core's generic contract. Recorded, not fixed."
+    "Widened lean's load_when.agents arrays by appending core's (or core-plus-planner's) agent names after lean's existing names, preserving lean's original array order as a prefix -- matches the ordering convention already committed for cslib's entry by the prior task.",
+    "Confirmed both Phase 2 sibling entries were genuine instances of the same defect, not deliberate narrowings -- no `#### Reasoned Exclusions` record was needed.",
+    "Verification bar honored strictly: the merge reconstruction was actually executed (not read from JSON) both pre-edit (demonstrating failure) and post-edit (demonstrating success), against the real on-disk core and lean index-entries.json files.",
+    "cslib's project/cslib/standards/ci-pipeline.md internal duplicate remains out of scope for a fix (outside file_scope, different collision mechanism) -- recorded with full disposition in the summary per WORK item 2.",
+    "Both WORK item 3 follow-up candidates (new lint rule; content-level override collision) recorded with actionable specifics but not implemented, per the task's explicit instruction."
   ],
   "plan_markers_verified": true
 }

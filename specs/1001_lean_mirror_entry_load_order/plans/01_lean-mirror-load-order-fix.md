@@ -323,28 +323,39 @@ in the summary.
 
 ---
 
-### Phase 4: Closing Gate and Scratch Cleanup [NOT STARTED]
+### Phase 4: Closing Gate and Scratch Cleanup [COMPLETED]
 
 **Goal**: Run the full gate set, confirm no collateral damage and no stray artifacts, and confirm
 the source-store boundary was respected.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and read the result against the lean-scoped
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and read the result against the lean-scoped
       bar: lean's own PASS. If the global exit code is non-zero for an unrelated pre-existing
       reason, name the failing rule and the file it concerns in the summary and attribute it
-      explicitly, rather than absorbing it silently or claiming a clean run.
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --check` and confirm no `line_count`
+      explicitly, rather than absorbing it silently or claiming a clean run. *(completed:
+      `lean PASS`; overall exit 1 due to a pre-existing, unrelated FAIL -- "deployed script content
+      drift" on `agent-system/extensions/core/scripts/validate-context-budgets.sh`, confirmed
+      untouched by this task's diff and attributed explicitly in the summary)*
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --check` and confirm no `line_count`
       in lean's index (or anywhere else) is now wrong -- this task changed no file contents, so any
-      new mismatch would be collateral damage.
-- [ ] Run `jq empty` over every edited `index-entries.json` one final time.
-- [ ] Confirm the diff touches `agent-system/extensions/lean/index-entries.json` plus `specs/**`
+      new mismatch would be collateral damage. *(completed: `CHECK PASSED: all line_count values
+      are exact`, 479/479 entries across 19 extensions)*
+- [x] Run `jq empty` over every edited `index-entries.json` one final time. *(completed: all 19
+      `agent-system/extensions/*/index-entries.json` files pass)*
+- [x] Confirm the diff touches `agent-system/extensions/lean/index-entries.json` plus `specs/**`
       only. Any `.claude/**` path in the diff is a source-store boundary violation and must be
-      reverted and redone against `agent-system/extensions/**`.
-- [ ] Delete the scratch reconstruction script and scratch index file; confirm `git status --short`
-      shows no stray untracked files introduced by this task.
-- [ ] Confirm no task-number references were written into any deliverable outside `specs/**` (this
+      reverted and redone against `agent-system/extensions/**`. *(completed: each of this task's
+      three commits individually verified via `git show --stat` to touch only
+      `agent-system/extensions/lean/index-entries.json` and
+      `specs/1001_lean_mirror_entry_load_order/**`; `git status --short -- .claude/` empty)*
+- [x] Delete the scratch reconstruction script and scratch index file; confirm `git status --short`
+      shows no stray untracked files introduced by this task. *(completed: scratch Lua script and
+      cached scratch index JSON deleted; repo working tree shows no stray files attributable to
+      this task)*
+- [x] Confirm no task-number references were written into any deliverable outside `specs/**` (this
       task's deliverable edits are JSON `agents` arrays, so this should be trivially satisfied --
-      confirm rather than assume).
+      confirm rather than assume). *(completed: confirmed via grep -- no task-number citation
+      anywhere in `agent-system/extensions/lean/index-entries.json`)*
 
 **Timing**: 25 minutes
 

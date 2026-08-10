@@ -1,13 +1,34 @@
 {
-    "status": "in_progress",
-    "metadata": {
-        "session_id": "sess_1786342011_4592c8_1001",
-        "agent_type": "general-implementation-agent",
-        "delegation_depth": 2,
-        "delegation_path": [
-            "orchestrator",
-            "implement",
-            "general-implementation-agent"
-        ]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/1001_lean_mirror_entry_load_order/summaries/01_lean-mirror-load-order-fix-summary.md",
+      "summary": "Union-valued all three lean/core duplicated contract entries in agent-system/extensions/lean/index-entries.json, proved by an executed headless-Neovim merge reconstruction (pre-edit failure and post-edit success both demonstrated), and recorded the fresh 19-extension duplicated-path audit, the cslib ci-pipeline.md disposition, and two follow-up candidates without implementing either."
     }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the lean mirror entry load-order defect by union-valuing load_when.agents on all three affected entries (contracts/adversarial-verification.md, contracts/reference-grounding.md, contracts/anti-analysis.md) in agent-system/extensions/lean/index-entries.json, proved via an executed core-then-lean merge reconstruction that fails pre-edit and passes post-edit. Re-ran the duplicated-path audit fresh across all 19 extensions, recorded the out-of-scope cslib internal-duplicate finding with explicit disposition, and recorded two follow-up candidates (a new check-extension-docs.sh lint rule and the content-level context/contracts override collision) without implementing either."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/index-entries.json",
+    "specs/1001_lean_mirror_entry_load_order/summaries/01_lean-mirror-load-order-fix-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When union-valuing a duplicated load_when.agents index entry across extensions (the merge.append_index_entries upsert-by-path defect class), re-run the cross-extension duplicate scan before assuming a path has only one other declaring extension. contracts/adversarial-verification.md turned out to be declared by THREE extensions (core, lean, cslib), not two -- a prior task had already union-valued cslib's copy using the identical pattern, so it showed up as 'already fixed' rather than a second instance of the live defect. A scoped scan (grep the two extensions named in the task) would have missed this; the full jq-based cross-extension scan over agent-system/extensions/*/index-entries.json caught it. Also useful: check-extension-docs.sh's rule-letter sequence currently ends at Rule U (EXTENSION.md length limit), so the next available letter for a new lint rule is Rule V.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1001_lean_mirror_entry_load_order/summaries/01_lean-mirror-load-order-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["index-entries", "cross-extension-audit", "append_index_entries", "check-extension-docs", "rule-letter-sequence"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786342011_4592c8_1001",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }
