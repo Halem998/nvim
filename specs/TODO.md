@@ -19,13 +19,13 @@ next_project_number: 1020
 
 ### Agent System
 
-1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
+1004 [RESEARCHED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 1012 [PARTIAL] — tests/run-all.sh is red and has been treated as permanently-expec
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
-1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
+1015 [RESEARCHING] — A VERIFICATION task, deliberately not a fix task. Do not change m
   └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 1017 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
   └─ 1013 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
@@ -38,7 +38,7 @@ next_project_number: 1020
 
 ### Orchestration Concurrency
 
-1016 [NOT STARTED] — Fix the register-bare/acquire-suffixed session-id pattern in the 
+1016 [RESEARCHING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
 
 ## Tasks
 
@@ -125,7 +125,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1016. Fix command register acquire session id parity
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
@@ -146,7 +146,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1015. Re-check settings.local.json deploy merge for content loss before any fix effort
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -499,10 +499,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1004. Fix /todo repository-metrics sync: build_errors is structurally always 0 and the technical_debt frontmatter target does not exist
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md]
 
 **Description**: /todo's "Sync Repository Metrics" stage cannot report a true build-health signal, and half of it writes to a target that does not exist. Both defects are live in the source store and were observed on a real /todo run.
 

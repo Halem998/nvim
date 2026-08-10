@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "task_number": 1004,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786386280_bc7e55_1004",
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
+      "summary": "Confirms both defects at cited lines, finds a third latent bug (status enum mismatch between todo.md's derivation and state-schema.json's declared 4-value enum), confirms this repo itself has no Makefile/package.json (live proof the current probe is non-portable), confirms no consumer of the technical_debt frontmatter block exists in agent-system/extensions/**, and confirms skill-todo/SKILL.md has no repository-metrics stage to mirror into. Recommends reading (a) 'structurally sound' for build_errors via a cheap bash-n/jq-empty probe with a nullable 'not measured' schema extension (precedented by memory_health.last_distilled), and option (b) for Defect 2 (delete Step 5.7.3, state.json remains sole home for repository_health)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo, .opencode/ is a SEPARATE git-tracked deploy tree (not gitignored, not generated from agent-system/extensions/**), distinct from .claude/ (blanket-gitignored, generated from agent-system/extensions/** and byte-identical to source for skill files). When searching for 'real consumers' of a source-store artifact under the binding source-store rule, grep hits inside .opencode/ do not count as in-scope consumers.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["opencode", "claude-deploy-tree", "source-store-boundary", "gitignore"]
+    },
+    {
+      "content": "state-schema.json already has a precedent for a nullable 'not measured' field: memory_health.last_distilled is typed [\"string\", \"null\"]. Reuse this union-type pattern (e.g. [\"integer\", \"null\"]) instead of inventing a new sentinel value when a metric can legitimately be unmeasured.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["state-schema", "nullable-field", "not-measured", "schema-design"]
+    },
+    {
+      "content": "validate-state.sh and state-write.sh do NOT deep-validate field types/enums against state-schema.json -- validate-state.sh only checks top-level key presence and the 12-value task-status enum on active_projects[].status; state-write.sh only validates jq filter syntax. Nested object fields (e.g. repository_health.status's 4-value enum) can silently drift from the declared schema with nothing catching it. Worth checking before trusting that a schema-documented enum is actually enforced anywhere.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["state-schema", "validation-gap", "validate-state", "state-write", "enum-drift"]
+    }
+  ],
+  "next_steps": "Run /plan 1004 to create implementation plan"
+}
