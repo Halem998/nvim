@@ -234,32 +234,41 @@ survivors. Remember the +1,864 ghost offset when comparing to the validator.
 
 ---
 
-### Phase 3: Rebase planner, general-research, and general-implementation in core [NOT STARTED]
+### Phase 3: Rebase planner, general-research, and general-implementation in core [COMPLETED]
 
 **Goal**: Rebase the three remaining core-owned agents onto their real reference sets, bringing
 `planner-agent` and `general-research-agent` under cap and reducing
 `general-implementation-agent` to its true irreducible floor.
 
 **Tasks**:
-- [ ] For each of `planner-agent`, `general-research-agent`, `general-implementation-agent`:
+- [x] For each of `planner-agent`, `general-research-agent`, `general-implementation-agent`:
       extract the real `@`-reference set from its `.md` body and enumerate its currently hooked
-      core entries with token costs.
-- [ ] Drop `agents[]` hooks for entries absent from that agent's reference set. High-confidence
+      core entries with token costs. *(completed: 5/16, 8/14, 11/34 respectively -- the
+      general-implementation-agent hooked count re-derived as 34, not the report's approximate
+      33, per this phase's own re-enumeration instruction)*
+- [x] Drop `agents[]` hooks for entries absent from that agent's reference set. High-confidence
       candidates verified at plan time: `patterns/task-lock.md` (9,336 tok, referenced only in
       prose, never with `@`-syntax) from `general-implementation-agent`; the four skill-lifecycle
       entries `patterns/skill-preflight-flow.md` (624), `patterns/skill-postflight-flow.md`
       (1,008), `patterns/skill-self-execution-fallback.md` (496), `patterns/lit-stage4a-flow.md`
       (1,864) — consumed by the orchestrating `SKILL.md` files, not the agent bodies — from all
       three agents; and `standards/postflight-tool-restrictions.md` (1,728) from
-      `general-implementation-agent`.
-- [ ] Evaluate `standards/status-markers.md` (3,304 tok, hooked to `planner-agent` and
+      `general-implementation-agent`. *(completed, plus one deliberate additional drop beyond the
+      literal reference-set test: `patterns/checkpoint-before-overflow.md` was dropped from
+      `general-research-agent` despite being genuinely `@`-referenced, per the plan/report's
+      Finding 4 rare-path determination, numerically necessary to reach the 7,160-token floor)*
+- [x] Evaluate `standards/status-markers.md` (3,304 tok, hooked to `planner-agent` and
       `general-implementation-agent`): its `commands` hook already covers `/plan` and
       `/implement`, which route to exactly those two agents. Drop the `agents[]` hook, keeping
-      `commands[]`, which additionally reaches `/task`.
-- [ ] Set `on_demand: true` on any entry left with all hooks empty.
-- [ ] Add hooks for any genuine unconditional reference currently missing.
-- [ ] Record `general-implementation-agent`'s resulting measured total — it is expected to remain
-      over 8,000 and is the input to Phase 8's exception.
+      `commands[]`, which additionally reaches `/task`. *(completed, confirmed commands:[/task,
+      /plan, /implement] preserved)*
+- [x] Set `on_demand: true` on any entry left with all hooks empty. *(completed: 4 for
+      planner-agent, 4 for general-research-agent, 7 for general-implementation-agent, some
+      overlapping across agents on the same shared entry)*
+- [x] Add hooks for any genuine unconditional reference currently missing. *(completed: none
+      needed -- every agent's unconditional refs were already hooked)*
+- [x] Record `general-implementation-agent`'s resulting measured total — it is expected to remain
+      over 8,000 and is the input to Phase 8's exception. *(completed: 16,688 tok measured)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,47 @@
+{
+  "phase": 3,
+  "phase_name": "Rebase planner, general-research, and general-implementation in core",
+  "started_at": "2026-08-10T01:05:00Z",
+  "last_updated": "2026-08-10T01:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extract real @-reference sets and enumerate hooked entries for all three agents",
+      "status": "done",
+      "files_touched": [],
+      "note": "planner-agent: 5 refs, 16 hooked entries. general-research-agent: 8 refs, 14 hooked entries. general-implementation-agent: 11 refs (excl. index.json self-ref), 34 hooked entries (report approximated 33; re-derivation found 34, per the phase's own Scope Hypothesis instruction to re-enumerate rather than assume)."
+    },
+    {
+      "id": 2,
+      "description": "Drop agents[] hooks for unreferenced entries; set on_demand:true where hooks empty; keep genuinely referenced entries",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"],
+      "note": "planner-agent: kept plan-format.md+return-metadata-file.md+workflows/task-breakdown.md (10,400 tok); dropped 13 unreferenced entries (4 became on_demand). general-implementation-agent: kept its 9 genuinely-referenced entries including the already-hooked 5-file core bundle plus checkpoint-before-overflow.md, context-exhaustion-detection.md, subagent-continuation-loop.md, standards/git-staging-scope.md (16,688 tok); dropped 25 unreferenced entries (7 became on_demand) including the explicit high-confidence candidates from the plan (patterns/task-lock.md, the four skill-lifecycle entries, standards/postflight-tool-restrictions.md) plus standards/status-markers.md's agents[] hook (its commands[] hook -- /task, /plan, /implement -- was preserved intact, confirmed post-edit). general-research-agent: kept return-metadata-file.md+report-format.md+context-exhaustion-detection.md (7,160 tok, exactly matching the plan/report's stated floor); dropped 11 entries including the one deliberate exception to the generic 'referenced => keep' rule -- patterns/checkpoint-before-overflow.md was dropped from general-research-agent DESPITE being genuinely @-referenced, following the plan/report's explicit Finding 4 determination that this is a rare/conditional 'Stage 3.6 git-checkpoint step' path, numerically necessary to reach the 7,160 floor (margin 840 under the 8,000 cap) -- keeping it would measure 8,568, still over cap."
+    },
+    {
+      "id": 3,
+      "description": "Evaluate standards/status-markers.md dual hook, drop agents[] keep commands[]",
+      "status": "done",
+      "files_touched": [],
+      "note": "Confirmed post-edit: agents:[] (dropped from both planner-agent and general-implementation-agent), commands:[/task,/plan,/implement] preserved intact."
+    },
+    {
+      "id": 4,
+      "description": "Add hooks for genuine unconditional references currently missing",
+      "status": "done",
+      "files_touched": [],
+      "note": "None needed: planner-agent's two unconditional refs (return-metadata-file.md, plan-format.md) were already hooked; general-research-agent's (return-metadata-file.md) already hooked; general-implementation-agent's 5-file core bundle was already fully hooked. Conditional-only references (roadmap-format.md, patterns/context-discovery.md, formats/handoff-artifact.md) were deliberately NOT added per the 'genuine unconditional' bar, consistent with the plan's Research Integration finding 3 (context-discovery.md commands[] conversion is optional hygiene, not required)."
+    },
+    {
+      "id": 5,
+      "description": "Verify: schema test, regenerate, measure all three outcomes",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-index-entries-schema.sh: 8 passed / 1 failed, identical pre-existing baseline (unrelated EXTENSION.md fixture). After deploy-headless.sh: planner-agent 10400/15000 OK; general-research-agent 9992/8000 OVER:1992 (expected -- Phase 6's memory-extension fix, not yet applied, still owes 2,832 tok; 9992-2832=7160 matches the report's floor exactly); general-implementation-agent 16688/8000 OVER:8688 (recorded as Phase 7/8 input, per plan instruction). Dead Entry Check: 0. Overall Violations: 6 (down from 7)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
