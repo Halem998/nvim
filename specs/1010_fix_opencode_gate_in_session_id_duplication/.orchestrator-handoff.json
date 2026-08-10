@@ -1,25 +1,31 @@
 {
-  "status": "planned",
-  "summary": "Created a 4-phase plan for the narrow catch-up sync of .opencode/scripts/command-gate-in.sh. The source-store file is already correct, so no source edit is planned; the fix is a verbatim cp from agent-system/extensions/core/scripts/command-gate-in.sh into the stale .opencode/ target. Pre-change test baselines were measured by execution during planning: source-store mode 36 passed / 1 failed with test-common-lib.sh PASSING, deployed mode 27 passed / 7 failed with test-common-lib.sh FAILING on the single offender .opencode/scripts/command-gate-in.sh. The plan's verification gate requires executed run-all.sh runs in both modes, with the deployed FAIL set losing exactly test-common-lib.sh and gaining nothing.",
+  "status": "implemented",
+  "summary": "Completed the narrow catch-up sync of .opencode/scripts/command-gate-in.sh. The source-store file (agent-system/extensions/core/scripts/command-gate-in.sh) was already correct, so no source-store edit was made; the fix was a verbatim `cp` from that source into the stale .opencode/ target, restoring the single-source-of-truth invariant test-common-lib.sh asserts. Phase 1 re-captured pre-change baselines by execution (matched the plan's expected numbers exactly: source-store 36 passed/1 failed/37 total, deployed 27 passed/7 failed/34 total, sole offender .opencode/scripts/command-gate-in.sh). Phase 2 performed the byte-identical copy and verified diff/exec-bit/bash-n/task-reference-lint, committing as task 1010 phase 2. Phase 3 re-ran both run-all.sh invocations and the target suite directly in both locations post-change: source-store unchanged (36/1/37), deployed moved to 28 passed/6 failed/34 total with test-common-lib.sh now Passed:24/Failed:0 (exit 0) in both source-store and deployed locations, and the deployed FAIL set equals the baseline minus exactly test-common-lib.sh with no additions. verify-deploy.sh was also run: overall FAIL (2 of 23 gates), but both failing gates (doc-lint gate 3, manifest content-hash gate 5) are pre-existing and unrelated -- neither references command-gate-in.sh or .opencode/; gate 8 (run-all.sh) itself reports PASS since the 7 baselined deployed-mode failures are known/allowed there.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/1010_fix_opencode_gate_in_session_id_duplication/plans/01_opencode-gate-in-catchup-sync.md",
-      "summary": "4-phase plan: (1) capture pre-change run-all.sh baselines in both modes, (2) verbatim cp of the already-correct source file into .opencode/ with byte-identity, exec-bit, bash -n, and task-reference-lint verification, (3) full gate re-running both suites and diffing FAIL sets against the baseline, (4) record the manual-redeploy rationale and the two out-of-scope spawn candidates."
+      "summary": "4-phase plan, all phases COMPLETED: (1) pre-change baseline capture, (2) verbatim cp catch-up sync with full verification, (3) full post-change verification gate in both modes plus verify-deploy.sh, (4) rationale record and spawn candidates."
+    },
+    {
+      "type": "summary",
+      "path": "specs/1010_fix_opencode_gate_in_session_id_duplication/summaries/01_opencode-gate-in-catchup-sync-summary.md",
+      "summary": "Implementation summary with full executed before/after test evidence for both source-store and deployed modes, the manual-redeploy rationale, and the two spawn candidates."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
   "sorry_inventory": [],
   "continuation_path": null,
   "task_number": 1010,
-  "stage": "plan",
-  "session_id": "sess_1786378789_92e564_1010",
+  "stage": "implement",
+  "session_id": "sess_1786378789_92e564",
   "plan_path": "specs/1010_fix_opencode_gate_in_session_id_duplication/plans/01_opencode-gate-in-catchup-sync.md",
   "report_path": "specs/1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md",
-  "next_command": "/implement 1010",
-  "next_action_hint": "Run /implement 1010. Phase 1 re-captures baselines before any edit; Phase 2 must use cp (not Write/Edit with retyped content) so byte-identity is guaranteed by the copy mechanism.",
+  "summary_path": "specs/1010_fix_opencode_gate_in_session_id_duplication/summaries/01_opencode-gate-in-catchup-sync-summary.md",
+  "next_command": null,
+  "next_action_hint": "Implementation complete. Task 1010 is ready for postflight/status transition. Two spawn candidates were surfaced for the orchestrator to optionally create as new tasks (see spawn_candidates); they were deliberately not folded into this task.",
   "plan_markers_verified": true,
   "measured_baseline": {
     "source_store_mode": {
@@ -44,13 +50,40 @@
       ],
       "test_common_lib": "FAIL",
       "sole_offending_file": ".opencode/scripts/command-gate-in.sh"
-    },
-    "expected_post_change": {
-      "source_store_mode": "unchanged: 36 passed, 1 failed",
-      "deployed_mode": "28 passed, 6 failed (test-common-lib.sh moves to PASS; the other 6 are pre-existing and out of scope)"
     }
   },
-  "out_of_scope_preexisting_failures": "Six deployed-mode failures are pre-existing and unrelated: test-index-entries-schema.sh (also red in source-store mode) plus five path-resolution failures (test-loop-guard-staleness, test-reconcile-handoff-status, test-resume-scan-nonconformance, test-skill-base-lifecycle, test-update-task-status) that all resolve repo-relative paths to /home/benjamin instead of the repo root /home/benjamin/.config/nvim. The plan explicitly forbids chasing them.",
+  "measured_post_change": {
+    "source_store_mode": {
+      "command": "bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet",
+      "summary_line": "[run-all] 36 passed, 1 failed, 0 skipped, 37 total",
+      "fail_set": [
+        "test-index-entries-schema.sh"
+      ],
+      "test_common_lib": "PASS (Passed: 24, Failed: 0)"
+    },
+    "deployed_mode": {
+      "command": "bash .claude/scripts/tests/run-all.sh --quiet",
+      "summary_line": "[run-all] 28 passed, 6 failed, 0 skipped, 34 total",
+      "fail_set": [
+        "test-index-entries-schema.sh",
+        "test-loop-guard-staleness.sh",
+        "test-reconcile-handoff-status.sh",
+        "test-resume-scan-nonconformance.sh",
+        "test-skill-base-lifecycle.sh",
+        "test-update-task-status.sh"
+      ],
+      "test_common_lib": "PASS (Passed: 24, Failed: 0)"
+    },
+    "verify_deploy_sh": {
+      "overall": "FAIL -- 2 of 23 check(s) failed",
+      "gate8_run_all": "PASS -- run-all.sh: all discovered suites passed",
+      "unrelated_failing_gates": [
+        "gate 3 doc-lint: flags unrelated never-deployed scripts (scripts/.zotero-title-sim.py, scripts/tests/generate-test-fixtures.py, scripts/tests/test-literature-convert.sh)",
+        "gate 5 manifest-driven content-hash parity: flags unrelated content drift in scripts/tests/test-corroborate-phase-counts.sh, test-errors-append.sh, test-double-loading-check.sh, test-handoff-reader-parity.sh, test-index-entries-schema.sh, and 12 more -- none reference command-gate-in.sh or .opencode/"
+      ]
+    }
+  },
+  "out_of_scope_preexisting_failures": "Six deployed-mode failures are pre-existing and unrelated: test-index-entries-schema.sh (also red in source-store mode) plus five path-resolution failures (test-loop-guard-staleness, test-reconcile-handoff-status, test-resume-scan-nonconformance, test-skill-base-lifecycle, test-update-task-status) that all resolve repo-relative paths to /home/benjamin instead of the repo root /home/benjamin/.config/nvim. The plan explicitly forbade chasing them; they remain unfixed by design.",
   "spawn_candidates": [
     "Add a headless (non-interactive) redeploy entrypoint for .opencode/, parallel to deploy-headless.sh's .claude/ support -- deploy-headless.sh hardcodes ext_config.claude() even though config.opencode() already exists in lua/neotex/plugins/ai/shared/extensions/config.lua. Without it, .opencode/ can only be redeployed via the interactive Neovim picker.",
     "Resync the full .opencode/scripts/ tree from agent-system/extensions/core/scripts/ -- 38 of 68 top-level scripts are missing, including task-lock.sh, verify-deploy.sh, state-write.sh, and the entire scripts/lib/ subdirectory, so other latent deployed-mode-only failures are likely.",

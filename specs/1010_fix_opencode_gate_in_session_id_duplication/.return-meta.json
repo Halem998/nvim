@@ -1,7 +1,33 @@
 {
-  "status": "in_progress",
-  "task_number": 1010,
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "session_id": "sess_1786378789_92e564"
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/1010_fix_opencode_gate_in_session_id_duplication/summaries/01_opencode-gate-in-catchup-sync-summary.md",
+      "summary": "Implementation summary: verbatim catch-up sync of .opencode/scripts/command-gate-in.sh, with executed before/after test evidence in both source-store and deployed modes, and two spawn candidates."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Restored the single-source-of-truth invariant for .opencode/scripts/command-gate-in.sh via a byte-identical cp from the already-correct source-store file, verified by diff/exec-bit/bash-n/lint checks and a full before/after test-run comparison in both source-store and deployed modes. test-common-lib.sh now passes (Failed: 0) in both modes; deployed run-all.sh moved from 27p/7f to 28p/6f with no new failures introduced."
+  },
+  "modified_files": [
+    ".opencode/scripts/command-gate-in.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo, .opencode/ and .claude/ are both generated deploy targets from the same agent-system/extensions/** source store, driven by config.claude() vs config.opencode() in lua/neotex/plugins/ai/shared/extensions/config.lua. deploy-headless.sh only supports .claude/ (hardcodes ext_config.claude()), so .opencode/ can drift stale with no headless catch-up path -- only the interactive picker or a manual single-file cp can resync it. When a deployed-mode-only test failure traces to .opencode/, check whether the source-store equivalent is already correct before editing; if so, the fix is a verbatim cp, never a hand-authored edit of the deploy target.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1010_fix_opencode_gate_in_session_id_duplication/summaries/01_opencode-gate-in-catchup-sync-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["opencode", "deploy-headless", "source-store", "catch-up-sync", "deploy-target-staleness"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786378789_92e564",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1010
 
 - **Task**: 1010 - Fix opencode gate-in session-id duplication (test-common-lib.sh deployed-mode failure)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md
@@ -315,19 +315,19 @@ direction, the phase is NOT complete — investigate rather than reporting succe
 
 ---
 
-### Phase 4: Record Rationale and Spawn Candidates [NOT STARTED]
+### Phase 4: Record Rationale and Spawn Candidates [COMPLETED]
 
 **Goal**: Leave a durable record of why a generated deploy target was written by hand, and surface
 the two out-of-scope structural gaps as explicit spawn candidates rather than silent debt.
 
 **Tasks**:
-- [ ] In the implementation summary under `specs/1010_.../summaries/`, record: the defect, the
+- [x] In the implementation summary under `specs/1010_.../summaries/`, record: the defect, the
       one-file remedy, the verbatim-copy provenance, and the executed before/after test evidence
-      from Phases 1 and 3.
-- [ ] Record the rationale that this write is a manual redeploy of an unmodified source file, not
+      from Phases 1 and 3. *(completed: 01_opencode-gate-in-catchup-sync-summary.md)*
+- [x] Record the rationale that this write is a manual redeploy of an unmodified source file, not
       a divergence to preserve, so a future full `.opencode/` resync should be a no-op for this
-      file.
-- [ ] Record the two spawn candidates carried forward from research (do not create the tasks here;
+      file. *(completed: in summary's Overview/Decisions and in the phase 2 commit message)*
+- [x] Record the two spawn candidates carried forward from research (do not create the tasks here;
       surface them for the orchestrator):
       1. Add a headless (non-interactive) redeploy entrypoint for `.opencode/`, parallel to
          `deploy-headless.sh`'s `.claude/` support — it hardcodes `ext_config.claude()` even
@@ -336,11 +336,12 @@ the two out-of-scope structural gaps as explicit spawn candidates rather than si
       2. Resync the full `.opencode/scripts/` tree — 38 of 68 top-level scripts are missing,
          including `task-lock.sh`, `verify-deploy.sh`, `state-write.sh`, and the entire
          `scripts/lib/` subdirectory, so other latent deployed-mode failures are likely.
-- [ ] Note, as an observation only, that five of the six remaining deployed-mode failures share a
+- [x] Note, as an observation only, that five of the six remaining deployed-mode failures share a
       single root cause (repo-root path resolution landing on `/home/benjamin` instead of the
-      repo root) and may warrant their own task. Do not fix them here.
-- [ ] Write the orchestrator handoff JSON with the executed verification evidence and the spawn
-      candidates.
+      repo root) and may warrant their own task. Do not fix them here. *(completed: recorded in
+      the summary's Follow-ups section and in the handoff's spawn_candidates)*
+- [x] Write the orchestrator handoff JSON with the executed verification evidence and the spawn
+      candidates. *(completed: .orchestrator-handoff.json)*
 
 **Timing**: 0.2 hours
 
