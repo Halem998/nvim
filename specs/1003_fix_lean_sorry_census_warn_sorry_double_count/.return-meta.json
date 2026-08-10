@@ -1,50 +1,39 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 1 task (#1003) to fix lean-sorry-census.sh double-counting `set_option warn.sorry false in` suppression annotations as phantom sorries, via a negative-lookbehind regex, plus new regression fixture scaffolding and --cross-check verification.",
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 1003,
+  "session_id": "sess_1786342011_4592c8_1003",
+  "findings_count": 9,
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task #1003 added to TODO.md (Task Order wave 1, topic agent-system)"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Task #1003 appended to active_projects; next_project_number bumped to 1004"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/1003_fix_lean_sorry_census_warn_sorry_double_count/",
-      "summary": "Task directory created"
+      "type": "report",
+      "path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md",
+      "summary": "Verifies the warn.sorry double-count root cause (line 144 \\bsorry\\b regex crossing the '.' boundary), independently confirms the (?<![.\\w])sorry\\b fix against 5 discriminating cases including the same-line non-regression case, traces the real sorry_count==0 downstream gate in lean-implementation-agent.md and cslib-implementation-agent.md, and specifies a new toolchain-free regression fixture under a new agent-system/extensions/lean/scripts/tests/ directory."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1786318034_e2b163",
-    "duration_seconds": 420,
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 1,
-    "task_numbers": [1003],
-    "topic": "agent-system",
-    "consolidation_mode": "single_task_no_split",
-    "user_confirmation": "obtained via AskUserQuestion in main session; answer 'Yes, one task'",
-    "confirmation_mechanism_note": "AskUserQuestion is unavailable to this subagent (verified absent from both loaded and deferred tool sets); the confirmation gate was executed by the coordinator in the main session and relayed via SendMessage."
-  },
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/state.json",
-    "/home/benjamin/.config/nvim/specs/TODO.md"
-  ],
-  "warnings": [
+  "memory_candidates": [
     {
-      "type": "advisory",
-      "message": "next_project_number is now 1004, past the 1000 vault-operation threshold. Vault archival (task renumbering by -1000, specs/archive/ -> specs/vault/{NN-vault}/) is pending in this repository.",
-      "recoverable": true,
-      "recommendation": "Run /todo in /home/benjamin/.config/nvim to trigger the vault archival flow. This trigger belongs to /todo, not /meta; task 1003 was created as normal."
+      "content": "In Python regex, \\b (word boundary) fires at any transition between a \\w char and a non-\\w char, including '.'. So \\bsorry\\b matches the 'sorry' inside 'warn.sorry' or any 'foo.sorry' dotted-qualified name -- not just standalone 'sorry' tokens. Fix: use a negative lookbehind excluding '.' and word chars, e.g. (?<![.\\w])sorry\\b, to require the match not be preceded by a dot or another word character. This generalizes to any 'exclude dotted-qualifier false positives from \\b<word>\\b scans' scenario.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["regex", "word-boundary", "python", "dotted-name", "false-positive"]
+    },
+    {
+      "content": "agent-system/extensions/core/scripts/tests/ establishes a repo-wide shell-test convention: set -uo pipefail; pass()/fail()/info() helpers with PASSED/FAILED integer counters; mktemp -d workdir with trap ... EXIT cleanup; synthetic-only fixtures built via heredocs (never touches the real repo tree); exit 0 on all-pass, 1 on any-fail. test-census-count.sh additionally documents an 'anti-vacuous-test guard': every bug-class fixture must assert both the naive/wrong number and the corrected number on the same fixture, so a fixture only a broken implementation would fail is required. Non-core extensions (e.g. lean) currently lack their own scripts/tests/ subdirectory -- new extension-level regression tests should follow this same convention in a new <extension>/scripts/tests/ dir.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["shell-testing", "test-convention", "fixture", "anti-vacuous-test", "extension-scripts"]
+    },
+    {
+      "content": "lean-sorry-census.sh's sorry_count output is a hard implementation-completion gate, not just an informational metric: both lean-implementation-agent.md and cslib-implementation-agent.md require sorry_count == 0 before marking a task implemented, and cslib's pr-description-format.md requires the literal 'sorry_count: 0' string in PR descriptions. Any counting bug in this script (e.g. phantom matches) can therefore falsely block legitimate completions, not merely misreport a number -- worth checking downstream consumers' gating logic whenever auditing a shared census/count script.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["sorry-census", "completion-gate", "downstream-consumers", "lean", "cslib"]
     }
   ],
-  "next_steps": "Run /research 1003 in /home/benjamin/.config/nvim to begin research on the sorry-census regex fix."
+  "next_steps": "Run /plan 1003 to create implementation plan"
 }

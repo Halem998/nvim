@@ -21,7 +21,7 @@ next_project_number: 1007
 
 999 [RESEARCHED] — Reduce the 8 standing per-agent context budget overruns that vali
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-1003 [RESEARCHING] — lean-sorry-census.sh counts every `set_option warn.sorry false in
+1003 [RESEARCHED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
@@ -231,10 +231,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1003. Fix lean-sorry-census.sh double-counting warn.sorry suppression annotations
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md]
 
 **Description**: lean-sorry-census.sh counts every `set_option warn.sorry false in` suppression annotation as a
 phantom extra sorry, on top of the real sorry that annotation exists to suppress. The census is
