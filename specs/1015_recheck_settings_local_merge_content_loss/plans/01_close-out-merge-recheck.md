@@ -225,12 +225,12 @@ occurrence and report the true count in the summary rather than silently fixing 
 
 ---
 
-### Phase 3: State explicit positions on both residual hypotheses [NOT STARTED]
+### Phase 3: State explicit positions on both residual hypotheses [COMPLETED]
 
 **Goal**: Neither residual is left dangling. Each has a written verdict with a reason.
 
 **Tasks**:
-- [ ] Create `specs/decisions/settings-local-merge-content-loss-verdict.md` (this path is under
+- [x] Create `specs/decisions/settings-local-merge-content-loss-verdict.md` (this path is under
       `specs/**`, so task numbers ARE permitted here) capturing:
       - the verdict: 0/12 this round, 0/15 cumulative, named sample size, isolated-scratch-copy
         methodology, positive-control-validated detector;
@@ -238,8 +238,8 @@ occurrence and report the true count in the summary rather than silently fixing 
         `manager.regenerate`, whose failure shape matches the original observation exactly;
       - the writer constraint: `errors-append.sh update` cannot mutate `severity`, so the record
         was closed rather than downgraded, and why closure is the stronger outcome;
-      - both positions below, with their reasoning.
-- [ ] **Position on the concurrency residual: closed as out of scope. No follow-up task.**
+      - both positions below, with their reasoning. *(completed)*
+- [x] **Position on the concurrency residual: closed as out of scope. No follow-up task.**
       Reasoning to record: the fail-open `specs/.deploy-lock` mutex is a *deliberate, documented*
       design choice, not an untracked defect -- it mirrors the `specs/.commit-lock` shape and is
       described in both `deploy-headless.sh` and `batch-orchestration-guardrails.md`, which
@@ -250,8 +250,8 @@ occurrence and report the true count in the summary rather than silently fixing 
       reproduction would be speculative work against an already-documented risk. The hypothesis is
       preserved in writing (Phase 2's known-limitation paragraph plus this record) so a future
       recurrence has a starting point: interleave two `--wipe` runs, or a `--wipe` against a
-      concurrent settings edit, on the same target.
-- [ ] **Position on `err_1786350581240_JyztWt` (ordering nondeterminism, low): stays open,
+      concurrent settings edit, on the same target. *(completed)*
+- [x] **Position on `err_1786350581240_JyztWt` (ordering nondeterminism, low): stays open,
       unchanged, and does NOT fall out of this task.** Reasoning to record: it is real (present in
       all 12 pairs), correctly severity-rated as cosmetic to JSON consumers, and its only
       consequence is defeating a future byte-identical-diff acceptance criterion for deploy
@@ -259,8 +259,10 @@ occurrence and report the true count in the summary rather than silently fixing 
       met* -- which is the honest correction, not a fix. The actual fix (deterministic key/array
       ordering at generation time in the merge/index-build routine) is unchanged in scope and
       remains tracked under its own record's existing `suggested_action`. Do not mark it fixed.
-- [ ] Confirm the working diff contains no edit under `lua/neotex/plugins/ai/shared/extensions/`
-      and no edit to `agent-system/extensions/core/scripts/deploy-headless.sh`.
+      *(completed: verified unfixed via jq after Phase 1's writer call)*
+- [x] Confirm the working diff contains no edit under `lua/neotex/plugins/ai/shared/extensions/`
+      and no edit to `agent-system/extensions/core/scripts/deploy-headless.sh`. *(completed: git
+      status --short shows no such path)*
 
 **Timing**: 0.75 hours
 
