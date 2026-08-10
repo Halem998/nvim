@@ -259,19 +259,19 @@ only, clustered after case 9.5) and by re-reading cases 9.1-9.5 to confirm they 
 
 ---
 
-### Phase 5: Full verification and gate sweep [NOT STARTED]
+### Phase 5: Full verification and gate sweep [COMPLETED]
 
 **Goal**: The complete change set passes the repository's own gates, and the deploy boundary is
 respected and documented.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` in full and record the summary counts.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` (repo-wide lint gate) and confirm zero new findings from the edited files.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm no new failures attributable to this change.
-- [ ] Run `bash .claude/scripts/lint/lint-routing-wiring.sh` and `bash .claude/scripts/lint/lint-agent-contracts.sh` as a regression sweep; both should be unaffected.
-- [ ] Confirm `git status --short` shows changes ONLY under `agent-system/extensions/core/**` and `specs/**` — no `.claude/**` path appears. If any does, revert it; the deployed tree is regenerated, never hand-edited.
-- [ ] Cross-check the final state against the reference: `grep -n 'task-lock.sh acquire' agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` and the three command files now show the same bare-id shape and the same class of inline invariant note.
-- [ ] Record in the implementation summary that the fix becomes live in `.claude/**` only after the next deploy/reload, and that this plan deliberately does not perform or simulate that deploy.
+- [x] Run `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` in full and record the summary counts. *(completed: 32 passed, 0 failed, including new cases 9.6/9.7/9.8)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` (repo-wide lint gate) and confirm zero new findings from the edited files. *(completed: PASS, 0 unexempted occurrences across all 4 scanned trees, exit 0)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm no new failures attributable to this change. *(completed: 3 remaining FAIL items, all traced and none attributable to this change: (1) "deployed script content drift: scripts/test-conflict-predicate.sh" is the expected, unavoidable consequence of editing the source-store script without deploying — exactly what this task's own contingency instructs to record rather than fix by hand-editing `.claude/**`; (2) "script file on disk NOT in provides.scripts: scripts/assess-repo-health.sh" predates this task, introduced by an unrelated already-committed commit outside this task's scope; (3) "index-entries.json entry 'schemas/state-schema.json' line_count mismatch" also predates this task and touches a file this plan never names. A fourth, in-scope finding — "index-entries.json entry 'patterns/task-lock.md' line_count mismatch: declared 1178, actual 1191" — WAS caused by this task's Phase 3 edit (confirmed via git show against the pre-Phase-3 commit: exactly 1178 lines before, 1191 after) and was fixed directly in `agent-system/extensions/core/index-entries.json`, scoped to only that one entry.)*
+- [x] Run `bash .claude/scripts/lint/lint-routing-wiring.sh` and `bash .claude/scripts/lint/lint-agent-contracts.sh` as a regression sweep; both should be unaffected. *(completed: lint-routing-wiring.sh — 323 passed, 0 failed; lint-agent-contracts.sh — 33 passed, 0 warnings, 0 failed; both exit 0, both unaffected by this change)*
+- [x] Confirm `git status --short` shows changes ONLY under `agent-system/extensions/core/**` and `specs/**` — no `.claude/**` path appears. If any does, revert it; the deployed tree is regenerated, never hand-edited. *(completed: confirmed zero `.claude/**` paths in `git status --short`)*
+- [x] Cross-check the final state against the reference: `grep -n 'task-lock.sh acquire' agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` and the three command files now show the same bare-id shape and the same class of inline invariant note. *(completed: confirmed identical bare-`$batch_session_id`/`$session_id` shape and a matching invariant-note class in all four files)*
+- [x] Record in the implementation summary that the fix becomes live in `.claude/**` only after the next deploy/reload, and that this plan deliberately does not perform or simulate that deploy. *(completed: recorded in the summary artifact)*
 
 **Timing**: 30 minutes
 
