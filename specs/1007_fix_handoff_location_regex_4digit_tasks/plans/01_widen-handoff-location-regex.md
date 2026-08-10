@@ -202,19 +202,20 @@ deviation in the implementation summary rather than silently changing the count.
 
 ---
 
-### Phase 3: Register the new suite in the core manifest [NOT STARTED]
+### Phase 3: Register the new suite in the core manifest [COMPLETED]
 
 **Goal**: The new test file is declared in the core extension's deploy allowlist, so it actually
 lands in a deployed repo instead of existing only in the source store.
 
 **Tasks**:
-- [ ] Add `tests/test-validate-handoff-location.sh` to `provides.scripts` in
+- [x] Add `tests/test-validate-handoff-location.sh` to `provides.scripts` in
       `agent-system/extensions/core/manifest.json`, placed adjacent to the other `tests/` entries
-      and matching their exact string form (`tests/`-prefixed, no leading `./`).
-- [ ] Confirm the manifest remains valid JSON.
-- [ ] Re-run the disk-vs-manifest reconciliation that established this allowlist is exhaustive:
+      and matching their exact string form (`tests/`-prefixed, no leading `./`). *(completed)*
+- [x] Confirm the manifest remains valid JSON. *(completed: jq empty succeeds)*
+- [x] Re-run the disk-vs-manifest reconciliation that established this allowlist is exhaustive:
       the set of `tests/*.sh` files on disk and the set declared in `provides.scripts` must be
-      equal, with an empty diff in both directions.
+      equal, with an empty diff in both directions. *(completed: bidirectional comm empty both
+      directions, 28/28)*
 
 **Timing**: 15 minutes
 

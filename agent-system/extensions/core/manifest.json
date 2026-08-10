@@ -182,6 +182,7 @@
       "tests/test-skill-base-lifecycle.sh",
       "tests/test-update-task-status.sh",
       "tests/test-validate-handoff.sh",
+      "tests/test-validate-handoff-location.sh",
       "tests/test-validate-no-task-references.sh",
       "tier-selection.sh",
       "uninstall-extension.sh",

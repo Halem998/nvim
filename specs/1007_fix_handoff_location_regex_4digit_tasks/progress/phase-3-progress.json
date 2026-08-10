@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Register the new suite in the core manifest",
+  "started_at": "2026-08-10T15:55:00Z",
+  "last_updated": "2026-08-10T15:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add tests/test-validate-handoff-location.sh to provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "Confirm manifest remains valid JSON", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run bidirectional disk-vs-manifest reconciliation", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
