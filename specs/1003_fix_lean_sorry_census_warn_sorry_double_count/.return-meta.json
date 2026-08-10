@@ -1,39 +1,27 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
   "task_number": 1003,
+  "agent_type": "planner-agent",
   "session_id": "sess_1786342011_4592c8_1003",
-  "findings_count": 9,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md",
-      "summary": "Verifies the warn.sorry double-count root cause (line 144 \\bsorry\\b regex crossing the '.' boundary), independently confirms the (?<![.\\w])sorry\\b fix against 5 discriminating cases including the same-line non-regression case, traces the real sorry_count==0 downstream gate in lean-implementation-agent.md and cslib-implementation-agent.md, and specifies a new toolchain-free regression fixture under a new agent-system/extensions/lean/scripts/tests/ directory."
+      "type": "plan",
+      "path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/plans/01_fix-warn-sorry-double-count.md",
+      "summary": "Four-phase test-first plan: (1) author agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh with anti-vacuous dual assertions and prove it FAILS against the unfixed script; (2) swap line 144 to (?<![.\\w])sorry\\b and reconcile the two comment lines (11, 96) that name the old pattern, leaving line 5's rejected-grep-chain description and strip_lean_comments()'s body byte-identical; (3) real-corpus before/after differential over ~/Projects/cslib asserting delta == independently-grepped annotation count and no real sorry dropped, with --cross-check as the secondary oracle; (4) repo lint gates and source-store hygiene."
     }
   ],
+  "phase_count": 4,
+  "estimated_hours": 2.5,
+  "dependency_waves": [[1], [2], [3], [4]],
   "memory_candidates": [
     {
-      "content": "In Python regex, \\b (word boundary) fires at any transition between a \\w char and a non-\\w char, including '.'. So \\bsorry\\b matches the 'sorry' inside 'warn.sorry' or any 'foo.sorry' dotted-qualified name -- not just standalone 'sorry' tokens. Fix: use a negative lookbehind excluding '.' and word chars, e.g. (?<![.\\w])sorry\\b, to require the match not be preceded by a dot or another word character. This generalizes to any 'exclude dotted-qualifier false positives from \\b<word>\\b scans' scenario.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["regex", "word-boundary", "python", "dotted-name", "false-positive"]
-    },
-    {
-      "content": "agent-system/extensions/core/scripts/tests/ establishes a repo-wide shell-test convention: set -uo pipefail; pass()/fail()/info() helpers with PASSED/FAILED integer counters; mktemp -d workdir with trap ... EXIT cleanup; synthetic-only fixtures built via heredocs (never touches the real repo tree); exit 0 on all-pass, 1 on any-fail. test-census-count.sh additionally documents an 'anti-vacuous-test guard': every bug-class fixture must assert both the naive/wrong number and the corrected number on the same fixture, so a fixture only a broken implementation would fail is required. Non-core extensions (e.g. lean) currently lack their own scripts/tests/ subdirectory -- new extension-level regression tests should follow this same convention in a new <extension>/scripts/tests/ dir.",
+      "content": "Word-boundary regex bugs in census/count tooling are usually boundary-class bugs, not counting-logic bugs, and the two must be diagnosed separately. In Python/PCRE, \\b fires between a word char and any non-word char including '.', so \\bsorry\\b matches inside dotted-qualified names like warn.sorry or foo.sorry. The fix is a negative lookbehind (?<![.\\w])sorry\\b, NOT a line-level pre-filter that skips lines containing the qualified name -- a skip-filter silently drops a real match riding on the same line as the annotation, converting an overcount into an undercount. Before changing such a matcher, determine whether the surrounding accumulator counts per-line (if re.search(line): total += 1) or per-occurrence (findall): a per-line accumulator makes same-line co-occurrence coincidentally correct today, so a well-intentioned switch to occurrence counting during the same edit reintroduces a double-count. Verification for this bug class must be differential and executed, never inspected: run the old and new matcher over the same real corpus and assert delta equals an independently-grepped count of the confounding token, plus that the post-fix inventory is a strict subset of the pre-fix one.",
       "category": "PATTERN",
-      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["shell-testing", "test-convention", "fixture", "anti-vacuous-test", "extension-scripts"]
-    },
-    {
-      "content": "lean-sorry-census.sh's sorry_count output is a hard implementation-completion gate, not just an informational metric: both lean-implementation-agent.md and cslib-implementation-agent.md require sorry_count == 0 before marking a task implemented, and cslib's pr-description-format.md requires the literal 'sorry_count: 0' string in PR descriptions. Any counting bug in this script (e.g. phantom matches) can therefore falsely block legitimate completions, not merely misreport a number -- worth checking downstream consumers' gating logic whenever auditing a shared census/count script.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["sorry-census", "completion-gate", "downstream-consumers", "lean", "cslib"]
+      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/plans/01_fix-warn-sorry-double-count.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["regex-word-boundary", "census-counting", "negative-lookbehind", "per-line-vs-per-occurrence", "differential-verification", "sorry-census"]
     }
   ],
-  "next_steps": "Run /plan 1003 to create implementation plan"
+  "next_steps": "Run /implement 1003 to execute the plan"
 }

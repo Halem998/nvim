@@ -21,7 +21,7 @@ next_project_number: 1007
 
 999 [PLANNED] — Reduce the 8 standing per-agent context budget overruns that vali
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-1003 [PLANNING] — lean-sorry-census.sh counts every `set_option warn.sorry false in
+1003 [PLANNED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
@@ -231,7 +231,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1003. Fix lean-sorry-census.sh double-counting warn.sorry suppression annotations
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

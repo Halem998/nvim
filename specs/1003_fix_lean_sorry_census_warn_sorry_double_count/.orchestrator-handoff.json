@@ -1,0 +1,61 @@
+{
+  "task_number": 1003,
+  "session_id": "sess_1786342011_4592c8_1003",
+  "stage": "plan",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "plan_path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/plans/01_fix-warn-sorry-double-count.md",
+  "research_inputs": [
+    "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md"
+  ],
+  "phase_count": 4,
+  "estimated_hours": 2.5,
+  "dependency_waves": [[1], [2], [3], [4]],
+  "phases": [
+    {
+      "number": 1,
+      "name": "Write the regression fixture and prove it fails against the unfixed script",
+      "depends_on": [],
+      "verification_tier": "local",
+      "files": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]
+    },
+    {
+      "number": 2,
+      "name": "Apply the regex fix and reconcile the stale pattern references",
+      "depends_on": [1],
+      "verification_tier": "interface",
+      "commit_mode": "per-substep",
+      "files": ["agent-system/extensions/lean/scripts/lean-sorry-census.sh"]
+    },
+    {
+      "number": 3,
+      "name": "Real-corpus differential verification",
+      "depends_on": [2],
+      "verification_tier": "full",
+      "files": []
+    },
+    {
+      "number": 4,
+      "name": "Repository gates and hygiene",
+      "depends_on": [3],
+      "verification_tier": "full",
+      "files": ["agent-system/extensions/lean/README.md", "agent-system/extensions/lean/manifest.json"]
+    }
+  ],
+  "file_scope": [
+    "agent-system/extensions/lean/scripts/lean-sorry-census.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh",
+    "agent-system/extensions/lean/"
+  ],
+  "constraints": [
+    "Edit agent-system/extensions/** only; never write under .claude/**. The lean extension is not loaded in this deploy, so no redeploy step is required or appropriate.",
+    "strip_lean_comments()'s executable body must remain byte-identical; only its docstring text changes.",
+    "Keep the per-line accumulator 'if sorry_re.search(line): total += 1' byte-identical -- do not switch to findall/occurrence counting.",
+    "Do not implement a line-level warn.sorry skip filter; it drops real same-line sorries.",
+    "The new test file is outside specs/**, so it must carry no task-number citations.",
+    "Phase 1's fixture MUST be run against the unfixed script and MUST fail before Phase 2 begins (falsifiability gate)."
+  ],
+  "verification_bar": "Fixture suite exits 1 pre-fix and 0 post-fix; real-corpus differential shows delta == independently-grepped own-line 'set_option warn.sorry false in' count with the post-fix inventory a strict subset of pre-fix; 'cross_check: MATCH' observed via --cross-check on ~/Projects/cslib (Cslib/Logics/Bimodal) or its non-completion recorded as a reasoned exclusion with evidence. Verify by execution, never by inspection.",
+  "next_command": "/implement 1003",
+  "next_steps": "Run /implement 1003 to execute the plan"
+}
