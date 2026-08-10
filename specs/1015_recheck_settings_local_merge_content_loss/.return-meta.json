@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "task_number": 1015,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786386280_bc7e55_1015",
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md",
+      "summary": "12-pair (24-run) empirical re-check of settings.local.json content loss across deploy-headless.sh --wipe, run in an isolated scratch copy: 0/12 reproduction (0/15 cumulative with the prior 3-pair check), all differences pure key/array reordering, no correlation with pre-existing file state/size/order across 6 tested variants; identifies commit 1692e33e8 (restore-before-load ordering fix, 2026-08-05) as the plausible root cause of the original single observation; recommends downgrading err_1786350581208_23mAsn from high to low severity and closing, with a narrower untested concurrent-access hypothesis flagged as residual risk. No merge logic changed (verification-only scope)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "To safely test deploy-headless.sh --wipe (which does rm -rf on a target repo's .claude/) without risking the live deploy tree: cp -a the live .claude/ + .claude-extensions.json + .syncprotect into a scratch dir, `git init` a fresh history-less repo there (only a valid .git dir is required), and pass that scratch dir as TARGET_REPO. No need to copy agent-system/ or lua/ into the scratch copy -- config.claude()'s global_extensions_dir defaults to ~/.config/nvim/agent-system/extensions unconditionally (independent of TARGET_REPO), so the scratch wipe reads the live source store read-only while writing exclusively under its own .claude/. Verified via 24 --wipe invocations against a scratch copy with zero live-tree writes.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless", "wipe", "scratch-copy", "settings-backup", "isolated-testing"]
+    },
+    {
+      "content": "manager.regenerate() in lua/neotex/plugins/ai/shared/extensions/init.lua restores the settings.json/settings.local.json snapshot BEFORE the extension reload loop, not after -- this ordering was fixed in commit 1692e33e8 (\"task 980 phase 5: correct the regenerate sequence\", 2026-08-05). The pre-fix ordering (restore-after-load) would clobber any settings-fragment merge the reload loop had just performed, producing exactly a dropped hooks.PreToolUse block and dropped mcpServers block -- the shape of a historical single observation that did not reproduce across 15 wipe-pairs of re-checking post-fix. Useful root-cause reference if a similar dropped-block report recurs: check whether the checkout predates 1692e33e8 before assuming a new defect.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["settings-merge", "wipe-regenerate", "ordering-bug", "root-cause", "deploy-engine"]
+    },
+    {
+      "content": "Hazard: a blocked Bash tool call (e.g. by the git-add-A guard hook) can prevent an entire multi-step && chain from executing, including an early `cd $TARGET` into a not-yet-created directory. If a later, separate Bash call assumes that cd succeeded (relying on 'working directory persists between commands'), it silently runs in the wrong (often live-repo) cwd instead of erroring loudly. Mitigation: after any command that might be blocked or partially fail, verify the target directory actually exists before chaining further commands against it; prefer `git -C <path>` and absolute paths over relying on a prior `cd` having succeeded, especially when constructing scratch/test environments.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash-safety", "cd-hazard", "git-add-a-guard", "scratch-environment", "hook-blocking"]
+    }
+  ],
+  "next_steps": "No implementation plan needed: 0/15 cumulative reproduction across two re-check rounds. Recommended next action is to downgrade err_1786350581208_23mAsn from high to low severity (citing this report's sample size and the commit-1692e33e8 root-cause finding) and close it; /plan 1015 is available if a maintainer prefers a formal plan for that housekeeping step instead of a direct errors.json edit."
+}
