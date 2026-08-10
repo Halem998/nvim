@@ -1,7 +1,48 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 1015,
-  "session_id": "sess_1786386280_bc7e55",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/1015_recheck_settings_local_merge_content_loss/summaries/01_close-out-merge-recheck-summary.md",
+      "summary": "Close-out summary: closed err_1786350581208_23mAsn via the sanctioned writer, corrected the falsified byte-identical claim and added a measured round-trip-fidelity subsection to regeneration-is-manual-only.md, and wrote a decision record stating explicit positions on the concurrency residual (closed, out of scope) and err_1786350581240_JyztWt (stays open, unfixed)."
+    },
+    {
+      "type": "decision",
+      "path": "specs/decisions/settings-local-merge-content-loss-verdict.md",
+      "summary": "Decision record: 0/15 cumulative non-reproduction verdict, candidate root cause (commit 1692e33e8), writer-constraint rationale for closure over downgrade, and both residual positions."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed err_1786350581208_23mAsn via errors-append.sh update (--fix-status fixed --fix-task 1015) after re-confirming the update subcommand cannot mutate severity; corrected the falsified byte-identical claim in regeneration-is-manual-only.md and added a measured round-trip-fidelity subsection (0/15 cumulative, six state variants, positive-control-validated detector); wrote specs/decisions/settings-local-merge-content-loss-verdict.md stating the concurrency residual is closed as out of scope and err_1786350581240_JyztWt stays open, unfixed. No merge, backup, restore, or deploy logic was touched -- reproduction was not established."
+  },
+  "modified_files": [
+    "specs/errors.json",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/decisions/settings-local-merge-content-loss-verdict.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a close-out/re-check task's originating instruction asks to 'downgrade severity' on an errors.json record but the sanctioned writer (errors-append.sh update) only accepts --id/--fix-status/--fixed-date/--fix-task with no severity mutation path, close the record instead of downgrading it (--fix-status fixed --fix-task N). A closed record is out of triage regardless of its historical severity stamp, so closure is a strictly stronger substitute -- it delivers the requested outcome (stop surfacing as open) without widening a flock-disciplined, schema-validated writer's mutation surface for one bookkeeping wish. Always re-read the writer's argument parser at implementation time rather than trusting a plan's prior reading, since the constraint is easy to get wrong from documentation alone.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/summaries/01_close-out-merge-recheck-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["errors-append", "close-out", "severity-downgrade", "sanctioned-writer", "fix_status"]
+    },
+    {
+      "content": "A documentation claim of byte-identical preservation across a destructive regenerate/restore cycle (e.g. --wipe preserving settings.local.json) should be verified with both a semantic comparison (jq -S recursively sorted then hashed) AND a structural presence check validated against a positive control (synthetic deletion of the exact blocks being checked, confirming the detector actually flags loss) before trusting a zero-result. Lua pairs() iteration nondeterminism across process runs commonly produces byte-level reordering that is easy to mistake for content loss on a naive raw diff; the semantic/structural split cleanly separates 'reordered' from 'dropped'.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/summaries/01_close-out-merge-recheck-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["jq-S", "positive-control", "round-trip-fidelity", "pairs-nondeterminism", "structural-detector"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786386280_bc7e55",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  }
 }
