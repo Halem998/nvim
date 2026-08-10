@@ -1,7 +1,7 @@
 # Implementation Plan: Convert surviving extension state.json writers to state-write.sh
 
 - **Task**: 995 - Convert surviving extension state.json writers to state-write.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: 983 (skill-skeleton collapse, COMPLETED/archived), 984 (state schema/status vocabulary, COMPLETED)
 - **Research Inputs**: specs/995_convert_extension_state_writers_to_state_write/reports/01_convert-extension-state-writers.md
@@ -512,22 +512,28 @@ gate-12-adjacent residual — except this residual is gate 8, pre-existing and o
 
 ---
 
-### Phase 10: Verification bar [NOT STARTED]
+### Phase 10: Verification bar [COMPLETED]
 
 **Goal**: Satisfy all three of the task's stated verification criteria and record the evidence.
 
 **Tasks**:
-- [ ] Full-source-store grep for a hand-rolled write outside `state-write.sh` returns zero,
+- [x] Full-source-store grep for a hand-rolled write outside `state-write.sh` returns zero,
       modulo the enumerated exclusion list — report the result WITH the exclusion list, never as
-      an unqualified "zero hits".
-- [ ] Dry-run smoke test: exercise one converted founder skill write path and one converted
+      an unqualified "zero hits". *(completed: 19 raw hits, all evidenced — see summary)*
+- [x] Dry-run smoke test: exercise one converted founder skill write path and one converted
       present skill write path via `state-write.sh --dry-run`, confirming the filter and bindings
-      validate.
-- [ ] Confirm the `$CSLIB_STATE` site by reading the file, not by grep, per the documented lint
-      limitation.
-- [ ] Re-run the lint fixture test (fails dirty, passes clean) and the full `verify-deploy.sh`.
-- [ ] Record the two deferred follow-ups in the summary: the `base_branch`/`forcing_data` schema
+      validate. *(completed: skill-market and skill-budget filters both validated cleanly)*
+- [x] Confirm the `$CSLIB_STATE` site by reading the file, not by grep, per the documented lint
+      limitation. *(completed: read skill-pr-implementation/SKILL.md Stage 7 directly; no
+      `CSLIB_DIR`/`CSLIB_STATE` reference remains)*
+- [x] Re-run the lint fixture test (fails dirty, passes clean) and the full `verify-deploy.sh`.
+      *(completed: fixture test 8/8 pass; verify-deploy.sh 22/23 checks pass, gate 12 passes
+      cleanly — see Phase 9's Reasoned Exclusions for the one pre-existing, unrelated gate-8
+      residual)*
+- [x] Record the two deferred follow-ups in the summary: the `base_branch`/`forcing_data` schema
       non-conformance, and any variable-indirected write class the lint cannot cover.
+      *(completed, plus a third newly-discovered follow-up recorded: the pre-existing gate-8
+      REPO_ROOT path-depth defect)*
 
 **Timing**: 0.75 hours
 
@@ -550,15 +556,17 @@ Phase 1 exclusion classification. A hit not on that list is a failure, not a new
 
 ## Testing & Validation
 
-- [ ] Per-extension directory grep returns zero after each conversion phase (Phases 2-7).
-- [ ] `bash -n` passes on every bash fence extracted from every edited markdown file.
-- [ ] `test-lint-state-writer-boundary.sh` passes: non-zero exit on the dirty fixture, zero on
+- [x] Per-extension directory grep returns zero after each conversion phase (Phases 2-7).
+- [x] `bash -n` passes on every bash fence extracted from every edited markdown file.
+- [x] `test-lint-state-writer-boundary.sh` passes: non-zero exit on the dirty fixture, zero on
       the clean fixture.
-- [ ] `verify-deploy.sh` passes end to end, including the new gate 12.
-- [ ] `state-write.sh --dry-run` validates one converted founder and one converted present write
+- [x] `verify-deploy.sh` passes end to end, including the new gate 12. *(deviation: gate 12
+      itself passes; overall run carries one pre-existing, unrelated gate-8 residual — see Phase
+      9's Reasoned Exclusions)*
+- [x] `state-write.sh --dry-run` validates one converted founder and one converted present write
       path.
-- [ ] `skill-pr-implementation/SKILL.md` contains no `CSLIB_DIR`/`CSLIB_STATE` reference.
-- [ ] Full-source-store grep returns zero modulo the enumerated, evidenced exclusion list.
+- [x] `skill-pr-implementation/SKILL.md` contains no `CSLIB_DIR`/`CSLIB_STATE` reference.
+- [x] Full-source-store grep returns zero modulo the enumerated, evidenced exclusion list.
 
 ## Artifacts & Outputs
 
