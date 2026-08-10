@@ -19,6 +19,36 @@ TODO.md is generated from state.json. Agents update state.json only; `generate-t
   - Status markers in brackets: [STATUS]
   - Single `## Tasks` section (new tasks prepended at top)
 
+## Artifacts Are Append-Only (With Same-Type Supersession)
+
+`active_projects[].artifacts` is **append-only during the task lifecycle** — the same phrasing
+the schema already uses for `memory_candidates`, and the two fields should be read as one
+concept. The one sanctioned exception is **same-type 1-for-1 supersession**: every current
+writer (`skill_link_artifacts` in `skill-base.sh`, `orchestrator-postflight.sh` Stage 8,
+`link_artifact` in `reconcile-task-status.sh`, and `skill-reviser/SKILL.md` Stage 8) removes all
+existing entries of the incoming artifact's `type` before adding the one new entry — a "latest
+pointer" swap for `report`/`plan`/`summary` links, not a bulk deletion.
+
+**Wholesale `.artifacts = [...]` assignment is prohibited.** An agent updating `specs/state.json`
+directly must append via `+=`, or call the sanctioned helper (`skill_link_artifacts` or
+equivalent) — never replace the array outright. Replacing the array silently discards every
+artifact link not re-included in the replacement, even though the underlying files remain on
+disk.
+
+**Enforcement mechanism**: `validate-state.sh --deep` checks, per `project_number` and per
+artifact `type`, that the count of paths removed relative to the prior git-committed version does
+not exceed the count of paths added — a FAIL-level finding on any pair that violates this. A
+genuine, intentional deletion is expressible via the repeatable
+`--allow-artifact-removal <project_number>[:<type>]` opt-in flag on the validator; every
+suppressed finding is still logged, never silent.
+
+**Known limitation**: enforcement is periodic, not write-time. It runs only when
+`validate-state.sh --deep` is invoked (currently via `verify-deploy.sh`'s gate 10), so a lossy
+direct-`jq` write can still land between validation passes, and a subsequent legitimate commit
+moves the comparison baseline forward, potentially hiding an earlier loss from a later diff. This
+trade-off is accepted rather than closed by this rule; closing it fully would require a
+synchronous (write-time) enforcement path, which is out of scope here.
+
 ## Status Transitions
 
 ### Permissive Model
