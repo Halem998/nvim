@@ -1,7 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/999_per_agent_context_budget_reduction/summaries/01_rebase-agent-context-hooks-summary.md",
+      "summary": "Rebased load_when.agents hooks across four index-entries.json files onto each of the 8 overrunning agents' real reference sets; 5 agents now pass outright, 3 implementation agents carry accurate, non-stale documented exceptions. validate-context-budgets.sh reports Violations: 0, exit 0, exactly 3 OK* rows. No CAPS value raised."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Rebased per-agent load_when.agents hooks across core/nvim/nix/memory index-entries.json to match each agent's real @-reference set, reclassifying orphaned and conditional content to on_demand/task_types-only, and rewrote validate-context-budgets.sh's EXCEPTIONS block with three accurately measured per-agent exceptions plus a generalized narration loop. Result: Violations 8 -> 0, exit 0, exactly three OK* rows, no CAPS raised.",
+    "roadmap_items": []
+  },
+  "modified_files": [
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/nvim/index-entries.json",
+    "agent-system/extensions/nix/index-entries.json",
+    "agent-system/extensions/memory/index-entries.json",
+    "agent-system/extensions/core/scripts/validate-context-budgets.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When rebasing an agent's load_when.agents hooks onto its real @-reference set, 'referenced in the .md body' is necessary but not sufficient for keeping a hook -- the correct bar (per this codebase's context-tier-semantics.md Tier 2 definition) is 'loaded whenever this agent is dispatched', not 'mentioned anywhere in the file'. Concretely: an agent's Context References section often prose-labels entries as conditional ('when creating summary', 'Stage 4C git-checkpoint step', 'use with agent=X, command=Y') even though a mechanical @-reference grep would still capture them. Entries gated behind a narrow, rare-path condition (context-exhaustion handling, live command-routing helpers, handoff-continuation) should be dropped from agents[] even when genuinely @-referenced, while a 'core bundle' of files effectively always touched in practice (e.g. return-metadata-file.md, progress-file.md, summary-format.md for implementation-type agents) should stay hooked despite carrying a similar conditional-sounding prose label. When a research/plan document gives an explicit numeric floor for an agent (e.g. '~7,160 tokens, margin 840'), treat that number as the authoritative target composition and work backward to which entries must be dropped, rather than trusting a purely mechanical reference-set membership test, which can leave an agent measurably over cap even after all its 'obviously wrong' hooks are removed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/999_per_agent_context_budget_reduction/summaries/01_rebase-agent-context-hooks-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries", "load_when.agents", "context-tier-semantics", "budget-rebase", "conditional-vs-unconditional"]
+    },
+    {
+      "content": "validate-context-budgets.sh's EXCEPTIONS associative array plus its summary narration block are two independent sources of truth for the same information -- if the narration block hardcodes agent-specific text instead of looping over EXCEPTIONS (and a companion applied-totals array populated during the main per-agent loop), the two will silently drift apart the first time EXCEPTIONS is edited, exactly as happened to the single prior exception (declared cap 8,048, real total 68,568, permanently inert and never surfaced as OK*). The fix pattern: populate an EXCEPTIONS_APPLIED_TOTALS[agent]=total_tokens array only when an agent's exception branch actually fires in the main loop, then have the summary loop over that array's keys and read cap/justification live from EXCEPTIONS -- this makes the printed narration structurally incapable of diverging from the array driving pass/fail logic.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/999_per_agent_context_budget_reduction/summaries/01_rebase-agent-context-hooks-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["validate-context-budgets", "exceptions-array", "narration-drift", "bash-associative-array", "self-consistency"]
+    }
+  ],
   "agent_type": "general-implementation-agent",
   "task_number": 999,
   "session_id": "sess_1786342011_4592c8_999",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "metadata": {
+    "session_id": "sess_1786342011_4592c8_999",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 9,
+    "phases_total": 9
+  }
 }

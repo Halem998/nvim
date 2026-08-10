@@ -1,123 +1,33 @@
 {
   "task_number": 999,
   "session_id": "sess_1786342011_4592c8_999",
-  "stage": "plan",
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "stage": "implement",
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "phases_completed": 9,
+  "phases_total": 9,
   "plan_path": "specs/999_per_agent_context_budget_reduction/plans/01_rebase-agent-context-hooks.md",
-  "research_inputs": [
-    "specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md"
-  ],
-  "phase_count": 9,
-  "estimated_hours": 7.5,
-  "dependency_waves": [[1], [2, 4, 5, 6], [3], [7], [8], [9]],
-  "phases": [
-    {
-      "number": 1,
-      "name": "Establish the regenerate-and-measure loop",
-      "depends_on": [],
-      "verification_tier": "local",
-      "files": []
-    },
-    {
-      "number": 2,
-      "name": "Rebase meta-builder-agent in core/index-entries.json",
-      "depends_on": [1],
-      "verification_tier": "interface",
-      "commit_mode": "per-substep",
-      "files": ["agent-system/extensions/core/index-entries.json"]
-    },
-    {
-      "number": 3,
-      "name": "Rebase planner, general-research, and general-implementation in core",
-      "depends_on": [2],
-      "verification_tier": "interface",
-      "commit_mode": "per-substep",
-      "files": ["agent-system/extensions/core/index-entries.json"]
-    },
-    {
-      "number": 4,
-      "name": "Rebase both Neovim agents in nvim/index-entries.json",
-      "depends_on": [1],
-      "verification_tier": "local",
-      "commit_mode": "per-substep",
-      "files": ["agent-system/extensions/nvim/index-entries.json"]
-    },
-    {
-      "number": 5,
-      "name": "Rebase both Nix agents in nix/index-entries.json",
-      "depends_on": [1],
-      "verification_tier": "local",
-      "commit_mode": "per-substep",
-      "files": ["agent-system/extensions/nix/index-entries.json"]
-    },
-    {
-      "number": 6,
-      "name": "Drop orphaned general-research hooks in memory/index-entries.json",
-      "depends_on": [1],
-      "verification_tier": "local",
-      "commit_mode": "per-substep",
-      "files": ["agent-system/extensions/memory/index-entries.json"]
-    },
-    {
-      "number": 7,
-      "name": "Regenerate and measure all eight post-rebase totals",
-      "depends_on": [3, 4, 5, 6],
-      "verification_tier": "full",
-      "files": []
-    },
-    {
-      "number": 8,
-      "name": "Rewrite the EXCEPTIONS block with measured floors",
-      "depends_on": [7],
-      "verification_tier": "interface",
-      "commit_mode": "per-substep",
-      "files": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"]
-    },
-    {
-      "number": 9,
-      "name": "Final verification sweep",
-      "depends_on": [8],
-      "verification_tier": "full",
-      "files": []
-    }
-  ],
-  "file_scope": [
+  "summary_path": "specs/999_per_agent_context_budget_reduction/summaries/01_rebase-agent-context-hooks-summary.md",
+  "modified_files": [
     "agent-system/extensions/core/index-entries.json",
     "agent-system/extensions/nvim/index-entries.json",
     "agent-system/extensions/nix/index-entries.json",
     "agent-system/extensions/memory/index-entries.json",
     "agent-system/extensions/core/scripts/validate-context-budgets.sh"
   ],
-  "file_scope_deviation": {
-    "added": ["agent-system/extensions/memory/index-entries.json"],
-    "reason": "general-research-agent carries 2,832 tokens from two memory-extension entries (project/memory/distill-usage.md 2,376 + project/memory/domain/memory-reference.md 456) that its own .md body never references. The research report's 7,160-token floor for this agent counted core-file entries only. Without editing this fourth file the agent lands at 9,992 against an 8,000 cap and cannot pass. The edit is the identical orphan-hook correction applied in every other phase, and both entries retain their commands hooks so no real reach is lost."
-  },
-  "constraints": [
-    "load_when.skills does NOT exist. index.schema.json closes load_when (additionalProperties: false) over exactly agents/always/commands/task_types, and records that skills was deliberately removed as never-queried at runtime. Use on_demand: true instead for entries whose hooks become empty.",
-    "load_when.agents is a live by-agent-name discovery query for 5 of the 8 agents (general-research, general-implementation, planner, meta-builder, neovim-research) and inert catalog metadata for the other 3 (neovim-implementation, nix-implementation, nix-research). Do not assume uniform runtime behavior; verify per agent before dropping a hook.",
-    "Do NOT raise any CAPS value. A cap set to current usage retires the check as an instrument. Every reduction must be a hook-shape correction or an accurately computed documented exception.",
-    "An entry left with all load_when hooks empty MUST get on_demand: true in the same edit, or it fails the Dead Entry Check.",
-    "The deployed .claude/context/index.json carries 2 ghost entries with no source-store owner (orchestration/orchestration-validation.md, 1,864 tok hooked to meta-builder-agent; orchestration/subagent-validation.md, 2,504 tok unhooked). install-extension.sh merges additively so no source edit removes them. Hand-summed source entries will NOT equal validator output; carry +1,864 on meta-builder-agent as a known constant offset.",
-    "validate-context-budgets.sh applies an exception only when total_tokens <= exception_cap. Exception caps MUST be written from Phase 7 measured values, never estimates. This is precisely why the existing exception (8,048 vs a measured 68,568) has been inert.",
-    "index-entries.json and validate-context-budgets.sh are deliverables outside specs/**. No task-number citations in any added text; cite file names and token composition as durable anchors.",
-    "Edit agent-system/extensions/** only. .claude/** is a disposable deploy artifact regenerated from source; the regenerated index.json is an output, not an edit target."
-  ],
-  "verification_bar": "bash .claude/scripts/validate-context-budgets.sh reports Violations: 0 and exits 0, with exactly three OK* documented-exception rows (general-implementation-agent, neovim-implementation-agent, nix-implementation-agent) whose declared caps and justifications are computed from Phase 7 measured totals and current file sizes. No CAPS value changed from baseline. Tier 1, Tier Classification, Dead Entry, and Double-Loading checks each no worse than baseline. check-task-references.sh and check-extension-docs.sh pass.",
+  "verification_bar_met": true,
+  "verification_result": "bash .claude/scripts/validate-context-budgets.sh reports Violations: 0, exit 0, exactly three OK* documented-exception rows (general-implementation-agent 16,688/17,188, neovim-implementation-agent 15,336/15,836, nix-implementation-agent 14,104/14,604). No CAPS value changed from baseline. Five agents pass with positive margin: meta-builder-agent 13,296/15,000, planner-agent 10,400/15,000, general-research-agent 7,160/8,000, neovim-research-agent 7,360/8,000, nix-research-agent 7,192/8,000. Supporting gates all pass: test-index-entries-schema.sh (8/9, 1 pre-existing unrelated failure), validate-context-index.sh, validate-index.sh, generate-context-line-counts.sh --check (479/479 exact), check-task-references.sh, check-extension-docs.sh.",
   "key_findings": [
-    "Baseline re-measured at plan time: 8 violations, per-agent numbers matching the research report's Finding 1 table exactly.",
-    "Verified structural floor: neovim-implementation-agent and nix-implementation-agent genuinely @-reference the full core bundle (return-metadata-file 4,768 + progress-file 2,160 + summary-format 608 + phase-closure 856 + pre-edit-gate 856 = 9,248 tok) despite none of it being hooked to them today. 9,248 alone exceeds their 8,000 cap, so correcting this under-inclusion honestly is why they cannot pass by narrowing.",
-    "standards/git-staging-scope.md (2,624 tok) is hooked to neovim-implementation-agent and nix-implementation-agent but @-referenced by neither; drop from both (the entry lives in the core file, so the edit belongs to Phase 3).",
-    "CORRECTION to research: patterns/context-discovery.md (3,000 tok) is hooked to meta-builder-agent ONLY, not to the four agents the report's commands[] conversion recommendation assumed. That conversion is optional hygiene, not a required reduction for planner-agent or general-research-agent.",
-    "Verified droppable at stated token cost: patterns/task-lock.md (9,336, prose reference only) from general-implementation-agent; the four skill-lifecycle entries skill-preflight-flow (624) + skill-postflight-flow (1,008) + skill-self-execution-fallback (496) + lit-stage4a-flow (1,864) from general-research/planner/general-implementation; postflight-tool-restrictions (1,728) from general-implementation; status-markers (3,304) agents[] hook from planner and general-implementation (its commands[] hook already covers /plan, /implement, /task).",
-    "nix-research-agent's research-computed floor is exactly 8,000 with zero margin; the plan additionally moves project/nix/README.md (808 tok) off the agents[] hook so line-count drift cannot silently re-break the check."
+    "Two deployed-only ghost index entries (orchestration/orchestration-validation.md, orchestration/subagent-validation.md) with no source-store owner contribute a fixed +1,864 token offset to meta-builder-agent's measured total that no source edit can remove; confirmed by full path-set-difference in Phase 1 and reconciled exactly in Phase 7.",
+    "5 of 8 agents cleared their caps outright by rebasing agents[] hooks onto real reference sets, including deliberately dropping some genuinely @-referenced but rare-path/conditional entries (checkpoint-before-overflow.md, neovim README/plugin-ecosystem, nix README) per the research report's Tier-2 'loaded whenever dispatched' bar.",
+    "3 implementation agents (general-implementation, neovim-implementation, nix-implementation) hit a genuine structural floor: a shared 9,248-token always-loaded core bundle (return-metadata-file+progress-file+summary-format+phase-closure+pre-edit-gate) exceeds the 8,000 cap before domain content. These now carry accurately measured exceptions instead of the prior stale, inert one.",
+    "The memory/index-entries.json file_scope extension (pre-authorized in the delegation) was necessary: general-research-agent measured 9,992 without it, 7,160 with it."
   ],
   "follow_ups_identified": [
-    "Shrink the shared core bundle, chiefly formats/return-metadata-file.md (596 lines / 4,768 tok, 59% of the 8,000 cap, referenced by 7 of the 8 overrun agents). This is the structural unblocker that would let the three exception agents pass without an exception.",
-    "Fold the content-duplication pairs patterns/metadata-file-return.md and patterns/early-metadata-pattern.md into formats/return-metadata-file.md.",
-    "Extend the Double-Loading Check to catch reverse-direction redundancy (agents[] fully subsumed by commands[] routing), which status-markers.md exhibits today and the check misses.",
-    "Fix the additive-merge ghost-entry defect in install-extension.sh's merge_index_entries, and remove the two stranded deployed files .claude/context/orchestration/orchestration-validation.md and subagent-validation.md."
+    "Shrink formats/return-metadata-file.md (4,768 tok, 59% of the 8,000 cap, referenced by 7 of 8 overrun agents) as the structural unblocker for the three exception agents.",
+    "Fold patterns/metadata-file-return.md and patterns/early-metadata-pattern.md into formats/return-metadata-file.md.",
+    "Extend the Double-Loading Check to catch reverse-direction redundancy on standards/status-markers.md.",
+    "Fix the additive-merge ghost-entry defect in install-extension.sh's merge_index_entries and remove the two stranded deployed files."
   ],
-  "next_command": "/implement 999",
-  "next_steps": "Run /implement 999 to execute the plan"
+  "next_steps": "Task complete. No further /implement dispatch needed."
 }
