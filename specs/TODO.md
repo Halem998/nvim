@@ -1,5 +1,5 @@
 ---
-next_project_number: 21
+next_project_number: 22
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 21
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 5,11,12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 5,11,12,14,16,17,18,19,20,21 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 6,9,13 | 5,17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -28,6 +28,7 @@ next_project_number: 21
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
+21 [NOT STARTED] — /todo and skill-todo both instruct the vault path to hand-insert 
 
 ### Extensions
 
@@ -38,6 +39,68 @@ next_project_number: 21
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
 
 ## Tasks
+
+### 21. Vault transition comment is wiped by TODO.md regeneration, corrupts frontmatter where it runs
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: /todo and skill-todo both instruct the vault path to hand-insert an HTML transition comment into specs/TODO.md, but generate-todo.sh regenerates that file wholesale, so the comment is wiped by the next regeneration. The instruction is also actively harmful where it does run: as written it corrupts the YAML frontmatter and duplicates itself. Decide the correct resolution and apply it consistently.
+
+THE DECISION IS ALREADY ON RECORD -- this is a re-regression, not a new finding. The archived summary at
+    specs/vault/01-vault/archive/653_update_task_creation_commands_state_first/summaries/01_task-creation-migration-summary.md
+states under Decisions:
+    "Vault transition comment: Removed the Python script that inserted HTML comments into TODO.md frontmatter. Since generate-todo.sh regenerates the entire file, vault transition info is preserved in state.json's vault_history array instead."
+That earlier work removed the SCRIPT but left the PROSE INSTRUCTION in place, so the behavior was re-specified in the two live documents that callers actually follow. Treat that recorded decision as strong prior art; if the resolution chosen here differs from it, say why explicitly rather than silently diverging a second time.
+
+MEASURED EVIDENCE (live, this investigation -- do not re-derive):
+
+(1) The comment does not survive. A vault run inserted the documented comment after TODO.md's frontmatter; the very next state-write with --regen-todo removed it. generate-todo.sh treats TODO_FILE purely as an output target -- it is referenced only as a default path, an argument, an mktemp sibling, and the destination of `mv "$TEMP_FILE" "$TODO_FILE"`. There is no read of the existing file anywhere, so nothing hand-written into TODO.md can persist by construction.
+
+(2) The skill's insertion corrupts the frontmatter AND double-inserts. Running skill-todo's exact sed against a real 3-line frontmatter (---, next_project_number: N, ---) produced:
+    ---
+    next_project_number: 20
+    <!-- Vault transition: ... -->
+    ---
+
+    <!-- Vault transition: ... -->
+    # TODO
+The range /^---$/,/^---$/ matches the closing delimiter as well as the opening one, so `a` fires twice: once after the line following the opening --- (placing an HTML comment INSIDE the YAML block, which is not valid YAML) and once after the closing ---. Any consumer that parses TODO.md frontmatter strictly would see a malformed block.
+
+(3) The computed task range is wrong. skill-todo derives the range as $((next_num - renumber_count - 1)). With this run's real values (next_num 1020, renumber_count 11) that yields 1008, so the comment would have claimed "tasks numbered 1 through 1008 archived" -- but the vault actually contains everything through 1015, and 1008 is not the renumbering boundary either. The number describes nothing.
+
+LIVE SITES (both in the source store, both currently instructing the broken behavior):
+  agent-system/extensions/core/commands/todo.md:893-898  (Step 5.8.9)
+  agent-system/extensions/core/skills/skill-todo/SKILL.md:877-890  (the sed block)
+
+DURABLE RECORDS THAT ALREADY EXIST (the reason deletion is viable):
+  specs/state.json .vault_history[] -- {vault_number, vault_dir, created_at}
+  specs/vault/{NN}-vault/meta.json -- {vault_number, created_at, archived_count, final_task_number}
+Both were written correctly by the vault run that exposed this, so no information is lost today if the comment goes away.
+
+PRECEDENT FOR THE RESOLUTION SHAPE: commands/todo.md Step 5.6.2 already documents this same overwrite property as the reason repository_health lives in state.json only and is deliberately NOT mirrored into TODO.md frontmatter. Whatever is decided here should be consistent with that existing, already-reasoned stance.
+
+WORK -- evaluate these and pick one, recording the reasoning:
+  (a) Delete the step from both live sites and rely on vault_history + meta.json. Matches the recorded decision, removes machinery, loses the at-a-glance signal in TODO.md.
+  (b) Render the transition line from state.json .vault_history inside generate-todo.sh, so it is generated rather than hand-inserted and therefore survives every regeneration. Keeps a user-visible signal; costs a new rendering branch and a test.
+  (c) Make generate-todo.sh preserve hand-authored comments across regeneration. Note that this contradicts the deliberate full-overwrite, atomic mktemp+mv design and would reintroduce read-modify-write; if rejected, say so rather than leaving it unconsidered.
+Whichever is chosen, no live document may be left instructing a caller to hand-edit TODO.md for vault transitions.
+
+ALSO IN SCOPE (adjacent, cheap, same section): commands/todo.md's vault section is headed "5.7. Vault Operation" while all nine of its substeps are numbered 5.8.1 through 5.8.9. Reconcile the numbering so a reader following a cross-reference to "Step 5.7" finds substeps that match.
+
+SCOPE DECISIONS REQUIRED (state each explicitly, do not silently skip):
+  - agent-system/extensions/core/scripts/deprecated/vault-operation.sh:242 carries the same comment logic but is quarantined under deprecated/. Confirm it stays untouched rather than "fixed".
+  - Five .opencode/** copies carry the same instruction (.opencode/commands/todo.md, .opencode/extensions/core/commands/todo.md, .opencode/skills/skill-todo/SKILL.md, .opencode/extensions/core/skills/skill-todo/SKILL.md, .opencode/scripts/vault-operation.sh). .opencode/ has no agent-system source and is separately tracked, and separate work already covers opencode drift. Decide whether these are updated here or deferred there, and record which -- leaving five unlabeled copies of a known-broken instruction is not an acceptable outcome.
+
+ACCEPTANCE: a vault operation followed immediately by a TODO.md regeneration leaves the file in the intended end state -- either no transition comment at all with the durable records present, or a comment that regeneration reproduces identically. specs/TODO.md's frontmatter must still parse as a closed, valid YAML block afterward; demonstrate this by parsing it, not by eyeballing. Grep the live (non-deprecated) source store for the transition-comment string and report the surviving count with justification for each survivor.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+FILE OVERLAP: separately-tracked work on the repository-metrics sync ordering also edits agent-system/extensions/core/commands/todo.md. Neither task depends on the other, but they touch the same file and should not run concurrently without re-reading it.
+
+---
 
 ### 20. Metrics sync measures a stale git index, inflating build_errors with phantom paths
 - **Status**: [NOT STARTED]
