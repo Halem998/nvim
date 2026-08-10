@@ -28,6 +28,11 @@
           "path": "specs/1016_fix_command_register_acquire_session_id_parity/plans/01_register-acquire-parity-fix.md",
           "type": "plan",
           "summary": "Five-phase plan unifying the batch session-id across session-register/acquire-retry/release in research.md, plan.md, implement.md; correcting the inline rationalization prose; threading the bare batch id into implement.md's per-task skill dispatch to fix the Stage 4D dual-heartbeat gap; reconciling task-lock.md's contradictory same-session-bypass passage; and extending test-conflict-predicate.sh Group 9 with sibling static guards."
+        },
+        {
+          "path": "specs/1016_fix_command_register_acquire_session_id_parity/summaries/01_register-acquire-parity-fix-summary.md",
+          "type": "summary",
+          "summary": "Register/acquire session-id parity fix"
         }
       ]
     },

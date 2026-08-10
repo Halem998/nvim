@@ -129,6 +129,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [1016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md]
 - **Plan**: [1016_fix_command_register_acquire_session_id_parity/plans/01_register-acquire-parity-fix.md]
+- **Summary**: [1016_fix_command_register_acquire_session_id_parity/summaries/01_register-acquire-parity-fix-summary.md]
 
 **Description**: Fix the register-bare/acquire-suffixed session-id pattern in the research.md, plan.md, and implement.md command files.
 
