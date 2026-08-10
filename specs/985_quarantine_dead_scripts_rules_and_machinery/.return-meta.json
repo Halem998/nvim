@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/985_quarantine_dead_scripts_rules_and_machinery/reports/01_dead-machinery-triage.md",
+      "summary": "Per-item triage table (quarantine / keep-with-doc-note / wire-in / defer) for the full dead-machinery inventory, with empirical caller-graph re-verification and a load-bearing correction: the review's claim that .claude/rules/ is not auto-loaded is false, so pr-prohibition.md and project-overview-detection.md are not dead."
+    }
+  ],
+  "next_steps": "Run /plan 985 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786322063_3251e8_985",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 23
+  },
+  "memory_candidates": [
+    {
+      "content": ".claude/rules/*.md files support a YAML frontmatter `paths:` glob that Claude Code's harness auto-loads natively into session context whenever a touched/referenced path matches, completely independent of CLAUDE.md's `@`-import 'Rules References' list. A rule file can be fully live (auto-injected on matching paths) even if absent from CLAUDE.md's @-import list. Confirmed by direct observation: pr-prohibition.md (paths: \"**/*\") and project-overview-detection.md (paths: .claude/context/repo/project-overview.md) are both natively loaded this way, contradicting a prior review's claim that .claude/rules/ is not auto-loaded. Files with no frontmatter (e.g. no-task-references-in-deliverables.md, source-store-deploy-boundary.md) rely solely on the @-import path instead.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/985_quarantine_dead_scripts_rules_and_machinery/reports/01_dead-machinery-triage.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["claude-rules", "frontmatter-paths", "rule-auto-loading", "claude-code-harness", "dead-code-audit"]
+    },
+    {
+      "content": "run-all.sh (agent-system/extensions/core/scripts/tests/run-all.sh) auto-discovers test suites via two globs per extension: scripts/tests/test-*.sh (narrow) and flat scripts/test-*.sh (broad). Any flat test-*.sh file dropped in an extension's scripts/ root is automatically picked up and run as part of verify-deploy.sh Gate 8, with no further wiring needed. A caller-graph grep for a flat test-*.sh script's basename will show zero explicit callers even though it IS invoked -- the invocation is glob-based, not name-based, so dead-code audits must check run-all.sh's discovery globs before declaring such a script orphaned.",
+      "category": "PATTERN",
+      "source_artifact": "specs/985_quarantine_dead_scripts_rules_and_machinery/reports/01_dead-machinery-triage.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["run-all.sh", "test-discovery", "glob-based-invocation", "verify-deploy", "dead-code-audit"]
+    },
+    {
+      "content": "Two confirmed superseded-duplicate script pairs in agent-system/extensions/core/scripts/: roadmap-sync.sh (dead) vs roadmap-integration.sh (live, called by commands/todo.md and skill-todo/SKILL.md); validate-extension-index.sh (dead) vs check-extension-docs.sh's Rule T / check_index_entries_schema (live, wired into verify-deploy.sh Gate 3). Basename-only caller-graph greps miss this class of dead code entirely, since the check they claim to perform is done by a differently-named script -- a dead-code audit should also check for near-synonym script names covering the same docstring-described purpose.",
+      "category": "PATTERN",
+      "source_artifact": "specs/985_quarantine_dead_scripts_rules_and_machinery/reports/01_dead-machinery-triage.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["superseded-scripts", "dead-code", "roadmap-integration", "check-extension-docs", "caller-graph"]
+    }
+  ]
+}
