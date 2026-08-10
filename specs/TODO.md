@@ -231,6 +231,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md]
 - **Plan**: [1012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md]
+- **Summary**: [1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md]
 
 **Description**: tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.
 

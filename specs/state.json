@@ -850,6 +850,11 @@
           "path": "specs/1012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md",
           "type": "plan",
           "summary": "6-phase implementation plan (5.5 hours, 4 dependency waves) covering REPO_ROOT migration across 17 test suites, the test-index-entries-schema.sh fixture manifest fix, sanctioned-path redeploy and dual-mode re-measurement, a time-boxed diagnostic for the test-four-tier-conflict.sh flake, and a final gate with a residual-failure justification table"
+        },
+        {
+          "path": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
+          "type": "summary",
+          "summary": "Full residual-failure justification table, measured counts for both modes, verify-deploy.sh and check-extension-docs.sh gate results"
         }
       ],
       "session_id": "sess_1786378789_92e564"
