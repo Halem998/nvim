@@ -1,7 +1,7 @@
 # Implementation Plan: Capstone acceptance gate — record findings and spawn follow-ups
 
 - **Task**: 996 - Capstone: end-to-end verification of the refactored agent system
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: 985, 986, 993, 995, 999
 - **Research Inputs**: specs/996_capstone_end_to_end_refactor_verification/reports/01_capstone-verification-findings.md
@@ -153,19 +153,19 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Confirm the two reproducibility-flagged DEPLOY defects [NOT STARTED]
+### Phase 1: Confirm the two reproducibility-flagged DEPLOY defects [COMPLETED]
 
 **Goal**: Establish whether the settings.local.json content-lossy merge and the
 index.json/settings.json ordering non-determinism reproduce, so Phase 4 records them at an
 evidenced severity rather than a single-observation one. Also re-confirm the orphan-file count.
 
 **Tasks**:
-- [ ] Create a fresh scratch git repo under this session's scratchpad directory; seed it with a copy of the live `.claude-extensions.json`. Assert the target path is under the scratchpad and is not the repo root before proceeding.
-- [ ] Run `deploy-headless.sh --wipe <scratch>` twice against the identical target, capturing both resulting `.claude/` trees separately.
-- [ ] Diff the two trees. Record, per file: whether `context/index.json` differs beyond the `generated` timestamp; whether `settings.json` hook ordering differs; whether `settings.local.json` differs in *content* (a dropped block) versus ordering only.
-- [ ] Repeat the wipe-pair up to 3 times total, or stop early once the lossy settings.local.json difference has both occurred and not occurred. Record the observed rate as a fraction (e.g. "1 of 3 pairs").
-- [ ] Diff the live deployed `.claude/` against one clean scratch regenerate; enumerate every file present live and absent from the regenerate. Confirm or correct the 4-file orphan list.
-- [ ] Delete the scratch trees.
+- [x] Create a fresh scratch git repo under this session's scratchpad directory; seed it with a copy of the live `.claude-extensions.json`. Assert the target path is under the scratchpad and is not the repo root before proceeding. *(completed: `/tmp/claude-1000/.../scratchpad/deploy-test`, path-under-scratchpad and not-repo-root asserted before use)*
+- [x] Run `deploy-headless.sh --wipe <scratch>` twice against the identical target, capturing both resulting `.claude/` trees separately. *(completed: ran 4 total wipes, 3 wipe-pairs, each exited 0)*
+- [x] Diff the two trees. Record, per file: whether `context/index.json` differs beyond the `generated` timestamp; whether `settings.json` hook ordering differs; whether `settings.local.json` differs in *content* (a dropped block) versus ordering only. *(completed: index.json — raw diff shows entries relocated but `jq -S` semantic diff shows only the `generated` timestamp differs, i.e. object-key-order non-determinism only; settings.json — raw diff shows `permissions`/`hooks` blocks relocated but `jq -S` semantic diff is empty, i.e. key-order-only; settings.local.json — raw diff shows `mcpServers`/`hooks` blocks relocated but `jq -S` semantic diff is empty across all 3 pairs, i.e. ordering-only, NOT content-lossy in any of the 3 re-check pairs)*
+- [x] Repeat the wipe-pair up to 3 times total, or stop early once the lossy settings.local.json difference has both occurred and not occurred. Record the observed rate as a fraction (e.g. "1 of 3 pairs"). *(completed: ran all 3 pairs (run1-2, run2-3, run3-4) since the lossy difference never occurred to trigger early stop. Observed content-loss reproduction rate: 0 of 3 pairs. All 3 pairs showed ordering-only differences, semantically identical under `jq -S`.)*
+- [x] Diff the live deployed `.claude/` against one clean scratch regenerate; enumerate every file present live and absent from the regenerate. Confirm or correct the 4-file orphan list. *(completed: `comm -23` between live `.claude/` and the scratch regenerate found 4 orphans matching the claimed list exactly — `context/orchestration/orchestration-validation.md`, `context/orchestration/subagent-validation.md`, `docs/architecture/architecture-spec.md`, `docs/README.md` — plus two items correctly excluded from the orphan count: `context/repo/project-overview.md` (generated user content seeded by `/project-overview`, not declared in any extension's static `provides` file list, so its absence from a clean regenerate is by design) and two `tmp/workflow-active-*` session-lock files (session runtime state, not deploy content). The 4-file orphan list is CONFIRMED, not corrected.)*
+- [x] Delete the scratch trees. *(completed: `rm -rf` on the scratch directory; confirmed via `find .claude -newermt '5 minutes ago'` that the only live-tree file touched during the phase window was this session's own `tmp/workflow-active-<session>` lock file, not written by any deploy test)*
 
 **Timing**: 1 hour
 
@@ -192,19 +192,19 @@ is what Phase 4 and Phase 6 record. Do not carry the number 4 forward unverified
 
 ---
 
-### Phase 2: Establish and evidence the LIVE CYCLE blocking condition [NOT STARTED]
+### Phase 2: Establish and evidence the LIVE CYCLE blocking condition [COMPLETED]
 
 **Goal**: Convert "the live cycle was not run" into an evidenced "the live cycle cannot run
 cleanly until the handoff-location regex fix lands," so the gate's re-run condition is mechanical
 rather than a judgement call.
 
 **Tasks**:
-- [ ] Re-read `next_project_number` from `specs/state.json` and record it. Confirm it is >= 1000.
-- [ ] Re-read `hooks/validate-handoff-location.sh` and cite the regex verbatim plus the two consequences on a non-match: `exit 2`, and the `system-defect-record.sh --defect-class HANDOFF_MISLOCATED` call.
-- [ ] Confirm the hook is live: it is registered in the deployed `.claude/settings.json`, and its registration source is `agent-system/extensions/core/merge-sources/settings-hooks.json` (so this is a live wiring, not a deploy gap).
-- [ ] Write the blocking argument explicitly: a scratch task created now is 4-digit; its handoff write cannot match the regex; the hook therefore emits a spurious `HANDOFF_MISLOCATED` system_defect; acceptance sub-item 3's negative test ("NO system_defect event on the clean run") is thereby structurally unpassable, independent of system health.
-- [ ] Count the existing `system_defect` entries in `specs/events.jsonl` and record their dates and messages. Confirm whether the "deferred-defect surface renders empty" clause already fails on current state.
-- [ ] Record which of LIVE CYCLE's 4 sub-items are statically covered anyway: routing resolution is effectively verified by `lint-routing-wiring.sh` (verify-deploy.sh gate 7, PASS).
+- [x] Re-read `next_project_number` from `specs/state.json` and record it. Confirm it is >= 1000. *(completed: `jq '.next_project_number' specs/state.json` = 1007, >= 1000 confirmed)*
+- [x] Re-read `hooks/validate-handoff-location.sh` and cite the regex verbatim plus the two consequences on a non-match: `exit 2`, and the `system-defect-record.sh --defect-class HANDOFF_MISLOCATED` call. *(completed: regex verbatim from `.claude/hooks/validate-handoff-location.sh` line 65: `(^|/)specs/(OC_)?[0-9]{3}_[^/]+/\.orchestrator-handoff\.json$` — fixed-position `{3}` cannot match a 4-digit directory segment. On non-match the hook exits 2 with a MISPLACED diagnostic and invokes `system-defect-record.sh --defect-class HANDOFF_MISLOCATED`.)*
+- [x] Confirm the hook is live: it is registered in the deployed `.claude/settings.json`, and its registration source is `agent-system/extensions/core/merge-sources/settings-hooks.json` (so this is a live wiring, not a deploy gap). *(completed: confirmed registered at `.claude/settings.json:73` (`"command": "bash .claude/hooks/validate-handoff-location.sh"`) and sourced from `agent-system/extensions/core/merge-sources/settings-hooks.json:49` — identical command string at both sites, confirming live wiring, not a deploy gap)*
+- [x] Write the blocking argument explicitly: a scratch task created now is 4-digit; its handoff write cannot match the regex; the hook therefore emits a spurious `HANDOFF_MISLOCATED` system_defect; acceptance sub-item 3's negative test ("NO system_defect event on the clean run") is thereby structurally unpassable, independent of system health. *(completed, one paragraph: `next_project_number` is 1007, so any task created now to exercise a live `/orchestrate` cycle is numbered >= 1007 — a 4-digit directory segment. `validate-handoff-location.sh`'s regex requires exactly `[0-9]{3}` (three digits, fixed-position, no `{3,}` or `+` quantifier) between `specs/` and the trailing `_`, so a 4-digit segment structurally cannot match. Every `.orchestrator-handoff.json` write under such a task therefore trips the hook's non-match branch, which both exits 2 with a false MISPLACED diagnostic and unconditionally calls `system-defect-record.sh --defect-class HANDOFF_MISLOCATED`, emitting a `system_defect` event. Acceptance sub-item 3 requires "the system-defect recorder emits NO system_defect event on the clean run" as its negative test; because the emission above fires on every 4-digit task regardless of whether the orchestrated task itself completed cleanly, the negative test cannot pass for reasons wholly unrelated to system health. This is why LIVE CYCLE is recorded as BLOCKED rather than merely unattempted, and why it is gated specifically on `err_1786349061492_XpY38x` landing (the regex fix), not on any other defect in this batch.)*
+- [x] Count the existing `system_defect` entries in `specs/events.jsonl` and record their dates and messages. Confirm whether the "deferred-defect surface renders empty" clause already fails on current state. *(completed: 3 pre-existing `system_defect` events, all dated 2026-08-08: (1) 18:15:29.205Z, task 953, `OFF_SCHEMA_STATUS` — "handoff dispatch_status '<empty>' is off-schema (writer emitted key 'dispatch_status' instead of 'status')"; (2) 20:49:35.840Z, task 983, `HANDOFF_STALE_OR_ABSENT` — "handoff mtime 1786220555 predates this dispatch window (1786220600)"; (3) 23:17:18.226Z, task 983, `HANDOFF_STALE_OR_ABSENT` — "handoff mtime 1786228557 predates dispatch window 1786228651; agent stalled mid-phase-10". All three attribute to `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`. The "deferred-defect surface renders empty" clause ALREADY FAILS on current state, independent of any new cycle — 3 events already populate the surface.)*
+- [x] Record which of LIVE CYCLE's 4 sub-items are statically covered anyway: routing resolution is effectively verified by `lint-routing-wiring.sh` (verify-deploy.sh gate 7, PASS). *(completed: `verify-deploy.sh` gate 7 invokes `lint-routing-wiring.sh --verbose` and is one of the 22/23 passing gates per the research's live `--findings` run — the only failure is gate 8, the test-suite runner. Routing-resolution coverage for LIVE CYCLE is therefore already statically discharged by this passing gate, independent of running an actual `/orchestrate` cycle.)*
 
 **Timing**: 45 minutes
 
@@ -230,19 +230,19 @@ not change the conclusion — but the recorded figures must be the observed ones
 
 ---
 
-### Phase 3: Establish the gate-out auto-repair instrumentation gap [NOT STARTED]
+### Phase 3: Establish the gate-out auto-repair instrumentation gap [COMPLETED]
 
 **Goal**: Evidence the claim that acceptance sub-item "gate-out reports zero format errors and
 zero auto-repaired fields" is unverifiable as written, so Phase 4 can record it as a defect and
 Phase 6 can state it as a criterion defect rather than a system failure.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/command-gate-out.sh` end to end. Record its line count and every occurrence of repair/format-error vocabulary.
-- [ ] Trace the actual repair path: `command-gate-out.sh` -> `skill_validate_task_artifacts` (in `skill-base.sh`) -> `validate-artifact.sh "$f" "$type" --fix 2>/dev/null`.
-- [ ] Record `validate-artifact.sh`'s terminal accounting: the `[FIXED] $fixes field(s) auto-repaired, $errors error(s), $warnings warning(s) remaining` line and its `exit 2`.
-- [ ] Record precisely what survives to the caller: the `[FIXED] N` line reaches stdout and is human-readable in a transcript; stderr is discarded; every non-zero exit collapses into one generic non-blocking WARNING; no counter, aggregate, event, or exit-code effect exists at the gate-out layer.
-- [ ] State the consequence in one sentence: there is no "gate-out reports" surface against which "zero auto-repaired fields" can be asserted or refuted, so the criterion is unverifiable as written — distinct from being verified-and-failing.
-- [ ] Note the secondary hazard for the record: `--fix` mutates the artifact in place, so a repair both happens and goes uncounted.
+- [x] Read `agent-system/extensions/core/scripts/command-gate-out.sh` end to end. Record its line count and every occurrence of repair/format-error vocabulary. *(completed: 134 lines total. Only one related occurrence: line 131, comment `# Non-blocking artifact validation (link repair)`. No counter, aggregate, format-error, or auto-repair vocabulary elsewhere in the file.)*
+- [x] Trace the actual repair path: `command-gate-out.sh` -> `skill_validate_task_artifacts` (in `skill-base.sh`) -> `validate-artifact.sh "$f" "$type" --fix 2>/dev/null`. *(completed: `skill_validate_task_artifacts()` in `agent-system/extensions/core/scripts/skill-base.sh` (line 402) iterates `reports/*.md`, `plans/*.md`, `summaries/*.md` and invokes exactly `bash .claude/scripts/validate-artifact.sh "$f" "$type" --fix 2>/dev/null` (line 411) per file, discarding stderr and checking only the exit code.)*
+- [x] Record `validate-artifact.sh`'s terminal accounting: the `[FIXED] $fixes field(s) auto-repaired, $errors error(s), $warnings warning(s) remaining` line and its `exit 2`. *(completed: `validate-artifact.sh` line 280 emits `"[FIXED] $fixes field(s) auto-repaired, $errors error(s), $warnings warning(s) remaining"` to stdout, then line 281 `exit 2`.)*
+- [x] Record precisely what survives to the caller: the `[FIXED] N` line reaches stdout and is human-readable in a transcript; stderr is discarded; every non-zero exit collapses into one generic non-blocking WARNING; no counter, aggregate, event, or exit-code effect exists at the gate-out layer. *(completed: the `[FIXED] N` line is unredirected stdout, so it is visible in a transcript; `2>/dev/null` discards stderr; `skill_validate_task_artifacts`'s `if ! ... ; then echo "WARNING: ${type} artifact ${f} has format issues (non-blocking)."` collapses the exit-2 (and any other non-zero exit) into one generic message per file with no numeric detail carried forward; the function unconditionally `return 0`s, so `command-gate-out.sh` sees no exit-code signal at all from this step.)*
+- [x] State the consequence in one sentence: there is no "gate-out reports" surface against which "zero auto-repaired fields" can be asserted or refuted, so the criterion is unverifiable as written — distinct from being verified-and-failing. *(completed: there is no counter, aggregate, logged event, or exit-code surface anywhere between `validate-artifact.sh`'s `[FIXED] N` line and `command-gate-out.sh`'s return, so the acceptance criterion "gate-out reports zero format errors and zero auto-repaired fields" has no reporting surface to assert or refute against — it is unverifiable as written, which is a distinct condition from being verified and found failing.)*
+- [x] Note the secondary hazard for the record: `--fix` mutates the artifact in place, so a repair both happens and goes uncounted. *(completed: `--fix` is passed unconditionally in `skill_validate_task_artifacts`, so any auto-repair both mutates the artifact file in place AND goes uncounted at every layer above `validate-artifact.sh` itself — the repair is silent by construction, not merely unreported.)*
 
 **Timing**: 30 minutes
 
@@ -260,21 +260,16 @@ Phase 6 can state it as a criterion defect rather than a system failure.
 
 ---
 
-### Phase 4: Record every new defect in specs/errors.json [NOT STARTED]
+### Phase 4: Record every new defect in specs/errors.json [COMPLETED]
 
 **Goal**: The plan's primary deliverable. Make the new findings durable via the sanctioned writer,
 without duplicating the five already-recorded entries.
 
 **Tasks**:
-- [ ] Read `specs/errors.json`. Confirm each of the five already-recorded ids is present. Scan every existing entry's `type` and `message` for near-duplicates of what this phase is about to append.
-- [ ] Append, one `errors-append.sh append` invocation each, with `--session sess_1786342011_4592c8_996`, `--command /plan`, `--task 996`, `--checkpoint GATE_OUT`, and a `--suggested-action` naming the fix target path:
-  - `deploy_merge_content_loss` — severity per Phase 1's reproduction rate (**critical** if it reproduced at all; **high** with the rate stated in the message if `0 of N`). Message: two consecutive identical `--wipe` runs produced `settings.local.json` differing by a whole dropped `hooks.PreToolUse` block and an `mcpServers` block, with no error surfaced. This is the most consequential new finding: a routine redeploy can silently drop a hook or MCP registration.
-  - `deploy_nondeterministic_merge` — **low**. Message: `context/index.json` and `settings.json` differ in key and array order between two identical `--wipe` runs, beyond the expected `generated` timestamp. Harmless to JSON consumers today; defeats any future byte-identical-diff verification.
-  - `deploy_orphan_files_undercounted` — **medium**. Message: the live tree carries the Phase-1-confirmed orphan list, two of which (`docs/architecture/architecture-spec.md`, `docs/README.md`) were not named by the existing `err_1786349061556_LuKGif`. Cross-reference that id in the message; this entry extends it, it does not replace it.
-  - `test_suite_failure_undocumented` — **medium**. Message: `run-all.sh` has a 7th, previously unreported deployed-mode failure, `test-common-lib.sh`, flagging `.opencode/scripts/command-gate-in.sh` for an inline `sess_$(date +%s)_...` generator duplicating `lib/common.sh`'s canonical one. Passes in source-store mode, fails only deployed.
-  - `acceptance_criterion_not_instrumented` — **medium**. Message: Phase 3's finding — the "zero auto-repaired fields" acceptance criterion has no reporting surface in `command-gate-out.sh`.
-- [ ] After each append, capture the returned error id.
-- [ ] Re-read `specs/errors.json` and confirm the document still parses, the new ids are present exactly once each, and no pre-existing entry was mutated.
+- [x] Read `specs/errors.json`. Confirm each of the five already-recorded ids is present. Scan every existing entry's `type` and `message` for near-duplicates of what this phase is about to append. *(completed: all 5 present; no near-duplicate `type` values found among the 5 pre-existing entries)*
+- [x] Append, one `errors-append.sh append` invocation each, with `--session sess_1786342011_4592c8_996`, `--command /plan`, `--task 996`, `--checkpoint GATE_OUT`, and a `--suggested-action` naming the fix target path. *(completed: 5 invocations made. `deploy_merge_content_loss` recorded at severity **high** (Phase 1's re-check rate was 0 of 3, not the reproduce-at-all case, per the plan's own severity rule) with the 0-of-3 rate stated in the message -> `err_1786350581208_23mAsn`; `deploy_nondeterministic_merge` at **low** -> `err_1786350581240_JyztWt`; `deploy_orphan_files_undercounted` at **medium**, cross-referencing `err_1786349061556_LuKGif` -> `err_1786350581273_TAWj0I`; `test_suite_failure_undocumented` at **medium** -> `err_1786350581305_8cNAZ7`; `acceptance_criterion_not_instrumented` at **medium** -> `err_1786350581339_Q4VnFy`)*
+- [x] After each append, capture the returned error id. *(completed: ids listed above, all captured from the script's stdout)*
+- [x] Re-read `specs/errors.json` and confirm the document still parses, the new ids are present exactly once each, and no pre-existing entry was mutated. *(completed: `jq -e '.errors | length'` = 10 (5 pre-existing + 5 new), each new id retrievable exactly once, spot-checked `err_1786349061524_pY97cE`'s severity unchanged at `critical`)*
 
 **Timing**: 1 hour
 
@@ -300,27 +295,32 @@ for a finding Phase 1 refuted, and do not silently reduce the count without reco
 
 ---
 
-### Phase 5: Decide and create follow-up tasks [NOT STARTED]
+### Phase 5: Decide and create follow-up tasks [COMPLETED]
 
 **Goal**: Decide, per defect, whether an errors.json entry alone suffices or a task must be
 spawned — and create only those that clear the bar.
 
 **Tasks**:
-- [ ] Read `specs/state.json`'s open tasks and `specs/errors.json` in full. Build the disposition table: for each of the ten confirmed defects (5 already-recorded + 5 new), record whether an open task already covers it.
-- [ ] Apply the bar: spawn a task only when the fix is structural, has a named target file, and is not already covered by an open task. An entry alone suffices for a finding that is informational, already covered, or whose fix is a one-line change bundled into another task's scope.
-- [ ] Recommended dispositions, to be confirmed against the live disposition table rather than assumed:
-  - `err_1786349061492_XpY38x` (regex) — **spawn, highest priority**. It is already firing falsely, and it blocks this very gate's LIVE CYCLE scope. Target: `agent-system/extensions/core/hooks/validate-handoff-location.sh`.
-  - `err_1786349061524_pY97cE` (MT session-id) — **spawn**. Fully blocks multi-task `/orchestrate`, a documented capability. Target: `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`, one of the two ID-construction sites.
-  - `deploy_merge_content_loss` — **spawn** if Phase 1 reproduced it; **entry only** if `0 of N`, with a re-check noted in Phase 7's re-run procedure.
-  - `deploy_orphan_files_undercounted` + `err_1786349061556_LuKGif` — **spawn one task covering both**: either add a subtractive/orphan-detection pass, or decide and document that parity is one-directional by design. Do not spawn two tasks for one decision.
-  - `test_suite_failure_undocumented` — **spawn or fold into an existing `run-all.sh` task** if one is open (the batch already recorded a REPO_ROOT path-depth follow-up; prefer folding).
-  - `err_1786349061588_fqHbUZ` (defect vocabulary) — **spawn**. Three concrete instances now exist to ground the new classes: lock/session contention, hook-regex/path-depth boundary, deploy orphan drift.
-  - `deploy_nondeterministic_merge` — **entry only**. Low impact; fold into whichever deploy task lands first.
-  - `acceptance_criterion_not_instrumented` — **entry only**, unless Phase 7 concludes the gate cannot be re-run without it, in which case spawn.
-- [ ] Create the tasks that clear the bar, using the sanctioned creation path (never a hand-edit of `specs/state.json`). Each description must carry: the originating error id, the named target file, the SOURCE-STORE RULE, and the DELIVERABLE RULE.
-- [ ] Add to each created task's description the constraint that it must not be driven by multi-task `/orchestrate` until `err_1786349061524_pY97cE` is fixed.
-- [ ] Do NOT run `/orchestrate` on any task created here.
-- [ ] Regenerate `specs/TODO.md` from `specs/state.json` via `generate-todo.sh`. Never hand-edit TODO.md.
+- [x] Read `specs/state.json`'s open tasks and `specs/errors.json` in full. Build the disposition table: for each of the ten confirmed defects (5 already-recorded + 5 new), record whether an open task already covers it. *(completed — disposition table below; only 3 non-terminal open tasks existed besides 996 itself: 1004, 1005, 1006, none of which cover any of the 10 defects)*
+
+  | Defect (error id) | Open task covers it? | Disposition | Justification |
+  |---|---|---|---|
+  | `err_1786349061492_XpY38x` (hook regex) | No | **Spawn -> 1007** | Already firing falsely; blocks this gate's LIVE CYCLE scope; named target file exists |
+  | `err_1786349061524_pY97cE` (MT session-id) | No | **Spawn -> 1008** | Fully blocks a documented capability; named target file exists |
+  | `err_1786350581208_23mAsn` (deploy_merge_content_loss) | No | **Entry only** | Phase 1 re-check reproduced 0 of 3 — per the plan's own rule, non-reproduction gets entry-only with the rate stated (already done in the message) and a Phase 7 re-check step |
+  | `err_1786350581273_TAWj0I` (deploy_orphan_files_undercounted) + `err_1786349061556_LuKGif` | No | **Spawn one task -> 1009, covering both ids** | Two ids, one decision (subtractive-detection vs. documented one-directional parity); do not split |
+  | `err_1786350581305_8cNAZ7` (test_suite_failure_undocumented) | No (988, the prior run-all.sh consolidation task, is already completed/closed; no open run-all.sh task exists to fold into) | **Spawn -> 1010** | Named target file exists; nothing open to fold into |
+  | `err_1786349061588_fqHbUZ` (defect vocabulary) | No | **Spawn -> 1011** | Three concrete instances now ground the new classes |
+  | `err_1786350581240_JyztWt` (deploy_nondeterministic_merge) | No | **Entry only** | Low impact; noted to fold into whichever deploy task (1009) lands first |
+  | `err_1786350581339_Q4VnFy` (acceptance_criterion_not_instrumented) | No | **Entry only** | Phase 7 (below) did not conclude the gate is unable to re-run without it — the re-run procedure can state the criterion as currently unverifiable rather than requiring new instrumentation before any re-run |
+  | `err_1786344051474_RcIhk6` (delegation_interrupted) | N/A — prior interrupted dispatch, no active fix target | **Entry only (pre-existing, no action)** | Historical record, not a live structural defect requiring a task |
+
+- [x] Apply the bar: spawn a task only when the fix is structural, has a named target file, and is not already covered by an open task. An entry alone suffices for a finding that is informational, already covered, or whose fix is a one-line change bundled into another task's scope. *(completed — bar applied per the table above: 5 spawned, 4 entry-only including the pre-existing delegation_interrupted record which needed no fresh disposition)*
+- [x] Recommended dispositions, to be confirmed against the live disposition table rather than assumed. *(completed — live table above confirms all recommended dispositions except `deploy_merge_content_loss`, which resolved to the explicitly-anticipated `0 of N` entry-only branch since Phase 1 found 0 of 3 reproductions)*
+- [x] Create the tasks that clear the bar, using the sanctioned creation path (never a hand-edit of `specs/state.json`). Each description must carry: the originating error id, the named target file, the SOURCE-STORE RULE, and the DELIVERABLE RULE. *(completed — 5 tasks created via `state-write.sh` following the exact schema `/task`'s Create Task Mode uses (prepend to `active_projects`, increment `next_project_number`, `--regen-todo`), never a hand-edit: task 1007 "fix_handoff_location_regex_4digit_tasks", 1008 "fix_orchestrate_mt_session_id_mismatch", 1009 "resolve_deploy_orphan_file_parity", 1010 "fix_opencode_gate_in_session_id_duplication", 1011 "expand_defect_class_vocabulary". Each description carries its originating error id(s), named target file(s), and both binding rules verbatim.)*
+- [x] Add to each created task's description the constraint that it must not be driven by multi-task `/orchestrate` until `err_1786349061524_pY97cE` is fixed. *(completed — all 5 tasks (1007-1011) carry the CONSTRAINT text; 1007 and 1008 had it inline at creation, 1009/1010/1011 had it appended via a follow-up `state-write.sh` amendment after an initial gap was caught)*
+- [x] Do NOT run `/orchestrate` on any task created here. *(completed — no `/orchestrate` invocation was made on 1007-1011 during this implementation)*
+- [x] Regenerate `specs/TODO.md` from `specs/state.json` via `generate-todo.sh`. Never hand-edit TODO.md. *(completed — each `state-write.sh` call passed `--regen-todo`; `validate-state.sh --deep` confirms "TODO.md is in sync with specs/state.json (regenerated content is byte-identical)")*
 
 **Timing**: 1 hour
 
@@ -346,24 +346,16 @@ estimate is itself a finding — an unjustified spawn is.
 
 ---
 
-### Phase 6: Write the dated closing-bookend review artifact [NOT STARTED]
+### Phase 6: Write the dated closing-bookend review artifact [COMPLETED]
 
 **Goal**: Satisfy the task's scope item 4 — record the results as a dated review artifact under
 `specs/reviews/`, closing the bookend opened by `review-2026-07-29-agent-system.md`.
 
 **Tasks**:
-- [ ] Read `specs/reviews/review-2026-07-29-agent-system.md` for structure and voice. Match its register: quantified first, tables over prose, no emojis.
-- [ ] Write `specs/reviews/review-2026-08-10-agent-system-refactor-capstone.md` containing:
-  - The **verdict**, stated plainly in the opening: the capstone acceptance gate FAILS, with the per-scope partition from this plan's Overview table.
-  - Per-scope sub-item accounting: DEPLOY 6, GATES 4 plus `verify-deploy.sh` 22/23, LIVE CYCLE 4 — each marked PASS / FAIL / CONDITIONAL / BLOCKED / UNVERIFIABLE-AS-WRITTEN, each with its evidence.
-  - The one CONDITIONAL called out explicitly: "declared-vs-deployed parity" passes as implemented (one-directional) and fails bidirectionally. Name the mechanical reason — `verify.lua`'s result shape has no `extra`/`orphan` field and only ever iterates the declared side; `install-extension.sh`'s `merge_index_entries()` is purely additive with no stale-removal step.
-  - The one UNVERIFIABLE-AS-WRITTEN sub-item, with Phase 3's traced call path.
-  - The BLOCKED scope with Phase 2's blocking argument.
-  - A defect ledger: all ten confirmed defects with their error ids, severities, and Phase 5 dispositions.
-  - The closing-bookend framing against the opening review: which of that review's five root causes this refactor batch addressed, and which the capstone's findings show still live. The one-directional-parity and non-deterministic-merge findings are fresh instances of its "verification that silently passes" root cause; say so.
-  - A short section stating what this task deliberately did NOT do and why, so a future reader does not mistake the absence of fixes for an oversight.
-- [ ] Reference durable anchors only: filenames, section headings, function names, error ids. This artifact lives under `specs/**`, so task numbers are permitted, but prefer the durable anchor where one exists.
-- [ ] Do not restate the research report. Link it and summarize its verdicts.
+- [x] Read `specs/reviews/review-2026-07-29-agent-system.md` for structure and voice. Match its register: quantified first, tables over prose, no emojis. *(completed: register matched — opens with a plain verdict, tables over prose throughout, no emojis)*
+- [x] Write `specs/reviews/review-2026-08-10-agent-system-refactor-capstone.md` containing all required sections. *(completed: file written with (1) plain-stated FAIL verdict and per-scope partition in Section 1, (2) full 6+4+4 sub-item accounting with explicit verdicts and evidence in Sections 2-4, (3) the CONDITIONAL parity item named explicitly with the `verify.lua`/`merge_index_entries()` mechanical reason in Section 2, (4) the UNVERIFIABLE-AS-WRITTEN gate-out item with the traced call path in Section 5, (5) the BLOCKED LIVE CYCLE scope with the full blocking argument in Section 4, (6) a defect ledger covering all 10 confirmed defects with error ids/severities/dispositions in Section 7, (7) the closing-bookend framing against the 2026-07-29 review's five root causes in Section 6, explicitly naming the parity and non-determinism findings as fresh "verification that silently passes" instances, (8) a "what this task deliberately did NOT do" section in Section 8)*
+- [x] Reference durable anchors only: filenames, section headings, function names, error ids. This artifact lives under `specs/**`, so task numbers are permitted, but prefer the durable anchor where one exists. *(completed: durable anchors used throughout — file paths, function names, error ids, section headings; task numbers used only where they are the durable identifier, e.g. spawned task 1007-1011 references)*
+- [x] Do not restate the research report. Link it and summarize its verdicts. *(completed: the closing References line links `specs/996_capstone_end_to_end_refactor_verification/reports/01_capstone-verification-findings.md` as the sole evidence base and summarizes rather than restates it)*
 
 **Timing**: 1 hour
 
@@ -383,18 +375,18 @@ estimate is itself a finding — an unjustified spawn is.
 
 ---
 
-### Phase 7: Specify the gate re-run procedure [NOT STARTED]
+### Phase 7: Specify the gate re-run procedure [COMPLETED]
 
 **Goal**: The task description says "the gate re-runs after the fix lands." Make that mechanical:
 a reader must be able to determine, without judgement, whether the gate is ready to re-run and
 exactly what to execute.
 
 **Tasks**:
-- [ ] Write a **re-run precondition checklist** into the review artifact: the named, checkable conditions under which each currently-failing or blocked scope becomes re-runnable. At minimum: LIVE CYCLE unblocks when `validate-handoff-location.sh` matches 4-digit task directories (verify by writing a handoff under a 4-digit scratch task dir and confirming no `HANDOFF_MISLOCATED` event is emitted); GATES passes when `verify-deploy.sh --findings` reports 23/23; DEPLOY's byte-identity item passes when two consecutive `--wipe` runs diff clean modulo the `generated` timestamp.
-- [ ] Write the **re-run command sequence** verbatim and copy-pasteable: the four gate commands at hardened defaults with no env overrides, `verify-deploy.sh --findings`, both `run-all.sh` copies (source-store and deployed, reported separately — their failure sets differ), and the scratch wipe-pair procedure.
-- [ ] State the **verdict rule**: the capstone passes only when all 14 sub-items are PASS, with the CONDITIONAL parity item resolved by an explicit recorded decision (bidirectional check added, or one-directional documented as intended) rather than left ambiguous, and the UNVERIFIABLE-AS-WRITTEN item resolved either by instrumenting the counter or by amending the criterion to something checkable.
-- [ ] Record that re-running the gate is a fresh task, not a re-open of this one: this task's mandate ends at recording.
-- [ ] If Phase 1 reported `0 of N` for the lossy merge, add an explicit re-check step to the procedure so a non-reproduction does not quietly become a non-finding.
+- [x] Write a **re-run precondition checklist** into the review artifact: the named, checkable conditions under which each currently-failing or blocked scope becomes re-runnable. *(completed: Section 9.1 of the review artifact, a table covering LIVE CYCLE (unblocks when task 1007's regex fix lands, with the exact negative-test verification method named), GATES `run-all.sh` (unblocks at `verify-deploy.sh --findings` 23/23), DEPLOY byte-identity (unblocks when two consecutive `--wipe` runs diff clean modulo the `generated` timestamp — and explicitly requires the ordering non-determinism fixed too, not only content-loss), DEPLOY parity CONDITIONAL, and the gate-out UNVERIFIABLE-AS-WRITTEN item)*
+- [x] Write the **re-run command sequence** verbatim and copy-pasteable. *(completed: Section 9.2, a single bash block covering the 3 GATES commands at hardened defaults, `verify-deploy.sh --findings`, both `run-all.sh` copies named and run separately, and the full scratch wipe-pair procedure with `mktemp -d` and explicit non-repo-root scratch usage, plus a LIVE CYCLE stub gated on task 1007)*
+- [x] State the **verdict rule**. *(completed: Section 9.3 — pass requires all 14 sub-items PASS, with the CONDITIONAL parity item requiring an explicit recorded decision (bidirectional check added and passing, or one-directional documented as intended) and the UNVERIFIABLE-AS-WRITTEN gate-out item requiring either instrumentation added and reporting zero, or the criterion amended and passing)*
+- [x] Record that re-running the gate is a fresh task, not a re-open of this one. *(completed: stated explicitly in Section 9's opening sentence: "Re-running the gate is a fresh task, not a re-open of this one — this task's mandate ends at recording", and repeated in the verdict rule's closing sentence)*
+- [x] If Phase 1 reported `0 of N` for the lossy merge, add an explicit re-check step to the procedure so a non-reproduction does not quietly become a non-finding. *(completed: Phase 1 reported 0 of 3. Section 2's "Decision on the content-loss non-reproduction" paragraph and Section 9.1's DEPLOY byte-identity row both point to the re-check requirement; the Section 9.2 command sequence's scratch wipe-pair block IS that re-check step, reusable verbatim for a future re-run)*
 
 **Timing**: 45 minutes
 

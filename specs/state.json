@@ -1,7 +1,57 @@
 {
   "version": "1.1.0",
-  "next_project_number": 1007,
+  "next_project_number": 1012,
   "active_projects": [
+    {
+      "project_number": 1011,
+      "project_name": "expand_defect_class_vocabulary",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "The system-defect vocabulary has a gap: defect classes exist for a narrow set of shapes, but at least three concrete instances from this batch do not fit cleanly into any existing defect_class value. Recorded as err_1786349061588_fqHbUZ, severity medium. Three concrete instances now ground the gap, confirmed by the capstone acceptance gate dispatch: lock/session contention (err_1786349061524_pY97cE, MT-1/MT-4 session-id mismatch), hook-regex/path-depth boundary defects (err_1786349061492_XpY38x, the 3-digit handoff-location regex), and deploy orphan-file drift (err_1786349061556_LuKGif / err_1786350581273_TAWj0I).\n\nTARGET: wherever defect_class is enumerated for system-defect-record.sh (search the source store for its schema/enum definition) and any consumer that switches on defect_class value.\n\nWORK: read the current defect_class enum, confirm the three instances above genuinely lack a fitting class (do not add classes for shapes that already have one), and add the minimum set of new classes needed to name them precisely -- for example a session/lock-contention class, a regex/path-boundary class, and an orphan-drift class. Update any documentation enumerating the vocabulary. Do not rename or remove existing classes as part of this task.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.",
+      "topic": "agent-system",
+      "created": "2026-08-10T08:32:45Z",
+      "last_updated": "2026-08-10T08:33:19Z"
+    },
+    {
+      "project_number": 1010,
+      "project_name": "fix_opencode_gate_in_session_id_duplication",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "tests/run-all.sh has a 7th, previously unreported deployed-mode-only failure: test-common-lib.sh flags .opencode/scripts/command-gate-in.sh for an inline sess_$(date +%s)_... session-id generator that duplicates lib/common.sh's canonical generator instead of sourcing it. It passes in source-store mode and fails only in deployed mode. Recorded as err_1786350581305_8cNAZ7. No open task currently covers tests/run-all.sh failures (the prior consolidation task that made the suites runnable is already completed); this task is spawned standalone rather than folded, since nothing is open to fold into.\n\nTARGET: .opencode/scripts/command-gate-in.sh (the inline sess_$(date +%s)_... construction) and agent-system/extensions/core/scripts/lib/common.sh (the canonical generator it should source instead).\n\nWORK: replace the inline session-id generator in .opencode/scripts/command-gate-in.sh with a sourced call to lib/common.sh's canonical generator, matching the pattern already used elsewhere in the deployed tree. Re-run tests/run-all.sh in BOTH source-store and deployed modes and confirm test-common-lib.sh passes in both.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. Note: .opencode/scripts/command-gate-in.sh is itself a deploy target mirroring a source-store equivalent -- confirm the correct source-store location before editing (do not hand-edit the deployed .opencode/ tree directly if it is generated).\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.",
+      "topic": "agent-system",
+      "created": "2026-08-10T08:32:32Z",
+      "last_updated": "2026-08-10T08:33:19Z"
+    },
+    {
+      "project_number": 1009,
+      "project_name": "resolve_deploy_orphan_file_parity",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Declared-vs-deployed parity for provides.* categories is one-directional by design, and the live .claude/ tree carries 4 orphan files absent from a clean scratch regenerate: context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md. Two of these (docs/architecture/architecture-spec.md, docs/README.md) were not covered by the pre-existing err_1786349061556_LuKGif (deploy_ghost_index_entries), which only named the other two -- confirmed and extended by err_1786350581273_TAWj0I (deploy_orphan_files_undercounted). This task covers BOTH error ids with one decision; do not split it.\n\nMECHANICAL REASON (already diagnosed, do not re-derive): verify.lua's result shape has no extra/orphan field and only ever iterates the declared side; install-extension.sh's merge_index_entries() is purely additive with no stale-removal step. Parity is therefore verified only in the declared-to-deployed direction, never the reverse.\n\nTARGET: agent-system/extensions/core/scripts/verify-deploy.sh (or the shared verify.lua module it calls), and/or docs/architecture/architecture-spec.md if the decision is to document one-directional parity as intended rather than build detection.\n\nWORK: decide ONE of two directions and implement it -- (a) add a subtractive/orphan-detection pass to verify.lua or verify-deploy.sh that flags live files present in .claude/ but absent from a clean regenerate of every provides.* category, so future orphan drift is caught mechanically; or (b) explicitly document in docs/architecture/architecture-spec.md that provides.* parity is one-directional by design (additive only, no stale-removal), so a future reader does not mistake the current behavior for an oversight. Resolve the 4 currently-orphaned files as part of whichever direction is chosen: either they get removed/reconciled (direction a) or explicitly enumerated as accepted legacy orphans in the documentation (direction b).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.",
+      "topic": "agent-system",
+      "created": "2026-08-10T08:32:20Z",
+      "last_updated": "2026-08-10T08:33:19Z"
+    },
+    {
+      "project_number": 1008,
+      "project_name": "fix_orchestrate_mt_session_id_mismatch",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "skill-orchestrate/SKILL.md has a session-id mismatch between two of its own construction sites (MT-1 and MT-4), causing lock self-contention that fully blocks multi-task /orchestrate, a documented capability. Recorded as err_1786349061524_pY97cE, severity critical.\n\nTARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, the two session-id construction sites referenced by the MT-1/MT-4 stage labels.\n\nWORK: locate both construction sites, determine why they produce different session_id values for what should be the same orchestrated dispatch, and unify them so a single session_id is used consistently across the stages that acquire and later reference the task lock. Add a regression test or fixture that exercises a multi-task /orchestrate invocation end to end and confirms no self-contention on the task lock.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until it is fixed (self-evidently -- the defect blocks the very mechanism that would exercise the fix). Use single-task /orchestrate or /implement to work this task.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "topic": "orchestration-concurrency",
+      "created": "2026-08-10T08:32:05Z",
+      "last_updated": "2026-08-10T08:32:05Z"
+    },
+    {
+      "project_number": 1007,
+      "project_name": "fix_handoff_location_regex_4digit_tasks",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "validate-handoff-location.sh matches .orchestrator-handoff.json paths with a fixed-position [0-9]{3} task-directory regex: (^|/)specs/(OC_)?[0-9]{3}_[^/]+/\\.orchestrator-handoff\\.json$. Once specs/state.json's next_project_number crosses 1000, every task directory is 4+ digits, so the regex can never match, and the hook both exits 2 with a false MISPLACED diagnostic and unconditionally calls system-defect-record.sh --defect-class HANDOFF_MISLOCATED on every handoff write under a 4-digit task -- a spurious system_defect on every such task. Recorded as err_1786349061492_XpY38x. This is the single defect currently BLOCKING the capstone acceptance gate's LIVE CYCLE scope: acceptance sub-item 3 requires the system-defect recorder to emit NO system_defect event on a clean run, and the false positive above makes that negative test structurally unpassable on any 4-digit task, independent of system health.\n\nTARGET: agent-system/extensions/core/hooks/validate-handoff-location.sh (the regex at approximately line 65).\n\nWORK: widen the digit-count portion of the regex to accept 3+ digits (e.g. [0-9]{3,}) so it matches both the legacy 3-digit and the current/future 4+-digit task directory naming, while continuing to reject genuinely misplaced handoff paths. Add a negative-test fixture: writing a handoff under a 4-digit scratch task directory must NOT trip HANDOFF_MISLOCATED.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "topic": "agent-system",
+      "created": "2026-08-10T08:31:48Z",
+      "last_updated": "2026-08-10T08:31:48Z"
+    },
     {
       "project_number": 998,
       "project_name": "double_loading_warning_triage",
@@ -525,7 +575,7 @@
       "project_number": 996,
       "project_name": "capstone_end_to_end_refactor_verification",
       "title": "Capstone: end-to-end verification of the refactored agent system",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -537,7 +587,7 @@
       ],
       "description": "Capstone acceptance gate for the agent-system refactor: verify the COMPOSED system end-to-end after all structural waves land. Every prior refactor task carries its own verification bar; nothing yet verifies the composition — a fresh deploy, all gates at their hardened defaults, and a live orchestrate cycle exercising routing, handoff, gate-out, and defect-recording together. This task fixes nothing structural itself: any failure is recorded (errors.json entry and/or spawned follow-up task) and the gate re-runs after the fix lands.\n\nVERIFICATION SCOPE:\n  1. DEPLOY: wipe+regenerate to a scratch tree succeeds; running it twice is byte-identical; declared-vs-deployed parity plus content-hash equality holds for EVERY provides.* category; no quarantined/deprecated file is present in the deployed tree; protected (.syncprotect) files and settings.local.json survive the round-trip.\n  2. GATES: check-extension-docs.sh exits 0 with every gate mode at its hardened baked-in default (no env overrides at invocation); validate-state.sh (including --deep invariants) passes on live state; the script test runner (run-all.sh) is green; the repo-wide task-reference lint (check-task-references.sh) passes.\n  3. LIVE CYCLE: one scratch-task /orchestrate cycle runs end-to-end — routing resolution yields an agent file that EXISTS on disk for every task_type declared in any loaded manifest; the cycle produces a schema-valid handoff (or, if the return-meta single-channel design was chosen, no handoff and no recovery-bridge warnings); gate-out reports zero format errors and zero auto-repaired fields; the system-defect recorder emits NO system_defect event on the clean run (the negative test) and the deferred-defect surface renders empty.\n  4. Record the results as a dated review artifact under specs/reviews/ so the refactor has a closing bookend to the review that opened it.\n\nSOURCE-STORE RULE (binding): any fixes spun out of this task target agent-system/extensions/** (or lua/neotex/plugins/ai/** for deploy machinery), never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-08-05T17:17:11Z",
-      "last_updated": "2026-08-10T08:24:11Z",
+      "last_updated": "2026-08-10T08:40:32Z",
       "session_id": "sess_1786342011_4592c8_996",
       "artifacts": [
         {
@@ -548,6 +598,11 @@
         {
           "path": "specs/996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md",
           "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md",
+          "type": "summary",
           "summary": ""
         }
       ]

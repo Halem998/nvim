@@ -1,30 +1,51 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md",
-      "summary": "7-phase recording-and-follow-up plan for the capstone acceptance gate: confirms the two reproducibility-flagged DEPLOY defects, establishes the LIVE CYCLE blocking condition and the gate-out instrumentation gap, records 5 new errors.json entries, decides follow-up task dispositions for all 10 confirmed defects, and writes the dated specs/reviews/ closing bookend with an explicit FAIL verdict and a mechanical re-run procedure."
+      "type": "summary",
+      "path": "specs/996_capstone_end_to_end_refactor_verification/summaries/01_capstone-gate-recording-summary.md",
+      "summary": "Executed all 7 phases of the RECORDING plan. Gate verdict FAIL/BLOCKED, recorded via 5 new errors.json entries, 5 spawned follow-up tasks (1007-1011), and the dated closing-bookend review artifact. No structural fix applied anywhere."
+    },
+    {
+      "type": "review",
+      "path": "specs/reviews/review-2026-08-10-agent-system-refactor-capstone.md",
+      "summary": "Dated closing bookend to review-2026-07-29-agent-system.md: full 14-sub-item DEPLOY/GATES/LIVE-CYCLE verdict accounting, defect ledger, root-cause framing, and mechanical re-run procedure."
     }
   ],
-  "next_steps": "Run /implement 996 to execute the plan. It fixes nothing structural by design: Phase 4 (errors.json entries) is the primary deliverable and Phase 6 (specs/reviews/ closing bookend) satisfies the task's scope item 4. The gate's verdict is FAIL, and LIVE CYCLE is BLOCKED on err_1786349061492_XpY38x (the 3-digit handoff-location regex) because next_project_number is 1007, so every new scratch task's handoff write emits a spurious HANDOFF_MISLOCATED system_defect that structurally defeats the clean-run negative test.",
-  "metadata": {
-    "session_id": "sess_1786342011_4592c8_996",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 5,
-    "dependency_waves": [[1, 2, 3], [4], [5], [6], [7]]
+  "completion_data": {
+    "completion_summary": "Recorded the capstone acceptance gate's FAIL/BLOCKED verdict: appended 5 new specs/errors.json entries (deploy_merge_content_loss, deploy_nondeterministic_merge, deploy_orphan_files_undercounted, test_suite_failure_undocumented, acceptance_criterion_not_instrumented) via errors-append.sh, spawned 5 follow-up tasks (1007-1011) via the sanctioned state-write.sh creation path, and wrote the dated specs/reviews/ closing bookend with a mechanical re-run procedure. No structural fix was applied under agent-system/**, .claude/**, lua/**, or .opencode/** -- confirmed by a scoped git status check.",
+    "roadmap_items": []
   },
+  "modified_files": [
+    "specs/errors.json",
+    "specs/state.json",
+    "specs/TODO.md",
+    "specs/reviews/review-2026-08-10-agent-system-refactor-capstone.md",
+    "specs/996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md",
+    "specs/996_capstone_end_to_end_refactor_verification/summaries/01_capstone-gate-recording-summary.md"
+  ],
   "memory_candidates": [
     {
-      "content": "When a verification gate includes a negative test ('the defect recorder emits NO event on a clean run'), check the detector's own trigger conditions before concluding the system is healthy or unhealthy. A live defect in the detection path can make the negative test structurally unpassable for reasons unrelated to the system under test. Concrete instance: hooks/validate-handoff-location.sh matches handoff paths with a fixed-position [0-9]{3} task-directory regex and, on a non-match, both exits 2 and calls system-defect-record.sh --defect-class HANDOFF_MISLOCATED. Once specs/state.json's next_project_number crossed 1000, every new task became 4-digit, so every such task's handoff write emits a spurious defect event. Any acceptance criterion asserting 'no defect events on a clean run' is therefore unpassable until that regex is widened -- the gate is BLOCKED, not FAILING. Generalization: a gate whose pass condition depends on a detector's silence inherits every one of that detector's false-positive modes.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md",
+      "content": "When re-checking a single-observation deploy defect for reproducibility (e.g. a content-lossy config merge across two identical --wipe runs), use `jq -S` (sorted-key semantic diff) alongside the raw diff to distinguish genuine content loss from mere object-key/array-element ordering non-determinism. A raw multi-line diff that looks like whole blocks were dropped and relocated can be fully explained by non-deterministic key ordering (e.g. Lua table iteration leaking into JSON encoding) with `jq -S` on both sides showing zero semantic difference. Do not conclude content loss from a raw diff alone -- confirm with a sorted-key structural comparison first.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/996_capstone_end_to_end_refactor_verification/summaries/01_capstone-gate-recording-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["negative-test", "acceptance-gate", "false-positive-detector", "validate-handoff-location", "system-defect-record", "blocked-vs-failing"]
+      "suggested_keywords": ["jq-S", "semantic-diff", "deploy-nondeterminism", "reproducibility-check", "settings-merge"]
+    },
+    {
+      "content": "For a RECORDING-only gate task (fixes nothing structural, only records findings and spawns follow-ups), the sanctioned task-creation path can be replicated directly via state-write.sh using the exact schema /task's Create Task Mode documents (prepend to active_projects, increment next_project_number, pass --regen-todo) without needing the interactive /task command itself. This lets an implementer spawn multiple follow-up tasks in one dispatch while still going through the mutex-guarded, validated write path -- never a raw jq assignment to state.json.",
+      "category": "PATTERN",
+      "source_artifact": "specs/996_capstone_end_to_end_refactor_verification/summaries/01_capstone-gate-recording-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["state-write.sh", "task-creation", "sanctioned-path", "spawn-follow-up-tasks", "recording-plan"]
     }
   ],
-  "modified_files": []
+  "metadata": {
+    "session_id": "sess_1786342011_4592c8_996",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

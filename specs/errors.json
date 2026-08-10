@@ -1,1 +1,173 @@
-{"errors": []}
+{
+  "errors": [
+    {
+      "id": "err_1786344051474_RcIhk6",
+      "timestamp": "2026-08-10T06:40:51.478Z",
+      "type": "delegation_interrupted",
+      "severity": "medium",
+      "message": "Task 995 implement dispatch returned with .return-meta.json status=in_progress (early-metadata only); agent spawned phase sub-agents and terminated before writing a terminal handoff. Phases 1-5,7 committed; phase 6 partially applied and uncommitted; phases 8-10 not started. Plan phase markers for 3,4,5,7 still read [NOT STARTED] despite landed commits.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8_995",
+        "command": "/orchestrate",
+        "task": 995,
+        "checkpoint": "GATE_OUT"
+      },
+      "recovery": {
+        "suggested_action": "Re-dispatch implement to resume from phase 6; instruct agent to reconcile plan markers against committed state first",
+        "auto_recoverable": true
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786349061492_XpY38x",
+      "timestamp": "2026-08-10T08:04:21.497Z",
+      "type": "hook_regex_defect",
+      "severity": "high",
+      "message": "validate-handoff-location.sh:65 allow-pattern uses exact-count [0-9]{3}_ so every task dir numbered >999 fails to match; handoff writes for tasks 1000-1003 (which exist on disk today) are rejected exit 2. Peer-verified empirically: specs/1000_foo NO_MATCH, specs/999_foo MATCH.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8",
+        "command": "/orchestrate",
+        "checkpoint": "DELEGATE"
+      },
+      "recovery": {
+        "suggested_action": "Widen quantifier to [0-9]{3,} in agent-system/extensions/core/hooks/validate-handoff-location.sh",
+        "auto_recoverable": false
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786349061524_pY97cE",
+      "timestamp": "2026-08-10T08:04:21.528Z",
+      "type": "lock_session_self_contention",
+      "severity": "critical",
+      "message": "skill-orchestrate/SKILL.md:1960 acquires per-task locks with suffixed ${session_id}_${task_num} while Stage MT-1 registers the batch registry entry under the bare session_id; session_contention() self-exclusion (lib/file-scope-overlap.sh:115) is exact string match, so the batch contends against its own registration and every task is refused. Blocks multi-task /orchestrate entirely. The batch-admit call at SKILL.md:1628 correctly uses the bare id; the acquire call does not.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8",
+        "command": "/orchestrate",
+        "checkpoint": "GATE_IN"
+      },
+      "recovery": {
+        "suggested_action": "Pass bare session_id to the task-lock.sh acquire/release calls at SKILL.md:1960, matching the batch-admit call site",
+        "auto_recoverable": false
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786349061556_LuKGif",
+      "timestamp": "2026-08-10T08:04:21.560Z",
+      "type": "deploy_ghost_index_entries",
+      "severity": "medium",
+      "message": "orchestration/orchestration-validation.md and orchestration/subagent-validation.md exist only in deployed .claude/context/index.json with no source-store owner (context/orchestration/validation.md:3 states it consolidates both). install-extension.sh merge_index_entries is purely additive so no source edit removes them; ~4.4k tokens hooked to meta-builder-agent. May make the capstone's declared-vs-deployed parity criterion unsatisfiable as written.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8",
+        "command": "/orchestrate"
+      },
+      "recovery": {
+        "suggested_action": "Decide whether merge_index_entries should prune entries with no source owner; verify whether a wiped scratch tree also reproduces the ghosts",
+        "auto_recoverable": false
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786349061588_fqHbUZ",
+      "timestamp": "2026-08-10T08:04:21.592Z",
+      "type": "defect_vocabulary_gap",
+      "severity": "medium",
+      "message": "system-defect-record.sh's ten closed Signal A classes cover none of: lock/session contention, hook-regex defects, plan-marker drift, deploy-ghost index entries. Four real defects found in one batch had no durable telemetry path and were rejected by the recorder. events.jsonl holds only 3 system_defect events ever recorded.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8",
+        "command": "/orchestrate"
+      },
+      "recovery": {
+        "suggested_action": "Extend the Signal A vocabulary or add an escape-hatch class for infrastructure defects outside the handoff/artifact axis",
+        "auto_recoverable": false
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786350581208_23mAsn",
+      "timestamp": "2026-08-10T08:29:41.212Z",
+      "type": "deploy_merge_content_loss",
+      "severity": "high",
+      "message": "Two consecutive identical deploy-headless.sh --wipe runs against the same target were re-checked for content-lossy settings.local.json merge (task 996 Phase 1 re-check, 3 wipe-pairs): reproduction rate observed 0 of 3. All 3 pairs showed ordering-only differences (mcpServers/hooks blocks relocated, semantically identical under jq -S), not a dropped block. The original single-observation finding (a dropped hooks.PreToolUse block and an mcpServers block) did not reproduce under re-check; severity set to high (not critical) with the 0-of-3 rate stated per the non-reproduction-is-a-result mitigation. A routine redeploy silently dropping a hook or MCP registration remains the most consequential hypothesis in this batch if it recurs -- re-check before any fix effort.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8_996",
+        "command": "/plan",
+        "task": 996,
+        "checkpoint": "GATE_OUT"
+      },
+      "recovery": {
+        "suggested_action": "Re-run the Phase 1 wipe-pair procedure (agent-system/extensions/core/scripts/deploy-headless.sh --wipe) several more times under varied conditions before spending fix effort; if it reproduces, investigate the settings.local.json merge routine for order-of-operations races."
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786350581240_JyztWt",
+      "timestamp": "2026-08-10T08:29:41.245Z",
+      "type": "deploy_nondeterministic_merge",
+      "severity": "low",
+      "message": "context/index.json and settings.json differ in key/array order between two identical deploy-headless.sh --wipe runs, beyond the expected generated timestamp in index.json. Confirmed via jq -S semantic diff across 3 wipe-pairs (task 996 Phase 1): sorted-key diffs are empty (settings.json) or differ only in the generated timestamp (index.json), i.e. structurally/semantically identical, ordering only. Harmless to JSON consumers today; defeats any future byte-identical-diff verification of the deploy output.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8_996",
+        "command": "/plan",
+        "task": 996,
+        "checkpoint": "GATE_OUT"
+      },
+      "recovery": {
+        "suggested_action": "Sort object keys and stabilize array ordering (e.g. sort by path) at generation time in the merge/index-build routine under agent-system/extensions/core/ so two identical --wipe runs diff clean modulo timestamps."
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786350581273_TAWj0I",
+      "timestamp": "2026-08-10T08:29:41.277Z",
+      "type": "deploy_orphan_files_undercounted",
+      "severity": "medium",
+      "message": "The live .claude/ tree carries 4 orphan files absent from a clean scratch regenerate (confirmed via task 996 Phase 1 comm -23 diff): context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md. Two of these (docs/architecture/architecture-spec.md, docs/README.md) were not named by the existing err_1786349061556_LuKGif (deploy_ghost_index_entries), which only covered the other two. This entry extends err_1786349061556_LuKGif's orphan-file coverage; it does not replace it. Declared-vs-deployed parity for provides.* categories is one-directional by design: verify.lua's result shape has no extra/orphan field and only iterates the declared side, and install-extension.sh's merge_index_entries() is purely additive with no stale-removal step.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8_996",
+        "command": "/plan",
+        "task": 996,
+        "checkpoint": "GATE_OUT"
+      },
+      "recovery": {
+        "suggested_action": "Either add a subtractive/orphan-detection pass to agent-system/extensions/core/scripts/verify-deploy.sh (or verify.lua) that flags live files absent from a clean regenerate, or explicitly document one-directional parity as the intended contract in docs/architecture/architecture-spec.md."
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786350581305_8cNAZ7",
+      "timestamp": "2026-08-10T08:29:41.309Z",
+      "type": "test_suite_failure_undocumented",
+      "severity": "medium",
+      "message": "tests/run-all.sh has a 7th, previously unreported deployed-mode-only failure: test-common-lib.sh flags .opencode/scripts/command-gate-in.sh for an inline sess_$(date +%s)_... session-id generator that duplicates lib/common.sh's canonical generator instead of sourcing it. Passes in source-store mode, fails only in deployed mode. Distinct from the other 6 previously-known run-all.sh failures (2 source-store, 6 prior deployed) confirmed live by the capstone research dispatch.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8_996",
+        "command": "/plan",
+        "task": 996,
+        "checkpoint": "GATE_OUT"
+      },
+      "recovery": {
+        "suggested_action": "Fix .opencode/scripts/command-gate-in.sh to source the canonical session-id generator from lib/common.sh instead of inlining its own sess_$(date +%s)_... construction; fold into whichever run-all.sh follow-up task is open (the batch already recorded a REPO_ROOT path-depth follow-up), do not spawn a duplicate task."
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786350581339_Q4VnFy",
+      "timestamp": "2026-08-10T08:29:41.344Z",
+      "type": "acceptance_criterion_not_instrumented",
+      "severity": "medium",
+      "message": "Acceptance criterion 'gate-out reports zero format errors and zero auto-repaired fields' is unverifiable as written (task 996 Phase 3 trace): agent-system/extensions/core/scripts/command-gate-out.sh (134 lines) has no counter, aggregate, or exit-code surface for auto-repairs -- its only related line is a comment. The actual repair path is command-gate-out.sh -> skill_validate_task_artifacts (skill-base.sh) -> validate-artifact.sh \"$f\" \"$type\" --fix 2>/dev/null. validate-artifact.sh emits a terminal '[FIXED] $fixes field(s) auto-repaired, $errors error(s), $warnings warning(s) remaining' line and exits 2, but skill_validate_task_artifacts discards stderr, collapses every non-zero exit into one generic non-blocking WARNING with no numeric detail, and always returns 0 -- so command-gate-out.sh sees no signal at all. There is no 'gate-out reports' surface to assert or refute 'zero auto-repaired fields' against. Secondary hazard: --fix mutates the artifact in place, so a repair both happens and goes uncounted.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8_996",
+        "command": "/plan",
+        "task": 996,
+        "checkpoint": "GATE_OUT"
+      },
+      "recovery": {
+        "suggested_action": "Add a repair counter/aggregate to skill_validate_task_artifacts in agent-system/extensions/core/scripts/skill-base.sh that captures validate-artifact.sh's [FIXED] N count per file, sums it across the directory sweep, and surfaces the total (stdout line and/or exit-code signal) from command-gate-out.sh; alternatively amend the acceptance criterion to something checkable given current instrumentation."
+      },
+      "fix_status": "unfixed"
+    }
+  ]
+}

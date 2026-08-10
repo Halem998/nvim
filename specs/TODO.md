@@ -1,5 +1,5 @@
 ---
-next_project_number: 1007
+next_project_number: 1012
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 1007
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 996,1004 | -- | agent-system |
+| 1 | 1004,1007,1008,1009,1010,1011 | -- | agent-system, orchestration-concurrency |
 | 2 | 1005 | 1004 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
@@ -19,12 +19,116 @@ next_project_number: 1007
 
 ### Agent System
 
-996 [PLANNED] — Capstone acceptance gate for the agent-system refactor: verify th
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
+1007 [NOT STARTED] — validate-handoff-location.sh matches .orchestrator-handoff.json p
+1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
+1010 [NOT STARTED] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
+1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
+
+### Orchestration Concurrency
+
+1008 [NOT STARTED] — skill-orchestrate/SKILL.md has a session-id mismatch between two 
 
 ## Tasks
+
+### 1011. Expand defect class vocabulary
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: The system-defect vocabulary has a gap: defect classes exist for a narrow set of shapes, but at least three concrete instances from this batch do not fit cleanly into any existing defect_class value. Recorded as err_1786349061588_fqHbUZ, severity medium. Three concrete instances now ground the gap, confirmed by the capstone acceptance gate dispatch: lock/session contention (err_1786349061524_pY97cE, MT-1/MT-4 session-id mismatch), hook-regex/path-depth boundary defects (err_1786349061492_XpY38x, the 3-digit handoff-location regex), and deploy orphan-file drift (err_1786349061556_LuKGif / err_1786350581273_TAWj0I).
+
+TARGET: wherever defect_class is enumerated for system-defect-record.sh (search the source store for its schema/enum definition) and any consumer that switches on defect_class value.
+
+WORK: read the current defect_class enum, confirm the three instances above genuinely lack a fitting class (do not add classes for shapes that already have one), and add the minimum set of new classes needed to name them precisely -- for example a session/lock-contention class, a regex/path-boundary class, and an orphan-drift class. Update any documentation enumerating the vocabulary. Do not rename or remove existing classes as part of this task.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+CONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.
+
+---
+
+### 1010. Fix opencode gate in session id duplication
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: tests/run-all.sh has a 7th, previously unreported deployed-mode-only failure: test-common-lib.sh flags .opencode/scripts/command-gate-in.sh for an inline sess_$(date +%s)_... session-id generator that duplicates lib/common.sh's canonical generator instead of sourcing it. It passes in source-store mode and fails only in deployed mode. Recorded as err_1786350581305_8cNAZ7. No open task currently covers tests/run-all.sh failures (the prior consolidation task that made the suites runnable is already completed); this task is spawned standalone rather than folded, since nothing is open to fold into.
+
+TARGET: .opencode/scripts/command-gate-in.sh (the inline sess_$(date +%s)_... construction) and agent-system/extensions/core/scripts/lib/common.sh (the canonical generator it should source instead).
+
+WORK: replace the inline session-id generator in .opencode/scripts/command-gate-in.sh with a sourced call to lib/common.sh's canonical generator, matching the pattern already used elsewhere in the deployed tree. Re-run tests/run-all.sh in BOTH source-store and deployed modes and confirm test-common-lib.sh passes in both.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. Note: .opencode/scripts/command-gate-in.sh is itself a deploy target mirroring a source-store equivalent -- confirm the correct source-store location before editing (do not hand-edit the deployed .opencode/ tree directly if it is generated).
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+CONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.
+
+---
+
+### 1009. Resolve deploy orphan file parity
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Declared-vs-deployed parity for provides.* categories is one-directional by design, and the live .claude/ tree carries 4 orphan files absent from a clean scratch regenerate: context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md. Two of these (docs/architecture/architecture-spec.md, docs/README.md) were not covered by the pre-existing err_1786349061556_LuKGif (deploy_ghost_index_entries), which only named the other two -- confirmed and extended by err_1786350581273_TAWj0I (deploy_orphan_files_undercounted). This task covers BOTH error ids with one decision; do not split it.
+
+MECHANICAL REASON (already diagnosed, do not re-derive): verify.lua's result shape has no extra/orphan field and only ever iterates the declared side; install-extension.sh's merge_index_entries() is purely additive with no stale-removal step. Parity is therefore verified only in the declared-to-deployed direction, never the reverse.
+
+TARGET: agent-system/extensions/core/scripts/verify-deploy.sh (or the shared verify.lua module it calls), and/or docs/architecture/architecture-spec.md if the decision is to document one-directional parity as intended rather than build detection.
+
+WORK: decide ONE of two directions and implement it -- (a) add a subtractive/orphan-detection pass to verify.lua or verify-deploy.sh that flags live files present in .claude/ but absent from a clean regenerate of every provides.* category, so future orphan drift is caught mechanically; or (b) explicitly document in docs/architecture/architecture-spec.md that provides.* parity is one-directional by design (additive only, no stale-removal), so a future reader does not mistake the current behavior for an oversight. Resolve the 4 currently-orphaned files as part of whichever direction is chosen: either they get removed/reconciled (direction a) or explicitly enumerated as accepted legacy orphans in the documentation (direction b).
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+CONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.
+
+---
+
+### 1008. Fix orchestrate mt session id mismatch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: None
+
+**Description**: skill-orchestrate/SKILL.md has a session-id mismatch between two of its own construction sites (MT-1 and MT-4), causing lock self-contention that fully blocks multi-task /orchestrate, a documented capability. Recorded as err_1786349061524_pY97cE, severity critical.
+
+TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, the two session-id construction sites referenced by the MT-1/MT-4 stage labels.
+
+WORK: locate both construction sites, determine why they produce different session_id values for what should be the same orchestrated dispatch, and unify them so a single session_id is used consistently across the stages that acquire and later reference the task lock. Add a regression test or fixture that exercises a multi-task /orchestrate invocation end to end and confirms no self-contention on the task lock.
+
+CONSTRAINT: do not drive this task with multi-task /orchestrate until it is fixed (self-evidently -- the defect blocks the very mechanism that would exercise the fix). Use single-task /orchestrate or /implement to work this task.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 1007. Fix handoff location regex 4digit tasks
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: validate-handoff-location.sh matches .orchestrator-handoff.json paths with a fixed-position [0-9]{3} task-directory regex: (^|/)specs/(OC_)?[0-9]{3}_[^/]+/\.orchestrator-handoff\.json$. Once specs/state.json's next_project_number crosses 1000, every task directory is 4+ digits, so the regex can never match, and the hook both exits 2 with a false MISPLACED diagnostic and unconditionally calls system-defect-record.sh --defect-class HANDOFF_MISLOCATED on every handoff write under a 4-digit task -- a spurious system_defect on every such task. Recorded as err_1786349061492_XpY38x. This is the single defect currently BLOCKING the capstone acceptance gate's LIVE CYCLE scope: acceptance sub-item 3 requires the system-defect recorder to emit NO system_defect event on a clean run, and the false positive above makes that negative test structurally unpassable on any 4-digit task, independent of system health.
+
+TARGET: agent-system/extensions/core/hooks/validate-handoff-location.sh (the regex at approximately line 65).
+
+WORK: widen the digit-count portion of the regex to accept 3+ digits (e.g. [0-9]{3,}) so it matches both the legacy 3-digit and the current/future 4+-digit task directory naming, while continuing to reject genuinely misplaced handoff paths. Add a negative-test fixture: writing a handoff under a 4-digit scratch task directory must NOT trip HANDOFF_MISLOCATED.
+
+CONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 1006. Nothing prevents an agent from rewriting state.json .artifacts wholesale, silently discarding prior artifacts
 - **Status**: [NOT STARTED]
@@ -640,12 +744,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 996. Capstone: end-to-end verification of the refactored agent system
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 985, Task 986, Task 993, Task 995, Task 999
 - **Research**: [996_capstone_end_to_end_refactor_verification/reports/01_capstone-verification-findings.md]
 - **Plan**: [996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md]
+- **Summary**: [996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md]
 
 **Description**: Capstone acceptance gate for the agent-system refactor: verify the COMPOSED system end-to-end after all structural waves land. Every prior refactor task carries its own verification bar; nothing yet verifies the composition — a fresh deploy, all gates at their hardened defaults, and a live orchestrate cycle exercising routing, handoff, gate-out, and defect-recording together. This task fixes nothing structural itself: any failure is recorded (errors.json entry and/or spawned follow-up task) and the gate re-runs after the fix lands.
 
