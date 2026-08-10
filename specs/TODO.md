@@ -23,7 +23,7 @@ next_project_number: 1004
 
 993 [PLANNED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-1000 [PLANNING] — Give the cslib extension its own copy of the adversarial-verifica
+1000 [PLANNED] — Give the cslib extension its own copy of the adversarial-verifica
   └─ 1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
 1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
   └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
@@ -215,11 +215,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1000. Give cslib its own adversarial-verification contract copy and union-valued index entry
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 992
 - **Research**: [1000_cslib_adversarial_verification_mirror/reports/01_cslib-adversarial-verification-mirror.md]
+- **Plan**: [1000_cslib_adversarial_verification_mirror/plans/01_cslib-h4-contract-mirror.md]
 
 **Description**: Give the cslib extension its own copy of the adversarial-verification contract and a union-valued index entry for it, closing a recorded regression. The meta-catch-all decomposition task removed two agent names -- cslib-research-hard-agent and lean-research-hard-agent -- from core's index entry for contracts/adversarial-verification.md, because both name agents that exist in the source store but belong to unloaded extensions and so never reach .claude/agents/ in this deploy. That removal was correct and is not to be reverted. Its recorded consequence is this task's subject: the contract is now unreachable for cslib-research-hard-agent in a cslib-loaded deploy.
 
