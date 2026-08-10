@@ -1,27 +1,11 @@
 {
-  "status": "planned",
-  "task_number": 1003,
-  "agent_type": "planner-agent",
-  "session_id": "sess_1786342011_4592c8_1003",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/plans/01_fix-warn-sorry-double-count.md",
-      "summary": "Four-phase test-first plan: (1) author agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh with anti-vacuous dual assertions and prove it FAILS against the unfixed script; (2) swap line 144 to (?<![.\\w])sorry\\b and reconcile the two comment lines (11, 96) that name the old pattern, leaving line 5's rejected-grep-chain description and strip_lean_comments()'s body byte-identical; (3) real-corpus before/after differential over ~/Projects/cslib asserting delta == independently-grepped annotation count and no real sorry dropped, with --cross-check as the secondary oracle; (4) repo lint gates and source-store hygiene."
-    }
-  ],
-  "phase_count": 4,
-  "estimated_hours": 2.5,
-  "dependency_waves": [[1], [2], [3], [4]],
-  "memory_candidates": [
-    {
-      "content": "Word-boundary regex bugs in census/count tooling are usually boundary-class bugs, not counting-logic bugs, and the two must be diagnosed separately. In Python/PCRE, \\b fires between a word char and any non-word char including '.', so \\bsorry\\b matches inside dotted-qualified names like warn.sorry or foo.sorry. The fix is a negative lookbehind (?<![.\\w])sorry\\b, NOT a line-level pre-filter that skips lines containing the qualified name -- a skip-filter silently drops a real match riding on the same line as the annotation, converting an overcount into an undercount. Before changing such a matcher, determine whether the surrounding accumulator counts per-line (if re.search(line): total += 1) or per-occurrence (findall): a per-line accumulator makes same-line co-occurrence coincidentally correct today, so a well-intentioned switch to occurrence counting during the same edit reintroduces a double-count. Verification for this bug class must be differential and executed, never inspected: run the old and new matcher over the same real corpus and assert delta equals an independently-grepped count of the confounding token, plus that the post-fix inventory is a strict subset of the pre-fix one.",
-      "category": "PATTERN",
-      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/plans/01_fix-warn-sorry-double-count.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["regex-word-boundary", "census-counting", "negative-lookbehind", "per-line-vs-per-occurrence", "differential-verification", "sorry-census"]
-    }
-  ],
-  "next_steps": "Run /implement 1003 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786342011_4592c8_1003",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 4
+  }
 }

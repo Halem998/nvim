@@ -1,7 +1,7 @@
 # Implementation Plan: Fix lean-sorry-census.sh warn.sorry double-count
 
 - **Task**: 1003 - Fix lean-sorry-census.sh double-counting warn.sorry suppression annotations
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md
@@ -107,45 +107,49 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Write the regression fixture and prove it fails against the unfixed script [NOT STARTED]
+### Phase 1: Write the regression fixture and prove it fails against the unfixed script [COMPLETED]
 
 **Goal**: Create `agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh` and
 demonstrate — by running it before any source change — that it FAILS on the own-line case. This
 is the falsifiability check that makes the rest of the task meaningful.
 
 **Tasks**:
-- [ ] Create the new directory `agent-system/extensions/lean/scripts/tests/`.
-- [ ] Read `agent-system/extensions/core/scripts/tests/test-census-count.sh` for the house style:
+- [x] Create the new directory `agent-system/extensions/lean/scripts/tests/`. *(completed)*
+- [x] Read `agent-system/extensions/core/scripts/tests/test-census-count.sh` for the house style:
       `set -uo pipefail`, `pass()/fail()/info()` helpers with `PASSED`/`FAILED` integer counters,
       a `mktemp -d` workdir with `trap ... EXIT` cleanup, synthetic heredoc fixtures only, exit 0
       on all-pass / exit 1 on any failure, and a header comment stating the anti-vacuous guard.
-- [ ] Write `test-lean-sorry-census.sh` resolving the tool under test relative to
+      *(completed)*
+- [x] Write `test-lean-sorry-census.sh` resolving the tool under test relative to
       `${BASH_SOURCE[0]}` (`$SCRIPT_DIR/../lean-sorry-census.sh`), erroring out if it is absent or
-      if `python3` is not on PATH.
-- [ ] Parse the tool's `sorry_count` from stdout with the same idiom the script itself uses
-      internally: `grep -oE '^sorry_count: [0-9]+' | grep -oE '[0-9]+'`.
-- [ ] Fixture A (own-line annotation): `set_option warn.sorry false in` on its own line followed
-      by `theorem foo : P := sorry`. Assert reported count is exactly 1.
-- [ ] Fixture B (same-line annotation): `set_option warn.sorry false in theorem bar : Q := sorry`
-      on one line. Assert exactly 1 — not 0 (line-skip anti-pattern) and not 2.
-- [ ] Fixture C (stripper guard): one `--` line-commented sorry, one sorry inside a nested
+      if `python3` is not on PATH. *(completed)*
+- [x] Parse the tool's `sorry_count` from stdout with the same idiom the script itself uses
+      internally: `grep -oE '^sorry_count: [0-9]+' | grep -oE '[0-9]+'`. *(completed)*
+- [x] Fixture A (own-line annotation): `set_option warn.sorry false in` on its own line followed
+      by `theorem foo : P := sorry`. Assert reported count is exactly 1. *(completed)*
+- [x] Fixture B (same-line annotation): `set_option warn.sorry false in theorem bar : Q := sorry`
+      on one line. Assert exactly 1 — not 0 (line-skip anti-pattern) and not 2. *(completed)*
+- [x] Fixture C (stripper guard): one `--` line-commented sorry, one sorry inside a nested
       `/- ... /- ... -/ ... -/` block comment, and one sorry inside a `"..."` string literal.
-      Assert each contributes 0.
-- [ ] Fixture D (dotted-name generality): a line containing `foo.sorry` with no bare sorry.
-      Assert 0.
-- [ ] Fixture E (aggregate): a file with N own-line annotations and M real sorries. Assert the
-      reported total is M, not M + N.
-- [ ] Anti-vacuous dual assertion: for Fixtures A and D, additionally compute what the naive
+      Assert each contributes 0. *(completed)*
+- [x] Fixture D (dotted-name generality): a line containing `foo.sorry` with no bare sorry.
+      Assert 0. *(completed)*
+- [x] Fixture E (aggregate): a file with N own-line annotations and M real sorries. Assert the
+      reported total is M, not M + N. *(completed: N=3, M=2)*
+- [x] Anti-vacuous dual assertion: for Fixtures A and D, additionally compute what the naive
       `\bsorry\b` pattern yields over the same fixture text (a small inline `python3 -c` is
       sufficient) and assert it differs from the tool's number, so a fixture both
-      implementations would agree on can never masquerade as coverage.
-- [ ] Add an inventory assertion on Fixture A: the `sorry_inventory:` block must contain the
+      implementations would agree on can never masquerade as coverage. *(completed)*
+- [x] Add an inventory assertion on Fixture A: the `sorry_inventory:` block must contain the
       `theorem foo` line and must NOT contain the `set_option` line — this catches a
-      count-correct-but-inventory-wrong fix.
-- [ ] `chmod +x` the new file, matching the mode of the core test files.
-- [ ] **Run it now, against the unfixed script.** Record the output. Fixtures A, D, and E MUST
+      count-correct-but-inventory-wrong fix. *(completed)*
+- [x] `chmod +x` the new file, matching the mode of the core test files. *(completed)*
+- [x] **Run it now, against the unfixed script.** Record the output. Fixtures A, D, and E MUST
       fail and B and C MUST pass. Any other outcome means the fixture is wrong, not the script —
-      fix the fixture and re-run before proceeding.
+      fix the fixture and re-run before proceeding. *(completed: observed exactly A/D/E FAIL,
+      B/C PASS — PASSED=2, FAILED=6, exit 1. Fixture A: count 2 (expected 1), anti-vacuous
+      naive==tool==2, inventory shows both lines. Fixture D: count 1 (expected 0), anti-vacuous
+      naive==tool==1. Fixture E: count 5 (expected 2). Confirms the Scope Hypothesis exactly.)*
 
 **Timing**: 1 hour
 

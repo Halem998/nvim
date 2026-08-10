@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Write the regression fixture and prove it fails against the unfixed script",
+  "started_at": "2026-08-10T07:28:55Z",
+  "last_updated": "2026-08-10T07:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create tests/ directory and write test-lean-sorry-census.sh fixture suite (A-E + anti-vacuous + inventory assertion)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]},
+    {"id": 2, "description": "chmod +x and run suite against unfixed script, record pass/fail pattern", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Ran against UNFIXED script: Fixture A FAIL (count 2, expected 1), Fixture A anti-vacuous FAIL (naive==tool==2), Fixture A inventory FAIL (both lines present), Fixture B PASS (count 1), Fixture C PASS (count 0), Fixture D FAIL (count 1, expected 0), Fixture D anti-vacuous FAIL (naive==tool==1), Fixture E FAIL (count 5, expected 2). Exactly matches Scope Hypothesis: A, D, E fail; B, C pass. Suite exits 1 with PASSED=2 FAILED=6."
+}
