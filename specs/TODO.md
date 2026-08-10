@@ -11,7 +11,7 @@ next_project_number: 1004
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 986,995,997,1001,1002,1003 | -- | agent-system, orchestration-concurrency |
+| 1 | 986,995,1001,1002,1003 | -- | agent-system |
 | 2 | 999 | 986,1002 | agent-system |
 | 3 | 996 | 995,999 | agent-system |
 
@@ -28,10 +28,6 @@ next_project_number: 1004
 1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
   └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
 1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
-
-### Orchestration Concurrency
-
-997 [PLANNED] — session_liveness() in scripts/task-lock.sh reports liveness_reaso
 
 ## Tasks
 
@@ -355,12 +351,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 997. Report a confirmably-dead pid within the grace floor as its own liveness reason
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
 - **Research**: [997_fix_session_liveness_reason_mislabel/reports/01_verify-liveness-reason-ladder.md]
 - **Plan**: [997_fix_session_liveness_reason_mislabel/plans/01_dead-pid-within-grace-reason.md]
+- **Summary**: [997_fix_session_liveness_reason_mislabel/summaries/01_dead-pid-within-grace-reason-summary.md]
 
 **Description**: session_liveness() in scripts/task-lock.sh reports liveness_reason "pid-alive" for a pid that
 `kill -0` just proved is GONE, whenever the entry's age is below SESSION_REGISTRY_DEAD_PID_MIN

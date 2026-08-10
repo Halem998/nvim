@@ -1,7 +1,7 @@
 # Implementation Plan: Report a confirmably-dead pid within the grace floor as its own liveness reason
 
 - **Task**: 997 - Report a confirmably-dead pid within the grace floor as its own liveness reason
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/997_fix_session_liveness_reason_mislabel/reports/01_verify-liveness-reason-ladder.md
