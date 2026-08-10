@@ -210,7 +210,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Slash command file structure and organization",
-      "line_count": 982,
+      "line_count": 985,
       "keywords": [
         "format",
         "command",

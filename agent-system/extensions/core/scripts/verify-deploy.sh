@@ -514,6 +514,36 @@ else
 fi
 
 say ""
+
+# Gate 12: state-writer boundary lint (lint-state-writer-boundary.sh --verbose)
+#
+# Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11):
+# only the source store (agent-system/extensions/core/**) is validated, regardless of which copy
+# (source store or deployed .claude/) invoked this script. Invokes the source-store copy
+# directly, resolving REPO_ROOT the same way gate 11 does.
+say "12. State-writer boundary lint (lint-state-writer-boundary.sh --verbose)"
+CURRENT_GATE="gate12"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- state-writer boundary lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh" ]; then
+  fail "lint-state-writer-boundary.sh not found in source store"
+else
+  state_writer_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh" --verbose 2>&1)
+  state_writer_lint_status=$?
+  if [ "$state_writer_lint_status" -eq 0 ]; then
+    pass "state-writer boundary lint reports no hand-rolled writes"
+  else
+    fail "state-writer boundary lint reported hand-rolled state.json writes" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r state_writer_lint_line; do
+        FINDINGS_LIST+=("FINDING gate12 ${state_writer_lint_line#*VIOLATION\] }")
+      done < <(printf '%s\n' "$state_writer_lint_output" | grep -F '[VIOLATION]')
+    fi
+  fi
+fi
+
+say ""
 if [ "$FAILURES" -eq 0 ]; then
   echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)"
   say ""
