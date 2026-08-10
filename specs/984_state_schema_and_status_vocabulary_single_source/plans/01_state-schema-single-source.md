@@ -1,7 +1,7 @@
 # Implementation Plan: Task #984
 
 - **Task**: 984 - One state.json schema, one status vocabulary, converted extension writers
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None remaining (962, 969, 988 landed and are archived-completed)
 - **Research Inputs**: `specs/984_state_schema_and_status_vocabulary_single_source/reports/01_state-schema-status-vocabulary.md`
@@ -144,7 +144,7 @@ Phase 5 owns `index-entries.json` — no wave-2 phase writes a file another wave
 
 ---
 
-### Phase 1: Schema and status-vocabulary anchor [NOT STARTED]
+### Phase 1: Schema and status-vocabulary anchor [IN PROGRESS]
 
 **Goal**: Create `context/schemas/state-schema.json` (draft-07) matching empirically-derived live
 reality, and `scripts/lib/status-vocabulary.sh` as the single sourced enum anchor, with a drift

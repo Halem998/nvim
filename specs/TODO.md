@@ -38,7 +38,7 @@ next_project_number: 1004
 
 ### Status Marker Lifecycle
 
-984 [PLANNED] — Give specs/state.json a machine-enforced schema and make the stat
+984 [IMPLEMENTING] — Give specs/state.json a machine-enforced schema and make the stat
 
 ## Tasks
 
@@ -583,7 +583,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 984. One state.json schema, one status vocabulary, converted extension writers
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
 - **Dependencies**: Task 962, Task 969, Task 988

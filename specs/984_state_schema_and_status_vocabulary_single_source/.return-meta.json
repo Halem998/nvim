@@ -1,19 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 984,
-  "session_id": "sess_1786322063_3251e8_984",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/984_state_schema_and_status_vocabulary_single_source/plans/01_state-schema-single-source.md",
-      "summary": "Five-phase plan: draft-07 state-schema.json + sourced status-vocabulary.sh anchor; hand-rolled bash+jq validate-state.sh (base + --deep) wired as verify-deploy Gate 10; conversion of generate-todo.sh and update-task-status.sh with the permissive catch-all deleted; reconciliation of status-markers.md and state-management-schema.md to the anchor with revising/revised deleted as dead vocabulary; command-structure.md defect-site repair plus retirement of the two index-entries.json-wired dead files. Work item 5 (non-core extension writers) explicitly out of scope."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 8,
-  "dependency_waves": [[1], [2, 3, 5], [4]],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 984 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786322063_3251e8_984",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
