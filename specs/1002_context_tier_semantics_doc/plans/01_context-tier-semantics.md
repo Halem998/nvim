@@ -176,15 +176,15 @@ number into Phase 2. A result outside the range is not a defect; a `line_count` 
 
 ---
 
-### Phase 2: Add the index entry to core index-entries.json [NOT STARTED]
+### Phase 2: Add the index entry to core index-entries.json [COMPLETED]
 
 **Goal**: Register the new file with one minimal, additive, schema-conformant entry carrying an
 exact `line_count`.
 
 **Tasks**:
-- [ ] Re-run `wc -l` on the Phase 1 file to get the authoritative count (do not reuse a stale
-      number if the file was touched after Phase 1 closed).
-- [ ] Append exactly one entry to the end of the `entries` array in
+- [x] Re-run `wc -l` on the Phase 1 file to get the authoritative count (do not reuse a stale
+      number if the file was touched after Phase 1 closed). *(completed: 142)*
+- [x] Append exactly one entry to the end of the `entries` array in
       `agent-system/extensions/core/index-entries.json`:
       `path: "standards/context-tier-semantics.md"`, `domain: "core"`,
       `subdomain: "standards"`,
@@ -193,13 +193,13 @@ exact `line_count`.
       `keywords: ["tier", "derived_tier", "on_demand", "index.json", "load_when", "context-budget"]`,
       `topics: ["context-architecture"]`,
       `load_when: { "agents": [], "commands": [], "task_types": [] }`,
-      `on_demand: true`.
-- [ ] Confirm `on_demand: true` is present. Its absence on an all-empty-hooks entry is exactly the
-      Dead Entry Check violation this shape exists to avoid.
-- [ ] Confirm no forbidden keys (`description`, `tags`) and no `load_when` keys beyond
-      `agents`/`commands`/`task_types`/`always` (Rule T).
-- [ ] Confirm the diff is strictly one added object — no reordering, reformatting, key reordering,
-      or whitespace change to any existing entry.
+      `on_demand: true`. *(completed)*
+- [x] Confirm `on_demand: true` is present. Its absence on an all-empty-hooks entry is exactly the
+      Dead Entry Check violation this shape exists to avoid. *(completed)*
+- [x] Confirm no forbidden keys (`description`, `tags`) and no `load_when` keys beyond
+      `agents`/`commands`/`task_types`/`always` (Rule T). *(completed)*
+- [x] Confirm the diff is strictly one added object — no reordering, reformatting, key reordering,
+      or whitespace change to any existing entry. *(completed)*
 
 **Timing**: 20 minutes
 
@@ -225,18 +225,18 @@ baseline shifts and only the `+1` delta is meaningful.
 
 ---
 
-### Phase 3: Point the DERIVED_TIER header comment at the new doc [NOT STARTED]
+### Phase 3: Point the DERIVED_TIER header comment at the new doc [COMPLETED]
 
 **Goal**: Close the drift loop by naming the new file from the script that owns the rule.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/validate-context-budgets.sh`, locate the
+- [x] In `agent-system/extensions/core/scripts/validate-context-budgets.sh`, locate the
       `# --- Tier derivation ---` comment block immediately preceding the `DERIVED_TIER='` shell
-      assignment (reference it by that anchor, not by line number).
-- [ ] Append a one-line pointer inside that existing comment block naming
+      assignment (reference it by that anchor, not by line number). *(completed)*
+- [x] Append a one-line pointer inside that existing comment block naming
       `context/standards/context-tier-semantics.md` and stating the division of labor: this comment
-      states the rule, that file explains it and carries the `on_demand` decision rule.
-- [ ] Make no other change to the script — no logic, no predicate, no formatting elsewhere.
+      states the rule, that file explains it and carries the `on_demand` decision rule. *(completed)*
+- [x] Make no other change to the script — no logic, no predicate, no formatting elsewhere. *(completed)*
 
 **Timing**: 10 minutes
 

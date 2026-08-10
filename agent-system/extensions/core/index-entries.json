@@ -3128,6 +3128,30 @@
           "/refresh"
         ]
       }
+    },
+    {
+      "path": "standards/context-tier-semantics.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Derived tier classification (1-4) for context index entries: rule, rationale, on_demand marker",
+      "line_count": 142,
+      "keywords": [
+        "tier",
+        "derived_tier",
+        "on_demand",
+        "index.json",
+        "load_when",
+        "context-budget"
+      ],
+      "topics": [
+        "context-architecture"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     }
   ]
 }

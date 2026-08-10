@@ -1,0 +1,12 @@
+{
+  "phase": 2,
+  "phase_name": "Add the index entry to core index-entries.json",
+  "started_at": "2026-08-10T06:40:00Z",
+  "last_updated": "2026-08-10T06:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-measure jq '.entries | length' baseline (measured 133, no other batch task has landed yet) and append exactly one schema-conformant entry for standards/context-tier-semantics.md with on_demand:true and line_count 142", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

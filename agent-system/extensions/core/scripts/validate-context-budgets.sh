@@ -78,6 +78,10 @@ fi
 # than being an authored claim. That is what makes the old Dead Entry Check ("not Tier 4 but
 # never loaded") a tautology, and why that check is keyed on the explicit `on_demand` marker
 # instead -- see the Dead Entry Check section below.
+#
+# See context/standards/context-tier-semantics.md for the full explanation and rationale behind
+# this rule table and the on_demand decision rule; this comment states the rule, that file
+# explains and motivates it.
 DERIVED_TIER='
 def derived_tier:
   if (.load_when.always == true) then 1

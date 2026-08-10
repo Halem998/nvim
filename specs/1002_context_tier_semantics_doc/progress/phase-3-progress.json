@@ -1,0 +1,12 @@
+{
+  "phase": 3,
+  "phase_name": "Point the DERIVED_TIER header comment at the new doc",
+  "started_at": "2026-08-10T06:40:00Z",
+  "last_updated": "2026-08-10T06:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append a one-line pointer inside the existing tier-derivation comment block naming context/standards/context-tier-semantics.md, with no logic/predicate/formatting changes elsewhere", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
