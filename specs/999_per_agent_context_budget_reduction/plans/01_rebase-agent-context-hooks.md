@@ -1,7 +1,7 @@
 # Implementation Plan: Reduce Per-Agent Context Budget Overruns
 
 - **Task**: 999 - Reduce the 8 standing per-agent context budget overruns
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: None (all prerequisite tasks completed)
 - **Research Inputs**: `specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md`
@@ -136,28 +136,31 @@ and may run alongside Phase 2.
 
 ---
 
-### Phase 1: Establish the regenerate-and-measure loop [NOT STARTED]
+### Phase 1: Establish the regenerate-and-measure loop [COMPLETED]
 
 **Goal**: Prove, before editing anything, that a change to a source `index-entries.json` reaches
 `.claude/context/index.json` and moves the validator's numbers — and record the ghost-entry
 offset so later measurements are interpretable.
 
 **Tasks**:
-- [ ] Record the baseline: `bash .claude/scripts/validate-context-budgets.sh` (expect 8
-      violations; capture the full per-agent table verbatim into the progress file).
-- [ ] Identify the regeneration path that rebuilds `.claude/context/index.json` from
+- [x] Record the baseline: `bash .claude/scripts/validate-context-budgets.sh` (expect 8
+      violations; capture the full per-agent table verbatim into the progress file). *(completed:
+      8 violations confirmed, matches research/plan table exactly)*
+- [x] Identify the regeneration path that rebuilds `.claude/context/index.json` from
       `agent-system/extensions/*/index-entries.json`. Candidates to evaluate:
       `install-extension.sh`'s `merge_index_entries`, the lua deploy engine's pre-load cleanup
       (`lua/neotex/plugins/ai/shared/extensions/init.lua`, the `remove_orphaned_index_entries`
-      path), and `deploy-headless.sh`. Document the exact working invocation.
-- [ ] Make a trivial reversible probe edit to one source entry's `load_when.agents`, regenerate,
+      path), and `deploy-headless.sh`. Document the exact working invocation. *(completed:
+      `bash .claude/scripts/deploy-headless.sh`, default resync mode)*
+- [x] Make a trivial reversible probe edit to one source entry's `load_when.agents`, regenerate,
       and confirm the validator's number for that agent moves by the expected amount. Revert the
-      probe.
-- [ ] Enumerate every deployed index entry with no source-store owner and record its token cost
+      probe. *(completed: spawn-agent 5568 -> 6840 on a 1272-tok probe hook, reverted cleanly)*
+- [x] Enumerate every deployed index entry with no source-store owner and record its token cost
       and agent hooks. Expected: `orchestration/orchestration-validation.md` (1,864 tok ->
       meta-builder-agent) and `orchestration/subagent-validation.md` (2,504 tok, no agent hook).
-- [ ] Record the resulting per-agent "unremovable offset" constant (expected: meta-builder-agent
-      +1,864; all others +0) in the progress file for use by Phases 7 and 8.
+      *(completed: confirmed by full set-difference, exactly these two, no others)*
+- [x] Record the resulting per-agent "unremovable offset" constant (expected: meta-builder-agent
+      +1,864; all others +0) in the progress file for use by Phases 7 and 8. *(completed)*
 
 **Timing**: 0.5 hours
 

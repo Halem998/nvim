@@ -1,0 +1,47 @@
+{
+  "phase": 1,
+  "phase_name": "Establish the regenerate-and-measure loop",
+  "started_at": "2026-08-10T00:00:00Z",
+  "last_updated": "2026-08-10T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Record baseline: validate-context-budgets.sh reports 8 violations",
+      "status": "done",
+      "files_touched": [],
+      "note": "Baseline confirmed identical to research/plan: meta-builder-agent 132984/15000, general-implementation-agent 68568/8000, neovim-implementation-agent 40104/8000, planner-agent 31888/15000, general-research-agent 28744/8000, neovim-research-agent 22872/8000, nix-implementation-agent 23096/8000, nix-research-agent 20472/8000. spawn-agent (5568) and code-reviewer-agent (5544) OK. Violations: 8."
+    },
+    {
+      "id": 2,
+      "description": "Identify and document the regeneration path",
+      "status": "done",
+      "files_touched": [],
+      "note": "bash .claude/scripts/deploy-headless.sh (no args, default resync mode, non-destructive) rebuilds .claude/context/index.json from agent-system/extensions/*/index-entries.json for all 5 currently-loaded extensions (core, email, memory, nix, nvim per .claude-extensions.json)."
+    },
+    {
+      "id": 3,
+      "description": "Probe edit, regenerate, confirm validator number moves, revert",
+      "status": "done",
+      "files_touched": [],
+      "note": "Added spawn-agent to patterns/regeneration-is-manual-only.md's load_when.agents (159 lines = 1272 tok) in core/index-entries.json. After deploy-headless.sh, spawn-agent's total moved 5568 -> 6840 (exactly +1272), confirming the loop. Reverted via file restore + redeploy; git diff --stat on agent-system/extensions/ is empty; validator back to baseline 8 violations."
+    },
+    {
+      "id": 4,
+      "description": "Enumerate every deployed index entry with no source-store owner (ghost entries)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Set-differenced deployed .claude/context/index.json path set (190 entries) against the union of the 5 loaded extensions' source index-entries.json path sets (188 entries), both LC_ALL=C sorted. Result: exactly 2 ghosts, matching plan prediction exactly: orchestration/orchestration-validation.md (233 lines = 1864 tok, hooked to meta-builder-agent) and orchestration/subagent-validation.md (313 lines = 2504 tok, hooked only to /orchestrate command, no agent hook). Reverse direction (source entries missing from deployed) is empty -- deployed = source + 2 ghosts exactly (188 + 2 = 190)."
+    },
+    {
+      "id": 5,
+      "description": "Record the per-agent unremovable ghost offset constant",
+      "status": "done",
+      "files_touched": [],
+      "note": "meta-builder-agent: +1864 (unremovable, no source owner). All other agents: +0. subagent-validation.md (2504 tok) has no agent hook so contributes 0 offset to any agent's per-agent budget total, only affecting overall entry counts."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

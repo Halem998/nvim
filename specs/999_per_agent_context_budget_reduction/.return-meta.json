@@ -1,44 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 999,
   "session_id": "sess_1786342011_4592c8_999",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/999_per_agent_context_budget_reduction/plans/01_rebase-agent-context-hooks.md",
-      "summary": "9-phase plan rebasing load_when.agents hooks onto real @-reference sets across four index-entries.json files, then replacing the stale inert EXCEPTIONS block in validate-context-budgets.sh with three accurately measured per-agent exceptions. Target: 8 violations -> 0 with 3 documented OK* rows, no CAPS raised."
-    }
-  ],
-  "phase_count": 9,
-  "estimated_hours": 7.5,
-  "dependency_waves": [[1], [2, 4, 5, 6], [3], [7], [8], [9]],
-  "plan_metadata": {
-    "phases": 9,
-    "total_effort_hours": 8,
-    "complexity": "complex",
-    "research_integrated": true,
-    "plan_version": 1,
-    "dependency_waves": [[1], [2, 4, 5, 6], [3], [7], [8], [9]],
-    "reports_integrated": [
-      {
-        "path": "reports/01_reduce-agent-budget-overruns.md",
-        "integrated_in_plan_version": 1,
-        "integrated_date": "2026-08-10"
-      }
-    ],
-    "skeleton": false,
-    "follow_up_tasks": []
-  },
-  "memory_candidates": [
-    {
-      "content": "Deployed .claude/context/index.json can carry ghost entries with no source-store owner. install-extension.sh's merge_index_entries uses purely additive `.entries += ...`, and the lua deploy engine's remove_orphaned_index_entries is keyed on content-file existence under context_dir. So when a context file is renamed, BOTH the stale index entry and the stale deployed content file survive indefinitely, and the ghost keeps contributing tokens to whatever agent its load_when.agents named. Observed concretely: orchestration/orchestration-validation.md (1,864 tok, hooked to meta-builder-agent) and orchestration/subagent-validation.md (2,504 tok) exist only in the deployed index while the source store has orchestration/validation.md. Practical consequence for any task that edits index-entries.json to change per-agent budgets: the sum of edited source entries will NOT equal what validate-context-budgets.sh reports, because that script reads the deployed index. Always set-difference the deployed index's path set against the union of all agent-system/extensions/*/index-entries.json path sets first, and carry the resulting per-agent offset as a known constant through every later measurement.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/999_per_agent_context_budget_reduction/plans/01_rebase-agent-context-hooks.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["index.json", "deploy-drift", "ghost-entries", "context-budget", "additive-merge", "index-entries"]
-    }
-  ],
-  "next_steps": "Run /implement 999 to execute the plan"
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }
