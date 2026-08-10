@@ -35,12 +35,12 @@
     {
       "project_number": 1010,
       "project_name": "fix_opencode_gate_in_session_id_duplication",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "tests/run-all.sh has a 7th, previously unreported deployed-mode-only failure: test-common-lib.sh flags .opencode/scripts/command-gate-in.sh for an inline sess_$(date +%s)_... session-id generator that duplicates lib/common.sh's canonical generator instead of sourcing it. It passes in source-store mode and fails only in deployed mode. Recorded as err_1786350581305_8cNAZ7. No open task currently covers tests/run-all.sh failures (the prior consolidation task that made the suites runnable is already completed); this task is spawned standalone rather than folded, since nothing is open to fold into.\n\nTARGET: .opencode/scripts/command-gate-in.sh (the inline sess_$(date +%s)_... construction) and agent-system/extensions/core/scripts/lib/common.sh (the canonical generator it should source instead).\n\nWORK: replace the inline session-id generator in .opencode/scripts/command-gate-in.sh with a sourced call to lib/common.sh's canonical generator, matching the pattern already used elsewhere in the deployed tree. Re-run tests/run-all.sh in BOTH source-store and deployed modes and confirm test-common-lib.sh passes in both.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. Note: .opencode/scripts/command-gate-in.sh is itself a deploy target mirroring a source-store equivalent -- confirm the correct source-store location before editing (do not hand-edit the deployed .opencode/ tree directly if it is generated).\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.",
       "topic": "agent-system",
       "created": "2026-08-10T08:32:32Z",
-      "last_updated": "2026-08-10T16:31:16Z",
+      "last_updated": "2026-08-10T16:39:32Z",
       "file_scope": [
         ".opencode/scripts/command-gate-in.sh"
       ],
@@ -50,6 +50,11 @@
           "path": "specs/1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md",
           "type": "report",
           "summary": "Establishes that .opencode/ is a generated deploy target (same parameterized Lua loader as .claude/, single shared source agent-system/extensions/core/scripts/command-gate-in.sh), that the source file is already fixed (sources common.sh's common_session_id), that .opencode/scripts/command-gate-in.sh is simply a stale snapshot (part of a much broader 38-script gap in .opencode/scripts/), explains the source-store-pass/deployed-fail test split via SCRIPT_DIR/../../.. scan-root resolution, and recommends a narrow one-off catch-up sync of the single file rather than hand-authoring new content or a full deploy-engine rebuild."
+        },
+        {
+          "path": "specs/1010_fix_opencode_gate_in_session_id_duplication/plans/01_opencode-gate-in-catchup-sync.md",
+          "type": "plan",
+          "summary": "4-phase sequential plan for the narrow catch-up sync of .opencode/scripts/command-gate-in.sh: capture pre-change run-all.sh baselines in both source-store and deployed modes; verbatim cp of the already-correct agent-system/extensions/core/scripts/command-gate-in.sh into the stale .opencode/ target with byte-identity, exec-bit, bash -n, and task-reference-lint verification; a full verification gate re-running both suites and diffing FAIL sets against the baseline (deployed must lose exactly test-common-lib.sh and gain nothing); and a record phase capturing the manual-redeploy rationale plus the two out-of-scope spawn candidates. No source-store edit is planned -- the source file is already correct."
         }
       ]
     },
@@ -819,7 +824,7 @@
       "project_number": 1012,
       "project_name": "fix_test_suite_deployed_mode_failures",
       "title": "Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [],
@@ -829,7 +834,7 @@
       ],
       "description": "tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.\n\nMEASURED EVIDENCE (live run, not inherited): 25 passed, 8 FAILED, 0 skipped, 33 total. Earlier reports of a 5-suite REPO_ROOT count were NOT confirmed and should be treated as superseded by this measurement. Recorded as err_1786368358319_8jwcdo.\n\nCONFIRMED ROOT CAUSE (2 of 8): test-skill-base-lifecycle.sh and test-update-task-status.sh both abort with\n    ERROR: deployed scripts tree not found at /home/benjamin/.claude/scripts\nproving REPO_ROOT resolved to $HOME instead of the repo root. Both derive it as:\n    REPO_ROOT=\"$(cd \"$SCRIPT_DIR/../../../../..\" && pwd)\"\nFive levels up is correct from the SOURCE-STORE location agent-system/extensions/core/scripts/tests/, but wrong from the DEPLOYED location .claude/scripts/tests/, which is only three levels below the repo root. The same 5-level literal appears in at least test-corroborate-phase-counts.sh, test-errors-append.sh, test-handoff-reader-parity.sh, and test-index-entries-schema.sh, so the defect class is wider than the two suites that happen to fail loudly.\n\nPROVEN-GOOD PATTERN ALREADY IN-TREE: test-deploy-propagation.sh derives it depth-independently:\n    REPO_ROOT=\"$(cd \"$SCRIPT_DIR\" && git rev-parse --show-toplevel 2>/dev/null)\"\n    [ -z \"$REPO_ROOT\" ] && REPO_ROOT=\"$(cd \"$SCRIPT_DIR/../../../../..\" && pwd)\"\nAdopt this shape rather than inventing a new one.\n\nUNCONFIRMED (6 of 8) - triage each individually, do NOT assume a shared cause:\n  test-common-lib.sh (1 failure; overlaps the separately-tracked opencode session-id duplication finding)\n  test-index-entries-schema.sh (8 passed, 1 failed)\n  test-lint-state-writer-boundary.sh (7 passed, 1 failed)\n  test-loop-guard-staleness.sh\n  test-reconcile-handoff-status.sh\n  test-resume-scan-nonconformance.sh\n\nNOTABLE: test-lint-state-writer-boundary.sh is the suite added by the state-writer conversion work, which reported 8/8 green in source-store context but is 7/8 in deployed mode. Determine whether this is the same depth defect or a genuine gap in the new lint.\n\nACCEPTANCE: run-all.sh reports 0 failures, OR every residual failure has a written, evidenced justification. Report the count honestly; never an unqualified green.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T13:26:30Z",
-      "last_updated": "2026-08-10T16:31:19Z",
+      "last_updated": "2026-08-10T16:31:52Z",
       "artifacts": [
         {
           "path": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
