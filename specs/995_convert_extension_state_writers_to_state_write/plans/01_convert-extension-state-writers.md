@@ -1,7 +1,7 @@
 # Implementation Plan: Convert surviving extension state.json writers to state-write.sh
 
 - **Task**: 995 - Convert surviving extension state.json writers to state-write.sh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: 983 (skill-skeleton collapse, COMPLETED/archived), 984 (state schema/status vocabulary, COMPLETED)
 - **Research Inputs**: specs/995_convert_extension_state_writers_to_state_write/reports/01_convert-extension-state-writers.md
@@ -151,23 +151,25 @@ touches no conversion territory.
 
 ---
 
-### Phase 1: Baseline inventory and conversion recipe [NOT STARTED]
+### Phase 1: Baseline inventory and conversion recipe [COMPLETED]
 
 **Goal**: Establish a machine-checkable before-state so every later phase can prove its own
 delta, and fix the exact conversion recipe once so six phases do not each invent their own.
 
 **Tasks**:
-- [ ] Run the full-source-store grep and record per-file matching-line counts to a baseline
-      record under the task directory.
-- [ ] Classify every hit as CONVERT or EXCLUDE, reproducing the exclusion table from this plan's
+- [x] Run the full-source-store grep and record per-file matching-line counts to a baseline
+      record under the task directory. *(completed: 109 matching lines, baseline/01_grep-baseline-and-recipe.md)*
+- [x] Classify every hit as CONVERT or EXCLUDE, reproducing the exclusion table from this plan's
       Scope Boundary Resolution with the concrete grep line as evidence for each exclusion.
-- [ ] Write the canonical conversion recipe as a short reference block in the baseline record,
+      *(completed)*
+- [x] Write the canonical conversion recipe as a short reference block in the baseline record,
       copying the shapes from `skill-status-sync` (status update, artifact append) and
       `skill-researcher` (`--argjson num "$task_number"`), including: bind the task number with
       `--argjson`, never string-interpolate it; one existing site becomes exactly one
       `state-write.sh` call; add `--regen-todo` only where the site already regenerated TODO.md.
-- [ ] Record the bash-fence extraction command each conversion phase will use for its `bash -n`
-      pass over edited markdown.
+      *(completed)*
+- [x] Record the bash-fence extraction command each conversion phase will use for its `bash -n`
+      pass over edited markdown. *(completed)*
 
 **Timing**: 0.75 hours
 

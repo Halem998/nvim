@@ -1,32 +1,8 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/995_convert_extension_state_writers_to_state_write/plans/01_convert-extension-state-writers.md",
-      "summary": "10-phase implementation plan converting ~94 hand-rolled state.json write sites across 46 source-store files to state-write.sh, plus a new permanently-wired lint-state-writer-boundary.sh; explicitly resolves the commands/*.md scope-boundary question as INCLUDE."
-    }
-  ],
-  "next_steps": "Run /implement 995 to execute the plan",
+  "status": "in_progress",
   "metadata": {
     "session_id": "sess_1786342011_4592c8_995",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 10,
-    "estimated_hours": 9,
-    "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8], [9], [10]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a task's declared state.json file_scope disagrees with the breadth stated in its own description body or VERIFICATION BAR, the description body wins. file_scope is documented in rules/state-management.md and context/reference/state-management-schema.md as descriptive/anticipated, set at creation time, never filesystem-validated, and used only for lock-overlap detection -- it is not a contract boundary that authorizes or forbids edits. The decisive test is whether the narrower reading leaves the task's own verification bar unsatisfiable: if honoring file_scope means the stated bar can never pass, the bar (not file_scope) defines the real scope. A planner MUST state the inclusion/exclusion decision explicitly with reasons rather than silently narrowing or widening, and any residual left out needs an enumerated, individually-evidenced exclusion list rather than an unqualified 'zero hits' claim.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/995_convert_extension_state_writers_to_state_write/plans/01_convert-extension-state-writers.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "scope-boundary", "verification-bar", "planning", "exclusion-list", "state-management"]
-    }
-  ],
-  "modified_files": [
-    "specs/995_convert_extension_state_writers_to_state_write/plans/01_convert-extension-state-writers.md"
-  ]
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
