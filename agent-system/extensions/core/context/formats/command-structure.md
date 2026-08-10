@@ -71,13 +71,18 @@ max_delegation_depth: 3
   
   <step_3>
     Load task context from state.json:
-    task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" .claude/state.json)
-    task_title=$(jq -r ".tasks[] | select(.number == $task_number) | .title" .claude/state.json)
+    task_status=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .status" specs/state.json)
+    task_title=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .title" specs/state.json)
   </step_3>
   
   <step_4>
     Validate task is ready for planning:
-    - Status must be "research_complete" or "ready"
+    - Status should typically be "researched" (per the permissive transition model in
+      state-management.md, any non-terminal status may in fact run /plan; "researched" is the
+      normal case this validation targets). See context/schemas/state-schema.json's
+      definitions.taskStatus / scripts/lib/status-vocabulary.sh for the closed enum -- this
+      section previously cited two placeholder values that are not members of any of this
+      system's vocabularies; the enum above is the single authoritative source.
     - Task must not already have a plan
     If not ready: Return error with current status
   </step_4>
@@ -157,7 +162,7 @@ max_delegation_depth: 3
     - Missing task_number → "Usage: /plan <task_number> [research_report]"
     - Invalid task_number → "Task number must be a positive integer"
     - Task not found → "Task {task_number} not found in state.json"
-    - Task not ready → "Task {task_number} status is {status}, expected research_complete or ready"
+    - Task not ready → "Task {task_number} status is {status}, expected researched"
   </argument_errors>
   
   <workflow_errors>
@@ -180,8 +185,8 @@ max_delegation_depth: 3
 <state_management>
   <reads>
     # Fast, direct queries via jq
-    task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" .claude/state.json)
-    task_title=$(jq -r ".tasks[] | select(.number == $task_number) | .title" .claude/state.json)
+    task_status=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .status" specs/state.json)
+    task_title=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .title" specs/state.json)
   </reads>
   
   <writes>
@@ -538,7 +543,7 @@ Benefit: Clear separation, easy to test, flexible composition
   
   <step_2>
     Load task context from state.json:
-    task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" .claude/state.json)
+    task_status=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .status" specs/state.json)
     
     If task not found: Return "Task {task_number} not found"
   </step_2>
@@ -684,7 +689,7 @@ Benefit: Clear separation, easy to test, flexible composition
 <state_management>
   <read>
     # Fast, direct query via jq
-    task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" .claude/state.json)
+    task_status=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .status" specs/state.json)
     
     # No delegation needed for reads
   </read>
@@ -745,7 +750,7 @@ Benefit: Clear separation, easy to test, flexible composition
   
   <step_2>
     Update state.json directly:
-    jq ".tasks[] | select(.number == $task_number) | .status = \"planned\"" state.json
+    jq ".active_projects[] | select(.project_number == $task_number) | .status = \"planned\"" specs/state.json
   </step_2>
 </workflow_execution>
 ```
@@ -762,7 +767,9 @@ Benefit: Clear separation, easy to test, flexible composition
   </step_1>
   
   <step_2>
-    Delegate to status-sync-manager
+    Delegate status updates via skill_preflight_update()/skill_postflight_update() in
+    skill-base.sh, which call update-task-status.sh (or, for standalone/manual corrections,
+    the skill-status-sync skill) -- not a fictional "status-sync-manager" abstraction
     Wait for confirmation
   </step_2>
 </workflow_execution>
@@ -815,9 +822,11 @@ Benefit: Clear separation, easy to test, flexible composition
 
 <state_management>
   <write>
-    # Direct write to state.json
-    jq ".tasks[] | select(.number == $task_number) | .status = \"completed\"" .claude/state.json > tmp.json
-    mv tmp.json .claude/state.json
+    # Hand-rolled, unprotected direct write to state.json -- bypasses the mutex-guarded single
+    # writer (scripts/state-write.sh) every other writer in this codebase shares, and can
+    # corrupt state.json under concurrent writers:
+    jq ".active_projects[] | select(.project_number == $task_number) | .status = \"completed\"" specs/state.json > tmp.json
+    mv tmp.json specs/state.json
   </write>
 </state_management>
 ```
@@ -828,12 +837,20 @@ Benefit: Clear separation, easy to test, flexible composition
 
 <state_management>
   <write>
-    # Delegated write via status-sync-manager
-    Delegate to status-sync-manager with:
+    # Preferred: delegate via the normal skill lifecycle -- skill_preflight_update()/
+    # skill_postflight_update() in skill-base.sh, which call update-task-status.sh (or, for
+    # standalone/manual corrections, the skill-status-sync skill). Not a fictional
+    # "status-sync-manager" abstraction.
+    Delegate status update with:
       - task_number: {task_number}
       - new_status: "completed"
       - session_id: {session_id}
       - delegation_depth: 2
+
+    # If a lower-level script must write specs/state.json directly (outside the skill
+    # lifecycle), call scripts/state-write.sh -- the single mutex-guarded writer. Never
+    # hand-roll `jq ... > tmp.json; mv tmp.json ...` directly; that is exactly the race
+    # state-write.sh exists to eliminate.
   </write>
 </state_management>
 ```

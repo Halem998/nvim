@@ -210,7 +210,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Slash command file structure and organization",
-      "line_count": 965,
+      "line_count": 982,
       "keywords": [
         "format",
         "command",
@@ -1555,29 +1555,6 @@
       }
     },
     {
-      "path": "repo/self-healing-implementation-details.md",
-      "domain": "core",
-      "subdomain": "repo",
-      "summary": "Self-healing system implementation details",
-      "line_count": 594,
-      "keywords": [
-        "repo",
-        "self-healing",
-        "implementation"
-      ],
-      "topics": [
-        "recovery"
-      ],
-      "load_when": {
-        "agents": [],
-        "task_types": [],
-        "commands": [
-          "/errors",
-          "/fix-it"
-        ]
-      }
-    },
-    {
       "path": "repo/update-project.md",
       "domain": "core",
       "subdomain": "repo",
@@ -2213,30 +2190,6 @@
         ],
         "task_types": [],
         "commands": []
-      }
-    },
-    {
-      "path": "templates/state-template.json",
-      "domain": "core",
-      "subdomain": "templates",
-      "summary": "Template for state.json initialization",
-      "line_count": 69,
-      "keywords": [
-        "template",
-        "state",
-        "json"
-      ],
-      "topics": [
-        "state"
-      ],
-      "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
-        "task_types": [],
-        "commands": [
-          "/task"
-        ]
       }
     },
     {

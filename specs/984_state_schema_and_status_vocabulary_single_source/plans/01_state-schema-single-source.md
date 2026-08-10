@@ -438,39 +438,39 @@ summary table, and `state-management-schema.md` a 12-row mapping table with zero
 
 ---
 
-### Phase 5: command-structure.md defect sites and dead-file retirement [NOT STARTED]
+### Phase 5: command-structure.md defect sites and dead-file retirement [COMPLETED]
 
 **Goal**: Fix all `command-structure.md` defect sites and retire the two stale files that are
 actively injected into live agent context, including their `index-entries.json` wiring.
 
 **Tasks**:
-- [ ] Re-sweep `context/formats/command-structure.md` to confirm the site inventory before editing
+- [x] Re-sweep `context/formats/command-structure.md` to confirm the site inventory before editing
       (see Scope Hypothesis).
-- [ ] Fix the store-path/array-name/key-name sites: `.claude/state.json` -> `specs/state.json`,
+- [x] Fix the store-path/array-name/key-name sites: `.claude/state.json` -> `specs/state.json`,
       `.tasks[]` -> `.active_projects[]`, `.number` -> `.project_number`. Reported sites are near
       the `/plan` argument-parsing step, the `<state_management><reads>` block, a later workflow
       step, the "Read-Only Query" worked example, the "Status Update" example (which uses bare
       `state.json`), and the "Updating State Directly" mistake block.
-- [ ] In the "Updating State Directly" block, replace the modeled unprotected
+- [x] In the "Updating State Directly" block, replace the modeled unprotected
       `jq ... > tmp.json; mv tmp.json ...` idiom with the `state-write.sh` call it exists to
       mandate — the wrong example currently teaches the exact anti-pattern.
-- [ ] Fix the two fabricated-vocabulary sites: `research_complete` and `ready` are not valid in
+- [x] Fix the two fabricated-vocabulary sites: `research_complete` and `ready` are not valid in
       any of this system's three vocabularies. Replace with real enum values and point at the
       schema/library anchor.
-- [ ] Normalize the imprecise `status-sync-manager` abstraction name in the adjacent "Correct"
+- [x] Normalize the imprecise `status-sync-manager` abstraction name in the adjacent "Correct"
       examples to the real path: `skill_preflight_update()`/`skill_postflight_update()` in
       `skill-base.sh` -> `update-task-status.sh`, or the standalone `skill-status-sync` skill.
-- [ ] Delete `context/templates/state-template.json` and remove its `index-entries.json` entry
+- [x] Delete `context/templates/state-template.json` and remove its `index-entries.json` entry
       (currently `load_when` -> `meta-builder-agent` + `/task`). If a bootstrap template is still
       wanted, replace it with a minimal current-schema template validated by `validate-state.sh`
       rather than leaving the divergent v1.0.0 shape in place — deletion is the default; a
       replacement must pass the validator.
-- [ ] Delete `context/repo/self-healing-implementation-details.md` and remove its
+- [x] Delete `context/repo/self-healing-implementation-details.md` and remove its
       `index-entries.json` entry (currently `load_when` -> `/errors` + `/fix-it`). Its
       `ensure_state_json()` has zero callers anywhere and rebuilds state.json FROM TODO.md,
       inverting the canonical direction. If any recovery guidance is retained, it must be
       state-from-scratch or from git history — never from TODO.md.
-- [ ] Confirm no other file references either deleted path
+- [x] Confirm no other file references either deleted path
       (`grep -rl 'state-template\|self-healing-implementation-details' agent-system/extensions`);
       note that `root-files/settings.local.json` carries a stale allowlist reference and is
       install-only — record it as an out-of-scope loose end, do not edit it.
@@ -508,6 +508,32 @@ actually found and record the corrected count.
   returns only `root-files/settings.local.json` (the documented out-of-scope loose end).
 - `bash scripts/validate-context-index.sh` and `bash scripts/verify-deploy.sh` both pass (no
   orphaned index entries, manifest parity intact).
+
+**Phase Notes (Scope Hypothesis confirmation + a defect this phase's own edit introduced and
+fixed)**: Re-swept `command-structure.md` before editing; found exactly 8 defect sites (6
+store/array/key at lines 74-75, 183-184, 541, 687, 748, 819-820, plus 2 fabricated-vocabulary at
+lines 80, 160) and exactly 2 `index-entries.json` entries to retire, matching the hypothesis
+exactly. All fixed: store/array/key sites now use `.active_projects[]`/`.project_number`/
+`specs/state.json`; the two fabricated-vocabulary sites point at the schema/library anchor
+instead of citing the fake values inline (the earlier draft of this fix still contained the
+literal fabricated strings as prose naming them as invalid, which is itself a hit for the
+verification grep -- reworded to describe them without repeating them, so the grep now returns
+zero hits as the bullet requires); the "Updating State Directly" Wrong block's unprotected
+`jq ... > tmp.json; mv ...` idiom is now explicitly commented as unprotected/dangerous rather than
+modeled as ordinary code, and its paired Correct block points at `state-write.sh` plus
+`update-task-status.sh`/`skill-status-sync` instead of the fictional `status-sync-manager`
+abstraction (same normalization applied to Mistake 1's adjacent Correct block). Both dead files
+were deleted and their `index-entries.json` entries removed (137 -> 135 entries); `grep -rl
+'state-template\|self-healing-implementation-details' agent-system/extensions/core` confirms only
+the documented `root-files/settings.local.json` loose end remains. `bash
+scripts/validate-context-index.sh` passes (191 entries across all loaded extensions, 0
+errors/warnings). This phase's own edits to `command-structure.md` changed its line count from
+965 to 982, which `check-extension-docs.sh`'s Rule R caught as a real (non-advisory) FAIL against
+the stale `index-entries.json` `line_count: 965` declaration -- fixed by updating the declared
+`line_count` to 982 and confirmed via `generate-context-line-counts.sh --check` (480/480 entries
+exact across all extensions). `bash scripts/verify-deploy.sh` now passes every gate except the
+same pre-existing, unrelated Gate 8 `test-index-entries-schema.sh` failure already recorded in
+Phase 2/3's phase notes.
 
 ---
 
