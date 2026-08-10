@@ -1,7 +1,7 @@
 # Implementation Plan: Lean Mirror Entry Load-Order Fix
 
 - **Task**: 1001 - Fix lean mirror entry load-order defect; audit duplicated index paths
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: Task 1000 (completed -- establishes and proves the union-valued pattern)
 - **Research Inputs**: specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md
@@ -143,32 +143,39 @@ gate over all of them.
 
 ---
 
-### Phase 1: Union-Value the Named Adversarial-Verification Entry [NOT STARTED]
+### Phase 1: Union-Value the Named Adversarial-Verification Entry [COMPLETED]
 
 **Goal**: Discharge WORK item 1 -- lean's `contracts/adversarial-verification.md` entry declares a
 union `load_when.agents`, proved by a run reconstruction of the core-then-lean merge.
 
 **Tasks**:
-- [ ] Read the current entry in `agent-system/extensions/lean/index-entries.json` and re-confirm it
+- [x] Read the current entry in `agent-system/extensions/lean/index-entries.json` and re-confirm it
       declares `load_when.agents: ["lean-research-hard-agent"]` and
       `load_when.task_types: ["lean4"]`. Re-confirm core's entry for the same path declares
-      `["general-research-hard-agent"]`.
-- [ ] Edit **only** the `load_when.agents` array to the union
+      `["general-research-hard-agent"]`. *(completed: both confirmed via direct read/jq; lean and
+      core each have exactly one entry for this path)*
+- [x] Edit **only** the `load_when.agents` array to the union
       `["lean-research-hard-agent", "general-research-hard-agent"]`. Leave `line_count` (93),
       `task_types`, `domain`, `subdomain`, `summary`, and `keywords` untouched, and do not add a
-      `commands` key that the entry does not currently have.
-- [ ] Confirm the file is still valid JSON (`jq empty` on it) before proceeding.
-- [ ] Build the merge reconstruction in the scratchpad directory (NOT the repo): a disposable
+      `commands` key that the entry does not currently have. *(completed: single-hunk edit,
+      confirmed by `git diff`)*
+- [x] Confirm the file is still valid JSON (`jq empty` on it) before proceeding. *(completed: exits 0)*
+- [x] Build the merge reconstruction in the scratchpad directory (NOT the repo): a disposable
       headless-Neovim script that calls
       `neotex.plugins.ai.shared.extensions.merge.append_index_entries` against a scratch index file,
       passing core's entries first and lean's entries second -- the realistic core-then-extension
-      processing order.
-- [ ] Run it and assert the single surviving entry for `contracts/adversarial-verification.md` has a
+      processing order. *(completed: `phase1_merge_recon.lua`, written under the session
+      scratchpad directory)*
+- [x] Run it and assert the single surviving entry for `contracts/adversarial-verification.md` has a
       `load_when.agents` containing **both** `general-research-hard-agent` and
-      `lean-research-hard-agent`. Capture the actual output for the summary.
-- [ ] Run the same reconstruction against the pre-edit state (or reason from the captured output) to
+      `lean-research-hard-agent`. Capture the actual output for the summary. *(completed: post-edit
+      run printed `load_when.agents: ["lean-research-hard-agent","general-research-hard-agent"]` for
+      a single surviving entry)*
+- [x] Run the same reconstruction against the pre-edit state (or reason from the captured output) to
       confirm the assertion would have **failed** before the edit -- an assertion that passes either
-      way proves nothing.
+      way proves nothing. *(completed: pre-edit run, captured before the edit, printed
+      `load_when.agents: ["lean-research-hard-agent"]` only -- the union assertion demonstrably
+      fails pre-edit)*
 
 **Timing**: 35 minutes
 

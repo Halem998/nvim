@@ -1,32 +1,13 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md",
-      "summary": "Four-phase plan union-valuing lean's contract mirror entries, proving the fix by executed merge reconstruction, and recording the duplicated-path audit plus two follow-up candidates"
+    "status": "in_progress",
+    "metadata": {
+        "session_id": "sess_1786342011_4592c8_1001",
+        "agent_type": "general-implementation-agent",
+        "delegation_depth": 2,
+        "delegation_path": [
+            "orchestrator",
+            "implement",
+            "general-implementation-agent"
+        ]
     }
-  ],
-  "next_steps": "Run /implement 1001 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1786342011_4592c8_1001",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 2,
-    "dependency_waves": [[1], [2], [3], [4]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo's extension deploy engine, a path declared by two extensions collides at TWO independent layers, both last-writer-wins with no warning: (1) merge.append_index_entries upserts index entries BY PATH and replaces the WHOLE entry object (no per-field merge), so a later extension's narrower load_when.agents silently discards an earlier one's agent hooks; and (2) copy_category(\"context\", ...) copies context files by path, so an extension whose manifest provides.context lists a shared prefix (e.g. \"contracts\") overwrites another extension's file at the same deploy path. Consequence: union-valuing load_when.agents on a duplicated path restores the HOOK but not the CONTENT -- the newly-hooked agent then receives the last-deployed extension's domain-specialized override of that file, not the generic core version. Both layers are invisible to check-extension-docs.sh (Rules R and T touch load_when shape and source-file existence, never cross-extension path comparison). Audit for duplicates with: jq -r '.entries[]?.path' over each agent-system/extensions/*/index-entries.json, checking both cross-file collisions and same-file uniq -d internal duplicates.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["index-entries", "extension-merge", "load-order", "append_index_entries", "copy_category", "duplicated-path"]
-    }
-  ],
-  "modified_files": [
-    "specs/1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md"
-  ]
 }

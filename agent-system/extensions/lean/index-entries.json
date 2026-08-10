@@ -602,7 +602,8 @@
       "line_count": 93,
       "load_when": {
         "agents": [
-          "lean-research-hard-agent"
+          "lean-research-hard-agent",
+          "general-research-hard-agent"
         ],
         "task_types": [
           "lean4"

@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Union-Value the Named Adversarial-Verification Entry",
+  "started_at": "2026-08-09T00:00:00Z",
+  "last_updated": "2026-08-09T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm current lean/core entries for contracts/adversarial-verification.md", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Edit lean's load_when.agents to the union", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 3, "description": "Confirm valid JSON via jq empty", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Build scratch merge reconstruction script", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run reconstruction post-edit, assert union present", "status": "done", "files_touched": [], "note": "post-edit run: contracts/adversarial-verification.md merged entry carries both lean-research-hard-agent and general-research-hard-agent"},
+    {"id": 6, "description": "Confirm pre-edit reconstruction fails the assertion", "status": "done", "files_touched": [], "note": "pre-edit run (captured before the edit): merged entry carried only lean-research-hard-agent, confirming the assertion fails pre-edit"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
