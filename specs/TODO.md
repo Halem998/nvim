@@ -18,7 +18,7 @@ next_project_number: 22
 
 ### Agent System
 
-5 [RESEARCHED] — /todo documents a producer/consumer contract for ROADMAP.md synch
+5 [PLANNED] — /todo documents a producer/consumer contract for ROADMAP.md synch
   └─ 6 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
 11 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 12 [PARTIAL] — tests/run-all.sh is red and has been treated as permanently-expec
@@ -441,11 +441,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 5. roadmap_items is never derived by any implement path, so /todo's ROADMAP sync is dead in practice
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 1004
 - **Research**: [005_implement_roadmap_items_producer/reports/01_roadmap-items-producer.md]
+- **Plan**: [005_implement_roadmap_items_producer/plans/01_roadmap-items-producer.md]
 
 **Description**: /todo documents a producer/consumer contract for ROADMAP.md synchronisation in which /implement
 is the producer. The consumer half is fully built; the producer half computes nothing, so the
