@@ -40,7 +40,6 @@ This directory contains the documentation for the `.claude/` agent system. The s
 └── architecture/               # Architecture documentation
     ├── system-overview.md      # Three-layer architecture overview
     ├── extension-system.md     # Extension system architecture
-    ├── architecture-spec.md    # Unified workflow architecture spec
     ├── handoff-schema.md       # Orchestrator handoff JSON schema
     └── orchestrate-state-machine.md # /orchestrate state machine spec
 ```
@@ -50,6 +49,33 @@ This directory contains the documentation for the `.claude/` agent system. The s
 ## System Architecture
 
 The `.claude/` directory implements a three-layer architecture: Commands, Skills, and Agents, with checkpoint-based execution and task-type-specific routing. All system details, including the task lifecycle, state management, and git integration patterns, are documented in [architecture/system-overview.md](architecture/system-overview.md).
+
+The core agent system is itself packaged as an extension (`core`) alongside domain extensions
+(lean, latex, typst, python, nix, web, z3, epidemiology, formal, and others) that add
+task-type-specific routing. See [Extension System Architecture](architecture/extension-system.md)
+for how the loader, merger, and per-extension `manifest.json` work, and `../README.md` for the
+current command/agent inventory.
+
+---
+
+## Maintenance
+
+### /refresh Command
+
+Clean up Claude Code resources:
+
+| Option | Description |
+|--------|-------------|
+| `/refresh` | Interactive cleanup |
+| `/refresh --dry-run` | Preview changes |
+| `/refresh --force` | Execute immediately (8-hour default) |
+
+**Cleanable directories**: `~/.claude/{projects,debug,file-history,todos,session-env,telemetry,cache}/`
+
+### MCP Configuration
+
+Custom subagents cannot access project-scoped MCP servers (`.mcp.json`). For subagent access,
+configure servers in user scope (`~/.claude.json`).
 
 ---
 

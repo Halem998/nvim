@@ -722,27 +722,6 @@
       }
     },
     {
-      "path": "orchestration/orchestration-validation.md",
-      "domain": "core",
-      "subdomain": "orchestration",
-      "summary": "Validation rules for orchestration",
-      "line_count": 233,
-      "keywords": [
-        "orchestration",
-        "validation"
-      ],
-      "topics": [
-        "quality"
-      ],
-      "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
-        "task_types": [],
-        "commands": []
-      }
-    },
-    {
       "path": "orchestration/orchestrator.md",
       "domain": "core",
       "subdomain": "orchestration",
@@ -849,33 +828,11 @@
       }
     },
     {
-      "path": "orchestration/subagent-validation.md",
-      "domain": "core",
-      "subdomain": "orchestration",
-      "summary": "Validation rules for subagent returns",
-      "line_count": 313,
-      "keywords": [
-        "orchestration",
-        "subagent",
-        "validation"
-      ],
-      "topics": [
-        "quality"
-      ],
-      "load_when": {
-        "agents": [],
-        "commands": [
-          "/orchestrate"
-        ],
-        "task_types": []
-      }
-    },
-    {
       "path": "orchestration/validation.md",
       "domain": "core",
       "subdomain": "orchestration",
-      "summary": "General validation patterns for orchestration",
-      "line_count": 698,
+      "summary": "Consolidated orchestration validation: philosophy, return/artifact validation steps, error codes, /task flag validation",
+      "line_count": 715,
       "keywords": [
         "orchestration",
         "validation"
@@ -888,7 +845,9 @@
           "meta-builder-agent"
         ],
         "task_types": [],
-        "commands": []
+        "commands": [
+          "/orchestrate"
+        ]
       }
     },
     {

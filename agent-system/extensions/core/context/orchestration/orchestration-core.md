@@ -239,7 +239,7 @@ Validate language/agent compatibility before delegation:
 
 ## Related Documentation
 
-- `orchestration-validation.md` - Return validation details
+- `validation.md` - Return validation details
 - `preflight-pattern.md` - Preflight execution steps
 - `postflight-pattern.md` - Postflight execution steps
 - `state-management.md` - Task state and status markers

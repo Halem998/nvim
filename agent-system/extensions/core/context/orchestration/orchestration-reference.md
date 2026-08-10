@@ -303,7 +303,7 @@ Recommendation: Verify researcher writes artifacts to correct paths
 ## Related Documentation
 
 - `orchestration-core.md` - Core patterns (session, delegation, routing)
-- `orchestration-validation.md` - Validation rules and steps
+- `validation.md` - Validation rules and steps
 - `preflight-pattern.md` - Pre-delegation checklist
 - `postflight-pattern.md` - Post-completion checklist
 - `architecture.md` - Three-layer architecture overview

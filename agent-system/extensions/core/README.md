@@ -178,6 +178,6 @@ The following sections common to domain extension READMEs are omitted because th
   source is `agent-system/extensions/core/merge-sources/claudemd.md`, not an `EXTENSION.md` --
   core has none; see `docs/reference/standards/extension-slim-standard.md`'s "Resource-Only /
   Non-EXTENSION.md-Source Extensions" note)
-- `.claude/docs/README.md` - Standards documentation index
+- `.claude/docs/docs-README.md` - Standards documentation index
 - `.claude/context/index.json` - Context discovery index
 - `.claude-extensions.json` (project root) - Extension registry

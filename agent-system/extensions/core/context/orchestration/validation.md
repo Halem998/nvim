@@ -1,11 +1,8 @@
 # Validation Strategy
 
----
-
-> **DEPRECATED** (2026-01-19): This file has been consolidated into:
-> - `orchestration-validation.md` - Validation philosophy, return validation, error codes
->
-> This file is preserved for reference but should not be loaded for new development.
+**Consolidates**: This file, `subagent-validation.md`, and `orchestration-validation.md` (both
+deleted; their content is folded in below). It is the single orchestration validation reference
+for `meta-builder-agent` and `/orchestrate`.
 
 ---
 
@@ -453,16 +450,19 @@ echo "[PASS] All required fields present"
 ```bash
 # Check status is valid enum
 status=$(echo "$return" | jq -r '.status')
-valid_statuses=("completed" "partial" "failed" "blocked")
+valid_statuses=("implemented" "researched" "planned" "partial" "failed" "blocked")
 
 if [[ ! " ${valid_statuses[@]} " =~ " ${status} " ]]; then
   echo "[FAIL] Invalid status: ${status}"
-  echo "Valid statuses: completed, partial, failed, blocked"
+  echo "Valid statuses: implemented, researched, planned, partial, failed, blocked"
   exit 1
 fi
 
 echo "[PASS] Status is valid: ${status}"
 ```
+
+**Note**: Status values must be contextual (`implemented`, `researched`, `planned`, ...) — never
+`"completed"` or `"done"`, which trigger Claude's stop behavior.
 
 #### Step 4: Validate Session ID
 
@@ -495,11 +495,12 @@ fi
 
 ## Artifact Validation (CRITICAL)
 
-Prevents "phantom research" - status=completed but no artifacts created.
+Prevents "phantom work" - a successful-sounding status but no artifacts created.
 
 ### When to Validate
 
-**Only validate artifacts if status == "completed"**
+**Only validate artifacts if status indicates successful completion**
+(`implemented`, `researched`, `planned`).
 
 For partial/failed/blocked status, artifacts may be empty or incomplete.
 
@@ -508,12 +509,12 @@ For partial/failed/blocked status, artifacts may be empty or incomplete.
 #### Step 1: Check Artifacts Array is Non-Empty
 
 ```bash
-if [ "$status" == "completed" ]; then
+if [[ "$status" =~ ^(implemented|researched|planned)$ ]]; then
   artifact_count=$(echo "$return" | jq '.artifacts | length')
   
   if [ $artifact_count -eq 0 ]; then
-    echo "[FAIL] Agent returned 'completed' status but created no artifacts"
-    echo "Error: Phantom research detected - status=completed but no artifacts"
+    echo "[FAIL] Agent returned '${status}' status but created no artifacts"
+    echo "Error: Phantom work detected - status=${status} but no artifacts"
     exit 1
   fi
   
@@ -524,7 +525,7 @@ fi
 #### Step 2: Verify Each Artifact Exists
 
 ```bash
-if [ "$status" == "completed" ]; then
+if [[ "$status" =~ ^(implemented|researched|planned)$ ]]; then
   # Extract artifact paths
   artifact_paths=$(echo "$return" | jq -r '.artifacts[].path')
   
@@ -543,7 +544,7 @@ fi
 #### Step 3: Verify Each Artifact is Non-Empty
 
 ```bash
-if [ "$status" == "completed" ]; then
+if [[ "$status" =~ ^(implemented|researched|planned)$ ]]; then
   for path in $artifact_paths; do
     # Check file is non-empty (size > 0)
     if [ ! -s "$path" ]; then
@@ -561,12 +562,12 @@ fi
 
 ### Why This Matters
 
-**Problem**: Agents may update status to "completed" without actually creating artifacts.
+**Problem**: Agents may update status to a successful value without actually creating artifacts.
 
 **Example**:
 ```json
 {
-  "status": "completed",
+  "status": "researched",
   "summary": "Research completed successfully",
   "artifacts": [],  // Empty! No research was actually done
   "metadata": {...}
@@ -576,6 +577,19 @@ fi
 **Impact**: User thinks research is done, but no research report exists.
 
 **Solution**: Validate artifacts array is non-empty and all files exist.
+
+## Error Codes
+
+| Code | Meaning | Recoverable |
+|------|---------|-------------|
+| TIMEOUT | Operation exceeded time limit | Yes |
+| VALIDATION_FAILED | Input validation failed | Yes |
+| TOOL_UNAVAILABLE | Required tool not available | Yes |
+| BUILD_ERROR | Compilation/build failed | Yes |
+| FILE_NOT_FOUND | Required file missing | Yes |
+| CYCLE_DETECTED | Delegation would create cycle | No |
+| MAX_DEPTH_EXCEEDED | Depth limit (3) exceeded | No |
+| STATUS_SYNC_FAILED | Failed to update state | Yes |
 
 ## Error Handling
 
@@ -696,3 +710,6 @@ These validation rules are now ACTIVELY ENFORCED by command files Stage 3 (Valid
 - Subagent Return Format: `.claude/context/formats/subagent-return.md`
 - State Management: `.claude/context/orchestration/state-management.md`
 - Routing Logic: `.claude/context/orchestration/routing.md`
+- Core Patterns: `.claude/context/orchestration/orchestration-core.md` - Session tracking, delegation safety
+- Preflight Checklist: `.claude/context/orchestration/preflight-pattern.md`
+- Postflight Checklist: `.claude/context/orchestration/postflight-pattern.md`

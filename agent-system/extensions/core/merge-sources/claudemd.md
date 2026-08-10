@@ -1,11 +1,11 @@
-Task management and agent orchestration for project development. For comprehensive documentation, see @.claude/docs/README.md.
+Task management and agent orchestration for project development. For comprehensive documentation, see @.claude/docs/docs-README.md.
 
 ## Quick Reference
 
 - **Task List**: @specs/TODO.md
 - **Machine State**: @specs/state.json
 - **Error Tracking**: @specs/errors.json
-- **Architecture**: @.claude/docs/README.md
+- **Architecture**: @.claude/docs/docs-README.md
 
 ## Project Structure
 

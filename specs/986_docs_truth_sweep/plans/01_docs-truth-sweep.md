@@ -273,41 +273,41 @@ check whether actionable content was removed rather than accepting the smaller n
 
 ---
 
-### Phase 3: Consolidate validation docs and fold docs/README.md [NOT STARTED]
+### Phase 3: Consolidate validation docs and fold docs/README.md [COMPLETED]
 
 **Goal**: One orchestration validation doc replaces three, meta-builder-agent no longer loads 931
 overlapping lines, and `docs/` has exactly one README that is an accurate directory map.
 
 **Tasks**:
-- [ ] Extract a heading inventory from all three sources before editing:
+- [x] Extract a heading inventory from all three sources before editing:
       `context/orchestration/validation.md` (698L), `subagent-validation.md` (313L),
       `orchestration-validation.md` (233L). Note that `validation.md` is itself already a 3-way
       merge (Validation Strategy L1-161, `/task` flag validation L161-380, Validation Rules
       Standard L382-692 nearly duplicating `subagent-validation.md`).
-- [ ] Merge into a single file, deduplicating the shared "Step 1: Validate JSON Structure ->
+- [x] Merge into a single file, deduplicating the shared "Step 1: Validate JSON Structure ->
       Step 2: Validate Required Fields -> Step 3: Validate Status -> Step 4: Validate Session ID
       -> Step 5: Validate Artifacts (CRITICAL)" sequence that all three repeat.
-- [ ] Delete the two superseded files and check every heading from the inventory off against the
+- [x] Delete the two superseded files and check every heading from the inventory off against the
       merged result before deleting.
-- [ ] **Leave `context/validation.md` (46L) untouched and separate.** It is a distinct
+- [x] **Leave `context/validation.md` (46L) untouched and separate.** It is a distinct
       skill-contract concern (return schema / idempotency), `on_demand` only, and the least
       duplicative of the four.
-- [ ] Update `index-entries.json`: remove the entries for the two deleted files, update the
+- [x] Update `index-entries.json`: remove the entries for the two deleted files, update the
       surviving entry's `line_count`, and merge `load_when` so the survivor carries both
       `agents: ["meta-builder-agent"]` and `commands: ["/orchestrate"]` — otherwise `/orchestrate`
       silently loses its validation context.
-- [ ] Repair inbound references in `context/orchestration/orchestration-core.md`,
+- [x] Repair inbound references in `context/orchestration/orchestration-core.md`,
       `context/orchestration/delegation.md`, `context/orchestration/orchestration-reference.md`,
       and `context/architecture/system-overview.md`.
-- [ ] Fold `docs/README.md` (263L) into `docs/docs-README.md` (103L): move over any genuinely
+- [x] Fold `docs/README.md` (263L) into `docs/docs-README.md` (103L): move over any genuinely
       unique content, then delete `docs/README.md`. It is mislabeled "Version: 3.0", restates
       root CLAUDE.md tables rather than indexing `docs/`, and has ~13 broken relative links — every
       internal link is prefixed `docs/...` despite already living inside `docs/`, and
       `core/docs/docs/` does not exist.
-- [ ] Update the two `@.claude/docs/README.md` pointers in `merge-sources/claudemd.md` (lines 1
+- [x] Update the two `@.claude/docs/README.md` pointers in `merge-sources/claudemd.md` (lines 1
       and 8) and the `.claude/docs/README.md` mention in `core/README.md` to name the surviving
       file.
-- [ ] Run `generate-context-line-counts.sh --write` to reconcile.
+- [x] Run `generate-context-line-counts.sh --write` to reconcile.
 
 **Timing**: 1.75 hours
 

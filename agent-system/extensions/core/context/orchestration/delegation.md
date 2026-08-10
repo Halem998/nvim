@@ -8,7 +8,7 @@
 
 > **DEPRECATED** (2026-01-19): This file has been consolidated into:
 > - `orchestration-core.md` - Return format, delegation context, safety mechanisms
-> - `orchestration-validation.md` - Validation framework
+> - `validation.md` - Validation framework
 > - `orchestration-reference.md` - Bulk operation patterns, examples
 >
 > This file is preserved for reference but should not be loaded for new development.
