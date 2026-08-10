@@ -41,7 +41,9 @@ default-mode deploy correctly reconstructs the full tree, including subdirectory
 silently dropped on both a fresh deploy and a resync alike (see
 `scripts/tests/test-deploy-propagation.sh`, whose Assertions A and B guard against a regression
 of this exact defect). `--wipe` was verified to survive `settings.local.json` and every
-`.syncprotect`-listed path byte-identically across the deletion.
+`.syncprotect`-listed path **semantically** across the deletion -- value-for-value identical
+under `jq -S`, with key/array reordering observed at the byte level in every sampled pair. See
+`### Round-Trip Fidelity of settings.local.json (measured)` below for the full measurement.
 
 Use `scripts/deploy-headless.sh` rather than open-coding an equivalent `manager` call -- it
 resolves the repo root, refuses to run outside a git repository, holds the `specs/.deploy-lock`
@@ -130,6 +132,52 @@ single-command matcher object**. That shape is idempotent across re-merges, wher
 command into an existing shared matcher makes that object non-equal to the source and causes its
 siblings to be registered twice.
 
+### Round-Trip Fidelity of settings.local.json (measured)
+
+A prior single observation recorded a content-lossy `--wipe` merge: a dropped `hooks.PreToolUse`
+block and a dropped `mcpServers` block. Two independent re-check rounds have since measured the
+round-trip fidelity of `settings.local.json` across `--wipe` empirically, rather than relying on
+the code-reading claim this document previously asserted.
+
+**Measurement**: 24 `--wipe` invocations across 12 wipe-pairs, run against an isolated scratch
+copy of the repository (never the live deploy tree) in the most recent round, plus 3 pairs from
+an earlier round -- **15 pairs cumulative**. Each pair was compared three ways: semantic equality
+(`jq -S`, recursively sorted keys, then hashed), an explicit structural presence check on
+`hooks.PreToolUse`, `hooks.Stop`, `mcpServers`, `permissions.allow`, `permissions.deny`, and
+`enabledMcpjsonServers` (validated against a positive control -- synthetic deletion of
+`hooks.PreToolUse` and `mcpServers` -- before its "0 dropped" result was trusted), and spot-check
+raw byte diffs.
+
+**Result**: 0 of 15 cumulative pairs showed any dropped key, array element, or block. Every
+observed difference across all pairs was pure key/array **reordering**, attributable to Lua
+`pairs()` iteration nondeterminism across process runs -- semantically identical under `jq -S`,
+never byte-identical. The most recent round additionally varied the pre-existing
+`settings.local.json` state across six variants (baseline, extra permissions, reversed/scrambled
+key order, ~2.5x bloated content, a minimal file stripped to only `hooks` and `mcpServers`, and a
+pre-seeded duplicate `PreToolUse` matcher block deliberately exercising the matcher-merge/dedup
+code path) and found no correlation between pre-existing state and loss.
+
+**Candidate root cause for the original observation**: commit `1692e33e8` moved the settings
+snapshot restoration in `manager.regenerate` to run *before* the extension reload loop; the
+pre-fix ordering (restore-after-load) would produce exactly the observed failure shape by letting
+the reload loop's own settings-fragment merges get clobbered by a later restore. The measured
+sampling above ran entirely against the post-fix code, and its 0/15 result is consistent with
+that fix being effective.
+
+**Known limitation**: all sampling was strictly serial, against an idle target, in a single
+process. The `specs/.deploy-lock` mutex `--wipe` and non-destructive regeneration both acquire is
+fail-open/non-blocking by design (the same acquire/warn-and-proceed shape as
+`specs/.commit-lock`) -- see `deploy-headless.sh` and
+`context/patterns/batch-orchestration-guardrails.md`, which already document that a genuinely
+concurrent `--wipe` "could corrupt the `.claude/` tree." A `--wipe` racing another `--wipe`, or a
+`--wipe` racing a concurrent hand-edit of `settings.local.json`, on the same target is **outside**
+what this measurement covers, and remains an untested, narrower hypothesis distinct from the
+plain-repeated-wipe question this measurement answers.
+
+Full methodology, per-pair results, and the positive-control validation are recorded in the
+originating research report,
+`specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md`.
+
 ## Root-Resolution Guard for Core Scripts
 
 Any core script under `agent-system/extensions/core/scripts/` that resolves its repo root as
@@ -149,6 +197,9 @@ repo root, masking the invocation-context error this guard exists to surface.
 
 - `scripts/deploy-headless.sh` -- scripted regeneration for non-interactive contexts
 - `scripts/verify-deploy.sh` -- checks a deployed tree against its source store
+- `specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md`
+  -- the empirical `--wipe` round-trip-fidelity measurement backing the
+  `### Round-Trip Fidelity of settings.local.json (measured)` subsection above
 - `docs/guides/creating-extensions.md` -- extension authoring guide (manifest schema, file
   templates, deployment categories)
 - `scripts/check-extension-docs.sh` -- doc-lint gate; its core deploy-drift lane surfaces

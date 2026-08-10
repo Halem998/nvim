@@ -1,0 +1,47 @@
+{
+  "phase": 2,
+  "phase_name": "Record the reproduction rate durably in the deploy documentation",
+  "started_at": "2026-08-10T18:46:00Z",
+  "last_updated": "2026-08-10T18:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Correct the byte-identically claim in ## The Headless Path (verified)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add the Round-Trip Fidelity of settings.local.json (measured) subsection",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]
+    },
+    {
+      "id": 3,
+      "description": "Record the known concurrency-sampling limitation in the same subsection",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]
+    },
+    {
+      "id": 4,
+      "description": "Cite durable anchors only; confirm no task-number citations",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Add cross-reference to Related Documentation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]
+    },
+    {
+      "id": 6,
+      "description": "Run generate-context-line-counts.sh --check/--write for drift",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

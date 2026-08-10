@@ -157,38 +157,42 @@ script before running any command; the branch taken above depends on that readin
 
 ---
 
-### Phase 2: Record the reproduction rate durably in the deploy documentation [NOT STARTED]
+### Phase 2: Record the reproduction rate durably in the deploy documentation [COMPLETED]
 
 **Goal**: A reader of `regeneration-is-manual-only.md` learns, without knowing this task ever ran,
 (a) that `--wipe` round-trip fidelity for `settings.local.json` was empirically measured, (b) the
 sample size and rate, and (c) that the preservation is semantic, not byte-level.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`, correct
+- [x] In `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`, correct
       the claim in `## The Headless Path (verified)` that `--wipe` preserves `settings.local.json`
       and `.syncprotect`-listed paths "byte-identically." Replace with the accurate statement:
       preserved **semantically** (`jq -S` value-for-value identical), with key/array reordering
       observed at the byte level, attributable to Lua `pairs()` iteration nondeterminism.
-- [ ] Add a short subsection under `## Merge Semantics That Regeneration Cannot Fix` -- suggested
+      *(completed)*
+- [x] Add a short subsection under `## Merge Semantics That Regeneration Cannot Fix` -- suggested
       heading `### Round-Trip Fidelity of settings.local.json (measured)` -- stating: 24 `--wipe`
       invocations across 12 pairs against an isolated scratch copy, plus 3 pairs from an earlier
       round, produced 0 dropped keys, array elements, or blocks (15 pairs cumulative); every
       difference was ordering-only; six pre-existing-state variants (baseline, extra permissions,
       reversed key order, ~2.5x bloated, minimal, pre-seeded duplicate `PreToolUse` matcher)
       showed no correlation with loss; the structural presence detector was validated against a
-      positive control before its zero-result was trusted.
-- [ ] In the same subsection, record the **known limitation** verbatim in substance: the sampling
+      positive control before its zero-result was trusted. *(completed)*
+- [x] In the same subsection, record the **known limitation** verbatim in substance: the sampling
       was strictly serial, and the `specs/.deploy-lock` mutex is fail-open/non-blocking by design
       (the same acquire/warn-and-proceed shape as `specs/.commit-lock`), so a genuinely concurrent
       `--wipe` racing another `--wipe` or a concurrent hand-edit is **outside** what this
-      measurement covers.
-- [ ] Cite durable anchors only: the report path
+      measurement covers. *(completed)*
+- [x] Cite durable anchors only: the report path
       `specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md`,
       commit `1692e33e8`, and named section headings. **No task-number citations** -- no
-      `task 1015`, `task 996`, or `(task N)` phrasing anywhere in this file.
-- [ ] Optionally add the new subsection to `## Related Documentation` if a cross-reference helps.
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --check`; if
-      `patterns/regeneration-is-manual-only.md` reports drift, run `--write`.
+      `task 1015`, `task 996`, or `(task N)` phrasing anywhere in this file. *(completed: verified
+      via check-task-references.sh, 0 occurrences)*
+- [x] Optionally add the new subsection to `## Related Documentation` if a cross-reference helps.
+      *(completed: added report-path cross-reference)*
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --check`; if
+      `patterns/regeneration-is-manual-only.md` reports drift, run `--write`. *(completed: drift
+      found 159 declared vs 210 actual, corrected via --write)*
 
 **Timing**: 0.75 hours
 
