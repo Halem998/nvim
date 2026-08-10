@@ -1,41 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/996_capstone_end_to_end_refactor_verification/reports/01_capstone-verification-findings.md",
-      "summary": "Live-verified DEPLOY/GATES/LIVE CYCLE capstone scope: confirms all 6 batch leads plus finds 4 new defects (2 extra orphan files, lossy settings.local.json merge non-determinism, and a 7th run-all.sh failure)."
+      "type": "plan",
+      "path": "specs/996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md",
+      "summary": "7-phase recording-and-follow-up plan for the capstone acceptance gate: confirms the two reproducibility-flagged DEPLOY defects, establishes the LIVE CYCLE blocking condition and the gate-out instrumentation gap, records 5 new errors.json entries, decides follow-up task dispositions for all 10 confirmed defects, and writes the dated specs/reviews/ closing bookend with an explicit FAIL verdict and a mechanical re-run procedure."
     }
   ],
-  "next_steps": "Run /plan 996 to turn the 8 confirmed defects into errors.json entries and/or spawned follow-up tasks, then write the specs/reviews/ closing-bookend artifact; treat the regex bug (task numbers > 999) and the multi-task lock self-contention bug as highest priority since both are already live, not hypothetical.",
+  "next_steps": "Run /implement 996 to execute the plan. It fixes nothing structural by design: Phase 4 (errors.json entries) is the primary deliverable and Phase 6 (specs/reviews/ closing bookend) satisfies the task's scope item 4. The gate's verdict is FAIL, and LIVE CYCLE is BLOCKED on err_1786349061492_XpY38x (the 3-digit handoff-location regex) because next_project_number is 1007, so every new scratch task's handoff write emits a spurious HANDOFF_MISLOCATED system_defect that structurally defeats the clean-run negative test.",
   "metadata": {
     "session_id": "sess_1786342011_4592c8_996",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 14
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 5,
+    "dependency_waves": [[1, 2, 3], [4], [5], [6], [7]]
   },
   "memory_candidates": [
     {
-      "content": "verify-deploy.sh's gate 5 (manifest-driven parity + content-hash equality, via lua/neotex/plugins/ai/shared/extensions/verify.lua) is one-directional: it only checks that declared/manifest-listed files are present and hash-match in the deployed tree. It has no 'extra'/'orphan' field and never scans the deployed tree for undeclared content. Orphaned files with no source-store owner (e.g. left behind after a source file is deleted/renamed, since install-extension.sh's merge_index_entries() is purely additive with no stale-removal step) will pass this gate forever. Any future 'declared vs deployed parity' claim must be read as this one-directional guarantee, not a bidirectional one, unless a subtractive/orphan-detection pass is added.",
+      "content": "When a verification gate includes a negative test ('the defect recorder emits NO event on a clean run'), check the detector's own trigger conditions before concluding the system is healthy or unhealthy. A live defect in the detection path can make the negative test structurally unpassable for reasons unrelated to the system under test. Concrete instance: hooks/validate-handoff-location.sh matches handoff paths with a fixed-position [0-9]{3} task-directory regex and, on a non-match, both exits 2 and calls system-defect-record.sh --defect-class HANDOFF_MISLOCATED. Once specs/state.json's next_project_number crossed 1000, every new task became 4-digit, so every such task's handoff write emits a spurious defect event. Any acceptance criterion asserting 'no defect events on a clean run' is therefore unpassable until that regex is widened -- the gate is BLOCKED, not FAILING. Generalization: a gate whose pass condition depends on a detector's silence inherits every one of that detector's false-positive modes.",
       "category": "INSIGHT",
-      "source_artifact": "specs/996_capstone_end_to_end_refactor_verification/reports/01_capstone-verification-findings.md",
+      "source_artifact": "specs/996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "verify.lua", "parity", "orphan-files", "merge_index_entries", "one-directional"]
-    },
-    {
-      "content": "Technique for testing deploy-headless.sh idempotency/byte-identity safely: global_extensions_dir in lua/neotex/plugins/ai/shared/extensions/config.lua is hardcoded to ~/.config/nvim/agent-system/extensions regardless of the TARGET_REPO argument, so deploy-headless.sh --wipe <scratch-git-repo> can be run against an arbitrary scratch git repo (seeded with a copy of the live .claude-extensions.json to replicate the same active-extension set) without touching the live .claude/ tree. Running it twice on the same scratch target and diffing the two .claude/ trees is the correct way to test byte-identical-twice claims.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/996_capstone_end_to_end_refactor_verification/reports/01_capstone-verification-findings.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["deploy-headless.sh", "scratch-tree-testing", "idempotency", "global_extensions_dir"]
-    },
-    {
-      "content": "run-all.sh (the shell test suite runner) behaves differently when run from its source-store location (agent-system/extensions/core/scripts/tests/run-all.sh) versus its deployed location (.claude/scripts/tests/run-all.sh): a REPO_ROOT path-depth resolution bug in the deployed copy causes 5 additional suite failures (missing-file errors resolving to /home/benjamin/... instead of /home/benjamin/.config/nvim/...) that do not occur in source-store mode, plus at least one suite (test-common-lib.sh) that only fails in deployed mode for a different reason (a single-source-of-truth assertion catching .opencode/scripts/command-gate-in.sh's un-migrated inline session-ID generator). Always run and report both copies separately when diagnosing run-all.sh failures -- the failure sets are not the same.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/996_capstone_end_to_end_refactor_verification/reports/01_capstone-verification-findings.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["run-all.sh", "REPO_ROOT", "path-depth-bug", "deployed-vs-source-store", "test-common-lib"]
+      "suggested_keywords": ["negative-test", "acceptance-gate", "false-positive-detector", "validate-handoff-location", "system-defect-record", "blocked-vs-failing"]
     }
   ],
   "modified_files": []

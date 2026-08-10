@@ -19,7 +19,7 @@ next_project_number: 1007
 
 ### Agent System
 
-996 [RESEARCHED] — Capstone acceptance gate for the agent-system refactor: verify th
+996 [PLANNED] — Capstone acceptance gate for the agent-system refactor: verify th
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
@@ -640,11 +640,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 996. Capstone: end-to-end verification of the refactored agent system
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 985, Task 986, Task 993, Task 995, Task 999
 - **Research**: [996_capstone_end_to_end_refactor_verification/reports/01_capstone-verification-findings.md]
+- **Plan**: [996_capstone_end_to_end_refactor_verification/plans/01_capstone-gate-recording.md]
 
 **Description**: Capstone acceptance gate for the agent-system refactor: verify the COMPOSED system end-to-end after all structural waves land. Every prior refactor task carries its own verification bar; nothing yet verifies the composition — a fresh deploy, all gates at their hardened defaults, and a live orchestrate cycle exercising routing, handoff, gate-out, and defect-recording together. This task fixes nothing structural itself: any failure is recorded (errors.json entry and/or spawned follow-up task) and the gate re-runs after the fix lands.
 
