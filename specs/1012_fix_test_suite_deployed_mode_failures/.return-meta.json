@@ -1,14 +1,20 @@
 {
-  "status": "implemented",
+  "status": "partial",
+  "partial_progress": {
+    "stage": "phase_4_redeploy_deferred_pending_next_cycle",
+    "details": "Phases 1, 2, 3, and 5 are genuinely complete and verified (17 REPO_ROOT-carrying suites migrated and green from the source-store location; test-index-entries-schema.sh's fixture manifest fixed with Rule U verified firing; a real write_holder() concurrency race in task-lock.sh diagnosed and fixed, resolving the test-four-tier-conflict.sh flake). Phase 4 (redeploy + deployed-mode re-measurement) is BLOCKED, not because no sanctioned path exists, but because a sibling implementation dispatch in this same orchestration cycle was concurrently writing agent-system/extensions/core/scripts/lib/common.sh and .opencode/scripts/command-gate-in.sh, and the inter-cycle redeploy checkpoint's commit-then-redeploy sequencing guarantee correctly deferred firing until that sibling's commits land. Phase 6's gate run and residual-failure justification table are an honest interim snapshot (deployed run-all.sh measured 28 passed/6 failed/34 total, all 6 failures being the un-redeployed source-fixed suites) but are provisional, not final, pending a real post-redeploy re-measurement. Team-lead will re-dispatch this task next cycle specifically to obtain the redeploy and close out Phase 4/6 definitively.",
+    "phases_completed": 4,
+    "phases_total": 6
+  },
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
-      "summary": "All 6 phases complete. 17 REPO_ROOT-carrying test suites migrated to the depth-independent git-rev-parse pattern; test-index-entries-schema.sh's fixture manifest fixed to restore live Rule U coverage; a real write_holder() concurrency race in task-lock.sh diagnosed and fixed, resolving the test-four-tier-conflict.sh flake. Source-store run-all.sh: 37 passed/0 failed/37 total. Deployed run-all.sh: 28 passed/6 failed/34 total -- the 6 residual failures are exactly the un-redeployed source-fixed suites (no sanctioned redeploy path was available within this dispatch; Phase 4 closed BLOCKED with a depth-3 scratch proof as evidence). Residual-failure justification table included."
+      "summary": "Phases 1, 2, 3, 5 complete and verified. Phase 4 BLOCKED pending a redeploy deferred (not denied) by this cycle's commit-then-redeploy sequencing against a concurrent sibling dispatch. Phase 6's gate run and justification table are an honest interim snapshot, not the final word -- source-store run-all.sh: 37/0/37; deployed run-all.sh: 28/6/34 with all 6 failures being the un-redeployed source-fixed suites. Re-dispatch expected next cycle to obtain the redeploy and re-measure deployed mode for real."
     }
   ],
   "completion_data": {
-    "completion_summary": "Fixed the REPO_ROOT depth-derivation defect class across 17 test suites (5 loudly-failing + 11 latent + 1 already-covered by the fixture fix), restored Rule U coverage in test-index-entries-schema.sh's fixture, and diagnosed and fixed a real write_holder() concurrency race in task-lock.sh that was causing the test-four-tier-conflict.sh flake. Source-store run-all.sh reached 37/0/37; deployed run-all.sh measures 28/6/34 with all 6 residual failures attributable solely to a pending, sanctioned-path-only redeploy that could not be obtained within this dispatch (requested via SendMessage, none landed)."
+    "completion_summary": "Fixed the REPO_ROOT depth-derivation defect class across 17 test suites and restored Rule U coverage in test-index-entries-schema.sh's fixture (both verified green from the source-store location); diagnosed and fixed a real write_holder() concurrency race in task-lock.sh that was causing the test-four-tier-conflict.sh flake. Deployed-mode re-measurement (Phase 4) remains outstanding: the redeploy was deferred by this cycle's commit-then-redeploy sequencing against a concurrent sibling dispatch, not denied -- re-dispatch expected next cycle."
   },
   "modified_files": [
     "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
@@ -44,14 +50,19 @@
       "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
       "confidence": 0.75,
       "suggested_keywords": ["REPO_ROOT migration", "dual-mode detection", "git rev-parse", "fallback preservation", "source-store deploy boundary"]
+    },
+    {
+      "content": "An inter-cycle redeploy checkpoint gated on a commit-then-redeploy sequencing guarantee will correctly defer (not fail) when a sibling task in the same orchestration cycle is still mid-write to a file the checkpoint's critical-path detection watches. When an implementer's own task has no remaining sanctioned redeploy path within its own dispatch, the correct closure is: BLOCKED at the phase level with the evidence gathered, status: partial (not implemented/completed) in return-meta and the orchestrator handoff, and phases_completed counted only for genuinely-closed phases -- leaving the task non-terminal so the orchestrator can re-dispatch specifically for the deferred phase once the sequencing dependency clears, rather than closing the task out with a provisional 'good enough' justification that would need to be walked back.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["inter-cycle redeploy checkpoint", "commit-then-redeploy sequencing", "orchestration cycle", "partial status", "re-dispatch"]
     }
   ],
   "metadata": {
     "session_id": "sess_1786378789_92e564",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 6,
-    "phases_total": 6
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

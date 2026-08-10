@@ -1,22 +1,22 @@
 {
-  "status": "implemented",
-  "summary": "All 6 phases complete. Migrated 17 REPO_ROOT-carrying test suites to the depth-independent git-rev-parse pattern; fixed test-index-entries-schema.sh's fixture manifest to restore live Rule U coverage; diagnosed and fixed a real write_holder() concurrency race in task-lock.sh that was causing the test-four-tier-conflict.sh order-dependent flake. Source-store run-all.sh: 37 passed/0 failed/37 total. Deployed run-all.sh: 28 passed/6 failed/34 total -- NOT an unqualified green. The 6 residual failures are exactly the suites this task fixed in the source store but could not get redeployed: no sanctioned redeploy path (orchestrator inter-cycle checkpoint or explicit operator action) was invokable from within this dispatch. Phase 4 closed [BLOCKED] per the plan's own pre-accepted contingency, with a depth-3 scratch proof recorded as evidence that the fix is correct independent of directory depth. A redeploy was requested from team-lead via SendMessage; none landed before this dispatch completed.",
+  "status": "partial",
+  "summary": "Phases 1, 2, 3, and 5 complete and verified: 17 REPO_ROOT-carrying test suites migrated to the depth-independent git-rev-parse pattern; test-index-entries-schema.sh's fixture manifest fixed to restore live Rule U coverage; a real write_holder() concurrency race in task-lock.sh diagnosed and fixed, resolving the test-four-tier-conflict.sh order-dependent flake. Phase 4 (redeploy + deployed-mode re-measurement) is [BLOCKED] -- not permanently denied, but deferred this cycle because a sibling implementation dispatch was concurrently writing agent-system/extensions/core/scripts/lib/common.sh and .opencode/scripts/command-gate-in.sh, and the inter-cycle redeploy checkpoint's commit-then-redeploy sequencing guarantee correctly declined to fire while that sibling's work was still in flight. Phase 6 ran its full gate set and produced a residual-failure justification table (deployed run-all.sh: 28 passed/6 failed/34 total, all 6 failures being exactly the un-redeployed source-fixed suites; source-store run-all.sh: 37 passed/0 failed/37 total) but is [PARTIAL], not final -- treat it as an honest interim snapshot pending a real post-redeploy re-measurement.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/1012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md",
-      "summary": "6-phase plan, all phases closed [COMPLETED] or [COMPLETED WITH EXCLUSIONS] except Phase 4 [BLOCKED] (evidenced, pre-accepted redeploy-unavailable contingency)"
+      "summary": "Phases 1, 2, 3 [COMPLETED]; Phase 5 [COMPLETED WITH EXCLUSIONS]; Phase 4 [BLOCKED] (clean resume point, deferred pending sibling commit sequencing); Phase 6 [PARTIAL] (provisional gate results)"
     },
     {
       "type": "summary",
       "path": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
-      "summary": "Full residual-failure justification table, measured counts for both modes, verify-deploy.sh and check-extension-docs.sh gate results"
+      "summary": "Interim residual-failure justification table and measured counts for both modes; verify-deploy.sh and check-extension-docs.sh gate results, all attributable to the same pending redeploy"
     }
   ],
-  "phases_completed": 6,
+  "phases_completed": 4,
   "phases_total": 6,
   "blockers": [
-    "Deployed-mode run-all.sh cannot reach 34/0/34 until a sanctioned redeploy runs (orchestrator inter-cycle checkpoint, or an operator running <leader>al [Reload All] / bash .claude/scripts/deploy-headless.sh). 18 files are drift-flagged by verify-deploy.sh/check-extension-docs.sh awaiting exactly this redeploy -- all are this task's own source-store fixes, already verified green from the source-store location."
+    "Deployed-mode run-all.sh cannot be re-measured for real, and Phase 4/6 cannot close definitively, until the inter-cycle redeploy checkpoint fires. It correctly deferred this cycle because a sibling implementation dispatch was concurrently writing agent-system/extensions/core/scripts/lib/common.sh and .opencode/scripts/command-gate-in.sh -- the commit-then-redeploy sequencing guarantee requires that sibling's commits to land first. This is a deferral, not a denial: re-dispatch is expected next cycle once both implementers in this cycle return."
   ],
-  "next_action_hint": "Trigger a sanctioned redeploy (orchestrator inter-cycle checkpoint, or an operator action) and re-run deployed-mode run-all.sh to confirm it reaches 34/0/34. No further code changes are needed for task 1012 itself -- test-common-lib.sh remains the concurrent sibling task's scope, untouched here and in fact measured PASS in this task's own deployed-mode run."
+  "next_action_hint": "Re-dispatch this task next cycle (once the inter-cycle redeploy checkpoint has fired) specifically to: (1) confirm the redeploy landed the 18 fixed files (17 test suites + task-lock.sh) into .claude/scripts/, (2) re-run deployed-mode run-all.sh and record the real count (expected 34/0/34), (3) close Phase 4 as [COMPLETED] and re-close Phase 6 as [COMPLETED] with the final measurement replacing this interim one. No further source-code changes are anticipated -- this is a measurement-and-closure re-dispatch, not new implementation work. test-common-lib.sh remains the concurrent sibling task's scope, untouched here."
 }

@@ -829,7 +829,7 @@
       "project_number": 1012,
       "project_name": "fix_test_suite_deployed_mode_failures",
       "title": "Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites",
-      "status": "completed",
+      "status": "partial",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [],
@@ -839,7 +839,7 @@
       ],
       "description": "tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.\n\nMEASURED EVIDENCE (live run, not inherited): 25 passed, 8 FAILED, 0 skipped, 33 total. Earlier reports of a 5-suite REPO_ROOT count were NOT confirmed and should be treated as superseded by this measurement. Recorded as err_1786368358319_8jwcdo.\n\nCONFIRMED ROOT CAUSE (2 of 8): test-skill-base-lifecycle.sh and test-update-task-status.sh both abort with\n    ERROR: deployed scripts tree not found at /home/benjamin/.claude/scripts\nproving REPO_ROOT resolved to $HOME instead of the repo root. Both derive it as:\n    REPO_ROOT=\"$(cd \"$SCRIPT_DIR/../../../../..\" && pwd)\"\nFive levels up is correct from the SOURCE-STORE location agent-system/extensions/core/scripts/tests/, but wrong from the DEPLOYED location .claude/scripts/tests/, which is only three levels below the repo root. The same 5-level literal appears in at least test-corroborate-phase-counts.sh, test-errors-append.sh, test-handoff-reader-parity.sh, and test-index-entries-schema.sh, so the defect class is wider than the two suites that happen to fail loudly.\n\nPROVEN-GOOD PATTERN ALREADY IN-TREE: test-deploy-propagation.sh derives it depth-independently:\n    REPO_ROOT=\"$(cd \"$SCRIPT_DIR\" && git rev-parse --show-toplevel 2>/dev/null)\"\n    [ -z \"$REPO_ROOT\" ] && REPO_ROOT=\"$(cd \"$SCRIPT_DIR/../../../../..\" && pwd)\"\nAdopt this shape rather than inventing a new one.\n\nUNCONFIRMED (6 of 8) - triage each individually, do NOT assume a shared cause:\n  test-common-lib.sh (1 failure; overlaps the separately-tracked opencode session-id duplication finding)\n  test-index-entries-schema.sh (8 passed, 1 failed)\n  test-lint-state-writer-boundary.sh (7 passed, 1 failed)\n  test-loop-guard-staleness.sh\n  test-reconcile-handoff-status.sh\n  test-resume-scan-nonconformance.sh\n\nNOTABLE: test-lint-state-writer-boundary.sh is the suite added by the state-writer conversion work, which reported 8/8 green in source-store context but is 7/8 in deployed mode. Determine whether this is the same depth defect or a genuine gap in the new lint.\n\nACCEPTANCE: run-all.sh reports 0 failures, OR every residual failure has a written, evidenced justification. Report the count honestly; never an unqualified green.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T13:26:30Z",
-      "last_updated": "2026-08-10T17:12:14Z",
+      "last_updated": "2026-08-10T17:15:14Z",
       "artifacts": [
         {
           "path": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",

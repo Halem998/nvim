@@ -1,24 +1,33 @@
 # Implementation Summary: Make run-all.sh green or justify every residual failure
 
 - **Task**: 1012 - Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and further suites
-- **Status**: [COMPLETED]
+- **Status**: [PARTIAL]
 - **Started**: 2026-08-10T17:00:00Z
-- **Completed**: 2026-08-10T19:15:00Z
-- **Effort**: ~2.5 hours
+- **Last updated**: 2026-08-10T19:15:00Z (interim; a follow-up re-dispatch will close this out)
+- **Effort**: ~2.5 hours so far
 - **Dependencies**: None (one advisory overlap: the opencode session-id duplication task owns `test-common-lib.sh`)
 - **Artifacts**: plans/01_run-all-deployed-mode-fixes.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md, source-store-deploy-boundary.md
 
 ## Overview
 
-Deployed-mode `run-all.sh` measures 28 passed, 6 failed, 34 total — down from the research
-baseline's 8 failures, but **not zero**: this is not an unqualified green. Source-store `run-all.sh`
-measures 37 passed, 0 failed, 37 total (its own separate, non-comparable total, since source-store
-mode scans every extension). The 6 residual deployed-mode failures are all suites this task fixed
-in the source store but could not get redeployed through any sanctioned path within this dispatch
-— see the justification table below. Every fix in this task's own scope was verified green from
-the source-store location; the gap between source-store green and deployed-mode green is entirely
-attributable to the pending redeploy, not to any unresolved defect.
+**This is an interim summary, not a final one.** Phases 1, 2, 3, and 5 are genuinely complete and
+verified. Phase 4 (redeploy + deployed-mode re-measurement) is `[BLOCKED]` — deferred, not denied:
+a sibling implementation dispatch in this same orchestration cycle was concurrently writing
+`agent-system/extensions/core/scripts/lib/common.sh` and `.opencode/scripts/command-gate-in.sh`,
+and the inter-cycle redeploy checkpoint's commit-then-redeploy sequencing guarantee correctly
+declined to fire while that sibling's work was still in flight. Team-lead will re-dispatch this
+task next cycle specifically to obtain the redeploy and re-measure deployed mode for real.
+
+Deployed-mode `run-all.sh` measures 28 passed, 6 failed, 34 total as of this dispatch — down from
+the research baseline's 8 failures, but **not zero**: this is not an unqualified green, and this
+count is expected to change once the redeploy lands. Source-store `run-all.sh` measures 37 passed,
+0 failed, 37 total (its own separate, non-comparable total, since source-store mode scans every
+extension). The 6 residual deployed-mode failures are all suites this task fixed in the source
+store but could not get redeployed through any sanctioned path within this dispatch — see the
+justification table below. Every fix in this task's own scope was verified green from the
+source-store location; the gap between source-store green and deployed-mode green is entirely
+attributable to the pending, already-scheduled redeploy, not to any unresolved defect.
 
 ## What Changed
 
@@ -141,10 +150,14 @@ did not touch.
 
 ## Follow-ups
 
-- Land a redeploy (orchestrator inter-cycle checkpoint, or an operator running `<leader>al`
-  `[Reload All]` / `bash .claude/scripts/deploy-headless.sh`) to bring deployed-mode `run-all.sh`
-  to its expected 34/0/34 and clear the `verify-deploy.sh`/`check-extension-docs.sh` drift
-  findings for these 18 files.
+- **Expected next step (already scheduled)**: the inter-cycle redeploy checkpoint deferred this
+  cycle only because a sibling implementation dispatch was concurrently writing
+  `agent-system/extensions/core/scripts/lib/common.sh` and
+  `.opencode/scripts/command-gate-in.sh`; the checkpoint's commit-then-redeploy sequencing
+  guarantee correctly declined to fire until that sibling's commits land. Once both implementers
+  in this cycle return and land their commits, the checkpoint fires for real and this task will be
+  re-dispatched specifically to confirm the redeploy, re-measure deployed-mode `run-all.sh` for
+  real (expected 34/0/34), and close Phase 4/6 definitively.
 - No further action needed on `test-common-lib.sh` from this task; it remains the concurrent
   sibling task's scope.
 

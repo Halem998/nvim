@@ -1,7 +1,7 @@
 # Implementation Plan: Make run-all.sh green or justify every residual failure
 
 - **Task**: 1012 - Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and further suites
-- **Status**: [COMPLETED]
+- **Status**: [PARTIAL]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (one advisory overlap: the opencode session-id duplication task owns `test-common-lib.sh`)
 - **Research Inputs**: specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md
@@ -365,7 +365,19 @@ accepted outcome and routes to the justification branch — it is not a failure 
 
 ---
 
-### Phase 6: Final gate, honest re-measurement, and residual-failure justification [COMPLETED]
+### Phase 6: Final gate, honest re-measurement, and residual-failure justification [PARTIAL]
+
+**PROVISIONAL — pending Phase 4 re-dispatch**: every measurement and gate result below was
+captured honestly and is accurate as of this dispatch, but Phase 4's redeploy was deferred (not
+permanently blocked) for sequencing reasons: a sibling implementation dispatch in this same
+orchestration cycle was concurrently writing to `.opencode/scripts/command-gate-in.sh` /
+`agent-system/extensions/core/scripts/lib/common.sh`, and the inter-cycle redeploy checkpoint's
+commit-then-redeploy sequencing guarantee correctly declined to fire while that sibling's work was
+still in flight. Once both implementers in this cycle land their commits, the checkpoint will fire
+for real and this task becomes eligible for re-dispatch specifically to re-measure deployed-mode
+`run-all.sh` and close out Phase 4 (and this phase) definitively. Treat the deployed-mode counts
+and the residual-failure justification table below as an honest interim snapshot, not the final
+word — do not re-close this phase as `[COMPLETED]` until a real post-redeploy measurement lands.
 
 **Goal**: Run the full gate set, report the measured counts without qualification-free optimism,
 and give every remaining failure a written, evidenced justification.

@@ -21,7 +21,7 @@
       "description": "Obtain a redeploy through a sanctioned path (orchestrator inter-cycle checkpoint or explicit operator action)",
       "status": "blocked",
       "files_touched": [],
-      "note": "No sanctioned redeploy path was available within this agent's own dispatch (deploy-headless.sh may only be invoked by skill-orchestrate's Stage MT-3 checkpoint or an explicit operator action, never self-invoked by an implementer agent). Requested via SendMessage to team-lead; no redeploy landed before this phase closed."
+      "note": "No sanctioned redeploy path was available within this agent's own dispatch (deploy-headless.sh may only be invoked by skill-orchestrate's Stage MT-3 checkpoint or an explicit operator action, never self-invoked by an implementer agent). Requested via SendMessage to team-lead; no redeploy landed before this phase closed. Team-lead confirmed the reason: a sibling implementation dispatch in this same orchestration cycle was concurrently writing agent-system/extensions/core/scripts/lib/common.sh and .opencode/scripts/command-gate-in.sh, and the inter-cycle redeploy checkpoint's commit-then-redeploy sequencing guarantee correctly deferred firing until that sibling's commits land. This is a deferral, not a permanent block -- team-lead will re-dispatch this task next cycle specifically to measure deployed-mode run-all.sh for real and close out this phase."
     },
     {
       "id": 4,
