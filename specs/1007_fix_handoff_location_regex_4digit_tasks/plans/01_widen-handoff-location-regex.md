@@ -240,26 +240,34 @@ than assuming registration is optional.
 
 ---
 
-### Phase 4: Full gate, deploy-boundary check, and redeploy note [NOT STARTED]
+### Phase 4: Full gate, deploy-boundary check, and redeploy note [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The complete repository gate set is green, every edit landed in the source store rather
 than the deploy mirror, and the required redeploy is explicitly recorded.
 
 **Tasks**:
-- [ ] Run the full test suite via `agent-system/extensions/core/scripts/tests/run-all.sh` and
-      confirm the new suite is auto-discovered and green alongside the existing 27.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and confirm all gates pass, including the
-      task-reference lint gate.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm the new test file introduces
-      no unexempted task-number citation.
-- [ ] **Deploy-boundary check**: confirm via `git status --short` that every path modified across
+- [x] Run the full test suite via `agent-system/extensions/core/scripts/tests/run-all.sh` and
+      confirm the new suite is auto-discovered and green alongside the existing 27. *(completed:
+      `test-validate-handoff-location.sh` auto-discovered and [PASS]; run-all.sh's own exit code is
+      1 due to one pre-existing, unrelated failure — see Reasoned Exclusions below)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and confirm all gates pass, including the
+      task-reference lint gate. *(completed: task-reference lint gate (4) passes; gate 5
+      (manifest-driven parity) fails with 2 expected findings — see Reasoned Exclusions below)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm the new test file introduces
+      no unexempted task-number citation. *(completed: 0 unexempted occurrences, exit 0)*
+- [x] **Deploy-boundary check**: confirm via `git status --short` that every path modified across
       Phases 1-3 is under `agent-system/extensions/**` and that **no** file under `.claude/**` was
       hand-edited. A `.claude/**` edit in the diff means the source-store rule was violated and must
-      be reverted and redone against the source store.
-- [ ] Record in the implementation summary that the deployed `.claude/` mirror still carries the old
+      be reverted and redone against the source store. *(completed: `git diff --stat` over the
+      Phase 1-3 commit range touches only `agent-system/extensions/core/hooks/...`,
+      `agent-system/extensions/core/manifest.json`,
+      `agent-system/extensions/core/scripts/tests/...`, and files under
+      `specs/1007_fix_handoff_location_regex_4digit_tasks/**`; zero `.claude/**` paths)*
+- [x] Record in the implementation summary that the deployed `.claude/` mirror still carries the old
       3-digit regex until the next `[Reload All]` / `[Regenerate]` / `deploy-headless.sh` run, so
       the live symptom persists until redeploy. State this as a required follow-up action, not as a
-      completed one, unless a redeploy is actually performed.
+      completed one, unless a redeploy is actually performed. *(completed: recorded in the
+      implementation summary's Follow-ups section; no redeploy was performed as part of this task)*
 
 **Timing**: 15 minutes
 
@@ -272,25 +280,38 @@ than the deploy mirror, and the required redeploy is explicitly recorded.
 
 **Verification**:
 - `run-all.sh` exits 0 with `test-validate-handoff-location.sh` listed among the suites run
-- `verify-deploy.sh` exits 0
-- `check-task-references.sh` exits 0
+  *(new suite listed and [PASS]; see Reasoned Exclusions for the aggregate exit code)*
+- `verify-deploy.sh` exits 0 *(see Reasoned Exclusions)*
+- `check-task-references.sh` exits 0 *(confirmed)*
 - `git status --short` shows changes only under `agent-system/extensions/**` and `specs/**`
+  *(confirmed via `git diff --stat` over the Phase 1-3 commit range)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `run-all.sh` aggregate exit code 0 | The one failing suite, `test-index-entries-schema.sh` (Rule U: "did not fire on a 61-line EXTENSION.md"), is unrelated to this task's scope — it tests `check-extension-docs.sh`'s EXTENSION.md line-count rule, not the handoff-location hook. Confirmed pre-existing (not introduced by Phases 1-3): the file is byte-identical to the pre-task-1007 baseline commit. Fixing it would be "Retrofitting coverage onto any other hook" / an unrelated fix, explicitly a Non-Goal of this plan. | `git show 0ed5c9517:agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh \| diff - agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh` reports no differences (0ed5c9517 is the commit immediately preceding this task's Phase 1 commit c0d6d716c). `test-validate-handoff-location.sh` itself is auto-discovered and reports `[PASS]` in the same run. |
+| `verify-deploy.sh` gate 5 (manifest-driven content-hash/category parity) exit 0 | Both of the 2 reported findings are the expected, plan-anticipated staleness of the deployed `.claude/` mirror relative to the just-edited source store — exactly the Risk-table row 3 scenario ("Deployed `.claude/` mirror keeps the old regex after the source edit... Expected deploy-boundary behavior, not a defect in the fix"). A redeploy (`[Reload All]`/`[Regenerate]`/`deploy-headless.sh`) is explicitly out of scope for this task per the Non-Goals and is recorded as a required follow-up instead. | Direct gate-5 run reports exactly 2 findings: `VERIFY_FINDING core: Missing scripts: scripts/tests/test-validate-handoff-location.sh` (new test not yet deployed) and `VERIFY_FINDING core: Content differs from source: hooks/validate-handoff-location.sh` (deployed mirror still has the old `{3}` quantifier) — both are the deploy-mirror-staleness class, not a defect in the source-store edit itself. |
 
 ---
 
 ## Testing & Validation
 
-- [ ] A handoff path under a 4-digit task directory exits 0 and produces no `MISPLACED` diagnostic
-- [ ] A handoff path under a 4-digit `OC_`-prefixed task directory exits 0
-- [ ] A handoff path under a legacy 3-digit task directory still exits 0 (no regression)
-- [ ] A 5-digit task directory exits 0 (no repeat of this defect at the next crossing)
-- [ ] A bare `.orchestrator-handoff.json` filename still exits 2
-- [ ] `specs/.orchestrator-handoff.json` (outside any task directory) still exits 2
-- [ ] A non-numeric directory prefix still exits 2
-- [ ] A 2-digit directory prefix still exits 2 (the 3-digit minimum is genuinely enforced)
-- [ ] A differently-named file is ignored entirely (exact-basename guard intact)
-- [ ] `run-all.sh`, `verify-deploy.sh`, and `check-task-references.sh` all exit 0
-- [ ] No file under `.claude/**` was hand-edited
+- [x] A handoff path under a 4-digit task directory exits 0 and produces no `MISPLACED` diagnostic
+      *(verified in test-validate-handoff-location.sh, required negative fixture)*
+- [x] A handoff path under a 4-digit `OC_`-prefixed task directory exits 0
+- [x] A handoff path under a legacy 3-digit task directory still exits 0 (no regression)
+- [x] A 5-digit task directory exits 0 (no repeat of this defect at the next crossing)
+- [x] A bare `.orchestrator-handoff.json` filename still exits 2
+- [x] `specs/.orchestrator-handoff.json` (outside any task directory) still exits 2
+- [x] A non-numeric directory prefix still exits 2
+- [x] A 2-digit directory prefix still exits 2 (the 3-digit minimum is genuinely enforced)
+- [x] A differently-named file is ignored entirely (exact-basename guard intact)
+- [x] `run-all.sh`, `verify-deploy.sh`, and `check-task-references.sh` all exit 0 *(deviation:
+      altered — `check-task-references.sh` exits 0; `run-all.sh` and `verify-deploy.sh` each carry
+      exactly one class of expected/pre-existing exclusion, both fully diagnosed and evidenced in
+      Phase 4's Reasoned Exclusions table)*
+- [x] No file under `.claude/**` was hand-edited
 
 ## Artifacts & Outputs
 

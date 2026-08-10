@@ -1,0 +1,32 @@
+{
+  "phase": 4,
+  "phase_name": "Full gate, deploy-boundary check, and redeploy note",
+  "started_at": "2026-08-10T15:59:00Z",
+  "last_updated": "2026-08-10T16:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run run-all.sh, confirm new suite auto-discovered and green", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run verify-deploy.sh, confirm all gates pass", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run check-task-references.sh, confirm no unexempted citation", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Deploy-boundary check via git status/diff --stat", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record redeploy-required note in implementation summary", "status": "done", "files_touched": ["specs/1007_fix_handoff_location_regex_4digit_tasks/summaries/01_widen-handoff-location-regex-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "run-all.sh full suite run", "result": "1 pre-existing unrelated failure (test-index-entries-schema.sh Rule U)", "reason": "confirmed byte-identical to pre-task-1007 baseline via git show diff; unrelated to this task's scope"},
+    {"approach": "verify-deploy.sh gate 5 (manifest-driven parity)", "result": "2 expected findings", "reason": "deployed .claude/ mirror is stale relative to just-edited source store -- new test file missing, hook content differs; exactly the plan's anticipated Risk-table row 3 scenario, cleared only by a redeploy which is out of scope for this task"}
+  ],
+  "handoff_count": 0,
+  "closure": "COMPLETED_WITH_EXCLUSIONS",
+  "reasoned_exclusions": [
+    {
+      "item": "run-all.sh aggregate exit code 0",
+      "reason": "test-index-entries-schema.sh Rule U failure is unrelated to this task and pre-existing",
+      "evidence": "git show 0ed5c9517:agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh diffs identical to current file"
+    },
+    {
+      "item": "verify-deploy.sh gate 5 exit code 0",
+      "reason": "deployed .claude/ mirror staleness is the expected, plan-anticipated post-fix state pending redeploy, not a defect",
+      "evidence": "gate 5 direct run reports exactly 2 findings: missing scripts/tests/test-validate-handoff-location.sh and content differs for hooks/validate-handoff-location.sh"
+    }
+  ]
+}
