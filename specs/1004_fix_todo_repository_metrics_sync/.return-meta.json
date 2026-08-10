@@ -1,9 +1,59 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 1004,
   "task_type": "meta",
   "session_id": "sess_1786386280_bc7e55",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "plan_path": "specs/1004_fix_todo_repository_metrics_sync/plans/01_repository-metrics-sync-fix.md"
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/1004_fix_todo_repository_metrics_sync/summaries/01_repository-metrics-sync-fix-summary.md",
+      "summary": "All five plan phases completed and verified with executed tests: assess-repo-health.sh extracted, fixture suite with negative-control demonstration, state-schema.json reconciled, todo.md rewritten, deployed and verify-deploy.sh green (23/23)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extracted /todo's build-health probe into a standalone, fixture-tested script (assess-repo-health.sh), fixed the always-green build_errors defect and the undefined-$build_errors jq bug, reconciled the status enum and nullable build_errors typing across state-schema.json and its doc mirror, deleted the dead TODO.md-frontmatter instruction, and registered/deployed both new files with verify-deploy.sh confirmed green (23/23 checks, 0 failures)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/assess-repo-health.sh",
+    "agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh",
+    "agent-system/extensions/core/context/schemas/state-schema.json",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shell test suite resolves its dependencies deploy-tree-first / source-store-fallback (the pattern used by scripts/tests/test-status-vocabulary.sh and its siblings), a mid-implementation local run can show a spurious FAIL if a *stale, pre-existing* deployed copy (e.g. .claude/context/schemas/state-schema.json from an earlier, unrelated deploy) predates the current source-store edit. This is not a defect in the new suite or the edit -- it resolves itself once the deploy step (usually the plan's own final phase) syncs the tree. Diagnose by comparing the source-store file directly against the deployed copy before assuming the new code is wrong; defer full-green confirmation to after deploy rather than fudging or skipping the check.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/summaries/01_repository-metrics-sync-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-tree-first-resolution", "stale-deployed-artifact", "shell-test-suite", "verify-deploy-timing", "source-store-vs-deployed"]
+    },
+    {
+      "content": "A negative-control demonstration for a fixture-driven shell test suite must invert the actual pass/fail LOGIC (e.g. drop the leading `!` on a `bash -n`/`jq empty` success check so valid input is counted as an error and invalid input is not), not just force a constant output. Forcing a constant (e.g. `errors=0` unconditionally) only flips the cases that were previously non-zero; it does not touch cases that already expected 0, so a 'both the failing fixture AND the clean control go [FAIL]' requirement (the correct demonstration that a probe's specific comparison logic, not just one branch, is exercised) is not satisfied by a constant-forcing mutation. Use a true sense-inversion instead.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/summaries/01_repository-metrics-sync-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["negative-control", "mutation-testing", "shell-script-testing", "vacuous-test-guard", "logic-inversion-mutation"]
+    },
+    {
+      "content": "Editing a JSON Schema file tracked in an extension's index-entries.json (which carries a hand-maintained line_count per entry) requires updating that entry's line_count alongside the content edit, or verify-deploy.sh's doc-lint Rule R will fail on the next deploy verification. generate-context-line-counts.sh --write exists to auto-correct this but rewrites every extension's index-entries.json in one pass with no per-file scoping flag -- for a single-file fix, hand-editing just the affected entry is safer and avoids pulling unrelated pre-existing line_count drift into an otherwise-narrow diff.",
+      "category": "CONFIG",
+      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/summaries/01_repository-metrics-sync-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "line_count-drift", "doc-lint", "verify-deploy", "generate-context-line-counts"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786386280_bc7e55",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
