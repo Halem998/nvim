@@ -1,0 +1,34 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy regeneration and full gate run",
+  "started_at": "2026-08-10T23:05:00Z",
+  "last_updated": "2026-08-10T23:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm no .claude/** hand-edits before regeneration", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Regenerate deploy tree via deploy-headless.sh (required manifest registration for new test suite)", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Run verify-deploy.sh; investigate and resolve in-scope findings", "status": "done", "files_touched": ["specs/state.json", "specs/TODO.md"]},
+    {"id": 4, "description": "Run run-all.sh, confirm new suite discovered and passing", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run check-extension-docs.sh and lint-agent-contracts.sh", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Residual-site sweep against deployed tree", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm no-task-references gate ran and passed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.2",
+      "description": "Register new test suite in manifest.json provides.scripts",
+      "type": "altered",
+      "reason": "Not anticipated by the plan: agent-system/extensions/core/scripts/tests/*.sh files are manifest-driven allow-list deploy, not glob-discovered. deploy-headless.sh silently omitted the new suite from .claude/scripts/tests/ until registered in core/manifest.json's provides.scripts array.",
+      "annotation": "*(deviation: altered -- required an additional manifest.json registration not anticipated by the plan)*"
+    },
+    {
+      "task_id": "5.3",
+      "description": "Fixed task 5's own stale dependencies:[1004] entry in specs/state.json",
+      "type": "altered",
+      "reason": "verify-deploy.sh's validate-state.sh --deep gate flagged a dangling dependency reference (5 -> 1004). The plan's own metadata line already declares this dependency satisfied/vaulted ('Dependencies: None'), so state.json's stale dependencies array was in-scope cleanup of this task's own metadata, routed through the sanctioned state-write.sh writer.",
+      "annotation": "*(deviation: altered -- cleared task 5's own stale dependencies entry via state-write.sh to match the plan's declared Dependencies: None)*"
+    }
+  ]
+}

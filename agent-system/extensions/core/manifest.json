@@ -180,6 +180,7 @@
       "tests/test-postflight-marker-schema.sh",
       "tests/test-reconcile-handoff-status.sh",
       "tests/test-resume-scan-nonconformance.sh",
+      "tests/test-roadmap-items-producer.sh",
       "tests/test-routing-resolution.sh",
       "tests/test-skill-base-lifecycle.sh",
       "tests/test-update-task-status.sh",

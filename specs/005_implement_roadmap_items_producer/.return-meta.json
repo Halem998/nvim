@@ -1,30 +1,56 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
   "session_id": "sess_1786396737_4bb5dd",
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
   "task_number": 5,
   "task_name": "implement_roadmap_items_producer",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/005_implement_roadmap_items_producer/plans/01_roadmap-items-producer.md",
-      "summary": "5-phase plan threading roadmap_path into every implementation-agent dispatch context, adding a read-only roadmap-load stage plus a directive Stage 6a to both implementation agents, adding a distinct roadmap_no_match signal to /todo, an end-to-end fixture test, and deploy regeneration with full gate run."
+      "type": "summary",
+      "path": "specs/005_implement_roadmap_items_producer/summaries/01_roadmap-items-producer-summary.md",
+      "summary": "All 5 phases completed: roadmap_path threaded into all 8 implementation-agent dispatch sites, Load Roadmap Context stages added to both implementation agents with a directive Stage 6a, roadmap_no_match signal added to /todo, an 11-assertion fixture suite proving the chain end to end, and a full deploy regeneration + gate run (21/23 gates pass; 2 pre-existing unrelated failures documented)."
     }
   ],
-  "metadata": {
-    "phase_count": 5,
-    "estimated_hours": 4.5,
-    "dependency_waves": 3
+  "completion_data": {
+    "completion_summary": "Fixed the roadmap_items producer chain: threaded roadmap_path into every implementation-agent dispatch context (8 sites across 4 skill files), added a read-only Load Roadmap Context stage plus a directive verbatim-copy Stage 6a to both implementation agents, added a distinct roadmap_no_match silent-zero signal to /todo's Roadmap branch, and proved the full chain (state.json write -> roadmap-integration.sh annotation) end to end on an isolated fixture suite."
   },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/tests/test-roadmap-items-producer.sh",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
   "memory_candidates": [
     {
       "content": "When an agent contract instructs a subagent to make a judgment against an external document (e.g. 'only include X if it clearly maps to a roadmap item'), the instruction is inert unless some dispatch stage actually loads that document into the subagent's context. Diagnosing a dead feature of this shape means checking the delegation-context plumbing, not the instruction text. Corollary for this codebase: threading a new delegation field to implementation agents requires editing BOTH the implementer skills (skill-implementer, skill-implementer-hard) AND the orchestrator skills (skill-orchestrate, skill-orchestrate-hard), because /orchestrate dispatches $IMPLEMENT_AGENT directly with its own inline context objects and never passes through skill-implementer's Stage 4. Editing only the implementer skills leaves the field dead on every /orchestrate run.",
       "category": "INSIGHT",
-      "source_artifact": "specs/005_implement_roadmap_items_producer/plans/01_roadmap-items-producer.md",
+      "source_artifact": "specs/005_implement_roadmap_items_producer/summaries/01_roadmap-items-producer-summary.md",
       "confidence": 0.85,
       "suggested_keywords": ["delegation-context", "dispatch-plumbing", "orchestrate-bypass", "agent-contract", "inert-instruction", "roadmap_path"]
+    },
+    {
+      "content": "In this repo's deploy engine, agent-system/extensions/<ext>/scripts/tests/*.sh files are NOT glob-discovered at deploy time -- they are a manifest-driven allow-list under provides.scripts in manifest.json. Adding a new test suite to a scripts/tests/ directory in the source store is silently invisible to deploy-headless.sh (and therefore to the deployed .claude/scripts/tests/ tree and run-all.sh in deployed mode) until its path is explicitly added to the extension's manifest.json provides.scripts array. This is easy to miss because run-all.sh in source-store mode DOES glob-discover the same file directly from the source store, so the suite appears to work fine right up until deploy regeneration.",
+      "category": "CONFIG",
+      "source_artifact": "specs/005_implement_roadmap_items_producer/summaries/01_roadmap-items-producer-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless", "manifest.json", "provides.scripts", "test-discovery", "source-store-vs-deployed"]
     }
   ],
-  "next_steps": "Run /implement 5 to execute the plan"
+  "metadata": {
+    "session_id": "sess_1786396737_4bb5dd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "next_steps": "Task 5 complete. Follow-ups (out of scope, documented in the summary): test-claude-refresh-matcher.sh's pre-existing flaky failure, and task 9's own unrelated dangling dependency on vaulted task 1015."
 }

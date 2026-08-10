@@ -360,29 +360,45 @@ new `roadmap_no_match` derivation fires exactly on the intended condition.
 
 ---
 
-### Phase 5: Deploy regeneration and full gate run [NOT STARTED]
+### Phase 5: Deploy regeneration and full gate run [COMPLETED]
 
 **Goal**: The source-store edits reach the live `.claude/` tree and every repository gate passes.
 
 **Tasks**:
 
-- [ ] Confirm no `.claude/**` file was hand-edited at any point:
+- [x] Confirm no `.claude/**` file was hand-edited at any point:
       `git status --short .claude/` before regeneration, and review the whole diff for edits whose
-      target path is `.claude/`.
-- [ ] Regenerate the deploy tree:
+      target path is `.claude/`. *(completed: zero hits before regeneration)*
+- [x] Regenerate the deploy tree:
       `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default non-destructive
-      resync mode; do NOT use `--wipe`).
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and confirm all gates pass, including the
-      no-task-references gate.
-- [ ] Run `bash .claude/scripts/tests/run-all.sh` and confirm zero failing suites and zero
-      `[SKIP]`s for the new suite.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and
-      `bash .claude/scripts/lint/lint-agent-contracts.sh`; both exit 0.
-- [ ] Residual-site sweep: re-run Phase 1's enumeration command against the deployed tree and
-      confirm every implementation-agent dispatch context carries `roadmap_path`.
-- [ ] Confirm no task-number citations were introduced outside `specs/**` (the deliverable rule) —
+      resync mode; do NOT use `--wipe`). *(completed: also required registering the new test
+      suite in `agent-system/extensions/core/manifest.json`'s `provides.scripts` allow-list —
+      `scripts/tests/*.sh` is not glob-discovered by the deploy engine, it is manifest-driven; the
+      new file was silently absent from `.claude/scripts/tests/` until registered, then deployed
+      correctly on the second regeneration)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and confirm all gates pass, including the
+      no-task-references gate. *(21/23 pass. 2 pre-existing failures, both confirmed unrelated to
+      this task's changes and out of scope: (1) `test-claude-refresh-matcher.sh` — a flaky
+      live-process/pid-matching suite, `git diff --stat` against master confirms zero lines
+      touched by this plan; (2) `validate-state.sh --deep`'s dangling-dependency check on task 9's
+      own `dependencies: [1015]` entry (an unrelated task, vaulted target), pre-existing before
+      any commit in this plan. This task's OWN dangling dependency (`5 -> 1004`, the plan's
+      already-declared-satisfied dependency) WAS fixed in-scope via `state-write.sh` since it is
+      this task's own metadata, consistent with the plan's own "Dependencies: None" declaration.
+      No-task-references gate: PASS)*
+- [x] Run `bash .claude/scripts/tests/run-all.sh` and confirm zero failing suites and zero
+      `[SKIP]`s for the new suite. *(the new suite passes cleanly and is discovered, not
+      `[SKIP]`ped; the pre-existing `test-claude-refresh-matcher.sh` failure above is the sole
+      other suite failure, confirmed unrelated)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and
+      `bash .claude/scripts/lint/lint-agent-contracts.sh`; both exit 0. *(completed: both PASS)*
+- [x] Residual-site sweep: re-run Phase 1's enumeration command against the deployed tree and
+      confirm every implementation-agent dispatch context carries `roadmap_path`. *(completed: all
+      8 sites confirmed — 1 + 1 + 5 + 1 across the four deployed skill files)*
+- [x] Confirm no task-number citations were introduced outside `specs/**` (the deliverable rule) —
       `verify-deploy.sh`'s gate covers this, but confirm the gate actually ran and passed rather
-      than assuming.
+      than assuming. *(completed: re-ran `check-task-references.sh --quiet` directly — 0
+      unexempted occurrences across all 4 deliverable trees)*
 
 **Timing**: 1 hour
 
