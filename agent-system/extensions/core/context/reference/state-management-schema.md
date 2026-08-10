@@ -55,6 +55,25 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
 
 ## Field Reference
 
+### Top-Level Fields
+
+Confirmed against a live property-union scan of `specs/state.json` (see
+`context/schemas/state-schema.json`, whose `additionalProperties: false` top-level shape is the
+authoritative source this table glosses).
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `next_project_number` | number | Yes | Next task number to assign |
+| `active_projects` | array | Yes | In-flight task entries (see Project Entry Fields below) |
+| `default_task_type` | string or null | No | Documented-optional. Overrides the `/task` keyword-routing table for new tasks in this project when set to a non-null string (see the root CLAUDE.md's Task-Type-Based Routing section). Absent in the current live snapshot, but a real, consumed field (`commands/task.md`) |
+| `active_topics` | array of strings | No | Documented-optional, confirmed live. Distinct topic strings currently in use across `active_projects[].topic` |
+| `completed_projects` | array | No | Documented-optional, confirmed live (currently empty, `[]`). Reserved for a possible future completed-but-not-yet-archived staging array; completion today moves an entry through `active_projects[].status`, not into this array |
+| `repository_health` | object | No | See Repository Health Fields below |
+| `memory_health` | object | No | Documented-optional, confirmed live. Memory-vault health snapshot maintained by `/distill`: `last_distilled`, `distill_count`, `total_memories`, `never_retrieved`, `health_score`, `status` |
+| `version` | string | No | Documented-optional, confirmed live. State-store schema/version marker string (e.g. `"1.1.0"`) |
+| `vault_count` | number | No | See Vault Fields below |
+| `vault_history` | array | No | See Vault Fields below |
+
 ### Project Entry Fields
 
 | Field | Type | Required | Description |
@@ -63,13 +82,17 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
 | `project_name` | string | Yes | Snake_case slug from title |
 | `status` | string | Yes | Current status (see Status Values) |
 | `task_type` | string | Yes | Task type for routing (see Task Type Values). Bare values (`meta`, `general`) or compound `extension:subtype` (`present:grant`, `founder:deck`) |
-| `effort` | string | No | Estimated effort |
+| `title` | string | No | Documented-optional, confirmed live on all current entries. Human-readable task title |
+| `topic` | string | No | Documented-optional, confirmed live on all current entries. Free-text topic label, aggregated into the top-level `active_topics` array |
+| `description` | string | No | Documented-optional, confirmed live on all current entries. Full task description |
+| `session_id` | string | No | Documented-optional, confirmed live. Session ID of the most recent status-changing command invocation (`sess_{timestamp}_{random}`) |
+| `effort` | string | No | Estimated effort. Zero occurrences in the current active snapshot, but this is a lifecycle-timing artifact, not evidence of disuse -- 276 occurrences in `specs/archive/state.json` (populates once a task completes) |
 | `created` | string | Yes | ISO8601 creation timestamp |
 | `last_updated` | string | Yes | ISO8601 last update timestamp |
 | `dependencies` | array | No | Array of task numbers this depends on |
 | `file_scope` | array of strings | No | Anticipated repo-relative paths/prefixes this task expects to touch (default: `[]`) |
 | `artifacts` | array | No | Array of artifact objects |
-| `next_artifact_number` | number | No | Next artifact sequence number (default: 1) |
+| `next_artifact_number` | number | No | Next artifact sequence number (default: 1). Zero occurrences in the current active snapshot -- same lifecycle-timing sparsity as `effort`, 308 occurrences in `specs/archive/state.json` |
 
 ### task_type Field
 
@@ -209,6 +232,12 @@ semantics — the latest implementation's reflection replaces any prior one on t
 - **Semantics**: Overwrite, not append; absence is valid (optional even on a successful
   implementation)
 
+**Sparsity note**: `reflection` has zero occurrences anywhere in `specs/state.json` or
+`specs/archive/state.json` as of this writing -- unlike `effort`/`next_artifact_number` (sparse
+in the active snapshot but abundant in archive), this is genuinely the one field that may not yet
+have been exercised, per this document's own producer/consumer wiring description above. Not
+evidence the field is dead; documented-optional pending its first real population.
+
 ### Dependencies Field
 
 | Field | Type | Required | Default | Description |
@@ -254,10 +283,17 @@ complementary and are never merged or reconciled against each other.
 |-------|------|-------------|
 | `last_assessed` | string | ISO8601 timestamp of last metrics update |
 | `status` | string | `healthy`, `manageable`, `concerning`, or `critical` |
+| `todo_count` | number | Documented-optional, confirmed live. Count of TODO: tags found by the last scan |
+| `fixme_count` | number | Documented-optional, confirmed live. Count of FIXME:/FIX: tags found by the last scan |
+| `build_errors` | number | Documented-optional, confirmed live. Count of build/lint errors found by the last scan |
 
 ### Vault Fields
 
 The vault system manages task number cycling when `next_project_number` exceeds 1000.
+
+**Sparsity note**: `vault_count`/`vault_history` are 0/`[]` everywhere (both the active snapshot
+and archive) as of this writing -- this is expected, not dead code: the vault trigger
+(`next_project_number > 1000`) has simply never fired yet.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -288,6 +324,14 @@ The vault system manages task number cycling when `next_project_number` exceeds 
 8. Increment `vault_count` and add entry to `vault_history`
 
 ## Status Values Mapping
+
+**Single source**: the authoritative status enum is `context/schemas/state-schema.json`'s
+`definitions.taskStatus.enum`, mirrored as a sourced shell array in
+`scripts/lib/status-vocabulary.sh` (the two are kept byte-equal by
+`scripts/tests/test-status-vocabulary.sh`). The table below is a human-readable gloss over that
+pair, not an independent authority -- if this table and the schema/library ever disagree, the
+schema/library wins. See also `context/standards/status-markers.md` for full per-marker prose
+definitions, transition rules, and required fields.
 
 | TODO.md Marker | state.json status |
 |----------------|-------------------|

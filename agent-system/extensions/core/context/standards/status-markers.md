@@ -16,6 +16,15 @@ This document defines the complete set of status markers used throughout this ag
 - **Valid Transitions**: Which status changes are allowed
 - **Command Mappings**: Which commands trigger which status changes
 
+### Single source
+
+The task-level status enum itself has exactly one machine-readable pair of anchors:
+`context/schemas/state-schema.json`'s `definitions.taskStatus.enum` and the sourced shell library
+`scripts/lib/status-vocabulary.sh` (kept byte-equal by `scripts/tests/test-status-vocabulary.sh`'s
+drift assertion). This document is the authoritative **human-readable gloss** over that pair --
+prose explaining meaning, transitions, and required fields -- not an independent third source. If
+this document and the schema/library ever disagree, the schema/library wins.
+
 ---
 
 ## Status Marker Definitions
@@ -65,23 +74,19 @@ This document defines the complete set of status markers used throughout this ag
 
 **Required Artifacts**: Implementation plan linked in TODO.md
 
-#### `[REVISING]`
-**TODO.md Format**: `- **Status**: [REVISING]`  
-**state.json Value**: `"status": "revising"`  
-**Meaning**: Plan revision is in progress.
-
-**Valid Transitions**: Non-terminal; any command can run. Normally completes to `[REVISED]`.
-
-**Timestamps**: Always include `- **Revised**: YYYY-MM-DD` when started
-
-#### `[REVISED]`
-**TODO.md Format**: `- **Status**: [REVISED]`  
-**state.json Value**: `"status": "revised"`  
-**Meaning**: Plan revision completed, new plan version created.
-
-**Valid Transitions**: Any command (research, plan, implement, revise) can run from this status.
-
-**Required Artifacts**: Revised plan linked in TODO.md (replaces previous plan link)
+> **Removal note**: the two intermediate plan-revision markers formerly documented here -- an
+> in-progress marker (state.json value ending "-ing") and its completion counterpart (state.json
+> value ending "-ed") -- were deleted from this document (and are not members of the closed enum
+> in `state-schema.json` / `status-vocabulary.sh`) as dead vocabulary, not merely
+> under-documented. Three independent pieces of evidence: `update-task-status.sh`'s
+> `map_status()` has no case for the `/revise` target, so both values are unreachable through the
+> one canonical status writer; `state-management-schema.md` never mentioned them; and
+> `skill-reviser/SKILL.md` explicitly documents skipping the intermediate status by design ("No
+> intermediate status update is needed mid-revision. The task transitions directly to 'planned'
+> on success (via postflight). Skip preflight status update."). `/revise` remains a real command
+> -- only the two intermediate status VALUES were removed, not the command itself. Do not
+> silently reintroduce these values without re-reading `skill-reviser/SKILL.md`'s documented
+> decision.
 
 #### `[IMPLEMENTING]`
 **TODO.md Format**: `- **Status**: [IMPLEMENTING]`  
@@ -248,9 +253,8 @@ semantically-overlapping fourth marker would require re-touching every site
 | `[RESEARCHED]` | `researched` | Research completed |
 | `[PLANNING]` | `planning` | Planning in progress |
 | `[PLANNED]` | `planned` | Plan created |
-| `[REVISING]` | `revising` | Plan revision in progress |
-| `[REVISED]` | `revised` | Plan revision completed |
 | `[IMPLEMENTING]` | `implementing` | Implementation in progress |
+| `[PR READY]` | `pr_ready` | `task_type == "pr"` only; implementation complete, awaiting `/merge` |
 | `[COMPLETED]` | `completed` | Task fully completed |
 | `[PARTIAL]` | `partial` | Implementation partially complete |
 | `[BLOCKED]` | `blocked` | Task blocked |
@@ -270,7 +274,7 @@ semantically-overlapping fourth marker would require re-touching every site
 |---------|------------------|-------------------|-------|
 | `/research` | `[RESEARCHING]` | `[RESEARCHED]` | Creates research report |
 | `/plan` | `[PLANNING]` | `[PLANNED]` | Creates implementation plan |
-| `/revise` | `[REVISING]` | `[REVISED]` | Creates new plan version |
+| `/revise` | N/A (preflight status update skipped by design) | `[PLANNED]` | Creates new plan version; `skill-reviser/SKILL.md` documents skipping the intermediate mid-revision status entirely (see the removal note above) |
 | `/implement` | `[IMPLEMENTING]` | `[COMPLETED]` or `[PARTIAL]` | Executes implementation |
 | `/review` | N/A | N/A | Creates new tasks |
 
@@ -304,8 +308,8 @@ permits unconditionally only for `task_type == "pr"`.
                     │         Any Non-Terminal Status          │
                     │                                         │
                     │  NOT STARTED, RESEARCHING, RESEARCHED,  │
-                    │  PLANNING, PLANNED, REVISING, REVISED,  │
-                    │  IMPLEMENTING, PARTIAL, BLOCKED         │
+                    │  PLANNING, PLANNED, IMPLEMENTING,       │
+                    │  PARTIAL, BLOCKED                       │
                     └──────────────┬──────────────────────────┘
                                    │
               ┌────────────────────┼────────────────────┐
@@ -315,11 +319,12 @@ permits unconditionally only for `task_type == "pr"`.
               │                    │                     │
               ▼                    ▼                     ▼
         [RESEARCHING]        [PLANNING]           [IMPLEMENTING]
-              │               [REVISING]                │
-              ▼                    │              ┌──────┴──────┐
-        [RESEARCHED]               ▼              ▼             ▼
-                             [PLANNED]       [COMPLETED]   [PARTIAL]
-                             [REVISED]
+              │                    │              ┌──────┴──────┐
+              ▼                    ▼              ▼             ▼
+        [RESEARCHED]         [PLANNED]      [COMPLETED]   [PARTIAL]
+
+    Note: /revise skips the intermediate status update on preflight by design (see the
+    removal note above) and lands directly on [PLANNED] via postflight, same as /plan.
 
     Terminal states (no further transitions):
     [COMPLETED], [ABANDONED], [EXPANDED]
@@ -390,7 +395,7 @@ All files are updated via temp-file + atomic rename so no partial state is writt
 - MUST include `subtasks` array with subtask numbers
 - MUST include `- **Subtasks**: {list}` in TODO.md
 
-**For completion statuses** (`[RESEARCHED]`, `[PLANNED]`, `[REVISED]`, `[COMPLETED]`):
+**For completion statuses** (`[RESEARCHED]`, `[PLANNED]`, `[COMPLETED]`):
 - MUST include `validated_artifacts` array with artifact paths
 - Artifacts MUST exist on disk and be non-empty
 

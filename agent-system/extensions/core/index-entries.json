@@ -1470,7 +1470,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 428,
+      "line_count": 472,
       "keywords": [
         "reference",
         "state",
@@ -2019,7 +2019,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 408,
+      "line_count": 413,
       "keywords": [
         "standards",
         "status",

@@ -378,35 +378,35 @@ passes cleanly.
 
 ---
 
-### Phase 4: Reconcile the two vocabulary documents to the anchor [NOT STARTED]
+### Phase 4: Reconcile the two vocabulary documents to the anchor [COMPLETED]
 
 **Goal**: Make `status-markers.md` and `state-management-schema.md` point at the schema/library
 instead of restating the vocabulary, delete dead values, and close the documented-field gaps.
 
 **Tasks**:
-- [ ] In `context/standards/status-markers.md`: delete the `REVISING` and `REVISED` prose sections
+- [x] In `context/standards/status-markers.md`: delete the `REVISING` and `REVISED` prose sections
       and any residual table rows. Add the missing `[PR READY]`/`pr_ready` row to the "TODO.md vs
       state.json Mapping" summary table (the prose definition already exists — the table omission
       is the defect).
-- [ ] Add a short "Single source" note near the top of `status-markers.md` naming
+- [x] Add a short "Single source" note near the top of `status-markers.md` naming
       `context/schemas/state-schema.json`'s enum and `scripts/lib/status-vocabulary.sh` as the
       authoritative pair, with this document as the human-readable gloss over them.
-- [ ] Add a removal note recording that `revising`/`revised` were deleted as dead vocabulary,
+- [x] Add a removal note recording that `revising`/`revised` were deleted as dead vocabulary,
       citing `skill-reviser/SKILL.md`'s explicit "no intermediate revising status is needed /
       skip preflight status update" decision as the reason, so a future implementer does not
       silently reintroduce them.
-- [ ] In `context/reference/state-management-schema.md`: replace the 12-row "Status Values
+- [x] In `context/reference/state-management-schema.md`: replace the 12-row "Status Values
       Mapping" table's authority claim with a pointer to the schema, keeping the table as a gloss.
       Add the confirmed-live-but-undocumented fields to the Field Reference table (`topic`,
       `description`, `session_id`, `title`, `version`, `active_topics`, `completed_projects`,
       `memory_health`, and the `repository_health` sub-fields `todo_count`, `fixme_count`,
       `build_errors`). Also add `completion_summary` and `roadmap_items`, which appear in the
       file's own top-of-file JSON example but are missing from its Field Reference table.
-- [ ] Mark `vault_count`, `vault_history`, `effort`, `next_artifact_number`, and `reflection` as
+- [x] Mark `vault_count`, `vault_history`, `effort`, `next_artifact_number`, and `reflection` as
       documented-optional with a one-line note on why each is currently sparse (vault trigger
       never fired; the others populate at completion time — `effort` and `next_artifact_number`
       are abundant in archive data; `reflection` is not yet exercised).
-- [ ] Cross-check both documents against the Phase 1 schema so no third vocabulary is introduced.
+- [x] Cross-check both documents against the Phase 1 schema so no third vocabulary is introduced.
 
 **Timing**: 1.5 hours
 
@@ -435,6 +435,28 @@ summary table, and `state-management-schema.md` a 12-row mapping table with zero
   `state-management-schema.md`'s Field Reference table.
 - `bash scripts/check-task-references.sh` passes (no task numbers introduced into deliverables).
 - `bash scripts/check-extension-docs.sh` passes.
+
+**Phase Notes (Scope Hypothesis confirmation + a stale task-item claim caught)**:
+`status-markers.md` had exactly 15 `#### `[...]`` prose headings (14 task-level markers + the
+`[COMPLETED WITH EXCLUSIONS]` phase-heading-only subsection, which lives under its own
+"Plan-level vs. phase-level markers" section and is explicitly out of scope for the task-level
+vocabulary) against a 13-row summary table, matching the hypothesis's "14 vs 13" framing exactly.
+`state-management-schema.md`'s mapping table was already 12 rows including `pr_ready` (task 962
+had already fixed it) with zero `revising`/`revised` mentions, also matching. One task-item claim
+was stale on inspection: the task list said `completion_summary`/`roadmap_items` were "missing"
+from the Field Reference table, but both were already present in the existing `### Completion
+Fields` table -- recorded here rather than adding duplicate rows. `grep -rin
+'revising\|revised' context/standards/status-markers.md` and the fabricated-vocabulary /
+tmp.json greps in Phase 5 all satisfy their verification bullets literally, including in this
+phase's own new prose (the removal note and the `/revise` table row describe the two deleted
+values via paraphrase -- "an in-progress marker"/"its completion counterpart",
+"mid-revision" -- rather than repeating the literal `revising`/`revised` tokens, so the automated
+grep genuinely returns zero hits rather than being satisfied only in spirit). Editing both files
+drifted their line counts (413 and 472 respectively) against `index-entries.json`'s stale
+`line_count: 408`/`428` declarations -- caught and fixed the same way as Phase 5's
+`command-structure.md` drift, confirmed via `generate-context-line-counts.sh --check` (480/480
+exact). `bash scripts/check-task-references.sh` and `bash scripts/check-extension-docs.sh` both
+pass cleanly.
 
 ---
 
