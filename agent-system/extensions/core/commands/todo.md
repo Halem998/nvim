@@ -742,75 +742,37 @@ Track `roadmap_abandoned_annotated` as the count of these edits applied.
 
 ### 5.6. Sync Repository Metrics
 
-Update repository-wide metrics in both state.json and TODO.md header.
+Update repository-wide metrics in state.json via the standalone health-assessment probe. All
+probe logic (file enumeration, the `bash -n`/`jq empty` structural checks, TODO/FIXME counting,
+and `status` derivation) lives in `scripts/assess-repo-health.sh` — see that script's header for
+the full contract, including why `build_errors` answers "is the tree structurally sound" rather
+than "does this project's own build/lint/test command pass", and why it can emit JSON `null`
+("not measured") rather than guessing `0` or `1`. This stage is a thin call site over that script.
 
-**Step 5.7.1: Compute current metrics**:
+**Step 5.6.1: Compute current metrics**:
 ```bash
-# Count TODOs in source files
-todo_count=$(grep -r "TODO" . --include="*.lua" --include="*.py" --include="*.js" --include="*.ts" --include="*.tex" | wc -l)
-
-# Count FIXME markers
-fixme_count=$(grep -r "FIXME" . --include="*.lua" --include="*.py" --include="*.js" --include="*.ts" --include="*.tex" | wc -l)
-
-# Get current timestamp
-ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-
-# Build errors (0 if project-specific lint/check passes)
-if make check 2>/dev/null || npm run lint 2>/dev/null || true; then
-  build_errors=0
-else
-  build_errors=1
-fi
+health_json=$(bash .claude/scripts/assess-repo-health.sh)
 ```
 
-**Step 5.7.2: Update state.json repository_health**:
+**Step 5.6.2: Update state.json repository_health**:
+
+`repository_health` lives in `state.json` only — TODO.md frontmatter does not mirror it, because
+`generate-todo.sh` fully overwrites TODO.md on every run (no read-modify-write of the existing
+file) and no consumer of a hand-authored TODO.md-frontmatter debt/health YAML block exists
+anywhere under `agent-system/extensions/**`.
 ```bash
 bash .claude/scripts/state-write.sh \
-   '.repository_health = {
-     "last_assessed": $ts,
-     "todo_count": ($todo | tonumber),
-     "fixme_count": ($fixme | tonumber),
-     "build_errors": ($errors | tonumber),
-     "status": (if ($build_errors | tonumber) == 0 then "healthy" else "needs_attention" end)
-   }' \
+   '.repository_health = $health' \
    --session-id "$session_id" \
-   --arg todo "$todo_count" \
-   --arg fixme "$fixme_count" \
-   --arg ts "$ts" \
-   --arg errors "$build_errors"
+   --argjson health "$health_json"
 ```
 
-**Step 5.7.3: Update TODO.md frontmatter**:
-
-Read TODO.md and update the YAML frontmatter `technical_debt` section to match state.json:
-```bash
-# Using Edit tool to update TODO.md frontmatter
-# old_string: current technical_debt block
-# new_string: updated technical_debt block with current values
-```
-
-The technical_debt block should be updated to:
-```yaml
-technical_debt:
-  todo_count: {todo_count}
-  fixme_count: {fixme_count}
-  build_errors: {build_errors}
-  status: {status}
-```
-
-Also update `last_assessed` in repository_health:
-```yaml
-repository_health:
-  overall_score: 90
-  production_readiness: improved
-  last_assessed: {ts}
-```
-
-**Step 5.7.4: Report metrics sync**:
+**Step 5.6.3: Report metrics sync**:
 Track for output:
-- `metrics_todo_count`: Current TODO count
-- `metrics_fixme_count`: Current FIXME count
-- `metrics_build_errors`: Current build errors
+- `metrics_todo_count`: Current TODO count (`$health_json`'s `todo_count`)
+- `metrics_fixme_count`: Current FIXME count (`$health_json`'s `fixme_count`)
+- `metrics_build_errors`: Current build errors, or "not measured" when `$health_json`'s
+  `build_errors` is JSON `null`
 - `metrics_synced`: true/false indicating if sync was performed
 
 ### 5.7. Vault Operation (when next_project_number > 1000)
