@@ -11,14 +11,13 @@ next_project_number: 22
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 6,11,12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 11,12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 9,13 | 17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-6 [IMPLEMENTING] — The artifact list in specs/state.json is append-only by intent bu
 11 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 12 [PARTIAL] — tests/run-all.sh is red and has been treated as permanently-expec
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
@@ -380,7 +379,7 @@ STALENESS CAVEAT (added after the deploy-staleness finding): the orphan-file mea
 ---
 
 ### 6. Nothing prevents an agent from rewriting state.json .artifacts wholesale, silently discarding prior artifacts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 5

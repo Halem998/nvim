@@ -23,29 +23,54 @@
       "category": "PATTERN",
       "source_artifact": "specs/006_guard_against_nonadditive_artifact_rewrites/summaries/01_guard-nonadditive-artifact-rewrites-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["append-only invariant", "per-type count check", "state.json artifacts", "jq remove-then-add idiom", "validate-state.sh"]
+      "suggested_keywords": [
+        "append-only invariant",
+        "per-type count check",
+        "state.json artifacts",
+        "jq remove-then-add idiom",
+        "validate-state.sh"
+      ]
     },
     {
       "content": "A test suite whose validator-resolution prefers the deployed copy over the source-store copy (to test 'what's actually live') creates a false-green risk for brand-new checks added to the source store but not yet deployed: the new fixtures would silently run against a stale deployed binary that lacks the check. Fix: give new fixtures for a not-yet-deployed feature their OWN validator-candidate list ordered source-store-first, and grep each candidate for a stable identifier string (e.g. a code comment like 'Check D5') before trusting it -- loudly info-skip if no candidate qualifies. This lets the new fixtures genuinely execute pre-deploy while never risking a false pass against stale code.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/006_guard_against_nonadditive_artifact_rewrites/summaries/01_guard-nonadditive-artifact-rewrites-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test fixture validator resolution", "stale deployed copy", "false green", "source-store-first", "grep identifier before trusting"]
+      "suggested_keywords": [
+        "test fixture validator resolution",
+        "stale deployed copy",
+        "false green",
+        "source-store-first",
+        "grep identifier before trusting"
+      ]
     },
     {
       "content": "Scripts under agent-system/extensions/core/scripts/ that shell out to sibling scripts via a hardcoded '../..'-relative repo-root guess (e.g. generate-todo.sh) can refuse to run when invoked directly from the source-store tree instead of the deployed .claude/ tree, producing an unrelated-looking FAIL (e.g. a TODO.md sync check failure) that has nothing to do with the feature under test. Before concluding a new check is broken, verify the same failure reproduces on the unmodified script (e.g. via git stash) from the same invocation path -- it may be a pre-existing source-store-vs-deployed-tree limitation, not a regression.",
       "category": "INSIGHT",
       "source_artifact": "specs/006_guard_against_nonadditive_artifact_rewrites/summaries/01_guard-nonadditive-artifact-rewrites-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["source-store vs deployed tree", "generate-todo.sh", "false regression signal", "git stash verification"]
+      "suggested_keywords": [
+        "source-store vs deployed tree",
+        "generate-todo.sh",
+        "false regression signal",
+        "git stash verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786400631_478c94",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
-    "phases_total": 5
+    "phases_total": 5,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

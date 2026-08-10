@@ -1,7 +1,7 @@
 # Implementation Plan: Task #6
 
 - **Task**: 6 - guard_against_nonadditive_artifact_rewrites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None (task 5 is adjacent but shares no code surface)
 - **Research Inputs**: `specs/006_guard_against_nonadditive_artifact_rewrites/reports/01_guard-nonadditive-artifact-rewrites.md`
