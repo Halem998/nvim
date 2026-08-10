@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Record the Duplicated-Path Audit and Follow-Up Candidates",
+  "started_at": "2026-08-09T00:30:00Z",
+  "last_updated": "2026-08-09T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "re-run audit queries fresh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "write audit table into summary", "status": "done", "files_touched": ["specs/1001_lean_mirror_entry_load_order/summaries/01_lean-mirror-load-order-fix-summary.md"]},
+    {"id": 3, "description": "state cslib disposition explicitly", "status": "done", "files_touched": ["specs/1001_lean_mirror_entry_load_order/summaries/01_lean-mirror-load-order-fix-summary.md"]},
+    {"id": 4, "description": "record follow-up candidate 1 (lint rule)", "status": "done", "files_touched": ["specs/1001_lean_mirror_entry_load_order/summaries/01_lean-mirror-load-order-fix-summary.md"]},
+    {"id": 5, "description": "record follow-up candidate 2 (content-level collision)", "status": "done", "files_touched": ["specs/1001_lean_mirror_entry_load_order/summaries/01_lean-mirror-load-order-fix-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

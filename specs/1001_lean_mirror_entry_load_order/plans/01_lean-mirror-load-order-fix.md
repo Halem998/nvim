@@ -261,34 +261,42 @@ reason to skip the phase.
 
 ---
 
-### Phase 3: Record the Duplicated-Path Audit and Follow-Up Candidates [NOT STARTED]
+### Phase 3: Record the Duplicated-Path Audit and Follow-Up Candidates [COMPLETED]
 
 **Goal**: Discharge WORK item 2 (the audit is recorded in the task summary) and WORK item 3 (the
 loader-warning question is recorded as a follow-up, not implemented).
 
 **Tasks**:
-- [ ] Re-run the audit queries fresh rather than copying the research report's table on trust: the
+- [x] Re-run the audit queries fresh rather than copying the research report's table on trust: the
       cross-extension duplicate scan and the per-extension internal-duplicate scan over
       `agent-system/extensions/*/index-entries.json`. Record the actual numbers observed.
-- [ ] Write the duplicated-path audit into the task summary as a table covering all findings, each
+      *(completed: 19 extensions, 479 total entries (research report said 478 -- divergence
+      recorded); cslib is the only extension with an internal duplicate; three cross-extension
+      duplicated paths confirmed)*
+- [x] Write the duplicated-path audit into the task summary as a table covering all findings, each
       row stating the path, the declaring extensions, whether it is the cross-extension or
       same-file shape, and its disposition (fixed here / out of file_scope / already fixed).
-- [ ] State the cslib disposition explicitly and with its reason -- out of `file_scope`, a
+      *(completed: see summary's "Duplicated-Path Audit" table)*
+- [x] State the cslib disposition explicitly and with its reason -- out of `file_scope`, a
       different collision mechanism, recorded per WORK item 2 rather than fixed -- so a reader of
-      the summary alone can see it was decided, not overlooked.
-- [ ] Record the WORK item 3 follow-up candidate concretely enough to act on: a check that (a) flags
+      the summary alone can see it was decided, not overlooked. *(completed: see summary's
+      "cslib ci-pipeline.md Disposition" section)*
+- [x] Record the WORK item 3 follow-up candidate concretely enough to act on: a check that (a) flags
       any path declared by more than one extension's `index-entries.json` where the
       `load_when.agents` sets differ and neither is a superset of the other, and (b) flags
       unconditionally any path declared more than once within a single extension's own array. Note
       that it belongs alongside the existing Rule R / Rule T family in `check-extension-docs.sh`,
-      and that it would have caught every finding in the audit table automatically.
-- [ ] Record the second follow-up candidate surfaced during planning: the **content**-level path
+      and that it would have caught every finding in the audit table automatically. *(completed:
+      see summary's Candidate 1, naming Rule V as the next available letter)*
+- [x] Record the second follow-up candidate surfaced during planning: the **content**-level path
       collision. Lean's `provides.context` includes `contracts`, and `copy_category("context", ...)`
       copies by path, so in a lean-loaded deploy lean's `context/contracts/*.md` copies overwrite
       core's at the same deploy paths. Confirm this by inspection at implementation time and state
       the consequence plainly: the union index entry restores the *hook* for
       `general-research-hard-agent`, but that agent then receives lean's lean4-specialized override
-      content rather than core's generic contract. Record; do not fix.
+      content rather than core's generic contract. Record; do not fix. *(completed: confirmed via
+      manifest.json provides.context inspection and line-count comparison; see summary's
+      Candidate 2)*
 
 **Timing**: 30 minutes
 
