@@ -525,7 +525,7 @@
       "project_number": 996,
       "project_name": "capstone_end_to_end_refactor_verification",
       "title": "Capstone: end-to-end verification of the refactored agent system",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -537,7 +537,15 @@
       ],
       "description": "Capstone acceptance gate for the agent-system refactor: verify the COMPOSED system end-to-end after all structural waves land. Every prior refactor task carries its own verification bar; nothing yet verifies the composition — a fresh deploy, all gates at their hardened defaults, and a live orchestrate cycle exercising routing, handoff, gate-out, and defect-recording together. This task fixes nothing structural itself: any failure is recorded (errors.json entry and/or spawned follow-up task) and the gate re-runs after the fix lands.\n\nVERIFICATION SCOPE:\n  1. DEPLOY: wipe+regenerate to a scratch tree succeeds; running it twice is byte-identical; declared-vs-deployed parity plus content-hash equality holds for EVERY provides.* category; no quarantined/deprecated file is present in the deployed tree; protected (.syncprotect) files and settings.local.json survive the round-trip.\n  2. GATES: check-extension-docs.sh exits 0 with every gate mode at its hardened baked-in default (no env overrides at invocation); validate-state.sh (including --deep invariants) passes on live state; the script test runner (run-all.sh) is green; the repo-wide task-reference lint (check-task-references.sh) passes.\n  3. LIVE CYCLE: one scratch-task /orchestrate cycle runs end-to-end — routing resolution yields an agent file that EXISTS on disk for every task_type declared in any loaded manifest; the cycle produces a schema-valid handoff (or, if the return-meta single-channel design was chosen, no handoff and no recovery-bridge warnings); gate-out reports zero format errors and zero auto-repaired fields; the system-defect recorder emits NO system_defect event on the clean run (the negative test) and the deferred-defect surface renders empty.\n  4. Record the results as a dated review artifact under specs/reviews/ so the refactor has a closing bookend to the review that opened it.\n\nSOURCE-STORE RULE (binding): any fixes spun out of this task target agent-system/extensions/** (or lua/neotex/plugins/ai/** for deploy machinery), never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-08-05T17:17:11Z",
-      "last_updated": "2026-08-09T22:51:31Z"
+      "last_updated": "2026-08-10T08:17:03Z",
+      "session_id": "sess_1786342011_4592c8_996",
+      "artifacts": [
+        {
+          "path": "specs/996_capstone_end_to_end_refactor_verification/reports/01_capstone-verification-findings.md",
+          "type": "report",
+          "summary": "Live-verified DEPLOY/GATES/LIVE CYCLE capstone scope"
+        }
+      ]
     },
     {
       "project_number": 997,
