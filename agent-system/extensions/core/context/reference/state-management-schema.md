@@ -282,10 +282,10 @@ complementary and are never merged or reconciled against each other.
 | Field | Type | Description |
 |-------|------|-------------|
 | `last_assessed` | string | ISO8601 timestamp of last metrics update |
-| `status` | string | `healthy`, `manageable`, `concerning`, or `critical` |
+| `status` | string | `healthy`, `manageable`, `concerning`, `critical`, or `unknown`. Derived solely from `build_errors`: `null` -> `unknown` (not measured), `0` -> `healthy`, `>0` -> `critical`. `manageable` and `concerning` are reserved for a future graded metric and are not currently emitted by any producer |
 | `todo_count` | number | Documented-optional, confirmed live. Count of TODO: tags found by the last scan |
 | `fixme_count` | number | Documented-optional, confirmed live. Count of FIXME:/FIX: tags found by the last scan |
-| `build_errors` | number | Documented-optional, confirmed live. Count of build/lint errors found by the last scan |
+| `build_errors` | number or null | Documented-optional, confirmed live. Count of build/lint errors found by the last scan. `null` means no applicable structural probe found -- not measured (same nullable-field pattern as `memory_health.last_distilled`), distinct from both `0` and any positive count |
 
 ### Vault Fields
 

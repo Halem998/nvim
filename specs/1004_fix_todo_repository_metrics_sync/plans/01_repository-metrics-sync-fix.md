@@ -206,24 +206,25 @@ property the original defect lacked.
 
 ---
 
-### Phase 3: Reconcile the state schema and its documentation mirror [NOT STARTED]
+### Phase 3: Reconcile the state schema and its documentation mirror [COMPLETED]
 
 **Goal**: Make the declared schema able to express both "not measured" and the not-measured status,
 with the JSON schema and its prose mirror changed in the same phase so they cannot skew.
 
 **Tasks**:
-- [ ] In `context/schemas/state-schema.json`, change `repository_health.build_errors` from
+- [x] In `context/schemas/state-schema.json`, change `repository_health.build_errors` from
       `{"type": "integer"}` to `{"type": ["integer", "null"]}`, and extend its description to state
       that `null` means "no applicable structural probe found — not measured", citing the
-      `memory_health.last_distilled` precedent.
-- [ ] In the same file, extend `repository_health.status.enum` from four to five members by adding
+      `memory_health.last_distilled` precedent. *(completed)*
+- [x] In the same file, extend `repository_health.status.enum` from four to five members by adding
       `"unknown"`, and add a description naming which member each `build_errors` outcome maps to,
-      including that `manageable` and `concerning` are currently unemitted-but-reserved.
-- [ ] In `context/reference/state-management-schema.md`, update the "Repository Health Fields"
+      including that `manageable` and `concerning` are currently unemitted-but-reserved. *(completed)*
+- [x] In `context/reference/state-management-schema.md`, update the "Repository Health Fields"
       documentation to the same five-value enum and the same nullable `build_errors` typing, using
-      the same wording, so the two sources agree textually as well as semantically.
-- [ ] Check the example `repository_health` block near the top of `state-management-schema.md` and
-      leave it valid under the new schema (it already is — `healthy` remains a member).
+      the same wording, so the two sources agree textually as well as semantically. *(completed)*
+- [x] Check the example `repository_health` block near the top of `state-management-schema.md` and
+      leave it valid under the new schema (it already is — `healthy` remains a member). *(completed:
+      verified — example block at line 33 shows "status": "healthy", still valid)*
 
 **Timing**: 0.5 hours
 

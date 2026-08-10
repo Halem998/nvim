@@ -39,7 +39,8 @@
         },
         "status": {
           "type": "string",
-          "enum": ["healthy", "manageable", "concerning", "critical"]
+          "enum": ["healthy", "manageable", "concerning", "critical", "unknown"],
+          "description": "Derived from build_errors: null -> \"unknown\" (no applicable structural probe found -- not measured); 0 -> \"healthy\"; >0 -> \"critical\". \"manageable\" and \"concerning\" are reserved for a future graded metric and are not currently emitted by any producer."
         },
         "todo_count": {
           "type": "integer",
@@ -50,8 +51,8 @@
           "description": "Documented-optional sub-field, confirmed live. Count of FIXME:/FIX: tags found by the last scan."
         },
         "build_errors": {
-          "type": "integer",
-          "description": "Documented-optional sub-field, confirmed live. Count of build/lint errors found by the last scan."
+          "type": ["integer", "null"],
+          "description": "Documented-optional sub-field, confirmed live. Count of build/lint errors found by the last scan. null means no applicable structural probe found -- not measured (same nullable-field pattern as memory_health.last_distilled below), distinct from both 0 and any positive count."
         }
       },
       "additionalProperties": false
