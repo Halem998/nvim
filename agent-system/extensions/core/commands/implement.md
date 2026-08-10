@@ -161,6 +161,16 @@ For each validated task, invoke the appropriate implementation skill using paral
   union-`file_scope` registration read as a foreign live session and refuse every lock acquire in
   the batch against its own registration. See `.claude/context/patterns/task-lock.md`'s
   "Register/acquire parity invariant".
+- Invoke each task's implementation skill with `session_id={batch_session_id}` — the bare batch
+  id, byte-identical to the value used for `session-register` (Step 2), the batch-admission
+  `--session-id` (Step 2.5), and this loop's `acquire-retry`/`release`. This mirrors the
+  single-task path's `session_id={SESSION_ID}` arg shape.
+
+  This is what makes `general-implementation-agent.md`'s Stage 4D dual heartbeat resolve —
+  `task-lock.sh heartbeat` matches the per-task lock holder written by this loop's
+  `acquire-retry`, and `task-lock.sh session-heartbeat` matches the batch registry entry written
+  by Step 2. Any per-task-unique identifier needed downstream (`.return-meta.json` provenance,
+  commit trailers) must be a separate field, never this one.
 - If `--team`: use `skill-team-implement`; invoke all skills in a single message (parallel execution)
 - Pass `--force` to each skill when `FORCE_FLAG == "true"`
 - Collect results; read `.return-meta.json` for structured data
@@ -169,7 +179,10 @@ For each validated task, invoke the appropriate implementation skill using paral
 **No intra-batch session-registry heartbeat**: this step dispatches all validated tasks in a
 single parallel batch and waits for every result — there is no per-cycle loop boundary to
 heartbeat at, unlike `skill-orchestrate`'s multi-cycle dispatch. This is an intentional omission,
-not a gap to "fix" later.
+not a gap to "fix" later. This omission concerns the command-level loop only — the per-*phase*
+heartbeat lives one layer down, inside each dispatched `general-implementation-agent.md`'s
+Stage 4D, and is what the `session_id={batch_session_id}` dispatch-args bullet above makes
+resolve correctly; the two are not in tension.
 
 #### Step 3.5: Second Pass (Bounded, In-Batch Deferrals Only)
 

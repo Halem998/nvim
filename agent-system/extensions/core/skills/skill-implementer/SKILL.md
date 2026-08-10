@@ -166,6 +166,11 @@ supplies the shared block's preconditions: `lit_flag`, `description`, and `orche
 
 Prepare delegation context for the subagent:
 
+`session_id` here is the value received in this skill's args (see Stage 2+3's "supplied
+preconditions" above), passed through verbatim; never regenerated here. The `sess_{timestamp}_
+{random}` shape below is illustrative of that value's format only, not an instruction to
+construct a new one at this stage.
+
 ```json
 {
   "session_id": "sess_{timestamp}_{random}",

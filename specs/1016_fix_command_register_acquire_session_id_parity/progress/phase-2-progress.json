@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Close the downstream heartbeat gap in implement.md",
+  "started_at": "2026-08-10T00:30:00Z",
+  "last_updated": "2026-08-10T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add session_id={batch_session_id} dispatch-args bullet after acquire-retry bullet in implement.md Step 3", "status": "done", "files_touched": ["agent-system/extensions/core/commands/implement.md"]},
+    {"id": 2, "description": "Add rationale note attributing Stage 4D dual heartbeat resolution", "status": "done", "files_touched": ["agent-system/extensions/core/commands/implement.md"]},
+    {"id": 3, "description": "Add caveat clause to No intra-batch session-registry heartbeat note so it does not contradict the new bullet", "status": "done", "files_touched": ["agent-system/extensions/core/commands/implement.md"]},
+    {"id": 4, "description": "Inspect skill-implementer/SKILL.md Stage 4 and add one-line clarification that session_id is received, not regenerated", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-implementer/SKILL.md"]},
+    {"id": 5, "description": "Inspect skill-team-implement/SKILL.md; reasoned exclusion recorded (already treats session_id as required received input)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Apply the same one-line clarification to skill-team-implement",
+      "type": "skipped",
+      "reason": "skill-team-implement/SKILL.md already declares session_id as a required input parameter and threads it through verbatim at every use site; no generation-shaped template exists there to clarify",
+      "annotation": "*(completed as a reasoned exclusion: ...)*"
+    }
+  ]
+}
