@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/984_state_schema_and_status_vocabulary_single_source/reports/01_state-schema-status-vocabulary.md",
+      "summary": "Empirically re-verified every claimed defect (schema absence, two-vocabulary divergence, stale template/self-healing doc, command-structure.md's 8 defect sites, permissive generate-todo.sh catch-all), found revising/revised to be dead (not just under-documented) vocabulary, confirmed the stale template and self-healing doc are actively injected into live agent context via index-entries.json load_when, and confirmed the validate-state.sh convention should follow the existing hand-rolled bash+jq idiom rather than a JSON-Schema-library dependency."
+    }
+  ],
+  "next_steps": "Run /plan 984 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786322063_3251e8_984",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 12
+  },
+  "memory_candidates": [
+    {
+      "content": "This codebase has an explicit, documented policy against runtime JSON-Schema-library validators (ajv, python3 -m jsonschema): context/formats/errors-format.md states 'Nothing in core/scripts/ uses one.' All schema validators (events-append.sh, errors-append.sh, validate-handoff.sh) hand-validate via bash case statements, jq-shape checks, and regex checks that mirror the schema file, referenced only in comments. Any new validate-*.sh script should follow this same idiom, not introduce a new external validator dependency.",
+      "category": "PATTERN",
+      "source_artifact": "specs/984_state_schema_and_status_vocabulary_single_source/reports/01_state-schema-status-vocabulary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["json-schema", "validator", "jq", "bash", "state.json", "no-ajv-policy"]
+    },
+    {
+      "content": "scripts/lib/phase-heading-patterns.sh is a working precedent for a 'single-source shared library + self-discovering consumer list' pattern in this codebase: it documents its own consumer-discovery mechanism inline ('the current consumer list is found live via grep -rl <libname> agent-system/extensions') instead of maintaining a static consumer list that can drift. This shape generalizes well to any future single-source-of-truth consolidation (e.g. a status-vocabulary.sh shared library).",
+      "category": "PATTERN",
+      "source_artifact": "specs/984_state_schema_and_status_vocabulary_single_source/reports/01_state-schema-status-vocabulary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["single-source-of-truth", "shared-library", "consumer-discovery", "grep-rl", "phase-heading"]
+    },
+    {
+      "content": "index-entries.json's load_when wiring (agents/commands/task_types) means a stale or dead-looking context file is not automatically harmless: it can still be actively injected into live agent context. Before treating a doc as 'safe to delete because nothing calls it', check index-entries.json for a load_when entry pointing at it -- a file with zero script/skill callers can still be loaded into every invocation of a specific command or agent via the context-discovery mechanism.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/984_state_schema_and_status_vocabulary_single_source/reports/01_state-schema-status-vocabulary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "load_when", "context-discovery", "dead-code", "stale-docs"]
+    }
+  ]
+}
