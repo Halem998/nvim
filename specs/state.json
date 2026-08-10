@@ -105,7 +105,7 @@
     {
       "project_number": 1001,
       "project_name": "lean_mirror_entry_load_order",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix lean mirror entry load-order defect; audit duplicated index paths",
@@ -119,7 +119,7 @@
         1000
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T06:17:30Z",
+      "last_updated": "2026-08-10T06:18:23Z",
       "artifacts": [
         {
           "path": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
@@ -132,7 +132,7 @@
     {
       "project_number": 1002,
       "project_name": "context_tier_semantics_doc",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Author the context tier-semantics standard for the derived tier classification",
@@ -146,7 +146,7 @@
         998
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T06:17:32Z",
+      "last_updated": "2026-08-10T06:18:25Z",
       "artifacts": [
         {
           "path": "specs/1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md",
@@ -451,7 +451,7 @@
       "project_number": 995,
       "project_name": "convert_extension_state_writers_to_state_write",
       "title": "Convert surviving extension state.json writers to state-write.sh",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -468,13 +468,18 @@
         "agent-system/extensions/epidemiology/skills/"
       ],
       "created": "2026-08-05T17:17:11Z",
-      "last_updated": "2026-08-10T06:17:28Z",
+      "last_updated": "2026-08-10T06:24:18Z",
       "session_id": "sess_1786342011_4592c8_995",
       "artifacts": [
         {
           "path": "specs/995_convert_extension_state_writers_to_state_write/reports/01_convert-extension-state-writers.md",
           "type": "report",
           "summary": "Full re-grep inventory of hand-rolled specs/state.json writers surviving the skill-skeleton collapse: 29 SKILL.md files / 69 sites within the declared skills/ file_scope (founder 15/37, present 5/17, lean 4/10, cslib 5/5, web and epidemiology-skills already clean); flags a scope-boundary gap (16 commands/*.md files / 22 sites outside the declared file_scope but inside the task's own FULL-source-store WORK item), a cross-repo hardcoded-path bug in skill-pr-implementation, two schema-conformance risks (base_branch, forcing_data), and recommends a new generalized lint plus the conversion pattern to copy from already-converted core/web skills."
+        },
+        {
+          "path": "specs/995_convert_extension_state_writers_to_state_write/plans/01_convert-extension-state-writers.md",
+          "type": "plan",
+          "summary": "10-phase conversion plan with 4 dependency waves, per-phase verification tiers, and an enumerated evidenced exclusion list."
         }
       ]
     },

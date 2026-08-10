@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Created a 10-phase plan converting ~94 hand-rolled specs/state.json read-modify-write sites across 46 source-store files to state-write.sh, plus a new permanently-wired lint-state-writer-boundary.sh with fixture test and verify-deploy gate 12. The research report's open scope-boundary question is resolved explicitly as INCLUDE: the 16 commands/*.md survivor files are in scope, because the task's own VERIFICATION BAR says FULL source store and file_scope is descriptive, not a contract boundary.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/995_convert_extension_state_writers_to_state_write/plans/01_convert-extension-state-writers.md",
+      "summary": "10-phase conversion plan with 4 dependency waves, per-phase verification tiers, and an enumerated evidenced exclusion list."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 10,
+  "blockers": [],
+  "next_action_hint": "Dispatch /implement 995. Phase 1 establishes the baseline inventory and conversion recipe; phases 2-8 are parallel-capable over disjoint file territories; phase 9 wires the lint (atomic-batch) and must follow all conversions."
+}
