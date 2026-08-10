@@ -388,7 +388,9 @@ info "8: deployed-tree reachability for scripts/lib/file-scope-overlap.sh and th
 # never a per-task-suffixed variant. Drives the real task-lock.sh CLI end to end (no hand-written
 # registry fixture) against the 820/g4_clean_candidate and 850/g23_predecessor fixture pair, which
 # are not dependency-edge-connected to each other -- exactly the "unrelated batch members" shape
-# the union-file_scope self-contention defect needs.
+# the union-file_scope self-contention defect needs. This group now covers both
+# skill-orchestrate/SKILL.md (9.5) and the three multi-task command files -- research.md, plan.md,
+# implement.md (9.6-9.8).
 # =============================================================================
 reset_sessions
 
@@ -451,6 +453,45 @@ if [ -f "$skill_md" ]; then
   if [ "$c95_ok" = true ]; then pass "9.5: no lock-touching task-lock.sh call in skill-orchestrate/SKILL.md uses the per-task-suffixed session_id"; else fail "9.5: static guard case failed (see INFO lines above)"; fi
 else
   info "9.5: SKIPPED -- skill-orchestrate/SKILL.md not reachable at $skill_md from this invocation"
+fi
+
+# 9.6 Static guard case: no lock-touching task-lock.sh call in commands/research.md may
+# reintroduce the per-task-suffixed pattern. Mirrors Group 8's stance on SCRIPT_DIR ambiguity --
+# info-and-skip if the file is not reachable from this invocation, rather than failing.
+research_md="$SCRIPT_DIR/../commands/research.md"
+if [ -f "$research_md" ]; then
+  c96_ok=true
+  bad_lines=$(grep -nE 'task-lock\.sh[[:space:]]+(acquire|release|heartbeat)' "$research_md" | grep -F '${batch_session_id}_${task_num}' || true)
+  [ -z "$bad_lines" ] || { c96_ok=false; info "9.6: found a lock-touching call still using the per-task-suffixed session_id: $bad_lines"; }
+  if [ "$c96_ok" = true ]; then pass "9.6: no lock-touching task-lock.sh call in commands/research.md uses the per-task-suffixed session_id"; else fail "9.6: static guard case failed (see INFO lines above)"; fi
+else
+  info "9.6: SKIPPED -- commands/research.md not reachable at $research_md from this invocation"
+fi
+
+# 9.7 Static guard case: no lock-touching task-lock.sh call in commands/plan.md may
+# reintroduce the per-task-suffixed pattern. Mirrors Group 8's stance on SCRIPT_DIR ambiguity --
+# info-and-skip if the file is not reachable from this invocation, rather than failing.
+plan_md="$SCRIPT_DIR/../commands/plan.md"
+if [ -f "$plan_md" ]; then
+  c97_ok=true
+  bad_lines=$(grep -nE 'task-lock\.sh[[:space:]]+(acquire|release|heartbeat)' "$plan_md" | grep -F '${batch_session_id}_${task_num}' || true)
+  [ -z "$bad_lines" ] || { c97_ok=false; info "9.7: found a lock-touching call still using the per-task-suffixed session_id: $bad_lines"; }
+  if [ "$c97_ok" = true ]; then pass "9.7: no lock-touching task-lock.sh call in commands/plan.md uses the per-task-suffixed session_id"; else fail "9.7: static guard case failed (see INFO lines above)"; fi
+else
+  info "9.7: SKIPPED -- commands/plan.md not reachable at $plan_md from this invocation"
+fi
+
+# 9.8 Static guard case: no lock-touching task-lock.sh call in commands/implement.md may
+# reintroduce the per-task-suffixed pattern. Mirrors Group 8's stance on SCRIPT_DIR ambiguity --
+# info-and-skip if the file is not reachable from this invocation, rather than failing.
+implement_md="$SCRIPT_DIR/../commands/implement.md"
+if [ -f "$implement_md" ]; then
+  c98_ok=true
+  bad_lines=$(grep -nE 'task-lock\.sh[[:space:]]+(acquire|release|heartbeat)' "$implement_md" | grep -F '${batch_session_id}_${task_num}' || true)
+  [ -z "$bad_lines" ] || { c98_ok=false; info "9.8: found a lock-touching call still using the per-task-suffixed session_id: $bad_lines"; }
+  if [ "$c98_ok" = true ]; then pass "9.8: no lock-touching task-lock.sh call in commands/implement.md uses the per-task-suffixed session_id"; else fail "9.8: static guard case failed (see INFO lines above)"; fi
+else
+  info "9.8: SKIPPED -- commands/implement.md not reachable at $implement_md from this invocation"
 fi
 
 "$TL" release 820 "sess_mt_batch" >/dev/null 2>&1

@@ -225,18 +225,18 @@ than leaving them.
 
 ---
 
-### Phase 4: Extend test-conflict-predicate.sh Group 9 with sibling static guards [NOT STARTED]
+### Phase 4: Extend test-conflict-predicate.sh Group 9 with sibling static guards [COMPLETED]
 
 **Goal**: Group 9 fails loudly if any of the three command files ever reintroduces a
 per-task-suffixed session id on a lock-touching call.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/test-conflict-predicate.sh`, add cases 9.6, 9.7, 9.8 immediately after case 9.5, as three explicit sibling blocks copying 9.5's structure line for line.
-- [ ] Vary only two things per block: the file path (`$SCRIPT_DIR/../commands/research.md`, `.../plan.md`, `.../implement.md`) and the `grep -F` bad-pattern substring (`${batch_session_id}_${task_num}` instead of `${session_id}_${task_num}`). Keep 9.5's ERE (`task-lock\.sh[[:space:]]+(acquire|release|heartbeat)`) verbatim — it matches `acquire-retry` by prefix, which is intended.
-- [ ] Keep 9.5's info-and-skip branch verbatim for unreachable files (the `SCRIPT_DIR` ambiguity stance Group 8 established); a missing file must never fail the suite.
-- [ ] Extend the Group 9 header comment with one sentence noting that the group now covers both the orchestrate skill and the three multi-task command files.
-- [ ] Negative control: copy one command file to the scratch directory, reinsert the bad substring into an `acquire-retry` line, and run the new grep expression against that copy to confirm it triggers. Do not mutate anything in the repo to do this.
-- [ ] Do not touch cases 9.1-9.4 or add fixtures.
+- [x] In `agent-system/extensions/core/scripts/test-conflict-predicate.sh`, add cases 9.6, 9.7, 9.8 immediately after case 9.5, as three explicit sibling blocks copying 9.5's structure line for line. *(completed)*
+- [x] Vary only two things per block: the file path (`$SCRIPT_DIR/../commands/research.md`, `.../plan.md`, `.../implement.md`) and the `grep -F` bad-pattern substring (`${batch_session_id}_${task_num}` instead of `${session_id}_${task_num}`). Keep 9.5's ERE (`task-lock\.sh[[:space:]]+(acquire|release|heartbeat)`) verbatim — it matches `acquire-retry` by prefix, which is intended. *(completed)*
+- [x] Keep 9.5's info-and-skip branch verbatim for unreachable files (the `SCRIPT_DIR` ambiguity stance Group 8 established); a missing file must never fail the suite. *(completed)*
+- [x] Extend the Group 9 header comment with one sentence noting that the group now covers both the orchestrate skill and the three multi-task command files. *(completed)*
+- [x] Negative control: copy one command file to the scratch directory, reinsert the bad substring into an `acquire-retry` line, and run the new grep expression against that copy to confirm it triggers. Do not mutate anything in the repo to do this. *(completed: mutated a scratch copy of research.md under the session scratchpad, confirmed the 9.6 grep expression triggers on the mutated line, then deleted the scratch copy — repo untouched)*
+- [x] Do not touch cases 9.1-9.4 or add fixtures. *(completed: git diff --stat shows only additions plus the one header-comment-line replacement; confirmed no other deletions)*
 
 **Timing**: 45 minutes
 
