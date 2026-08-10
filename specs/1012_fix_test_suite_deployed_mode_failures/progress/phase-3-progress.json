@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Fix the test-index-entries-schema.sh fixture manifest",
+  "started_at": "2026-08-10T17:35:00Z",
+  "last_updated": "2026-08-10T17:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add merge_targets.claudemd.source to fixture manifest.json, migrate REPO_ROOT, verify Rule U fires on 61-line case and stays silent on 60-line case",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

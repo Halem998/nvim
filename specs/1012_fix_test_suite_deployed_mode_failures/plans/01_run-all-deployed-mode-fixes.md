@@ -210,22 +210,22 @@ mismatch means the file set changed since planning and must be re-derived before
 
 ---
 
-### Phase 3: Fix the test-index-entries-schema.sh fixture manifest [NOT STARTED]
+### Phase 3: Fix the test-index-entries-schema.sh fixture manifest [COMPLETED]
 
 **Goal**: Restore Rule U coverage by declaring `merge_targets.claudemd.source` in the suite's
 fixture `manifest.json`, and migrate that file's `REPO_ROOT` for consistency with Phases 1-2.
 
 **Tasks**:
-- [ ] Add `"merge_targets": {"claudemd": {"source": "EXTENSION.md"}}` to the fixture manifest
-      heredoc in `test-index-entries-schema.sh`
-- [ ] Apply the `git rev-parse` REPO_ROOT pattern in the same file
-- [ ] Run the suite and confirm the Rule U positive case (61 lines) now fires
-- [ ] Confirm the Rule U negative case (60 lines) still stays silent — and that it now does so
+- [x] Add `"merge_targets": {"claudemd": {"source": "EXTENSION.md"}}` to the fixture manifest
+      heredoc in `test-index-entries-schema.sh` *(completed)*
+- [x] Apply the `git rev-parse` REPO_ROOT pattern in the same file *(completed)*
+- [x] Run the suite and confirm the Rule U positive case (61 lines) now fires *(completed)*
+- [x] Confirm the Rule U negative case (60 lines) still stays silent — and that it now does so
       because the rule ran and correctly declined, not vacuously. Verify by asserting the 61-line
       case fires in the same run; a passing negative with a failing positive is the vacuous
-      signature to watch for
-- [ ] Make no change to `check-extension-docs.sh` — its manifest-authoritative guard is correct
-      by design
+      signature to watch for *(completed: both cases pass in the same run — 9 passed, 0 failed)*
+- [x] Make no change to `check-extension-docs.sh` — its manifest-authoritative guard is correct
+      by design *(completed: file untouched)*
 
 **Timing**: 30 minutes
 
