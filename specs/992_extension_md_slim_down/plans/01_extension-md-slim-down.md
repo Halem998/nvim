@@ -1,7 +1,7 @@
 # Implementation Plan: Task #992
 
 - **Task**: 992 - Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8.75 hours
 - **Dependencies**: 987, 990, 991 (index-entries.json schema reconciliation -- research confirms this has landed; a live Rule T run reports 0 violations across all 19 extensions)
 - **Research Inputs**: specs/992_extension_md_slim_down/reports/01_extension_md_slim_down.md

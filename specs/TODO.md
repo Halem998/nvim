@@ -6,14 +6,14 @@ next_project_number: 1004
 
 ## Task Order
 
-*Updated 2026-08-09. Generated from state.json dependency graph.*
+*Updated 2026-08-10. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 984,992,997,1002,1003 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
-| 2 | 985,993,995,1000 | 984,992 | agent-system |
-| 3 | 986,1001 | 985,1000 | agent-system |
+| 1 | 984,993,997,1000,1002,1003 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
+| 2 | 985,995,1001 | 984,1000 | agent-system |
+| 3 | 986 | 985 | agent-system |
 | 4 | 999 | 986,1002 | agent-system |
 | 5 | 996 | 993,995,999 | agent-system |
 
@@ -21,18 +21,17 @@ next_project_number: 1004
 
 ### Agent System
 
-992 [IMPLEMENTING] — Bring every EXTENSION.md into conformance with extension-slim-sta
-  └─ 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
-    └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-      └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
-        └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-  └─ 993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
-    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
-  └─ 1000 [NOT STARTED] — Give the cslib extension its own copy of the adversarial-verifica
-    └─ 1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
+993 [NOT STARTED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
+  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
+1000 [NOT STARTED] — Give the cslib extension its own copy of the adversarial-verifica
+  └─ 1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
 1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
-  └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
+  └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
+    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
+985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
+  └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
+    └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 
@@ -494,12 +493,13 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 992. Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 987, Task 990, Task 991
 - **Research**: [992_extension_md_slim_down/reports/01_extension_md_slim_down.md]
 - **Plan**: [992_extension_md_slim_down/plans/01_extension-md-slim-down.md]
+- **Summary**: [992_extension_md_slim_down/summaries/01_extension-md-slim-down-summary.md]
 
 **Description**: Bring every EXTENSION.md into conformance with extension-slim-standard.md and Rule U (check-extension-docs.sh, check_extension_md_length), so the gate-promotion follow-on can flip SCHEMA_CONFORMANCE_GATE_MODE to hard without standing failures. Two sub-scopes:
 

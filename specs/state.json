@@ -280,7 +280,7 @@
     {
       "project_number": 992,
       "project_name": "extension_md_slim_down",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Trim the 6 over-length live EXTENSION.md files; resolve the 2 dead ones",
@@ -302,8 +302,8 @@
         991
       ],
       "created": "2026-07-30T01:55:17Z",
-      "last_updated": "2026-08-09T23:28:57Z",
-      "session_id": "sess_1786316975_3658f6_992",
+      "last_updated": "2026-08-10T00:26:32Z",
+      "session_id": "sess_1786320438_16cc48",
       "artifacts": [
         {
           "path": "specs/992_extension_md_slim_down/reports/01_extension_md_slim_down.md",
@@ -314,8 +314,14 @@
           "path": "specs/992_extension_md_slim_down/plans/01_extension-md-slim-down.md",
           "type": "plan",
           "summary": "8-phase plan: 6 parallel EXTENSION.md trim phases with per-extension context-file migration and index entries, 1 phase making check-extension-docs.sh merge_targets.claudemd.source-authoritative and deleting both dead files, 1 final zero-Rule-U-advisory gate phase"
+        },
+        {
+          "path": "specs/992_extension_md_slim_down/summaries/01_extension-md-slim-down-summary.md",
+          "type": "summary",
+          "summary": "Trimmed 6 over-length EXTENSION.md files to conformance and confirmed the 2 dead files (deleted in a prior phase) stay resolved; zero Rule U advisories across all 19 extensions, including under SCHEMA_CONFORMANCE_GATE_MODE=hard."
         }
-      ]
+      ],
+      "completion_summary": "Trimmed literature/email/lean/cslib/present/nix EXTENSION.md files to conform to extension-slim-standard.md (each now well under 60 lines, four required sections only), relocating detail content into schema-conformant context files with index-entries.json entries. Confirmed core/slidev EXTENSION.md deletion from the prior phase remains clean. check-extension-docs.sh reports zero Rule U advisories across all 19 extensions and passes under SCHEMA_CONFORMANCE_GATE_MODE=hard as a dry proof for the follow-on gate flip."
     },
     {
       "project_number": 993,
