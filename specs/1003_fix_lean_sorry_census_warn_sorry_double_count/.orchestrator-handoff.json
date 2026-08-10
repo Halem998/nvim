@@ -1,61 +1,22 @@
 {
-  "task_number": 1003,
-  "session_id": "sess_1786342011_4592c8_1003",
-  "stage": "plan",
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "plan_path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/plans/01_fix-warn-sorry-double-count.md",
-  "research_inputs": [
-    "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md"
-  ],
-  "phase_count": 4,
-  "estimated_hours": 2.5,
-  "dependency_waves": [[1], [2], [3], [4]],
-  "phases": [
+  "status": "implemented",
+  "phase": "implement",
+  "summary": "Fixed lean-sorry-census.sh's warn.sorry double-count via a negative-lookbehind regex swap, shipped its first regression fixture (test-first, proven non-vacuous), and validated on the real cslib corpus with a delta-18 identity confirmed on two scopes and zero real sorries lost.",
+  "artifacts": [
     {
-      "number": 1,
-      "name": "Write the regression fixture and prove it fails against the unfixed script",
-      "depends_on": [],
-      "verification_tier": "local",
-      "files": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]
+      "type": "summary",
+      "path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/summaries/01_fix-warn-sorry-double-count-summary.md",
+      "summary": "Full 4-phase implementation summary with test-first evidence, regex diff, and real-corpus differential."
     },
     {
-      "number": 2,
-      "name": "Apply the regex fix and reconcile the stale pattern references",
-      "depends_on": [1],
-      "verification_tier": "interface",
-      "commit_mode": "per-substep",
-      "files": ["agent-system/extensions/lean/scripts/lean-sorry-census.sh"]
-    },
-    {
-      "number": 3,
-      "name": "Real-corpus differential verification",
-      "depends_on": [2],
-      "verification_tier": "full",
-      "files": []
-    },
-    {
-      "number": 4,
-      "name": "Repository gates and hygiene",
-      "depends_on": [3],
-      "verification_tier": "full",
-      "files": ["agent-system/extensions/lean/README.md", "agent-system/extensions/lean/manifest.json"]
+      "type": "test",
+      "path": "agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh",
+      "summary": "New 8-assertion regression fixture suite; 8/8 PASS against the fixed script, 6/8 FAIL against the unfixed script."
     }
   ],
-  "file_scope": [
-    "agent-system/extensions/lean/scripts/lean-sorry-census.sh",
-    "agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh",
-    "agent-system/extensions/lean/"
-  ],
-  "constraints": [
-    "Edit agent-system/extensions/** only; never write under .claude/**. The lean extension is not loaded in this deploy, so no redeploy step is required or appropriate.",
-    "strip_lean_comments()'s executable body must remain byte-identical; only its docstring text changes.",
-    "Keep the per-line accumulator 'if sorry_re.search(line): total += 1' byte-identical -- do not switch to findall/occurrence counting.",
-    "Do not implement a line-level warn.sorry skip filter; it drops real same-line sorries.",
-    "The new test file is outside specs/**, so it must carry no task-number citations.",
-    "Phase 1's fixture MUST be run against the unfixed script and MUST fail before Phase 2 begins (falsifiability gate)."
-  ],
-  "verification_bar": "Fixture suite exits 1 pre-fix and 0 post-fix; real-corpus differential shows delta == independently-grepped own-line 'set_option warn.sorry false in' count with the post-fix inventory a strict subset of pre-fix; 'cross_check: MATCH' observed via --cross-check on ~/Projects/cslib (Cslib/Logics/Bimodal) or its non-completion recorded as a reasoned exclusion with evidence. Verify by execution, never by inspection.",
-  "next_command": "/implement 1003",
-  "next_steps": "Run /implement 1003 to execute the plan"
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "continuation_path": null,
+  "plan_markers_verified": true
 }

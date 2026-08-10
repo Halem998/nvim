@@ -1,11 +1,50 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/summaries/01_fix-warn-sorry-double-count-summary.md",
+      "summary": "Full 4-phase implementation summary: test-first fixture, regex fix, real-corpus differential (completed with a reasoned exclusion on the secondary cross-check oracle), and repository gate hygiene."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed lean-sorry-census.sh's warn.sorry double-count by swapping the matcher to (?<![.\\w])sorry\\b, shipped its first regression fixture (proven non-vacuous by failing against the unfixed script first), and validated on the real cslib corpus: delta of 18 phantom sorries removed on both the repo-wide and Cslib/Logics/Bimodal scopes, matching the independently-grepped annotation count exactly, with zero real sorries lost."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh",
+    "agent-system/extensions/lean/scripts/lean-sorry-census.sh",
+    "agent-system/extensions/lean/manifest.json",
+    "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/plans/01_fix-warn-sorry-double-count.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When testing a regex fix for a false-positive matcher bug, add an explicit anti-vacuous dual assertion: compute what the OLD/naive pattern would report on the same fixture text and assert it differs from the tool's actual output. This guarantees the fixture text itself has discriminating power and can't accidentally be a case both the buggy and fixed implementations agree on (which would make the test pass trivially either way).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/summaries/01_fix-warn-sorry-double-count-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["anti-vacuous test", "regex fixture", "falsifiability gate", "shell test", "dual assertion"]
+    },
+    {
+      "content": "check-extension-docs.sh's provides.scripts drift check hard-FAILs (not warns) when a script file exists on disk under an extension's scripts/ tree but is absent from that extension's manifest.json provides.scripts array -- this applies to test scripts too, not just the main tool script. Core's own manifest.json lists tests/test-census-count.sh individually, confirming the convention: every shipped script, including tests, needs a provides.scripts entry, contrary to an assumption that test files are implicitly covered by their parent script's entry.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/summaries/01_fix-warn-sorry-double-count-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["check-extension-docs.sh", "manifest.json", "provides.scripts", "extension lint", "test script registration"]
+    },
+    {
+      "content": "lean-sorry-census.sh's --cross-check secondary oracle (lake build + grep 'declaration uses sorry' warnings) can return a false MISMATCH when the .lake/build cache is already fully up to date: a warm-cache lake build elaborates zero files and therefore emits zero sorry warnings, regardless of whether the stripper-based count is correct. Don't treat this as evidence the fix is wrong -- verify via an independent toolchain-free differential (before/after script run comparing counts and inventories) instead, and record the cross-check outcome as a reasoned exclusion when the cache is warm.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/summaries/01_fix-warn-sorry-double-count-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["lake build cache", "cross-check", "sorry census", "false mismatch", "toolchain-free verification"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786342011_4592c8_1003",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 4,
     "phases_total": 4
   }
 }
