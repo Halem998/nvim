@@ -874,23 +874,6 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            --argjson final "$next_num"
          ```
 
-         Add vault transition comment to TODO.md:
-         ```bash
-         current_date=$(date +"%Y-%m-%d")
-         transition_comment="<!-- Vault transition: ${current_date} - tasks numbered 1 through $((next_num - renumber_count - 1)) archived to ${vault_path}/ -->"
-
-         # Insert after frontmatter or at top of file
-         if grep -q "^---$" specs/TODO.md; then
-           # Has frontmatter, insert after closing ---
-           sed -i "/^---$/,/^---$/{/^---$/{n;a\\
-${transition_comment}
-}}" specs/TODO.md
-         else
-           # No frontmatter, insert at top
-           sed -i "1i${transition_comment}" specs/TODO.md
-         fi
-         ```
-
          After sub-step 9.4 completes, continue to Stage 11 (UpdateRoadmap).
 
       <!-- CHECKPOINT: Stage 10 complete when vault_check output is present AND

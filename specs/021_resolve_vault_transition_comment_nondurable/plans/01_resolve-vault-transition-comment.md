@@ -175,26 +175,29 @@ numbers still hold.
 
 ---
 
-### Phase 2: Delete the corrupting sed block from skill-todo/SKILL.md [NOT STARTED]
+### Phase 2: Delete the corrupting sed block from skill-todo/SKILL.md [COMPLETED]
 
 **Goal**: `agent-system/extensions/core/skills/skill-todo/SKILL.md` no longer contains the
 executable transition-comment insertion — the only site of the two that actually runs and
 corrupts frontmatter.
 
 **Tasks**:
-- [ ] Re-read the sub-step `9.4. ResetState` region (opens near line 827) before editing.
-- [ ] Delete the `Add vault transition comment to TODO.md:` prose label together with its entire
+- [x] Re-read the sub-step `9.4. ResetState` region (opens near line 827) before editing.
+      *(completed: confirmed exact anchors match plan expectations)*
+- [x] Delete the `Add vault transition comment to TODO.md:` prose label together with its entire
       fenced bash block — from `current_date=$(date +"%Y-%m-%d")` through the closing fence after
       the `fi`, i.e. roughly lines 877-892 including both the `grep -q "^---$"` branch and the
-      `sed -i "1i${transition_comment}"` else-branch.
-- [ ] Leave the immediately preceding `Add entry to vault_history:` block **entirely unmodified**,
+      `sed -i "1i${transition_comment}"` else-branch. *(completed)*
+- [x] Leave the immediately preceding `Add entry to vault_history:` block **entirely unmodified**,
       including the `task_range="1-$((next_num - renumber_count - 1))"` line at ~855 and the
       `task_range` / `archived_count` / `final_task_number` fields — the schema divergence is
-      explicitly deferred to a future task.
-- [ ] Leave the following line `After sub-step 9.4 completes, continue to Stage 11
+      explicitly deferred to a future task. *(completed: confirmed unchanged)*
+- [x] Leave the following line `After sub-step 9.4 completes, continue to Stage 11
       (UpdateRoadmap).` unmodified — the deleted block was the tail of 9.4, not a sub-step of its
-      own, so this cross-reference stays correct with no renumbering.
-- [ ] Confirm the file still contains zero occurrences of `Vault transition`.
+      own, so this cross-reference stays correct with no renumbering. *(completed: confirmed
+      unchanged, line now immediately follows the vault_history block)*
+- [x] Confirm the file still contains zero occurrences of `Vault transition`. *(completed:
+      `grep -c` returns 0)*
 
 **Timing**: 0.5 hours
 
