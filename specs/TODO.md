@@ -21,7 +21,7 @@ next_project_number: 1004
 
 995 [PLANNED] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-1001 [PLANNING] — Fix the dormant load-order defect in lean/index-entries.json's mi
+1001 [PLANNED] — Fix the dormant load-order defect in lean/index-entries.json's mi
 1002 [PLANNING] — Author a context file that states the tier-classification semanti
   └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
@@ -164,11 +164,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1001. Fix lean mirror entry load-order defect; audit duplicated index paths
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 992, Task 1000
 - **Research**: [1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md]
+- **Plan**: [1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md]
 
 **Description**: Fix the dormant load-order defect in lean/index-entries.json's mirror entry for contracts/adversarial-verification.md. The entry names ONLY lean-research-hard-agent in its load_when.agents. The extension loader upserts index entries BY PATH (merge.lua, append_index_entries) with last-extension-processed winning the WHOLE entry -- so in a lean-loaded deploy where lean is processed after core, lean's single-agent entry REPLACES core's and silently drops general-research-hard-agent's hook on that path. The agent keeps working; it just stops receiving a contract it is supposed to receive, with no error anywhere.
 

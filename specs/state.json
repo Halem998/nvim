@@ -105,7 +105,7 @@
     {
       "project_number": 1001,
       "project_name": "lean_mirror_entry_load_order",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix lean mirror entry load-order defect; audit duplicated index paths",
@@ -119,12 +119,17 @@
         1000
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T06:18:23Z",
+      "last_updated": "2026-08-10T06:24:20Z",
       "artifacts": [
         {
           "path": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
           "type": "report",
           "summary": "Load-order defect root cause, lean fix recommendation, and full cross-extension duplicated-path audit (4 findings)."
+        },
+        {
+          "path": "specs/1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md",
+          "type": "plan",
+          "summary": "Four-phase plan: union-value the named entry, extend to two siblings in the same file, record the audit and two follow-up candidates, closing gate"
         }
       ],
       "session_id": "sess_1786342011_4592c8_1001"

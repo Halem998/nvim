@@ -1,34 +1,32 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
-      "summary": "Confirms merge.lua's append_index_entries upserts index entries by path (whole-entry replace, no per-field merge); documents the lean contracts/adversarial-verification.md single-agent entry as the named defect; audits all extensions and finds two more core/lean pairs with the identical shape (reference-grounding.md, anti-analysis.md) plus a distinct same-file duplicate in cslib's own index-entries.json (ci-pipeline.md); recommends the union-valued load_when.agents fix proven by task 1000's cslib precedent, verified via actual merge reconstruction."
+      "type": "plan",
+      "path": "specs/1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md",
+      "summary": "Four-phase plan union-valuing lean's contract mirror entries, proving the fix by executed merge reconstruction, and recording the duplicated-path audit plus two follow-up candidates"
     }
   ],
-  "next_steps": "Run /plan 1001 to create implementation plan",
+  "next_steps": "Run /implement 1001 to execute the plan",
   "metadata": {
     "session_id": "sess_1786342011_4592c8_1001",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 4
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 2,
+    "dependency_waves": [[1], [2], [3], [4]]
   },
   "memory_candidates": [
     {
-      "content": "In this repo's extension system, lua/neotex/plugins/ai/shared/extensions/merge.lua's M.append_index_entries upserts index.json entries strictly BY PATH: it replaces the whole matching entry object in place (no per-field merge) when two entries share a path, whether the collision is cross-extension (last-extension-processed wins) or WITHIN a single extension's own index-entries.json array (later array position wins). Any mirror/duplicate index entry for a path another extension (or the same extension, twice) also declares MUST use a union-valued load_when.agents, or a narrower entry silently drops the other's agent hook with no error anywhere. Established/proven pattern: task 1000's cslib mirror fix, verified by an actual headless-Neovim merge reconstruction rather than static JSON inspection.",
-      "category": "PATTERN",
-      "source_artifact": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["index-entries.json", "upsert-by-path", "load_when.agents", "merge.lua", "extension-loader"]
-    },
-    {
-      "content": "check-extension-docs.sh's Rule R (source-file existence) and Rule T (forbidden load_when keys) are the only existing lint rules touching index-entries.json load_when structure, and neither detects a duplicated path across extensions (or within one extension's own file) whose load_when.agents sets are narrower than their union. This defect class is currently invisible to all automated gates in the repo; a jq one-liner over agent-system/extensions/*/index-entries.json (group by .path, flag count>1) is the manual audit technique used to surface it.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["check-extension-docs.sh", "Rule R", "lint-gap", "duplicate-path-audit", "jq"]
+      "content": "In this repo's extension deploy engine, a path declared by two extensions collides at TWO independent layers, both last-writer-wins with no warning: (1) merge.append_index_entries upserts index entries BY PATH and replaces the WHOLE entry object (no per-field merge), so a later extension's narrower load_when.agents silently discards an earlier one's agent hooks; and (2) copy_category(\"context\", ...) copies context files by path, so an extension whose manifest provides.context lists a shared prefix (e.g. \"contracts\") overwrites another extension's file at the same deploy path. Consequence: union-valuing load_when.agents on a duplicated path restores the HOOK but not the CONTENT -- the newly-hooked agent then receives the last-deployed extension's domain-specialized override of that file, not the generic core version. Both layers are invisible to check-extension-docs.sh (Rules R and T touch load_when shape and source-file existence, never cross-extension path comparison). Audit for duplicates with: jq -r '.entries[]?.path' over each agent-system/extensions/*/index-entries.json, checking both cross-file collisions and same-file uniq -d internal duplicates.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries", "extension-merge", "load-order", "append_index_entries", "copy_category", "duplicated-path"]
     }
+  ],
+  "modified_files": [
+    "specs/1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md"
   ]
 }
