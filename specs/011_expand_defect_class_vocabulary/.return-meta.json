@@ -1,8 +1,26 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "session_id": "sess_1786402783_e354c8",
-  "task_number": 11,
-  "task_name": "expand_defect_class_vocabulary"
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/011_expand_defect_class_vocabulary/summaries/01_defect-class-vocabulary-expansion-summary.md",
+      "summary": "Added SESSION_LOCK_CONTENTION, HOOK_REGEX_BOUNDARY_DEFECT, and DEPLOY_ORPHAN_DRIFT to the defect_class enum in system-defect-record.sh and the Signal A table in system-defect-discrimination.md, with cross-file round-trip verification."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Widened the defect_class enum from ten to thirteen values at both enumeration sites (system-defect-record.sh's case validator and system-defect-discrimination.md's Signal A table), leaving every existing class byte-identical and wiring no detector. Verified via bash -n, cross-file class-set diff, positive/negative round-trip invocations, and a producer audit of all 17 --defect-class call sites."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/system-defect-record.sh",
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"
+  ],
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1786402783_e354c8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  }
 }

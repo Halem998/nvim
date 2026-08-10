@@ -1,7 +1,7 @@
 # Implementation Plan: Expand defect_class Vocabulary
 
 - **Task**: 11 - expand_defect_class_vocabulary
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/011_expand_defect_class_vocabulary/reports/01_defect-class-vocabulary-gap.md
@@ -213,28 +213,39 @@ appending blindly.
 
 ---
 
-### Phase 3: Cross-file consistency and round-trip verification [NOT STARTED]
+### Phase 3: Cross-file consistency and round-trip verification [COMPLETED]
 
 **Goal**: The script and the document agree on exactly thirteen classes, the new values validate end
 to end, unknown values are still rejected, and no caller or deploy-tree file was touched.
 
 **Tasks**:
-- [ ] Extract the class list from the script's `case` arm and the class list from the document's
+- [x] Extract the class list from the script's `case` arm and the class list from the document's
       Signal A table; diff the two sets and confirm they match exactly at thirteen values.
-- [ ] Positive round trip: invoke the script once per new class with the minimum required arguments
+      *(completed: both sets are 13 values, `diff` reports identical)*
+- [x] Positive round trip: invoke the script once per new class with the minimum required arguments
       (`--defect-class`, `--detecting-site`, `--message`, and one Signal B argument) and confirm it
-      does not exit 1 on enum validation.
-- [ ] Negative round trip: invoke with a deliberately bogus class (e.g. `NOT_A_REAL_CLASS`) and
+      does not exit 1 on enum validation. *(completed: all three classes pass the `case` arm; each
+      invocation then fails later only at the unrelated `deploy-root-guard.sh` source-store check,
+      which runs after enum validation and is expected since the script cannot run from the
+      source store — see Deviations)*
+- [x] Negative round trip: invoke with a deliberately bogus class (e.g. `NOT_A_REAL_CLASS`) and
       confirm it still exits 1 with the invalid-class error — this proves the `case` arm was not
-      accidentally flattened into an accept-all.
-- [ ] Confirm the positive round trip's effect on `specs/events.jsonl`: if the invocations appended
+      accidentally flattened into an accept-all. *(completed: exits 1 with
+      "invalid --defect-class ... must be one of the thirteen Signal A instances")*
+- [x] Confirm the positive round trip's effect on `specs/events.jsonl`: if the invocations appended
       rows, either leave them (they are legitimate telemetry) or note them in the summary; do NOT
-      hand-edit the events log to remove them.
-- [ ] Re-run the producer audit: `grep -rn -- "--defect-class" agent-system/extensions` and confirm
+      hand-edit the events log to remove them. *(completed: line count unchanged, 1303 before and
+      after — no rows appended, since all three invocations failed before reaching the write stage)*
+- [x] Re-run the producer audit: `grep -rn -- "--defect-class" agent-system/extensions` and confirm
       every call site still passes a literal that is in the thirteen-value enum, and that none
       contains a `case`/dispatch over the enum requiring a new arm (see Scope Hypothesis).
-- [ ] Confirm `git status --short` shows exactly the two intended source-store files as modified
-      (plus any `specs/**` artifacts), and that nothing under `.claude/**` was written.
+      *(completed: 17 call sites across 8 files, matching the hypothesis exactly once
+      `system-defect-record.sh`'s own self-documentation hits are excluded — see Deviations)*
+- [x] Confirm `git status --short` shows exactly the two intended source-store files as modified
+      (plus any `specs/**` artifacts), and that nothing under `.claude/**` was written. *(completed
+      with a deviation: the two source-store files no longer show as modified because Phases 1 and
+      2 each committed a green sub-step per the Commit-Per-Green-Substep Mandate; `git status
+      --short` and a `.claude/` grep both confirm zero `.claude/**` modification — see Deviations)*
 
 **Timing**: 0.5 hours
 
@@ -264,16 +275,18 @@ before concluding no consumer change is needed.
 
 ## Testing & Validation
 
-- [ ] `bash -n agent-system/extensions/core/scripts/system-defect-record.sh` exits 0.
-- [ ] Each of `SESSION_LOCK_CONTENTION`, `HOOK_REGEX_BOUNDARY_DEFECT`, `DEPLOY_ORPHAN_DRIFT` is
+- [x] `bash -n agent-system/extensions/core/scripts/system-defect-record.sh` exits 0.
+- [x] Each of `SESSION_LOCK_CONTENTION`, `HOOK_REGEX_BOUNDARY_DEFECT`, `DEPLOY_ORPHAN_DRIFT` is
       accepted by the script's enum validation.
-- [ ] An unknown class value still exits 1 with the invalid-class message.
-- [ ] All ten pre-existing class values are still accepted and byte-identical in both files.
-- [ ] The Signal A table and the script `case` arm enumerate the same thirteen values.
-- [ ] No count word `ten` describing the vocabulary remains in either file.
-- [ ] No task-number citation appears in either modified file (both are deliverables outside
+- [x] An unknown class value still exits 1 with the invalid-class message.
+- [x] All ten pre-existing class values are still accepted and byte-identical in both files.
+- [x] The Signal A table and the script `case` arm enumerate the same thirteen values.
+- [x] No count word `ten` describing the vocabulary remains in either file *(the sole remaining
+      "ten" hit, "ten pre-existing instances" in the new extension-decision paragraph, accurately
+      describes the unchanged prior row count rather than the vocabulary's total size)*.
+- [x] No task-number citation appears in either modified file (both are deliverables outside
       `specs/**`).
-- [ ] No file under `.claude/**` was created or modified.
+- [x] No file under `.claude/**` was created or modified.
 
 ## Artifacts & Outputs
 
