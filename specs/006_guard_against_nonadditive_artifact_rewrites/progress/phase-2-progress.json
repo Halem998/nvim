@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Implement the D5 Artifact-Loss Check and --allow-artifact-removal Flag",
+  "started_at": "2026-08-10T22:46:00Z",
+  "last_updated": "2026-08-10T23:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --allow-artifact-removal flag parsing (repeatable, project[:type] form, hard error on malformed value)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 2, "description": "Implement D5 check inside --deep D4 git block, reusing prior_json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Compute per-type removed/added path sets with untyped sentinel and archival skip", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Emit log_fail with actionable message for violating pairs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 5, "description": "Suppress via --allow-artifact-removal with explicit informational line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 6, "description": "Emit log_pass when zero unsuppressed violations", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 7, "description": "Update header comment block (--deep checks list, Usage flag doc)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 8, "description": "Bump --help sed line range", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"], "note": "Range moved from 2,57p to 2,74p; verified --help output matches header exactly with no truncation or leakage."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "scope_hypothesis_result": "grep -rln 'validate-state.sh' agent-system/extensions/ found 4 hits: manifest.json (deploy-file declaration only, not an invocation), verify-deploy.sh (gate 10, invokes deployed copy with --deep <path>, unaffected by new flag), test-validate-state.sh (invokes it, Phase 3 work), and validate-state.sh itself (self-reference in header comments). The two-consumer claim (verify-deploy.sh, test-validate-state.sh) holds for actual invocations; manifest.json is a declaration, not a call site."
+}

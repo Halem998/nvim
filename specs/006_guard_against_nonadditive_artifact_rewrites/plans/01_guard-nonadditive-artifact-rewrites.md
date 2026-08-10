@@ -177,7 +177,7 @@ outcome recorded here, and that substitution must be stated in the summary.
 
 ---
 
-### Phase 2: Implement the D5 Artifact-Loss Check and `--allow-artifact-removal` Flag [NOT STARTED]
+### Phase 2: Implement the D5 Artifact-Loss Check and `--allow-artifact-removal` Flag [COMPLETED]
 
 **Goal**: Add the per-type artifact-loss invariant as a new `--deep` check in
 `validate-state.sh`, reusing D4's already-fetched `prior_json`, together with a repeatable CLI
@@ -185,7 +185,7 @@ opt-in flag that makes genuine deletion expressible.
 
 **Tasks**:
 
-- [ ] Add flag parsing for `--allow-artifact-removal <project_number>[:<type>]` to the existing
+- [x] Add flag parsing for `--allow-artifact-removal <project_number>[:<type>]` to the existing
       `while [[ $# -gt 0 ]]` argument loop. The flag is **repeatable**; accumulate values into an
       array. Semantics:
       - `--allow-artifact-removal 6` — permits net removal of any type for project 6.
@@ -194,30 +194,35 @@ opt-in flag that makes genuine deletion expressible.
       - A malformed value (non-integer project number, empty type after `:`) is a hard error exit
         2, consistent with the script's existing environment-error convention — never a silent
         ignore.
-- [ ] Implement the check inside the existing `--deep` D4 git block, **after** the D4 loop and
+      *(completed: verified `notanumber` and `6:` both exit 2 with named errors)*
+- [x] Implement the check inside the existing `--deep` D4 git block, **after** the D4 loop and
       reusing the same `prior_json` variable (do not issue a second `git show`). Guard it so it
       runs only when `prior_json` is non-empty; when D4 skipped for lack of git history or a
-      prior commit, emit the same style of skip warning naming this check.
-- [ ] Compute, for each `project_number` present in BOTH `prior_json` and the live file: per-`type`
+      prior commit, emit the same style of skip warning naming this check. *(completed)*
+- [x] Compute, for each `project_number` present in BOTH `prior_json` and the live file: per-`type`
       path sets, then `removed(T)` and `added(T)` as set differences (counts of distinct paths, not
       raw array lengths).
       - Entries whose `.type` is absent or null group under an explicit sentinel key
         (e.g. `(untyped)`) so they participate in the invariant rather than being dropped.
       - Project numbers present in `prior_json` but absent from the live `active_projects` are
         skipped (archival is covered elsewhere); note this in a comment.
-- [ ] Emit a `log_fail` (or `log_warn`, per Phase 1's recorded decision) for every
+      *(completed)*
+- [x] Emit a `log_fail` (or `log_warn`, per Phase 1's recorded decision) for every
       `(project_number, type)` pair where `removed(T) > added(T)`, naming the project number, the
       type, both counts, and the concrete dropped path(s) — the message must be actionable enough
-      to repair by hand.
-- [ ] Suppress the finding for any pair matched by an `--allow-artifact-removal` entry, and when
+      to repair by hand. *(completed: FAIL-level per Phase 1's decision)*
+- [x] Suppress the finding for any pair matched by an `--allow-artifact-removal` entry, and when
       suppressed emit an explicit informational line recording that the removal was allowed by
-      operator opt-in. A silent suppression would defeat the audit purpose.
-- [ ] Emit a single `log_pass` when the check ran and found zero unsuppressed violations, matching
-      D4's existing pass-line style.
-- [ ] Update the script's header comment block: extend the `--deep mode additionally checks:`
-      list with the new check, and document the new flag under `Usage:`.
-- [ ] **Bump the `--help` line range.** `--help` is implemented as `sed -n '2,57p' "$0"`; adding
+      operator opt-in. A silent suppression would defeat the audit purpose. *(completed: emits
+      log_warn "Artifact removal ALLOWED by --allow-artifact-removal opt-in" — never silent)*
+- [x] Emit a single `log_pass` when the check ran and found zero unsuppressed violations, matching
+      D4's existing pass-line style. *(completed)*
+- [x] Update the script's header comment block: extend the `--deep mode additionally checks:`
+      list with the new check, and document the new flag under `Usage:`. *(completed)*
+- [x] **Bump the `--help` line range.** `--help` is implemented as `sed -n '2,57p' "$0"`; adding
       header lines makes this range stale. Recompute the correct end line and update it.
+      *(completed: range moved to `2,74p`; verified `--help` output matches the header comment
+      exactly with no truncation or code leakage)*
 
 **Timing**: 1.5 hours
 
@@ -231,6 +236,14 @@ are `verify-deploy.sh` gate 10 and `scripts/tests/test-validate-state.sh`. Confi
 implementation time with `grep -rln "validate-state.sh" agent-system/extensions/` and reconcile
 the result against that two-consumer claim before closing the phase; report the actual consumer
 list.
+
+**Scope Hypothesis Result**: `grep -rln "validate-state.sh" agent-system/extensions/` found 4
+hits: `manifest.json` (a deploy-file declaration, not an invocation), `verify-deploy.sh` (gate 10,
+invokes the deployed copy with `--deep <path>`, unaffected by the new flag),
+`scripts/tests/test-validate-state.sh` (invokes it; Phase 3's target), and `validate-state.sh`
+itself (self-reference in header comments). The two-consumer claim holds for actual invocations;
+`manifest.json` is a declaration, not a call site. Change confirmed confined to the one declared
+file.
 
 **Files to modify**:
 

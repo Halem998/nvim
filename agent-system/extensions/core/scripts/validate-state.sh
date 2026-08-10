@@ -21,16 +21,22 @@
 # deploy-tree-only restriction.
 #
 # Usage:
-#   validate-state.sh [--deep] [STATE_FILE]
+#   validate-state.sh [--deep] [--allow-artifact-removal <project_number>[:<type>]]... [STATE_FILE]
 #   validate-state.sh --help
 #
 # STATE_FILE defaults to specs/state.json relative to the current working directory when omitted.
 #
+# --allow-artifact-removal <project_number>[:<type>] (repeatable): explicit, named opt-in for the
+#   --deep per-type artifact-loss check below. `6` permits net artifact removal of any type for
+#   project_number 6; `6:summary` permits it only for type "summary" on project_number 6. A
+#   malformed value (non-integer project_number, or an empty type after ':') is a hard error,
+#   exit 2 -- never a silent ignore.
+#
 # Exit codes:
 #   0 - valid (no FAIL-level finding)
 #   1 - invalid (at least one FAIL-level finding)
-#   2 - environment error (file not found, jq unavailable, or the status-vocabulary library could
-#       not be found at any candidate path)
+#   2 - environment error (file not found, jq unavailable, the status-vocabulary library could not
+#       be found at any candidate path, or a malformed --allow-artifact-removal value)
 #
 # Base-mode checks (always run):
 #   - JSON is parsable
@@ -55,6 +61,16 @@
 #     version of STATE_FILE, since state.json carries no previous-status field to diff against
 #     in-place. Skipped with a WARN when STATE_FILE is not inside a git work tree or has no prior
 #     committed version.
+#   - per-type artifact-loss invariant (D5, FAIL-level): reusing the same prior git-committed
+#     version fetched for the terminal-status check above, for every project_number present in
+#     BOTH the prior and live active_projects, and for every distinct artifacts[].type (entries
+#     with absent/null .type grouped under the sentinel "(untyped)"), the count of distinct paths
+#     removed must not exceed the count of distinct paths added -- see
+#     rules/state-management.md's "Artifacts Are Append-Only" subsection. A project_number present
+#     in the prior version but absent from the live active_projects is skipped (archival, covered
+#     elsewhere). Suppressible per (project_number[, type]) via --allow-artifact-removal; every
+#     suppression is still logged, never silent. Skipped with the same style of warning as the
+#     terminal-status check when the prior-commit fetch is unavailable.
 
 set -uo pipefail
 
@@ -67,6 +83,7 @@ NC='\033[0m'
 
 DEEP=false
 STATE_FILE=""
+ALLOW_ARTIFACT_REMOVAL=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -74,8 +91,29 @@ while [[ $# -gt 0 ]]; do
       DEEP=true
       shift
       ;;
+    --allow-artifact-removal)
+      if [[ $# -lt 2 ]]; then
+        echo "ERROR: --allow-artifact-removal requires an argument: <project_number>[:<type>]" >&2
+        exit 2
+      fi
+      _aar_val="$2"
+      _aar_proj="${_aar_val%%:*}"
+      if [[ "$_aar_val" == *:* ]]; then
+        _aar_type="${_aar_val#*:}"
+        if [[ -z "$_aar_type" ]]; then
+          echo "ERROR: --allow-artifact-removal: empty type after ':' in '$_aar_val'" >&2
+          exit 2
+        fi
+      fi
+      if ! [[ "$_aar_proj" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: --allow-artifact-removal: invalid project_number in '$_aar_val' (must be an integer)" >&2
+        exit 2
+      fi
+      ALLOW_ARTIFACT_REMOVAL+=("$_aar_val")
+      shift 2
+      ;;
     --help|-h)
-      sed -n '2,57p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,74p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -84,6 +122,26 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Returns success (0) iff a prior (project_number, type) artifact-loss finding is covered by an
+# --allow-artifact-removal entry. An entry without a ':type' suffix matches any type for that
+# project_number; an entry with a ':type' suffix matches only that exact type.
+allow_artifact_removal_matches() {
+  local pnum="$1" ptype="$2" entry proj etype
+  for entry in "${ALLOW_ARTIFACT_REMOVAL[@]:-}"; do
+    [[ -z "$entry" ]] && continue
+    proj="${entry%%:*}"
+    if [[ "$entry" == *:* ]]; then
+      etype="${entry#*:}"
+    else
+      etype=""
+    fi
+    if [[ "$proj" == "$pnum" ]] && { [[ -z "$etype" ]] || [[ "$etype" == "$ptype" ]]; }; then
+      return 0
+    fi
+  done
+  return 1
+}
 
 if [[ -z "$STATE_FILE" ]]; then
   STATE_FILE="specs/state.json"
@@ -373,6 +431,7 @@ if [[ "$DEEP" == "true" ]]; then
     fi
     if [[ -z "$prior_commit" ]]; then
       log_warn "No git history found for $STATE_FILE -- skipping terminal-status immutability check"
+      log_warn "No git history found for $STATE_FILE -- skipping per-type artifact-loss check (D5)"
     else
       # `git show <sha>:<path>` requires a "./"-prefixed (or repo-root-relative) path even under
       # `-C`; a bare relative path that resolves fine for `git log -- <path>` is rejected here
@@ -380,6 +439,7 @@ if [[ "$DEEP" == "true" ]]; then
       prior_json="$(git -C "$state_dir" show "${prior_commit}:./${rel_path}" 2>/dev/null || echo "")"
       if [[ -z "$prior_json" ]]; then
         log_warn "Could not read prior committed version of $STATE_FILE -- skipping terminal-status immutability check"
+        log_warn "Could not read prior committed version of $STATE_FILE -- skipping per-type artifact-loss check (D5)"
       else
         violations=0
         while IFS=$'\t' read -r pnum prior_status; do
@@ -397,10 +457,59 @@ if [[ "$DEEP" == "true" ]]; then
         if [[ "$violations" -eq 0 ]]; then
           log_pass "No terminal-status immutability violations found against prior git history"
         fi
+
+        # --- Check D5: per-type artifact-loss invariant (FAIL-level) ---
+        # Reuses the same $prior_json fetched above rather than issuing a second `git show`. For
+        # every project_number present in BOTH prior_json and the live active_projects, compute
+        # per-type distinct-path sets and require removed(T) <= added(T). Entries with absent/null
+        # .type are grouped under the sentinel key "(untyped)" so they participate in the
+        # invariant rather than being silently dropped. A project_number present in prior_json but
+        # absent from the live active_projects is skipped -- archival is covered by other checks,
+        # not this one.
+        d5_unsuppressed=0
+        d5_pnums=$(jq -r '[.active_projects[].project_number] | .[]' <<< "$prior_json" 2>/dev/null)
+        while IFS= read -r d5_pnum; do
+          [[ -z "$d5_pnum" ]] && continue
+          if ! jq -e --arg n "$d5_pnum" '.active_projects[] | select((.project_number|tostring) == $n)' "$STATE_FILE" >/dev/null 2>&1; then
+            continue
+          fi
+          d5_prior_types=$(jq -r --arg n "$d5_pnum" \
+            '[.active_projects[] | select((.project_number|tostring) == $n) | (.artifacts // [])[] | (.type // "(untyped)")] | unique | .[]' \
+            <<< "$prior_json" 2>/dev/null)
+          d5_live_types=$(jq -r --arg n "$d5_pnum" \
+            '[.active_projects[] | select((.project_number|tostring) == $n) | (.artifacts // [])[] | (.type // "(untyped)")] | unique | .[]' \
+            "$STATE_FILE" 2>/dev/null)
+          d5_all_types=$(printf '%s\n%s\n' "$d5_prior_types" "$d5_live_types" | sort -u | grep -v '^$')
+          [[ -z "$d5_all_types" ]] && continue
+          while IFS= read -r d5_type; do
+            [[ -z "$d5_type" ]] && continue
+            d5_prior_paths=$(jq -r --arg n "$d5_pnum" --arg t "$d5_type" \
+              '[.active_projects[] | select((.project_number|tostring) == $n) | (.artifacts // [])[] | select((.type // "(untyped)") == $t) | .path] | unique | .[]' \
+              <<< "$prior_json" 2>/dev/null)
+            d5_live_paths=$(jq -r --arg n "$d5_pnum" --arg t "$d5_type" \
+              '[.active_projects[] | select((.project_number|tostring) == $n) | (.artifacts // [])[] | select((.type // "(untyped)") == $t) | .path] | unique | .[]' \
+              "$STATE_FILE" 2>/dev/null)
+            d5_removed_count=$(comm -23 <(sort <<< "$d5_prior_paths") <(sort <<< "$d5_live_paths") | grep -c -v '^$')
+            d5_added_count=$(comm -13 <(sort <<< "$d5_prior_paths") <(sort <<< "$d5_live_paths") | grep -c -v '^$')
+            if [[ "$d5_removed_count" -gt "$d5_added_count" ]]; then
+              if allow_artifact_removal_matches "$d5_pnum" "$d5_type"; then
+                log_warn "Artifact removal ALLOWED by --allow-artifact-removal opt-in: project_number $d5_pnum, type '$d5_type' (removed=$d5_removed_count added=$d5_added_count)"
+              else
+                d5_dropped=$(comm -23 <(sort <<< "$d5_prior_paths") <(sort <<< "$d5_live_paths") | grep -v '^$' | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
+                log_fail "Artifact loss: project_number $d5_pnum, type '$d5_type' -- removed=$d5_removed_count added=$d5_added_count, dropped path(s): $d5_dropped (opt in with --allow-artifact-removal $d5_pnum:$d5_type if intentional)"
+                d5_unsuppressed=$((d5_unsuppressed + 1))
+              fi
+            fi
+          done <<< "$d5_all_types"
+        done <<< "$d5_pnums"
+        if [[ "$d5_unsuppressed" -eq 0 ]]; then
+          log_pass "No unsuppressed per-type artifact-loss violations found against prior git history"
+        fi
       fi
     fi
   else
     log_warn "Not inside a git work tree -- skipping terminal-status immutability check"
+    log_warn "Not inside a git work tree -- skipping per-type artifact-loss check (D5)"
   fi
 fi
 
