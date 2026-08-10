@@ -20,7 +20,7 @@ next_project_number: 1004
 
 ### Agent System
 
-985 [RESEARCHED] — Quarantine (never silently delete) the dead machinery the review 
+985 [PLANNED] — Quarantine (never silently delete) the dead machinery the review 
   └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
     └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
       └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
@@ -554,11 +554,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 985. Dead-code quarantine sweep: orphan scripts, dead rules, dead Lua, vestigial twins
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 952, Task 960, Task 963, Task 964, Task 969, Task 973, Task 980, Task 981, Task 982, Task 984, Task 987, Task 988, Task 992
 - **Research**: [985_quarantine_dead_scripts_rules_and_machinery/reports/01_dead-machinery-triage.md]
+- **Plan**: [985_quarantine_dead_scripts_rules_and_machinery/plans/01_dead-machinery-quarantine.md]
 
 **Description**: Quarantine (never silently delete) the dead machinery the review inventoried, mirroring the literature extension's existing scripts/deprecated/ + README-with-per-file-rationale precedent. DEPENDS ON the deploy-engine consolidation task landing first, because that task decides the fate of several items below (manager.regenerate and settings_backup get WIRED there, not quarantined; sync.lua's status changes there).
 
