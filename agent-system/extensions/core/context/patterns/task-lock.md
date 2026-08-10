@@ -751,8 +751,9 @@ Read-only enumeration of `specs/.sessions/*.json` — a bounded, dedicated-direc
 repo-wide scan. No `--dry-run` flag (nothing here is ever deleted). Emits one compact NDJSON line
 per entry: every raw entry field verbatim, plus computed `live` (bool) and `liveness_reason`
 (string) from `session_liveness()`. `live` is derived uniformly as `liveness_reason NOT IN
-{dead-pid, stale-heartbeat}` — true for `pid-alive`, `corrupt`, AND `undeterminable`, matching
-D4's "`live == true`, `corrupt`, and undeterminable-liveness entries DO contend" language exactly.
+{dead-pid, stale-heartbeat}` — true for `pid-alive`, `dead-pid-within-grace`, `corrupt`, AND
+`undeterminable`, matching D4's "`live == true`, `corrupt`, and undeterminable-liveness entries DO
+contend" language exactly.
 A corrupt/unparseable entry is emitted with `liveness_reason: "corrupt"`, `live: true`, and empty
 `file_scope`/`task_numbers` (nothing can be safely read from it) — never silently dropped from the
 stream.
@@ -832,21 +833,25 @@ two-signal staleness rule independently. Given an entry file path, it prints `"<
 <liveness_reason>"`, where `liveness_reason` is one of:
 
 - **`corrupt`** — entry file is missing/unparseable JSON. `age` falls back to the file's own
-  mtime. Checked FIRST and short-circuits the other four — an unparseable entry's `pid`/
+  mtime. Checked FIRST and short-circuits the other five — an unparseable entry's `pid`/
   `heartbeat_at` fields cannot be trusted at all.
 - **`dead-pid`** — `pid` is a parseable integer, `kill -0 $pid` FAILS, AND `age` exceeds
   `SESSION_REGISTRY_DEAD_PID_MIN`.
+- **`dead-pid-within-grace`** — `pid` is a parseable integer, `kill -0 $pid` FAILS (pid
+  confirmably gone), and `age` does NOT exceed `SESSION_REGISTRY_DEAD_PID_MIN` — the grace floor
+  holds the verdict at `live: true`, but the reason no longer claims the process is alive.
 - **`stale-heartbeat`** — not `dead-pid`, and `age` exceeds `SESSION_REGISTRY_REAP_MIN`.
   "pid alive" is NEVER treated as proof of liveness on its own; this band is always the fallback
   regardless of pid state.
-- **`pid-alive`** — not `dead-pid`, not `stale-heartbeat`, and `pid` is a parseable integer for
-  which `kill -0` succeeded.
-- **`undeterminable`** — not `dead-pid`, not `stale-heartbeat`, and `pid` is empty/non-numeric
-  (liveness cannot be confirmed either way from the pid signal alone).
+- **`pid-alive`** — not `dead-pid`, not `dead-pid-within-grace`, not `stale-heartbeat`, and `pid`
+  is a parseable integer for which `kill -0` succeeded.
+- **`undeterminable`** — not `dead-pid`, not `dead-pid-within-grace`, not `stale-heartbeat`, and
+  `pid` is empty/non-numeric (liveness cannot be confirmed either way from the pid signal alone).
 
-`pid-alive` and `undeterminable` are states `session-reap` alone never needed to distinguish (both
-simply mean "do not reap") — they exist because `session-list`/`session_contention()` need a
-liveness verdict for EVERY entry, not just reap-worthy ones.
+`pid-alive`, `dead-pid-within-grace`, and `undeterminable` are states `session-reap` alone never
+needed to distinguish (all three simply mean "do not reap") — they exist because
+`session-list`/`session_contention()` need a liveness verdict for EVERY entry, not just
+reap-worthy ones.
 
 ### `session-reap [--dry-run]`
 
@@ -857,8 +862,9 @@ inline. **Two-signal staleness**, evaluated in this order:
 1. **`dead-pid`**: `kill -0 "$pid" 2>/dev/null` FAILS (the pid is confirmably gone — the same
    idiom already used by `claude-refresh.sh`) AND `heartbeat_at` age exceeds
    `SESSION_REGISTRY_DEAD_PID_MIN`. Reap with reason `dead-pid`.
-2. **`stale-heartbeat`**: otherwise (the pid is alive, or liveness is undeterminable — e.g. `pid`
-   is missing or non-numeric), fall through to `heartbeat_at` age exceeding
+2. **`stale-heartbeat`**: otherwise (the pid is alive, liveness is undeterminable — e.g. `pid` is
+   missing or non-numeric — or the pid is confirmably dead but still within the
+   `SESSION_REGISTRY_DEAD_PID_MIN` grace floor), fall through to `heartbeat_at` age exceeding
    `SESSION_REGISTRY_REAP_MIN`. Reap with reason `stale-heartbeat`.
 
 **`kill -0` succeeding is NEVER treated as proof of liveness** — it only prevents the dead-pid

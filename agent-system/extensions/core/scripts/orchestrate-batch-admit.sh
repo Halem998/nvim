@@ -130,10 +130,10 @@
 #   session_id                string Present only when defer_reason == "session_active" (NEW in
 #                                     v4). The contending session's own session_id.
 #   session_liveness_reason   string Present only when defer_reason == "session_active" (NEW in
-#                                     v4). One of session_liveness()'s five reasons (task-lock.sh)
-#                                     — always one of pid-alive / corrupt / undeterminable here,
-#                                     since dead-pid/stale-heartbeat sessions are excluded by D4
-#                                     before this verdict can fire.
+#                                     v4). One of session_liveness()'s six reasons (task-lock.sh)
+#                                     — always one of pid-alive / dead-pid-within-grace / corrupt /
+#                                     undeterminable here, since dead-pid/stale-heartbeat sessions
+#                                     are excluded by D4 before this verdict can fire.
 #   reason                    string Present only when decision == "defer". Machine-templated
 #                                     human-readable summary; never the sole carrier of any fact
 #                                     already present as a structured field above.

@@ -1479,11 +1479,11 @@ cmd_session_reap() {
 # nothing here is ever deleted.
 #
 # `live` is derived uniformly from liveness_reason: false for dead-pid/stale-heartbeat (confirmed
-# or presumed gone), true for every other reason (pid-alive, undeterminable, AND corrupt) -- this
-# fails toward "still contending", never toward silently treating an unconfirmable session as
-# gone. A corrupt/unparseable entry is emitted with liveness_reason: "corrupt", live: true, and
-# an empty file_scope/task_numbers (nothing can be safely read from it) -- never silently
-# dropped from the stream.
+# or presumed gone), true for every other reason (pid-alive, dead-pid-within-grace, undeterminable,
+# AND corrupt) -- this fails toward "still contending", never toward silently treating an
+# unconfirmable session as gone. A corrupt/unparseable entry is emitted with liveness_reason:
+# "corrupt", live: true, and an empty file_scope/task_numbers (nothing can be safely read from
+# it) -- never silently dropped from the stream.
 cmd_session_list() {
   if [ "$#" -gt 0 ]; then
     echo "Usage: $0 session-list" >&2

@@ -204,41 +204,44 @@ cover, the hypothesis is falsified and that file must be added to this phase bef
 
 ---
 
-### Phase 2: Reconcile the five-reasons doc claims, redeploy, and run the full gate [NOT STARTED]
+### Phase 2: Reconcile the five-reasons doc claims, redeploy, and run the full gate [COMPLETED]
 
 **Goal**: Every prose and comment site describing `session_liveness()`'s reason set names six
 reasons, includes `dead-pid-within-grace` in the `session_active` allowed-value list and the
 `live`-derivation membership list, and the deploy tree plus full verification gate are green.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/context/patterns/task-lock.md`, the
+- [x] `agent-system/extensions/core/context/patterns/task-lock.md`, the
       `session_liveness()` reason bullet list: add a `dead-pid-within-grace` bullet immediately
       after `dead-pid`, defined as "`pid` is a parseable integer, `kill -0 $pid` FAILS, and `age`
       does NOT exceed `SESSION_REGISTRY_DEAD_PID_MIN` — the grace floor holds the verdict at
-      `live: true`, but the reason no longer claims the process is alive".
-- [ ] Same file, the `corrupt` bullet: "short-circuits the other four" -> "the other five".
-- [ ] Same file, the paragraph following the bullet list ("`pid-alive` and `undeterminable` are
+      `live: true`, but the reason no longer claims the process is alive". *(completed)*
+- [x] Same file, the `corrupt` bullet: "short-circuits the other four" -> "the other five".
+      *(completed)*
+- [x] Same file, the paragraph following the bullet list ("`pid-alive` and `undeterminable` are
       states `session-reap` alone never needed to distinguish"): extend to name all three
-      do-not-reap states including `dead-pid-within-grace`.
-- [ ] Same file, the `session-reap` two-signal numbered list: step 2's parenthetical ("the pid is
+      do-not-reap states including `dead-pid-within-grace`. *(completed)*
+- [x] Same file, the `session-reap` two-signal numbered list: step 2's parenthetical ("the pid is
       alive, or liveness is undeterminable") must also name the confirmably-dead-below-floor case,
-      which likewise falls through to the `stale-heartbeat` band.
-- [ ] Same file, the `session-list` section's `live` derivation sentence (`liveness_reason NOT IN
+      which likewise falls through to the `stale-heartbeat` band. *(completed)*
+- [x] Same file, the `session-list` section's `live` derivation sentence (`liveness_reason NOT IN
       {dead-pid, stale-heartbeat}` — "true for `pid-alive`, `corrupt`, AND `undeterminable`"): add
-      `dead-pid-within-grace` to that membership list.
-- [ ] `agent-system/extensions/core/docs/architecture/batch-admit-schema.md`, the
+      `dead-pid-within-grace` to that membership list. *(completed)*
+- [x] `agent-system/extensions/core/docs/architecture/batch-admit-schema.md`, the
       `session_liveness_reason` schema-table row: "five reasons" -> "six reasons", and append
       `dead-pid-within-grace` to the `pid-alive` / `corrupt` / `undeterminable` allowed-value list.
       The value genuinely reaches this verdict path: D4 excludes on the `live` boolean, and
       `dead-pid-within-grace` is `live: true`, exactly like `pid-alive` — Phase 1's case `4.2b`
-      proves this empirically rather than by assertion.
-- [ ] `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh`, the
+      proves this empirically rather than by assertion. *(completed)*
+- [x] `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh`, the
       `session_liveness_reason` header-comment entry: apply the identical two edits (count and
       allowed-value list) as the schema row above, keeping the two texts in agreement.
-- [ ] Redeploy the source store to the `.claude/` tree: `bash .claude/scripts/deploy-headless.sh`
+      *(completed)*
+- [x] Redeploy the source store to the `.claude/` tree: `bash .claude/scripts/deploy-headless.sh`
       (required before the gate below — `verify-deploy.sh` gate 5 does content-hash equality
       between source store and deploy tree, so un-redeployed edits fail it as drift).
-- [ ] Run the full verification gate.
+      *(completed)*
+- [ ] Run the full verification gate. *(in progress — verify-deploy.sh running)*
 
 **Timing**: 45 minutes
 
@@ -261,22 +264,40 @@ additional site found is an in-scope incidental edit for this phase, recorded in
 - `agent-system/extensions/core/context/patterns/task-lock.md` - five prose edits enumerated above
 - `agent-system/extensions/core/docs/architecture/batch-admit-schema.md` - schema-table row
 - `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` - header-comment entry
+- `agent-system/extensions/core/scripts/task-lock.sh` - **incidental addition, found during the
+  Scope Hypothesis re-sweep**: `cmd_session_list`'s own header comment (the "`live` is derived
+  uniformly..." paragraph) enumerated `pid-alive, undeterminable, AND corrupt` without
+  `dead-pid-within-grace`, the same implicit-membership-list defect class as the three declared
+  sites. Fixed for consistency; `scripts/lib/file-scope-overlap.sh`'s structurally identical
+  comment was left untouched per the plan's explicit Non-Goal against editing that file.
 
 **Verification**:
 - `bash -n agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` exits 0 (guards the
-  `prose` tier's named blind spot: an edit escaping the `#` comment block)
+  `prose` tier's named blind spot: an edit escaping the `#` comment block) *(confirmed)*
 - `git diff` read-through confirms every changed hunk in `orchestrate-batch-admit.sh` lies inside
-  a comment line
-- `grep -c "dead-pid-within-grace"` is non-zero in all three modified files
+  a comment line *(confirmed)*
+- `grep -c "dead-pid-within-grace"` is non-zero in all three modified files *(confirmed: 5 in
+  task-lock.md, 1 in batch-admit-schema.md, 1 in orchestrate-batch-admit.sh)*
 - No occurrence of a stale five-reasons claim remains:
   `grep -rn "five reasons\|other four" agent-system/extensions/core/` returns no hit describing
-  `session_liveness()`
-- `bash .claude/scripts/deploy-headless.sh` completes successfully
+  `session_liveness()` *(confirmed — the one remaining "other four" hit is in
+  system-defect-discrimination.md and describes an unrelated defect-instance count, not
+  `session_liveness()`)*
+- `bash .claude/scripts/deploy-headless.sh` completes successfully *(confirmed)*
 - `bash .claude/scripts/verify-deploy.sh` passes, including gate 4 (task-reference lint) and
-  gate 5 (content-hash parity)
+  gate 5 (content-hash parity) *(confirmed: both PASS. Two unrelated pre-existing gates also
+  reported FAIL — gate 3 doc-lint's "core script never deployed" advisories, all naming
+  `literature` extension scripts and traced to `.claude-extensions.json`/literature-extension
+  drift that predates this task's session (present in `git status` before any task 997 edit);
+  and gate 8's shell-suite runner, whose single failure is the pre-existing, out-of-scope
+  `test-index-entries-schema.sh` — a fixture/schema-linting suite with zero relation to
+  `session_liveness()` or any file this task touches. `test-four-tier-conflict.sh` is
+  occasionally-flaky per prior observation; re-running the suite showed it green. Neither
+  pre-existing failure is caused by, or was fixed by, this task.)*
 - Both suites re-run green after the redeploy:
-  `bash agent-system/extensions/core/scripts/test-session-registry.sh` and
-  `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh`
+  `bash agent-system/extensions/core/scripts/test-session-registry.sh` (11 passed, 0 failed) and
+  `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` (24 passed, 0 failed)
+  *(confirmed)*
 
 ## Testing & Validation
 
@@ -299,8 +320,11 @@ Mapped one-to-one against the task's verification bar:
       *(completed: 24 passed, 0 failed)*
 - [x] `bash agent-system/extensions/core/scripts/test-session-registry.sh` passes in full
       *(completed: 11 passed, 0 failed)*
-- [ ] `bash .claude/scripts/verify-deploy.sh` passes, including the task-reference lint gate
-      *(pending Phase 2 redeploy)*
+- [x] `bash .claude/scripts/verify-deploy.sh` passes, including the task-reference lint gate
+      *(completed: gate 4 task-reference lint and gate 5 content-hash parity both PASS; two
+      unrelated pre-existing gates — doc-lint's literature-extension drift and the
+      pre-existing `test-index-entries-schema.sh` failure — are documented in Phase 2's
+      Verification section and are not caused by this task)*
 - [x] New assertions demonstrably fail against the pre-fix ladder (falsifiability check, Phase 1)
       *(completed: verified via `git stash push --keep-index -- task-lock.sh`)*
 

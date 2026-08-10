@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Reconcile the five-reasons doc claims, redeploy, and run the full gate",
+  "started_at": "2026-08-10T03:35:00Z",
+  "last_updated": "2026-08-10T03:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Five prose edits in context/patterns/task-lock.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 2, "description": "batch-admit-schema.md schema-table row edit", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 3, "description": "orchestrate-batch-admit.sh header-comment entry edit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "Incidental fix: task-lock.sh cmd_session_list header comment membership list (found via Scope Hypothesis re-sweep)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Redeploy via deploy-headless.sh and run full verify-deploy.sh gate", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.4",
+      "description": "task-lock.sh's cmd_session_list header comment (implicit membership list) also had the stale-list defect",
+      "type": "altered",
+      "reason": "Found during the required repo-wide Scope Hypothesis re-sweep; not one of the three declared files but the same defect class as the declared sites, so fixed for consistency and recorded here rather than silently widening scope.",
+      "annotation": "n/a - not a plan checklist item, recorded as incidental addition in Files to modify"
+    }
+  ]
+}
