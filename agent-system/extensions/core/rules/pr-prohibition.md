@@ -46,6 +46,12 @@ Pull request creation and pushing to remote are deployment-adjacent operations t
 
 ## CSLib Extension: /pr Command
 
+**Deploy-conditional note**: the two "CSLib Extension" subsections below (`/pr` and
+`/pr --review`) describe the `/pr` command, which is provided by the CSLib extension and is not
+present in every deploy. Where CSLib is not loaded, these subsections are inert prose describing
+an unavailable command — they do not indicate the rule itself is dead, and the prohibitions in
+the sections above (which apply universally, independent of `/pr`) remain fully live regardless.
+
 For tasks with `task_type: "pr"` (CSLib pull request tasks), the workflow differs from the
 general `/merge` flow:
 

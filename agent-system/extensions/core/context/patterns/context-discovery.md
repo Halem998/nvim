@@ -16,6 +16,26 @@ Context is discovered from three independent sources, loaded in parallel:
 
 Extension context is merged INTO `.claude/context/index.json` by the extension loader. There is no separate extension query.
 
+## Rule Loading: Two Independent Paths
+
+`.claude/rules/*.md` files are loaded via two mechanisms that operate independently of each
+other and of the three-layer context-index architecture above:
+
+1. **Harness-native `paths:` frontmatter glob**: Claude Code auto-loads a rule file into session
+   context whenever a touched/referenced path matches its own YAML `paths:` frontmatter glob
+   (e.g. `paths: "**/*"` on `pr-prohibition.md` matches every path; `paths: specs/**/*` on
+   `state-management.md` matches only `specs/` paths). This is a harness mechanism, unrelated to
+   `.claude/context/index.json` and unrelated to any `@`-import list.
+2. **`CLAUDE.md` `@`-import list**: the curated subset of rules listed under CLAUDE.md's
+   "Rules References" section, pulled in via `@`-reference syntax.
+
+A rule file can be live via path 1 alone, with no entry in path 2's list at all — this is common
+and not a defect. **A dead-code audit MUST check a rule file's own `paths:` frontmatter before
+declaring it "unwired" or "dead" on the basis of absence from the `@`-import list.** Concluding
+a rule is dead purely from CLAUDE.md's list omitting it is a category error: the list documents
+a curated subset, not the sole loading path, and this exact error has previously produced a
+false "dead rule" finding in a codebase review.
+
 ## Layer 1: Agent Context
 
 All paths in `.claude/context/index.json` are relative to `.claude/context/`.

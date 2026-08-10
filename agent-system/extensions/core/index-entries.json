@@ -965,7 +965,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context discovery query patterns",
-      "line_count": 355,
+      "line_count": 375,
       "keywords": [
         "patterns",
         "context",

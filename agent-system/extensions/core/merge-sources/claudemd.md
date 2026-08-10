@@ -130,6 +130,11 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 - `.claude/scripts/generate-context-line-counts.sh` - Recompute `line_count` from `wc -l` for every entry in every extension's source `index-entries.json` (`--check` reports only, `--write` corrects in place)
 - `.claude/scripts/lint/lint-agent-contracts.sh` - Lint agent frontmatter (invalid key detection, `model:` presence) and no-task-references bullet coverage across every dispatchable agent
 - `.claude/scripts/lint/lint-routing-wiring.sh` - Lint every manifest's routing wiring: `routing`/`routing_hard` keys have `routing_agents`/`routing_agents_hard` counterparts, and every declared agent name exists on disk
+- `.claude/scripts/lint/lint-contract-compliance.sh` - Lint hard-mode H-technique contract wiring: hard agents reference their required contracts, all 5 contract files exist with H-technique identifiers, hard skills dispatch to the correct hard agent, `skill-orchestrate-hard` declares convergence-policing fields, `general-implementation-hard-agent` carries H2 vocabulary, and each hard agent has index coverage. Wired as a `verify-deploy.sh` gate; not automated beyond that — no other automated caller
+- `.claude/scripts/install-aliases.sh` - Installs `claude-refresh`/`claude-refresh-force`/`claude-cleanup` shell aliases. Invoked manually by an operator once per shell setup; no automated caller by design
+- `.claude/scripts/install-systemd-timer.sh` - Installs a user-level systemd timer that runs `claude-refresh` hourly to clean up orphaned processes. Invoked manually by an operator; no automated caller by design
+- `.claude/scripts/migrate-directory-padding.sh` - One-shot migration of unpadded task directories to the 3-digit zero-padded `{NNN}_{SLUG}` format. Invoked manually by an operator when needed; no automated caller by design
+- `.claude/scripts/verify-lean-mcp.sh` - Diagnoses whether `lean-lsp` is correctly configured in user-scope `~/.claude.json` for Claude Code subagents. Invoked manually by an operator; no automated caller by design
 
 ## State Synchronization
 
@@ -502,6 +507,13 @@ Core rules (auto-applied by file path):
 - @.claude/rules/source-store-deploy-boundary.md - .claude/** is a disposable deploy artifact; edit agent-system/extensions/** instead
 
 **Extension Rules**: When extensions are loaded, additional rules are added (e.g., {domain}-rules.md for domain-specific development).
+
+**This list is a curated subset, not the sole loading path**: `.claude/rules/*.md` files are
+additionally auto-loaded natively by the Claude Code harness whenever a touched or referenced
+path matches their own YAML `paths:` frontmatter glob — a mechanism completely independent of
+this `@`-import list. A rule absent from the list above (e.g. `pr-prohibition.md`, whose
+`paths: "**/*"` glob matches every path) is not thereby unwired; check its frontmatter before
+concluding a rule file is dead.
 
 ## Context Discovery
 

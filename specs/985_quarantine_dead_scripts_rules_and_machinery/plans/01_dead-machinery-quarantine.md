@@ -263,38 +263,41 @@ never add the gate while it is red.
 
 ---
 
-### Phase 3: Documentation notes and the dead syncprotect line [NOT STARTED]
+### Phase 3: Documentation notes and the dead syncprotect line [COMPLETED]
 
 **Goal**: Land the keep-with-doc-note dispositions and the rule-loading mechanism note, so the
 next dead-code audit does not repeat either mis-triage; delete the one dead `.syncprotect` line.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/merge-sources/claudemd.md`, extend the `### Utility
+- [x] In `agent-system/extensions/core/merge-sources/claudemd.md`, extend the `### Utility
       Scripts` list with one line each for the four manual operator tools —
       `install-aliases.sh`, `install-systemd-timer.sh`, `migrate-directory-padding.sh`,
       `verify-lean-mcp.sh` — each stating explicitly that it is invoked manually by an operator
       and has no automated caller by design. Add a line for
       `lint/lint-contract-compliance.sh` describing the hard-mode contract checks it performs.
-- [ ] In the same file's `## Rules References` section, add a short clarification that the listed
+      *(completed)*
+- [x] In the same file's `## Rules References` section, add a short clarification that the listed
       `@`-imports are a curated subset, and that `.claude/rules/*.md` are additionally
       auto-loaded natively whenever a touched path matches their YAML `paths:` frontmatter glob —
-      so a rule absent from the list is not thereby unwired.
-- [ ] Document the two independent rule-loading paths in
+      so a rule absent from the list is not thereby unwired. *(completed)*
+- [x] Document the two independent rule-loading paths in
       `agent-system/extensions/core/context/patterns/context-discovery.md`: the harness-native
       `paths:` frontmatter glob and the `CLAUDE.md` `@`-import list. State that a dead-code audit
-      MUST check frontmatter before declaring a rule file unwired.
-- [ ] In `agent-system/extensions/core/rules/pr-prohibition.md`, add a short note that the
+      MUST check frontmatter before declaring a rule file unwired. *(completed: new "Rule
+      Loading: Two Independent Paths" section)*
+- [x] In `agent-system/extensions/core/rules/pr-prohibition.md`, add a short note that the
       `/pr` and `/pr --review` subsections describe a CSLib-extension command not present in
       every deploy, and are inert where that extension is not loaded. Do not remove the sections
-      and do not touch the file's frontmatter.
-- [ ] Delete the `output/implementation-001.md` line from the repo-root `.syncprotect`. Leave
-      `context/repo/project-overview.md` and all comment lines intact.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
+      and do not touch the file's frontmatter. *(completed; frontmatter untouched)*
+- [x] Delete the `output/implementation-001.md` line from the repo-root `.syncprotect`. Leave
+      `context/repo/project-overview.md` and all comment lines intact. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
       refresh `line_count` for any edited context file, then `--check` to confirm clean.
-- [ ] Re-verify (read-only, no edits) that `core/EXTENSION.md`, `slidev/EXTENSION.md`, and
+      *(completed: context-discovery.md's line_count corrected 355 -> 375; --check now clean)*
+- [x] Re-verify (read-only, no edits) that `core/EXTENSION.md`, `slidev/EXTENSION.md`, and
       `agent-system/extensions/core/skills/skill-orchestrator/` are all still absent from the
       source store, and that `sync.lua`'s header still declares the glob engine retired. Record
-      the confirmations; take no action.
+      the confirmations; take no action. *(completed: all four re-verified, no action taken)*
 
 **Timing**: 1 hour
 
