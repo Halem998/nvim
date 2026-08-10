@@ -1,7 +1,52 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 997,
-  "session_id": "sess_1786322063_3251e8_997",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/997_fix_session_liveness_reason_mislabel/summaries/01_dead-pid-within-grace-reason-summary.md",
+      "summary": "Two-phase implementation adding a sixth session_liveness() reason 'dead-pid-within-grace' for a confirmably-dead pid within the SESSION_REGISTRY_DEAD_PID_MIN grace floor, preserving the existing live:true/no-reap/contends verdict exactly. Phase 1 fixed the ladder, docstring, and added falsifiability-checked test assertions (test-session-registry.sh case 5a, test-conflict-predicate.sh case 4.2b). Phase 2 reconciled five doc/comment sites (plus one incidental find during the repo-wide sweep), redeployed, and ran the full verify-deploy.sh gate (task-reference lint and content-hash parity both pass; two unrelated pre-existing gate failures documented as not caused by this task)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed session_liveness()'s reason ladder to report 'dead-pid-within-grace' instead of the misleading 'pid-alive' for a confirmably-dead pid still within the grace floor, preserving the live:true/no-reap/contends verdict exactly; reconciled all doc/comment sites describing the reason set and verified via a required falsifiability check plus the full deploy verification gate."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/test-session-registry.sh",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a bash reason-ladder function computes a boolean signal (e.g. kill -0 result) but only conditionally derives a string reason from it, the signal can get silently discarded in a later fallback branch that re-derives a weaker/wrong conclusion from other fields (e.g. 'pid is numeric' standing in for 'process is alive'). Fix pattern: capture the signal in its own local (pid_dead=false, set true at the point of computation) and consult that local FIRST in every downstream branch, rather than re-testing the original raw fields.",
+      "category": "PATTERN",
+      "source_artifact": "specs/997_fix_session_liveness_reason_mislabel/summaries/01_dead-pid-within-grace-reason-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["bash", "reason-ladder", "boolean-signal-capture", "fallback-branch", "task-lock.sh"]
+    },
+    {
+      "content": "Falsifiability check technique for a bugfix plan: git stash push --keep-index -- <single-file-path> isolates one file's edits from other already-staged/modified files in the working tree. Useful when new test assertions must be proven to fail against pre-fix code, but the test files themselves (which carry the new assertions) must NOT be reverted along with the fix — only the fix file. Restore with git stash pop.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/997_fix_session_liveness_reason_mislabel/summaries/01_dead-pid-within-grace-reason-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["git-stash", "keep-index", "falsifiability", "test-driven-fix", "isolate-single-file"]
+    },
+    {
+      "content": "A plan's 'Scope Hypothesis' re-sweep (grep for the pattern being fixed across the whole repo, not just the declared file list) can surface implicit membership-list defects beyond the explicitly declared files -- e.g. a code comment enumerating allowed values without the newly-added one. Pre-authorizing 'any additional site found is an in-scope incidental edit, recorded in the summary' in the plan avoids a scope-creep debate mid-implementation while still requiring documentation.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/997_fix_session_liveness_reason_mislabel/summaries/01_dead-pid-within-grace-reason-summary.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["scope-hypothesis", "repo-wide-sweep", "incidental-edit", "plan-authorization", "implicit-membership-list"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786322063_3251e8_997",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
+  }
 }
