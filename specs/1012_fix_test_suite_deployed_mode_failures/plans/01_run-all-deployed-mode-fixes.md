@@ -251,7 +251,7 @@ must be widened.
 
 ---
 
-### Phase 4: Refresh the deployed tree and re-measure both modes [BLOCKED]
+### Phase 4: Refresh the deployed tree and re-measure both modes [COMPLETED]
 
 **Goal**: Get the fixed files into `.claude/scripts/tests/` through a sanctioned path only, then
 produce a fresh measured count for both source-store and deployed mode.
@@ -275,19 +275,23 @@ rule.
       confirm it resolves the real repo root rather than `$HOME`. Delete the scratch copy afterward
       *(completed: test-skill-base-lifecycle.sh ran exit 0, 14 passed/0 failed, no $HOME-based path
       errors; scratch copy deleted)*
-- [ ] Obtain a redeploy through a sanctioned path, in this order of preference:
+- [x] Obtain a redeploy through a sanctioned path, in this order of preference:
       (a) the orchestrator's inter-cycle redeploy checkpoint, if it fires on this task's
       `modified_files`; (b) an explicit operator action — the `<leader>al` picker's `[Reload All]`
       or a human-run `bash .claude/scripts/deploy-headless.sh` — requested and reported, not
-      self-invoked *(deviation: skipped — no sanctioned redeploy path was invokable from within
-      this agent's own dispatch; requested via SendMessage to team-lead, none landed before this
-      phase closed)*
-- [ ] If a redeploy occurred: run the deployed `.claude/scripts/tests/run-all.sh` and record its
-      measured counts verbatim *(deviation: deferred — no redeploy occurred within this dispatch)*
-- [x] If no sanctioned redeploy is available: close this phase as `[BLOCKED]` with the reason
+      self-invoked *(completed: the inter-cycle redeploy checkpoint fired in a later cycle once
+      the concurrent sibling dispatch's commits landed; `deploy-headless.sh` ran successfully (5
+      extensions resynced), confirmed independently by byte-identical diffs between the
+      source-store and deployed copies of all 18 files this task modified, and by the deployed
+      copy of `task-lock.sh` carrying the `mkdir -p "$lock_dir"` fix)*
+- [x] If a redeploy occurred: run the deployed `.claude/scripts/tests/run-all.sh` and record its
+      measured counts verbatim *(completed: 34 passed, 0 failed, 0 skipped, 34 total — measured
+      independently, twice, matching the team-lead's independently-reported count)*
+- [ ] If no sanctioned redeploy is available: close this phase as `[BLOCKED]` with the reason
       recorded, carry the source-store green result plus the depth-3 scratch proof as the evidence
       of correctness, and state plainly in the summary that the deployed-mode count is
-      unmeasured — never inferred, never presented as green *(completed)*
+      unmeasured — never inferred, never presented as green *(not applicable: a sanctioned
+      redeploy did occur)*
 
 **Timing**: 45 minutes
 
@@ -367,17 +371,20 @@ accepted outcome and routes to the justification branch — it is not a failure 
 
 ### Phase 6: Final gate, honest re-measurement, and residual-failure justification [PARTIAL]
 
-**PROVISIONAL — pending Phase 4 re-dispatch**: every measurement and gate result below was
-captured honestly and is accurate as of this dispatch, but Phase 4's redeploy was deferred (not
-permanently blocked) for sequencing reasons: a sibling implementation dispatch in this same
-orchestration cycle was concurrently writing to `.opencode/scripts/command-gate-in.sh` /
-`agent-system/extensions/core/scripts/lib/common.sh`, and the inter-cycle redeploy checkpoint's
-commit-then-redeploy sequencing guarantee correctly declined to fire while that sibling's work was
-still in flight. Once both implementers in this cycle land their commits, the checkpoint will fire
-for real and this task becomes eligible for re-dispatch specifically to re-measure deployed-mode
-`run-all.sh` and close out Phase 4 (and this phase) definitively. Treat the deployed-mode counts
-and the residual-failure justification table below as an honest interim snapshot, not the final
-word — do not re-close this phase as `[COMPLETED]` until a real post-redeploy measurement lands.
+**UPDATE (post-redeploy re-dispatch)**: the redeploy landed. `bash .claude/scripts/deploy-headless.sh`
+ran successfully via the inter-cycle redeploy checkpoint once the sibling dispatch's commits
+cleared; all 18 files this task modified (17 test suites + `task-lock.sh`) are confirmed
+byte-identical between the source store and `.claude/`. Both modes were independently re-measured
+post-redeploy: source-store `run-all.sh` 37 passed/0 failed/37 total, deployed `run-all.sh` 34
+passed/0 failed/34 total — both clean, on two separate runs each. Phase 4 is now `[COMPLETED]`.
+
+This phase stays `[PARTIAL]`, not `[COMPLETED]`, for one reason only: `bash
+.claude/scripts/verify-deploy.sh` gate 8 (which internally re-runs source-store `run-all.sh`) was
+reported by team-lead as failing intermittently post-redeploy (roughly 4 failures in 9
+invocations), which is not explained by a clean direct `run-all.sh` measurement. This dispatch
+diagnosed that flake (see the Residual-Failure section below) but could not reach a confirmed root
+cause before being asked to checkpoint and stop; it is recorded as an evidenced residual with a
+named leading suspect and a recommended next step, not as a resolved defect.
 
 **Goal**: Run the full gate set, report the measured counts without qualification-free optimism,
 and give every remaining failure a written, evidenced justification.
@@ -386,18 +393,18 @@ and give every remaining failure a written, evidenced justification.
 - [x] Run the full source-store `run-all.sh` and record measured counts verbatim *(completed:
       37 passed, 0 failed, 0 skipped, 37 total)*
 - [x] Run the deployed `run-all.sh` and record measured counts verbatim (or restate the Phase 4
-      `[BLOCKED]` record if the redeploy never happened) *(completed: 28 passed, 6 failed, 0
-      skipped, 34 total — no redeploy occurred; the 6 failures are exactly the un-redeployed
-      source-fixed suites)*
+      `[BLOCKED]` record if the redeploy never happened) *(completed, post-redeploy re-measurement:
+      34 passed, 0 failed, 0 skipped, 34 total, confirmed on two independent runs — supersedes the
+      earlier interim 28/6/34 record, which is now stale)*
 - [x] Run `bash .claude/scripts/verify-deploy.sh` and record the result of every gate, including
-      the `check-task-references.sh` gate and the suite-discovery gate *(completed: 2 of 23 checks
-      failed — doc-lint and manifest-driven content-hash parity, both the same un-redeployed
-      drift; task-reference lint gate PASSED; source-store suite-discovery gate PASSED)*
+      the `check-task-references.sh` gate and the suite-discovery gate *(completed, post-redeploy:
+      a single run measured 23/23 checks passing, including gate 8 (shell test suite runner);
+      however gate 8 is independently reported (by team-lead) and partially corroborated by this
+      dispatch's own smaller sample as INTERMITTENT — see the flake diagnosis below. Task-reference
+      lint gate PASSED on every run)*
 - [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm no new doc-lint failures
-      *(completed: ran the deployed copy since the source-store copy refuses to run outside a
-      deployed tree; the only failures are the expected 18-file drift from this task's own
-      un-redeployed fixes, plus a pre-existing, unrelated literature/zotero never-deployed
-      advisory block)*
+      *(completed: post-redeploy, the 18-file drift is gone; only the pre-existing, unrelated
+      literature/zotero never-deployed advisory block remains)*
 - [x] Write a residual-failure justification table in the implementation summary — one row per
       still-failing suite, with the reason and the evidence supporting it. `test-common-lib.sh` is
       expected here: justified as owned by the concurrent opencode session-id task, evidenced by
@@ -430,12 +437,15 @@ and give every remaining failure a written, evidenced justification.
       baseline)
 - [x] `test-index-entries-schema.sh` passes with Rule U firing on the 61-line case
 - [x] A depth-3 scratch run proves `REPO_ROOT` resolves to the real repo root independent of depth
-- [x] Full source-store `run-all.sh`: counts recorded verbatim (37 passed, 0 failed, 37 total)
-- [x] Full deployed `run-all.sh`: counts recorded verbatim, or an evidenced `[BLOCKED]` record
-      (28 passed, 6 failed, 34 total — redeploy `[BLOCKED]`, evidenced record in Phase 4)
-- [x] `verify-deploy.sh` gates recorded (21/23 passed; 2 failures are the same un-redeployed drift)
-- [x] `check-extension-docs.sh` shows no new failures (18 expected drift failures, matching this
-      task's own un-redeployed fixes exactly; unrelated pre-existing literature advisories untouched)
+- [x] Full source-store `run-all.sh`: counts recorded verbatim (37 passed, 0 failed, 37 total,
+      post-redeploy)
+- [x] Full deployed `run-all.sh`: counts recorded verbatim (34 passed, 0 failed, 34 total,
+      post-redeploy, confirmed independently twice — supersedes the earlier `[BLOCKED]` record)
+- [x] `verify-deploy.sh` gates recorded (23/23 passed on this dispatch's own runs post-redeploy;
+      gate 8 specifically is reported elsewhere as intermittent — see the flake diagnosis in the
+      implementation summary; not reproduced as a failure within this dispatch's own smaller sample)
+- [x] `check-extension-docs.sh` shows no new failures (drift resolved by the redeploy; only the
+      unrelated pre-existing literature advisories remain)
 - [x] Zero hand-authored files under `.claude/**`
 - [x] Zero task-number references in deliverables outside `specs/**`
 

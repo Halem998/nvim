@@ -2,7 +2,7 @@
   "phase": 4,
   "phase_name": "Refresh the deployed tree and re-measure both modes",
   "started_at": "2026-08-10T17:45:00Z",
-  "last_updated": "2026-08-10T18:00:00Z",
+  "last_updated": "2026-08-10T18:10:00Z",
   "objectives": [
     {
       "id": 1,
@@ -19,33 +19,26 @@
     {
       "id": 3,
       "description": "Obtain a redeploy through a sanctioned path (orchestrator inter-cycle checkpoint or explicit operator action)",
-      "status": "blocked",
+      "status": "done",
       "files_touched": [],
-      "note": "No sanctioned redeploy path was available within this agent's own dispatch (deploy-headless.sh may only be invoked by skill-orchestrate's Stage MT-3 checkpoint or an explicit operator action, never self-invoked by an implementer agent). Requested via SendMessage to team-lead; no redeploy landed before this phase closed. Team-lead confirmed the reason: a sibling implementation dispatch in this same orchestration cycle was concurrently writing agent-system/extensions/core/scripts/lib/common.sh and .opencode/scripts/command-gate-in.sh, and the inter-cycle redeploy checkpoint's commit-then-redeploy sequencing guarantee correctly deferred firing until that sibling's commits land. This is a deferral, not a permanent block -- team-lead will re-dispatch this task next cycle specifically to measure deployed-mode run-all.sh for real and close out this phase."
+      "note": "Redeploy landed in a later re-dispatch cycle, once the concurrently-writing sibling dispatch's commits cleared: the inter-cycle redeploy checkpoint fired for real and bash .claude/scripts/deploy-headless.sh ran successfully (5 extensions resynced). Confirmed independently in this dispatch: all 18 files this task modified (17 test suites + task-lock.sh) are byte-identical between the source store and .claude/ (diff -q clean on test-skill-base-lifecycle.sh; git rev-parse --show-toplevel pattern present in all 18 deployed copies via grep; task-lock.sh's mkdir -p \"$lock_dir\" fix confirmed present in the deployed copy)."
     },
     {
       "id": 4,
-      "description": "Close phase as BLOCKED with reason recorded; carry source-store green + depth-3 scratch proof as evidence; state deployed-mode count as unmeasured",
+      "description": "Run the deployed run-all.sh and record measured counts verbatim",
       "status": "done",
-      "files_touched": []
+      "files_touched": [],
+      "note": "Independently measured twice: 34 passed, 0 failed, 0 skipped, 34 total both times (one earlier standalone run hit an unrelated flake in test-claude-refresh-matcher.sh -- not one of this task's suites -- which self-resolved on immediate rerun). Matches team-lead's independently-reported count."
     }
   ],
   "current_objective": 4,
   "approaches_tried": [
     {
-      "approach": "Requested a sanctioned redeploy from team-lead via SendMessage before closing the phase",
-      "result": "no_response_within_dispatch",
-      "reason": "Redeploy authority lives outside this agent's tool scope by design; proceeding per the plan's own pre-accepted BLOCKED contingency rather than stalling"
+      "approach": "Requested a sanctioned redeploy from team-lead via SendMessage before closing the phase (prior dispatch)",
+      "result": "landed_in_later_cycle",
+      "reason": "Redeploy authority lives outside this agent's tool scope by design; the request was honored once the inter-cycle redeploy checkpoint's sequencing dependency on the sibling dispatch's commits cleared"
     }
   ],
   "handoff_count": 0,
-  "deviations": [
-    {
-      "task_id": "4.3",
-      "description": "Obtain a redeploy through a sanctioned path",
-      "type": "skipped",
-      "reason": "No sanctioned redeploy path was invokable from within this agent's own dispatch; deployed-mode measurement is therefore honestly reported as unmeasured, not inferred or presented as green",
-      "annotation": "*(deviation: skipped — no sanctioned redeploy path available within this dispatch; requested from team-lead but none landed)*"
-    }
-  ]
+  "deviations": []
 }

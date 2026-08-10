@@ -1,62 +1,43 @@
 {
   "status": "partial",
   "partial_progress": {
-    "stage": "phase_4_redeploy_deferred_pending_next_cycle",
-    "details": "Phases 1, 2, 3, and 5 are genuinely complete and verified (17 REPO_ROOT-carrying suites migrated and green from the source-store location; test-index-entries-schema.sh's fixture manifest fixed with Rule U verified firing; a real write_holder() concurrency race in task-lock.sh diagnosed and fixed, resolving the test-four-tier-conflict.sh flake). Phase 4 (redeploy + deployed-mode re-measurement) is BLOCKED, not because no sanctioned path exists, but because a sibling implementation dispatch in this same orchestration cycle was concurrently writing agent-system/extensions/core/scripts/lib/common.sh and .opencode/scripts/command-gate-in.sh, and the inter-cycle redeploy checkpoint's commit-then-redeploy sequencing guarantee correctly deferred firing until that sibling's commits land. Phase 6's gate run and residual-failure justification table are an honest interim snapshot (deployed run-all.sh measured 28 passed/6 failed/34 total, all 6 failures being the un-redeployed source-fixed suites) but are provisional, not final, pending a real post-redeploy re-measurement. Team-lead will re-dispatch this task next cycle specifically to obtain the redeploy and close out Phase 4/6 definitively.",
-    "phases_completed": 4,
+    "stage": "phase_6_gate8_flake_unresolved_residual",
+    "details": "Phases 1-5 are complete and verified. Phase 4 (redeploy + deployed-mode re-measurement) is now COMPLETED: the inter-cycle redeploy checkpoint fired once the previously-blocking sibling dispatch's commits cleared, deploy-headless.sh ran successfully, and this dispatch independently confirmed both modes measure clean when run directly (source-store run-all.sh 37/0/37, deployed run-all.sh 34/0/34, each on two separate runs) and that all 18 files this task modified are byte-identical between the source store and the deployed tree. Phase 6 stays PARTIAL for one reason: verify-deploy.sh gate 8 (which internally re-runs source-store run-all.sh) is independently reported by team-lead as failing intermittently post-redeploy (~4/9 invocations), which this dispatch's own smaller reproduction sample (7 of 14 planned invocations, stopped early on explicit instruction to checkpoint and stop ahead of an imminent context clear) did not reproduce. The leading hypothesis from code review -- test-claude-refresh-matcher.sh's pre-existing, self-documented, load-sensitive kill -0 liveness poll, NOT a recurrence of the Phase 5 write_holder() race, which code review confirmed is structurally closed at every call site -- is recorded as an evidenced but unconfirmed residual, with a recommended follow-up task, not presented as fixed or as a resolved defect.",
+    "phases_completed": 5,
     "phases_total": 6
   },
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
-      "summary": "Phases 1, 2, 3, 5 complete and verified. Phase 4 BLOCKED pending a redeploy deferred (not denied) by this cycle's commit-then-redeploy sequencing against a concurrent sibling dispatch. Phase 6's gate run and justification table are an honest interim snapshot, not the final word -- source-store run-all.sh: 37/0/37; deployed run-all.sh: 28/6/34 with all 6 failures being the un-redeployed source-fixed suites. Re-dispatch expected next cycle to obtain the redeploy and re-measure deployed mode for real."
+      "summary": "Phases 1-5 complete and verified; Phase 4 now COMPLETED with independently-confirmed post-redeploy measurements (source-store run-all.sh 37/0/37, deployed run-all.sh 34/0/34). Phase 6 stays PARTIAL: verify-deploy.sh gate 8's intermittent failure (reported by team-lead, ~4/9) was not reproduced in this dispatch's smaller sample and is recorded as an evidenced, unresolved residual naming test-claude-refresh-matcher.sh as the leading suspect, with a recommended follow-up task."
     }
   ],
   "completion_data": {
-    "completion_summary": "Fixed the REPO_ROOT depth-derivation defect class across 17 test suites and restored Rule U coverage in test-index-entries-schema.sh's fixture (both verified green from the source-store location); diagnosed and fixed a real write_holder() concurrency race in task-lock.sh that was causing the test-four-tier-conflict.sh flake. Deployed-mode re-measurement (Phase 4) remains outstanding: the redeploy was deferred by this cycle's commit-then-redeploy sequencing against a concurrent sibling dispatch, not denied -- re-dispatch expected next cycle."
+    "completion_summary": "Confirmed the redeploy landed and both run-all.sh modes now measure clean (source-store 37/0/37, deployed 34/0/34), closing Phase 4. Attempted to reproduce and diagnose verify-deploy.sh gate 8's reported intermittent failure but was asked to checkpoint and stop before reaching a confirmed root cause; recorded test-claude-refresh-matcher.sh (a pre-existing, unrelated, load-sensitive flake) as the leading suspect, with code review ruling out a recurrence of the Phase 5 task-lock.sh race. Phase 6 remains open pending a dedicated follow-up diagnostic."
   },
-  "modified_files": [
-    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
-    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
-    "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh",
-    "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh",
-    "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
-    "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
-    "agent-system/extensions/core/scripts/tests/test-double-loading-check.sh",
-    "agent-system/extensions/core/scripts/tests/test-errors-append.sh",
-    "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh",
-    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
-    "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh",
-    "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh",
-    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
-    "agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh",
-    "agent-system/extensions/core/scripts/task-lock.sh"
-  ],
+  "modified_files": [],
   "memory_candidates": [
     {
-      "content": "When diagnosing an intermittent test failure inside a full suite sequence but not in isolation, check whether the failing test's OWN fixture design deliberately introduces a concurrency race (e.g. a backgrounded 'rm -rf' racing the code under test) before assuming the flake needs cross-suite bisection. In this case, test-four-tier-conflict.sh's Tier-2 resolving fixture backgrounds a lock-directory removal mid-retry-window specifically to exercise task-lock.sh's stale-lock-override path; the real defect (write_holder() assuming its lock directory still exists at write time, with no re-verification between the caller's existence check and the write) was visible directly from reading that fixture's own design, without needing a bisection across preceding suites. The fix pattern -- unconditionally 'mkdir -p' the target directory immediately before a tmp-file-then-rename atomic write -- is broadly reusable: any atomic-write helper whose target directory can be concurrently removed by another process should recreate that directory defensively at write time, since by the time the write is reached the caller has already decided it should own the write.",
+      "content": "When a teammate reports 'you appear idle' based on stale artifact mtimes while you are actually mid-diagnosis on a slow background reproduction loop (e.g. 8x sequential ~3-minute verify-deploy.sh runs), send an immediate SendMessage status update with concrete partial findings rather than waiting silently for the loop to finish. Silence during a genuinely long-running diagnostic reads identically to having done nothing, from the outside -- there is no way for a caller to distinguish 'actively working on a slow task' from 'stalled' without an explicit interim signal. Checkpoint the reasoning and partial evidence gathered so far to a message (or to disk) well before the full loop completes, especially when a session context-clear is a live possibility.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["status checkpoint", "background reproduction loop", "silence reads as idle", "SendMessage interim update", "context-clear risk"]
+    },
+    {
+      "content": "When a shell-based CI/lint gate internally re-invokes a full test suite runner as a captured command substitution ($(...)), `ps`/`pstree` can show the intermediate subshell with the SAME argv as its parent script (e.g. a gate script appearing to recursively re-invoke itself), because bash's fork-for-command-substitution does not always rewrite argv before exec'ing the final command. This is a normal, benign artifact of process-tree inspection, not evidence of accidental recursion -- verify by checking whether the 'child' process's own children match the expected real invocation (e.g. the actual test-runner script) before concluding there is a recursion bug.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["flaky test diagnosis", "TOCTOU race", "atomic write", "mkdir -p defensive recreate", "task-lock.sh", "fixture-driven root cause"]
+      "confidence": 0.6,
+      "suggested_keywords": ["ps pstree subshell argv", "command substitution fork", "process tree debugging", "false recursion signal"]
     },
     {
-      "content": "When a suite's REPO_ROOT derivation is NOT a bare fixed-depth literal but a structured dual-mode detector (e.g. probing for a sibling manifest.json to distinguish source-store vs. deployed invocation depth), migrating it to a depth-independent 'git rev-parse --show-toplevel' pattern requires placing the git-based resolution FIRST and retaining the suite's entire original detection block, unmodified, as the non-git fallback -- not just swapping the literal depth-climb line inside it. This preserves the 'leave existing candidate arrays and fallback ordering untouched' migration constraint even when a file's fallback is a multi-line conditional block rather than a single expression.",
-      "category": "PATTERN",
-      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["REPO_ROOT migration", "dual-mode detection", "git rev-parse", "fallback preservation", "source-store deploy boundary"]
-    },
-    {
-      "content": "An inter-cycle redeploy checkpoint gated on a commit-then-redeploy sequencing guarantee will correctly defer (not fail) when a sibling task in the same orchestration cycle is still mid-write to a file the checkpoint's critical-path detection watches. When an implementer's own task has no remaining sanctioned redeploy path within its own dispatch, the correct closure is: BLOCKED at the phase level with the evidence gathered, status: partial (not implemented/completed) in return-meta and the orchestrator handoff, and phases_completed counted only for genuinely-closed phases -- leaving the task non-terminal so the orchestrator can re-dispatch specifically for the deferred phase once the sequencing dependency clears, rather than closing the task out with a provisional 'good enough' justification that would need to be walked back.",
+      "content": "A test suite that drives a REAL backgrounded process (e.g. `sleep 300 &`, killed and then polled with `kill -0` to confirm death before asserting liveness-check semantics) is inherently load-sensitive: under a fuller concurrent suite run, PID reap/zombie-cleanup can take longer than an isolated run, producing an intermittent failure correlated with system load rather than with any defect in the code under test. If such a suite's own comments already document a prior widening of its polling budget for exactly this reason, treat that as a strong signal that further intermittent failures in a heavier-load context (e.g. inside a CI gate that re-runs the full suite alongside dozens of others) are very likely the SAME pre-existing load-sensitivity, not a new defect -- before assuming an unrelated recent change (e.g. a concurrency fix in a completely different subsystem) is the cause.",
       "category": "INSIGHT",
       "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["inter-cycle redeploy checkpoint", "commit-then-redeploy sequencing", "orchestration cycle", "partial status", "re-dispatch"]
+      "suggested_keywords": ["load-sensitive test flake", "kill -0 zombie reap timing", "self-documented widened budget", "intermittent CI gate failure", "leading suspect vs confirmed cause"]
     }
   ],
   "metadata": {

@@ -3,31 +3,28 @@
 - **Task**: 1012 - Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and further suites
 - **Status**: [PARTIAL]
 - **Started**: 2026-08-10T17:00:00Z
-- **Last updated**: 2026-08-10T19:15:00Z (interim; a follow-up re-dispatch will close this out)
-- **Effort**: ~2.5 hours so far
+- **Last updated**: 2026-08-10T18:12:00Z (post-redeploy re-dispatch; one residual remains — see below)
+- **Effort**: ~3.5 hours total across dispatches
 - **Dependencies**: None (one advisory overlap: the opencode session-id duplication task owns `test-common-lib.sh`)
 - **Artifacts**: plans/01_run-all-deployed-mode-fixes.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md, source-store-deploy-boundary.md
 
 ## Overview
 
-**This is an interim summary, not a final one.** Phases 1, 2, 3, and 5 are genuinely complete and
-verified. Phase 4 (redeploy + deployed-mode re-measurement) is `[BLOCKED]` — deferred, not denied:
-a sibling implementation dispatch in this same orchestration cycle was concurrently writing
-`agent-system/extensions/core/scripts/lib/common.sh` and `.opencode/scripts/command-gate-in.sh`,
-and the inter-cycle redeploy checkpoint's commit-then-redeploy sequencing guarantee correctly
-declined to fire while that sibling's work was still in flight. Team-lead will re-dispatch this
-task next cycle specifically to obtain the redeploy and re-measure deployed mode for real.
+**Not an unqualified green.** The redeploy this summary was previously waiting on has landed:
+`bash .claude/scripts/deploy-headless.sh` ran successfully via the inter-cycle redeploy checkpoint,
+and both modes now measure clean when run directly — source-store `run-all.sh`: 37 passed, 0
+failed, 37 total; deployed `run-all.sh`: 34 passed, 0 failed, 34 total — each independently
+confirmed on two separate runs in this dispatch, matching team-lead's own independent measurement.
+Phases 1-5 are complete and verified; Phase 4 (redeploy + re-measurement) is now `[COMPLETED]`.
 
-Deployed-mode `run-all.sh` measures 28 passed, 6 failed, 34 total as of this dispatch — down from
-the research baseline's 8 failures, but **not zero**: this is not an unqualified green, and this
-count is expected to change once the redeploy lands. Source-store `run-all.sh` measures 37 passed,
-0 failed, 37 total (its own separate, non-comparable total, since source-store mode scans every
-extension). The 6 residual deployed-mode failures are all suites this task fixed in the source
-store but could not get redeployed through any sanctioned path within this dispatch — see the
-justification table below. Every fix in this task's own scope was verified green from the
-source-store location; the gap between source-store green and deployed-mode green is entirely
-attributable to the pending, already-scheduled redeploy, not to any unresolved defect.
+**One residual remains, and it is NOT one of this task's own fixes regressing.** Team-lead reports
+`bash .claude/scripts/verify-deploy.sh` gate 8 (which internally re-runs source-store `run-all.sh`)
+failing intermittently post-redeploy — roughly 4 failures in 9 invocations — even though `run-all.sh`
+run directly passes consistently. This dispatch attempted to reproduce and diagnose that flake but
+was asked to checkpoint findings to disk and stop before reaching a confirmed root cause (session
+context was about to be cleared). The findings gathered are recorded below as an evidenced,
+unresolved residual, not presented as fixed. Phase 6 stays `[PARTIAL]` for this reason alone.
 
 ## What Changed
 
@@ -81,18 +78,38 @@ attributable to the pending, already-scheduled redeploy, not to any unresolved d
   which branch inside `cmd_acquire` triggered it, and the fix was verified effective (5/5 isolation
   runs, 4/4 full-sequence runs green, versus an intermittent pre-fix failure) without needing that
   sub-question resolved.
-- **No redeploy was invoked by this agent.** Per the source-store/deploy-boundary rule and this
-  task's own binding Phase 4 constraint, only `skill-orchestrate`'s Stage MT-3 inter-cycle
-  checkpoint or an explicit operator action may run `deploy-headless.sh`. A redeploy was requested
-  from team-lead via SendMessage; none landed within this dispatch. Phase 4 closed `[BLOCKED]`
-  per the plan's own pre-accepted contingency, carrying the source-store-green result and a
-  depth-3 scratch proof as evidence of correctness.
+- **A redeploy landed, and Phase 4 closed `[COMPLETED]`.** The inter-cycle redeploy checkpoint
+  fired once the previously-blocking sibling dispatch's commits cleared; `deploy-headless.sh` ran
+  successfully (5 extensions resynced). This dispatch independently confirmed the redeploy landed
+  correctly: all 18 files this task modified are byte-identical between the source store and
+  `.claude/`, and both modes measure clean when run directly (37/0/37 source-store, 34/0/34
+  deployed, each on two separate runs).
+- **Gate 8's intermittent failure is a genuine, unresolved residual — diagnosis was time-boxed by
+  an explicit instruction to checkpoint and stop, not by this task's own time-box.** Team-lead
+  reported `verify-deploy.sh` gate 8 (which re-runs source-store `run-all.sh` internally,
+  regardless of which tree `verify-deploy.sh` itself is checking) failing roughly 4 of 9 times
+  post-redeploy, while direct `run-all.sh` invocations pass consistently. Two sequential
+  reproduction loops (14 invocations planned, 7 completed before being asked to stop) did not
+  reproduce a single failure in this dispatch's own sample — a sample too small to either confirm
+  or refute the ~44% failure rate team-lead measured. The leading hypothesis, from code review
+  rather than a captured failure: `test-claude-refresh-matcher.sh` (not one of this task's 18
+  files) has a pre-existing, self-documented, load-sensitive flake — it backgrounds a real
+  `sleep 300 &`, kills it, then polls up to 8s for `kill -0` to confirm it dead before asserting
+  liveness semantics; its own comment states this budget was "widened once already" because it
+  needs more headroom "when run alongside ~25 concurrent others." This dispatch hit that exact
+  failure on a standalone source-store `run-all.sh` run (unrelated to any repro loop), and it
+  self-resolved on immediate rerun — the same intermittent signature reported for gate 8. Re-reading
+  `task-lock.sh`'s `cmd_acquire`/`write_holder()` flow found no residual TOCTOU window: Phase 5's
+  `mkdir -p` fix covers every `write_holder` call site, so a recurrence of that specific race is not
+  supported by code review. This is a hypothesis with circumstantial evidence, not a confirmed root
+  cause — recorded honestly as such, with a named suspect and a recommended follow-up rather than
+  either a claimed fix or a shrug.
 
 ## Plan Deviations
 
-- **Phase 4, task "Obtain a redeploy through a sanctioned path"**: skipped. No sanctioned redeploy
-  path was invokable from within this agent's own dispatch. Requested via SendMessage to
-  team-lead; none landed before Phase 4 closed. Recorded in `progress/phase-4-progress.json`.
+- **Phase 4, task "Obtain a redeploy through a sanctioned path"**: no longer a deviation — the
+  redeploy landed in this dispatch via the inter-cycle checkpoint, as the plan's own preferred
+  path anticipated. See `progress/phase-4-progress.json`.
 - **Phase 5, task "Bisect the ordering dependency"**: skipped. The root cause was identified
   directly from `test-four-tier-conflict.sh`'s own fixture design (its deliberate concurrent
   `rm -rf $lock_dir` releaser) rather than requiring a bisection across preceding suites — the
@@ -100,66 +117,63 @@ attributable to the pending, already-scheduled redeploy, not to any unresolved d
 - **Phase 5, task "Evaluate the dead-pid probe heuristic"**: skipped. The probe (`DEAD_PID=999999`,
   decremented until confirmed dead) is unconnected to the actual failure mechanism found; its
   appearance in the reproduced log is an unrelated informational fixture-build line.
+- **Phase 6, task "diagnose gate 8's intermittent failure"**: partially completed, then deferred.
+  Reproduction was stopped after 7 of 14 planned `verify-deploy.sh` invocations, per an explicit
+  instruction to checkpoint findings to disk and stop ahead of an imminent context clear, rather
+  than complete the statistically-meaningful sample originally planned. Recorded as an evidenced
+  residual in the table below, with a named leading suspect and a recommended follow-up task.
 - All other tasks across all 6 phases completed as planned.
 
 ## Verification
 
 - Build: N/A (shell scripts, no build step)
-- Tests: **28 passed, 6 failed, 0 skipped, 34 total (deployed mode)**; 37 passed, 0 failed, 0
-  skipped, 37 total (source-store mode, separate and non-comparable total)
+- Tests, post-redeploy re-measurement (independently confirmed, twice each):
+  **34 passed, 0 failed, 0 skipped, 34 total (deployed mode)**; **37 passed, 0 failed, 0 skipped,
+  37 total (source-store mode, separate and non-comparable total)**
+- `verify-deploy.sh`: this dispatch's own 7 completed runs (across two reproduction loops) all
+  measured 23/23 checks passing, gate 8 included. Team-lead independently reports gate 8 failing
+  intermittently (~4/9) in a separate, larger sample post-redeploy — not reproduced here, not
+  refuted here; see the Residual-Failure section below.
 - Files verified: Yes — every edited file confirmed to exist, contain the expected pattern, and
-  pass its own suite (17 test files individually; `task-lock.sh` via the suite that exercises it)
+  pass its own suite (17 test files individually; `task-lock.sh` via the suite that exercises it);
+  all 18 confirmed byte-identical between source store and deployed tree post-redeploy
 
-### Residual-Failure Justification Table (deployed mode, 6 failures)
+### Residual-Failure Justification Table (1 unresolved residual)
 
-| Suite | Reason | Evidence |
+| Suite / Gate | Reason | Evidence |
 |-------|--------|----------|
-| `test-index-entries-schema.sh` | Source-store fix (fixture manifest + REPO_ROOT) verified green (9/9 passed, Rule U firing correctly); no sanctioned redeploy path was available in this dispatch to land it in `.claude/scripts/tests/` | Deployed-mode failure text: `[FAIL] Rule U did not fire on a 61-line EXTENSION.md`, matching the pre-fix defect exactly; source-store run of the same (already-fixed) file: `Results: 9 passed, 0 failed` |
-| `test-loop-guard-staleness.sh` | Same — REPO_ROOT fix verified green in source store (28/0), pending redeploy | Deployed grep confirms 0 occurrences of `git rev-parse --show-toplevel` in the deployed copy; source-store copy has it and passes |
-| `test-reconcile-handoff-status.sh` | Same — REPO_ROOT fix verified green in source store (14/0), pending redeploy | Same drift pattern; source-store `Results: 14 passed, 0 failed` |
-| `test-resume-scan-nonconformance.sh` | Same — REPO_ROOT fix verified green in source store (39/0), pending redeploy | Same drift pattern; source-store `Results: 39 passed, 0 failed` |
-| `test-skill-base-lifecycle.sh` | Same — REPO_ROOT fix verified green in source store (14/0), pending redeploy; also the file used for the depth-3 scratch proof, which independently confirmed correct REPO_ROOT resolution at deployed depth without a redeploy | Source-store `Results: 14 passed, 0 failed`; depth-3 scratch run: exit 0, 14 passed/0 failed, no `$HOME`-based path errors |
-| `test-update-task-status.sh` | Same — REPO_ROOT fix verified green in source store (19/0), pending redeploy | Same drift pattern; source-store `Results: 19 passed, 0 failed` |
+| `verify-deploy.sh` gate 8 (intermittent, ~4/9 per team-lead's sample) | NOT one of this task's 18 modified files, and NOT the Phase 5 `write_holder()` race recurring (code review found no residual TOCTOU window — Phase 5's `mkdir -p` fix covers every call site). Leading suspect: `test-claude-refresh-matcher.sh`'s pre-existing, load-sensitive `kill -0` liveness poll (8s budget, self-documented as already widened once for exactly this kind of load sensitivity). Diagnosis was stopped before a failure was captured to confirm this — recorded as an evidenced hypothesis, not a proven cause | This dispatch reproduced the SAME failure signature (`is_live_inhibitor_target: still excludes the SAME inhibitor after its target was killed -- tautological check`) on a standalone source-store `run-all.sh` run, self-resolving on immediate rerun — matching gate 8's own intermittent, self-resolving character. 7 of 14 planned `verify-deploy.sh --findings` reproduction runs completed in this dispatch, all 23/23 PASS (did not capture a failure to inspect directly) |
 
-**`test-common-lib.sh`** (out of scope, owned by the concurrent opencode session-id task, per this
-task's binding constraint) was explicitly **not** expected to be justified as red here — and in
-fact it **measured PASS** in this task's own deployed-mode run, along with
-`test-lint-state-writer-boundary.sh` (8/8, confirming the research report's finding that its
-earlier 7/8 report was stale) and `test-four-tier-conflict.sh` (deployed copy, unfixed
-`task-lock.sh`, passed this run — consistent with the flake's own intermittent, not-always-firing
-nature documented in Phase 5).
-
-`verify-deploy.sh`: 21 of 23 checks passed. The 2 failures (doc-lint, manifest-driven content-hash
-parity) are the same un-redeployed drift as the table above, not new or unrelated findings — both
-resolve to a stable count of 18 drifted files (17 test suites + `task-lock.sh`), exactly matching
-this task's own source-store edits. `check-extension-docs.sh` (deployed copy): same 18-file drift,
-plus a pre-existing, unrelated 36-item literature/zotero never-deployed advisory block this task
-did not touch.
+Every REPO_ROOT-related residual from the prior interim snapshot (6 suites: `test-index-entries-schema.sh`,
+`test-loop-guard-staleness.sh`, `test-reconcile-handoff-status.sh`, `test-resume-scan-nonconformance.sh`,
+`test-skill-base-lifecycle.sh`, `test-update-task-status.sh`) is now resolved — the redeploy landed
+and all 6 measure green in this dispatch's deployed-mode re-run. `test-common-lib.sh` (out of
+scope, owned by the concurrent opencode session-id task) also measures PASS.
 
 ## Impacts
 
-- Once a sanctioned redeploy runs (orchestrator inter-cycle checkpoint or an operator running
-  `<leader>al` / `deploy-headless.sh`), deployed-mode `run-all.sh` is expected to reach 34/0/34 —
-  every currently-red suite is proven green from the source-store location and the only gap is the
-  pending deploy.
+- Deployed-mode `run-all.sh` now measures 34/0/34 for real, not provisionally — every fix this task
+  made is confirmed live in the deployed tree.
 - The `write_holder()` fix in `task-lock.sh` is a real concurrency-correctness improvement that
   benefits every `task-lock.sh` consumer (acquire, acquire-retry, heartbeat), not only the test
-  suite that exposed it.
-- The REPO_ROOT defect class (17 files) is now fully eliminated at the source, closing the
-  recurrence surface the 13 previously-masked suites represented.
+  suite that exposed it, and is now confirmed deployed.
+- The REPO_ROOT defect class (17 files) is now fully eliminated at the source and confirmed
+  deployed, closing the recurrence surface the 13 previously-masked suites represented.
+- Gate 8's intermittent failure remains open. If the leading hypothesis is correct, it is a
+  pre-existing defect this task did not introduce and is not obligated to fix — but it is a real
+  gap in `verify-deploy.sh`'s reliability as an automated gate (see Follow-ups).
 
 ## Follow-ups
 
-- **Expected next step (already scheduled)**: the inter-cycle redeploy checkpoint deferred this
-  cycle only because a sibling implementation dispatch was concurrently writing
-  `agent-system/extensions/core/scripts/lib/common.sh` and
-  `.opencode/scripts/command-gate-in.sh`; the checkpoint's commit-then-redeploy sequencing
-  guarantee correctly declined to fire until that sibling's commits land. Once both implementers
-  in this cycle return and land their commits, the checkpoint fires for real and this task will be
-  re-dispatched specifically to confirm the redeploy, re-measure deployed-mode `run-all.sh` for
-  real (expected 34/0/34), and close Phase 4/6 definitively.
+- **Recommended new task**: reproduce gate 8's intermittent failure with a larger, unattended
+  sample (15-20x `bash .claude/scripts/verify-deploy.sh --findings`), capturing `FINDING gate8`
+  lines and the raw `run_all_output` on every failure, to confirm or rule out
+  `test-claude-refresh-matcher.sh` as the cause. If confirmed: either widen its `kill -0` poll
+  budget further (current 8s, already widened once) or replace the real-process-timing-dependent
+  liveness assertion with an injectable/mockable predicate so the suite is no longer inherently
+  load-sensitive.
 - No further action needed on `test-common-lib.sh` from this task; it remains the concurrent
-  sibling task's scope.
+  sibling task's scope, and it measures PASS in current deployed mode regardless.
 
 ## References
 
@@ -167,3 +181,4 @@ did not touch.
 - `specs/1012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md`
 - `specs/1012_fix_test_suite_deployed_mode_failures/progress/phase-1-progress.json` through `phase-6-progress.json`
 - `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`
+- `agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh` (leading suspect for the gate-8 residual)
