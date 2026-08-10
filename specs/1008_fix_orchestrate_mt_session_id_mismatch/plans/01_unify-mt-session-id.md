@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1008
 
 - **Task**: 1008 - fix_orchestrate_mt_session_id_mismatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/1008_fix_orchestrate_mt_session_id_mismatch/reports/01_mt-session-id-self-contention.md
@@ -114,33 +114,36 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Unify the lock-touching session-id sites in Stage MT-4 [NOT STARTED]
+### Phase 1: Unify the lock-touching session-id sites in Stage MT-4 [COMPLETED]
 
 **Goal**: Every site in `skill-orchestrate/SKILL.md` that acquires, releases, or is later
 consumed by a heartbeat against the per-task lock presents the same bare `$session_id` that
 Stage MT-1 registered and Stage MT-3 already passes.
 
 **Tasks**:
-- [ ] Open `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` (source store —
-      never the `.claude/` copy).
-- [ ] In Stage MT-4's "Task-lock acquire (per-task, before dispatch)" block, change the
+- [x] Open `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` (source store —
+      never the `.claude/` copy). *(completed)*
+- [x] In Stage MT-4's "Task-lock acquire (per-task, before dispatch)" block, change the
       `task-lock.sh acquire` argument from `"${session_id}_${task_num}"` to `"$session_id"`.
-- [ ] In Stage MT-4's step 6 "Task-lock release (per-task, unconditional)" block, change the
+      *(completed)*
+- [x] In Stage MT-4's step 6 "Task-lock release (per-task, unconditional)" block, change the
       `task-lock.sh release` argument from `"${session_id}_${task_num}"` to `"$session_id"`.
-- [ ] In the `implement_agents[task_num]` Agent-tool dispatch context, change the `session_id`
-      field from `"${session_id}_${task_num}"` to `"$session_id"`.
-- [ ] Add prose at the acquire block stating the invariant explicitly: the bare `$session_id` is
+      *(completed)*
+- [x] In the `implement_agents[task_num]` Agent-tool dispatch context, change the `session_id`
+      field from `"${session_id}_${task_num}"` to `"$session_id"`. *(completed)*
+- [x] Add prose at the acquire block stating the invariant explicitly: the bare `$session_id` is
       used here deliberately, it must equal the value Stage MT-1 passed to `session-register` and
       Stage MT-3 passes to `orchestrate-batch-admit.sh --session-id`, because
       `session_contention()`'s self-exclusion is an exact string match — a suffixed value makes
       the batch contend against its own registration. Mirror the explanatory style already used
-      at the Stage MT-3 call site.
-- [ ] Add a one-line note at the release block and at the implement dispatch context pointing
+      at the Stage MT-3 call site. *(completed)*
+- [x] Add a one-line note at the release block and at the implement dispatch context pointing
       back to that invariant (the release must match the acquire; the dispatch `session_id` is
       what `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` presents against
-      `holder.json`).
-- [ ] Confirm Stage MT-1's `session-register` line and Stage MT-3's
-      `orchestrate-batch-admit.sh --session-id` line are unchanged.
+      `holder.json`). *(completed)*
+- [x] Confirm Stage MT-1's `session-register` line and Stage MT-3's
+      `orchestrate-batch-admit.sh --session-id` line are unchanged. *(completed: verified via
+      grep, both still bare `$session_id` at lines 1418 and 1628)*
 
 **Timing**: 0.75 hours
 

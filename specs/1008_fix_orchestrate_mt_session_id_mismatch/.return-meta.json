@@ -1,33 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "session_id": "sess_1786370015_5e32a2",
-  "delegation_depth": 2,
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
-  "task_number": 1008,
-  "task_name": "fix_orchestrate_mt_session_id_mismatch",
-  "task_type": "meta",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/1008_fix_orchestrate_mt_session_id_mismatch/plans/01_unify-mt-session-id.md",
-      "summary": "4-phase plan unifying the Stage MT-4 lock-touching session-id sites onto the bare $session_id, adding a register/acquire parity regression group to test-conflict-predicate.sh, stating the parity invariant in task-lock.md, and gating on full verification plus a follow-up record for the identical pattern in the three multi-task command files."
-    }
-  ],
-  "phase_count": 4,
-  "estimated_hours": 2.5,
-  "dependency_waves": [[1], [2, 3], [4]],
-  "research_inputs": [
-    "specs/1008_fix_orchestrate_mt_session_id_mismatch/reports/01_mt-session-id-self-contention.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "Self-exclusion predicates keyed on an exact identifier string make any per-consumer decoration of that identifier a self-contention bug. In the task-lock session registry, a batch registers once under a bare session_id (with a UNION file_scope over all batch members), but each per-task acquire passed a task-suffixed ${session_id}_${task_num}. session_contention()'s D4 exclusion 1 is `select($sess.session_id != $own_sid)` -- an exact match -- so the batch's own registration was never excluded and every acquire refused against the batch's own union scope. The failure is deterministic and total, not a race. Generalizable rule: whenever a component registers under an identifier and a later stage re-presents that identifier to a predicate that self-excludes by equality, the two construction sites form a parity invariant that must be stated at the point of use, not left implicit. Related consumers that decorate the same id for provenance (commit --session, defect-record --session, status-sync) are safe precisely because nothing self-excludes on them -- so the audit question is not 'is the id consistent everywhere' but 'which consumers compare it for identity'. The same register-bare/acquire-suffixed shape exists in commands/research.md, commands/plan.md, and commands/implement.md.",
-      "category": "PATTERN",
-      "source_artifact": "specs/1008_fix_orchestrate_mt_session_id_mismatch/plans/01_unify-mt-session-id.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["session-id-parity", "task-lock", "self-contention", "session-registry", "multi-task-orchestrate", "exact-match-exclusion"]
-    }
-  ],
-  "next_steps": "Run /implement 1008 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786370015_5e32a2",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"]
+  }
 }

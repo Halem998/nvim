@@ -1957,8 +1957,15 @@ full contract. For each task across `research_tasks + plan_tasks + implement_tas
 building the single dispatch message):
 
 ```bash
-bash .claude/scripts/task-lock.sh acquire "$task_num" "$op" "${session_id}_${task_num}" "/orchestrate (multi-task)"
+bash .claude/scripts/task-lock.sh acquire "$task_num" "$op" "$session_id" "/orchestrate (multi-task)"
 ```
+
+**Invariant**: the bare `$session_id` is used here deliberately — it MUST equal the value Stage
+MT-1 passed to `session-register` and Stage MT-3 passes to `orchestrate-batch-admit.sh
+--session-id`, because `session_contention()`'s self-exclusion is an exact string match on
+`session_id`. A per-task-suffixed value (`${session_id}_${task_num}`) would make the batch's own
+union-`file_scope` registration read as a foreign live session, refusing every lock acquire in
+the batch against its own registration.
 
 where `$op` is `research`/`plan`/`implement` matching the task's group. If `acquire` refuses
 (exit 1 — a fresh lock held by a genuinely different session; same-session re-entry, including a
@@ -1999,7 +2006,7 @@ For each task in `implement_tasks`:
   single-task Stage 4/Stage 5 handlers above) — and **normalizing** the result to
   `{ handoff_path, orchestrator_mode: true }`, or `null` if neither form is present
 - `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read)
+- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 
@@ -2385,8 +2392,10 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 6. **Task-lock release (per-task, unconditional)**: regardless of the outcome above (success,
    failed, or blocked):
    ```bash
-   bash .claude/scripts/task-lock.sh release "$task_num" "${session_id}_${task_num}"
+   bash .claude/scripts/task-lock.sh release "$task_num" "$session_id"
    ```
+   The release argument must match the acquire argument above — bare `$session_id` — per the
+   Task-lock acquire invariant.
 
 ### Stage MT-5: Multi-Task Postflight
 
