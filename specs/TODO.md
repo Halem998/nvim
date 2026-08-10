@@ -386,6 +386,7 @@ STALENESS CAVEAT (added after the deploy-staleness finding): the orphan-file mea
 - **Dependencies**: Task 5
 - **Research**: [006_guard_against_nonadditive_artifact_rewrites/reports/01_guard-nonadditive-artifact-rewrites.md]
 - **Plan**: [006_guard_against_nonadditive_artifact_rewrites/plans/01_guard-nonadditive-artifact-rewrites.md]
+- **Summary**: [006_guard_against_nonadditive_artifact_rewrites/summaries/01_guard-nonadditive-artifact-rewrites-summary.md]
 
 **Description**: The artifact list in specs/state.json is append-only by intent but not by enforcement. Every
 sanctioned write path is additive, yet an agent that writes state.json directly can replace the

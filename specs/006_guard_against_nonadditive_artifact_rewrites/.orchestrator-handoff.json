@@ -1,0 +1,34 @@
+{
+  "status": "implemented",
+  "task_number": 6,
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/006_guard_against_nonadditive_artifact_rewrites/summaries/01_guard-nonadditive-artifact-rewrites-summary.md",
+      "summary": "D5 per-type artifact-loss check landed FAIL-level in validate-state.sh --deep with an --allow-artifact-removal opt-in, six bidirectional fixture tests, an append-only rule in state-management.md, and a new MUST NOT bullet in general-implementation-agent.md."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a per-type (removed<=added) artifact-loss invariant as a new FAIL-level D5 check in validate-state.sh --deep, reusing D4's git-diff mechanism, with a repeatable --allow-artifact-removal CLI opt-in, six bidirectional fixture tests proving both rejection and opt-in acceptance on a raw jq-composed write, an explicit append-only rule in rules/state-management.md, and a new MUST NOT bullet in general-implementation-agent.md."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/rules/state-management.md",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/agents/general-implementation-agent.md"
+  ],
+  "known_deviations": [
+    "Phase 3's Scope Hypothesis estimated seven new fixture cases; actual delivered is six (matches the phase's own Tasks list).",
+    "Phase 5: verify-deploy.sh gate 10 reports FAIL, but for a pre-existing, unrelated D3 dangling-dependency finding on project 9 (9 -> 1015), not caused by the new D5 check, which itself reports zero findings. Out of this task's declared file scope to fix."
+  ],
+  "metadata": {
+    "session_id": "sess_1786400631_478c94",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "plan_path": "specs/006_guard_against_nonadditive_artifact_rewrites/plans/01_guard-nonadditive-artifact-rewrites.md"
+  }
+}

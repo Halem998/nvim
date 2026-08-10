@@ -138,6 +138,11 @@
           "path": "specs/006_guard_against_nonadditive_artifact_rewrites/plans/01_guard-nonadditive-artifact-rewrites.md",
           "type": "plan",
           "summary": "Five-phase plan adding a per-type removed<=added artifact-loss invariant as a FAIL-level --deep check in validate-state.sh, with an --allow-artifact-removal CLI opt-in, bidirectional fixture tests, an explicit append-only rule in rules/state-management.md, and a MUST NOT bullet on general-implementation-agent."
+        },
+        {
+          "path": "specs/006_guard_against_nonadditive_artifact_rewrites/summaries/01_guard-nonadditive-artifact-rewrites-summary.md",
+          "type": "summary",
+          "summary": "D5 per-type artifact-loss check landed FAIL-level in validate-state.sh --deep with an --allow-artifact-removal opt-in, six bidirectional fixture tests, an append-only rule in state-management.md, and a new MUST NOT bullet in general-implementation-agent.md."
         }
       ],
       "session_id": "sess_1786400631_478c94"
