@@ -1,7 +1,7 @@
 # Implementation Plan: Promote SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard
 
 - **Task**: 993 - Promote SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5 hours
 - **Dependencies**: 987, 990, 992 (all landed; empirically re-confirmed by research)
 - **Research Inputs**: specs/993_promote_schema_gates_to_hard/reports/01_promote-schema-gate-hard.md
@@ -79,30 +79,30 @@ No roadmap context was provided in the delegation context; no ROADMAP.md phases 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Flip the default and rewrite its comment block [NOT STARTED]
+### Phase 1: Flip the default and rewrite its comment block [COMPLETED]
 
 **Goal**: `SCHEMA_CONFORMANCE_GATE_MODE` resolves to `hard` when unset, and the eight-line comment
 block immediately above the assignment records completed remediation instead of pending
 remediation.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/check-extension-docs.sh` around the
+- [x] Read `agent-system/extensions/core/scripts/check-extension-docs.sh` around the
       `SCHEMA_CONFORMANCE_GATE_MODE` assignment (approximately lines 646-663) to confirm current
-      text before editing.
-- [ ] Confirm the edit target is the source store (`agent-system/extensions/core/scripts/...`),
-      never the deployed `.claude/scripts/` copy.
-- [ ] Replace the trailing default fragment on the assignment line so it reads
-      `SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-hard}"`.
-- [ ] Rewrite the preceding comment block to past tense, mirroring `INDEX_TRUTH_GATE_MODE`'s
+      text before editing. *(completed)*
+- [x] Confirm the edit target is the source store (`agent-system/extensions/core/scripts/...`),
+      never the deployed `.claude/scripts/` copy. *(completed)*
+- [x] Replace the trailing default fragment on the assignment line so it reads
+      `SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-hard}"`. *(completed)*
+- [x] Rewrite the preceding comment block to past tense, mirroring `INDEX_TRUTH_GATE_MODE`'s
       post-promotion comment (approximately lines 580-589): keep the SIBLING-not-overload
       sentence, replace the "Defaults to advisory until ... land" clause with a statement that
       both follow-on remediation efforts have landed and a hard dry run confirmed zero Rule T and
       zero Rule U findings across all 19 extensions, and add the "override to advisory only for
       temporary local debugging, never in committed config" guidance. Keep the
-      `ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE` precedent reference.
-- [ ] Confirm the new comment text contains no task-number citations (this file is a deliverable
-      outside `specs/**`); refer to the prerequisites by what they were, not by number.
-- [ ] Leave `schema_conformance_report()` and every Rule T/U call site untouched.
+      `ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE` precedent reference. *(completed)*
+- [x] Confirm the new comment text contains no task-number citations (this file is a deliverable
+      outside `specs/**`); refer to the prerequisites by what they were, not by number. *(completed)*
+- [x] Leave `schema_conformance_report()` and every Rule T/U call site untouched. *(completed)*
 
 **Timing**: 0.25 hours
 

@@ -644,14 +644,13 @@ check_line_count_accuracy() {
 }
 
 # SCHEMA_CONFORMANCE_GATE_MODE controls severity for Rules T and U (the two checks this block
-# introduces) -- a SIBLING to INDEX_TRUTH_GATE_MODE above, not an overload of it.
-# INDEX_TRUTH_GATE_MODE already defaults to "hard" because Rules R/S landed after their
-# remediation was already complete; routing these new, pre-remediation rules through it would
-# either hard-fail 14 of 19 extensions (Rule T) and 7 of 19 (Rule U) on day one, or force
-# demoting Rules R/S back to advisory. Defaults to "advisory" until the bulk index-entries.json
-# migration and EXTENSION.md slim-down follow-on tasks land; promote to "hard" only once those
-# have shipped (mirrors the ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE promotion precedent).
-SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-advisory}"
+# introduces) -- a SIBLING to INDEX_TRUTH_GATE_MODE above, not an overload of it. Defaults to
+# "hard" now that both follow-on remediation efforts -- the bulk index-entries.json schema
+# migration (Rule T) and the EXTENSION.md slim-down (Rule U) -- have landed and a hard-mode dry
+# run confirmed zero Rule T and zero Rule U findings across all 19 extensions (mirrors the
+# ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE promotion precedent) -- override to "advisory" only
+# for temporary local debugging, never in committed config.
+SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-hard}"
 
 schema_conformance_report() {
   local msg="$1"
