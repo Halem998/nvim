@@ -24,7 +24,7 @@ next_project_number: 1020
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
 1010 [PLANNED] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
-1012 [PLANNING] — tests/run-all.sh is red and has been treated as permanently-expec
+1012 [PLANNED] — tests/run-all.sh is red and has been treated as permanently-expec
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
   └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
@@ -227,11 +227,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1012. Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md]
+- **Plan**: [1012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md]
 
 **Description**: tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.
 

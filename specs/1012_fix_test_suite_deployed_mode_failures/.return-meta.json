@@ -1,34 +1,34 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
-      "summary": "Re-measured run-all.sh live (26 passed, 8 failed, 34 total); confirmed the REPO_ROOT depth defect spans 5 suites (not 2); traced test-index-entries-schema.sh's failure to a fixture manifest.json gap; confirmed test-common-lib.sh overlaps the out-of-scope opencode session-id task; found test-lint-state-writer-boundary.sh's prior 7/8 report does not reproduce (8/8 measured); discovered a new, undiagnosed order-dependent flake in test-four-tier-conflict.sh."
+      "type": "plan",
+      "path": "specs/1012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md",
+      "summary": "6-phase implementation plan (5.5 hours, 4 dependency waves) covering REPO_ROOT migration across 17 test suites, the test-index-entries-schema.sh fixture manifest fix, sanctioned-path redeploy and dual-mode re-measurement, a time-boxed diagnostic for the test-four-tier-conflict.sh flake, and a final gate with a residual-failure justification table"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/1012_fix_test_suite_deployed_mode_failures/.orchestrator-handoff.json",
+      "summary": "Orchestrator handoff for the plan dispatch"
     }
   ],
-  "next_steps": "Run /plan 1012 to create an implementation plan: (1) migrate REPO_ROOT resolution in the 5 confirmed-failing suites (test-skill-base-lifecycle.sh, test-update-task-status.sh, test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh) to the proven git-rev-parse-with-fallback pattern from test-deploy-propagation.sh, ideally extended to all 18 occurrences of the literal pattern; (2) add merge_targets.claudemd.source to test-index-entries-schema.sh's fixture manifest.json; (3) scope a separate diagnostic pass for test-four-tier-conflict.sh's order-dependent flake; (4) leave test-common-lib.sh (out of scope, separate task) and test-lint-state-writer-boundary.sh (not reproduced, currently green) untouched.",
+  "next_steps": "Run /implement 1012 to execute the plan",
   "metadata": {
     "session_id": "sess_1786378789_92e564_1012",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 8
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 5.5,
+    "dependency_waves": [[1, 2, 3], [4], [5], [6]]
   },
   "memory_candidates": [
     {
-      "content": "check-extension-docs.sh's Rule U (check_extension_md_length) is manifest-authoritative: it only length-checks EXTENSION.md when the extension's manifest.json declares merge_targets.claudemd.source == \"EXTENSION.md\". A test fixture manifest.json lacking merge_targets entirely will silently skip Rule U regardless of the constructed file's line count -- the guard's `return 0` fires before any length comparison. When writing or reviewing a check-extension-docs.sh fixture, verify merge_targets.claudemd.source is set if the fixture intends to exercise Rule U.",
-      "category": "PATTERN",
-      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs.sh", "Rule U", "claudemd_source_for", "manifest.json", "test fixture", "merge_targets"]
-    },
-    {
-      "content": "A test file's REPO_ROOT literal (`cd \"$SCRIPT_DIR/../../../../..\" && pwd`, 5 levels up) is correct only from the source-store test location (agent-system/extensions/core/scripts/tests/, 5 levels below repo root) and silently resolves to $HOME when the same file executes from the deployed location (.claude/scripts/tests/, only 3 levels below repo root) -- landing exactly 2 levels too high. A suite with this literal only fails loudly in deployed mode if it also lacks a $SCRIPT_DIR-relative fallback candidate; suites that list one (even as a secondary candidate in an array) are safe regardless of REPO_ROOT correctness. The proven-good replacement in this codebase is test-deploy-propagation.sh's pattern: `git rev-parse --show-toplevel` from $SCRIPT_DIR, falling back to the literal climb only if git is unavailable.",
+      "content": "When a repo has a source store (agent-system/extensions/**) deployed into a disposable tree (.claude/**), any script that exists in BOTH locations at different directory depths cannot use a fixed levels-up climb to find the repo root. The depth-independent fix is `REPO_ROOT=\"$(cd \"$SCRIPT_DIR\" && git rev-parse --show-toplevel 2>/dev/null)\"` with the original fixed-depth climb retained only as an `if [[ -z \"$REPO_ROOT\" ]]` fallback for non-git checkouts -- behavior-preserving where git is absent, correct from every depth where git is present. Critically, planning such a migration must separate suites that FAIL from suites that merely CARRY the defect masked by a $SCRIPT_DIR-relative fallback candidate: the masked ones are only accidentally safe and are the recurrence surface, so eliminating the defect class means migrating all carriers, not just the loud ones. Also verify deployed-mode behavior cannot be established by editing the source store alone -- a redeploy is a separate gate, and where the deploy script is policy-restricted to manual invocation, an in-repo scratch copy placed at the deployed depth proves depth-independence without touching the deploy tree.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["REPO_ROOT", "deployed mode", "source-store", "git rev-parse", "test suite", "SCRIPT_DIR"]
+      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["REPO_ROOT", "git rev-parse", "source-store deploy boundary", "deployed mode", "defect class elimination", "test harness"]
     }
   ]
 }

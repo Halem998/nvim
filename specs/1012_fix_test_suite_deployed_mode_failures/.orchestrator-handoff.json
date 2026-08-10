@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Created a 6-phase implementation plan targeting the re-measured 26/8/34 run-all.sh baseline: REPO_ROOT migration across 17 source-store test suites (5 confirmed-failing + 11 latent + the fixture-schema suite), the test-index-entries-schema.sh fixture manifest fix, a sanctioned-path-only redeploy and dual-mode re-measurement, a time-boxed diagnostic for the test-four-tier-conflict.sh order-dependent flake, and a final gate that records a written, evidenced justification for every residual failure.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/1012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md",
+      "summary": "6-phase plan (5.5h, 4 dependency waves) to make run-all.sh green or justify every residual failure"
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "next_action_hint": "Run /implement 1012 to execute the plan. Phase 4 requires a redeploy through a sanctioned path only -- deploy-headless.sh is manual-by-default and the implementer must not self-invoke it."
+}
