@@ -189,17 +189,17 @@ record that as a reasoned exclusion rather than editing to satisfy the estimate.
 
 ---
 
-### Phase 3: Reconcile the contradictory passages in task-lock.md [NOT STARTED]
+### Phase 3: Reconcile the contradictory passages in task-lock.md [COMPLETED]
 
 **Goal**: `context/patterns/task-lock.md` no longer contains one passage instructing per-task
 suffixing and another forbidding it, and a reader arriving at either passage is routed to the
 other.
 
 **Tasks**:
-- [ ] Rewrite the "Same-session bypass" bullet in the "Cross-Task `file_scope` Overlap Check" section. Its current second half — "Multi-task dispatch sessions are suffixed per-task (`sess_..._${task_num}`) and are therefore distinct sessions for this purpose — they ARE enforced against each other" — is now factually wrong and must be replaced with the reconciliation: multi-task dispatch batches share ONE bare `session_id` across every per-task acquire (required by the parity invariant), so a same-batch sibling's held lock IS bypassed by this rule; that is not a hole, because in-batch `file_scope` collisions are detected and deferred earlier by the batch-admission pre-check (`orchestrate-batch-admit.sh`, Step 2.5 of each multi-task command, which reports `defer_reason: file_scope_collision` with `collision_scope: in_batch`) before the acquire loop ever runs.
-- [ ] Add a forward cross-reference from that bullet to the "Register/acquire parity invariant" paragraph (Consumers item 2), and a matching back-reference from the parity paragraph to the "Cross-Task `file_scope` Overlap Check" section, so neither can be read in isolation to the wrong conclusion again.
-- [ ] While in Consumers item 2: its heartbeat-wiring sentence names "`skill-implementer/SKILL.md`'s phase-transition point", but item 5 of the same list states that `skill-implementer/SKILL.md` has no such point and that the heartbeat lives in `agents/general-implementation-agent.md`'s Stage 4D. Correct item 2 to match item 5. This is a one-sentence pointer fix in the same paragraph family, not a scope expansion.
-- [ ] Verify no task numbers were introduced; cite file and section names only.
+- [x] Rewrite the "Same-session bypass" bullet in the "Cross-Task `file_scope` Overlap Check" section. Its current second half — "Multi-task dispatch sessions are suffixed per-task (`sess_..._${task_num}`) and are therefore distinct sessions for this purpose — they ARE enforced against each other" — is now factually wrong and must be replaced with the reconciliation: multi-task dispatch batches share ONE bare `session_id` across every per-task acquire (required by the parity invariant), so a same-batch sibling's held lock IS bypassed by this rule; that is not a hole, because in-batch `file_scope` collisions are detected and deferred earlier by the batch-admission pre-check (`orchestrate-batch-admit.sh`, Step 2.5 of each multi-task command, which reports `defer_reason: file_scope_collision` with `collision_scope: in_batch`) before the acquire loop ever runs. *(completed)*
+- [x] Add a forward cross-reference from that bullet to the "Register/acquire parity invariant" paragraph (Consumers item 2), and a matching back-reference from the parity paragraph to the "Cross-Task `file_scope` Overlap Check" section, so neither can be read in isolation to the wrong conclusion again. *(completed)*
+- [x] While in Consumers item 2: its heartbeat-wiring sentence names "`skill-implementer/SKILL.md`'s phase-transition point", but item 5 of the same list states that `skill-implementer/SKILL.md` has no such point and that the heartbeat lives in `agents/general-implementation-agent.md`'s Stage 4D. Correct item 2 to match item 5. This is a one-sentence pointer fix in the same paragraph family, not a scope expansion. *(completed)*
+- [x] Verify no task numbers were introduced; cite file and section names only. *(completed)*
 
 **Timing**: 30 minutes
 

@@ -132,8 +132,15 @@ Consumers section).
   protecting against overlap.
 - **Same-session bypass**: a foreign lock held by the SAME literal `session_id` is skipped
   entirely, even if its `file_scope` overlaps. This mirrors the task-number check's same-session
-  re-entry property. Multi-task dispatch sessions are suffixed per-task (`sess_..._${task_num}`)
-  and are therefore distinct sessions for this purpose — they ARE enforced against each other.
+  re-entry property. Multi-task dispatch batches share ONE bare `session_id` across every
+  per-task `acquire` call (required by the "Register/acquire parity invariant" below), so a
+  same-batch sibling's held lock IS bypassed by this rule — two tasks in the same batch are never
+  enforced against each other by this check. That is not a hole: in-batch `file_scope` collisions
+  are detected and deferred earlier, by the batch-admission pre-check
+  (`orchestrate-batch-admit.sh`, invoked at Step 2.5 of each multi-task command with
+  `defer_reason: file_scope_collision` and `collision_scope: in_batch`), before Step 3's acquire
+  loop ever runs. See "Register/acquire parity invariant" under Consumers item 2 below for the
+  session-id-sharing requirement this bypass depends on.
 - **Fresh overlapping foreign lock**: refuse. Two-line `ABORT:` message names the other task
   number, its holding session, its heartbeat age, the stale threshold, and the overlapping path.
   Exit 1 — same exit code as the task-number refusal, no new exit-code class.
@@ -1064,8 +1071,10 @@ the same conversation) always succeeds. This property has a dedicated functional
    acquire/release in the multi-task loop) — these paths bypass the gate scripts entirely and
    need their own acquire/release bracketing. Heartbeat refresh is wired at existing natural
    checkpoints: `skill-orchestrate/SKILL.md`'s Stage 3 cycle loop (alongside the existing
-   `.orchestrator-loop-guard` refresh) and `skill-implementer/SKILL.md`'s phase-transition point
-   (alongside `update-phase-status.sh`). Because create-if-missing lives inside `acquire` itself
+   `.orchestrator-loop-guard` refresh) and `agents/general-implementation-agent.md`'s Stage 4D
+   phase transition (alongside `update-phase-status.sh`) — the implementer's real per-phase
+   checkpoint; `skill-implementer/SKILL.md` has none and is not touched by this wiring (see item 5
+   below, which states this same fact). Because create-if-missing lives inside `acquire` itself
    (see the `acquire` contract above), both of these gate-bypassing consumers dispatch tasks whose
    directory does not exist yet without any change of their own — the fix is entirely internal to
    `cmd_acquire`/`resolve_task_dir`.
@@ -1079,7 +1088,11 @@ the same conversation) always succeeds. This property has a dedicated functional
    the batch's own union-`file_scope` registration read as a foreign live session, and every lock
    acquire in the batch is refused against its own registration. A new multi-task lock consumer
    MUST reuse the exact bare `session_id` string across its `session-register` call and every
-   `acquire`/`release`/`heartbeat` call it makes on behalf of that same batch.
+   `acquire`/`release`/`heartbeat` call it makes on behalf of that same batch. See the
+   "Same-session bypass" bullet under "Cross-Task `file_scope` Overlap Check" above for why this
+   same-bare-id sharing does not create an in-batch overlap hole: same-batch siblings ARE bypassed
+   by that check, but in-batch `file_scope` collisions are already excluded earlier by the
+   batch-admission pre-check.
 3. **`init-marker` call sites** (file-granularity, independent of the two paths above):
    `skill-orchestrate/SKILL.md` Stage 2 (`.orchestrator-loop-guard` creation) and
    `skill-orchestrate-hard/SKILL.md` Stage 2 (`.orchestrator-loop-guard` AND
