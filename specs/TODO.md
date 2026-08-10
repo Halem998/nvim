@@ -33,7 +33,7 @@ next_project_number: 1016
 
 ### Orchestration Concurrency
 
-1008 [NOT STARTED] — skill-orchestrate/SKILL.md has a session-id mismatch between two 
+1008 [RESEARCHED] — skill-orchestrate/SKILL.md has a session-id mismatch between two 
 
 ## Tasks
 
@@ -215,10 +215,11 @@ CONSTRAINT: do not drive this task with multi-task /orchestrate until err_178634
 ---
 
 ### 1008. Fix orchestrate mt session id mismatch
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
+- **Research**: [1008_fix_orchestrate_mt_session_id_mismatch/reports/01_mt-session-id-self-contention.md]
 
 **Description**: skill-orchestrate/SKILL.md has a session-id mismatch between two of its own construction sites (MT-1 and MT-4), causing lock self-contention that fully blocks multi-task /orchestrate, a documented capability. Recorded as err_1786349061524_pY97cE, severity critical.
 

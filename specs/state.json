@@ -49,14 +49,22 @@
     {
       "project_number": 1008,
       "project_name": "fix_orchestrate_mt_session_id_mismatch",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "description": "skill-orchestrate/SKILL.md has a session-id mismatch between two of its own construction sites (MT-1 and MT-4), causing lock self-contention that fully blocks multi-task /orchestrate, a documented capability. Recorded as err_1786349061524_pY97cE, severity critical.\n\nTARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, the two session-id construction sites referenced by the MT-1/MT-4 stage labels.\n\nWORK: locate both construction sites, determine why they produce different session_id values for what should be the same orchestrated dispatch, and unify them so a single session_id is used consistently across the stages that acquire and later reference the task lock. Add a regression test or fixture that exercises a multi-task /orchestrate invocation end to end and confirms no self-contention on the task lock.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until it is fixed (self-evidently -- the defect blocks the very mechanism that would exercise the fix). Use single-task /orchestrate or /implement to work this task.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "topic": "orchestration-concurrency",
       "created": "2026-08-10T08:32:05Z",
-      "last_updated": "2026-08-10T08:32:05Z",
+      "last_updated": "2026-08-10T14:03:14Z",
       "file_scope": [
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ],
+      "session_id": "sess_1786370015_5e32a2",
+      "artifacts": [
+        {
+          "path": "specs/1008_fix_orchestrate_mt_session_id_mismatch/reports/01_mt-session-id-self-contention.md",
+          "type": "report",
+          "summary": "Root-cause analysis of the MT-1/MT-4 session-id mismatch causing task-lock self-contention, with minimal fix and regression-test design."
+        }
       ]
     },
     {
