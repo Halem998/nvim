@@ -20,7 +20,7 @@
         "briefing"
       ],
       "summary": "Unified index schema: global Literature/ repo structure, per-repo sub-index (specs/literature-index.json), and runtime resolution",
-      "line_count": 97,
+      "line_count": 117,
       "load_when": {
         "agents": [
           "literature-agent"
@@ -49,7 +49,7 @@
         "agent-exploration"
       ],
       "summary": "Briefing+tools pattern: how agents interact with literature using Read and literature-search.sh on demand",
-      "line_count": 138,
+      "line_count": 156,
       "load_when": {
         "agents": [
           "literature-agent",
@@ -126,7 +126,7 @@
         "citekey",
         "title-similarity"
       ],
-      "summary": "How to resolve an index.json doc_id to its Zotero PDF: live-API-vs-sqlite-vs-snapshot tradeoffs, derived (never hardcoded) storage root, citekey-vs-real-key gotcha, and title-search truncation/similarity-floor mitigations",
+      "summary": "Resolve an index.json doc_id to its Zotero PDF: live-API vs sqlite vs snapshot tradeoffs, derived storage root, citekey-vs-real-key gotcha, title-search truncation/similarity mitigations",
       "line_count": 114,
       "load_when": {
         "agents": [
@@ -201,7 +201,7 @@
         "online-ingest",
         "in_zotero_no_pdf"
       ],
-      "summary": "How literature-ingest-online.sh creates a new Zotero item with a PDF attachment (item-add wrapping zot add --pdf), the unconfirmed envelope-field-name mitigation, the mandatory %PDF gate, storage re-pointing, and the in_zotero_no_pdf attach-to-existing sub-path",
+      "summary": "How literature-ingest-online.sh creates a Zotero item with PDF attachment (item-add wrapping zot add --pdf), envelope-field mitigation, %PDF gate, storage re-pointing, in_zotero_no_pdf sub-path",
       "line_count": 124,
       "load_when": {
         "agents": [
@@ -211,6 +211,234 @@
         ],
         "commands": [
           "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/domain/extension-dependencies.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "dependencies",
+        "manifest",
+        "filetypes"
+      ],
+      "keywords": [
+        "dependencies",
+        "manifest",
+        "filetypes",
+        "core",
+        "transitive",
+        "extension-loading"
+      ],
+      "summary": "Why the literature manifest declares only core: filetypes is not a transitive dependency and must be loaded explicitly by repos that need it alongside literature",
+      "line_count": 22,
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/domain/sparse-coverage.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "sparse",
+        "coverage",
+        "briefing",
+        "directive"
+      ],
+      "keywords": [
+        "sparse",
+        "LITERATURE_SPARSE_THRESHOLD",
+        "lit-coverage",
+        "SPARSE_PROMPT_NEEDED",
+        "briefing",
+        "orchestrator-mode"
+      ],
+      "summary": "Sparse-coverage signalling in literature-briefing.sh/literature-lit-flag-resolve.sh (threshold, lit-coverage marker, SPARSE_PROMPT_NEEDED); points to CLAUDE.md merge source for full flow",
+      "line_count": 33,
+      "load_when": {
+        "agents": [
+          "literature-agent",
+          "general-research-agent",
+          "general-implementation-agent",
+          "planner-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/research",
+          "/plan",
+          "/implement"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/domain/zotero-integration.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "zotero",
+        "integration",
+        "setup",
+        "csl-json"
+      ],
+      "keywords": [
+        "zotero",
+        "better-bibtex",
+        "csl-json",
+        "zot",
+        "zotero-library.json",
+        "setup",
+        "export"
+      ],
+      "summary": "Zotero integration overview: the CSL-JSON export search path vs the zot CLI direct path, the Better BibTeX keep-updated export setup, and which consumers depend on each",
+      "line_count": 41,
+      "load_when": {
+        "agents": [
+          "literature-agent",
+          "general-research-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/cite"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/patterns/literature-command-modes.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "command",
+        "discover",
+        "integrate",
+        "modes",
+        "tiers"
+      ],
+      "keywords": [
+        "mode-a",
+        "mode-b",
+        "discover",
+        "integrate",
+        "literature-discover",
+        "literature-ingest",
+        "semantic-scholar",
+        "unpaywall",
+        "arxiv",
+        "SOURCES.md"
+      ],
+      "summary": "The two-mode /literature command: argument-shape mode detection, Mode A three-tier discovery (index, Zotero, online) with ingest-or-record outcomes, and Mode B ingestion",
+      "line_count": 39,
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/patterns/cite-workflow.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "cite",
+        "citation",
+        "verification",
+        "gaps"
+      ],
+      "keywords": [
+        "cite",
+        "citation",
+        "cite-extract",
+        "confidence",
+        "gaps",
+        "unconfirmed",
+        "verification"
+      ],
+      "summary": "The /cite verification workflow: extract, match, score by confidence, interactively select, and create research tasks for unverified claims; plus the --gaps flag and graceful script degradation",
+      "line_count": 33,
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/cite"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/tools/literature-dir-config.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "configuration",
+        "environment",
+        "literature-dir"
+      ],
+      "keywords": [
+        "LITERATURE_DIR",
+        "settings.json",
+        "env-var",
+        "fallback",
+        "sources",
+        "centralized-repository"
+      ],
+      "summary": "LITERATURE_DIR resolution: the $HOME/Projects/Literature default, the settings.json/env-var override, the sources/ prefix, and the two-tier fallback to per-project specs/literature/",
+      "line_count": 29,
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/tools/zotero-scripts.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "zotero",
+        "scripts",
+        "tools",
+        "inventory"
+      ],
+      "keywords": [
+        "zotero-search",
+        "zotero-read",
+        "zotero-write",
+        "zotero-setup",
+        "zotero-chunk",
+        "zotero-attach-chunks",
+        "cite-extract",
+        "literature-ingest-online"
+      ],
+      "summary": "Inventory of the Zotero-related scripts shipped by this extension (search, read, write, setup, chunk, attach-chunks, cite-extract, online-ingest bridge) plus the separate-argument search gotcha",
+      "line_count": 29,
+      "load_when": {
+        "agents": [
+          "literature-agent",
+          "general-research-agent",
+          "general-implementation-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/cite"
         ]
       }
     }

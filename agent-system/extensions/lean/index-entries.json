@@ -207,7 +207,7 @@
     },
     {
       "path": "project/lean4/tools/mcp-tools-guide.md",
-      "line_count": 140,
+      "line_count": 149,
       "load_when": {
         "agents": [
           "lean-research-agent",
@@ -468,7 +468,7 @@
     },
     {
       "path": "project/lean4/README.md",
-      "line_count": 25,
+      "line_count": 26,
       "load_when": {
         "agents": [
           "lean-research-agent",
@@ -638,6 +638,28 @@
         "cslib",
         "hard-mode",
         "context-hygiene",
+        "contracts"
+      ]
+    },
+    {
+      "path": "project/lean4/domain/hard-mode.md",
+      "line_count": 51,
+      "load_when": {
+        "agents": [
+          "lean-research-hard-agent",
+          "lean-implementation-hard-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean hard mode: when to use --hard, hard-mode routing and skill-agent mapping, H2/H3/H4/H5/H9 contracts, contract override files",
+      "keywords": [
+        "lean4",
+        "hard-mode",
+        "routing",
         "contracts"
       ]
     }

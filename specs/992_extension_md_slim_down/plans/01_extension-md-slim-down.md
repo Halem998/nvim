@@ -174,16 +174,16 @@ additional live references beyond the three named, handle them in this phase rat
 
 ---
 
-### Phase 2: Trim literature/EXTENSION.md (169L) [NOT STARTED]
+### Phase 2: Trim literature/EXTENSION.md (169L) [COMPLETED]
 
 **Goal**: Reduce `literature/EXTENSION.md` to the four required sections under 60 lines, relocating
 its nine detail sections into `literature/context/project/literature/{domain,patterns,tools}/`.
 
 **Tasks**:
-- [ ] Read `literature/EXTENSION.md` in full and the two dedup candidates
+- [x] Read `literature/EXTENSION.md` in full and the two dedup candidates
       `context/project/literature/domain/literature-index.md` and
-      `context/project/literature/domain/format-decision.md` BEFORE creating any file.
-- [ ] Move/merge per the research migration map: Dependencies note -> `domain/`; Global Repository
+      `context/project/literature/domain/format-decision.md` BEFORE creating any file. *(completed)*
+- [x] Move/merge per the research migration map: Dependencies note -> `domain/`; Global Repository
       and Per-Repo Sub-Index -> merge into existing `domain/literature-index.md` if it already covers
       the material; Briefing+Tools Agent Pattern -> `patterns/`; Sparse-Coverage Detection -> short
       `domain/` file that mostly points at the fuller authority in `core/merge-sources/claudemd.md`'s
@@ -191,12 +191,14 @@ its nine detail sections into `literature/context/project/literature/{domain,pat
       Centralized Repository (env var / settings key config) -> `tools/`; Format Decision paragraph ->
       collapse to one line plus the existing `domain/format-decision.md` pointer; Zotero Integration
       prose -> `domain/`; Zotero script table -> `tools/`; `/cite` workflow prose -> `patterns/`.
-- [ ] Add a schema-conformant `index-entries.json` entry for every newly created file
+      *(completed)*
+- [x] Add a schema-conformant `index-entries.json` entry for every newly created file
       (`path`, `domain`, `subdomain`, `summary`, `line_count`, `load_when`; no `description`/`tags`).
-- [ ] Rewrite `EXTENSION.md` to Header + Routing Table (Skill-Agent Mapping) + Command List
-      (`/literature` rows folded with the `/cite` rows) + Context Pointers (max 5 `@`-pointers).
-- [ ] Confirm `wc -l` <= 60 and each section within budget (Header 3-5, Routing 5-15, Commands 5-15,
-      Pointers 3-5).
+      *(completed: 2 overlong summaries repaired during Phase 8 gate to satisfy the 200-char maxLength)*
+- [x] Rewrite `EXTENSION.md` to Header + Routing Table (Skill-Agent Mapping) + Command List
+      (`/literature` rows folded with the `/cite` rows) + Context Pointers (max 5 `@`-pointers). *(completed)*
+- [x] Confirm `wc -l` <= 60 and each section within budget (Header 3-5, Routing 5-15, Commands 5-15,
+      Pointers 3-5). *(completed: 33 lines total)*
 
 **Timing**: 1.5 hours
 
@@ -222,7 +224,7 @@ than hitting the estimated count.
 
 ---
 
-### Phase 3: Trim email/EXTENSION.md (106L) [NOT STARTED]
+### Phase 3: Trim email/EXTENSION.md (106L) [COMPLETED]
 
 **Goal**: Reduce `email/EXTENSION.md` to the four required sections under 60 lines by relocating the
 68-line Safety Invariants block and Key Technologies, and resolve the dangling
@@ -230,22 +232,22 @@ than hitting the estimated count.
 isolation content.
 
 **Tasks**:
-- [ ] Read `email/EXTENSION.md` in full plus the existing `context/project/email/domain/`
+- [x] Read `email/EXTENSION.md` in full plus the existing `context/project/email/domain/`
       files (`wrapper-contracts.md`, `staleness-detection.md`, `archive-mode-risk.md`) to identify
-      which invariant bullets are already covered there and only need a pointer.
-- [ ] Create `context/project/email/domain/index-architecture.md` at exactly the path the existing
+      which invariant bullets are already covered there and only need a pointer. *(completed)*
+- [x] Create `context/project/email/domain/index-architecture.md` at exactly the path the existing
       dangling reference names, carrying the "Account isolation, folder-scoped only" content
       (the three `folder:` query forms and their live behavior). This is deliberate in-scope work,
-      not an out-of-scope typo fix.
-- [ ] Consolidate the remaining invariant bullets not already covered by an existing domain file into
+      not an out-of-scope typo fix. *(completed: 70 lines)*
+- [x] Consolidate the remaining invariant bullets not already covered by an existing domain file into
       `context/project/email/domain/safety-invariants.md`; fold Key Technologies into that file or a
-      sibling `domain/` file.
-- [ ] Set `load_when.agents` to include `email-implementation-agent` and `load_when.task_types` to
+      sibling `domain/` file. *(completed: 102 lines)*
+- [x] Set `load_when.agents` to include `email-implementation-agent` and `load_when.task_types` to
       include `email` on every new entry, so the operational safety content stays auto-loaded for the
-      agents that depend on it.
-- [ ] Rewrite `EXTENSION.md` to Header + Task-Type Routing (Routing Table) + Skill-Agent Mapping
-      folded into that same table + Command List + Context Pointers.
-- [ ] Confirm `wc -l` <= 60 and per-section budgets.
+      agents that depend on it. *(completed)*
+- [x] Rewrite `EXTENSION.md` to Header + Task-Type Routing (Routing Table) + Skill-Agent Mapping
+      folded into that same table + Command List + Context Pointers. *(completed)*
+- [x] Confirm `wc -l` <= 60 and per-section budgets. *(completed: 37 lines total)*
 
 **Timing**: 1.25 hours
 
@@ -275,27 +277,29 @@ cover less, split into a third file rather than exceeding a reasonable single-fi
 
 ---
 
-### Phase 4: Trim lean/EXTENSION.md (73L) [NOT STARTED]
+### Phase 4: Trim lean/EXTENSION.md (73L) [COMPLETED]
 
 **Goal**: Reduce `lean/EXTENSION.md` to the four required sections under 60 lines by moving MCP
 Integration and the 36-line Lean Hard Mode block into `context/project/lean4/`.
 
 **Tasks**:
-- [ ] Read `lean/EXTENSION.md` in full plus the dedup candidates
+- [x] Read `lean/EXTENSION.md` in full plus the dedup candidates
       `context/project/lean4/tools/mcp-tools-guide.md`, `tools/blocked-mcp-tools.md`, and
       `patterns/mcp-fallback-table.md` -- the MCP Integration section very likely merges into one of
-      these rather than warranting a new file.
-- [ ] Move the MCP Integration section into the best-matching existing `tools/` file (merge) or a new
-      `tools/` file only if no existing file fits.
-- [ ] Move the Lean Hard Mode block: the "when to use `--hard`" rationale into a new
+      these rather than warranting a new file. *(completed)*
+- [x] Move the MCP Integration section into the best-matching existing `tools/` file (merge) or a new
+      `tools/` file only if no existing file fits. *(completed: merged into mcp-tools-guide.md)*
+- [x] Move the Lean Hard Mode block: the "when to use `--hard`" rationale into a new
       `context/project/lean4/domain/` file; keep the hard-mode routing/skill-agent rows only if they
       fit inside the 15-line Routing Table budget, otherwise move them alongside the rationale.
-- [ ] Create new files under `context/project/lean4/` -- NOT `context/project/lean/`, which does not
+      *(completed: new domain/hard-mode.md, 51 lines)*
+- [x] Create new files under `context/project/lean4/` -- NOT `context/project/lean/`, which does not
       exist. Set each new entry's `subdomain` to the value the extension's existing entries already
-      use (`"lean"`), matching convention rather than the path segment.
-- [ ] Rewrite `EXTENSION.md` to Header + Routing Table (Language Routing + Skill-Agent Mapping + Rules
-      folded) + Command List + Context Pointers.
-- [ ] Confirm `wc -l` <= 60 and per-section budgets.
+      use (`"lean"`), matching convention rather than the path segment. *(completed: verified single
+      `"lean"` subdomain value across all entries, no `context/project/lean/` directory created)*
+- [x] Rewrite `EXTENSION.md` to Header + Routing Table (Language Routing + Skill-Agent Mapping + Rules
+      folded) + Command List + Context Pointers. *(completed)*
+- [x] Confirm `wc -l` <= 60 and per-section budgets. *(completed: 35 lines total)*
 
 **Timing**: 1 hour
 
@@ -321,26 +325,29 @@ before creating anything.
 
 ---
 
-### Phase 5: Trim cslib/EXTENSION.md (71L) [NOT STARTED]
+### Phase 5: Trim cslib/EXTENSION.md (71L) [COMPLETED]
 
 **Goal**: Reduce `cslib/EXTENSION.md` to the four required sections under 60 lines by moving the
 23-line "When to Use --hard" block, MCP Integration, and the CI Verification Pipeline into existing
 `context/project/cslib/` files wherever they already cover the material.
 
 **Tasks**:
-- [ ] Read `cslib/EXTENSION.md` in full plus the dedup candidates `context/project/cslib/tools/lake-commands.md`
+- [x] Read `cslib/EXTENSION.md` in full plus the dedup candidates `context/project/cslib/tools/lake-commands.md`
       and `context/project/cslib/standards/ci-pipeline.md` BEFORE creating any file -- the CI
-      Verification Pipeline section very likely belongs in one of these, not in a new sibling.
-- [ ] Move "When to Use --hard" (23 lines) into a new `context/project/cslib/domain/` file.
-- [ ] Merge MCP Integration and the CI Verification Pipeline into the existing `tools/`/`standards/`
-      files identified above; create a new file only if neither fits.
-- [ ] Add index entries for any newly created file; update the `line_count` of any existing entry
-      whose file grew from a merge.
-- [ ] Rewrite `EXTENSION.md` to Header + Routing Table (Language Routing + Skill-Agent Mapping) +
-      Command List + Context Pointers.
-- [ ] Confirm `wc -l` <= 60 and per-section budgets (Skill-Agent Mapping is 12 lines today, already
+      Verification Pipeline section very likely belongs in one of these, not in a new sibling. *(completed)*
+- [x] Move "When to Use --hard" (23 lines) into a new `context/project/cslib/domain/` file.
+      *(completed: new domain/hard-mode-selection.md, 47 lines)*
+- [x] Merge MCP Integration and the CI Verification Pipeline into the existing `tools/`/`standards/`
+      files identified above; create a new file only if neither fits. *(completed: no near-duplicate
+      CI-pipeline file created -- grep confirms only the pre-existing tools/lake-commands.md and
+      standards/ci-pipeline.md cover that ground)*
+- [x] Add index entries for any newly created file; update the `line_count` of any existing entry
+      whose file grew from a merge. *(completed)*
+- [x] Rewrite `EXTENSION.md` to Header + Routing Table (Language Routing + Skill-Agent Mapping) +
+      Command List + Context Pointers. *(completed)*
+- [x] Confirm `wc -l` <= 60 and per-section budgets (Skill-Agent Mapping is 12 lines today, already
       inside the 15-line Routing Table budget only if Language Routing folds in -- check the combined
-      count).
+      count). *(completed: 33 lines total)*
 
 **Timing**: 1 hour
 
@@ -367,23 +374,25 @@ neither existing file fits.
 
 ---
 
-### Phase 6: Trim present/EXTENSION.md (64L) [NOT STARTED]
+### Phase 6: Trim present/EXTENSION.md (64L) [COMPLETED]
 
 **Goal**: Reduce `present/EXTENSION.md` to the four required sections under 60 lines by moving Talk
 Modes and Talk Library into `context/project/present/domain/` and tightening the 17-line Commands
 table into the 15-line budget.
 
 **Tasks**:
-- [ ] Read `present/EXTENSION.md` in full plus the dedup candidate
-      `context/project/present/domain/presentation-types.md` BEFORE creating any file.
-- [ ] Move Talk Modes and Talk Library into `domain/presentation-types.md` if it already covers the
+- [x] Read `present/EXTENSION.md` in full plus the dedup candidate
+      `context/project/present/domain/presentation-types.md` BEFORE creating any file. *(completed)*
+- [x] Move Talk Modes and Talk Library into `domain/presentation-types.md` if it already covers the
       material, otherwise into a single new `domain/` file (both sections together, not two files).
-- [ ] Fold Language Routing into the Skill-Agent Mapping table (they are the same axis) or drop the
-      redundant one.
-- [ ] Compress the Commands table to <= 15 lines; if it cannot compress, move the least-load-bearing
+      *(completed: new domain/talk-modes-and-library.md, both sections together in one file)*
+- [x] Fold Language Routing into the Skill-Agent Mapping table (they are the same axis) or drop the
+      redundant one. *(completed: single "### Routing" table combining task type/operation/skill/agent)*
+- [x] Compress the Commands table to <= 15 lines; if it cannot compress, move the least-load-bearing
       usage-variant rows into `context/project/present/patterns/` and leave the canonical command rows.
-- [ ] Add index entries for any new file; update `line_count` for any existing file that grew.
-- [ ] Confirm `wc -l` <= 60 and per-section budgets.
+      *(completed: Commands section is 9 lines, within the 15-line budget)*
+- [x] Add index entries for any new file; update `line_count` for any existing file that grew. *(completed)*
+- [x] Confirm `wc -l` <= 60 and per-section budgets. *(completed: 35 lines total)*
 
 **Timing**: 0.75 hours
 
@@ -408,26 +417,29 @@ shaving required sections below their minimum budgets.
 
 ---
 
-### Phase 7: Trim nix/EXTENSION.md (62L) [NOT STARTED]
+### Phase 7: Trim nix/EXTENSION.md (62L) [COMPLETED]
 
 **Goal**: Reduce `nix/EXTENSION.md` to the four required sections under 60 lines by moving Key
 Technologies, Build Verification, and MCP-NixOS Integration out, and dropping the Context Categories
 meta-section that the required Context Pointers section replaces.
 
 **Tasks**:
-- [ ] Read `nix/EXTENSION.md` in full plus the dedup candidates
+- [x] Read `nix/EXTENSION.md` in full plus the dedup candidates
       `context/project/nix/tools/nixos-rebuild-guide.md` and `context/project/nix/tools/home-manager-guide.md`
-      BEFORE creating any file -- the Build Verification bash block very likely duplicates them.
-- [ ] Move Build Verification into whichever of those two existing guides fits (or split across both);
-      create a new file only if neither covers it.
-- [ ] Move Key Technologies into an existing `context/project/nix/domain/` file (`flakes.md`,
-      `nixos-modules.md`, `home-manager.md`) or a new `domain/` file if none fits.
-- [ ] Create `context/project/nix/tools/mcp-nixos-integration.md` for the MCP-NixOS Integration
-      section (research found no existing tools file covering it).
-- [ ] DROP the Context Categories section entirely -- it is a meta-description of the
+      BEFORE creating any file -- the Build Verification bash block very likely duplicates them. *(completed)*
+- [x] Move Build Verification into whichever of those two existing guides fits (or split across both);
+      create a new file only if neither covers it. *(completed: merged into domain/flakes.md's
+      "Build Verification and Debugging" section)*
+- [x] Move Key Technologies into an existing `context/project/nix/domain/` file (`flakes.md`,
+      `nixos-modules.md`, `home-manager.md`) or a new `domain/` file if none fits. *(completed:
+      merged into README.md's new "Key Technologies" section)*
+- [x] Create `context/project/nix/tools/mcp-nixos-integration.md` for the MCP-NixOS Integration
+      section (research found no existing tools file covering it). *(completed)*
+- [x] DROP the Context Categories section entirely -- it is a meta-description of the
       `domain/patterns/standards/tools` taxonomy that the required Context Pointers section replaces.
-- [ ] Add index entries for any new file; update `line_count` for any existing file that grew.
-- [ ] Confirm `wc -l` <= 60 and per-section budgets.
+      *(completed: no "Context Categories" heading remains)*
+- [x] Add index entries for any new file; update `line_count` for any existing file that grew. *(completed)*
+- [x] Confirm `wc -l` <= 60 and per-section budgets. *(completed: 31 lines total)*
 
 **Timing**: 1 hour
 
@@ -454,29 +466,44 @@ files. Confirm by reading `tools/nixos-rebuild-guide.md`, `tools/home-manager-gu
 
 ---
 
-### Phase 8: Full gate, line-count sync, and zero-advisory attestation [NOT STARTED]
+### Phase 8: Full gate, line-count sync, and zero-advisory attestation [COMPLETED]
 
 **Goal**: Prove the verification bar: zero Rule U advisories across all 19 extensions, every new
 context file schema-conformant and accurately line-counted, no regressions in any other rule, and no
 task-number citations introduced into deliverables.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check`; correct
-      any drift with `--write`.
-- [ ] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and
-      capture the full output; confirm exit 0 and zero `Rule U` lines.
-- [ ] Re-run the checker with `SCHEMA_CONFORMANCE_GATE_MODE=hard` as a dry proof that the follow-on
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check`; correct
+      any drift with `--write`. *(completed: ran the deployed copy at `.claude/scripts/` per its
+      required-deployed-tree guard, since it resolves entries from the source store regardless --
+      "CHECK PASSED: all line_count values are exact", 480/480 entries across all 19 extensions)*
+- [x] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and
+      capture the full output; confirm exit 0 and zero `Rule U` lines. *(completed: exit 0, zero
+      "Rule U" occurrences in output, all 19 extensions + project-wide report PASS)*
+- [x] Re-run the checker with `SCHEMA_CONFORMANCE_GATE_MODE=hard` as a dry proof that the follow-on
       flip will pass -- do NOT change the default in the script (that is the follow-on's scope).
-- [ ] Validate every new/modified `index-entries.json` against `core/context/index.schema.json`
+      *(completed: exit 0, all 19 extensions PASS under hard mode; script default left untouched)*
+- [x] Validate every new/modified `index-entries.json` against `core/context/index.schema.json`
       (required keys present, forbidden `description`/`tags` absent, `load_when` restricted to
-      `agents`/`commands`/`task_types`/`always`).
-- [ ] Re-measure `wc -l` for all 19 `EXTENSION.md` files that still exist; record the before/after
-      table in the implementation summary.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` and
-      `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh`; confirm clean.
-- [ ] Confirm no file under `.claude/**` was modified by this task
-      (`git status --short -- .claude/` is empty apart from pre-existing unrelated state).
-- [ ] Confirm every `@`-pointer in every trimmed `EXTENSION.md` resolves to a file that exists.
+      `agents`/`commands`/`task_types`/`always`). *(completed: jsonschema validation found and fixed
+      3 overlong `summary` fields (>200 chars) across literature (2) and email (1) index-entries.json;
+      all 6 touched extensions now VALID against the schema)*
+- [x] Re-measure `wc -l` for all 19 `EXTENSION.md` files that still exist; record the before/after
+      table in the implementation summary. *(completed: 17 EXTENSION.md files exist (core, slidev
+      deleted); table recorded in the implementation summary)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` and
+      `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh`; confirm clean. *(completed:
+      both exit 0 -- "PASS: 0 unexempted task-reference occurrences across 4 tree(s)" and
+      "ROUTING WIRING LINT PASSED", 323 passed / 0 failed)*
+- [x] Confirm no file under `.claude/**` was modified by this task
+      (`git status --short -- .claude/` is empty apart from pre-existing unrelated state). *(completed:
+      `git status --short -- .claude/` returns empty)*
+- [x] Confirm every `@`-pointer in every trimmed `EXTENSION.md` resolves to a file that exists.
+      *(completed: all 27 pointers across the 6 trimmed files resolve to an existing file on disk;
+      email and lean use a `.claude/`-prefixed pointer form matching the pre-existing `nvim`
+      extension's established convention rather than the bare `context/...` form literature/present/
+      cslib/nix use -- both forms are already live in the repo (nvim predates this task) and every
+      referenced FILE exists under either interpretation, which is the plan's stated bar)*
 
 **Timing**: 0.75 hours
 

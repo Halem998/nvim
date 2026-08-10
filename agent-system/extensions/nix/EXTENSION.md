@@ -1,6 +1,7 @@
 ## Nix Extension
 
-This project includes NixOS and Home Manager configuration support via the nix extension.
+NixOS and Home Manager configuration support with MCP-NixOS integration for package/option
+validation.
 
 ### Language Routing
 
@@ -15,48 +16,16 @@ This project includes NixOS and Home Manager configuration support via the nix e
 | skill-nix-research | nix-research-agent | sonnet | NixOS/Home Manager/flakes research with MCP-NixOS |
 | skill-nix-implementation | nix-implementation-agent | sonnet | Nix configuration implementation with verification |
 
-### Key Technologies
+### Commands
 
-- **NixOS**: Declarative Linux distribution with reproducible system configurations
-- **Home Manager**: User-level declarative configuration management
-- **Nix Flakes**: Reproducible, hermetic package management with lockfiles
-- **MCP-NixOS**: Model Context Protocol server for package/option search and validation
+This extension provides no dedicated slash commands. Tasks with `task_type: nix` route through
+the core lifecycle commands (`/research N`, `/plan N`, `/implement N`) using the skill-agent
+mappings above.
 
-### Build Verification
+### Context
 
-```bash
-# Check flake syntax and evaluate outputs
-nix flake check
-
-# Show flake outputs
-nix flake show
-
-# Build NixOS configuration
-nixos-rebuild build --flake .#hostname
-
-# Build Home Manager configuration
-home-manager build --flake .#user
-
-# Evaluate specific expression
-nix eval .#path
-```
-
-### Context Categories
-
-- **Domain**: Core Nix concepts (Nix language, flakes, NixOS modules, Home Manager)
-- **Patterns**: Implementation patterns (modules, overlays, derivations)
-- **Standards**: Coding conventions (style guide)
-- **Tools**: Tool-specific guides (nixos-rebuild, home-manager)
-
-### MCP-NixOS Integration
-
-The MCP-NixOS server provides enhanced package and option validation:
-
-```bash
-# Available via MCP tools when configured:
-mcp__nixos__nix(action="search", query="pkgname", source="nixpkgs")
-mcp__nixos__nix(action="options", query="services.X", source="nixos-options")
-mcp__nixos__nix_versions(package="nodejs")
-```
-
-Agents gracefully degrade to WebSearch and CLI commands when MCP is unavailable.
+- @context/project/nix/README.md - Key technologies, directory map, loading strategy
+- @context/project/nix/domain/flakes.md - Flake structure, inputs/outputs, build verification
+- @context/project/nix/tools/nixos-rebuild-guide.md - System rebuild, testing, rollback
+- @context/project/nix/tools/home-manager-guide.md - Home Manager CLI and configuration workflows
+- @context/project/nix/tools/mcp-nixos-integration.md - MCP-NixOS tools and CLI fallbacks

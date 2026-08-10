@@ -2,6 +2,13 @@
 
 Domain knowledge for NixOS and Home Manager configuration development.
 
+## Key Technologies
+
+- **NixOS**: Declarative Linux distribution with reproducible system configurations
+- **Home Manager**: User-level declarative configuration management
+- **Nix Flakes**: Reproducible, hermetic package management with lockfiles
+- **MCP-NixOS**: Model Context Protocol server for package/option search and validation
+
 ## Directory Structure
 
 ```
@@ -20,7 +27,8 @@ project/nix/
 │   └── nix-style-guide.md      # Formatting, naming conventions
 └── tools/                       # Tool-specific guides
     ├── nixos-rebuild-guide.md  # System rebuild workflows
-    └── home-manager-guide.md   # Home Manager workflows
+    ├── home-manager-guide.md   # Home Manager workflows
+    └── mcp-nixos-integration.md # MCP-NixOS package/option validation
 ```
 
 ## Loading Strategy

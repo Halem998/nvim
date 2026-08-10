@@ -1,0 +1,57 @@
+{
+  "phase": 3,
+  "phase_name": "Trim email/EXTENSION.md (106L)",
+  "started_at": "2026-08-09T00:10:00Z",
+  "last_updated": "2026-08-09T17:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read email/EXTENSION.md and existing domain files to identify covered invariant bullets",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Create domain/index-architecture.md at the dangling reference path",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/email/context/project/email/domain/index-architecture.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Consolidate remaining invariant bullets and Key Technologies into domain/safety-invariants.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/email/context/project/email/domain/safety-invariants.md",
+        "agent-system/extensions/email/README.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Set load_when.agents/task_types on every new entry",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/email/index-entries.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Rewrite EXTENSION.md to the four required sections",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/email/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Confirm wc -l <= 60 and per-section budgets",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

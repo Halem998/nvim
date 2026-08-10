@@ -1,0 +1,54 @@
+{
+  "phase": 5,
+  "phase_name": "Trim cslib/EXTENSION.md (71L)",
+  "started_at": "2026-08-09T00:10:00Z",
+  "last_updated": "2026-08-09T17:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read cslib/EXTENSION.md and dedup candidates (lake-commands.md, ci-pipeline.md)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Move When to Use --hard into new domain/hard-mode-selection.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/context/project/cslib/domain/hard-mode-selection.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Merge MCP Integration and CI Verification Pipeline into existing tools/standards files",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Add/update index entries",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/index-entries.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Rewrite EXTENSION.md to the four required sections",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Confirm wc -l <= 60 and per-section budgets",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

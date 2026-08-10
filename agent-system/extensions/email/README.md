@@ -36,7 +36,9 @@ execute the approved archive/delete/unsubscribe-extract actions. The agent never
 | `commands/email.md` | The `/email` slash command (default/`--all`/`--archive` cleanup, or `--sync`) |
 | `hooks/mail-guard.sh` | Allowlist/deny PreToolUse hook (technical enforcement layer) |
 | `context/project/email/` | Harvested preferences plus wrapper-contract, pattern, and standard docs |
+| `context/project/email/domain/safety-invariants.md` | The non-negotiable operating rules for every `email` task (wrapper-only, enforcement layers, gates, batch/expiry, account isolation) |
 | `context/project/email/domain/wrapper-contracts.md` | Ground-truth-verified wrapper contract (incl. classify pagination contract and folder tokens) |
+| `context/project/email/domain/index-architecture.md` | Key technologies, the three `folder:` query forms, account isolation, and the deliberately-unused `tag:<account>` scheme |
 | `context/project/email/domain/archive-mode-risk.md` | Account archive blast radius, reversible-vs-hard boundary, asymmetric confidence policy |
 | `context/project/email/patterns/bulk-bucket-review.md` | Sender/domain bucket bulk-approval pattern (`--all` mode review gate) |
 | `context/project/email/design/email-to-memory-preferences.md` | Authoritative design for routing wrapper-confirmed cleanup decisions into `email/preferences/{account}/{key}` memory-vault preference memories — resolves G1-G8, verified against real mail; implemented by the Stage 7 harvest below |

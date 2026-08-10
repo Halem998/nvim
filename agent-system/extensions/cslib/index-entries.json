@@ -324,6 +324,31 @@
       ]
     },
     {
+      "path": "project/cslib/domain/hard-mode-selection.md",
+      "line_count": 47,
+      "load_when": {
+        "agents": [
+          "cslib-research-hard-agent",
+          "cslib-implementation-hard-agent",
+          "planner-hard-agent"
+        ],
+        "task_types": [
+          "cslib",
+          "pr"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "cslib",
+      "summary": "Criteria for selecting --hard on CSLib tasks, the H2/H3/H4/H7/H9 contracts it adds, and its cost multiplier",
+      "keywords": [
+        "cslib",
+        "hard-mode",
+        "selection",
+        "contracts",
+        "cost"
+      ]
+    },
+    {
       "path": "project/cslib/patterns/lint-fix-wave-assignment.md",
       "line_count": 82,
       "load_when": {

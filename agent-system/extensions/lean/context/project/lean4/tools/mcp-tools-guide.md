@@ -4,6 +4,15 @@
 
 This guide describes the lean-lsp-mcp tools available for Lean 4 development in Claude Code. These tools are accessed directly via MCP (Model Context Protocol) with the `mcp__lean-lsp__*` prefix.
 
+The `lean-lsp` MCP server provides four capability groups:
+
+| Capability | Tools |
+|------------|-------|
+| Goal state inspection | `lean_goal`, `lean_minimal_hypotheses`, `lean_term_goal` |
+| Proof search | `lean_state_search`, `lean_hammer_premise`, `lean_multi_attempt` |
+| Mathlib lookup | `lean_loogle`, `lean_leansearch`, `lean_leanfinder`, `lean_local_search` |
+| Code actions and diagnostics | `lean_code_actions`, `lean_hover_info`, `lean_build`, `lean_verify` |
+
 ### CRITICAL: Blocked Tools - DO NOT USE
 
 **NEVER call these tools directly.** They have known bugs that cause incorrect behavior.

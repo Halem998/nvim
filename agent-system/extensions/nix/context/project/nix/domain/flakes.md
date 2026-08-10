@@ -225,9 +225,14 @@ in {
 }
 ```
 
-## Debugging
+## Build Verification and Debugging
+
+Flake-level verification -- run these before building a full configuration:
 
 ```bash
+# Check flake syntax and evaluate all outputs
+nix flake check
+
 # Show flake outputs
 nix flake show
 
@@ -237,3 +242,8 @@ nix eval .#nixosConfigurations.hostname.config.system.stateVersion
 # Build without switching
 nix build .#nixosConfigurations.hostname.config.system.build.toplevel
 ```
+
+Configuration-level build verification lives in the tool guides: `nixos-rebuild build --flake
+.#hostname` (see `tools/nixos-rebuild-guide.md`) and `home-manager build --flake .#user` (see
+`tools/home-manager-guide.md`) each build without activating, so they confirm a configuration
+compiles without touching the running system.

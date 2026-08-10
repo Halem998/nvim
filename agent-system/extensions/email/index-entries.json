@@ -33,6 +33,38 @@
       "summary": "Frozen, ground-truth-verified contract for the five email wrapper binaries: safety classes, global flags, classify pagination, folder-scope query tokens, and the index-freshness gate"
     },
     {
+      "path": "project/email/domain/safety-invariants.md",
+      "load_when": {
+        "agents": [
+          "email-implementation-agent"
+        ],
+        "task_types": [
+          "email"
+        ],
+        "commands": []
+      },
+      "line_count": 102,
+      "domain": "project",
+      "subdomain": "email",
+      "summary": "Non-negotiable email operating rules: wrapper-only invariant, two-layer enforcement, propose-review-confirm-execute, delete/PATH preconditions, freshness gate, cursor, sub-50 drain, archive gates"
+    },
+    {
+      "path": "project/email/domain/index-architecture.md",
+      "load_when": {
+        "agents": [
+          "email-implementation-agent"
+        ],
+        "task_types": [
+          "email"
+        ],
+        "commands": []
+      },
+      "line_count": 70,
+      "domain": "project",
+      "subdomain": "email",
+      "summary": "Himalaya/notmuch/mbsync layering and account scoping: three folder: query forms (glob-broken, exact-match, regex), unused tag:<account> scheme, per-account liveness/no-silent-fallback rule"
+    },
+    {
       "path": "project/email/domain/staleness-detection.md",
       "load_when": {
         "agents": [

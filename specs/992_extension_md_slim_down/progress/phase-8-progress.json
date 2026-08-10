@@ -1,0 +1,71 @@
+{
+  "phase": 8,
+  "phase_name": "Full gate, line-count sync, and zero-advisory attestation",
+  "started_at": "2026-08-09T17:00:00Z",
+  "last_updated": "2026-08-09T17:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run generate-context-line-counts.sh --check; correct drift",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Run check-extension-docs.sh; confirm exit 0 and zero Rule U lines",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Re-run checker with SCHEMA_CONFORMANCE_GATE_MODE=hard as dry proof",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Validate every new/modified index-entries.json against the schema",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/index-entries.json",
+        "agent-system/extensions/email/index-entries.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Re-measure wc -l for all EXTENSION.md files; record before/after table",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Run check-task-references.sh and lint-routing-wiring.sh; confirm clean",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Confirm no file under .claude/** was modified",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Confirm every @-pointer in every trimmed EXTENSION.md resolves to an existing file",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.4",
+      "description": "Validate every new/modified index-entries.json against core/context/index.schema.json",
+      "type": "altered",
+      "reason": "jsonschema validation surfaced 3 pre-existing schema violations (summary fields exceeding the 200-char maxLength) in literature (2 entries) and email (1 entry) index-entries.json, left over from Phases 2-3 work done before this gate phase. Fixed in place by shortening the summaries below 200 chars while preserving their meaning, then re-validated clean.",
+      "annotation": "*(deviation: altered -- fixed 3 overlong summary fields discovered during schema validation, not originally anticipated as gate-phase work)*"
+    }
+  ]
+}

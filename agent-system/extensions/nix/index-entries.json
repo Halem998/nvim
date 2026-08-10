@@ -11,10 +11,10 @@
           "nix"
         ]
       },
-      "line_count": 93,
+      "line_count": 101,
       "domain": "project",
       "subdomain": "nix",
-      "summary": "Nix context overview with directory structure and loading strategy"
+      "summary": "Nix context overview with key technologies, directory structure, and loading strategy"
     },
     {
       "path": "project/nix/domain/nix-language.md",
@@ -43,10 +43,10 @@
           "nix"
         ]
       },
-      "line_count": 239,
+      "line_count": 249,
       "domain": "project",
       "subdomain": "nix",
-      "summary": "Nix flake structure, inputs, outputs, and lockfile management"
+      "summary": "Nix flake structure, inputs, outputs, lockfile management, and flake-level build verification"
     },
     {
       "path": "project/nix/domain/nixos-modules.md",
@@ -175,6 +175,22 @@
       "domain": "project",
       "subdomain": "nix",
       "summary": "Home Manager CLI commands and configuration workflows"
+    },
+    {
+      "path": "project/nix/tools/mcp-nixos-integration.md",
+      "load_when": {
+        "agents": [
+          "nix-research-agent",
+          "nix-implementation-agent"
+        ],
+        "task_types": [
+          "nix"
+        ]
+      },
+      "line_count": 54,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "MCP-NixOS server tools for package/option validation with CLI fallbacks"
     }
   ]
 }

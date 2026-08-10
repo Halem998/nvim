@@ -1162,6 +1162,44 @@
           "/slides"
         ]
       }
+    },
+    {
+      "path": "project/present/domain/talk-modes-and-library.md",
+      "domain": "project",
+      "subdomain": "present",
+      "topics": [
+        "talk",
+        "modes",
+        "library",
+        "themes",
+        "templates"
+      ],
+      "keywords": [
+        "talk",
+        "mode",
+        "library",
+        "slides",
+        "theme",
+        "component",
+        "template"
+      ],
+      "summary": "Talk mode durations and slide counts, plus the talk library map (patterns, contents, templates, components, themes, rubric)",
+      "line_count": 50,
+      "load_when": {
+        "agents": [
+          "slides-research-agent",
+          "pptx-assembly-agent",
+          "slidev-assembly-agent",
+          "slide-planner-agent",
+          "slide-critic-agent"
+        ],
+        "commands": [
+          "/slides"
+        ],
+        "task_types": [
+          "present"
+        ]
+      }
     }
   ]
 }

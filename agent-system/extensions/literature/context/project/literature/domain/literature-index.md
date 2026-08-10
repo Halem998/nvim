@@ -6,7 +6,21 @@ The literature system uses a two-level index architecture:
 
 1. **Global index** (`$LITERATURE_DIR/index.json`) — The single source of truth for all documents in the centralized Literature/ repository. Contains full metadata for every document and chunk.
 
-2. **Per-repo sub-index** (`specs/literature-index.json`) — A lightweight reference index for each project. Contains only `doc_id` references pointing to entries in the global index. No cached metadata — all metadata is resolved at runtime from the global index.
+2. **Per-repo sub-index** (`specs/literature-index.json`) — A lightweight reference index for each project. Contains only `doc_id` references pointing to entries in the global index. No cached metadata — all metadata is resolved at runtime from the global index. This index is read by `literature-briefing.sh` at skill preflight time.
+
+## Global Repository Contents
+
+The global Literature/ repo (`$LITERATURE_DIR`, default `~/Projects/Literature/`) is the single
+source of truth for all converted literature:
+
+| Path | Contents |
+|------|----------|
+| `$LITERATURE_DIR/index.json` | Enriched v2 metadata (222+ entries) |
+| `$LITERATURE_DIR/sources/` | Converted markdown organized by document |
+| `$LITERATURE_DIR/.literature.db` | SQLite FTS5 full-text search database |
+| `$LITERATURE_DIR/zotero-library.json` | Better BibTeX CSL-JSON auto-export |
+
+See `tools/literature-dir-config.md` for how `$LITERATURE_DIR` is resolved and overridden.
 
 ## Global Index Schema (v2)
 
@@ -95,3 +109,9 @@ bash .claude/scripts/literature-search.sh blackburn_2002 --by-doc
 ```
 
 Returns JSON array of matching chunks with `doc_id`, `section_path`, `score`, and `snippet` fields.
+
+## Related
+
+- `tools/literature-dir-config.md` — `$LITERATURE_DIR` resolution and the two-tier fallback
+- `domain/extension-dependencies.md` — what this extension does and does not auto-load
+- `patterns/agent-exploration.md` — how agents navigate the indexed corpus

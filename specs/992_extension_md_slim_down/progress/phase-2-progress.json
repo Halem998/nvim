@@ -1,0 +1,59 @@
+{
+  "phase": 2,
+  "phase_name": "Trim literature/EXTENSION.md (169L)",
+  "started_at": "2026-08-09T00:10:00Z",
+  "last_updated": "2026-08-09T17:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read literature/EXTENSION.md and dedup candidates before creating any file",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Move/merge nine detail sections into domain/patterns/tools per the migration map",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/context/project/literature/domain/literature-index.md",
+        "agent-system/extensions/literature/context/project/literature/domain/format-decision.md",
+        "agent-system/extensions/literature/context/project/literature/domain/extension-dependencies.md",
+        "agent-system/extensions/literature/context/project/literature/domain/sparse-coverage.md",
+        "agent-system/extensions/literature/context/project/literature/domain/zotero-integration.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/agent-exploration.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/cite-workflow.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/literature-command-modes.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/zotero-item-creation.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/zotero-pdf-resolution.md",
+        "agent-system/extensions/literature/context/project/literature/tools/zotero-scripts.md",
+        "agent-system/extensions/literature/context/project/literature/tools/literature-dir-config.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add schema-conformant index-entries.json entries for every new file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/index-entries.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Rewrite EXTENSION.md to the four required sections",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Confirm wc -l <= 60 and per-section budgets",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

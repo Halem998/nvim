@@ -15,6 +15,7 @@ This directory contains context files for Lean 4 theorem prover development.
 - `patterns/tactic-patterns.md` - Common tactics and when to use them
 - `domain/mathlib-overview.md` - Mathlib library organization
 - `standards/lean4-style-guide.md` - Coding style conventions
+- `domain/hard-mode.md` - `--hard` routing, hard-mode agents, and behavioral contracts
 
 ## For Research
 

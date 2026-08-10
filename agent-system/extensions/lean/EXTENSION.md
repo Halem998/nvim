@@ -1,14 +1,13 @@
 ## Lean 4 Extension
 
-This project includes Lean 4 theorem prover support via the lean extension.
+This project includes Lean 4 theorem prover support via the lean extension: proof development,
+Mathlib search, and Lake build management, backed by the `lean-lsp` MCP server.
 
-### Language Routing
+### Routing Table
 
 | Language | Research Tools | Implementation Tools |
 |----------|----------------|---------------------|
 | `lean4` | WebSearch, WebFetch, Read, Lean MCP | Read, Write, Edit, Bash (lake), Lean MCP |
-
-### Skill-Agent Mapping
 
 | Skill | Agent | Purpose |
 |-------|-------|---------|
@@ -17,57 +16,20 @@ This project includes Lean 4 theorem prover support via the lean extension.
 | skill-lake-repair | lean-implementation-agent | Lake build repair |
 | skill-lean-version | (direct execution) | Lean version management |
 
-### Rules
-
-- lean4.md - Lean 4 coding conventions and MCP tool guidance (**/*.lean)
-- plan-compliance.md - Strict plan-sequence compliance when an implementation plan exists (**/*.lean)
-
-### MCP Integration
-
-The `lean-lsp` MCP server provides:
-- Goal state inspection (`lean_goal`)
-- Proof search (`lean_state_search`, `lean_hammer_premise`)
-- Mathlib lookup (`lean_loogle`, `lean_leansearch`, `lean_leanfinder`)
-- Code actions and diagnostics
+Rules (both apply to `**/*.lean`): `lean4.md` — Lean 4 conventions and MCP tool guidance;
+`plan-compliance.md` — plan-sequence compliance. `--hard` routing: see hard-mode pointer below.
 
 ### Commands
 
-- `/lake` - Build management and error handling
-- `/lean` - Lean-specific proof assistance
+| Command | Usage | Description |
+|---------|-------|-------------|
+| `/lake` | `/lake` | Build management and error handling |
+| `/lean` | `/lean` | Lean-specific proof assistance |
 
-### Lean Hard Mode
+### Context Pointers
 
-Activate with `--hard` flag on `/research` or `/implement` commands for lean4 tasks.
-
-**When to use `--hard` for lean4**:
-1. Research previously returned "Mathlib likely has this" without finding the lemma
-2. Implementation dispatches produced analysis-heavy output without proof progress
-3. Task involves faithful transcription from a paper or proof sketch
-4. Three or more dispatches without completing a phase
-
-**Routing (hard mode)**:
-
-| Language | --hard Research | --hard Implement | --hard Plan |
-|----------|-----------------|------------------|-------------|
-| `lean4` | `skill-lean-research-hard` | `skill-lean-implementation-hard` | `skill-planner-hard` (core) |
-
-**Skill-Agent Mapping (hard mode)**:
-
-| Skill | Agent | Model | Purpose |
-|-------|-------|-------|---------|
-| skill-lean-research-hard | lean-research-hard-agent | opus | H2+H3+H4+H5 hard-mode Lean research |
-| skill-lean-implementation-hard | lean-implementation-hard-agent | opus | H2+H9 hard-mode Lean implementation |
-
-**Note**: `/plan --hard` for lean4 tasks uses `skill-planner-hard` (core hard planner).
-No lean4-specific planner hard agent is needed — the core planner handles lean4 phase sizing.
-
-**Behavioral Contracts Added by Hard Mode**:
-- **H2 (lean4)**: Formal proof line bar — first sorry-free lemma within 30% of tool calls
-- **H3 (lean4)**: 5-column lemma mapping table for literature-backed tasks
-- **H4**: Adversarial self-verification pass in every research dispatch
-- **H5**: Divergence audit mode (triggered by "divergence" or "audit" in focus_prompt)
-- **H9**: Sorry inventory tracking in every implementation dispatch end
-
-**Contract Override Files** (loaded automatically for hard agents):
-- `.claude/extensions/lean/context/contracts/anti-analysis.md` - H2 lean4 override
-- `.claude/extensions/lean/context/contracts/reference-grounding.md` - H3 lean4 override
+- @.claude/extensions/lean/context/project/lean4/README.md - Lean context index and navigation
+- @.claude/extensions/lean/context/project/lean4/domain/hard-mode.md - `--hard` routing, agents, contracts
+- @.claude/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md - Lean MCP server tool reference
+- @.claude/extensions/lean/context/project/lean4/tools/blocked-mcp-tools.md - Blocked tools and alternatives
+- @.claude/extensions/lean/context/project/lean4/patterns/mcp-fallback-table.md - MCP tool fallback strategies

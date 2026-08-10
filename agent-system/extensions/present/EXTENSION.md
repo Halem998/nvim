@@ -2,63 +2,34 @@
 
 Structured proposal development (grants) and research presentation creation (talks) in Typst and Slidev formats.
 
-### Skill-Agent Mapping
+### Routing
 
-| Skill | Agent | Model | Purpose |
-|-------|-------|-------|---------|
-| skill-grant | grant-agent | opus | Grant proposal research and drafting |
-| skill-budget | budget-agent | opus | Grant budget spreadsheet generation (XLSX) |
-| skill-timeline | timeline-agent | opus | Research project timeline planning |
-| skill-funds | funds-agent | opus | Research funding landscape analysis |
-| skill-slides | slides-research-agent | opus | Research talk material synthesis |
-| skill-slides | pptx-assembly-agent | opus | PowerPoint presentation assembly |
-| skill-slides | slidev-assembly-agent | opus | Slidev presentation assembly |
-| skill-slide-planning | slide-planner-agent | opus | Slide plan with design questions |
-| skill-slide-critic | slide-critic-agent | opus | Interactive slide critique with rubric evaluation |
+| Task Type | Operation | Skill | Agent | Model | Tools |
+|-----------|-----------|-------|-------|-------|-------|
+| `present` (bare), `present:grant` | research, implement | skill-grant | grant-agent | opus | WebSearch, WebFetch, Read, Write, Edit |
+| `present:budget` | research, implement | skill-budget | budget-agent | opus | WebSearch, WebFetch, Read, Write, Edit, Bash |
+| `present:timeline` | research, implement | skill-timeline | timeline-agent | opus | WebSearch, WebFetch, Read, Write, Edit |
+| `present:funds` | research, implement | skill-funds | funds-agent | opus | WebSearch, WebFetch, Read, Write, Edit, Bash |
+| `present:slides` | research, implement | skill-slides | slides-research-agent, pptx-assembly-agent, slidev-assembly-agent | opus | WebSearch, WebFetch, Read, Write, Edit |
+| `present:slides` | plan | skill-slide-planning | slide-planner-agent | opus | Read, Write, Edit |
+| `present:slides` | critique | skill-slide-critic | slide-critic-agent | opus | Read, Write, Edit |
+
+All other `present:*` task types use `skill-planner` / `planner-agent` for the plan operation.
 
 ### Commands
 
 | Command | Usage | Description |
 |---------|-------|-------------|
-| `/grant` | `/grant "Description"` | Create grant task (stops at [NOT STARTED]) |
-| `/grant` | `/grant N --draft ["focus"]` | Draft narrative sections (exploratory) |
-| `/grant` | `/grant N --budget ["guidance"]` | Develop budget with justification |
-| `/grant` | `/grant --revise N "description"` | Create revision task for existing grant |
-| `/budget` | `/budget "Description"` | Create grant budget task with forcing questions |
-| `/budget` | `/budget N` | Resume budget generation for existing task |
-| `/timeline` | `/timeline "Description"` | Create research timeline task |
-| `/timeline` | `/timeline N` | Resume timeline planning for existing task |
-| `/funds` | `/funds "Description"` | Create funding analysis task with forcing questions |
-| `/funds` | `/funds N` | Resume funding analysis for existing task |
-| `/slides` | `/slides "Description"` | Create research talk task with forcing questions |
-| `/slides` | `/slides N` | Resume research on existing talk task |
-| `/slides` | `/slides /path/to/file` | Use file as primary source material for talk |
-| `/slides` | `/slides N --critic [path\|prompt]` | Critique slide materials with interactive feedback loop |
+| `/grant` | `"Description"` \| `N --draft ["focus"]` \| `N --budget ["guidance"]` \| `--revise N "description"` | Create grant task (stops at [NOT STARTED]); draft narrative sections (exploratory); develop budget with justification; create a revision task for an existing grant |
+| `/budget` | `"Description"` \| `N` | Create or resume a grant budget task with forcing questions |
+| `/timeline` | `"Description"` \| `N` | Create or resume a research timeline task |
+| `/funds` | `"Description"` \| `N` | Create or resume a funding analysis task with forcing questions |
+| `/slides` | `"Description"` \| `N` \| `/path/to/file` \| `N --critic [path\|prompt]` | Create or resume a research talk task; use a file as primary source material; critique slides with an interactive feedback loop |
 
-### Language Routing
+### Context
 
-| Language | Task Type | Research Skill | Implementation Skill | Tools |
-|----------|-----------|----------------|---------------------|-------|
-| `present` | `grant` | `skill-grant` | `skill-grant` | WebSearch, WebFetch, Read, Write, Edit |
-| `present` | `budget` | `skill-budget` | `skill-budget` | WebSearch, WebFetch, Read, Write, Edit, Bash |
-| `present` | `timeline` | `skill-timeline` | `skill-timeline` | WebSearch, WebFetch, Read, Write, Edit |
-| `present` | `funds` | `skill-funds` | `skill-funds` | WebSearch, WebFetch, Read, Write, Edit, Bash |
-| `present` | `slides` | `skill-slides` | `skill-slides` | WebSearch, WebFetch, Read, Write, Edit |
-
-### Talk Modes
-
-| Mode | Duration | Slides | Use Case |
-|------|----------|--------|----------|
-| CONFERENCE | 15-20 min | 12-18 | Conference platform presentations |
-| SEMINAR | 45-60 min | 30-45 | Departmental seminars, job talks |
-| DEFENSE | 30-60 min | 25-40 | Grant defense, thesis defense |
-| POSTER | N/A | 1 | Poster session presentations |
-| JOURNAL_CLUB | 15-30 min | 10-15 | Paper review for journal club |
-
-### Talk Library
-
-The talk library at `context/project/present/talk/` contains:
-- **Patterns**: Slide structure definitions for each talk mode
-- **Content Templates**: Slidev-compatible markdown templates for slide types
-- **Components**: Vue components (FigurePanel, DataTable, CitationBlock, StatResult, FlowDiagram)
-- **Themes**: Academic-clean and clinical-teal visual themes
+- @context/project/present/domain/talk-modes-and-library.md - Talk modes (duration, slide counts) and the talk library
+- @context/project/present/domain/presentation-types.md - Per-mode audience, format, and selection guide
+- @context/project/present/domain/grant-workflow.md - Grant proposal development workflow
+- @context/project/present/patterns/talk-structure.md - Cross-mode slide organization patterns
+- @context/project/present/standards/character-limits.md - Section length and formatting limits

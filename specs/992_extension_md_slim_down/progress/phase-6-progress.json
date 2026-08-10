@@ -1,0 +1,54 @@
+{
+  "phase": 6,
+  "phase_name": "Trim present/EXTENSION.md (64L)",
+  "started_at": "2026-08-09T00:10:00Z",
+  "last_updated": "2026-08-09T17:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read present/EXTENSION.md and dedup candidate presentation-types.md",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Move Talk Modes and Talk Library into new domain/talk-modes-and-library.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/present/context/project/present/domain/talk-modes-and-library.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Fold Language Routing into Skill-Agent Mapping table",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/present/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Compress Commands table to <= 15 lines",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Add/update index entries",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/present/index-entries.json"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Confirm wc -l <= 60 and per-section budgets",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

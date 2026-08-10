@@ -1,0 +1,57 @@
+{
+  "phase": 4,
+  "phase_name": "Trim lean/EXTENSION.md (73L)",
+  "started_at": "2026-08-09T00:10:00Z",
+  "last_updated": "2026-08-09T17:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read lean/EXTENSION.md and MCP dedup candidates",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Merge MCP Integration into tools/mcp-tools-guide.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Move Lean Hard Mode block into new domain/hard-mode.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md",
+        "agent-system/extensions/lean/context/project/lean4/README.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Verify new files under context/project/lean4/ with subdomain=lean",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/index-entries.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Rewrite EXTENSION.md to the four required sections",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Confirm wc -l <= 60 and per-section budgets",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -9,6 +9,18 @@ instructions. Agents then explore literature on demand using existing tools.
 This replaces the old content-injection approach (`<literature-context>`) which blindly loaded
 all literature files up to a token budget.
 
+The briefing block costs ~300-500 tokens (vs 4,000-8,000 tokens for full injection). Total
+session cost depends on how many searches/reads the agent performs, but selectivity is always
+better than blind injection. Agents reach content through three on-demand routes:
+
+- **Read specific chunks**: the `Read` tool with absolute paths taken from the briefing
+- **Search full corpus**: `bash .claude/scripts/literature-search.sh "query"`
+- **Browse TOC**: `bash .claude/scripts/literature-search.sh --toc doc_id`
+
+**No `--zot` flag**: the former `--zot` flag was never wired and has been removed. All Zotero
+functionality is reached via `/literature` discovery (see
+`patterns/literature-command-modes.md`) or the `zotero-search.sh` script directly.
+
 ## What Agents Receive
 
 When `--lit` is active, the agent prompt includes:
@@ -136,3 +148,9 @@ Task: "Prove completeness of K modal logic"
 
 The `<literature-briefing>` block is a signal that literature is available and relevant — but
 agents should only search/read when the task actually requires it.
+
+## Related
+
+- `domain/sparse-coverage.md` — what happens when the briefing resolves almost nothing
+- `patterns/adhoc-navigation-directive.md` — the same navigation, requested conversationally
+- `patterns/literature-command-modes.md` — how documents enter the corpus in the first place
