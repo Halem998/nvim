@@ -40,12 +40,12 @@
     {
       "project_number": 11,
       "project_name": "expand_defect_class_vocabulary",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "description": "The system-defect vocabulary has a gap: defect classes exist for a narrow set of shapes, but at least three concrete instances from this batch do not fit cleanly into any existing defect_class value. Recorded as err_1786349061588_fqHbUZ, severity medium. Three concrete instances now ground the gap, confirmed by the capstone acceptance gate dispatch: lock/session contention (err_1786349061524_pY97cE, MT-1/MT-4 session-id mismatch), hook-regex/path-depth boundary defects (err_1786349061492_XpY38x, the 3-digit handoff-location regex), and deploy orphan-file drift (err_1786349061556_LuKGif / err_1786350581273_TAWj0I).\n\nTARGET: wherever defect_class is enumerated for system-defect-record.sh (search the source store for its schema/enum definition) and any consumer that switches on defect_class value.\n\nWORK: read the current defect_class enum, confirm the three instances above genuinely lack a fitting class (do not add classes for shapes that already have one), and add the minimum set of new classes needed to name them precisely -- for example a session/lock-contention class, a regex/path-boundary class, and an orphan-drift class. Update any documentation enumerating the vocabulary. Do not rename or remove existing classes as part of this task.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.",
       "topic": "agent-system",
       "created": "2026-08-10T08:32:45Z",
-      "last_updated": "2026-08-10T23:08:41Z",
+      "last_updated": "2026-08-10T23:14:51Z",
       "file_scope": [
         "agent-system/extensions/core/scripts/system-defect-record.sh",
         "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"
@@ -60,10 +60,16 @@
           "path": "specs/011_expand_defect_class_vocabulary/plans/01_defect-class-vocabulary-expansion.md",
           "type": "plan",
           "summary": "Three-phase plan adding SESSION_LOCK_CONTENTION, HOOK_REGEX_BOUNDARY_DEFECT, and DEPLOY_ORPHAN_DRIFT to the enum and the Signal A table, with cross-file round-trip verification."
+        },
+        {
+          "path": "specs/011_expand_defect_class_vocabulary/summaries/01_defect-class-vocabulary-expansion-summary.md",
+          "type": "summary",
+          "summary": "Added SESSION_LOCK_CONTENTION, HOOK_REGEX_BOUNDARY_DEFECT, and DEPLOY_ORPHAN_DRIFT to the defect_class enum and the Signal A table, with cross-file round-trip verification."
         }
       ],
       "dependencies": [],
-      "session_id": "sess_1786402783_e354c8"
+      "session_id": "sess_1786402783_e354c8",
+      "completion_summary": "Widened the defect_class enum from ten to thirteen values at both enumeration sites (system-defect-record.sh's case validator and system-defect-discrimination.md's Signal A table), leaving every existing class byte-identical and wiring no detector. Verified via bash -n, cross-file class-set diff, positive/negative round-trip invocations, and a producer audit of all 17 --defect-class call sites."
     },
     {
       "project_number": 9,

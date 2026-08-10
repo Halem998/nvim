@@ -11,14 +11,13 @@ next_project_number: 22
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 11,12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 9,13 | 17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-11 [PLANNED] — The system-defect vocabulary has a gap: defect classes exist for 
 12 [PARTIAL] — tests/run-all.sh is red and has been treated as permanently-expec
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
@@ -337,12 +336,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 11. Expand defect class vocabulary
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [011_expand_defect_class_vocabulary/reports/01_defect-class-vocabulary-gap.md]
 - **Plan**: [011_expand_defect_class_vocabulary/plans/01_defect-class-vocabulary-expansion.md]
+- **Summary**: [011_expand_defect_class_vocabulary/summaries/01_defect-class-vocabulary-expansion-summary.md]
 
 **Description**: The system-defect vocabulary has a gap: defect classes exist for a narrow set of shapes, but at least three concrete instances from this batch do not fit cleanly into any existing defect_class value. Recorded as err_1786349061588_fqHbUZ, severity medium. Three concrete instances now ground the gap, confirmed by the capstone acceptance gate dispatch: lock/session contention (err_1786349061524_pY97cE, MT-1/MT-4 session-id mismatch), hook-regex/path-depth boundary defects (err_1786349061492_XpY38x, the 3-digit handoff-location regex), and deploy orphan-file drift (err_1786349061556_LuKGif / err_1786350581273_TAWj0I).
 
