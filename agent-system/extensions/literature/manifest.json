@@ -63,7 +63,7 @@
   },
   "merge_targets": {
     "claudemd": {
-      "source": "EXTENSION.md",
+      "source": "merge-sources/claudemd.md",
       "target": ".claude/CLAUDE.md",
       "section_id": "extension_literature"
     },

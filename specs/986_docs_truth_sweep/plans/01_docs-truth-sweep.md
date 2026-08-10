@@ -348,48 +348,48 @@ links are broken, re-read the file to check the fold is still warranted on conte
 
 ---
 
-### Phase 4: Relocate merge-source content and fix the jq recipe [NOT STARTED]
+### Phase 4: Relocate merge-source content and fix the jq recipe [COMPLETED]
 
 **Goal**: `merge-sources/claudemd.md` sheds >=250 lines with every removed section in a durable
 home, the `--lit` documentation merges into CLAUDE.md only where the literature extension is
 loaded, and the always-loaded jq recipe is copy-pasteable.
 
 **Tasks**:
-- [ ] **Do this first.** Fix `context/patterns/context-discovery.md`'s "Adaptive Context Loading
+- [x] **Do this first.** Fix `context/patterns/context-discovery.md`'s "Adaptive Context Loading
       (Recommended Pattern)" block: line 196 declares `--arg lang "meta"` while line 203
       references `$task_type`, so copy-pasting yields
       `jq: error: $task_type is not defined at <top-level>`. Use `claudemd.md`'s inline Context
       Discovery copy (lines 518-547, already correct with `--arg task_type`) as the reference
       text — the later steps of this phase delete that reference.
-- [ ] Create `agent-system/extensions/literature/merge-sources/claudemd.md` as a **superset**: the
+- [x] Create `agent-system/extensions/literature/merge-sources/claudemd.md` as a **superset**: the
       current 33-line `EXTENSION.md` body first, then the 162-line `## Literature Mode (\`--lit\`)`
       section lifted from `merge-sources/claudemd.md` lines 335-496.
-- [ ] Repoint `agent-system/extensions/literature/manifest.json`'s
+- [x] Repoint `agent-system/extensions/literature/manifest.json`'s
       `merge_targets.claudemd.source` from `"EXTENSION.md"` to `"merge-sources/claudemd.md"`,
       keeping `target` and `section_id: "extension_literature"` unchanged.
-- [ ] Delete `agent-system/extensions/literature/EXTENSION.md`, following the documented precedent
+- [x] Delete `agent-system/extensions/literature/EXTENSION.md`, following the documented precedent
       by which `core/EXTENSION.md` and `slidev/EXTENSION.md` were deleted rather than trimmed once
       they stopped being a declared merge source (`check-extension-docs.sh:734-750`). Because Rule
       U's length check returns early unless the claudemd source is literally `EXTENSION.md`
       (line 773), the repointed literature extension leaves Rule U's scope entirely — the 60-line
       cap is satisfied by construction, not by budget.
-- [ ] **Do not** park the `--lit` content in `EXTENSION.md`. That is the explicitly forbidden
+- [x] **Do not** park the `--lit` content in `EXTENSION.md`. That is the explicitly forbidden
       approach and would turn the hardened Rule U gate red.
-- [ ] Remove the `## Literature Mode (\`--lit\`)` section (162 lines) from
+- [x] Remove the `## Literature Mode (\`--lit\`)` section (162 lines) from
       `merge-sources/claudemd.md`.
-- [ ] Remove the four other sections that restate an always-loaded file, each of which has a
+- [x] Remove the four other sections that restate an always-loaded file, each of which has a
       confirmed durable home; before removing each, verify the home actually covers the content
       and extend the home file if it does not:
       State Synchronization (46L, L139-184) -> `rules/state-management.md` (86L);
       Context Discovery (30L, L518-547) -> `context/patterns/context-discovery.md` (375L);
       Context Architecture (33L, L548-580) -> `context/architecture/context-layers.md` (99L);
       Multi-Task Creation Standards (25L, L589-613) -> `docs/reference/standards/multi-task-creation-standard.md` (469L).
-- [ ] Leave the 16-line jq Command Safety section (L620-635) in place if removing it would drop
+- [x] Leave the 16-line jq Command Safety section (L620-635) in place if removing it would drop
       `claudemd.md` below the point where the remaining prose still reads coherently; the >=250
       target is already met without it.
-- [ ] Replace each removed section with a one-line pointer to its durable home so no unique
+- [x] Replace each removed section with a one-line pointer to its durable home so no unique
       content and no discoverability is lost.
-- [ ] Reconcile `index-entries.json` line counts for any `context/` file extended above.
+- [x] Reconcile `index-entries.json` line counts for any `context/` file extended above.
 
 **Timing**: 1.5 hours
 

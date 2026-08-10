@@ -21,6 +21,41 @@ The system uses three independent context layers. Each has a distinct owner, lif
 | **Query** | `.claude/context/index.json` | `.context/index.json` | Direct file reads |
 | **Touched by loader** | Yes (copy + merge) | No | No |
 
+## Five-Layer Summary and Storage Decision Tree
+
+The three-layer model above groups "Agent Context" as a single row; in practice it is populated
+from two distinct sources (core files vs. extension files), and a fifth layer — Claude Code's own
+auto-memory — sits outside this system entirely. The full five-layer picture:
+
+| Layer | Location | Owner | Contains |
+|-------|----------|-------|----------|
+| Agent context | `.claude/context/` | Extension loader | Core agent patterns + extension domain knowledge |
+| Extensions | `.claude/extensions/*/context/` | Extension loader | Language-specific standards, tools, patterns |
+| Project context | `.context/` | User (via index.json) | Project conventions not covered by extensions |
+| Project memory | `.memory/` | Agents over time | Learned facts, discoveries, decisions |
+| Auto-memory | `~/.claude/projects/` | Claude Code | User preferences, behavioral corrections |
+
+**Where to store new content**:
+
+```
+Language-specific standard, pattern, or tool reference?
+  YES --> extension context (.claude/extensions/*/context/)
+
+Agent system pattern (orchestration, format, workflow)?
+  YES --> .claude/context/
+
+Project convention (coding style, naming, domain knowledge)?
+  YES --> .context/
+
+Learned fact from development (discovery, decision, pattern)?
+  YES --> .memory/
+
+User preference or behavioral correction?
+  YES --> auto-memory (automatic, no action needed)
+```
+
+This decision tree is the canonical version; CLAUDE.md's own copy is a one-line pointer to here.
+
 ## Layer Details
 
 ### 1. Agent Context (.claude/context/)

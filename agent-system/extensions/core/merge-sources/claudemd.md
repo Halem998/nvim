@@ -138,49 +138,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 
 ## State Synchronization
 
-TODO.md is generated from state.json. Update state.json first, then call `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md. The `update-task-status.sh` script calls `generate-todo.sh` internally, so explicit calls are only needed after manual state.json edits.
-
-### state.json Structure
-```json
-{
-  "next_project_number": 1,
-  "default_task_type": null,
-  "active_projects": [{
-    "project_number": 1,
-    "project_name": "task_slug",
-    "status": "planned",
-    "task_type": "general",
-    "completion_summary": "Required when status=completed",
-    "roadmap_items": ["Optional explicit roadmap items"]
-  }],
-  "repository_health": {
-    "last_assessed": "ISO8601 timestamp",
-    "status": "healthy"
-  }
-}
-```
-
-**`default_task_type`** (optional, null by default): When set to a non-null string, overrides the keyword table in `/task` step 4 for all new tasks in this project. Meta keywords ("meta", "agent", "command", "skill") always resolve to `meta` regardless of this field. Precedence: meta keywords > extension `keyword_overrides` > `default_task_type` > keyword table > `general`.
-
-### Completion Workflow
-- Non-meta tasks: `completion_summary` + optional `roadmap_items` -> /todo annotates ROADMAP.md
-- Meta tasks: `completion_summary` only (CLAUDE.md is auto-generated from merge-sources)
-
-### Vault Operation (Task Number Reset)
-
-When `next_project_number` exceeds 1000, the `/todo` command initiates vault archival:
-
-1. **Trigger**: `next_project_number > 1000` detected during /todo execution
-2. **User Confirmation**: AskUserQuestion with renumbering preview
-3. **Vault Creation**: Move `specs/archive/` to `specs/vault/{NN-vault}/`
-4. **Renumbering**: Tasks > 1000 renumbered by subtracting 1000 (e.g., 1003 -> 3)
-5. **State Reset**: `next_project_number` set to max(renumbered) + 1
-
-**Vault Fields** in state.json:
-- `vault_count`: Number of completed vault operations
-- `vault_history`: Array of vault metadata entries
-
-See `.claude/rules/state-management.md` for complete vault schema documentation.
+See `.claude/rules/state-management.md` for the state.json schema, `default_task_type` precedence, completion workflow, and vault operation (task number reset) mechanics.
 
 ## Git Commit Conventions
 
@@ -334,165 +292,10 @@ explicitly pass `--hard` to activate hard mode.
 
 ## Literature Mode (`--lit`)
 
-Literature mode produces a live, navigate-on-demand `<literature-briefing>` block for agent
-prompts — never a static content dump. Use this when a task involves implementing from a paper,
-specification, or reference document.
-
-### What `--lit` Does
-
-When `--lit` is passed to `/research`, `/plan`, `/implement`, or `/orchestrate`:
-- `--lit` triggers `literature-briefing.sh` to build a live `<literature-briefing>` block against
-  a corpus of pre-segmented literature chunks — the agent navigates on demand rather than
-  receiving injected file content.
-- Two source modes, matching `literature-briefing.sh`:
-  - **Per-repo mode** (default, no args): sourced from the per-repo sub-index
-    `specs/literature-index.json`, resolved against the global `$LITERATURE_DIR/index.json`.
-  - **Global-corpus mode** (`literature-briefing.sh --global "<query>"`): a live relevance search
-    over the global Literature corpus, used when no per-repo sub-index exists (see "Interactive
-    Sub-Index Setup Detection" below for when this mode is selected).
-- Both modes emit a single `<literature-briefing>` block containing document/chunk metadata plus
-  a "How to Use" footer instructing the agent to run `literature-search.sh` and `Read` specific
-  chunks on demand — no full-file content is ever injected.
-- The block is injected after `<memory-context>` (if any) and before task-specific instructions.
-- If `--lit` is not passed (`LIT_DISABLED`), nothing is injected. If a per-repo sub-index and the
-  global index are both absent (`GLOBAL_MISSING`), the skill emits a visible notice that no
-  literature is available and continues without a briefing — this is never a silent no-op (see
-  "Interactive Sub-Index Setup Detection" for the full missing-sub-index decision flow).
-- The only numeric limiter on any live path is `--top-n` (default 8 chunks), which applies to
-  global-corpus mode only.
-- **Sparse-coverage detection**: `literature-briefing.sh` also emits a machine-readable
-  `<!-- lit-coverage mode=repo|global seg_count=N sparse=true|false threshold=T -->` marker and,
-  when `sparse=true`, a loud `[SPARSE COVERAGE - N segment(s), threshold T]` banner (same family
-  as `[UNVERIFIED ...]` / `[DEGRADED RETRIEVAL ...]`). Sparse is `seg_count < threshold` (never
-  `<=`). `LITERATURE_SPARSE_THRESHOLD` (env var, default `3`) controls the threshold for both
-  this marker and the resolver's `SPARSE_PROMPT_NEEDED` directive below.
-
-### Ad-Hoc / Conversational Literature Requests
-
-Stage 4a (below) only runs inside a `/research|/plan|/implement|/orchestrate --lit` dispatch. When
-a user instead asks conversationally — outside any such dispatch — to consult "the literature", a
-paper, or otherwise invoke `--lit`-like behavior, the primary/root session follows
-`.claude/context/project/literature/patterns/adhoc-navigation-directive.md`: it runs
-`literature-lit-flag-resolve.sh --orchestrator-mode false` and surfaces the SAME three-option
-interactive question as Stage 4a ("Use global corpus now" / "Create curation task" / "Skip this
-run") — never silently injecting nothing and never silently auto-searching.
-
-### Interactive Sub-Index Setup Detection
-
-When `--lit` is used, each skill (skill-researcher, skill-planner, skill-implementer, and their
-`--hard` variants) resolves the situation via the shared helper
-`.claude/scripts/literature-lit-flag-resolve.sh`, which classifies the case and prints exactly
-one of SIX directives (`LIT_DISABLED`, `SUBINDEX_PRESENT`, `GLOBAL_MISSING`, `PROMPT_NEEDED`,
-`AUTONOMOUS_GLOBAL`, `SPARSE_PROMPT_NEEDED`) — this eliminates the prior per-skill duplication
-and, critically, ensures no directive branch defaults to an empty briefing without either a
-visible logged notice or an explicit user choice. There is no silent fallback. All six skills
-implement the branching via ONE shared, directly-executable block imported from
-`.claude/context/patterns/lit-stage4a-flow.md` rather than six independently-maintained copies.
-
-1. **No global index** (`GLOBAL_MISSING`): If the per-repo sub-index at
-   `specs/literature-index.json` is absent AND `~/Projects/Literature/index.json` (or
-   `$LITERATURE_DIR/index.json`) is also absent, the skill emits a visible notice that no
-   literature is available and continues without literature context. This is the one acceptable
-   empty branch, and it is explicitly announced, never silent.
-
-2. **Global index exists, sub-index missing, interactive context** (`PROMPT_NEEDED`): An
-   `AskUserQuestion` prompt appears with FOUR choices — three live outcomes plus one explicit,
-   non-silent skip:
-   - **Use global corpus now** (recommended default, listed first): Runs a live relevance
-     search against the global Literature corpus via
-     `literature-briefing-invoke.sh --global "<task description>"` and injects the result for
-     this run only. No setup, no file writes. If the result's `<!-- lit-coverage ... -->` marker
-     reports `sparse=true`, the skill re-prompts with the same four-option list (the
-     two-checkpoint shape) rather than silently accepting thin coverage — but only when this was
-     the option chosen, never after "Skip this run" or "Create curation task".
-   - **Create curation task**: Creates a task (`populate_literature_sub_index`) in TODO.md via
-     `.claude/scripts/literature-create-setup-task.sh`, then attempts to fork-populate
-     `specs/literature-index.json` inline so the current run also benefits; injects via the
-     no-arg `literature-briefing-invoke.sh` once the sub-index exists (or emits a visible notice
-     if the inline population did not complete this run).
-   - **Search online to ingest** (new): Runs `literature-discover.sh "<task description>"`,
-     filters candidate records to `open_access`/`paywall`/`in_zotero_no_pdf`, ingests each via the
-     `literature-ingest-online.sh --record` bridge (STABLE CONTRACT: input schema, directive
-     tokens, and exit codes are documented in that script's own header and are never changed by
-     this flow), then re-runs the per-repo briefing to pick up whatever was ingested. Live
-     network calls; interactive-choice-only, never triggered autonomously.
-   - **Skip this run**: An explicit, user-chosen decision to continue without literature context.
-     The skill logs a visible `[lit] Skipped by user choice` notice — non-silent because it is an
-     explicit choice, not a default.
-
-3. **Global index exists, sub-index missing, autonomous context** (`AUTONOMOUS_GLOBAL`): When
-   `orchestrator_mode == true` (e.g. `/orchestrate`), `AskUserQuestion` cannot prompt a human, so
-   the skill MUST NOT call it. It takes the deterministic default **"Use global corpus now"**:
-   it runs `literature-briefing-invoke.sh --global "<task description>"` and emits a visible
-   `[lit:auto]` notice to the transcript stating that the global-corpus briefing was
-   auto-selected because no per-repo sub-index exists and no human is available to prompt. This
-   is never a silent no-op. Online ingest is never triggered autonomously even if the resulting
-   briefing reports `sparse=true`.
-
-4. **Per-repo sub-index exists but is sparse** (`SPARSE_PROMPT_NEEDED`): The sub-index at
-   `specs/literature-index.json` exists but resolves to fewer than `LITERATURE_SPARSE_THRESHOLD`
-   entries (default `3`; includes zero). Interactive contexts get the SAME four-option
-   `AskUserQuestion` as `PROMPT_NEEDED` above (prompt wording names the sparse sub-index rather
-   than a missing one). Autonomous contexts (`orchestrator_mode == true`) reuse the existing
-   sub-index via the plain per-repo briefing and emit `[lit:auto]` — never `AskUserQuestion`,
-   never online ingest.
-
-The sub-index creation helper is `.claude/scripts/literature-create-setup-task.sh`. The
-global-corpus search mode is `.claude/scripts/literature-briefing-invoke.sh --global "<query>"
-[--top-n N]`; both the per-repo and global-corpus briefing modes share a single output section
-that always appends the "How to Use" footer. The interactive detection block lives in Stage 4a
-of each skill that supports `--lit` (skill-researcher, skill-planner, skill-implementer, and
-their `--hard` variants), each delegating classification to `literature-lit-flag-resolve.sh` and
-importing the single shared flow at `.claude/context/patterns/lit-stage4a-flow.md`.
-
-### orchestrator_mode Dual-Consumer / Autonomy Contract
-
-`orchestrator_mode` has TWO independent consumers: (1) the `.orchestrator-handoff.json`
-write-gate (see `docs/architecture/handoff-schema.md`), and (2) the literature Stage 4a autonomy
-gate above (`AUTONOMOUS_GLOBAL` / the autonomous branch of `SPARSE_PROMPT_NEEDED`). Both
-`skill-orchestrate` and `skill-orchestrate-hard` pass `orchestrator_mode: true` uniformly for
-research, plan, AND implement dispatches so the literature autonomy contract holds across all
-three `/orchestrate --lit` phases — never just the implement phase. A future change to either
-consumer's meaning MUST re-check the other before landing.
-
-### specs/literature/ Directory Convention
-
-The `specs/literature/` directory is user-maintained and not task-scoped:
-- Place paper summaries, specification documents, algorithm descriptions, or reference PDFs
-  (converted to .md/.txt) here
-- All files in the directory are available to any task when `--lit` is active
-- The directory is not created automatically — create it before using `--lit`
-- Suitable content: academic paper summaries, RFC/spec excerpts, algorithm pseudocode,
-  mathematical definitions the agent should treat as ground truth
-
-### When to Use `--lit`
-
-- Task requires implementing from a paper or formal specification
-- Agent needs stable reference material beyond what is in memory
-- Using `--hard` with H3 reference grounding tier "literature"
-- Task description mentions "paper to code", "spec to implementation", or cites a specific document
-
-### Relationship to `--clean`
-
-The two flags are independent:
-
-| Flag combination | Memory retrieval | Literature injection |
-|------------------|-----------------|---------------------|
-| (neither)        | active          | inactive            |
-| `--clean`        | suppressed      | inactive            |
-| `--lit`          | active          | active              |
-| `--clean --lit`  | suppressed      | active              |
-
-### Composability
-
-- `--lit` works with `--team`, `--hard`, `--fast`, and model flags
-- `--lit` is threaded through all dispatch contexts in skill-orchestrate
-- Per-invocation only: no sticky state in state.json
-
-### Per-Invocation Only
-
-`--lit` has no persistent state. Each invocation of `/research`, `/plan`, `/implement`, or
-`/orchestrate` must explicitly pass `--lit` to activate literature injection.
+The `--lit` documentation now lives in the literature extension's merge source
+(`agent-system/extensions/literature/merge-sources/claudemd.md`), merged into generated
+CLAUDE.md only where the literature extension is loaded. See
+`context/patterns/context-discovery.md` for the general context-loading model.
 
 ## Rules References
 
@@ -517,66 +320,11 @@ concluding a rule file is dead.
 
 ## Context Discovery
 
-Context is discovered from three independent layers, loaded in parallel:
-
-| Layer | Source | Notes |
-|-------|--------|-------|
-| Agent context | `.claude/context/index.json` | Core + extensions (merged by loader) |
-| Project context | `.context/index.json` | User conventions (may be empty) |
-| Project memory | `.memory/` files | Loaded directly, no index needed |
-
-```bash
-# Combined adaptive query (recommended) - loads matching context from all dimensions
-jq -r --arg agent "planner-agent" --arg task_type "meta" --arg cmd "/plan" '
-  .entries[] | select(
-    (.load_when.always == true) or
-    any(.load_when.agents[]?; . == $agent) or
-    any(.load_when.task_types[]?; . == $task_type) or
-    any(.load_when.commands[]?; . == $cmd)
-  ) | .path' .claude/context/index.json
-
-# Get line counts for budget calculation
-jq -r '.entries[] | select(.load_when.agents[]? == "planner-agent") | "\(.line_count)\t\(.path)"' .claude/context/index.json
-```
-
-**Empty Array Semantics**: Empty `load_when` arrays mean "never match". Use `"always": true` for universal files.
-
-See `.claude/context/patterns/context-discovery.md` for full query patterns including multi-layer discovery.
-
-**Extension Context**: Extension index entries are merged into `.claude/context/index.json` by the loader -- no separate extension query needed.
+See `.claude/context/patterns/context-discovery.md` for the full three-layer discovery model, the adaptive query pattern, and multi-layer discovery examples.
 
 ## Context Architecture
 
-Five layers provide context to agents. Each has a distinct owner and purpose.
-
-| Layer | Location | Owner | Contains |
-|-------|----------|-------|----------|
-| Agent context | `.claude/context/` | Extension loader | Core agent patterns + extension domain knowledge |
-| Extensions | `.claude/extensions/*/context/` | Extension loader | Language-specific standards, tools, patterns |
-| Project context | `.context/` | User (via index.json) | Project conventions not covered by extensions |
-| Project memory | `.memory/` | Agents over time | Learned facts, discoveries, decisions |
-| Auto-memory | `~/.claude/projects/` | Claude Code | User preferences, behavioral corrections |
-
-### Where to store new content
-
-```
-Language-specific standard, pattern, or tool reference?
-  YES --> extension context (.claude/extensions/*/context/)
-
-Agent system pattern (orchestration, format, workflow)?
-  YES --> .claude/context/
-
-Project convention (coding style, naming, domain knowledge)?
-  YES --> .context/
-
-Learned fact from development (discovery, decision, pattern)?
-  YES --> .memory/
-
-User preference or behavioral correction?
-  YES --> auto-memory (automatic, no action needed)
-```
-
-Full details: `.claude/context/architecture/context-layers.md`
+See `.claude/context/architecture/context-layers.md` for the full five-layer context model and the "Where to store new content" decision tree.
 
 ## Context Imports
 
@@ -588,28 +336,7 @@ Core context (always available):
 
 ## Multi-Task Creation Standards
 
-Commands that create multiple tasks follow a standardized 8-component pattern. See `.claude/docs/reference/standards/multi-task-creation-standard.md` for the complete specification.
-
-**Commands Using Multi-Task Creation**:
-| Command | Compliance | Notes |
-|---------|------------|-------|
-| `/meta` | Full (Reference) | All 8 components, Kahn's algorithm, DAG visualization |
-| `/fix-it` | Full | Interactive selection, topic grouping, internal dependencies |
-| `/review` | Partial | Tier-based selection, grouping; no dependencies |
-| `/errors` | Partial | Automatic mode (intentional); no interactive selection |
-| `/task --review` | Partial | Numbered selection, parent_task linking |
-
-**Required Components** (all multi-task creators):
-- Item Discovery - Identify potential tasks
-- Interactive Selection - AskUserQuestion with multiSelect
-- User Confirmation - Explicit "Yes, create tasks" before creation
-- State Updates - Atomic state.json + TODO.md updates
-
-**Optional Components** (for 3+ tasks):
-- Topic Grouping - Cluster related items
-- Dependency Declaration - Ask about task relationships
-- Topological Sorting - Kahn's algorithm for ordering
-- Visualization - Linear chain or layered DAG display
+See `.claude/docs/reference/standards/multi-task-creation-standard.md` for the full 8-component pattern, per-command compliance table, and reference implementation.
 
 ## Error Handling
 

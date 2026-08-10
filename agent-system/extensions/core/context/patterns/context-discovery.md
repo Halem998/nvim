@@ -194,7 +194,7 @@ Load context that matches any active dimension - always, agent, language, or com
 ```bash
 # Full combined query for adaptive context loading
 jq -r --arg agent "general-implementation-agent" \
-      --arg lang "meta" \
+      --arg task_type "meta" \
       --arg cmd "/implement" '
   .entries[] |
   select(
