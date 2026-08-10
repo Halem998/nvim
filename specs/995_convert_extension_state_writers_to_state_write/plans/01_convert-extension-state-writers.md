@@ -233,14 +233,14 @@ directory after; the two-line-per-site artifact means site count may be lower th
 
 ---
 
-### Phase 3: Convert present/skills [NOT STARTED]
+### Phase 3: Convert present/skills [COMPLETED]
 
 **Goal**: Every hand-rolled write in the 5 present skill files routes through `state-write.sh`.
 
 **Tasks**:
-- [ ] Convert each site in the 5 `SKILL.md` files per Phase 1's recipe.
-- [ ] Preserve bindings and filter semantics; leave TODO.md handling untouched.
-- [ ] Extract bash fences from every edited file and run `bash -n` over each.
+- [x] Convert each site in the 5 `SKILL.md` files per Phase 1's recipe. *(completed)*
+- [x] Preserve bindings and filter semantics; leave TODO.md handling untouched. *(completed)*
+- [x] Extract bash fences from every edited file and run `bash -n` over each. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -260,14 +260,14 @@ directory after; the two-line-per-site artifact means site count may be lower th
 
 ---
 
-### Phase 4: Convert lean/skills [NOT STARTED]
+### Phase 4: Convert lean/skills [COMPLETED]
 
 **Goal**: Every hand-rolled write in the 4 lean skill files routes through `state-write.sh`.
 
 **Tasks**:
-- [ ] Convert each site in the 4 `SKILL.md` files per Phase 1's recipe.
-- [ ] Confirm the hard-mode variants (`-hard` skills) keep their own stage semantics unchanged.
-- [ ] Extract bash fences from every edited file and run `bash -n` over each.
+- [x] Convert each site in the 4 `SKILL.md` files per Phase 1's recipe. *(completed)*
+- [x] Confirm the hard-mode variants (`-hard` skills) keep their own stage semantics unchanged. *(completed)*
+- [x] Extract bash fences from every edited file and run `bash -n` over each. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -288,25 +288,25 @@ Confirm against Phase 1's record; re-grep after.
 
 ---
 
-### Phase 5: Convert cslib/skills (individually reviewed) [NOT STARTED]
+### Phase 5: Convert cslib/skills (individually reviewed) [COMPLETED]
 
 **Goal**: Convert all 5 cslib sites, each reviewed individually, and fix the hardcoded
 absolute-path bug as part of its site's conversion.
 
 **Tasks**:
-- [ ] `skill-pr-implementation/SKILL.md`: drop `CSLIB_DIR`/`CSLIB_STATE` entirely and write the
+- [x] `skill-pr-implementation/SKILL.md`: drop `CSLIB_DIR`/`CSLIB_STATE` entirely and write the
       project-relative `specs/state.json`, matching the same file's own earlier
       `update-task-status.sh preflight` call. Do NOT carry the absolute path into a
-      `--state-file` argument.
-- [ ] `skill-pr-review-implementation/SKILL.md`: convert the `/tmp/state.tmp` site.
-- [ ] `skill-pr-review-research/SKILL.md`: convert the `/tmp/state.tmp` site.
-- [ ] `skill-cslib-vet/SKILL.md`: convert the task-creation site (prepends to `.active_projects`,
+      `--state-file` argument. *(completed)*
+- [x] `skill-pr-review-implementation/SKILL.md`: convert the `/tmp/state.tmp` site. *(completed)*
+- [x] `skill-pr-review-research/SKILL.md`: convert the `/tmp/state.tmp` site. *(completed)*
+- [x] `skill-cslib-vet/SKILL.md`: convert the task-creation site (prepends to `.active_projects`,
       bumps `next_project_number`); confirm the read-modify-write stays within one
-      `state-write.sh` call so the bump is serialized.
-- [ ] `skill-cslib-research-hard/SKILL.md`: convert the `specs/tmp/state.json` site.
-- [ ] MUST NOT batch find/replace across these files — each site is reviewed and edited on its
-      own.
-- [ ] Extract bash fences from every edited file and run `bash -n` over each.
+      `state-write.sh` call so the bump is serialized. *(completed)*
+- [x] `skill-cslib-research-hard/SKILL.md`: convert the `specs/tmp/state.json` site. *(completed)*
+- [x] MUST NOT batch find/replace across these files — each site is reviewed and edited on its
+      own. *(completed: individually reviewed, confirmed by per-file diffs)*
+- [x] Extract bash fences from every edited file and run `bash -n` over each. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -334,23 +334,25 @@ the `$CSLIB_STATE` site is gone — confirm that one by reading the file.
 
 ---
 
-### Phase 6: Convert commands/*.md task-creation sites [NOT STARTED]
+### Phase 6: Convert commands/*.md task-creation sites [COMPLETED]
 
 **Goal**: Convert the task-creation writers in founder, present, and epidemiology `commands/`
 — the scope expansion resolved in this plan's Scope Boundary Resolution.
 
 **Tasks**:
-- [ ] Convert the founder `commands/*.md` sites (`finance.md`, `strategy.md`, `deck.md`,
+- [x] Convert the founder `commands/*.md` sites (`finance.md`, `strategy.md`, `deck.md`,
       `project.md`, `consult.md`, `analyze.md`, `meeting.md`, `market.md`, `legal.md`,
-      `sheet.md`).
-- [ ] Convert the present `commands/*.md` sites (`budget.md`, `slides.md`, `timeline.md`,
-      `grant.md`, `funds.md`).
-- [ ] Convert the epidemiology `commands/epi.md` sites.
-- [ ] For each: the `next_project_number` bump and the `.active_projects` append MUST remain in
+      `sheet.md`). *(completed)*
+- [x] Convert the present `commands/*.md` sites (`budget.md`, `slides.md`, `timeline.md`,
+      `grant.md`, `funds.md`). *(completed)*
+- [x] Convert the epidemiology `commands/epi.md` sites. *(completed)*
+- [x] For each: the `next_project_number` bump and the `.active_projects` append MUST remain in
       one `state-write.sh` call, so the read-modify-write is serialized by one mutex acquisition.
-- [ ] Preserve every existing field written into the new entry verbatim, including
+      *(completed)*
+- [x] Preserve every existing field written into the new entry verbatim, including
       `forcing_data` — do NOT drop or rename fields to satisfy the schema (out of scope).
-- [ ] Extract bash fences from every edited file and run `bash -n` over each.
+      *(completed)*
+- [x] Extract bash fences from every edited file and run `bash -n` over each. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -374,21 +376,22 @@ rather than assuming one site per file.
 
 ---
 
-### Phase 7: Core residual — reviews state file and the doc example [NOT STARTED]
+### Phase 7: Core residual — reviews state file and the doc example [COMPLETED]
 
 **Goal**: Remove the two core-extension residuals that the new lint would otherwise have to
 carve out without justification.
 
 **Tasks**:
-- [ ] `core/commands/review.md`: convert both `specs/reviews/state.json` sites to
+- [x] `core/commands/review.md`: convert both `specs/reviews/state.json` sites to
       `state-write.sh --state-file specs/reviews/state.json`, preserving the filters exactly.
       Confirm `--regen-todo` is NOT passed (it is refused with a non-default `--state-file`).
-- [ ] `core/context/formats/command-structure.md`: replace the illustrative
+      *(completed)*
+- [x] `core/context/formats/command-structure.md`: replace the illustrative
       `jq ... specs/state.json > tmp.json && mv tmp.json specs/state.json` example with the
-      `state-write.sh` shape, so the doc stops teaching the anti-pattern.
-- [ ] Confirm the vault-rename, read-only-check, test-fixture, and prose hits identified in
-      Phase 1 remain unconverted and are recorded as exclusions for Phase 8's list.
-- [ ] Extract bash fences from both edited files and run `bash -n` over each.
+      `state-write.sh` shape, so the doc stops teaching the anti-pattern. *(completed)*
+- [x] Confirm the vault-rename, read-only-check, test-fixture, and prose hits identified in
+      Phase 1 remain unconverted and are recorded as exclusions for Phase 8's list. *(completed)*
+- [x] Extract bash fences from both edited files and run `bash -n` over each. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -411,27 +414,28 @@ conversions — confirm each against Phase 1's classification before touching an
 
 ---
 
-### Phase 8: Author lint-state-writer-boundary.sh and its fixture test [NOT STARTED]
+### Phase 8: Author lint-state-writer-boundary.sh and its fixture test [COMPLETED]
 
 **Goal**: A standalone lint that detects hand-rolled state-file writes across the source store,
 with pass/fail fixtures, authored against fixtures and not yet wired.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh`, following
+- [x] Create `agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh`, following
       the structure of `lint-postflight-boundary.sh` (the closest content-pattern lint precedent):
       same `--verbose`/`--quiet` flag handling, same pass/fail reporting idiom, non-zero exit on
-      any finding.
-- [ ] Detection basis: `jq`-staged writes onto any `state.json` across all three observed staging
+      any finding. *(completed)*
+- [x] Detection basis: `jq`-staged writes onto any `state.json` across all three observed staging
       variants (`specs/tmp/state.json`, `specs/state.json.tmp`, `/tmp/state.tmp`) plus bare `mv`
-      onto a `state.json` target.
-- [ ] Encode the exclusion list from Phase 1's classification, each entry carrying an inline
-      comment stating WHY it is exempt — never a bare path list.
-- [ ] Document in the header comment, in the manner of `state-write.sh`'s own header, that a
+      onto a `state.json` target. *(completed)*
+- [x] Encode the exclusion list from Phase 1's classification, each entry carrying an inline
+      comment stating WHY it is exempt — never a bare path list. *(completed)*
+- [x] Document in the header comment, in the manner of `state-write.sh`'s own header, that a
       regex lint CANNOT catch a variable-indirected write (the `$CSLIB_STATE` class), so the lint
-      is a guardrail against recurrence and not a proof of absence.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh` with
+      is a guardrail against recurrence and not a proof of absence. *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh` with
       a fixture containing a hand-rolled write (must fail) and a clean fixture (must pass).
-- [ ] `bash -n` both new scripts.
+      *(completed: 8 passed, 0 failed)*
+- [x] `bash -n` both new scripts. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -449,22 +453,28 @@ with pass/fail fixtures, authored against fixtures and not yet wired.
 
 ---
 
-### Phase 9: Wire the lint (manifest, verify-deploy gate, deploy) [NOT STARTED]
+### Phase 9: Wire the lint (manifest, verify-deploy gate, deploy) [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The lint runs automatically where the other repo lints run, and is present in the
 deployed tree.
 
 **Tasks**:
-- [ ] Add `lint/lint-state-writer-boundary.sh` and `tests/test-lint-state-writer-boundary.sh` to
+- [x] Add `lint/lint-state-writer-boundary.sh` and `tests/test-lint-state-writer-boundary.sh` to
       `core/manifest.json`'s `provides.scripts`, alongside the four existing lint entries.
-- [ ] Add gate 12 to `verify-deploy.sh` immediately after gate 11
+      *(completed)*
+- [x] Add gate 12 to `verify-deploy.sh` immediately after gate 11
       (`lint-contract-compliance.sh`), using the established `say "12. ..."` / `fail "<message>"
       "<remediation hint>"` idiom and the same source-store-vs-deploy-consumer `[SKIP]` posture
-      the sibling lint gates use.
-- [ ] Run the deploy so `.claude/scripts/lint/` receives the new lint. Do NOT hand-author
-      anything under `.claude/**`.
-- [ ] Run the lint against the real, fully-converted tree; it must pass.
-- [ ] Run `verify-deploy.sh` end to end; all gates including the new gate 12 must pass.
+      the sibling lint gates use. *(completed)*
+- [x] Run the deploy so `.claude/scripts/lint/` receives the new lint. Do NOT hand-author
+      anything under `.claude/**`. *(completed via deploy-headless.sh; also fixed a
+      `command-structure.md` line_count drift in `core/index-entries.json` surfaced by the
+      redeploy's doc-lint gate, re-derived from Phase 7's own edit to that file)*
+- [x] Run the lint against the real, fully-converted tree; it must pass. *(completed: 0
+      violations, 19 evidenced exemptions)*
+- [x] Run `verify-deploy.sh` end to end; all gates including the new gate 12 must pass.
+      *(completed with exclusion — gate 12 itself passes cleanly; see Reasoned Exclusions below
+      for the one pre-existing, out-of-scope gate that keeps the overall run red)*
 
 **Timing**: 1 hour
 
@@ -486,6 +496,19 @@ numbering currently tops out at 11. Confirm the highest existing gate number by 
 - `verify-deploy.sh` passes end to end, including gate 12.
 - The lint is present and executable at `.claude/scripts/lint/lint-state-writer-boundary.sh`
   after deploy.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|---|---|---|
+| Gate 8 (`tests/run-all.sh`) overall exit, specifically `test-loop-guard-staleness.sh`, `test-reconcile-handoff-status.sh`, `test-resume-scan-nonconformance.sh`, `test-skill-base-lifecycle.sh`, `test-update-task-status.sh` | Pre-existing `REPO_ROOT` path-depth bug unrelated to state-writer conversion: each script derives `REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"` from `.claude/scripts/tests`, which resolves to `/home/benjamin` (5 levels up) instead of `/home/benjamin/.config/nvim` (3 levels up) on this repo's actual nesting depth (`.config/nvim` adds 2 extra path segments versus the assumed layout). None of task 995's phases (1-9) touch any of these five files, and `git log` shows their last edit predates this task (task 961 for `test-loop-guard-staleness.sh`). Re-running `verify-deploy.sh` twice, before and after Phase 9's wiring, reproduces the identical five-file failure set both times, confirming it is not a regression this task introduced. | `grep -n REPO_ROOT .claude/scripts/tests/test-loop-guard-staleness.sh` shows the 5-`..`-component derivation; `git log --oneline -- agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh` shows `task 961 phase 4: fixture test harness...` as the last touching commit; `verify-deploy.sh` run output (this phase) shows gates 1-7 and 9-12 all `[PASS]`, isolating the failure to gate 8's five scripts |
+| Gate 8, `test-index-entries-schema.sh`'s "Rule U did not fire on a 61-line EXTENSION.md" sub-case | Unrelated `EXTENSION.md` line-length rule (Rule U), no relation to `state.json` writers or the new lint; the file and rule were not touched by any phase of this task | `grep -n "Rule U" agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh` shows the assertion is about `EXTENSION.md` length, unrelated to `index-entries.json`'s `line_count` field that Phase 9's redeploy fix touched |
+
+Gate 12 (state-writer boundary lint) itself is unaffected and passes cleanly in every
+`verify-deploy.sh` run this phase performed. The residual is recorded as a named follow-up in
+Phase 10, not silently dropped, per the plan's own Rollback/Contingency guidance for a
+gate-12-adjacent residual — except this residual is gate 8, pre-existing and orthogonal to gate
+12, so the Rollback/Contingency's "revert gate-12" remedy does not apply here.
 
 ---
 
