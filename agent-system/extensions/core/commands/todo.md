@@ -23,8 +23,8 @@ dry_run = "--dry-run" in $ARGUMENTS
 
 `/todo` has no `command-gate-in.sh` call and no `session_id` of its own — generate one once
 near the top of this run, following the same self-generating fallback used elsewhere
-(`manage-topics.sh` / `archive-task.sh`), and thread that single value through every
-`state-write.sh` call below:
+(`manage-topics.sh`; also formerly used by the now-quarantined `archive-task` script under
+`scripts/deprecated/`), and thread that single value through every `state-write.sh` call below:
 ```bash
 session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ```

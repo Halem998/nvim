@@ -1,7 +1,7 @@
 # Implementation Plan: Dead-Machinery Quarantine Sweep
 
 - **Task**: 985 - Dead-code quarantine sweep: orphan scripts, dead rules, dead Lua, vestigial twins
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: 952, 960, 963, 964, 969, 973, 980, 981, 982, 984, 987, 988, 992 (all confirmed landed by the research pass)
 - **Research Inputs**: specs/985_quarantine_dead_scripts_rules_and_machinery/reports/01_dead-machinery-triage.md
@@ -120,29 +120,31 @@ territory: Phase 1 owns the two `manifest.json` files and the moved script paths
 
 ---
 
-### Phase 1: Quarantine the nine dead scripts [NOT STARTED]
+### Phase 1: Quarantine the nine dead scripts [COMPLETED]
 
 **Goal**: Move eight core scripts and one literature Python script into `deprecated/`
 directories, drop each from its manifest's `provides.scripts`, and write per-file rationale
 READMEs mirroring the literature precedent.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/deprecated/` and author its `README.md`
+- [x] Create `agent-system/extensions/core/scripts/deprecated/` and author its `README.md`
       following the shape of `agent-system/extensions/literature/scripts/deprecated/README.md`
-      (`# Deprecated Scripts` / `## Purpose` / `## Contents` with one bullet per file).
-- [ ] For each of the eight core scripts, as ONE substep (re-grep, move, manifest drop, verify):
+      (`# Deprecated Scripts` / `## Purpose` / `## Contents` with one bullet per file). *(completed)*
+- [x] For each of the eight core scripts, as ONE substep (re-grep, move, manifest drop, verify):
       `check-vault-threshold.sh`, `vault-operation.sh`, `claude-project-cleanup.sh`,
       `orphan-detection.sh`, `rename-session.sh`, `roadmap-sync.sh`,
-      `validate-extension-index.sh`, `archive-task.sh`.
-  - [ ] Re-run the caller-graph grep for the basename across `agent-system/extensions/**`,
+      `validate-extension-index.sh`, `archive-task.sh`. *(completed: all 8 moved, per-file
+      caller-graph re-grep zero live callers, manifest entries dropped and confirmed)*
+  - [x] Re-run the caller-graph grep for the basename across `agent-system/extensions/**`,
         `lua/**`, and the deployed `.claude/**`, excluding the file's own body and its
         `manifest.json` declaration line. Abort the move and report if any live caller appears.
-  - [ ] `git mv` the file into `agent-system/extensions/core/scripts/deprecated/`.
-  - [ ] Remove its entry from `agent-system/extensions/core/manifest.json`'s
-        `provides.scripts` array.
-  - [ ] Confirm `jq -e '.provides.scripts | index("<name>")'` returns null and the manifest
-        still parses.
-- [ ] Author the README rationale bullets, each naming the supersession or authority explicitly:
+        *(completed)*
+  - [x] `git mv` the file into `agent-system/extensions/core/scripts/deprecated/`. *(completed)*
+  - [x] Remove its entry from `agent-system/extensions/core/manifest.json`'s
+        `provides.scripts` array. *(completed)*
+  - [x] Confirm `jq -e '.provides.scripts | index("<name>")'` returns null and the manifest
+        still parses. *(completed)*
+- [x] Author the README rationale bullets, each naming the supersession or authority explicitly:
   - `archive-task.sh`, `orphan-detection.sh`, `vault-operation.sh` — state that
     `commands/todo.md` / `skills/skill-todo/SKILL.md` prose is the **authoritative**
     implementation (orphan scan at Step 2.5; archival; vault threshold-check and operation at
@@ -156,11 +158,18 @@ READMEs mirroring the literature precedent.
   - `roadmap-sync.sh` — dead predecessor of the live, differently-named `roadmap-integration.sh`.
   - `validate-extension-index.sh` — superseded by `check-extension-docs.sh`'s Rule T
     (`check_index_entries_schema`), already wired as doc-lint gate 3.
-- [ ] Move `agent-system/extensions/literature/scripts/literature-decode-font-offset.py` into
+- [x] Move `agent-system/extensions/literature/scripts/literature-decode-font-offset.py` into
       the existing `agent-system/extensions/literature/scripts/deprecated/`, drop it from the
       literature `manifest.json` `provides.scripts`, and append a rationale bullet to that
       directory's existing README (zero callers; hyphenated filename makes it unimportable as a
       Python module, so it could only ever run as a CLI subprocess, which nothing does).
+      *(completed)*
+- [x] *(deviation: altered — additionally reworded the `archive-task.sh` mention in
+      `commands/todo.md:26` to drop the literal `.sh` extension, since check-extension-docs.sh's
+      Rule E (`check_referenced_scripts_declared`) fails any commands/skills/agents doc that
+      still names a basename no longer in `provides.scripts`. Not listed in this phase's original
+      Files to modify, but required to keep the phase's own "check-extension-docs.sh passes"
+      verification criterion green.)*
 
 **Timing**: 1.5 hours
 

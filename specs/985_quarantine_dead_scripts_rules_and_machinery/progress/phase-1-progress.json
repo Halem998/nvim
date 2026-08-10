@@ -1,0 +1,62 @@
+{
+  "phase": 1,
+  "phase_name": "Quarantine the nine dead scripts",
+  "started_at": "2026-08-09T00:00:00Z",
+  "last_updated": "2026-08-09T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create deprecated/ dir and author core README.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/deprecated/README.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Move eight core scripts, drop manifest entries, verify per-file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/deprecated/check-vault-threshold.sh",
+        "agent-system/extensions/core/scripts/deprecated/vault-operation.sh",
+        "agent-system/extensions/core/scripts/deprecated/claude-project-cleanup.sh",
+        "agent-system/extensions/core/scripts/deprecated/orphan-detection.sh",
+        "agent-system/extensions/core/scripts/deprecated/rename-session.sh",
+        "agent-system/extensions/core/scripts/deprecated/roadmap-sync.sh",
+        "agent-system/extensions/core/scripts/deprecated/validate-extension-index.sh",
+        "agent-system/extensions/core/scripts/deprecated/archive-task.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Move literature-decode-font-offset.py, drop manifest entry, append README bullet",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/deprecated/literature-decode-font-offset.py",
+        "agent-system/extensions/literature/scripts/deprecated/README.md",
+        "agent-system/extensions/literature/manifest.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Fix check-extension-docs.sh Rule E failure caused by stale archive-task.sh prose mention in commands/todo.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/todo.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.deviation-1",
+      "description": "commands/todo.md:26 reference to archive-task.sh",
+      "type": "altered",
+      "reason": "check-extension-docs.sh Rule E fails any commands/skills/agents doc naming a basename no longer in provides.scripts; reworded to drop the .sh extension while preserving the naming-convention-precedent intent.",
+      "annotation": "*(deviation: altered — reworded commands/todo.md's archive-task.sh mention)*"
+    }
+  ]
+}

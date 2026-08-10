@@ -1,27 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 985,
-  "session_id": "sess_1786322063_3251e8_985",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/985_quarantine_dead_scripts_rules_and_machinery/plans/01_dead-machinery-quarantine.md",
-      "summary": "Four-phase quarantine plan implementing the research report's corrected triage: MOVE nine confirmed-dead scripts to deprecated/ with per-file README rationale and same-substep manifest.provides.scripts drops; repair lint-contract-compliance.sh's broken root resolution and wire it as a new verify-deploy.sh gate; land keep-with-doc-note documentation for the four manual operator tools and the native rules frontmatter auto-load mechanism plus the dead .syncprotect line removal; close with a --wipe deploy sweep and full gate run."
-    }
-  ],
-  "phase_count": 4,
-  "estimated_hours": 5,
-  "dependency_waves": [[1, 2], [3], [4]],
-  "memory_candidates": [
-    {
-      "content": "Quarantining a dead script in this agent-system repo is a two-part atomic edit, never a move alone: the file goes to <extension>/scripts/deprecated/ AND its manifest.json provides.scripts entry is dropped in the same substep, or the manifest-driven deploy engine fails on a missing declared path. Two mechanical facts make this pattern lint-clean: check-extension-docs.sh Rule Q (check_undeclared_scripts) explicitly skips deprecated/*, so the moved file is invisible to the undeclared-script check; and Rule M's deployed-orphan check enumerates via `git ls-files .claude/<category>`, which returns nothing because .claude/ is gitignored, so stale deployed copies of a de-declared script do NOT trip doc-lint. verify.lua's category parity is declared->deployed only, so dropping an entry cannot break that gate either. The consequence: no automated gate observes the stale deployed copy, and deploy-headless.sh's default mode (manager.resync_all) never removes anything -- proving a quarantined file is gone from .claude/ requires deploy-headless.sh --wipe specifically.",
-      "category": "PATTERN",
-      "source_artifact": "specs/985_quarantine_dead_scripts_rules_and_machinery/plans/01_dead-machinery-quarantine.md",
-      "confidence": 0.88,
-      "suggested_keywords": ["quarantine", "deprecated", "manifest", "provides.scripts", "deploy-headless", "check-extension-docs"]
-    }
-  ],
-  "next_steps": "Run /implement 985 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786322063_3251e8_985",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -35,12 +35,19 @@ QUARANTINE-NEVER-DELETE posture. Files are retained for:
     Document Entry"), which already writes the correct 4-field shape to the correct file.
 - **zotero-index-remove.sh** - Formerly removed entries from the Zotero index; superseded by
   the inline `jq` logic in `skills/skill-literature/SKILL.md`. Quarantined during the same removal that dropped it from `manifest.json`.
+- **literature-decode-font-offset.py** - Zero callers anywhere in
+  `agent-system/extensions/literature/` outside its own `manifest.json` declaration and its own
+  docstring; not imported by either of the other two literature Python scripts. Its hyphenated
+  filename cannot be imported as a Python module regardless of caller intent — it could only
+  ever run as a CLI subprocess, and nothing invokes it as one. Quarantined rather than repaired
+  since there is no live consumer to repair it for.
 
 ## Migration Status
 
-Neither script is declared in `manifest.json` `provides.scripts` and neither is invoked by any
-active skill, agent, or command. The functionality they provided is handled inline via `jq` in
-`skills/skill-literature/SKILL.md`.
+None of the three scripts above is declared in `manifest.json` `provides.scripts`, and none is
+invoked by any active skill, agent, or command. The Zotero-index functionality is handled inline
+via `jq` in `skills/skill-literature/SKILL.md`; `literature-decode-font-offset.py` had no live
+consumer to supersede it.
 
 ## Using Deprecated Code
 
