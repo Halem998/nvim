@@ -11,7 +11,7 @@ next_project_number: 1020
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 1004,1010,1011,1014,1015,1016,1017,1018,1019 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 1004,1011,1014,1015,1016,1017,1018,1019 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 1005,1009,1013 | 1004,1015,1017,1018 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
@@ -22,7 +22,6 @@ next_project_number: 1020
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
-1010 [IMPLEMENTING] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
@@ -285,12 +284,13 @@ CONSTRAINT: do not drive this task with multi-task /orchestrate until err_178634
 ---
 
 ### 1010. Fix opencode gate in session id duplication
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md]
 - **Plan**: [1010_fix_opencode_gate_in_session_id_duplication/plans/01_opencode-gate-in-catchup-sync.md]
+- **Summary**: [1010_fix_opencode_gate_in_session_id_duplication/summaries/01_opencode-gate-in-catchup-sync-summary.md]
 
 **Description**: tests/run-all.sh has a 7th, previously unreported deployed-mode-only failure: test-common-lib.sh flags .opencode/scripts/command-gate-in.sh for an inline sess_$(date +%s)_... session-id generator that duplicates lib/common.sh's canonical generator instead of sourcing it. It passes in source-store mode and fails only in deployed mode. Recorded as err_1786350581305_8cNAZ7. No open task currently covers tests/run-all.sh failures (the prior consolidation task that made the suites runnable is already completed); this task is spawned standalone rather than folded, since nothing is open to fold into.
 

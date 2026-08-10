@@ -35,12 +35,12 @@
     {
       "project_number": 1010,
       "project_name": "fix_opencode_gate_in_session_id_duplication",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "tests/run-all.sh has a 7th, previously unreported deployed-mode-only failure: test-common-lib.sh flags .opencode/scripts/command-gate-in.sh for an inline sess_$(date +%s)_... session-id generator that duplicates lib/common.sh's canonical generator instead of sourcing it. It passes in source-store mode and fails only in deployed mode. Recorded as err_1786350581305_8cNAZ7. No open task currently covers tests/run-all.sh failures (the prior consolidation task that made the suites runnable is already completed); this task is spawned standalone rather than folded, since nothing is open to fold into.\n\nTARGET: .opencode/scripts/command-gate-in.sh (the inline sess_$(date +%s)_... construction) and agent-system/extensions/core/scripts/lib/common.sh (the canonical generator it should source instead).\n\nWORK: replace the inline session-id generator in .opencode/scripts/command-gate-in.sh with a sourced call to lib/common.sh's canonical generator, matching the pattern already used elsewhere in the deployed tree. Re-run tests/run-all.sh in BOTH source-store and deployed modes and confirm test-common-lib.sh passes in both.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. Note: .opencode/scripts/command-gate-in.sh is itself a deploy target mirroring a source-store equivalent -- confirm the correct source-store location before editing (do not hand-edit the deployed .opencode/ tree directly if it is generated).\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.",
       "topic": "agent-system",
       "created": "2026-08-10T08:32:32Z",
-      "last_updated": "2026-08-10T16:39:56Z",
+      "last_updated": "2026-08-10T17:13:59Z",
       "file_scope": [
         ".opencode/scripts/command-gate-in.sh"
       ],
@@ -55,6 +55,11 @@
           "path": "specs/1010_fix_opencode_gate_in_session_id_duplication/plans/01_opencode-gate-in-catchup-sync.md",
           "type": "plan",
           "summary": "4-phase sequential plan for the narrow catch-up sync of .opencode/scripts/command-gate-in.sh: capture pre-change run-all.sh baselines in both source-store and deployed modes; verbatim cp of the already-correct agent-system/extensions/core/scripts/command-gate-in.sh into the stale .opencode/ target with byte-identity, exec-bit, bash -n, and task-reference-lint verification; a full verification gate re-running both suites and diffing FAIL sets against the baseline (deployed must lose exactly test-common-lib.sh and gain nothing); and a record phase capturing the manual-redeploy rationale plus the two out-of-scope spawn candidates. No source-store edit is planned -- the source file is already correct."
+        },
+        {
+          "path": "specs/1010_fix_opencode_gate_in_session_id_duplication/summaries/01_opencode-gate-in-catchup-sync-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with full executed before/after test evidence for both source-store and deployed modes, the manual-redeploy rationale, and the two spawn candidates."
         }
       ]
     },
