@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1002
 
 - **Task**: 1002 - Author the context tier-semantics standard for the derived tier classification
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: Task 991, Task 998 (both already resolved into the current codebase state; no open blocking work)
 - **Research Inputs**: specs/1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md
