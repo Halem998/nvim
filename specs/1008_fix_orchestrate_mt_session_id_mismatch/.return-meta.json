@@ -1,9 +1,79 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/1008_fix_orchestrate_mt_session_id_mismatch/summaries/01_unify-mt-session-id-summary.md",
+      "summary": "Unified skill-orchestrate's Stage MT-4 lock-touching session-id sites to the bare $session_id, added a 5-case register/acquire parity regression group, documented the invariant in the canonical lock spec, and verified gates green with a recorded follow-up for the same pattern in the multi-task command files."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the MT-1/MT-4 session-id mismatch in skill-orchestrate/SKILL.md that caused every multi-task /orchestrate lock acquire to be refused against the batch's own session-registry registration, added a regression test group that reproduces and pins the fix, and documented the parity invariant in the canonical task-lock spec."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/1008_fix_orchestrate_mt_session_id_mismatch/plans/01_unify-mt-session-id.md",
+    "specs/1008_fix_orchestrate_mt_session_id_mismatch/summaries/01_unify-mt-session-id-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "task-lock.sh's session-registry contention self-exclusion (D4) is an exact string match on session_id. Any multi-task/batch lock consumer that registers via session-register under a bare batch session_id but then acquires/releases/heartbeats per-task locks under a suffixed variant (e.g. ${session_id}_${task_num}) will have its own union-file_scope registration read as a foreign live session, refusing every lock acquire in the batch. The fix is to reuse the exact same bare session_id string across session-register and every acquire/release/heartbeat call for that batch. This exact pattern also exists (unfixed) in commands/research.md, plan.md, and implement.md's acquire-retry/release calls.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1008_fix_orchestrate_mt_session_id_mismatch/summaries/01_unify-mt-session-id-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "task-lock",
+        "session-register",
+        "session_contention",
+        "self-exclusion",
+        "orchestrate",
+        "multi-task"
+      ]
+    },
+    {
+      "content": "A CLI-driven regression test for task-lock.sh session-registry behavior should call the real session-register/acquire/release/heartbeat subcommands against an isolated temp root (mirroring test-conflict-predicate.sh's existing pattern), never hand-write a session registry JSON fixture -- cmd_session_register computes file_scope as a union internally via get_file_scope, so a hand-built fixture would not exercise (and could mask bugs in) that union computation.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1008_fix_orchestrate_mt_session_id_mismatch/summaries/01_unify-mt-session-id-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "task-lock.sh",
+        "test-conflict-predicate",
+        "session-register",
+        "regression-test",
+        "fixture"
+      ]
+    },
+    {
+      "content": "check-extension-docs.sh enforces two easy-to-miss invariants after any source-store edit: (1) deployed .claude/ scripts must byte-match their agent-system/extensions/** source (fix: bash .claude/scripts/deploy-headless.sh), and (2) index-entries.json line_count fields must match actual wc -l for every context file (fix: bash .claude/scripts/generate-context-line-counts.sh --write). Both are silent until this gate is run -- run it as a matter of course after any context/**.md or scripts/**.sh edit, not just at the end of a task.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/1008_fix_orchestrate_mt_session_id_mismatch/summaries/01_unify-mt-session-id-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "check-extension-docs",
+        "deploy-headless",
+        "generate-context-line-counts",
+        "index-entries.json",
+        "source-store"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786370015_5e32a2",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

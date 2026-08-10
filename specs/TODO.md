@@ -11,7 +11,7 @@ next_project_number: 1016
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 1004,1007,1008,1010,1011,1012,1013,1014,1015 | -- | agent-system, orchestration-concurrency |
+| 1 | 1004,1007,1010,1011,1012,1013,1014,1015 | -- | agent-system |
 | 2 | 1005,1009 | 1004,1015 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
@@ -30,10 +30,6 @@ next_project_number: 1016
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
   └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
-
-### Orchestration Concurrency
-
-1008 [PLANNED] — skill-orchestrate/SKILL.md has a session-id mismatch between two 
 
 ## Tasks
 
@@ -215,12 +211,13 @@ CONSTRAINT: do not drive this task with multi-task /orchestrate until err_178634
 ---
 
 ### 1008. Fix orchestrate mt session id mismatch
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
 - **Research**: [1008_fix_orchestrate_mt_session_id_mismatch/reports/01_mt-session-id-self-contention.md]
 - **Plan**: [1008_fix_orchestrate_mt_session_id_mismatch/plans/01_unify-mt-session-id.md]
+- **Summary**: [1008_fix_orchestrate_mt_session_id_mismatch/summaries/01_unify-mt-session-id-summary.md]
 
 **Description**: skill-orchestrate/SKILL.md has a session-id mismatch between two of its own construction sites (MT-1 and MT-4), causing lock self-contention that fully blocks multi-task /orchestrate, a documented capability. Recorded as err_1786349061524_pY97cE, severity critical.
 
