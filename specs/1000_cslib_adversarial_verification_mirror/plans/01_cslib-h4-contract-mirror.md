@@ -1,7 +1,7 @@
 # Implementation Plan: CSLib Adversarial-Verification Mirror
 
 - **Task**: 1000 - Give cslib its own adversarial-verification contract copy and union-valued index entry
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: 991, 992 (both completed; their decomposition recorded this gap as a follow-on)
 - **Research Inputs**: specs/1000_cslib_adversarial_verification_mirror/reports/01_cslib-adversarial-verification-mirror.md
