@@ -1,7 +1,7 @@
 # Implementation Plan: Expand defect_class Vocabulary
 
 - **Task**: 11 - expand_defect_class_vocabulary
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/011_expand_defect_class_vocabulary/reports/01_defect-class-vocabulary-gap.md
@@ -100,24 +100,27 @@ only the three class-name strings, which are fixed by this plan.
 
 ---
 
-### Phase 1: Extend the validated enum in system-defect-record.sh [NOT STARTED]
+### Phase 1: Extend the validated enum in system-defect-record.sh [COMPLETED]
 
 **Goal**: `system-defect-record.sh` accepts the three new classes, still rejects unknown values, and
 states the new vocabulary size consistently everywhere it mentions it.
 
 **Tasks**:
-- [ ] Read the whole file first and locate every occurrence of the vocabulary or its count; do not
-      trust the line numbers below without re-confirming them (see Scope Hypothesis).
-- [ ] Header comment (`--defect-class CLASS   One of the ten Signal A instances ...`): change the
-      count word `ten` to `thirteen`.
-- [ ] `usage()` required-args block: append the three new values to the pipe-delimited list after
+- [x] Read the whole file first and locate every occurrence of the vocabulary or its count; do not
+      trust the line numbers below without re-confirming them (see Scope Hypothesis). *(completed:
+      re-ran the grep — hits matched the hypothesized four locations exactly)*
+- [x] Header comment (`--defect-class CLASS   One of the ten Signal A instances ...`): change the
+      count word `ten` to `thirteen`. *(completed)*
+- [x] `usage()` required-args block: append the three new values to the pipe-delimited list after
       `STATE_SYNC_DIVERGENCE`, preserving every existing entry and the existing line-continuation
-      style.
-- [ ] `case "$defect_class" in` validation arm: add the three new literals to the same no-op `;;`
+      style. *(completed)*
+- [x] `case "$defect_class" in` validation arm: add the three new literals to the same no-op `;;`
       arm, preserving every existing literal and the backslash line continuations exactly.
-- [ ] Comment above the `case` (`closed, ten-value enum`) and the invalid-value error message
+      *(completed)*
+- [x] Comment above the `case` (`closed, ten-value enum`) and the invalid-value error message
       (`must be one of the ten Signal A instances`): update both count words to `thirteen`.
-- [ ] Run `bash -n` on the file.
+      *(completed)*
+- [x] Run `bash -n` on the file. *(completed: exits 0)*
 
 **Timing**: 0.5 hours
 
