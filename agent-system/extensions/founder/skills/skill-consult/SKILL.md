@@ -176,13 +176,13 @@ Link the consultation artifact to the task in state.json:
 ```bash
 if [ -n "$artifact_path" ]; then
     # Add consultation artifact to state.json
-    mkdir -p specs/tmp
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
-       --argjson num "$task_number" \
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --arg path "$artifact_path" \
+      --arg type "$artifact_type" \
+      --arg summary "$artifact_summary" \
+      --argjson num "$task_number"
 fi
 ```
 

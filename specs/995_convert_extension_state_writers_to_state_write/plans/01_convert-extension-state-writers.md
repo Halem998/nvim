@@ -194,17 +194,21 @@ against this record, not against the numbers written in this plan.
 
 ---
 
-### Phase 2: Convert founder/skills [NOT STARTED]
+### Phase 2: Convert founder/skills [COMPLETED]
 
 **Goal**: Every hand-rolled write in the 15 founder skill files routes through `state-write.sh`.
 
 **Tasks**:
-- [ ] For each of the 15 `SKILL.md` files, replace each hand-rolled write with one
-      `state-write.sh` call per Phase 1's recipe.
-- [ ] Preserve each site's `--arg`/`--argjson` bindings and filter semantics exactly; convert
-      string-interpolated `'$task_number'` to `--argjson num "$task_number"`.
-- [ ] Leave each site's TODO.md handling untouched unless it already regenerated TODO.md.
-- [ ] Extract bash fences from every edited file and run `bash -n` over each.
+- [x] For each of the 15 `SKILL.md` files, replace each hand-rolled write with one
+      `state-write.sh` call per Phase 1's recipe. *(completed)*
+- [x] Preserve each site's `--arg`/`--argjson` bindings and filter semantics exactly; convert
+      string-interpolated `'$task_number'` to `--argjson num "$task_number"`. *(completed)*
+- [x] Leave each site's TODO.md handling untouched unless it already regenerated TODO.md.
+      *(completed)*
+- [x] Extract bash fences from every edited file and run `bash -n` over each. *(completed: all
+      state-write.sh fences pass; whole-file fence concatenation hits pre-existing, unrelated
+      prose fences elsewhere in these files — e.g. an intentionally-truncated illustrative git
+      commit message example — so verification was scoped to the fences this phase edited)*
 
 **Timing**: 1.5 hours
 

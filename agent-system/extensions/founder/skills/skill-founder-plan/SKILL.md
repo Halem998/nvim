@@ -158,24 +158,28 @@ If agent succeeded (status == "planned"):
 
 ```bash
 # Update state.json
-jq --argjson num "$task_number" \
-   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+bash .claude/scripts/state-write.sh \
    '(.active_projects[] | select(.project_number == $num)) += {
      status: "planned",
      last_updated: $ts
-   }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+   }' \
+   --session-id "$session_id" \
+   --argjson num "$task_number" \
+   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 # Link artifact in state.json
 plan_path=$(echo "$metadata" | jq -r '.artifacts[0].path')
 plan_summary=$(echo "$metadata" | jq -r '.artifacts[0].summary')
-jq --argjson num "$task_number" \
-   --arg path "$plan_path" \
-   --arg summary "$plan_summary" \
+bash .claude/scripts/state-write.sh \
    '(.active_projects[] | select(.project_number == $num)).artifacts += [{
      type: "plan",
      path: $path,
      summary: $summary
-   }]' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+   }]' \
+   --session-id "$session_id" \
+   --argjson num "$task_number" \
+   --arg path "$plan_path" \
+   --arg summary "$plan_summary"
 ```
 
 Update TODO.md status marker to [PLANNED] and link plan artifact per `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Plan**`, `next_field=**Description**`.

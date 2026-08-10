@@ -212,12 +212,13 @@ If status is "researched", update state.json and TODO.md.
 
 **Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researched" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+bash .claude/scripts/state-write.sh \
+  '(.active_projects[] | select(.project_number == $num)) |= . + {
     status: $status,
     last_updated: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --argjson num "$task_number" --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg status "researched"
 ```
 
 **Update TODO.md**: Use Edit tool to change status marker to `[RESEARCHED]`.
@@ -233,16 +234,17 @@ Add artifact to state.json with summary.
 ```bash
 if [ -n "$artifact_path" ]; then
     # Step 1: Filter out existing research artifacts (use "| not" pattern)
-    jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-        [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "research" | not)]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).artifacts =
+        [(.active_projects[] | select(.project_number == $num)).artifacts // [] | .[] | select(.type == "research" | not)]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number"
 
     # Step 2: Add new research artifact
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" --arg path "$artifact_path" --arg type "$artifact_type" --arg summary "$artifact_summary"
 fi
 ```
 

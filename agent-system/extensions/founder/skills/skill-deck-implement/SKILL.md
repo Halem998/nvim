@@ -184,12 +184,14 @@ If agent succeeded (status == "implemented"):
 
 ```bash
 # Update state.json to completed
-jq --argjson num "$task_number" \
-   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+bash .claude/scripts/state-write.sh \
    '(.active_projects[] | select(.project_number == $num)) += {
      status: "completed",
      last_updated: $ts
-   }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+   }' \
+   --session-id "$session_id" \
+   --argjson num "$task_number" \
+   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 # Link artifacts in state.json (deck files and summary)
 artifacts=$(echo "$metadata" | jq '.artifacts')
@@ -197,15 +199,17 @@ for i in $(seq 0 $(($(echo "$artifacts" | jq 'length') - 1))); do
   artifact_type=$(echo "$artifacts" | jq -r ".[$i].type")
   artifact_path=$(echo "$artifacts" | jq -r ".[$i].path")
   artifact_summary=$(echo "$artifacts" | jq -r ".[$i].summary")
-  jq --argjson num "$task_number" \
-     --arg type "$artifact_type" \
-     --arg path "$artifact_path" \
-     --arg summary "$artifact_summary" \
+  bash .claude/scripts/state-write.sh \
      '(.active_projects[] | select(.project_number == $num)).artifacts += [{
        type: $type,
        path: $path,
        summary: $summary
-     }]' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+     }]' \
+     --session-id "$session_id" \
+     --argjson num "$task_number" \
+     --arg type "$artifact_type" \
+     --arg path "$artifact_path" \
+     --arg summary "$artifact_summary"
 done
 ```
 
