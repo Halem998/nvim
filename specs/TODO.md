@@ -19,10 +19,10 @@ next_project_number: 1004
 
 ### Agent System
 
-995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
+995 [RESEARCHED] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
-1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
+1001 [RESEARCHED] — Fix the dormant load-order defect in lean/index-entries.json's mi
+1002 [RESEARCHED] — Author a context file that states the tier-classification semanti
   └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
@@ -118,10 +118,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1002. Author the context tier-semantics standard for the derived tier classification
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 998
+- **Research**: [1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md]
 
 **Description**: Author a context file that states the tier-classification semantics for context index entries. The meta-catch-all decomposition task converted validate-context-budgets.sh from reading a never-populated authored `tier` field to deriving tier algorithmically from load_when shape, at all four former read sites. The derivation is now real and load-bearing, but its ONLY authority is the derived_tier jq function and its header comment inside that one script -- there is no context file a human or an agent can read to learn what the tiers mean or why an entry lands in one.
 
@@ -163,10 +164,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1001. Fix lean mirror entry load-order defect; audit duplicated index paths
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 992, Task 1000
+- **Research**: [1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md]
 
 **Description**: Fix the dormant load-order defect in lean/index-entries.json's mirror entry for contracts/adversarial-verification.md. The entry names ONLY lean-research-hard-agent in its load_when.agents. The extension loader upserts index entries BY PATH (merge.lua, append_index_entries) with last-extension-processed winning the WHOLE entry -- so in a lean-loaded deploy where lean is processed after core, lean's single-agent entry REPLACES core's and silently drops general-research-hard-agent's hook on that path. The agent keeps working; it just stops receiving a contract it is supposed to receive, with no error anywhere.
 
@@ -451,10 +453,11 @@ SOURCE-STORE RULE (binding): any fixes spun out of this task target agent-system
 ---
 
 ### 995. Convert surviving extension state.json writers to state-write.sh
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 983, Task 984
+- **Research**: [995_convert_extension_state_writers_to_state_write/reports/01_convert-extension-state-writers.md]
 
 **Description**: Convert the hand-rolled specs/state.json read-modify-write sequences that SURVIVE the skill-skeleton collapse to state-write.sh (or its guest mode). SPLIT RATIONALE (post-review): this work was originally item 5 of the state-schema/status-vocabulary task; it is split out because the skill-skeleton task collapses the 12 domain skill files onto a shared skeleton and routes the three team skills through update-task-status.sh, eliminating many of the ~110 hand-rolled writer blocks by construction (founder ~44, present ~22, web, lean, cslib — two via machine-global /tmp/state.tmp — epidemiology; all mutex-blind, most via fixed shared temp paths). Converting before the collapse would be partially wasted work, and gating the whole state-schema task on the collapse would delay the schema/vocabulary fixes needlessly. Correct sequence: collapse first, then convert the survivors against the landed schema.
 

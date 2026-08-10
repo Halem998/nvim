@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/995_convert_extension_state_writers_to_state_write/reports/01_convert-extension-state-writers.md",
+      "summary": "Full re-grep inventory of hand-rolled specs/state.json writers surviving the skill-skeleton collapse: 29 SKILL.md files / 69 sites within the declared skills/ file_scope (founder 15/37, present 5/17, lean 4/10, cslib 5/5, web and epidemiology-skills already clean); flags a scope-boundary gap (16 commands/*.md files / 22 sites outside the declared file_scope but inside the task's own FULL-source-store WORK item), a cross-repo hardcoded-path bug in skill-pr-implementation, two schema-conformance risks (base_branch, forcing_data), and recommends a new generalized lint plus the conversion pattern to copy from already-converted core/web skills."
+    }
+  ],
+  "next_steps": "Run /plan 995 to create implementation plan. The plan must resolve the scope-boundary question flagged in the report (skills/-only per declared file_scope, vs. FULL source store per WORK item 1/VERIFICATION BAR, which would add 16 commands/*.md files across founder/present/epidemiology) before phasing the conversion work.",
+  "metadata": {
+    "session_id": "sess_1786342011_4592c8_995",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 8
+  },
+  "memory_candidates": [
+    {
+      "content": "When re-grepping a source store for hand-rolled specs/state.json writers (the jq-to-shared-temp-then-mv anti-pattern state-write.sh replaces), check three temp-path variants, not just one: 'specs/tmp/state.json' (most common), 'specs/state.json.tmp' (a single-file variant), and '/tmp/state.tmp' or a hardcoded absolute path via a shell variable (machine-global or cross-repo, the worst variant since it can point outside the current repo entirely). A grep anchored only on the first variant will silently miss the other two.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/995_convert_extension_state_writers_to_state_write/reports/01_convert-extension-state-writers.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["state-write.sh", "hand-rolled-writer", "grep-inventory", "temp-path-variants", "state.json"]
+    },
+    {
+      "content": "A task's declared file_scope in state.json can be narrower than what the task description's own WORK items/VERIFICATION BAR text actually require (e.g. file_scope names only skills/ subdirectories while WORK item 1 says 're-grep the FULL source store'). When this mismatch is found during research, do not silently pick one interpretation -- report both inventories (in-scope vs. full-source-store) separately and let planning make the explicit call, mirroring how a prior conversion task (state-write.sh archive/vault coverage) declared and justified its own scoped-grep exclusion list rather than claiming an unqualified 'zero hits'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/995_convert_extension_state_writers_to_state_write/reports/01_convert-extension-state-writers.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["file_scope", "scope-boundary", "verification-bar", "research-report", "planning-handoff"]
+    },
+    {
+      "content": "state-schema.json's projectEntry sets additionalProperties: false. Any extension skill/command that writes a non-enumerated field onto an active_projects[] entry (observed: base_branch from cslib PR skills, forcing_data from founder task-creation commands) will fail a future validate-state.sh --deep / hard schema gate even after its writer mechanism is correctly converted to state-write.sh, because state-write.sh validates JSON well-formedness only, not schema conformance. Converting the mechanism and fixing schema conformance are two separate concerns that are easy to conflate.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/995_convert_extension_state_writers_to_state_write/reports/01_convert-extension-state-writers.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["state-schema.json", "additionalProperties", "validate-state.sh", "schema-conformance", "base_branch"]
+    }
+  ]
+}
