@@ -310,6 +310,51 @@ else
 fi
 
 # =====================================================================
+# Case 9: off-schema status -> generate-todo.sh hard-fails (nonzero exit, named error), writing
+# nothing, instead of silently rendering an uppercased marker (the permissive `*)` catch-all this
+# task's plan removed). Seeds the off-schema value directly into the fixture's state.json (not
+# via update-task-status.sh, which independently validates its own resolved resting state and
+# would reject 'foobar' before it ever reached state.json) -- this case is specifically about
+# generate-todo.sh's OWN format_status()/status_vocabulary_todo_marker() enforcement, exercised
+# the same way a corrupted or hand-edited state.json would trigger it.
+#
+# task-ref-ok:begin category 6-adjacent: the asserted substring below is generate-todo.sh's own
+# literal runtime error text, which embeds the fixture's project_number (1) via its
+# "for task ${task_num}" format string -- a functional assertion on produced output, not a
+# citation of this repo's own ephemeral task tracker.
+# =====================================================================
+info "=== Case 9: off-schema status -> generate-todo.sh hard-fails ==="
+FIXTURE_ROOT="$WORKDIR/case9"
+build_fixture_repo "$FIXTURE_ROOT"
+jq '.active_projects[0].status = "foobar"' "$FIXTURE_ROOT/specs/state.json" > "$WORKDIR/c9-state.json.tmp"
+mv "$WORKDIR/c9-state.json.tmp" "$FIXTURE_ROOT/specs/state.json"
+
+rm -f "$FIXTURE_ROOT/specs/TODO.md"
+if "$FIXTURE_ROOT/.claude/scripts/generate-todo.sh" \
+    --state "$FIXTURE_ROOT/specs/state.json" --todo "$FIXTURE_ROOT/specs/TODO.md" --no-log \
+    >"$WORKDIR/c9.out" 2>"$WORKDIR/c9.err"; then
+  fail "off-schema status 'foobar': expected generate-todo.sh to exit nonzero, got exit 0"
+else
+  c9_exit=$?
+  if [[ "$c9_exit" -eq 1 ]]; then
+    pass "off-schema status 'foobar': generate-todo.sh exits 1"
+  else
+    fail "off-schema status 'foobar': expected exit 1, got $c9_exit"
+  fi
+fi
+if grep -q "off-schema status 'foobar' for task 1" "$WORKDIR/c9.err"; then
+  pass "off-schema status error names both the bad value and the fixture's project_number"
+else
+  fail "off-schema status error did not name the value and project_number as expected (see $WORKDIR/c9.err)"
+fi
+# task-ref-ok:end
+if [[ -f "$FIXTURE_ROOT/specs/TODO.md" ]]; then
+  fail "off-schema status: TODO.md was written despite the hard-fail (nothing should be written)"
+else
+  pass "off-schema status: nothing was written to TODO.md"
+fi
+
+# =====================================================================
 # Real-tree contamination guard (delta check against the pre-suite baseline; see
 # test-skill-base-lifecycle.sh's identical guard for why this is a delta, not an absolute
 # emptiness check).

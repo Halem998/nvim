@@ -79,6 +79,34 @@ fi
 # shellcheck disable=SC1090
 . "$PHASE_LIB"
 
+# --- Shared status-vocabulary library ---
+# Single sourced anchor for the closed 12-value task-status enum -- see
+# context/schemas/state-schema.json's definitions.taskStatus and
+# scripts/lib/status-vocabulary.sh's own header. Same deploy-tree-first / source-store-fallback
+# resolution as the phase-heading library above; a missing library is a loud environment error
+# (exit 5, matching the phase-heading library's own exit code for the same failure class), never
+# a silent degradation.
+VOCAB_LIB_CANDIDATES=(
+  "$PROJECT_ROOT/.claude/scripts/lib/status-vocabulary.sh"
+  "$PROJECT_ROOT/agent-system/extensions/core/scripts/lib/status-vocabulary.sh"
+)
+VOCAB_LIB=""
+for _candidate in "${VOCAB_LIB_CANDIDATES[@]}"; do
+  if [[ -f "$_candidate" ]]; then
+    VOCAB_LIB="$_candidate"
+    break
+  fi
+done
+if [[ -z "$VOCAB_LIB" ]]; then
+  echo "Error: shared library status-vocabulary.sh not found at any of:" >&2
+  for _candidate in "${VOCAB_LIB_CANDIDATES[@]}"; do
+    echo "  $_candidate" >&2
+  done
+  exit 5
+fi
+# shellcheck disable=SC1090
+. "$VOCAB_LIB"
+
 # --- specs/state.json read-modify-write + TODO.md regen below ---
 # Routed through state-write.sh, the single mutex-guarded specs/state.json writer every other
 # writer in this codebase shares (see scripts/state-write.sh's own header for the full
@@ -178,6 +206,18 @@ map_status() {
 }
 
 map_status "$operation" "$target_status"
+
+# --- Validate the resolved resting state against the closed enum ---
+# map_status()'s own case statement is closed (no `revise` case -- revising/revised stay
+# unreachable by design, per the research/plan decision documented in status-vocabulary.sh's
+# header), so STATE_STATUS should always already be a member of the enum. This is a defensive
+# backstop against future drift (e.g. a new case arm added to map_status() without a matching
+# schema/library update), not a behavior change for any of the ten combinations above -- every
+# one of them resolves to a value status_vocabulary_is_valid already accepts.
+if ! status_vocabulary_is_valid "$STATE_STATUS"; then
+  echo "Error: map_status() resolved an off-schema resting state '${STATE_STATUS}' for '${operation}:${target_status}' (not a member of the closed task-status enum in scripts/lib/status-vocabulary.sh / context/schemas/state-schema.json). This indicates map_status() has drifted from the schema -- fix map_status() or the schema, do not bypass this check." >&2
+  exit 1
+fi
 
 # --- Validate task exists in state.json ---
 task_exists=$(jq -r --arg num "$task_number" \

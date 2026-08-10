@@ -303,29 +303,29 @@ unrelated defect at Gate 8 -- recorded here rather than silently claimed.
 
 ---
 
-### Phase 3: Convert generate-todo.sh and update-task-status.sh to the anchor [NOT STARTED]
+### Phase 3: Convert generate-todo.sh and update-task-status.sh to the anchor [COMPLETED]
 
 **Goal**: Make the two `file_scope` consumer scripts source `lib/status-vocabulary.sh` instead of
 re-typing the enum, and turn an off-schema status into a loud failure.
 
 **Tasks**:
-- [ ] Capture a baseline: `bash scripts/generate-todo.sh` to a temp path and `diff` against the
+- [x] Capture a baseline: `bash scripts/generate-todo.sh` to a temp path and `diff` against the
       committed `specs/TODO.md`; record that they match before any edit (this is the regression
       oracle for the whole phase).
-- [ ] Convert `generate-todo.sh`'s `format_status()` to source `lib/status-vocabulary.sh` and use
+- [x] Convert `generate-todo.sh`'s `format_status()` to source `lib/status-vocabulary.sh` and use
       its mapping rather than 12 inline `case` arms.
-- [ ] DELETE the permissive `*)` catch-all arm. Replace it with a loud failure: a named error on
+- [x] DELETE the permissive `*)` catch-all arm. Replace it with a loud failure: a named error on
       stderr identifying the offending status value and the task it came from, plus a nonzero
       exit. Note in the error text that `.return-meta.json`'s separate vocabulary
       (e.g. `in_progress`) is a common confusion source.
-- [ ] Convert `update-task-status.sh`'s `map_status()` to validate its target argument and
+- [x] Convert `update-task-status.sh`'s `map_status()` to validate its target argument and
       resulting status against the library's predicate. Do NOT add a `revise` case —
       `revising`/`revised` stay unreachable by design. Preserve the documented
       target-arguments-vs-resting-states mapping (including `postflight:pr_ready -> completed`)
       exactly as-is.
-- [ ] Re-run the baseline diff: regenerated TODO.md must be byte-identical to the pre-edit
+- [x] Re-run the baseline diff: regenerated TODO.md must be byte-identical to the pre-edit
       version.
-- [ ] Run the existing `scripts/tests/test-update-task-status.sh` suite; extend it with an
+- [x] Run the existing `scripts/tests/test-update-task-status.sh` suite; extend it with an
       off-schema-status fixture asserting `generate-todo.sh` hard-fails (nonzero exit, named
       error) rather than rendering an uppercased marker.
 
@@ -357,6 +357,24 @@ shape governs and the divergence is recorded.
 - `bash scripts/tests/run-all.sh` reports zero failing suites.
 - `grep -n 'not_started' scripts/generate-todo.sh` shows the token no longer appears as a
   re-typed enum (only in comments or the sourced library reference).
+
+**Phase Notes (Scope Hypothesis confirmation)**: `generate-todo.sh`'s `format_status()` had
+exactly 12 explicit cases plus one `*)` catch-all arm, matching the hypothesis exactly.
+`update-task-status.sh`'s `map_status()` diverged slightly: reading the function found 10
+`op:target` case combinations (not framed as "9 target values" -- the actual shape is 6 distinct
+target tokens -- `research`, `plan`, `implement`, `pr_ready`, `partial`, `blocked` -- crossed with
+`preflight`/`postflight`, minus the nonsensical `preflight:partial`/`preflight:blocked` pairs the
+catch-all already rejects, giving 10 valid combinations), with no `revise` case present, as
+predicted. The actual shape governs per the hypothesis's own instruction; recorded here rather
+than silently reconciled. `grep -n 'not_started' scripts/generate-todo.sh` shows exactly one
+remaining hit, a jq default-value fallback (`.status // "not_started"`) in the data-extraction
+pass -- not a re-typed enum value, so the verification intent is satisfied. `bash
+scripts/tests/run-all.sh` reports one pre-existing, unrelated failure
+(`test-index-entries-schema.sh`'s "Rule U did not fire on a 61-line EXTENSION.md" fixture case,
+confirmed via `git stash` to predate this task's entire diff, per Phase 2's phase notes) --
+recorded honestly rather than claimed as zero; every suite this phase's own changes touch or
+introduce (`test-update-task-status.sh`, `test-status-vocabulary.sh`, `test-validate-state.sh`)
+passes cleanly.
 
 ---
 

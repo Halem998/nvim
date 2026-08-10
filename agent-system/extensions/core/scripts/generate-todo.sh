@@ -30,6 +30,34 @@ source "${SCRIPT_DIR}/lib/common.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 
+# --- Shared status-vocabulary library ---
+# Single sourced anchor for the closed 12-value task-status enum and its state.json-value ->
+# TODO.md-marker mapping -- see context/schemas/state-schema.json's definitions.taskStatus and
+# scripts/lib/status-vocabulary.sh's own header. Deploy-tree-first / source-store-fallback
+# candidate list, matching update-task-status.sh's resolution of phase-heading-patterns.sh. Never
+# falls through to an inline mapping: a missing library is a loud environment error, not a silent
+# degradation back to the old permissive catch-all.
+VOCAB_LIB_CANDIDATES=(
+  "${SCRIPT_DIR}/lib/status-vocabulary.sh"
+  "${PROJECT_ROOT}/agent-system/extensions/core/scripts/lib/status-vocabulary.sh"
+)
+VOCAB_LIB=""
+for _vocab_candidate in "${VOCAB_LIB_CANDIDATES[@]}"; do
+  if [[ -f "$_vocab_candidate" ]]; then
+    VOCAB_LIB="$_vocab_candidate"
+    break
+  fi
+done
+if [[ -z "$VOCAB_LIB" ]]; then
+  echo "ERROR: shared library status-vocabulary.sh not found at any of:" >&2
+  for _vocab_candidate in "${VOCAB_LIB_CANDIDATES[@]}"; do
+    echo "  $_vocab_candidate" >&2
+  done
+  exit 1
+fi
+# shellcheck disable=SC1090
+. "$VOCAB_LIB"
+
 # ============================================================================
 # Default Values
 # ============================================================================
@@ -116,21 +144,15 @@ fi
 
 format_status() {
   local raw="$1"
-  case "$raw" in
-    not_started)  printf '%s' "NOT STARTED" ;;
-    researching)  printf '%s' "RESEARCHING" ;;
-    researched)   printf '%s' "RESEARCHED" ;;
-    planning)     printf '%s' "PLANNING" ;;
-    planned)      printf '%s' "PLANNED" ;;
-    implementing) printf '%s' "IMPLEMENTING" ;;
-    completed)    printf '%s' "COMPLETED" ;;
-    blocked)      printf '%s' "BLOCKED" ;;
-    abandoned)    printf '%s' "ABANDONED" ;;
-    partial)      printf '%s' "PARTIAL" ;;
-    expanded)     printf '%s' "EXPANDED" ;;
-    pr_ready)     printf '%s' "PR READY" ;;
-    *)            printf '%s' "$(echo "$raw" | tr '[:lower:]' '[:upper:]')" ;;
-  esac
+  # Sourced from scripts/lib/status-vocabulary.sh -- the single anchor for the closed 12-value
+  # enum and its TODO.md-marker mapping -- rather than re-typed as 12 inline case arms. Returns
+  # nonzero (printing nothing) on an off-schema value; the CALLER is responsible for the loud,
+  # task-identifying failure (see generate_task_entry() below) because status_vocabulary_todo_marker
+  # is invoked via command substitution here, and `exit` inside a command-substitution subshell
+  # would only terminate that subshell, not this script -- deliberately not done here. The
+  # permissive `*)` catch-all that used to silently uppercase any unknown status into a
+  # plausible-looking marker has been removed entirely; there is no fallback branch.
+  status_vocabulary_todo_marker "$raw"
 }
 
 # ============================================================================
@@ -176,9 +198,14 @@ generate_task_entry() {
     fi
   fi
 
-  # Format status
+  # Format status. A common confusion source named in the error: .return-meta.json uses a
+  # DIFFERENT vocabulary (e.g. "in_progress") that is never a valid specs/state.json status
+  # value -- see status-markers.md's Target Arguments vs. Resting States subsection.
   local status_display
-  status_display=$(format_status "$status")
+  if ! status_display=$(format_status "$status"); then
+    log_error "off-schema status '${status}' for task ${task_num} is not a member of the closed task-status enum (see context/schemas/state-schema.json / scripts/lib/status-vocabulary.sh). A common confusion source: .return-meta.json uses a DIFFERENT vocabulary (e.g. 'in_progress') that is never a valid specs/state.json status value. Nothing was written."
+    exit 1
+  fi
 
   # Heading
   printf '### %s. %s\n' "$task_num" "$title"
