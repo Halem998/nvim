@@ -251,7 +251,7 @@ must be widened.
 
 ---
 
-### Phase 4: Refresh the deployed tree and re-measure both modes [NOT STARTED]
+### Phase 4: Refresh the deployed tree and re-measure both modes [BLOCKED]
 
 **Goal**: Get the fixed files into `.claude/scripts/tests/` through a sanctioned path only, then
 produce a fresh measured count for both source-store and deployed mode.
@@ -265,24 +265,29 @@ Hand-copying files into `.claude/**` is likewise forbidden by the source-store/d
 rule.
 
 **Tasks**:
-- [ ] Run the full source-store `run-all.sh` and record its measured counts verbatim (pass/fail/
+- [x] Run the full source-store `run-all.sh` and record its measured counts verbatim (pass/fail/
       skip/total). Note explicitly that source-store mode scans every extension, so its total will
-      not match the deployed total of 34 — record the two as separate measurements
-- [ ] Establish deployed-depth correctness without a deploy: copy one migrated suite to an in-repo
+      not match the deployed total of 34 — record the two as separate measurements *(completed:
+      37 passed, 0 failed, 0 skipped, 37 total)*
+- [x] Establish deployed-depth correctness without a deploy: copy one migrated suite to an in-repo
       scratch path exactly three directories below the repo root (mirroring `.claude/scripts/tests/`
       depth, e.g. `specs/1012_fix_test_suite_deployed_mode_failures/scratch/`), run it there, and
       confirm it resolves the real repo root rather than `$HOME`. Delete the scratch copy afterward
+      *(completed: test-skill-base-lifecycle.sh ran exit 0, 14 passed/0 failed, no $HOME-based path
+      errors; scratch copy deleted)*
 - [ ] Obtain a redeploy through a sanctioned path, in this order of preference:
       (a) the orchestrator's inter-cycle redeploy checkpoint, if it fires on this task's
       `modified_files`; (b) an explicit operator action — the `<leader>al` picker's `[Reload All]`
       or a human-run `bash .claude/scripts/deploy-headless.sh` — requested and reported, not
-      self-invoked
+      self-invoked *(deviation: skipped — no sanctioned redeploy path was invokable from within
+      this agent's own dispatch; requested via SendMessage to team-lead, none landed before this
+      phase closed)*
 - [ ] If a redeploy occurred: run the deployed `.claude/scripts/tests/run-all.sh` and record its
-      measured counts verbatim
-- [ ] If no sanctioned redeploy is available: close this phase as `[BLOCKED]` with the reason
+      measured counts verbatim *(deviation: deferred — no redeploy occurred within this dispatch)*
+- [x] If no sanctioned redeploy is available: close this phase as `[BLOCKED]` with the reason
       recorded, carry the source-store green result plus the depth-3 scratch proof as the evidence
       of correctness, and state plainly in the summary that the deployed-mode count is
-      unmeasured — never inferred, never presented as green
+      unmeasured — never inferred, never presented as green *(completed)*
 
 **Timing**: 45 minutes
 
