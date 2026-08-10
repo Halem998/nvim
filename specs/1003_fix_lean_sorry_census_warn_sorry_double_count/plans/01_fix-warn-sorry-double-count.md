@@ -177,15 +177,15 @@ than the one this task is scoped to.
 
 ---
 
-### Phase 2: Apply the regex fix and reconcile the stale pattern references [NOT STARTED]
+### Phase 2: Apply the regex fix and reconcile the stale pattern references [COMPLETED]
 
 **Goal**: Swap line 144's pattern to `(?<![.\w])sorry\b`, update every comment line that names the
 old pattern as this script's own behavior, and leave everything else byte-identical.
 
 **Tasks**:
-- [ ] Edit line 144 from `sorry_re = re.compile(r'\bsorry\b')` to
-      `sorry_re = re.compile(r'(?<![.\w])sorry\b')`.
-- [ ] Run `grep -n 'bsorry' agent-system/extensions/lean/scripts/lean-sorry-census.sh` and
+- [x] Edit line 144 from `sorry_re = re.compile(r'\bsorry\b')` to
+      `sorry_re = re.compile(r'(?<![.\w])sorry\b')`. *(completed)*
+- [x] Run `grep -n 'bsorry' agent-system/extensions/lean/scripts/lean-sorry-census.sh` and
       disposition each remaining hit explicitly:
       - line 5 (`a grep -rn "\bsorry\b" | grep -v ... chain cannot do this correctly`) — describes
         the REJECTED grep-chain alternative, not this script's matcher. Leave verbatim.
@@ -194,13 +194,19 @@ old pattern as this script's own behavior, and leave everything else byte-identi
       - line 96, inside `strip_lean_comments()`'s docstring
         (`later matched by the \\bsorry\\b scan`) — update to name the corrected pattern,
         preserving the existing double-backslash escaping convention used inside that docstring.
-- [ ] Confirm `strip_lean_comments()`'s executable body (everything after its closing docstring
-      through `return "".join(out)`) is byte-unchanged.
-- [ ] Confirm the counting block `if sorry_re.search(line): total += 1` and its surrounding loop
-      are byte-unchanged — do NOT switch to `findall` or occurrence counting.
-- [ ] Review `git diff` hunk by hunk: the diff must contain exactly the regex line plus the
-      dispositioned comment lines, and nothing else.
-- [ ] Re-run the Phase 1 suite. All cases must now pass and the suite must exit 0.
+      *(completed: confirmed exactly 3 occurrences before editing, matching the hypothesis;
+      line 5 left verbatim, lines 11 and 96 updated to name `(?<![.\w])sorry\b`)*
+- [x] Confirm `strip_lean_comments()`'s executable body (everything after its closing docstring
+      through `return "".join(out)`) is byte-unchanged. *(completed: verified via git diff — no
+      hunk touches this region)*
+- [x] Confirm the counting block `if sorry_re.search(line): total += 1` and its surrounding loop
+      are byte-unchanged — do NOT switch to `findall` or occurrence counting. *(completed:
+      verified via git diff — no hunk touches this region)*
+- [x] Review `git diff` hunk by hunk: the diff must contain exactly the regex line plus the
+      dispositioned comment lines, and nothing else. *(completed: 3 hunks total, exactly lines
+      11, 96, 144)*
+- [x] Re-run the Phase 1 suite. All cases must now pass and the suite must exit 0. *(completed:
+      8/8 PASS, exit 0)*
 
 **Timing**: 30 minutes
 

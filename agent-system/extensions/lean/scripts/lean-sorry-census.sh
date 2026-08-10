@@ -8,7 +8,7 @@
 # cannot be tracked by a fixed-depth regex/grep pipeline. This script instead
 # runs a single-pass, depth-counting comment/string stripper (python3) that
 # preserves newlines (so line numbers match the original file) before
-# matching `\bsorry\b` on the stripped text.
+# matching `(?<![.\w])sorry\b` on the stripped text.
 #
 # Handles:
 #   - `--` line comments (stripped to end of line)
@@ -93,7 +93,7 @@ def strip_lean_comments(text: str) -> str:
     Preserves newlines so grep-style line numbers on the output match the
     original file. String interiors are masked with spaces (not preserved
     verbatim) so a bare 'sorry' token appearing only as string text is not
-    later matched by the \\bsorry\\b scan -- it is not a sorry term/tactic.
+    later matched by the (?<![.\\w])sorry\\b scan -- it is not a sorry term/tactic.
     """
     out, i, n, depth, in_str = [], 0, len(text), 0, False
     while i < n:
@@ -141,7 +141,7 @@ def strip_lean_comments(text: str) -> str:
     return "".join(out)
 
 
-sorry_re = re.compile(r'\bsorry\b')
+sorry_re = re.compile(r'(?<![.\w])sorry\b')
 total = 0
 inventory = []
 for path in sys.argv[1:]:
