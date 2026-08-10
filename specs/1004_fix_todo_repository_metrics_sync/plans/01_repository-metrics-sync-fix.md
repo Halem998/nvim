@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1004
 
 - **Task**: 1004 - Fix /todo repository-metrics sync: build_errors is structurally always 0 and the technical_debt frontmatter target does not exist
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md
@@ -351,7 +351,7 @@ rest, noting it rather than silently widening the diff.
 
 ---
 
-### Phase 5: Wire, deploy, and prove idempotence end to end [IN PROGRESS]
+### Phase 5: Wire, deploy, and prove idempotence end to end [COMPLETED]
 
 **Goal**: Register the new files so they actually reach a deployed tree, satisfy the third
 verification bar, and confirm the standing gates are green.
@@ -373,13 +373,33 @@ verification bar, and confirm the standing gates are green.
       executed: PASS. generate-todo.sh requires a deployed tree (its deploy-root-guard.sh refuses
       the source-store copy); the case loud-skips when absent per shell-script-testing.md, and ran
       successfully against the deployed copy already present in this workspace)*
-- [ ] Run the full suite runner: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
-- [ ] Deploy and confirm both new files landed in `.claude/scripts/` and `.claude/scripts/tests/`,
-      and that the deployed `.claude/commands/todo.md` carries the rewritten stage.
-- [ ] Run `verify-deploy.sh` and confirm the lint gates (notably the state-writer boundary gate and
-      the doc-lint gate) are green.
-- [ ] Optionally exercise the real path once: run the deployed probe against this repo root and
-      confirm the emitted object would validate against the updated schema.
+- [x] Run the full suite runner: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
+      *(completed, executed pre-deploy from source store: 37 passed, 1 failed, 38 total — the one
+      failure was this suite's own known stale-schema issue)*
+- [x] Deploy and confirm both new files landed in `.claude/scripts/` and `.claude/scripts/tests/`,
+      and that the deployed `.claude/commands/todo.md` carries the rewritten stage. *(completed,
+      executed: `bash .claude/scripts/deploy-headless.sh` (default non-destructive resync mode,
+      explicit and deliberate per this plan's own Phase 5 task, not a side effect of an unrelated
+      operation) exited 0, "Resynced 5 extension(s)". Confirmed present:
+      `.claude/scripts/assess-repo-health.sh` (executable), `.claude/scripts/tests/test-assess-repo-health.sh`
+      (executable), `.claude/commands/todo.md` containing Steps 5.6.1-5.6.3 and the
+      `assess-repo-health.sh` call site, `.claude/context/schemas/state-schema.json` with the
+      five-value enum and nullable `build_errors`)*
+- [x] Run `verify-deploy.sh` and confirm the lint gates (notably the state-writer boundary gate and
+      the doc-lint gate) are green. *(completed — see Verification below for the full transcript,
+      including a real defect this step caught: my Phase 3 edit changed
+      `context/schemas/state-schema.json`'s line count from 261 to 262 without updating its
+      `index-entries.json` line_count entry, which doc-lint's Rule R caught as a genuine FAIL. Fixed
+      by hand-correcting the one entry (`agent-system/extensions/core/index-entries.json`) rather
+      than running `generate-context-line-counts.sh --write` across all extensions, to avoid pulling
+      unrelated pre-existing drift into this diff. Redeployed and re-verified: 0 failures)*
+- [x] Optionally exercise the real path once: run the deployed probe against this repo root and
+      confirm the emitted object would validate against the updated schema. *(completed, executed:
+      `bash .claude/scripts/assess-repo-health.sh` against this repo root emitted valid JSON with
+      `status: "critical"` (one real, pre-existing, out-of-scope defect found:
+      `.opencode/scripts/execute-command.sh` fails `bash -n` — confirmed unrelated to this task and
+      outside the source-store rule's scope), confirmed a member of the deployed schema's five-value
+      enum)*
 
 **Timing**: 1 hour
 
@@ -396,13 +416,27 @@ exists is that the manifest/deploy coupling has failed silently before.
 - `agent-system/extensions/core/manifest.json` - two `provides.scripts` entries.
 - `agent-system/extensions/core/merge-sources/claudemd.md` - Utility Scripts entry.
 - `agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh` - idempotence case added.
+- `agent-system/extensions/core/index-entries.json` - corrected `schemas/state-schema.json`
+  `line_count` (261 -> 262) after Phase 3's edit, caught by `verify-deploy.sh`'s doc-lint gate
+  (not originally listed in this plan; a real defect discovered during this phase's own
+  verification, fixed in scope).
 
 **Verification**:
 - `jq empty agent-system/extensions/core/manifest.json` passes and both new paths appear in
-  `provides.scripts`.
+  `provides.scripts`. **Executed: confirmed** (`assess-repo-health.sh` at index 0,
+  `tests/test-assess-repo-health.sh` present in the `tests/` block).
 - `run-all.sh` exits 0 and its summary reports the new suite among those discovered (not skipped).
-- `verify-deploy.sh` reports no new failures relative to a pre-change baseline.
-- `.claude/scripts/assess-repo-health.sh` exists and is executable after deploy.
+  **Executed, post-deploy, from the deployed tree**: `35 passed, 0 failed, 0 skipped, 35 total`,
+  exit 0. (A transient, pre-existing, unrelated flake in `test-claude-refresh-matcher.sh` — a
+  process-liveness test that kills and re-checks a real PID — was observed on the first post-deploy
+  run and confirmed non-reproducing on immediate re-run in isolation: 12/12 passed. Unrelated to
+  this task; last touched by prior, unrelated work.)
+- `verify-deploy.sh` reports no new failures relative to a pre-change baseline. **Executed twice**:
+  first run surfaced 1 genuine FAIL (the `index-entries.json` line_count drift documented above,
+  caused by this task's own Phase 3 edit — not pre-existing). Fixed, redeployed, re-ran:
+  **`[verify-deploy] PASS -- 23 check(s), 0 failure(s)`**.
+- `.claude/scripts/assess-repo-health.sh` exists and is executable after deploy. **Executed:
+  confirmed**, `-rwxr-xr-x`.
 
 ---
 

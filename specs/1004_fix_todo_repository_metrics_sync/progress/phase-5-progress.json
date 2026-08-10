@@ -2,14 +2,25 @@
   "phase": 5,
   "phase_name": "Wire, deploy, and prove idempotence end to end",
   "started_at": "2026-08-10T01:15:00Z",
-  "last_updated": "2026-08-10T01:30:00Z",
+  "last_updated": "2026-08-10T02:10:00Z",
   "objectives": [
     {"id": 1, "description": "Register assess-repo-health.sh and tests/test-assess-repo-health.sh in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
     {"id": 2, "description": "Add assess-repo-health.sh entry to claudemd.md Utility Scripts list", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
     {"id": 3, "description": "Bar 3: add frontmatter-idempotence regression-lock case to the Phase 2 suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]},
-    {"id": 4, "description": "Run run-all.sh, deploy, confirm new files landed, run verify-deploy.sh, re-run deferred Phase 2/4 checks against deployed tree", "status": "in_progress", "files_touched": []}
+    {"id": 4, "description": "Run run-all.sh, deploy, confirm new files landed, run verify-deploy.sh, re-run deferred Phase 2/4 checks against deployed tree, exercise real path", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
   ],
-  "current_objective": 4,
-  "approaches_tried": [],
-  "handoff_count": 0
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Run generate-context-line-counts.sh --write across all extensions to fix the line_count drift", "result": "rejected", "reason": "would rewrite every extension's index-entries.json, pulling unrelated pre-existing drift into this diff; chose a surgical single-entry hand-edit instead, scoped exactly to the entry this task's own Phase 3 edit changed"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.index-entries-fix",
+      "description": "Fix index-entries.json line_count drift for schemas/state-schema.json (261 -> 262), caught by verify-deploy.sh doc-lint gate",
+      "type": "altered",
+      "reason": "Not originally listed as a Phase 5 file to modify; discovered during this phase's own verify-deploy.sh execution as a real defect caused by Phase 3's schema edit. Fixed in scope rather than deferred, since Phase 5 explicitly gates on verify-deploy.sh being green.",
+      "annotation": "*(deviation: altered -- added index-entries.json fix, discovered via executed verify-deploy.sh)*"
+    }
+  ]
 }
