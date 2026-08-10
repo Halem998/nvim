@@ -200,16 +200,20 @@ roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
 
 # Add completion_summary if present
 if [ -n "$completion_summary" ]; then
-    jq --arg summary "$completion_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).completion_summary = $summary' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).completion_summary = $summary' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg summary "$completion_summary"
 fi
 
 # Add roadmap_items if present (for non-meta tasks only)
 if [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
-    jq --argjson items "$roadmap_items" \
-      '(.active_projects[] | select(.project_number == '$task_number')).roadmap_items = $items' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).roadmap_items = $items' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --argjson items "$roadmap_items"
 fi
 ```
 
@@ -226,10 +230,12 @@ Add summary artifact to state.json. Update TODO.md per `@.claude/context/pattern
 
 ```bash
 if [ -n "$summary_artifact_path" ]; then
-    jq --arg path "$summary_artifact_path" \
-       --arg summary "$summary_artifact_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": "summary", "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": "summary", "summary": $summary}]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg path "$summary_artifact_path" \
+      --arg summary "$summary_artifact_summary"
 fi
 ```
 

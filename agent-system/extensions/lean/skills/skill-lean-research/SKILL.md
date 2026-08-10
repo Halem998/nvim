@@ -54,14 +54,17 @@ Update task status to "researching" BEFORE invoking subagent.
 
 **Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researching" \
-   --arg sid "$session_id" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+bash .claude/scripts/state-write.sh \
+  '(.active_projects[] | select(.project_number == $num)) |= . + {
     status: $status,
     last_updated: $ts,
     session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --argjson num "$task_number" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "researching" \
+  --arg sid "$session_id"
 ```
 
 **Update TODO.md**: Use Edit tool to change status marker from `[NOT STARTED]` or `[RESEARCHED]` to `[RESEARCHING]`.
@@ -158,13 +161,16 @@ If status is "researched", update state.json and TODO.md:
 
 **Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researched" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+bash .claude/scripts/state-write.sh \
+  '(.active_projects[] | select(.project_number == $num)) |= . + {
     status: $status,
     last_updated: $ts,
     researched: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --argjson num "$task_number" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "researched"
 ```
 
 **Update TODO.md**: Use Edit tool to change status marker from `[RESEARCHING]` to `[RESEARCHED]`.
@@ -179,11 +185,13 @@ Add artifact to state.json with summary.
 
 ```bash
 if [ -n "$artifact_path" ]; then
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg path "$artifact_path" \
+      --arg type "$artifact_type" \
+      --arg summary "$artifact_summary"
 fi
 ```
 

@@ -180,11 +180,13 @@ Add artifact to state.json with summary. Update TODO.md per
 
 ```bash
 if [ -n "$artifact_path" ]; then
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg path "$artifact_path" \
+      --arg type "$artifact_type" \
+      --arg summary "$artifact_summary"
 fi
 ```
 
