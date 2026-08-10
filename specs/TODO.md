@@ -38,7 +38,7 @@ next_project_number: 1004
 
 ### Status Marker Lifecycle
 
-984 [RESEARCHED] — Give specs/state.json a machine-enforced schema and make the stat
+984 [PLANNED] — Give specs/state.json a machine-enforced schema and make the stat
 
 ## Tasks
 
@@ -583,11 +583,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 984. One state.json schema, one status vocabulary, converted extension writers
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
 - **Dependencies**: Task 962, Task 969, Task 988
 - **Research**: [984_state_schema_and_status_vocabulary_single_source/reports/01_state-schema-status-vocabulary.md]
+- **Plan**: [984_state_schema_and_status_vocabulary_single_source/plans/01_state-schema-single-source.md]
 
 **Description**: Give specs/state.json a machine-enforced schema and make the status vocabulary a single source of truth. This SUBSUMES task 950 (marked abandoned in favor of this task — its verified command-structure.md defect inventory folds into item 4 below) and DEPENDS ON task 969 (state-write.sh archive/vault coverage) landing first so the writer conversion in item 5 has a mechanism that can address every target.
 
