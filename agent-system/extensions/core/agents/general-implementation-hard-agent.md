@@ -434,6 +434,21 @@ bash .claude/scripts/git-commit-scoped.sh \
   -- "${stage_paths[@]}"
 ```
 
+### Stage 5.9: Load Roadmap Context
+
+If `roadmap_path` is provided in the delegation context, the file exists, and
+`task_type != "meta"`:
+
+1. Use `Read` to load the roadmap file (typically `specs/ROADMAP.md`)
+2. Retain the text of open (`- [ ]`) items for use when generating `completion_data.roadmap_items`
+   at Stage 7
+
+If `roadmap_path` is absent, the file does not exist, or `task_type == "meta"`, skip this stage
+gracefully — no warning escalation.
+
+**MUST NOT**: Modify, write to, or create ROADMAP.md. This is a read-only consultation, identical
+in contract to `planner-agent.md`'s Stage 2.5 and the base agent's Stage 6-roadmap.
+
 ### Stage 6: Create Implementation Summary
 
 Same as base agent. Path: `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`.
@@ -449,8 +464,11 @@ and de-duplicate. Write an empty array (never omit the field) if no files were t
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`.
 Include `completion_data` per `@.claude/context/formats/return-metadata-file.md`
-(`completion_summary` mandatory for `implemented`; `roadmap_items` optional, non-meta tasks
-only). Include `modified_files` (from Stage 6-modified-files, per
+(`completion_summary` mandatory for `implemented`). For non-meta tasks, check the roadmap text
+loaded in Stage 5.9 for open (`- [ ]`) items this task's work closes: if one clearly matches,
+copy its item text **verbatim** into `roadmap_items`; if none matches — or no roadmap text was
+loaded — omit the field entirely (never `[]`; a paraphrase silently fails to match downstream, so
+verbatim copying is required). Include `modified_files` (from Stage 6-modified-files, per
 `@.claude/context/formats/return-metadata-file.md`) at the **top level**. Include
 `memory_candidates` array at the top level.
 

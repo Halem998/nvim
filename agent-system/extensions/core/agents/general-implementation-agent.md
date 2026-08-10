@@ -533,6 +533,20 @@ the commit pipeline (`orchestrator-postflight.sh` Stage 9 and the per-phase comm
 agent's Phase Checkpoint Protocol below) uses for targeted staging; see
 `@.claude/context/standards/git-staging-scope.md` for the full contract.
 
+### Stage 6-roadmap: Load Roadmap Context
+
+If `roadmap_path` is provided in the delegation context, the file exists, and
+`task_type != "meta"`:
+
+1. Use `Read` to load the roadmap file (typically `specs/ROADMAP.md`)
+2. Retain the text of open (`- [ ]`) items for use in Stage 6a's directive check below
+
+If `roadmap_path` is absent, the file does not exist, or `task_type == "meta"`, skip this stage
+gracefully — no warning escalation.
+
+**MUST NOT**: Modify, write to, or create ROADMAP.md. This is a read-only consultation, identical
+in contract to `planner-agent.md`'s Stage 2.5.
+
 ### Stage 6a: Generate Completion Data
 
 **CRITICAL**: Before writing metadata, prepare the `completion_data` object.
@@ -544,8 +558,16 @@ agent's Phase Checkpoint Protocol below) uses for targeted staging; see
    - Example: "Created new-agent.md with full specification including tools, execution flow, and error handling."
 
 **For NON-META tasks**:
-2. Optionally generate `roadmap_items`: Array of explicit ROADMAP.md item texts this task addresses
-   - Only include if the task clearly maps to specific roadmap items
+2. Check the roadmap text loaded in Stage 6-roadmap for open (`- [ ]`) items this task's work
+   closes. If one clearly matches, copy its item text **verbatim** into `roadmap_items`. If none
+   matches — or no roadmap text was loaded — omit the `roadmap_items` field entirely.
+   - A paraphrase of the item text will silently fail to match downstream
+     (`roadmap-integration.sh`'s `explicit_roadmap_item` tier requires an exact/substring match
+     against the verbatim item text), so copying verbatim is required, not optional stylistic
+     preference.
+   - Omission is preferred over `[]` when nothing matches: `skill_propagate_completion_summary`
+     treats an absent field and an empty array identically, but omission states intent more
+     clearly for a future reader of the metadata.
    - Example: `["Prove completeness theorem for K modal logic"]`
 
 **Example completion_data for meta task**:

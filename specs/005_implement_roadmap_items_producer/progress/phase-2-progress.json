@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Add roadmap loading and tighten Stage 6a in both implementation agents",
+  "started_at": "2026-08-10T21:50:00Z",
+  "last_updated": "2026-08-10T22:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "general-implementation-agent.md: add Load Roadmap Context stage before Stage 6a", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "general-implementation-agent.md Stage 6a: rewrite to directive verbatim-copy instruction", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 3, "description": "general-implementation-hard-agent.md: add equivalent Load Roadmap Context stage and update Stage 7 pointer", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"]},
+    {"id": 4, "description": "Leave completion_data examples intact except where contradicting directive", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

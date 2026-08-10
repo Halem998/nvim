@@ -181,33 +181,36 @@ phase progress file.
 
 ---
 
-### Phase 2: Add roadmap loading and tighten Stage 6a in both implementation agents [NOT STARTED]
+### Phase 2: Add roadmap loading and tighten Stage 6a in both implementation agents [COMPLETED]
 
 **Goal**: Both implementation agents read ROADMAP.md read-only before generating completion data,
 and Stage 6a becomes a directive check against the loaded text.
 
 **Tasks**:
 
-- [ ] `agents/general-implementation-agent.md`: add a new read-only stage immediately before
+- [x] `agents/general-implementation-agent.md`: add a new read-only stage immediately before
       Stage 6a — "Load Roadmap Context" — modelled on `planner-agent.md`'s Stage 2.5. Contract:
       if `roadmap_path` is present in the delegation context AND the file exists AND
       `task_type != "meta"`, `Read` it and retain the open (`- [ ]`) item texts. If the field is
       absent or the file is missing, skip gracefully with no warning escalation. State
       explicitly: **MUST NOT** modify, write to, or create ROADMAP.md — this is a read-only
-      consultation (same wording contract as `planner-agent.md` Stage 2.5).
-- [ ] `agents/general-implementation-agent.md` Stage 6a (currently lines 546-549): replace
+      consultation (same wording contract as `planner-agent.md` Stage 2.5). *(completed: added
+      as "Stage 6-roadmap: Load Roadmap Context", immediately before Stage 6a)*
+- [x] `agents/general-implementation-agent.md` Stage 6a (currently lines 546-549): replace
       "Optionally generate `roadmap_items` ... Only include if the task clearly maps to specific
       roadmap items" with a directive: check the loaded roadmap text for open (`- [ ]`) items this
       task's work closes; if one clearly matches, copy its item text **verbatim** into
       `roadmap_items`; if none matches, omit the field entirely. Add a note that a paraphrase will
       silently fail to match downstream, so verbatim copying is required, and that omission is
       preferred over `[]` (both are treated identically by the writer's guard, but omission
-      states intent).
-- [ ] `agents/general-implementation-hard-agent.md`: add the equivalent "Load Roadmap Context"
+      states intent). *(completed)*
+- [x] `agents/general-implementation-hard-agent.md`: add the equivalent "Load Roadmap Context"
       stage and update its Stage-6a-equivalent pointer (around line 451-452) so the hard agent
-      carries the same directive rather than only pointing at the shared format doc.
-- [ ] Leave the `completion_data` examples intact; update the non-meta example only if its
-      wording now contradicts the directive.
+      carries the same directive rather than only pointing at the shared format doc. *(completed:
+      added as "Stage 5.9: Load Roadmap Context"; Stage 7 pointer text now carries the directive)*
+- [x] Leave the `completion_data` examples intact; update the non-meta example only if its
+      wording now contradicts the directive. *(completed: examples left unchanged — neither
+      contradicted the new directive)*
 
 **Timing**: 1 hour
 
