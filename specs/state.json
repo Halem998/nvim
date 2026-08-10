@@ -467,7 +467,7 @@
       "project_number": 995,
       "project_name": "convert_extension_state_writers_to_state_write",
       "title": "Convert surviving extension state.json writers to state-write.sh",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -493,7 +493,7 @@
         "agent-system/extensions/core/manifest.json"
       ],
       "created": "2026-08-05T17:17:11Z",
-      "last_updated": "2026-08-10T06:25:00Z",
+      "last_updated": "2026-08-10T06:59:51Z",
       "session_id": "sess_1786342011_4592c8_995",
       "artifacts": [
         {
@@ -505,6 +505,11 @@
           "path": "specs/995_convert_extension_state_writers_to_state_write/plans/01_convert-extension-state-writers.md",
           "type": "plan",
           "summary": "10-phase conversion plan with 4 dependency waves, per-phase verification tiers, and an enumerated evidenced exclusion list."
+        },
+        {
+          "path": "specs/995_convert_extension_state_writers_to_state_write/summaries/01_convert-extension-state-writers-summary.md",
+          "type": "summary",
+          "summary": "Full execution summary with the evidenced grep/exclusion accounting, dry-run smoke test results, and three recorded follow-ups."
         }
       ]
     },

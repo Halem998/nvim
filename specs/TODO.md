@@ -11,18 +11,16 @@ next_project_number: 1007
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 995,999,1003,1004 | -- | agent-system |
-| 2 | 996,1005 | 995,999,1004 | agent-system |
+| 1 | 999,1003,1004 | -- | agent-system |
+| 2 | 996,1005 | 999,1004 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-995 [IMPLEMENTING] — Convert the hand-rolled specs/state.json read-modify-write sequen
-  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
-  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
@@ -659,12 +657,13 @@ SOURCE-STORE RULE (binding): any fixes spun out of this task target agent-system
 ---
 
 ### 995. Convert surviving extension state.json writers to state-write.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 983, Task 984
 - **Research**: [995_convert_extension_state_writers_to_state_write/reports/01_convert-extension-state-writers.md]
 - **Plan**: [995_convert_extension_state_writers_to_state_write/plans/01_convert-extension-state-writers.md]
+- **Summary**: [995_convert_extension_state_writers_to_state_write/summaries/01_convert-extension-state-writers-summary.md]
 
 **Description**: Convert the hand-rolled specs/state.json read-modify-write sequences that SURVIVE the skill-skeleton collapse to state-write.sh (or its guest mode). SPLIT RATIONALE (post-review): this work was originally item 5 of the state-schema/status-vocabulary task; it is split out because the skill-skeleton task collapses the 12 domain skill files onto a shared skeleton and routes the three team skills through update-task-status.sh, eliminating many of the ~110 hand-rolled writer blocks by construction (founder ~44, present ~22, web, lean, cslib — two via machine-global /tmp/state.tmp — epidemiology; all mutex-blind, most via fixed shared temp paths). Converting before the collapse would be partially wasted work, and gating the whole state-schema task on the collapse would delay the schema/vocabulary fixes needlessly. Correct sequence: collapse first, then convert the survivors against the landed schema.
 
