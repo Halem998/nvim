@@ -371,6 +371,29 @@
         "parallel",
         "conflicts"
       ]
+    },
+    {
+      "path": "contracts/adversarial-verification.md",
+      "line_count": 117,
+      "load_when": {
+        "agents": [
+          "general-research-hard-agent",
+          "cslib-research-hard-agent"
+        ],
+        "task_types": [
+          "cslib"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "cslib",
+      "summary": "H4 adversarial verification contract (cslib mirror copy): Claim Verification Bar, Confidence Taxonomy, Contradiction Resolution Protocol, Forbidden Outputs, domain specialization for cslib/lean4. Union-valued load_when.agents (general-research-hard-agent + cslib-research-hard-agent) so the upsert-by-path merge does not silently drop core's hook when cslib wins the collision on this shared path.",
+      "keywords": [
+        "cslib",
+        "hard-mode",
+        "adversarial-verification",
+        "contracts",
+        "H4"
+      ]
     }
   ]
 }

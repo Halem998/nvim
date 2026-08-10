@@ -1,7 +1,7 @@
 # Implementation Plan: CSLib Adversarial-Verification Mirror
 
 - **Task**: 1000 - Give cslib its own adversarial-verification contract copy and union-valued index entry
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1 hour
 - **Dependencies**: 991, 992 (both completed; their decomposition recorded this gap as a follow-on)
 - **Research Inputs**: specs/1000_cslib_adversarial_verification_mirror/reports/01_cslib-adversarial-verification-mirror.md
@@ -88,44 +88,53 @@ No ROADMAP.md consulted for this task.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Verify and Reconcile the Working-Tree Deliverables [NOT STARTED]
+### Phase 1: Verify and Reconcile the Working-Tree Deliverables [COMPLETED]
 
 **Goal**: Confirm both working-tree changes still exist and are internally consistent (file
 present, `line_count` accurate, union-valued `agents`, correct entry shape); make any corrections
 needed so the Rule R hard gate passes.
 
 **Tasks**:
-- [ ] Run `git status --short -- agent-system/extensions/cslib/` and record what is present. Expect
+- [x] Run `git status --short -- agent-system/extensions/cslib/` and record what is present. Expect
       an untracked `agent-system/extensions/cslib/context/contracts/` directory and a modified
-      `agent-system/extensions/cslib/index-entries.json`.
-- [ ] Read `agent-system/extensions/cslib/context/contracts/adversarial-verification.md` and
+      `agent-system/extensions/cslib/index-entries.json`. *(completed: confirmed exactly these two
+      paths, nothing else)*
+- [x] Read `agent-system/extensions/cslib/context/contracts/adversarial-verification.md` and
       confirm it contains: the explanatory header (what the file is; why it is deliberately NOT
       cslib-specialized, citing the shared-path collision; where genuinely cslib-only H4 behavior
       belongs), the Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution
       Protocol, and Forbidden Verification Outputs sections, and the Domain Specialization section
-      naming both cslib and lean4.
-- [ ] If the file is missing, re-author it at that exact path following the structure recorded in
+      naming both cslib and lean4. *(completed: all sections present; body verbatim-matches core's
+      from `## Claim Verification Bar` through `## Domain Specialization` except the closing
+      attribution lines)*
+- [x] If the file is missing, re-author it at that exact path following the structure recorded in
       the research report's Recommendations section, sourcing the four contract sections verbatim
       from `agent-system/extensions/core/context/contracts/adversarial-verification.md`.
-- [ ] Confirm the file's cross-references point at the generic deployed core paths
+      *(completed: file was present, no re-authoring needed)*
+- [x] Confirm the file's cross-references point at the generic deployed core paths
       (`@.claude/context/contracts/anti-analysis.md`,
       `@.claude/context/contracts/reference-grounding.md`) — matching what
       `agent-system/extensions/cslib/agents/cslib-research-hard-agent.md` already names. A
-      cslib-namespaced H3 anchor would dangle: cslib owns no H2/H3 parity copies.
-- [ ] Measure the file with `wc -l` and compare against the `line_count` in the
+      cslib-namespaced H3 anchor would dangle: cslib owns no H2/H3 parity copies. *(completed:
+      file references `@.claude/context/contracts/reference-grounding.md#source-coverage-minimums`;
+      confirmed `cslib-research-hard-agent.md` lines 40-42 point at the same generic core paths)*
+- [x] Measure the file with `wc -l` and compare against the `line_count` in the
       `contracts/adversarial-verification.md` entry of
       `agent-system/extensions/cslib/index-entries.json`. Correct `line_count` to the measured
-      value on any mismatch (never adjust the file to fit the number).
-- [ ] Confirm the entry's `load_when.agents` is exactly
+      value on any mismatch (never adjust the file to fit the number). *(completed: `wc -l` = 117,
+      declared `line_count` = 117, no correction needed)*
+- [x] Confirm the entry's `load_when.agents` is exactly
       `["general-research-hard-agent", "cslib-research-hard-agent"]` — a union, not a single name.
-      Restore both names if either is missing.
-- [ ] Confirm the entry shape follows lean's contract-mirror precedent: `path`
+      Restore both names if either is missing. *(completed: both names present)*
+- [x] Confirm the entry shape follows lean's contract-mirror precedent: `path`
       `"contracts/adversarial-verification.md"` (bare, not the `project/cslib/...` prefix cslib's
       other entries use), `domain: "project"`, `subdomain: "cslib"`, `load_when.task_types:
-      ["cslib"]`, and no `commands` key.
-- [ ] Validate the JSON parses: `jq -e . agent-system/extensions/cslib/index-entries.json`.
-- [ ] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and
+      ["cslib"]`, and no `commands` key. *(completed: entry shape matches lean's precedent exactly)*
+- [x] Validate the JSON parses: `jq -e . agent-system/extensions/cslib/index-entries.json`.
+      *(completed: valid)*
+- [x] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and
       confirm the summary table reports `cslib PASS`. Fix and re-run on any cslib failure.
+      *(completed: summary table reports `cslib PASS`)*
 
 **Timing**: 30 minutes
 
