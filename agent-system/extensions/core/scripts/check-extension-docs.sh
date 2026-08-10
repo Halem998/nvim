@@ -41,9 +41,9 @@
 #     context/index.schema.json's real field set: required keys present, forbidden keys
 #     (description, tags, non-agents/commands/task_types/always load_when keys) absent, domain
 #     value in the enum (source-level, per entry; severity controlled by
-#     SCHEMA_CONFORMANCE_GATE_MODE, defaults advisory)
+#     SCHEMA_CONFORMANCE_GATE_MODE)
 #   - EXTENSION.md exceeding the 60-line limit from extension-slim-standard.md (severity
-#     controlled by SCHEMA_CONFORMANCE_GATE_MODE, defaults advisory)
+#     controlled by SCHEMA_CONFORMANCE_GATE_MODE)
 #
 # Rule letter index (checks named "Rule X" in function comments below, in first-introduced
 # order; unlettered checks are unnamed/structural and are not part of this index):

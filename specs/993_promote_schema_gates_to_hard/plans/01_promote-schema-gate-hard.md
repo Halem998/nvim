@@ -1,7 +1,7 @@
 # Implementation Plan: Promote SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard
 
 - **Task**: 993 - Promote SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: 987, 990, 992 (all landed; empirically re-confirmed by research)
 - **Research Inputs**: specs/993_promote_schema_gates_to_hard/reports/01_promote-schema-gate-hard.md
@@ -136,26 +136,34 @@ pass and are hypotheses, not addresses — locate by content match, not by line 
 
 ---
 
-### Phase 2: Header bullet polish and full verification [NOT STARTED]
+### Phase 2: Header bullet polish and full verification [COMPLETED]
 
 **Goal**: The file's top-of-file rule-list bullets no longer advertise a stale "defaults advisory"
 qualifier, and the full verification bar is met end to end.
 
 **Tasks**:
-- [ ] Locate the two header rule-list bullets (approximately lines 40-46) that describe the
-      index-entries.json schema conformance check and the EXTENSION.md 60-line check.
-- [ ] Drop the `, defaults advisory` clause from both bullets so they read "severity controlled by
+- [x] Locate the two header rule-list bullets (approximately lines 40-46) that describe the
+      index-entries.json schema conformance check and the EXTENSION.md 60-line check. *(completed)*
+- [x] Drop the `, defaults advisory` clause from both bullets so they read "severity controlled by
       SCHEMA_CONFORMANCE_GATE_MODE" — matching the sibling `INDEX_TRUTH_GATE_MODE` bullets, which
       carry no `defaults X` qualifier at all. Do not reword to "defaults hard"; the sibling style
-      is the closer mirror of precedent.
-- [ ] Re-run the verification bar with no environment override and confirm exit 0.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` to confirm the
+      is the closer mirror of precedent. *(completed)*
+- [x] Re-run the verification bar with no environment override and confirm exit 0.
+      *(deviation: altered — raw exit code is 1 due to an expected Rule F self-reference
+      deploy-drift FAIL (deployed .claude/scripts/check-extension-docs.sh vs. the just-edited
+      source), not a SCHEMA_CONFORMANCE_GATE_MODE/Rule T/U regression; confirmed via targeted
+      grep that zero Rule T/U findings occurred and all 19 extensions PASS — see summary)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` to confirm the
       edited comment prose introduced no task-number citation into a deliverable.
-- [ ] Record in the summary that `extension-slim-standard.md` (line ~9-12, "defaulting
+      *(deviation: altered — the source-store copy of check-task-references.sh refuses to run
+      outside a deployed tree by design; ran the deployed `.claude/scripts/check-task-references.sh`
+      instead, which is the same script content and is the sanctioned invocation path. Result:
+      PASS, 0 unexempted occurrences)*
+- [x] Record in the summary that `extension-slim-standard.md` (line ~9-12, "defaulting
       `advisory`") is now stale prose and is a candidate one-line follow-up outside this task's
-      `file_scope`.
-- [ ] Record that the pre-existing `test-index-entries-schema.sh` Rule U fixture failure is
-      unchanged by this task and remains an unrelated open item.
+      `file_scope`. *(completed)*
+- [x] Record that the pre-existing `test-index-entries-schema.sh` Rule U fixture failure is
+      unchanged by this task and remains an unrelated open item. *(completed)*
 
 **Timing**: 0.25 hours
 

@@ -1,9 +1,25 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/993_promote_schema_gates_to_hard/summaries/01_promote-schema-gate-hard-summary.md",
+      "summary": "Flipped SCHEMA_CONFORMANCE_GATE_MODE default to hard, rewrote its comment block to past tense, and dropped stale 'defaults advisory' header bullets; verified zero Rule T/U findings across all 19 extensions, override escape hatch still functional, and zero task-reference citations introduced."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Promoted SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard in check-extension-docs.sh (default flip, comment rewrite, header bullet cleanup); confirmed zero Rule T/U findings across all 19 extensions and that the advisory override remains functional."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/check-extension-docs.sh"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1786322063_3251e8_993",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }

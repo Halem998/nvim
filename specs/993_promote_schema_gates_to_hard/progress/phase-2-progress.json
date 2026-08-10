@@ -1,0 +1,31 @@
+{
+  "phase": 2,
+  "phase_name": "Header bullet polish and full verification",
+  "started_at": "2026-08-09T00:15:00Z",
+  "last_updated": "2026-08-09T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Locate and drop ', defaults advisory' clause from both header bullets", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 2, "description": "Re-run verification bar with no override and confirm exit 0", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run check-task-references.sh to confirm no task-number citation introduced", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record extension-slim-standard.md staleness and pre-existing Rule U fixture failure as open items in summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.verification",
+      "description": "Re-run the verification bar with no environment override and confirm exit 0.",
+      "type": "altered",
+      "reason": "REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh exits 1, not 0, due to Rule F (check_deployed_script_drift) firing on the script's own self-reference: the deployed .claude/scripts/check-extension-docs.sh has not been regenerated to match the source-store edits made in this task, so it now differs byte-for-byte from the source copy. This is a known, pre-documented structural gotcha (see .memory/10-Memories/MEM-workflow-check-extension-docs-rules.md's 'Self-reference hazard' section) that is orthogonal to SCHEMA_CONFORMANCE_GATE_MODE. Regenerating .claude/ via deploy-headless.sh is restricted to skill-orchestrate's own Stage MT-3 redeploy checkpoint (per that script's own header comment), not a general implementation agent, so this implementer cannot resolve the drift itself. Verified instead via targeted checks: (a) grep for 'Rule T:'/'Rule U:' findings in the full run log returns zero matches, (b) all 19 extensions show PASS in the per-extension summary table (only 'core' shows FAIL, solely due to Rule F), (c) the advisory-override run (SCHEMA_CONFORMANCE_GATE_MODE=advisory) produces the identical single Rule F FAIL and no schema findings either way, proving the override escape hatch and the hard-mode default both behave identically with respect to Rules T/U. This confirms the plan's substantive claim (all extensions pass Rule T/U under hard mode) while leaving the incidental deploy-drift FAIL for the orchestrator's own redeploy step.",
+      "annotation": "*(deviation: altered — raw exit code is 1 due to an expected Rule F self-reference deploy-drift FAIL, not a SCHEMA_CONFORMANCE_GATE_MODE/Rule T/U regression; confirmed via targeted grep that zero Rule T/U findings occurred and all 19 extensions PASS — see summary)*"
+    },
+    {
+      "task_id": "2.task-references-check",
+      "description": "Run bash agent-system/extensions/core/scripts/check-task-references.sh to confirm the edited comment prose introduced no task-number citation into a deliverable.",
+      "type": "altered",
+      "reason": "The source-store copy of check-task-references.sh refuses to run outside a deployed scripts/ tree by design (it computes repo root via '../..' from its own location, which is bogus when invoked from agent-system/extensions/core/scripts/). Ran the deployed .claude/scripts/check-task-references.sh instead -- same script content, sanctioned invocation path per its own error message. Result: PASS, 0 unexempted task-reference occurrences across all 4 scanned trees.",
+      "annotation": "*(deviation: altered — the source-store copy of check-task-references.sh refuses to run outside a deployed tree by design; ran the deployed .claude/scripts/check-task-references.sh instead, which is the same script content and is the sanctioned invocation path. Result: PASS, 0 unexempted occurrences)*"
+    }
+  ]
+}
