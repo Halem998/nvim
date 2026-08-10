@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
+      "summary": "Re-measured run-all.sh live (26 passed, 8 failed, 34 total); confirmed the REPO_ROOT depth defect spans 5 suites (not 2); traced test-index-entries-schema.sh's failure to a fixture manifest.json gap; confirmed test-common-lib.sh overlaps the out-of-scope opencode session-id task; found test-lint-state-writer-boundary.sh's prior 7/8 report does not reproduce (8/8 measured); discovered a new, undiagnosed order-dependent flake in test-four-tier-conflict.sh."
+    }
+  ],
+  "next_steps": "Run /plan 1012 to create an implementation plan: (1) migrate REPO_ROOT resolution in the 5 confirmed-failing suites (test-skill-base-lifecycle.sh, test-update-task-status.sh, test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh) to the proven git-rev-parse-with-fallback pattern from test-deploy-propagation.sh, ideally extended to all 18 occurrences of the literal pattern; (2) add merge_targets.claudemd.source to test-index-entries-schema.sh's fixture manifest.json; (3) scope a separate diagnostic pass for test-four-tier-conflict.sh's order-dependent flake; (4) leave test-common-lib.sh (out of scope, separate task) and test-lint-state-writer-boundary.sh (not reproduced, currently green) untouched.",
+  "metadata": {
+    "session_id": "sess_1786378789_92e564_1012",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 8
+  },
+  "memory_candidates": [
+    {
+      "content": "check-extension-docs.sh's Rule U (check_extension_md_length) is manifest-authoritative: it only length-checks EXTENSION.md when the extension's manifest.json declares merge_targets.claudemd.source == \"EXTENSION.md\". A test fixture manifest.json lacking merge_targets entirely will silently skip Rule U regardless of the constructed file's line count -- the guard's `return 0` fires before any length comparison. When writing or reviewing a check-extension-docs.sh fixture, verify merge_targets.claudemd.source is set if the fixture intends to exercise Rule U.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs.sh", "Rule U", "claudemd_source_for", "manifest.json", "test fixture", "merge_targets"]
+    },
+    {
+      "content": "A test file's REPO_ROOT literal (`cd \"$SCRIPT_DIR/../../../../..\" && pwd`, 5 levels up) is correct only from the source-store test location (agent-system/extensions/core/scripts/tests/, 5 levels below repo root) and silently resolves to $HOME when the same file executes from the deployed location (.claude/scripts/tests/, only 3 levels below repo root) -- landing exactly 2 levels too high. A suite with this literal only fails loudly in deployed mode if it also lacks a $SCRIPT_DIR-relative fallback candidate; suites that list one (even as a secondary candidate in an array) are safe regardless of REPO_ROOT correctness. The proven-good replacement in this codebase is test-deploy-propagation.sh's pattern: `git rev-parse --show-toplevel` from $SCRIPT_DIR, falling back to the literal climb only if git is unavailable.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["REPO_ROOT", "deployed mode", "source-store", "git rev-parse", "test suite", "SCRIPT_DIR"]
+    }
+  ]
+}
