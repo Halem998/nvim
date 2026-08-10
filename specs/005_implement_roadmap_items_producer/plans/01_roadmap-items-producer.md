@@ -299,7 +299,7 @@ new fourth branch. Record the actual list edited.
 
 ---
 
-### Phase 4: End-to-end fixture test [NOT STARTED]
+### Phase 4: End-to-end fixture test [COMPLETED]
 
 **Goal**: Demonstrate — not argue — that a populated `roadmap_items` flows through the writer into
 `state.json` and produces a ROADMAP.md annotation, that a `meta` task writes none, and that the
@@ -307,12 +307,12 @@ new `roadmap_no_match` derivation fires exactly on the intended condition.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-roadmap-items-producer.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-roadmap-items-producer.sh`,
       following the conventions of an existing suite (read
       `scripts/tests/test-skill-base-lifecycle.sh` for its `mktemp -d` fixture-repo pattern, since
       `skill_propagate_completion_summary` routes writes through `state-write.sh` and needs a repo
-      shaped like the real one).
-- [ ] **Case 1 (the verification bar, end to end)**: fixture `ROADMAP.md` with a known open
+      shaped like the real one). *(completed)*
+- [x] **Case 1 (the verification bar, end to end)**: fixture `ROADMAP.md` with a known open
       `- [ ] **Item text**: ...` checkbox; fixture `state.json` with one `completed`, non-`meta`
       task carrying a roadmap-related `completion_summary`. Call
       `skill_propagate_completion_summary` with a `roadmap_items` value whose entry is the
@@ -320,20 +320,25 @@ new `roadmap_no_match` derivation fires exactly on the intended condition.
       `roadmap-integration.sh --roadmap <fixture> --state <fixture> --annotate` and assert the
       fixture ROADMAP.md item is now annotated with the `*(Completed: ...)*` suffix and that
       `annotation_summary.annotations_made` is 1 with `match_type: explicit_roadmap_item` at
-      `high` confidence.
-- [ ] **Case 2 (meta suppression preserved)**: same fixture, `task_type == "meta"`; assert
+      `high` confidence. *(completed: 4/4 assertions pass)*
+- [x] **Case 2 (meta suppression preserved)**: same fixture, `task_type == "meta"`; assert
       `skill_propagate_completion_summary` writes `completion_summary` but no `roadmap_items` key
-      to state.json.
-- [ ] **Case 3 (paraphrase does not mis-annotate)**: `roadmap_items` containing a paraphrase
+      to state.json. *(completed: 2/2 assertions pass)*
+- [x] **Case 3 (paraphrase does not mis-annotate)**: `roadmap_items` containing a paraphrase
       rather than verbatim text; assert no `high`-confidence `explicit_roadmap_item` match is
-      produced (this is the guard the Phase 2 verbatim requirement relies on).
-- [ ] **Case 4 (`roadmap_no_match` derivation)**: exercise the Phase 3 jq derivation in isolation
+      produced (this is the guard the Phase 2 verbatim requirement relies on). *(completed)*
+- [x] **Case 4 (`roadmap_no_match` derivation)**: exercise the Phase 3 jq derivation in isolation
       against three inputs — (a) eligible tasks non-empty, matches empty, open checkboxes > 0 ->
       `true`; (b) eligible tasks empty -> `false`; (c) zero open checkboxes -> `false`.
-- [ ] `chmod +x` the new suite (an un-executable suite is reported as a loud `[SKIP]` by
-      `run-all.sh`, not a pass).
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-roadmap-items-producer.sh` and
-      confirm all cases pass.
+      *(completed: 3/3 sub-cases pass)*
+- [x] `chmod +x` the new suite (an un-executable suite is reported as a loud `[SKIP]` by
+      `run-all.sh`, not a pass). *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-roadmap-items-producer.sh` and
+      confirm all cases pass. *(completed: 11 passed, 0 failed, exit 0. Also confirmed discovered
+      and passing under `run-all.sh` in source-store mode; two unrelated, pre-existing suite
+      failures — `test-claude-refresh-matcher.sh` and `test-lint-state-writer-boundary.sh` — were
+      observed only when run as part of the full batch, pass individually in isolation, and touch
+      files this plan never modifies; not in scope for this task)*
 
 **Timing**: 1.5 hours
 
