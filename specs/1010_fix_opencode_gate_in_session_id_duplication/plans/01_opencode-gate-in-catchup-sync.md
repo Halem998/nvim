@@ -183,7 +183,7 @@ absolute counts.
 
 ---
 
-### Phase 2: Catch-Up Sync of the Single Stale File [IN PROGRESS]
+### Phase 2: Catch-Up Sync of the Single Stale File [COMPLETED]
 
 **Goal**: Make `.opencode/scripts/command-gate-in.sh` byte-identical to its already-correct
 source-store original, by verbatim copy.
@@ -214,11 +214,11 @@ source-store original, by verbatim copy.
       outside `specs/**`, namely `.opencode/scripts/command-gate-in.sh`. *(completed: confirmed —
       `.claude-extensions.json` and `specs/events.jsonl` were already modified before this task
       began, per the session's starting git status, and are unrelated pre-existing drift)*
-- [ ] Commit with the rationale explicit in the body — that this is a manual redeploy of an
+- [x] Commit with the rationale explicit in the body — that this is a manual redeploy of an
       unmodified source file into a stale generated target, performed because no headless
       `.opencode` deploy entrypoint exists, and that a future real resync is expected to be a
       no-op for this file. Stage only `.opencode/scripts/command-gate-in.sh` plus the task-scoped
-      `specs/**` paths; never `git add -A` or `git commit -am`.
+      `specs/**` paths; never `git add -A` or `git commit -am`. *(completed: commit c67863916)*
 
 **Timing**: 0.3 hours
 
@@ -248,30 +248,46 @@ deliverable path means something unintended happened and the phase must stop rat
 
 ---
 
-### Phase 3: Full Verification Gate — Executed Tests in Both Modes [NOT STARTED]
+### Phase 3: Full Verification Gate — Executed Tests in Both Modes [COMPLETED]
 
 **Goal**: Prove by execution — not by reasoning — that `test-common-lib.sh` now passes in both
 source-store and deployed modes, and that nothing else regressed.
 
 **Tasks**:
-- [ ] Re-run source-store mode: `bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet`,
-      capture output.
-- [ ] Re-run deployed mode: `bash .claude/scripts/tests/run-all.sh --quiet`, capture output.
-- [ ] Run the target suite directly in **both** locations and record its own
+- [x] Re-run source-store mode: `bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet`,
+      capture output. *(completed: 36 passed, 1 failed, 37 total — unchanged from baseline)*
+- [x] Re-run deployed mode: `bash .claude/scripts/tests/run-all.sh --quiet`, capture output.
+      *(completed: 28 passed, 6 failed, 34 total — one suite moved FAIL to PASS)*
+- [x] Run the target suite directly in **both** locations and record its own
       `Passed: N / Failed: M` tail line for each:
       - `bash agent-system/extensions/core/scripts/tests/test-common-lib.sh`
       - `bash .claude/scripts/tests/test-common-lib.sh`
-      Both MUST exit 0 with `Failed: 0`.
-- [ ] Diff the post-change `[FAIL] ` sets against the Phase 1 baseline sets, per mode. Required
+      Both MUST exit 0 with `Failed: 0`. *(completed: both report `Passed: 24 / Failed: 0`,
+      exit 0)*
+- [x] Diff the post-change `[FAIL] ` sets against the Phase 1 baseline sets, per mode. Required
       outcome: the deployed FAIL set loses exactly `test-common-lib.sh` and gains nothing; the
-      source-store FAIL set is unchanged.
-- [ ] Paste the actual observed summary lines and the target suite's PASS lines into the
+      source-store FAIL set is unchanged. *(completed: confirmed — deployed FAIL set is now
+      {test-index-entries-schema.sh, test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh,
+      test-resume-scan-nonconformance.sh, test-skill-base-lifecycle.sh, test-update-task-status.sh},
+      exactly the baseline minus test-common-lib.sh; source-store FAIL set is unchanged
+      {test-index-entries-schema.sh})*
+- [x] Paste the actual observed summary lines and the target suite's PASS lines into the
       implementation record. A reasoned claim that the tests "should now pass" does not satisfy
-      this phase — observed output is required.
-- [ ] Run the repo deploy verification gate `bash .claude/scripts/verify-deploy.sh` if it is
+      this phase — observed output is required. *(completed: recorded in the implementation
+      summary)*
+- [x] Run the repo deploy verification gate `bash .claude/scripts/verify-deploy.sh` if it is
       available and runnable in this environment; if it fails for reasons traceable to the six
       pre-existing unrelated failures or to unrelated gates, record that explicitly rather than
-      treating it as caused by this change.
+      treating it as caused by this change. *(completed: ran; overall `FAIL — 2 of 23 check(s)
+      failed`, but gate 8 "Shell test suite runner" — the run-all.sh gate — itself reports
+      `[PASS] run-all.sh: all discovered suites passed` since the 7 deployed-mode failures are
+      pre-baselined as known/allowed. The 2 failing gates are gate 3 (doc-lint, flags unrelated
+      never-deployed scripts: scripts/.zotero-title-sim.py, scripts/tests/generate-test-fixtures.py,
+      scripts/tests/test-literature-convert.sh) and gate 5 (manifest-driven content-hash parity,
+      flags unrelated content drift in scripts/tests/test-corroborate-phase-counts.sh,
+      test-errors-append.sh, test-double-loading-check.sh, test-handoff-reader-parity.sh,
+      test-index-entries-schema.sh, and 12 more — none reference command-gate-in.sh or .opencode/).
+      Both are pre-existing, unrelated to this change, and were not caused by it.)*
 
 **Timing**: 0.5 hours
 
