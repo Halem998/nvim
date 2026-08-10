@@ -1,34 +1,33 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "session_id": "sess_1786370015_5e32a2",
+  "delegation_depth": 2,
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+  "task_number": 1008,
+  "task_name": "fix_orchestrate_mt_session_id_mismatch",
+  "task_type": "meta",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/1008_fix_orchestrate_mt_session_id_mismatch/reports/01_mt-session-id-self-contention.md",
-      "summary": "Root-cause analysis of the MT-1/MT-4 session-id mismatch in skill-orchestrate/SKILL.md that self-contends the task lock on every multi-task /orchestrate dispatch, with a minimal fix, a secondary heartbeat-consistency fix, and a concrete regression-test design."
+      "type": "plan",
+      "path": "specs/1008_fix_orchestrate_mt_session_id_mismatch/plans/01_unify-mt-session-id.md",
+      "summary": "4-phase plan unifying the Stage MT-4 lock-touching session-id sites onto the bare $session_id, adding a register/acquire parity regression group to test-conflict-predicate.sh, stating the parity invariant in task-lock.md, and gating on full verification plus a follow-up record for the identical pattern in the three multi-task command files."
     }
   ],
-  "next_steps": "Run /plan 1008 to create an implementation plan: (1) change SKILL.md:1960 and SKILL.md:2388 from \"${session_id}_${task_num}\" to \"$session_id\" so Stage MT-4's task-lock acquire/release matches Stage MT-1's session-register and Stage MT-3's batch-admit calls; (2) change SKILL.md:2002's implement_agents dispatch context session_id to the bare $session_id so general-implementation-agent.md's phase-transition heartbeat keeps matching the lock holder; (3) add the MT-1->MT-4 end-to-end regression group to agent-system/extensions/core/scripts/test-conflict-predicate.sh as designed in the report's Recommendations section 4.",
-  "metadata": {
-    "session_id": "sess_1786370015_5e32a2",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
-    "findings_count": 3
-  },
+  "phase_count": 4,
+  "estimated_hours": 2.5,
+  "dependency_waves": [[1], [2, 3], [4]],
+  "research_inputs": [
+    "specs/1008_fix_orchestrate_mt_session_id_mismatch/reports/01_mt-session-id-self-contention.md"
+  ],
   "memory_candidates": [
     {
-      "content": "task-lock.sh's session-registry contention pass (session_contention() in lib/file-scope-overlap.sh) self-excludes a registered session via an EXACT string match between the acquiring call's session_id argument and the session-register call's session_id argument (D4 exclusion 1). Any multi-task consumer that registers under one session_id form (e.g. a bare batch session_id) and later calls task-lock.sh acquire/release/heartbeat under a DIFFERENT form (e.g. a per-task-suffixed session_id) will have its own batch registration treated as a foreign, live, overlapping session on every acquire, since the registered file_scope is the union of every task's scope and therefore always overlaps each individual task's own scope. This produces a total, deterministic self-contention (not intermittent), and is a general trap for any future multi-task/batch consumer of task-lock.sh's session-registry CLI, not unique to skill-orchestrate.",
+      "content": "Self-exclusion predicates keyed on an exact identifier string make any per-consumer decoration of that identifier a self-contention bug. In the task-lock session registry, a batch registers once under a bare session_id (with a UNION file_scope over all batch members), but each per-task acquire passed a task-suffixed ${session_id}_${task_num}. session_contention()'s D4 exclusion 1 is `select($sess.session_id != $own_sid)` -- an exact match -- so the batch's own registration was never excluded and every acquire refused against the batch's own union scope. The failure is deterministic and total, not a race. Generalizable rule: whenever a component registers under an identifier and a later stage re-presents that identifier to a predicate that self-excludes by equality, the two construction sites form a parity invariant that must be stated at the point of use, not left implicit. Related consumers that decorate the same id for provenance (commit --session, defect-record --session, status-sync) are safe precisely because nothing self-excludes on them -- so the audit question is not 'is the id consistent everywhere' but 'which consumers compare it for identity'. The same register-bare/acquire-suffixed shape exists in commands/research.md, commands/plan.md, and commands/implement.md.",
       "category": "PATTERN",
-      "source_artifact": "specs/1008_fix_orchestrate_mt_session_id_mismatch/reports/01_mt-session-id-self-contention.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["task-lock.sh", "session_contention", "session-register", "self-exclusion", "multi-task", "orchestrate", "file-scope-overlap"]
-    },
-    {
-      "content": "In skill-orchestrate/SKILL.md's multi-task mode, the same session_id value flows into two independent purposes: (a) task-lock ownership identity (session-register at MT-1, acquire/release at MT-4, and downstream general-implementation-agent.md's phase-transition heartbeat, which reuses whatever session_id its own dispatch context carried) and (b) provenance/attribution metadata (skill_preflight_update/postflight_update, git-commit-scoped.sh --session, system-defect-record.sh --session), where per-task-suffixed uniqueness is harmless or even useful for log readability. When fixing a session-id mismatch bug, only the (a)-class call sites need to agree on one exact string; (b)-class call sites can safely keep a per-task-suffixed convention. Conflating the two, or fixing only some of the (a)-class sites, is the recurring failure mode.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/1008_fix_orchestrate_mt_session_id_mismatch/reports/01_mt-session-id-self-contention.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["session_id", "task-lock", "heartbeat", "orchestrate", "provenance", "dispatch-context"]
+      "source_artifact": "specs/1008_fix_orchestrate_mt_session_id_mismatch/plans/01_unify-mt-session-id.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["session-id-parity", "task-lock", "self-contention", "session-registry", "multi-task-orchestrate", "exact-match-exclusion"]
     }
-  ]
+  ],
+  "next_steps": "Run /implement 1008 to execute the plan"
 }
