@@ -333,7 +333,7 @@ restating this estimate.
 
 ---
 
-### Phase 4: State the Append-Only Rule and Add the Agent Contract [NOT STARTED]
+### Phase 4: State the Append-Only Rule and Add the Agent Contract [COMPLETED]
 
 **Goal**: Make the invariant discoverable and binding in prose: state the append-only contract in
 `rules/state-management.md`, explain at the `skill_link_artifacts` choke point why its same-type
@@ -341,7 +341,7 @@ removal is exempt by construction, and add the preventive `MUST NOT` to the impl
 
 **Tasks**:
 
-- [ ] `agent-system/extensions/core/rules/state-management.md`: add an
+- [x] `agent-system/extensions/core/rules/state-management.md`: add an
       **"Artifacts Are Append-Only (With Same-Type Supersession)"** subsection near the existing
       "File Synchronization" section. It must state: (a) `.artifacts` is append-only during the
       task lifecycle; (b) the one sanctioned exception is same-type 1-for-1 supersession as
@@ -350,19 +350,21 @@ removal is exempt by construction, and add the preventive `MUST NOT` to the impl
       `validate-state.sh --deep` with its `--allow-artifact-removal` opt-in for genuine deletions;
       and (e) the honest limitation that enforcement is periodic (via `verify-deploy.sh`), not
       write-time. Mirror the schema's existing `memory_candidates` "append-only during the task
-      lifecycle" phrasing so the two read as one concept.
-- [ ] `agent-system/extensions/core/scripts/skill-base.sh`: add an explanatory comment immediately
+      lifecycle" phrasing so the two read as one concept. *(completed)*
+- [x] `agent-system/extensions/core/scripts/skill-base.sh`: add an explanatory comment immediately
       above `skill_link_artifacts`'s two-step block. **No functional change to any line of code.**
       The comment must explain that the Step 1 same-type removal is 1-for-1 and therefore exempt by
       construction under the per-type invariant, cross-reference the new rules subsection, and warn
-      against generalizing the pattern into a wholesale array assignment.
-- [ ] `agent-system/extensions/core/agents/general-implementation-agent.md`: append a new numbered
+      against generalizing the pattern into a wholesale array assignment. *(completed: verified
+      comment-only via git diff)*
+- [x] `agent-system/extensions/core/agents/general-implementation-agent.md`: append a new numbered
       bullet to the existing **MUST NOT** list (currently ending at bullet 7): never assign
       `.artifacts` wholesale when updating `specs/state.json` directly — append via `+=`, or call
       the sanctioned helper — with a pointer to the new rule. Match the surrounding numbered-bullet
-      style exactly.
-- [ ] Cite durable anchors only. All three files are outside `specs/**`, so no task numbers may
-      appear in any added text; reference filenames and section headings instead.
+      style exactly. *(completed: bullet 8 added)*
+- [x] Cite durable anchors only. All three files are outside `specs/**`, so no task numbers may
+      appear in any added text; reference filenames and section headings instead. *(completed:
+      check-task-references.sh exits 0)*
 
 **Timing**: 1 hour
 
@@ -376,6 +378,11 @@ removal is exempt by construction, and add the preventive `MUST NOT` to the impl
 change is comment-only. Confirm with `git diff --stat` (expect three paths) and by reading
 `git diff agent-system/extensions/core/scripts/skill-base.sh` to verify every added line begins
 with `#` and no existing line was altered. Report both results.
+
+**Scope Hypothesis Result**: Confirmed. `git status --porcelain -- agent-system/` shows exactly
+three modified paths (`general-implementation-agent.md`, `rules/state-management.md`,
+`scripts/skill-base.sh`); `git diff agent-system/extensions/core/scripts/skill-base.sh` shows only
+added `#`-prefixed lines, no existing line altered.
 
 **Files to modify**:
 
