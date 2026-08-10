@@ -1,0 +1,30 @@
+{
+  "phase": 2,
+  "phase_name": "Migrate REPO_ROOT in the eleven latent suites",
+  "started_at": "2026-08-10T17:15:00Z",
+  "last_updated": "2026-08-10T17:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the git rev-parse pattern to the 11 latent suites (test-double-loading-check.sh required a structural adaptation: git-rev-parse-first with its original manifest.json-probe dual-mode logic retained as the non-git fallback, per the plan's 'leave candidate arrays and fallback ordering untouched' constraint) and verify each passes in isolation from source-store location",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+        "agent-system/extensions/core/scripts/tests/test-double-loading-check.sh",
+        "agent-system/extensions/core/scripts/tests/test-errors-append.sh",
+        "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh",
+        "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
+        "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-state.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -27,7 +27,16 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+# REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
+# source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
+# (.claude/scripts/tests/), which sit at different depths below the repo root. A single
+# fixed levels-up count cannot be correct for both depths at once, so resolve via the git
+# worktree root first (depth-independent) and only fall back to the fixed-depth guess
+# (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
+REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
+if [[ -z "$REPO_ROOT" ]]; then
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+fi
 
 # Source-store-first (see test-validate-handoff.sh's identical rationale): this suite exercises
 # the SKILL.md files under active development, which live in the source store before a redeploy

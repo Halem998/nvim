@@ -41,18 +41,22 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Dual-mode REPO_ROOT detection (same technique as run-all.sh): this suite itself may run either
-# from the source store (agent-system/extensions/core/scripts/tests/, 5 levels above repo root)
-# or from the deployed tree (.claude/scripts/tests/, 3 levels above repo root) -- a single
-# hardcoded level-count breaks whichever mode it wasn't written for. Detected via the same
-# core/manifest.json probe run-all.sh uses: present 3 levels up means source-store; absent means
-# deployed. DEPLOYED_SCRIPT always targets `.claude/scripts/...` off the resolved REPO_ROOT in
-# either mode -- the object under test is always the .claude deploy tree, never .opencode.
-CANDIDATE_EXT_ROOT="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd || true)"
-if [ -n "$CANDIDATE_EXT_ROOT" ] && [ -f "$CANDIDATE_EXT_ROOT/core/manifest.json" ]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-else
-  REPO_ROOT="$CANDIDATE_EXT_ROOT"
+# REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
+# source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
+# (.claude/scripts/tests/), which sit at different depths below the repo root. Resolve via
+# the git worktree root first (depth-independent); only fall back to this suite's original
+# dual-mode manifest.json-probe detection (same technique as run-all.sh: present 3 levels up
+# means source-store, absent means deployed) when SCRIPT_DIR is not inside a git work tree.
+# DEPLOYED_SCRIPT always targets `.claude/scripts/...` off the resolved REPO_ROOT in either
+# branch -- the object under test is always the .claude deploy tree, never .opencode.
+REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
+if [[ -z "$REPO_ROOT" ]]; then
+  CANDIDATE_EXT_ROOT="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd || true)"
+  if [ -n "$CANDIDATE_EXT_ROOT" ] && [ -f "$CANDIDATE_EXT_ROOT/core/manifest.json" ]; then
+    REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+  else
+    REPO_ROOT="$CANDIDATE_EXT_ROOT"
+  fi
 fi
 
 DEPLOYED_SCRIPT="$REPO_ROOT/.claude/scripts/validate-context-budgets.sh"

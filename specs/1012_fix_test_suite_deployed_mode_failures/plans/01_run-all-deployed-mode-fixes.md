@@ -156,27 +156,32 @@ means the hypothesis was wrong and the phase scope must be re-measured before pr
 
 ---
 
-### Phase 2: Migrate REPO_ROOT in the eleven latent suites [NOT STARTED]
+### Phase 2: Migrate REPO_ROOT in the eleven latent suites [COMPLETED]
 
 **Goal**: Eliminate the defect class rather than only its currently-loud instances, by migrating
 the remaining suites that carry the same literal but are masked by a `$SCRIPT_DIR`-relative
 fallback candidate.
 
 **Tasks**:
-- [ ] Apply the same pattern in `test-corroborate-phase-counts.sh`
-- [ ] Apply the same pattern in `test-double-loading-check.sh`
-- [ ] Apply the same pattern in `test-errors-append.sh`
-- [ ] Apply the same pattern in `test-handoff-reader-parity.sh`
-- [ ] Apply the same pattern in `test-lint-postflight-boundary.sh`
-- [ ] Apply the same pattern in `test-lint-state-writer-boundary.sh`
-- [ ] Apply the same pattern in `test-phase-heading-patterns.sh`
-- [ ] Apply the same pattern in `test-postflight-marker-schema.sh`
-- [ ] Apply the same pattern in `test-status-vocabulary.sh`
-- [ ] Apply the same pattern in `test-validate-handoff.sh`
-- [ ] Apply the same pattern in `test-validate-state.sh`
-- [ ] Leave each suite's existing candidate arrays and fallback ordering untouched — this phase
-      changes only how `REPO_ROOT` itself is derived
-- [ ] Run all 11 suites from their source-store location and confirm each still passes
+- [x] Apply the same pattern in `test-corroborate-phase-counts.sh` *(completed)*
+- [x] Apply the same pattern in `test-double-loading-check.sh` *(completed: this file's existing
+      REPO_ROOT derivation was a manifest.json-probe dual-mode block rather than a bare literal, so
+      the git-rev-parse resolution was placed first with that entire original block retained,
+      unmodified, as the non-git fallback)*
+- [x] Apply the same pattern in `test-errors-append.sh` *(completed)*
+- [x] Apply the same pattern in `test-handoff-reader-parity.sh` *(completed)*
+- [x] Apply the same pattern in `test-lint-postflight-boundary.sh` *(completed)*
+- [x] Apply the same pattern in `test-lint-state-writer-boundary.sh` *(completed: re-confirmed 8/8
+      green, matching the research report's baseline, not the stale 7/8)*
+- [x] Apply the same pattern in `test-phase-heading-patterns.sh` *(completed)*
+- [x] Apply the same pattern in `test-postflight-marker-schema.sh` *(completed)*
+- [x] Apply the same pattern in `test-status-vocabulary.sh` *(completed)*
+- [x] Apply the same pattern in `test-validate-handoff.sh` *(completed)*
+- [x] Apply the same pattern in `test-validate-state.sh` *(completed)*
+- [x] Leave each suite's existing candidate arrays and fallback ordering untouched — this phase
+      changes only how `REPO_ROOT` itself is derived *(completed)*
+- [x] Run all 11 suites from their source-store location and confirm each still passes *(completed:
+      all 11 exit 0)*
 
 **Timing**: 45 minutes
 
