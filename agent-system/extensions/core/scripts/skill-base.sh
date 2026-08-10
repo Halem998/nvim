@@ -559,6 +559,16 @@ skill_propagate_completion_summary() {
 # Uses two-step jq pattern to avoid Issue #1132 (!=  escaping bug), both steps routed through
 # state-write.sh -- see skill_propagate_completion_summary's header comment above for the full
 # SKILL_REPO_ROOT-qualified-path and session_id/self-generation rationale, identical here.
+#
+# Append-only note (rules/state-management.md's "Artifacts Are Append-Only (With Same-Type
+# Supersession)" subsection): Step 1's removal below is a same-type, 1-for-1 "latest pointer"
+# swap -- it drops every existing entry of $artifact_type before Step 2 adds exactly one new
+# entry of that same type. This is the one sanctioned exception to append-only and is exempt by
+# construction under validate-state.sh --deep's per-type artifact-loss invariant
+# (removed(T) <= added(T)), since this call always nets zero or a 1-for-1 replace. Do NOT
+# generalize this pattern into a wholesale `.artifacts = [...]` assignment elsewhere -- that
+# replaces the whole array and silently discards every artifact link not re-included, which the
+# invariant is designed to catch.
 skill_link_artifacts() {
   local task_number="$1"
   local artifact_path="$2"
