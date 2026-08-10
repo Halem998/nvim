@@ -11,34 +11,29 @@ next_project_number: 1004
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 984,997,1001,1002,1003 | -- | agent-system, orchestration-concurrency, status-marker-lifecycle |
-| 2 | 985,995 | 984 | agent-system |
-| 3 | 986 | 985 | agent-system |
-| 4 | 999 | 986,1002 | agent-system |
-| 5 | 996 | 995,999 | agent-system |
+| 1 | 985,995,997,1001,1002,1003 | -- | agent-system, orchestration-concurrency |
+| 2 | 986 | 985 | agent-system |
+| 3 | 999 | 986,1002 | agent-system |
+| 4 | 996 | 995,999 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
-1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
-  └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
-    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
   └─ 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
-    └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
+    └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
+      └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
+1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
+  └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
+1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
 
 ### Orchestration Concurrency
 
 997 [NOT STARTED] — session_liveness() in scripts/task-lock.sh reports liveness_reaso
-
-### Status Marker Lifecycle
-
-984 [IMPLEMENTING] — Give specs/state.json a machine-enforced schema and make the stat
 
 ## Tasks
 
@@ -583,12 +578,13 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 984. One state.json schema, one status vocabulary, converted extension writers
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
 - **Dependencies**: Task 962, Task 969, Task 988
 - **Research**: [984_state_schema_and_status_vocabulary_single_source/reports/01_state-schema-status-vocabulary.md]
 - **Plan**: [984_state_schema_and_status_vocabulary_single_source/plans/01_state-schema-single-source.md]
+- **Summary**: [984_state_schema_and_status_vocabulary_single_source/summaries/01_state-schema-single-source-summary.md]
 
 **Description**: Give specs/state.json a machine-enforced schema and make the status vocabulary a single source of truth. This SUBSUMES task 950 (marked abandoned in favor of this task — its verified command-structure.md defect inventory folds into item 4 below) and DEPENDS ON task 969 (state-write.sh archive/vault coverage) landing first so the writer conversion in item 5 has a mechanism that can address every target.
 

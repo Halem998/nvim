@@ -1,7 +1,7 @@
 # Implementation Plan: Task #984
 
 - **Task**: 984 - One state.json schema, one status vocabulary, converted extension writers
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None remaining (962, 969, 988 landed and are archived-completed)
 - **Research Inputs**: `specs/984_state_schema_and_status_vocabulary_single_source/reports/01_state-schema-status-vocabulary.md`
