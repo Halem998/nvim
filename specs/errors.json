@@ -168,6 +168,22 @@
         "suggested_action": "Add a repair counter/aggregate to skill_validate_task_artifacts in agent-system/extensions/core/scripts/skill-base.sh that captures validate-artifact.sh's [FIXED] N count per file, sums it across the directory sweep, and surfaces the total (stdout line and/or exit-code signal) from command-gate-out.sh; alternatively amend the acceptance criterion to something checkable given current instrumentation."
       },
       "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1786368358319_8jwcdo",
+      "timestamp": "2026-08-10T13:25:58.323Z",
+      "type": "test_suite_deployed_mode_failures",
+      "severity": "high",
+      "message": "tests/run-all.sh measured live: 25 passed, 8 FAILED, 33 total — not the 5-suite REPO_ROOT count previously relayed. Two suites (test-skill-base-lifecycle.sh, test-update-task-status.sh) fail with 'deployed scripts tree not found at /home/benjamin/.claude/scripts', proving REPO_ROOT was computed as $HOME: they derive REPO_ROOT via \"$SCRIPT_DIR/../../../../..\" (5 levels), correct for the source-store depth agent-system/extensions/core/scripts/tests/ but wrong for the deployed depth .claude/scripts/tests/ (3 levels). Six further suites fail for unconfirmed reasons: test-common-lib.sh, test-index-entries-schema.sh, test-lint-state-writer-boundary.sh (7/8 — the suite newly added by the state-writer conversion work, failing in deployed mode though reported 8/8 in source-store context), test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh.",
+      "context": {
+        "session_id": "sess_1786342011_4592c8",
+        "command": "/orchestrate"
+      },
+      "recovery": {
+        "suggested_action": "Make REPO_ROOT derivation depth-independent (git rev-parse --show-toplevel with a depth fallback, as test-deploy-propagation.sh already does); then triage the remaining six failures individually",
+        "auto_recoverable": false
+      },
+      "fix_status": "unfixed"
     }
   ]
 }

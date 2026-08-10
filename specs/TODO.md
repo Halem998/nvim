@@ -1,5 +1,5 @@
 ---
-next_project_number: 1012
+next_project_number: 1016
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 1012
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 1004,1007,1008,1009,1010,1011 | -- | agent-system, orchestration-concurrency |
+| 1 | 1004,1007,1008,1009,1010,1011,1012,1013,1014,1015 | -- | agent-system, orchestration-concurrency |
 | 2 | 1005 | 1004 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
@@ -26,12 +26,134 @@ next_project_number: 1012
 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 1010 [NOT STARTED] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
+1012 [NOT STARTED] — tests/run-all.sh is red and has been treated as permanently-expec
+1013 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
+1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
+1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
 
 ### Orchestration Concurrency
 
 1008 [NOT STARTED] — skill-orchestrate/SKILL.md has a session-id mismatch between two 
 
 ## Tasks
+
+### 1015. Re-check settings.local.json deploy merge for content loss before any fix effort
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: A VERIFICATION task, deliberately not a fix task. Do not change merge logic until reproduction is established. Recorded as err_1786350581208_23mAsn (severity high, reproduction 0 of 3).
+
+WHAT WAS SEEN ONCE: a single observation of a content-lossy settings.local.json merge across a deploy-headless.sh --wipe pair - a dropped hooks.PreToolUse block and a dropped mcpServers block.
+
+WHAT RE-CHECKING FOUND: 3 further wipe-pairs showed reproduction 0 of 3. All three exhibited ordering-only differences (mcpServers and hooks blocks relocated, semantically identical under jq -S), not a dropped block. The original finding did NOT reproduce.
+
+WHY THIS STAYS OPEN DESPITE NOT REPRODUCING: non-reproduction is a result, not an all-clear. If it is real and intermittent, the consequence is a routine redeploy silently dropping a hook or an MCP registration - the most consequential hypothesis surfaced in the batch that found it. The asymmetry between a cheap re-check and a silently disabled security-relevant PreToolUse hook justifies keeping it open.
+
+WORK:
+  1. Run a substantially larger wipe-pair sample than 3 (10 or more), comparing settings.local.json semantically (jq -S) AND structurally (key/block presence), not by raw diff - raw diff cannot distinguish reordering from loss, which is exactly what confused the original observation.
+  2. Determine whether any pre-existing settings.local.json state, ordering, or size correlates with loss.
+  3. If reproduced: capture the exact input, escalate to critical, and only then plan a fix.
+  4. If not reproduced across the larger sample: downgrade the recorded severity with the sample size stated, and close. Record the number of pairs run either way.
+
+RELATED BUT SEPARATE: ordering non-determinism in context/index.json and settings.json between identical wipe runs is recorded as err_1786350581240_JyztWt (low). It is cosmetic on its own, but it is coupled to the deploy byte-identical-twice acceptance criterion, so resolving it may fall out of the orphan-parity work rather than this task.
+
+ACCEPTANCE: a stated reproduction rate over a named sample size. Neither confirm nor dismiss on a single observation.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 1014. Prevent implementation-agent fan-out from returning non-terminal status and stale plan markers
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Two dispatches in a single batch fanned out to phase sub-agents and terminated before writing a terminal status, costing a recovery cycle each. Recorded as err_1786344051474_RcIhk6.
+
+OBSERVED FAILURE MODE: a dispatched implementation agent spawned per-phase sub-agents, returned while they were still running, and left .return-meta.json at status=in_progress. Per context/formats/return-metadata-file.md that value is early-metadata-only and never a legal terminal dispatch outcome, so orchestrate-recover-outcome.sh correctly declines it (reason STATUS_IN_PROGRESS). The orchestrator contract for an unresolvable dispatch is failed_tasks - which would have been WRONG here, since 6 of 10 phases had in fact been committed. Correct handling came from rules/error-handling.md Delegation Interrupted Recovery (keep status, resume), not from the orchestrator stage contract.
+
+COMPOUNDING DEFECT - STALE PLAN MARKERS: the sub-agents committed phases 3, 4, 5 and 7 but left every one of those phase markers reading [NOT STARTED]. Because the orchestrator phase-marker recovery grep reads exactly those markers, it would have reported 2/10 against a true 6/10. A resume driven by markers alone would have redone committed work. Recovery only succeeded because the actual state was reconstructed from git log and diffs instead.
+
+TWO INDEPENDENT QUESTIONS, BOTH IN SCOPE:
+  1. Should a dispatched implementation agent fan out to sub-agents at all? If yes, it must still write a terminal status covering its childrens work; if no, the prohibition belongs in the agent contract, not in per-dispatch prompt text (the workaround used during the incident).
+  2. Should a sub-agent that commits a phase be required to update that phases marker in the same commit? Markers and commits diverging silently is the deeper defect - it degrades the recovery path for every future interrupted dispatch, not just fan-out ones.
+
+CONSIDER ALSO: whether the orchestrator should treat status=in_progress plus evidence of committed phase work as PARTIAL/resume rather than routing it toward failed_tasks, so correct handling does not depend on an operator noticing.
+
+ACCEPTANCE: an interrupted fan-out dispatch is either impossible by contract, or leaves markers and terminal status accurate enough that resume needs no manual git archaeology.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 1013. Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: The acceptance criterion "gate-out reports zero format errors and zero auto-repaired fields" is unverifiable as written, because no reporting surface exists. Recorded as err_1786350581339_Q4VnFy.
+
+TRACED PATH: command-gate-out.sh (134 lines) has no counter, aggregate, or exit-code surface for auto-repairs; its only related line is a comment. The real repair path is
+    command-gate-out.sh -> skill_validate_task_artifacts (skill-base.sh) -> validate-artifact.sh "$f" "$type" --fix 2>/dev/null
+validate-artifact.sh DOES emit a terminal line of the form "[FIXED] N field(s) auto-repaired, E error(s), W warning(s) remaining" and exits 2. But skill_validate_task_artifacts discards stderr, collapses every non-zero exit into a single generic non-blocking WARNING carrying no numeric detail, and always returns 0. command-gate-out.sh therefore receives no signal at all.
+
+PRIMARY HAZARD (the reason this is not merely cosmetic): --fix MUTATES THE ARTIFACT IN PLACE. A repair both happens and goes uncounted, so an artifact can be silently rewritten with nothing anywhere recording that it was. The instrumentation gap and the silent-mutation hazard are the same defect seen from two ends.
+
+WORK:
+  1. Propagate validate-artifact.sh fix/error/warning counts through skill_validate_task_artifacts instead of discarding them.
+  2. Give command-gate-out.sh a reportable surface for those counts.
+  3. Decide explicitly whether --fix should remain in-place-mutating on the gate-out path, or whether a repair should be reported and left for a human. State the decision and its reasoning.
+
+ACCEPTANCE: a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count, and a task needing none reports zero. Both directions must be demonstrated - a report that can only ever say zero is not instrumentation.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 1012. Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.
+
+MEASURED EVIDENCE (live run, not inherited): 25 passed, 8 FAILED, 0 skipped, 33 total. Earlier reports of a 5-suite REPO_ROOT count were NOT confirmed and should be treated as superseded by this measurement. Recorded as err_1786368358319_8jwcdo.
+
+CONFIRMED ROOT CAUSE (2 of 8): test-skill-base-lifecycle.sh and test-update-task-status.sh both abort with
+    ERROR: deployed scripts tree not found at /home/benjamin/.claude/scripts
+proving REPO_ROOT resolved to $HOME instead of the repo root. Both derive it as:
+    REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+Five levels up is correct from the SOURCE-STORE location agent-system/extensions/core/scripts/tests/, but wrong from the DEPLOYED location .claude/scripts/tests/, which is only three levels below the repo root. The same 5-level literal appears in at least test-corroborate-phase-counts.sh, test-errors-append.sh, test-handoff-reader-parity.sh, and test-index-entries-schema.sh, so the defect class is wider than the two suites that happen to fail loudly.
+
+PROVEN-GOOD PATTERN ALREADY IN-TREE: test-deploy-propagation.sh derives it depth-independently:
+    REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
+    [ -z "$REPO_ROOT" ] && REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+Adopt this shape rather than inventing a new one.
+
+UNCONFIRMED (6 of 8) - triage each individually, do NOT assume a shared cause:
+  test-common-lib.sh (1 failure; overlaps the separately-tracked opencode session-id duplication finding)
+  test-index-entries-schema.sh (8 passed, 1 failed)
+  test-lint-state-writer-boundary.sh (7 passed, 1 failed)
+  test-loop-guard-staleness.sh
+  test-reconcile-handoff-status.sh
+  test-resume-scan-nonconformance.sh
+
+NOTABLE: test-lint-state-writer-boundary.sh is the suite added by the state-writer conversion work, which reported 8/8 green in source-store context but is 7/8 in deployed mode. Determine whether this is the same depth defect or a genuine gap in the new lint.
+
+ACCEPTANCE: run-all.sh reports 0 failures, OR every residual failure has a written, evidenced justification. Report the count honestly; never an unqualified green.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 1011. Expand defect class vocabulary
 - **Status**: [NOT STARTED]

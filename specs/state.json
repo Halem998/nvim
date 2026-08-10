@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 1012,
+  "next_project_number": 1016,
   "active_projects": [
     {
       "project_number": 1011,
@@ -730,6 +730,74 @@
       "description": "The artifact list in specs/state.json is append-only by intent but not by enforcement. Every\nsanctioned write path is additive, yet an agent that writes state.json directly can replace the\nwhole array, and nothing detects the loss.\n\nSANCTIONED PATHS ARE ALREADY CORRECT (do not change them):\n  - agent-system/extensions/core/scripts/orchestrator-postflight.sh:432 uses `.artifacts += [...]`\n  - agent-system/extensions/core/scripts/reconcile-task-status.sh:172 (link_artifact) likewise\n  - skill_link_artifacts in skill-base.sh routes through state-write.sh\n\nTHE GAP: these are helpers an agent MAY use, not a constraint it MUST satisfy. An implementation\nagent updating state.json with its own jq assignment (`.artifacts = [...]`) bypasses all of them.\nNothing validates that the post-write artifact set is a superset of the pre-write set.\n\nOBSERVED, WITH LOSS: during a real implementation dispatch, an agent updated its task's state.json\nentry and the artifact list went from 11 entries to 8 -- five previously-recorded phase summaries\nwere dropped while two new entries were added. The summary FILES were still on disk; only the\nlinks were destroyed, so nothing failed and no warning was emitted. The loss was caught only by a\nmanual count during postflight review and repaired by hand. Had it not been noticed, the task\nwould have archived with five phase summaries permanently unreferenced.\n\nRELATIONSHIP TO THE STATE-WRITE CONVERSION TASK (adjacent, NOT duplicate -- read before starting):\nthe existing state-write conversion work targets hand-rolled read-modify-write sequences in the\nSOURCE STORE, and its verification bar is a grep for `mv` onto state.json across source files.\nThat bar cannot catch this defect: the offending write came from an AGENT at runtime composing jq\ninline, not from any checked-in script. Converting every source-store writer to state-write.sh\nleaves this hole exactly as open. If the two are worked together, the deliverable here is the\nsuperset-invariant, not another writer conversion.\n\nWORK:\n  1. Add a machine-checkable invariant: for any write touching .artifacts, the resulting set must\n     contain every path present beforehand. Removal must require an explicit, named opt-in\n     (legitimate cases exist -- a genuinely deleted artifact -- and must remain expressible).\n  2. Enforce it where writes actually funnel. state-write.sh is the natural choke point; decide\n     whether the invariant lives there (catches everything routed through it) or in\n     validate-state.sh (catches drift regardless of writer, including direct jq). Prefer the\n     option that ALSO catches a direct jq write, since that is the observed failure mode --\n     enforcing only inside state-write.sh would miss the exact case that motivated this task.\n  3. State the append-only rule explicitly in rules/state-management.md, which currently\n     describes artifact linking formats without ever saying the list is append-only.\n  4. Add a MUST NOT to the implementation agents that write state.json directly: never assign\n     .artifacts wholesale; append, or call the helper.\n\nVERIFICATION BAR:\n  - A fixture write that drops an existing artifact path is REJECTED (or loudly flagged by the\n    validator), and the same write with the opt-in flag is accepted. Both directions executed.\n  - A normal additive link still succeeds unchanged; existing link_artifact / skill_link_artifacts\n    call sites are unaffected.\n  - The check triggers on a direct jq-composed write, not only on state-write.sh traffic.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T06:30:00Z",
       "last_updated": "2026-08-10T06:30:00Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 1012,
+      "project_name": "fix_test_suite_deployed_mode_failures",
+      "title": "Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/tests/",
+        "agent-system/extensions/lean/scripts/tests/"
+      ],
+      "description": "tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.\n\nMEASURED EVIDENCE (live run, not inherited): 25 passed, 8 FAILED, 0 skipped, 33 total. Earlier reports of a 5-suite REPO_ROOT count were NOT confirmed and should be treated as superseded by this measurement. Recorded as err_1786368358319_8jwcdo.\n\nCONFIRMED ROOT CAUSE (2 of 8): test-skill-base-lifecycle.sh and test-update-task-status.sh both abort with\n    ERROR: deployed scripts tree not found at /home/benjamin/.claude/scripts\nproving REPO_ROOT resolved to $HOME instead of the repo root. Both derive it as:\n    REPO_ROOT=\"$(cd \"$SCRIPT_DIR/../../../../..\" && pwd)\"\nFive levels up is correct from the SOURCE-STORE location agent-system/extensions/core/scripts/tests/, but wrong from the DEPLOYED location .claude/scripts/tests/, which is only three levels below the repo root. The same 5-level literal appears in at least test-corroborate-phase-counts.sh, test-errors-append.sh, test-handoff-reader-parity.sh, and test-index-entries-schema.sh, so the defect class is wider than the two suites that happen to fail loudly.\n\nPROVEN-GOOD PATTERN ALREADY IN-TREE: test-deploy-propagation.sh derives it depth-independently:\n    REPO_ROOT=\"$(cd \"$SCRIPT_DIR\" && git rev-parse --show-toplevel 2>/dev/null)\"\n    [ -z \"$REPO_ROOT\" ] && REPO_ROOT=\"$(cd \"$SCRIPT_DIR/../../../../..\" && pwd)\"\nAdopt this shape rather than inventing a new one.\n\nUNCONFIRMED (6 of 8) - triage each individually, do NOT assume a shared cause:\n  test-common-lib.sh (1 failure; overlaps the separately-tracked opencode session-id duplication finding)\n  test-index-entries-schema.sh (8 passed, 1 failed)\n  test-lint-state-writer-boundary.sh (7 passed, 1 failed)\n  test-loop-guard-staleness.sh\n  test-reconcile-handoff-status.sh\n  test-resume-scan-nonconformance.sh\n\nNOTABLE: test-lint-state-writer-boundary.sh is the suite added by the state-writer conversion work, which reported 8/8 green in source-store context but is 7/8 in deployed mode. Determine whether this is the same depth defect or a genuine gap in the new lint.\n\nACCEPTANCE: run-all.sh reports 0 failures, OR every residual failure has a written, evidenced justification. Report the count honestly; never an unqualified green.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "created": "2026-08-10T13:26:30Z",
+      "last_updated": "2026-08-10T13:26:30Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 1013,
+      "project_name": "instrument_gate_out_auto_repair_reporting",
+      "title": "Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/command-gate-out.sh",
+        "agent-system/extensions/core/scripts/skill-base.sh"
+      ],
+      "description": "The acceptance criterion \"gate-out reports zero format errors and zero auto-repaired fields\" is unverifiable as written, because no reporting surface exists. Recorded as err_1786350581339_Q4VnFy.\n\nTRACED PATH: command-gate-out.sh (134 lines) has no counter, aggregate, or exit-code surface for auto-repairs; its only related line is a comment. The real repair path is\n    command-gate-out.sh -> skill_validate_task_artifacts (skill-base.sh) -> validate-artifact.sh \"$f\" \"$type\" --fix 2>/dev/null\nvalidate-artifact.sh DOES emit a terminal line of the form \"[FIXED] N field(s) auto-repaired, E error(s), W warning(s) remaining\" and exits 2. But skill_validate_task_artifacts discards stderr, collapses every non-zero exit into a single generic non-blocking WARNING carrying no numeric detail, and always returns 0. command-gate-out.sh therefore receives no signal at all.\n\nPRIMARY HAZARD (the reason this is not merely cosmetic): --fix MUTATES THE ARTIFACT IN PLACE. A repair both happens and goes uncounted, so an artifact can be silently rewritten with nothing anywhere recording that it was. The instrumentation gap and the silent-mutation hazard are the same defect seen from two ends.\n\nWORK:\n  1. Propagate validate-artifact.sh fix/error/warning counts through skill_validate_task_artifacts instead of discarding them.\n  2. Give command-gate-out.sh a reportable surface for those counts.\n  3. Decide explicitly whether --fix should remain in-place-mutating on the gate-out path, or whether a repair should be reported and left for a human. State the decision and its reasoning.\n\nACCEPTANCE: a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count, and a task needing none reports zero. Both directions must be demonstrated - a report that can only ever say zero is not instrumentation.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "created": "2026-08-10T13:26:30Z",
+      "last_updated": "2026-08-10T13:26:30Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 1014,
+      "project_name": "prevent_implementation_agent_nonterminal_fanout",
+      "title": "Prevent implementation-agent fan-out from returning non-terminal status and stale plan markers",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/agents/general-implementation-agent.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ],
+      "description": "Two dispatches in a single batch fanned out to phase sub-agents and terminated before writing a terminal status, costing a recovery cycle each. Recorded as err_1786344051474_RcIhk6.\n\nOBSERVED FAILURE MODE: a dispatched implementation agent spawned per-phase sub-agents, returned while they were still running, and left .return-meta.json at status=in_progress. Per context/formats/return-metadata-file.md that value is early-metadata-only and never a legal terminal dispatch outcome, so orchestrate-recover-outcome.sh correctly declines it (reason STATUS_IN_PROGRESS). The orchestrator contract for an unresolvable dispatch is failed_tasks - which would have been WRONG here, since 6 of 10 phases had in fact been committed. Correct handling came from rules/error-handling.md Delegation Interrupted Recovery (keep status, resume), not from the orchestrator stage contract.\n\nCOMPOUNDING DEFECT - STALE PLAN MARKERS: the sub-agents committed phases 3, 4, 5 and 7 but left every one of those phase markers reading [NOT STARTED]. Because the orchestrator phase-marker recovery grep reads exactly those markers, it would have reported 2/10 against a true 6/10. A resume driven by markers alone would have redone committed work. Recovery only succeeded because the actual state was reconstructed from git log and diffs instead.\n\nTWO INDEPENDENT QUESTIONS, BOTH IN SCOPE:\n  1. Should a dispatched implementation agent fan out to sub-agents at all? If yes, it must still write a terminal status covering its childrens work; if no, the prohibition belongs in the agent contract, not in per-dispatch prompt text (the workaround used during the incident).\n  2. Should a sub-agent that commits a phase be required to update that phases marker in the same commit? Markers and commits diverging silently is the deeper defect - it degrades the recovery path for every future interrupted dispatch, not just fan-out ones.\n\nCONSIDER ALSO: whether the orchestrator should treat status=in_progress plus evidence of committed phase work as PARTIAL/resume rather than routing it toward failed_tasks, so correct handling does not depend on an operator noticing.\n\nACCEPTANCE: an interrupted fan-out dispatch is either impossible by contract, or leaves markers and terminal status accurate enough that resume needs no manual git archaeology.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "created": "2026-08-10T13:27:04Z",
+      "last_updated": "2026-08-10T13:27:04Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 1015,
+      "project_name": "recheck_settings_local_merge_content_loss",
+      "title": "Re-check settings.local.json deploy merge for content loss before any fix effort",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/deploy-headless.sh",
+        "agent-system/extensions/core/scripts/install-extension.sh"
+      ],
+      "description": "A VERIFICATION task, deliberately not a fix task. Do not change merge logic until reproduction is established. Recorded as err_1786350581208_23mAsn (severity high, reproduction 0 of 3).\n\nWHAT WAS SEEN ONCE: a single observation of a content-lossy settings.local.json merge across a deploy-headless.sh --wipe pair - a dropped hooks.PreToolUse block and a dropped mcpServers block.\n\nWHAT RE-CHECKING FOUND: 3 further wipe-pairs showed reproduction 0 of 3. All three exhibited ordering-only differences (mcpServers and hooks blocks relocated, semantically identical under jq -S), not a dropped block. The original finding did NOT reproduce.\n\nWHY THIS STAYS OPEN DESPITE NOT REPRODUCING: non-reproduction is a result, not an all-clear. If it is real and intermittent, the consequence is a routine redeploy silently dropping a hook or an MCP registration - the most consequential hypothesis surfaced in the batch that found it. The asymmetry between a cheap re-check and a silently disabled security-relevant PreToolUse hook justifies keeping it open.\n\nWORK:\n  1. Run a substantially larger wipe-pair sample than 3 (10 or more), comparing settings.local.json semantically (jq -S) AND structurally (key/block presence), not by raw diff - raw diff cannot distinguish reordering from loss, which is exactly what confused the original observation.\n  2. Determine whether any pre-existing settings.local.json state, ordering, or size correlates with loss.\n  3. If reproduced: capture the exact input, escalate to critical, and only then plan a fix.\n  4. If not reproduced across the larger sample: downgrade the recorded severity with the sample size stated, and close. Record the number of pairs run either way.\n\nRELATED BUT SEPARATE: ordering non-determinism in context/index.json and settings.json between identical wipe runs is recorded as err_1786350581240_JyztWt (low). It is cosmetic on its own, but it is coupled to the deploy byte-identical-twice acceptance criterion, so resolving it may fall out of the orphan-parity work rather than this task.\n\nACCEPTANCE: a stated reproduction rate over a named sample size. Neither confirm nor dismiss on a single observation.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "created": "2026-08-10T13:27:04Z",
+      "last_updated": "2026-08-10T13:27:04Z",
       "artifacts": []
     }
   ],
