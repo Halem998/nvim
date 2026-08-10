@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/005_implement_roadmap_items_producer/reports/01_roadmap-items-producer.md",
+      "summary": "Confirms the actual remaining gap is narrower than the task description assumes: two of five described sub-problems (matcher Priority 3, Priority 2 vs. no-task-references rule) are already resolved by later work, and the real fix is threading roadmap_path into the implementer agent contracts (mirroring planner-agent.md's existing Stage 2.5 pattern) plus a distinct silent-0 signal in /todo's Roadmap section branch."
+    }
+  ],
+  "findings_count": 7,
+  "memory_candidates": [
+    {
+      "content": "In this repo, task descriptions authored earlier in the roadmap can go stale relative to later, unrelated task work that reshapes the same files. Before planning from a task description, grep git log for the files named in file_scope to check whether the described gap has already been partially or fully closed by intervening tasks -- e.g. task 5 (roadmap_items producer) described a 'three-priority matcher with an unimplemented third tier' that tasks 910/911/914/969/985/21 had already turned into a fully-implemented four-tier matcher by the time research ran.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/005_implement_roadmap_items_producer/reports/01_roadmap-items-producer.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["stale-task-description", "git-log-verification", "research-grounding", "roadmap-items", "todo-command"]
+    },
+    {
+      "content": "planner-agent.md already has a working, minimal pattern for giving a fresh-context subagent read-only access to specs/ROADMAP.md: skill-planner/SKILL.md unconditionally sets \"roadmap_path\": \"specs/ROADMAP.md\" in the delegation context JSON, and planner-agent.md's Stage 2.5 reads it if present ('MUST NOT: Modify, write to, or create ROADMAP.md. This is a read-only consultation.'). general-research-agent.md has the equivalent as its own Stage 1.5. Any other agent needing ROADMAP.md awareness (e.g. general-implementation-agent.md, which currently has none) should copy this exact shape rather than inventing a new one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/005_implement_roadmap_items_producer/reports/01_roadmap-items-producer.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["roadmap_path", "delegation-context", "planner-agent", "read-only-consultation", "context-threading"]
+    },
+    {
+      "content": "specs/ROADMAP.md is fully exempt from .claude/rules/no-task-references-in-deliverables.md because that rule's own scope line excludes all of specs/**. Task-number prose (\"task 710\", \"(Task N)\") in ROADMAP.md is not a rule violation and needs no marker -- do not propose reconciliation work between roadmap annotation formats and that rule without first re-checking its scope line.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/005_implement_roadmap_items_producer/reports/01_roadmap-items-producer.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["no-task-references", "specs-exemption", "ROADMAP.md", "rule-scope"]
+    }
+  ],
+  "next_steps": "Run /plan 5 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786396737_4bb5dd",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"]
+  }
+}

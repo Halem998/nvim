@@ -76,7 +76,7 @@
       "project_number": 5,
       "project_name": "implement_roadmap_items_producer",
       "title": "roadmap_items is never derived by any implement path, so /todo's ROADMAP sync is dead in practice",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -90,8 +90,15 @@
       ],
       "description": "/todo documents a producer/consumer contract for ROADMAP.md synchronisation in which /implement\nis the producer. The consumer half is fully built; the producer half computes nothing, so the\nfeature has never functioned.\n\nWHAT EXISTS (the consumer and the write path -- both fine, do not rebuild):\n  - agent-system/extensions/core/commands/todo.md:1122 states the contract explicitly:\n    \"/implement is the **producer**: populates completion_summary and optional roadmap_items\".\n  - todo.md's Step 3.5 matcher implements a three-priority strategy: (1) explicit roadmap_items,\n    (2) exact `(Task N)` references in ROADMAP.md, (3) summary-based search.\n  - skill_propagate_completion_summary (agent-system/extensions/core/scripts/skill-base.sh:526-551)\n    WRITES roadmap_items to state.json correctly when handed a non-empty value, routed through\n    state-write.sh, correctly skipping task_type == \"meta\" and empty/`[]` values.\n\nWHAT IS MISSING: nothing anywhere DERIVES the value passed as that third argument. Grep of the\nfull source store finds write sites and schema references but no derivation logic. So the helper\nis called with an empty value and the write is skipped every time.\n\nCONSEQUENCE, MEASURED: on a real archival run, 24 consecutive completed tasks were archived and\nproduced ZERO roadmap annotations, while 8 unchecked items sat in ROADMAP.md -- several plainly\nrelated to the work just completed. All three matcher priorities missed:\n  - Priority 1 found no task carrying a roadmap_items field (none has ever been populated).\n  - Priority 2 found no `(Task N)` references, because ROADMAP.md contains none -- and per the\n    repo's own no-task-references-in-deliverables rule, ROADMAP.md arguably should not contain\n    them, which makes Priority 2 structurally unreliable rather than merely unused.\n  - Priority 3 is an explicit unimplemented placeholder in todo.md (\"not currently implemented\").\nSo the roadmap silently drifts from reality, and the drift is invisible: /todo reports success\nwith \"0 roadmap items updated\" and no warning that its only functioning matcher found nothing.\n\nWORK:\n  1. Decide where derivation belongs and state why. Candidates: the implementation agent proposes\n     roadmap_items in its return metadata (agent judgement, no new matching machinery); or a\n     script matches completion_summary against ROADMAP.md text at postflight (deterministic,\n     testable, but needs a matching heuristic that Priority 3 was never given).\n     Prefer the option that does not invent a fuzzy matcher -- an agent naming which roadmap\n     items its work closed is both cheaper and more accurate than post-hoc string similarity.\n  2. Implement derivation on the chosen path and thread it into the EXISTING\n     skill_propagate_completion_summary call sites. Do not add a second write path.\n  3. Make an empty result visible rather than silent: when /todo archives non-meta tasks and\n     matches zero roadmap items, it must say so distinctly from \"there was nothing to match\".\n     A silent 0 is what allowed this to go unnoticed across 24 tasks.\n  4. Either implement Priority 3 or delete it. A documented placeholder that reads as a working\n     tier is worse than an honest two-tier matcher.\n  5. Reconcile Priority 2 with the no-task-references-in-deliverables rule. If `(Task N)` markers\n     are not permitted in ROADMAP.md, say so in todo.md and stop presenting Priority 2 as a\n     general mechanism.\n\nVERIFICATION BAR:\n  - A completed non-meta task with a roadmap-related completion_summary produces a populated\n    roadmap_items in state.json, and a subsequent /todo run annotates the matching ROADMAP.md\n    item. Demonstrated end to end on a fixture, not argued.\n  - A task whose work matches no roadmap item produces an explicit \"no match\" report.\n  - task_type == \"meta\" still writes no roadmap_items (existing behaviour preserved).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T06:30:00Z",
-      "last_updated": "2026-08-10T06:30:00Z",
-      "artifacts": []
+      "last_updated": "2026-08-10T21:24:48Z",
+      "artifacts": [
+        {
+          "path": "specs/005_implement_roadmap_items_producer/reports/01_roadmap-items-producer.md",
+          "type": "report",
+          "summary": "Confirms the remaining gap is narrower than assumed: two of five sub-problems already resolved; real fix is threading roadmap_path into implementer agent contracts plus a distinct silent-0 signal in /todo."
+        }
+      ],
+      "session_id": "sess_1786396737_4bb5dd"
     },
     {
       "project_number": 6,
