@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 1004,
+  "next_project_number": 1007,
   "active_projects": [
     {
       "project_number": 998,
@@ -105,7 +105,7 @@
     {
       "project_number": 1001,
       "project_name": "lean_mirror_entry_load_order",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix lean mirror entry load-order defect; audit duplicated index paths",
@@ -119,7 +119,7 @@
         1000
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T06:24:20Z",
+      "last_updated": "2026-08-10T06:40:23Z",
       "artifacts": [
         {
           "path": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
@@ -129,7 +129,7 @@
         {
           "path": "specs/1001_lean_mirror_entry_load_order/plans/01_lean-mirror-load-order-fix.md",
           "type": "plan",
-          "summary": "Four-phase plan: union-value the named entry, extend to two siblings in the same file, record the audit and two follow-up candidates, closing gate"
+          "summary": "Four-phase plan, all phases marked [COMPLETED]: union-value the named entry, extend to two siblings in the same file, record the audit and two follow-up candidates, closing gate"
         }
       ],
       "session_id": "sess_1786342011_4592c8_1001"
@@ -137,21 +137,22 @@
     {
       "project_number": 1002,
       "project_name": "context_tier_semantics_doc",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Author the context tier-semantics standard for the derived tier classification",
       "description": "Author a context file that states the tier-classification semantics for context index entries. The meta-catch-all decomposition task converted validate-context-budgets.sh from reading a never-populated authored `tier` field to deriving tier algorithmically from load_when shape, at all four former read sites. The derivation is now real and load-bearing, but its ONLY authority is the derived_tier jq function and its header comment inside that one script -- there is no context file a human or an agent can read to learn what the tiers mean or why an entry lands in one.\n\nTHE SEMANTICS TO DOCUMENT (as landed; verify against the script rather than trusting this summary):\n  Tier 1  load_when.always == true                                   -- always loaded, every prompt\n  Tier 2  non-empty load_when.agents                                 -- loaded for named agents\n  Tier 3  non-empty commands/task_types only                         -- loaded for named commands\n  Tier 4  all hooks empty                                            -- reachable only on demand\n  Current deployed distribution: Tier 1: 3, Tier 2: 144, Tier 3: 34, Tier 4: 6 (187 entries).\n\nWORK:\n  1. Write the context file (a standards/ file under core context is the natural home) covering:\n     what each tier means operationally, the derivation rule, why the authored `tier` field was\n     abandoned (index.schema.json sets additionalProperties:false on entries AND carries a $comment\n     stating tier is deliberately absent because it is meant to be derived from load_when shape --\n     the schema already asserts this design, the doc should make it discoverable), and the cost of\n     the Tier 4 fallthrough decision.\n  2. Cover the on_demand marker and why it exists: with Tier 4 defined as all-hooks-empty, the Dead\n     Entry Check would become a tautology, so an explicit schema-declared on_demand:true property\n     marks intent and preserves the check's signal. A reader needs to know when to set it -- this is\n     the single most likely thing for a future entry author to get wrong.\n  3. Add the index entry for the new file, with an accurate line_count (Rule R gates it) and a\n     load_when hook narrow enough not to worsen any agent's budget.\n  4. Point the derived_tier function's header comment at the new file so the two do not drift.\n\nSEQUENCING NOTE: this file lands in core context/, which the docs truth sweep also claims wholesale.\nIt is deliberately NOT gated behind that sweep -- the knowledge is fresh now and the file is small --\nso if both are in flight the runtime file-scope check will simply defer one. The sweep should treat\nthis file as current truth rather than re-deciding it.\n\nVERIFICATION BAR: the new file exists with a schema-conformant index entry whose declared line_count\nmatches; check-extension-docs.sh passes (Rules R and T); bash .claude/scripts/validate-context-budgets.sh\nintroduces no new budget violation and its tier distribution is unchanged apart from the one added\nentry.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "file_scope": [
         "agent-system/extensions/core/context/standards/context-tier-semantics.md",
-        "agent-system/extensions/core/index-entries.json"
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/scripts/validate-context-budgets.sh"
       ],
       "dependencies": [
         991,
         998
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T06:24:22Z",
+      "last_updated": "2026-08-10T06:40:25Z",
       "artifacts": [
         {
           "path": "specs/1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md",
@@ -162,6 +163,11 @@
           "path": "specs/1002_context_tier_semantics_doc/plans/01_context-tier-semantics.md",
           "type": "plan",
           "summary": "Four-phase plan authoring the context tier-semantics standard, its additive index entry, and the DERIVED_TIER back-pointer comment"
+        },
+        {
+          "path": "specs/1002_context_tier_semantics_doc/summaries/01_context-tier-semantics-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the context tier-semantics standard, index entry, and DERIVED_TIER back-pointer"
         }
       ],
       "session_id": "sess_1786342011_4592c8_1002"
@@ -461,7 +467,7 @@
       "project_number": 995,
       "project_name": "convert_extension_state_writers_to_state_write",
       "title": "Convert surviving extension state.json writers to state-write.sh",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -475,10 +481,19 @@
         "agent-system/extensions/web/skills/",
         "agent-system/extensions/lean/skills/",
         "agent-system/extensions/cslib/skills/",
-        "agent-system/extensions/epidemiology/skills/"
+        "agent-system/extensions/epidemiology/skills/",
+        "agent-system/extensions/founder/commands/",
+        "agent-system/extensions/present/commands/",
+        "agent-system/extensions/epidemiology/commands/epi.md",
+        "agent-system/extensions/core/commands/review.md",
+        "agent-system/extensions/core/context/formats/command-structure.md",
+        "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/manifest.json"
       ],
       "created": "2026-08-05T17:17:11Z",
-      "last_updated": "2026-08-10T06:24:18Z",
+      "last_updated": "2026-08-10T06:25:00Z",
       "session_id": "sess_1786342011_4592c8_995",
       "artifacts": [
         {
@@ -562,6 +577,66 @@
       "description": "lean-sorry-census.sh counts every `set_option warn.sorry false in` suppression annotation as a\nphantom extra sorry, on top of the real sorry that annotation exists to suppress. The census is\ntherefore inflated by exactly the number of own-line suppression annotations in the scanned scope.\n\nROOT CAUSE (agent-system/extensions/lean/scripts/lean-sorry-census.sh, line 144):\n    sorry_re = re.compile(r'\\bsorry\\b')\n`.` is a non-word character, so `\\b` matches between `warn` and `.sorry`. The regex therefore\nmatches the \"sorry\" substring inside \"warn.sorry\" -- and inside any other dotted-qualified name\nending in `.sorry`. The script's comment/docstring/string-literal stripper runs BEFORE this scan\nand correctly removes commented-out and string-literal sorries; the stripper is not the problem.\nThe final regex match is the only broken piece.\n\nCOUNTING IS PER-LINE, NOT PER-OCCURRENCE (line 158):\n    if sorry_re.search(line): total += 1\nThis detail was discovered while verifying the bug and materially shapes the fix and its test.\nConsequences:\n  - Phantom inflation occurs ONLY when `set_option warn.sorry false in` sits on its own line.\n    All 18 instances in the reference corpus do, which is why the observed delta equals the\n    occurrence count there.\n  - When the annotation shares a line with the sorry it suppresses\n    (`set_option warn.sorry false in theorem foo : P := sorry`), the buggy regex and a correct\n    regex BOTH yield 1 for that line, so this form does not currently inflate the count -- but a\n    careless fix (e.g. skipping any line containing `warn.sorry`) would wrongly drop it to 0.\n    The fix must not regress this case.\n\nEVIDENCE (independently verified twice, most recently 2026-08-09 against ~/Projects/cslib):\n  - Repo-wide census: 45 reported = 27 real + 18 phantom.\n  - Cslib/Logics/Bimodal: 41 reported = 23 real + 18 phantom.\n  - The 27 and 23 figures independently match the pre-existing ROADMAP.md census and a separate\n    hand-audited scope.\n  - Direct regex comparison over Cslib/**/*.lean (pre-stripping, hence higher absolute numbers):\n    naive `\\bsorry\\b` = 199, corrected `(?<![.\\w])sorry\\b` = 181, delta = 18, and the count of\n    `warn.sorry` occurrences = 18. Exact match.\n  - A naive grep-style count that skips the block-comment/docstring stripper gives 152 repo-wide,\n    confirming the stripper itself is correct and valuable.\n\nWORK:\n  1. Replace the line-144 regex with the negative-lookbehind form `(?<![.\\w])sorry\\b` (verified\n     working by two independent parties). The `\\w` term is redundant with the existing `\\b` and is\n     retained only for explicitness; excluding a preceding `.` is the substantive change, and it\n     correctly covers every dotted-qualified `*.sorry` name, not just `warn.sorry`.\n     An equivalent accepted alternative is a line-level pre-filter that skips any line whose\n     stripped content is exactly the `set_option warn.sorry false in` directive -- but note this\n     alternative must still handle the same-line form above, so the regex fix is preferred.\n  2. PRESERVE strip_lean_comments() (lines 91-141) BYTE-UNCHANGED. It is correct and is the\n     script's valuable part. However, its docstring at line 96 explicitly references \"the\n     \\bsorry\\b scan\" it feeds; that one reference must be updated to name the corrected regex so\n     the docstring does not go stale. This is a comment-text edit inside the function's docstring,\n     not a change to the stripping logic -- the logic body stays byte-identical.\n  3. Add a regression fixture. None exists today: `find agent-system -iname \"*sorry*\"` returns only\n     the script itself, so this is new test scaffolding under agent-system/extensions/lean/.\n     The fixture MUST cover BOTH forms:\n       (a) own-line annotation:\n             set_option warn.sorry false in\n             theorem foo : P := sorry\n           -> must count as exactly 1 (today: 2)\n       (b) same-line annotation:\n             set_option warn.sorry false in theorem bar : Q := sorry\n           -> must count as exactly 1 (not 0, not 2) -- this pins the per-line semantics and\n              guards against an over-aggressive line-skipping fix.\n     Include N annotations and M real sorries and assert the census reports M. Also include at\n     least one commented-out sorry and one string-literal sorry so the fixture simultaneously\n     guards the stripper against future regression.\n  4. Verify with the script's own `--cross-check` flag, which already exists (flag parsing at\n     line 53, comparison logic at lines 179-189) and is the intended verification oracle. It\n     compares the stripper count against `lake build`'s \"declaration uses 'sorry'\" warning count,\n     which is comment- and annotation-immune by construction. A post-fix run must report\n     `cross_check: MATCH` on a scope where it previously reported MISMATCH.\n\nPRIOR STATE: the only recent commit touching this script is 8dcb6d92e, a task-number-reference\npurge (3 files, 3 insertions / 3 deletions, rewriting a citation string in a comment). It did not\ntouch the matching logic. The bug is live in the source store.\n\nPROVENANCE: this originated in the cslib repository, where the target path pointed outside that\nrepo. It is recreated in this global root because the source store lives here; a fix applied under\ncslib's gitignored .claude/ deploy tree would be wiped on the next regeneration.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-09T23:31:11Z",
       "last_updated": "2026-08-09T23:31:11Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 1004,
+      "project_name": "fix_todo_repository_metrics_sync",
+      "title": "Fix /todo repository-metrics sync: build_errors is structurally always 0 and the technical_debt frontmatter target does not exist",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/commands/todo.md",
+        "agent-system/extensions/core/scripts/generate-todo.sh",
+        "agent-system/extensions/core/skills/skill-todo/SKILL.md"
+      ],
+      "description": "/todo's \"Sync Repository Metrics\" stage cannot report a true build-health signal, and half of it writes to a target that does not exist. Both defects are live in the source store and were observed on a real /todo run.\n\nDEFECT 1 -- build_errors is unconditionally 0 (agent-system/extensions/core/commands/todo.md:757-762):\n\n    # Build errors (0 if project-specific lint/check passes)\n    if make check 2>/dev/null || npm run lint 2>/dev/null || true; then\n      build_errors=0\n    else\n      build_errors=1\n    fi\n\nThe trailing `|| true` makes the `if` condition unconditionally true, so the `else` branch is\nunreachable and `build_errors` is ALWAYS 0. Downstream, `repository_health.status` is derived as\n`(if build_errors == 0 then \"healthy\" else \"needs_attention\" end)`, so the status field is always\n\"healthy\" no matter the actual state of the repository. The field carries no information while\nlooking authoritative -- the worst failure mode for a health signal.\n\nA second, subtler problem sits behind the same lines: `make check` / `npm run lint` are the only\nprobes, and they are wrong for most repos this system is deployed into (Python/pytest, Lean/lake,\nNix). Even with the `|| true` removed, a repo with neither a Makefile nor package.json would take\nthe `else` branch and report `build_errors=1` -- a false RED replacing the current false GREEN.\nThe fix must address the probe, not merely the boolean.\n\nDEFECT 2 -- the technical_debt frontmatter block does not exist (todo.md:783-800 vs\nagent-system/extensions/core/scripts/generate-todo.sh:315-323):\n\ntodo.md Step 5.7.3 instructs: \"Read TODO.md and update the YAML frontmatter `technical_debt`\nsection to match state.json\", and shows a `technical_debt:` / `repository_health:` block to write.\nBut generate-todo.sh emits ONLY `next_project_number` into the frontmatter:\n\n    printf 'next_project_number: %s\\n' \"$next_num\"\n\nSo there is no `technical_debt` block to update. Worse, TODO.md is generated from state.json --\nany hand-written frontmatter block would be destroyed on the next generate-todo.sh run, which\n/todo itself triggers. The instruction is unexecutable as written, and executing it literally\nwould produce work that is silently discarded.\n\nOBSERVED: on a real /todo run the recorded repository_health was `todo_count: 8, fixme_count: 0,\nbuild_errors: 0, status: \"healthy\"`, last assessed ~2 months earlier. Actual measured counts were\n41 TODO and 2 FIXME. The stale figures had never been corrected because the sync stage had never\nproduced a meaningful result.\n\nWORK:\n  1. Decide and document what `build_errors` is actually supposed to mean. Two coherent readings:\n     (a) \"the tree is structurally sound\" -- importable/parseable/collectable; or\n     (b) \"the project's own check command passes\". These are different signals with different\n     costs; (a) is cheap and portable, (b) is expensive and repo-specific. Pick one, state it\n     where the field is defined, and make status derivation match. Do NOT leave a field whose\n     meaning must be inferred from a broken heuristic.\n  2. Implement the chosen probe so it can actually fail. Remove the `|| true`. If no probe is\n     applicable to the repo, the honest value is \"not measured\", not 0 and not 1 -- if the schema\n     cannot express that, extend it rather than picking a misleading number.\n  3. Resolve Defect 2 in ONE direction, not both: either (a) teach generate-todo.sh to emit the\n     technical_debt/repository_health frontmatter from state.json, making it generated like every\n     other part of TODO.md and making Step 5.7.3 a no-op that can be deleted; or (b) delete Step\n     5.7.3 and let state.json be the sole home for repository_health. Option (a) is preferred only\n     if the frontmatter has a real consumer -- verify that first; if it has none, take (b).\n  4. Mirror the change into skill-todo/SKILL.md, which describes the same stage.\n\nVERIFICATION BAR:\n  - A fixture repo whose check command FAILS produces a non-zero/failed build_errors and a status\n    that is not \"healthy\". This must be an executed test, not a reasoned claim -- the current bug\n    is precisely a condition that was never exercised in its failing direction.\n  - A fixture repo with no recognised check command does not silently report either 0 or 1.\n  - Running generate-todo.sh twice in a row leaves the frontmatter byte-identical (no\n    hand-written block is destroyed, no drift is introduced).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "created": "2026-08-10T06:30:00Z",
+      "last_updated": "2026-08-10T06:30:00Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 1005,
+      "project_name": "implement_roadmap_items_producer",
+      "title": "roadmap_items is never derived by any implement path, so /todo's ROADMAP sync is dead in practice",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [
+        1004
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/commands/todo.md",
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-implementer/SKILL.md"
+      ],
+      "description": "/todo documents a producer/consumer contract for ROADMAP.md synchronisation in which /implement\nis the producer. The consumer half is fully built; the producer half computes nothing, so the\nfeature has never functioned.\n\nWHAT EXISTS (the consumer and the write path -- both fine, do not rebuild):\n  - agent-system/extensions/core/commands/todo.md:1122 states the contract explicitly:\n    \"/implement is the **producer**: populates completion_summary and optional roadmap_items\".\n  - todo.md's Step 3.5 matcher implements a three-priority strategy: (1) explicit roadmap_items,\n    (2) exact `(Task N)` references in ROADMAP.md, (3) summary-based search.\n  - skill_propagate_completion_summary (agent-system/extensions/core/scripts/skill-base.sh:526-551)\n    WRITES roadmap_items to state.json correctly when handed a non-empty value, routed through\n    state-write.sh, correctly skipping task_type == \"meta\" and empty/`[]` values.\n\nWHAT IS MISSING: nothing anywhere DERIVES the value passed as that third argument. Grep of the\nfull source store finds write sites and schema references but no derivation logic. So the helper\nis called with an empty value and the write is skipped every time.\n\nCONSEQUENCE, MEASURED: on a real archival run, 24 consecutive completed tasks were archived and\nproduced ZERO roadmap annotations, while 8 unchecked items sat in ROADMAP.md -- several plainly\nrelated to the work just completed. All three matcher priorities missed:\n  - Priority 1 found no task carrying a roadmap_items field (none has ever been populated).\n  - Priority 2 found no `(Task N)` references, because ROADMAP.md contains none -- and per the\n    repo's own no-task-references-in-deliverables rule, ROADMAP.md arguably should not contain\n    them, which makes Priority 2 structurally unreliable rather than merely unused.\n  - Priority 3 is an explicit unimplemented placeholder in todo.md (\"not currently implemented\").\nSo the roadmap silently drifts from reality, and the drift is invisible: /todo reports success\nwith \"0 roadmap items updated\" and no warning that its only functioning matcher found nothing.\n\nWORK:\n  1. Decide where derivation belongs and state why. Candidates: the implementation agent proposes\n     roadmap_items in its return metadata (agent judgement, no new matching machinery); or a\n     script matches completion_summary against ROADMAP.md text at postflight (deterministic,\n     testable, but needs a matching heuristic that Priority 3 was never given).\n     Prefer the option that does not invent a fuzzy matcher -- an agent naming which roadmap\n     items its work closed is both cheaper and more accurate than post-hoc string similarity.\n  2. Implement derivation on the chosen path and thread it into the EXISTING\n     skill_propagate_completion_summary call sites. Do not add a second write path.\n  3. Make an empty result visible rather than silent: when /todo archives non-meta tasks and\n     matches zero roadmap items, it must say so distinctly from \"there was nothing to match\".\n     A silent 0 is what allowed this to go unnoticed across 24 tasks.\n  4. Either implement Priority 3 or delete it. A documented placeholder that reads as a working\n     tier is worse than an honest two-tier matcher.\n  5. Reconcile Priority 2 with the no-task-references-in-deliverables rule. If `(Task N)` markers\n     are not permitted in ROADMAP.md, say so in todo.md and stop presenting Priority 2 as a\n     general mechanism.\n\nVERIFICATION BAR:\n  - A completed non-meta task with a roadmap-related completion_summary produces a populated\n    roadmap_items in state.json, and a subsequent /todo run annotates the matching ROADMAP.md\n    item. Demonstrated end to end on a fixture, not argued.\n  - A task whose work matches no roadmap item produces an explicit \"no match\" report.\n  - task_type == \"meta\" still writes no roadmap_items (existing behaviour preserved).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "created": "2026-08-10T06:30:00Z",
+      "last_updated": "2026-08-10T06:30:00Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 1006,
+      "project_name": "guard_against_nonadditive_artifact_rewrites",
+      "title": "Nothing prevents an agent from rewriting state.json .artifacts wholesale, silently discarding prior artifacts",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [
+        1005
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/scripts/validate-state.sh",
+        "agent-system/extensions/core/rules/state-management.md",
+        "agent-system/extensions/core/agents/general-implementation-agent.md"
+      ],
+      "description": "The artifact list in specs/state.json is append-only by intent but not by enforcement. Every\nsanctioned write path is additive, yet an agent that writes state.json directly can replace the\nwhole array, and nothing detects the loss.\n\nSANCTIONED PATHS ARE ALREADY CORRECT (do not change them):\n  - agent-system/extensions/core/scripts/orchestrator-postflight.sh:432 uses `.artifacts += [...]`\n  - agent-system/extensions/core/scripts/reconcile-task-status.sh:172 (link_artifact) likewise\n  - skill_link_artifacts in skill-base.sh routes through state-write.sh\n\nTHE GAP: these are helpers an agent MAY use, not a constraint it MUST satisfy. An implementation\nagent updating state.json with its own jq assignment (`.artifacts = [...]`) bypasses all of them.\nNothing validates that the post-write artifact set is a superset of the pre-write set.\n\nOBSERVED, WITH LOSS: during a real implementation dispatch, an agent updated its task's state.json\nentry and the artifact list went from 11 entries to 8 -- five previously-recorded phase summaries\nwere dropped while two new entries were added. The summary FILES were still on disk; only the\nlinks were destroyed, so nothing failed and no warning was emitted. The loss was caught only by a\nmanual count during postflight review and repaired by hand. Had it not been noticed, the task\nwould have archived with five phase summaries permanently unreferenced.\n\nRELATIONSHIP TO THE STATE-WRITE CONVERSION TASK (adjacent, NOT duplicate -- read before starting):\nthe existing state-write conversion work targets hand-rolled read-modify-write sequences in the\nSOURCE STORE, and its verification bar is a grep for `mv` onto state.json across source files.\nThat bar cannot catch this defect: the offending write came from an AGENT at runtime composing jq\ninline, not from any checked-in script. Converting every source-store writer to state-write.sh\nleaves this hole exactly as open. If the two are worked together, the deliverable here is the\nsuperset-invariant, not another writer conversion.\n\nWORK:\n  1. Add a machine-checkable invariant: for any write touching .artifacts, the resulting set must\n     contain every path present beforehand. Removal must require an explicit, named opt-in\n     (legitimate cases exist -- a genuinely deleted artifact -- and must remain expressible).\n  2. Enforce it where writes actually funnel. state-write.sh is the natural choke point; decide\n     whether the invariant lives there (catches everything routed through it) or in\n     validate-state.sh (catches drift regardless of writer, including direct jq). Prefer the\n     option that ALSO catches a direct jq write, since that is the observed failure mode --\n     enforcing only inside state-write.sh would miss the exact case that motivated this task.\n  3. State the append-only rule explicitly in rules/state-management.md, which currently\n     describes artifact linking formats without ever saying the list is append-only.\n  4. Add a MUST NOT to the implementation agents that write state.json directly: never assign\n     .artifacts wholesale; append, or call the helper.\n\nVERIFICATION BAR:\n  - A fixture write that drops an existing artifact path is REJECTED (or loudly flagged by the\n    validator), and the same write with the opt-in flag is accepted. Both directions executed.\n  - A normal additive link still succeeds unchanged; existing link_artifact / skill_link_artifacts\n    call sites are unaffected.\n  - The check triggers on a direct jq-composed write, not only on state-write.sh traffic.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "created": "2026-08-10T06:30:00Z",
+      "last_updated": "2026-08-10T06:30:00Z",
       "artifacts": []
     }
   ],

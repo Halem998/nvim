@@ -1,7 +1,7 @@
 # Implementation Plan: Lean Mirror Entry Load-Order Fix
 
 - **Task**: 1001 - Fix lean mirror entry load-order defect; audit duplicated index paths
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: Task 1000 (completed -- establishes and proves the union-valued pattern)
 - **Research Inputs**: specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md

@@ -1,5 +1,5 @@
 ---
-next_project_number: 1004
+next_project_number: 1007
 ---
 
 # TODO
@@ -11,23 +11,226 @@ next_project_number: 1004
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 995,1001,1002,1003 | -- | agent-system |
-| 2 | 999 | 1002 | agent-system |
-| 3 | 996 | 995,999 | agent-system |
+| 1 | 995,999,1003,1004 | -- | agent-system |
+| 2 | 996,1005 | 995,999,1004 | agent-system |
+| 3 | 1006 | 1005 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-995 [PLANNED] — Convert the hand-rolled specs/state.json read-modify-write sequen
+995 [IMPLEMENTING] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-1001 [PLANNED] — Fix the dormant load-order defect in lean/index-entries.json's mi
-1002 [PLANNED] — Author a context file that states the tier-classification semanti
-  └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
-    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
+  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
+1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
+  └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
+    └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
 
 ## Tasks
+
+### 1006. Nothing prevents an agent from rewriting state.json .artifacts wholesale, silently discarding prior artifacts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 1005
+
+**Description**: The artifact list in specs/state.json is append-only by intent but not by enforcement. Every
+sanctioned write path is additive, yet an agent that writes state.json directly can replace the
+whole array, and nothing detects the loss.
+
+SANCTIONED PATHS ARE ALREADY CORRECT (do not change them):
+  - agent-system/extensions/core/scripts/orchestrator-postflight.sh:432 uses `.artifacts += [...]`
+  - agent-system/extensions/core/scripts/reconcile-task-status.sh:172 (link_artifact) likewise
+  - skill_link_artifacts in skill-base.sh routes through state-write.sh
+
+THE GAP: these are helpers an agent MAY use, not a constraint it MUST satisfy. An implementation
+agent updating state.json with its own jq assignment (`.artifacts = [...]`) bypasses all of them.
+Nothing validates that the post-write artifact set is a superset of the pre-write set.
+
+OBSERVED, WITH LOSS: during a real implementation dispatch, an agent updated its task's state.json
+entry and the artifact list went from 11 entries to 8 -- five previously-recorded phase summaries
+were dropped while two new entries were added. The summary FILES were still on disk; only the
+links were destroyed, so nothing failed and no warning was emitted. The loss was caught only by a
+manual count during postflight review and repaired by hand. Had it not been noticed, the task
+would have archived with five phase summaries permanently unreferenced.
+
+RELATIONSHIP TO THE STATE-WRITE CONVERSION TASK (adjacent, NOT duplicate -- read before starting):
+the existing state-write conversion work targets hand-rolled read-modify-write sequences in the
+SOURCE STORE, and its verification bar is a grep for `mv` onto state.json across source files.
+That bar cannot catch this defect: the offending write came from an AGENT at runtime composing jq
+inline, not from any checked-in script. Converting every source-store writer to state-write.sh
+leaves this hole exactly as open. If the two are worked together, the deliverable here is the
+superset-invariant, not another writer conversion.
+
+WORK:
+  1. Add a machine-checkable invariant: for any write touching .artifacts, the resulting set must
+     contain every path present beforehand. Removal must require an explicit, named opt-in
+     (legitimate cases exist -- a genuinely deleted artifact -- and must remain expressible).
+  2. Enforce it where writes actually funnel. state-write.sh is the natural choke point; decide
+     whether the invariant lives there (catches everything routed through it) or in
+     validate-state.sh (catches drift regardless of writer, including direct jq). Prefer the
+     option that ALSO catches a direct jq write, since that is the observed failure mode --
+     enforcing only inside state-write.sh would miss the exact case that motivated this task.
+  3. State the append-only rule explicitly in rules/state-management.md, which currently
+     describes artifact linking formats without ever saying the list is append-only.
+  4. Add a MUST NOT to the implementation agents that write state.json directly: never assign
+     .artifacts wholesale; append, or call the helper.
+
+VERIFICATION BAR:
+  - A fixture write that drops an existing artifact path is REJECTED (or loudly flagged by the
+    validator), and the same write with the opt-in flag is accepted. Both directions executed.
+  - A normal additive link still succeeds unchanged; existing link_artifact / skill_link_artifacts
+    call sites are unaffected.
+  - The check triggers on a direct jq-composed write, not only on state-write.sh traffic.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 1005. roadmap_items is never derived by any implement path, so /todo's ROADMAP sync is dead in practice
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 1004
+
+**Description**: /todo documents a producer/consumer contract for ROADMAP.md synchronisation in which /implement
+is the producer. The consumer half is fully built; the producer half computes nothing, so the
+feature has never functioned.
+
+WHAT EXISTS (the consumer and the write path -- both fine, do not rebuild):
+  - agent-system/extensions/core/commands/todo.md:1122 states the contract explicitly:
+    "/implement is the **producer**: populates completion_summary and optional roadmap_items".
+  - todo.md's Step 3.5 matcher implements a three-priority strategy: (1) explicit roadmap_items,
+    (2) exact `(Task N)` references in ROADMAP.md, (3) summary-based search.
+  - skill_propagate_completion_summary (agent-system/extensions/core/scripts/skill-base.sh:526-551)
+    WRITES roadmap_items to state.json correctly when handed a non-empty value, routed through
+    state-write.sh, correctly skipping task_type == "meta" and empty/`[]` values.
+
+WHAT IS MISSING: nothing anywhere DERIVES the value passed as that third argument. Grep of the
+full source store finds write sites and schema references but no derivation logic. So the helper
+is called with an empty value and the write is skipped every time.
+
+CONSEQUENCE, MEASURED: on a real archival run, 24 consecutive completed tasks were archived and
+produced ZERO roadmap annotations, while 8 unchecked items sat in ROADMAP.md -- several plainly
+related to the work just completed. All three matcher priorities missed:
+  - Priority 1 found no task carrying a roadmap_items field (none has ever been populated).
+  - Priority 2 found no `(Task N)` references, because ROADMAP.md contains none -- and per the
+    repo's own no-task-references-in-deliverables rule, ROADMAP.md arguably should not contain
+    them, which makes Priority 2 structurally unreliable rather than merely unused.
+  - Priority 3 is an explicit unimplemented placeholder in todo.md ("not currently implemented").
+So the roadmap silently drifts from reality, and the drift is invisible: /todo reports success
+with "0 roadmap items updated" and no warning that its only functioning matcher found nothing.
+
+WORK:
+  1. Decide where derivation belongs and state why. Candidates: the implementation agent proposes
+     roadmap_items in its return metadata (agent judgement, no new matching machinery); or a
+     script matches completion_summary against ROADMAP.md text at postflight (deterministic,
+     testable, but needs a matching heuristic that Priority 3 was never given).
+     Prefer the option that does not invent a fuzzy matcher -- an agent naming which roadmap
+     items its work closed is both cheaper and more accurate than post-hoc string similarity.
+  2. Implement derivation on the chosen path and thread it into the EXISTING
+     skill_propagate_completion_summary call sites. Do not add a second write path.
+  3. Make an empty result visible rather than silent: when /todo archives non-meta tasks and
+     matches zero roadmap items, it must say so distinctly from "there was nothing to match".
+     A silent 0 is what allowed this to go unnoticed across 24 tasks.
+  4. Either implement Priority 3 or delete it. A documented placeholder that reads as a working
+     tier is worse than an honest two-tier matcher.
+  5. Reconcile Priority 2 with the no-task-references-in-deliverables rule. If `(Task N)` markers
+     are not permitted in ROADMAP.md, say so in todo.md and stop presenting Priority 2 as a
+     general mechanism.
+
+VERIFICATION BAR:
+  - A completed non-meta task with a roadmap-related completion_summary produces a populated
+    roadmap_items in state.json, and a subsequent /todo run annotates the matching ROADMAP.md
+    item. Demonstrated end to end on a fixture, not argued.
+  - A task whose work matches no roadmap item produces an explicit "no match" report.
+  - task_type == "meta" still writes no roadmap_items (existing behaviour preserved).
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 1004. Fix /todo repository-metrics sync: build_errors is structurally always 0 and the technical_debt frontmatter target does not exist
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: /todo's "Sync Repository Metrics" stage cannot report a true build-health signal, and half of it writes to a target that does not exist. Both defects are live in the source store and were observed on a real /todo run.
+
+DEFECT 1 -- build_errors is unconditionally 0 (agent-system/extensions/core/commands/todo.md:757-762):
+
+    # Build errors (0 if project-specific lint/check passes)
+    if make check 2>/dev/null || npm run lint 2>/dev/null || true; then
+      build_errors=0
+    else
+      build_errors=1
+    fi
+
+The trailing `|| true` makes the `if` condition unconditionally true, so the `else` branch is
+unreachable and `build_errors` is ALWAYS 0. Downstream, `repository_health.status` is derived as
+`(if build_errors == 0 then "healthy" else "needs_attention" end)`, so the status field is always
+"healthy" no matter the actual state of the repository. The field carries no information while
+looking authoritative -- the worst failure mode for a health signal.
+
+A second, subtler problem sits behind the same lines: `make check` / `npm run lint` are the only
+probes, and they are wrong for most repos this system is deployed into (Python/pytest, Lean/lake,
+Nix). Even with the `|| true` removed, a repo with neither a Makefile nor package.json would take
+the `else` branch and report `build_errors=1` -- a false RED replacing the current false GREEN.
+The fix must address the probe, not merely the boolean.
+
+DEFECT 2 -- the technical_debt frontmatter block does not exist (todo.md:783-800 vs
+agent-system/extensions/core/scripts/generate-todo.sh:315-323):
+
+todo.md Step 5.7.3 instructs: "Read TODO.md and update the YAML frontmatter `technical_debt`
+section to match state.json", and shows a `technical_debt:` / `repository_health:` block to write.
+But generate-todo.sh emits ONLY `next_project_number` into the frontmatter:
+
+    printf 'next_project_number: %s\n' "$next_num"
+
+So there is no `technical_debt` block to update. Worse, TODO.md is generated from state.json --
+any hand-written frontmatter block would be destroyed on the next generate-todo.sh run, which
+/todo itself triggers. The instruction is unexecutable as written, and executing it literally
+would produce work that is silently discarded.
+
+OBSERVED: on a real /todo run the recorded repository_health was `todo_count: 8, fixme_count: 0,
+build_errors: 0, status: "healthy"`, last assessed ~2 months earlier. Actual measured counts were
+41 TODO and 2 FIXME. The stale figures had never been corrected because the sync stage had never
+produced a meaningful result.
+
+WORK:
+  1. Decide and document what `build_errors` is actually supposed to mean. Two coherent readings:
+     (a) "the tree is structurally sound" -- importable/parseable/collectable; or
+     (b) "the project's own check command passes". These are different signals with different
+     costs; (a) is cheap and portable, (b) is expensive and repo-specific. Pick one, state it
+     where the field is defined, and make status derivation match. Do NOT leave a field whose
+     meaning must be inferred from a broken heuristic.
+  2. Implement the chosen probe so it can actually fail. Remove the `|| true`. If no probe is
+     applicable to the repo, the honest value is "not measured", not 0 and not 1 -- if the schema
+     cannot express that, extend it rather than picking a misleading number.
+  3. Resolve Defect 2 in ONE direction, not both: either (a) teach generate-todo.sh to emit the
+     technical_debt/repository_health frontmatter from state.json, making it generated like every
+     other part of TODO.md and making Step 5.7.3 a no-op that can be deleted; or (b) delete Step
+     5.7.3 and let state.json be the sole home for repository_health. Option (a) is preferred only
+     if the frontmatter has a real consumer -- verify that first; if it has none, take (b).
+  4. Mirror the change into skill-todo/SKILL.md, which describes the same stage.
+
+VERIFICATION BAR:
+  - A fixture repo whose check command FAILS produces a non-zero/failed build_errors and a status
+    that is not "healthy". This must be an executed test, not a reasoned claim -- the current bug
+    is precisely a condition that was never exercised in its failing direction.
+  - A fixture repo with no recognised check command does not silently report either 0 or 1.
+  - Running generate-todo.sh twice in a row leaves the frontmatter byte-identical (no
+    hand-written block is destroyed, no drift is introduced).
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 1003. Fix lean-sorry-census.sh double-counting warn.sorry suppression annotations
 - **Status**: [NOT STARTED]
@@ -118,12 +321,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1002. Author the context tier-semantics standard for the derived tier classification
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 998
 - **Research**: [1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md]
 - **Plan**: [1002_context_tier_semantics_doc/plans/01_context-tier-semantics.md]
+- **Summary**: [1002_context_tier_semantics_doc/summaries/01_context-tier-semantics-summary.md]
 
 **Description**: Author a context file that states the tier-classification semantics for context index entries. The meta-catch-all decomposition task converted validate-context-budgets.sh from reading a never-populated authored `tier` field to deriving tier algorithmically from load_when shape, at all four former read sites. The derivation is now real and load-bearing, but its ONLY authority is the derived_tier jq function and its header comment inside that one script -- there is no context file a human or an agent can read to learn what the tiers mean or why an entry lands in one.
 
@@ -165,7 +369,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1001. Fix lean mirror entry load-order defect; audit duplicated index paths
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 992, Task 1000
@@ -455,7 +659,7 @@ SOURCE-STORE RULE (binding): any fixes spun out of this task target agent-system
 ---
 
 ### 995. Convert surviving extension state.json writers to state-write.sh
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 983, Task 984
