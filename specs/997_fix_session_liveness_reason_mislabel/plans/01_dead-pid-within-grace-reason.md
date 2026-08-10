@@ -1,7 +1,7 @@
 # Implementation Plan: Report a confirmably-dead pid within the grace floor as its own liveness reason
 
 - **Task**: 997 - Report a confirmably-dead pid within the grace floor as its own liveness reason
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/997_fix_session_liveness_reason_mislabel/reports/01_verify-liveness-reason-ladder.md
@@ -114,26 +114,28 @@ No ROADMAP.md consulted for this task.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Ladder fix, docstring, and reason-string test assertions [NOT STARTED]
+### Phase 1: Ladder fix, docstring, and reason-string test assertions [COMPLETED]
 
 **Goal**: `session_liveness()` emits `dead-pid-within-grace` for a confirmably-dead pid at or
 below the grace floor, with the verdict unchanged, and both test suites now assert the reason
 string for that branch.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/task-lock.sh`, `session_liveness()`: add a
+- [x] In `agent-system/extensions/core/scripts/task-lock.sh`, `session_liveness()`: add a
       `pid_dead=false` local, set it to `true` inside the existing `if ! kill -0 "$pid"` block
       (alongside, not replacing, the existing `age -gt SESSION_REGISTRY_DEAD_PID_MIN` ->
       `reason="dead-pid"` assignment), and extend the final `if [ -z "$reason" ]` fallback to test
       `pid_dead` FIRST:
       `if [ "$pid_dead" = true ]; then reason="dead-pid-within-grace"; elif [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then reason="pid-alive"; else reason="undeterminable"; fi`
-- [ ] Confirm by reading that the `corrupt` early-return, the `dead-pid` branch, the
+      *(completed)*
+- [x] Confirm by reading that the `corrupt` early-return, the `dead-pid` branch, the
       `stale-heartbeat` branch, and the two threshold comparisons are all untouched — the
-      evaluation ORDER must remain byte-for-byte as it is today.
-- [ ] Update the `session_liveness` docstring comment block directly above the function: add the
+      evaluation ORDER must remain byte-for-byte as it is today. *(completed)*
+- [x] Update the `session_liveness` docstring comment block directly above the function: add the
       `dead-pid-within-grace` entry (place it immediately after `dead-pid` to mirror evaluation
       order), and change the `corrupt` line's "short-circuits the other four" to "the other five".
-- [ ] In `agent-system/extensions/core/scripts/test-session-registry.sh`, insert a new case
+      *(completed)*
+- [x] In `agent-system/extensions/core/scripts/test-session-registry.sh`, insert a new case
       (label it `5a` to avoid renumbering the existing 6-10; the harness's pass/fail helpers take
       free-form label strings and no parser reads them) between the reap-fixture write block and
       Case 6's dry-run. It calls `"$TL" session-list` against the full untouched fixture set and
@@ -142,22 +144,25 @@ string for that branch.
       `sess_dead_old` -> `liveness_reason == "dead-pid"` AND `live == false`;
       `sess_live_young` -> `liveness_reason == "pid-alive"` AND `live == true`.
       Placing it before Case 6 is required: `sess_dead_old` is reaped by the later live reap and
-      would no longer be listable.
-- [ ] In the same file, extend Case 6's dry-run assertion to additionally require that
+      would no longer be listable. *(completed)*
+- [x] In the same file, extend Case 6's dry-run assertion to additionally require that
       `$dry_run_out` does NOT contain a `would reap:` line naming `sess_dead_young` (the
       verification bar's "`session-reap --dry-run` does not select it" clause, currently asserted
-      only for the live reap in Case 8).
-- [ ] In `agent-system/extensions/core/scripts/test-conflict-predicate.sh`, add a case `4.2b`
+      only for the live reap in Case 8). *(completed)*
+- [x] In `agent-system/extensions/core/scripts/test-conflict-predicate.sh`, add a case `4.2b`
       immediately after existing case 4.2, reusing `write_session_fixture` with a below-floor age:
       `write_session_fixture "sess_dead_grace" "$DEAD_PID" '[899]' '["g4/clean"]' 5`. Assert both
       halves of the contend-set claim: (a) `"$TL" session-list` reports
       `liveness_reason == "dead-pid-within-grace"` with `live == true` for it, and (b)
       `"$BA" --session-id "sess_caller" 820` returns `decision == "defer"` with
       `defer_reason == "session_active"` and `session_liveness_reason == "dead-pid-within-grace"`.
-      Call `reset_sessions` after, matching the surrounding cases.
-- [ ] Run both suites from the source store so they copy the EDITED `task-lock.sh` (each harness
+      Call `reset_sessions` after, matching the surrounding cases. *(completed)*
+- [x] Run both suites from the source store so they copy the EDITED `task-lock.sh` (each harness
       copies from its own `SCRIPT_DIR`; running the deployed `.claude/scripts/` copies would test
-      the un-redeployed old code and produce a false green).
+      the un-redeployed old code and produce a false green). *(completed: also ran the
+      falsifiability check via `git stash push --keep-index -- task-lock.sh`, confirmed case 5a
+      and case 4.2b both FAIL against the unmodified ladder, then restored the fix and confirmed
+      both suites green)*
 
 **Timing**: 1 hour
 
@@ -277,21 +282,27 @@ additional site found is an in-scope incidental edit for this phase, recorded in
 
 Mapped one-to-one against the task's verification bar:
 
-- [ ] A registry entry with a dead pid and age below the floor reports `dead-pid-within-grace`
+- [x] A registry entry with a dead pid and age below the floor reports `dead-pid-within-grace`
       with `live: true` — test-session-registry.sh case `5a`; test-conflict-predicate.sh case
-      `4.2b` half (a)
-- [ ] `session-reap --dry-run` does not select that entry — test-session-registry.sh Case 6
-      (extended assertion) and Case 8 (live reap, existing)
-- [ ] A registry entry with a dead pid and age above the floor still reports `dead-pid` with
+      `4.2b` half (a) *(completed)*
+- [x] `session-reap --dry-run` does not select that entry — test-session-registry.sh Case 6
+      (extended assertion) and Case 8 (live reap, existing) *(completed)*
+- [x] A registry entry with a dead pid and age above the floor still reports `dead-pid` with
       `live: false` and IS reaped — test-session-registry.sh case `5a` plus existing Case 7
-- [ ] A registry entry with a live pid still reports `pid-alive` — test-session-registry.sh case
-      `5a`
-- [ ] The below-floor entry still CONTENDS (contend-set unchanged) — test-conflict-predicate.sh
+      *(completed)*
+- [x] A registry entry with a live pid still reports `pid-alive` — test-session-registry.sh case
+      `5a` *(completed)*
+- [x] The below-floor entry still CONTENDS (contend-set unchanged) — test-conflict-predicate.sh
       case `4.2b` half (b), `decision == "defer"` / `defer_reason == "session_active"`
-- [ ] `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` passes in full
-- [ ] `bash agent-system/extensions/core/scripts/test-session-registry.sh` passes in full
+      *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` passes in full
+      *(completed: 24 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/test-session-registry.sh` passes in full
+      *(completed: 11 passed, 0 failed)*
 - [ ] `bash .claude/scripts/verify-deploy.sh` passes, including the task-reference lint gate
-- [ ] New assertions demonstrably fail against the pre-fix ladder (falsifiability check, Phase 1)
+      *(pending Phase 2 redeploy)*
+- [x] New assertions demonstrably fail against the pre-fix ladder (falsifiability check, Phase 1)
+      *(completed: verified via `git stash push --keep-index -- task-lock.sh`)*
 
 ## Artifacts & Outputs
 

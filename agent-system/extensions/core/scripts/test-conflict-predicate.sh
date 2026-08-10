@@ -242,6 +242,20 @@ c42_ok=true
 if [ "$c42_ok" = true ]; then pass "4.2: a dead-pid session does not contend"; else fail "4.2: dead-pid-excluded case failed (see INFO lines above)"; fi
 reset_sessions
 
+# 4.2b dead-pid-within-grace (below the SESSION_REGISTRY_DEAD_PID_MIN floor) STILL contends --
+# the verdict must be unchanged even though the reason string now differs from pid-alive.
+write_session_fixture "sess_dead_grace" "$DEAD_PID" '[899]' '["g4/clean"]' 5
+list_42b=$("$TL" session-list 2>/dev/null | jq -c 'select(.session_id=="sess_dead_grace")')
+v42b=$("$BA" --session-id "sess_caller" 820 2>/dev/null | jq -c '.')
+c42b_ok=true
+[ "$(echo "$list_42b" | jq -r '.liveness_reason')" = "dead-pid-within-grace" ] || { c42b_ok=false; info "sess_dead_grace liveness_reason was not dead-pid-within-grace: $list_42b"; }
+[ "$(echo "$list_42b" | jq -r '.live')" = "true" ] || { c42b_ok=false; info "sess_dead_grace live was not true: $list_42b"; }
+[ "$(echo "$v42b" | jq -r '.decision')" = "defer" ] || { c42b_ok=false; info "sess_dead_grace (dead-pid-within-grace) did not defer: $v42b"; }
+[ "$(echo "$v42b" | jq -r '.defer_reason // empty')" = "session_active" ] || { c42b_ok=false; info "sess_dead_grace defer_reason was not session_active: $v42b"; }
+[ "$(echo "$v42b" | jq -r '.session_liveness_reason // empty')" = "dead-pid-within-grace" ] || { c42b_ok=false; info "sess_dead_grace session_liveness_reason was not dead-pid-within-grace: $v42b"; }
+if [ "$c42b_ok" = true ]; then pass "4.2b: a dead-pid-within-grace session (below the floor) still contends"; else fail "4.2b: dead-pid-within-grace-still-contends case failed (see INFO lines above)"; fi
+reset_sessions
+
 # 4.3 stale-heartbeat does not contend
 write_session_fixture "sess_stale" "$$" '[899]' '["g4/clean"]' 300
 v43=$("$BA" --session-id "sess_caller" 820 2>/dev/null | jq -c '.')

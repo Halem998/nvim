@@ -1314,21 +1314,26 @@ cmd_session_release() {
 #
 # Prints "<age_minutes> <liveness_reason>" on stdout (space-separated, exactly two tokens).
 # liveness_reason is one of:
-#   corrupt          - entry file is missing/unparseable JSON. age falls back to the file's own
-#                       mtime. Checked FIRST and short-circuits the other four -- a corrupt
-#                       entry's pid/heartbeat fields cannot be trusted at all.
-#   dead-pid         - pid is a parseable integer, `kill -0 $pid` FAILS (pid confirmably gone),
-#                       AND age > SESSION_REGISTRY_DEAD_PID_MIN.
+#   corrupt                 - entry file is missing/unparseable JSON. age falls back to the
+#                              file's own mtime. Checked FIRST and short-circuits the other five
+#                              -- a corrupt entry's pid/heartbeat fields cannot be trusted at all.
+#   dead-pid                - pid is a parseable integer, `kill -0 $pid` FAILS (pid confirmably
+#                              gone), AND age > SESSION_REGISTRY_DEAD_PID_MIN.
+#   dead-pid-within-grace   - pid is a parseable integer, `kill -0 $pid` FAILS (pid confirmably
+#                              gone), but age does NOT exceed SESSION_REGISTRY_DEAD_PID_MIN -- the
+#                              grace floor holds the verdict at live:true, but the reason no
+#                              longer claims the process is alive.
 #   stale-heartbeat  - not dead-pid, and age > SESSION_REGISTRY_REAP_MIN. "pid alive" is NEVER
 #                       treated as proof of liveness on its own; this band is always the
 #                       fallback regardless of pid state.
-#   pid-alive        - not dead-pid, not stale-heartbeat, and pid is a parseable integer for
-#                       which `kill -0` succeeded.
-#   undeterminable   - not dead-pid, not stale-heartbeat, and pid is empty/non-numeric (liveness
-#                       cannot be confirmed either way from the pid signal alone).
+#   pid-alive        - not dead-pid, not dead-pid-within-grace, not stale-heartbeat, and pid is a
+#                       parseable integer for which `kill -0` succeeded.
+#   undeterminable   - not dead-pid, not dead-pid-within-grace, not stale-heartbeat, and pid is
+#                       empty/non-numeric (liveness cannot be confirmed either way from the pid
+#                       signal alone).
 session_liveness() {
   local f="$1"
-  local pid age reason=""
+  local pid age reason="" pid_dead=false
 
   if ! jq -e . "$f" >/dev/null 2>&1; then
     local file_mtime
@@ -1347,6 +1352,7 @@ session_liveness() {
 
   if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
     if ! kill -0 "$pid" 2>/dev/null; then
+      pid_dead=true
       if [ "$age" -gt "$SESSION_REGISTRY_DEAD_PID_MIN" ]; then
         reason="dead-pid"
       fi
@@ -1358,7 +1364,9 @@ session_liveness() {
   fi
 
   if [ -z "$reason" ]; then
-    if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
+    if [ "$pid_dead" = true ]; then
+      reason="dead-pid-within-grace"
+    elif [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
       reason="pid-alive"
     else
       reason="undeterminable"

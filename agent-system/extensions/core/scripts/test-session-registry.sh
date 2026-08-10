@@ -231,6 +231,42 @@ corrupt_epoch=$(( $(now_epoch) - (300 * 60) ))
 touch -d "@$corrupt_epoch" "$SESSIONS_DIR/sess_corrupt.json"
 
 # =====================================================================
+# Case 5a: session-list reports liveness_reason correctly across the dead-pid-within-grace
+# boundary -- dead-pid-within-grace (below floor), dead-pid (above floor), pid-alive (live pid).
+# Run against the full untouched fixture set, BEFORE Case 6/7/8's live reap consumes
+# sess_dead_old (it would no longer be listable afterward).
+# =====================================================================
+list_out=$("$TL" session-list 2>&1)
+list_exit=$?
+
+c5a_ok=true
+[ "$list_exit" -eq 0 ] || { c5a_ok=false; info "session-list exit code was $list_exit, expected 0"; }
+
+dead_young_entry=$(echo "$list_out" | jq -c 'select(.session_id=="sess_dead_young")' 2>/dev/null)
+dead_young_reason=$(echo "$dead_young_entry" | jq -r '.liveness_reason' 2>/dev/null)
+dead_young_live=$(echo "$dead_young_entry" | jq -r '.live' 2>/dev/null)
+[ "$dead_young_reason" = "dead-pid-within-grace" ] || { c5a_ok=false; info "sess_dead_young liveness_reason was '$dead_young_reason', expected dead-pid-within-grace"; }
+[ "$dead_young_live" = "true" ] || { c5a_ok=false; info "sess_dead_young live was '$dead_young_live', expected true"; }
+
+dead_old_entry=$(echo "$list_out" | jq -c 'select(.session_id=="sess_dead_old")' 2>/dev/null)
+dead_old_reason=$(echo "$dead_old_entry" | jq -r '.liveness_reason' 2>/dev/null)
+dead_old_live=$(echo "$dead_old_entry" | jq -r '.live' 2>/dev/null)
+[ "$dead_old_reason" = "dead-pid" ] || { c5a_ok=false; info "sess_dead_old liveness_reason was '$dead_old_reason', expected dead-pid"; }
+[ "$dead_old_live" = "false" ] || { c5a_ok=false; info "sess_dead_old live was '$dead_old_live', expected false"; }
+
+live_young_entry=$(echo "$list_out" | jq -c 'select(.session_id=="sess_live_young")' 2>/dev/null)
+live_young_reason=$(echo "$live_young_entry" | jq -r '.liveness_reason' 2>/dev/null)
+live_young_live=$(echo "$live_young_entry" | jq -r '.live' 2>/dev/null)
+[ "$live_young_reason" = "pid-alive" ] || { c5a_ok=false; info "sess_live_young liveness_reason was '$live_young_reason', expected pid-alive"; }
+[ "$live_young_live" = "true" ] || { c5a_ok=false; info "sess_live_young live was '$live_young_live', expected true"; }
+
+if [ "$c5a_ok" = true ]; then
+  pass "5a: session-list reports dead-pid-within-grace/dead-pid/pid-alive correctly at the grace-floor boundary"
+else
+  fail "5a: dead-pid-within-grace reason-string case failed (see INFO lines above)"
+fi
+
+# =====================================================================
 # Case 6: session-reap --dry-run removes nothing (run FIRST, against the full fixture)
 # =====================================================================
 dry_run_out=$("$TL" session-reap --dry-run 2>&1)
@@ -243,9 +279,10 @@ for f in sess_dead_old sess_dead_young sess_live_stale sess_live_young sess_corr
 done
 echo "$dry_run_out" | grep -qF "sess_dead_old" || { c6_ok=false; info "dry-run output missing sess_dead_old"; }
 echo "$dry_run_out" | grep -q "would reap" || { c6_ok=false; info "dry-run output missing 'would reap'"; }
+echo "$dry_run_out" | grep -E "would reap.*sess_dead_young" >/dev/null && { c6_ok=false; info "dry-run output incorrectly selected sess_dead_young (dead-pid-within-grace must not be reaped)"; }
 
 if [ "$c6_ok" = true ]; then
-  pass "6: session-reap --dry-run reports would-reap candidates and removes nothing"
+  pass "6: session-reap --dry-run reports would-reap candidates, removes nothing, and does not select sess_dead_young"
 else
   fail "6: dry-run case failed (see INFO lines above)"
 fi
