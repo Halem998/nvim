@@ -1,7 +1,23 @@
 {
   "version": "1.1.0",
-  "next_project_number": 1016,
+  "next_project_number": 1017,
   "active_projects": [
+    {
+      "project_number": 1016,
+      "project_name": "fix_command_register_acquire_session_id_parity",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Fix the register-bare/acquire-suffixed session-id pattern in the research.md, plan.md, and implement.md command files.\n\nTARGET: agent-system/extensions/core/commands/research.md, agent-system/extensions/core/commands/plan.md, agent-system/extensions/core/commands/implement.md.\n\nCONTEXT: skill-orchestrate/SKILL.md carried a defect where the in-flight session registry was registered under the bare session_id but the per-task lock was acquired and released under a task-suffixed variant. Because the session-contention self-exclusion is an exact string match, the batch never recognized its own registration and every acquire aborted deterministically. That defect was fixed in skill-orchestrate, and the fix recorded that these three multi-task command files exhibit the structurally identical register-bare/acquire-suffixed pattern and are likely to carry the same latent bug.\n\nWORK: verify whether each of the three command files actually reproduces the defect (the registration site, the acquire/release sites, and any dispatch context whose session_id feeds a downstream task-lock heartbeat call). Unify the session-id used across register/acquire/release/heartbeat in each file that is affected. Extend the existing register/acquire parity regression coverage to cover these consumers rather than adding a parallel test harness.\n\nREFERENCE: the parity invariant is stated in agent-system/extensions/core/context/patterns/task-lock.md (Consumers section); the existing regression group lives in agent-system/extensions/core/scripts/test-conflict-predicate.sh.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "topic": "orchestration-concurrency",
+      "created": "2026-08-10T15:19:39Z",
+      "last_updated": "2026-08-10T15:19:39Z",
+      "file_scope": [
+        "agent-system/extensions/core/commands/research.md",
+        "agent-system/extensions/core/commands/plan.md",
+        "agent-system/extensions/core/commands/implement.md",
+        "agent-system/extensions/core/scripts/test-conflict-predicate.sh"
+      ]
+    },
     {
       "project_number": 1011,
       "project_name": "expand_defect_class_vocabulary",

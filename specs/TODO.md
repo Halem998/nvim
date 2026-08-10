@@ -1,5 +1,5 @@
 ---
-next_project_number: 1016
+next_project_number: 1017
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 1016
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 1004,1007,1010,1011,1012,1013,1014,1015 | -- | agent-system |
+| 1 | 1004,1007,1010,1011,1012,1013,1014,1015,1016 | -- | agent-system, orchestration-concurrency |
 | 2 | 1005,1009 | 1004,1015 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
@@ -31,7 +31,32 @@ next_project_number: 1016
 1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
   └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 
+### Orchestration Concurrency
+
+1016 [NOT STARTED] — Fix the register-bare/acquire-suffixed session-id pattern in the 
+
 ## Tasks
+
+### 1016. Fix command register acquire session id parity
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: None
+
+**Description**: Fix the register-bare/acquire-suffixed session-id pattern in the research.md, plan.md, and implement.md command files.
+
+TARGET: agent-system/extensions/core/commands/research.md, agent-system/extensions/core/commands/plan.md, agent-system/extensions/core/commands/implement.md.
+
+CONTEXT: skill-orchestrate/SKILL.md carried a defect where the in-flight session registry was registered under the bare session_id but the per-task lock was acquired and released under a task-suffixed variant. Because the session-contention self-exclusion is an exact string match, the batch never recognized its own registration and every acquire aborted deterministically. That defect was fixed in skill-orchestrate, and the fix recorded that these three multi-task command files exhibit the structurally identical register-bare/acquire-suffixed pattern and are likely to carry the same latent bug.
+
+WORK: verify whether each of the three command files actually reproduces the defect (the registration site, the acquire/release sites, and any dispatch context whose session_id feeds a downstream task-lock heartbeat call). Unify the session-id used across register/acquire/release/heartbeat in each file that is affected. Extend the existing register/acquire parity regression coverage to cover these consumers rather than adding a parallel test harness.
+
+REFERENCE: the parity invariant is stated in agent-system/extensions/core/context/patterns/task-lock.md (Consumers section); the existing regression group lives in agent-system/extensions/core/scripts/test-conflict-predicate.sh.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 1015. Re-check settings.local.json deploy merge for content loss before any fix effort
 - **Status**: [NOT STARTED]
