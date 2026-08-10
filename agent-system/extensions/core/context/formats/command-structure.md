@@ -822,11 +822,14 @@ Benefit: Clear separation, easy to test, flexible composition
 
 <state_management>
   <write>
-    # Hand-rolled, unprotected direct write to state.json -- bypasses the mutex-guarded single
-    # writer (scripts/state-write.sh) every other writer in this codebase shares, and can
-    # corrupt state.json under concurrent writers:
-    jq ".active_projects[] | select(.project_number == $task_number) | .status = \"completed\"" specs/state.json > tmp.json
-    mv tmp.json specs/state.json
+    # Command file reaches into specs/state.json on its own instead of delegating the status
+    # transition to the skill lifecycle. Even written against the mutex-guarded single writer,
+    # this bypasses update-task-status.sh -- so TODO.md, the status marker, and any
+    # lifecycle-owned bookkeeping drift out of sync with the state entry it just edited:
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).status = "completed"' \
+      --session-id "$session_id" \
+      --argjson num "$task_number"
   </write>
 </state_management>
 ```
@@ -849,7 +852,7 @@ Benefit: Clear separation, easy to test, flexible composition
 
     # If a lower-level script must write specs/state.json directly (outside the skill
     # lifecycle), call scripts/state-write.sh -- the single mutex-guarded writer. Never
-    # hand-roll `jq ... > tmp.json; mv tmp.json ...` directly; that is exactly the race
+    # hand-roll a jq-to-tempfile-then-rename sequence of your own; that is exactly the race
     # state-write.sh exists to eliminate.
   </write>
 </state_management>

@@ -665,16 +665,18 @@ bash .claude/scripts/generate-todo.sh \
 **6. Track in review state:**
 ```bash
 # Add task numbers to review entry
-jq --argjson tasks "[${task_nums}]" \
+bash .claude/scripts/state-write.sh \
    '.reviews[-1].tasks_created = $tasks' \
-   specs/reviews/state.json > specs/reviews/state.json.tmp && \
-   mv specs/reviews/state.json.tmp specs/reviews/state.json
+   --session-id "$session_id" \
+   --state-file specs/reviews/state.json \
+   --argjson tasks "[${task_nums}]"
 
 # Update statistics
-jq --argjson count "${task_count}" \
+bash .claude/scripts/state-write.sh \
    '.statistics.total_tasks_created += $count' \
-   specs/reviews/state.json > specs/reviews/state.json.tmp && \
-   mv specs/reviews/state.json.tmp specs/reviews/state.json
+   --session-id "$session_id" \
+   --state-file specs/reviews/state.json \
+   --argjson count "${task_count}"
 ```
 
 #### 5.6.4. Duplicate Prevention
