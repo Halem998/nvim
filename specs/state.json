@@ -42,7 +42,7 @@
     {
       "project_number": 999,
       "project_name": "per_agent_context_budget_reduction",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Reduce the 8 per-agent context budget overruns",
@@ -51,7 +51,8 @@
         "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/nvim/index-entries.json",
         "agent-system/extensions/nix/index-entries.json",
-        "agent-system/extensions/core/scripts/validate-context-budgets.sh"
+        "agent-system/extensions/core/scripts/validate-context-budgets.sh",
+        "agent-system/extensions/memory/index-entries.json"
       ],
       "dependencies": [
         991,
@@ -61,7 +62,7 @@
         1002
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T07:27:53Z",
+      "last_updated": "2026-08-10T07:28:06Z",
       "artifacts": [
         {
           "path": "specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md",
@@ -578,7 +579,7 @@
       "project_number": 1003,
       "project_name": "fix_lean_sorry_census_warn_sorry_double_count",
       "title": "Fix lean-sorry-census.sh double-counting warn.sorry suppression annotations",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [],
@@ -588,12 +589,17 @@
       ],
       "description": "lean-sorry-census.sh counts every `set_option warn.sorry false in` suppression annotation as a\nphantom extra sorry, on top of the real sorry that annotation exists to suppress. The census is\ntherefore inflated by exactly the number of own-line suppression annotations in the scanned scope.\n\nROOT CAUSE (agent-system/extensions/lean/scripts/lean-sorry-census.sh, line 144):\n    sorry_re = re.compile(r'\\bsorry\\b')\n`.` is a non-word character, so `\\b` matches between `warn` and `.sorry`. The regex therefore\nmatches the \"sorry\" substring inside \"warn.sorry\" -- and inside any other dotted-qualified name\nending in `.sorry`. The script's comment/docstring/string-literal stripper runs BEFORE this scan\nand correctly removes commented-out and string-literal sorries; the stripper is not the problem.\nThe final regex match is the only broken piece.\n\nCOUNTING IS PER-LINE, NOT PER-OCCURRENCE (line 158):\n    if sorry_re.search(line): total += 1\nThis detail was discovered while verifying the bug and materially shapes the fix and its test.\nConsequences:\n  - Phantom inflation occurs ONLY when `set_option warn.sorry false in` sits on its own line.\n    All 18 instances in the reference corpus do, which is why the observed delta equals the\n    occurrence count there.\n  - When the annotation shares a line with the sorry it suppresses\n    (`set_option warn.sorry false in theorem foo : P := sorry`), the buggy regex and a correct\n    regex BOTH yield 1 for that line, so this form does not currently inflate the count -- but a\n    careless fix (e.g. skipping any line containing `warn.sorry`) would wrongly drop it to 0.\n    The fix must not regress this case.\n\nEVIDENCE (independently verified twice, most recently 2026-08-09 against ~/Projects/cslib):\n  - Repo-wide census: 45 reported = 27 real + 18 phantom.\n  - Cslib/Logics/Bimodal: 41 reported = 23 real + 18 phantom.\n  - The 27 and 23 figures independently match the pre-existing ROADMAP.md census and a separate\n    hand-audited scope.\n  - Direct regex comparison over Cslib/**/*.lean (pre-stripping, hence higher absolute numbers):\n    naive `\\bsorry\\b` = 199, corrected `(?<![.\\w])sorry\\b` = 181, delta = 18, and the count of\n    `warn.sorry` occurrences = 18. Exact match.\n  - A naive grep-style count that skips the block-comment/docstring stripper gives 152 repo-wide,\n    confirming the stripper itself is correct and valuable.\n\nWORK:\n  1. Replace the line-144 regex with the negative-lookbehind form `(?<![.\\w])sorry\\b` (verified\n     working by two independent parties). The `\\w` term is redundant with the existing `\\b` and is\n     retained only for explicitness; excluding a preceding `.` is the substantive change, and it\n     correctly covers every dotted-qualified `*.sorry` name, not just `warn.sorry`.\n     An equivalent accepted alternative is a line-level pre-filter that skips any line whose\n     stripped content is exactly the `set_option warn.sorry false in` directive -- but note this\n     alternative must still handle the same-line form above, so the regex fix is preferred.\n  2. PRESERVE strip_lean_comments() (lines 91-141) BYTE-UNCHANGED. It is correct and is the\n     script's valuable part. However, its docstring at line 96 explicitly references \"the\n     \\bsorry\\b scan\" it feeds; that one reference must be updated to name the corrected regex so\n     the docstring does not go stale. This is a comment-text edit inside the function's docstring,\n     not a change to the stripping logic -- the logic body stays byte-identical.\n  3. Add a regression fixture. None exists today: `find agent-system -iname \"*sorry*\"` returns only\n     the script itself, so this is new test scaffolding under agent-system/extensions/lean/.\n     The fixture MUST cover BOTH forms:\n       (a) own-line annotation:\n             set_option warn.sorry false in\n             theorem foo : P := sorry\n           -> must count as exactly 1 (today: 2)\n       (b) same-line annotation:\n             set_option warn.sorry false in theorem bar : Q := sorry\n           -> must count as exactly 1 (not 0, not 2) -- this pins the per-line semantics and\n              guards against an over-aggressive line-skipping fix.\n     Include N annotations and M real sorries and assert the census reports M. Also include at\n     least one commented-out sorry and one string-literal sorry so the fixture simultaneously\n     guards the stripper against future regression.\n  4. Verify with the script's own `--cross-check` flag, which already exists (flag parsing at\n     line 53, comparison logic at lines 179-189) and is the intended verification oracle. It\n     compares the stripper count against `lake build`'s \"declaration uses 'sorry'\" warning count,\n     which is comment- and annotation-immune by construction. A post-fix run must report\n     `cross_check: MATCH` on a scope where it previously reported MISMATCH.\n\nPRIOR STATE: the only recent commit touching this script is 8dcb6d92e, a task-number-reference\npurge (3 files, 3 insertions / 3 deletions, rewriting a citation string in a comment). It did not\ntouch the matching logic. The bug is live in the source store.\n\nPROVENANCE: this originated in the cslib repository, where the target path pointed outside that\nrepo. It is recreated in this global root because the source store lives here; a fix applied under\ncslib's gitignored .claude/ deploy tree would be wiped on the next regeneration.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-09T23:31:11Z",
-      "last_updated": "2026-08-10T07:27:54Z",
+      "last_updated": "2026-08-10T07:46:40Z",
       "artifacts": [
         {
           "path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md",
           "type": "report",
           "summary": "Verifies the warn.sorry double-count root cause (line 144 \\bsorry\\b regex crossing the '.' boundary), independently confirms the (?<![.\\w])sorry\\b fix against 5 discriminating cases including the same-line non-regression case, traces the real sorry_count==0 downstream gate in lean-implementation-agent.md and cslib-implementation-agent.md, and specifies a new toolchain-free regression fixture under a new agent-system/extensions/lean/scripts/tests/ directory."
+        },
+        {
+          "path": "specs/1003_fix_lean_sorry_census_warn_sorry_double_count/summaries/01_fix-warn-sorry-double-count-summary.md",
+          "type": "summary",
+          "summary": "Full 4-phase implementation summary with test-first evidence, regex diff, and real-corpus differential."
         }
       ],
       "session_id": "sess_1786342011_4592c8_1003"
