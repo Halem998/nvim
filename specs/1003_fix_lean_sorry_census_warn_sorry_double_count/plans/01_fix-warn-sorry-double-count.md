@@ -1,7 +1,7 @@
 # Implementation Plan: Fix lean-sorry-census.sh warn.sorry double-count
 
 - **Task**: 1003 - Fix lean-sorry-census.sh double-counting warn.sorry suppression annotations
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/1003_fix_lean_sorry_census_warn_sorry_double_count/reports/01_fix-warn-sorry-double-count.md
@@ -308,28 +308,41 @@ divergence from 45/27/41/23/18 as corpus drift rather than treating a mismatch a
 
 ---
 
-### Phase 4: Repository gates and hygiene [NOT STARTED]
+### Phase 4: Repository gates and hygiene [COMPLETED]
 
 **Goal**: Confirm the new test file and the edit satisfy the repo's standing lint gates and
 source-store rules.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/check-task-references.sh` — the new test file lives outside
+- [x] Run `bash .claude/scripts/check-task-references.sh` — the new test file lives outside
       `specs/**` and must carry no task-number citation. Fix any finding at the source rather
       than adding an exemption marker unless the finding genuinely falls into the documented
-      exemption taxonomy.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm the lean extension's docs
+      exemption taxonomy. *(completed: PASS, 0 unexempted occurrences across 4 scanned trees)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm the lean extension's docs
       still pass; if the extension README enumerates its scripts, add the new tests directory
-      there in the same style the core extension uses.
-- [ ] Confirm the new file's executable bit and shebang match the core test convention.
-- [ ] Confirm nothing under `.claude/**` was written by this task (`git status --short` shows
+      there in the same style the core extension uses. *(completed: initial run hard-FAILed
+      lean with "script file on disk NOT in provides.scripts: scripts/tests/test-lean-sorry-census.sh";
+      fixed per the next task item; re-run shows lean PASS and all 20 extensions PASS. README.md
+      does not enumerate any scripts, so no README edit applies)*
+- [x] Confirm the new file's executable bit and shebang match the core test convention.
+      *(completed: both 755, both `#!/usr/bin/env bash`)*
+- [x] Confirm nothing under `.claude/**` was written by this task (`git status --short` shows
       only `agent-system/extensions/lean/**` and `specs/1003_*/**`). The lean extension is not
-      loaded in this deploy, so no redeploy is required or appropriate.
-- [ ] Consider whether `agent-system/extensions/lean/manifest.json`'s `provides.scripts` needs the
+      loaded in this deploy, so no redeploy is required or appropriate. *(completed:
+      `git status --short | grep '.claude/'` returns nothing; all task changes confined to
+      `agent-system/extensions/lean/**` and `specs/1003_fix_lean_sorry_census_warn_sorry_double_count/**`;
+      other dirty files in the tree predate this session and belong to concurrent agents)*
+- [x] Consider whether `agent-system/extensions/lean/manifest.json`'s `provides.scripts` needs the
       test path added. Core's test files are not individually listed in `provides`, so the
       default answer is no — record the decision either way rather than leaving it unexamined.
-- [ ] Re-run the fixture suite one final time from a clean shell to confirm it is
-      location-independent and leaves no temp directory behind.
+      *(completed: the plan's stated default was WRONG — core/manifest.json line 160 lists
+      `tests/test-census-count.sh`, and `check-extension-docs.sh` hard-FAILs without a parallel
+      entry. Added `"tests/test-lean-sorry-census.sh"` to `lean/manifest.json`'s
+      `provides.scripts` array. Recorded as a deviation in progress/phase-4-progress.json)*
+- [x] Re-run the fixture suite one final time from a clean shell to confirm it is
+      location-independent and leaves no temp directory behind. *(completed: ran from `/tmp`
+      (unrelated cwd), 8/8 PASS, exit 0; `/tmp` temp-dir count unchanged before/after (139/139),
+      confirming no leftover workdir)*
 
 **Timing**: 30 minutes
 

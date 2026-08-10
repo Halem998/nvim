@@ -35,7 +35,8 @@
       "contracts"
     ],
     "scripts": [
-      "lean-sorry-census.sh"
+      "lean-sorry-census.sh",
+      "tests/test-lean-sorry-census.sh"
     ],
     "hooks": []
   },

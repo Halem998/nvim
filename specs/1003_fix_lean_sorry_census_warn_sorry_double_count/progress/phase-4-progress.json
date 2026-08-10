@@ -1,0 +1,29 @@
+{
+  "phase": 4,
+  "phase_name": "Repository gates and hygiene",
+  "started_at": "2026-08-10T08:12:00Z",
+  "last_updated": "2026-08-10T08:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run check-task-references.sh on new test file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run check-extension-docs.sh; add tests dir to README if extension enumerates scripts", "status": "done", "files_touched": ["agent-system/extensions/lean/manifest.json"]},
+    {"id": 3, "description": "Confirm executable bit/shebang match core convention", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm git status confined to lean extension + specs/1003_* (no .claude/** writes)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Decide on manifest.json provides.scripts inclusion; record decision", "status": "done", "files_touched": ["agent-system/extensions/lean/manifest.json"]},
+    {"id": 6, "description": "Final clean-shell re-run of fixture suite, location-independent, no leftover temp dir", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Assumed manifest.json provides.scripts would not need the new test path (per plan's default hypothesis)", "result": "failed", "reason": "check-extension-docs.sh hard-FAILed with 'script file on disk NOT in provides.scripts'; empirical check of core/manifest.json showed core DOES list tests/test-census-count.sh, contradicting the plan's stated default. Corrected by adding tests/test-lean-sorry-census.sh to lean/manifest.json provides.scripts."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Plan's default hypothesis: 'Core's test files are not individually listed in provides, so the default answer is no'",
+      "type": "altered",
+      "reason": "Empirically false -- core/manifest.json line 160 lists tests/test-census-count.sh. check-extension-docs.sh hard-FAILed until the parallel entry was added for lean.",
+      "annotation": "*(deviation: altered -- added tests/test-lean-sorry-census.sh to manifest.json provides.scripts, correcting the plan's stated default)*"
+    }
+  ],
+  "notes": "check-task-references.sh: PASS, 0 unexempted occurrences. check-extension-docs.sh: initial run hard-FAILed lean extension (script not in provides.scripts); fixed by adding 'tests/test-lean-sorry-census.sh' to agent-system/extensions/lean/manifest.json provides.scripts array; re-run shows lean PASS, all 20 extensions PASS. README.md does not enumerate any scripts (grep for 'script'/'census' returns nothing) so no README edit needed. Executable bit (755) and shebang (#!/usr/bin/env bash) match core's test-census-count.sh exactly. git status --short has zero .claude/** entries; all task-1003 changes confined to agent-system/extensions/lean/** and specs/1003_*/**; other dirty files in the tree (.claude-extensions.json, specs/TODO.md, specs/state.json, .memory/*, literature-pyenv) predate this session (present in the initial git status snapshot) and belong to other concurrent agents, not this task. Final suite re-run from /tmp (unrelated cwd): 8/8 PASS, exit 0, temp-dir count under /tmp unchanged before/after (139 both times) confirming no leftover workdir."
+}
