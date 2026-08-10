@@ -1,8 +1,6 @@
 ---
-next_project_number: 20
+next_project_number: 21
 ---
-
-<!-- Vault transition: 2026-08-10 - Archived to specs/vault/01-vault/ -->
 
 # TODO
 
@@ -13,7 +11,7 @@ next_project_number: 20
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 5,11,12,14,16,17,18,19 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 5,11,12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 6,9,13 | 5,17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -29,6 +27,7 @@ next_project_number: 20
   └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
+20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 
 ### Extensions
 
@@ -39,6 +38,42 @@ next_project_number: 20
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
 
 ## Tasks
+
+### 20. Metrics sync measures a stale git index, inflating build_errors with phantom paths
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: /todo's repository-metrics sync runs before its git commit, so the health probe measures a tree whose git index still points at pre-move paths. Every archived-away file is counted as a structural failure, inflating build_errors and flipping status to "critical" on a healthy tree.
+
+MEASURED EVIDENCE (live /todo run archiving 20 tasks, this is not inherited): Step 5.6 reported
+    {"todo_count":44,"fixme_count":2,"build_errors":89,"status":"critical"}
+Re-running the identical probe after the commit reported build_errors: 1. Of the 89, 88 were phantom and exactly 1 was real (a duplicated case pattern in .opencode/scripts/execute-command.sh, fixed separately; the probe then reported build_errors: 0, status "healthy"). So the reported figure was wrong by 88 and the derived status was wrong outright.
+
+CONFIRMED ROOT CAUSE (two independent contributing defects, both must be addressed):
+
+(1) The probe counts paths that no longer exist. assess-repo-health.sh's enumerate_by_glob builds candidates from `git ls-files -z -- "$glob"` and emits "$ROOT/$rel" with no existence check. Both structural loops then guard only emptiness, not existence:
+        for f in "${SH_FILES[@]}"; do
+          [ -n "$f" ] || continue
+          if ! bash -n "$f" >/dev/null 2>&1; then errors=$((errors + 1)); fi
+A path present in the index but absent on disk fails `bash -n` / `jq empty` for the trivial reason that there is no file to parse, and is scored as a structural error. This is caller-independent: any uncommitted rename, delete, or move produces the same inflation, so the probe is wrong on its own terms and not merely mis-sequenced. total_candidates is also inflated by the same phantom paths, which perturbs the degenerate zero-candidate branch that emits build_errors: null.
+
+(2) /todo sequences the probe against exactly the tree state that triggers (1). commands/todo.md places Step 5.6 (Sync Repository Metrics, calling assess-repo-health.sh at the documented line) after Step 5D's directory moves and Step 5.7's vault operation, but before Step 6's `git add specs/` + commit. The one caller most likely to have just moved hundreds of files measures before recording them.
+
+WORK:
+  1. Make the probe existence-safe: skip candidates that are not present on disk, and exclude them from total_candidates so the null/"unknown" branch stays meaningful. Decide explicitly whether a phantom path should be silently skipped or surfaced as a separate diagnostic field (an index/worktree divergence is itself a signal worth reporting); state the decision and its reasoning.
+  2. Re-sequence /todo so the metrics sync reflects the tree it actually commits. Either move Step 5.6 after Step 6, or have Step 6 re-sync afterward. Do not rely on fix 1 alone to paper over the ordering: fix 1 stops the false inflation, but a pre-commit measurement still describes a tree that is about to change.
+  3. Check for other callers of assess-repo-health.sh with the same pre-commit exposure and note whether each is affected.
+
+ACCEPTANCE: a /todo run that archives at least one task with a directory reports the same build_errors and status as an identical probe run immediately after its commit, and both match the true count for the tree. Demonstrate both directions -- a genuinely broken file must still be counted (a probe that can only ever report zero is not a fix), and a large batch of moved-but-uncommitted files must contribute zero. Report the measured before/after counts explicitly; never an unqualified green.
+
+REGRESSION LOCK: add a test that stages nothing, moves a tracked *.sh or *.json to a new path, runs the probe, and asserts the moved file contributes no error. Without this the defect silently returns on the next refactor of enumerate_by_glob.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 19. Fix opencode agent-fragment path resolution and validator fail-fast
 - **Effort**: 3h
