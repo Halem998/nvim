@@ -1,25 +1,19 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1786322063_3251e8_993",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 993,
-  "findings_count": 6,
+  "session_id": "sess_1786322063_3251e8_993",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/993_promote_schema_gates_to_hard/reports/01_promote-schema-gate-hard.md",
-      "summary": "Confirms both prerequisite remediation tasks landed clean; empirically verifies SCHEMA_CONFORMANCE_GATE_MODE=hard yields exit 0 across all 19 extensions today; identifies the exact edit targets (default assignment line 654 and preceding comment block lines 646-653, plus optional header-bullet polish at lines 40-46) in agent-system/extensions/core/scripts/check-extension-docs.sh, with a recommended replacement comment mirroring INDEX_TRUTH_GATE_MODE's post-promotion style."
+      "type": "plan",
+      "path": "specs/993_promote_schema_gates_to_hard/plans/01_promote-schema-gate-hard.md",
+      "summary": "Two-phase plan: (1) flip SCHEMA_CONFORMANCE_GATE_MODE default advisory->hard and rewrite its preceding comment block to post-remediation tense; (2) drop stale 'defaults advisory' clauses from the two header rule-list bullets and run the full verification bar. Single file, all edits in agent-system/extensions/core/scripts/check-extension-docs.sh."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "check-extension-docs.sh's gate-mode promotions (ORPHAN_GATE_MODE, INDEX_TRUTH_GATE_MODE, SCHEMA_CONFORMANCE_GATE_MODE) all follow the same shape: severity branching lives in one shared *_report() helper function per gate family, called from every Rule check site, so promoting advisory->hard is always just a one-line default-value flip plus a comment update -- never a change to the check logic itself. When researching/verifying such a promotion, run the actual script with the target mode forced via env var override BEFORE editing, to empirically confirm zero findings corpus-wide rather than trusting task-completion summaries alone.",
-      "category": "PATTERN",
-      "source_artifact": "specs/993_promote_schema_gates_to_hard/reports/01_promote-schema-gate-hard.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "gate-mode-promotion", "advisory-to-hard", "schema-conformance", "doc-lint"]
-    }
-  ],
-  "next_steps": "Run /plan 993 to create implementation plan"
+  "phase_count": 2,
+  "estimated_hours": 0.5,
+  "dependency_waves": [[1], [2]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 993 to execute the plan"
 }

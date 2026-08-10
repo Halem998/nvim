@@ -21,9 +21,9 @@ next_project_number: 1004
 
 ### Agent System
 
-993 [RESEARCHED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
+993 [PLANNED] — Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequis
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-1000 [RESEARCHED] — Give the cslib extension its own copy of the adversarial-verifica
+1000 [PLANNING] — Give the cslib extension its own copy of the adversarial-verifica
   └─ 1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
 1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
   └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
@@ -215,7 +215,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1000. Give cslib its own adversarial-verification contract copy and union-valued index entry
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 992
@@ -484,11 +484,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 993. Promote SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 987, Task 990, Task 992
 - **Research**: [993_promote_schema_gates_to_hard/reports/01_promote-schema-gate-hard.md]
+- **Plan**: [993_promote_schema_gates_to_hard/plans/01_promote-schema-gate-hard.md]
 
 **Description**: Promote SCHEMA_CONFORMANCE_GATE_MODE (introduced by the prerequisite task in agent-system/extensions/core/scripts/check-extension-docs.sh, governing Rules T and U) from its advisory default to hard, mirroring the promotion sequence ORPHAN_GATE_MODE -> INDEX_TRUTH_GATE_MODE already went through once their own remediation landed. DEPENDS ON the index_entries_schema_migration and extension_md_slim_down follow-on tasks both landing clean first -- flipping the default before either lands would turn a passing doc-lint gate into a standing hard failure for every extension either task was meant to fix. WORK: change the default in the SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-advisory}" line to hard, and update its preceding comment block to record that source-store remediation is now complete (mirroring INDEX_TRUTH_GATE_MODE's own comment). VERIFICATION BAR: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh exits 0 with the gate hard (no SCHEMA_CONFORMANCE_GATE_MODE override needed at invocation time, since hard is now the baked-in default). SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
