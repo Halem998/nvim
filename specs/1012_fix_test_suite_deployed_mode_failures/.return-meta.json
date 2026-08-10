@@ -1,8 +1,57 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
+      "summary": "All 6 phases complete. 17 REPO_ROOT-carrying test suites migrated to the depth-independent git-rev-parse pattern; test-index-entries-schema.sh's fixture manifest fixed to restore live Rule U coverage; a real write_holder() concurrency race in task-lock.sh diagnosed and fixed, resolving the test-four-tier-conflict.sh flake. Source-store run-all.sh: 37 passed/0 failed/37 total. Deployed run-all.sh: 28 passed/6 failed/34 total -- the 6 residual failures are exactly the un-redeployed source-fixed suites (no sanctioned redeploy path was available within this dispatch; Phase 4 closed BLOCKED with a depth-3 scratch proof as evidence). Residual-failure justification table included."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the REPO_ROOT depth-derivation defect class across 17 test suites (5 loudly-failing + 11 latent + 1 already-covered by the fixture fix), restored Rule U coverage in test-index-entries-schema.sh's fixture, and diagnosed and fixed a real write_holder() concurrency race in task-lock.sh that was causing the test-four-tier-conflict.sh flake. Source-store run-all.sh reached 37/0/37; deployed run-all.sh measures 28/6/34 with all 6 residual failures attributable solely to a pending, sanctioned-path-only redeploy that could not be obtained within this dispatch (requested via SendMessage, none landed)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh",
+    "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
+    "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+    "agent-system/extensions/core/scripts/tests/test-double-loading-check.sh",
+    "agent-system/extensions/core/scripts/tests/test-errors-append.sh",
+    "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
+    "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When diagnosing an intermittent test failure inside a full suite sequence but not in isolation, check whether the failing test's OWN fixture design deliberately introduces a concurrency race (e.g. a backgrounded 'rm -rf' racing the code under test) before assuming the flake needs cross-suite bisection. In this case, test-four-tier-conflict.sh's Tier-2 resolving fixture backgrounds a lock-directory removal mid-retry-window specifically to exercise task-lock.sh's stale-lock-override path; the real defect (write_holder() assuming its lock directory still exists at write time, with no re-verification between the caller's existence check and the write) was visible directly from reading that fixture's own design, without needing a bisection across preceding suites. The fix pattern -- unconditionally 'mkdir -p' the target directory immediately before a tmp-file-then-rename atomic write -- is broadly reusable: any atomic-write helper whose target directory can be concurrently removed by another process should recreate that directory defensively at write time, since by the time the write is reached the caller has already decided it should own the write.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["flaky test diagnosis", "TOCTOU race", "atomic write", "mkdir -p defensive recreate", "task-lock.sh", "fixture-driven root cause"]
+    },
+    {
+      "content": "When a suite's REPO_ROOT derivation is NOT a bare fixed-depth literal but a structured dual-mode detector (e.g. probing for a sibling manifest.json to distinguish source-store vs. deployed invocation depth), migrating it to a depth-independent 'git rev-parse --show-toplevel' pattern requires placing the git-based resolution FIRST and retaining the suite's entire original detection block, unmodified, as the non-git fallback -- not just swapping the literal depth-climb line inside it. This preserves the 'leave existing candidate arrays and fallback ordering untouched' migration constraint even when a file's fallback is a multi-line conditional block rather than a single expression.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["REPO_ROOT migration", "dual-mode detection", "git rev-parse", "fallback preservation", "source-store deploy boundary"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786378789_92e564",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

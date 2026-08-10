@@ -1,0 +1,61 @@
+{
+  "phase": 6,
+  "phase_name": "Final gate, honest re-measurement, and residual-failure justification",
+  "started_at": "2026-08-10T18:50:00Z",
+  "last_updated": "2026-08-10T19:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run full source-store run-all.sh, record measured counts verbatim",
+      "status": "done",
+      "files_touched": [],
+      "note": "37 passed, 0 failed, 0 skipped, 37 total (source-store scans every extension, so this total is not comparable to the deployed 34-total baseline)"
+    },
+    {
+      "id": 2,
+      "description": "Run deployed run-all.sh, record measured counts verbatim (restating Phase 4's BLOCKED record since no redeploy occurred)",
+      "status": "done",
+      "files_touched": [],
+      "note": "28 passed, 6 failed, 0 skipped, 34 total. All 6 failures are the un-redeployed suites this task fixed in the source store (test-index-entries-schema.sh, test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh, test-skill-base-lifecycle.sh, test-update-task-status.sh); no other suite failed. test-common-lib.sh and test-lint-state-writer-boundary.sh both measured PASS here (contrary to their originally-reported failures), and test-four-tier-conflict.sh (deployed copy, unfixed task-lock.sh) also measured PASS this run."
+    },
+    {
+      "id": 3,
+      "description": "Run verify-deploy.sh, record every gate result",
+      "status": "done",
+      "files_touched": [],
+      "note": "2 of 23 checks failed: gate 3 (doc-lint) and gate 5 (manifest-driven content-hash parity), both attributable entirely to the same un-redeployed source-store drift already recorded in Phase 4/objective 2 above -- gates 1, 2, 4, 6, 7, 8, 9, 10, 11, 12 all PASS. Gate 4 (task-reference lint) PASS confirms no deliverable outside specs/** gained a task-number reference."
+    },
+    {
+      "id": 4,
+      "description": "Run check-extension-docs.sh, confirm no new doc-lint failures",
+      "status": "done",
+      "files_touched": [],
+      "note": "Ran the deployed copy (.claude/scripts/check-extension-docs.sh) since the source-store copy refuses to run outside a deployed tree by design. 18 'deployed script content drift' FAILs, exactly matching the 17 migrated test files plus task-lock.sh -- all expected, pre-announced staleness from this task's own un-redeployed source fixes, not a new or unrelated defect. A separate, pre-existing block of 36 advisory 'core script never deployed' items for literature/zotero scripts is unrelated to this task and was not touched."
+    },
+    {
+      "id": 5,
+      "description": "Write residual-failure justification table in the implementation summary",
+      "status": "done",
+      "files_touched": [
+        "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "State final pass/fail/total counts as measured, first sentence of summary if any failure remains",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Confirm no deliverable outside specs/** gained a task-number reference",
+      "status": "done",
+      "files_touched": [],
+      "note": "Confirmed via verify-deploy.sh gate 4 (task-reference lint, PASS) plus a direct grep of every file this task touched"
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -11,7 +11,7 @@ next_project_number: 1020
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 1004,1010,1011,1012,1014,1015,1016,1017,1018,1019 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 1004,1010,1011,1014,1015,1016,1017,1018,1019 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 1005,1009,1013 | 1004,1015,1017,1018 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
@@ -24,7 +24,6 @@ next_project_number: 1020
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
 1010 [IMPLEMENTING] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
-1012 [IMPLEMENTING] — tests/run-all.sh is red and has been treated as permanently-expec
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
   └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
@@ -227,7 +226,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1012. Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

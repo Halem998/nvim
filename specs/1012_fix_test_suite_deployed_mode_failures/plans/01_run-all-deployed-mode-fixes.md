@@ -1,7 +1,7 @@
 # Implementation Plan: Make run-all.sh green or justify every residual failure
 
 - **Task**: 1012 - Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and further suites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (one advisory overlap: the opencode session-id duplication task owns `test-common-lib.sh`)
 - **Research Inputs**: specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md
@@ -365,25 +365,37 @@ accepted outcome and routes to the justification branch — it is not a failure 
 
 ---
 
-### Phase 6: Final gate, honest re-measurement, and residual-failure justification [NOT STARTED]
+### Phase 6: Final gate, honest re-measurement, and residual-failure justification [COMPLETED]
 
 **Goal**: Run the full gate set, report the measured counts without qualification-free optimism,
 and give every remaining failure a written, evidenced justification.
 
 **Tasks**:
-- [ ] Run the full source-store `run-all.sh` and record measured counts verbatim
-- [ ] Run the deployed `run-all.sh` and record measured counts verbatim (or restate the Phase 4
-      `[BLOCKED]` record if the redeploy never happened)
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and record the result of every gate, including
-      the `check-task-references.sh` gate and the suite-discovery gate
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm no new doc-lint failures
-- [ ] Write a residual-failure justification table in the implementation summary — one row per
+- [x] Run the full source-store `run-all.sh` and record measured counts verbatim *(completed:
+      37 passed, 0 failed, 0 skipped, 37 total)*
+- [x] Run the deployed `run-all.sh` and record measured counts verbatim (or restate the Phase 4
+      `[BLOCKED]` record if the redeploy never happened) *(completed: 28 passed, 6 failed, 0
+      skipped, 34 total — no redeploy occurred; the 6 failures are exactly the un-redeployed
+      source-fixed suites)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and record the result of every gate, including
+      the `check-task-references.sh` gate and the suite-discovery gate *(completed: 2 of 23 checks
+      failed — doc-lint and manifest-driven content-hash parity, both the same un-redeployed
+      drift; task-reference lint gate PASSED; source-store suite-discovery gate PASSED)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm no new doc-lint failures
+      *(completed: ran the deployed copy since the source-store copy refuses to run outside a
+      deployed tree; the only failures are the expected 18-file drift from this task's own
+      un-redeployed fixes, plus a pre-existing, unrelated literature/zotero never-deployed
+      advisory block)*
+- [x] Write a residual-failure justification table in the implementation summary — one row per
       still-failing suite, with the reason and the evidence supporting it. `test-common-lib.sh` is
       expected here: justified as owned by the concurrent opencode session-id task, evidenced by
-      its assertion output naming `.opencode/scripts/command-gate-in.sh`
-- [ ] State the final pass/fail/total counts as measured. If any failure remains, say so explicitly
-      in the first sentence of the summary — never report an unqualified green
-- [ ] Confirm no deliverable outside `specs/**` gained a task-number reference
+      its assertion output naming `.opencode/scripts/command-gate-in.sh` *(completed: see
+      summaries/01_run-all-deployed-mode-fixes-summary.md; test-common-lib.sh in fact measured
+      PASS in this task's deployed-mode run rather than needing the anticipated justification)*
+- [x] State the final pass/fail/total counts as measured. If any failure remains, say so explicitly
+      in the first sentence of the summary — never report an unqualified green *(completed)*
+- [x] Confirm no deliverable outside `specs/**` gained a task-number reference *(completed: verified
+      via verify-deploy.sh's task-reference lint gate plus a direct grep of every file touched)*
 
 **Timing**: 45 minutes
 
@@ -401,17 +413,19 @@ and give every remaining failure a written, evidenced justification.
 
 ## Testing & Validation
 
-- [ ] Each of the 17 migrated suites passes when run individually from the source-store location
-- [ ] `test-lint-state-writer-boundary.sh` still reports 8/8 (no regression against its measured
+- [x] Each of the 17 migrated suites passes when run individually from the source-store location
+- [x] `test-lint-state-writer-boundary.sh` still reports 8/8 (no regression against its measured
       baseline)
-- [ ] `test-index-entries-schema.sh` passes with Rule U firing on the 61-line case
-- [ ] A depth-3 scratch run proves `REPO_ROOT` resolves to the real repo root independent of depth
-- [ ] Full source-store `run-all.sh`: counts recorded verbatim
-- [ ] Full deployed `run-all.sh`: counts recorded verbatim, or an evidenced `[BLOCKED]` record
-- [ ] `verify-deploy.sh` gates recorded
-- [ ] `check-extension-docs.sh` shows no new failures
-- [ ] Zero hand-authored files under `.claude/**`
-- [ ] Zero task-number references in deliverables outside `specs/**`
+- [x] `test-index-entries-schema.sh` passes with Rule U firing on the 61-line case
+- [x] A depth-3 scratch run proves `REPO_ROOT` resolves to the real repo root independent of depth
+- [x] Full source-store `run-all.sh`: counts recorded verbatim (37 passed, 0 failed, 37 total)
+- [x] Full deployed `run-all.sh`: counts recorded verbatim, or an evidenced `[BLOCKED]` record
+      (28 passed, 6 failed, 34 total — redeploy `[BLOCKED]`, evidenced record in Phase 4)
+- [x] `verify-deploy.sh` gates recorded (21/23 passed; 2 failures are the same un-redeployed drift)
+- [x] `check-extension-docs.sh` shows no new failures (18 expected drift failures, matching this
+      task's own un-redeployed fixes exactly; unrelated pre-existing literature advisories untouched)
+- [x] Zero hand-authored files under `.claude/**`
+- [x] Zero task-number references in deliverables outside `specs/**`
 
 ## Artifacts & Outputs
 
