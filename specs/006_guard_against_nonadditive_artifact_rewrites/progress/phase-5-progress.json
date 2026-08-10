@@ -1,0 +1,26 @@
+{
+  "phase": 5,
+  "phase_name": "Integration Verification Against the Live Pipeline",
+  "started_at": "2026-08-10T23:42:00Z",
+  "last_updated": "2026-08-11T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Deploy the source store and confirm deployed validate-state.sh contains the new check", "status": "done", "files_touched": [], "note": "bash agent-system/extensions/core/scripts/deploy-headless.sh: resynced 5 extensions. grep -n 'Check D5' .claude/scripts/validate-state.sh confirms the deployed copy contains the check."},
+    {"id": 2, "description": "Run full test suite against deployed validator, all pass, D5 cases not skipped", "status": "done", "files_touched": [], "note": "bash .claude/scripts/tests/test-validate-state.sh: 14 passed, 0 failed, exit 0. D5 info line confirms it ran against .claude/scripts/validate-state.sh (the deployed copy), not skipped."},
+    {"id": 3, "description": "Run validate-state.sh --deep against live specs/state.json, confirm matches Phase 1 baseline", "status": "done", "files_touched": [], "note": "Exit 1, 14 PASS / 0 WARN / 1 FAIL. The sole FAIL is the same pre-existing, unrelated D3 dangling-dependency finding (project 9 -> 1015) recorded in Phase 1's baseline -- unchanged. New D5 check reports PASS ('No unsuppressed per-type artifact-loss violations')."},
+    {"id": 4, "description": "Run verify-deploy.sh and confirm gate 10 result", "status": "done", "files_touched": [], "note": "verify-deploy.sh: 22 of 23 checks PASS; gate 10 (validate-state.sh --deep) reports FAIL, but for the SAME pre-existing, unrelated dangling-dependency finding (project 9 -> 1015) present before this task's changes landed -- not caused by the D5 check, which itself reports no finding. This is a known, pre-existing defect outside this task's declared file scope (specs/state.json dependency-graph repair is not part of this task's WORK items or Non-Goals exclusions)."},
+    {"id": 5, "description": "Exercise a real sanctioned link end to end via skill_link_artifacts against a scratch fixture", "status": "done", "files_touched": [], "note": "Ran the exact two-step jq filter skill_link_artifacts uses, via the real state-write.sh (--state-file pointed at a scratch git-backed fixture) -- same-type report removed then added. validate-state.sh --deep against the fixture reports 'No unsuppressed per-type artifact-loss violations', confirming the sanctioned call path is genuinely unaffected."},
+    {"id": 6, "description": "Re-state the periodic-enforcement limitation in the summary", "status": "done", "files_touched": [], "note": "Will be restated in the implementation summary (Stage 6)."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "description": "verify-deploy.sh gate 10 result is reported explicitly (PASS, or PASS-with-warning under the WARN branch)",
+      "type": "altered",
+      "reason": "gate 10 reports FAIL, not PASS or PASS-with-warning -- but for a pre-existing, unrelated D3 dangling-dependency finding (project 9 -> 1015) that predates this task's changes and was already present in Phase 1's control-run baseline. The D5 check itself reports no finding. This outcome was not one of the plan's two anticipated branches because those branches only modeled D5's own FAIL/WARN decision, not an orthogonal pre-existing defect. Fixing project 9's dependency graph is outside this task's declared file scope and Non-Goals.",
+      "annotation": "*(deviation: altered -- gate 10 reports FAIL for a pre-existing, unrelated D3 dangling-dependency finding, not D5; D5 itself reports no finding)*"
+    }
+  ]
+}

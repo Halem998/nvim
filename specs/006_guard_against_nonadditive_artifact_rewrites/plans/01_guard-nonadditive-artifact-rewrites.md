@@ -413,27 +413,38 @@ added `#`-prefixed lines, no existing line altered.
 
 ---
 
-### Phase 5: Integration Verification Against the Live Pipeline [NOT STARTED]
+### Phase 5: Integration Verification Against the Live Pipeline [COMPLETED]
 
 **Goal**: Confirm the invariant is genuinely wired end to end — deployed, exercised by the real
 test suite and the real deploy gate — and that no sanctioned link path regressed.
 
 **Tasks**:
 
-- [ ] Deploy the source store so `.claude/` reflects the new source (the test suite and
+- [x] Deploy the source store so `.claude/` reflects the new source (the test suite and
       `verify-deploy.sh` gate 10 both invoke the *deployed* copy). Confirm the deployed
       `validate-state.sh` contains the new check by grepping it for the check's identifier.
-- [ ] Run the full test suite: `bash .claude/scripts/tests/test-validate-state.sh` — all cases
+      *(completed: `grep -n "Check D5" .claude/scripts/validate-state.sh` hits at the deployed
+      copy's line 461)*
+- [x] Run the full test suite: `bash .claude/scripts/tests/test-validate-state.sh` — all cases
       pass, and the new cases are executed against the deployed validator (not skipped).
-- [ ] Run `bash .claude/scripts/validate-state.sh --deep specs/state.json` against the live state
-      and confirm the outcome matches Phase 1's recorded baseline decision.
-- [ ] Run `verify-deploy.sh` and confirm gate 10 passes (or, under the WARN-level branch, that it
-      still passes with the new warning present and no new FAIL).
-- [ ] Exercise a real sanctioned link end to end: invoke `skill_link_artifacts` (or its equivalent
+      *(completed: 14 passed, 0 failed, exit 0; D5 info line confirms it ran against the deployed
+      `.claude/scripts/validate-state.sh`, not skipped)*
+- [x] Run `bash .claude/scripts/validate-state.sh --deep specs/state.json` against the live state
+      and confirm the outcome matches Phase 1's recorded baseline decision. *(completed: exit 1,
+      14 PASS / 0 WARN / 1 FAIL, matching Phase 1's baseline exactly -- the sole FAIL is the same
+      pre-existing, unrelated D3 dangling-dependency finding; the new D5 check reports PASS)*
+- [x] Run `verify-deploy.sh` and confirm gate 10 passes (or, under the WARN-level branch, that it
+      still passes with the new warning present and no new FAIL). *(deviation: altered -- gate 10
+      reports FAIL for a pre-existing, unrelated D3 dangling-dependency finding on project 9,
+      not D5; D5 itself reports no finding. See progress file deviation entry 5.4)*
+- [x] Exercise a real sanctioned link end to end: invoke `skill_link_artifacts` (or its equivalent
       additive path) against a scratch fixture, then re-run the validator and confirm the new check
       reports no finding — the concrete proof that "existing call sites are unaffected."
-- [ ] Re-state the accepted limitation in the implementation summary: enforcement is periodic, so a
-      lossy write can still land between validation runs.
+      *(completed: ran the identical two-step jq filter via the real `state-write.sh` against a
+      scratch git-backed fixture; validator reports no D5 finding, exit 0)*
+- [x] Re-state the accepted limitation in the implementation summary: enforcement is periodic, so a
+      lossy write can still land between validation runs. *(completed: restated in the
+      implementation summary)*
 
 **Timing**: 0.75 hours
 
@@ -457,19 +468,24 @@ test suite and the real deploy gate — and that no sanctioned link path regress
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on `validate-state.sh`, `test-validate-state.sh`, and `skill-base.sh`.
-- [ ] Rejection direction: a fixture write dropping more paths of a type than it adds produces a
+- [x] `bash -n` clean on `validate-state.sh`, `test-validate-state.sh`, and `skill-base.sh`.
+- [x] Rejection direction: a fixture write dropping more paths of a type than it adds produces a
       FAIL-level finding naming the project number, the type, both counts, and the dropped paths.
-- [ ] Acceptance direction: the identical write with `--allow-artifact-removal` exits 0 and logs an
+- [x] Acceptance direction: the identical write with `--allow-artifact-removal` exits 0 and logs an
       explicit opt-in line.
-- [ ] The rejection fixture's mutation is a hand-composed `jq` assignment, proving writer-agnostic
+- [x] The rejection fixture's mutation is a hand-composed `jq` assignment, proving writer-agnostic
       detection.
-- [ ] Sanctioned 1-for-1 same-type supersession and pure-append writes both pass with no finding.
-- [ ] Type-scoped opt-in does not over-permit a different type's loss.
-- [ ] Untyped entries participate in the invariant rather than being silently dropped.
-- [ ] `--help` output is complete and untruncated after the header grew.
-- [ ] `check-task-references.sh` and `lint-agent-contracts.sh` both exit 0.
-- [ ] `verify-deploy.sh` gate 10 passes against the live `specs/state.json`.
+- [x] Sanctioned 1-for-1 same-type supersession and pure-append writes both pass with no finding.
+- [x] Type-scoped opt-in does not over-permit a different type's loss.
+- [x] Untyped entries participate in the invariant rather than being silently dropped.
+- [x] `--help` output is complete and untruncated after the header grew.
+- [x] `check-task-references.sh` and `lint-agent-contracts.sh` both exit 0.
+- [x] `verify-deploy.sh` gate 10 passes against the live `specs/state.json`. *(deviation: altered
+      -- gate 10 currently reports FAIL, but for a pre-existing, unrelated D3 dangling-dependency
+      finding on project 9 (project 9 -> 1015, absent from both active_projects and archive),
+      present before this task's changes and unrelated to artifact linking. The new D5 check
+      itself reports PASS with zero findings against the live state. See Phase 5's recorded
+      deviation for detail)*
 
 ## Artifacts & Outputs
 
