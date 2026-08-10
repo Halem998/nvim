@@ -1,0 +1,47 @@
+{
+  "phase": 7,
+  "phase_name": "Regenerate and measure all eight post-rebase totals",
+  "started_at": "2026-08-10T02:55:00Z",
+  "last_updated": "2026-08-10T03:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run regeneration, run validator --verbose, capture full per-agent table and entry listings",
+      "status": "done",
+      "files_touched": [],
+      "note": "deploy-headless.sh regeneration + validate-context-budgets.sh --verbose captured to /tmp/phase7-verbose.txt (scratch, not a deliverable)."
+    },
+    {
+      "id": 2,
+      "description": "Confirm the 5 expected-pass agents are under cap with positive margin",
+      "status": "done",
+      "files_touched": [],
+      "note": "meta-builder-agent 13296/15000 (margin 1704), planner-agent 10400/15000 (margin 4600), general-research-agent 7160/8000 (margin 840), neovim-research-agent 7360/8000 (margin 640), nix-research-agent 7192/8000 (margin 808). All positive margin; no further conditional-content reclassification pass needed."
+    },
+    {
+      "id": 3,
+      "description": "Record exact measured total and entry-by-entry composition for the 3 expected survivors",
+      "status": "done",
+      "files_touched": [],
+      "note": "general-implementation-agent 16,688 tok: contracts/pre-edit-gate.md(856)+contracts/phase-closure.md(856)+formats/summary-format.md(608)+formats/return-metadata-file.md(4768)+standards/git-staging-scope.md(2624)+formats/progress-file.md(2160)+patterns/subagent-continuation-loop.md(1720)+patterns/context-exhaustion-detection.md(1688)+patterns/checkpoint-before-overflow.md(1408). neovim-implementation-agent 15,336 tok: contracts/pre-edit-gate.md(856)+contracts/phase-closure.md(856)+formats/summary-format.md(608)+formats/return-metadata-file.md(4768)+project/neovim/standards/lua-style-guide.md(2472)+formats/progress-file.md(2160)+project/neovim/patterns/plugin-spec.md(2136)+project/neovim/patterns/keymap-patterns.md(1480). nix-implementation-agent 14,104 tok: contracts/pre-edit-gate.md(856)+contracts/phase-closure.md(856)+project/nix/README.md(808)+formats/summary-format.md(608)+formats/return-metadata-file.md(4768)+project/nix/standards/nix-style-guide.md(2328)+formats/progress-file.md(2160)+project/nix/domain/nix-language.md(1720). These become the Phase 8 exception justification text."
+    },
+    {
+      "id": 4,
+      "description": "Reconcile each measured total against hand-summed source entries plus the Phase 1 ghost offset",
+      "status": "done",
+      "files_touched": [],
+      "note": "Computed source-only sums for all 8 agents directly via jq over the 5 loaded extensions' source index-entries.json files. All 8 reconciled exactly: 7 agents (planner, general-research, neovim-research, nix-research, general-implementation, neovim-implementation, nix-implementation) show source_tok == measured_tok exactly (offset 0). meta-builder-agent: source_tok=11,432, measured=13,296, difference=1,864 == the Phase 1 ghost offset exactly. No unexplained discrepancy -- not a stop condition."
+    },
+    {
+      "id": 5,
+      "description": "Run generate-context-line-counts.sh --check to confirm no line_count drift",
+      "status": "done",
+      "files_touched": [],
+      "note": "CHECK PASSED: all 479 entries across all extensions exact match, 0 mismatch, 0 null, 0 missing source. Expected clean since no content files were edited in Phases 2-6, only load_when.agents hooks."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

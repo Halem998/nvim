@@ -442,28 +442,33 @@ were found — a spot check of the two predicted paths would miss a third.
 
 ---
 
-### Phase 7: Regenerate and measure all eight post-rebase totals [NOT STARTED]
+### Phase 7: Regenerate and measure all eight post-rebase totals [COMPLETED]
 
 **Goal**: Produce the authoritative measured token total for every one of the eight agents, which
 is the sole input to Phase 8's exception values.
 
 **Tasks**:
-- [ ] Run the regeneration invocation established in Phase 1 so every source edit reaches
-      `.claude/context/index.json`.
-- [ ] Run `bash .claude/scripts/validate-context-budgets.sh --verbose` and capture the full
-      per-agent table plus per-agent entry listings.
-- [ ] For each of the five agents expected to pass (`meta-builder-agent`, `planner-agent`,
+- [x] Run the regeneration invocation established in Phase 1 so every source edit reaches
+      `.claude/context/index.json`. *(completed)*
+- [x] Run `bash .claude/scripts/validate-context-budgets.sh --verbose` and capture the full
+      per-agent table plus per-agent entry listings. *(completed)*
+- [x] For each of the five agents expected to pass (`meta-builder-agent`, `planner-agent`,
       `general-research-agent`, `neovim-research-agent`, `nix-research-agent`), confirm it is
       under cap and record its margin. Any agent at zero or negative margin gets a further
-      conditional-content reclassification pass before proceeding.
-- [ ] For each of the three expected survivors (`general-implementation-agent`,
+      conditional-content reclassification pass before proceeding. *(completed: all 5 pass with
+      positive margin -- 1704/4600/840/640/808 respectively -- no further pass needed)*
+- [x] For each of the three expected survivors (`general-implementation-agent`,
       `neovim-implementation-agent`, `nix-implementation-agent`), record the exact measured total
       and the exact entry-by-entry composition from the `--verbose` listing. These compositions
-      become the exception justification text.
-- [ ] Reconcile each measured total against the hand-summed source entries plus the Phase 1 ghost
+      become the exception justification text. *(completed: 16,688 / 15,336 / 14,104 respectively,
+      full compositions recorded in the progress file)*
+- [x] Reconcile each measured total against the hand-summed source entries plus the Phase 1 ghost
       offset. An unexplained discrepancy is a stop condition, not a rounding artifact.
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --check` to confirm no
+      *(completed: all 8 reconcile exactly -- 7 agents at offset 0, meta-builder-agent at exactly
+      +1,864)*
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --check` to confirm no
       `line_count` drift was introduced (no content files were edited, so this must be clean).
+      *(completed: CHECK PASSED, 479/479 exact)*
 
 **Timing**: 0.5 hours
 
