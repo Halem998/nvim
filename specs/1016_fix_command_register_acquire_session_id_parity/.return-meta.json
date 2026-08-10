@@ -1,9 +1,46 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/1016_fix_command_register_acquire_session_id_parity/summaries/01_register-acquire-parity-fix-summary.md",
+      "summary": "Fixed the register-bare/acquire-suffixed session-id parity defect across research.md, plan.md, implement.md; closed implement.md's downstream heartbeat gap; reconciled task-lock.md's contradictory passages; extended Group 9 test coverage; ran the full gate sweep."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the register-bare/acquire-suffixed session-id defect in the three multi-task command files (research.md, plan.md, implement.md), which was causing every multi-task batch with a declared file_scope to self-refuse its own lock acquires. Closed the downstream heartbeat gap in implement.md, reconciled task-lock.md's contradictory documentation, extended test-conflict-predicate.sh Group 9 with three new sibling static guards (9.6-9.8, verified non-vacuous via a negative control), and ran the full gate sweep (test suite 32/32, check-task-references PASS, lint-routing-wiring 323/323, lint-agent-contracts 33/33)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a static-guard grep test greps a file that ALSO contains an invariant-note explanation of the bad pattern it forbids (e.g. porting skill-orchestrate/SKILL.md's own inline invariant comment, which necessarily mentions the forbidden suffixed-session_id string as an illustrative example), a naive flat grep -rnF for the bad substring across the whole file/tree will show false-positive hits. The correct guard scopes the grep to lines matching the actual call-site ERE first (e.g. `task-lock\\.sh[[:space:]]+(acquire|release|heartbeat)`), then greps for the bad substring only within those matched lines. Don't be alarmed by a nonzero flat-grep count if the real regression guard is ERE-scoped this way -- verify against the actual guard mechanism, not a naive proxy sweep.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1016_fix_command_register_acquire_session_id_parity/summaries/01_register-acquire-parity-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["task-lock", "session_id", "grep-scoping", "static-guard", "invariant-note", "false-positive"]
+    },
+    {
+      "content": "When check-extension-docs.sh reports multiple FAIL items after an edit, trace each one individually via git log/git show against the pre-edit commit before assuming it's caused by the current change. An index-entries.json line_count mismatch is only in-scope if git show against the immediately-preceding commit confirms the declared count matched the file's actual line count before this session's edits. Fix only the in-scope entry directly (surgical Edit), rather than running the bulk --write regeneration script, which would also silently correct unrelated, possibly-concurrent, out-of-scope entries in a shared multi-agent session.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/1016_fix_command_register_acquire_session_id_parity/summaries/01_register-acquire-parity-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["check-extension-docs", "index-entries.json", "line_count", "scoped-fix", "concurrent-sessions"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786386280_bc7e55",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

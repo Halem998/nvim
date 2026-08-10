@@ -1,0 +1,20 @@
+{
+  "task_number": 1016,
+  "dispatch_status": "implemented",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "summary_path": "specs/1016_fix_command_register_acquire_session_id_parity/summaries/01_register-acquire-parity-fix-summary.md",
+  "plan_path": "specs/1016_fix_command_register_acquire_session_id_parity/plans/01_register-acquire-parity-fix.md",
+  "modified_files": [
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "notes": "All five plan phases completed in wave order [[1,3],[2],[4],[5]]. Fixed the register-bare/acquire-suffixed session-id parity defect in research.md, plan.md, implement.md (6 lock-family call sites unified to bare $batch_session_id); closed implement.md's downstream Stage 4D heartbeat gap by threading session_id={batch_session_id} into the per-task dispatch args; reconciled task-lock.md's two contradictory passages with two-way cross-references; extended test-conflict-predicate.sh Group 9 with cases 9.6-9.8 (verified non-vacuous via a negative control against a scratch copy); ran the full gate sweep (test-conflict-predicate.sh 32/32, check-task-references.sh PASS, lint-routing-wiring.sh 323/323, lint-agent-contracts.sh 33/33). Fixed one in-scope index-entries.json line_count drift (patterns/task-lock.md, caused by this task's own Phase 3 edit). Three remaining check-extension-docs.sh FAIL items are pre-existing/out-of-scope, traced individually via git log/git show: (1) deployed-vs-source drift on test-conflict-predicate.sh is the expected consequence of a source-store-only edit awaiting the next deploy/reload, per the SOURCE-STORE RULE; (2) assess-repo-health.sh provides.scripts gap predates this task; (3) schemas/state-schema.json line_count drift predates this task and is unrelated. git status --short confirmed zero .claude/** paths touched.",
+  "orchestrator_mode": true,
+  "session_id": "sess_1786386280_bc7e55"
+}
