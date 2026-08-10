@@ -167,33 +167,44 @@ rather than claiming it.
 
 ---
 
-### Phase 2: Confirm the Verification Bar and Claim the Files [NOT STARTED]
+### Phase 2: Confirm the Verification Bar and Claim the Files [COMPLETED]
 
 **Goal**: Re-establish the task's full stated verification bar (union survives the upsert; no new
 budget violation) and claim both paths via `modified_files` so the postflight commit captures the
 uncommitted work.
 
 **Tasks**:
-- [ ] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`
-      as the closing gate and confirm the overall exit status and `cslib PASS`.
-- [ ] Prove the union survives the upsert rather than assuming it: with a headless-Neovim script
+- [x] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`
+      as the closing gate and confirm the overall exit status and `cslib PASS`. *(deviation:
+      altered — `cslib PASS` confirmed; overall exit is 1 due to a pre-existing, unrelated FAIL
+      ("deployed script content drift" on `agent-system/extensions/core/scripts/check-extension-docs.sh`)
+      caused by another in-flight task's uncommitted edit to that file, not by this task's changes.
+      This task's file scope is limited to `agent-system/extensions/cslib/**`; per the plan's own
+      risk-mitigation row ("Doc-lint or budget script emits a pre-existing unrelated failure and is
+      misread as caused by this change"), the cslib-scoped criterion is what governs this item)*
+- [x] Prove the union survives the upsert rather than assuming it: with a headless-Neovim script
       calling `neotex.plugins.ai.shared.extensions.merge.append_index_entries` against a scratch
       index file, apply core's `contracts/adversarial-verification.md` entry first and cslib's
       second (realistic core-then-extension order), then inspect the merged JSON and confirm the
       single surviving entry retains BOTH `general-research-hard-agent` and
-      `cslib-research-hard-agent`. Delete the scratch file afterwards.
-- [ ] Run `bash .claude/scripts/validate-context-budgets.sh` (read-only invocation of a deployed
+      `cslib-research-hard-agent`. Delete the scratch file afterwards. *(completed: single surviving
+      entry retained both agent names; scratch file and script deleted)*
+- [x] Run `bash .claude/scripts/validate-context-budgets.sh` (read-only invocation of a deployed
       script; not an edit under `.claude/**`) and confirm `cslib-research-hard-agent` appears
       nowhere in the output — the pre-existing violations belong to loaded extensions only, and
-      cslib is not a loaded extension in this repository's `.claude-extensions.json`.
-- [ ] Confirm no file under `.claude/**` was written by this task:
-      `git status --short -- .claude/` shows nothing attributable to this work.
-- [ ] Report both paths in `modified_files` so the implement postflight stages and commits them:
+      cslib is not a loaded extension in this repository's `.claude-extensions.json`. *(completed:
+      8 violations, matching the research report's recorded baseline exactly; `cslib-research-hard-agent`
+      appears 0 times)*
+- [x] Confirm no file under `.claude/**` was written by this task:
+      `git status --short -- .claude/` shows nothing attributable to this work. *(completed: empty
+      output)*
+- [x] Report both paths in `modified_files` so the implement postflight stages and commits them:
       `agent-system/extensions/cslib/context/contracts/adversarial-verification.md` and
       `agent-system/extensions/cslib/index-entries.json`. Under-report rather than over-report:
-      do not add unrelated working-tree paths.
-- [ ] Confirm the summary artifact and any deliverable text cite durable anchors (file paths,
-      section headings, script names) rather than task numbers outside `specs/**`.
+      do not add unrelated working-tree paths. *(completed: both already committed at Phase 1's
+      green sub-step commit; reported in `.return-meta.json`'s `modified_files`)*
+- [x] Confirm the summary artifact and any deliverable text cite durable anchors (file paths,
+      section headings, script names) rather than task numbers outside `specs/**`. *(completed)*
 
 **Timing**: 30 minutes
 
@@ -220,18 +231,20 @@ any divergence is reported, not silently absorbed into the claim.
 
 ## Testing & Validation
 
-- [ ] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` — Rule R
-      hard gate passes; summary reports `cslib PASS`
-- [ ] `jq -e . agent-system/extensions/cslib/index-entries.json` — valid JSON
-- [ ] `wc -l agent-system/extensions/cslib/context/contracts/adversarial-verification.md` equals the
-      entry's declared `line_count`
-- [ ] `load_when.agents` contains both `general-research-hard-agent` and
-      `cslib-research-hard-agent`
-- [ ] Headless-Neovim `merge.append_index_entries` simulation retains both agent names after the
-      core-then-cslib upsert
-- [ ] `bash .claude/scripts/validate-context-budgets.sh` shows no new violation naming
-      `cslib-research-hard-agent`
-- [ ] No file written under `.claude/**`
+- [x] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` — Rule R
+      hard gate passes; summary reports `cslib PASS` *(completed: `cslib PASS` confirmed; see
+      Phase 2 task 1's deviation note for the unrelated overall-exit-code caveat)*
+- [x] `jq -e . agent-system/extensions/cslib/index-entries.json` — valid JSON *(completed)*
+- [x] `wc -l agent-system/extensions/cslib/context/contracts/adversarial-verification.md` equals the
+      entry's declared `line_count` *(completed: both 117)*
+- [x] `load_when.agents` contains both `general-research-hard-agent` and
+      `cslib-research-hard-agent` *(completed)*
+- [x] Headless-Neovim `merge.append_index_entries` simulation retains both agent names after the
+      core-then-cslib upsert *(completed)*
+- [x] `bash .claude/scripts/validate-context-budgets.sh` shows no new violation naming
+      `cslib-research-hard-agent` *(completed: 0 occurrences, 8 pre-existing violations matching
+      research baseline)*
+- [x] No file written under `.claude/**` *(completed: `git status --short -- .claude/` empty)*
 
 ## Artifacts & Outputs
 
