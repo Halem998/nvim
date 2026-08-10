@@ -398,25 +398,27 @@ behavior — which is a reason for accuracy, not a licence for approximation.
 
 ---
 
-### Phase 6: Drop orphaned general-research hooks in memory/index-entries.json [NOT STARTED]
+### Phase 6: Drop orphaned general-research hooks in memory/index-entries.json [COMPLETED]
 
 **Goal**: Remove the 2,832 tokens of memory-extension entries hooked to `general-research-agent`
 that its `.md` body never references — without which that agent cannot clear its cap.
 
 **Tasks**:
-- [ ] Re-confirm the orphan status: `grep -n "distill-usage\|memory-reference"
+- [x] Re-confirm the orphan status: `grep -n "distill-usage\|memory-reference"
       agent-system/extensions/core/agents/general-research-agent.md` must return no matches.
-- [ ] Remove `general-research-agent` from `load_when.agents` on
+      *(completed: zero matches confirmed)*
+- [x] Remove `general-research-agent` from `load_when.agents` on
       `project/memory/distill-usage.md` (2,376 tok) and
-      `project/memory/domain/memory-reference.md` (456 tok).
-- [ ] Leave both entries' `commands` hooks intact (`/distill`, and `/learn` on the second) —
+      `project/memory/domain/memory-reference.md` (456 tok). *(completed)*
+- [x] Leave both entries' `commands` hooks intact (`/distill`, and `/learn` on the second) —
       these are the real, correct reach and both commands are direct-execution, so the entries
       leave the Double-Loading Check's dual-hook population entirely rather than becoming
-      redundant.
-- [ ] Record the `file_scope` extension explicitly in the implementation summary: the declared
+      redundant. *(completed: both commands hooks preserved, confirmed post-edit)*
+- [x] Record the `file_scope` extension explicitly in the implementation summary: the declared
       scope named three `index-entries.json` files, and this is a fourth, justified by the
       measured fact that `general-research-agent` cannot reach its cap otherwise and that the
-      edit is the identical orphan-hook correction applied in every other phase.
+      edit is the identical orphan-hook correction applied in every other phase. *(completed: also
+      already recorded in state.json's file_scope and the delegation context)*
 
 **Timing**: 0.25 hours
 

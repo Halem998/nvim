@@ -94,9 +94,7 @@
           "/learn",
           "/distill"
         ],
-        "agents": [
-          "general-research-agent"
-        ]
+        "agents": []
       }
     },
     {
@@ -150,9 +148,7 @@
         "commands": [
           "/distill"
         ],
-        "agents": [
-          "general-research-agent"
-        ]
+        "agents": []
       }
     },
     {

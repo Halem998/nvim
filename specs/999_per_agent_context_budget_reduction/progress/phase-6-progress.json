@@ -1,0 +1,33 @@
+{
+  "phase": 6,
+  "phase_name": "Drop orphaned general-research hooks in memory/index-entries.json",
+  "started_at": "2026-08-10T02:40:00Z",
+  "last_updated": "2026-08-10T02:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-confirm orphan status via grep",
+      "status": "done",
+      "files_touched": [],
+      "note": "grep -n 'distill-usage|memory-reference' agent-system/extensions/core/agents/general-research-agent.md returned zero matches, confirming both entries are genuinely unreferenced by this agent's .md body."
+    },
+    {
+      "id": 2,
+      "description": "Remove general-research-agent from load_when.agents on both entries, preserving commands hooks",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/memory/index-entries.json"],
+      "note": "Dropped from project/memory/distill-usage.md (2,376 tok, commands:[/distill] preserved) and project/memory/domain/memory-reference.md (456 tok, commands:[/learn,/distill] preserved). Neither entry's hooks became fully empty (commands non-empty), so no on_demand marker was needed -- Dead Entry Check confirmed 0. This is the justified file_scope extension recorded in state.json and the delegation context (a fourth index-entries.json file beyond the plan's original three)."
+    },
+    {
+      "id": 3,
+      "description": "Verify: schema test, regenerate, measure general-research-agent under cap",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-index-entries-schema.sh: 8/1 identical baseline. After deploy-headless.sh: general-research-agent measures exactly 7,160/8,000 OK (margin 840), matching the report's Finding 4 floor exactly (7,160 core total + 0, since the 2,832 orphaned memory tokens are now fully removed). Dead Entry Check: 0. Double-Loading Check: 0 redundant. Overall Violations: 3 -- exactly the three expected structural-floor agents (general-implementation-agent 16,688, neovim-implementation-agent 15,336, nix-implementation-agent 14,104), matching the plan's Definition of Done precisely."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
