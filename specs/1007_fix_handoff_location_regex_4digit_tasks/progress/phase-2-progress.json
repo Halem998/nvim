@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Add the regression suite pinning both accept and reject sides",
+  "started_at": "2026-08-10T15:45:00Z",
+  "last_updated": "2026-08-10T15:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-validate-handoff-location.sh modeled on test-validate-no-task-references.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh"]},
+    {"id": 2, "description": "Assert on exit code (0 allowed, 2 misplaced), never instrument the hook", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Implement accept fixtures: 3-digit, 4-digit (required negative), 4-digit OC_, 5-digit", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Implement reject fixtures: bare filename, specs/ root, non-numeric, 2-digit", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Implement non-trigger fixture: differently-named file ignored", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Use neutral synthetic directory numbers, never a live task number", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Make the file executable", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "scratch-copy revert of {3,} back to {3} to confirm suite pins the fix", "result": "confirmed", "reason": "3 accept fixtures (4-digit, OC_ 4-digit, 5-digit) fail under the reverted pattern; reject and non-trigger fixtures unaffected"}
+  ],
+  "handoff_count": 0
+}

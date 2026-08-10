@@ -147,33 +147,34 @@ token** (plus adjacent comment lines). Confirm at implementation time by running
 
 ---
 
-### Phase 2: Add the regression suite pinning both accept and reject sides [NOT STARTED]
+### Phase 2: Add the regression suite pinning both accept and reject sides [COMPLETED]
 
 **Goal**: A durable, auto-discovered test suite that fails loudly if the 4-digit accept case
 regresses or if the matcher over-widens.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh`,
       modeled structurally on `test-validate-no-task-references.sh`: `mktemp -d` workdir with a
       `trap ... EXIT` cleanup, the hook copied byte-for-byte into the workdir at the relative path
       its `SCRIPT_DIR` resolution expects, synthetic PostToolUse JSON built with `jq -n` and piped
       on stdin, `pass()`/`fail()`/`info()` helpers with `PASSED`/`FAILED` integer counters, and
-      exit 0 all-pass / 1 any-fail / 2 environment error (missing hook or missing `jq`).
-- [ ] Assert on **exit code** (0 = allowed, 2 = misplaced), matching the hook's real contract; the
-      hook must never be instrumented or modified for testability.
-- [ ] Implement the accept fixtures: 3-digit legacy; **4-digit — the required negative test, which
+      exit 0 all-pass / 1 any-fail / 2 environment error (missing hook or missing `jq`). *(completed)*
+- [x] Assert on **exit code** (0 = allowed, 2 = misplaced), matching the hook's real contract; the
+      hook must never be instrumented or modified for testability. *(completed)*
+- [x] Implement the accept fixtures: 3-digit legacy; **4-digit — the required negative test, which
       must NOT trip `HANDOFF_MISLOCATED`**; 4-digit with `OC_` prefix; 5-digit future-proofing.
       For the 4-digit case additionally assert that stderr carries no `MISPLACED` text, so the
-      fixture pins the diagnostic's absence and not merely the exit code.
-- [ ] Implement the reject fixtures: bare `.orchestrator-handoff.json` with no directory;
+      fixture pins the diagnostic's absence and not merely the exit code. *(completed)*
+- [x] Implement the reject fixtures: bare `.orchestrator-handoff.json` with no directory;
       `specs/.orchestrator-handoff.json` (outside any task directory); non-numeric prefix
       (`specs/abc_foo/...`); 2-digit prefix (`specs/42_foo/...`, confirming `{3,}` still enforces a
-      3-digit minimum rather than "any digits").
-- [ ] Implement the non-trigger fixture: a differently-named file such as `handoff-example.json`
-      exits 0, confirming the exact-basename guard is untouched by this change.
-- [ ] Use neutral synthetic directory numbers in fixture paths — never a live task number — so the
+      3-digit minimum rather than "any digits"). *(completed)*
+- [x] Implement the non-trigger fixture: a differently-named file such as `handoff-example.json`
+      exits 0, confirming the exact-basename guard is untouched by this change. *(completed)*
+- [x] Use neutral synthetic directory numbers in fixture paths — never a live task number — so the
       fixtures read as obviously synthetic and stay clear of the deliverable-citation lint.
-- [ ] Make the file executable (`chmod +x`).
+      *(completed: used 042/8842/OC_8842/88420/42/abc synthetic fixtures)*
+- [x] Make the file executable (`chmod +x`). *(completed)*
 
 **Timing**: 45 minutes
 
