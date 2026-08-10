@@ -59,10 +59,10 @@ if [ "$(basename "$FILE")" != ".orchestrator-handoff.json" ]; then
   exit 0
 fi
 
-# Allowed shapes, absolute or relative:
+# Allowed shapes, absolute or relative ({NNN} is 3 or more digits):
 #   specs/{NNN}_{SLUG}/.orchestrator-handoff.json      (Claude Code tasks)
 #   specs/OC_{NNN}_{SLUG}/.orchestrator-handoff.json   (OpenCode tasks)
-if printf '%s' "$FILE" | grep -Eq '(^|/)specs/(OC_)?[0-9]{3}_[^/]+/\.orchestrator-handoff\.json$'; then
+if printf '%s' "$FILE" | grep -Eq '(^|/)specs/(OC_)?[0-9]{3,}_[^/]+/\.orchestrator-handoff\.json$'; then
   echo '{}'
   exit 0
 fi
