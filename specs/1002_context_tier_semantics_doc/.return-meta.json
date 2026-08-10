@@ -1,30 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/1002_context_tier_semantics_doc/plans/01_context-tier-semantics.md",
-      "summary": "Four-phase plan authoring the context tier-semantics standard, its additive index entry, and the DERIVED_TIER back-pointer comment"
-    }
-  ],
-  "next_steps": "Run /implement 1002 to execute the plan",
+  "status": "in_progress",
   "metadata": {
     "session_id": "sess_1786342011_4592c8_1002",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 2,
-    "dependency_waves": [[1], [2, 3], [4]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a documentation task must register a new file in a source-store context index whose entries carry an exact line_count gate (check-extension-docs.sh Rule R), the phase order is forced: author the file to completion first, then wc -l it, then write the index entry. Splitting authoring and registration into separate phases with an explicit dependency is not bureaucratic overhead -- it is what makes the line_count a measured fact rather than an estimate. The same shape applies to any index/manifest whose entries assert a measurable property of the file they point at.",
-      "category": "PATTERN",
-      "source_artifact": "specs/1002_context_tier_semantics_doc/plans/01_context-tier-semantics.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["line_count", "index-entries", "check-extension-docs", "phase-ordering", "measured-not-estimated"]
-    }
-  ],
-  "modified_files": []
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 4
+  }
 }

@@ -1,0 +1,12 @@
+{
+  "phase": 1,
+  "phase_name": "Author context/standards/context-tier-semantics.md",
+  "started_at": "2026-08-10T06:25:47Z",
+  "last_updated": "2026-08-10T06:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write context-tier-semantics.md with single-source-of-truth framing, four-tier rule table, precedence note, tier-field-abandonment rationale, on_demand decision rule, worked example, cross-reference, and back-pointer note", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/context-tier-semantics.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

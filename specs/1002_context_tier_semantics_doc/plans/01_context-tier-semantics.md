@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1002
 
 - **Task**: 1002 - Author the context tier-semantics standard for the derived tier classification
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: Task 991, Task 998 (both already resolved into the current codebase state; no open blocking work)
 - **Research Inputs**: specs/1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md
@@ -108,44 +108,44 @@ concurrently; both require Phase 1's file to exist first.
 
 ---
 
-### Phase 1: Author context/standards/context-tier-semantics.md [NOT STARTED]
+### Phase 1: Author context/standards/context-tier-semantics.md [COMPLETED]
 
 **Goal**: Write the new standards file, complete and final, so its line count is stable before
 Phase 2 records it.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/standards/context-tier-semantics.md`.
-- [ ] Open with a single-source-of-truth statement: the `derived_tier` jq function in
+- [x] Create `agent-system/extensions/core/context/standards/context-tier-semantics.md`. *(completed)*
+- [x] Open with a single-source-of-truth statement: the `derived_tier` jq function in
       `scripts/validate-context-budgets.sh` is authoritative; this document explains and motivates
-      it; if the two disagree, the script wins. Mirror `status-markers.md`'s framing.
-- [ ] Write the four-tier rule table in first-match-wins order. Per tier give (a) the exact
+      it; if the two disagree, the script wins. Mirror `status-markers.md`'s framing. *(completed)*
+- [x] Write the four-tier rule table in first-match-wins order. Per tier give (a) the exact
       `load_when` predicate and (b) its operational meaning — when in an agent's session the entry
-      actually loads.
-- [ ] State the precedence explicitly: an entry with `always: true` AND a non-empty `agents[]`
+      actually loads. *(completed)*
+- [x] State the precedence explicitly: an entry with `always: true` AND a non-empty `agents[]`
       lands in Tier 1, not Tier 2. Note that no entry does this today but the ordering is part of
-      the semantics.
-- [ ] Explain why the authored `tier` field was abandoned, paraphrasing `index.schema.json`'s entry
+      the semantics. *(completed)*
+- [x] Explain why the authored `tier` field was abandoned, paraphrasing `index.schema.json`'s entry
       `$comment` and naming its `additionalProperties: false` enforcement (an authored `tier` key
-      is schema-illegal, not merely discouraged).
-- [ ] Document the `on_demand` marker: what it is for, why it exists as a direct consequence of
+      is schema-illegal, not merely discouraged). *(completed)*
+- [x] Document the `on_demand` marker: what it is for, why it exists as a direct consequence of
       Tier 4's fallthrough-on-emptiness design, and the decision rule — *set `on_demand: true` if
       and only if all `load_when` arrays are empty by deliberate design, i.e. the file is meant to
       be reachable only via grep or explicit Read. Leaving it unset on an all-empty entry is a Dead
-      Entry Check violation, not a lesser tier.*
-- [ ] State the Tier-4-vs-Dead-Entry-Check distinction precisely: Tier 4 is a classification
+      Entry Check violation, not a lesser tier.* *(completed)*
+- [x] State the Tier-4-vs-Dead-Entry-Check distinction precisely: Tier 4 is a classification
       outcome; `on_demand` is an intent marker. Setting `on_demand: true` does not change an
       entry's tier — it only stops the entry being flagged dead. Note that the Dead Entry Check's
-      predicate is independent of the derived tier value.
-- [ ] Add a short worked example: this file's own index entry (all hooks empty, `on_demand: true`,
-      therefore Tier 4) as a self-referential illustration of why an entry lands in Tier 4.
-- [ ] Cross-reference `context/patterns/context-discovery.md`'s "Hook-Shape Policy" section as the
+      predicate is independent of the derived tier value. *(completed)*
+- [x] Add a short worked example: this file's own index entry (all hooks empty, `on_demand: true`,
+      therefore Tier 4) as a self-referential illustration of why an entry lands in Tier 4. *(completed)*
+- [x] Cross-reference `context/patterns/context-discovery.md`'s "Hook-Shape Policy" section as the
       companion doc, framing the split: this doc answers "what tier does this shape produce and what
       does `on_demand` mean"; that one answers "which shape should I author for a given loading
-      intent".
-- [ ] Note that `validate-context-budgets.sh`'s `DERIVED_TIER` header comment points back at this
-      file (the bidirectional half completed in Phase 3).
-- [ ] If any tier-distribution numbers are included, label them explicitly as an illustrative
-      snapshot with no invariant status. Preferably omit counts entirely.
+      intent". *(completed)*
+- [x] Note that `validate-context-budgets.sh`'s `DERIVED_TIER` header comment points back at this
+      file (the bidirectional half completed in Phase 3). *(completed)*
+- [x] If any tier-distribution numbers are included, label them explicitly as an illustrative
+      snapshot with no invariant status. Preferably omit counts entirely. *(completed)*
 
 **Timing**: 1 hour
 
