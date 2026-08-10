@@ -67,7 +67,7 @@
     {
       "project_number": 1000,
       "project_name": "cslib_adversarial_verification_mirror",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Give cslib its own adversarial-verification contract copy and union-valued index entry",
@@ -81,7 +81,7 @@
         992
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T00:50:30Z",
+      "last_updated": "2026-08-10T00:50:34Z",
       "artifacts": [
         {
           "path": "specs/1000_cslib_adversarial_verification_mirror/reports/01_cslib-adversarial-verification-mirror.md",
@@ -338,7 +338,7 @@
     {
       "project_number": 993,
       "project_name": "promote_schema_gates_to_hard",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Promote SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard",
@@ -352,7 +352,7 @@
         992
       ],
       "created": "2026-07-30T01:55:17Z",
-      "last_updated": "2026-08-10T00:50:27Z",
+      "last_updated": "2026-08-10T00:57:37Z",
       "session_id": "sess_1786322063_3251e8_993",
       "artifacts": [
         {
@@ -364,8 +364,14 @@
           "path": "specs/993_promote_schema_gates_to_hard/plans/01_promote-schema-gate-hard.md",
           "type": "plan",
           "summary": "Two-phase plan: (1) flip SCHEMA_CONFORMANCE_GATE_MODE default advisory->hard and rewrite its preceding comment block to post-remediation tense; (2) drop stale 'defaults advisory' clauses from the two header rule-list bullets and run the full verification bar. Single file, all edits in agent-system/extensions/core/scripts/check-extension-docs.sh."
+        },
+        {
+          "path": "specs/993_promote_schema_gates_to_hard/summaries/01_promote-schema-gate-hard-summary.md",
+          "type": "summary",
+          "summary": "Flipped SCHEMA_CONFORMANCE_GATE_MODE default to hard, rewrote its comment block to past tense, and dropped stale 'defaults advisory' header bullets; verified zero Rule T/U findings across all 19 extensions, override escape hatch still functional, and zero task-reference citations introduced."
         }
-      ]
+      ],
+      "completion_summary": "Promoted SCHEMA_CONFORMANCE_GATE_MODE from advisory to hard in check-extension-docs.sh (default flip, comment rewrite, header bullet cleanup); confirmed zero Rule T/U findings across all 19 extensions and that the advisory override remains functional."
     },
     {
       "project_number": 995,
