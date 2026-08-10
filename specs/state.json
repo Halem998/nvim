@@ -113,7 +113,7 @@
       "project_number": 6,
       "project_name": "guard_against_nonadditive_artifact_rewrites",
       "title": "Nothing prevents an agent from rewriting state.json .artifacts wholesale, silently discarding prior artifacts",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -127,12 +127,17 @@
       ],
       "description": "The artifact list in specs/state.json is append-only by intent but not by enforcement. Every\nsanctioned write path is additive, yet an agent that writes state.json directly can replace the\nwhole array, and nothing detects the loss.\n\nSANCTIONED PATHS ARE ALREADY CORRECT (do not change them):\n  - agent-system/extensions/core/scripts/orchestrator-postflight.sh:432 uses `.artifacts += [...]`\n  - agent-system/extensions/core/scripts/reconcile-task-status.sh:172 (link_artifact) likewise\n  - skill_link_artifacts in skill-base.sh routes through state-write.sh\n\nTHE GAP: these are helpers an agent MAY use, not a constraint it MUST satisfy. An implementation\nagent updating state.json with its own jq assignment (`.artifacts = [...]`) bypasses all of them.\nNothing validates that the post-write artifact set is a superset of the pre-write set.\n\nOBSERVED, WITH LOSS: during a real implementation dispatch, an agent updated its task's state.json\nentry and the artifact list went from 11 entries to 8 -- five previously-recorded phase summaries\nwere dropped while two new entries were added. The summary FILES were still on disk; only the\nlinks were destroyed, so nothing failed and no warning was emitted. The loss was caught only by a\nmanual count during postflight review and repaired by hand. Had it not been noticed, the task\nwould have archived with five phase summaries permanently unreferenced.\n\nRELATIONSHIP TO THE STATE-WRITE CONVERSION TASK (adjacent, NOT duplicate -- read before starting):\nthe existing state-write conversion work targets hand-rolled read-modify-write sequences in the\nSOURCE STORE, and its verification bar is a grep for `mv` onto state.json across source files.\nThat bar cannot catch this defect: the offending write came from an AGENT at runtime composing jq\ninline, not from any checked-in script. Converting every source-store writer to state-write.sh\nleaves this hole exactly as open. If the two are worked together, the deliverable here is the\nsuperset-invariant, not another writer conversion.\n\nWORK:\n  1. Add a machine-checkable invariant: for any write touching .artifacts, the resulting set must\n     contain every path present beforehand. Removal must require an explicit, named opt-in\n     (legitimate cases exist -- a genuinely deleted artifact -- and must remain expressible).\n  2. Enforce it where writes actually funnel. state-write.sh is the natural choke point; decide\n     whether the invariant lives there (catches everything routed through it) or in\n     validate-state.sh (catches drift regardless of writer, including direct jq). Prefer the\n     option that ALSO catches a direct jq write, since that is the observed failure mode --\n     enforcing only inside state-write.sh would miss the exact case that motivated this task.\n  3. State the append-only rule explicitly in rules/state-management.md, which currently\n     describes artifact linking formats without ever saying the list is append-only.\n  4. Add a MUST NOT to the implementation agents that write state.json directly: never assign\n     .artifacts wholesale; append, or call the helper.\n\nVERIFICATION BAR:\n  - A fixture write that drops an existing artifact path is REJECTED (or loudly flagged by the\n    validator), and the same write with the opt-in flag is accepted. Both directions executed.\n  - A normal additive link still succeeds unchanged; existing link_artifact / skill_link_artifacts\n    call sites are unaffected.\n  - The check triggers on a direct jq-composed write, not only on state-write.sh traffic.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T06:30:00Z",
-      "last_updated": "2026-08-10T22:32:22Z",
+      "last_updated": "2026-08-10T22:37:19Z",
       "artifacts": [
         {
           "path": "specs/006_guard_against_nonadditive_artifact_rewrites/reports/01_guard-nonadditive-artifact-rewrites.md",
           "type": "report",
           "summary": "Finds all four sanctioned artifact writers use a remove-same-type-then-add pattern (not pure append), so the invariant must be per-type (removed<=added per type), not a strict path superset; recommends implementing it as a new FAIL-level --deep check (D5) in validate-state.sh reusing D4's git-diff mechanism, with a CLI opt-in flag for genuine deletions, plus doc-only touches to skill-base.sh, rules/state-management.md, and a new MUST NOT bullet in general-implementation-agent.md."
+        },
+        {
+          "path": "specs/006_guard_against_nonadditive_artifact_rewrites/plans/01_guard-nonadditive-artifact-rewrites.md",
+          "type": "plan",
+          "summary": "Five-phase plan adding a per-type removed<=added artifact-loss invariant as a FAIL-level --deep check in validate-state.sh, with an --allow-artifact-removal CLI opt-in, bidirectional fixture tests, an explicit append-only rule in rules/state-management.md, and a MUST NOT bullet on general-implementation-agent."
         }
       ],
       "session_id": "sess_1786400631_478c94"
