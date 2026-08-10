@@ -51,7 +51,6 @@ export OPENCODE_ROOT=".opencode"
 case "$command_name" in
   "task"|"research"|"plan"|"implement"|"revise"|"review"|"meta"|"learn"|"refresh"|"convert"|"errors"|"todo")
     # Core workflow commands - execute with full context
-    "task"|"research"|"plan"|"implement"|"revise"|"review"|"meta"|"learn"|"refresh"|"convert"|"errors"|"todo")
     echo "Loading context for $command_name..."
     exec <(echo "#! /usr/bin/env bash"; echo "set -euo pipefail"; echo ""; echo "# Command: $command_name"; echo "# Arguments: $arguments"; echo ""; echo "# Load command definition and execute"; echo "source \"$OPENCODE_ROOT/context/core/patterns/command-integration.sh\""; echo "execute_lean_command \"$command_name\" \"$arguments\"")
     ;;
