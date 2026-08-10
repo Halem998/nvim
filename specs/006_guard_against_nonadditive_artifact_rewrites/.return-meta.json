@@ -1,45 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "session_id": "sess_1786400631_478c94",
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
-  "task_number": 6,
-  "task_name": "guard_against_nonadditive_artifact_rewrites",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/006_guard_against_nonadditive_artifact_rewrites/plans/01_guard-nonadditive-artifact-rewrites.md",
-      "summary": "Five-phase plan adding a per-type removed<=added artifact-loss invariant as a FAIL-level --deep check in validate-state.sh, with an --allow-artifact-removal CLI opt-in, bidirectional fixture tests, an explicit append-only rule in rules/state-management.md, and a MUST NOT bullet on general-implementation-agent."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 5,
-  "dependency_waves": [[1], [2, 4], [3], [5]],
-  "plan_metadata": {
-    "phases": 5,
-    "total_effort_hours": 5,
-    "complexity": "medium",
-    "research_integrated": true,
-    "plan_version": 1,
-    "dependency_waves": [[1], [2, 4], [3], [5]],
-    "reports_integrated": [
-      {
-        "path": "reports/01_guard-nonadditive-artifact-rewrites.md",
-        "integrated_in_plan_version": 1,
-        "integrated_date": "2026-08-10"
-      }
-    ],
-    "skeleton": false,
-    "follow_up_tasks": []
-  },
-  "memory_candidates": [
-    {
-      "content": "In this agent system, specs/state.json's .artifacts array is append-only by INTENT but every sanctioned writer (skill_link_artifacts in skill-base.sh, orchestrator-postflight.sh Stage 8, link_artifact in reconcile-task-status.sh, skill-reviser SKILL.md Stage 8) implements a two-step 'remove-all-of-same-type, then add one' idiom -- the reference pattern taught in context/patterns/inline-status-update.md. Consequence for invariant design: a naive global path-superset rule ('every path present before must still be present') breaks every routine report/plan/summary re-link. The correct shape is a PER-TYPE COUNT invariant, removed(T) <= added(T), which is a no-op for first links (0/1), permits routine 1-for-1 supersession (1/1), and still rejects bulk loss (5 removed/2 added). Generalizable rule: before designing an append-only or monotonicity invariant over a shared data structure, empirically audit what the sanctioned writers actually do -- 'append-only by intent' rarely means literally append-only, and the gap between intent and behavior determines whether the invariant must be stated over sets or over per-partition counts.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/006_guard_against_nonadditive_artifact_rewrites/plans/01_guard-nonadditive-artifact-rewrites.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["append-only", "state.json", "artifacts", "invariant-design", "validate-state", "per-type-count"]
-    }
-  ],
-  "next_steps": "Run /implement 6 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786400631_478c94",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"]
+  }
 }

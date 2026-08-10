@@ -1,7 +1,7 @@
 # Implementation Plan: Task #6
 
 - **Task**: 6 - guard_against_nonadditive_artifact_rewrites
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None (task 5 is adjacent but shares no code surface)
 - **Research Inputs**: `specs/006_guard_against_nonadditive_artifact_rewrites/reports/01_guard-nonadditive-artifact-rewrites.md`
@@ -111,7 +111,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Baseline Drift Triage and Enforcement-Level Decision [NOT STARTED]
+### Phase 1: Baseline Drift Triage and Enforcement-Level Decision [COMPLETED]
 
 **Goal**: Determine empirically whether the live `specs/state.json` already contains net per-type
 artifact loss relative to its prior committed version, and record the resulting binding decision
@@ -120,17 +120,21 @@ written, because it is the single input that decides the check's severity.
 
 **Tasks**:
 
-- [ ] Run the current validator as a control and record the result:
+- [x] Run the current validator as a control and record the result:
       `bash .claude/scripts/validate-state.sh --deep specs/state.json` (capture exit code and the
-      PASS/WARN/FAIL summary counts).
-- [ ] Write a throwaway probe (not committed) that reproduces the intended D5 arithmetic against
+      PASS/WARN/FAIL summary counts). *(completed: exit 1, 13 PASS / 0 WARN / 1 FAIL — the sole
+      FAIL is a pre-existing, unrelated D3 dangling-dependency finding on project 9 -> 1015, not
+      an artifact-loss issue)*
+- [x] Write a throwaway probe (not committed) that reproduces the intended D5 arithmetic against
       the live file: read the prior committed `specs/state.json` via
       `git show "$(git log -1 --format=%H -- specs/state.json)":./specs/state.json`, and for every
       `project_number` present in BOTH the prior and live `active_projects`, compute per-`type`
       `removed = |prior_paths(T) \ cur_paths(T)|` and `added = |cur_paths(T) \ prior_paths(T)|`.
-- [ ] Record every `(project_number, type)` pair where `removed > added`, with the concrete
-      dropped paths.
-- [ ] Apply the decision rule and record the outcome in the implementation summary:
+      *(completed)*
+- [x] Record every `(project_number, type)` pair where `removed > added`, with the concrete
+      dropped paths. *(completed: 0 violating pairs across 14 (project_number, type) pairs
+      checked)*
+- [x] Apply the decision rule and record the outcome in the implementation summary:
       - Zero violating pairs -> the check lands **FAIL-level** (the researched recommendation).
       - Violating pairs found AND every dropped path still exists on disk -> re-link the dropped
         artifacts (append-only, via `state-write.sh` or an additive `jq` `+=`), re-run the probe to
@@ -138,8 +142,11 @@ written, because it is the single input that decides the check's severity.
       - Violating pairs found that cannot be safely repaired -> land **WARN-level** and record an
         explicit promotion criterion ("promote to FAIL once `specs/state.json` shows zero violating
         pairs") in both the script's header comment and the new rules subsection.
-- [ ] Do NOT edit `validate-state.sh` in this phase. The only permitted mutation is an artifact
-      re-link repair under the second branch above.
+      *(completed: zero violating pairs -> FAIL-level is the recorded, binding decision carried
+      into Phase 2)*
+- [x] Do NOT edit `validate-state.sh` in this phase. The only permitted mutation is an artifact
+      re-link repair under the second branch above. *(completed: no repair needed, no code
+      edited)*
 
 **Timing**: 0.5 hours
 
