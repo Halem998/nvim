@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/011_expand_defect_class_vocabulary/reports/01_defect-class-vocabulary-gap.md",
+      "summary": "Confirms the three grounding defects lack a fitting existing defect_class, proposes the minimum new-class set (SESSION_LOCK_CONTENTION, HOOK_REGEX_BOUNDARY_DEFECT, DEPLOY_ORPHAN_DRIFT), and gives exact edit locations in system-defect-record.sh and system-defect-discrimination.md."
+    }
+  ],
+  "next_steps": "Run /plan 11 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786402783_e354c8",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
+    "findings_count": 5
+  },
+  "memory_candidates": [
+    {
+      "content": "In this codebase, a closed enum's canonical enumeration and its bash-validated definition are frequently split across exactly two files: a context/patterns/*.md table (the human-readable, decision-recording source) and a scripts/*.sh case statement (the machine-validated mirror). When asked to extend a vocabulary, grep the whole source store for every existing enum literal (not just the two obvious files) to find all consumers before concluding the edit surface is small -- confirmed here that neither of the two SKILL.md consumer files needed changes because they only produce hardcoded literals, never switch generically over the enum.",
+      "category": "PATTERN",
+      "source_artifact": "specs/011_expand_defect_class_vocabulary/reports/01_defect-class-vocabulary-gap.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["defect_class", "enum-extension", "system-defect-record", "vocabulary-gap", "source-store"]
+    },
+    {
+      "content": "system-defect-discrimination.md documents a deliberate precedent: a new Signal A vocabulary instance may be added to the table before any detector calls system-defect-record.sh for it (see the existing ARTIFACTS_MISSING_ON_SUCCESS row, marked 'not currently computed anywhere'). Naming a defect class and wiring a detector/recorder call are treated as separate, sequential pieces of work, not one atomic change -- useful precedent when a task's scope is explicitly limited to vocabulary naming.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/011_expand_defect_class_vocabulary/reports/01_defect-class-vocabulary-gap.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["defect_class", "signal-a", "detector-wiring", "scope-boundary"]
+    }
+  ]
+}
