@@ -1,31 +1,19 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 997,
   "session_id": "sess_1786322063_3251e8_997",
-  "findings_count": 6,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/997_fix_session_liveness_reason_mislabel/reports/01_verify-liveness-reason-ladder.md",
-      "summary": "Verification/inventory report: confirms session_liveness() ladder matches the task description's root-cause quote exactly at current HEAD, classifies all liveness_reason consumers as opaque interpolation (no literal-string branching risk), confirms cmd_session_list/cmd_session_reap wildcard defaults already preserve the required live:true/no-reap verdict for any new reason with zero code change needed there, finds a third undocumented 'five reasons' claim site (orchestrate-batch-admit.sh line 133) beyond the two named docs, identifies a test-coverage gap (neither named test file currently asserts the reason string for the below-floor dead-pid fixture), and documents the live suffixed-vs-bare session-id self-contention instance as orthogonal and out of scope."
+      "type": "plan",
+      "path": "specs/997_fix_session_liveness_reason_mislabel/plans/01_dead-pid-within-grace-reason.md",
+      "summary": "Two-phase plan adding a sixth session_liveness() reason 'dead-pid-within-grace' for a confirmably-dead pid at or below SESSION_REGISTRY_DEAD_PID_MIN. Phase 1 carries the kill -0 result forward into the ladder's fallback branch, updates the in-file docstring, and adds reason-string assertions to test-session-registry.sh (new case 5a, extended Case 6 dry-run) and test-conflict-predicate.sh (new case 4.2b proving the contend-set is unchanged) with a required falsifiability check. Phase 2 reconciles five doc claims in context/patterns/task-lock.md, the batch-admit-schema.md schema row, and the orchestrate-batch-admit.sh header comment (an explicit file_scope addition), then redeploys and runs the full gate. cmd_session_list, cmd_session_reap, and file-scope-overlap.sh are explicit non-goals since their wildcard defaults already preserve the required live:true/no-reap verdict."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In agent-system/extensions/core/scripts/task-lock.sh, cmd_session_list's live_flag case and cmd_session_reap's reap-set case both key off `dead-pid|stale-heartbeat)` with a `*)` wildcard default. This means session_liveness() can grow new reason strings (beyond the five documented ones) without touching either consumer function -- a new reason automatically gets live:true (list) and is automatically excluded from reap (reap), by construction of the wildcard default. Only session_liveness()'s own ladder and its docstring need updating when adding a reason. session_contention()'s D4 liveness exclusion (file-scope-overlap.sh) likewise filters on the boolean `.live` field, not the reason string, so it's also insulated from new reason strings.",
-      "category": "PATTERN",
-      "source_artifact": "specs/997_fix_session_liveness_reason_mislabel/reports/01_verify-liveness-reason-ladder.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["task-lock.sh", "session_liveness", "wildcard-case-default", "liveness_reason", "session-registry"]
-    },
-    {
-      "content": "orchestrate-batch-admit.sh's --session-id flag must receive the SAME id string registered via task-lock.sh session-register, because session_contention()'s D4 self-exclusion compares them by exact string equality (.session_id != $own_sid). A per-task suffixed session_id (e.g. a bare batch id with a task-number suffix appended) passed as --session-id while the registry holds the bare id causes the self-exclusion to silently fail to match, and the session's own file_scope can contend against itself in later per-task dispatches within the same batch. Observed live in a multi-task /orchestrate run: registry entry used bare id, per-task delegation context carried the suffixed id.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/997_fix_session_liveness_reason_mislabel/reports/01_verify-liveness-reason-ladder.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["session-registry", "self-exclusion", "session_id", "D4", "orchestrate-batch-admit", "self-contention"]
-    }
-  ],
-  "next_steps": "Run /plan 997 to create implementation plan"
+  "phase_count": 2,
+  "estimated_hours": 2,
+  "dependency_waves": [[1], [2]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 997 to execute the plan"
 }

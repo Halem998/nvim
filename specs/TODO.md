@@ -33,7 +33,7 @@ next_project_number: 1004
 
 ### Orchestration Concurrency
 
-997 [RESEARCHED] — session_liveness() in scripts/task-lock.sh reports liveness_reaso
+997 [PLANNED] — session_liveness() in scripts/task-lock.sh reports liveness_reaso
 
 ## Tasks
 
@@ -357,11 +357,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 997. Report a confirmably-dead pid within the grace floor as its own liveness reason
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
 - **Research**: [997_fix_session_liveness_reason_mislabel/reports/01_verify-liveness-reason-ladder.md]
+- **Plan**: [997_fix_session_liveness_reason_mislabel/plans/01_dead-pid-within-grace-reason.md]
 
 **Description**: session_liveness() in scripts/task-lock.sh reports liveness_reason "pid-alive" for a pid that
 `kill -0` just proved is GONE, whenever the entry's age is below SESSION_REGISTRY_DEAD_PID_MIN
