@@ -1,39 +1,44 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 986,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
   "session_id": "sess_1786322063_3251e8_986",
-  "findings_count": 9,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md",
-      "summary": "Re-verified all 9 inventory items from the docs/context review against current source-store state; 7 items fully live and actionable, item 8 (skill-lifecycle.md) already resolved by a predecessor task and dropped from scope, item 6's severity/target estimates corrected. Two new out-of-inventory findings surfaced (stale settings.local.json permission entry; item 7 template inconsistency freshly introduced by task 989 phase 1)."
+      "type": "plan",
+      "path": "specs/986_docs_truth_sweep/plans/01_docs-truth-sweep.md",
+      "summary": "5-phase plan covering the 7 live inventory items plus 3 new findings. Scopes item 5 around a planning-time discovery: claudemd merge sources are manifest-declared via merge_targets, and Rule U's 60-line EXTENSION.md cap is gated on the manifest naming EXTENSION.md as the source, so repointing literature to merge-sources/claudemd.md escapes the cap by construction. Item 8 excised, item 7 reframed as a one-directional template re-sync, item 6 targets corrected to ~114 lines."
     }
   ],
+  "phase_count": 5,
+  "estimated_hours": 6.5,
+  "dependency_waves": [[1, 2], [3], [4], [5]],
+  "plan_metadata": {
+    "phases": 5,
+    "total_effort_hours": 7,
+    "complexity": "complex",
+    "research_integrated": true,
+    "plan_version": 1,
+    "dependency_waves": [[1, 2], [3], [4], [5]],
+    "reports_integrated": [
+      {
+        "path": "reports/01_docs-truth-sweep-findings.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-08-09"
+      }
+    ],
+    "skeleton": false,
+    "follow_up_tasks": []
+  },
   "memory_candidates": [
     {
-      "content": "In this repo, `@`-references inside CLAUDE.md merge-source content (e.g. 'Full documentation: @.claude/context/patterns/X.md') are NOT auto-expanded into every agent prompt -- they only resolve when the target file's index-entries.json load_when matches the current agent/command/task_type. Do not assume a file pointed to by an @-reference in an always-loaded file is itself always-loaded; check its own load_when entry.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["at-reference", "load_when", "context-loading", "always-loaded", "index-entries"]
-    },
-    {
-      "content": "docs/templates/agent-template.md and context/templates/agent-template.md in agent-system/extensions/core are a deliberate two-tier split (user-facing tutorial vs. canonical meta-builder-agent structure), not accidental duplication -- context/templates/agent-template.md:1-5 explicitly documents the split. When a frontmatter-standard task updates one, check the other for staleness rather than assuming redundancy.",
+      "content": "Extension claudemd merge sources are declared in manifest.json's top-level `merge_targets.claudemd.source` (NOT `provides`), and generate_claudemd() in lua/neotex/plugins/ai/shared/extensions/merge.lua concatenates each loaded extension's declared source. Every non-core extension defaults to `EXTENSION.md`; only core uses a `merge-sources/` directory. Critically, check-extension-docs.sh's Rule U (60-line EXTENSION.md cap) is manifest-authoritative: check_extension_md_length returns early unless claudemd_source_for(ext) equals literally 'EXTENSION.md'. So when an extension's CLAUDE.md contribution outgrows 60 lines, the correct move is to repoint merge_targets.claudemd.source at a new `merge-sources/claudemd.md` (a superset containing the old EXTENSION.md body plus the new content) and DELETE the now-unread EXTENSION.md -- this takes the extension out of Rule U's scope by construction rather than fighting a budget. The same script's own rationale comment records core/EXTENSION.md and slidev/EXTENSION.md were deleted rather than trimmed for exactly this reason: a non-source EXTENSION.md is dead weight no code path reads. The required-file check is likewise gated on the manifest naming EXTENSION.md, so deletion does not trip it.",
       "category": "PATTERN",
-      "source_artifact": "specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["agent-template", "canonical-tutorial-split", "frontmatter-standard", "docs-consistency"]
-    },
-    {
-      "content": "Rule U (per-section line budget gate in check-extension-docs.sh, enforced via extension-slim-standard.md) caps an extension's EXTENSION.md at 60 lines as a hard failure. Before relocating large doc sections into an extension's EXTENSION.md, always check current line count against this cap -- e.g. literature/EXTENSION.md was 33 lines and could not absorb a 162-line section without failing the gate; the correct target for large relocated content is the extension's own merge-sources/claudemd.md instead.",
-      "category": "CONFIG",
-      "source_artifact": "specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["rule-u", "extension-slim-standard", "EXTENSION.md", "line-budget", "check-extension-docs"]
+      "source_artifact": "specs/986_docs_truth_sweep/plans/01_docs-truth-sweep.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["merge_targets", "claudemd", "EXTENSION.md", "Rule U", "extension-manifest", "generate_claudemd"]
     }
   ],
-  "next_steps": "Run /plan 986 to create implementation plan"
+  "next_steps": "Run /implement 986 to execute the plan"
 }
