@@ -235,7 +235,7 @@ and Stage 6a becomes a directive check against the loaded text.
 
 ---
 
-### Phase 3: Add a distinct silent-zero signal to `/todo`'s Roadmap branch [NOT STARTED]
+### Phase 3: Add a distinct silent-zero signal to `/todo`'s Roadmap branch [COMPLETED]
 
 **Goal**: `/todo` distinguishes "eligible completed tasks and open roadmap items both existed,
 but nothing matched" from "there was legitimately nothing to compare", in both the dry-run output
@@ -243,7 +243,7 @@ and the final summary.
 
 **Tasks**:
 
-- [ ] `commands/todo.md` Step 3.5.4 (after the `roadmap_eligible_matches` filter, where
+- [x] `commands/todo.md` Step 3.5.4 (after the `roadmap_eligible_matches` filter, where
       `roadmap_eligible_tasks[]`, `roadmap_eligible_matches`, and `roadmap_state` are all in
       scope): derive a new boolean `roadmap_no_match`. Compute the open-checkbox count from
       `roadmap_state` with jq (the items carry a `completed` boolean —
@@ -253,17 +253,22 @@ and the final summary.
       `roadmap_eligible_matches[]` is empty AND the open-checkbox count is greater than zero.
       Define it unconditionally (including in both error-handling fallback blocks, as
       `roadmap_no_match=false`) so no downstream branch reads an unbound variable — matching the
-      existing treatment of `high_confidence_matches`/`silent_noop`.
-- [ ] Add `roadmap_no_match` to the Step 3.5 "Track:" bullet list with a one-line description.
-- [ ] `commands/todo.md` Step 4 (dry-run, currently the three-way branch at lines 402-414): add a
+      existing treatment of `high_confidence_matches`/`silent_noop`. *(completed: added as
+      Step 3.5.5, immediately after the eligibility filter)*
+- [x] Add `roadmap_no_match` to the Step 3.5 "Track:" bullet list with a one-line description.
+      *(completed)*
+- [x] `commands/todo.md` Step 4 (dry-run, currently the three-way branch at lines 402-414): add a
       fourth branch. Keep the existing three verbatim; narrow the first branch's omission
       condition to also require `roadmap_no_match == false`. New branch text:
       `No roadmap items matched this run's {N} eligible completed task(s) against {M} open roadmap item(s) -- no task populated roadmap_items; see completion_data.roadmap_items`
-- [ ] `commands/todo.md` final summary (lines 940-988): add the same line to the output template,
+      *(completed)*
+- [x] `commands/todo.md` final summary (lines 940-988): add the same line to the output template,
       add `OR roadmap_no_match == true` to the "Roadmap" row of the Section Inclusion Rules table,
       and add the fourth bullet to the branch list below it, again narrowing the omission bullet.
-- [ ] Restate the existing invariant unchanged: omission is permitted only when the roadmap parsed
-      successfully AND there was genuinely nothing to compare.
+      *(completed)*
+- [x] Restate the existing invariant unchanged: omission is permitted only when the roadmap parsed
+      successfully AND there was genuinely nothing to compare. *(completed: invariant restated
+      with the added `roadmap_no_match == false` conjunct in both locations)*
 
 **Timing**: 1 hour
 

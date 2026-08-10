@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Add a distinct silent-zero signal to /todo's Roadmap branch",
+  "started_at": "2026-08-10T22:10:00Z",
+  "last_updated": "2026-08-10T22:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Derive roadmap_no_match at Step 3.5.4/3.5.5, define in both fallback blocks", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 2, "description": "Add roadmap_no_match to Step 3.5 Track: list", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 3, "description": "Step 4 dry-run: add fourth branch, narrow omission condition", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 4, "description": "Final summary: add fourth branch line, inclusion table, narrow omission", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 5, "description": "Restate invariant unchanged with added conjunct", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

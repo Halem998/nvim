@@ -293,6 +293,7 @@ if [ ! -f .claude/scripts/roadmap-integration.sh ]; then
   roadmap_warnings='[]'
   high_confidence_matches=0
   silent_noop=false
+  roadmap_no_match=false
 elif [[ "$roadmap_exit" -ne 0 ]] || [[ -z "$roadmap_output" ]]; then
   echo "Warning: roadmap-integration.sh exited $roadmap_exit or produced empty output -- skipping roadmap integration" >&2
   roadmap_state='{"phases":[],"status_tables":[]}'
@@ -301,6 +302,7 @@ elif [[ "$roadmap_exit" -ne 0 ]] || [[ -z "$roadmap_output" ]]; then
   roadmap_warnings='[]'
   high_confidence_matches=0
   silent_noop=false
+  roadmap_no_match=false
 fi
 ```
 
@@ -317,6 +319,29 @@ roadmap_eligible_matches=$(echo "$roadmap_matches_raw" | jq --argjson eligible "
   '[.[] | select(.matched_task as $t | $eligible | index($t) != null)]')
 ```
 
+**Step 3.5.5: `roadmap_no_match` -- distinct silent-zero signal**:
+
+Distinguishes "eligible completed tasks and open roadmap items both existed, but nothing
+matched" from "there was legitimately nothing to compare". Derived from data already in scope
+above -- no new script call, no new matcher tier. `roadmap_open_checkbox_count` is the count of
+still-open (`- [ ]`) items across `roadmap_state`, null-safe against the fallback shape:
+
+```bash
+roadmap_open_checkbox_count=$(echo "$roadmap_state" | jq \
+  '[.phases[].checkboxes.items[]? | select(.completed == false)] | length')
+roadmap_no_match=false
+if [ "${#roadmap_eligible_tasks[@]}" -gt 0 ] && \
+   [ "$(echo "$roadmap_eligible_matches" | jq 'length')" -eq 0 ] && \
+   [ "$roadmap_open_checkbox_count" -gt 0 ]; then
+  roadmap_no_match=true
+fi
+```
+
+`roadmap_no_match` is defined unconditionally on the main path above. It must ALSO be defined
+`false` in both error-handling fallback blocks below (Step 3.5.3's "script missing" and "script
+present but failed" branches), matching the existing treatment of `high_confidence_matches` /
+`silent_noop`, so no downstream branch ever reads an unbound variable.
+
 Track:
 - `roadmap_excluded_tasks[]` - Array of tasks excluded from ROADMAP.md matching (meta tasks, and
   expanded tasks since they have no `completion_summary` of their own by construction)
@@ -327,6 +352,8 @@ Track:
   the sole input to Step 4's dry-run output and Step 5.5's annotation
 - `high_confidence_matches` / `silent_noop` - From `annotation_summary`, always defined even
   though no annotation has run yet (parse-only mode reports 0/false, never an unbound variable)
+- `roadmap_no_match` - True iff eligible completed tasks existed, none matched any roadmap item,
+  and at least one open roadmap checkbox remains; always defined, never left unbound
 
 **Match Types** (the shared script's vocabulary -- both checkbox and table-row matching are live
 paths in the script, regardless of which shape the file currently has. This repository's actual
@@ -399,19 +426,25 @@ Total misplaced: {N}
 Run without --dry-run to archive.
 ```
 
-**Roadmap section inclusion is a three-way branch, never a bare "found nothing" omission**:
-- `roadmap_structure.parseable == true` and `roadmap_eligible_matches[]` is empty: omit the
-  "Roadmap updates" section entirely -- legitimately nothing to do.
+**Roadmap section inclusion is a four-way branch, never a bare "found nothing" omission**:
+- `roadmap_structure.parseable == true`, `roadmap_eligible_matches[]` is empty, AND
+  `roadmap_no_match == false`: omit the "Roadmap updates" section entirely -- legitimately
+  nothing to do.
 - `roadmap_structure.parseable == false`: **always** print, regardless of match count:
   `Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload`
   (matching `commands/review.md`'s wording verbatim).
 - `roadmap_silent_noop == true` (from Step 3.5's `annotation_summary.silent_noop` -- i.e. high
   confidence matches exist but none would apply): print
   `Warning: roadmap annotation no-op ({roadmap_high_confidence_matches} high-confidence match(es), 0 applied) -- see skipped_reasons in the payload`.
+- `roadmap_no_match == true` (eligible completed tasks and open roadmap items both existed, but
+  no task's `roadmap_items` matched any of them): print
+  `No roadmap items matched this run's {N} eligible completed task(s) against {M} open roadmap item(s) -- no task populated roadmap_items; see completion_data.roadmap_items`
+  where `{N}` = `${#roadmap_eligible_tasks[@]}` and `{M}` = `roadmap_open_checkbox_count`.
 
 **Invariant**: omission of the "Roadmap updates" section is permitted only when the roadmap
-parsed successfully (`parseable == true`) and there were genuinely no eligible matches. An
-unparseable roadmap is never reportable as a successful (or silent) annotation pass.
+parsed successfully (`parseable == true`) AND there were genuinely no eligible matches AND
+`roadmap_no_match == false`. An unparseable roadmap is never reportable as a successful (or
+silent) annotation pass.
 
 If no expanded parents were deferred (`deferred_expanded[]` is empty), omit the "Deferred" section.
 
@@ -957,6 +990,9 @@ Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -
 {If roadmap_silent_noop == true:}
 Warning: roadmap annotation no-op ({roadmap_high_confidence_matches} high-confidence match(es), 0 applied) -- see skipped_reasons in the payload
 
+{If roadmap_no_match == true:}
+No roadmap items matched this run's {N} eligible completed task(s) against {M} open roadmap item(s) -- no task populated roadmap_items; see completion_data.roadmap_items
+
 {If CLAUDE.md suggestions:}
 CLAUDE.md: {applied}/{total} suggestions applied
 
@@ -975,17 +1011,19 @@ Next Steps:
 | Directories | directories_moved > 0 |
 | Deferred | deferred_expanded[] is non-empty |
 | Cleanup | orphans_tracked > 0 OR misplaced_moved > 0 |
-| Roadmap | roadmap_completed_annotated + roadmap_abandoned_annotated > 0, OR `parseable == false`, OR `roadmap_silent_noop == true` |
+| Roadmap | roadmap_completed_annotated + roadmap_abandoned_annotated > 0, OR `parseable == false`, OR `roadmap_silent_noop == true`, OR `roadmap_no_match == true` |
 
-Same three-way branch as Step 4's dry-run output:
-- `roadmap_structure.parseable == true` and zero items were annotated: omit the "Roadmap"
-  section -- legitimately nothing to do.
+Same four-way branch as Step 4's dry-run output:
+- `roadmap_structure.parseable == true`, zero items were annotated, AND `roadmap_no_match ==
+  false`: omit the "Roadmap" section -- legitimately nothing to do.
 - `roadmap_structure.parseable == false`: **always** print the unparseable warning line above,
   regardless of annotation counts.
 - `roadmap_silent_noop == true`: print the annotation-no-op warning line above.
+- `roadmap_no_match == true`: print the no-match line above.
 
-**Invariant**: omission is permitted only when the roadmap parsed successfully. An unparseable
-roadmap is never reportable by `/todo` as a successful annotation pass.
+**Invariant**: omission is permitted only when the roadmap parsed successfully AND
+`roadmap_no_match == false`. An unparseable roadmap is never reportable by `/todo` as a
+successful annotation pass.
 
 ## Notes
 
