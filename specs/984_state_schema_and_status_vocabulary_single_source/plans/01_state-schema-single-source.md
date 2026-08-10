@@ -144,34 +144,34 @@ Phase 5 owns `index-entries.json` — no wave-2 phase writes a file another wave
 
 ---
 
-### Phase 1: Schema and status-vocabulary anchor [IN PROGRESS]
+### Phase 1: Schema and status-vocabulary anchor [COMPLETED]
 
 **Goal**: Create `context/schemas/state-schema.json` (draft-07) matching empirically-derived live
 reality, and `scripts/lib/status-vocabulary.sh` as the single sourced enum anchor, with a drift
 test binding the two together.
 
 **Tasks**:
-- [ ] Derive the full property inventory mechanically before writing anything: run
+- [x] Derive the full property inventory mechanically before writing anything: run
       `jq -r '[.active_projects[]|keys[]]|unique|.[]'` and `jq -r 'keys[]'` against BOTH
       `specs/state.json` and `specs/archive/state.json`; record the union.
-- [ ] Write `context/schemas/state-schema.json` (draft-07, `required`/`properties`/
+- [x] Write `context/schemas/state-schema.json` (draft-07, `required`/`properties`/
       `additionalProperties: false`, modeled structurally on `context/schemas/events-schema.json`).
       Document all confirmed-live fields as legitimate properties. Keep `vault_count`,
       `vault_history`, `effort`, `next_artifact_number`, and `reflection` as documented-optional.
-- [ ] Define the task-status enum in the schema as the canonical closed list: `not_started`,
+- [x] Define the task-status enum in the schema as the canonical closed list: `not_started`,
       `researching`, `researched`, `planning`, `planned`, `implementing`, `pr_ready`, `completed`,
       `blocked`, `abandoned`, `partial`, `expanded`. Do NOT include `revising`/`revised`.
-- [ ] Write `scripts/lib/status-vocabulary.sh` modeled on `scripts/lib/phase-heading-patterns.sh`:
+- [x] Write `scripts/lib/status-vocabulary.sh` modeled on `scripts/lib/phase-heading-patterns.sh`:
       export the closed enum, a validation predicate, the state.json-value -> TODO.md-marker
       mapping, and a header documenting the "consumers found live via
       `grep -rl 'status-vocabulary.sh' agent-system/extensions`" self-discovery mechanism.
-- [ ] Write `scripts/tests/test-status-vocabulary.sh` asserting (a) the library's enum is
+- [x] Write `scripts/tests/test-status-vocabulary.sh` asserting (a) the library's enum is
       byte-equal to `jq` extraction of the schema's enum — the anti-drift check — and (b) the
       predicate accepts every enum value and rejects `revising`, `revised`, `research_complete`,
       `ready`, `in_progress`.
-- [ ] Register `schemas/state-schema.json` in `index-entries.json` (follow the shape of the
+- [x] Register `schemas/state-schema.json` in `index-entries.json` (follow the shape of the
       existing `schemas/events-schema.json` entry, including `line_count`).
-- [ ] Register `lib/status-vocabulary.sh` and `tests/test-status-vocabulary.sh` in
+- [x] Register `lib/status-vocabulary.sh` and `tests/test-status-vocabulary.sh` in
       `manifest.json`'s `provides.scripts`.
 
 **Timing**: 1.5 hours
@@ -204,6 +204,26 @@ notes.
 - `bash scripts/lib/status-vocabulary.sh` sources cleanly under `set -euo pipefail` in a probe
   shell and exports the documented symbols.
 - `jq -r '.provides.scripts[]' manifest.json | grep -c 'status-vocabulary'` returns 2.
+
+**Phase Notes (Scope Hypothesis confirmation)**: Ran the `jq` key-union commands against live
+`specs/state.json` (15 active entries) and cross-referenced `specs/archive/state.json` (which uses
+a materially different `archived_projects`/`abandoned_projects`/`completed_projects` shape with
+many one-off historical fields, e.g. `researching_2`, `plan_metadata`, `previous_status` — not a
+schema-conformance target; used only to confirm `effort`/`next_artifact_number` liveness per the
+research report). Derived per-entry field union: `project_number`, `project_name`, `status`,
+`task_type`, `created`, `last_updated`, `dependencies`, `topic`, `description`, `title` present on
+15/15 entries; `file_scope` 14/15; `artifacts` 11/15; `session_id` 8/15; `completion_summary` 5/15;
+`effort`/`next_artifact_number`/`roadmap_items`/`memory_candidates`/`reflection` 0/15 (all
+genuinely sparse pre-completion, matching the research report's finding, not evidence of dead
+fields). Top-level: `next_project_number`, `active_projects`, `active_topics`, `completed_projects`,
+`repository_health` (+ sub-fields `todo_count`/`fixme_count`/`build_errors`), `memory_health`,
+`version` all present live; `vault_count`/`vault_history` absent live (expected — vault trigger has
+never fired) but documented-optional in the schema per the report's recommendation. One addition
+beyond the report's inventory: `default_task_type` (documented in the root CLAUDE.md, consumed by
+`commands/task.md`, absent from the live snapshot) was added to the schema as an optional,
+nullable top-level field since it is a real, consumed field even though currently unset. No other
+divergence from the report's inventory was found — the derived union matches the report's finding
+set exactly.
 
 ---
 
