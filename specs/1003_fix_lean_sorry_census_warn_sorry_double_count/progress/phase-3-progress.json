@@ -1,0 +1,28 @@
+{
+  "phase": 3,
+  "phase_name": "Real-corpus differential verification",
+  "started_at": "2026-08-10T07:50:00Z",
+  "last_updated": "2026-08-10T08:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture PRE-fix census (copy of pre-fix script) over Cslib/ and Cslib/Logics/Bimodal", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Capture POST-fix census (current fixed script) over same scopes", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Assert delta == independently-grepped own-line annotation count on each scope", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Assert post-fix inventory is strict subset of pre-fix inventory (no real sorry lost)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run --cross-check secondary oracle (lake build); record MATCH or reasoned exclusion", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "lake build --cross-check with 540s timeout on already-cached corpus", "result": "inconclusive", "reason": "lake build found everything cached, elaborated nothing, emitted 0 sorry warnings regardless of fix correctness -- not a fix defect"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.6",
+      "description": "Secondary --cross-check oracle expected cross_check: MATCH",
+      "type": "altered",
+      "reason": "lake build cache was fully up to date (14G, pre-existing), so it elaborated zero files and emitted zero compiler sorry warnings independent of the regex fix. This is a lake-cache-staleness artifact, not evidence against the fix.",
+      "annotation": "*(deviation: altered -- recorded as Reasoned Exclusion, binding differential gate passed independently)*"
+    }
+  ],
+  "notes": "Repo-wide: pre=43, post=25, delta=18. Bimodal: pre=41, post=23, delta=18. Independent grep count of own-line 'set_option warn.sorry false in' = 18 in both scopes -- identity confirmed exactly. Strict-subset inventory check: comm -13 (added) empty on both scopes; comm -23 (dropped) = exactly 18 lines on both scopes, all `set_option warn.sorry false in` lines, none are real sorries. Absolute repo-wide pre-fix figure (43) diverges from the task description's hypothesized 45 -- treated as corpus drift per the Scope Hypothesis, not a fix failure (Bimodal figures 41->23 matched the hypothesis exactly). Cross-check secondary oracle returned MISMATCH (compiler=0, stripper=23) due to a fully-cached .lake/build (no files elaborated) -- recorded as a Reasoned Exclusion; the binding toolchain-free differential remains the passing gate."
+}

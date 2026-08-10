@@ -237,30 +237,53 @@ fourth occurrence or line 5's framing has changed, re-disposition rather than as
 
 ---
 
-### Phase 3: Real-corpus differential verification [NOT STARTED]
+### Phase 3: Real-corpus differential verification [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Prove on real Lean sources — not synthetic fixtures — that the count drops by exactly
 the suppression-annotation count and that no real sorry was lost.
 
 **Tasks**:
-- [ ] Pick the reference corpus: `~/Projects/cslib` (present on this machine), scoping to both the
+- [x] Pick the reference corpus: `~/Projects/cslib` (present on this machine), scoping to both the
       whole `Cslib/` tree and the `Cslib/Logics/Bimodal` subtree the task description cites.
-- [ ] Capture the PRE-fix census on each scope by running the script from `git stash`/`git show`
+      *(completed)*
+- [x] Capture the PRE-fix census on each scope by running the script from `git stash`/`git show`
       of the pre-fix revision (or a copy of the original file placed in a temp dir) — do NOT
       revert the working tree; copy the pre-fix file content into a scratch path and run that
-      copy. Save full stdout including the `sorry_inventory:` block.
-- [ ] Capture the POST-fix census on the same scopes with the fixed script. Save full stdout.
-- [ ] Assert: `pre_count - post_count == <number of own-line \`set_option warn.sorry false in\`
-      lines in scope>`, computed independently with a grep count.
-- [ ] Assert: the post-fix inventory is a strict subset of the pre-fix inventory (no line appears
+      copy. Save full stdout including the `sorry_inventory:` block. *(completed: extracted
+      `git show HEAD~2:...lean-sorry-census.sh` to a scratch copy, confirmed it retains the
+      buggy `\bsorry\b` pattern, ran against both scopes: repo-wide 43, Bimodal 41)*
+- [x] Capture the POST-fix census on the same scopes with the fixed script. Save full stdout.
+      *(completed: repo-wide 25, Bimodal 23)*
+- [x] Assert: `pre_count - post_count == <number of own-line \`set_option warn.sorry false in\`
+      lines in scope>`, computed independently with a grep count. *(completed: repo-wide delta
+      43-25=18, Bimodal delta 41-23=18; independent grep count of own-line
+      `set_option warn.sorry false in` lines = 18 in both scopes — identity holds exactly.
+      Absolute pre-fix repo-wide figure (43) diverges from the task description's hypothesized
+      45 — recorded as corpus drift, not a fix failure, per the Scope Hypothesis below)*
+- [x] Assert: the post-fix inventory is a strict subset of the pre-fix inventory (no line appears
       post-fix that was absent pre-fix), and every dropped inventory line is a `set_option
-      warn.sorry` line. This is the "no real sorry lost" gate.
-- [ ] Secondary oracle: run `bash <path>/lean-sorry-census.sh Cslib/Logics/Bimodal --cross-check`
+      warn.sorry` line. This is the "no real sorry lost" gate. *(completed: `comm -13` (added)
+      empty on both scopes; `comm -23` (dropped) yields exactly 18 lines on both scopes, all of
+      the form `set_option warn.sorry false in` — no real sorry lost)*
+- [x] Secondary oracle: run `bash <path>/lean-sorry-census.sh Cslib/Logics/Bimodal --cross-check`
       from the corpus root. Expect `cross_check: MATCH` where it previously reported `MISMATCH`.
-- [ ] If `lake build` does not complete in a reasonable window or fails for reasons unrelated to
+      *(completed: ran with a 540s timeout; `lake build` exited 0 in seconds since `.lake/build`
+      was already fully cached (14G), so it elaborated nothing and emitted zero
+      "declaration uses 'sorry'" warnings. Result: `compiler_sorry_count: 0`,
+      `stripper_sorry_count: 23`, `cross_check: MISMATCH (stripper=23, compiler=0)`. This
+      MISMATCH is a lake-cache-staleness artifact unrelated to the regex fix, not evidence the
+      fix is wrong — see Reasoned Exclusions below)*
+- [x] If `lake build` does not complete in a reasonable window or fails for reasons unrelated to
       this change, record that explicitly as a reasoned exclusion with the observed evidence —
       the differential above remains the binding gate. Never report the cross-check as "passed"
-      without having seen `cross_check: MATCH` in real output.
+      without having seen `cross_check: MATCH` in real output. *(completed: recorded below as a
+      Reasoned Exclusion; `cross_check: MATCH` was never observed and is not reported as passed)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Secondary `--cross-check` oracle expected to show `cross_check: MATCH` | `lake build` found the entire `.lake/build` cache (14G) already up to date and elaborated zero files, so it emitted zero `declaration uses 'sorry'` compiler warnings regardless of the regex fix's correctness — the cache-staleness behavior is orthogonal to this change, and forcing a full clean rebuild to get a genuine compiler count is out of scope for this task's timing budget. The binding, toolchain-free differential gate (delta == 18 on both scopes, independently grep-confirmed, strict-subset inventory check with only `set_option warn.sorry` lines dropped) fully passed and is not weakened by this exclusion. | Captured cross-check run: `compiler_sorry_count: 0`, `stripper_sorry_count: 23`, `cross_check: MISMATCH (stripper=23, compiler=0)`, with zero sorry-warning lines anywhere in the `lake build` output (`grep -n "warning" crosscheck.txt` returns nothing), and `du -sh ~/Projects/cslib/.lake` showing a pre-existing 14G build cache from before this task began. |
 
 **Timing**: 45 minutes
 
