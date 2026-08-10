@@ -252,6 +252,7 @@ Ladder), and territory params (when applicable):
   "effort_flag": "hard",
   "model_flag": "{model_flag from command}",
   "plan_path": "{plan_path}",
+  "roadmap_path": "specs/ROADMAP.md",
   "phase_number": "{next_phase when orchestrator_mode=true, null otherwise}",
   "territory": "{territory params from orchestrate-hard dispatch, null if not provided}",
   "orchestrator_mode": "{orchestrator_mode}",

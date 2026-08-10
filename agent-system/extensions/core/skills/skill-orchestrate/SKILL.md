@@ -350,7 +350,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Implement task $task_number following the plan" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -421,7 +421,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Resume implementation for task $task_number from continuation handoff" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -482,7 +482,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Resume implementation for task $task_number (no continuation handoff; resume context recovered from the prior dispatch's return metadata)" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -1224,7 +1224,7 @@ After Agent tool returns: read handoff to confirm revision.
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Implement task $task_number following the revised plan" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, session_id, orchestrator_mode: true, plan_path: revised_plan_path, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
+| `context` | `{ task_number, session_id, orchestrator_mode: true, plan_path: revised_plan_path, roadmap_path: "specs/ROADMAP.md", task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
 
 After Agent tool returns: read handoff.
 
@@ -2006,7 +2006,7 @@ For each task in `implement_tasks`:
   single-task Stage 4/Stage 5 handlers above) — and **normalizing** the result to
   `{ handoff_path, orchestrator_mode: true }`, or `null` if neither form is present
 - `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
+- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 

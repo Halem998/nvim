@@ -187,6 +187,7 @@ construct a new one at this stage.
   "effort_flag": "{effort_flag from command, null if not set}",
   "model_flag": "{model_flag from command, null if not set}",
   "plan_path": "specs/{NNN}_{SLUG}/plans/MM_{short-slug}.md",
+  "roadmap_path": "specs/ROADMAP.md",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
 }
 ```

@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Thread roadmap_path into every implementation-agent dispatch context",
+  "started_at": "2026-08-10T21:31:23Z",
+  "last_updated": "2026-08-10T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate all dispatch sites (Scope Hypothesis confirmation)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "skill-implementer/SKILL.md Stage 4: add roadmap_path", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-implementer/SKILL.md"]},
+    {"id": 3, "description": "skill-implementer-hard/SKILL.md Stage 4: add roadmap_path", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"]},
+    {"id": 4, "description": "skill-orchestrate/SKILL.md: add roadmap_path to 5 context objects", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "skill-orchestrate-hard/SKILL.md: add roadmap_path to dispatch_context", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -680,6 +680,7 @@ elif [ -n "$next_phase" ]; then
     "orchestrator_mode": true,
     "effort_flag": "hard",
     "plan_path": "'$plan_path'",
+    "roadmap_path": "specs/ROADMAP.md",
     "phase_number": '$next_phase',
     "task_dir": "'$TASK_DIR_ABS'",
     "handoff_path": "'$HANDOFF_PATH_ABS'"

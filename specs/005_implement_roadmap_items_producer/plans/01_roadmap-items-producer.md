@@ -1,7 +1,7 @@
 # Implementation Plan: Task #5
 
 - **Task**: 5 - implement_roadmap_items_producer (roadmap_items is never derived by any implement path, so /todo's ROADMAP sync is dead in practice)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None (stated dependency 1004 confirmed satisfied/vaulted by the research report)
 - **Research Inputs**: specs/005_implement_roadmap_items_producer/reports/01_roadmap-items-producer.md
@@ -121,26 +121,31 @@ Phases within the same wave can execute in parallel. Phases 1, 2, and 3 touch di
 
 ---
 
-### Phase 1: Thread `roadmap_path` into every implementation-agent dispatch context [NOT STARTED]
+### Phase 1: Thread `roadmap_path` into every implementation-agent dispatch context [COMPLETED]
 
 **Goal**: Every path that spawns an implementation agent supplies `"roadmap_path":
 "specs/ROADMAP.md"` in its delegation/context object, mirroring `skill-planner/SKILL.md:207`.
 
 **Tasks**:
 
-- [ ] Enumerate all dispatch sites before editing (see Scope Hypothesis below); record the actual
-      list found.
-- [ ] `skills/skill-implementer/SKILL.md` Stage 4: add `"roadmap_path": "specs/ROADMAP.md",` to
+- [x] Enumerate all dispatch sites before editing (see Scope Hypothesis below); record the actual
+      list found. *(completed: confirmed exactly 8 sites — 2 implementer skills + 5 in
+      skill-orchestrate/SKILL.md (lines 353, 424, 485, 1227, 2009) + 1 in
+      skill-orchestrate-hard/SKILL.md (dispatch_context block ~676-686) — matching the Scope
+      Hypothesis exactly)*
+- [x] `skills/skill-implementer/SKILL.md` Stage 4: add `"roadmap_path": "specs/ROADMAP.md",` to
       the delegation-context JSON block, placed adjacent to `plan_path` (matches the planner
-      skill's placement convention).
-- [ ] `skills/skill-implementer-hard/SKILL.md`: same addition to its delegation-context JSON
-      block (around line 254, near `plan_path`).
-- [ ] `skills/skill-orchestrate/SKILL.md`: add `roadmap_path: "specs/ROADMAP.md"` to each inline
+      skill's placement convention). *(completed)*
+- [x] `skills/skill-implementer-hard/SKILL.md`: same addition to its delegation-context JSON
+      block (around line 254, near `plan_path`). *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md`: add `roadmap_path: "specs/ROADMAP.md"` to each inline
       `context` object in the implementation-dispatch tables (initial dispatch, resume dispatch,
       the third dispatch table, the post-revise re-dispatch, and the multi-task dispatch).
-- [ ] `skills/skill-orchestrate-hard/SKILL.md`: same addition to its `$IMPLEMENT_AGENT` dispatch
-      context.
-- [ ] Do NOT add `roadmap_path` to research or planner dispatch contexts — they already have it.
+      *(completed: 5 sites)*
+- [x] `skills/skill-orchestrate-hard/SKILL.md`: same addition to its `$IMPLEMENT_AGENT` dispatch
+      context. *(completed)*
+- [x] Do NOT add `roadmap_path` to research or planner dispatch contexts — they already have it.
+      *(completed: verified via diff review, no research/planner context objects touched)*
 
 **Timing**: 1 hour
 
