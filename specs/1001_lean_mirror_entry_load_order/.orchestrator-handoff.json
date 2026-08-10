@@ -1,0 +1,22 @@
+{
+  "phase": "research",
+  "status": "researched",
+  "summary": "Confirmed merge.lua upserts index entries by path (whole-entry replace, no field merge). Lean's contracts/adversarial-verification.md entry lists only lean-research-hard-agent, narrower than core's general-research-hard-agent entry -- a lean-after-core deploy would silently drop the core agent's hook. Audit found two more identical-shape pairs (reference-grounding.md, anti-analysis.md, core vs lean) plus a distinct same-file duplicate inside cslib's own index-entries.json (ci-pipeline.md). Recommends applying task 1000's proven union-valued load_when.agents fix to lean's entry, verified via actual merge reconstruction.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
+      "summary": "Load-order defect root cause, lean fix recommendation, and full cross-extension duplicated-path audit (4 findings)."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Apply task 1000's proven union-valued load_when.agents pattern to lean's contracts/adversarial-verification.md entry rather than designing a new approach",
+    "Scope the fix to only the entry named in WORK item 1; leave reference-grounding.md, anti-analysis.md, and cslib's internal ci-pipeline.md duplicate as recorded audit findings, not fixed here"
+  ],
+  "dead_ends": []
+}

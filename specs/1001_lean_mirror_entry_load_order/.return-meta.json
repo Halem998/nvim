@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
+      "summary": "Confirms merge.lua's append_index_entries upserts index entries by path (whole-entry replace, no per-field merge); documents the lean contracts/adversarial-verification.md single-agent entry as the named defect; audits all extensions and finds two more core/lean pairs with the identical shape (reference-grounding.md, anti-analysis.md) plus a distinct same-file duplicate in cslib's own index-entries.json (ci-pipeline.md); recommends the union-valued load_when.agents fix proven by task 1000's cslib precedent, verified via actual merge reconstruction."
+    }
+  ],
+  "next_steps": "Run /plan 1001 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786342011_4592c8_1001",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 4
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo's extension system, lua/neotex/plugins/ai/shared/extensions/merge.lua's M.append_index_entries upserts index.json entries strictly BY PATH: it replaces the whole matching entry object in place (no per-field merge) when two entries share a path, whether the collision is cross-extension (last-extension-processed wins) or WITHIN a single extension's own index-entries.json array (later array position wins). Any mirror/duplicate index entry for a path another extension (or the same extension, twice) also declares MUST use a union-valued load_when.agents, or a narrower entry silently drops the other's agent hook with no error anywhere. Established/proven pattern: task 1000's cslib mirror fix, verified by an actual headless-Neovim merge reconstruction rather than static JSON inspection.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["index-entries.json", "upsert-by-path", "load_when.agents", "merge.lua", "extension-loader"]
+    },
+    {
+      "content": "check-extension-docs.sh's Rule R (source-file existence) and Rule T (forbidden load_when keys) are the only existing lint rules touching index-entries.json load_when structure, and neither detects a duplicated path across extensions (or within one extension's own file) whose load_when.agents sets are narrower than their union. This defect class is currently invisible to all automated gates in the repo; a jq one-liner over agent-system/extensions/*/index-entries.json (group by .path, flag count>1) is the manual audit technique used to surface it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1001_lean_mirror_entry_load_order/reports/01_lean-mirror-load-order-defect.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["check-extension-docs.sh", "Rule R", "lint-gap", "duplicate-path-audit", "jq"]
+    }
+  ]
+}
