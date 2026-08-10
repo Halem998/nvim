@@ -492,33 +492,36 @@ than three remain, reduce the exception count accordingly.
 
 ---
 
-### Phase 8: Rewrite the EXCEPTIONS block with measured floors [NOT STARTED]
+### Phase 8: Rewrite the EXCEPTIONS block with measured floors [COMPLETED]
 
 **Goal**: Replace the stale, inert single exception with three accurate per-agent exceptions
 whose caps are the Phase 7 measured totals and whose justifications state real current
 composition.
 
 **Tasks**:
-- [ ] Replace the `EXCEPTIONS` associative array. The current entry is stale on three independent
+- [x] Replace the `EXCEPTIONS` associative array. The current entry is stale on three independent
       counts: it names `patterns/checkpoint-execution.md`, which
       `general-implementation-agent.md` no longer references; its declared cap of 8,048 is far
       below the measured total, making the exception inert (the `elif` branch requires
       `total_tokens <= exception_cap`); and its token figures use an outdated line-count ratio.
-- [ ] Write one entry per surviving agent, with `exception_cap` set to the Phase 7 measured total
+      *(completed)*
+- [x] Write one entry per surviving agent, with `exception_cap` set to the Phase 7 measured total
       (with a small deliberate headroom allowance stated in the justification, so ordinary drift
       does not immediately re-break the gate) and a justification naming the actual irreducible
       composition — the 9,248-token shared core bundle plus that agent's specific unconditional
-      domain content.
-- [ ] Generalize the hardcoded summary narration block, which currently prints
+      domain content. *(completed: caps 17,188 / 15,836 / 14,604, each measured total + 500
+      headroom)*
+- [x] Generalize the hardcoded summary narration block, which currently prints
       `general-implementation-agent`'s stale composition as literal text regardless of the
       `EXCEPTIONS` contents. Replace it with a loop over `EXCEPTIONS` so the two can never drift
-      apart again — this same drift is what made the existing exception misleading.
-- [ ] Add a maintenance note in the script stating that these caps are computed from current file
+      apart again — this same drift is what made the existing exception misleading. *(completed:
+      loop over EXCEPTIONS_APPLIED_TOTALS, reading cap/justification live from EXCEPTIONS)*
+- [x] Add a maintenance note in the script stating that these caps are computed from current file
       sizes and must be recomputed whenever the core bundle's files change, and that the
-      structural cause is core-doc size rather than hook authorship.
-- [ ] Confirm no task-number references appear anywhere in the added text. This file is a
+      structural cause is core-doc size rather than hook authorship. *(completed)*
+- [x] Confirm no task-number references appear anywhere in the added text. This file is a
       deliverable outside `specs/**`; cite file names and token composition as the durable
-      anchors.
+      anchors. *(completed: check-task-references.sh PASS)*
 
 **Timing**: 0.75 hours
 

@@ -1,0 +1,47 @@
+{
+  "phase": 8,
+  "phase_name": "Rewrite the EXCEPTIONS block with measured floors",
+  "started_at": "2026-08-10T03:15:00Z",
+  "last_updated": "2026-08-10T03:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace the stale, inert single EXCEPTIONS entry with three accurate per-agent entries",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"],
+      "note": "Replaced the single stale entry (general-implementation-agent, cap 8,048, naming patterns/checkpoint-execution.md which is no longer referenced) with three entries keyed on the Phase 7 measured totals: general-implementation-agent (measured 16,688, cap 17,188), neovim-implementation-agent (measured 15,336, cap 15,836), nix-implementation-agent (measured 14,104, cap 14,604). Each cap = measured total + 500-token deliberate headroom, documented inline. Justification text names the full entry-by-entry composition from Phase 7's --verbose listing, grouped as the shared 9,248-token core bundle plus each agent's specific unconditional domain content."
+    },
+    {
+      "id": 2,
+      "description": "Generalize the hardcoded summary narration block into a loop over EXCEPTIONS",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"],
+      "note": "Added EXCEPTIONS_APPLIED_TOTALS associative array, populated in the Agent Budget Check loop only when an agent's exception actually fires this run. The summary block now loops over that array's keys, reading cap/justification live from EXCEPTIONS, so the narration and the array can never drift apart again -- this is the direct fix for the exact defect this file's own history demonstrated (the old block printed general-implementation-agent's stale composition as literal text regardless of EXCEPTIONS contents)."
+    },
+    {
+      "id": 3,
+      "description": "Add a maintenance note about recomputation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-context-budgets.sh"],
+      "note": "Added a comment block above the EXCEPTIONS declaration stating: caps are computed from file sizes measured at authoring time; recompute via --verbose whenever a named file's content size changes; the structural cause is core-doc size (the 9,248-token shared bundle), not hook authorship; and an explicit warning against letting a cap go stale and inert the way the prior single entry did."
+    },
+    {
+      "id": 4,
+      "description": "Confirm no task-number references appear in the added text",
+      "status": "done",
+      "files_touched": [],
+      "note": "bash .claude/scripts/check-task-references.sh: PASS, 0 unexempted occurrences across all 4 scanned trees including agent-system/extensions."
+    },
+    {
+      "id": 5,
+      "description": "Verify: bash -n, no stale literals, full validator run",
+      "status": "done",
+      "files_touched": [],
+      "note": "bash -n passes. Confirmed no 'echo' statement contains the stale literals (checkpoint-execution, 8,048/8048, 4,016) -- only explanatory comments describing the historical defect for future maintainers reference them, never printed output. After deploy-headless.sh: validate-context-budgets.sh reports Violations: 0, exit 0, exactly 3 OK* rows with narration exactly matching EXCEPTIONS array contents. No CAPS value changed (meta-builder-agent/planner-agent still 15000, all others still 8000)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

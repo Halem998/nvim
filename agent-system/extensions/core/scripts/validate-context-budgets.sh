@@ -27,6 +27,10 @@ VIOLATIONS=0
 # for the current criterion.
 WARNINGS=0
 EXCEPTIONS_APPLIED=0
+# Populated in the Agent Budget Check loop below, keyed by agent, only for agents whose
+# documented exception actually applied this run. Consumed by the generalized summary
+# narration loop so the two can never drift apart -- see that loop's comment for why.
+declare -A EXCEPTIONS_APPLIED_TOTALS=()
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -111,9 +115,33 @@ declare -A CAPS=(
 )
 
 # Documented exceptions (agents that cannot meet strict cap with minimum essential context)
-# Format: agent=actual_realistic_cap (with justification)
+#
+# Format: agent=cap:justification, where cap = measured total (recomputed against the current
+# deployed index; see the recomputation note below) plus a small fixed 500-token headroom so
+# ordinary content drift (a line or two added to a hooked file) does not immediately re-break
+# the gate. This differs from raising a CAPS value: CAPS above stays fixed at each agent's real
+# budget ceiling, and an EXCEPTIONS entry is a separate, narrower, per-agent override that still
+# fails loudly (falls through to a plain OVER) the moment the agent's real composition grows
+# meaningfully past this recorded floor -- it is not a blank check.
+#
+# All three agents below share the same structural cause: the shared "always-loaded"
+# implementation core bundle -- formats/return-metadata-file.md (4,768 tok) +
+# formats/progress-file.md (2,160 tok) + formats/summary-format.md (608 tok) +
+# contracts/phase-closure.md (856 tok) + contracts/pre-edit-gate.md (856 tok) = 9,248 tokens --
+# already exceeds the 8,000-token cap before any agent-specific domain content is counted. This
+# is a core-doc size problem, not a hook-authorship problem; see the recomputation note below.
+#
+# RECOMPUTATION NOTE: these caps and justifications are computed from file sizes measured at
+# authoring time. Whenever any file named in a justification below changes size (edited content,
+# not just a hook change), recompute with:
+#   bash .claude/scripts/validate-context-budgets.sh --verbose
+# and update the affected entry's cap/justification to match -- do not leave a stale cap in
+# place the way the single prior entry (general-implementation-agent at a stale 8,048 against a
+# real 68,568) went unnoticed and inert for an extended period.
 declare -A EXCEPTIONS=(
-  ["general-implementation-agent"]="8048:return-metadata-file(4016)+checkpoint-execution(2032)+progress-file(2000) is minimum irreducible set"
+  ["general-implementation-agent"]="17188:9,248-token shared core bundle (return-metadata-file 4768+progress-file 2160+summary-format 608+phase-closure 856+pre-edit-gate 856) plus this agent's unconditional domain content -- git-staging-scope(2624)+subagent-continuation-loop(1720)+context-exhaustion-detection(1688)+checkpoint-before-overflow(1408) -- measured total 16,688, +500 headroom"
+  ["neovim-implementation-agent"]="15836:9,248-token shared core bundle (return-metadata-file 4768+progress-file 2160+summary-format 608+phase-closure 856+pre-edit-gate 856) plus this agent's unconditional domain content -- project/neovim/standards/lua-style-guide(2472)+project/neovim/patterns/plugin-spec(2136)+project/neovim/patterns/keymap-patterns(1480) -- measured total 15,336, +500 headroom"
+  ["nix-implementation-agent"]="14604:9,248-token shared core bundle (return-metadata-file 4768+progress-file 2160+summary-format 608+phase-closure 856+pre-edit-gate 856) plus this agent's unconditional domain content -- project/nix/standards/nix-style-guide(2328)+project/nix/domain/nix-language(1720)+project/nix/README(808) -- measured total 14,104, +500 headroom"
 )
 
 echo "--- Agent Budget Check ---"
@@ -146,6 +174,7 @@ for agent in "${!CAPS[@]}"; do
     printf "%-35s %8s %8s %12s\n" "$agent" "$total_tokens" "$cap" "OK*"
     WARNINGS=$((WARNINGS + 1))
     EXCEPTIONS_APPLIED=$((EXCEPTIONS_APPLIED + 1))
+    EXCEPTIONS_APPLIED_TOTALS["$agent"]="$total_tokens"
     if [[ "$VERBOSE" == "true" ]]; then
       echo "    * Documented exception: $exception_reason"
     fi
@@ -414,11 +443,21 @@ if [[ $WARNINGS -gt 0 ]]; then
 fi
 if [[ $EXCEPTIONS_APPLIED -gt 0 ]]; then
   echo "Documented exceptions: $EXCEPTIONS_APPLIED (OK* entries)"
-  echo "  * general-implementation-agent: 8,048 tokens vs 8,000 cap"
-  echo "    Minimum essential set cannot be reduced below this value:"
-  echo "    - formats/return-metadata-file.md (4,016 tok) -- critical for all subagents"
-  echo "    - patterns/checkpoint-execution.md (2,032 tok) -- critical for phase tracking"
-  echo "    - formats/progress-file.md (2,000 tok) -- critical for resumable execution"
+  # Generalized loop over EXCEPTIONS (not a hardcoded literal per agent): this is the fix for
+  # the exact drift this file's history already demonstrated once -- the prior version of this
+  # block printed general-implementation-agent's stale 8,048/4,016/2,032/2,000 composition as
+  # literal text regardless of what EXCEPTIONS actually declared, so the two silently diverged.
+  # Looping over EXCEPTIONS_APPLIED_TOTALS (populated only for agents whose exception fired this
+  # run, in the Agent Budget Check loop above) means the narration is always derived from the
+  # live array contents and the live measured total, never copy-pasted prose.
+  for agent in "${!EXCEPTIONS_APPLIED_TOTALS[@]}"; do
+    exception_data="${EXCEPTIONS[$agent]}"
+    exception_cap="${exception_data%%:*}"
+    exception_reason="${exception_data#*:}"
+    applied_total="${EXCEPTIONS_APPLIED_TOTALS[$agent]}"
+    echo "  * ${agent}: ${applied_total} tokens vs ${CAPS[$agent]} cap (exception cap ${exception_cap})"
+    echo "    ${exception_reason}"
+  done
 fi
 
 if [[ $VIOLATIONS -eq 0 ]]; then
