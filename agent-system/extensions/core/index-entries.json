@@ -15,12 +15,11 @@
         "system-design"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "architecture/context-layers.md",
@@ -37,12 +36,11 @@
         "context-loading"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "architecture/generation-guidelines.md",
@@ -59,12 +57,11 @@
         "system-design"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "architecture/system-overview.md",
@@ -81,12 +78,11 @@
         "system-design"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "checkpoints/checkpoint-commit.md",
@@ -198,12 +194,11 @@
         "standards"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "formats/command-structure.md",
@@ -220,12 +215,11 @@
         "standards"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "formats/errors-format.md",
@@ -292,12 +286,11 @@
         "standards"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "formats/handoff-artifact.md",
@@ -405,7 +398,8 @@
         "agents": [
           "general-research-agent",
           "planner-agent",
-          "general-implementation-agent"
+          "general-implementation-agent",
+          "meta-builder-agent"
         ],
         "task_types": [],
         "commands": []
@@ -495,7 +489,6 @@
       ],
       "load_when": {
         "agents": [
-          "meta-builder-agent",
           "spawn-agent"
         ],
         "task_types": [],
@@ -539,12 +532,11 @@
         "development"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "guides/loader-reference.md",
@@ -565,12 +557,11 @@
         "extensions"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "meta/context-revision-guide.md",
@@ -587,12 +578,11 @@
         "documentation"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "meta/domain-patterns.md",
@@ -609,12 +599,11 @@
         "extensions"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "meta/meta-guide.md",
@@ -630,12 +619,11 @@
         "system-design"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "orchestration/architecture.md",
@@ -651,12 +639,11 @@
         "system-design"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "orchestration/delegation.md",
@@ -672,12 +659,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "orchestration/orchestration-core.md",
@@ -693,12 +679,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "orchestration/orchestration-reference.md",
@@ -714,12 +699,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "orchestration/orchestrator.md",
@@ -735,12 +719,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "orchestration/postflight-pattern.md",
@@ -756,12 +739,11 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "orchestration/preflight-pattern.md",
@@ -777,12 +759,11 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "orchestration/sessions.md",
@@ -841,9 +822,7 @@
         "quality"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": [
           "/orchestrate"
@@ -867,7 +846,8 @@
         "agents": [
           "general-research-agent",
           "planner-agent",
-          "general-implementation-agent"
+          "general-implementation-agent",
+          "meta-builder-agent"
         ],
         "task_types": [],
         "commands": []
@@ -934,12 +914,11 @@
         "context-loading"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/early-metadata-pattern.md",
@@ -1025,7 +1004,6 @@
       ],
       "load_when": {
         "agents": [
-          "meta-builder-agent",
           "general-implementation-agent",
           "general-implementation-hard-agent"
         ],
@@ -1220,12 +1198,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/team-orchestration.md",
@@ -1264,12 +1241,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "processes/implementation-workflow.md",
@@ -1417,12 +1393,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "reference/state-management-schema.md",
@@ -1528,12 +1503,11 @@
         "documentation"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "routing.md",
@@ -1624,9 +1598,7 @@
         "standards"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "commands": [
           "/task",
           "/todo"
@@ -1650,12 +1622,11 @@
         "standards"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "schemas/subagent-frontmatter.yaml",
@@ -1673,12 +1644,11 @@
         "standards"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "standards/analysis-framework.md",
@@ -1795,9 +1765,7 @@
         "documentation"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [
           "markdown"
         ],
@@ -1887,9 +1855,7 @@
         "user-interaction"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": [
           "/meta",
@@ -2059,12 +2025,11 @@
         "standards"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "templates/agent-template.md",
@@ -2101,12 +2066,11 @@
         "system-design"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "templates/delegation-context.md",
@@ -2123,12 +2087,11 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "templates/orchestrator-template.md",
@@ -2144,12 +2107,11 @@
         "system-design"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "templates/subagent-template.md",
@@ -2165,12 +2127,11 @@
         "system-design"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "templates/thin-wrapper-skill.md",
@@ -2252,12 +2213,11 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "workflows/preflight-postflight.md",
@@ -2274,12 +2234,11 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "workflows/review-process.md",
@@ -2344,12 +2303,11 @@
         "context-system"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "contracts/adversarial-verification.md",
@@ -2651,12 +2609,11 @@
         "deliverable-hygiene"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/regeneration-is-manual-only.md",
@@ -2676,12 +2633,11 @@
         "extension-loader"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/batch-orchestration-guardrails.md",
@@ -2772,12 +2728,11 @@
         "routing"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "guides/manifest-routing-schema.md",
@@ -2796,12 +2751,11 @@
         "routing"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/batch-drain-loop.md",
@@ -2819,11 +2773,10 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/checkpoint-before-overflow.md",
@@ -2888,9 +2841,7 @@
         "orchestration"
       ],
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": [
           "/meta",

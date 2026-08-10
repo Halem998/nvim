@@ -1,0 +1,40 @@
+{
+  "phase": 2,
+  "phase_name": "Rebase meta-builder-agent in core/index-entries.json",
+  "started_at": "2026-08-10T00:35:00Z",
+  "last_updated": "2026-08-10T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extract meta-builder-agent's real @-reference set and enumerate hooked entries",
+      "status": "done",
+      "files_touched": [],
+      "note": "Real @-reference set (5 files): formats/return-metadata-file.md, patterns/anti-stop-patterns.md (both 'Always Load' per the agent's own Context References table), templates/thin-wrapper-skill.md, templates/agent-template.md (line 89, 'When discussing templates'), patterns/topic-assignment-pattern.md (line 626). Enumerated 49 hooked entries in core/index-entries.json matching the plan's Scope Hypothesis exactly."
+    },
+    {
+      "id": 2,
+      "description": "Drop agents[] hooks for entries outside the reference set; set on_demand:true where hooks become empty; add missing hooks for genuine references",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"],
+      "note": "Dropped meta-builder-agent from 46 entries (all 49 hooked entries minus the 3 genuine survivors: templates/thin-wrapper-skill.md, templates/agent-template.md, patterns/topic-assignment-pattern.md). Of those 46, 39 became fully hook-empty and got on_demand:true; 7 retained other agents/commands/task_types hooks and needed no marker (formats/task-order-format.md keeps spawn-agent; orchestration/validation.md keeps /orchestrate; patterns/jq-escaping-workarounds.md keeps other agents+commands; schemas/state-schema.json keeps /task+/todo; standards/documentation-standards.md keeps task_types:[markdown]; standards/interactive-selection.md keeps /meta+/fix-it+/review; patterns/context-protective-lead.md keeps /meta+/orchestrate). Added meta-builder-agent hook to formats/return-metadata-file.md and patterns/anti-stop-patterns.md (previously unhooked despite being genuine unconditional references). Notably dropped patterns/thin-wrapper-skill.md (distinct from the kept templates/thin-wrapper-skill.md -- the agent references the templates/ copy only). Pre-drop source sum of surviving hooks: 2200+2128+944+4768+1392 = 11,432 tok, matching the plan's Scope Hypothesis floor exactly."
+    },
+    {
+      "id": 3,
+      "description": "Review the nvim/index-entries.json meta-builder-agent entry (976 tok)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Left untouched here; ownership belongs to Phase 4 per the plan. Its 976 tok explains the gap between this phase's 11,432 source-file computation and the measured 13,296 (11,432 + 1,864 ghost offset), which itself explains the final measured 14,272 (13,296 + 976)."
+    },
+    {
+      "id": 4,
+      "description": "Verify: schema test, regenerate, measure meta-builder-agent under cap, Dead Entry Check 0",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-index-entries-schema.sh: 8 passed / 1 failed, identical to pre-edit baseline (the 1 failure is a pre-existing unrelated EXTENSION.md line-count fixture issue, confirmed via git stash comparison). After deploy-headless.sh regeneration: meta-builder-agent 14272/15000 OK (was 132984 OVER:117984). Dead Entry Check: 0. Overall Violations: 7 (down from 8). No load_when.skills key introduced (confirmed via schema pass)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -184,24 +184,30 @@ predicted paths — a third ghost would silently break Phase 7's arithmetic.
 
 ---
 
-### Phase 2: Rebase meta-builder-agent in core/index-entries.json [NOT STARTED]
+### Phase 2: Rebase meta-builder-agent in core/index-entries.json [COMPLETED]
 
 **Goal**: Bring `meta-builder-agent` from 132,984 tokens under its 15,000 cap by removing hooks
 for entries its own `.md` never references.
 
 **Tasks**:
-- [ ] Extract `meta-builder-agent`'s real `@`-reference set:
+- [x] Extract `meta-builder-agent`'s real `@`-reference set:
       `grep -oP '@\.claude/context/\K[A-Za-z0-9_./-]+\.(md|json)' agent-system/extensions/core/agents/meta-builder-agent.md | sort -u`.
-- [ ] Enumerate every core entry currently hooked to `meta-builder-agent` with its token cost.
-- [ ] For each hooked entry NOT in the real reference set: remove `meta-builder-agent` from
+      *(completed: 5 files -- formats/return-metadata-file.md, patterns/anti-stop-patterns.md,
+      templates/thin-wrapper-skill.md, templates/agent-template.md,
+      patterns/topic-assignment-pattern.md)*
+- [x] Enumerate every core entry currently hooked to `meta-builder-agent` with its token cost.
+      *(completed: 49 entries, matching plan-time count)*
+- [x] For each hooked entry NOT in the real reference set: remove `meta-builder-agent` from
       `load_when.agents`. If the entry's hooks then become entirely empty, set `on_demand: true`
       in the same edit (an all-hooks-empty entry without that marker fails the Dead Entry Check).
-- [ ] For any real reference NOT currently hooked, add the hook (correct under-inclusion in the
-      same pass, so the resulting number is honest).
-- [ ] Review the single `meta-builder-agent` entry in `nvim/index-entries.json` (976 tok) under
+      *(completed: 46 dropped, 39 got on_demand:true, 7 retained other hooks)*
+- [x] For any real reference NOT currently hooked, add the hook (correct under-inclusion in the
+      same pass, so the resulting number is honest). *(completed: added to
+      formats/return-metadata-file.md and patterns/anti-stop-patterns.md)*
+- [x] Review the single `meta-builder-agent` entry in `nvim/index-entries.json` (976 tok) under
       the same rule and note whether it survives; if it is to be dropped, do so in Phase 4, which
-      owns that file.
-- [ ] Confirm no `load_when.skills` key was introduced anywhere.
+      owns that file. *(completed: left for Phase 4's ownership, noted in progress file)*
+- [x] Confirm no `load_when.skills` key was introduced anywhere. *(completed: schema test passes)*
 
 **Timing**: 1.5 hours
 
