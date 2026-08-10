@@ -1,9 +1,70 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/985_quarantine_dead_scripts_rules_and_machinery/summaries/01_dead-machinery-quarantine-summary.md",
+      "summary": "Four-phase quarantine of nine dead scripts, lint-contract-compliance.sh repair and wire-in as verify-deploy.sh gate 11, rule-loading/operator-tool documentation notes, and a wipe-and-regenerate final verification sweep."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Quarantined nine dead scripts (eight core + one literature) into deprecated/ directories with per-file README rationale and manifest de-declaration; repaired lint-contract-compliance.sh's root resolution and wired it in as verify-deploy.sh gate 11; documented the four legitimate operator tools and the native rule-loading mechanism to prevent future mis-triage; and proved the quarantine holds via a destructive deploy-headless.sh --wipe rebuild plus a full verify-deploy.sh run (21/22 checks pass; the one failure is a pre-existing, unrelated test-index-entries-schema.sh defect)."
+  },
+  "modified_files": [
+    ".syncprotect",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/patterns/context-discovery.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/rules/pr-prohibition.md",
+    "agent-system/extensions/core/scripts/deprecated/archive-task.sh",
+    "agent-system/extensions/core/scripts/deprecated/check-vault-threshold.sh",
+    "agent-system/extensions/core/scripts/deprecated/claude-project-cleanup.sh",
+    "agent-system/extensions/core/scripts/deprecated/orphan-detection.sh",
+    "agent-system/extensions/core/scripts/deprecated/README.md",
+    "agent-system/extensions/core/scripts/deprecated/rename-session.sh",
+    "agent-system/extensions/core/scripts/deprecated/roadmap-sync.sh",
+    "agent-system/extensions/core/scripts/deprecated/validate-extension-index.sh",
+    "agent-system/extensions/core/scripts/deprecated/vault-operation.sh",
+    "agent-system/extensions/core/scripts/generate-context-line-counts.sh",
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/scripts/deprecated/literature-decode-font-offset.py",
+    "agent-system/extensions/literature/scripts/deprecated/README.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "check-extension-docs.sh's Rule E (check_referenced_scripts_declared) scans commands/*.md, skills/*/SKILL.md, agents/*.md, README.md, and EXTENSION.md for bare *.sh/*.sql filename tokens and fails if the name isn't in provides.scripts (or provides.hooks). When quarantining a script (move to deprecated/ + drop manifest entry), also grep those five doc-file globs for the basename -- a mere naming-convention-precedent mention in prose (not an invocation) still trips this rule and must be reworded to drop the literal extension.",
+      "category": "PATTERN",
+      "source_artifact": "specs/985_quarantine_dead_scripts_rules_and_machinery/summaries/01_dead-machinery-quarantine-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs", "rule-e", "quarantine", "manifest", "provides.scripts"]
+    },
+    {
+      "content": "Two independent rule-loading paths exist for .claude/rules/*.md: (1) harness-native auto-load via each file's own YAML paths: frontmatter glob (independent of any import list), and (2) CLAUDE.md's curated @-import list. A rule absent from the @-import list is NOT thereby dead -- check its own paths: frontmatter before concluding it's unwired. This was the root cause of a prior false 'dead rule' finding.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/985_quarantine_dead_scripts_rules_and_machinery/summaries/01_dead-machinery-quarantine-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["rule-loading", "frontmatter", "paths-glob", "claude-md", "dead-code-audit"]
+    },
+    {
+      "content": "When repairing a lint script's root-resolution to validate the source store (agent-system/extensions/**) instead of a deployed .claude/ tree, mirror the git-rev-parse-with-fallback pattern already used by lint-agent-contracts.sh (REPO_ROOT env override -> git -C SCRIPT_DIR rev-parse --show-toplevel -> relative fallback) rather than the scripts/-depth-specific common_repo_root(SCRIPT_DIR, N) helper, which assumes a fixed directory depth and silently resolves to the wrong root when a script lives two levels deeper (e.g. scripts/lint/). Also check for and fix any other script's comments that documented the old dependency on common_repo_root, since removing it can leave stale documentation elsewhere.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/985_quarantine_dead_scripts_rules_and_machinery/summaries/01_dead-machinery-quarantine-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["root-resolution", "git-rev-parse", "common_repo_root", "source-store", "lint-script"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786322063_3251e8_985",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

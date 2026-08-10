@@ -1,7 +1,7 @@
 # Implementation Plan: Dead-Machinery Quarantine Sweep
 
 - **Task**: 985 - Dead-code quarantine sweep: orphan scripts, dead rules, dead Lua, vestigial twins
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: 952, 960, 963, 964, 969, 973, 980, 981, 982, 984, 987, 988, 992 (all confirmed landed by the research pass)
 - **Research Inputs**: specs/985_quarantine_dead_scripts_rules_and_machinery/reports/01_dead-machinery-triage.md
