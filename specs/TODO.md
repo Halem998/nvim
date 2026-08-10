@@ -11,22 +11,20 @@ next_project_number: 1004
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 986,995,1001,1002,1003 | -- | agent-system |
-| 2 | 999 | 986,1002 | agent-system |
+| 1 | 995,1001,1002,1003 | -- | agent-system |
+| 2 | 999 | 1002 | agent-system |
 | 3 | 996 | 995,999 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-986 [IMPLEMENTING] — Make the documentation layer stop describing machinery that does 
-  └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
-    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
-  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
+  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 1001 [NOT STARTED] — Fix the dormant load-order defect in lean/index-entries.json's mi
 1002 [NOT STARTED] — Author a context file that states the tier-classification semanti
-  └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali (see above)
+  └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
+    └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
 
 ## Tasks
@@ -522,12 +520,13 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 986. Docs truth sweep: retire dispatch-agent fiction, dead-script refs, doc consolidation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 951, Task 960, Task 961, Task 962, Task 963, Task 969, Task 980, Task 982, Task 983, Task 984, Task 985, Task 987, Task 989, Task 992
 - **Research**: [986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md]
 - **Plan**: [986_docs_truth_sweep/plans/01_docs-truth-sweep.md]
+- **Summary**: [986_docs_truth_sweep/summaries/01_docs-truth-sweep-summary.md]
 
 **Description**: Make the documentation layer stop describing machinery that does not exist, and consolidate the redundant doc surfaces. This is the LAST pass of the review batch: it DEPENDS ON the deploy-engine consolidation task (the correct replacement text for every 'Load Core / Sync all' remediation instruction is decided there), the quarantine sweep (its removals change which references are dangling), the agent-contract normalization (the canonical template decision feeds item 7), and the EXTENSION.md slim-down (item 5's target shape and Rule U budgets).
 

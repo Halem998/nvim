@@ -1,7 +1,7 @@
 # Implementation Plan: Task #986
 
 - **Task**: 986 - Docs truth sweep: retire dispatch-agent fiction, dead-script refs, doc consolidation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: 951, 960, 961, 962, 963, 969, 980, 982, 983, 984, 985, 987, 989, 992 (all landed)
 - **Research Inputs**: specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md
