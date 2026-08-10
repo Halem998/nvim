@@ -12,6 +12,28 @@ model: sonnet
 
 <Brief overview of what this agent does and the kind of tasks it handles.>
 
+## Frontmatter Fields
+
+**Required**: `name`, `description`.
+
+**Optional**: `model` (`opus`, `sonnet`, `haiku`), `tools` (comma-separated allowlist, e.g.
+`tools: Read, Glob, Grep` — omit to inherit the full tool set), `disallowedTools`
+(comma-separated denylist, camelCase), `mcpServers` (MCP server access, camelCase). See
+`.claude/docs/reference/standards/agent-frontmatter-standard.md` for the complete field table
+(`permissionMode`, `maxTurns`, `skills`, `hooks`, `memory`, `background`, `effort`,
+`isolation`, `color`, `initialPrompt`).
+
+**Do NOT include** these fields — they are not supported by the current Agent tool and are
+silently ignored rather than rejected:
+- `mode`
+- `version`
+- `temperature`
+- `max_tokens`
+- `timeout`
+- `allowed-tools:` (SKILL.md/slash-command field, not a subagent field — use `tools:`)
+- `mcp-servers:` (hyphenated misspelling — use `mcpServers:`)
+- `return_format`
+
 ## Context References
 
 - `@.claude/context/formats/return-metadata-file.md` - Metadata schema (always load)
@@ -92,3 +114,9 @@ See `.claude/rules/error-handling.md` for general patterns. Agent-specific requi
 2. Return JSON to the console
 3. Assume the agent's return ends the workflow - the skill continues with postflight
 4. Skip Stage 0 early metadata creation
+
+## Related Documentation
+
+This is the user-facing tutorial version of the agent template. For the canonical structure
+`meta-builder-agent` uses when generating new agents via `/meta`, see
+`.claude/context/templates/agent-template.md`.

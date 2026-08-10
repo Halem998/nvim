@@ -209,39 +209,39 @@ inventory rather than editing only the pre-listed lines.
 
 ---
 
-### Phase 2: Standalone trims — rule narrative, template re-sync, stale permission [NOT STARTED]
+### Phase 2: Standalone trims — rule narrative, template re-sync, stale permission [COMPLETED]
 
 **Goal**: The no-task-references rule reads as an actionable constraint rather than a changelog,
 the tutorial agent template matches the canonical one's frontmatter guidance, and the stale
 `mv` permission entry is gone.
 
 **Tasks**:
-- [ ] Extract the 52 narrative lines from `rules/no-task-references-in-deliverables.md` into a
+- [x] Extract the 52 narrative lines from `rules/no-task-references-in-deliverables.md` into a
       decision record under `specs/` (create `specs/decisions/` if absent; name it for the rule,
       e.g. `no-task-references-enforcement-history.md`). The four blocks are: "Discovered during
       Phase 5 purge" (8L), "Discovered during Phase 10 purge" (9L), "Resolved test case" (8L), and
       the "Deploy-mechanism note" + "second, related class of symptom" run to EOF (27L).
-- [ ] **Keep** the Exemption Taxonomy table in the rule file. Research confirmed it is the
+- [x] **Keep** the Exemption Taxonomy table in the rule file. Research confirmed it is the
       enforcement mechanism the rule depends on, not narrative; the task description's ~90-line
       figure wrongly counted it.
-- [ ] Leave a one-line pointer in the rule file to the decision record so the provenance is not
+- [x] Leave a one-line pointer in the rule file to the decision record so the provenance is not
       lost, phrased with a durable anchor rather than a task number.
-- [ ] Preserve the deploy-gap narrative's content verbatim on the move. It was verified accurate
+- [x] Preserve the deploy-gap narrative's content verbatim on the move. It was verified accurate
       against current Lua (`manager.load` :269, `manager.resync_all` :901, `manager.wipe` :1200);
       do not "correct" paths.
-- [ ] Re-sync `docs/templates/agent-template.md`'s frontmatter block (currently 94 lines, still
+- [x] Re-sync `docs/templates/agent-template.md`'s frontmatter block (currently 94 lines, still
       showing only `model: sonnet` plus tier comments) to match
       `context/templates/agent-template.md` and `docs/reference/standards/agent-frontmatter-standard.md`:
       add `tools` / `disallowedTools` / `mcpServers` documentation and the forbidden-fields list
       (`mode`, `version`, `temperature`, `max_tokens`, `timeout`, `allowed-tools:`,
       `mcp-servers:`, `return_format`).
-- [ ] **Preserve the two-tier split.** Keep `docs/templates/agent-template.md` as the user-facing
+- [x] **Preserve the two-tier split.** Keep `docs/templates/agent-template.md` as the user-facing
       tutorial and `context/templates/agent-template.md` as canonical; confirm each still names
       the other's role. Do not delete or redirect either.
-- [ ] Remove the stale allowlist entry
+- [x] Remove the stale allowlist entry
       `"Bash(mv .claude/context/project/repo/self-healing-implementation-details.md .claude/context/repo/)"`
       from `root-files/settings.local.json` (a one-time `mv` of a since-deleted file).
-- [ ] Confirm `root-files/settings.local.json` still parses as valid JSON after the removal.
+- [x] Confirm `root-files/settings.local.json` still parses as valid JSON after the removal.
 
 **Timing**: 1.25 hours
 

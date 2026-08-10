@@ -11,7 +11,6 @@
       "Bash(mv .claude/context/project/processes/planning-workflow.md .claude/context/processes/)",
       "Bash(mv .claude/context/project/processes/research-workflow.md .claude/context/processes/)",
       "Bash(mv .claude/context/project/repo/project-overview.md .claude/context/repo/)",
-      "Bash(mv .claude/context/project/repo/self-healing-implementation-details.md .claude/context/repo/)",
       "Bash(mv .claude/context/project/repo/update-project.md .claude/context/repo/)",
       "Bash(bash .claude/scripts/check-extension-docs.sh)",
       "Bash(bash .claude/scripts/check-extension-docs.sh --quiet)",
