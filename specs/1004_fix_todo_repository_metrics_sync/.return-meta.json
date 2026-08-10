@@ -1,39 +1,32 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 1004,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_type": "meta",
   "session_id": "sess_1786386280_bc7e55_1004",
-  "findings_count": 6,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
-      "summary": "Confirms both defects at cited lines, finds a third latent bug (status enum mismatch between todo.md's derivation and state-schema.json's declared 4-value enum), confirms this repo itself has no Makefile/package.json (live proof the current probe is non-portable), confirms no consumer of the technical_debt frontmatter block exists in agent-system/extensions/**, and confirms skill-todo/SKILL.md has no repository-metrics stage to mirror into. Recommends reading (a) 'structurally sound' for build_errors via a cheap bash-n/jq-empty probe with a nullable 'not measured' schema extension (precedented by memory_health.last_distilled), and option (b) for Defect 2 (delete Step 5.7.3, state.json remains sole home for repository_health)."
+      "type": "plan",
+      "path": "specs/1004_fix_todo_repository_metrics_sync/plans/01_repository-metrics-sync-fix.md",
+      "summary": "Five-phase plan: extract the /todo health probe into an executable, fixture-testable script; reconcile the state schema's build_errors typing and status enum; rewrite todo.md's Sync Repository Metrics stage and delete the dead frontmatter step; register and deploy."
     }
+  ],
+  "phase_count": 5,
+  "estimated_hours": 5.5,
+  "dependency_waves": [
+    { "wave": 1, "phases": [1, 3], "blocked_by": [] },
+    { "wave": 2, "phases": [2, 4], "blocked_by": [1, 3] },
+    { "wave": 3, "phases": [5], "blocked_by": [1, 2, 3, 4] }
   ],
   "memory_candidates": [
     {
-      "content": "In this repo, .opencode/ is a SEPARATE git-tracked deploy tree (not gitignored, not generated from agent-system/extensions/**), distinct from .claude/ (blanket-gitignored, generated from agent-system/extensions/** and byte-identical to source for skill files). When searching for 'real consumers' of a source-store artifact under the binding source-store rule, grep hits inside .opencode/ do not count as in-scope consumers.",
+      "content": "Executable logic embedded as bash/jq snippets inside markdown command files is executed by an agent but never compiled, so defects accumulate invisibly and cannot be regression-tested. Confirmed instance: a state-write jq filter referencing an undefined $build_errors binding (only --arg errors was passed) fails with 'jq: 1 compile error', yet live state.json showed the write succeeding -- the executing agent had been silently repairing the binding at runtime, masking the defect indefinitely. The general pattern: when a defect's fix must be provable by an executed test, first extract the logic out of instruction prose into a real script with a JSON output contract, then make the command file a call site. Testability is the architectural driver, not code cleanliness. A second, compounding failure mode in the same class: a probe written as 'if cmd_a || cmd_b || true; then X else Y fi' makes the else branch structurally unreachable, so the metric it computes is a constant that no reader notices because the code looks like a real check.",
       "category": "PATTERN",
-      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["opencode", "claude-deploy-tree", "source-store-boundary", "gitignore"]
-    },
-    {
-      "content": "state-schema.json already has a precedent for a nullable 'not measured' field: memory_health.last_distilled is typed [\"string\", \"null\"]. Reuse this union-type pattern (e.g. [\"integer\", \"null\"]) instead of inventing a new sentinel value when a metric can legitimately be unmeasured.",
-      "category": "PATTERN",
-      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["state-schema", "nullable-field", "not-measured", "schema-design"]
-    },
-    {
-      "content": "validate-state.sh and state-write.sh do NOT deep-validate field types/enums against state-schema.json -- validate-state.sh only checks top-level key presence and the 12-value task-status enum on active_projects[].status; state-write.sh only validates jq filter syntax. Nested object fields (e.g. repository_health.status's 4-value enum) can silently drift from the declared schema with nothing catching it. Worth checking before trusting that a schema-documented enum is actually enforced anywhere.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["state-schema", "validation-gap", "validate-state", "state-write", "enum-drift"]
+      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/plans/01_repository-metrics-sync-fix.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["markdown-embedded-code", "untested-instruction-prose", "jq-undefined-variable", "unreachable-else-branch", "extract-to-testable-script", "agent-silent-repair"]
     }
   ],
-  "next_steps": "Run /plan 1004 to create implementation plan"
+  "next_steps": "Run /implement 1004 to execute the plan"
 }
