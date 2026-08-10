@@ -1,0 +1,37 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/006_guard_against_nonadditive_artifact_rewrites/reports/01_guard-nonadditive-artifact-rewrites.md",
+      "summary": "Finds all four sanctioned artifact writers use a remove-same-type-then-add pattern (not pure append), so the invariant must be per-type (removed<=added per type), not a strict path superset; recommends implementing it as a new FAIL-level --deep check (D5) in validate-state.sh reusing D4's git-diff mechanism, with a CLI opt-in flag for genuine deletions, plus doc-only touches to skill-base.sh, rules/state-management.md, and a new MUST NOT bullet in general-implementation-agent.md."
+    }
+  ],
+  "findings_count": 6,
+  "next_steps": "Run /plan 6 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786400631_478c94",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo's specs/state.json, the .artifacts array for report/plan/summary types is NOT true append-only — it's a 'keep latest pointer per type' slot. All four sanctioned writers (skill_link_artifacts in skill-base.sh, orchestrator-postflight.sh Stage 8, link_artifact in reconcile-task-status.sh, skill-reviser Stage 8) run a two-step jq pattern: remove all existing entries of the same .type, then add exactly one new entry of that type. This is documented as the reference idiom in context/patterns/inline-status-update.md. Any future work on an 'append-only artifacts' invariant must be per-type count-based (removed(T) <= added(T)), not a strict global path-superset check, or it will break every routine research/plan/summary re-link.",
+      "category": "PATTERN",
+      "source_artifact": "specs/006_guard_against_nonadditive_artifact_rewrites/reports/01_guard-nonadditive-artifact-rewrites.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["state.json", "artifacts", "append-only", "skill_link_artifacts", "supersession", "jq-two-step"]
+    },
+    {
+      "content": "validate-state.sh's --deep Check D4 (terminal-status immutability) establishes a reusable, writer-agnostic pattern for detecting state.json drift regardless of which script/agent produced it: resolve the sibling git history, fetch the prior committed version via `git show <sha>:./<rel_path>` into a prior_json variable, then diff specific fields between prior_json and the live file, keyed on project_number. It is WARN-level and best-effort (skips gracefully with no git history). Any future 'catch drift from any writer, including direct jq' check should reuse this same prior_json-fetch pattern rather than reinventing git introspection. validate-state.sh --deep is currently invoked only from verify-deploy.sh Gate 10 (periodic, not synchronous per-write).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/006_guard_against_nonadditive_artifact_rewrites/reports/01_guard-nonadditive-artifact-rewrites.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["validate-state.sh", "git-diff-check", "prior_json", "verify-deploy.sh", "drift-detection"]
+    }
+  ],
+  "modified_files": [
+    "specs/006_guard_against_nonadditive_artifact_rewrites/reports/01_guard-nonadditive-artifact-rewrites.md"
+  ]
+}
