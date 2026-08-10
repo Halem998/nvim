@@ -140,8 +140,11 @@ artifact_number=$next_num
 artifact_padded=$(printf "%02d" "$artifact_number")
 
 # Increment next_artifact_number
-jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number = '$((next_num + 1))'' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+bash .claude/scripts/state-write.sh \
+  '(.active_projects[] | select(.project_number == $num)).next_artifact_number = $next' \
+  --session-id "$session_id" \
+  --argjson num "$task_number" \
+  --argjson next "$((next_num + 1))"
 ```
 
 ---
@@ -312,12 +315,15 @@ fi
 **Update state.json** (if status changed to success):
 ```bash
 if [ "$meta_status" = "researched" ]; then
-  jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-     --arg status "researched" \
-    '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == $num)) |= . + {
       status: $status,
       last_updated: $ts
-    }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    }' \
+    --session-id "$session_id" \
+    --argjson num "$task_number" \
+    --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --arg status "researched"
 fi
 ```
 
@@ -336,16 +342,20 @@ Add artifact to state.json with summary.
 ```bash
 if [ -n "$artifact_path" ]; then
     # Step 1: Filter out existing report artifacts (use "| not" pattern - Issue #1132)
-    jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-        [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "report" | not)]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).artifacts =
+        [(.active_projects[] | select(.project_number == $num)).artifacts // [] | .[] | select(.type == "report" | not)]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number"
 
     # Step 2: Add new artifact
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg path "$artifact_path" \
+      --arg type "$artifact_type" \
+      --arg summary "$artifact_summary"
 fi
 ```
 

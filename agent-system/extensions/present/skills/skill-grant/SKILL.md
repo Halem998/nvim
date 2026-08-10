@@ -157,14 +157,17 @@ esac
 
 # Update state.json if status change needed
 if [ -n "$preflight_status" ]; then
-  jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-     --arg status "$preflight_status" \
-     --arg sid "$session_id" \
-    '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == $num)) |= . + {
       status: $status,
       last_updated: $ts,
       session_id: $sid
-    }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    }' \
+    --session-id "$session_id" \
+    --argjson num "$task_number" \
+    --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --arg status "$preflight_status" \
+    --arg sid "$session_id"
 fi
 ```
 
@@ -394,12 +397,15 @@ esac
 
 # Update state.json if status change to success
 if [ -n "$postflight_status" ]; then
-  jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-     --arg status "$postflight_status" \
-    '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == $num)) |= . + {
       status: $status,
       last_updated: $ts
-    }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    }' \
+    --session-id "$session_id" \
+    --argjson num "$task_number" \
+    --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --arg status "$postflight_status"
 fi
 ```
 
@@ -453,16 +459,21 @@ esac
 ```bash
 if [ -n "$artifact_path" ]; then
     # Step 1: Filter out existing artifacts of same type (use "| not" pattern to avoid != escaping - Issue #1132)
-    jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-        [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "'"$artifact_filter_type"'" | not)]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).artifacts =
+        [(.active_projects[] | select(.project_number == $num)).artifacts // [] | .[] | select(.type == $filter_type | not)]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg filter_type "$artifact_filter_type"
 
     # Step 2: Add new artifact
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg path "$artifact_path" \
+      --arg type "$artifact_type" \
+      --arg summary "$artifact_summary"
 fi
 ```
 
@@ -825,13 +836,11 @@ slug="fix_grant_${task_number}_issues"
 description="Fix embedded FIX: and NOTE: issues in grant ${task_number}"
 
 # Update state.json
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --arg desc "$description" \
-  --argjson parent "$task_number" \
+bash .claude/scripts/state-write.sh \
   '.next_project_number = ($next_num + 1) |
    .active_projects = [{
      "project_number": $next_num,
-     "project_name": "'"$slug"'",
+     "project_name": $slug,
      "status": "not_started",
      "task_type": "present",
      "task_type": "grant",
@@ -840,7 +849,12 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      "created": $ts,
      "last_updated": $ts
    }] + .active_projects' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --argjson next_num "$next_num" \
+  --arg slug "$slug" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg desc "$description" \
+  --argjson parent "$task_number"
 ```
 
 **TODO Task Creation** (per selected/grouped item):

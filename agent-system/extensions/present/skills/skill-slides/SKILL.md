@@ -130,14 +130,17 @@ esac
 
 # Update state.json
 if [ -n "$preflight_status" ]; then
-  jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-     --arg status "$preflight_status" \
-     --arg sid "$session_id" \
-    '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == $num)) |= . + {
       status: $status,
       last_updated: $ts,
       session_id: $sid
-    }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    }' \
+    --session-id "$session_id" \
+    --argjson num "$task_number" \
+    --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --arg status "$preflight_status" \
+    --arg sid "$session_id"
 fi
 ```
 
