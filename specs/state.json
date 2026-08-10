@@ -5,12 +5,12 @@
     {
       "project_number": 1016,
       "project_name": "fix_command_register_acquire_session_id_parity",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Fix the register-bare/acquire-suffixed session-id pattern in the research.md, plan.md, and implement.md command files.\n\nTARGET: agent-system/extensions/core/commands/research.md, agent-system/extensions/core/commands/plan.md, agent-system/extensions/core/commands/implement.md.\n\nCONTEXT: skill-orchestrate/SKILL.md carried a defect where the in-flight session registry was registered under the bare session_id but the per-task lock was acquired and released under a task-suffixed variant. Because the session-contention self-exclusion is an exact string match, the batch never recognized its own registration and every acquire aborted deterministically. That defect was fixed in skill-orchestrate, and the fix recorded that these three multi-task command files exhibit the structurally identical register-bare/acquire-suffixed pattern and are likely to carry the same latent bug.\n\nWORK: verify whether each of the three command files actually reproduces the defect (the registration site, the acquire/release sites, and any dispatch context whose session_id feeds a downstream task-lock heartbeat call). Unify the session-id used across register/acquire/release/heartbeat in each file that is affected. Extend the existing register/acquire parity regression coverage to cover these consumers rather than adding a parallel test harness.\n\nREFERENCE: the parity invariant is stated in agent-system/extensions/core/context/patterns/task-lock.md (Consumers section); the existing regression group lives in agent-system/extensions/core/scripts/test-conflict-predicate.sh.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "topic": "orchestration-concurrency",
       "created": "2026-08-10T15:19:39Z",
-      "last_updated": "2026-08-10T18:43:02Z",
+      "last_updated": "2026-08-10T18:43:31Z",
       "file_scope": [
         "agent-system/extensions/core/commands/research.md",
         "agent-system/extensions/core/commands/plan.md",
@@ -782,7 +782,7 @@
       "project_number": 1004,
       "project_name": "fix_todo_repository_metrics_sync",
       "title": "Fix /todo repository-metrics sync: build_errors is structurally always 0 and the technical_debt frontmatter target does not exist",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [],
@@ -793,7 +793,7 @@
       ],
       "description": "/todo's \"Sync Repository Metrics\" stage cannot report a true build-health signal, and half of it writes to a target that does not exist. Both defects are live in the source store and were observed on a real /todo run.\n\nDEFECT 1 -- build_errors is unconditionally 0 (agent-system/extensions/core/commands/todo.md:757-762):\n\n    # Build errors (0 if project-specific lint/check passes)\n    if make check 2>/dev/null || npm run lint 2>/dev/null || true; then\n      build_errors=0\n    else\n      build_errors=1\n    fi\n\nThe trailing `|| true` makes the `if` condition unconditionally true, so the `else` branch is\nunreachable and `build_errors` is ALWAYS 0. Downstream, `repository_health.status` is derived as\n`(if build_errors == 0 then \"healthy\" else \"needs_attention\" end)`, so the status field is always\n\"healthy\" no matter the actual state of the repository. The field carries no information while\nlooking authoritative -- the worst failure mode for a health signal.\n\nA second, subtler problem sits behind the same lines: `make check` / `npm run lint` are the only\nprobes, and they are wrong for most repos this system is deployed into (Python/pytest, Lean/lake,\nNix). Even with the `|| true` removed, a repo with neither a Makefile nor package.json would take\nthe `else` branch and report `build_errors=1` -- a false RED replacing the current false GREEN.\nThe fix must address the probe, not merely the boolean.\n\nDEFECT 2 -- the technical_debt frontmatter block does not exist (todo.md:783-800 vs\nagent-system/extensions/core/scripts/generate-todo.sh:315-323):\n\ntodo.md Step 5.7.3 instructs: \"Read TODO.md and update the YAML frontmatter `technical_debt`\nsection to match state.json\", and shows a `technical_debt:` / `repository_health:` block to write.\nBut generate-todo.sh emits ONLY `next_project_number` into the frontmatter:\n\n    printf 'next_project_number: %s\\n' \"$next_num\"\n\nSo there is no `technical_debt` block to update. Worse, TODO.md is generated from state.json --\nany hand-written frontmatter block would be destroyed on the next generate-todo.sh run, which\n/todo itself triggers. The instruction is unexecutable as written, and executing it literally\nwould produce work that is silently discarded.\n\nOBSERVED: on a real /todo run the recorded repository_health was `todo_count: 8, fixme_count: 0,\nbuild_errors: 0, status: \"healthy\"`, last assessed ~2 months earlier. Actual measured counts were\n41 TODO and 2 FIXME. The stale figures had never been corrected because the sync stage had never\nproduced a meaningful result.\n\nWORK:\n  1. Decide and document what `build_errors` is actually supposed to mean. Two coherent readings:\n     (a) \"the tree is structurally sound\" -- importable/parseable/collectable; or\n     (b) \"the project's own check command passes\". These are different signals with different\n     costs; (a) is cheap and portable, (b) is expensive and repo-specific. Pick one, state it\n     where the field is defined, and make status derivation match. Do NOT leave a field whose\n     meaning must be inferred from a broken heuristic.\n  2. Implement the chosen probe so it can actually fail. Remove the `|| true`. If no probe is\n     applicable to the repo, the honest value is \"not measured\", not 0 and not 1 -- if the schema\n     cannot express that, extend it rather than picking a misleading number.\n  3. Resolve Defect 2 in ONE direction, not both: either (a) teach generate-todo.sh to emit the\n     technical_debt/repository_health frontmatter from state.json, making it generated like every\n     other part of TODO.md and making Step 5.7.3 a no-op that can be deleted; or (b) delete Step\n     5.7.3 and let state.json be the sole home for repository_health. Option (a) is preferred only\n     if the frontmatter has a real consumer -- verify that first; if it has none, take (b).\n  4. Mirror the change into skill-todo/SKILL.md, which describes the same stage.\n\nVERIFICATION BAR:\n  - A fixture repo whose check command FAILS produces a non-zero/failed build_errors and a status\n    that is not \"healthy\". This must be an executed test, not a reasoned claim -- the current bug\n    is precisely a condition that was never exercised in its failing direction.\n  - A fixture repo with no recognised check command does not silently report either 0 or 1.\n  - Running generate-todo.sh twice in a row leaves the frontmatter byte-identical (no\n    hand-written block is destroyed, no drift is introduced).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T06:30:00Z",
-      "last_updated": "2026-08-10T18:41:31Z",
+      "last_updated": "2026-08-10T18:43:27Z",
       "artifacts": [
         {
           "path": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
@@ -924,7 +924,7 @@
       "project_number": 1015,
       "project_name": "recheck_settings_local_merge_content_loss",
       "title": "Re-check settings.local.json deploy merge for content loss before any fix effort",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [],
@@ -934,7 +934,7 @@
       ],
       "description": "A VERIFICATION task, deliberately not a fix task. Do not change merge logic until reproduction is established. Recorded as err_1786350581208_23mAsn (severity high, reproduction 0 of 3).\n\nWHAT WAS SEEN ONCE: a single observation of a content-lossy settings.local.json merge across a deploy-headless.sh --wipe pair - a dropped hooks.PreToolUse block and a dropped mcpServers block.\n\nWHAT RE-CHECKING FOUND: 3 further wipe-pairs showed reproduction 0 of 3. All three exhibited ordering-only differences (mcpServers and hooks blocks relocated, semantically identical under jq -S), not a dropped block. The original finding did NOT reproduce.\n\nWHY THIS STAYS OPEN DESPITE NOT REPRODUCING: non-reproduction is a result, not an all-clear. If it is real and intermittent, the consequence is a routine redeploy silently dropping a hook or an MCP registration - the most consequential hypothesis surfaced in the batch that found it. The asymmetry between a cheap re-check and a silently disabled security-relevant PreToolUse hook justifies keeping it open.\n\nWORK:\n  1. Run a substantially larger wipe-pair sample than 3 (10 or more), comparing settings.local.json semantically (jq -S) AND structurally (key/block presence), not by raw diff - raw diff cannot distinguish reordering from loss, which is exactly what confused the original observation.\n  2. Determine whether any pre-existing settings.local.json state, ordering, or size correlates with loss.\n  3. If reproduced: capture the exact input, escalate to critical, and only then plan a fix.\n  4. If not reproduced across the larger sample: downgrade the recorded severity with the sample size stated, and close. Record the number of pairs run either way.\n\nRELATED BUT SEPARATE: ordering non-determinism in context/index.json and settings.json between identical wipe runs is recorded as err_1786350581240_JyztWt (low). It is cosmetic on its own, but it is coupled to the deploy byte-identical-twice acceptance criterion, so resolving it may fall out of the orphan-parity work rather than this task.\n\nACCEPTANCE: a stated reproduction rate over a named sample size. Neither confirm nor dismiss on a single observation.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T13:27:04Z",
-      "last_updated": "2026-08-10T18:42:03Z",
+      "last_updated": "2026-08-10T18:50:27Z",
       "artifacts": [
         {
           "path": "specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md",
@@ -945,9 +945,15 @@
           "path": "specs/1015_recheck_settings_local_merge_content_loss/plans/01_close-out-merge-recheck.md",
           "type": "plan",
           "summary": "Close-out plan (NOT a merge-logic fix) for the settings.local.json content-loss verification: 3 phases, 2 hours. Phase 1 closes err_1786350581208_23mAsn via errors-append.sh update (--fix-status fixed --fix-task 1015) after confirming the sanctioned writer cannot mutate severity, so closure supersedes the requested downgrade and hand-editing errors.json is forbidden. Phase 2 records the 0/12-this-round, 0/15-cumulative rate and named sample size durably in agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md, correcting that file's now-falsified claim that --wipe preserves settings.local.json byte-identically (it is semantically identical with observed key/array reordering) and recording the serial-sampling known limitation. Phase 3 writes specs/decisions/settings-local-merge-content-loss-verdict.md stating both residual positions explicitly: the concurrency hypothesis is CLOSED as out of scope with no follow-up task (the fail-open specs/.deploy-lock mutex is a deliberate documented design mirroring specs/.commit-lock, already carrying its own corruption warning, so the hypothesis is a known accepted risk of a different defect class rather than an untracked gap), and err_1786350581240_JyztWt STAYS OPEN unchanged at low severity and explicitly does not fall out of this task."
+        },
+        {
+          "path": "specs/1015_recheck_settings_local_merge_content_loss/summaries/01_close-out-merge-recheck-summary.md",
+          "type": "summary",
+          "summary": "Close-out of settings.local.json merge content-loss recheck"
         }
       ],
-      "session_id": "sess_1786386280_bc7e55_1015"
+      "session_id": "sess_1786386280_bc7e55_1015",
+      "completion_summary": "Closed err_1786350581208_23mAsn via errors-append.sh update (--fix-status fixed --fix-task 1015) after re-confirming the update subcommand cannot mutate severity; corrected the falsified byte-identical claim in regeneration-is-manual-only.md and added a measured round-trip-fidelity subsection (0/15 cumulative, six state variants, positive-control-validated detector); wrote specs/decisions/settings-local-merge-content-loss-verdict.md stating the concurrency residual is closed as out of scope and err_1786350581240_JyztWt stays open, unfixed. No merge, backup, restore, or deploy logic was touched -- reproduction was not established."
     },
     {
       "project_number": 1017,

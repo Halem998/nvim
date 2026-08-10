@@ -11,26 +11,24 @@ next_project_number: 1020
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 1004,1011,1012,1014,1015,1016,1017,1018,1019 | -- | agent-system, extensions, orchestration-concurrency |
-| 2 | 1005,1009,1013 | 1004,1015,1017,1018 | agent-system |
+| 1 | 1004,1011,1012,1014,1016,1017,1018,1019 | -- | agent-system, extensions, orchestration-concurrency |
+| 2 | 1005,1009,1013 | 1004,1017,1018 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-1004 [PLANNED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
+1004 [IMPLEMENTING] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 1012 [PARTIAL] — tests/run-all.sh is red and has been treated as permanently-expec
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
-1015 [PLANNED] — A VERIFICATION task, deliberately not a fix task. Do not change m
-  └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 1017 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
   └─ 1013 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 1018 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
-  └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire (see above)
+  └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 
 ### Extensions
 
@@ -38,7 +36,7 @@ next_project_number: 1020
 
 ### Orchestration Concurrency
 
-1016 [PLANNED] — Fix the register-bare/acquire-suffixed session-id pattern in the 
+1016 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
 
 ## Tasks
 
@@ -125,7 +123,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1016. Fix command register acquire session id parity
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
@@ -148,12 +146,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1015. Re-check settings.local.json deploy merge for content loss before any fix effort
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md]
 - **Plan**: [1015_recheck_settings_local_merge_content_loss/plans/01_close-out-merge-recheck.md]
+- **Summary**: [1015_recheck_settings_local_merge_content_loss/summaries/01_close-out-merge-recheck-summary.md]
 
 **Description**: A VERIFICATION task, deliberately not a fix task. Do not change merge logic until reproduction is established. Recorded as err_1786350581208_23mAsn (severity high, reproduction 0 of 3).
 
@@ -503,7 +502,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1004. Fix /todo repository-metrics sync: build_errors is structurally always 0 and the technical_debt frontmatter target does not exist
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
