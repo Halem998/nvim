@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 1016,
+  "session_id": "sess_1786386280_bc7e55_1016",
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/1016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md",
+      "summary": "Confirms research.md, plan.md, and implement.md all reproduce the register-bare/acquire-suffixed session-id defect byte-for-byte, mechanically traces the failure through task-lock.sh's cmd_acquire/session_contention self-exclusion, cites skill-orchestrate/SKILL.md's already-landed bare-session_id fix as the reference pattern, flags a secondary downstream Stage-4D dual-heartbeat risk specific to implement.md, and recommends extending scripts/test-conflict-predicate.sh Group 9 (case 9.5's static-guard shape) with sibling cases per file instead of a new harness."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "task-lock.sh's cmd_acquire() runs TWO independent session-identity comparisons: (1) the held-lock pass compares the acquiring session_id against OTHER tasks' .lock/holder.json session_id (same-session bypass, skips enforcement); (2) the session-registry contention pass (session_contention() in lib/file-scope-overlap.sh) compares the acquiring session_id against specs/.sessions/*.json entries written by session-register, with self-exclusion via exact string match. A multi-task batch command MUST use the identical bare session_id for session-register AND every acquire/release/heartbeat call in that batch, or pass (2)'s self-exclusion never fires and the batch's own registered union file_scope reads as foreign live contention, refusing every acquire in the batch. Per-task-suffixed session_id variants (${session_id}_${task_num}) are safe ONLY for downstream bookkeeping (skill_preflight_update, .return-meta.json, Agent context) that never touches task-lock.sh directly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["task-lock", "session-register", "session_contention", "session-id parity", "multi-task batch", "cmd_acquire"]
+    },
+    {
+      "content": "general-implementation-agent.md's Stage 4D phase-transition checkpoint fires two heartbeat calls back-to-back from a single {session_id} context value: task-lock.sh heartbeat (must match the per-task .lock holder's session_id, i.e. whatever acquire used) and task-lock.sh session-heartbeat (must match the session-registry entry's session_id, i.e. whatever session-register used). A single context value can satisfy both only if the caller's acquire and session-register calls already share the same session_id -- this is a useful diagnostic pattern for spotting register/acquire parity bugs indirectly, via silent heartbeat no-op warnings, when the direct acquire-refusal symptom isn't triggered (e.g. task has no file_scope declared).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["heartbeat", "task-lock", "session-registry", "general-implementation-agent", "Stage 4D"]
+    }
+  ],
+  "next_steps": "Run /plan 1016 to create implementation plan"
+}

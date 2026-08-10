@@ -38,7 +38,7 @@ next_project_number: 1020
 
 ### Orchestration Concurrency
 
-1016 [RESEARCHING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
+1016 [RESEARCHED] — Fix the register-bare/acquire-suffixed session-id pattern in the 
 
 ## Tasks
 
@@ -125,10 +125,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1016. Fix command register acquire session id parity
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
+- **Research**: [1016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md]
 
 **Description**: Fix the register-bare/acquire-suffixed session-id pattern in the research.md, plan.md, and implement.md command files.
 
