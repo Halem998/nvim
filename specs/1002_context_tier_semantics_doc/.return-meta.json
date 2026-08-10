@@ -1,11 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/1002_context_tier_semantics_doc/summaries/01_context-tier-semantics-summary.md",
+      "summary": "Authored context-tier-semantics.md, appended its index entry, and pointed DERIVED_TIER's header comment back at the doc; Phase 4 closed COMPLETED WITH EXCLUSIONS on two out-of-scope, evidenced verification-wording gaps."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Authored agent-system/extensions/core/context/standards/context-tier-semantics.md (142 lines) documenting the derived tier-classification rule and the on_demand marker, appended one schema-conformant additive index entry (line_count 142, on_demand true), and added a comment-only back-pointer in validate-context-budgets.sh's DERIVED_TIER block. Verification confirmed zero Rule R/T findings, Dead entries: 0, and a merged-index Tier 4 count exactly +1 with Tiers 1-3 and all per-agent budget totals unchanged."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/context-tier-semantics.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/validate-context-budgets.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's Phase 4 verification bullet says a script 'exits 0' but the script also runs unrelated cross-cutting checks (e.g. check-extension-docs.sh's deployed-vs-source drift check), a source-store-only task that intentionally never redeploys to .claude/** will trip that unrelated check every time it touches a deployed script's source. This is not a defect to fix (redeploying would violate the source-store/deploy boundary) -- it is the correct trigger for closing that phase as [COMPLETED WITH EXCLUSIONS] with a Reasoned Exclusions record naming the specific unrelated finding and grep-confirming zero occurrences of the actually-required check names (e.g. 'Rule R'/'Rule T').",
+      "category": "PATTERN",
+      "source_artifact": "specs/1002_context_tier_semantics_doc/summaries/01_context-tier-semantics-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-extension-docs", "deploy-drift", "completed-with-exclusions", "source-store-boundary", "verification-tier"]
+    },
+    {
+      "content": "For a Scope Hypothesis that says 're-measure X before trusting the recorded count, another concurrent task may have landed first,' the concrete safe pattern is: run the measurement command immediately before the mutating edit in the same tool-call batch as the edit itself, and record both the measured baseline and the post-edit count explicitly in the phase's verification output rather than trusting either the plan's recorded number or an assumption of concurrency-safety.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1002_context_tier_semantics_doc/summaries/01_context-tier-semantics-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["scope-hypothesis", "concurrent-batch", "re-measure", "jq-entries-length", "index-entries"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786342011_4592c8_1002",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 4,
     "phases_total": 4
   }
 }

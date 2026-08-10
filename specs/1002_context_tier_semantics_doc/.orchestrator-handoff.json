@@ -1,18 +1,27 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Created a four-phase implementation plan for the context tier-semantics standard: author the new core standards doc, append one minimal index entry carrying an exact wc -l line_count, add a comment-only back-pointer in validate-context-budgets.sh, then verify against the task's stated bar. Documentation-only; the DERIVED_TIER logic stays frozen.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Authored context-tier-semantics.md documenting the derived tier rule and on_demand marker, appended its index entry, and pointed DERIVED_TIER's header comment back at the doc. All four phases complete; Phase 4 closed COMPLETED WITH EXCLUSIONS on two out-of-scope, evidenced verification-wording gaps (unrelated deploy-drift finding, git-status isolation superseded by per-phase commits).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/1002_context_tier_semantics_doc/plans/01_context-tier-semantics.md",
-      "summary": "Four-phase plan authoring the context tier-semantics standard, its additive index entry, and the DERIVED_TIER back-pointer comment"
+      "type": "summary",
+      "path": "specs/1002_context_tier_semantics_doc/summaries/01_context-tier-semantics-summary.md",
+      "summary": "Implementation summary for the context tier-semantics standard, index entry, and DERIVED_TIER back-pointer"
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
-  "plan_markers_verified": true,
   "continuation_path": null,
-  "next_action_hint": "Dispatch /implement 1002. Waves: [1], [2,3], [4]. Keep the index-entries.json change strictly additive -- a later task in this batch also edits that file."
+  "plan_markers_verified": true,
+  "files_modified": [
+    "agent-system/extensions/core/context/standards/context-tier-semantics.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/validate-context-budgets.sh"
+  ],
+  "decisions_made": [
+    "Re-measured jq '.entries | length' immediately before Phase 2's append (still 133; no concurrent batch task had landed an entry first).",
+    "Omitted tier-distribution counts from the new doc's prose to avoid staleness, per the plan's mitigation."
+  ],
+  "dead_ends": []
 }

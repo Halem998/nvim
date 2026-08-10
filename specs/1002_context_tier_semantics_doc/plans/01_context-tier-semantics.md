@@ -256,30 +256,34 @@ baseline shifts and only the `+1` delta is meaningful.
 
 ---
 
-### Phase 4: Verification sweep against the task's verification bar [NOT STARTED]
+### Phase 4: Verification sweep against the task's verification bar [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Demonstrate, with command output, that every condition in the task's stated verification
 bar holds.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm it passes
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm it passes
       — specifically Rule R (source `line_count` accuracy; it reads `EXT_DIR` defaulting to
       `agent-system/extensions`, so it sees this source-store change directly) and Rule T (entry
-      schema conformance).
-- [ ] Run `bash .claude/scripts/validate-context-budgets.sh` against the deployed index to capture
+      schema conformance). *(completed: zero Rule R and zero Rule T findings anywhere in the run;
+      note under Deviations below regarding the run's overall non-zero exit)*
+- [x] Run `bash .claude/scripts/validate-context-budgets.sh` against the deployed index to capture
       the unchanged baseline, and confirm no new budget violation is introduced. Note explicitly in
       the summary that the deployed `.claude/context/index.json` does not yet contain the new entry
       — it is regenerated at deploy time — so this run establishes the no-regression baseline, not
-      the post-entry state.
-- [ ] Build a temporary merged index (deployed index plus the new entry) in the scratch directory
+      the post-entry state. *(completed: 189 entries, Tier 1: 3, Tier 2: 147, Tier 3: 33, Tier 4: 6,
+      Dead entries: 0, 8 pre-existing agent-budget violations unrelated to this task)*
+- [x] Build a temporary merged index (deployed index plus the new entry) in the scratch directory
       and run `bash .claude/scripts/validate-context-budgets.sh --index <tmp>` against it. Confirm:
       `Dead entries: 0`; the tier distribution differs from baseline by exactly `+1` in Tier 4 and
       is unchanged in Tiers 1-3; and every per-agent token total is byte-identical to baseline
       (guaranteed structurally, since the entry carries no `agents`/`commands`/`task_types` hook —
-      confirm rather than assume).
-- [ ] Confirm no task-number citations were introduced in any of the three edited files (all are
-      outside `specs/**`).
-- [ ] Confirm no file under `.claude/**` was written by this task.
+      confirm rather than assume). *(completed: 190 entries, Tier 4: 7 (+1), Tiers 1-3 unchanged,
+      Dead entries: 0, per-agent lines byte-identical to baseline via diff)*
+- [x] Confirm no task-number citations were introduced in any of the three edited files (all are
+      outside `specs/**`). *(completed: grep found none)*
+- [x] Confirm no file under `.claude/**` was written by this task. *(completed: git show --stat on
+      both phase commits shows only agent-system/extensions/core/** and specs/1002_.../** paths)*
 
 **Timing**: 30 minutes
 
@@ -300,21 +304,30 @@ bar holds.
 - `git status --short` shows exactly three modified/added paths, all under
   `agent-system/extensions/core/`.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `check-extension-docs.sh` exits 0 overall | The run's sole finding is `FAIL: deployed script content drift (deployed != extension source): scripts/validate-context-budgets.sh` — a distinct check (drift between `.claude/scripts/` and the source store), not Rule R or Rule T. It exists solely because Phase 3 edited the source-store script without redeploying to `.claude/**`, which the plan's Non-Goals and Implementer Constraints explicitly forbid ("Deploying to `.claude/**`... All edits land in `agent-system/extensions/core/**`"). Deploying to clear this finding would itself violate the binding source-store rule, so the finding cannot be cleared within this task's scope. | `bash .claude/scripts/check-extension-docs.sh` output: `[core] FAIL: deployed script content drift (deployed != extension source): scripts/validate-context-budgets.sh`, immediately followed by zero occurrences of the strings `Rule R` or `Rule T` anywhere in the full run output (`grep -n "Rule R\|Rule T"` on the captured output returns no matches). |
+| `git status --short` shows exactly three modified/added paths | Concurrent batch tasks (995, 1001, and others visible in the same working tree) are modifying unrelated files in parallel, and this task's own three edited source-store files were already committed per-phase rather than left pending, so neither the literal working-tree diff nor a same-instant snapshot isolates this task's change set. | `git show --stat` on this task's two phase commits (`4fcb00d6d` phase 1, `6448aae0b` phases 2-3) shows exactly three deliverable paths under `agent-system/extensions/core/`: `context/standards/context-tier-semantics.md`, `index-entries.json`, `scripts/validate-context-budgets.sh` — matching the plan's Artifacts & Outputs list exactly, with all other changed paths in each commit confined to `specs/1002_context_tier_semantics_doc/**`. |
+
 ---
 
 ## Testing & Validation
 
-- [ ] `agent-system/extensions/core/context/standards/context-tier-semantics.md` exists, is
-      non-empty, and its rule table matches `DERIVED_TIER` case-for-case and in order.
-- [ ] `jq empty agent-system/extensions/core/index-entries.json` exits 0.
-- [ ] The new entry's `line_count` equals `wc -l` of the new file exactly.
-- [ ] The new entry has `on_demand: true` with all three `load_when` arrays empty.
-- [ ] `bash -n agent-system/extensions/core/scripts/validate-context-budgets.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` passes Rules R and T.
-- [ ] Merged-index budget run: `Dead entries: 0`, Tier 4 `+1`, Tiers 1-3 unchanged, per-agent
-      totals unchanged.
-- [ ] No task-number references in any file outside `specs/**`.
-- [ ] No writes under `.claude/**`.
+- [x] `agent-system/extensions/core/context/standards/context-tier-semantics.md` exists, is
+      non-empty, and its rule table matches `DERIVED_TIER` case-for-case and in order. *(completed)*
+- [x] `jq empty agent-system/extensions/core/index-entries.json` exits 0. *(completed)*
+- [x] The new entry's `line_count` equals `wc -l` of the new file exactly. *(completed: 142)*
+- [x] The new entry has `on_demand: true` with all three `load_when` arrays empty. *(completed)*
+- [x] `bash -n agent-system/extensions/core/scripts/validate-context-budgets.sh` exits 0. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` passes Rules R and T.
+      *(completed: zero Rule R/T findings; see Phase 4's Reasoned Exclusions for the unrelated
+      deploy-drift finding on the overall exit code)*
+- [x] Merged-index budget run: `Dead entries: 0`, Tier 4 `+1`, Tiers 1-3 unchanged, per-agent
+      totals unchanged. *(completed)*
+- [x] No task-number references in any file outside `specs/**`. *(completed)*
+- [x] No writes under `.claude/**`. *(completed)*
 
 ## Artifacts & Outputs
 
