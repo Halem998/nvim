@@ -779,7 +779,7 @@ Track for output:
 
 When `next_project_number` exceeds 1000, initiate vault archival operation to reset task numbering.
 
-**Step 5.8.1: Detect vault threshold**:
+**Step 5.7.1: Detect vault threshold**:
 ```bash
 next_num=$(jq -r '.next_project_number' specs/state.json)
 if [ "$next_num" -gt 1000 ]; then
@@ -787,7 +787,7 @@ if [ "$next_num" -gt 1000 ]; then
 fi
 ```
 
-**Step 5.8.2: Identify tasks to renumber**:
+**Step 5.7.2: Identify tasks to renumber**:
 ```bash
 # Find active tasks with project_number > 1000
 tasks_to_renumber=$(jq -r '
@@ -803,7 +803,7 @@ tasks_to_renumber=$(jq -r '
 renumber_count=$(echo "$tasks_to_renumber" | jq -s 'length')
 ```
 
-**Step 5.8.3: User confirmation**:
+**Step 5.7.3: User confirmation**:
 
 Use AskUserQuestion with vault operation details:
 ```json
@@ -820,7 +820,7 @@ Use AskUserQuestion with vault operation details:
 
 If user selects "skip", proceed to Step 6 (Git Commit).
 
-**Step 5.8.4: Create vault directory**:
+**Step 5.7.4: Create vault directory**:
 ```bash
 vault_count=$(jq -r '.vault_count // 0' specs/state.json)
 new_vault_num=$((vault_count + 1))
@@ -833,7 +833,7 @@ mv "specs/archive" "${vault_path}/archive"
 mv "${vault_path}/archive/state.json" "${vault_path}/state.json"
 ```
 
-**Step 5.8.5: Create vault meta.json**:
+**Step 5.7.5: Create vault meta.json**:
 ```bash
 current_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 archived_count=$(jq -r '.completed_projects | length' "${vault_path}/state.json" 2>/dev/null || echo "0")
@@ -851,7 +851,7 @@ jq -n \
   }' > "${vault_path}/meta.json"
 ```
 
-**Step 5.8.6: Reinitialize archive**. The fresh-create archive target is reached via
+**Step 5.7.6: Reinitialize archive**. The fresh-create archive target is reached via
 `state-write.sh`'s `--init` mode:
 ```bash
 mkdir -p "specs/archive"
@@ -859,7 +859,7 @@ bash .claude/scripts/state-write.sh '{ "completed_projects": [] }' \
   --init --state-file specs/archive/state.json --session-id "$session_id"
 ```
 
-**Step 5.8.7: Renumber tasks > 1000**:
+**Step 5.7.7: Renumber tasks > 1000**:
 
 For each task with project_number > 1000:
 1. Update state.json project_number (subtract 1000)
@@ -868,7 +868,7 @@ For each task with project_number > 1000:
 4. Rename task directories
 5. Update TODO.md entries
 
-**Step 5.8.8: Reset state**:
+**Step 5.7.8: Reset state**:
 ```bash
 # Calculate new next_project_number
 max_active=$(jq -r '[.active_projects[].project_number] | max // 0' specs/state.json)
@@ -890,12 +890,11 @@ bash .claude/scripts/state-write.sh \
    --arg created "$current_timestamp"
 ```
 
-**Step 5.8.9: Add transition comment to TODO.md**:
-```bash
-current_date=$(date +"%Y-%m-%d")
-comment="<!-- Vault transition: ${current_date} - Archived to ${vault_path}/ -->"
-# Insert after frontmatter
-```
+The vault-transition record lives in `state.json` `.vault_history[]` and
+`specs/vault/{NN}-vault/meta.json` only — TODO.md does not carry a transition marker, because
+`generate-todo.sh` fully overwrites TODO.md on every run (no read-modify-write of the existing
+file), so any hand-inserted marker is erased by the next regeneration. See Step 5.6.2 for the
+identical rationale applied to `repository_health`.
 
 Track vault operations for output:
 - `vault_created`: true/false
