@@ -1,0 +1,61 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy-tree sweep and final verification",
+  "started_at": "2026-08-09T01:30:00Z",
+  "last_updated": "2026-08-10T02:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "deploy-headless.sh --dry-run (and --wipe --dry-run) confirm plan without error",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "deploy-headless.sh --wipe destructive rebuild",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Assert absence of nine quarantined basenames under deployed tree",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Full verify-deploy.sh run, confirm gate 11 passes",
+      "status": "done",
+      "files_touched": [],
+      "note": "21/22 checks pass; gate 8 (tests/run-all.sh) shows only the known pre-existing test-index-entries-schema.sh failure -- confirmed via standalone re-run, no new failures, previously-flaky test-claude-refresh-matcher.sh/test-four-tier-conflict.sh both pass clean on final run"
+    },
+    {
+      "id": 5,
+      "description": "Final dangling-reference grep for all nine basenames",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/common.sh",
+        "agent-system/extensions/core/context/patterns/task-lock.md",
+        "agent-system/extensions/core/scripts/generate-context-line-counts.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "check-task-references.sh confirms no task-number leakage",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.deviation-1",
+      "description": "Historical-consumer comments in common.sh, task-lock.md, generate-context-line-counts.sh named quarantined basenames outside deprecated/",
+      "type": "altered",
+      "reason": "Phase 4's dangling-reference grep bar requires hits confined to deprecated/ directories; these were accurate but non-compliant historical/architectural comments. Reworded to drop the literal .sh basename while preserving meaning; also corrected a now-stale common.sh claim that lint-contract-compliance.sh consumes common_repo_root (Phase 2 removed that dependency) and repointed generate-context-line-counts.sh's stale validate-extension-index.sh precedent reference to check-extension-docs.sh Rule T.",
+      "annotation": "*(deviation: altered — reworded three files' historical-consumer comments)*"
+    }
+  ]
+}

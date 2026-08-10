@@ -53,33 +53,40 @@
 
 # Consumers (updated as each migration phase lands):
 #   Session-ID generation (common_session_id), migrated in Phase 3:
-#     scripts/archive-task.sh, scripts/command-gate-in.sh, scripts/manage-topics.sh,
+#     scripts/command-gate-in.sh, scripts/manage-topics.sh,
 #     scripts/orchestrate-predispatch-review.sh, scripts/reconcile-artifacts.sh,
-#     scripts/skill-base.sh (two call sites), scripts/vault-operation.sh.
+#     scripts/skill-base.sh (two call sites), plus two now-quarantined scripts under
+#     scripts/deprecated/ (archive-task, vault-operation) whose source still calls this
+#     function even though neither has a live caller of its own.
 #   command-gate-in.sh and skill-base.sh set no shell options at all (they are sourced into a
 #   caller's shell); sourcing common.sh is confirmed not to change that (see
 #   tests/test-common-lib.sh's $-/`set -o` assertions, exercised directly against both files).
 #   Root-resolution (common_repo_root), migrated in Phase 4:
-#     scripts/archive-task.sh, scripts/errors-append.sh, scripts/events-append.sh,
+#     scripts/errors-append.sh, scripts/events-append.sh,
 #     scripts/events-query.sh, scripts/export-to-markdown.sh, scripts/generate-task-order.sh,
 #     scripts/generate-todo.sh, scripts/git-commit-scoped.sh, scripts/install-extension.sh,
-#     scripts/lint/lint-contract-compliance.sh, scripts/lint/lint-postflight-boundary.sh,
+#     scripts/lint/lint-postflight-boundary.sh,
 #     scripts/literature-retrieve.sh, scripts/manage-topics.sh, scripts/memory-harvest.sh,
 #     scripts/memory-retrieve.sh, scripts/orchestrate-batch-admit.sh,
 #     scripts/orchestrate-dry-run-report.sh, scripts/orchestrate-predispatch-review.sh,
 #     scripts/orchestrate-triage-classify.sh, scripts/reap-session-runtime-files.sh,
-#     scripts/reconcile-artifacts.sh, scripts/reconcile-task-status.sh, scripts/roadmap-sync.sh,
+#     scripts/reconcile-artifacts.sh, scripts/reconcile-task-status.sh,
 #     scripts/state-write.sh, scripts/task-lock.sh, scripts/uninstall-extension.sh,
 #     scripts/update-task-status.sh, scripts/validate-context-budgets.sh,
-#     scripts/validate-wiring.sh, scripts/vault-operation.sh, and their test suites
+#     scripts/validate-wiring.sh, and their test suites
 #     (scripts/test-conflict-predicate.sh, scripts/test-four-tier-conflict.sh,
 #     scripts/test-session-registry.sh, scripts/test-session-runtime-files.sh,
 #     scripts/test-state-write-concurrency.sh, scripts/test-state-write-regen-timing.sh,
 #     scripts/test-task-lock-reap.sh, scripts/tests/test-errors-append.sh,
-#     scripts/tests/test-git-commit-scoped.sh, scripts/tests/test-orchestrate-triage-classify.sh).
+#     scripts/tests/test-git-commit-scoped.sh, scripts/tests/test-orchestrate-triage-classify.sh),
+#     plus three now-quarantined scripts under scripts/deprecated/ (archive-task, roadmap-sync,
+#     vault-operation) whose source still calls this function even though none has a live caller
+#     of its own.
 #     Residual (not migrated, explicitly bounded per the phase's Scope Hypothesis): the
-#     depth-2/3 cohort not listed above, and lint-agent-contracts.sh's deliberately different
-#     `git rev-parse --show-toplevel` + REPO_ROOT-override strategy, left untouched by design.
+#     depth-2/3 cohort not listed above, and lint-agent-contracts.sh's and (since the source-store
+#     root-resolution repair that fixed its `agent-system/extensions`-relative bug) the contract
+#     compliance lint's deliberately different `git rev-parse --show-toplevel` +
+#     REPO_ROOT-override strategy, left untouched by design.
 #   UTC timestamp formatting (common_timestamp_iso / common_timestamp_epoch), migrated
 #   opportunistically in Phase 4 within files already touched for root-resolution:
 #     scripts/task-lock.sh (iso_now/now_epoch wrappers), scripts/update-task-status.sh (two

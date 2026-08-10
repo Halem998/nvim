@@ -9,7 +9,7 @@
 # script therefore reads and (in --write mode) rewrites ONLY the source
 # `agent-system/extensions/<ext>/index-entries.json` files, resolving each entry's source file
 # as `agent-system/extensions/<ext>/context/<entry.path>` -- the same layout
-# validate-extension-index.sh's `--check-resolution` mode already assumes.
+# check-extension-docs.sh's Rule T (`check_index_entries_schema`) already assumes.
 #
 # Usage:
 #   bash generate-context-line-counts.sh [--check]   (default) report only, write nothing,

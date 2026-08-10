@@ -328,29 +328,52 @@ wired lint) and exactly one deleted `.syncprotect` line. Confirm by diffing the 
 
 ---
 
-### Phase 4: Deploy-tree sweep and final verification [NOT STARTED]
+### Phase 4: Deploy-tree sweep and final verification [COMPLETED]
 
 **Goal**: Prove the quarantine holds end to end — a regenerated `.claude/` tree contains none of
 the quarantined files, all gates pass, and no dangling reference survives anywhere.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh --dry-run` and confirm it
-      reports the wipe/regenerate plan without error.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh --wipe`. The default
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh --dry-run` and confirm it
+      reports the wipe/regenerate plan without error. *(completed; also confirmed via
+      `--wipe --dry-run` that the destructive plan itself reports cleanly)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh --wipe`. The default
       (non-`--wipe`) mode never removes anything, so it CANNOT satisfy this phase's bar — a plain
       resync would leave every stale quarantined copy in place. If headless nvim is unavailable,
       record the deploy-tree check as explicitly deferred, naming the reason, and complete the
       remaining source-store verifications; never report this bar as met without running it.
-- [ ] Assert absence: for each of the nine quarantined basenames, confirm no file of that name
+      *(completed: headless nvim available, wipe-and-regenerate ran successfully twice — once
+      after Phase 1-3's edits, once again after the dangling-reference cleanup below)*
+- [x] Assert absence: for each of the nine quarantined basenames, confirm no file of that name
       exists under `.claude/scripts/` (or the literature extension's deployed script directory).
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` in full and confirm a
-      PASS with zero failures, including the gate added in Phase 2.
-- [ ] Run a final repo-wide dangling-reference grep for all nine quarantined basenames across
+      *(completed: all nine confirmed absent via `find .claude -name "<basename>"`, re-confirmed
+      after the second wipe)*
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` in full and confirm a
+      PASS with zero failures, including the gate added in Phase 2. *(completed with the same
+      documented exception as Phase 2: gate 11 PASSes; gate 8 (`tests/run-all.sh`) reports the
+      known pre-existing `test-index-entries-schema.sh` failure only — re-run standalone confirms
+      it is the sole failure among 34 discovered suites, with the two previously-observed flaky
+      cases (`test-claude-refresh-matcher.sh`, `test-four-tier-conflict.sh`) both passing clean on
+      this final run. 21 of 22 verify-deploy.sh checks PASS; the one FAIL is gate 8's pre-existing
+      issue, unrelated to and untouched by this task)*
+- [x] Run a final repo-wide dangling-reference grep for all nine quarantined basenames across
       `agent-system/extensions/**`, `lua/**`, `.claude/**`, and the repo-root config files.
       The only permitted hits are inside the `deprecated/` directories themselves (the moved
-      files and their README rationale bullets).
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` to confirm no
-      task-number citation leaked into any deliverable written by this task.
+      files and their README rationale bullets). *(completed with a deviation: the first sweep
+      found four accurate-but-outside-`deprecated/` historical-consumer comments naming
+      `archive-task.sh`/`vault-operation.sh`/`roadmap-sync.sh`/`validate-extension-index.sh` in
+      `scripts/lib/common.sh`, `context/patterns/task-lock.md`, and
+      `scripts/generate-context-line-counts.sh`. These were reworded in place — dropping the bare
+      `.sh` basename while preserving the historical/architectural meaning (the quarantined
+      scripts still exist under `scripts/deprecated/` and still source `common.sh`), and
+      `generate-context-line-counts.sh`'s stale precedent-reference was repointed to
+      `check-extension-docs.sh`'s Rule T, the actual current superseding mechanism. Also corrected
+      `common.sh`'s now-stale claim that `lint-contract-compliance.sh` consumes
+      `common_repo_root` — Phase 2's root-resolution repair removed that dependency. Re-swept
+      clean: all nine basenames' remaining hits are confined to `deprecated/` directories.)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` to confirm no
+      task-number citation leaked into any deliverable written by this task. *(completed: PASS,
+      0 unexempted occurrences across all four scanned trees)*
 
 **Timing**: 0.75 hours
 

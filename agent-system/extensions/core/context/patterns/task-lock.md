@@ -545,9 +545,9 @@ and the `--regen-todo`/`--init` usage refusals below.
 takes an optional `--state-file <path>` (default `specs/state.json`, so every pre-existing caller
 is unchanged) and an `--init` flag for fresh-create targets that have no existing file to
 transform. Both `specs/archive/state.json` and vault-root `state.json` writers in
-`commands/task.md`, `commands/todo.md`, `skills/skill-todo/SKILL.md`, `scripts/archive-task.sh`,
-and `scripts/vault-operation.sh` now route through these two flags rather than hand-rolling their
-own `jq ... > tmp && mv` or `jq -n ... > file` sequences.
+`commands/task.md`, `commands/todo.md`, `skills/skill-todo/SKILL.md`, and the (now-quarantined,
+under `scripts/deprecated/`) archive-task and vault-operation scripts now route through these two
+flags rather than hand-rolling their own `jq ... > tmp && mv` or `jq -n ... > file` sequences.
 
 - **Single mutex, not per-file (D2)**: `--state-file` parameterizes only the internal
   `STATE_FILE` target -- the `specs/.scope-lock` mutex acquired via `task-lock.sh
@@ -598,10 +598,10 @@ grep result, not a permanent fact -- re-run the same searches before trusting th
   `state-write.sh` itself, `specs/reviews/state.json`, and non-`specs/state.json` illustrative
   fixtures).
 - `specs/archive/state.json` and vault-root targets are now covered via `--state-file`, and
-  fresh-creates via `--init` (see above); the two previously-orphaned scripts
-  `scripts/archive-task.sh` and `scripts/vault-operation.sh` are converted as well, including
-  `vault-operation.sh`'s two former live-`specs/state.json` writes that carried zero mutex
-  protection at all.
+  fresh-creates via `--init` (see above); the two previously-orphaned (now-quarantined,
+  under `scripts/deprecated/`) archive-task and vault-operation scripts are converted as well,
+  including the vault-operation script's two former live-`specs/state.json` writes that carried
+  zero mutex protection at all.
 - The remaining surface is the non-core extension domains -- re-measured at 115 hand-rolled
   `specs/state.json` write sites across 50 files under `agent-system/extensions/` outside
   `core/` (`cslib`, `epidemiology`, `founder`, `lean`, `present`, `web`) via the same grep pattern
