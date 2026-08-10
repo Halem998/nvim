@@ -11,8 +11,8 @@ next_project_number: 1016
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 1004,1007,1008,1009,1010,1011,1012,1013,1014,1015 | -- | agent-system, orchestration-concurrency |
-| 2 | 1005 | 1004 | agent-system |
+| 1 | 1004,1007,1008,1010,1011,1012,1013,1014,1015 | -- | agent-system, orchestration-concurrency |
+| 2 | 1005,1009 | 1004,1015 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -23,13 +23,13 @@ next_project_number: 1016
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
 1007 [NOT STARTED] — validate-handoff-location.sh matches .orchestrator-handoff.json p
-1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 1010 [NOT STARTED] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 1012 [NOT STARTED] — tests/run-all.sh is red and has been treated as permanently-expec
 1013 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
+  └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 
 ### Orchestration Concurrency
 
@@ -197,7 +197,7 @@ CONSTRAINT: do not drive this task with multi-task /orchestrate until err_178634
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 1015
 
 **Description**: Declared-vs-deployed parity for provides.* categories is one-directional by design, and the live .claude/ tree carries 4 orphan files absent from a clean scratch regenerate: context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md. Two of these (docs/architecture/architecture-spec.md, docs/README.md) were not covered by the pre-existing err_1786349061556_LuKGif (deploy_ghost_index_entries), which only named the other two -- confirmed and extended by err_1786350581273_TAWj0I (deploy_orphan_files_undercounted). This task covers BOTH error ids with one decision; do not split it.
 
