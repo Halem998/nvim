@@ -11,17 +11,15 @@ next_project_number: 1020
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 1004,1011,1012,1014,1016,1017,1018,1019 | -- | agent-system, extensions, orchestration-concurrency |
-| 2 | 1005,1009,1013 | 1004,1017,1018 | agent-system |
-| 3 | 1006 | 1005 | agent-system |
+| 1 | 1005,1011,1012,1014,1016,1017,1018,1019 | -- | agent-system, extensions, orchestration-concurrency |
+| 2 | 1006,1009,1013 | 1005,1017,1018 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-1004 [IMPLEMENTING] — /todo's "Sync Repository Metrics" stage cannot report a true buil
-  └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
-    └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
+1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
+  └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 1012 [PARTIAL] — tests/run-all.sh is red and has been treated as permanently-expec
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
@@ -503,12 +501,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1004. Fix /todo repository-metrics sync: build_errors is structurally always 0 and the technical_debt frontmatter target does not exist
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md]
 - **Plan**: [1004_fix_todo_repository_metrics_sync/plans/01_repository-metrics-sync-fix.md]
+- **Summary**: [1004_fix_todo_repository_metrics_sync/summaries/01_repository-metrics-sync-fix-summary.md]
 
 **Description**: /todo's "Sync Repository Metrics" stage cannot report a true build-health signal, and half of it writes to a target that does not exist. Both defects are live in the source store and were observed on a real /todo run.
 

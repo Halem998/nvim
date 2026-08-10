@@ -787,7 +787,7 @@
       "project_number": 1004,
       "project_name": "fix_todo_repository_metrics_sync",
       "title": "Fix /todo repository-metrics sync: build_errors is structurally always 0 and the technical_debt frontmatter target does not exist",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [],
@@ -798,7 +798,7 @@
       ],
       "description": "/todo's \"Sync Repository Metrics\" stage cannot report a true build-health signal, and half of it writes to a target that does not exist. Both defects are live in the source store and were observed on a real /todo run.\n\nDEFECT 1 -- build_errors is unconditionally 0 (agent-system/extensions/core/commands/todo.md:757-762):\n\n    # Build errors (0 if project-specific lint/check passes)\n    if make check 2>/dev/null || npm run lint 2>/dev/null || true; then\n      build_errors=0\n    else\n      build_errors=1\n    fi\n\nThe trailing `|| true` makes the `if` condition unconditionally true, so the `else` branch is\nunreachable and `build_errors` is ALWAYS 0. Downstream, `repository_health.status` is derived as\n`(if build_errors == 0 then \"healthy\" else \"needs_attention\" end)`, so the status field is always\n\"healthy\" no matter the actual state of the repository. The field carries no information while\nlooking authoritative -- the worst failure mode for a health signal.\n\nA second, subtler problem sits behind the same lines: `make check` / `npm run lint` are the only\nprobes, and they are wrong for most repos this system is deployed into (Python/pytest, Lean/lake,\nNix). Even with the `|| true` removed, a repo with neither a Makefile nor package.json would take\nthe `else` branch and report `build_errors=1` -- a false RED replacing the current false GREEN.\nThe fix must address the probe, not merely the boolean.\n\nDEFECT 2 -- the technical_debt frontmatter block does not exist (todo.md:783-800 vs\nagent-system/extensions/core/scripts/generate-todo.sh:315-323):\n\ntodo.md Step 5.7.3 instructs: \"Read TODO.md and update the YAML frontmatter `technical_debt`\nsection to match state.json\", and shows a `technical_debt:` / `repository_health:` block to write.\nBut generate-todo.sh emits ONLY `next_project_number` into the frontmatter:\n\n    printf 'next_project_number: %s\\n' \"$next_num\"\n\nSo there is no `technical_debt` block to update. Worse, TODO.md is generated from state.json --\nany hand-written frontmatter block would be destroyed on the next generate-todo.sh run, which\n/todo itself triggers. The instruction is unexecutable as written, and executing it literally\nwould produce work that is silently discarded.\n\nOBSERVED: on a real /todo run the recorded repository_health was `todo_count: 8, fixme_count: 0,\nbuild_errors: 0, status: \"healthy\"`, last assessed ~2 months earlier. Actual measured counts were\n41 TODO and 2 FIXME. The stale figures had never been corrected because the sync stage had never\nproduced a meaningful result.\n\nWORK:\n  1. Decide and document what `build_errors` is actually supposed to mean. Two coherent readings:\n     (a) \"the tree is structurally sound\" -- importable/parseable/collectable; or\n     (b) \"the project's own check command passes\". These are different signals with different\n     costs; (a) is cheap and portable, (b) is expensive and repo-specific. Pick one, state it\n     where the field is defined, and make status derivation match. Do NOT leave a field whose\n     meaning must be inferred from a broken heuristic.\n  2. Implement the chosen probe so it can actually fail. Remove the `|| true`. If no probe is\n     applicable to the repo, the honest value is \"not measured\", not 0 and not 1 -- if the schema\n     cannot express that, extend it rather than picking a misleading number.\n  3. Resolve Defect 2 in ONE direction, not both: either (a) teach generate-todo.sh to emit the\n     technical_debt/repository_health frontmatter from state.json, making it generated like every\n     other part of TODO.md and making Step 5.7.3 a no-op that can be deleted; or (b) delete Step\n     5.7.3 and let state.json be the sole home for repository_health. Option (a) is preferred only\n     if the frontmatter has a real consumer -- verify that first; if it has none, take (b).\n  4. Mirror the change into skill-todo/SKILL.md, which describes the same stage.\n\nVERIFICATION BAR:\n  - A fixture repo whose check command FAILS produces a non-zero/failed build_errors and a status\n    that is not \"healthy\". This must be an executed test, not a reasoned claim -- the current bug\n    is precisely a condition that was never exercised in its failing direction.\n  - A fixture repo with no recognised check command does not silently report either 0 or 1.\n  - Running generate-todo.sh twice in a row leaves the frontmatter byte-identical (no\n    hand-written block is destroyed, no drift is introduced).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T06:30:00Z",
-      "last_updated": "2026-08-10T18:43:27Z",
+      "last_updated": "2026-08-10T19:14:27Z",
       "artifacts": [
         {
           "path": "specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md",
@@ -809,9 +809,15 @@
           "path": "specs/1004_fix_todo_repository_metrics_sync/plans/01_repository-metrics-sync-fix.md",
           "type": "plan",
           "summary": "Five-phase plan: extract the /todo health probe into an executable, fixture-testable script; reconcile the state schema's build_errors typing and status enum; rewrite todo.md's Sync Repository Metrics stage and delete the dead frontmatter step; register and deploy."
+        },
+        {
+          "path": "specs/1004_fix_todo_repository_metrics_sync/summaries/01_repository-metrics-sync-fix-summary.md",
+          "type": "summary",
+          "summary": "Repository metrics sync fix"
         }
       ],
-      "session_id": "sess_1786386280_bc7e55_1004"
+      "session_id": "sess_1786386280_bc7e55_1004",
+      "completion_summary": "Extracted /todo's build-health probe into a standalone, fixture-tested script (assess-repo-health.sh), fixed the always-green build_errors defect and the undefined-$build_errors jq bug, reconciled the status enum and nullable build_errors typing across state-schema.json and its doc mirror, deleted the dead TODO.md-frontmatter instruction, and registered/deployed both new files with verify-deploy.sh confirmed green (23/23 checks, 0 failures)."
     },
     {
       "project_number": 1005,
