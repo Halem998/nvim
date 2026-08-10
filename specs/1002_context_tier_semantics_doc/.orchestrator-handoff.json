@@ -1,0 +1,23 @@
+{
+  "status": "researched",
+  "summary": "Verified the DERIVED_TIER rule table and on_demand rationale live in validate-context-budgets.sh and index.schema.json. Recommend a new standards/context-tier-semantics.md (Tier 4, on_demand:true, all load_when hooks empty per every existing on-demand entry's precedent) plus a matching index-entries.json entry and a pointer comment in the script. No existing doc covers this today; all 10 tracked agents are already over budget, confirming the empty-hook choice is required to avoid worsening any cap.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md",
+      "summary": "Research report with tier rule table, schema rationale, precedented doc location/outline, exact index-entry shape, and verification sequence."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "New file lands at agent-system/extensions/core/context/standards/context-tier-semantics.md, domain core / subdomain standards",
+    "Index entry uses on_demand:true with all load_when arrays empty, matching every existing on-demand entry's precedent",
+    "The derivation logic itself (DERIVED_TIER in validate-context-budgets.sh) is treated as correct and out of scope; this task is documentation-only",
+    "validate-context-budgets.sh's header comment above DERIVED_TIER should gain a one-line pointer to the new file (task WORK item 4), even though that script is outside the task's declared two-file file_scope"
+  ],
+  "dead_ends": []
+}
