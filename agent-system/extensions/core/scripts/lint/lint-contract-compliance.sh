@@ -2,7 +2,8 @@
 # lint-contract-compliance.sh - Static compliance checks for hard-mode behavioral contracts
 #
 # Validates that hard-mode agents, skills, and contract files structurally comply
-# with the H-technique contracts defined in .claude/context/contracts/.
+# with the H-technique contracts defined in agent-system/extensions/core/context/contracts/
+# (source store) -- deployed at .claude/context/contracts/ in a consuming repo.
 #
 # WHAT THIS SCRIPT CHECKS (Tier 1 static file-content checks):
 #   A. Hard agents reference their required contracts in Context References sections
@@ -10,7 +11,7 @@
 #   C. Each hard skill dispatches to the correct hard agent (SKILL.md wiring)
 #   D. skill-orchestrate-hard/SKILL.md contains convergence policing fields
 #   E. general-implementation-hard-agent.md contains H2 vocabulary
-#   F. index.json has at least one context entry per hard agent
+#   F. index-entries.json has at least one context entry per hard agent
 #
 # WHAT THIS SCRIPT DOES NOT CHECK (Tier 3 runtime behavior -- deferred):
 #   - Whether agents actually honor read budgets at runtime
@@ -54,7 +55,7 @@ while [[ $# -gt 0 ]]; do
       echo "  C. Hard skill -> hard agent dispatch wiring"
       echo "  D. Convergence policing fields in skill-orchestrate-hard"
       echo "  E. H2 vocabulary in general-implementation-hard-agent"
-      echo "  F. index.json contract coverage for hard agents"
+      echo "  F. index-entries.json contract coverage for hard agents"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found"
       exit 0
@@ -66,11 +67,29 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Resolve project root
+# ── Root resolution ──────────────────────────────────────────────────────────────────────────
+# Uses `git rev-parse --show-toplevel` (falling back to a `REPO_ROOT` env override, then to a
+# script-relative default), mirroring the sibling pattern in lint-agent-contracts.sh -- NOT the
+# scripts/-depth-specific common_repo_root("$SCRIPT_DIR", N) convention used by flat scripts/*.sh.
+# This script lives two levels deeper, at scripts/lint/, and validates the SOURCE STORE
+# (agent-system/extensions/core/**) directly rather than a deployed .claude/ tree, so it produces
+# identical results whether invoked from the deployed .claude/scripts/lint/ copy or directly from
+# the agent-system/extensions/core/scripts/lint/ source-store copy.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../lib/common.sh"
-PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 3)"
-CLAUDE_DIR="$PROJECT_ROOT/.claude"
+REPO_ROOT="${REPO_ROOT:-}"
+if [[ -z "$REPO_ROOT" ]]; then
+  REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+fi
+if [[ -z "$REPO_ROOT" ]]; then
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+fi
+PROJECT_ROOT="$REPO_ROOT"
+CORE_ROOT="$REPO_ROOT/agent-system/extensions/core"
+
+if [[ ! -d "$CORE_ROOT" ]]; then
+  echo "ERROR: core extension root not found at $CORE_ROOT" >&2
+  exit 2
+fi
 
 # Counters
 PASSED=0
@@ -105,7 +124,7 @@ check_a_hard_agent_contract_references() {
   echo "--- Check A: Hard agent contract @-references ---"
 
   # research agent requires: anti-analysis, reference-grounding
-  local research_agent="$CLAUDE_DIR/agents/general-research-hard-agent.md"
+  local research_agent="$CORE_ROOT/agents/general-research-hard-agent.md"
   if [[ ! -f "$research_agent" ]]; then
     log_fail "general-research-hard-agent.md not found"
   else
@@ -123,7 +142,7 @@ check_a_hard_agent_contract_references() {
   fi
 
   # planner agent requires: reference-grounding
-  local planner_agent="$CLAUDE_DIR/agents/planner-hard-agent.md"
+  local planner_agent="$CORE_ROOT/agents/planner-hard-agent.md"
   if [[ ! -f "$planner_agent" ]]; then
     log_fail "planner-hard-agent.md not found"
   else
@@ -136,7 +155,7 @@ check_a_hard_agent_contract_references() {
   fi
 
   # implementation agent requires: anti-analysis, wrap-up, territory
-  local impl_agent="$CLAUDE_DIR/agents/general-implementation-hard-agent.md"
+  local impl_agent="$CORE_ROOT/agents/general-implementation-hard-agent.md"
   if [[ ! -f "$impl_agent" ]]; then
     log_fail "general-implementation-hard-agent.md not found"
   else
@@ -167,7 +186,7 @@ check_b_contract_files() {
   echo ""
   echo "--- Check B: Contract file existence and H-technique identifiers ---"
 
-  local contracts_dir="$CLAUDE_DIR/context/contracts"
+  local contracts_dir="$CORE_ROOT/context/contracts"
 
   declare -A CONTRACT_FILES=(
     ["anti-analysis.md"]="H2"
@@ -212,7 +231,7 @@ check_c_hard_skill_dispatch() {
 
   for skill in "${!SKILL_AGENTS[@]}"; do
     local expected_agent="${SKILL_AGENTS[$skill]}"
-    local skill_file="$CLAUDE_DIR/skills/$skill/SKILL.md"
+    local skill_file="$CORE_ROOT/skills/$skill/SKILL.md"
 
     if [[ ! -f "$skill_file" ]]; then
       log_fail "$skill: SKILL.md not found"
@@ -227,7 +246,7 @@ check_c_hard_skill_dispatch() {
   done
 
   # skill-orchestrate-hard is a special case -- it dispatches to all hard agents
-  local orchestrate_skill="$CLAUDE_DIR/skills/skill-orchestrate-hard/SKILL.md"
+  local orchestrate_skill="$CORE_ROOT/skills/skill-orchestrate-hard/SKILL.md"
   if [[ ! -f "$orchestrate_skill" ]]; then
     log_fail "skill-orchestrate-hard: SKILL.md not found"
   else
@@ -243,7 +262,7 @@ check_d_convergence_policing() {
   echo ""
   echo "--- Check D: Convergence policing fields in skill-orchestrate-hard ---"
 
-  local skill_file="$CLAUDE_DIR/skills/skill-orchestrate-hard/SKILL.md"
+  local skill_file="$CORE_ROOT/skills/skill-orchestrate-hard/SKILL.md"
 
   if [[ ! -f "$skill_file" ]]; then
     log_fail "skill-orchestrate-hard/SKILL.md not found -- skipping convergence checks"
@@ -269,7 +288,7 @@ check_e_h2_vocabulary() {
   echo ""
   echo "--- Check E: H2 vocabulary in general-implementation-hard-agent ---"
 
-  local impl_agent="$CLAUDE_DIR/agents/general-implementation-hard-agent.md"
+  local impl_agent="$CORE_ROOT/agents/general-implementation-hard-agent.md"
 
   if [[ ! -f "$impl_agent" ]]; then
     log_fail "general-implementation-hard-agent.md not found -- skipping H2 vocabulary checks"
@@ -301,22 +320,24 @@ check_e_h2_vocabulary() {
 }
 
 # ---------------------------------------------------------------------------
-# Check F: index.json contract coverage for hard agents
-# Each hard agent must appear in at least one context entry's load_when.agents array
+# Check F: index-entries.json contract coverage for hard agents
+# Each hard agent must appear in at least one context entry's load_when.agents array.
+# Reads core's SOURCE `index-entries.json` (not the deployed, merged `.claude/context/index.json`
+# artifact) -- consistent with this script validating the source store throughout.
 # ---------------------------------------------------------------------------
 check_f_index_coverage() {
   echo ""
-  echo "--- Check F: index.json contract coverage for hard agents ---"
+  echo "--- Check F: index-entries.json contract coverage for hard agents ---"
 
-  local index_file="$CLAUDE_DIR/context/index.json"
+  local index_file="$CORE_ROOT/index-entries.json"
 
   if [[ ! -f "$index_file" ]]; then
-    log_fail "index.json not found at $index_file"
+    log_fail "index-entries.json not found at $index_file"
     return
   fi
 
   if ! jq empty "$index_file" 2>/dev/null; then
-    log_fail "index.json is not valid JSON"
+    log_fail "index-entries.json is not valid JSON"
     return
   fi
 
@@ -330,9 +351,9 @@ check_f_index_coverage() {
     local count
     count=$(jq -r "[.entries[] | select(.load_when.agents[]? == \"$agent\")] | length" "$index_file" 2>/dev/null || echo "0")
     if [[ "$count" -gt 0 ]]; then
-      log_pass "index.json: $agent has $count context entries"
+      log_pass "index-entries.json: $agent has $count context entries"
     else
-      log_warn "index.json: $agent has 0 context entries (contracts not indexed?)"
+      log_warn "index-entries.json: $agent has 0 context entries (contracts not indexed?)"
     fi
   done
 }
@@ -365,7 +386,7 @@ main() {
   if [[ "$FAILED" -gt 0 ]]; then
     echo -e "${RED}CONTRACT COMPLIANCE LINT FAILED ($FAILED failures)${NC}"
     echo ""
-    echo "Reference: .claude/context/contracts/ for contract definitions"
+    echo "Reference: agent-system/extensions/core/context/contracts/ for contract definitions"
     exit 1
   elif [[ "$WARNINGS" -gt 0 ]]; then
     echo -e "${YELLOW}CONTRACT COMPLIANCE LINT PASSED WITH WARNINGS${NC}"

@@ -1,0 +1,47 @@
+{
+  "phase": 2,
+  "phase_name": "Repair and wire in the contract-compliance lint",
+  "started_at": "2026-08-09T00:30:00Z",
+  "last_updated": "2026-08-09T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Reproduce current 15-failure state, confirm root-resolution artifact",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Repair root resolution using lint-agent-contracts.sh sibling pattern; repoint Check F to source index-entries.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Re-run --verbose, triage findings",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Add gate 11 to verify-deploy.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Run full verify-deploy.sh, confirm new gate passes",
+      "status": "done",
+      "files_touched": [],
+      "note": "gate 11 PASS; gate 8 (tests/run-all.sh) reports 2 pre-existing/flaky failures (test-index-entries-schema.sh, test-claude-refresh-matcher.sh) unrelated to this task's edits -- documented per delegation instructions, not fixed here"
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

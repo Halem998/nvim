@@ -202,30 +202,42 @@ moving it.
 
 ---
 
-### Phase 2: Repair and wire in the contract-compliance lint [NOT STARTED]
+### Phase 2: Repair and wire in the contract-compliance lint [COMPLETED]
 
 **Goal**: Fix `lint/lint-contract-compliance.sh`'s broken root resolution, triage the findings
 that survive the fix, and add the script as a new gate in `verify-deploy.sh`.
 
 **Tasks**:
-- [ ] Reproduce the current state: run the script and confirm it exits 1 with 15 failures whose
+- [x] Reproduce the current state: run the script and confirm it exits 1 with 15 failures whose
       messages name paths under `agent-system/extensions/.claude/...` — evidence the failures are
-      root-resolution artifacts rather than real contract violations.
-- [ ] Replace its root resolution with the sibling pattern used by
+      root-resolution artifacts rather than real contract violations. *(completed: confirmed 15
+      failures, root cause `common_repo_root "$SCRIPT_DIR" 3` landing on
+      `agent-system/extensions` instead of the repo root)*
+- [x] Replace its root resolution with the sibling pattern used by
       `scripts/lint/lint-agent-contracts.sh`: `SCRIPT_DIR` from `BASH_SOURCE`, `REPO_ROOT` from a
       `REPO_ROOT` env override then `git rev-parse --show-toplevel` then a relative fallback, and
       derive agent/skill/context roots from `$REPO_ROOT/agent-system/extensions` (source store)
-      rather than from a `.claude/` path relative to the script's own directory.
-- [ ] Re-run with `--verbose` and triage every surviving finding. Real contract violations are
+      rather than from a `.claude/` path relative to the script's own directory. *(completed; also
+      repointed Check F from the deployed, merged `.claude/context/index.json` to core's source
+      `index-entries.json`, the source-store equivalent, since the whole script now validates the
+      source store consistently)*
+- [x] Re-run with `--verbose` and triage every surviving finding. Real contract violations are
       fixed here; findings that reflect an intentional current design are recorded in the phase
-      summary with justification.
-- [ ] Add the script as a new gate in `agent-system/extensions/core/scripts/verify-deploy.sh`,
+      summary with justification. *(completed: 24/24 checks pass after the fix — all 15 original
+      failures were root-resolution artifacts, zero real contract violations remained)*
+- [x] Add the script as a new gate in `agent-system/extensions/core/scripts/verify-deploy.sh`,
       copying the structure of the existing gate 6 / gate 7 lint blocks verbatim (section banner,
       source-store existence check, `REPO_ROOT="$TARGET"` invocation with `--verbose`, `pass`/
       `fail` with a re-run hint, and `FINDINGS_LIST` population when `$FINDINGS` is true). Place
-      it after the existing final gate and number it accordingly.
-- [ ] Run the full `verify-deploy.sh` and confirm the new gate reports pass and the overall run
-      is green.
+      it after the existing final gate and number it accordingly. *(completed: added as gate 11)*
+- [x] Run the full `verify-deploy.sh` and confirm the new gate reports pass and the overall run
+      is green. *(completed with a documented exception: gate 11 itself PASSes; gate 8
+      (`tests/run-all.sh`) reports 2 pre-existing/flaky failures unrelated to this task —
+      `test-index-entries-schema.sh` (known pre-existing fixture-suite defect) and
+      `test-claude-refresh-matcher.sh` (PID-race flake; passes cleanly when re-run standalone).
+      Neither failure is new, neither touches any file this task modified, and both are called
+      out as expected/out-of-scope in this task's own delegation instructions. See Phase 4 for
+      the final confirming re-run.)*
 
 **Timing**: 1.5 hours
 

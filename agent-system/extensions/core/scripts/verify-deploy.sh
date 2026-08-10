@@ -483,6 +483,37 @@ else
 fi
 
 say ""
+
+# ── 11. Contract compliance lint (lint-contract-compliance.sh --verbose) ──────
+# Only meaningful in the source-store repo, mirroring gates 6-7's SKIP-if-not-source-store
+# precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
+# skips there. Invokes the source-store copy directly (like gates 6-7): the script resolves its
+# own REPO_ROOT via `git rev-parse --show-toplevel`, falling back to the `REPO_ROOT` env override
+# set here, and always validates the source store (agent-system/extensions/core/**) regardless of
+# which copy is invoked.
+say "11. Contract compliance lint (lint-contract-compliance.sh --verbose)"
+CURRENT_GATE="gate11"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- contract compliance lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh" ]; then
+  fail "lint-contract-compliance.sh not found in source store"
+else
+  contract_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh" --verbose 2>&1)
+  contract_lint_status=$?
+  if [ "$contract_lint_status" -eq 0 ]; then
+    pass "contract compliance lint reports no failures"
+  else
+    fail "contract compliance lint reported failures" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r contract_lint_line; do
+        FINDINGS_LIST+=("FINDING gate11 ${contract_lint_line#*FAIL\] }")
+      done < <(printf '%s\n' "$contract_lint_output" | grep -F '[FAIL]')
+    fi
+  fi
+fi
+
+say ""
 if [ "$FAILURES" -eq 0 ]; then
   echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)"
   say ""
