@@ -265,7 +265,7 @@ file.
 
 ---
 
-### Phase 3: Bidirectional Fixture Tests [NOT STARTED]
+### Phase 3: Bidirectional Fixture Tests [COMPLETED]
 
 **Goal**: Extend `test-validate-state.sh` with fixtures that execute **both directions** of the
 verification bar and prove the check fires on a directly `jq`-composed write, not only on
@@ -273,35 +273,37 @@ verification bar and prove the check fires on a directly `jq`-composed write, no
 
 **Tasks**:
 
-- [ ] Build a fixture helper that creates a temporary git repository containing a `specs/`
+- [x] Build a fixture helper that creates a temporary git repository containing a `specs/`
       directory, commits a baseline `state.json` with a known multi-type `.artifacts` array, then
       mutates the working-tree copy. This is required because the check reads the *prior committed*
-      version — a non-git fixture cannot exercise it.
-- [ ] **Negative fixture (rejection)**: mutate the working copy using a literal, hand-composed
+      version — a non-git fixture cannot exercise it. *(completed: `make_d5_baseline`)*
+- [x] **Negative fixture (rejection)**: mutate the working copy using a literal, hand-composed
       `jq '... .artifacts = [...]' > tmp && mv tmp state.json` sequence that drops more paths of one
       type than it adds (mirroring the observed 5-dropped/2-added shape). Assert the validator
       reports the new check's FAIL line naming the project number and type, and exits nonzero.
       Using a raw `jq` assignment here — rather than a helper call — is what satisfies the
       "triggers on a direct jq-composed write" bar; do not substitute a helper invocation.
-- [ ] **Positive fixture (opt-in accepted)**: re-run the *identical* mutated fixture with
+      *(completed)*
+- [x] **Positive fixture (opt-in accepted)**: re-run the *identical* mutated fixture with
       `--allow-artifact-removal <project_number>` and assert exit 0 with the suppression/opt-in
       line present. Both directions must run against the same mutation so the flag is the only
-      variable.
-- [ ] **Regression fixture (sanctioned supersession)**: a 1-for-1 same-type replacement
+      variable. *(completed)*
+- [x] **Regression fixture (sanctioned supersession)**: a 1-for-1 same-type replacement
       (one `report` path removed, one added) asserted to PASS with no finding — the guard that
-      existing `link_artifact` / `skill_link_artifacts` call sites remain unaffected.
-- [ ] **Pure-append fixture**: adding one artifact with nothing removed, asserted PASS.
-- [ ] **Untyped-entry fixture**: dropping two entries with absent `.type` while adding none,
-      asserted FAIL under the sentinel grouping.
-- [ ] **Scoped-flag fixture**: a `summary`-type loss with `--allow-artifact-removal <n>:report`
-      asserted to still FAIL (proving the type-scoped form does not over-permit).
-- [ ] Follow the suite's existing structural idiom exactly: `pass()`/`fail()`/`info()` helpers,
-      `PASSED`/`FAILED` counters, exit 0 on all-pass.
-- [ ] Resolve the validator under test explicitly. The suite's existing `VALIDATOR_CANDIDATES`
+      existing `link_artifact` / `skill_link_artifacts` call sites remain unaffected. *(completed)*
+- [x] **Pure-append fixture**: adding one artifact with nothing removed, asserted PASS. *(completed)*
+- [x] **Untyped-entry fixture**: dropping two entries with absent `.type` while adding none,
+      asserted FAIL under the sentinel grouping. *(completed)*
+- [x] **Scoped-flag fixture**: a `summary`-type loss with `--allow-artifact-removal <n>:report`
+      asserted to still FAIL (proving the type-scoped form does not over-permit). *(completed)*
+- [x] Follow the suite's existing structural idiom exactly: `pass()`/`fail()`/`info()` helpers,
+      `PASSED`/`FAILED` counters, exit 0 on all-pass. *(completed)*
+- [x] Resolve the validator under test explicitly. The suite's existing `VALIDATOR_CANDIDATES`
       prefers the deployed copy; the new cases must assert they are running a validator that
       actually contains the new check (e.g. grep the resolved `$VALIDATOR` for the check's
       identifier and `info()`-skip with a loud message if absent) so a stale deployed copy cannot
-      produce a false green.
+      produce a false green. *(completed: dedicated source-store-first `D5_VALIDATOR_CANDIDATES`,
+      grepped for "Check D5" before trusting)*
 
 **Timing**: 1.5 hours
 
@@ -313,6 +315,12 @@ verification bar and prove the check fires on a directly `jq`-composed write, no
 implementation time by reporting the actual delta in the suite's `PASSED` total before and after,
 and reconcile it against seven; if the real count differs, report the real number rather than
 restating this estimate.
+
+**Scope Hypothesis Result**: The actual delta is **six**, not seven — `PASSED` went from 8
+(pre-existing: 2 positive + 4 defect + 2 bonus) to 14 (post-change), matching the six named
+fixtures actually enumerated by this phase's own Tasks list above (negative, positive, regression,
+pure-append, untyped, scoped). The "seven" figure in this Scope Hypothesis was itself an overcount
+at plan-authoring time; reporting the real number per this hypothesis's own instruction.
 
 **Files to modify**:
 

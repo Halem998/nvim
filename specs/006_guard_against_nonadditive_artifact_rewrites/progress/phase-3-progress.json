@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Bidirectional Fixture Tests",
+  "started_at": "2026-08-10T23:20:00Z",
+  "last_updated": "2026-08-10T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Build git-backed fixture helper (temp git repo, specs/ dir, committed baseline)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 2, "description": "Negative fixture: raw jq-composed rejection, more removed than added", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 3, "description": "Positive fixture: identical mutation with --allow-artifact-removal accepted", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 4, "description": "Regression fixture: 1-for-1 same-type supersession passes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 5, "description": "Pure-append fixture passes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 6, "description": "Untyped-entry fixture: drop two untyped entries, add none, FAIL", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 7, "description": "Scoped-flag fixture: wrong-type opt-in still FAILs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 8, "description": "Resolve validator explicitly and assert it contains the new check identifier", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"], "note": "Added a dedicated D5_VALIDATOR_CANDIDATES resolution (source-store-first) that greps each candidate for the 'Check D5' identifier before trusting it; loudly info()-skips the D5 block if none qualify."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "scope_hypothesis_result": "Plan estimated seven new fixture cases; the actual implementation produced six distinct D5 pass() assertions (negative, positive, regression, pure-append, untyped, scoped) -- the plan's Tasks list itself only enumerates six named fixtures, so the Scope Hypothesis's 'seven' figure was itself an overcount at authoring time. Suite PASSED total went from 8 (pre-existing) to 14 (post-change), a delta of 6, matching the six D5 cases. All pre-existing 8 cases still pass (no regression). Reporting the real number (6) per the phase's own instruction."
+}
