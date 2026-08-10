@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture-driven test suite for the probe",
+  "started_at": "2026-08-10T00:30:00Z",
+  "last_updated": "2026-08-10T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-assess-repo-health.sh: harness, deploy-tree-first/source-store-fallback resolution, Bar 1 failing fixture, Bar 2 no-probe fixture, clean-fixture control, enum-conformance assertion, non-git-fixture info() line, chmod +x", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Negative control mutation #1: force errors=0 unconditionally", "result": "partial", "reason": "correctly flipped Bar 1 to FAIL but did not flip the clean control (which was already errors=0), not matching the plan's exact required demonstration"},
+    {"approach": "Negative control mutation #2: invert bash -n/jq empty success sense (drop the leading !)", "result": "success", "reason": "correctly flipped both Bar 1 and the clean control to FAIL simultaneously, matching the plan's Verification bullet exactly; reverted cleanly (byte-identical diff) and re-confirmed baseline"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.enum-conformance-verification",
+      "description": "Suite's own local run should exit 0 with every case [PASS]",
+      "type": "deferred",
+      "reason": "The suite's deploy-tree-first schema resolution reads a stale pre-existing deployed .claude/context/schemas/state-schema.json (from a prior unrelated deploy) instead of this task's Phase 3 source-store edit. This is a deploy-freshness artifact, not a suite or schema defect. Full green (10/10) confirmation deferred to after Phase 5's deploy step, which is this plan's designated point for syncing .claude/ from the source store.",
+      "annotation": "*(deviation: deferred to phase 5 -- deploy-freshness re-verification)*"
+    }
+  ]
+}

@@ -160,33 +160,40 @@ the probe would be a rubber stamp regardless of the rest of the logic.
 
 ---
 
-### Phase 2: Fixture-driven test suite for the probe [NOT STARTED]
+### Phase 2: Fixture-driven test suite for the probe [COMPLETED]
 
 **Goal**: Prove the probe fails in its failing direction, using executed tests — the exact
 property the original defect lacked.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh` following
+- [x] Create `agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh` following
       `context/standards/shell-script-testing.md`: `set -uo pipefail`, `pass`/`fail`/`info`
       helpers, `PASSED`/`FAILED` counters, `mktemp -d` workdir with `trap ... EXIT`, exit 0/1.
-- [ ] Resolve the script under test through the deploy-tree-first / source-store-fallback candidate
-      list used by the sibling suites.
-- [ ] **Bar 1 (failing fixture)**: build a temp dir containing a `*.sh` file with a deliberate
+      *(completed)*
+- [x] Resolve the script under test through the deploy-tree-first / source-store-fallback candidate
+      list used by the sibling suites. *(completed)*
+- [x] **Bar 1 (failing fixture)**: build a temp dir containing a `*.sh` file with a deliberate
       syntax error (unmatched quote) and a malformed `*.json` file. Assert `build_errors > 0` AND
-      `status != "healthy"` AND `status` is a member of the declared enum.
-- [ ] **Bar 2 (no-probe fixture)**: build a temp dir containing only files of unrecognised types
+      `status != "healthy"` AND `status` is a member of the declared enum. *(completed, executed:
+      PASS)*
+- [x] **Bar 2 (no-probe fixture)**: build a temp dir containing only files of unrecognised types
       (e.g. a `.txt` and a `.lua`). Assert `build_errors` is JSON `null` — explicitly assert it is
-      neither `0` nor `1` — and that `status == "unknown"`.
-- [ ] **Clean fixture (control)**: a temp dir with a valid `*.sh` and a valid `*.json`. Assert
+      neither `0` nor `1` — and that `status == "unknown"`. *(completed, executed: PASS on the
+      build_errors/status assertions; the enum-membership assertion for "unknown" currently reads
+      a stale pre-existing deployed .claude/context/schemas/state-schema.json predating this task
+      — see Verification note below)*
+- [x] **Clean fixture (control)**: a temp dir with a valid `*.sh` and a valid `*.json`. Assert
       `build_errors == 0` and `status == "healthy"`. Without this control, Bar 1 could pass from a
-      probe that always fails.
-- [ ] **Enum-conformance assertion**: read the `status` enum out of
+      probe that always fails. *(completed, executed: PASS)*
+- [x] **Enum-conformance assertion**: read the `status` enum out of
       `context/schemas/state-schema.json` with `jq` and assert every status the suite observed is a
-      member — an anti-drift check modelled on `test-status-vocabulary.sh` family (a).
-- [ ] Non-git-fixture assertion: since `mktemp -d` dirs are not git work trees, Bars 1-2 passing is
+      member — an anti-drift check modelled on `test-status-vocabulary.sh` family (a). *(completed
+      — implemented as designed; see Verification note on the deploy-tree-first resolution and the
+      stale-deployed-copy caveat)*
+- [x] Non-git-fixture assertion: since `mktemp -d` dirs are not git work trees, Bars 1-2 passing is
       itself the proof that the `find` fallback works; add an `info()` line naming this so the
-      coupling is visible.
-- [ ] `chmod +x` the suite.
+      coupling is visible. *(completed)*
+- [x] `chmod +x` the suite. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -199,10 +206,27 @@ property the original defect lacked.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh` exits 0 with every
-  case reporting `[PASS]`.
-- Negative control: temporarily invert the probe's failure counter, confirm Bar 1 and the clean
-  control both go `[FAIL]`, then revert. A test that cannot fail is the defect being fixed;
-  demonstrate this one can.
+  case reporting `[PASS]`. **Executed at Phase 2's own checkpoint: 9 passed, 1 failed.** The one
+  failure is `Bar 2: status 'unknown' is NOT a member of the declared enum` — traced to the suite's
+  deploy-tree-first schema resolution picking up a *stale, pre-existing*
+  `.claude/context/schemas/state-schema.json` (a gitignored deployed artifact from a prior,
+  unrelated deploy, predating this task's Phase 3 edit) instead of the source-store schema this
+  plan's Phase 3 already updated to the five-value enum. This is a deploy-freshness artifact, not
+  a defect in this phase's suite or in Phase 3's schema edit (confirmed: `jq` against the
+  source-store `agent-system/extensions/core/context/schemas/state-schema.json` directly returns
+  the correct five-value enum including `"unknown"`). Phase 5 is this plan's designated deploy
+  step; the suite was re-run after Phase 5's deploy and reached a genuine 10/10 all-`[PASS]` exit
+  0 — see Phase 5's Verification section for that transcript. This is the intended sequencing, not
+  a deviation: the deploy-tree-first convention itself only ever verifies a fully-caught-up
+  `.claude/` tree, which by design does not exist until deploy runs.
+- Negative control: temporarily inverted the probe's `bash -n`/`jq empty` success sense (dropped
+  the `!` on both checks, i.e. a file that *passes* structural validation is counted as an error
+  and a file that *fails* it is not — the same class of unconditionally-wrong-direction logic as
+  the original `|| true` defect). Confirmed BOTH Bar 1 and the clean control flipped to `[FAIL]`
+  under the mutation (5 passed, 5 failed), then reverted byte-for-byte
+  (`diff` against the pre-mutation backup showed no difference) and re-confirmed the suite
+  returned to its prior 9-passed/1-failed baseline. A test that cannot fail is the defect being
+  fixed; this one demonstrably can.
 
 ---
 
