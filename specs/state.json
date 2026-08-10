@@ -1,9 +1,9 @@
 {
   "version": "1.1.0",
-  "next_project_number": 1020,
+  "next_project_number": 20,
   "active_projects": [
     {
-      "project_number": 1016,
+      "project_number": 16,
       "project_name": "fix_command_register_acquire_session_id_parity",
       "status": "implementing",
       "task_type": "meta",
@@ -20,24 +20,25 @@
       "session_id": "sess_1786386280_bc7e55_1016",
       "artifacts": [
         {
-          "path": "specs/1016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md",
+          "path": "specs/016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md",
           "type": "report",
           "summary": "Confirms research.md, plan.md, and implement.md all reproduce the register-bare/acquire-suffixed session-id defect byte-for-byte, mechanically traces the failure through task-lock.sh's cmd_acquire/session_contention self-exclusion, cites skill-orchestrate/SKILL.md's already-landed bare-session_id fix as the reference pattern, flags a secondary downstream Stage-4D dual-heartbeat risk specific to implement.md, and recommends extending scripts/test-conflict-predicate.sh Group 9 (case 9.5's static-guard shape) with sibling cases per file instead of a new harness."
         },
         {
-          "path": "specs/1016_fix_command_register_acquire_session_id_parity/plans/01_register-acquire-parity-fix.md",
+          "path": "specs/016_fix_command_register_acquire_session_id_parity/plans/01_register-acquire-parity-fix.md",
           "type": "plan",
           "summary": "Five-phase plan unifying the batch session-id across session-register/acquire-retry/release in research.md, plan.md, implement.md; correcting the inline rationalization prose; threading the bare batch id into implement.md's per-task skill dispatch to fix the Stage 4D dual-heartbeat gap; reconciling task-lock.md's contradictory same-session-bypass passage; and extending test-conflict-predicate.sh Group 9 with sibling static guards."
         },
         {
-          "path": "specs/1016_fix_command_register_acquire_session_id_parity/summaries/01_register-acquire-parity-fix-summary.md",
+          "path": "specs/016_fix_command_register_acquire_session_id_parity/summaries/01_register-acquire-parity-fix-summary.md",
           "type": "summary",
           "summary": "Register/acquire session-id parity fix"
         }
-      ]
+      ],
+      "dependencies": []
     },
     {
-      "project_number": 1011,
+      "project_number": 11,
       "project_name": "expand_defect_class_vocabulary",
       "status": "not_started",
       "task_type": "meta",
@@ -48,14 +49,16 @@
       "file_scope": [
         "agent-system/extensions/core/scripts/system-defect-record.sh",
         "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"
-      ]
+      ],
+      "artifacts": [],
+      "dependencies": []
     },
     {
-      "project_number": 1009,
+      "project_number": 9,
       "project_name": "resolve_deploy_orphan_file_parity",
       "status": "not_started",
       "task_type": "meta",
-      "description": "Declared-vs-deployed parity for provides.* categories is one-directional by design, and the live .claude/ tree carries 4 orphan files absent from a clean scratch regenerate: context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md. Two of these (docs/architecture/architecture-spec.md, docs/README.md) were not covered by the pre-existing err_1786349061556_LuKGif (deploy_ghost_index_entries), which only named the other two -- confirmed and extended by err_1786350581273_TAWj0I (deploy_orphan_files_undercounted). This task covers BOTH error ids with one decision; do not split it.\n\nMECHANICAL REASON (already diagnosed, do not re-derive): verify.lua's result shape has no extra/orphan field and only ever iterates the declared side; install-extension.sh's merge_index_entries() is purely additive with no stale-removal step. Parity is therefore verified only in the declared-to-deployed direction, never the reverse.\n\nTARGET: agent-system/extensions/core/scripts/verify-deploy.sh (or the shared verify.lua module it calls), and/or docs/architecture/architecture-spec.md if the decision is to document one-directional parity as intended rather than build detection.\n\nWORK: decide ONE of two directions and implement it -- (a) add a subtractive/orphan-detection pass to verify.lua or verify-deploy.sh that flags live files present in .claude/ but absent from a clean regenerate of every provides.* category, so future orphan drift is caught mechanically; or (b) explicitly document in docs/architecture/architecture-spec.md that provides.* parity is one-directional by design (additive only, no stale-removal), so a future reader does not mistake the current behavior for an oversight. Resolve the 4 currently-orphaned files as part of whichever direction is chosen: either they get removed/reconciled (direction a) or explicitly enumerated as accepted legacy orphans in the documentation (direction b).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.\n\nSTALENESS CAVEAT (added after the deploy-staleness finding): the orphan-file measurement above (4 files present in .claude/ but absent from a clean scratch regenerate) was taken against a deploy tree since shown to be badly stale -- its task-lock.sh was 676 lines against a 1660-line source. That measurement may therefore be an artifact of the staleness rather than evidence of a one-directional parity gap. Re-take the measurement against a freshly regenerated tree before treating it as evidence, and revise the direction (a)/(b) decision if the orphan set changes. Depends on task 1018, which diagnoses the staleness root cause.\n",
+      "description": "Declared-vs-deployed parity for provides.* categories is one-directional by design, and the live .claude/ tree carries 4 orphan files absent from a clean scratch regenerate: context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md. Two of these (docs/architecture/architecture-spec.md, docs/README.md) were not covered by the pre-existing err_1786349061556_LuKGif (deploy_ghost_index_entries), which only named the other two -- confirmed and extended by err_1786350581273_TAWj0I (deploy_orphan_files_undercounted). This task covers BOTH error ids with one decision; do not split it.\n\nMECHANICAL REASON (already diagnosed, do not re-derive): verify.lua's result shape has no extra/orphan field and only ever iterates the declared side; install-extension.sh's merge_index_entries() is purely additive with no stale-removal step. Parity is therefore verified only in the declared-to-deployed direction, never the reverse.\n\nTARGET: agent-system/extensions/core/scripts/verify-deploy.sh (or the shared verify.lua module it calls), and/or docs/architecture/architecture-spec.md if the decision is to document one-directional parity as intended rather than build detection.\n\nWORK: decide ONE of two directions and implement it -- (a) add a subtractive/orphan-detection pass to verify.lua or verify-deploy.sh that flags live files present in .claude/ but absent from a clean regenerate of every provides.* category, so future orphan drift is caught mechanically; or (b) explicitly document in docs/architecture/architecture-spec.md that provides.* parity is one-directional by design (additive only, no stale-removal), so a future reader does not mistake the current behavior for an oversight. Resolve the 4 currently-orphaned files as part of whichever direction is chosen: either they get removed/reconciled (direction a) or explicitly enumerated as accepted legacy orphans in the documentation (direction b).\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.\n\nSTALENESS CAVEAT (added after the deploy-staleness finding): the orphan-file measurement above (4 files present in .claude/ but absent from a clean scratch regenerate) was taken against a deploy tree since shown to be badly stale -- its task-lock.sh was 676 lines against a 1660-line source. That measurement may therefore be an artifact of the staleness rather than evidence of a one-directional parity gap. Re-take the measurement against a freshly regenerated tree before treating it as evidence, and revise the direction (a)/(b) decision if the orphan set changes. Depends on task 18, which diagnoses the staleness root cause.\n",
       "topic": "agent-system",
       "created": "2026-08-10T08:32:20Z",
       "last_updated": "2026-08-10T16:02:07Z",
@@ -65,11 +68,12 @@
       ],
       "dependencies": [
         1015,
-        1018
-      ]
+        18
+      ],
+      "artifacts": []
     },
     {
-      "project_number": 1005,
+      "project_number": 5,
       "project_name": "implement_roadmap_items_producer",
       "title": "roadmap_items is never derived by any implement path, so /todo's ROADMAP sync is dead in practice",
       "status": "not_started",
@@ -90,14 +94,14 @@
       "artifacts": []
     },
     {
-      "project_number": 1006,
+      "project_number": 6,
       "project_name": "guard_against_nonadditive_artifact_rewrites",
       "title": "Nothing prevents an agent from rewriting state.json .artifacts wholesale, silently discarding prior artifacts",
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
-        1005
+        5
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/skill-base.sh",
@@ -111,7 +115,7 @@
       "artifacts": []
     },
     {
-      "project_number": 1012,
+      "project_number": 12,
       "project_name": "fix_test_suite_deployed_mode_failures",
       "title": "Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites",
       "status": "partial",
@@ -127,17 +131,17 @@
       "last_updated": "2026-08-10T18:04:55Z",
       "artifacts": [
         {
-          "path": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
+          "path": "specs/012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
           "type": "report",
           "summary": "Re-measured run-all.sh live (26 passed, 8 failed, 34 total); confirmed the REPO_ROOT depth defect spans 5 suites (not 2); traced test-index-entries-schema.sh's failure to a fixture manifest.json gap; confirmed test-common-lib.sh overlaps the out-of-scope opencode session-id task; found test-lint-state-writer-boundary.sh's prior 7/8 report does not reproduce (8/8 measured); discovered a new, undiagnosed order-dependent flake in test-four-tier-conflict.sh."
         },
         {
-          "path": "specs/1012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md",
+          "path": "specs/012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md",
           "type": "plan",
           "summary": "6-phase implementation plan (5.5 hours, 4 dependency waves) covering REPO_ROOT migration across 17 test suites, the test-index-entries-schema.sh fixture manifest fix, sanctioned-path redeploy and dual-mode re-measurement, a time-boxed diagnostic for the test-four-tier-conflict.sh flake, and a final gate with a residual-failure justification table"
         },
         {
-          "path": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
+          "path": "specs/012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
           "type": "summary",
           "summary": "Full residual-failure justification table, measured counts for both modes, verify-deploy.sh and check-extension-docs.sh gate results"
         }
@@ -145,14 +149,14 @@
       "session_id": "sess_1786378789_92e564_1012"
     },
     {
-      "project_number": 1013,
+      "project_number": 13,
       "project_name": "instrument_gate_out_auto_repair_reporting",
       "title": "Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation",
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
-        1017
+        17
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/command-gate-out.sh",
@@ -164,7 +168,7 @@
       "artifacts": []
     },
     {
-      "project_number": 1014,
+      "project_number": 14,
       "project_name": "prevent_implementation_agent_nonterminal_fanout",
       "title": "Prevent implementation-agent fan-out from returning non-terminal status and stale plan markers",
       "status": "not_started",
@@ -181,7 +185,7 @@
       "artifacts": []
     },
     {
-      "project_number": 1017,
+      "project_number": 17,
       "project_name": "fix_return_meta_lifecycle_ordering",
       "title": "Fix .return-meta.json lifecycle ordering that makes the gate-out body unreachable",
       "status": "not_started",
@@ -197,14 +201,14 @@
         "agent-system/extensions/core/skills/",
         "agent-system/extensions/core/commands/"
       ],
-      "description": "command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.\n\nVERIFIED MECHANISM (do not re-derive): skill-base.sh's skill_cleanup (lines 618-625) rm -f's .postflight-pending, .postflight-loop-guard, AND .return-meta.json. It is the single shared implementation invoked from Stage 9 of context/patterns/skill-postflight-flow.md, used by NINE skills: skill-implementer, skill-implementer-hard, skill-planner, skill-planner-hard, skill-reviser, skill-spawn, skill-team-implement, skill-team-plan, skill-team-research. command-gate-out.sh lines 69-73 then read \"${task_dir}/.return-meta.json\"; on absence it prints \"WARNING: .return-meta.json not found ... skill may have failed silently\" and exit 0. FIVE commands run it: implement.md, orchestrate.md, plan.md, research.md, revise.md.\n\nBLAST RADIUS IS LARGER THAN THE WARNING (measured, not inherited): the exit 0 at line 73 sits ABOVE everything else in the 134-line script. Code rendered unreachable in practice includes (a) the defensive status correction that repairs state.json when a skill reported completion but state is stale, and (b) the skill_validate_task_artifacts call at line 133, the last line, which is the artifact validation and --fix auto-repair path. One missing file disables both correctness mechanisms on all five commands. A real silent failure and an ordinary success emit the identical warning, so the signal carries no information.\n\nCONSEQUENCE FOR SIBLING TASK 1013: 1013's acceptance criterion (a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count) cannot be demonstrated until this ordering defect is fixed, because the path it instruments never executes. 1013 is sequenced after this task; both also edit the same two files.\n\nWORK: decide ONE direction and implement it. (a) run the command-level gate-out before skill cleanup; (b) have skill_cleanup preserve .return-meta.json and make gate-out delete it after consuming it; (c) have skill_cleanup archive the metadata to a location gate-out knows about; (d) if the skill-internal postflight genuinely subsumes both defensive correction and artifact validation, delete the dead reads and replace the warning with a truthful statement. Required regardless of direction: explicitly decide whether defensive status correction is still needed given skill-internal postflight and record the reasoning; and fix the warning text so a genuine silent failure is distinguishable from ordinary success.\n\nUNIFORMITY REQUIREMENT: whatever is chosen must hold across all nine skills and all five commands. A fix that repairs skill-reviser and /revise alone is not acceptable.\n\nACCEPTANCE: a normal successful run of each of the five commands emits no false silent-failure warning; a genuinely failed skill run emits a distinguishable warning; and the defensive-correction path is demonstrated to execute, or is documented as deliberately removed with stated reasoning.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "description": "command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.\n\nVERIFIED MECHANISM (do not re-derive): skill-base.sh's skill_cleanup (lines 618-625) rm -f's .postflight-pending, .postflight-loop-guard, AND .return-meta.json. It is the single shared implementation invoked from Stage 9 of context/patterns/skill-postflight-flow.md, used by NINE skills: skill-implementer, skill-implementer-hard, skill-planner, skill-planner-hard, skill-reviser, skill-spawn, skill-team-implement, skill-team-plan, skill-team-research. command-gate-out.sh lines 69-73 then read \"${task_dir}/.return-meta.json\"; on absence it prints \"WARNING: .return-meta.json not found ... skill may have failed silently\" and exit 0. FIVE commands run it: implement.md, orchestrate.md, plan.md, research.md, revise.md.\n\nBLAST RADIUS IS LARGER THAN THE WARNING (measured, not inherited): the exit 0 at line 73 sits ABOVE everything else in the 134-line script. Code rendered unreachable in practice includes (a) the defensive status correction that repairs state.json when a skill reported completion but state is stale, and (b) the skill_validate_task_artifacts call at line 133, the last line, which is the artifact validation and --fix auto-repair path. One missing file disables both correctness mechanisms on all five commands. A real silent failure and an ordinary success emit the identical warning, so the signal carries no information.\n\nCONSEQUENCE FOR SIBLING TASK 13: 13's acceptance criterion (a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count) cannot be demonstrated until this ordering defect is fixed, because the path it instruments never executes. 13 is sequenced after this task; both also edit the same two files.\n\nWORK: decide ONE direction and implement it. (a) run the command-level gate-out before skill cleanup; (b) have skill_cleanup preserve .return-meta.json and make gate-out delete it after consuming it; (c) have skill_cleanup archive the metadata to a location gate-out knows about; (d) if the skill-internal postflight genuinely subsumes both defensive correction and artifact validation, delete the dead reads and replace the warning with a truthful statement. Required regardless of direction: explicitly decide whether defensive status correction is still needed given skill-internal postflight and record the reasoning; and fix the warning text so a genuine silent failure is distinguishable from ordinary success.\n\nUNIFORMITY REQUIREMENT: whatever is chosen must hold across all nine skills and all five commands. A fix that repairs skill-reviser and /revise alone is not acceptable.\n\nACCEPTANCE: a normal successful run of each of the five commands emits no false silent-failure warning; a genuinely failed skill run emits a distinguishable warning; and the defensive-correction path is demonstrated to execute, or is documented as deliberately removed with stated reasoning.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T16:02:07Z",
       "last_updated": "2026-08-10T16:02:07Z",
       "artifacts": [],
       "effort": "4h"
     },
     {
-      "project_number": 1018,
+      "project_number": 18,
       "project_name": "detect_stale_claude_deploy_trees",
       "title": "Detect stale .claude/ deploy trees and root-cause the silent staleness",
       "status": "not_started",
@@ -218,14 +222,14 @@
         "agent-system/extensions/core/scripts/command-gate-in.sh",
         "lua/neotex/plugins/ai/claude/extensions/"
       ],
-      "description": "A repo can carry an arbitrarily stale .claude/ deploy with no signal, so a user hits a bug fixed upstream long ago with no indication that regeneration is the remedy. Discovered when /revise failed at GATE IN in a consuming repo on a task that had never produced an artifact.\n\nWHAT IS NOT THE DEFECT (ruled out, do not re-litigate): resolve_task_dir is not broken in source. agent-system/extensions/core/scripts/task-lock.sh's resolve_task_dir (line 249) takes a create_mode parameter and mkdir -p's when it is \"create\"; cmd_acquire (line 607) passes \"create\". The failure exists only in the deployed copy.\n\nMEASURED STALENESS EVIDENCE (live, this investigation): the consuming repo's .claude/scripts/task-lock.sh is 676 lines against a 1660-line source, with a deployed resolve_task_dir at line 98 taking no create_mode. Its .claude/scripts/ holds 94 scripts against core's 72 in source. Neither verify-deploy.sh nor deploy-headless.sh is present in the deployed tree at all. This is despite a large sync commit landing recently.\n\nBOOTSTRAP HYPOTHESIS RULED OUT: deploy-headless.sh's header documents a failure mode where a repo deployed by the retired glob-based engine has no \"core\" entry in .claude-extensions.json, so manager.resync_all silently deploys nothing. That is NOT this case. The repo's .claude-extensions.json lists core with status \"active\" and 294 recorded installed_files, including .claude/scripts/task-lock.sh. The loader believes it owns and has installed the very file that is stale. Root cause is unknown and is a genuine investigation, not a known-issue application.\n\nWORK, in order. (1) Determine WHY the deploy is stale despite core being active and the file being listed in installed_files. Hypotheses to test, not assume: the copy step skips existing destination files instead of overwriting; installed_files is treated as authoritative and short-circuits re-copy; resync only re-copies files whose manifest entry changed; or a later partial operation reverted the tree. If the cause is a loader defect, report and fix it as such. (2) Then design and implement staleness DETECTION on a path users actually hit. Note that verify-deploy.sh already performs source-vs-deploy comparison but is not itself deployed and is invoked only from skill-orchestrate's inter-cycle redeploy checkpoint, so no ordinary command surfaces its result. Directions to evaluate, do NOT pre-commit: stamp a source revision or content hash into the deployed tree at load time and have command gate scripts compare against the source store, warning on drift; extend /refresh or a doctor check to diff deployed script versions against source; or have the loader record a per-file hash manifest a preflight can validate cheaply. Whatever is chosen must be cheap enough for a normal command preflight.\n\nINTERACTION WITH SIBLING TASK 1009: 1009's evidence (4 orphan files present in .claude/ but absent from a clean scratch regenerate) was measured against this same stale deploy tree, so it may be an artifact of the staleness rather than a genuine one-directional-parity gap. 1009 is sequenced after this task and must re-measure against a freshly regenerated tree. Both tasks also edit verify-deploy.sh.\n\nACCEPTANCE: the root cause is identified and stated, with the loader defect fixed if that is the cause; a user running an ordinary command against a stale deploy receives an actionable warning naming regeneration as the remedy; demonstrated in both directions, where a stale tree warns and a fresh tree does not.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/** and lua/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "description": "A repo can carry an arbitrarily stale .claude/ deploy with no signal, so a user hits a bug fixed upstream long ago with no indication that regeneration is the remedy. Discovered when /revise failed at GATE IN in a consuming repo on a task that had never produced an artifact.\n\nWHAT IS NOT THE DEFECT (ruled out, do not re-litigate): resolve_task_dir is not broken in source. agent-system/extensions/core/scripts/task-lock.sh's resolve_task_dir (line 249) takes a create_mode parameter and mkdir -p's when it is \"create\"; cmd_acquire (line 607) passes \"create\". The failure exists only in the deployed copy.\n\nMEASURED STALENESS EVIDENCE (live, this investigation): the consuming repo's .claude/scripts/task-lock.sh is 676 lines against a 1660-line source, with a deployed resolve_task_dir at line 98 taking no create_mode. Its .claude/scripts/ holds 94 scripts against core's 72 in source. Neither verify-deploy.sh nor deploy-headless.sh is present in the deployed tree at all. This is despite a large sync commit landing recently.\n\nBOOTSTRAP HYPOTHESIS RULED OUT: deploy-headless.sh's header documents a failure mode where a repo deployed by the retired glob-based engine has no \"core\" entry in .claude-extensions.json, so manager.resync_all silently deploys nothing. That is NOT this case. The repo's .claude-extensions.json lists core with status \"active\" and 294 recorded installed_files, including .claude/scripts/task-lock.sh. The loader believes it owns and has installed the very file that is stale. Root cause is unknown and is a genuine investigation, not a known-issue application.\n\nWORK, in order. (1) Determine WHY the deploy is stale despite core being active and the file being listed in installed_files. Hypotheses to test, not assume: the copy step skips existing destination files instead of overwriting; installed_files is treated as authoritative and short-circuits re-copy; resync only re-copies files whose manifest entry changed; or a later partial operation reverted the tree. If the cause is a loader defect, report and fix it as such. (2) Then design and implement staleness DETECTION on a path users actually hit. Note that verify-deploy.sh already performs source-vs-deploy comparison but is not itself deployed and is invoked only from skill-orchestrate's inter-cycle redeploy checkpoint, so no ordinary command surfaces its result. Directions to evaluate, do NOT pre-commit: stamp a source revision or content hash into the deployed tree at load time and have command gate scripts compare against the source store, warning on drift; extend /refresh or a doctor check to diff deployed script versions against source; or have the loader record a per-file hash manifest a preflight can validate cheaply. Whatever is chosen must be cheap enough for a normal command preflight.\n\nINTERACTION WITH SIBLING TASK 9: 9's evidence (4 orphan files present in .claude/ but absent from a clean scratch regenerate) was measured against this same stale deploy tree, so it may be an artifact of the staleness rather than a genuine one-directional-parity gap. 9 is sequenced after this task and must re-measure against a freshly regenerated tree. Both tasks also edit verify-deploy.sh.\n\nACCEPTANCE: the root cause is identified and stated, with the loader defect fixed if that is the cause; a user running an ordinary command against a stale deploy receives an actionable warning naming regeneration as the remedy; demonstrated in both directions, where a stale tree warns and a fresh tree does not.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/** and lua/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T16:02:07Z",
       "last_updated": "2026-08-10T16:02:07Z",
       "artifacts": [],
       "effort": "5h"
     },
     {
-      "project_number": 1019,
+      "project_number": 19,
       "project_name": "fix_opencode_agent_fragment_paths",
       "title": "Fix opencode agent-fragment path resolution and validator fail-fast",
       "status": "not_started",
@@ -256,10 +260,10 @@
   ],
   "completed_projects": [],
   "repository_health": {
-    "last_assessed": "2026-08-10T19:46:35Z",
+    "last_assessed": "2026-08-10T19:52:33Z",
     "todo_count": 44,
     "fixme_count": 2,
-    "build_errors": 89,
+    "build_errors": 1,
     "status": "critical"
   },
   "memory_health": {
@@ -282,5 +286,13 @@
     "status-marker-lifecycle",
     "wezterm-notifications",
     "workflow-refactor"
+  ],
+  "vault_count": 1,
+  "vault_history": [
+    {
+      "vault_number": 1,
+      "vault_dir": "specs/vault/01-vault/",
+      "created_at": "2026-08-10T19:49:05Z"
+    }
   ]
 }
