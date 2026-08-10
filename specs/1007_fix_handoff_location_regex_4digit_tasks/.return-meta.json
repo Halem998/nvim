@@ -27,29 +27,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/1007_fix_handoff_location_regex_4digit_tasks/summaries/01_widen-handoff-location-regex-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["shell-testing", "hook-regression", "swallowed-failure", "mktemp-workdir", "exit-code-assertion"]
+      "suggested_keywords": [
+        "shell-testing",
+        "hook-regression",
+        "swallowed-failure",
+        "mktemp-workdir",
+        "exit-code-assertion"
+      ]
     },
     {
       "content": "To prove a new regression suite actually pins a fix rather than passing vacuously, temporarily revert the fix in a scratch copy of the file under test (sed-substitute the reverted token into a mktemp copy, point a scratch copy of the test file's *_SRC variable at it, run it) and confirm the expected fixtures flip to FAIL while unrelated fixtures stay stable. Restore immediately; never commit the scratch revert.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/1007_fix_handoff_location_regex_4digit_tasks/summaries/01_widen-handoff-location-regex-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test-verification", "scratch-revert", "regression-suite", "fixture-validation"]
+      "suggested_keywords": [
+        "test-verification",
+        "scratch-revert",
+        "regression-suite",
+        "fixture-validation"
+      ]
     },
     {
       "content": "In this repo, an exact-count regex quantifier on a task-directory digit segment (e.g. [0-9]{3}) is a latent defect class that resurfaces at every order-of-magnitude crossing of specs/state.json's next_project_number. When editing any path-matching pattern keyed to task-directory digits, prefer a minimum-count quantifier ({3,}) over an exact count from the start.",
       "category": "INSIGHT",
       "source_artifact": "specs/1007_fix_handoff_location_regex_4digit_tasks/summaries/01_widen-handoff-location-regex-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["task-directory-regex", "digit-count-quantifier", "order-of-magnitude", "state-json", "handoff-location"]
+      "suggested_keywords": [
+        "task-directory-regex",
+        "digit-count-quantifier",
+        "order-of-magnitude",
+        "state-json",
+        "handoff-location"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786375627_1c56b0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
-    "phases_total": 4
+    "phases_total": 4,
+    "cycles_used": 4,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

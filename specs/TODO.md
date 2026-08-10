@@ -11,7 +11,7 @@ next_project_number: 1017
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 1004,1007,1010,1011,1012,1013,1014,1015,1016 | -- | agent-system, orchestration-concurrency |
+| 1 | 1004,1010,1011,1012,1013,1014,1015,1016 | -- | agent-system, orchestration-concurrency |
 | 2 | 1005,1009 | 1004,1015 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
@@ -22,7 +22,6 @@ next_project_number: 1017
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
-1007 [NOT STARTED] — validate-handoff-location.sh matches .orchestrator-handoff.json p
 1010 [NOT STARTED] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 1012 [NOT STARTED] — tests/run-all.sh is red and has been treated as permanently-expec
@@ -258,10 +257,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1007. Fix handoff location regex 4digit tasks
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [1007_fix_handoff_location_regex_4digit_tasks/reports/01_widen-handoff-location-regex.md]
+- **Plan**: [1007_fix_handoff_location_regex_4digit_tasks/plans/01_widen-handoff-location-regex.md]
+- **Summary**: [1007_fix_handoff_location_regex_4digit_tasks/summaries/01_widen-handoff-location-regex-summary.md]
 
 **Description**: validate-handoff-location.sh matches .orchestrator-handoff.json paths with a fixed-position [0-9]{3} task-directory regex: (^|/)specs/(OC_)?[0-9]{3}_[^/]+/\.orchestrator-handoff\.json$. Once specs/state.json's next_project_number crosses 1000, every task directory is 4+ digits, so the regex can never match, and the hook both exits 2 with a false MISPLACED diagnostic and unconditionally calls system-defect-record.sh --defect-class HANDOFF_MISLOCATED on every handoff write under a 4-digit task -- a spurious system_defect on every such task. Recorded as err_1786349061492_XpY38x. This is the single defect currently BLOCKING the capstone acceptance gate's LIVE CYCLE scope: acceptance sub-item 3 requires the system-defect recorder to emit NO system_defect event on a clean run, and the false positive above makes that negative test structurally unpassable on any 4-digit task, independent of system health.
 

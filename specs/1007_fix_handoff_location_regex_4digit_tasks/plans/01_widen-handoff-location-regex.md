@@ -1,7 +1,7 @@
 # Implementation Plan: Widen validate-handoff-location.sh's task-directory digit-count regex
 
 - **Task**: 1007 - Fix validate-handoff-location.sh's fixed-3-digit task-directory regex
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/1007_fix_handoff_location_regex_4digit_tasks/reports/01_widen-handoff-location-regex.md

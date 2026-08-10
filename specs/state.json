@@ -97,15 +97,34 @@
     {
       "project_number": 1007,
       "project_name": "fix_handoff_location_regex_4digit_tasks",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "description": "validate-handoff-location.sh matches .orchestrator-handoff.json paths with a fixed-position [0-9]{3} task-directory regex: (^|/)specs/(OC_)?[0-9]{3}_[^/]+/\\.orchestrator-handoff\\.json$. Once specs/state.json's next_project_number crosses 1000, every task directory is 4+ digits, so the regex can never match, and the hook both exits 2 with a false MISPLACED diagnostic and unconditionally calls system-defect-record.sh --defect-class HANDOFF_MISLOCATED on every handoff write under a 4-digit task -- a spurious system_defect on every such task. Recorded as err_1786349061492_XpY38x. This is the single defect currently BLOCKING the capstone acceptance gate's LIVE CYCLE scope: acceptance sub-item 3 requires the system-defect recorder to emit NO system_defect event on a clean run, and the false positive above makes that negative test structurally unpassable on any 4-digit task, independent of system health.\n\nTARGET: agent-system/extensions/core/hooks/validate-handoff-location.sh (the regex at approximately line 65).\n\nWORK: widen the digit-count portion of the regex to accept 3+ digits (e.g. [0-9]{3,}) so it matches both the legacy 3-digit and the current/future 4+-digit task directory naming, while continuing to reject genuinely misplaced handoff paths. Add a negative-test fixture: writing a handoff under a 4-digit scratch task directory must NOT trip HANDOFF_MISLOCATED.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "topic": "agent-system",
       "created": "2026-08-10T08:31:48Z",
-      "last_updated": "2026-08-10T08:31:48Z",
+      "last_updated": "2026-08-10T15:51:50Z",
       "file_scope": [
         "agent-system/extensions/core/hooks/validate-handoff-location.sh"
-      ]
+      ],
+      "session_id": "sess_1786375627_1c56b0",
+      "artifacts": [
+        {
+          "path": "specs/1007_fix_handoff_location_regex_4digit_tasks/reports/01_widen-handoff-location-regex.md",
+          "type": "report",
+          "summary": "Research findings and recommended fix for the fixed-3-digit task-directory regex defect."
+        },
+        {
+          "path": "specs/1007_fix_handoff_location_regex_4digit_tasks/plans/01_widen-handoff-location-regex.md",
+          "type": "plan",
+          "summary": "Four-phase implementation plan for widening the handoff-location task-directory digit-count regex."
+        },
+        {
+          "path": "specs/1007_fix_handoff_location_regex_4digit_tasks/summaries/01_widen-handoff-location-regex-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 4 phases, decisions, plan deviations, verification results, and follow-ups."
+        }
+      ],
+      "completion_summary": "Widened validate-handoff-location.sh's fixed-3-digit task-directory quantifier ([0-9]{3} -> [0-9]{3,}) so 4+-digit task directories no longer trip a false MISPLACED/HANDOFF_MISLOCATED diagnostic, added a new 9-fixture regression suite (test-validate-handoff-location.sh) pinning both accept and reject sides, and registered the suite in the core manifest's provides.scripts allowlist. Phase 4 closed COMPLETED WITH EXCLUSIONS: run-all.sh and verify-deploy.sh each carry one fully diagnosed, evidenced, plan-anticipated exclusion (an unrelated pre-existing test failure, and the expected staleness of the not-yet-redeployed .claude/ mirror) — neither is a defect in this fix."
     },
     {
       "project_number": 998,
