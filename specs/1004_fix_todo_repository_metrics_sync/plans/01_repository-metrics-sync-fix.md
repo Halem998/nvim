@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1004
 
 - **Task**: 1004 - Fix /todo repository-metrics sync: build_errors is structurally always 0 and the technical_debt frontmatter target does not exist
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/1004_fix_todo_repository_metrics_sync/reports/01_repository-metrics-sync-fix.md
@@ -109,31 +109,31 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Extract the health probe into an executable script [NOT STARTED]
+### Phase 1: Extract the health probe into an executable script [COMPLETED]
 
 **Goal**: Create `agent-system/extensions/core/scripts/assess-repo-health.sh`, a standalone,
 portable, testable probe that emits the full `repository_health` object as JSON on stdout and
 never writes state itself.
 
 **Tasks**:
-- [ ] Create the script with `set -uo pipefail`, a header comment block matching the conventions of
-      neighbouring core scripts, and `--help`.
-- [ ] Accept `--root PATH` (default: repo root resolved via `git rev-parse --show-toplevel` with a
-      script-relative fallback), so fixtures can be pointed at a temp dir.
-- [ ] Enumerate candidate files: `git ls-files` when `--root` is inside a git work tree, else
-      `find` over the root, excluding `.git/`. Collect `*.sh` and `*.json` separately.
-- [ ] Structural probe: run `bash -n` on each `*.sh` and `jq empty` on each `*.json`, counting
-      failures into `build_errors`. Never `source`, `eval`, or execute a candidate file.
-- [ ] Degenerate case: when zero `*.sh` **and** zero `*.json` candidates are found, emit
-      `build_errors: null` (JSON null, not the string "null", not 0, not 1).
-- [ ] Compute `todo_count` and `fixme_count` over the same enumerated set, preserving the existing
-      source-file extension filter (`*.lua *.py *.js *.ts *.tex`) from the current Step 5.7.1.
-- [ ] Derive `status` from `build_errors` using only declared enum members:
-      `null -> "unknown"`, `0 -> "healthy"`, `>0 -> "critical"`.
-- [ ] Emit `last_assessed` as `date -u +%Y-%m-%dT%H:%M:%SZ`.
-- [ ] Emit the whole object as one JSON document built with `jq -n --argjson`/`--arg` (never by
-      string-concatenating JSON), so the output is well-formed by construction.
-- [ ] `chmod +x` the script.
+- [x] Create the script with `set -uo pipefail`, a header comment block matching the conventions of
+      neighbouring core scripts, and `--help`. *(completed)*
+- [x] Accept `--root PATH` (default: repo root resolved via `git rev-parse --show-toplevel` with a
+      script-relative fallback), so fixtures can be pointed at a temp dir. *(completed)*
+- [x] Enumerate candidate files: `git ls-files` when `--root` is inside a git work tree, else
+      `find` over the root, excluding `.git/`. Collect `*.sh` and `*.json` separately. *(completed)*
+- [x] Structural probe: run `bash -n` on each `*.sh` and `jq empty` on each `*.json`, counting
+      failures into `build_errors`. Never `source`, `eval`, or execute a candidate file. *(completed)*
+- [x] Degenerate case: when zero `*.sh` **and** zero `*.json` candidates are found, emit
+      `build_errors: null` (JSON null, not the string "null", not 0, not 1). *(completed)*
+- [x] Compute `todo_count` and `fixme_count` over the same enumerated set, preserving the existing
+      source-file extension filter (`*.lua *.py *.js *.ts *.tex`) from the current Step 5.7.1. *(completed)*
+- [x] Derive `status` from `build_errors` using only declared enum members:
+      `null -> "unknown"`, `0 -> "healthy"`, `>0 -> "critical"`. *(completed)*
+- [x] Emit `last_assessed` as `date -u +%Y-%m-%dT%H:%M:%SZ`. *(completed)*
+- [x] Emit the whole object as one JSON document built with `jq -n --argjson`/`--arg` (never by
+      string-concatenating JSON), so the output is well-formed by construction. *(completed)*
+- [x] `chmod +x` the script. *(completed)*
 
 **Timing**: 1.5 hours
 

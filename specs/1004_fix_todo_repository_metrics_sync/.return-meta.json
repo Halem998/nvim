@@ -1,32 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 1004,
   "task_type": "meta",
-  "session_id": "sess_1786386280_bc7e55_1004",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/1004_fix_todo_repository_metrics_sync/plans/01_repository-metrics-sync-fix.md",
-      "summary": "Five-phase plan: extract the /todo health probe into an executable, fixture-testable script; reconcile the state schema's build_errors typing and status enum; rewrite todo.md's Sync Repository Metrics stage and delete the dead frontmatter step; register and deploy."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 5.5,
-  "dependency_waves": [
-    { "wave": 1, "phases": [1, 3], "blocked_by": [] },
-    { "wave": 2, "phases": [2, 4], "blocked_by": [1, 3] },
-    { "wave": 3, "phases": [5], "blocked_by": [1, 2, 3, 4] }
-  ],
-  "memory_candidates": [
-    {
-      "content": "Executable logic embedded as bash/jq snippets inside markdown command files is executed by an agent but never compiled, so defects accumulate invisibly and cannot be regression-tested. Confirmed instance: a state-write jq filter referencing an undefined $build_errors binding (only --arg errors was passed) fails with 'jq: 1 compile error', yet live state.json showed the write succeeding -- the executing agent had been silently repairing the binding at runtime, masking the defect indefinitely. The general pattern: when a defect's fix must be provable by an executed test, first extract the logic out of instruction prose into a real script with a JSON output contract, then make the command file a call site. Testability is the architectural driver, not code cleanliness. A second, compounding failure mode in the same class: a probe written as 'if cmd_a || cmd_b || true; then X else Y fi' makes the else branch structurally unreachable, so the metric it computes is a constant that no reader notices because the code looks like a real check.",
-      "category": "PATTERN",
-      "source_artifact": "specs/1004_fix_todo_repository_metrics_sync/plans/01_repository-metrics-sync-fix.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["markdown-embedded-code", "untested-instruction-prose", "jq-undefined-variable", "unreachable-else-branch", "extract-to-testable-script", "agent-silent-repair"]
-    }
-  ],
-  "next_steps": "Run /implement 1004 to execute the plan"
+  "session_id": "sess_1786386280_bc7e55",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "plan_path": "specs/1004_fix_todo_repository_metrics_sync/plans/01_repository-metrics-sync-fix.md"
 }

@@ -1,0 +1,13 @@
+{
+  "phase": 1,
+  "phase_name": "Extract the health probe into an executable script",
+  "started_at": "2026-08-10T00:00:00Z",
+  "last_updated": "2026-08-10T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create assess-repo-health.sh with header, --help, --root, enumeration, structural probe, degenerate case, todo/fixme counts, status derivation, JSON emission, chmod +x", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/assess-repo-health.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
