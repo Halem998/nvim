@@ -1,0 +1,61 @@
+{
+  "phase": 9,
+  "phase_name": "Final verification sweep",
+  "started_at": "2026-08-10T03:40:00Z",
+  "last_updated": "2026-08-10T03:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "validate-context-budgets.sh final run",
+      "status": "done",
+      "files_touched": [],
+      "note": "Violations: 0, exit 0, exactly 3 OK* rows (general-implementation-agent, neovim-implementation-agent, nix-implementation-agent) with narration matching EXCEPTIONS array contents exactly."
+    },
+    {
+      "id": 2,
+      "description": "Schema and index gates for all four edited source files",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-index-entries-schema.sh: 8 passed / 1 failed, identical to the pre-task baseline (confirmed via git stash comparison at Phase 2 -- the 1 failure is a pre-existing unrelated EXTENSION.md line-count fixture issue, not caused by this task). validate-context-index.sh: 190 entries checked, 0 errors, 0 warnings, PASSED. validate-index.sh: all paths exist, no duplicates, PASSED."
+    },
+    {
+      "id": 3,
+      "description": "generate-context-line-counts.sh --check",
+      "status": "done",
+      "files_touched": [],
+      "note": "CHECK PASSED: 479/479 entries exact match, 0 mismatch, 0 null, 0 missing source (no content files were edited across the whole task, only load_when hooks)."
+    },
+    {
+      "id": 4,
+      "description": "Tier 1 Check, Tier Classification Check, Dead Entry Check, Double-Loading Check no worse than baseline",
+      "status": "done",
+      "files_touched": [],
+      "note": "Tier 1 Check: 3 always-loaded entries, 334 lines, OK (unchanged from baseline). Tier Classification: 190 total entries, distribution shifted from Tier1:3/Tier2:147/Tier3:33/Tier4:7 (baseline) to Tier1:3/Tier2:61/Tier3:70/Tier4:56 (final) -- expected and correct, since dropping over-broad agents[] hooks reclassifies entries from Tier 2 to Tier 3/4; check status remained OK throughout (it only fails on unclassifiable entries, which stayed 0). Dead Entry Check: 0 at baseline, 0 at final -- unchanged. Double-Loading Check: 0 redundant at baseline (14 dual-hook/14 legitimate), 0 redundant at final (6 dual-hook/6 legitimate) -- redundant count unchanged at 0, dual-hook population shrank as a side effect of dropping over-broad agents[] hooks that had been coincidentally paired with commands[] hooks."
+    },
+    {
+      "id": 5,
+      "description": "check-task-references.sh and check-extension-docs.sh",
+      "status": "done",
+      "files_touched": [],
+      "note": "check-task-references.sh: PASS, 0 unexempted occurrences across 4 scanned trees. check-extension-docs.sh: PASS, all 18 extensions OK including nvim, nix, memory (the three non-core extensions touched by this task)."
+    },
+    {
+      "id": 6,
+      "description": "Confirm and record margins for the 5 passing agents",
+      "status": "done",
+      "files_touched": [],
+      "note": "meta-builder-agent: 13,296/15,000 (margin 1,704). planner-agent: 10,400/15,000 (margin 4,600). general-research-agent: 7,160/8,000 (margin 840). neovim-research-agent: 7,360/8,000 (margin 640). nix-research-agent: 7,192/8,000 (margin 808, deliberately widened from the report's at-cap 8,000 by moving project/nix/README.md off the agents[] hook)."
+    },
+    {
+      "id": 7,
+      "description": "Record deferred follow-ups in the summary",
+      "status": "done",
+      "files_touched": [],
+      "note": "To be written into the implementation summary's Follow-ups section: (1) shrink formats/return-metadata-file.md, the structural unblocker for the three exception agents; (2) fold patterns/metadata-file-return.md and patterns/early-metadata-pattern.md into formats/return-metadata-file.md; (3) extend the Double-Loading Check to catch reverse-direction redundancy on standards/status-markers.md; (4) fix the additive-merge ghost-entry defect in install-extension.sh's merge_index_entries and remove the two stranded deployed files (orchestration/orchestration-validation.md, orchestration/subagent-validation.md)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

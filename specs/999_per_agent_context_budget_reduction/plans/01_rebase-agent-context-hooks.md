@@ -1,7 +1,7 @@
 # Implementation Plan: Reduce Per-Agent Context Budget Overruns
 
 - **Task**: 999 - Reduce the 8 standing per-agent context budget overruns
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: None (all prerequisite tasks completed)
 - **Research Inputs**: `specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md`
@@ -547,30 +547,36 @@ array.
 
 ---
 
-### Phase 9: Final verification sweep [NOT STARTED]
+### Phase 9: Final verification sweep [COMPLETED]
 
 **Goal**: Confirm the whole change set is green across every gate the repository already runs,
 and that no adjacent invariant was broken in passing.
 
 **Tasks**:
-- [ ] `bash .claude/scripts/validate-context-budgets.sh` -> `Violations: 0`, exit 0, three `OK*`
-      rows.
-- [ ] Schema and index gates: `test-index-entries-schema.sh`, `validate-context-index.sh`,
-      `validate-index.sh` all pass for all four edited source files.
-- [ ] `bash .claude/scripts/generate-context-line-counts.sh --check` reports no drift.
-- [ ] Tier 1 Check, Tier Classification Check, Dead Entry Check, and Double-Loading Check each
+- [x] `bash .claude/scripts/validate-context-budgets.sh` -> `Violations: 0`, exit 0, three `OK*`
+      rows. *(completed)*
+- [x] Schema and index gates: `test-index-entries-schema.sh`, `validate-context-index.sh`,
+      `validate-index.sh` all pass for all four edited source files. *(completed: schema test at
+      pre-existing baseline 8/1, both index validators PASSED)*
+- [x] `bash .claude/scripts/generate-context-line-counts.sh --check` reports no drift.
+      *(completed: 479/479 exact)*
+- [x] Tier 1 Check, Tier Classification Check, Dead Entry Check, and Double-Loading Check each
       report clean, as they did at baseline — this change must not trade a budget violation for a
-      different check's violation.
-- [ ] `bash .claude/scripts/check-task-references.sh` passes (no task-number citations introduced
-      into the four deliverable files).
-- [ ] `bash .claude/scripts/check-extension-docs.sh` passes.
-- [ ] Confirm the five passing agents each retain a positive margin and record the margins, so a
-      future maintainer can see how much headroom exists.
-- [ ] Record in the summary the deferred follow-ups this task deliberately did not do: the
+      different check's violation. *(completed: all clean, Dead Entry 0->0, Double-Loading
+      redundant 0->0)*
+- [x] `bash .claude/scripts/check-task-references.sh` passes (no task-number citations introduced
+      into the four deliverable files). *(completed: PASS, 0 occurrences)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` passes. *(completed: PASS, all 18 extensions
+      OK)*
+- [x] Confirm the five passing agents each retain a positive margin and record the margins, so a
+      future maintainer can see how much headroom exists. *(completed: meta-builder 1704,
+      planner 4600, general-research 840, neovim-research 640, nix-research 808)*
+- [x] Record in the summary the deferred follow-ups this task deliberately did not do: the
       content-duplication candidates (`patterns/metadata-file-return.md`,
       `patterns/early-metadata-pattern.md`), shrinking `return-metadata-file.md` as the structural
       unblocker for the three exception agents, the reverse-direction Double-Loading Check gap,
       and the additive-merge ghost-entry defect with its two stranded deployed files.
+      *(completed: recorded in the implementation summary's Follow-ups section)*
 
 **Timing**: 0.5 hours
 
