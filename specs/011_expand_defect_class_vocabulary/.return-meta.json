@@ -1,34 +1,28 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "session_id": "sess_1786402783_e354c8",
+  "task_number": 11,
+  "task_name": "expand_defect_class_vocabulary",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/011_expand_defect_class_vocabulary/reports/01_defect-class-vocabulary-gap.md",
-      "summary": "Confirms the three grounding defects lack a fitting existing defect_class, proposes the minimum new-class set (SESSION_LOCK_CONTENTION, HOOK_REGEX_BOUNDARY_DEFECT, DEPLOY_ORPHAN_DRIFT), and gives exact edit locations in system-defect-record.sh and system-defect-discrimination.md."
+      "type": "plan",
+      "path": "specs/011_expand_defect_class_vocabulary/plans/01_defect-class-vocabulary-expansion.md",
+      "summary": "Three-phase plan adding SESSION_LOCK_CONTENTION, HOOK_REGEX_BOUNDARY_DEFECT, and DEPLOY_ORPHAN_DRIFT to the defect_class enum in system-defect-record.sh and the Signal A table in system-defect-discrimination.md, with a cross-file round-trip verification phase."
     }
   ],
-  "next_steps": "Run /plan 11 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1786402783_e354c8",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
-    "findings_count": 5
-  },
+  "phase_count": 3,
+  "estimated_hours": 1.75,
+  "dependency_waves": [[1, 2], [3]],
+  "next_steps": "Run /implement 11 to execute the plan",
   "memory_candidates": [
     {
-      "content": "In this codebase, a closed enum's canonical enumeration and its bash-validated definition are frequently split across exactly two files: a context/patterns/*.md table (the human-readable, decision-recording source) and a scripts/*.sh case statement (the machine-validated mirror). When asked to extend a vocabulary, grep the whole source store for every existing enum literal (not just the two obvious files) to find all consumers before concluding the edit surface is small -- confirmed here that neither of the two SKILL.md consumer files needed changes because they only produce hardcoded literals, never switch generically over the enum.",
+      "content": "Widening a closed string enum in this agent system has a narrow, verifiable blast radius when every consumer is a producer of fixed literals rather than a dispatcher over the enum. The defect_class vocabulary is the worked example: it is validated in exactly one place (a bash `case` arm in scripts/system-defect-record.sh) and defined in exactly one place (the Signal A table in context/patterns/system-defect-discrimination.md), while ~17 call sites across skill-base.sh, five hooks, and two orchestrate SKILL.md files each pass one hardcoded literal. Because no call site branches on the enum, additive widening requires zero consumer edits. Two audit lessons: (1) grep the flag spelling (`--defect-class`), not just the variable spelling (`defect_class`) -- the underscore grep found 4 files, the hyphen grep found 8, and only the wider set proves the no-dispatch claim; (2) count words embedded in prose and error messages ('one of the ten Signal A instances') are part of the enum's surface area and drift silently, so grep for the spelled-out count alongside the values. Vocabulary naming and detector wiring are deliberately separate, sequential tasks here -- a class may legitimately sit in the enum marked 'not currently computed anywhere'.",
       "category": "PATTERN",
-      "source_artifact": "specs/011_expand_defect_class_vocabulary/reports/01_defect-class-vocabulary-gap.md",
+      "source_artifact": "specs/011_expand_defect_class_vocabulary/plans/01_defect-class-vocabulary-expansion.md",
       "confidence": 0.7,
-      "suggested_keywords": ["defect_class", "enum-extension", "system-defect-record", "vocabulary-gap", "source-store"]
-    },
-    {
-      "content": "system-defect-discrimination.md documents a deliberate precedent: a new Signal A vocabulary instance may be added to the table before any detector calls system-defect-record.sh for it (see the existing ARTIFACTS_MISSING_ON_SUCCESS row, marked 'not currently computed anywhere'). Naming a defect class and wiring a detector/recorder call are treated as separate, sequential pieces of work, not one atomic change -- useful precedent when a task's scope is explicitly limited to vocabulary naming.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/011_expand_defect_class_vocabulary/reports/01_defect-class-vocabulary-gap.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["defect_class", "signal-a", "detector-wiring", "scope-boundary"]
+      "suggested_keywords": ["defect_class", "closed-enum-widening", "blast-radius-audit", "grep-flag-vs-variable", "system-defect-record", "vocabulary-before-detector"]
     }
   ]
 }
