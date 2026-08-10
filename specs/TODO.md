@@ -25,7 +25,7 @@ next_project_number: 1020
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 1012 [PARTIAL] — tests/run-all.sh is red and has been treated as permanently-expec
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
-1015 [PLANNING] — A VERIFICATION task, deliberately not a fix task. Do not change m
+1015 [PLANNED] — A VERIFICATION task, deliberately not a fix task. Do not change m
   └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 1017 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
   └─ 1013 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
@@ -147,11 +147,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1015. Re-check settings.local.json deploy merge for content loss before any fix effort
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md]
+- **Plan**: [1015_recheck_settings_local_merge_content_loss/plans/01_close-out-merge-recheck.md]
 
 **Description**: A VERIFICATION task, deliberately not a fix task. Do not change merge logic until reproduction is established. Recorded as err_1786350581208_23mAsn (severity high, reproduction 0 of 3).
 

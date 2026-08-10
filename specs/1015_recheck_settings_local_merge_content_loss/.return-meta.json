@@ -1,39 +1,44 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 1015,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
   "session_id": "sess_1786386280_bc7e55_1015",
-  "findings_count": 5,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md",
-      "summary": "12-pair (24-run) empirical re-check of settings.local.json content loss across deploy-headless.sh --wipe, run in an isolated scratch copy: 0/12 reproduction (0/15 cumulative with the prior 3-pair check), all differences pure key/array reordering, no correlation with pre-existing file state/size/order across 6 tested variants; identifies commit 1692e33e8 (restore-before-load ordering fix, 2026-08-05) as the plausible root cause of the original single observation; recommends downgrading err_1786350581208_23mAsn from high to low severity and closing, with a narrower untested concurrent-access hypothesis flagged as residual risk. No merge logic changed (verification-only scope)."
+      "type": "plan",
+      "path": "specs/1015_recheck_settings_local_merge_content_loss/plans/01_close-out-merge-recheck.md",
+      "summary": "Close-out plan (NOT a merge-logic fix) for the settings.local.json content-loss verification: 3 phases, 2 hours. Phase 1 closes err_1786350581208_23mAsn via errors-append.sh update (--fix-status fixed --fix-task 1015) after confirming the sanctioned writer cannot mutate severity, so closure supersedes the requested downgrade and hand-editing errors.json is forbidden. Phase 2 records the 0/12-this-round, 0/15-cumulative rate and named sample size durably in agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md, correcting that file's now-falsified claim that --wipe preserves settings.local.json byte-identically (it is semantically identical with observed key/array reordering) and recording the serial-sampling known limitation. Phase 3 writes specs/decisions/settings-local-merge-content-loss-verdict.md stating both residual positions explicitly: the concurrency hypothesis is CLOSED as out of scope with no follow-up task (the fail-open specs/.deploy-lock mutex is a deliberate documented design mirroring specs/.commit-lock, already carrying its own corruption warning, so the hypothesis is a known accepted risk of a different defect class rather than an untracked gap), and err_1786350581240_JyztWt STAYS OPEN unchanged at low severity and explicitly does not fall out of this task."
     }
   ],
+  "plan_metadata": {
+    "phases": 3,
+    "total_effort_hours": 2,
+    "complexity": "simple",
+    "research_integrated": true,
+    "plan_version": 1,
+    "dependency_waves": [[1, 2], [3]],
+    "reports_integrated": [
+      {
+        "path": "reports/01_recheck-settings-local-merge.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-08-10"
+      }
+    ],
+    "skeleton": false,
+    "follow_up_tasks": []
+  },
+  "phase_count": 3,
+  "estimated_hours": 2,
+  "dependency_waves": [[1, 2], [3]],
   "memory_candidates": [
     {
-      "content": "To safely test deploy-headless.sh --wipe (which does rm -rf on a target repo's .claude/) without risking the live deploy tree: cp -a the live .claude/ + .claude-extensions.json + .syncprotect into a scratch dir, `git init` a fresh history-less repo there (only a valid .git dir is required), and pass that scratch dir as TARGET_REPO. No need to copy agent-system/ or lua/ into the scratch copy -- config.claude()'s global_extensions_dir defaults to ~/.config/nvim/agent-system/extensions unconditionally (independent of TARGET_REPO), so the scratch wipe reads the live source store read-only while writing exclusively under its own .claude/. Verified via 24 --wipe invocations against a scratch copy with zero live-tree writes.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless", "wipe", "scratch-copy", "settings-backup", "isolated-testing"]
-    },
-    {
-      "content": "manager.regenerate() in lua/neotex/plugins/ai/shared/extensions/init.lua restores the settings.json/settings.local.json snapshot BEFORE the extension reload loop, not after -- this ordering was fixed in commit 1692e33e8 (\"task 980 phase 5: correct the regenerate sequence\", 2026-08-05). The pre-fix ordering (restore-after-load) would clobber any settings-fragment merge the reload loop had just performed, producing exactly a dropped hooks.PreToolUse block and dropped mcpServers block -- the shape of a historical single observation that did not reproduce across 15 wipe-pairs of re-checking post-fix. Useful root-cause reference if a similar dropped-block report recurs: check whether the checkout predates 1692e33e8 before assuming a new defect.",
+      "content": "The sanctioned errors.json writer (agent-system/extensions/core/scripts/errors-append.sh) has an asymmetric mutation surface that shapes how error-triage close-out tasks must be planned: its `append` subcommand can set `severity` at creation time, but its `update` subcommand accepts ONLY --id, --fix-status, --fixed-date, and --fix-task. There is no sanctioned path to mutate an existing record's severity. Any task instruction phrased as 'downgrade severity from X to Y' is therefore unimplementable as written without either hand-editing specs/errors.json (forbidden -- the writer holds flock -x across read/transform/validate/mv and validates the MERGED document against context/schemas/errors-schema.json) or widening the writer's flag set (schema blast radius). The correct planning move is to close the record instead (--fix-status fixed --fix-task N): a closed record is out of triage regardless of its historical severity stamp, so closure delivers the downgrade's practical outcome and is strictly stronger. Plan the constraint check as an explicit first task with a Scope Hypothesis, so the implementer confirms the argument parser rather than trusting the plan's reading and reaching for a hand edit when the flag is rejected.",
       "category": "INSIGHT",
-      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["settings-merge", "wipe-regenerate", "ordering-bug", "root-cause", "deploy-engine"]
-    },
-    {
-      "content": "Hazard: a blocked Bash tool call (e.g. by the git-add-A guard hook) can prevent an entire multi-step && chain from executing, including an early `cd $TARGET` into a not-yet-created directory. If a later, separate Bash call assumes that cd succeeded (relying on 'working directory persists between commands'), it silently runs in the wrong (often live-repo) cwd instead of erroring loudly. Mitigation: after any command that might be blocked or partially fail, verify the target directory actually exists before chaining further commands against it; prefer `git -C <path>` and absolute paths over relying on a prior `cd` having succeeded, especially when constructing scratch/test environments.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["bash-safety", "cd-hazard", "git-add-a-guard", "scratch-environment", "hook-blocking"]
+      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/plans/01_close-out-merge-recheck.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["errors-append", "errors.json", "severity", "fix_status", "sanctioned-writer", "close-out"]
     }
   ],
-  "next_steps": "No implementation plan needed: 0/15 cumulative reproduction across two re-check rounds. Recommended next action is to downgrade err_1786350581208_23mAsn from high to low severity (citing this report's sample size and the commit-1692e33e8 root-cause finding) and close it; /plan 1015 is available if a maintainer prefers a formal plan for that housekeeping step instead of a direct errors.json edit."
+  "next_steps": "Run /implement 1015 to execute the plan"
 }
