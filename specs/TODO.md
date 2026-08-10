@@ -22,9 +22,9 @@ next_project_number: 1020
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
-1010 [NOT STARTED] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
+1010 [RESEARCHED] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
-1012 [NOT STARTED] — tests/run-all.sh is red and has been treated as permanently-expec
+1012 [RESEARCHED] — tests/run-all.sh is red and has been treated as permanently-expec
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
   └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
@@ -44,6 +44,7 @@ next_project_number: 1020
 ## Tasks
 
 ### 1019. Fix opencode agent-fragment path resolution and validator fail-fast
+- **Effort**: 3h
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
@@ -73,6 +74,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 1018. Detect stale .claude/ deploy trees and root-cause the silent staleness
+- **Effort**: 5h
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
@@ -98,6 +100,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1017. Fix .return-meta.json lifecycle ordering that makes the gate-out body unreachable
+- **Effort**: 4h
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
@@ -224,10 +227,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1012. Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md]
 
 **Description**: tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.
 
@@ -281,10 +285,11 @@ CONSTRAINT: do not drive this task with multi-task /orchestrate until err_178634
 ---
 
 ### 1010. Fix opencode gate in session id duplication
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md]
 
 **Description**: tests/run-all.sh has a 7th, previously unreported deployed-mode-only failure: test-common-lib.sh flags .opencode/scripts/command-gate-in.sh for an inline sess_$(date +%s)_... session-id generator that duplicates lib/common.sh's canonical generator instead of sourcing it. It passes in source-store mode and fails only in deployed mode. Recorded as err_1786350581305_8cNAZ7. No open task currently covers tests/run-all.sh failures (the prior consolidation task that made the suites runnable is already completed); this task is spawned standalone rather than folded, since nothing is open to fold into.
 

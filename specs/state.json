@@ -35,14 +35,22 @@
     {
       "project_number": 1010,
       "project_name": "fix_opencode_gate_in_session_id_duplication",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "description": "tests/run-all.sh has a 7th, previously unreported deployed-mode-only failure: test-common-lib.sh flags .opencode/scripts/command-gate-in.sh for an inline sess_$(date +%s)_... session-id generator that duplicates lib/common.sh's canonical generator instead of sourcing it. It passes in source-store mode and fails only in deployed mode. Recorded as err_1786350581305_8cNAZ7. No open task currently covers tests/run-all.sh failures (the prior consolidation task that made the suites runnable is already completed); this task is spawned standalone rather than folded, since nothing is open to fold into.\n\nTARGET: .opencode/scripts/command-gate-in.sh (the inline sess_$(date +%s)_... construction) and agent-system/extensions/core/scripts/lib/common.sh (the canonical generator it should source instead).\n\nWORK: replace the inline session-id generator in .opencode/scripts/command-gate-in.sh with a sourced call to lib/common.sh's canonical generator, matching the pattern already used elsewhere in the deployed tree. Re-run tests/run-all.sh in BOTH source-store and deployed modes and confirm test-common-lib.sh passes in both.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. Note: .opencode/scripts/command-gate-in.sh is itself a deploy target mirroring a source-store equivalent -- confirm the correct source-store location before editing (do not hand-edit the deployed .opencode/ tree directly if it is generated).\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nCONSTRAINT: do not drive this task with multi-task /orchestrate until err_1786349061524_pY97cE (the MT-1/MT-4 session-id mismatch, spawned as a sibling task) is fixed -- multi-task orchestration is documented-broken until that lands. Use single-task /orchestrate or /implement.",
       "topic": "agent-system",
       "created": "2026-08-10T08:32:32Z",
-      "last_updated": "2026-08-10T08:33:19Z",
+      "last_updated": "2026-08-10T16:31:16Z",
       "file_scope": [
         ".opencode/scripts/command-gate-in.sh"
+      ],
+      "session_id": "sess_1786378789_92e564_1010",
+      "artifacts": [
+        {
+          "path": "specs/1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md",
+          "type": "report",
+          "summary": "Establishes that .opencode/ is a generated deploy target (same parameterized Lua loader as .claude/, single shared source agent-system/extensions/core/scripts/command-gate-in.sh), that the source file is already fixed (sources common.sh's common_session_id), that .opencode/scripts/command-gate-in.sh is simply a stale snapshot (part of a much broader 38-script gap in .opencode/scripts/), explains the source-store-pass/deployed-fail test split via SCRIPT_DIR/../../.. scan-root resolution, and recommends a narrow one-off catch-up sync of the single file rather than hand-authoring new content or a full deploy-engine rebuild."
+        }
       ]
     },
     {
@@ -811,7 +819,7 @@
       "project_number": 1012,
       "project_name": "fix_test_suite_deployed_mode_failures",
       "title": "Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [],
@@ -821,8 +829,15 @@
       ],
       "description": "tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.\n\nMEASURED EVIDENCE (live run, not inherited): 25 passed, 8 FAILED, 0 skipped, 33 total. Earlier reports of a 5-suite REPO_ROOT count were NOT confirmed and should be treated as superseded by this measurement. Recorded as err_1786368358319_8jwcdo.\n\nCONFIRMED ROOT CAUSE (2 of 8): test-skill-base-lifecycle.sh and test-update-task-status.sh both abort with\n    ERROR: deployed scripts tree not found at /home/benjamin/.claude/scripts\nproving REPO_ROOT resolved to $HOME instead of the repo root. Both derive it as:\n    REPO_ROOT=\"$(cd \"$SCRIPT_DIR/../../../../..\" && pwd)\"\nFive levels up is correct from the SOURCE-STORE location agent-system/extensions/core/scripts/tests/, but wrong from the DEPLOYED location .claude/scripts/tests/, which is only three levels below the repo root. The same 5-level literal appears in at least test-corroborate-phase-counts.sh, test-errors-append.sh, test-handoff-reader-parity.sh, and test-index-entries-schema.sh, so the defect class is wider than the two suites that happen to fail loudly.\n\nPROVEN-GOOD PATTERN ALREADY IN-TREE: test-deploy-propagation.sh derives it depth-independently:\n    REPO_ROOT=\"$(cd \"$SCRIPT_DIR\" && git rev-parse --show-toplevel 2>/dev/null)\"\n    [ -z \"$REPO_ROOT\" ] && REPO_ROOT=\"$(cd \"$SCRIPT_DIR/../../../../..\" && pwd)\"\nAdopt this shape rather than inventing a new one.\n\nUNCONFIRMED (6 of 8) - triage each individually, do NOT assume a shared cause:\n  test-common-lib.sh (1 failure; overlaps the separately-tracked opencode session-id duplication finding)\n  test-index-entries-schema.sh (8 passed, 1 failed)\n  test-lint-state-writer-boundary.sh (7 passed, 1 failed)\n  test-loop-guard-staleness.sh\n  test-reconcile-handoff-status.sh\n  test-resume-scan-nonconformance.sh\n\nNOTABLE: test-lint-state-writer-boundary.sh is the suite added by the state-writer conversion work, which reported 8/8 green in source-store context but is 7/8 in deployed mode. Determine whether this is the same depth defect or a genuine gap in the new lint.\n\nACCEPTANCE: run-all.sh reports 0 failures, OR every residual failure has a written, evidenced justification. Report the count honestly; never an unqualified green.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T13:26:30Z",
-      "last_updated": "2026-08-10T13:26:30Z",
-      "artifacts": []
+      "last_updated": "2026-08-10T16:31:19Z",
+      "artifacts": [
+        {
+          "path": "specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md",
+          "type": "report",
+          "summary": "Re-measured run-all.sh live (26 passed, 8 failed, 34 total); confirmed the REPO_ROOT depth defect spans 5 suites (not 2); traced test-index-entries-schema.sh's failure to a fixture manifest.json gap; confirmed test-common-lib.sh overlaps the out-of-scope opencode session-id task; found test-lint-state-writer-boundary.sh's prior 7/8 report does not reproduce (8/8 measured); discovered a new, undiagnosed order-dependent flake in test-four-tier-conflict.sh."
+        }
+      ],
+      "session_id": "sess_1786378789_92e564_1012"
     },
     {
       "project_number": 1013,
@@ -884,8 +899,6 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "priority": "critical",
-      "estimated_hours": 4,
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/skill-base.sh",
@@ -899,7 +912,8 @@
       "description": "command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.\n\nVERIFIED MECHANISM (do not re-derive): skill-base.sh's skill_cleanup (lines 618-625) rm -f's .postflight-pending, .postflight-loop-guard, AND .return-meta.json. It is the single shared implementation invoked from Stage 9 of context/patterns/skill-postflight-flow.md, used by NINE skills: skill-implementer, skill-implementer-hard, skill-planner, skill-planner-hard, skill-reviser, skill-spawn, skill-team-implement, skill-team-plan, skill-team-research. command-gate-out.sh lines 69-73 then read \"${task_dir}/.return-meta.json\"; on absence it prints \"WARNING: .return-meta.json not found ... skill may have failed silently\" and exit 0. FIVE commands run it: implement.md, orchestrate.md, plan.md, research.md, revise.md.\n\nBLAST RADIUS IS LARGER THAN THE WARNING (measured, not inherited): the exit 0 at line 73 sits ABOVE everything else in the 134-line script. Code rendered unreachable in practice includes (a) the defensive status correction that repairs state.json when a skill reported completion but state is stale, and (b) the skill_validate_task_artifacts call at line 133, the last line, which is the artifact validation and --fix auto-repair path. One missing file disables both correctness mechanisms on all five commands. A real silent failure and an ordinary success emit the identical warning, so the signal carries no information.\n\nCONSEQUENCE FOR SIBLING TASK 1013: 1013's acceptance criterion (a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count) cannot be demonstrated until this ordering defect is fixed, because the path it instruments never executes. 1013 is sequenced after this task; both also edit the same two files.\n\nWORK: decide ONE direction and implement it. (a) run the command-level gate-out before skill cleanup; (b) have skill_cleanup preserve .return-meta.json and make gate-out delete it after consuming it; (c) have skill_cleanup archive the metadata to a location gate-out knows about; (d) if the skill-internal postflight genuinely subsumes both defensive correction and artifact validation, delete the dead reads and replace the warning with a truthful statement. Required regardless of direction: explicitly decide whether defensive status correction is still needed given skill-internal postflight and record the reasoning; and fix the warning text so a genuine silent failure is distinguishable from ordinary success.\n\nUNIFORMITY REQUIREMENT: whatever is chosen must hold across all nine skills and all five commands. A fix that repairs skill-reviser and /revise alone is not acceptable.\n\nACCEPTANCE: a normal successful run of each of the five commands emits no false silent-failure warning; a genuinely failed skill run emits a distinguishable warning; and the defensive-correction path is demonstrated to execute, or is documented as deliberately removed with stated reasoning.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T16:02:07Z",
       "last_updated": "2026-08-10T16:02:07Z",
-      "artifacts": []
+      "artifacts": [],
+      "effort": "4h"
     },
     {
       "project_number": 1018,
@@ -908,8 +922,6 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "priority": "high",
-      "estimated_hours": 5,
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/verify-deploy.sh",
@@ -921,7 +933,8 @@
       "description": "A repo can carry an arbitrarily stale .claude/ deploy with no signal, so a user hits a bug fixed upstream long ago with no indication that regeneration is the remedy. Discovered when /revise failed at GATE IN in a consuming repo on a task that had never produced an artifact.\n\nWHAT IS NOT THE DEFECT (ruled out, do not re-litigate): resolve_task_dir is not broken in source. agent-system/extensions/core/scripts/task-lock.sh's resolve_task_dir (line 249) takes a create_mode parameter and mkdir -p's when it is \"create\"; cmd_acquire (line 607) passes \"create\". The failure exists only in the deployed copy.\n\nMEASURED STALENESS EVIDENCE (live, this investigation): the consuming repo's .claude/scripts/task-lock.sh is 676 lines against a 1660-line source, with a deployed resolve_task_dir at line 98 taking no create_mode. Its .claude/scripts/ holds 94 scripts against core's 72 in source. Neither verify-deploy.sh nor deploy-headless.sh is present in the deployed tree at all. This is despite a large sync commit landing recently.\n\nBOOTSTRAP HYPOTHESIS RULED OUT: deploy-headless.sh's header documents a failure mode where a repo deployed by the retired glob-based engine has no \"core\" entry in .claude-extensions.json, so manager.resync_all silently deploys nothing. That is NOT this case. The repo's .claude-extensions.json lists core with status \"active\" and 294 recorded installed_files, including .claude/scripts/task-lock.sh. The loader believes it owns and has installed the very file that is stale. Root cause is unknown and is a genuine investigation, not a known-issue application.\n\nWORK, in order. (1) Determine WHY the deploy is stale despite core being active and the file being listed in installed_files. Hypotheses to test, not assume: the copy step skips existing destination files instead of overwriting; installed_files is treated as authoritative and short-circuits re-copy; resync only re-copies files whose manifest entry changed; or a later partial operation reverted the tree. If the cause is a loader defect, report and fix it as such. (2) Then design and implement staleness DETECTION on a path users actually hit. Note that verify-deploy.sh already performs source-vs-deploy comparison but is not itself deployed and is invoked only from skill-orchestrate's inter-cycle redeploy checkpoint, so no ordinary command surfaces its result. Directions to evaluate, do NOT pre-commit: stamp a source revision or content hash into the deployed tree at load time and have command gate scripts compare against the source store, warning on drift; extend /refresh or a doctor check to diff deployed script versions against source; or have the loader record a per-file hash manifest a preflight can validate cheaply. Whatever is chosen must be cheap enough for a normal command preflight.\n\nINTERACTION WITH SIBLING TASK 1009: 1009's evidence (4 orphan files present in .claude/ but absent from a clean scratch regenerate) was measured against this same stale deploy tree, so it may be an artifact of the staleness rather than a genuine one-directional-parity gap. 1009 is sequenced after this task and must re-measure against a freshly regenerated tree. Both tasks also edit verify-deploy.sh.\n\nACCEPTANCE: the root cause is identified and stated, with the loader defect fixed if that is the cause; a user running an ordinary command against a stale deploy receives an actionable warning naming regeneration as the remedy; demonstrated in both directions, where a stale tree warns and a fresh tree does not.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/** and lua/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T16:02:07Z",
       "last_updated": "2026-08-10T16:02:07Z",
-      "artifacts": []
+      "artifacts": [],
+      "effort": "5h"
     },
     {
       "project_number": 1019,
@@ -930,8 +943,6 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "extensions",
-      "priority": "low",
-      "estimated_hours": 3,
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/epidemiology/opencode-agents.json",
@@ -951,7 +962,8 @@
       "description": "Reloading extensions in a consuming repo emits roughly 60 lines of \"Extension '<name>' opencode-agents.json validation failed: Agent '<agent>' references missing file: <path>. Skipping fragment.\" The resync otherwise succeeds and the Claude Code deploy is correct and complete, so nothing the user relies on today is broken. .opencode/ is NOT currently in use, though the user intends to return to it. Priority is therefore low: the present cost is misleading reload noise, and the real cost is latent, namely that whenever OpenCode is picked back up, 18 agents will be silently missing behind noise that has already been trained into background.\n\nMEASURED EVIDENCE (do not re-derive). In a repo with 12 active extensions, the generated opencode.json contains 15 agents and 18 are dropped: lean 2, python 2, nix 2, filetypes 7, present 5. lua/neotex/plugins/ai/shared/extensions/merge.lua:886 validate_opencode_fragment resolves each agent's {file:PATH} prompt against project_dir and returns false on the FIRST unreadable path, so generate_opencode_json discards the ENTIRE fragment.\n\nROOT CAUSE 1 - the referenced directory is deployed by nothing. Ten of twelve fragments use {file:.opencode/agent/subagents/<agent>.md}. A grep of the whole lua/ tree for \"opencode/agent\" returns exactly one hit and it is a test fixture (commands/picker/operations/sync_spec.lua:100). No deploy, install, or resync path populates .opencode/agent/subagents/ at all. The 16 files present in the consuming repo are unmaintained legacy artifacts predating the current manifest-driven engine. latex (2/2), typst (2/2), and formal (4/4) validate only by accident because their agent files happen to be among those 16 leftovers; python, nix, filetypes, and present reference correctly-named files that were simply never deployed.\n\nROOT CAUSE 2 - lean uses a third convention, also wrong. agent-system/extensions/lean/opencode-agents.json uses {file:.claude/extensions/lean/agents/<agent>.md}, a directory that does not exist in the deployed tree. Those files are present both at the standard .opencode/agent/subagents/ path and at .claude/agents/. Pure path bug.\n\nROOT CAUSE 3 - present references an agent that exists nowhere. agent-system/extensions/present/opencode-agents.json declares an agent keyed \"slides\" pointing at slides-agent.md. No slides-agent.md exists anywhere under agent-system/extensions/; the real file is agent-system/extensions/present/agents/slides-research-agent.md. Stale name after a rename. timeline-agent.md in the same fragment DOES exist in source - do not flag it.\n\nAMPLIFIER. Fail-fast-on-first-miss silently discards a whole fragment for one bad reference, which is why present loses all 5 agents. Lua pairs() ordering is nondeterministic, so each validation pass names a different arbitrary agent, making the reload output look inconsistent and repetitive across passes while never revealing the true count. The task must decide whether the validator changes to report ALL missing references per fragment.\n\nDECISION REQUIRED - evaluate explicitly, do not treat any as pre-chosen: (a) repoint every fragment's {file:...} at .claude/agents/<agent>.md; (b) add a deploy step that populates .opencode/agent/subagents/; (c) gate opencode fragment processing off entirely while .opencode/ is dormant, so the noise stops without committing to a path convention that may be revisited when OpenCode returns; (d) some combination. Option (a) is the scouted recommendation but is not a fait accompli: .claude/agents/ IS deployed and maintained by the current engine and contains all 48 agents including every one currently reported missing (verified individually for python-implementation, nix-research, filetypes-router, funds, lean-implementation, slides-research, timeline), so repointing fixes all three root causes with no new deploy step and no duplicated copies. Option (c) is live precisely because .opencode/ is dormant. Whatever is chosen must handle the present/slides stale name and must state a verdict on the validator's fail-fast behavior.\n\nCONSTRAINT. Do NOT delete .opencode/ or its fragments - the user intends to return to OpenCode.\n\nACCEPTANCE. A reload in a consuming repo with 12 active extensions produces no opencode fragment validation errors; the chosen approach is stated with its rationale against the rejected alternatives; the present/slides stale reference is resolved; and the validator's fail-fast-vs-report-all behavior has an explicit recorded decision.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/** and lua/**, never .claude/** or .opencode/**, which are disposable deploy artifacts.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.",
       "created": "2026-08-10T16:10:25Z",
       "last_updated": "2026-08-10T16:10:25Z",
-      "artifacts": []
+      "artifacts": [],
+      "effort": "3h"
     }
   ],
   "completed_projects": [],

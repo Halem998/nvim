@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "task_number": 1010,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786378789_92e564_1010",
+  "findings_count": 6,
+  "next_steps": "Run /plan 1010 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md",
+      "summary": "Establishes that .opencode/ is a generated deploy target (same parameterized Lua loader as .claude/, single shared source agent-system/extensions/core/scripts/command-gate-in.sh), that the source file is already fixed (sources common.sh's common_session_id), that .opencode/scripts/command-gate-in.sh is simply a stale snapshot (part of a much broader 38-script gap in .opencode/scripts/), explains the source-store-pass/deployed-fail test split via SCRIPT_DIR/../../.. scan-root resolution, and recommends a narrow one-off catch-up sync of the single file rather than hand-authoring new content or a full deploy-engine rebuild."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": ".opencode/ is a real generated deploy target parameterized the same way as .claude/ (lua/neotex/plugins/ai/shared/extensions/config.lua's M.claude() vs M.opencode(), both base_dir-parameterized through loader.lua/merge.lua/init.lua's manager). It shares the exact same source-store files under agent-system/extensions/** as .claude/ -- there is no separate opencode-flavored source tree. However, deploy-headless.sh (the only headless/non-interactive deploy entrypoint) is hardcoded to ext_config.claude() with no .opencode option, so .opencode/ can currently only be redeployed via the interactive Neovim picker. This makes .opencode/ prone to silent staleness relative to .claude/ (observed: 38 of 68 top-level scripts missing, including the entire scripts/lib/ subdirectory).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["opencode", "deploy-headless", "source-store", "staleness", "extension-loader", "base_dir"]
+    },
+    {
+      "content": "When a test computes its scan root via SCRIPT_DIR/../../.. (or similar relative-ancestor arithmetic) to find 'the extensions tree', the same test file can scan a materially different subtree depending on whether it's running from its source-store location (e.g. agent-system/extensions/core/scripts/tests/) vs its deployed location (e.g. .claude/scripts/tests/), because the directory depth from the file to the repo root differs between the two trees. This is a legitimate design for single-source-of-truth assertions (only meaningful against a fully deployed tree) but produces a real source-store-passes/deployed-fails split that looks like flakiness unless you trace the path arithmetic.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-scan-root", "deployed-mode-only-failure", "SCRIPT_DIR", "source-store-vs-deployed", "shell-testing"]
+    }
+  ]
+}
