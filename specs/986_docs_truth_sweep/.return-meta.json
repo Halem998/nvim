@@ -1,44 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 986,
   "session_id": "sess_1786322063_3251e8_986",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/986_docs_truth_sweep/plans/01_docs-truth-sweep.md",
-      "summary": "5-phase plan covering the 7 live inventory items plus 3 new findings. Scopes item 5 around a planning-time discovery: claudemd merge sources are manifest-declared via merge_targets, and Rule U's 60-line EXTENSION.md cap is gated on the manifest naming EXTENSION.md as the source, so repointing literature to merge-sources/claudemd.md escapes the cap by construction. Item 8 excised, item 7 reframed as a one-directional template re-sync, item 6 targets corrected to ~114 lines."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 6.5,
-  "dependency_waves": [[1, 2], [3], [4], [5]],
-  "plan_metadata": {
-    "phases": 5,
-    "total_effort_hours": 7,
-    "complexity": "complex",
-    "research_integrated": true,
-    "plan_version": 1,
-    "dependency_waves": [[1, 2], [3], [4], [5]],
-    "reports_integrated": [
-      {
-        "path": "reports/01_docs-truth-sweep-findings.md",
-        "integrated_in_plan_version": 1,
-        "integrated_date": "2026-08-09"
-      }
-    ],
-    "skeleton": false,
-    "follow_up_tasks": []
-  },
-  "memory_candidates": [
-    {
-      "content": "Extension claudemd merge sources are declared in manifest.json's top-level `merge_targets.claudemd.source` (NOT `provides`), and generate_claudemd() in lua/neotex/plugins/ai/shared/extensions/merge.lua concatenates each loaded extension's declared source. Every non-core extension defaults to `EXTENSION.md`; only core uses a `merge-sources/` directory. Critically, check-extension-docs.sh's Rule U (60-line EXTENSION.md cap) is manifest-authoritative: check_extension_md_length returns early unless claudemd_source_for(ext) equals literally 'EXTENSION.md'. So when an extension's CLAUDE.md contribution outgrows 60 lines, the correct move is to repoint merge_targets.claudemd.source at a new `merge-sources/claudemd.md` (a superset containing the old EXTENSION.md body plus the new content) and DELETE the now-unread EXTENSION.md -- this takes the extension out of Rule U's scope by construction rather than fighting a budget. The same script's own rationale comment records core/EXTENSION.md and slidev/EXTENSION.md were deleted rather than trimmed for exactly this reason: a non-source EXTENSION.md is dead weight no code path reads. The required-file check is likewise gated on the manifest naming EXTENSION.md, so deletion does not trip it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/986_docs_truth_sweep/plans/01_docs-truth-sweep.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["merge_targets", "claudemd", "EXTENSION.md", "Rule U", "extension-manifest", "generate_claudemd"]
-    }
-  ],
-  "next_steps": "Run /implement 986 to execute the plan"
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }

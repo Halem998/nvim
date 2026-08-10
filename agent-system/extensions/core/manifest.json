@@ -240,7 +240,6 @@
       "workflows"
     ],
     "docs": [
-      "README.md",
       "docs-README.md",
       "architecture",
       "examples",

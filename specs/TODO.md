@@ -19,7 +19,7 @@ next_project_number: 1004
 
 ### Agent System
 
-986 [PLANNED] — Make the documentation layer stop describing machinery that does 
+986 [IMPLEMENTING] — Make the documentation layer stop describing machinery that does 
   └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 995 [NOT STARTED] — Convert the hand-rolled specs/state.json read-modify-write sequen
@@ -522,7 +522,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 986. Docs truth sweep: retire dispatch-agent fiction, dead-script refs, doc consolidation
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 951, Task 960, Task 961, Task 962, Task 963, Task 969, Task 980, Task 982, Task 983, Task 984, Task 985, Task 987, Task 989, Task 992

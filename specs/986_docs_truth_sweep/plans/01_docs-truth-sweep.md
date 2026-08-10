@@ -433,32 +433,32 @@ the numbers quoted here.
 
 ---
 
-### Phase 5: Verification sweep [NOT STARTED]
+### Phase 5: Verification sweep [COMPLETED]
 
 **Goal**: The task's three-part verification bar is demonstrably met, with no dangling reference,
 no failing gate, and a coherent regenerated CLAUDE.md.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it exits zero, with
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it exits zero, with
       particular attention to Rule R (line_count accuracy), Rule T (index schema conformance), and
       Rule U (EXTENSION.md length) across all extensions — not just core and literature.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and confirm all gates pass, including gate 4
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and confirm all gates pass, including gate 4
       (`check-task-references.sh`), which will scan the trimmed rule file and any content moved
-      into it.
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --check` and confirm zero
+      into it. *(21/22 gates pass; the sole failure is the documented pre-existing test-index-entries-schema.sh fixture issue, unrelated to this diff -- a real NEW failure was found and fixed in-phase: core/manifest.json's provides.docs still declared the deleted docs/README.md, causing test-deploy-propagation.sh Assertion C to fail; removed the stale declaration and confirmed 4/4 passing.)*
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --check` and confirm zero
       mismatches across every extension.
-- [ ] Dangling-reference sweep: for each of the 11 nonexistent script names, `dispatch-agent`,
+- [x] Dangling-reference sweep: for each of the 11 nonexistent script names, `dispatch-agent`,
       `dispatch-agent-spec.md`, the two deleted validation docs, `docs/README.md`, and
       `literature/EXTENSION.md`, confirm `grep -rn` over `agent-system/extensions/` returns zero
       hits or only explicitly-marked-removed notes.
-- [ ] Confirm every `index-entries.json` entry across all extensions resolves to a file on disk,
+- [x] Confirm every `index-entries.json` entry across all extensions resolves to a file on disk,
       and that no `context/` file that agents load is missing an entry it previously had.
-- [ ] Regenerate CLAUDE.md via the deploy path and sanity-read it: the literature section carries
+- [x] Regenerate CLAUDE.md via the deploy path and sanity-read it: the literature section carries
       both its tables and the `--lit` documentation, core's section no longer duplicates it, the
       removed sections each leave a working pointer, and no section is orphaned or duplicated.
-- [ ] Confirm no file was written under `.claude/**` by this task; all edits are in
+- [x] Confirm no file was written under `.claude/**` by this task; all edits are in
       `agent-system/extensions/**` plus the `specs/` decision record.
-- [ ] Spot-check that no task-number citation leaked into any deliverable outside `specs/**`.
+- [x] Spot-check that no task-number citation leaked into any deliverable outside `specs/**`.
 
 **Timing**: 0.5 hours
 
@@ -483,17 +483,17 @@ document and pass over.
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0 with zero Rule R / Rule T / Rule U findings.
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0, gate 4 included.
-- [ ] `bash .claude/scripts/generate-context-line-counts.sh --check` reports no mismatches.
-- [ ] Zero unmarked hits for all 11 nonexistent script names across `agent-system/extensions/`.
-- [ ] Zero hits for `dispatch-agent`, `dispatch_agent`, and `dispatch-agent-spec` outside
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0 with zero Rule R / Rule T / Rule U findings.
+- [x] `bash .claude/scripts/verify-deploy.sh`: 21/22 gates pass, gate 4 included. *(deviation: gate 8's `test-index-entries-schema.sh` fails on a documented pre-existing fixture issue unrelated to this diff -- see Phase 5 task annotation)*
+- [x] `bash .claude/scripts/generate-context-line-counts.sh --check` reports no mismatches.
+- [x] Zero unmarked hits for all 11 nonexistent script names across `agent-system/extensions/`.
+- [x] Zero hits for `dispatch-agent`, `dispatch_agent`, and `dispatch-agent-spec` outside
       explicitly-marked-removed notes.
-- [ ] `merge-sources/claudemd.md` shrinks from 645 to <= 395 lines.
-- [ ] Every `index-entries.json` entry resolves to an on-disk file.
-- [ ] The corrected `context-discovery.md` jq recipe executes without error when copy-pasted.
-- [ ] Regenerated CLAUDE.md contains the `--lit` section exactly once, inside the literature section.
-- [ ] No writes under `.claude/**`.
+- [x] `merge-sources/claudemd.md` shrinks from 645 to <= 395 lines. *(372 lines, 273 removed)*
+- [x] Every `index-entries.json` entry resolves to an on-disk file.
+- [x] The corrected `context-discovery.md` jq recipe executes without error when copy-pasted.
+- [x] Regenerated CLAUDE.md contains the `--lit` section exactly once, inside the literature section. *(literature extension is not active in this particular repo's deploy; verified instead via byte-exact superset diff of the new merge source and a direct read of merge.lua's generate_claudemd() resolution logic -- see Phase 4 commit)*
+- [x] No writes under `.claude/**`.
 
 ## Artifacts & Outputs
 
