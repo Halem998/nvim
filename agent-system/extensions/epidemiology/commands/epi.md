@@ -276,11 +276,7 @@ next_num=$(jq -r '.next_project_number' specs/state.json)
 ### Step 3: Update state.json
 
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --arg desc "$description" \
-  --argjson forcing "$forcing_data_json" \
-  --arg slug "$slug" \
-  --argjson num "$next_num" \
+bash .claude/scripts/state-write.sh \
   '.next_project_number = ($num + 1) |
    .active_projects = [{
      "project_number": $num,
@@ -292,8 +288,12 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      "created": $ts,
      "last_updated": $ts
    }] + .active_projects' \
-  specs/state.json > specs/tmp/state.json && \
-  mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --argjson num "$next_num" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg desc "$description" \
+  --argjson forcing "$forcing_data_json" \
+  --arg slug "$slug"
 ```
 
 ### Step 4: Update TODO.md

@@ -171,12 +171,13 @@ Capture all responses in a forcing_data object:
 
 6. **Update state.json** (via jq):
    ```bash
-   jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-     --arg desc "$description" \
-     --argjson forcing_data "$forcing_data_json" \
-     '.next_project_number = {NEW_NUMBER} |
+   # Session ID for the mutex-guarded state write (generate if not already set)
+   session_id="${session_id:-sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')}"
+
+   bash .claude/scripts/state-write.sh \
+     '.next_project_number = ($num + 1) |
       .active_projects = [{
-        "project_number": {N},
+        "project_number": $num,
         "project_name": "slug",
         "status": "not_started",
         "task_type": "present",
@@ -186,8 +187,11 @@ Capture all responses in a forcing_data object:
         "created": $ts,
         "last_updated": $ts
       }] + .active_projects' \
-     specs/state.json > specs/tmp/state.json && \
-     mv specs/tmp/state.json specs/state.json
+     --session-id "$session_id" \
+     --argjson num "$next_num" \
+     --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+     --arg desc "$description" \
+     --argjson forcing_data "$forcing_data_json"
    ```
 
 7. **Update TODO.md** (frontmatter AND entry):
@@ -423,13 +427,10 @@ Create a new task to revise an existing grant.
 
 3. **Update state.json**:
    ```bash
-   jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-     --arg desc "$revision_description" \
-     --argjson parent "$original_task_number" \
-     --arg revises_dir "$grant_dir" \
-     '.next_project_number = {NEW_NUMBER} |
+   bash .claude/scripts/state-write.sh \
+     '.next_project_number = ($num + 1) |
       .active_projects = [{
-        "project_number": {NEW_N},
+        "project_number": $num,
         "project_name": "revise_slug",
         "status": "not_started",
         "task_type": "present",
@@ -440,8 +441,12 @@ Create a new task to revise an existing grant.
         "created": $ts,
         "last_updated": $ts
       }] + .active_projects' \
-     specs/state.json > specs/tmp/state.json && \
-     mv specs/tmp/state.json specs/state.json
+     --session-id "$session_id" \
+     --argjson num "$next_num" \
+     --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+     --arg desc "$revision_description" \
+     --argjson parent "$original_task_number" \
+     --arg revises_dir "$grant_dir"
    ```
 
 4. **Update TODO.md**:

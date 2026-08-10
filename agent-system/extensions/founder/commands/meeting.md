@@ -143,13 +143,7 @@ next_num=$(jq -r '.next_project_number' specs/state.json)
 slug="meeting_$(echo "$description" | tr ' ' '_' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_]//g' | cut -c1-40)"
 
 # Create task in state.json with notes_path stored for resume
-jq --argjson num "$next_num" \
-   --arg name "$slug" \
-   --arg desc "$description" \
-   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg task_type "meeting" \
-   --arg notes "$file_path" \
-   --argjson update "$update_only" \
+bash .claude/scripts/state-write.sh \
    '. + {next_project_number: ($num + 1)} |
     .active_projects += [{
       project_number: $num,
@@ -162,7 +156,15 @@ jq --argjson num "$next_num" \
       update_only: $update,
       created: $ts,
       artifacts: []
-    }]' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    }]' \
+   --session-id "$session_id" \
+   --argjson num "$next_num" \
+   --arg name "$slug" \
+   --arg desc "$description" \
+   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   --arg task_type "meeting" \
+   --arg notes "$file_path" \
+   --argjson update "$update_only"
 
 # Update TODO.md
 task_number=$next_num

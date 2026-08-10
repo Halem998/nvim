@@ -264,12 +264,10 @@ enriched_description="${description} (${talk_type} talk, ${duration}, ${output_f
 ### Step 3: Update state.json
 
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --arg desc "$enriched_description" \
-  --argjson forcing "$forcing_data_json" \
-  '.next_project_number = ($next_num + 1) |
+bash .claude/scripts/state-write.sh \
+  '.next_project_number = ($num + 1) |
    .active_projects = [{
-     "project_number": $next_num,
+     "project_number": $num,
      "project_name": "slug",
      "status": "not_started",
      "task_type": "present:slides",
@@ -278,8 +276,11 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      "created": $ts,
      "last_updated": $ts
    }] + .active_projects' \
-  specs/state.json > specs/tmp/state.json && \
-  mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --argjson num "$next_num" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg desc "$enriched_description" \
+  --argjson forcing "$forcing_data_json"
 ```
 
 ### Step 4: Update TODO.md

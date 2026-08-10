@@ -157,11 +157,7 @@ else
   mkdir -p specs/tmp
   new_num=$((next_num + 1))
   ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-  jq --arg ts "$ts" \
-     --arg name "$task_slug" \
-     --arg desc "$description" \
-     --argjson num "$next_num" \
-     --argjson new_num "$new_num" \
+  bash .claude/scripts/state-write.sh \
     '.next_project_number = $new_num |
      .active_projects = [{
        "project_number": $num,
@@ -172,8 +168,12 @@ else
        "created": $ts,
        "last_updated": $ts
      }] + .active_projects' \
-    specs/state.json > specs/tmp/state.json && \
-    mv specs/tmp/state.json specs/state.json
+     --session-id "$session_id" \
+     --arg ts "$ts" \
+     --arg name "$task_slug" \
+     --arg desc "$description" \
+     --argjson num "$next_num" \
+     --argjson new_num "$new_num"
 
   # 5. Update TODO.md frontmatter: increment next_project_number
   sed -i "s/^next_project_number: ${next_num}$/next_project_number: ${new_num}/" specs/TODO.md

@@ -200,12 +200,7 @@ Proceed to STAGE 0 for forcing questions, then Step 4.
 next_num=$(jq -r '.next_project_number' specs/state.json)
 slug="gtm_strategy_$(echo "$description" | tr ' ' '_' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_]//g' | cut -c1-40)"
 
-jq --argjson num "$next_num" \
-   --arg name "$slug" \
-   --arg desc "GTM strategy: $description" \
-   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg task_type "strategy" \
-   --argjson forcing_data "$forcing_data_json" \
+bash .claude/scripts/state-write.sh \
    '. + {next_project_number: ($num + 1)} |
     .active_projects += [{
       project_number: $num,
@@ -217,7 +212,14 @@ jq --argjson num "$next_num" \
       created: $ts,
       forcing_data: $forcing_data,
       artifacts: []
-    }]' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    }]' \
+   --session-id "$session_id" \
+   --argjson num "$next_num" \
+   --arg name "$slug" \
+   --arg desc "GTM strategy: $description" \
+   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   --arg task_type "strategy" \
+   --argjson forcing_data "$forcing_data_json"
 
 task_number=$next_num
 ```
