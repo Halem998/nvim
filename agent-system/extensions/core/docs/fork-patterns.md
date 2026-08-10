@@ -52,8 +52,8 @@ specified explicitly, the env var has no effect — a fresh agent is always laun
 
 **Current state**: Core skills always specify `subagent_type` explicitly (e.g.,
 `subagent_type: "general-implementation-agent"`), so they are unaffected by this env var.
-The `FORK_SUBAGENT` env var mechanism (referenced in the old `dispatch-agent.sh`) is no longer
-used. Use `subagent_type: "fork"` instead.
+The `FORK_SUBAGENT` env var mechanism is obsolete and no longer used. Use
+`subagent_type: "fork"` instead.
 
 ---
 

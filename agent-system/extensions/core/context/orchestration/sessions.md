@@ -115,7 +115,7 @@ After task completion:
 **Auto-remove sessions >24 hours old**
 
 - Check `last_activity` timestamp in manifest
-- Safe to run periodically (see `scripts/cleanup-stale-sessions.sh`)
+- Safe to run periodically (see `scripts/reap-session-runtime-files.sh`, invoked via `/refresh`)
 - Won't affect active sessions
 
 ## Error Handling

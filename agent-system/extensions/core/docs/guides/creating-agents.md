@@ -682,7 +682,6 @@ Research completed successfully. Found 5 patterns. See report at ...
 - [Creating Commands](creating-commands.md) - Creating commands that invoke skills
 - `.claude/context/formats/subagent-return.md` - Return format schema
 - `.claude/docs/templates/agent-template.md` - Agent template
-- `.claude/docs/architecture/dispatch-agent-spec.md` - dispatch_agent() fork-vs-subagent dispatch
 - `.claude/docs/architecture/handoff-schema.md` - Orchestrator handoff JSON schema
 
 ---

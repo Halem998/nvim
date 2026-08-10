@@ -2,7 +2,7 @@
 
 **Status**: Current architecture — result of the unified workflow refactor's /orchestrate state machine component.
 
-**See Also**: `architecture-spec.md` (Component 3), `handoff-schema.md`
+**See Also**: `handoff-schema.md`
 
 ---
 

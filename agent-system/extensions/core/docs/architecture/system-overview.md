@@ -4,7 +4,7 @@
 
 This document provides a high-level overview of the agent system architecture for users and developers.
 
-The unified workflow refactor is complete. This document describes the **current** architecture including skill-base.sh lifecycle functions, command gate scripts, dispatch-agent.sh, the /orchestrate autonomous state machine, computed CLAUDE.md generation, and extension lifecycle hooks.
+The unified workflow refactor is complete. This document describes the **current** architecture including skill-base.sh lifecycle functions, command gate scripts, the /orchestrate autonomous state machine, computed CLAUDE.md generation, and extension lifecycle hooks.
 
 ---
 

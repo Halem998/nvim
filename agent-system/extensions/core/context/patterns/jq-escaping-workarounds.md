@@ -263,24 +263,15 @@ jq --arg path "$artifact_path" \
 # Expected output should show status "researched" and artifact added
 ```
 
-## Postflight Scripts
+## State Updates
 
-Reusable shell scripts are available in `.claude/scripts/` that encapsulate correct jq patterns:
-
-| Script | Purpose |
-|--------|---------|
-| `postflight-research.sh TASK_NUM ARTIFACT_PATH [SUMMARY]` | Update state.json after research completion |
-| `postflight-plan.sh TASK_NUM ARTIFACT_PATH [SUMMARY]` | Update state.json after plan creation |
-| `postflight-implement.sh TASK_NUM ARTIFACT_PATH [SUMMARY]` | Update state.json after implementation |
-
-Example usage:
-```bash
-.claude/scripts/postflight-plan.sh 607 "specs/607_task/plans/02_implementation-plan.md" "9-phase implementation plan"
-```
+State updates now go through `.claude/scripts/update-task-status.sh` (preflight/postflight
+variants), which encapsulates the correct jq patterns internally. See
+`.claude/rules/state-management.md` for the state-first update pipeline this script implements.
 
 ## References
 
 - Claude Code Issue #1132: Bash tool escaping bug
 - `.claude/context/patterns/inline-status-update.md` - Status update patterns
 - `.claude/rules/state-management.md` - State management rules
-- `.claude/scripts/postflight-*.sh` - Reusable postflight scripts
+- `.claude/scripts/update-task-status.sh` - State-first status update script

@@ -745,21 +745,20 @@ context_loading:
 
 **Diagnosis**:
 ```bash
-# Run validation script
-bash .claude/scripts/validate-context-refs.sh
+# Run the extension-docs gate, which flags index-entries.json paths that no
+# longer resolve to a file on disk (Rule R / Rule T)
+bash .claude/scripts/check-extension-docs.sh
 
 # Check for broken references manually
-grep -r "core/system/" .claude/command .claude/agent
+grep -r "core/system/" .claude/commands .claude/agents
 ```
 
 **Solutions**:
-1. Run reference update script: `bash update-context-refs.sh`
-2. Manually fix broken references
-3. Add validation to CI/CD pipeline
+1. Manually fix broken references (no bulk reference-rewrite script exists)
+2. Add `check-extension-docs.sh` to CI/CD pipeline
 
 **Prevention**:
-- Run validation script before commits
-- Use reference update script for bulk updates
+- Run `check-extension-docs.sh` before commits
 - Document file moves and renames
 
 ### 8.2 Context Bloat
@@ -841,7 +840,7 @@ find .claude/context -name "*.md" -exec wc -l {} + | sort -n | tail -10
 
 **Validate all references**:
 ```bash
-bash .claude/scripts/validate-context-refs.sh
+bash .claude/scripts/check-extension-docs.sh
 ```
 
 **Count broken references**:
@@ -885,8 +884,7 @@ done
 
 **Quick Reference**:
 
-- **Validation script**: `.claude/scripts/validate-context-refs.sh`
-- **Update script**: `update-context-refs.sh`
+- **Validation script**: `.claude/scripts/check-extension-docs.sh`
 - **Context index**: `.claude/context/index.json`
 - **Max context sizes**: Research (50k), Planning (40k), Implementation (30k)
 - **File size limits**: Standards (700), Formats (600), Templates (400)

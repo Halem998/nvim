@@ -17,7 +17,7 @@ neutralizes the "restored from an old commit" scenario a tracked file would othe
 exactly the gate the loop guard lacks, which is why that file stays gitignored instead. See
 `context/standards/orchestrator-runtime-files.md` for the full two-class policy and rationale.
 
-**See Also**: `architecture-spec.md` (Component 5), `orchestrate-state-machine.md`,
+**See Also**: `orchestrate-state-machine.md`,
 `context/standards/orchestrator-runtime-files.md`
 
 ## Path Resolution Contract

@@ -205,7 +205,7 @@ The `lint-postflight-boundary.sh` script detects violations:
 
 ### Pre-Commit Hook
 
-Run as part of `validate-all-standards.sh --postflight` category.
+Run `lint-postflight-boundary.sh` directly, or as part of `verify-deploy.sh`'s gate suite.
 
 ---
 

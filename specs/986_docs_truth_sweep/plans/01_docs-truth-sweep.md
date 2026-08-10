@@ -1,7 +1,7 @@
 # Implementation Plan: Task #986
 
 - **Task**: 986 - Docs truth sweep: retire dispatch-agent fiction, dead-script refs, doc consolidation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: 951, 960, 961, 962, 963, 969, 980, 982, 983, 984, 985, 987, 989, 992 (all landed)
 - **Research Inputs**: specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md
@@ -129,30 +129,30 @@ only genuine parallel opportunity.
 
 ---
 
-### Phase 1: Retire dispatch-agent fiction and purge dead script references [NOT STARTED]
+### Phase 1: Retire dispatch-agent fiction and purge dead script references [COMPLETED]
 
 **Goal**: No document describes `dispatch-agent.sh` as current architecture, no citation points at
 the nonexistent `dispatch-agent-spec.md`, and every reference to a nonexistent script is either
 removed or explicitly marked as removed.
 
 **Tasks**:
-- [ ] Retire `docs/architecture/architecture-spec.md` (599 lines). It carries 9 of the 13
+- [x] Retire `docs/architecture/architecture-spec.md` (599 lines). It carries 9 of the 13
       dispatch-agent hits, a full "Component 4: `dispatch_agent()` Function" section, a
       `**File location**: .claude/scripts/dispatch-agent.sh` claim, and 5 dead-script hits
       (`postflight-workflow.sh` x3, `nix-postflight.sh`, `nix-verify.sh`). Prefer outright
       deletion; if any section describes real current machinery, migrate only that content into
       `docs/architecture/system-overview.md` before deleting.
-- [ ] Fix `docs/architecture/system-overview.md:7`, which asserts the current architecture
+- [x] Fix `docs/architecture/system-overview.md:7`, which asserts the current architecture
       "includes ... dispatch-agent.sh". Remove the claim; do not replace it with a forward
       reference to a retired file.
-- [ ] Remove the 4 `dispatch-agent-spec.md` citations: 2 in `architecture-spec.md` (resolved by its
+- [x] Remove the 4 `dispatch-agent-spec.md` citations: 2 in `architecture-spec.md` (resolved by its
       deletion), plus `docs/guides/creating-agents.md` and `docs/templates/README.md`.
-- [ ] Reword `docs/fork-patterns.md`'s surviving mention so it no longer implies a reader can go
+- [x] Reword `docs/fork-patterns.md`'s surviving mention so it no longer implies a reader can go
       look at `dispatch-agent.sh`; it already correctly calls the mechanism obsolete.
-- [ ] Repair inbound links to the retired spec in `docs/architecture/handoff-schema.md`,
+- [x] Repair inbound links to the retired spec in `docs/architecture/handoff-schema.md`,
       `docs/architecture/orchestrate-state-machine.md`, and `docs/templates/README.md`. Leave
       `docs/README.md` and `docs/docs-README.md` alone — Phase 3 owns those two files.
-- [ ] Purge the remaining dead-script references, following the "correctly marked removed" style
+- [x] Purge the remaining dead-script references, following the "correctly marked removed" style
       of `artifact-linking-todo.md`: `postflight-research.sh` / `postflight-plan.sh` /
       `postflight-implement.sh` in `context/patterns/jq-escaping-workarounds.md` (the recipes are
       uncopyable as written — replace with a working example or delete the block);
@@ -161,7 +161,7 @@ removed or explicitly marked as removed.
       `docs/guides/context-loading-best-practices.md`; `validate-all-standards.sh` in
       `context/standards/postflight-tool-restrictions.md`; `test-implement-pipeline.sh` in
       `context/standards/shell-script-testing.md`.
-- [ ] Reconcile `index-entries.json` `line_count` for the four indexed `context/` files edited
+- [x] Reconcile `index-entries.json` `line_count` for the four indexed `context/` files edited
       here (`patterns/jq-escaping-workarounds.md`, `orchestration/sessions.md`,
       `standards/postflight-tool-restrictions.md`, `standards/shell-script-testing.md`) by running
       `bash .claude/scripts/generate-context-line-counts.sh --write`.

@@ -12,8 +12,7 @@ doc states which applies when.
 - **Narrow, fixture-driven suite for a single script** -> `scripts/tests/<script-under-test>`-named
   test file, e.g. `scripts/tests/test-census-count.sh` tests `scripts/census-count.sh`.
 - **Broad end-to-end / pipeline suite** that exercises multiple scripts together, or a full
-  command-level workflow -> stays flat in `scripts/`, e.g. a hypothetical
-  `scripts/test-implement-pipeline.sh`.
+  command-level workflow -> stays flat in `scripts/`, e.g. `scripts/test-session-registry.sh`.
 
 This is a scope-based split, not "core always does X" or "follow whichever extension shipped
 first." A sibling extension already mixes both shapes for exactly this reason: its narrow,

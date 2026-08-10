@@ -1055,7 +1055,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Workarounds for jq escaping issues",
-      "line_count": 286,
+      "line_count": 277,
       "keywords": [
         "patterns",
         "jq",
@@ -1967,7 +1967,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 102,
+      "line_count": 101,
       "keywords": [
         "standards",
         "shell",
@@ -3073,7 +3073,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1161,
+      "line_count": 1167,
       "keywords": [
         "task-lock",
         "concurrency",
