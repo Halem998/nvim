@@ -19,9 +19,9 @@ next_project_number: 1007
 
 ### Agent System
 
-999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
+999 [RESEARCHED] — Reduce the 8 standing per-agent context budget overruns that vali
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
-1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
+1003 [RESEARCHING] — lean-sorry-census.sh counts every `set_option warn.sorry false in
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
@@ -231,7 +231,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1003. Fix lean-sorry-census.sh double-counting warn.sorry suppression annotations
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -450,10 +450,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 999. Reduce the 8 per-agent context budget overruns
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 992, Task 986, Task 998, Task 1002
+- **Research**: [999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md]
 
 **Description**: Reduce the 8 standing per-agent context budget overruns that validate-context-budgets.sh reports, so the budget check can become an instrument that passes rather than one whose failure is permanently expected. The meta-catch-all decomposition task established the diagnosis and deliberately did NOT attempt the reduction: its verification bar was re-scoped (option b) precisely because these 8 violations are load_when.agents breadth across core/nvim/nix and lay outside that task's file_scope. Raising CAPS was considered there and REJECTED with reasoning that binds this task too -- a cap set to current usage can never fail, which retires the check as an instrument. Do not resolve this task by raising caps to meet current usage.
 

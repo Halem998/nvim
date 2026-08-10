@@ -1,0 +1,48 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md",
+      "summary": "Re-measures the 8 per-agent context budget overruns, diagnoses the root cause as load_when.agents catalog drift from each agent's real @-reference set (over-inclusion of orphaned/conditional entries plus a few under-hooked real dependencies), and gives a per-agent hook-reclassification plan that fully resolves 5 of 8 agents and reduces the remaining 3 (general-implementation-agent, neovim-implementation-agent, nix-implementation-agent) to a small, accurately-computed documented exception grounded in the shared core bundle's real size. Corrects one factual error surfaced during reconciliation with a parallel research pass (load_when.skills is not a valid schema key)."
+    }
+  ],
+  "next_steps": "Run /plan 999 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786342011_4592c8_999",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 8,
+  "memory_candidates": [
+    {
+      "content": "In this repo's context-index system, .claude/context/index.json's load_when.agents field is NOT a uniform runtime auto-loader. It is a live jq-filtered discovery source for only some agents (general-research-agent, general-implementation-agent, planner-agent, neovim-research-agent run a documented `select(.load_when.agents[]? == $agent)` query; meta-builder-agent only reads a TARGET repo's index.json wholesale in analyze mode) and is pure inert catalog metadata for others (neovim-implementation-agent, nix-implementation-agent, nix-research-agent have zero index.json consumers -- their real context comes entirely from hardcoded @-references in their own .md). Before treating an index.json load_when.agents entry as load-bearing, grep the target agent's own .md for a literal @.claude/context/<path> reference or a documented by-agent-name jq query -- absence of either means the hook is decorative.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index.json", "load_when.agents", "context-discovery", "agent-context-loading", "validate-context-budgets"]
+    },
+    {
+      "content": "validate-context-budgets.sh's per-agent check sums ALL entries in an agent's load_when.agents unconditionally, even when the agent's own .md file gates those same @-references behind a conditional sub-heading (e.g. nix-research-agent's 'Package tasks:' / 'Flake tasks:' table). This makes the check systematically overcount agents whose domain content is genuinely sub-task-conditional. The correct fix per the derived-tier model (context-tier-semantics.md) is to move conditional-only content to task_types-only (Tier 3) or on_demand (Tier 4), not to leave it in agents[] (Tier 2, which specifically means 'loaded on every dispatch') -- this is a real tier correction, not a cap-inflation workaround, and is the dominant lever for shrinking domain-agent budget-check numbers.",
+      "category": "PATTERN",
+      "source_artifact": "specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["context-tier-semantics", "derived-tier", "load_when", "conditional-content", "budget-check"]
+    },
+    {
+      "content": "The shared 'always-loaded' core implementation bundle in this repo (formats/return-metadata-file.md 4768 tok + formats/progress-file.md 2160 + formats/summary-format.md 608 + contracts/phase-closure.md 856 + contracts/pre-edit-gate.md 856 = 9248 tokens) already exceeds the 8000-token per-agent budget cap used for general/neovim/nix-implementation-agent, before any domain content is counted. Any per-agent budget-check reduction effort for implementation-type agents structurally bottoms out above the 8000 cap purely from this shared bundle; return-metadata-file.md alone (596 lines, 4768 tok) is 59% of the cap and is @-referenced by 7 of the 8 currently-over-budget agents, making it the highest-leverage single target for a future content-size-reduction task.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["return-metadata-file", "context-budget", "core-bundle", "implementation-agent", "cap-floor"]
+    },
+    {
+      "content": "context/index.schema.json's load_when object is closed (additionalProperties: false) over exactly agents/commands/task_types/always. A `skills` discriminator key was tried historically and deliberately removed (schema $comment: 'languages and skills were removed as never-queried at runtime'). Never propose load_when.skills as a fix for entries that are actually @-imported by an orchestrating SKILL.md rather than the dispatched agent body -- it is schema-illegal today. The correct disposition for such entries is on_demand: true with agents[] cleared, which achieves the same budget-check exclusion legally.",
+      "category": "CONFIG",
+      "source_artifact": "specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["load_when", "index.schema.json", "additionalProperties", "on_demand", "skills-key-removed"]
+    }
+  ]
+}
