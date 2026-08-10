@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Acceptance -- YAML parse, survivor accounting, dangling-reference sweep",
+  "started_at": "2026-08-10T00:30:00Z",
+  "last_updated": "2026-08-10T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Frontmatter parse of specs/TODO.md via strict YAML loader, asserting key set", "status": "done", "files_touched": []},
+    {"id": 2, "description": "End-state simulation: regenerate TODO.md via generate-todo.sh, re-parse", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Durable-record check: vault_history and meta.json", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Survivor grep with command grep, five-bucket accounting", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Dangling-reference sweep for 5.8.", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run check-extension-docs.sh doc-lint gate", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Write execution summary", "status": "done", "files_touched": ["specs/021_resolve_vault_transition_comment_nondurable/summaries/01_resolve-vault-transition-comment-summary.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

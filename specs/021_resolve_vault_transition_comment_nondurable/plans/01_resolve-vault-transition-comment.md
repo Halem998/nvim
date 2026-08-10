@@ -223,33 +223,34 @@ after; the set of matched labels must be identical apart from line-number shift.
 
 ---
 
-### Phase 3: Acceptance — YAML parse, survivor accounting, dangling-reference sweep [NOT STARTED]
+### Phase 3: Acceptance — YAML parse, survivor accounting, dangling-reference sweep [COMPLETED]
 
 **Goal**: Demonstrate the acceptance criteria by measurement and record the results, including a
 justified survivor count for every remaining occurrence of the transition-comment string.
 
 **Tasks**:
-- [ ] **Frontmatter parse (by parsing, not eyeballing)**: parse `specs/TODO.md`'s leading `---`
+- [x] **Frontmatter parse (by parsing, not eyeballing)**: parse `specs/TODO.md`'s leading `---`
       block with a strict YAML loader (e.g. `python3` + `yaml.safe_load` over the extracted
       block) and record that it is a closed, valid YAML mapping whose keys are exactly the
       expected ones — specifically with **no** stray `<!-- Vault transition` key. Note in the
       output *why* the loader alone is insufficient evidence in general (the corrupted form
       parses successfully as a bogus key rather than erroring), so the check must assert on the
-      key set, not merely on "no exception raised".
-- [ ] **End-state simulation**: confirm the acceptance narrative holds — regenerate TODO.md via
+      key set, not merely on "no exception raised". *(completed: keys == ['next_project_number'],
+      no stray key; see summary for parser output)*
+- [x] **End-state simulation**: confirm the acceptance narrative holds — regenerate TODO.md via
       the sanctioned path (`bash .claude/scripts/generate-todo.sh`) and re-run the parse, showing
       the file is unchanged in the relevant respect (no transition comment present before or
-      after, durable records untouched). Do not perform an actual vault operation.
-- [ ] **Durable-record check**: confirm `jq '.vault_history' specs/state.json` and
+      after, durable records untouched). Do not perform an actual vault operation. *(completed)*
+- [x] **Durable-record check**: confirm `jq '.vault_history' specs/state.json` and
       `specs/vault/01-vault/meta.json` are both present and populated, i.e. Option (a) loses no
-      information.
-- [ ] **Survivor grep — use `command grep`, not the shell `grep`**: this shell's `grep` is a
+      information. *(completed: both present and populated)*
+- [x] **Survivor grep — use `command grep`, not the shell `grep`**: this shell's `grep` is a
       ugrep shim invoked with `--ignore-files`, which honors `.gitignore` and therefore silently
       omits gitignored trees such as `.claude/**`. A naive repo-wide `grep -rln "Vault transition" .`
       under-reports. Run the accounting with `command grep -rn --exclude-dir=.git "Vault transition" .`
       (or with each directory named explicitly) and cross-check the `.claude/**` count with a
-      targeted `command grep -c` on the two deployed files.
-- [ ] **Report the surviving count with justification for each survivor**, in these buckets:
+      targeted `command grep -c` on the two deployed files. *(completed)*
+- [x] **Report the surviving count with justification for each survivor**, in these buckets:
       1. `agent-system/extensions/**` excluding `scripts/deprecated/**` — expected 0 (the
          acceptance target).
       2. `agent-system/extensions/core/scripts/deprecated/vault-operation.sh` — 1, retained by
@@ -260,14 +261,21 @@ justified survivor count for every remaining occurrence of the transition-commen
          rule; self-correct on the next deploy/reload.
       5. `specs/**` — this task's own records plus archived historical artifacts; exempt and never
          edited retroactively.
-- [ ] **Dangling-reference sweep**: `command grep -rn "5\.8\." agent-system/extensions/` must
+      *(completed: measured 0 / 1 / 5 files / 2 files / 10 files respectively — matches all four
+      numeric hypotheses; see summary for full table and per-bucket justification)*
+- [x] **Dangling-reference sweep**: `command grep -rn "5\.8\." agent-system/extensions/` must
       return hits only under `scripts/deprecated/`; confirm `deprecated/README.md` still
-      references only the heading ("Step 5.7") and needs no change.
-- [ ] Run the repo's doc-lint gate `bash .claude/scripts/check-extension-docs.sh` and confirm no
-      new failures are attributable to these edits.
-- [ ] Write the execution summary to
+      references only the heading ("Step 5.7") and needs no change. *(completed: all 8 hits
+      confined to scripts/deprecated/vault-operation.sh's own comment labels; deviation —
+      deprecated/README.md line 32 reads "Steps 5.7-5.8", a now-stale range reference the plan's
+      risk-mitigation claim did not account for, undetected by the literal `5\.8\.` pattern
+      because it lacks a trailing period; flagged as a follow-up in the summary, not fixed —
+      outside this plan's approved file list)*
+- [x] Run the repo's doc-lint gate `bash .claude/scripts/check-extension-docs.sh` and confirm no
+      new failures are attributable to these edits. *(completed: all 20 extensions PASS)*
+- [x] Write the execution summary to
       `specs/021_resolve_vault_transition_comment_nondurable/summaries/01_resolve-vault-transition-comment-summary.md`,
-      including the survivor table and the parse evidence verbatim.
+      including the survivor table and the parse evidence verbatim. *(completed)*
 
 **Timing**: 0.5 hours
 
