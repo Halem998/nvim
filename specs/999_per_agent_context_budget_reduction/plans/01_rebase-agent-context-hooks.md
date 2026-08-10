@@ -346,30 +346,34 @@ authoritative over this list.
 
 ---
 
-### Phase 5: Rebase both Nix agents in nix/index-entries.json [NOT STARTED]
+### Phase 5: Rebase both Nix agents in nix/index-entries.json [COMPLETED]
 
 **Goal**: Bring `nix-research-agent` under its 8,000 cap with real margin and reduce
 `nix-implementation-agent` to its honest structural floor.
 
 **Tasks**:
-- [ ] Extract real `@`-reference sets for both agents.
-- [ ] `nix-research-agent`: keep only unconditional references hooked. The eight sub-task-gated
+- [x] Extract real `@`-reference sets for both agents. *(completed: 12 hooked entries each in
+      the nix file, matching plan-time count exactly)*
+- [x] `nix-research-agent`: keep only unconditional references hooked. The eight sub-task-gated
       files (`flakes.md`, `home-manager.md`, `derivation-patterns.md`, `module-patterns.md`,
       `overlay-patterns.md`, `nixos-modules.md`, `home-manager-guide.md`,
       `nixos-rebuild-guide.md`) are gated behind "Package tasks:" / "NixOS module tasks:" /
       "Flake tasks:" / "Build/deploy tasks:" headings and do not meet the Tier 2 "loaded whenever
       this agent is dispatched" bar — move them to `task_types`-only, preserving their existing
-      `task_types` hook.
-- [ ] The research computes this agent at exactly 8,000 (at cap, no margin). Additionally move
+      `task_types` hook. *(completed)*
+- [x] The research computes this agent at exactly 8,000 (at cap, no margin). Additionally move
       `project/nix/README.md` (808 tok) to `on_demand`/`task_types`-only for margin, so a future
-      line-count drift does not silently re-break the check.
-- [ ] `nix-implementation-agent`: hook its genuine unconditional references — the core bundle
+      line-count drift does not silently re-break the check. *(completed: measured 7,192, margin
+      808)*
+- [x] `nix-implementation-agent`: hook its genuine unconditional references — the core bundle
       (`phase-closure.md`, `pre-edit-gate.md`, `progress-file.md`, `return-metadata-file.md`,
       `summary-format.md`) plus the unconditionally-listed `project/nix/README.md`,
       `project/nix/domain/nix-language.md`, `project/nix/standards/nix-style-guide.md`. Its
-      remaining eleven nix references are sub-task-gated and stay `task_types`-only.
-- [ ] Record for Phase 3: `standards/git-staging-scope.md` is hooked to
+      remaining eleven nix references are sub-task-gated and stay `task_types`-only. *(completed:
+      measured 14,104, exactly matching the report's prediction)*
+- [x] Record for Phase 3: `standards/git-staging-scope.md` is hooked to
       `nix-implementation-agent` but not `@`-referenced by it; drop belongs in the core file.
+      *(completed: dropped directly from core/index-entries.json)*
 
 **Timing**: 1 hour
 

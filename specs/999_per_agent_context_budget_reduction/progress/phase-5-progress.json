@@ -1,0 +1,54 @@
+{
+  "phase": 5,
+  "phase_name": "Rebase both Nix agents in nix/index-entries.json",
+  "started_at": "2026-08-10T02:15:00Z",
+  "last_updated": "2026-08-10T02:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extract real @-reference sets for both Nix agents",
+      "status": "done",
+      "files_touched": [],
+      "note": "nix-research-agent: unconditional (return-metadata-file.md core, report-format.md core, project/nix/README.md, project/nix/domain/nix-language.md) + 8 sub-task-gated files. nix-implementation-agent: unconditional (core bundle 5 files + README.md, nix-language.md, nix-style-guide.md) + 8 sub-task-gated files. Both agents had 12 hooked entries in nix/index-entries.json, matching the plan's Scope Hypothesis exactly. project/nix/tools/mcp-nixos-integration.md confirmed unreferenced by either agent's .md body (zero grep matches for both 'mcp-nixos-integration' and 'mcp_nixos')."
+    },
+    {
+      "id": 2,
+      "description": "nix-research-agent: keep only unconditional refs, move 8 sub-task-gated files to task_types-only",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nix/index-entries.json", "agent-system/extensions/core/index-entries.json"],
+      "note": "Dropped 11 of 12 hooked entries (all retained task_types:[nix], no on_demand needed), keeping only project/nix/domain/nix-language.md (1,720 tok) in the nix file. Added nix-research-agent to core-owned formats/return-metadata-file.md and formats/report-format.md."
+    },
+    {
+      "id": 3,
+      "description": "Move project/nix/README.md to on_demand/task_types-only for margin (per research: agent computes exactly 8,000 with no margin otherwise)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nix/index-entries.json"],
+      "note": "README.md (808 tok) dropped from nix-research-agent's agents[] hook alongside the other 10 conditional/unreferenced entries in objective 2's single pass, despite being a genuine unconditional reference -- deliberately for margin, per the plan's explicit instruction. Result: nix-research-agent measures 7,192 (margin 808), not the bare-cap 8,000 the report predicted before this deliberate extra drop."
+    },
+    {
+      "id": 4,
+      "description": "nix-implementation-agent: hook core bundle + 3 unconditional nix files, keep 8 sub-task-gated as task_types-only",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nix/index-entries.json", "agent-system/extensions/core/index-entries.json"],
+      "note": "Dropped 9 of 12 hooked entries (all retained task_types:[nix], no on_demand needed), keeping project/nix/README.md+domain/nix-language.md+standards/nix-style-guide.md (4,856 tok). Added nix-implementation-agent to the 5 core-owned core-bundle entries (previously not hooked to this agent at all)."
+    },
+    {
+      "id": 5,
+      "description": "Record git-staging-scope.md drop for Phase 3's owner (handled directly, core file)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"],
+      "note": "Confirmed not @-referenced by nix-implementation-agent.md. Dropped nix-implementation-agent from standards/git-staging-scope.md's agents[]; commands[] hook (5 commands) kept it non-empty, no on_demand needed."
+    },
+    {
+      "id": 6,
+      "description": "Verify: schema test, regenerate, measure both outcomes with margin",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-index-entries-schema.sh: 8/1 identical baseline. After deploy-headless.sh: nix-research-agent 7192/8000 OK (margin 808), nix-implementation-agent 14104/8000 OVER:6104 (exact report prediction, recorded for Phase 8). Dead Entry Check: 0. Overall Violations: 4 (down from 5)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

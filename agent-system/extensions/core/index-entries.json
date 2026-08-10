@@ -347,7 +347,8 @@
       "load_when": {
         "agents": [
           "general-implementation-agent",
-          "neovim-implementation-agent"
+          "neovim-implementation-agent",
+          "nix-implementation-agent"
         ],
         "task_types": [],
         "commands": []
@@ -370,7 +371,8 @@
       "load_when": {
         "agents": [
           "general-research-agent",
-          "neovim-research-agent"
+          "neovim-research-agent",
+          "nix-research-agent"
         ],
         "task_types": [],
         "commands": []
@@ -397,7 +399,9 @@
           "general-implementation-agent",
           "meta-builder-agent",
           "neovim-research-agent",
-          "neovim-implementation-agent"
+          "neovim-implementation-agent",
+          "nix-research-agent",
+          "nix-implementation-agent"
         ],
         "task_types": [],
         "commands": []
@@ -462,7 +466,8 @@
       "load_when": {
         "agents": [
           "general-implementation-agent",
-          "neovim-implementation-agent"
+          "neovim-implementation-agent",
+          "nix-implementation-agent"
         ],
         "task_types": [],
         "commands": []
@@ -2496,7 +2501,8 @@
         "agents": [
           "general-implementation-agent",
           "general-implementation-hard-agent",
-          "neovim-implementation-agent"
+          "neovim-implementation-agent",
+          "nix-implementation-agent"
         ],
         "commands": [],
         "task_types": []
@@ -2526,7 +2532,8 @@
         "agents": [
           "general-implementation-agent",
           "general-implementation-hard-agent",
-          "neovim-implementation-agent"
+          "neovim-implementation-agent",
+          "nix-implementation-agent"
         ],
         "commands": [],
         "task_types": []
@@ -3003,8 +3010,7 @@
       "load_when": {
         "agents": [
           "general-implementation-agent",
-          "general-implementation-hard-agent",
-          "nix-implementation-agent"
+          "general-implementation-hard-agent"
         ],
         "commands": [
           "/orchestrate",

@@ -4,7 +4,6 @@
       "path": "project/nix/README.md",
       "load_when": {
         "agents": [
-          "nix-research-agent",
           "nix-implementation-agent"
         ],
         "task_types": [
@@ -35,10 +34,7 @@
     {
       "path": "project/nix/domain/flakes.md",
       "load_when": {
-        "agents": [
-          "nix-research-agent",
-          "nix-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "nix"
         ]
@@ -51,10 +47,7 @@
     {
       "path": "project/nix/domain/nixos-modules.md",
       "load_when": {
-        "agents": [
-          "nix-research-agent",
-          "nix-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "nix"
         ]
@@ -67,10 +60,7 @@
     {
       "path": "project/nix/domain/home-manager.md",
       "load_when": {
-        "agents": [
-          "nix-research-agent",
-          "nix-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "nix"
         ]
@@ -83,10 +73,7 @@
     {
       "path": "project/nix/patterns/module-patterns.md",
       "load_when": {
-        "agents": [
-          "nix-research-agent",
-          "nix-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "nix"
         ]
@@ -99,10 +86,7 @@
     {
       "path": "project/nix/patterns/overlay-patterns.md",
       "load_when": {
-        "agents": [
-          "nix-research-agent",
-          "nix-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "nix"
         ]
@@ -115,10 +99,7 @@
     {
       "path": "project/nix/patterns/derivation-patterns.md",
       "load_when": {
-        "agents": [
-          "nix-research-agent",
-          "nix-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "nix"
         ]
@@ -132,7 +113,6 @@
       "path": "project/nix/standards/nix-style-guide.md",
       "load_when": {
         "agents": [
-          "nix-research-agent",
           "nix-implementation-agent"
         ],
         "task_types": [
@@ -147,10 +127,7 @@
     {
       "path": "project/nix/tools/nixos-rebuild-guide.md",
       "load_when": {
-        "agents": [
-          "nix-research-agent",
-          "nix-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "nix"
         ]
@@ -163,10 +140,7 @@
     {
       "path": "project/nix/tools/home-manager-guide.md",
       "load_when": {
-        "agents": [
-          "nix-research-agent",
-          "nix-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "nix"
         ]
@@ -179,10 +153,7 @@
     {
       "path": "project/nix/tools/mcp-nixos-integration.md",
       "load_when": {
-        "agents": [
-          "nix-research-agent",
-          "nix-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "nix"
         ]
