@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1010
 
 - **Task**: 1010 - Fix opencode gate-in session-id duplication (test-common-lib.sh deployed-mode failure)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/1010_fix_opencode_gate_in_session_id_duplication/reports/01_opencode-gate-in-staleness.md
@@ -136,22 +136,26 @@ Phases within the same wave can execute in parallel. This plan is fully sequenti
 
 ---
 
-### Phase 1: Capture Pre-Change Test Baseline in Both Modes [NOT STARTED]
+### Phase 1: Capture Pre-Change Test Baseline in Both Modes [COMPLETED]
 
 **Goal**: Establish, by execution, the exact set of failing suites in each mode *before* any file
 is touched, so Phase 3 can prove that the only change is `test-common-lib.sh` going green.
 
 **Tasks**:
-- [ ] Run source-store mode: `bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet`,
-      capturing full output to a scratch file.
-- [ ] Run deployed mode: `bash .claude/scripts/tests/run-all.sh --quiet`, capturing full output to
-      a separate scratch file.
-- [ ] Extract the `[FAIL] ` line set from each with `grep '^\[FAIL\] '` and record both sets and
-      both `[run-all] N passed, M failed, ...` summary lines verbatim.
-- [ ] Confirm `test-common-lib.sh` appears in the deployed FAIL set and NOT in the source-store
+- [x] Run source-store mode: `bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet`,
+      capturing full output to a scratch file. *(completed: 36 passed, 1 failed, 37 total)*
+- [x] Run deployed mode: `bash .claude/scripts/tests/run-all.sh --quiet`, capturing full output to
+      a separate scratch file. *(completed: 27 passed, 7 failed, 34 total)*
+- [x] Extract the `[FAIL] ` line set from each with `grep '^\[FAIL\] '` and record both sets and
+      both `[run-all] N passed, M failed, ...` summary lines verbatim. *(completed, matches
+      pre-captured baseline in Overview exactly)*
+- [x] Confirm `test-common-lib.sh` appears in the deployed FAIL set and NOT in the source-store
       FAIL set. If this does not reproduce, STOP and report — the defect premise no longer holds.
-- [ ] Run `bash .claude/scripts/tests/test-common-lib.sh` alone and record the offending-file line
+      *(completed: confirmed)*
+- [x] Run `bash .claude/scripts/tests/test-common-lib.sh` alone and record the offending-file line
       it prints, confirming `.opencode/scripts/command-gate-in.sh` is the sole offender.
+      *(completed: Passed: 23, Failed: 1; sole offender is
+      `/home/benjamin/.config/nvim/.opencode/scripts/command-gate-in.sh`)*
 
 **Timing**: 0.3 hours
 
@@ -179,33 +183,37 @@ absolute counts.
 
 ---
 
-### Phase 2: Catch-Up Sync of the Single Stale File [NOT STARTED]
+### Phase 2: Catch-Up Sync of the Single Stale File [IN PROGRESS]
 
 **Goal**: Make `.opencode/scripts/command-gate-in.sh` byte-identical to its already-correct
 source-store original, by verbatim copy.
 
 **Tasks**:
-- [ ] Confirm the source file is already correct before copying:
+- [x] Confirm the source file is already correct before copying:
       `grep -n 'common_session_id' agent-system/extensions/core/scripts/command-gate-in.sh`
       must hit, and `grep -c 'sess_\$(date' agent-system/extensions/core/scripts/command-gate-in.sh`
       must be `0`. If either fails, STOP — the plan's premise (source already fixed) is wrong.
-- [ ] Copy verbatim:
+      *(completed: hit at line 54, `SESSION_ID="$(common_session_id)"`; count 0)*
+- [x] Copy verbatim:
       `cp agent-system/extensions/core/scripts/command-gate-in.sh .opencode/scripts/command-gate-in.sh`
       Use `cp`, **not** the `Write` or `Edit` tool with retyped content — byte-identity must be
-      guaranteed by the copy mechanism, not by careful transcription.
-- [ ] Verify byte-identity:
+      guaranteed by the copy mechanism, not by careful transcription. *(completed)*
+- [x] Verify byte-identity:
       `diff .opencode/scripts/command-gate-in.sh agent-system/extensions/core/scripts/command-gate-in.sh`
-      must produce zero output and exit 0.
-- [ ] Verify the exec bit survived: `ls -l .opencode/scripts/command-gate-in.sh` must show mode
-      `-rwxr-xr-x`. Restore with `chmod 755` if not.
-- [ ] Syntax-check the result: `bash -n .opencode/scripts/command-gate-in.sh` must exit 0.
-- [ ] Confirm the defect pattern is gone from the target:
-      `grep -c 'sess_\$(date' .opencode/scripts/command-gate-in.sh` must be `0`.
-- [ ] Confirm the deliverable-tree lint stays clean:
+      must produce zero output and exit 0. *(completed: zero output, exit 0)*
+- [x] Verify the exec bit survived: `ls -l .opencode/scripts/command-gate-in.sh` must show mode
+      `-rwxr-xr-x`. Restore with `chmod 755` if not. *(completed: mode -rwxr-xr-x confirmed)*
+- [x] Syntax-check the result: `bash -n .opencode/scripts/command-gate-in.sh` must exit 0.
+      *(completed: exit 0)*
+- [x] Confirm the defect pattern is gone from the target:
+      `grep -c 'sess_\$(date' .opencode/scripts/command-gate-in.sh` must be `0`. *(completed: 0)*
+- [x] Confirm the deliverable-tree lint stays clean:
       `bash .claude/scripts/check-task-references.sh` must report `PASS` with `0` occurrences for
-      the `.opencode` tree.
-- [ ] Confirm no other file was touched: `git status --short` must show exactly one modified path
-      outside `specs/**`, namely `.opencode/scripts/command-gate-in.sh`.
+      the `.opencode` tree. *(completed: PASS, 0 occurrences across all 4 trees)*
+- [x] Confirm no other file was touched: `git status --short` must show exactly one modified path
+      outside `specs/**`, namely `.opencode/scripts/command-gate-in.sh`. *(completed: confirmed —
+      `.claude-extensions.json` and `specs/events.jsonl` were already modified before this task
+      began, per the session's starting git status, and are unrelated pre-existing drift)*
 - [ ] Commit with the rationale explicit in the body — that this is a manual redeploy of an
       unmodified source file into a stale generated target, performed because no headless
       `.opencode` deploy entrypoint exists, and that a future real resync is expected to be a

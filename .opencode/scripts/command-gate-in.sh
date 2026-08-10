@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # command-gate-in.sh — CHECKPOINT 1: Session generation, task lookup, and terminal status guard
 #
-# Usage: source .opencode/scripts/command-gate-in.sh "$task_number" "$operation"
+# Usage: source .claude/scripts/command-gate-in.sh "$task_number" "$operation"
 #
 # IMPORTANT: This script MUST be sourced (not called as a subprocess) because
 # it exports variables into the calling shell. Source it within a single Bash
@@ -10,7 +10,10 @@
 #
 # Arguments:
 #   $1  task_number — The numeric task ID to look up
-#   $2  operation   — "research" | "plan" | "implement" | "revise"
+#   $2  operation   — "research" | "plan" | "implement" | "revise" | "orchestrate"
+#
+# Note: operation == "revise" is exempt from the terminal-status guard below (skill-reviser's
+# documented contract is "works regardless of task status").
 #
 # Exported Variables:
 #   SESSION_ID    — sess_{timestamp}_{random}
@@ -27,12 +30,28 @@
 # Downstream dependencies:
 #   skill-base.sh will source this script.
 
+# ─────────────────────────────────────────────────────────────────────────────
+# SHARED LIBRARY: scripts/lib/common.sh (session-ID generation, repo-root resolution helpers,
+# timestamps, logging, test helpers). Sets no shell options of its own -- see its own header
+# contract. This file itself deliberately sets no shell options either (it is sourced into a
+# caller's shell -- see the module docstring above), so sourcing common.sh must not change that.
+# Two candidate paths: the deployed tree (this file's normal runtime context, tried first) and a
+# source-store-relative fallback so this file can also be sourced directly from
+# agent-system/extensions/core/scripts/ (e.g. by a test suite exercising it in isolation).
+_GATE_IN_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [ -f "${_GATE_IN_REPO_ROOT}/.claude/scripts/lib/common.sh" ]; then
+  source "${_GATE_IN_REPO_ROOT}/.claude/scripts/lib/common.sh"
+elif [ -f "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh" ]; then
+  source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
+fi
+unset _GATE_IN_REPO_ROOT
+
 gate_in() {
   local task_number="$1"
   local operation="$2"
 
   # Generate session ID
-  SESSION_ID="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' \n')"
+  SESSION_ID="$(common_session_id)"
 
   # Pad task number
   PADDED_NUM=$(printf "%03d" "$task_number")
@@ -53,14 +72,36 @@ gate_in() {
   PROJECT_NAME=$(echo "$task_data" | jq -r '.project_name')
   DESCRIPTION=$(echo "$task_data" | jq -r '.description // ""')
 
-  # Guard: terminal status check
-  case "$TASK_STATUS" in
-    completed|abandoned|expanded)
-      echo "ABORT: Task $task_number is in terminal status: $TASK_STATUS" >&2
-      echo "  Use --force to override (implement only), or check task status with /task --sync" >&2
-      return 1
-      ;;
-  esac
+  # Guard: terminal status check (skipped for "revise" — skill-reviser's documented contract
+  # is "no status-based ABORT rules; the skill works regardless of task status")
+  if [ "$operation" != "revise" ]; then
+    case "$TASK_STATUS" in
+      completed|abandoned|expanded)
+        echo "ABORT: Task $task_number is in terminal status: $TASK_STATUS" >&2
+        echo "  Use --force to override (implement only), or check task status with /task --sync" >&2
+        return 1
+        ;;
+    esac
+  fi
+
+  # Task lock: acquire AFTER the terminal-status guard so terminal-status tasks fail fast
+  # without ever touching the lock. See .claude/context/patterns/task-lock.md for the full
+  # acquire/heartbeat/release/check contract, and its "Four-Tier Conflict Response" section for
+  # where this call sits in the ladder. Same-session re-entry never self-blocks — this is
+  # unchanged by the acquire-retry wrapper below, since every retried attempt is a full fresh
+  # cmd_acquire entry and same-session re-entry returns 0 on the FIRST attempt every time (see
+  # task-lock.sh's cmd_acquire_retry contract comment). A fresh lock held by a DIFFERENT session
+  # is now retried within a bounded budget (Tier 2) before the command aborts (Tier 3) — a
+  # refusal here means "still locked after the bounded retry budget," not "locked on first look."
+  if ! bash .claude/scripts/task-lock.sh acquire-retry "$task_number" "$operation" "$SESSION_ID" "/$operation $task_number"; then
+    return 1
+  fi
+
+  # In-flight session registry: register this single-task session. Best-effort and
+  # non-blocking — a registration failure must never turn a successful lock acquire into a
+  # refusal; this task changes no admission decision. See
+  # .claude/context/patterns/task-lock.md's Session-Registry CLI section.
+  bash .claude/scripts/task-lock.sh session-register "$SESSION_ID" "/$operation $task_number" "$task_number" 2>/dev/null || true
 
   # Display operation header
   local op_label
