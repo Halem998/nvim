@@ -178,7 +178,7 @@ before proceeding — do not widen the edit to make the grep clean.
 
 ---
 
-### Phase 2: Add the register/acquire parity regression group [NOT STARTED]
+### Phase 2: Add the register/acquire parity regression group [COMPLETED]
 
 **Goal**: A runnable regression group that reproduces the MT-1 -> MT-4 sequence against the real
 `task-lock.sh` CLI, passes under the bare id, fails-as-designed under the suffixed id, and
@@ -186,34 +186,37 @@ statically guards `SKILL.md` against reintroduction of the suffixed pattern at a
 site.
 
 **Tasks**:
-- [ ] Append a new group (next sequential number after the existing Group 8) to
+- [x] Append a new group (next sequential number after the existing Group 8) to
       `agent-system/extensions/core/scripts/test-conflict-predicate.sh`, placed after the Group 8
       block and before the `# Summary` block, using the suite's existing
-      `pass`/`fail`/`info`/`reset_sessions` helpers and `"$TL"` handle.
-- [ ] Registration case: call `reset_sessions`, then the real CLI
+      `pass`/`fail`/`info`/`reset_sessions` helpers and `"$TL"` handle. *(completed: Group 9)*
+- [x] Registration case: call `reset_sessions`, then the real CLI
       `"$TL" session-register "sess_mt_batch" "/orchestrate (multi-task)" "820,850"`, mirroring
       Stage MT-1. Assert the registry entry exists and its `file_scope` is the union of the two
       fixture scopes (`g4/clean`, `g23/x`) — this proves the union is computed by the CLI, not by
-      the fixture.
-- [ ] Positive case (post-fix behavior): `"$TL" acquire 820 research "sess_mt_batch" "/orchestrate (multi-task)"`
+      the fixture. *(completed: case 9.1)*
+- [x] Positive case (post-fix behavior): `"$TL" acquire 820 research "sess_mt_batch" "/orchestrate (multi-task)"`
       — same bare id as registered — assert exit 0. Release with the same bare id, then repeat
-      for `850` and assert exit 0, confirming both batch members admit.
-- [ ] Negative case (regression reproduction): `"$TL" acquire 820 research "sess_mt_batch_820" "/orchestrate (multi-task)"`
+      for `850` and assert exit 0, confirming both batch members admit. *(completed: case 9.2)*
+- [x] Negative case (regression reproduction): `"$TL" acquire 820 research "sess_mt_batch_820" "/orchestrate (multi-task)"`
       — the task-suffixed id — assert exit 1 AND assert stderr contains `registered session`, so
       the assertion pins the session-registry contention path specifically rather than any other
-      refusal reason.
-- [ ] Heartbeat parity case: after a bare-id acquire on `820`, run
+      refusal reason. *(completed: case 9.3)*
+- [x] Heartbeat parity case: after a bare-id acquire on `820`, run
       `"$TL" heartbeat 820 "sess_mt_batch"` and assert its output does NOT contain a
-      different-session WARN — guarding the implement-dispatch half of Phase 1.
-- [ ] Static guard case: locate `$SCRIPT_DIR/../skills/skill-orchestrate/SKILL.md` (this relative
+      different-session WARN — guarding the implement-dispatch half of Phase 1. *(completed: case
+      9.4)*
+- [x] Static guard case: locate `$SCRIPT_DIR/../skills/skill-orchestrate/SKILL.md` (this relative
       path resolves in both the source-store and the deployed tree). If present, assert that no
       line matching `task-lock.sh (acquire|release|heartbeat)` in that file contains
       `${session_id}_${task_num}`. If absent, emit `info` and skip — mirror Group 8's stance on
-      `SCRIPT_DIR` ambiguity rather than failing.
-- [ ] Call `reset_sessions` and release any held lock at the end of the group so suite state does
-      not leak into the summary.
-- [ ] Write every comment and message using fixture phrasing (`fixture 820`, `the 820/850
+      `SCRIPT_DIR` ambiguity rather than failing. *(completed: case 9.5; verified the guard
+      actually bites via a scratch revert, discarded afterward)*
+- [x] Call `reset_sessions` and release any held lock at the end of the group so suite state does
+      not leak into the summary. *(completed)*
+- [x] Write every comment and message using fixture phrasing (`fixture 820`, `the 820/850
       fixture pair`) — never "task 820". This file is a deliverable outside `specs/**`.
+      *(completed)*
 
 **Timing**: 1 hour
 

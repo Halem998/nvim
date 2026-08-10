@@ -382,6 +382,82 @@ mv "$TMPROOT/.claude/scripts/lib/file-scope-overlap.sh.bak" "$TMPROOT/.claude/sc
 info "8: deployed-tree reachability for scripts/lib/file-scope-overlap.sh and this suite's own file was confirmed directly against .claude/scripts/ during implementation (see the originating plan's Phase 8 completion notes) -- not re-derived here since this suite's own SCRIPT_DIR is ambiguous between a source-store and a deployed invocation and cannot reliably self-locate the deploy root."
 
 # =============================================================================
+# Group 9: session-register/acquire parity -- reproduces a multi-task batch's own
+# session-register (bare session_id, union file_scope) against per-task acquire/release/heartbeat,
+# pinning that a lock-touching call MUST present the SAME bare session_id the batch registered,
+# never a per-task-suffixed variant. Drives the real task-lock.sh CLI end to end (no hand-written
+# registry fixture) against the 820/g4_clean_candidate and 850/g23_predecessor fixture pair, which
+# are not dependency-edge-connected to each other -- exactly the "unrelated batch members" shape
+# the union-file_scope self-contention defect needs.
+# =============================================================================
+reset_sessions
+
+# 9.1 Registration case: mirrors Stage MT-1's session-register call. Assert the entry exists and
+# its file_scope is the union of the fixture 820/850 scopes (g4/clean, g23/x), proving the union
+# is computed by the CLI itself, not hand-assembled by this test.
+"$TL" session-register "sess_mt_batch" "/orchestrate (multi-task)" "820,850" >/dev/null 2>&1
+reg_entry="$SESSIONS_DIR/sess_mt_batch.json"
+c91_ok=true
+[ -f "$reg_entry" ] || { c91_ok=false; info "9.1: session-register did not create $reg_entry"; }
+if [ -f "$reg_entry" ]; then
+  reg_scope=$(jq -c '.file_scope | sort' "$reg_entry" 2>/dev/null)
+  [ "$reg_scope" = '["g23/x","g4/clean"]' ] || { c91_ok=false; info "9.1: registered file_scope was not the union of the 820/850 fixture pair: $reg_scope"; }
+fi
+if [ "$c91_ok" = true ]; then pass "9.1: session-register computes the union file_scope over the 820/850 fixture pair"; else fail "9.1: registration case failed (see INFO lines above)"; fi
+
+# 9.2 Positive case (post-fix behavior): acquiring with the SAME bare session_id the batch
+# registered must admit both fixture members -- this is the parity the fix restores.
+c92_ok=true
+if ! "$TL" acquire 820 research "sess_mt_batch" "/orchestrate (multi-task)" >/dev/null 2>/dev/null; then
+  c92_ok=false; info "9.2: bare-id acquire on fixture 820 was refused"
+fi
+"$TL" release 820 "sess_mt_batch" >/dev/null 2>&1
+if ! "$TL" acquire 850 research "sess_mt_batch" "/orchestrate (multi-task)" >/dev/null 2>/dev/null; then
+  c92_ok=false; info "9.2: bare-id acquire on fixture 850 was refused"
+fi
+"$TL" release 850 "sess_mt_batch" >/dev/null 2>&1
+if [ "$c92_ok" = true ]; then pass "9.2: acquire/release with the bare, registered session_id admits both fixture batch members"; else fail "9.2: register/acquire parity (positive) case failed (see INFO lines above)"; fi
+
+# 9.3 Negative case (regression reproduction): acquiring with the per-task-suffixed variant of the
+# SAME logical session contends against the batch's own registration -- this is the MT-1/MT-4
+# mismatch this plan fixes. Assert both the refusal (exit 1) and that the stderr names the
+# session-registry contention path specifically (via "registered session"), not some other
+# refusal reason.
+c93_neg_out=$("$TL" acquire 820 research "sess_mt_batch_820" "/orchestrate (multi-task)" 2>&1 1>/dev/null)
+c93_neg_exit=$?
+c93_ok=true
+[ "$c93_neg_exit" -eq 1 ] || { c93_ok=false; info "9.3: suffixed-id acquire on fixture 820 exited $c93_neg_exit, expected 1: $c93_neg_out"; }
+echo "$c93_neg_out" | grep -qi "registered session" || { c93_ok=false; info "9.3: suffixed-id refusal did not name the session-registry contention path: $c93_neg_out"; }
+if [ "$c93_ok" = true ]; then pass "9.3: a per-task-suffixed session_id contends against the batch's own bare-id registration (regression reproduction)"; else fail "9.3: register/acquire parity (negative) case failed (see INFO lines above)"; fi
+
+# 9.4 Heartbeat parity case: guards the implement-dispatch half of the fix -- the session_id a
+# per-phase heartbeat presents must match the bare id the acquire used, or the heartbeat is a
+# silent no-op against a foreign holder.
+"$TL" acquire 820 research "sess_mt_batch" "/orchestrate (multi-task)" >/dev/null 2>&1
+c94_hb_out=$("$TL" heartbeat 820 "sess_mt_batch" 2>&1)
+c94_ok=true
+echo "$c94_hb_out" | grep -qi "held by a different session" && { c94_ok=false; info "9.4: bare-id heartbeat on fixture 820 warned of a different-session holder: $c94_hb_out"; }
+if [ "$c94_ok" = true ]; then pass "9.4: a heartbeat presenting the same bare session_id as the acquire does not warn of a foreign holder"; else fail "9.4: heartbeat parity case failed (see INFO lines above)"; fi
+"$TL" release 820 "sess_mt_batch" >/dev/null 2>&1
+
+# 9.5 Static guard case: no lock-touching task-lock.sh call in skill-orchestrate/SKILL.md may
+# reintroduce the per-task-suffixed pattern. Mirrors Group 8's stance on SCRIPT_DIR ambiguity --
+# info-and-skip if the file is not reachable from this invocation, rather than failing.
+skill_md="$SCRIPT_DIR/../skills/skill-orchestrate/SKILL.md"
+if [ -f "$skill_md" ]; then
+  c95_ok=true
+  bad_lines=$(grep -nE 'task-lock\.sh[[:space:]]+(acquire|release|heartbeat)' "$skill_md" | grep -F '${session_id}_${task_num}' || true)
+  [ -z "$bad_lines" ] || { c95_ok=false; info "9.5: found a lock-touching call still using the per-task-suffixed session_id: $bad_lines"; }
+  if [ "$c95_ok" = true ]; then pass "9.5: no lock-touching task-lock.sh call in skill-orchestrate/SKILL.md uses the per-task-suffixed session_id"; else fail "9.5: static guard case failed (see INFO lines above)"; fi
+else
+  info "9.5: SKIPPED -- skill-orchestrate/SKILL.md not reachable at $skill_md from this invocation"
+fi
+
+"$TL" release 820 "sess_mt_batch" >/dev/null 2>&1
+"$TL" release 850 "sess_mt_batch" >/dev/null 2>&1
+reset_sessions
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo ""
