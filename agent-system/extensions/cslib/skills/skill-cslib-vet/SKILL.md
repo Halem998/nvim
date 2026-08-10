@@ -323,13 +323,10 @@ now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 # For each fix task:
 next_num=$(jq '.next_project_number' specs/state.json)
 
-jq \
-  --argjson next_num "$next_num" \
-  --arg slug "$slug" \
-  --arg title "$title" \
-  --arg desc "$description" \
-  --arg tt "cslib" \
-  --arg now "$now" \
+# One state-write.sh call: the next_project_number bump and the active_projects prepend
+# are applied under a single mutex acquisition, so concurrent creators cannot collide on
+# the same number.
+bash .claude/scripts/state-write.sh \
   '.next_project_number = ($next_num + 1) |
    .active_projects = [{
      project_number: $next_num,
@@ -343,7 +340,13 @@ jq \
      next_artifact_number: 1,
      artifacts: []
    }] + .active_projects' \
-  specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+  --session-id "$session_id" \
+  --argjson next_num "$next_num" \
+  --arg slug "$slug" \
+  --arg title "$title" \
+  --arg desc "$description" \
+  --arg tt "cslib" \
+  --arg now "$now"
 
 echo "Created fix task #$next_num: $title"
 

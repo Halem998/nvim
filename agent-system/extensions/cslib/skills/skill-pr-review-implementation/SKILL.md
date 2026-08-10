@@ -261,17 +261,16 @@ artifacts=$(jq -c '.artifacts // []' "specs/{NNN}_{SLUG}/.return-meta.json")
 
 # Add each artifact to state.json
 # Example for pr-response.md:
-jq --argjson num "$task_number" \
-   --arg path "specs/{NNN}_{SLUG}/pr-response.md" \
-   --arg summary "GitHub PR comment response for review task" \
-   '.active_projects |= map(if .project_number == $num then
+bash .claude/scripts/state-write.sh \
+  '.active_projects |= map(if .project_number == $num then
      . + {"artifacts": ((.artifacts // []) + [{"type": "pr_response", "path": $path, "summary": $summary}]),
           "next_artifact_number": ((.next_artifact_number // 1) + 1)}
      else . end)' \
-  specs/state.json > /tmp/state.tmp && mv /tmp/state.tmp specs/state.json
-
-# Regenerate TODO.md
-bash .claude/scripts/generate-todo.sh
+  --session-id "$session_id" \
+  --argjson num "$task_number" \
+  --arg path "specs/{NNN}_{SLUG}/pr-response.md" \
+  --arg summary "GitHub PR comment response for review task" \
+  --regen-todo
 ```
 
 ### Stage 8a: TTS Lifecycle Notification

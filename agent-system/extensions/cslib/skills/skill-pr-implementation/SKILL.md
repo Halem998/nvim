@@ -114,14 +114,13 @@ this task is stacked on top of another unmerged PR).
 
 ```bash
 # Write base_branch to state.json task metadata
-CSLIB_DIR="/home/benjamin/Projects/cslib"
-CSLIB_STATE="$CSLIB_DIR/specs/state.json"
 base_branch_used="main"  # or the parent branch for stacked PRs
 
-jq --argjson num "$task_number" \
-   --arg branch "$base_branch_used" \
-   '.active_projects |= map(if .project_number == $num then . + {"base_branch": $branch} else . end)' \
-   "$CSLIB_STATE" > /tmp/state.tmp && mv /tmp/state.tmp "$CSLIB_STATE"
+bash .claude/scripts/state-write.sh \
+  '.active_projects |= map(if .project_number == $num then . + {"base_branch": $branch} else . end)' \
+  --session-id "$session_id" \
+  --argjson num "$task_number" \
+  --arg branch "$base_branch_used"
 ```
 
 ### Stage 8: Git Commit

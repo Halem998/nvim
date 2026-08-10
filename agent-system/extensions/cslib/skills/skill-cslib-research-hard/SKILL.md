@@ -227,9 +227,11 @@ fi
 if [ "$status" = "researched" ]; then
   bash .claude/scripts/update-task-status.sh postflight "$task_number" research "$session_id"
 
-  jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
-      (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
-    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == $num)).next_artifact_number =
+     (((.active_projects[] | select(.project_number == $num)).next_artifact_number // 1) + 1)' \
+    --session-id "$session_id" \
+    --argjson num "$task_number"
 fi
 ```
 
