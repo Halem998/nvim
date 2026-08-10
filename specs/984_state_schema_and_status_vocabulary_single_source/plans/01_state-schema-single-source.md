@@ -227,35 +227,35 @@ set exactly.
 
 ---
 
-### Phase 2: validate-state.sh (base + --deep) and deploy Gate 10 [NOT STARTED]
+### Phase 2: validate-state.sh (base + --deep) and deploy Gate 10 [COMPLETED]
 
 **Goal**: Build the hand-rolled bash+jq validator with a `--deep` invariant mode, prove it fails
 loudly on seeded defects, and wire it into `verify-deploy.sh` as Gate 10.
 
 **Tasks**:
-- [ ] Write `scripts/validate-state.sh` following `scripts/validate-handoff.sh`'s structure
+- [x] Write `scripts/validate-state.sh` following `scripts/validate-handoff.sh`'s structure
       (argument parsing, `--help`, colored PASS/FAIL/WARN counters, hand-rolled jq shape checks
       that reference the schema file in comments only). Source `lib/status-vocabulary.sh` for the
       enum — do not re-type it. Do NOT introduce `ajv` or `python3 -m jsonschema`.
-- [ ] Base-mode checks: required top-level fields present; no unknown top-level or per-entry
+- [x] Base-mode checks: required top-level fields present; no unknown top-level or per-entry
       fields (mirroring `additionalProperties: false`); every `status` value in the enum;
       `project_number` is an integer; `task_type` is a non-empty string.
-- [ ] `--deep` mode checks: `project_number` uniqueness
+- [x] `--deep` mode checks: `project_number` uniqueness
       (`group_by(.project_number)|map(select(length>1))`); TODO.md sync (regen via
       `generate-todo.sh` to a temp file, `diff` against live `specs/TODO.md`); dependency-graph
       integrity (dangling references not resolvable in `active_projects` or
       `specs/archive/state.json`, self-references, cycles); terminal-status immutability check
       against the last-known status from git history (state.json has no previous-status field).
-- [ ] Write `scripts/tests/test-validate-state.sh` with four seeded fixtures — a stray
+- [x] Write `scripts/tests/test-validate-state.sh` with four seeded fixtures — a stray
       undocumented field, a duplicate `project_number`, an off-schema status, and a dangling
       dependency — asserting a nonzero exit and a named error line for each, plus a positive
       fixture asserting exit 0 on valid state.
-- [ ] Run `validate-state.sh` and `validate-state.sh --deep` against live `specs/state.json`;
+- [x] Run `validate-state.sh` and `validate-state.sh --deep` against live `specs/state.json`;
       if either reports a real defect, repair the live data (work item 1's repair step) and
       record what was repaired. Expect the two originally-cited defects to already be absent.
-- [ ] Add Gate 10 to `scripts/verify-deploy.sh` following the existing
+- [x] Add Gate 10 to `scripts/verify-deploy.sh` following the existing
       `# ── N. description ──` + `say`/`pass`/`fail` block convention used by Gates 1-9.
-- [ ] Register `validate-state.sh` and `tests/test-validate-state.sh` in `manifest.json`'s
+- [x] Register `validate-state.sh` and `tests/test-validate-state.sh` in `manifest.json`'s
       `provides.scripts`.
 
 **Timing**: 2 hours
@@ -284,6 +284,22 @@ if the count has changed, use the next free number rather than hardcoding 10.
   exit with a distinct named error; the positive fixture exits 0.
 - `grep -rn 'ajv\|jsonschema' scripts/validate-state.sh` returns nothing.
 - `bash scripts/verify-deploy.sh` passes with the new gate present in its output.
+
+**Phase Notes (Scope Hypothesis confirmation + honest verify-deploy.sh status)**:
+`grep -c '^# ── [0-9]' scripts/verify-deploy.sh` confirmed exactly 9 pre-existing numbered gates
+before this phase's edit, matching the hypothesis exactly -- the validator became Gate 10 as
+predicted, no renumbering needed. New Gate 10 (`validate-state.sh --deep` against
+`$TARGET/specs/state.json`) passes cleanly against live state, confirmed via a full
+`bash .claude/scripts/verify-deploy.sh` run (deployed copy, via `deploy-headless.sh` resync --
+required for Gate 10's own generate-todo.sh-backed TODO.md-sync sub-check, which needs the
+deployed tree's `deploy-root-guard.sh` to be satisfied). That same full run surfaces ONE
+pre-existing, unrelated failure at Gate 8 (`tests/run-all.sh`): `test-index-entries-schema.sh`'s
+"Rule U did not fire on a 61-line EXTENSION.md" case fails identically with this task's entire
+diff `git stash`-ed away, confirming it predates this work and is out of scope for task 984 (an
+EXTENSION.md line-count lint rule, unrelated to state.json/status-vocabulary). Every other gate,
+including Gate 10, passes. The verification bullet above ("verify-deploy.sh passes") is
+literally true only for Gate 10 itself, not the whole script's exit code, given this pre-existing
+unrelated defect at Gate 8 -- recorded here rather than silently claimed.
 
 ---
 

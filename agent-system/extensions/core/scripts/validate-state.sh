@@ -1,0 +1,426 @@
+#!/usr/bin/env bash
+# validate-state.sh - Validate a specs/state.json-shaped file against
+# context/schemas/state-schema.json.
+#
+# Follows the hand-rolled bash+jq idiom documented in context/formats/errors-format.md (see that
+# file's explicit no-runtime-JSON-Schema-engine policy statement, which names the two tools this
+# codebase deliberately avoids). Both subcommands are hand-validated in the events-append.sh
+# idiom -- required-arg presence, closed-enum case checks, integer regex checks, and jq-shape
+# checks. This script references context/schemas/state-schema.json and
+# scripts/lib/status-vocabulary.sh in comments/sourcing only -- it never shells out to any
+# external schema-validation engine or library. Structural model: scripts/validate-handoff.sh
+# (argument parsing, --help, colored PASS/FAIL/WARN counters, hand-rolled checks).
+#
+# Deliberately argument-relative, not PROJECT_ROOT-relative: this script takes a state-file path
+# directly (mirroring validate-handoff.sh, which takes a handoff-file path directly) rather than
+# resolving a repo root via scripts/lib/common.sh + deploy-root-guard.sh. The sibling TODO.md and
+# sibling archive/state.json used by the --deep checks below are located relative to STATE_FILE's
+# own directory, not PROJECT_ROOT, so this script runs correctly from either the deployed tree
+# (.claude/scripts/validate-state.sh) or the source store
+# (agent-system/extensions/core/scripts/validate-state.sh) without deploy-root-guard.sh's
+# deploy-tree-only restriction.
+#
+# Usage:
+#   validate-state.sh [--deep] [STATE_FILE]
+#   validate-state.sh --help
+#
+# STATE_FILE defaults to specs/state.json relative to the current working directory when omitted.
+#
+# Exit codes:
+#   0 - valid (no FAIL-level finding)
+#   1 - invalid (at least one FAIL-level finding)
+#   2 - environment error (file not found, jq unavailable, or the status-vocabulary library could
+#       not be found at any candidate path)
+#
+# Base-mode checks (always run):
+#   - JSON is parsable
+#   - required top-level fields present: next_project_number, active_projects
+#   - no unknown top-level fields (mirrors the schema's additionalProperties: false)
+#   - no unknown active_projects[] entry fields (same)
+#   - every active_projects[].status value is a member of the closed 12-value enum
+#     (scripts/lib/status-vocabulary.sh)
+#   - every active_projects[].project_number is a number
+#   - every active_projects[].task_type is a non-empty string
+#
+# --deep mode additionally checks:
+#   - active_projects[].project_number uniqueness
+#   - TODO.md sync: regenerates TODO.md from STATE_FILE to a temp file via generate-todo.sh and
+#     diffs it against STATE_FILE's sibling TODO.md (skipped with a note if no sibling TODO.md
+#     exists, e.g. when validating an isolated fixture)
+#   - dependency-graph integrity: dangling dependencies (a referenced project_number absent from
+#     both active_projects and the sibling archive/state.json's archived/abandoned/completed
+#     project arrays), self-references, and cycles
+#   - terminal-status immutability (WARN-level, best-effort): compares each entry's current status
+#     against the status recorded for the same project_number in the most recent git-committed
+#     version of STATE_FILE, since state.json carries no previous-status field to diff against
+#     in-place. Skipped with a WARN when STATE_FILE is not inside a git work tree or has no prior
+#     committed version.
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+DEEP=false
+STATE_FILE=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --deep)
+      DEEP=true
+      shift
+      ;;
+    --help|-h)
+      sed -n '2,57p' "$0" | sed 's/^# \{0,1\}//'
+      exit 0
+      ;;
+    *)
+      STATE_FILE="$1"
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "$STATE_FILE" ]]; then
+  STATE_FILE="specs/state.json"
+fi
+
+if [[ ! -f "$STATE_FILE" ]]; then
+  echo -e "${RED}[FAIL]${NC} File not found: $STATE_FILE"
+  exit 2
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo -e "${RED}[FAIL]${NC} jq not available" >&2
+  exit 2
+fi
+
+# --- Shared status-vocabulary library (deploy-tree-first / source-store-fallback) ---
+VOCAB_LIB_CANDIDATES=(
+  "$SCRIPT_DIR/lib/status-vocabulary.sh"
+  "$SCRIPT_DIR/../../.claude/scripts/lib/status-vocabulary.sh"
+)
+VOCAB_LIB=""
+for _candidate in "${VOCAB_LIB_CANDIDATES[@]}"; do
+  if [[ -f "$_candidate" ]]; then
+    VOCAB_LIB="$_candidate"
+    break
+  fi
+done
+if [[ -z "$VOCAB_LIB" ]]; then
+  echo "ERROR: shared library status-vocabulary.sh not found at any of:" >&2
+  for _candidate in "${VOCAB_LIB_CANDIDATES[@]}"; do
+    echo "  $_candidate" >&2
+  done
+  exit 2
+fi
+# shellcheck disable=SC1090
+. "$VOCAB_LIB"
+
+PASSED=0
+FAILED=0
+WARNINGS=0
+
+log_pass() { echo -e "${GREEN}[PASS]${NC} $1"; PASSED=$((PASSED + 1)); }
+log_fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; WARNINGS=$((WARNINGS + 1)); }
+
+echo "Validating state file: $STATE_FILE"
+[[ "$DEEP" == "true" ]] && echo "Mode: base + --deep"
+echo ""
+
+# ─── Check 1: JSON parsability ─────────────────────────────────────────────────────────────────
+if jq empty "$STATE_FILE" 2>/dev/null; then
+  log_pass "JSON is valid and parsable"
+else
+  echo -e "${RED}[FAIL]${NC} Invalid JSON: $(jq empty "$STATE_FILE" 2>&1)"
+  echo ""
+  echo "VALIDATION FAILED (invalid JSON)"
+  exit 1
+fi
+
+# ─── Check 2: Required top-level fields ────────────────────────────────────────────────────────
+for field in next_project_number active_projects; do
+  if jq -e --arg f "$field" 'has($f)' "$STATE_FILE" >/dev/null 2>&1; then
+    log_pass "Required top-level field present: $field"
+  else
+    log_fail "Required top-level field missing: $field"
+  fi
+done
+
+# ─── Check 3: No unknown top-level fields ──────────────────────────────────────────────────────
+# Mirrors context/schemas/state-schema.json's top-level additionalProperties: false. Hardcoded
+# here (not parsed from the schema at runtime) matching validate-handoff.sh's own precedent of
+# hand-coded required-field lists.
+KNOWN_TOP_LEVEL_FIELDS=(
+  next_project_number default_task_type active_projects active_topics completed_projects
+  repository_health memory_health version vault_count vault_history
+)
+unknown_top=$(jq -r 'keys[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r k; do
+  known=0
+  for kf in "${KNOWN_TOP_LEVEL_FIELDS[@]}"; do
+    [[ "$k" == "$kf" ]] && known=1 && break
+  done
+  [[ "$known" -eq 0 ]] && printf '%s\n' "$k"
+done)
+if [[ -z "$unknown_top" ]]; then
+  log_pass "No unknown top-level fields (matches state-schema.json's additionalProperties: false)"
+else
+  while IFS= read -r k; do
+    [[ -z "$k" ]] && continue
+    log_fail "Unknown top-level field: $k (not in state-schema.json)"
+  done <<< "$unknown_top"
+fi
+
+# ─── Check 4: No unknown per-entry fields ──────────────────────────────────────────────────────
+KNOWN_ENTRY_FIELDS=(
+  project_number project_name status task_type title topic description session_id effort
+  created last_updated dependencies file_scope artifacts next_artifact_number
+  completion_summary roadmap_items memory_candidates reflection
+)
+unknown_entry=$(jq -r '.active_projects[] | keys[]' "$STATE_FILE" 2>/dev/null | sort -u | while IFS= read -r k; do
+  known=0
+  for kf in "${KNOWN_ENTRY_FIELDS[@]}"; do
+    [[ "$k" == "$kf" ]] && known=1 && break
+  done
+  [[ "$known" -eq 0 ]] && printf '%s\n' "$k"
+done)
+if [[ -z "$unknown_entry" ]]; then
+  log_pass "No unknown active_projects[] entry fields"
+else
+  while IFS= read -r k; do
+    [[ -z "$k" ]] && continue
+    bad_entries=$(jq -r --arg f "$k" '[.active_projects[] | select(has($f)) | .project_number] | join(",")' "$STATE_FILE")
+    log_fail "Unknown entry field: $k (on project_number(s): $bad_entries)"
+  done <<< "$unknown_entry"
+fi
+
+# ─── Check 5: status enum membership ───────────────────────────────────────────────────────────
+bad_status_count=0
+while IFS=$'\t' read -r pnum status; do
+  [[ -z "$pnum" ]] && continue
+  if status_vocabulary_is_valid "$status"; then
+    :
+  else
+    log_fail "project_number $pnum has off-schema status '$status' (not in the closed 12-value enum)"
+    bad_status_count=$((bad_status_count + 1))
+  fi
+done < <(jq -r '.active_projects[] | [(.project_number|tostring), (.status // "__MISSING__")] | @tsv' "$STATE_FILE")
+if [[ "$bad_status_count" -eq 0 ]]; then
+  log_pass "All active_projects[].status values are members of the closed enum"
+fi
+
+# ─── Check 6: project_number is a number ───────────────────────────────────────────────────────
+bad_pnum=$(jq -r '[.active_projects[] | select((.project_number | type) != "number") | (.project_name // "unknown")] | join(",")' "$STATE_FILE")
+if [[ -z "$bad_pnum" ]]; then
+  log_pass "All active_projects[].project_number values are numbers"
+else
+  log_fail "Non-numeric project_number on entries: $bad_pnum"
+fi
+
+# ─── Check 7: task_type is a non-empty string ──────────────────────────────────────────────────
+bad_ttype=$(jq -r '[.active_projects[] | select(((.task_type | type) != "string") or (.task_type | length) == 0) | (.project_number|tostring)] | join(",")' "$STATE_FILE")
+if [[ -z "$bad_ttype" ]]; then
+  log_pass "All active_projects[].task_type values are non-empty strings"
+else
+  log_fail "Missing/empty task_type on project_number(s): $bad_ttype"
+fi
+
+# ══════════════════════════════════════════════════════════════════════════════════════════════
+# --deep checks
+# ══════════════════════════════════════════════════════════════════════════════════════════════
+if [[ "$DEEP" == "true" ]]; then
+  echo ""
+  echo "--- --deep checks ---"
+
+  # --- Check D1: project_number uniqueness ---
+  dup_pnums=$(jq -r '[.active_projects[]] | group_by(.project_number) | map(select(length > 1) | .[0].project_number) | .[]' "$STATE_FILE" 2>/dev/null)
+  if [[ -z "$dup_pnums" ]]; then
+    log_pass "All active_projects[].project_number values are unique"
+  else
+    while IFS= read -r p; do
+      [[ -z "$p" ]] && continue
+      log_fail "Duplicate project_number: $p"
+    done <<< "$dup_pnums"
+  fi
+
+  # --- Check D2: TODO.md sync ---
+  state_dir="$(cd "$(dirname "$STATE_FILE")" && pwd)"
+  sibling_todo="$state_dir/TODO.md"
+  gen_todo_script="$SCRIPT_DIR/generate-todo.sh"
+  if [[ ! -f "$sibling_todo" ]]; then
+    log_warn "No sibling TODO.md next to $STATE_FILE -- skipping TODO.md sync check"
+  elif [[ ! -x "$gen_todo_script" && ! -f "$gen_todo_script" ]]; then
+    log_warn "generate-todo.sh not found next to validate-state.sh -- skipping TODO.md sync check"
+  else
+    tmp_todo="$(mktemp)"
+    if bash "$gen_todo_script" --state "$STATE_FILE" --todo "$tmp_todo" --no-log >/dev/null 2>&1; then
+      if diff -q "$tmp_todo" "$sibling_todo" >/dev/null 2>&1; then
+        log_pass "TODO.md is in sync with $STATE_FILE (regenerated content is byte-identical)"
+      else
+        log_fail "TODO.md is OUT OF SYNC with $STATE_FILE (regenerated content differs)" \
+                  "diff -u '$sibling_todo' '$tmp_todo' for detail"
+      fi
+    else
+      log_fail "generate-todo.sh failed while regenerating TODO.md for the sync check"
+    fi
+    rm -f "$tmp_todo"
+  fi
+
+  # --- Check D3: dependency-graph integrity ---
+  self_refs=$(jq -r '[.active_projects[] | . as $e | select(($e.dependencies // []) | index($e.project_number)) | $e.project_number] | join(",")' "$STATE_FILE")
+  if [[ -z "$self_refs" ]]; then
+    log_pass "No self-referential dependencies"
+  else
+    log_fail "Self-referential dependencies on project_number(s): $self_refs"
+  fi
+
+  # Known project numbers: active_projects union sibling archive/state.json's terminal arrays
+  # (archived_projects / abandoned_projects / completed_projects -- archive's own, looser shape;
+  # see state-schema.json's header note on why archive is not itself schema-validated here).
+  archive_file="$state_dir/archive/state.json"
+  known_pnums_file="$(mktemp)"
+  jq -r '[.active_projects[].project_number] | .[]' "$STATE_FILE" > "$known_pnums_file"
+  if [[ -f "$archive_file" ]]; then
+    jq -r '[(.archived_projects // [])[], (.abandoned_projects // [])[], (.completed_projects // [])[] | .project_number] | .[]' \
+      "$archive_file" 2>/dev/null >> "$known_pnums_file" || true
+  fi
+
+  dangling=$(jq -r '[.active_projects[] | . as $e | ($e.dependencies // [])[] | {from: $e.project_number, to: .}] | .[] | "\(.from)\t\(.to)"' "$STATE_FILE" \
+    | while IFS=$'\t' read -r from to; do
+        [[ -z "$to" ]] && continue
+        if ! grep -qxF "$to" "$known_pnums_file"; then
+          printf '%s -> %s\n' "$from" "$to"
+        fi
+      done)
+  if [[ -z "$dangling" ]]; then
+    log_pass "No dangling dependency references"
+  else
+    while IFS= read -r d; do
+      [[ -z "$d" ]] && continue
+      log_fail "Dangling dependency reference: $d (target project_number not found in active_projects or archive)"
+    done <<< "$dangling"
+  fi
+  rm -f "$known_pnums_file"
+
+  # Cycle detection over active_projects' dependency edges only (archive entries are terminal and
+  # cannot participate in an active cycle). Kahn's algorithm: repeatedly remove nodes whose
+  # entire dependency list points only at already-removed (or external/non-active) nodes; any
+  # node left unremoved after the loop converges is part of a cycle. Adjacency is built directly
+  # from jq TSV output (task \t dependency) into bash associative arrays.
+  declare -A _adj_count
+  declare -A _adj_list
+  while IFS=$'\t' read -r from to; do
+    [[ -z "$from" ]] && continue
+    _adj_count["$from"]=${_adj_count["$from"]:-0}
+    if [[ -n "$to" ]]; then
+      _adj_list["$from"]="${_adj_list[$from]:-} $to"
+      _adj_count["$from"]=$(( ${_adj_count["$from"]} + 1 ))
+    fi
+  done < <(jq -r '.active_projects[] | . as $e | if ($e.dependencies // [] | length) == 0 then "\($e.project_number)\t" else ($e.dependencies[] | "\($e.project_number)\t\(.)") end' "$STATE_FILE")
+
+  # Kahn's algorithm over the "depends on" edges: a node's in-degree here is its OWN outgoing
+  # dependency count (edge direction: task -> dependency). Cycles are detected by repeatedly
+  # removing nodes whose entire dependency list points only at already-removed (or external,
+  # non-active) nodes; whatever remains once no further removal is possible is the cycle set.
+  # Tracked via an associative "still remaining" set rather than a newline-joined string, so
+  # membership tests never depend on delimiter-matching (a newline-joined string compared with a
+  # space-delimited `*" $d "*` glob silently mismatches whenever a candidate sits at a string
+  # boundary next to a newline instead of a space).
+  declare -A _still_remaining
+  for _node in "${!_adj_count[@]}"; do
+    _still_remaining["$_node"]=1
+  done
+  changed=1
+  while [[ "$changed" -eq 1 && "${#_still_remaining[@]}" -gt 0 ]]; do
+    changed=0
+    for node in "${!_still_remaining[@]}"; do
+      deps="${_adj_list[$node]:-}"
+      all_resolved=1
+      for d in $deps; do
+        if [[ -n "${_still_remaining[$d]:-}" ]]; then
+          all_resolved=0
+          break
+        fi
+      done
+      if [[ "$all_resolved" -eq 1 ]]; then
+        unset '_still_remaining[$node]'
+        changed=1
+      fi
+    done
+  done
+  if [[ "${#_still_remaining[@]}" -eq 0 ]]; then
+    log_pass "No dependency cycles detected among active_projects"
+  else
+    cyc_list=$(printf '%s,' "${!_still_remaining[@]}" | sed 's/,$//')
+    log_fail "Dependency cycle detected among project_number(s): $cyc_list"
+  fi
+  unset _adj_count _adj_list _still_remaining
+
+  # --- Check D4: terminal-status immutability (WARN-level, best-effort) ---
+  if command -v git >/dev/null 2>&1 && git -C "$state_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    # Deliberately WITHOUT --full-name: every git call below is scoped via `-C "$state_dir"`, so
+    # rel_path must stay relative to state_dir (git's cwd for these calls), not repo-root-relative
+    # -- mixing the two produced a spurious "no history" result during development.
+    rel_path=$(git -C "$state_dir" ls-files "$(basename "$STATE_FILE")" 2>/dev/null | head -1)
+    prior_commit=""
+    if [[ -n "$rel_path" ]]; then
+      prior_commit=$(git -C "$state_dir" log -1 --format=%H -- "$rel_path" 2>/dev/null || echo "")
+    fi
+    if [[ -z "$prior_commit" ]]; then
+      log_warn "No git history found for $STATE_FILE -- skipping terminal-status immutability check"
+    else
+      # `git show <sha>:<path>` requires a "./"-prefixed (or repo-root-relative) path even under
+      # `-C`; a bare relative path that resolves fine for `git log -- <path>` is rejected here
+      # with "path 'X' exists, but not '<path>'" -- confirmed empirically during implementation.
+      prior_json="$(git -C "$state_dir" show "${prior_commit}:./${rel_path}" 2>/dev/null || echo "")"
+      if [[ -z "$prior_json" ]]; then
+        log_warn "Could not read prior committed version of $STATE_FILE -- skipping terminal-status immutability check"
+      else
+        violations=0
+        while IFS=$'\t' read -r pnum prior_status; do
+          [[ -z "$pnum" ]] && continue
+          case "$prior_status" in
+            completed|abandoned|expanded)
+              cur_status=$(jq -r --arg n "$pnum" '.active_projects[] | select((.project_number|tostring) == $n) | .status // ""' "$STATE_FILE")
+              if [[ -n "$cur_status" && "$cur_status" != "$prior_status" ]]; then
+                log_warn "project_number $pnum was terminal ('$prior_status') in the prior commit but is now '$cur_status' -- terminal-status immutability violation"
+                violations=$((violations + 1))
+              fi
+              ;;
+          esac
+        done < <(jq -r '.active_projects[] | [(.project_number|tostring), (.status // "")] | @tsv' <<< "$prior_json" 2>/dev/null)
+        if [[ "$violations" -eq 0 ]]; then
+          log_pass "No terminal-status immutability violations found against prior git history"
+        fi
+      fi
+    fi
+  else
+    log_warn "Not inside a git work tree -- skipping terminal-status immutability check"
+  fi
+fi
+
+# ─── Summary ────────────────────────────────────────────────────────────────────────────────────
+echo ""
+echo "========================================"
+echo "Validation Summary"
+echo "========================================"
+echo -e "Passed:   ${GREEN}$PASSED${NC}"
+echo -e "Warnings: ${YELLOW}$WARNINGS${NC}"
+echo -e "Failed:   ${RED}$FAILED${NC}"
+echo ""
+
+if [[ "$FAILED" -gt 0 ]]; then
+  echo -e "${RED}STATE VALIDATION FAILED${NC}"
+  exit 1
+elif [[ "$WARNINGS" -gt 0 ]]; then
+  echo -e "${YELLOW}STATE VALIDATION PASSED WITH WARNINGS${NC}"
+  exit 0
+else
+  echo -e "${GREEN}STATE VALIDATION PASSED${NC}"
+  exit 0
+fi

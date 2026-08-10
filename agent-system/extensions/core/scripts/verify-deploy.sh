@@ -31,11 +31,11 @@
 #      redeploy landed is in the same position as one that established it did not.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all ten gates (gate0
-#   through gate9) plus a gate0 "could not run" sentinel, printed to stdout after the final
+#   Emits a normalized, one-per-line, machine-diffable findings set across all eleven gates (gate0
+#   through gate10) plus a gate0 "could not run" sentinel, printed to stdout after the final
 #   narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
 #   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
-#   gate label (`gate0`..`gate9`); the automated consumer is expected to invoke
+#   gate label (`gate0`..`gate10`); the automated consumer is expected to invoke
 #   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
 #   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
@@ -444,6 +444,40 @@ else
       while IFS= read -r postflight_lint_line; do
         FINDINGS_LIST+=("FINDING gate9 ${postflight_lint_line#*VIOLATION\] }")
       done < <(printf '%s\n' "$postflight_lint_output" | grep -F '[VIOLATION]')
+    fi
+  fi
+fi
+
+say ""
+
+# ── 10. specs/state.json schema validation (validate-state.sh --deep) ─────────
+# Only meaningful in the source-store repo, mirroring gates 3-4/6-7/9's SKIP-if-not-source-store
+# precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
+# skips there. Invokes the DEPLOYED copy (like gate 9), not the source-store one: validate-state.sh
+# itself is argument-relative (no PROJECT_ROOT/deploy-root-guard.sh dependency), but its --deep
+# TODO.md-sync check shells out to generate-todo.sh, which DOES require the deployed tree via
+# deploy-root-guard.sh -- so running the source-store copy here would spuriously fail that one
+# sub-check. Targets $TARGET/specs/state.json, the live state store, not a fixture.
+say "10. specs/state.json schema validation (validate-state.sh --deep)"
+CURRENT_GATE="gate10"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- state schema validation does not apply"
+elif [ ! -f "$TARGET/.claude/scripts/validate-state.sh" ]; then
+  fail "validate-state.sh not found in deployed tree (run deploy-headless.sh first)"
+elif [ ! -f "$TARGET/specs/state.json" ]; then
+  say "  [SKIP] no specs/state.json in $TARGET -- state schema validation does not apply"
+else
+  state_validate_output=$(cd "$TARGET" && bash "$TARGET/.claude/scripts/validate-state.sh" --deep "$TARGET/specs/state.json" 2>&1)
+  state_validate_status=$?
+  if [ "$state_validate_status" -eq 0 ]; then
+    pass "validate-state.sh --deep: specs/state.json passes (no FAIL-level finding)"
+  else
+    fail "validate-state.sh --deep reported FAIL-level finding(s) against specs/state.json" \
+         "re-run for detail: bash .claude/scripts/validate-state.sh --deep specs/state.json" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r state_validate_line; do
+        FINDINGS_LIST+=("FINDING gate10 ${state_validate_line#*\[FAIL\] }")
+      done < <(printf '%s\n' "$state_validate_output" | grep -F '[FAIL]')
     fi
   fi
 fi
