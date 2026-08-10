@@ -202,29 +202,36 @@ different defect (the cslib internal-duplicate shape) appearing in a new file.
 
 ---
 
-### Phase 2: Extend the Union Fix to the Two Sibling Entries in the Same File [NOT STARTED]
+### Phase 2: Extend the Union Fix to the Two Sibling Entries in the Same File [COMPLETED]
 
 **Goal**: Close the two structurally identical defects that live inside this task's declared
 file_scope, per Decision 1, so the file is not left holding known instances of the defect it was
 just edited to fix.
 
 **Tasks**:
-- [ ] For `contracts/reference-grounding.md`: confirm core declares
+- [x] For `contracts/reference-grounding.md`: confirm core declares
       `["general-research-hard-agent", "planner-hard-agent"]` and lean declares
       `["lean-research-hard-agent", "lean-implementation-hard-agent"]`. Set lean's array to the
-      4-name union of exactly those two lists -- no invented names, no omissions.
-- [ ] For `contracts/anti-analysis.md`: confirm core declares
+      4-name union of exactly those two lists -- no invented names, no omissions. *(completed:
+      lean's array now `["lean-research-hard-agent", "lean-implementation-hard-agent",
+      "general-research-hard-agent", "planner-hard-agent"]`)*
+- [x] For `contracts/anti-analysis.md`: confirm core declares
       `["general-implementation-hard-agent", "general-research-hard-agent"]` and lean declares
       `["lean-research-hard-agent", "lean-implementation-hard-agent"]`. Set lean's array to the
-      4-name union of exactly those two lists.
-- [ ] Leave `line_count` (97 and 111 respectively), `task_types`, and every other field untouched on
-      both entries.
-- [ ] Re-run the Phase 1 merge reconstruction, extended to assert on all three paths, and confirm
-      each merged entry's `load_when.agents` is the full expected union.
-- [ ] If either pair turns out on inspection to be a deliberate narrowing rather than a defect, do
+      4-name union of exactly those two lists. *(completed: lean's array now
+      `["lean-research-hard-agent", "lean-implementation-hard-agent",
+      "general-implementation-hard-agent", "general-research-hard-agent"]`)*
+- [x] Leave `line_count` (97 and 111 respectively), `task_types`, and every other field untouched on
+      both entries. *(completed: confirmed via `git diff` -- both hunks confined to `agents`
+      arrays)*
+- [x] Re-run the Phase 1 merge reconstruction, extended to assert on all three paths, and confirm
+      each merged entry's `load_when.agents` is the full expected union. *(completed: all three
+      paths' merged entries carry their full expected unions)*
+- [x] If either pair turns out on inspection to be a deliberate narrowing rather than a defect, do
       NOT force the edit: close that item as a `#### Reasoned Exclusions` record under this phase
       with `Item | Reason | Evidence` columns, and mark the phase
-      `[COMPLETED WITH EXCLUSIONS]`.
+      `[COMPLETED WITH EXCLUSIONS]`. *(completed: not applicable -- both pairs were confirmed
+      genuine instances of the same defect, no reasoned exclusion needed)*
 
 **Timing**: 30 minutes
 

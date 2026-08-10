@@ -557,7 +557,9 @@
       "load_when": {
         "agents": [
           "lean-research-hard-agent",
-          "lean-implementation-hard-agent"
+          "lean-implementation-hard-agent",
+          "general-research-hard-agent",
+          "planner-hard-agent"
         ],
         "task_types": [
           "lean4"
@@ -580,7 +582,9 @@
       "load_when": {
         "agents": [
           "lean-research-hard-agent",
-          "lean-implementation-hard-agent"
+          "lean-implementation-hard-agent",
+          "general-implementation-hard-agent",
+          "general-research-hard-agent"
         ],
         "task_types": [
           "lean4"
