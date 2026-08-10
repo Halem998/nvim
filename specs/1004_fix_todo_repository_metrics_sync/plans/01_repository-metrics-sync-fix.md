@@ -351,24 +351,28 @@ rest, noting it rather than silently widening the diff.
 
 ---
 
-### Phase 5: Wire, deploy, and prove idempotence end to end [NOT STARTED]
+### Phase 5: Wire, deploy, and prove idempotence end to end [IN PROGRESS]
 
 **Goal**: Register the new files so they actually reach a deployed tree, satisfy the third
 verification bar, and confirm the standing gates are green.
 
 **Tasks**:
-- [ ] Add `assess-repo-health.sh` and `tests/test-assess-repo-health.sh` to
+- [x] Add `assess-repo-health.sh` and `tests/test-assess-repo-health.sh` to
       `agent-system/extensions/core/manifest.json` `provides.scripts`. This allowlist is explicit —
-      an unregistered script never deploys, and the failure is silent.
-- [ ] Add an `assess-repo-health.sh` entry to the "Utility Scripts" list in
+      an unregistered script never deploys, and the failure is silent. *(completed)*
+- [x] Add an `assess-repo-health.sh` entry to the "Utility Scripts" list in
       `agent-system/extensions/core/merge-sources/claudemd.md`, describing it and naming its caller
       (`/todo`'s Sync Repository Metrics stage), matching the style of the neighbouring entries.
-- [ ] **Bar 3 (frontmatter idempotence)**: add a case to the Phase 2 suite that copies a minimal
+      *(completed)*
+- [x] **Bar 3 (frontmatter idempotence)**: add a case to the Phase 2 suite that copies a minimal
       synthetic `state.json` into the temp workdir, runs
       `generate-todo.sh --state <fixture> --todo <fixture-todo> --no-log` twice, and asserts the
       YAML frontmatter region of the two outputs is byte-identical (`diff` on the extracted
       frontmatter, or on the whole file). `generate-todo.sh` is unmodified by this plan, so this
-      case is a regression lock, not a fix — state that in the case's `info()` line.
+      case is a regression lock, not a fix — state that in the case's `info()` line. *(completed,
+      executed: PASS. generate-todo.sh requires a deployed tree (its deploy-root-guard.sh refuses
+      the source-store copy); the case loud-skips when absent per shell-script-testing.md, and ran
+      successfully against the deployed copy already present in this workspace)*
 - [ ] Run the full suite runner: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
 - [ ] Deploy and confirm both new files landed in `.claude/scripts/` and `.claude/scripts/tests/`,
       and that the deployed `.claude/commands/todo.md` carries the rewritten stage.

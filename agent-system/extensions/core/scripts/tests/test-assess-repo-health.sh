@@ -16,6 +16,12 @@
 #   Enum-conformance -- every status value observed across the cases above is checked against
 #     context/schemas/state-schema.json's `repository_health.status.enum`, read live via jq (an
 #     anti-drift check modelled on test-status-vocabulary.sh).
+#   Bar 3 (frontmatter idempotence, regression lock) -- generate-todo.sh, run twice against a
+#     fixed synthetic state.json, must leave TODO.md's YAML frontmatter region byte-identical.
+#     generate-todo.sh is unmodified by this task; this locks in the pre-existing full-overwrite
+#     behavior the plan's Phase 4 rationale depends on. Requires a deployed
+#     .claude/scripts/generate-todo.sh (its own deploy-root-guard.sh refuses the source-store
+#     copy) -- SKIPPED with a named [INFO] line, not counted as FAILED, when absent.
 #
 # Non-git-fixture note: every fixture above is built under a `mktemp -d` workdir, which is never a
 # git work tree. Every case therefore exercises assess-repo-health.sh's `find`-based enumeration
@@ -208,6 +214,70 @@ if BAR2_OUT="$(bash "$TOOL" --root "$BAR2_DIR" 2>"$WORKDIR/bar2_stderr")"; then
   assert_status_in_enum "$bar2_status" "Bar 2"
 else
   fail "Bar 2 (no-probe fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar2_stderr")"
+fi
+
+# =====================================================================
+# Bar 3: frontmatter idempotence -- generate-todo.sh, run twice against a fixed synthetic
+# state.json fixture, must leave the YAML frontmatter region byte-identical. generate-todo.sh
+# itself is UNMODIFIED by this task -- this case is a regression lock, not a fix, confirming the
+# existing full-overwrite-every-run behavior this plan's Phase 4 rationale note depends on (no
+# read-modify-write means a hand-authored frontmatter addition could never have survived, which is
+# exactly why the deleted frontmatter step in todo.md's old Step 5.7.3 could never have worked).
+#
+# generate-todo.sh requires a DEPLOYED tree specifically (its own deploy-root-guard.sh refuses to
+# run from the source-store copy, exiting with a named error) -- unlike assess-repo-health.sh and
+# state-schema.json above, there is no usable source-store fallback for this one dependency. Per
+# shell-script-testing.md's loud-skip discipline, an unavailable deployed copy is a named, visible
+# SKIP (not a silent no-op, and not counted as a FAILED case), since it reflects a missing
+# deployment rather than a defect in this suite or in generate-todo.sh.
+# =====================================================================
+GENERATE_TODO="$REPO_ROOT/.claude/scripts/generate-todo.sh"
+if [[ ! -f "$GENERATE_TODO" ]]; then
+  info "Bar 3 (frontmatter idempotence, regression lock): SKIPPED -- deployed .claude/scripts/generate-todo.sh not found. generate-todo.sh requires a deployed tree (its deploy-root-guard.sh refuses the source-store copy); deploy first, then re-run this suite to exercise Bar 3."
+else
+  info "Bar 3 (frontmatter idempotence): generate-todo.sh is UNMODIFIED by this plan -- this case is a regression lock on its existing full-overwrite-every-run behavior, not a fix."
+  BAR3_STATE="$WORKDIR/bar3_state.json"
+  cat > "$BAR3_STATE" <<'EOF'
+{
+  "next_project_number": 5,
+  "active_projects": [
+    {
+      "project_number": 1,
+      "project_name": "sample_task",
+      "status": "not_started",
+      "task_type": "general",
+      "effort": "1 hour",
+      "created": "2026-01-01T00:00:00Z",
+      "last_updated": "2026-01-01T00:00:00Z",
+      "dependencies": [],
+      "artifacts": []
+    }
+  ],
+  "repository_health": {
+    "last_assessed": "2026-01-01T00:00:00Z",
+    "status": "healthy"
+  },
+  "vault_count": 0,
+  "vault_history": []
+}
+EOF
+  BAR3_TODO_1="$WORKDIR/bar3_TODO_1.md"
+  BAR3_TODO_2="$WORKDIR/bar3_TODO_2.md"
+
+  extract_frontmatter() {
+    awk '/^---$/{c++} {print} c==2{exit}' "$1"
+  }
+
+  if bash "$GENERATE_TODO" --state "$BAR3_STATE" --todo "$BAR3_TODO_1" --no-log 2>"$WORKDIR/bar3_stderr_1" \
+     && bash "$GENERATE_TODO" --state "$BAR3_STATE" --todo "$BAR3_TODO_2" --no-log 2>"$WORKDIR/bar3_stderr_2"; then
+    if diff <(extract_frontmatter "$BAR3_TODO_1") <(extract_frontmatter "$BAR3_TODO_2") >/dev/null 2>&1; then
+      pass "Bar 3 (frontmatter idempotence): two generate-todo.sh runs against a fixed state.json produced byte-identical frontmatter"
+    else
+      fail "Bar 3 (frontmatter idempotence): frontmatter differed between two runs against the same state.json"
+    fi
+  else
+    fail "Bar 3 (frontmatter idempotence): generate-todo.sh exited non-zero; stderr: $(cat "$WORKDIR/bar3_stderr_1" "$WORKDIR/bar3_stderr_2" 2>/dev/null)"
+  fi
 fi
 
 echo ""

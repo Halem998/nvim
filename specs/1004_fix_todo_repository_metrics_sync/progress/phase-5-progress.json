@@ -1,0 +1,15 @@
+{
+  "phase": 5,
+  "phase_name": "Wire, deploy, and prove idempotence end to end",
+  "started_at": "2026-08-10T01:15:00Z",
+  "last_updated": "2026-08-10T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Register assess-repo-health.sh and tests/test-assess-repo-health.sh in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "Add assess-repo-health.sh entry to claudemd.md Utility Scripts list", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 3, "description": "Bar 3: add frontmatter-idempotence regression-lock case to the Phase 2 suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]},
+    {"id": 4, "description": "Run run-all.sh, deploy, confirm new files landed, run verify-deploy.sh, re-run deferred Phase 2/4 checks against deployed tree", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

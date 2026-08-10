@@ -125,6 +125,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 
 ### Utility Scripts
 
+- `.claude/scripts/assess-repo-health.sh` - Standalone repository-health probe: structural `bash -n`/`jq empty` checks over tracked `*.sh`/`*.json`, TODO/FIXME counts, and status derivation, emitted as one JSON `repository_health` object. Called by `/todo`'s Sync Repository Metrics stage (Step 5.6.1)
 - `.claude/scripts/export-to-markdown.sh` - Export .claude/ directory to consolidated markdown file
 - `.claude/scripts/check-extension-docs.sh` - Doc-lint: validate extension READMEs, manifests, and cross-references (exits non-zero on failures)
 - `.claude/scripts/generate-context-line-counts.sh` - Recompute `line_count` from `wc -l` for every entry in every extension's source `index-entries.json` (`--check` reports only, `--write` corrects in place)

@@ -91,6 +91,7 @@
       "skill-orchestrate-hard"
     ],
     "scripts": [
+      "assess-repo-health.sh",
       "census-count.sh",
       "check-extension-docs.sh",
       "check-runtime-file-tracking.sh",
@@ -157,6 +158,7 @@
       "test-state-write-regen-timing.sh",
       "test-task-lock-reap.sh",
       "tests/run-all.sh",
+      "tests/test-assess-repo-health.sh",
       "tests/test-census-count.sh",
       "tests/test-common-lib.sh",
       "tests/test-claude-refresh-matcher.sh",
