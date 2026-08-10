@@ -137,7 +137,7 @@
     {
       "project_number": 1002,
       "project_name": "context_tier_semantics_doc",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Author the context tier-semantics standard for the derived tier classification",
@@ -151,12 +151,17 @@
         998
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T06:18:25Z",
+      "last_updated": "2026-08-10T06:24:22Z",
       "artifacts": [
         {
           "path": "specs/1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md",
           "type": "report",
           "summary": "Research report with tier rule table, schema rationale, precedented doc location/outline, exact index-entry shape, and verification sequence."
+        },
+        {
+          "path": "specs/1002_context_tier_semantics_doc/plans/01_context-tier-semantics.md",
+          "type": "plan",
+          "summary": "Four-phase plan authoring the context tier-semantics standard, its additive index entry, and the DERIVED_TIER back-pointer comment"
         }
       ],
       "session_id": "sess_1786342011_4592c8_1002"

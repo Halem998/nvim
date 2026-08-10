@@ -1,23 +1,18 @@
 {
-  "status": "researched",
-  "summary": "Verified the DERIVED_TIER rule table and on_demand rationale live in validate-context-budgets.sh and index.schema.json. Recommend a new standards/context-tier-semantics.md (Tier 4, on_demand:true, all load_when hooks empty per every existing on-demand entry's precedent) plus a matching index-entries.json entry and a pointer comment in the script. No existing doc covers this today; all 10 tracked agents are already over budget, confirming the empty-hook choice is required to avoid worsening any cap.",
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Created a four-phase implementation plan for the context tier-semantics standard: author the new core standards doc, append one minimal index entry carrying an exact wc -l line_count, add a comment-only back-pointer in validate-context-budgets.sh, then verify against the task's stated bar. Documentation-only; the DERIVED_TIER logic stays frozen.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md",
-      "summary": "Research report with tier rule table, schema rationale, precedented doc location/outline, exact index-entry shape, and verification sequence."
+      "type": "plan",
+      "path": "specs/1002_context_tier_semantics_doc/plans/01_context-tier-semantics.md",
+      "summary": "Four-phase plan authoring the context tier-semantics standard, its additive index entry, and the DERIVED_TIER back-pointer comment"
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 4,
   "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
-  "decisions_made": [
-    "New file lands at agent-system/extensions/core/context/standards/context-tier-semantics.md, domain core / subdomain standards",
-    "Index entry uses on_demand:true with all load_when arrays empty, matching every existing on-demand entry's precedent",
-    "The derivation logic itself (DERIVED_TIER in validate-context-budgets.sh) is treated as correct and out of scope; this task is documentation-only",
-    "validate-context-budgets.sh's header comment above DERIVED_TIER should gain a one-line pointer to the new file (task WORK item 4), even though that script is outside the task's declared two-file file_scope"
-  ],
-  "dead_ends": []
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Dispatch /implement 1002. Waves: [1], [2,3], [4]. Keep the index-entries.json change strictly additive -- a later task in this batch also edits that file."
 }

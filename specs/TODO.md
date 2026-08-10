@@ -22,7 +22,7 @@ next_project_number: 1004
 995 [PLANNED] — Convert the hand-rolled specs/state.json read-modify-write sequen
   └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 1001 [PLANNED] — Fix the dormant load-order defect in lean/index-entries.json's mi
-1002 [PLANNING] — Author a context file that states the tier-classification semanti
+1002 [PLANNED] — Author a context file that states the tier-classification semanti
   └─ 999 [NOT STARTED] — Reduce the 8 standing per-agent context budget overruns that vali
     └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th (see above)
 1003 [NOT STARTED] — lean-sorry-census.sh counts every `set_option warn.sorry false in
@@ -118,11 +118,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1002. Author the context tier-semantics standard for the derived tier classification
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 998
 - **Research**: [1002_context_tier_semantics_doc/reports/01_context-tier-semantics.md]
+- **Plan**: [1002_context_tier_semantics_doc/plans/01_context-tier-semantics.md]
 
 **Description**: Author a context file that states the tier-classification semantics for context index entries. The meta-catch-all decomposition task converted validate-context-budgets.sh from reading a never-populated authored `tier` field to deriving tier algorithmically from load_when shape, at all four former read sites. The derivation is now real and load-bearing, but its ONLY authority is the derived_tier jq function and its header comment inside that one script -- there is no context file a human or an agent can read to learn what the tiers mean or why an entry lands in one.
 
