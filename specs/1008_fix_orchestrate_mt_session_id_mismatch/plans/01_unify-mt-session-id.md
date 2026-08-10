@@ -245,25 +245,28 @@ before concluding no manifest edit is owed; if it is absent, add it rather than 
 
 ---
 
-### Phase 3: State the parity invariant in the canonical lock spec [NOT STARTED]
+### Phase 3: State the parity invariant in the canonical lock spec [COMPLETED]
 
 **Goal**: A future author wiring a NEW multi-task lock consumer reads the invariant in the
 canonical spec, not only in a test assertion or a single skill's inline prose.
 
 **Tasks**:
-- [ ] Open `agent-system/extensions/core/context/patterns/task-lock.md` (source store).
-- [ ] In the "Consumers (Six Distinct Wiring Paths)" section, at the multi-task/wave-dispatch
+- [x] Open `agent-system/extensions/core/context/patterns/task-lock.md` (source store).
+      *(completed)*
+- [x] In the "Consumers (Six Distinct Wiring Paths)" section, at the multi-task/wave-dispatch
       item, add one to two sentences stating the invariant directly: the `session_id` argument
       passed to `acquire`/`release`/`heartbeat` for a task MUST be byte-identical to the
       `session_id` the same batch passed to `session-register`, because D4 exclusion 1 is an
       exact string match; a per-task-suffixed variant makes the batch's own union-scope
-      registration read as a foreign live session and refuses every member.
-- [ ] Cross-reference the item that already documents the bare-id `session-register` requirement,
-      so the two statements are reachable from each other.
-- [ ] Verify the addition sits alongside, and does not contradict, the existing "Session-Registry
-      Reader Contract" and "Same-Session Re-Entry" sections.
-- [ ] Do not cite a task number; reference the invariant and the section names as the durable
-      anchors.
+      registration read as a foreign live session and refuses every member. *(completed)*
+- [x] Cross-reference the item that already documents the bare-id `session-register` requirement,
+      so the two statements are reachable from each other. *(completed: cross-references item 5
+      and the "Session-Registry Reader Contract" section)*
+- [x] Verify the addition sits alongside, and does not contradict, the existing "Session-Registry
+      Reader Contract" and "Same-Session Re-Entry" sections. *(completed: read-through confirmed
+      no contradiction)*
+- [x] Do not cite a task number; reference the invariant and the section names as the durable
+      anchors. *(completed)*
 
 **Timing**: 0.25 hours
 

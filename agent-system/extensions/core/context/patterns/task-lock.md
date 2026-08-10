@@ -1069,6 +1069,17 @@ the same conversation) always succeeds. This property has a dedicated functional
    (see the `acquire` contract above), both of these gate-bypassing consumers dispatch tasks whose
    directory does not exist yet without any change of their own — the fix is entirely internal to
    `cmd_acquire`/`resolve_task_dir`.
+
+   **Register/acquire parity invariant**: the `session_id` argument a wave-dispatch consumer
+   passes to `acquire`/`release`/`heartbeat` for a given task MUST be byte-identical to the
+   `session_id` the same batch already passed to `session-register` (see item 5 below and the
+   "Session-Registry Reader Contract" section above), because the session-registry contention
+   pass's self-exclusion (D4) is an exact string match on `session_id`, not a prefix or
+   substring match. A per-task-suffixed variant (for example `${session_id}_${task_num}`) makes
+   the batch's own union-`file_scope` registration read as a foreign live session, and every lock
+   acquire in the batch is refused against its own registration. A new multi-task lock consumer
+   MUST reuse the exact bare `session_id` string across its `session-register` call and every
+   `acquire`/`release`/`heartbeat` call it makes on behalf of that same batch.
 3. **`init-marker` call sites** (file-granularity, independent of the two paths above):
    `skill-orchestrate/SKILL.md` Stage 2 (`.orchestrator-loop-guard` creation) and
    `skill-orchestrate-hard/SKILL.md` Stage 2 (`.orchestrator-loop-guard` AND
