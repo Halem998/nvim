@@ -288,32 +288,42 @@ canonical spec, not only in a test assertion or a single skill's inline prose.
 
 ---
 
-### Phase 4: Full verification, deploy-boundary check, and follow-up record [NOT STARTED]
+### Phase 4: Full verification, deploy-boundary check, and follow-up record [COMPLETED]
 
 **Goal**: The change set passes the repository's gates, no `.claude/**` file was hand-edited, and
 the out-of-scope sibling defect is recorded where a human will act on it.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` and confirm a
-      zero-failure summary.
-- [ ] Run `bash agent-system/extensions/core/scripts/test-session-registry.sh` and confirm it
-      still passes (no regression in the neighbouring registry suite).
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm zero unexempted findings
-      across the deliverable trees.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it still exits zero.
-- [ ] Confirm `git status --short` shows changes only under
+- [x] Run `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` and confirm a
+      zero-failure summary. *(completed: 29 passed, 0 failed, including the new Group 9)*
+- [x] Run `bash agent-system/extensions/core/scripts/test-session-registry.sh` and confirm it
+      still passes (no regression in the neighbouring registry suite). *(completed: 11 passed,
+      0 failed)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm zero unexempted findings
+      across the deliverable trees. *(completed: PASS, 0 occurrences across 4 trees)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it still exits zero.
+      *(completed: initially FAILed on deployed-content drift for
+      `scripts/test-conflict-predicate.sh` and an index-entries.json `line_count` mismatch for
+      `patterns/task-lock.md` (1167 declared vs. 1178 actual, from Phase 3's 11-line addition);
+      resolved by `generate-context-line-counts.sh --write` and `deploy-headless.sh`, then
+      re-ran to a clean 0 exit)*
+- [x] Confirm `git status --short` shows changes only under
       `agent-system/extensions/**` and `specs/**`, and specifically no modification under
-      `.claude/**`.
-- [ ] Re-run the Phase 1 Scope Hypothesis grep one final time and record the surviving
+      `.claude/**`. *(completed: confirmed — no `.claude/**` path appears; `.claude/` is
+      gitignored and the deploy regeneration in the previous item is the sanctioned exception to
+      the source-store rule)*
+- [x] Re-run the Phase 1 Scope Hypothesis grep one final time and record the surviving
       out-of-scope site list in the implementation summary as the confirmed scope evidence.
-- [ ] Record in the implementation summary the follow-up recommendation, with call sites, for the
+      *(completed — see summary)*
+- [x] Record in the implementation summary the follow-up recommendation, with call sites, for the
       structurally identical `session-register` (bare) vs. `acquire-retry` (suffixed) pattern in
       `commands/research.md`, `commands/plan.md`, and `commands/implement.md`, noting the same
       fix shape and the same regression-test pattern apply. Do not fix those files here and do
       not create the follow-up task from inside this task — surface the recommendation for the
-      orchestrator or user to act on.
-- [ ] Note in the summary that verification deliberately avoided a multi-task `/orchestrate`
+      orchestrator or user to act on. *(completed — see summary)*
+- [x] Note in the summary that verification deliberately avoided a multi-task `/orchestrate`
       invocation, per the task constraint, and that the lock-level CLI test is the substitute.
+      *(completed — see summary)*
 
 **Timing**: 0.5 hours
 
