@@ -1,0 +1,31 @@
+{
+  "status": "implemented",
+  "summary": "All 5 plan phases complete. Retired the dispatch-agent fiction (599-line architecture-spec.md deleted, 13 references cleaned across 5 files), purged 17 dead-script references across 7 files, consolidated three overlapping orchestration validation docs (1,244 lines) into one, folded docs/README.md into docs-README.md, fixed the broken jq recipe in context-discovery.md, and relocated 273 lines out of merge-sources/claudemd.md (645 -> 372) into durable homes including a new literature-owned merge source for the --lit section. Independently re-verified all Phase 5 claims (check-extension-docs.sh, generate-context-line-counts.sh --check, dangling-reference sweep, index-entries.json resolution) rather than trusting the prior uncommitted state. verify-deploy.sh shows 21/22 gates passing; the sole failure is a pre-existing, unrelated fixture assertion in test-index-entries-schema.sh (see blockers/deviation note below). All work confined to agent-system/extensions/** plus one specs/decisions/ record.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/986_docs_truth_sweep/plans/01_docs-truth-sweep.md",
+      "summary": "5-phase implementation plan; all phases marked [COMPLETED]"
+    },
+    {
+      "type": "summary",
+      "path": "specs/986_docs_truth_sweep/summaries/01_docs-truth-sweep-summary.md",
+      "summary": "Full implementation summary covering all 5 phases, deviations, and verification results"
+    },
+    {
+      "type": "decision-record",
+      "path": "specs/decisions/no-task-references-enforcement-history.md",
+      "summary": "Narrative history extracted from the no-task-references rule file during Phase 2"
+    },
+    {
+      "type": "merge-source",
+      "path": "agent-system/extensions/literature/merge-sources/claudemd.md",
+      "summary": "New literature-owned merge source: former EXTENSION.md body plus the relocated --lit documentation"
+    }
+  ],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "plan_markers_verified": true,
+  "deviation_note": "verify-deploy.sh: 21/22 gates pass. The sole failure (gate 8, shell test suite runner) traces to test-index-entries-schema.sh's 'Rule U did not fire on a 61-line EXTENSION.md' fixture assertion. Confirmed pre-existing and unrelated to this task: neither that test file (last touched by an unrelated prior task) nor check-extension-docs.sh's Rule U logic (last touched by unrelated prior tasks) was modified by any phase of this implementation, and the test exercises a synthetic fixture extension rather than any real content this task edited."
+}

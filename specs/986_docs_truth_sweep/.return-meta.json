@@ -1,7 +1,47 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 986,
-  "session_id": "sess_1786322063_3251e8_986",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/986_docs_truth_sweep/summaries/01_docs-truth-sweep-summary.md",
+      "summary": "Implementation summary covering all 5 phases, deviations, and independently re-verified verification results."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Completed the final phase (Phase 5, verification sweep) of the docs truth sweep, independently re-verifying all claims rather than trusting the prior uncommitted state: check-extension-docs.sh, generate-context-line-counts.sh --check, a dangling-reference grep sweep, and index-entries.json resolution all pass. verify-deploy.sh shows 21/22 gates passing, with the sole failure confirmed pre-existing (test-index-entries-schema.sh fixture assertion, untouched by this task). Committed the remaining uncommitted Phase 5 work (plan checkboxes plus the core/manifest.json provides.docs fix) and wrote the implementation summary."
+  },
+  "modified_files": [
+    "specs/986_docs_truth_sweep/plans/01_docs-truth-sweep.md",
+    "agent-system/extensions/core/manifest.json",
+    "specs/986_docs_truth_sweep/summaries/01_docs-truth-sweep-summary.md",
+    "specs/986_docs_truth_sweep/.orchestrator-handoff.json",
+    "specs/986_docs_truth_sweep/.return-meta.json",
+    "specs/TODO.md",
+    "specs/state.json",
+    "specs/events.jsonl"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a Phase 5 (or final) verification phase's gate run turns up a pre-existing failure unrelated to the current task's diff, confirm it with git log on the failing test file AND the code path it exercises (e.g. check-extension-docs.sh's Rule U logic) before writing it off -- if neither was touched by any commit belonging to the current task, and the test exercises a synthetic/fixture-based scenario rather than real repo content, that is sufficient proof of pre-existing/unrelated status without needing to check out prior commits.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/986_docs_truth_sweep/summaries/01_docs-truth-sweep-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["verify-deploy", "pre-existing-failure", "fixture-test", "git-log-attribution", "verification-sweep"]
+    },
+    {
+      "content": "Resuming an implementer dispatch after a prior run left work uncommitted: check `git status --porcelain` and `git diff` on the plan file FIRST -- a plan showing all phases [COMPLETED] with an uncommitted diff (rather than a stale [NOT STARTED] heading) means a prior agent run did the work but was interrupted before committing/writing final metadata. Don't re-do the work; independently re-verify the claims, then commit and close out.",
+      "category": "PATTERN",
+      "source_artifact": "specs/986_docs_truth_sweep/summaries/01_docs-truth-sweep-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["resume", "uncommitted-work", "handoff-recovery", "implementer-agent", "plan-markers"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786336261_a8153b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
