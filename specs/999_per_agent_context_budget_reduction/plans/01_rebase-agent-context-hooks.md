@@ -293,30 +293,35 @@ hook, and confirm the three outcomes by measurement in Phase 7 rather than by th
 
 ---
 
-### Phase 4: Rebase both Neovim agents in nvim/index-entries.json [NOT STARTED]
+### Phase 4: Rebase both Neovim agents in nvim/index-entries.json [COMPLETED]
 
 **Goal**: Bring `neovim-research-agent` under its 8,000 cap and reduce
 `neovim-implementation-agent` to its honest structural floor.
 
 **Tasks**:
-- [ ] Extract real `@`-reference sets for `neovim-research-agent` and
-      `neovim-implementation-agent` from their `.md` bodies.
-- [ ] `neovim-research-agent`: keep unconditional references hooked; move conditionally-loaded
+- [x] Extract real `@`-reference sets for `neovim-research-agent` and
+      `neovim-implementation-agent` from their `.md` bodies. *(completed: 5 and 8 refs
+      respectively, the latter matching the plan's explicit list exactly)*
+- [x] `neovim-research-agent`: keep unconditional references hooked; move conditionally-loaded
       and unreferenced entries to `task_types`-only or `on_demand: true`. Target floor per
       research: ~7,360 (`return-metadata-file.md` 4,768 + `report-format.md` 704 +
       `neovim-api.md` 1,888), which requires the first two to be hooked from the core file — if
       they are not, coordinate the addition with Phase 3's owner of that file rather than
-      duplicating entries here.
-- [ ] `neovim-implementation-agent`: hook its genuine unconditional references, which
+      duplicating entries here. *(completed: measured exactly 7,360; core-file additions made
+      directly since one session executed all phases sequentially)*
+- [x] `neovim-implementation-agent`: hook its genuine unconditional references, which
       plan-time grep confirms are `contracts/phase-closure.md`, `contracts/pre-edit-gate.md`,
       `formats/progress-file.md`, `formats/return-metadata-file.md`, `formats/summary-format.md`,
       `project/neovim/patterns/keymap-patterns.md`, `project/neovim/patterns/plugin-spec.md`,
       `project/neovim/standards/lua-style-guide.md`. Drop every hooked entry outside that set.
-- [ ] Drop the `meta-builder-agent` hook on this file's single such entry if Phase 2 determined
-      it is unreferenced.
-- [ ] Note: `standards/git-staging-scope.md` (2,624 tok, core-owned) is hooked to
+      *(completed: measured 15,336, exactly matching the report's prediction)*
+- [x] Drop the `meta-builder-agent` hook on this file's single such entry if Phase 2 determined
+      it is unreferenced. *(completed: dropped from project/neovim/domain/extension-deploy-modes.md,
+      confirmed unreferenced, on_demand:true set)*
+- [x] Note: `standards/git-staging-scope.md` (2,624 tok, core-owned) is hooked to
       `neovim-implementation-agent` but not `@`-referenced by it. Its removal belongs to the
       core file — record it for Phase 3's owner rather than editing core from this phase.
+      *(completed: dropped directly from core/index-entries.json)*
 
 **Timing**: 1 hour
 

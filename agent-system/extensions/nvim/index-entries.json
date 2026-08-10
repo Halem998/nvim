@@ -17,10 +17,7 @@
       "summary": "Neovim configuration domain overview",
       "line_count": 96,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -43,10 +40,7 @@
       "summary": "Common Lua patterns and idioms for Neovim",
       "line_count": 207,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -70,8 +64,7 @@
       "line_count": 236,
       "load_when": {
         "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
+          "neovim-research-agent"
         ],
         "task_types": [
           "neovim"
@@ -95,9 +88,7 @@
       "summary": "Neovim plugin ecosystem overview",
       "line_count": 165,
       "load_when": {
-        "agents": [
-          "neovim-research-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -120,10 +111,7 @@
       "summary": "LSP configuration and integration in Neovim",
       "line_count": 188,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -146,9 +134,7 @@
       "summary": "Autocommand patterns and best practices",
       "line_count": 228,
       "load_when": {
-        "agents": [
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -171,9 +157,7 @@
       "summary": "Filetype plugin patterns and organization",
       "line_count": 212,
       "load_when": {
-        "agents": [
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -271,9 +255,7 @@
       "summary": "Testing patterns for Neovim configuration",
       "line_count": 238,
       "load_when": {
-        "agents": [
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -296,9 +278,7 @@
       "summary": "Template for creating new ftplugin files",
       "line_count": 273,
       "load_when": {
-        "agents": [
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -321,9 +301,7 @@
       "summary": "Template for creating new plugin specs",
       "line_count": 239,
       "load_when": {
-        "agents": [
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -346,10 +324,7 @@
       "summary": "Guide to lazy.nvim plugin manager",
       "line_count": 311,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -372,10 +347,7 @@
       "summary": "Guide to telescope.nvim fuzzy finder",
       "line_count": 290,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -398,10 +370,7 @@
       "summary": "Guide to nvim-treesitter integration",
       "line_count": 250,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -425,10 +394,7 @@
       "summary": "Unicode box-drawing character reference for UI elements",
       "line_count": 53,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -452,10 +418,7 @@
       "summary": "README requirements, structure template, and style guidelines",
       "line_count": 40,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -479,10 +442,7 @@
       "summary": "Character encoding guidelines and approved emoji alternatives",
       "line_count": 33,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -506,9 +466,7 @@
       "summary": "Correct string:match() assertion usage for Lua tests",
       "line_count": 40,
       "load_when": {
-        "agents": [
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -532,10 +490,7 @@
       "summary": "WezTerm terminal integration for Neovim workflow",
       "line_count": 283,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -564,10 +519,7 @@
       "summary": "Hook-based readiness signaling, TTS notifications, and STT voice input for Neovim",
       "line_count": 335,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -595,10 +547,7 @@
       "summary": "TTS/STT setup, configuration, and troubleshooting for Claude Code and Neovim",
       "line_count": 372,
       "load_when": {
-        "agents": [
-          "neovim-research-agent",
-          "neovim-implementation-agent"
-        ],
+        "agents": [],
         "task_types": [
           "neovim"
         ]
@@ -621,11 +570,10 @@
       "summary": "Two deploy mechanisms (symlink installer, copy engine) for extension artifacts and their ownership rule",
       "line_count": 122,
       "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
+        "agents": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     }
   ]
 }

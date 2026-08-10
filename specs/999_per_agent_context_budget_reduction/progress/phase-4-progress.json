@@ -1,0 +1,54 @@
+{
+  "phase": 4,
+  "phase_name": "Rebase both Neovim agents in nvim/index-entries.json",
+  "started_at": "2026-08-10T01:45:00Z",
+  "last_updated": "2026-08-10T02:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extract real @-reference sets for both Neovim agents",
+      "status": "done",
+      "files_touched": [],
+      "note": "neovim-research-agent: 5 refs (2 core-owned: return-metadata-file.md, report-format.md; 3 nvm-owned: README.md, neovim-api.md, plugin-ecosystem.md). neovim-implementation-agent: 8 refs, exactly matching the plan's explicit list (5 core-owned core bundle + 3 nvm-owned: lua-style-guide.md, plugin-spec.md, keymap-patterns.md)."
+    },
+    {
+      "id": 2,
+      "description": "neovim-research-agent: keep unconditional refs, move conditional/unreferenced to task_types-only",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nvim/index-entries.json", "agent-system/extensions/core/index-entries.json"],
+      "note": "Dropped 13 of 14 hooked nvm-owned entries (all already carried task_types:[neovim], so no on_demand needed), keeping only project/neovim/domain/neovim-api.md. Per the plan/report's Finding 4 explicit floor computation (~7,360), README.md and plugin-ecosystem.md were deliberately dropped despite being genuinely @-referenced -- the same 'referenced but rare/conditional -> drop' treatment applied to general-research-agent's checkpoint-before-overflow.md in Phase 3. Added neovim-research-agent to the two core-owned entries (formats/return-metadata-file.md, formats/report-format.md), coordinating the core-file addition directly since this session executes all phases sequentially rather than via separate file-scoped agents."
+    },
+    {
+      "id": 3,
+      "description": "neovim-implementation-agent: hook its 8 genuine unconditional references, drop the rest",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nvim/index-entries.json", "agent-system/extensions/core/index-entries.json"],
+      "note": "Dropped 19 of 22 hooked nvm-owned entries (all retained task_types:[neovim], no on_demand needed), keeping lua-style-guide.md+plugin-spec.md+keymap-patterns.md (6,088 tok). Added neovim-implementation-agent to the 5 core-owned core-bundle entries (return-metadata-file.md, progress-file.md, summary-format.md, phase-closure.md, pre-edit-gate.md -- previously not hooked to this agent at all, confirming the plan's under-inclusion finding)."
+    },
+    {
+      "id": 4,
+      "description": "Drop the meta-builder-agent hook on project/neovim/domain/extension-deploy-modes.md (Phase 2 deferred item)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nvim/index-entries.json"],
+      "note": "Confirmed unreferenced by meta-builder-agent.md (zero grep matches for 'extension-deploy-modes'). Dropped; all hooks (agents/task_types, no commands key) became empty, so on_demand:true was set (this is the single Dead-Entry-Check-relevant on_demand marker from this phase)."
+    },
+    {
+      "id": 5,
+      "description": "Drop standards/git-staging-scope.md's neovim-implementation-agent hook (Phase 4's own note, core file)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"],
+      "note": "Confirmed not @-referenced by neovim-implementation-agent.md. Dropped; commands[] hook (5 commands) kept the entry non-empty, no on_demand needed."
+    },
+    {
+      "id": 6,
+      "description": "Verify: schema test, regenerate, measure both outcomes",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-index-entries-schema.sh: 8/1 identical baseline. After deploy-headless.sh: neovim-research-agent 7360/8000 OK (exact plan target), neovim-implementation-agent 15336/8000 OVER:7336 (exact report prediction, recorded for Phase 8). meta-builder-agent incidentally dropped 14272 -> 13296 (the 976-tok extension-deploy-modes.md removal). Dead Entry Check: 0. Overall Violations: 5 (down from 6)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
