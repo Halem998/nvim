@@ -42,7 +42,7 @@
     {
       "project_number": 999,
       "project_name": "per_agent_context_budget_reduction",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Reduce the 8 per-agent context budget overruns",
@@ -62,7 +62,7 @@
         1002
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T07:28:06Z",
+      "last_updated": "2026-08-10T07:57:10Z",
       "artifacts": [
         {
           "path": "specs/999_per_agent_context_budget_reduction/reports/01_reduce-agent-budget-overruns.md",

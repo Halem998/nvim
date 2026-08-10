@@ -11,16 +11,15 @@ next_project_number: 1007
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 999,1004 | -- | agent-system |
-| 2 | 996,1005 | 999,1004 | agent-system |
+| 1 | 996,1004 | -- | agent-system |
+| 2 | 1005 | 1004 | agent-system |
 | 3 | 1006 | 1005 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-999 [IMPLEMENTING] — Reduce the 8 standing per-agent context budget overruns that vali
-  └─ 996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
+996 [NOT STARTED] — Capstone acceptance gate for the agent-system refactor: verify th
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
@@ -451,7 +450,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 999. Reduce the 8 per-agent context budget overruns
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 991, Task 992, Task 986, Task 998, Task 1002
