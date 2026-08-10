@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "summary": "Created a 10-phase plan converting ~94 hand-rolled specs/state.json read-modify-write sites across 46 source-store files to state-write.sh, plus a new permanently-wired lint-state-writer-boundary.sh with fixture test and verify-deploy gate 12. The research report's open scope-boundary question is resolved explicitly as INCLUDE: the 16 commands/*.md survivor files are in scope, because the task's own VERIFICATION BAR says FULL source store and file_scope is descriptive, not a contract boundary.",
+  "status": "implemented",
+  "summary": "All 10 phases complete. Every hand-rolled specs/state.json read-modify-write site across founder/present/lean/cslib skills, founder/present/epidemiology commands/, and two core residuals now routes through state-write.sh. lint-state-writer-boundary.sh is authored, fixture-tested (8/8), and wired as verify-deploy.sh gate 12 (passes cleanly). Phase 9 is closed COMPLETED WITH EXCLUSIONS: gate 12 itself passes, but verify-deploy.sh's overall exit stays red due to one pre-existing, unrelated REPO_ROOT path-depth defect in five tests/run-all.sh suites plus one unrelated EXTENSION.md-length assertion, none of which any phase of this task touches -- evidenced and recorded as a follow-up, not fixed in-scope. Full-source-store grep returns 19 hits, all evidenced against the plan's six exclusion classes (two classes gained new, in-scope instances from this task's own lint/fixture files). Dry-run smoke test and $CSLIB_STATE direct-file confirmation both passed.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/995_convert_extension_state_writers_to_state_write/summaries/01_convert-extension-state-writers-summary.md",
+      "summary": "Full execution summary with the evidenced grep/exclusion accounting, dry-run smoke test results, and three recorded follow-ups."
+    },
     {
       "type": "plan",
       "path": "specs/995_convert_extension_state_writers_to_state_write/plans/01_convert-extension-state-writers.md",
-      "summary": "10-phase conversion plan with 4 dependency waves, per-phase verification tiers, and an enumerated evidenced exclusion list."
+      "summary": "10-phase plan with all phase-heading markers reconciled to their verified terminal states (9 x [COMPLETED], phase 9 x [COMPLETED WITH EXCLUSIONS] with a Reasoned Exclusions record)."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 10,
   "phases_total": 10,
   "blockers": [],
-  "next_action_hint": "Dispatch /implement 995. Phase 1 establishes the baseline inventory and conversion recipe; phases 2-8 are parallel-capable over disjoint file territories; phase 9 wires the lint (atomic-batch) and must follow all conversions."
+  "next_action_hint": "Task is ready for postflight/status-sync to [COMPLETED]. Optional follow-up task worth spawning: fix the pre-existing verify-deploy.sh gate-8 REPO_ROOT path-depth defect (5 affected test scripts) recorded in the Follow-ups section of the summary -- out of scope for this task."
 }
