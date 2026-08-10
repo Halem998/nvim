@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Unify the lock/registry session-id in all three command files",
+  "started_at": "2026-08-10T00:00:00Z",
+  "last_updated": "2026-08-10T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm occurrence set (6 hits, 2 per file)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Fix acquire-retry/release call sites and add invariant note in research.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/research.md"]},
+    {"id": 3, "description": "Fix acquire-retry/release call sites and add invariant note in plan.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/plan.md"]},
+    {"id": 4, "description": "Fix acquire-retry/release call sites and add invariant note in implement.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/implement.md"]},
+    {"id": 5, "description": "Rewrite Step 2 rationalization prose in all three files", "status": "done", "files_touched": ["agent-system/extensions/core/commands/research.md", "agent-system/extensions/core/commands/plan.md", "agent-system/extensions/core/commands/implement.md"]},
+    {"id": 6, "description": "Re-run fixed-string sweep and confirm via ERE-scoped guard shape", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

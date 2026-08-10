@@ -1,28 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "task_number": 1016,
-  "task_type": "meta",
-  "session_id": "sess_1786386280_bc7e55_1016",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/1016_fix_command_register_acquire_session_id_parity/plans/01_register-acquire-parity-fix.md",
-      "summary": "Five-phase plan unifying the batch session-id across session-register/acquire-retry/release in research.md, plan.md, implement.md; correcting the inline rationalization prose; threading the bare batch id into implement.md's per-task skill dispatch to fix the Stage 4D dual-heartbeat gap; reconciling task-lock.md's contradictory same-session-bypass passage; and extending test-conflict-predicate.sh Group 9 with sibling static guards."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 3,
-  "dependency_waves": [[1, 3], [2], [4], [5]],
-  "memory_candidates": [
-    {
-      "content": "Lock/registry session ids and per-task bookkeeping session ids are two different things in this agent system, and conflating them is a live defect class. Any value passed to task-lock.sh session-register / acquire / acquire-retry / release / heartbeat / session-heartbeat for one batch MUST be one byte-identical bare session id, because session_contention()'s self-exclusion (in scripts/lib/file-scope-overlap.sh) is an exact string match on session_id: a per-task-suffixed variant makes the batch's own union-file_scope registration read as a foreign live session and refuses every acquire in the batch against itself. Per-task-suffixed ids remain correct for NON-lock purposes (skill_preflight_update bookkeeping, the Agent context id surfaced in .return-meta.json, commit trailers). When a downstream agent fires two heartbeats (task-lock heartbeat + session-heartbeat) from one context session_id, both can only succeed if the dispatching caller threads the bare batch id into the dispatch args -- fix that at the caller that owns the value, not in the agent. Note also that instruction-document prose can actively rationalize such a defect as intentional; the prose must be corrected in the same phase as the call site, or it re-teaches the bug.",
-      "category": "PATTERN",
-      "source_artifact": "specs/1016_fix_command_register_acquire_session_id_parity/plans/01_register-acquire-parity-fix.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["task-lock", "session-id-parity", "session_contention", "file_scope", "multi-task-batch", "heartbeat"]
-    }
-  ],
-  "next_steps": "Run /implement 1016 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786386280_bc7e55",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

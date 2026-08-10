@@ -163,10 +163,10 @@ batch_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ```
 
 Register the in-flight session registry entry for this batch. **Use the bare `batch_session_id`
-here — never a `_${task_num}`-suffixed derivative.** Step 3 below suffixes the same variable
-per-task for its own task-lock acquire/release calls; the registry entry is batch-scoped, not
-per-task, so it stays keyed on the unsuffixed value. Best-effort and non-blocking (a registration
-failure must never affect any admission or dispatch decision):
+here — never a `_${task_num}`-suffixed derivative.** Step 3 below uses this SAME bare value for
+every per-task `acquire-retry`/`release` call — register and acquire must present byte-identical
+session ids or the batch contends against its own registration. Best-effort and non-blocking (a
+registration failure must never affect any admission or dispatch decision):
 
 ```bash
 bash .claude/scripts/task-lock.sh session-register "$batch_session_id" "/plan (multi-task)" "$(IFS=,; echo "${validated_tasks[*]}")" 2>/dev/null || true
@@ -238,11 +238,19 @@ For each validated task, invoke the appropriate planner skill using parallel Ski
 
 1. Extract task_type per task from state.json
 2. Route each task to the appropriate planner skill (extension routing or default `skill-planner`)
-3. **Before** invoking the skill for a task: `bash .claude/scripts/task-lock.sh acquire-retry "$task_num" plan "${batch_session_id}_${task_num}" "/plan (multi-task)"`. If this refuses (exit 1 — still locked by a genuinely different session after the bounded retry budget; same-session re-entry never refuses and never enters the retry wait), move that task from `validated_tasks` to `skipped_tasks`/`invalid_tasks` with reason `"locked by another session"` and do NOT invoke its skill this run.
+3. **Before** invoking the skill for a task: `bash .claude/scripts/task-lock.sh acquire-retry "$task_num" plan "$batch_session_id" "/plan (multi-task)"`. If this refuses (exit 1 — still locked by a genuinely different session after the bounded retry budget; same-session re-entry never refuses and never enters the retry wait), move that task from `validated_tasks` to `skipped_tasks`/`invalid_tasks` with reason `"locked by another session"` and do NOT invoke its skill this run.
+
+   **Invariant**: the bare `$batch_session_id` is used here deliberately — it MUST be byte-identical
+   to the value Step 2 passed to `session-register` and Step 2.5 passed as `--session-id`, because
+   `session_contention()`'s self-exclusion is an exact string match on `session_id`. A
+   per-task-suffixed value (`${batch_session_id}_${task_num}`) would make this batch's own
+   union-`file_scope` registration read as a foreign live session and refuse every lock acquire in
+   the batch against its own registration. See `.claude/context/patterns/task-lock.md`'s
+   "Register/acquire parity invariant".
 4. Invoke all skills in a single message (parallel execution, one skill per task)
 5. Each skill runs the full single-task planning lifecycle independently (preflight, agent delegation, postflight)
 6. Collect text results from all skills; read `.return-meta.json` in each task directory for structured data if needed
-7. **After** each task's skill invocation completes (success, partial, or failed): `bash .claude/scripts/task-lock.sh release "$task_num" "${batch_session_id}_${task_num}"` — unconditional, run regardless of outcome.
+7. **After** each task's skill invocation completes (success, partial, or failed): `bash .claude/scripts/task-lock.sh release "$task_num" "$batch_session_id"` — unconditional, run regardless of outcome.
 
 **Note**: Batch dispatch is handled directly by this command's orchestrator loop via parallel Skill tool calls, not by a separate batch skill.
 

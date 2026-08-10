@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1016
 
 - **Task**: 1016 - Fix the register-bare/acquire-suffixed session-id pattern in research.md, plan.md, implement.md
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None (the reference fix in `skill-orchestrate/SKILL.md` Stage MT-4 has already landed)
 - **Research Inputs**: specs/1016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md
@@ -105,19 +105,19 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Unify the lock/registry session-id in all three command files [NOT STARTED]
+### Phase 1: Unify the lock/registry session-id in all three command files [COMPLETED]
 
 **Goal**: Every `task-lock.sh` lock-family call in the three multi-task command files presents the
 same bare `$batch_session_id` the batch registered, and the surrounding prose states why.
 
 **Tasks**:
-- [ ] Confirm the occurrence set first: `grep -rnF '${batch_session_id}_${task_num}' agent-system/extensions/core/` — expect exactly six hits, two per command file (`acquire-retry`, `release`). Record the actual count; if it differs from six, stop and reconcile before editing.
-- [ ] In `agent-system/extensions/core/commands/research.md` Step 3: change the `acquire-retry` argument (line ~234) and the `release` argument (line ~238) from `"${batch_session_id}_${task_num}"` to `"$batch_session_id"`.
-- [ ] In `agent-system/extensions/core/commands/plan.md` Step 3: same change at lines ~241 and ~245.
-- [ ] In `agent-system/extensions/core/commands/implement.md` Step 3: same change at lines ~155 and ~159.
-- [ ] In each of the three files, add an inline invariant note immediately after the `acquire-retry` bullet, ported from `skill-orchestrate/SKILL.md` Stage MT-4's already-landed comment. Suggested wording (identical in all three, varying only the command name): *"**Invariant**: the bare `$batch_session_id` is used here deliberately — it MUST be byte-identical to the value Step 2 passed to `session-register` and Step 2.5 passed as `--session-id`, because `session_contention()`'s self-exclusion is an exact string match on `session_id`. A per-task-suffixed value (`${batch_session_id}_${task_num}`) would make this batch's own union-`file_scope` registration read as a foreign live session and refuse every lock acquire in the batch against its own registration. See `.claude/context/patterns/task-lock.md`'s 'Register/acquire parity invariant'."*
-- [ ] In each of the three files, rewrite the Step 2 rationalization sentence (`research.md` ~158-161, `plan.md` ~165-168, `implement.md` ~82-85). Delete the clause "Step 3 below suffixes the same variable per-task for its own task-lock acquire/release calls; the registry entry is batch-scoped, not per-task, so it stays keyed on the unsuffixed value" and replace it with: *"Step 3 below uses this SAME bare value for every per-task `acquire-retry`/`release` call — register and acquire must present byte-identical session ids or the batch contends against its own registration."* Keep the surrounding "Use the bare `batch_session_id` here" bolded sentence and the "best-effort and non-blocking" clause intact.
-- [ ] Re-run the fixed-string sweep; expect zero hits across the whole source store.
+- [x] Confirm the occurrence set first: `grep -rnF '${batch_session_id}_${task_num}' agent-system/extensions/core/` — expect exactly six hits, two per command file (`acquire-retry`, `release`). Record the actual count; if it differs from six, stop and reconcile before editing. *(completed: confirmed exactly 6 hits, 2 per file)*
+- [x] In `agent-system/extensions/core/commands/research.md` Step 3: change the `acquire-retry` argument (line ~234) and the `release` argument (line ~238) from `"${batch_session_id}_${task_num}"` to `"$batch_session_id"`. *(completed)*
+- [x] In `agent-system/extensions/core/commands/plan.md` Step 3: same change at lines ~241 and ~245. *(completed)*
+- [x] In `agent-system/extensions/core/commands/implement.md` Step 3: same change at lines ~155 and ~159. *(completed)*
+- [x] In each of the three files, add an inline invariant note immediately after the `acquire-retry` bullet, ported from `skill-orchestrate/SKILL.md` Stage MT-4's already-landed comment. Suggested wording (identical in all three, varying only the command name): *"**Invariant**: the bare `$batch_session_id` is used here deliberately — it MUST be byte-identical to the value Step 2 passed to `session-register` and Step 2.5 passed as `--session-id`, because `session_contention()`'s self-exclusion is an exact string match on `session_id`. A per-task-suffixed value (`${batch_session_id}_${task_num}`) would make this batch's own union-`file_scope` registration read as a foreign live session and refuse every lock acquire in the batch against its own registration. See `.claude/context/patterns/task-lock.md`'s 'Register/acquire parity invariant'."* *(completed)*
+- [x] In each of the three files, rewrite the Step 2 rationalization sentence (`research.md` ~158-161, `plan.md` ~165-168, `implement.md` ~82-85). Delete the clause "Step 3 below suffixes the same variable per-task for its own task-lock acquire/release calls; the registry entry is batch-scoped, not per-task, so it stays keyed on the unsuffixed value" and replace it with: *"Step 3 below uses this SAME bare value for every per-task `acquire-retry`/`release` call — register and acquire must present byte-identical session ids or the batch contends against its own registration."* Keep the surrounding "Use the bare `batch_session_id` here" bolded sentence and the "best-effort and non-blocking" clause intact. *(completed)*
+- [x] Re-run the fixed-string sweep; expect zero hits across the whole source store. *(completed: the naive flat `grep -rnF` now shows 3 hits, one per file — these are the newly-added invariant notes' own descriptive mention of the bad pattern as an illustrative example, exactly mirroring `skill-orchestrate/SKILL.md`'s own reference invariant note at its line 1966, which contains the identical self-referential mention and is not itself a lock-family call site. The actual guard — `grep -nE 'task-lock\.sh[[:space:]]+(acquire|release|heartbeat)' | grep -F '...'`, i.e. Group 9's real mechanism — correctly returns zero for all three files since the invariant-note lines never match the ERE for an actual `task-lock.sh acquire/release/heartbeat` call line. Confirmed directly: `grep -nF 'task-lock.sh acquire-retry'` and `grep -nF 'task-lock.sh release'` across all three files show only the bare `"$batch_session_id"` form.)*
 
 **Timing**: 45 minutes
 
