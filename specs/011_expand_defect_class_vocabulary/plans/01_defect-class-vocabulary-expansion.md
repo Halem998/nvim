@@ -147,39 +147,41 @@ too and note the discrepancy in the summary rather than silently skipping it.
 
 ---
 
-### Phase 2: Define the three classes in system-defect-discrimination.md [NOT STARTED]
+### Phase 2: Define the three classes in system-defect-discrimination.md [COMPLETED]
 
 **Goal**: The canonical Signal A table defines all thirteen classes, and the extension-decision
 section records this addition in the same style as the prior five-instance extension.
 
 **Tasks**:
-- [ ] Read the Signal A table and the "Extending the Signal A vocabulary is an explicit decision,
-      not a silent act" section in full before editing.
-- [ ] Append three rows to the Signal A table, after the `STATE_SYNC_DIVERGENCE` row, matching the
+- [x] Read the Signal A table and the "Extending the Signal A vocabulary is an explicit decision,
+      not a silent act" section in full before editing. *(completed)*
+- [x] Append three rows to the Signal A table, after the `STATE_SYNC_DIVERGENCE` row, matching the
       existing two-column format (`Instance` = `` `CLASS` `` followed by an em-dash one-line
       definition; `Where it is already computed` = **not currently computed anywhere**, following
-      the `ARTIFACTS_MISSING_ON_SUCCESS` row's convention verbatim):
-  - [ ] `SESSION_LOCK_CONTENTION` — a task-lock acquire/release call keyed to a session-id string
+      the `ARTIFACTS_MISSING_ON_SUCCESS` row's convention verbatim): *(completed)*
+  - [x] `SESSION_LOCK_CONTENTION` — a task-lock acquire/release call keyed to a session-id string
         that does not match the session-id used to register the same unit of work elsewhere (e.g.
         batch admission), so exact-match self-exclusion logic spuriously contends against the
-        caller's own registration.
-  - [ ] `HOOK_REGEX_BOUNDARY_DEFECT` — a validation hook's regex or path-depth pattern encodes an
+        caller's own registration. *(completed)*
+  - [x] `HOOK_REGEX_BOUNDARY_DEFECT` — a validation hook's regex or path-depth pattern encodes an
         unstated boundary assumption (e.g. a fixed digit-count quantifier) that silently breaks once
         real inputs cross that boundary, wrongly rejecting (or wrongly accepting) otherwise-valid
-        inputs.
-  - [ ] `DEPLOY_ORPHAN_DRIFT` — a file or index entry present in the deployed tree with no
+        inputs. *(completed)*
+  - [x] `DEPLOY_ORPHAN_DRIFT` — a file or index entry present in the deployed tree with no
         corresponding source-store owner, surviving indefinitely because the deploy/merge routine is
-        purely additive with no stale-entry pruning step.
-- [ ] Add a short paragraph to the extension-decision section, parallel in structure to the existing
+        purely additive with no stale-entry pruning step. *(completed)*
+- [x] Add a short paragraph to the extension-decision section, parallel in structure to the existing
       five-instance paragraph: name the three new instances, state they were added deliberately to
       name three concrete recorded defect shapes, and state that no existing instance was reworded
-      or reinterpreted and no recorder was wired.
-- [ ] Describe the grounding defects by shape (lock/session self-contention, hook-regex path-depth
+      or reinterpreted and no recorder was wired. *(completed)*
+- [x] Describe the grounding defects by shape (lock/session self-contention, hook-regex path-depth
       boundary, deploy ghost index entries / undercounted orphan files) rather than by raw
       `err_...` identifier, matching this document's existing citation style, which names prior
-      additions by class name only.
-- [ ] Re-grep the file for `\bten\b` and any other bare count word describing the vocabulary; update
-      if present (see Scope Hypothesis).
+      additions by class name only. *(completed)*
+- [x] Re-grep the file for `\bten\b` and any other bare count word describing the vocabulary; update
+      if present (see Scope Hypothesis). *(completed: only hit is "ten pre-existing instances" in
+      the newly-added paragraph itself, an accurate count of unchanged prior rows, not a stale
+      vocabulary-size total — left as-is)*
 
 **Timing**: 0.75 hours
 

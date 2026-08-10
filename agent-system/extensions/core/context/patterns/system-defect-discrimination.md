@@ -86,6 +86,9 @@ decision, not silently done by a detection site):
 | `TASK_REFERENCE_IN_DELIVERABLE` — a task-number citation in a deliverable outside `specs/**` | `hooks/validate-no-task-references.sh` |
 | `ARTIFACT_FORMAT_VIOLATION` — an artifact write under `specs/*/{plans,reports,summaries}/*.md` that fails format validation | `hooks/validate-plan-write.sh` |
 | `STATE_SYNC_DIVERGENCE` — `state.json`/`TODO.md` desynchronization | `hooks/validate-state-sync.sh` |
+| `SESSION_LOCK_CONTENTION` — a task-lock acquire/release call keyed to a session-id string that does not match the session-id used to register the same unit of work elsewhere (e.g. batch admission), so exact-match self-exclusion logic spuriously contends against the caller's own registration | **not currently computed anywhere** |
+| `HOOK_REGEX_BOUNDARY_DEFECT` — a validation hook's regex or path-depth pattern encodes an unstated boundary assumption (e.g. a fixed digit-count quantifier) that silently breaks once real inputs cross that boundary, wrongly rejecting (or wrongly accepting) otherwise-valid inputs | **not currently computed anywhere** |
+| `DEPLOY_ORPHAN_DRIFT` — a file or index entry present in the deployed tree with no corresponding source-store owner, surviving indefinitely because the deploy/merge routine is purely additive with no stale-entry pruning step | **not currently computed anywhere** |
 
 Not every instance above yet has a working detector — see the `ARTIFACTS_MISSING_ON_SUCCESS` row:
 it defines what counts as a violation of this kind, not what currently fires. Building a detector
@@ -130,6 +133,18 @@ stale-handoff gate and Class (c)'s five hooks). None of the five pre-existing in
 reworded or reinterpreted to cover a new site; each new instance names a site that previously
 mapped to no Signal A instance at all. This is recorded here, in the document that owns the
 enum, rather than left implicit in a recorder's validation logic.
+
+A further three instances (`SESSION_LOCK_CONTENTION`, `HOOK_REGEX_BOUNDARY_DEFECT`,
+`DEPLOY_ORPHAN_DRIFT`) were added deliberately, to name three concrete recorded defect shapes: a
+lock/session self-contention where an acquire/release call is keyed to a session-id that does not
+match the session-id used to register the same unit of work elsewhere; a hook-regex path-depth
+boundary defect where a validation hook's pattern encodes an unstated boundary assumption that
+silently breaks once real inputs cross it; and deploy ghost index entries / undercounted orphan
+files that survive indefinitely because the deploy/merge routine is purely additive with no
+stale-entry pruning step. None of the ten pre-existing instances was reworded or reinterpreted to
+cover these shapes, and no recorder was wired for any of the three — naming the vocabulary and
+instrumenting a detection site remain separate, sequential pieces of work, as with
+`ARTIFACTS_MISSING_ON_SUCCESS` above.
 
 ### Signal B — attribution
 
