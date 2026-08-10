@@ -1,44 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 1015,
-  "session_id": "sess_1786386280_bc7e55_1015",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/1015_recheck_settings_local_merge_content_loss/plans/01_close-out-merge-recheck.md",
-      "summary": "Close-out plan (NOT a merge-logic fix) for the settings.local.json content-loss verification: 3 phases, 2 hours. Phase 1 closes err_1786350581208_23mAsn via errors-append.sh update (--fix-status fixed --fix-task 1015) after confirming the sanctioned writer cannot mutate severity, so closure supersedes the requested downgrade and hand-editing errors.json is forbidden. Phase 2 records the 0/12-this-round, 0/15-cumulative rate and named sample size durably in agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md, correcting that file's now-falsified claim that --wipe preserves settings.local.json byte-identically (it is semantically identical with observed key/array reordering) and recording the serial-sampling known limitation. Phase 3 writes specs/decisions/settings-local-merge-content-loss-verdict.md stating both residual positions explicitly: the concurrency hypothesis is CLOSED as out of scope with no follow-up task (the fail-open specs/.deploy-lock mutex is a deliberate documented design mirroring specs/.commit-lock, already carrying its own corruption warning, so the hypothesis is a known accepted risk of a different defect class rather than an untracked gap), and err_1786350581240_JyztWt STAYS OPEN unchanged at low severity and explicitly does not fall out of this task."
-    }
-  ],
-  "plan_metadata": {
-    "phases": 3,
-    "total_effort_hours": 2,
-    "complexity": "simple",
-    "research_integrated": true,
-    "plan_version": 1,
-    "dependency_waves": [[1, 2], [3]],
-    "reports_integrated": [
-      {
-        "path": "reports/01_recheck-settings-local-merge.md",
-        "integrated_in_plan_version": 1,
-        "integrated_date": "2026-08-10"
-      }
-    ],
-    "skeleton": false,
-    "follow_up_tasks": []
-  },
-  "phase_count": 3,
-  "estimated_hours": 2,
-  "dependency_waves": [[1, 2], [3]],
-  "memory_candidates": [
-    {
-      "content": "The sanctioned errors.json writer (agent-system/extensions/core/scripts/errors-append.sh) has an asymmetric mutation surface that shapes how error-triage close-out tasks must be planned: its `append` subcommand can set `severity` at creation time, but its `update` subcommand accepts ONLY --id, --fix-status, --fixed-date, and --fix-task. There is no sanctioned path to mutate an existing record's severity. Any task instruction phrased as 'downgrade severity from X to Y' is therefore unimplementable as written without either hand-editing specs/errors.json (forbidden -- the writer holds flock -x across read/transform/validate/mv and validates the MERGED document against context/schemas/errors-schema.json) or widening the writer's flag set (schema blast radius). The correct planning move is to close the record instead (--fix-status fixed --fix-task N): a closed record is out of triage regardless of its historical severity stamp, so closure delivers the downgrade's practical outcome and is strictly stronger. Plan the constraint check as an explicit first task with a Scope Hypothesis, so the implementer confirms the argument parser rather than trusting the plan's reading and reaching for a hand edit when the flag is rejected.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/1015_recheck_settings_local_merge_content_loss/plans/01_close-out-merge-recheck.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["errors-append", "errors.json", "severity", "fix_status", "sanctioned-writer", "close-out"]
-    }
-  ],
-  "next_steps": "Run /implement 1015 to execute the plan"
+  "session_id": "sess_1786386280_bc7e55",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }

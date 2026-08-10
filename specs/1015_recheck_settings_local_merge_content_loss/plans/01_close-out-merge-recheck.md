@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1015
 
 - **Task**: 1015 - Re-check settings.local.json deploy merge for content loss before any fix effort
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md`
@@ -111,23 +111,28 @@ No `roadmap_path` was provided in the delegation context and no ROADMAP.md was l
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Close the content-loss error record via the sanctioned writer [NOT STARTED]
+### Phase 1: Close the content-loss error record via the sanctioned writer [COMPLETED]
 
 **Goal**: `err_1786350581208_23mAsn` carries `fix_status: "fixed"` with `fix_task: 1015` and a
 `fixed_date`, written by `errors-append.sh update` and by nothing else.
 
 **Tasks**:
-- [ ] Re-read the `update` subcommand's argument parser in
+- [x] Re-read the `update` subcommand's argument parser in
       `agent-system/extensions/core/scripts/errors-append.sh` and confirm in the implementation
       summary that `--severity` is not an accepted flag. If it *is* accepted (contradicting this
       plan's finding), prefer `--severity low` and note the divergence -- do not hand-edit either
-      way.
-- [ ] Run the closure through the deployed writer:
+      way. *(completed: confirmed -- the `update` case block at lines 306-315 accepts exactly
+      --id/--fix-status/--fixed-date/--fix-task; --severity falls into the `*)` unknown-argument
+      branch and errors)*
+- [x] Run the closure through the deployed writer:
       `bash .claude/scripts/errors-append.sh update --id err_1786350581208_23mAsn --fix-status fixed --fix-task 1015`
-- [ ] Re-read the record with `jq` and confirm `fix_status`, `fix_task`, and `fixed_date` landed
-      and that `message`, `context`, `severity`, and `recovery` are byte-unchanged.
-- [ ] Confirm `err_1786350581240_JyztWt` was NOT touched (it stays `unfixed` -- see Phase 3).
-- [ ] Do NOT edit `specs/errors.json` with `Write`, `Edit`, `sed`, or an inline `jq` redirect.
+      *(completed)*
+- [x] Re-read the record with `jq` and confirm `fix_status`, `fix_task`, and `fixed_date` landed
+      and that `message`, `context`, `severity`, and `recovery` are byte-unchanged. *(completed)*
+- [x] Confirm `err_1786350581240_JyztWt` was NOT touched (it stays `unfixed` -- see Phase 3).
+      *(completed)*
+- [x] Do NOT edit `specs/errors.json` with `Write`, `Edit`, `sed`, or an inline `jq` redirect.
+      *(completed: no hand-edit performed, writer only)*
 
 **Timing**: 0.5 hours
 

@@ -99,7 +99,9 @@
       "recovery": {
         "suggested_action": "Re-run the Phase 1 wipe-pair procedure (agent-system/extensions/core/scripts/deploy-headless.sh --wipe) several more times under varied conditions before spending fix effort; if it reproduces, investigate the settings.local.json merge routine for order-of-operations races."
       },
-      "fix_status": "unfixed"
+      "fix_status": "fixed",
+      "fixed_date": "2026-08-10T18:44:25.268Z",
+      "fix_task": 1015
     },
     {
       "id": "err_1786350581240_JyztWt",
