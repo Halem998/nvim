@@ -561,19 +561,26 @@ Phase 2/3's phase notes.
 
 ## Testing & Validation
 
-- [ ] `bash scripts/tests/run-all.sh` reports zero failing suites (Gate 8's engine).
-- [ ] `bash scripts/verify-deploy.sh` passes with the new validator gate present.
-- [ ] `bash scripts/validate-state.sh specs/state.json` and `--deep` both exit 0 on live state.
-- [ ] Each of the four seeded defect fixtures (stray field, duplicate `project_number`,
+- [x] `bash scripts/tests/run-all.sh` reports zero failing suites (Gate 8's engine). *(deviation:
+      altered — one pre-existing, unrelated suite fails: `test-index-entries-schema.sh`'s "Rule U
+      did not fire on a 61-line EXTENSION.md" fixture case, confirmed via `git stash` in Phase 2's
+      phase notes to predate this task's entire diff. Every suite this task touches or introduces
+      passes cleanly.)*
+- [x] `bash scripts/verify-deploy.sh` passes with the new validator gate present. *(deviation:
+      altered — passes 20/21 checks; the one failure is Gate 8, tracking the same pre-existing
+      unrelated `test-index-entries-schema.sh` defect above. Gate 10, the new validator gate,
+      passes cleanly.)*
+- [x] `bash scripts/validate-state.sh specs/state.json` and `--deep` both exit 0 on live state.
+- [x] Each of the four seeded defect fixtures (stray field, duplicate `project_number`,
       off-schema status, dangling dependency) produces a nonzero exit with a distinct named error.
-- [ ] `bash scripts/generate-todo.sh` hard-fails on an off-schema status fixture and writes
+- [x] `bash scripts/generate-todo.sh` hard-fails on an off-schema status fixture and writes
       nothing.
-- [ ] Regenerated `specs/TODO.md` is byte-identical to the committed version on unchanged state.
-- [ ] The library enum and the schema enum are byte-equal (asserted by
+- [x] Regenerated `specs/TODO.md` is byte-identical to the committed version on unchanged state.
+- [x] The library enum and the schema enum are byte-equal (asserted by
       `tests/test-status-vocabulary.sh`).
-- [ ] `bash scripts/check-task-references.sh` passes — no task numbers introduced anywhere under
+- [x] `bash scripts/check-task-references.sh` passes — no task numbers introduced anywhere under
       `agent-system/extensions/**`.
-- [ ] `bash scripts/check-extension-docs.sh` and `bash scripts/validate-context-index.sh` pass.
+- [x] `bash scripts/check-extension-docs.sh` and `bash scripts/validate-context-index.sh` pass.
 
 ## Artifacts & Outputs
 
