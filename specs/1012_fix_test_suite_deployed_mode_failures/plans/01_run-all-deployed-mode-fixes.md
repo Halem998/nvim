@@ -1,7 +1,7 @@
 # Implementation Plan: Make run-all.sh green or justify every residual failure
 
 - **Task**: 1012 - Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and further suites
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (one advisory overlap: the opencode session-id duplication task owns `test-common-lib.sh`)
 - **Research Inputs**: specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md
@@ -111,21 +111,21 @@ carry no shared-file conflicts.
 
 ---
 
-### Phase 1: Migrate REPO_ROOT in the five confirmed-failing suites [NOT STARTED]
+### Phase 1: Migrate REPO_ROOT in the five confirmed-failing suites [COMPLETED]
 
 **Goal**: Replace the fixed five-level `REPO_ROOT` climb with the depth-independent
 `git rev-parse --show-toplevel` pattern in every suite research confirmed as failing in deployed
 mode.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh`'s `REPO_ROOT`
-      block and reuse it verbatim (including its explanatory comment, adapted per file)
-- [ ] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`
-- [ ] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-update-task-status.sh`
-- [ ] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh`
-- [ ] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh`
-- [ ] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh`
-- [ ] Run each edited suite from its source-store location and confirm it still passes there
+- [x] Read `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh`'s `REPO_ROOT`
+      block and reuse it verbatim (including its explanatory comment, adapted per file) *(completed)*
+- [x] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` *(completed)*
+- [x] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-update-task-status.sh` *(completed)*
+- [x] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh` *(completed)*
+- [x] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh` *(completed)*
+- [x] Apply the pattern in `agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh` *(completed)*
+- [x] Run each edited suite from its source-store location and confirm it still passes there *(completed: all 5 pass, 0 failed each)*
 
 **Timing**: 1 hour
 

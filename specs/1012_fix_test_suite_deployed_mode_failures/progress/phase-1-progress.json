@@ -1,0 +1,30 @@
+{
+  "phase": 1,
+  "phase_name": "Migrate REPO_ROOT in the five confirmed-failing suites",
+  "started_at": "2026-08-10T17:00:00Z",
+  "last_updated": "2026-08-10T17:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read test-deploy-propagation.sh's REPO_ROOT block and reuse it verbatim (adapted)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Apply pattern to the 5 confirmed-failing suites and verify each passes in isolation from source-store location",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+        "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+        "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh",
+        "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh",
+        "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

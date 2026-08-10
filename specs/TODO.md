@@ -22,9 +22,9 @@ next_project_number: 1020
 1004 [NOT STARTED] — /todo's "Sync Repository Metrics" stage cannot report a true buil
   └─ 1005 [NOT STARTED] — /todo documents a producer/consumer contract for ROADMAP.md synch
     └─ 1006 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
-1010 [PLANNED] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
+1010 [IMPLEMENTING] — tests/run-all.sh has a 7th, previously unreported deployed-mode-o
 1011 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
-1012 [PLANNED] — tests/run-all.sh is red and has been treated as permanently-expec
+1012 [IMPLEMENTING] — tests/run-all.sh is red and has been treated as permanently-expec
 1014 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 1015 [NOT STARTED] — A VERIFICATION task, deliberately not a fix task. Do not change m
   └─ 1009 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
@@ -227,7 +227,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 1012. Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -286,7 +286,7 @@ CONSTRAINT: do not drive this task with multi-task /orchestrate until err_178634
 ---
 
 ### 1010. Fix opencode gate in session id duplication
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
