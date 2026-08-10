@@ -298,6 +298,19 @@ write_holder() {
   local lock_dir="$1" session_id="$2" task_number="$3" operation="$4" acquired_at="$5" heartbeat_at="$6" command="$7"
   local tmp_file="$lock_dir/holder.json.tmp"
 
+  # Every caller decided ITS OWN session should hold (or continue holding) this lock before
+  # reaching this write -- that decision already happened in cmd_acquire/cmd_heartbeat above and
+  # is not re-litigated here. But $lock_dir can be concurrently removed by another process (a
+  # release, a reaper, or -- as test-four-tier-conflict.sh's Tier-2 resolving fixture deliberately
+  # exercises -- a foreign holder releasing mid-retry-window) in the window between a caller's
+  # existence check and this write. Recreating it here is therefore always the correct response,
+  # never a decision of its own: it is a no-op if the directory still exists, and otherwise it is
+  # exactly what this write needs to proceed for the session that already earned the right to
+  # write. Without this, the tmp-file open below fails with "No such file or directory" and the
+  # caller's whole acquire/heartbeat aborts with an ERROR that the race itself, not real
+  # contention, caused.
+  mkdir -p "$lock_dir" 2>/dev/null || true
+
   jq -n \
     --arg session_id "$session_id" \
     --argjson task_number "$task_number" \

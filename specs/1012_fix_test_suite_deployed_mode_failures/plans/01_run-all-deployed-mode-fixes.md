@@ -304,7 +304,7 @@ rule.
 
 ---
 
-### Phase 5: Diagnose the test-four-tier-conflict.sh order-dependent flake [NOT STARTED]
+### Phase 5: Diagnose the test-four-tier-conflict.sh order-dependent flake [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Determine why `test-four-tier-conflict.sh` fails inside the full sequence but passes in
 isolation, and either fix it or produce a written, evidenced justification for leaving it red.
@@ -313,21 +313,43 @@ isolation, and either fix it or produce a written, evidenced justification for l
 accepted outcome and routes to the justification branch — it is not a failure of the phase.
 
 **Tasks**:
-- [ ] Reproduce: run the full `run-all.sh` sequence and confirm the failure signature
+- [x] Reproduce: run the full `run-all.sh` sequence and confirm the failure signature
       (`task-lock.sh` writing `.lock/holder.json.tmp`, "jq produced empty output", dead-pid probe
-      resolving to 999999)
-- [ ] Confirm the isolation baseline: run the suite alone several times and record the pass count
+      resolving to 999999) *(completed: reproduced on the 3rd of 3 pre-fix full-sequence attempts)*
+- [x] Confirm the isolation baseline: run the suite alone several times and record the pass count
+      *(completed: pre-fix isolation was already reliably green — this suite's own docstring frames
+      it as failing only inside the full sequence; post-fix isolation measured 5/5 green)*
 - [ ] Bisect the ordering dependency: run the suite immediately after progressively larger prefixes
       of the preceding suites to identify the smallest preceding set that triggers the failure
-- [ ] Inspect `task-lock.sh`'s `holder.json.tmp` write path around the failing line for an
-      unguarded assumption about the lock directory existing at write time
+      *(deviation: skipped — the root cause was identified directly by reading the failing suite's
+      own fixture design (case 1's deliberate concurrent `rm -rf $lock_dir` releaser) rather than
+      needing a bisection to locate it; the defect is a self-contained race inside
+      `write_holder()`/`cmd_acquire`, not an inter-suite ordering dependency, so a bisection across
+      preceding suites was not the applicable diagnostic once the mechanism was clear)*
+- [x] Inspect `task-lock.sh`'s `holder.json.tmp` write path around the failing line for an
+      unguarded assumption about the lock directory existing at write time *(completed: confirmed —
+      see Phase 5 progress file objective 2 for the full mechanism)*
 - [ ] Evaluate the dead-pid probe heuristic for PID-recycling sensitivity under accumulated load
-- [ ] If a root cause is established and the fix is small and evidenced: apply it in
+      *(deviation: skipped — the dead-pid probe (`DEAD_PID=999999`, decremented until
+      `kill -0` confirms no live process) is unrelated to the actual failure mechanism found; the
+      "999999" appearing in the reproduced failure's INFO line is this probe's own informational
+      fixture-build line, not part of the failure signature itself, and no evidence connects it to
+      the write_holder race)*
+- [x] If a root cause is established and the fix is small and evidenced: apply it in
       `agent-system/extensions/core/scripts/` (source store) and verify in both isolation and full
-      sequence
-- [ ] If no root cause is established within the time-box: write the evidence gathered (bisection
+      sequence *(completed: `mkdir -p "$lock_dir" 2>/dev/null || true` added at the top of
+      `write_holder()` in `task-lock.sh`; verified 5/5 isolation and 4/4 full-sequence runs green
+      after the fix, versus an intermittent pre-fix failure)*
+- [x] If no root cause is established within the time-box: write the evidence gathered (bisection
       result, reproduction rates, ruled-out hypotheses) for Phase 6's justification record. Do not
-      apply a speculative fix
+      apply a speculative fix *(not applicable: a root cause was established and fixed)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Ordering-dependency bisection across preceding suites | Root cause was identified directly from the failing suite's own fixture design rather than requiring a bisection; the defect is a self-contained concurrency race inside `write_holder()`, not a cross-suite ordering dependency | `test-four-tier-conflict.sh`'s case 1 fixture (lines 163-169) deliberately backgrounds a `rm -rf $lock_dir` releaser mid-retry-window; `cmd_acquire`'s stale-override/re-entry/missing-holder.json branches call `write_holder` without re-verifying `$lock_dir` exists immediately before the write, exactly reproducing the observed "No such file or directory" ERROR when raced against that releaser |
+| Dead-pid probe heuristic evaluation | The probe's mechanism (`DEAD_PID=999999`, decremented until confirmed dead via `kill -0`) is unconnected to the actual failure; its appearance in the reproduced log is an unrelated informational fixture-build line, not a symptom | Reproduced failure log's `[INFO] Fixture built at ... (dead pid probe resolved to 999999)` line precedes and is independent of the `[FAIL] 1: Tier-2 resolving case` line that carries the actual defect signature |
 
 **Timing**: 1.5 hours (time-boxed)
 

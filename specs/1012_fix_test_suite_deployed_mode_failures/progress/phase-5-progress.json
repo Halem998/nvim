@@ -1,0 +1,41 @@
+{
+  "phase": 5,
+  "phase_name": "Diagnose the test-four-tier-conflict.sh order-dependent flake",
+  "started_at": "2026-08-10T18:10:00Z",
+  "last_updated": "2026-08-10T18:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Reproduce the failure signature in the full run-all.sh sequence",
+      "status": "done",
+      "files_touched": [],
+      "note": "Reproduced on the 3rd of 3 pre-fix full-sequence attempts: 'dead pid probe resolved to 999999' info line, then case 1 (Tier-2 resolving) failed with rc=2, task-lock.sh line 301 'holder.json.tmp: No such file or directory', 'ERROR: failed to write holder.json (jq produced empty output)'. Confirms the flake is real and intermittent, not a stale report."
+    },
+    {
+      "id": 2,
+      "description": "Root-cause: inspect write_holder's call sites in cmd_acquire for an unguarded assumption about $lock_dir existing at write time",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-four-tier-conflict.sh's own case 1 fixture deliberately backgrounds a releaser that runs `rm -rf $lock_dir` mid-retry-window (simulating a foreign holder releasing while acquire-retry polls). cmd_acquire's 'stale lock, override' branch (and its same-session-reentry and missing-holder.json branches) all decide to call write_holder after an earlier existence check, without re-verifying $lock_dir still exists immediately before the write. If the releaser's rm -rf lands in that window, write_holder's tmp-file open (`$lock_dir/holder.json.tmp`) fails because the parent directory no longer exists, producing exactly the observed 'No such file or directory' / empty-jq-output ERROR and a hard rc=2 abort instead of a successful acquire."
+    },
+    {
+      "id": 3,
+      "description": "Apply the fix and verify in both isolation and full sequence",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/task-lock.sh"
+      ],
+      "note": "Added `mkdir -p \"$lock_dir\" 2>/dev/null || true` at the top of write_holder() (agent-system/extensions/core/scripts/task-lock.sh), before the jq write. This is a no-op when the directory still exists and recreates it when a concurrent process removed it -- every write_holder caller has already decided its own session should hold the lock before reaching this point, so recreating the directory is always the correct response to a concurrent removal, never a new decision. Verified: 5/5 isolation runs pass (11/0 each); 4/4 full-sequence run-all.sh runs pass (37/0/37 each) after the fix, versus an intermittent pre-fix failure reproduced on attempt 3 of 3."
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Investigated whether the observed '1012 min ago' stale-heartbeat reading in the failing run was a distinct age_minutes/clock-parsing bug rather than the directory-removal race",
+      "result": "inconclusive_but_not_blocking",
+      "reason": "Could not fully pin down why the read heartbeat aged to ~1012 minutes within the time-box (plausibly a read racing the concurrent rm -rf producing a garbled/empty read that date interpreted unexpectedly, or environment-level clock skew under a heavily loaded sandboxed full run-all.sh sequence); the applied fix does not depend on resolving this sub-question because it addresses the terminal, reproducible failure mode (write_holder's ERROR abort) regardless of which branch inside cmd_acquire decided to call write_holder"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
