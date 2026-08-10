@@ -67,7 +67,7 @@
     {
       "project_number": 1000,
       "project_name": "cslib_adversarial_verification_mirror",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Give cslib its own adversarial-verification contract copy and union-valued index entry",
@@ -81,8 +81,14 @@
         992
       ],
       "created": "2026-08-09T21:57:14Z",
-      "last_updated": "2026-08-10T00:38:23Z",
-      "artifacts": [],
+      "last_updated": "2026-08-10T00:47:37Z",
+      "artifacts": [
+        {
+          "path": "specs/1000_cslib_adversarial_verification_mirror/reports/01_cslib-adversarial-verification-mirror.md",
+          "type": "report",
+          "summary": "Research + direct fix: authored the cslib mirror copy of the H4 adversarial-verification contract and a union-valued index entry, verified via check-extension-docs.sh and a headless-Neovim upsert simulation."
+        }
+      ],
       "session_id": "sess_1786322063_3251e8_1000"
     },
     {

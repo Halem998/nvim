@@ -1,0 +1,49 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786322063_3251e8_1000",
+  "task_number": 1000,
+  "findings_count": 12,
+  "next_steps": "Run /plan 1000 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/1000_cslib_adversarial_verification_mirror/reports/01_cslib-adversarial-verification-mirror.md",
+      "summary": "Research + direct fix: authored the cslib mirror copy of the H4 adversarial-verification contract and a union-valued index entry, verified via check-extension-docs.sh and a headless-Neovim upsert simulation."
+    },
+    {
+      "type": "source_file",
+      "path": "agent-system/extensions/cslib/context/contracts/adversarial-verification.md",
+      "summary": "New 117-line cslib mirror copy of the H4 adversarial-verification contract, near-verbatim to core's content by deliberate design (shared deployed-path collision safety)."
+    },
+    {
+      "type": "index_entry",
+      "path": "agent-system/extensions/cslib/index-entries.json",
+      "summary": "Added contracts/adversarial-verification.md entry with union load_when.agents (general-research-hard-agent, cslib-research-hard-agent)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's extension loader, agent-system/extensions/*/context/ trees deploy into ONE shared merged .claude/context/ directory, not per-extension namespaced trees (.claude/extensions/<ext>/ holds only manifest.json). When two extensions' index-entries.json declare the same relative path (e.g. core and lean both declare contracts/adversarial-verification.md), merge.lua's append_index_entries does an upsert-by-path: whichever extension is processed LAST for a given load/sync run fully replaces both the file content and the index entry (including load_when) at that path. This is a documented 'dormant' risk in merge.lua's own doc comment. Any new extension mirroring a core contract at the same relative path (e.g. cslib mirroring contracts/adversarial-verification.md) enters this same collision.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/1000_cslib_adversarial_verification_mirror/reports/01_cslib-adversarial-verification-mirror.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["merge.lua", "upsert-by-path", "index-entries.json", "shared-deployed-path-collision", "extension-loader"]
+    },
+    {
+      "content": "When an extension must mirror a core (or another extension's) index-entries.json contract entry that shares a deployed path, set load_when.agents to the UNION of every agent that should reach it, not just the mirroring extension's own agent. Because the loader's upsert-by-path fully replaces the whole entry object on a path match, a single-agent mirror silently drops every other agent's hook whenever the mirroring extension is processed last. Verified concretely: applying core's entry (agents=[general-research-hard-agent]) then a union-valued cslib entry (agents=[general-research-hard-agent, cslib-research-hard-agent]) via merge.append_index_entries yields one merged entry retaining both agent names.",
+      "category": "PATTERN",
+      "source_artifact": "specs/1000_cslib_adversarial_verification_mirror/reports/01_cslib-adversarial-verification-mirror.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["union-valued-load-when", "index-entries.json", "mirror-entry", "upsert-by-path", "contract-reachability"]
+    },
+    {
+      "content": "To test neotex.plugins.ai.shared.extensions.merge's append_index_entries upsert behavior without performing a full extension deploy, run it directly via headless Neovim: package.path-extend to lua/, require the merge module, and call merge.append_index_entries(scratch_target, {entry}) repeatedly against a scratch JSON file, then inspect the result. This proves upsert-by-path outcomes (e.g. which fields survive a collision) without mutating .claude-extensions.json or the live deployed tree.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/1000_cslib_adversarial_verification_mirror/reports/01_cslib-adversarial-verification-mirror.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["headless-nvim", "merge.lua", "testing", "append_index_entries", "scratch-verification"]
+    }
+  ]
+}
