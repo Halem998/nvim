@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "task_number": 986,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786322063_3251e8_986",
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md",
+      "summary": "Re-verified all 9 inventory items from the docs/context review against current source-store state; 7 items fully live and actionable, item 8 (skill-lifecycle.md) already resolved by a predecessor task and dropped from scope, item 6's severity/target estimates corrected. Two new out-of-inventory findings surfaced (stale settings.local.json permission entry; item 7 template inconsistency freshly introduced by task 989 phase 1)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo, `@`-references inside CLAUDE.md merge-source content (e.g. 'Full documentation: @.claude/context/patterns/X.md') are NOT auto-expanded into every agent prompt -- they only resolve when the target file's index-entries.json load_when matches the current agent/command/task_type. Do not assume a file pointed to by an @-reference in an always-loaded file is itself always-loaded; check its own load_when entry.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["at-reference", "load_when", "context-loading", "always-loaded", "index-entries"]
+    },
+    {
+      "content": "docs/templates/agent-template.md and context/templates/agent-template.md in agent-system/extensions/core are a deliberate two-tier split (user-facing tutorial vs. canonical meta-builder-agent structure), not accidental duplication -- context/templates/agent-template.md:1-5 explicitly documents the split. When a frontmatter-standard task updates one, check the other for staleness rather than assuming redundancy.",
+      "category": "PATTERN",
+      "source_artifact": "specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["agent-template", "canonical-tutorial-split", "frontmatter-standard", "docs-consistency"]
+    },
+    {
+      "content": "Rule U (per-section line budget gate in check-extension-docs.sh, enforced via extension-slim-standard.md) caps an extension's EXTENSION.md at 60 lines as a hard failure. Before relocating large doc sections into an extension's EXTENSION.md, always check current line count against this cap -- e.g. literature/EXTENSION.md was 33 lines and could not absorb a 162-line section without failing the gate; the correct target for large relocated content is the extension's own merge-sources/claudemd.md instead.",
+      "category": "CONFIG",
+      "source_artifact": "specs/986_docs_truth_sweep/reports/01_docs-truth-sweep-findings.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["rule-u", "extension-slim-standard", "EXTENSION.md", "line-budget", "check-extension-docs"]
+    }
+  ],
+  "next_steps": "Run /plan 986 to create implementation plan"
+}
