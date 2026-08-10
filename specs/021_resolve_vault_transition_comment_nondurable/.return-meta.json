@@ -20,22 +20,41 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/021_resolve_vault_transition_comment_nondurable/summaries/01_resolve-vault-transition-comment-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["grep", "ugrep", "gitignore", "command grep", "survivor-accounting"]
+      "suggested_keywords": [
+        "grep",
+        "ugrep",
+        "gitignore",
+        "command grep",
+        "survivor-accounting"
+      ]
     },
     {
       "content": "When a plan supplies example replacement wording for a deletion, check whether the wording itself contains the string the same phase's verification grep checks for zero occurrences of. A rationale note like 'X information lives in...' can literally re-embed the string 'X' it is trying to eliminate, causing the phase's own acceptance check to fail against the plan's own suggested text.",
       "category": "INSIGHT",
       "source_artifact": "specs/021_resolve_vault_transition_comment_nondurable/summaries/01_resolve-vault-transition-comment-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verification", "self-contradiction", "rationale-note", "plan-deviation", "grep-check"]
+      "suggested_keywords": [
+        "verification",
+        "self-contradiction",
+        "rationale-note",
+        "plan-deviation",
+        "grep-check"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786394806_0d5dd8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
-    "phases_total": 3
+    "phases_total": 3,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

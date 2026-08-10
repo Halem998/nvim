@@ -11,7 +11,7 @@ next_project_number: 22
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 5,11,12,14,16,17,18,19,20,21 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 5,11,12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 6,9,13 | 5,17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -28,7 +28,6 @@ next_project_number: 22
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
-21 [NOT STARTED] — /todo and skill-todo both instruct the vault path to hand-insert 
 
 ### Extensions
 
@@ -41,10 +40,13 @@ next_project_number: 22
 ## Tasks
 
 ### 21. Vault transition comment is wiped by TODO.md regeneration, corrupts frontmatter where it runs
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [021_resolve_vault_transition_comment_nondurable/reports/01_resolve-vault-transition-comment.md]
+- **Plan**: [021_resolve_vault_transition_comment_nondurable/plans/01_resolve-vault-transition-comment.md]
+- **Summary**: [021_resolve_vault_transition_comment_nondurable/summaries/01_resolve-vault-transition-comment-summary.md]
 
 **Description**: /todo and skill-todo both instruct the vault path to hand-insert an HTML transition comment into specs/TODO.md, but generate-todo.sh regenerates that file wholesale, so the comment is wiped by the next regeneration. The instruction is also actively harmful where it does run: as written it corrupts the YAML frontmatter and duplicates itself. Decide the correct resolution and apply it consistently.
 

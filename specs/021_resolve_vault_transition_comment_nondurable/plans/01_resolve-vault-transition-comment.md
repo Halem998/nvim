@@ -1,7 +1,7 @@
 # Implementation Plan: Task #21
 
 - **Task**: 21 - resolve_vault_transition_comment_nondurable
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/021_resolve_vault_transition_comment_nondurable/reports/01_resolve-vault-transition-comment.md
