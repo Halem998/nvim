@@ -751,5 +751,9 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 5. Skip Stage 0 early metadata creation
 6. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
 7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
+8. Assign `.artifacts` wholesale (`.artifacts = [...]`) when updating `specs/state.json`
+   directly -- append via `+=`, or call `skill_link_artifacts`/the sanctioned helper; see
+   `.claude/rules/state-management.md`'s "Artifacts Are Append-Only (With Same-Type
+   Supersession)" subsection
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-implementer) will report partial status to the user, who can re-run `/implement` to resume.
