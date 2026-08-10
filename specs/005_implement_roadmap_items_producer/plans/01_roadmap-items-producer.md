@@ -1,7 +1,7 @@
 # Implementation Plan: Task #5
 
 - **Task**: 5 - implement_roadmap_items_producer (roadmap_items is never derived by any implement path, so /todo's ROADMAP sync is dead in practice)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None (stated dependency 1004 confirmed satisfied/vaulted by the research report)
 - **Research Inputs**: specs/005_implement_roadmap_items_producer/reports/01_roadmap-items-producer.md

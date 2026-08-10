@@ -11,15 +11,14 @@ next_project_number: 22
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 5,11,12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
-| 2 | 6,9,13 | 5,17,18 | agent-system |
+| 1 | 6,11,12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
+| 2 | 9,13 | 17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-5 [IMPLEMENTING] — /todo documents a producer/consumer contract for ROADMAP.md synch
-  └─ 6 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
+6 [NOT STARTED] — The artifact list in specs/state.json is append-only by intent bu
 11 [NOT STARTED] — The system-defect vocabulary has a gap: defect classes exist for 
 12 [PARTIAL] — tests/run-all.sh is red and has been treated as permanently-expec
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
@@ -441,12 +440,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 5. roadmap_items is never derived by any implement path, so /todo's ROADMAP sync is dead in practice
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [005_implement_roadmap_items_producer/reports/01_roadmap-items-producer.md]
 - **Plan**: [005_implement_roadmap_items_producer/plans/01_roadmap-items-producer.md]
+- **Summary**: [005_implement_roadmap_items_producer/summaries/01_roadmap-items-producer-summary.md]
 
 **Description**: /todo documents a producer/consumer contract for ROADMAP.md synchronisation in which /implement
 is the producer. The consumer half is fully built; the producer half computes nothing, so the

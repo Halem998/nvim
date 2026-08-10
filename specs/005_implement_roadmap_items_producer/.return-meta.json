@@ -2,7 +2,12 @@
   "status": "implemented",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1786396737_4bb5dd",
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "orchestrate",
+    "skill-orchestrate",
+    "general-implementation-agent"
+  ],
   "task_number": 5,
   "task_name": "implement_roadmap_items_producer",
   "artifacts": [
@@ -34,23 +39,44 @@
       "category": "INSIGHT",
       "source_artifact": "specs/005_implement_roadmap_items_producer/summaries/01_roadmap-items-producer-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["delegation-context", "dispatch-plumbing", "orchestrate-bypass", "agent-contract", "inert-instruction", "roadmap_path"]
+      "suggested_keywords": [
+        "delegation-context",
+        "dispatch-plumbing",
+        "orchestrate-bypass",
+        "agent-contract",
+        "inert-instruction",
+        "roadmap_path"
+      ]
     },
     {
       "content": "In this repo's deploy engine, agent-system/extensions/<ext>/scripts/tests/*.sh files are NOT glob-discovered at deploy time -- they are a manifest-driven allow-list under provides.scripts in manifest.json. Adding a new test suite to a scripts/tests/ directory in the source store is silently invisible to deploy-headless.sh (and therefore to the deployed .claude/scripts/tests/ tree and run-all.sh in deployed mode) until its path is explicitly added to the extension's manifest.json provides.scripts array. This is easy to miss because run-all.sh in source-store mode DOES glob-discover the same file directly from the source store, so the suite appears to work fine right up until deploy regeneration.",
       "category": "CONFIG",
       "source_artifact": "specs/005_implement_roadmap_items_producer/summaries/01_roadmap-items-producer-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "manifest.json", "provides.scripts", "test-discovery", "source-store-vs-deployed"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "manifest.json",
+        "provides.scripts",
+        "test-discovery",
+        "source-store-vs-deployed"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786396737_4bb5dd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
-    "phases_total": 5
+    "phases_total": 5,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   },
   "next_steps": "Task 5 complete. Follow-ups (out of scope, documented in the summary): test-claude-refresh-matcher.sh's pre-existing flaky failure, and task 9's own unrelated dangling dependency on vaulted task 1015."
 }
