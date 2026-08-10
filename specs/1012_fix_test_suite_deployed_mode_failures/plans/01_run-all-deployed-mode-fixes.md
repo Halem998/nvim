@@ -1,7 +1,7 @@
 # Implementation Plan: Make run-all.sh green or justify every residual failure
 
 - **Task**: 1012 - Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and further suites
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (one advisory overlap: the opencode session-id duplication task owns `test-common-lib.sh`)
 - **Research Inputs**: specs/1012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md
