@@ -15,12 +15,12 @@
     {
       "project_number": 36,
       "project_name": "audit_context_loading_efficiency",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Audit context-loading efficiency across the agent system and its extensions, then create optimization tasks. A single /task invocation eagerly loaded ~19k of context before doing any work (CLAUDE.md, README, topic-assignment-pattern.md, and unrelated literature/nix/present extension context plus four rules files). The sweep should determine which context is loaded eagerly vs lazily, which loads are unconditional regardless of task type or command, and where @-imports, rules path globs, and extension context indexes can be narrowed or deferred",
       "topic": "agent-system",
       "created": "2026-08-11T15:18:00Z",
-      "last_updated": "2026-08-11T15:57:39Z",
+      "last_updated": "2026-08-11T16:18:16Z",
       "session_id": "sess_1786463507_5fe0a8",
       "next_artifact_number": 2,
       "artifacts": [
@@ -33,8 +33,14 @@
           "path": "specs/036_audit_context_loading_efficiency/plans/01_context-loading-optimization.md",
           "type": "plan",
           "summary": "7-phase plan (6h, waves [1,2,3,5]->[4]->[6]->[7]) executing the audit's cheap wins in the source store plus follow-up task creation"
+        },
+        {
+          "path": "specs/036_audit_context_loading_efficiency/summaries/01_context-loading-optimization-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with before/after byte accounting and deviation record"
         }
-      ]
+      ],
+      "completion_summary": "Normalized all @-references in generated-CLAUDE.md merge sources to plain backticked paths (52 refs across 10 source-store files), applied the rules-frontmatter triage (2 rules gated, largest rule split into eager principle + lazy taxonomy companion, 2 deliberate-eager decisions recorded), re-sited literature command rows from core to the literature extension, documented the eager-vs-lazy channel inventory and volatility constraint in core context, and created follow-up tasks 41-44. Predicted session-start eager surface drops ~41% (to ~10.4k tokens) at next redeploy; all lint gates pass."
     },
     {
       "project_number": 23,

@@ -43,22 +43,41 @@
       "category": "PATTERN",
       "source_artifact": "specs/036_audit_context_loading_efficiency/summaries/01_context-loading-optimization-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["rules-frontmatter", "paths-glob", "eager-context", "hook-timing", "context-loading"]
+      "suggested_keywords": [
+        "rules-frontmatter",
+        "paths-glob",
+        "eager-context",
+        "hook-timing",
+        "context-loading"
+      ]
     },
     {
       "content": "check-extension-docs.sh reports 'deployed content drift (deployed != extension source)' FAILs on rules and scripts whenever the source store (agent-system/extensions/**) is edited without redeploying .claude/. For source-store-only tasks (where redeploy is deliberately deferred to a later deploy vehicle), these drift FAILs are the expected and correct pre-redeploy state, not regressions — verify the touched extensions' content checks pass and note the drift as clearing at next deploy. Merge-source and EXTENSION.md edits do not trigger the drift check; only deployed-category files (rules/, scripts/, hooks/) do.",
       "category": "INSIGHT",
       "source_artifact": "specs/036_audit_context_loading_efficiency/summaries/01_context-loading-optimization-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["check-extension-docs", "content-drift", "source-store", "deploy-boundary", "lint-interpretation"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "content-drift",
+        "source-store",
+        "deploy-boundary",
+        "lint-interpretation"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786463507_5fe0a8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 2,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

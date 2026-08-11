@@ -1,6 +1,13 @@
 # Teammate A Findings: Eager-Load Surface Measurement and Narrowing Approach
 
 **Task**: 36 - Audit context loading efficiency
+- **Started**: TBD
+- **Completed**: TBD
+- **Effort**: TBD
+- **Dependencies**: TBD
+- **Sources/Inputs**: TBD
+- **Artifacts**: TBD
+- **Standards**: TBD
 **Angle**: PRIMARY - measure and map the actual eager-load surface, propose concrete narrowing
 **Date**: 2026-08-11
 **Method**: Empirical - every number below is from `wc -l`/`wc -c` on this repo's deployed and source-store files, cross-checked against the context actually injected into this session at start.

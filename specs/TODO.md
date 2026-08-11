@@ -11,7 +11,7 @@ next_project_number: 42
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,33,34,36,38,40,41,41,42,43,44 | -- | agent-system, extensions, literature, ... |
+| 1 | 14,16,17,18,20,22,27,28,31,33,34,38,40,41,41,42,43,44 | -- | agent-system, extensions, literature, ... |
 | 2 | 9,13,29,35,39 | 17,18,22,33,38 | agent-system, literature, orchestration-concurrency |
 | 3 | 30,37 | 29,35 | agent-system, orchestration-concurrency |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -32,7 +32,7 @@ next_project_number: 42
 31 [RESEARCHING] — Give the .opencode/extensions/ mirror a real generation path from
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
-36 [IMPLEMENTING] — Audit context-loading efficiency across the agent system and its 
+41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -56,7 +56,6 @@ next_project_number: 42
 
 ### Context Loading
 
-41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 
@@ -113,7 +112,7 @@ next_project_number: 42
 - **Effort**: 2-4 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: context-loading
+- **Topic**: agent-system
 - **Dependencies**: None
 
 **Description**: Create `measure-eager-context.sh` in the core extension's scripts: a harness that PREDICTS the session-start eager context set from the source store plus a fresh regenerate — never by measuring the live `.claude/` tree (stale-deploy concern; the deployed tree routinely lags the source store). The eager set to model: (1) the parent CLAUDE.md chain (e.g. ~/.config/CLAUDE.md, repo CLAUDE.md, generated .claude/CLAUDE.md); (2) the generated CLAUDE.md content assembled from core + loaded extensions' merge sources; (3) any RESOLVING `@`-imports found in that chain (directory-relative resolution — see context/architecture/context-layers.md 'Eager vs. Lazy Loading Channels'); (4) rules lacking `paths:` frontmatter or carrying `paths: "**/*"`. Emit bytes and estimated tokens (bytes/4) per contributing source plus a total, in a stable machine-parseable format. Provide a `--check`/`--write` split following the precedent of `generate-context-line-counts.sh` (`--check` reports, `--write` records a baseline snapshot for later drift comparison). The audit baseline to compare against: ~69.9 KB / ~17.5k tokens before downward normalization; predicted ~9.5k tokens after. CONSTRAINTS: no volatile files (specs/TODO.md, state.json, errors.json) may ever be counted as legitimately eager — flag any found; all edits target agent-system/extensions/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**.
@@ -331,12 +330,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 36. Audit context loading efficiency
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [036_audit_context_loading_efficiency/reports/01_team-research.md]
 - **Plan**: [036_audit_context_loading_efficiency/plans/01_context-loading-optimization.md]
+- **Summary**: [036_audit_context_loading_efficiency/summaries/01_context-loading-optimization-summary.md]
 
 **Description**: Audit context-loading efficiency across the agent system and its extensions, then create optimization tasks. A single /task invocation eagerly loaded ~19k of context before doing any work (CLAUDE.md, README, topic-assignment-pattern.md, and unrelated literature/nix/present extension context plus four rules files). The sweep should determine which context is loaded eagerly vs lazily, which loads are unconditional regardless of task type or command, and where @-imports, rules path globs, and extension context indexes can be narrowed or deferred
 
