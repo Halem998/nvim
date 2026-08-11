@@ -673,8 +673,33 @@ def sentence_boundary_glue_count(text):
     genuine, previously-undetected correctness defect this check catches.
     Verified at 0-1 occurrences across a random sample of 60 real corpus
     markdown files (read-only, not reconverted) with the period-only
-    pattern; the threshold below (>=3) sits well above that baseline."""
-    return len(re.findall(r"[a-z]\.[A-Z]", text))
+    pattern; the threshold below (>=3) sits well above that baseline.
+
+    Two further benign patterns are exempted BEFORE counting, both found via
+    real corpus PDFs during Logos/Theory corpus building:
+      - `Ph.D.` / `Ph.D` in bibliography entries (the `h.D` transition) —
+        e.g. Pym-O'Hearn-Yang 2004 "Possible Worlds and Resources", rejected
+        at exactly 4 hits, all `Ph.D.` in the bibliography.
+      - Single-letter-variable quantifier/binder notation such as `∀x.P`,
+        `∃x.P`, `∃y.E` (the `{var}.{Upper}` transition immediately preceded
+        by a `∀`/`∃`/`λ` binder) — e.g. Ishtiaq-O'Hearn 2001 "BI as an
+        Assertion Language", rejected at 7 hits (5 quantifier notation, 2
+        Ph.D.). Both conversions were otherwise clean and were manually
+        promoted from rejected_path before this fix.
+
+    Exemption is applied by stripping the exempted substrings first, THEN
+    counting on what remains — not a negative lookbehind — since the
+    exemption spans (`Ph.D`, `{binder}{var}.{Upper}`) each fully contain the
+    raw 3-character match span they exempt, making a strip-first pass exact
+    and avoiding Python re's fixed-width-lookbehind constraint.
+
+    The binder class is deliberately narrow — the binder character must be
+    immediately adjacent to a single lowercase variable — so a bare
+    single-letter-then-period-then-capital transition with no binder prefix
+    is still counted."""
+    exempted = re.sub(r"Ph\.D\.?", "", text)
+    exempted = re.sub(r"[∀∃λ][a-z]\.[A-Z]", "", exempted)
+    return len(re.findall(r"[a-z]\.[A-Z]", exempted))
 
 
 def run_quality_gate(content, doc):

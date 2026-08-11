@@ -233,18 +233,18 @@ untouched.
 
 ---
 
-### Phase 3: Apply the strip-then-count fix and update the docstring [NOT STARTED]
+### Phase 3: Apply the strip-then-count fix and update the docstring [COMPLETED]
 
 **Goal**: Replace `sentence_boundary_glue_count`'s body with the two-pass exemption strip followed
 by the original `re.findall`, and extend its docstring to record both exemptions and their
 empirical motivation.
 
 **Tasks**:
-- [ ] In the `python3 << 'PYEOF'` heredoc, replace the single `return len(re.findall(...))` line with:
+- [x] In the `python3 << 'PYEOF'` heredoc, replace the single `return len(re.findall(...))` line with:
       `exempted = re.sub(r"Ph\.D\.?", "", text)`, then
       `exempted = re.sub(r"[∀∃λ][a-z]\.[A-Z]", "", exempted)`, then
-      `return len(re.findall(r"[a-z]\.[A-Z]", exempted))`
-- [ ] Extend the docstring, preserving every existing paragraph (comma/semicolon precedent, the
+      `return len(re.findall(r"[a-z]\.[A-Z]", exempted))` *(completed)*
+- [x] Extend the docstring, preserving every existing paragraph (comma/semicolon precedent, the
       Goldblatt/Hodkinson/Venema provenance, the 60-file sampling baseline) and appending a new
       paragraph that records: the two exemptions; the two real-paper cases motivating them (Pym-
       O'Hearn-Yang 2004 rejected at 4 hits, all `Ph.D.` in the bibliography; Ishtiaq-O'Hearn 2001
@@ -252,14 +252,15 @@ empirical motivation.
       manually promoted from `rejected_path`; and why strip-then-count is used rather than a
       negative lookbehind (each exemption span fully contains the 3-character match span it
       exempts, so a strip-first pass is exact and sidesteps Python `re`'s fixed-width-lookbehind
-      constraint)
-- [ ] Note in the docstring that the binder class is deliberately narrow — the binder character must
+      constraint) *(completed)*
+- [x] Note in the docstring that the binder class is deliberately narrow — the binder character must
       be immediately adjacent to a single lowercase variable — so a bare
-      single-letter-then-period-then-capital transition is still counted
-- [ ] Do NOT reference task numbers in the docstring; cite the papers and the mechanism instead
-- [ ] Confirm the heredoc's single-quoted `<< 'PYEOF'` form still holds so no shell expansion
+      single-letter-then-period-then-capital transition is still counted *(completed)*
+- [x] Do NOT reference task numbers in the docstring; cite the papers and the mechanism instead
+      *(completed)*
+- [x] Confirm the heredoc's single-quoted `<< 'PYEOF'` form still holds so no shell expansion
       touches the new backslashes, and that the non-ASCII binder characters are written directly
-      (the file is already UTF-8)
+      (the file is already UTF-8) *(completed: `bash -n` clean, heredoc marker unchanged)*
 
 **Timing**: 0.5 hours
 

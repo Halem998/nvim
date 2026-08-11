@@ -1,0 +1,23 @@
+{
+  "phase": 3,
+  "phase_name": "Apply the strip-then-count fix and update the docstring",
+  "started_at": "2026-08-11T22:10:00Z",
+  "last_updated": "2026-08-11T22:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace sentence_boundary_glue_count body with two-pass exemption strip then original findall", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"]},
+    {"id": 2, "description": "Extend docstring: preserve existing paragraphs, add new paragraph with both exemptions and empirical cases", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"]},
+    {"id": 3, "description": "Note deliberate narrowness of binder class in docstring", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"]},
+    {"id": 4, "description": "No task-number references in docstring", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm heredoc single-quoted form and UTF-8 non-ASCII chars intact", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "evidence": {
+    "bash_n": "clean",
+    "existing_suite": "8 passed, 0 failed (test-literature-convert.sh, pre-Phase-4 wiring)",
+    "negative_fixture_post_fix": {"exit_code": 0, "final_md_written": true},
+    "positive_fixture_post_fix": {"exit_code": 3, "rejected_written": true, "reason": "sentence-boundary-glue"},
+    "git_diff_scope": "hunk confined to sentence_boundary_glue_count docstring + body; threshold line 'glue_count >= 3' unchanged"
+  }
+}
