@@ -51,7 +51,7 @@ Loaded via the extension picker. Once loaded, `<type>` becomes a recognized task
 
 ## MCP Tool Setup
 
-<Complex only. Omit if the extension has no mcp_servers entries in manifest.json.>
+<Complex only. Omit if the extension registers no MCP server.>
 
 ### <server-name>
 
@@ -61,7 +61,16 @@ Loaded via the extension picker. Once loaded, `<type>` becomes a recognized task
 <install command>
 ```
 
-Configured automatically in `manifest.json`. <API key requirements, if any.>
+Registration and permission are two independent, separately-owned steps -- see
+[MCP Server Ownership](../context/patterns/mcp-server-ownership.md) before writing this
+section:
+- **Registration** happens in user-scope `~/.claude.json`, via a host-level/home-manager
+  activation block or a `core/scripts/` setup script -- never via `manifest.json`'s `mcp_servers`
+  field (inert) or an `mcpServers` key in this extension's `settings-fragment.json` (also inert).
+  State plainly here which of the two registration mechanisms this server uses, or that it is not
+  yet registered by anything in the repo if that is the case.
+- **Permission** is a `mcp__<server-name>__*` wildcard in this extension's own
+  `settings-fragment.json` `permissions.allow`. <API key requirements, if any.>
 
 **Capabilities**:
 

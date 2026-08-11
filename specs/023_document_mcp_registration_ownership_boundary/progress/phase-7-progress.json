@@ -1,0 +1,38 @@
+{
+  "phase": 7,
+  "phase_name": "Repo-wide consistency sweep and gate run",
+  "started_at": "2026-08-11T06:30:00Z",
+  "last_updated": "2026-08-11T06:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Repo-wide grep sweep for mcpServers / 'Configured automatically in' / mcp_servers; reconcile every hit, widening scope to fix additional discovered sites",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
+        "agent-system/extensions/core/templates/extension-readme-template.md",
+        "agent-system/extensions/filetypes/README.md",
+        "agent-system/extensions/core/docs/guides/adding-domains.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "jq empty on all touched JSON files; re-run generate-context-line-counts.sh --check and correct any drifted in-place-edited entries",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/lean/index-entries.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Run check-task-references.sh (PASS) and check-extension-docs.sh (triaged; only expected pre-regeneration drift attributable to this plan)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Widened scope per this phase's own Scope Hypothesis instruction: found and fixed four additional wrong-assertion sites beyond the six files named in Phases 1-6 -- lean/context/project/lean4/tools/mcp-tools-guide.md ('.mcp.json' claim), core/templates/extension-readme-template.md (the propagation-risk template every future extension README copies from), filetypes/README.md (SuperDoc/openpyxl 'Configured automatically' claims plus a stale note), and core/docs/guides/adding-domains.md (mcp_servers dead-field example, parallel to the Phase 3 fix in creating-extensions.md). All fixes are prose/comment corrections, matching the pattern already established across Phases 1-6. No Reasoned Exclusions record needed -- every discovered hit was corrected, none deferred."
+}

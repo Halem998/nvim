@@ -1062,7 +1062,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Recovery patterns for MCP tool failures",
-      "line_count": 257,
+      "line_count": 261,
       "keywords": [
         "patterns",
         "mcp",

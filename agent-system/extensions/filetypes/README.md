@@ -30,7 +30,11 @@ Provides tracked-changes editing for `.docx` files.
 npx -y @superdoc-dev/mcp
 ```
 
-Configured automatically in `manifest.json`. No API key required.
+**Not currently registered** by anything in this repository. Neither `manifest.json` nor the
+`mcpServers` block in this extension's `settings-fragment.json` registers a server -- Claude Code
+never reads either for server definitions. Registering SuperDoc requires a write to user-scope
+`~/.claude.json` (a host-level/home-manager activation block or a `core/scripts/` setup script),
+which does not yet exist for this server. No API key required.
 
 **Used by**: `docx-edit-agent` (for tracked-changes edits requested via `/edit`)
 
@@ -42,11 +46,17 @@ Provides spreadsheet access and cell-level manipulation.
 npx -y @jonemo/openpyxl-mcp
 ```
 
-Configured automatically in `manifest.json`. No API key required.
+**Not currently registered** by anything in this repository, for the same reason as SuperDoc
+above. No API key required.
 
 **Used by**: `spreadsheet-agent` (for reading `.xlsx` structure and formulas)
 
-**Note**: Subagents cannot access project-scoped MCP servers. The SuperDoc and openpyxl servers must be configured in user scope (`~/.claude.json`) for `docx-edit-agent` and `spreadsheet-agent` to use them. The `manifest.json` entries declare the servers for the extension, but Claude Code's scoping rules still apply.
+**Note**: project-scoped `.mcp.json` servers require an interactive approval prompt that a
+subagent cannot satisfy, so `docx-edit-agent` and `spreadsheet-agent` can only use SuperDoc and
+openpyxl once each is registered in user scope (`~/.claude.json`) -- registration is a pending
+follow-up, not something either `manifest.json` or `settings-fragment.json` performs today. See
+[MCP Server Ownership](../core/context/patterns/mcp-server-ownership.md) for the full
+registration/permission split.
 
 ## Commands
 

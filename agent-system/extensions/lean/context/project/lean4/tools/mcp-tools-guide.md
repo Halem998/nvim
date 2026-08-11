@@ -24,7 +24,8 @@ The `lean-lsp` MCP server provides four capability groups:
 
 ## Configuration
 
-The MCP server is configured in `.mcp.json`:
+The server is registered in user-scope `~/.claude.json` (never in a project-scoped `.mcp.json` or
+in any settings file) by `core/scripts/setup-lean-mcp.sh`, which writes an entry shaped like this:
 
 ```json
 {
@@ -40,6 +41,13 @@ The MCP server is configured in `.mcp.json`:
   }
 }
 ```
+
+User scope is required rather than project-scoped `.mcp.json` because project-scoped servers
+require an interactive approval prompt that a subagent cannot satisfy. Tool permissions are
+granted separately, by a `mcp__lean-lsp__*` wildcard in this extension's own
+`settings-fragment.json`. See
+[MCP Server Ownership](../../../../../core/context/patterns/mcp-server-ownership.md) for the
+full registration/permission split.
 
 ## Available Tools
 

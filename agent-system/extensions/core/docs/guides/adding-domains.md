@@ -48,7 +48,8 @@ agent-system/extensions/your-domain/
 │                               #   a resource-only extension with no skills/commands may omit
 │                               #   both the file and the merge_targets.claudemd key entirely)
 ├── index-entries.json         # Context index entries (optional)
-├── settings-fragment.json     # MCP server configs (optional)
+├── settings-fragment.json     # Permission grants, incl. MCP tool permissions (optional --
+│                               #   does NOT register an MCP server; see mcp-server-ownership.md)
 ├── agents/                    # Domain agents
 │   ├── your-domain-research-agent.md
 │   └── your-domain-implementation-agent.md
@@ -107,10 +108,15 @@ The manifest declares what the extension provides:
       "source": "index-entries.json",
       "target": ".claude/context/index.json"
     }
-  },
-  "mcp_servers": {}
+  }
 }
 ```
+
+Omit `mcp_servers` -- it is inert and not consumed by the loader. If your domain uses an MCP
+server, register it in user-scope `~/.claude.json` (host-level activation block or a
+`core/scripts/` setup script) and grant its tools via a `mcp__{server}__*` wildcard in
+`settings-fragment.json`'s `permissions.allow`. See
+[MCP Server Ownership](../../context/patterns/mcp-server-ownership.md).
 
 ### EXTENSION.md Format
 

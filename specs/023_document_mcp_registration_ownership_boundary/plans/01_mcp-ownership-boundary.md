@@ -1,7 +1,7 @@
 # Implementation Plan: MCP Registration/Permission Ownership Boundary
 
 - **Task**: 23 - Document MCP registration vs permission ownership boundary; reconcile lean-lsp three-way duplication
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/023_document_mcp_registration_ownership_boundary/reports/01_mcp-registration-ownership-boundary.md
@@ -442,33 +442,52 @@ here.
 
 ---
 
-### Phase 7: Repo-wide consistency sweep and gate run [NOT STARTED]
+### Phase 7: Repo-wide consistency sweep and gate run [COMPLETED]
 
 **Goal**: Confirm no residual wrong assertion survives anywhere in the source store, and that every
 mechanical gate this change can be checked against passes at source level.
 
 **Tasks**:
-- [ ] Run `grep -rn 'mcpServers' agent-system/` and classify every hit: a settings-fragment
+- [x] Run `grep -rn 'mcpServers' agent-system/` and classify every hit: a settings-fragment
       declaration in nix/memory/filetypes/founder/epidemiology is expected and named in the Known
       gaps section; a prose hit presenting it as a working registration path is a defect this task
-      must fix.
-- [ ] Run `grep -rni 'Configured automatically in' agent-system/` and confirm no MCP registration
-      claim remains.
-- [ ] Run `grep -rn 'mcp_servers' agent-system/extensions/core/docs/` and confirm every remaining
-      mention describes the field as inert.
-- [ ] Run `jq empty` over every JSON file touched by this plan
+      must fix. *(completed: found and fixed one additional in-scope prose hit not named in Phase 6
+      -- lean's `context/project/lean4/tools/mcp-tools-guide.md` asserted "The MCP server is
+      configured in `.mcp.json`", contradicting the now-corrected README/script; corrected to
+      describe the actual user-scope registration path)*
+- [x] Run `grep -rni 'Configured automatically in' agent-system/` and confirm no MCP registration
+      claim remains. *(completed: found and fixed two more sites beyond the four Phase-6 files --
+      `core/templates/extension-readme-template.md` (the template every future extension README
+      copies from) and `filetypes/README.md` (SuperDoc/openpyxl, both carrying the same wrong
+      claim); widened scope noted here per this phase's own Scope Hypothesis instruction)*
+- [x] Run `grep -rn 'mcp_servers' agent-system/extensions/core/docs/` and confirm every remaining
+      mention describes the field as inert. *(completed: found and fixed one more site,
+      `core/docs/guides/adding-domains.md`, carrying the same dead-field example and directory-tree
+      mischaracterization Phase 3 fixed in `creating-extensions.md`)*
+- [x] Run `jq empty` over every JSON file touched by this plan
       (`core/root-files/settings.json`, `lean/settings-fragment.json`, `core/index-entries.json`).
-- [ ] Re-run `bash .claude/scripts/generate-context-line-counts.sh --check` now that all prose edits
-      are final, and correct the new entry's `line_count` if the earlier value drifted.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm no new finding traces to a
-      file this plan touched.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and triage its output: source-vs-deployed
+      *(completed: all exit 0)*
+- [x] Re-run `bash .claude/scripts/generate-context-line-counts.sh --check` now that all prose edits
+      are final, and correct the new entry's `line_count` if the earlier value drifted. *(completed:
+      the new entry (160) was already exact; two edited-in-place entries had drifted --
+      `core/patterns/mcp-tool-recovery.md` (257->261) and `lean/project/lean4/tools/mcp-tools-guide.md`
+      (149->157) -- both corrected. Remaining single mismatch (`literature/domain/literature-index.md`)
+      predates this task and is out of scope)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm no new finding traces to a
+      file this plan touched. *(completed: PASS, 0 unexempted occurrences across all 4 scanned
+      trees)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and triage its output: source-vs-deployed
       drift findings for files this plan edited are EXPECTED (the `.claude/**` tree is regenerated
       manually by the user and this plan does not redeploy) and are not defects; any finding that
-      is not explained by that drift must be resolved.
-- [ ] Record in the implementation summary that a manual regeneration is required for these
+      is not explained by that drift must be resolved. *(completed: the only finding attributable to
+      this plan is `core: FAIL: deployed script content drift ... scripts/setup-lean-mcp.sh`, the
+      exact expected-and-non-blocking pre-regeneration drift case; the `literature` FAIL and the
+      generic `README.md older than manifest.json` WARNs across many extensions predate this task
+      and are unrelated)*
+- [x] Record in the implementation summary that a manual regeneration is required for these
       source-store changes to reach the deployed tree, and that the systemic
-      dead-`mcpServers` finding across five extensions remains an open follow-up.
+      dead-`mcpServers` finding across five extensions remains an open follow-up. *(completed, see
+      summary)*
 
 **Timing**: 25 minutes
 
@@ -498,24 +517,25 @@ this phase and note the widened scope.
 
 ## Testing & Validation
 
-- [ ] `agent-system/extensions/core/context/patterns/mcp-server-ownership.md` exists, is non-empty,
+- [x] `agent-system/extensions/core/context/patterns/mcp-server-ownership.md` exists, is non-empty,
       and answers the acceptance question standalone: a reader learns where to declare a new MCP
-      server and where to grant its permissions without consulting another file.
-- [ ] `jq empty` passes on `core/root-files/settings.json`, `lean/settings-fragment.json`, and
-      `core/index-entries.json`.
-- [ ] `grep -c 'mcp__lean-lsp' agent-system/extensions/core/root-files/settings.json` returns 0.
-- [ ] `jq '.mcpServers' agent-system/extensions/lean/settings-fragment.json` returns `null` and
-      `.permissions.allow` holds exactly one wildcard entry.
-- [ ] `bash .claude/scripts/generate-context-line-counts.sh --check` reports no mismatch for the new
-      index entry.
-- [ ] `bash .claude/scripts/check-task-references.sh` reports no new finding in any file this plan
-      touched.
-- [ ] `bash -n agent-system/extensions/core/scripts/setup-lean-mcp.sh` exits 0 and its diff is
-      comment-only.
-- [ ] Every one of the four corrected docs (`permission-configuration.md`, `extension-system.md`,
+      server and where to grant its permissions without consulting another file. *(verified)*
+- [x] `jq empty` passes on `core/root-files/settings.json`, `lean/settings-fragment.json`, and
+      `core/index-entries.json`. *(verified)*
+- [x] `grep -c 'mcp__lean-lsp' agent-system/extensions/core/root-files/settings.json` returns 0.
+      *(verified)*
+- [x] `jq '.mcpServers' agent-system/extensions/lean/settings-fragment.json` returns `null` and
+      `.permissions.allow` holds exactly one wildcard entry. *(verified)*
+- [x] `bash .claude/scripts/generate-context-line-counts.sh --check` reports no mismatch for the new
+      index entry. *(verified; two other in-place-edited entries were also corrected, see Phase 7)*
+- [x] `bash .claude/scripts/check-task-references.sh` reports no new finding in any file this plan
+      touched. *(verified: PASS)*
+- [x] `bash -n agent-system/extensions/core/scripts/setup-lean-mcp.sh` exits 0 and its diff is
+      comment-only. *(verified)*
+- [x] Every one of the four corrected docs (`permission-configuration.md`, `extension-system.md`,
       `creating-extensions.md`, `mcp-tool-recovery.md`) plus both READMEs links the canonical
-      pattern document.
-- [ ] No file outside `specs/**` touched by this plan contains a task-number citation.
+      pattern document. *(verified)*
+- [x] No file outside `specs/**` touched by this plan contains a task-number citation. *(verified)*
 
 ## Artifacts & Outputs
 
