@@ -56,7 +56,7 @@ cd /path/to/project && lake build 2>&1
 | `lean_diagnostic_messages` | BLOCKED | Resource contention | Check lean-lsp-mcp issues |
 | `lean_file_outline` | BLOCKED | Performance issues | Check lean-lsp-mcp issues |
 
-**To check current blocking status**: See `.claude/extensions/lean/context/project/lean4/tools/blocked-mcp-tools.md`
+**To check current blocking status**: See `.claude/context/project/lean4/tools/blocked-mcp-tools.md`
 
 ---
 

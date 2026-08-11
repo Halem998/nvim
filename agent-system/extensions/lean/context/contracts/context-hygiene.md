@@ -35,7 +35,7 @@ on every step; consult context-exhaustion-detection.md only once pressure is alr
   relevant.
 - MUST NOT re-read a region already read earlier in the same dispatch; rely on the earlier
   read's content or re-query a narrower range if state may have changed.
-- `lean_file_outline` remains BLOCKED; `@.claude/extensions/lean/context/project/lean4/tools/blocked-mcp-tools.md`
+- `lean_file_outline` remains BLOCKED; `.claude/context/project/lean4/tools/blocked-mcp-tools.md`
   is the single source of truth for its block status — do not hardcode "blocked" logic here,
   consult that file. `Read` with `offset`/`limit` is the mandated substitute for outline-style
   navigation while the block is in effect.
