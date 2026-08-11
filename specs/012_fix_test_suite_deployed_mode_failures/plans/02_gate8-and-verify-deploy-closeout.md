@@ -656,7 +656,7 @@ since planning and the edit must be re-derived, not forced.
 
 ---
 
-### Phase 10: Redeploy through a sanctioned path and confirm a consistent tree [NOT STARTED]
+### Phase 10: Redeploy through a sanctioned path and confirm a consistent tree [IN PROGRESS]
 
 **Goal**: Get Phases 6, 7, and 8's source-store changes into `.claude/`, resolving the recorded
 two-file deploy drift, so the final verification observes one consistent tree.
@@ -676,8 +676,9 @@ document explicitly declines to license any other automated caller. The implemen
   382 deployed
 
 **Tasks**:
-- [ ] Confirm Phases 6, 7, and 8 are all closed before proceeding — a redeploy taken before Phase 8
+- [x] Confirm Phases 6, 7, and 8 are all closed before proceeding — a redeploy taken before Phase 8
       lands would carry a stale `index-entries.json` and defeat the ordering constraint
+      *(completed: Phases 6, 7, 8, and 9 are all [COMPLETED] and committed)*
 - [ ] Obtain a redeploy through a sanctioned path, in this order of preference:
       (a) the orchestrator's inter-cycle redeploy checkpoint, if it fires on this task's
       `modified_files`; (b) an explicit operator action — the `<leader>al` picker's `[Reload All]`
