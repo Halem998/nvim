@@ -243,7 +243,7 @@ git diff -- "$m" | grep -E '^[+-]' | grep -v '^[+-][+-]'
 
 ---
 
-### Phase 3: Acceptance verification against a pre-existing settings file [NOT STARTED]
+### Phase 3: Acceptance verification against a pre-existing settings file [COMPLETED]
 
 **Goal**: Prove the 9 grants land in a `.claude/settings.local.json` that **already existed**,
 that the 3 unsafe tools do not, that pre-existing content survives, and that re-running is
@@ -256,9 +256,10 @@ Verifying here would require either loading `web` into this repo or regenerating
 identical `merge.lua` code path with zero blast radius.
 
 **Tasks**:
-- [ ] Create a scratch fixture under the session scratchpad directory (NOT `/tmp` directly, NOT
+- [x] Create a scratch fixture under the session scratchpad directory (NOT `/tmp` directly, NOT
       anywhere under this repo's `.claude/`), e.g. `$SCRATCH/pw-fixture/.claude/`.
-- [ ] Pre-seed the fixture so it is unambiguously an *already-initialized* project:
+      *(completed: $SCRATCH/pw-fixture/.claude/)*
+- [x] Pre-seed the fixture so it is unambiguously an *already-initialized* project:
       - `.claude/settings.json` containing some plausible pre-existing content (this file's mere
         existence is what makes the fixture represent the install-once scenario; the merge must
         not touch it).
@@ -266,8 +267,10 @@ identical `merge.lua` code path with zero blast radius.
         `permissions.allow` array with an unrelated entry (e.g. `"mcp__nixos__nix"`) and one
         unrelated top-level scalar key, so both the array-append and the never-overwrite-a-scalar
         behaviors are observable.
-- [ ] Record a `sha256sum` (or a copy) of both pre-seeded files before merging.
-- [ ] Run the real merge path headlessly against the fixture:
+      *(completed: settings.json seeded with a `$schema` + `permissions.allow: ["Bash(git status:*)"]`; settings.local.json seeded with `someUnrelatedScalar` and `permissions.allow: ["mcp__nixos__nix"]`)*
+- [x] Record a `sha256sum` (or a copy) of both pre-seeded files before merging.
+      *(completed: recorded to $SCRATCH/pre-shasums.txt)*
+- [x] Run the real merge path headlessly against the fixture:
       ```bash
       cd /home/benjamin/.config/nvim
       FIX=<absolute fixture path>
@@ -278,13 +281,16 @@ identical `merge.lua` code path with zero blast radius.
             print('ok='..tostring(ok)); print(vim.inspect(tracked))" \
         -c "qa!"
       ```
-- [ ] Run the exact same command a **second** time to exercise idempotency.
-- [ ] Optional, best-effort end-to-end tier (attempt it; if it fails for environment reasons,
+      *(completed: ok=true, tracked shows all 9 tools appended)*
+- [x] Run the exact same command a **second** time to exercise idempotency.
+      *(completed: ok=true, tracked shows `items = {}` -- nothing new appended, confirming idempotency)*
+- [x] Optional, best-effort end-to-end tier (attempt it; if it fails for environment reasons,
       record the reason in the summary and rely on the merge-level evidence above, which covers
       the acceptance semantics on its own): a full isolated load,
       `nvim --headless -c "lua require('neotex.plugins.ai.shared.extensions.init').manager.load('web', {project_dir='$FIX', confirm=false})" -c "qa!"`.
       This must target the fixture's `project_dir` only. Under no circumstances run it (or
       `deploy-headless.sh`) against `/home/benjamin/.config/nvim`.
+      *(completed: required correcting the invocation shape to `require(...).create(config).load(...)` -- the module exposes `M.create(config)` returning a manager instance, not a bare `M.manager` table. Loaded `core` then `web` against the fixture's `project_dir` only; both returned `ok2=true`. The resulting fixture `settings.local.json` carries all 9 playwright grants plus the pre-existing `mcp__nixos__nix` entry and `someUnrelatedScalar`, confirmed via jq. Loading `core` additively added its own unrelated `hooks` block to fixture `settings.json` via core's own merge_targets.settings -- orthogonal to this task's playwright grant and not evidence against the settings.json-untouched claim, which was already confirmed via sha256 immediately after the two direct merge_settings runs above, before this optional tier ran.)*
 
 **Timing**: 0.5 hours
 
