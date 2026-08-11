@@ -3,7 +3,9 @@
 - **Task**: 39 - Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap
 - **Started**: 2026-08-11
 - **Completed**: 2026-08-11 (design pass; live-verification pass appended same day at
-  2026-08-11T21:46-21:49 UTC, after `~/.dotfiles` task 129's provisioning work completed in full)
+  2026-08-11T21:46-21:49 UTC and 21:53 UTC, after `~/.dotfiles` task 129's provisioning work
+  completed in full; an authorized translation-server enable/test/revert cycle followed at
+  21:56-22:00 UTC — see the Live Verification section for all three)
 - **Effort**: 3-6 hours (estimate carried from task description)
 - **Dependencies**: 38 (write-back path activation, completed); `~/.dotfiles` task 129
   (machine-level tooling provisioning, completed same day — see the Live Verification section)
@@ -14,8 +16,9 @@
   `zotero-write.sh`, `zotero-export-freshness.sh`, `literature-discover.sh`, and
   `context/project/literature/patterns/zotero-item-creation.md` /
   `domain/zotero-integration.md`; `~/.dotfiles`'s task 129 plan/summary; live probes of `zot`,
-  `zotero-export-freshness.sh`, `zotero-read.sh`, `ss`, and `systemctl --user` (see Live
-  Verification section)
+  `zotero-export-freshness.sh`, `zotero-read.sh`, `ss`, and `systemctl --user`; a real,
+  authorized `~/.dotfiles/home.nix` enable/test/revert cycle exercising translation-server's
+  `POST /search` and `POST /web` end to end (see Live Verification section)
 - **Artifacts**: this report
 - **Standards**: report-format.md, subagent-return.md
 
@@ -59,11 +62,18 @@
   capability exists for Work Item 3's orphaned-attachment problem — `zot` in fact ships `delete`,
   `orphans clean`, and `trash list/restore`, which simplifies that design; reconfirms the storage
   quota state is unverifiable without an out-of-scope write (last known: over quota, unchanged);
-  reconfirms `--via-bridge` is still unavailable (Zotero desktop not running); confirms
-  translation-server is correctly disabled by default but that its `/search` endpoint was already
-  live-verified with a real DOI during provisioning, while `/web` remains genuinely untested by
-  anyone; and confirms `zotero-mcp` is not registered anywhere on this machine, grounding the
-  defer decision in fact.
+  reconfirms `--via-bridge` is still unavailable (Zotero desktop not running); and confirms
+  `zotero-mcp` is not registered anywhere on this machine, grounding the defer decision in fact.
+- **Authorized translation-server enable/test/revert cycle (see dedicated Live Verification
+  subsection)**: with explicit user authorization, temporarily enabled the service in
+  `~/.dotfiles`, exercised both `POST /search` and `POST /web` for real (nine distinct requests,
+  including a genuine `300 Multiple Choices` response and its follow-up selection protocol), then
+  fully reverted and verified the revert. `/search`'s no-match status is now confirmed `HTTP 501`
+  (validates the existing graceful-degradation design unchanged). One real design-relevant finding:
+  `/web` returns `HTTP 200` with a generic `webpage` stub rather than failing for
+  bibliographically-thin pages, so a future `/web` caller must check `itemType`, not just
+  status/non-emptiness — recorded for when `/web` gets a live caller, since today's discovery
+  pipeline still only calls `/search`.
 
 ## Context & Scope
 
@@ -165,10 +175,16 @@ A **5-second timeout** (not the 30s used for PDF downloads) is deliberate: trans
 local/trusted-network service per the seed report, so a slow or absent response should fail fast
 rather than stall the whole ingest call. `curl --fail` distinguishes "service down" (connection
 refused / timeout, `rc != 0`) from "resolved but empty" (200 with `[]`, which the `jq -e '.[0]'`
-check also catches) — the seed report notes the README doesn't document the no-match status
-code, so treating both as the same non-fatal degradation avoids depending on an unconfirmed
-status code (this is the honest-surfacing move: do not assume 404/501 behavior that isn't
-independently confirmed).
+check also catches).
+
+**Update from the live-verification cycle below (2026-08-11T21:59 UTC, real requests against a
+running instance): `/search`'s no-match status code is now CONFIRMED as `501`**, not merely
+assumed — `curl --fail` correctly treats it as a failure (`rc != 0`) since `501` is a non-2xx
+status, so this design's fallback branch was already correct for the confirmed real behavior
+without any change. Both real no-match sub-cases (a well-formed-but-unresolvable DOI, and a
+non-identifier-shaped string) return `501` with different plain-text bodies — the helper does
+not need to distinguish them, since both correctly fall through to the same "not resolved, fall
+back" branch already written above.
 
 **Honest surfacing of which resolution path produced each record.** A `RESOLUTION_PATH` value
 (`"translation-server"` | `"zot-crossref-or-bare"` | `"zot-crossref"` for the pre-existing
@@ -375,12 +391,20 @@ gains one row once `item-add-json`/`item-delete` are actually implemented in a l
   orphan-detection and honest-surfacing pattern (`.data.next`, `.data.attachment_error`) rather
   than inventing a new one, and should apply the Work Item 3 quota pre-check before attempting the
   attach half.
-- **Translation-server's undocumented no-match behavior** (seed report: neither a confirmed 404
-  nor 501) means the resolution helper above treats *any* non-2xx or empty-array response as
-  "not resolved, fall back" without trying to distinguish "no match" from "malformed request" —
-  acceptable because both outcomes lead to the same fallback action, but worth re-confirming
-  empirically once a real translation-server instance is reachable from this environment (it was
-  not reachable during this research pass; ~/.dotfiles task 129 provisions it).
+- **Resolved by an authorized live test cycle** (see the Live Verification section's dedicated
+  subsection, run 2026-08-11T21:56-22:00 UTC): translation-server's no-match behavior for
+  `/search` is confirmed `HTTP 501` for both a well-formed-but-unresolvable identifier and a
+  non-identifier-shaped input (distinguishable only by response body text). `/web` was also
+  exercised for real, including a genuine `300 Multiple Choices` response and its follow-up
+  selection protocol, both matching the seed report's documented shape exactly. One new, real
+  finding from this cycle that does affect design: `/web` returned `HTTP 200` with a generic
+  `itemType: "webpage"` stub (not a failure) for a bibliographically-empty page, so a future
+  `/web` caller cannot treat `200 + non-empty array` alone as "meaningfully resolved" — it must
+  also check for a non-generic `itemType`. This does not affect Work Item 1's `/search`-only
+  implementation (which has no live `/web` caller today), but is recorded for whenever `/web`
+  gets one. A second new finding: two different multi-result pages returned `HTTP 500` rather
+  than `300` — an apparent translator-specific crash, already correctly handled by the existing
+  `curl --fail`-based fallback with no design change needed.
 - **Reactive quota cache can go stale in the optimistic direction** (operator upgrades the plan or
   frees space, but the cache still says "over quota" for up to 24h) — accepted trade-off, bounded
   by the staleness window; the alternative (no expiry) would require a manual cache-clear step,
@@ -547,43 +571,111 @@ The bridge/local-import alternative to the quota-limited Web-API cloud upload ro
 `patterns/zotero-item-creation.md` section 4, remains unavailable — unchanged from the
 predecessor task's finding, now independently reconfirmed rather than merely re-stated.
 
-### translation-server: confirmed OFF by design; `/search` already live-verified during provisioning; `/web` still never exercised by anyone
+### translation-server: authorized live enable/test/revert cycle performed (2026-08-11T21:56-22:00 UTC)
 
+**This supersedes the account below of what this report originally did NOT do.** The user
+explicitly authorized a coordinated, narrowly-scoped enable/test/revert cycle (relayed by the
+team lead), covering exactly: flipping `services.zoteroTranslationServer.enable` in
+`~/.dotfiles/home.nix`, running `home-manager switch`, exercising both endpoints, then reverting
+and re-switching. That cycle was performed in full, in this session, and is recorded here with
+exact commands and real output. No other `~/.dotfiles` file was touched, no MCP registration was
+changed, and no write of any kind was made against the user's production Zotero library.
+
+**Step 1 — pre-change state recorded.** `cd ~/.dotfiles && git status --porcelain` was empty
+(clean tree) before any change; `git log --oneline -1` showed the tip commit unrelated to this
+session. This is the baseline the revert is checked against below.
+
+**Step 2 — enable and switch.** Added one line to `~/.dotfiles/home.nix` (inside the top-level
+attrset, alongside `imports`): `services.zoteroTranslationServer.enable = true;`, then ran
+`home-manager switch --flake .#benjamin`. Activation log showed `Starting units:
+zotero-translation-server.service`. Confirmed before testing:
 ```
-$ ss -lntp | grep 1969   # nothing
+$ systemctl --user status zotero-translation-server
+Active: active (running) ... Listening on 127.0.0.1:1969
+$ ss -lntp | grep 1969
+LISTEN 0 511 127.0.0.1:1969 ... users:(("node",...))
+```
+
+**Step 3-5 — endpoint exercise, real requests, real responses** (timestamps UTC):
+
+| # | Time | Call | Result |
+|---|---|---|---|
+| 1 | 21:58:03 | `POST /search` body `10.26686/ajl.v22i2.5680` (known-good DOI) | `HTTP 200`, JSON array of one full Zotero `journalArticle` item (title, creators, abstract, ISSN, DOI, date) |
+| 2 | 21:58:09 | `POST /web` body `https://arxiv.org/abs/2301.00001` (arXiv abstract page) | `HTTP 200`, JSON array of one `preprint` item (creators, DOI, arXiv archiveID) |
+| 3 | 21:58:19 | `POST /web` body `https://plato.stanford.edu/entries/logic-modal/` (publisher/reference landing page) | `HTTP 200`, JSON array of one `bookSection` item (SEP-specific fields: edition, tags) |
+| 4 | 21:58:33 | `POST /web` body `https://philpapers.org/s/modal%20logic` (search-results page, attempt to provoke 300) | `HTTP 500`, plain-text body `Internal Server Error` — **new finding**, see below |
+| 5 | 21:58:40 | `POST /web` body `https://scholar.google.com/scholar?q=...` (search-results page, second attempt) | `HTTP 500`, plain-text body `Internal Server Error` — same failure mode as #4 |
+| 6 | 21:58:46 | `POST /web` body `https://arxiv.org/list/cs.LO/2024-01` (arXiv subject-listing page) | **`HTTP 300`**, body `{"url":..., "session":"jYlmfS69hYhHJIz", "items": {"2401.00164": "Solving Causal Stream Inclusions", ... 48 more `id: title` pairs}}` — exact shape the seed report predicted from the README, now confirmed real |
+| 6b | 21:58:56 | Follow-up: `POST /web`, `Content-Type: application/json`, body = the same `{url, session, items}` object from #6 trimmed to 2 selected IDs (values kept as their title strings) | `HTTP 200`, JSON array of 2 fully-resolved `preprint` items — the full multi-choice protocol works end to end exactly as documented |
+| 7 | 21:59:03 | `POST /search` body `10.9999/totally-bogus-nonexistent-doi-xyz-123` (well-formed but unresolvable DOI) | **`HTTP 501`**, plain-text body `No items returned from any translator` |
+| 8 | 21:59:05 | `POST /web` body `https://example.com/` (a real but bibliographically-empty page) | `HTTP 200`, JSON array of one **generic `webpage`** item (only `title`/`url`/`accessDate` — no bibliographic fields) — **new finding**, see below |
+| 9 | 21:59:05 | `POST /search` body `this is not a doi or isbn at all` (malformed, not identifier-shaped) | `HTTP 501`, plain-text body `No identifiers found` |
+
+**Step 6 — revert and verify** (22:00 UTC): the added `home.nix` line was removed via a direct
+file edit (not `git checkout`, which the repo's destructive-git guard correctly blocked on a
+dirty tree — using a precise inverse edit was the safe path instead), confirmed
+`git diff home.nix` empty and `git status --porcelain` empty (byte-identical to the Step 1
+baseline). `home-manager switch --flake .#benjamin` was run again; activation log showed
+`Stopping units: zotero-translation-server.service`. Final state confirmed:
+```
+$ ss -lntp | grep 1969            # nothing
 $ systemctl --user list-unit-files 'zotero-translation-server*'
 0 unit files listed.
+$ systemctl --user status zotero-translation-server
+Unit zotero-translation-server.service could not be found.
+$ cd ~/.dotfiles && git status
+nothing to commit, working tree clean
 ```
-The service is correctly disabled by default (`services.zoteroTranslationServer.enable = false`
-in `~/.dotfiles`) — no unit even exists right now (the module wraps the whole
-`systemd.user.services` block in `lib.mkIf cfg.enable`), so there is nothing listening on 1969.
-This matches the dotfiles plan's intended design, not a defect.
+The service is back to fully disabled (not merely stopped — the unit file itself is gone, since
+the module wraps the whole `systemd.user.services` block in `lib.mkIf cfg.enable`), and
+`~/.dotfiles` is back to its exact pre-change committed state. No lingering side effect.
 
-The dotfiles provisioning task itself already performed a genuine, live smoke test of `POST
-/search` during Phase 8 (temporarily enabling the toggle, testing, then reverting), documented in
-its own summary: `curl -s -d '10.1093/mind/fzab048' -H 'Content-Type: text/plain'
-http://127.0.0.1:1969/search` returned real Zotero-format JSON (title "The Modal Moving
-Spotlight Theory", DOI, creators, ISSN). That result is taken as verified evidence for `/search`'s
-response shape claim in Work Item 1 above — it is a real, executed, successful call, not a
-documentation claim.
+**Design-relevant findings from this cycle** (revising Work Item 1 above):
 
-**`POST /web` has never been exercised by anyone, in either task.** A `grep` across both of the
-dotfiles task's reports and its summary for `/web` found no evidence it was ever called — only
-`/search` was smoke-tested. This gap is real and should be recorded as open, not assumed closed
-by association with `/search`'s success.
-
-**This report does not re-enable the service to close that gap.** Doing so requires editing
-`~/.dotfiles/home.nix` (a file entirely outside this task's `agent-system/extensions/literature/**`
-binding rule and outside this repository) and running `home-manager switch` — a real,
-system-level activation affecting a different repository's managed state. That is exactly the
-kind of outward-facing, cross-repo action this session should not take without explicit
-authorization, and it is outside what either research task 39's or the dotfiles task's binding
-rules license an agent in this position to do unilaterally. **Recommendation, not performed
-here**: either coordinate a short, explicitly-authorized enable/test/revert cycle (mirroring
-Phase 8's own pattern) before or during `/plan 39`'s phase design, or accept `/web`'s response
-shape as unverified-but-documented (per the seed report's citation of the official
-translation-server README) until the literature-side implementation phase needs it running
-anyway and can test it as part of that work.
+1. **`/search` no-match is confirmed `HTTP 501`**, not an assumption — settling the seed report's
+   "undocumented gap." Both genuine sub-cases (well-formed-but-unresolvable identifier, and
+   not-identifier-shaped input) return `501` with different plain-text bodies
+   (`"No items returned from any translator"` vs. `"No identifiers found"`), so a caller cannot
+   distinguish them by status code alone, only by body text. This **validates, rather than
+   changes**, the graceful-degradation helper design above: both sub-cases already fall into the
+   same "not resolved, fall back" branch, and that was the intended behavior — no design change
+   needed, only the status-code assumption moves from speculative to confirmed.
+2. **`/web` essentially never hard-fails for a well-formed URL — it falls back to a generic
+   `itemType: "webpage"` stub with only `title`/`url`/`accessDate`.** This is a genuinely new
+   finding not covered by the seed report or the original Work Item 1 design: `POST /web` against
+   a bibliographically-empty page (`https://example.com/`) still returned `HTTP 200`, not a
+   failure. **This means `resolve_via_translation_server()`'s "resolved" check cannot be
+   `HTTP 200 + non-empty array` alone for the `/web` path** — that condition is satisfied even by
+   a near-useless generic snapshot. The helper (or its caller) should additionally check the
+   resolved item's `itemType`: treat a bare `"webpage"` result with no richer bibliographic
+   fields (no `DOI`/`creators`/`publicationTitle`/etc.) as equivalent to "not meaningfully
+   resolved" for this bridge's purposes, distinct from a real bibliographic hit. This refinement
+   applies only to a future `/web` caller — today's discovery-record shape still has no live
+   caller path to `/web` (unchanged conclusion from the original design), so it does not block
+   Work Item 1's `/search`-only implementation, but it must be recorded now so a future `/web`
+   integration does not silently treat generic-webpage stubs as successful resolutions.
+3. **A genuine, previously-unknown failure mode was found**: two different multi-result-shaped
+   pages (PhilPapers search results, Google Scholar search results) both returned `HTTP 500
+   Internal Server Error` rather than a `300 Multiple Choices` or any structured error. This
+   appears to be a translator-specific crash (not every site with multiple results necessarily
+   triggers the clean 300 path — the arXiv listing page did, cleanly, while these two did not),
+   not a service-wide defect (the service kept running and served subsequent requests correctly
+   immediately afterward). The graceful-degradation helper's `curl --fail`-based check already
+   treats any non-2xx (including 500) as "not resolved, fall back" — so this is also validated
+   as already-handled by the existing design, not a gap, but it is worth recording that `500` is
+   a real, reachable outcome in practice, not just a theoretical one.
+4. **The `300 Multiple Choices` → follow-up-selection protocol works exactly as documented**: a
+   `POST /web` returning `300` with `{url, session, items}` can be answered by re-`POST`ing the
+   same object (trimmed to the selected `id`s, `Content-Type: application/json`) back to `/web`,
+   yielding a clean `200` with the fully-resolved items. This is now verified, real integration
+   surface, not a documentation claim — directly usable if a future `/web` caller needs to handle
+   multi-result pages (out of scope for Work Item 1's `/search`-only implementation today, but
+   ready to reference when `/web` gets a live caller).
+5. **A non-URL, non-identifier malformed input to `/web`** (mirroring test #9's `/search` case)
+   was not tested — the service had already been reverted by the time this additional case was
+   considered, and re-enabling it again for one more edge case was judged outside the spirit of
+   the single authorized cycle. Flagged as a genuinely open, low-priority question for a future
+   test, not assumed either way.
 
 ### `zotero-mcp`: confirmed NOT registered — Work Item 2's decision stands, now fact-grounded rather than argued alone
 
@@ -618,8 +710,8 @@ sync-lag/quota/bridge-unavailability facts).
 | "No `zot delete`/trash capability found in this repo's docs" (Work Item 3, Risks) | `zot delete`, `zot orphans clean`, and `zot trash list/restore` all exist and are documented in `zot --help` | **Corrected**: recommend wrapping `zot orphans clean` directly; no new Web-API-DELETE design needed |
 | Storage quota state (413, 2745.6 > 300 MB) | Unchanged; not re-verifiable this session without an out-of-scope write | **Stands**, timestamped, not re-confirmed by new evidence either way |
 | `--via-bridge` blocked (Zotero desktop unreachable) | Reconfirmed live: port 23119 closed, `zot bridge status` reports `not_reachable` | **Stands**, now independently reconfirmed |
-| translation-server integration is fully design-only/unverified | `/search` was already live-verified (real DOI, real JSON) during provisioning; `/web` remains genuinely untested by anyone | **Partially corrected**: `/search` moves from "designed" to "designed against a verified real response"; `/web` gap is real and flagged, not closed |
-| zotero-mcp adoption decision argued from landscape reasoning alone | Confirmed not registered/installed anywhere on this machine | **Reinforced, not changed**: defer stands, now grounded in a verified absence |
+| translation-server integration is fully design-only/unverified | Authorized live cycle: both `/search` and `/web` exercised for real (9 requests), including a real `300 Multiple Choices` + follow-up-selection round trip; `/search` no-match confirmed `HTTP 501` | **Fully corrected**: both endpoints and the multi-choice protocol move from "designed against README claims" to "designed against verified real responses"; one new design-relevant finding recorded (`/web`'s generic-`webpage`-stub fallback) |
+| zotero-mcp adoption decision argued from landscape reasoning alone | Confirmed not registered/installed anywhere on this machine (re-confirmed twice, 4 minutes apart) | **Reinforced, not changed**: defer stands, now grounded in a verified absence |
 
 ## Appendix
 
