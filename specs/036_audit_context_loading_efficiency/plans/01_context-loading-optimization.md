@@ -172,7 +172,7 @@ Phases within the same wave can execute in parallel (disjoint file sets: Phase 1
 
 ---
 
-### Phase 4: Re-site literature rows from core to the literature extension [NOT STARTED]
+### Phase 4: Re-site literature rows from core to the literature extension [IN PROGRESS]
 
 **Goal**: Stop `/literature` and `/cite` documentation from rendering in every deploy regardless of whether the literature extension is loaded (F8 mis-siting).
 

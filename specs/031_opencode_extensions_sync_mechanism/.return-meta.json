@@ -1,0 +1,7 @@
+{
+  "status": "in_progress",
+  "task_number": 31,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786459614_0c9ada_31"
+}

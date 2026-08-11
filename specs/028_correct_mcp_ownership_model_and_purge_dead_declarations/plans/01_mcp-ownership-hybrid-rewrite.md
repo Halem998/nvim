@@ -522,7 +522,7 @@ the sweep finds additional contradicting statements, add them to the recorded fo
 
 ---
 
-### Phase 8: Full verification sweep [NOT STARTED]
+### Phase 8: Full verification sweep [IN PROGRESS]
 
 **Goal**: Run the complete gate set and confirm the delta against the captured baseline is clean.
 

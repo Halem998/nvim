@@ -1,5 +1,5 @@
 ---
-next_project_number: 40
+next_project_number: 41
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 40
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,33,34,36 | -- | agent-system, extensions, orchestration-concurrency |
-| 2 | 9,13,29,35 | 17,18,22,33 | agent-system, orchestration-concurrency |
+| 1 | 14,16,17,18,20,22,27,28,31,33,34,36,38,40 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,13,29,35,39 | 17,18,22,33,38 | agent-system, literature, orchestration-concurrency |
 | 3 | 30,37 | 29,35 | agent-system, orchestration-concurrency |
 | 4 | 32 | 28,30,31 | agent-system |
 
@@ -32,7 +32,7 @@ next_project_number: 40
 31 [RESEARCHING] — Give the .opencode/extensions/ mirror a real generation path from
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
-36 [RESEARCHED] — Audit context-loading efficiency across the agent system and its 
+36 [IMPLEMENTING] — Audit context-loading efficiency across the agent system and its 
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -43,8 +43,9 @@ next_project_number: 40
 
 ### Literature
 
-38 [NOT STARTED] — Activate and harden the Zotero write-back path in the literature
-  └─ 39 [NOT STARTED] — Upgrade Zotero metadata resolution and plan the Zotero 10 backen
+38 [NOT STARTED] — Activate the literature extension's designed-but-inactive Zotero 
+  └─ 39 [NOT STARTED] — Upgrade the literature extension's Zotero integration beyond bare
+40 [NOT STARTED] — The `sentence_boundary_glue_count` quality-gate check in `agent-s
 
 ### Orchestration Concurrency
 
@@ -54,6 +55,62 @@ next_project_number: 40
     └─ 37 [NOT STARTED] — Make the concurrency premise handed to per-phase dispatch agents 
 
 ## Tasks
+
+### 40. Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: The `sentence_boundary_glue_count` quality-gate check in `agent-system/extensions/literature/scripts/literature-convert.sh` (function at line 655, called from `run_quality_gate` at line 690, threshold `>= 3`) rejects otherwise-clean conversions of logic and math papers. The regex `[a-z]\.[A-Z]` matches two benign patterns endemic to this corpus: (1) `Ph.D.` in bibliography entries — the `h.D` transition, extremely common in reference lists; (2) single-letter-variable quantifier/binder notation such as `∀x.P`, `∃x.P`, `∃y.E` — the `x.P` transition, standard in logic papers.
+
+=== EMPIRICAL EVIDENCE ===
+
+Observed during Logos/Theory corpus building on 2026-08-11 (session sess_1786462160_5922f5). Both cases are real corpus documents, not synthetic fixtures:
+
+1. Pym–O'Hearn–Yang 2004 "Possible Worlds and Resources": rejected at exactly 4 hits, ALL of them `Ph.D.` in the bibliography.
+2. Ishtiaq–O'Hearn 2001 "BI as an Assertion Language": rejected at 7 hits — 5 quantifier notation (`∀x.P` / `∃x.P` / `∃y.E`), 2 `Ph.D.`.
+
+Both conversions were otherwise clean and were manually promoted from `rejected_path`. Any fix MUST keep these two cases passing.
+
+=== HOW THE GATE BEHAVES TODAY ===
+
+`run_quality_gate` collects reasons from five independent checks (column-interleaving, sentence-boundary-glue, page-coverage, ligature-scan, dehyphenation-check). If ANY reason is present, the converted output is written to `rejected_path`, the final `.md` is NOT written, and the script exits 3. So a single false-positive check silently blocks an otherwise-clean conversion from entering the corpus.
+
+=== FIX DIRECTION ===
+
+Exempt benign patterns BEFORE counting — strip `Ph.D.`/`Ph.D` occurrences and single-letter-variable binder patterns (`[∀∃λ]?[a-z]\.[A-Z]` where the left side is a single-letter variable preceded by a quantifier, binder, or math context) — or use a negative lookbehind so that `P` in `Ph.D` and single-letter variables do not count.
+
+This extends reasoning ALREADY RECORDED in the function's own docstring, which documents why comma/semicolon variants were removed: they false-positived heavily on legitimate math tuple/list notation (`(x,Y)`, `a,B,c`). The period-only pattern was retained on a verified 0-1 baseline across a random sample of 60 real corpus markdown files — that sampling evidently under-covered bibliographies and logic notation, which is exactly the gap this task closes.
+
+=== PRESERVE THE CHECK'S REAL PURPOSE ===
+
+The check must still catch genuine zero-space word fusion of the kind found on Goldblatt/Hodkinson/Venema 2003, where pymupdf4llm dropped inter-word spaces around `<sup>`/`<sub>` markdown spans, producing fused runs like "Thesecondlinefollowsby" — a genuine, previously-undetected correctness defect this check caught. Do NOT raise the numeric threshold as a substitute for narrowing the pattern: that would trade one silent-corruption hazard for another, and would degrade detection on documents where real fusion is present but sparse.
+
+=== REGRESSION FIXTURES ===
+
+`scripts/tests/` currently has NO fixture exercising this check in either direction. `generate-test-fixtures.py` provides `build_two_column_pdf` and `build_bold_heading_pdf`; `test-literature-convert.sh` covers Test 1 (forced-fallback tier actually exercised) and Test 2/2b (two-column reading-order regression). Add BOTH polarities:
+
+1. NEGATIVE fixture (must PASS the gate, exit 0): carries `Ph.D.` bibliography entries plus quantifier/binder notation at a density above the current threshold, mirroring the two real-world cases above.
+2. POSITIVE fixture (must STILL FAIL, exit 3, output written to `rejected_path`): carries genuine fused-word corruption of the Goldblatt/Hodkinson/Venema signature.
+
+Follow the suite's existing constraints: all test conversions write to a scratch temp directory ONLY; the suite NEVER reads from or writes to ~/Projects/Literature/ (the real corpus).
+
+=== ACCEPTANCE CRITERIA ===
+
+1. The two named real-world papers pass the gate.
+2. Genuine fused-word corruption still fails with exit 3 and still writes to `rejected_path`.
+3. Both-polarity fixtures exist, are generated by `generate-test-fixtures.py`, and are wired into `test-literature-convert.sh` as required (non-skipping) assertions.
+4. The function docstring is updated to record the period-pattern exemptions and the empirical cases motivating them, matching the existing comma/semicolon precedent already documented there.
+5. No other gate check (column-interleaving, page-coverage, ligature-scan, dehyphenation-check) is altered, and the numeric threshold `>= 3` is not raised.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target agent-system/extensions/literature/**. NEVER edit the deployed .claude/** tree — it is gitignored, disposable, and regenerated from the source store.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 39. Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap
 - **Effort**: 3-6 hours
@@ -210,11 +267,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 36. Audit context loading efficiency
-- **Status**: [RESEARCHED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [036_audit_context_loading_efficiency/reports/01_team-research.md]
+- **Plan**: [036_audit_context_loading_efficiency/plans/01_context-loading-optimization.md]
 
 **Description**: Audit context-loading efficiency across the agent system and its extensions, then create optimization tasks. A single /task invocation eagerly loaded ~19k of context before doing any work (CLAUDE.md, README, topic-assignment-pattern.md, and unrelated literature/nix/present extension context plus four rules files). The sweep should determine which context is loaded eagerly vs lazily, which loads are unconditional regardless of task type or command, and where @-imports, rules path globs, and extension context indexes can be narrowed or deferred
 
