@@ -1,0 +1,57 @@
+{
+  "status": "researched",
+  "summary": "Team research completed with 4 teammates. Measured session-start eager surface at 69,926 bytes (~17.5k tokens), three-way independently confirmed. Root cause identified: @-imports resolve relative to the containing file's directory, so extension context loads (or silently fails to load) by path-prefix accident rather than design.",
+  "artifacts": [
+    {
+      "type": "research",
+      "path": "specs/036_audit_context_loading_efficiency/reports/01_team-research.md",
+      "summary": "Synthesized research from 4 teammates"
+    },
+    {
+      "type": "research",
+      "path": "specs/036_audit_context_loading_efficiency/reports/01_teammate-a-findings.md",
+      "summary": "Primary angle: eager-load surface measurement and narrowing approach"
+    },
+    {
+      "type": "research",
+      "path": "specs/036_audit_context_loading_efficiency/reports/01_teammate-b-findings.md",
+      "summary": "Alternatives and prior art, ranked by savings-per-unit-of-churn"
+    },
+    {
+      "type": "research",
+      "path": "specs/036_audit_context_loading_efficiency/reports/01_teammate-c-findings.md",
+      "summary": "Critic: premise interrogation, harm model, safety triage"
+    },
+    {
+      "type": "research",
+      "path": "specs/036_audit_context_loading_efficiency/reports/01_teammate-d-findings.md",
+      "summary": "Horizons: roadmap alignment, task shape, growth mechanism"
+    }
+  ],
+  "team_execution": {
+    "enabled": true,
+    "wave_count": 1,
+    "teammates_spawned": 4,
+    "teammates_completed": 4,
+    "teammates_failed": 0,
+    "token_usage_multiplier": 5.0,
+    "degraded_to_single": false
+  },
+  "teammate_results": [
+    { "teammate": "a", "angle": "primary", "status": "completed", "confidence": "high" },
+    { "teammate": "b", "angle": "alternatives", "status": "completed", "confidence": "high" },
+    { "teammate": "c", "angle": "critic", "status": "completed", "confidence": "high" },
+    { "teammate": "d", "angle": "horizons", "status": "completed", "confidence": "high" }
+  ],
+  "synthesis": {
+    "conflicts_found": 4,
+    "conflicts_resolved": 4,
+    "gaps_identified": 5,
+    "wave_2_triggered": false
+  },
+  "metadata": {
+    "session_id": "sess_1786461982_2337d4",
+    "agent_type": "skill-team-research",
+    "model_flag": "fable"
+  }
+}

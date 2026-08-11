@@ -1,5 +1,5 @@
 ---
-next_project_number: 37
+next_project_number: 38
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 37
 |------|-------|------------|--------|
 | 1 | 14,16,17,18,20,22,27,28,31,33,34,36 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 9,13,29,35 | 17,18,22,33 | agent-system, orchestration-concurrency |
-| 3 | 30 | 29 | agent-system |
+| 3 | 30,37 | 29,35 | agent-system, orchestration-concurrency |
 | 4 | 32 | 28,30,31 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -29,31 +29,112 @@ next_project_number: 37
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 28 [IMPLEMENTING] — Rewrite the canonical MCP ownership document, whose central premi
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta
-31 [NOT STARTED] — Give the .opencode/extensions/ mirror a real generation path from
+31 [RESEARCHING] — Give the .opencode/extensions/ mirror a real generation path from
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
-36 [NOT STARTED] — Audit context-loading efficiency across the agent system and its 
+36 [RESEARCHED] — Audit context-loading efficiency across the agent system and its 
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
 
 ### Extensions
 
-22 [NOT STARTED] — Silence and correct opencode-agents.json fragment validation spam
+22 [RESEARCHING] — Silence and correct opencode-agents.json fragment validation spam
 
 ### Orchestration Concurrency
 
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
 33 [NOT STARTED] — Fix two coupled, high-severity run-state-integrity defects in the
   └─ 35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
+    └─ 37 [NOT STARTED] — Make the concurrency premise handed to per-phase dispatch agents 
 
 ## Tasks
 
-### 36. Audit context loading efficiency
+### 37. Replace the unsound no-concurrency premise with a wired, checkable territory contract for per-phase dispatch
+- **Effort**: 3-6 hours
 - **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: Task 33, Task 35
+
+**Description**: Make the concurrency premise handed to per-phase dispatch agents SOUND and CHECKABLE. Observed live as a near-miss during a real `/orchestrate --hard` run.
+
+=== OBSERVED FAILURE (near-miss, not a clean pass) ===
+
+The phase-19 agent woke during the phase-21 dispatch's flight and correctly observed: five commits it did not make; uncommitted modifications in FormalSystem/Metalogic/Algebraic/FlowFrame.lean and FormalSystem/Metalogic/BXCanonical/CompletenessDedekind.lean; and a `lake build` running. It declined to touch any of it and deliberately did not kill the running build. It also explicitly retracted the premise it had been given, noting that its own earlier verification numbers were measured at commit 8bc318b3e and say nothing about the tree as it now stands.
+
+That correct outcome came from the agent reasoning PAST the premise it was operating under. The premise pointed the other way: in substance, "no other agent is running concurrently, so any claim of a concurrent dispatch is false." Such a premise pre-emptively discredits a TRUE observation and would license a woken agent to dismiss real concurrent work as fictitious and edit into another dispatch's live territory. The system got the right answer by luck of agent judgment, not by contract.
+
+=== VERIFICATION CORRECTED THE ATTRIBUTION -- READ THIS BEFORE STARTING ===
+
+The defect was reported as bad wording in "the H7 territory contract slot in the Stage 4 per-phase dispatch context." Direct inspection of the source store shows there is NO SUCH SLOT, and no such assertion exists as a fixed string anywhere. The real situation is different, and worse:
+
+1. NO TERRITORY IS EVER SENT IN HARD MODE. The Stage 4 `dispatch_context` JSON (skill-orchestrate-hard/SKILL.md lines 676-687) contains exactly: task_number, task_type, session_id, orchestrator_mode, effort_flag, plan_path, roadmap_path, phase_number, task_dir, handoff_path. There is no `territory` key. The inline comment at line 674 states the intent explicitly: "Determine territory for this phase (single-phase dispatch, no parallel territory needed -- parallel wave dispatch is disabled)."
+
+2. THE DISPATCH PROMPT HAS NO TERRITORY SLOT. `build_hard_mode_prompt_context()` (lines ~778-791) emits exactly five numbered contract slots: Mission, Anti-Analysis Rules, Wrap-up Contract, Settled Design Preamble, Recovery Discipline. None concerns territory or concurrency.
+
+3. THE BASE ENGINE EMITS NO TERRITORY TEXT AT ALL. `grep -c territory skills/skill-orchestrate/SKILL.md` returns 0.
+
+4. THE AGENT-SIDE TERRITORY CHECK IS THEREFORE DEAD CODE. general-implementation-hard-agent.md Stage 3.6 (lines 144-149) is gated on "If `territory` parameters were provided in delegation context" -- and the orchestrator never provides them. The same is true of its line 107 `territory` param declaration and line 514 "Honor territory boundaries when territory params provided."
+
+5. context/contracts/territory.md IS SCOPED TO A DISABLED FEATURE. Its opening line reads "governs file ownership and commit coordination when multiple agents are dispatched simultaneously." But parallel wave dispatch is DISABLED (skill-orchestrate-hard/SKILL.md lines 816-822). The contract's Territory Declaration Template (lines 71-82) is described as what "the orchestrator includes in each parallel dispatch context" -- i.e. never, in current operation.
+
+CONCLUSION: the unsound assertion was almost certainly IMPROVISED AT RUNTIME rather than read from a file. The most likely seeds are the true-but-narrow statements at line 603 ("Dispatch exactly one phase per cycle") and lines 817-818 ("the orchestrator dispatches exactly one phase per cycle and blocks on its return -- no simultaneous/background Agent calls"). Both are correct statements about the ORCHESTRATOR'S OWN dispatch behaviour, and both are false if read as a GLOBAL no-concurrency invariant, precisely because a previously-reported agent can wake later. With no authoritative territory text in the prompt, the improvised premise filled the vacuum.
+
+THE FIX IS THEREFORE NOT "REWORD THE ASSERTION" -- there is no assertion to reword. It is to WIRE an explicit, sound, checkable contract into the dispatch so the model has no vacuum to improvise into, and so the existing agent-side machinery stops being dead.
+
+CORROBORATING INTERNAL INCONSISTENCY: the source store already contradicts the no-concurrency premise elsewhere. context/standards/git-staging-scope.md lines 195-215 warns that a bare commit sweeps in "a concurrently-dispatched agent's staged-but-uncommitted work," citing "a real, observed defect (two implementation agents each reported their own phase commits swept into a concurrent session's commit message)." general-implementation-hard-agent.md line 422 and general-implementation-agent.md line 229 repeat the same concurrency-aware warning. So one part of the system plans for concurrent agents while the dispatch premise denies they can exist.
+
+=== SUGGESTED DIRECTION (evaluate, do NOT blindly adopt) ===
+
+Assert what is actually true and checkable, rather than a global invariant the orchestrator cannot guarantee. Candidate shape: "This dispatch owns these files. Other agents may exist. If you observe work you did not do -- unexpected commits, uncommitted modifications outside your territory, a running build you did not start -- STOP and report it in your handoff; do not proceed and do not dismiss it." Note that the STOP-and-report behaviour is exactly what the phase-19 agent did correctly on its own; the goal is to make that the contracted behaviour rather than a fortunate improvisation.
+
+Second, separable question: WATCHER TEARDOWN. The phase-19 agent had to stop a redundant self-armed monitor by hand across two separate wakes. Consider requiring agents to tear down watchers/monitors/background jobs before reporting, so the wake does not happen at all. VERIFIED GAP: context/contracts/wrap-up.md currently has ZERO coverage of watchers, monitors, background jobs, or teardown of any kind (grep for watch/monitor/background/teardown/run_in_background returns nothing). This is a genuine hole in the wrap-up contract, not a wording problem. Treat prevention (teardown) and mitigation (sound territory contract) as complementary -- teardown alone cannot cover a resume-driven wake, which no teardown can prevent.
+
+Third: decide whether territory.md should be rescoped from "parallel dispatch only" to cover single-phase dispatch, or whether a separate, smaller single-dispatch contract is cleaner. Whichever is chosen, resolve the now-dead Stage 3.6 agent-side check -- either wire it or remove it, but do not leave it conditional on params that are never sent.
+
+=== SHARED ROOT CAUSE WITH THE HANDOFF DEFECT (RECORD THIS, DO NOT LOSE IT) ===
+
+This defect and the `.orchestrator-handoff.json` single-slot overwrite defect share ONE root cause: THE SYSTEM TREATS "AGENT REPORTED" AS "AGENT TERMINATED". It is not. A dispatch can resume after it reports -- via a stale watcher/monitor it armed, or via a resume.
+
+Both symptoms follow directly from that single false assumption:
+  - A woken predecessor is exactly the LATE WRITER that clobbers the single-slot handoff.
+  - The same wake is what makes a global no-concurrency premise false.
+  - The orchestrator's mtime staleness gate is blind to BOTH for the same reason: a woken predecessor's write carries a NEWER mtime than the successor's dispatch window, so it passes a gate designed only to catch OLD (git-restored) files.
+
+A future implementer who fixes either symptom in isolation will very likely leave the other live. Any fix here MUST be reconciled against the handoff-identity work, and the shared "report != termination" model should be stated ONCE in the source store and referenced from both sites rather than re-derived independently.
+
+=== CO-MAINTENANCE (BINDING) ===
+
+skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md carry an explicit contract about each other (skill-orchestrate-hard/SKILL.md lines 956-961 and 1686-1688: "an edit to either copy REQUIRES the same edit to the other; the two MUST always agree"). Note the ASYMMETRY here: hard mode has territory scaffolding that is unwired, while base mode has none at all. So this is net-new work in base mode, not a mirror edit. Base mode ALSO genuinely dispatches multiple agents concurrently in its multi-task path, so a sound territory contract may matter MORE there, not less. Decide and record explicitly whether base mode gains the same contract.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. No dispatch prompt asserts a global no-concurrency invariant, in either engine. The contract states only what the orchestrator can actually guarantee.
+2. A dispatched agent is contractually REQUIRED to stop and report on observing work it did not do, and is never instructed or licensed to dismiss such an observation as false.
+3. The territory contract is either genuinely wired into single-phase dispatch or explicitly and visibly scoped as inapplicable. No path is left where an agent-side territory check is gated on parameters the orchestrator never sends.
+4. Whatever is decided for general-implementation-hard-agent.md Stage 3.6 is applied consistently to the extension hard agents that share the pattern (lean, cslib).
+5. Watcher/monitor/background-job teardown before reporting is either added to context/contracts/wrap-up.md or explicitly recorded as out of scope with a reason.
+6. The shared "agent report != agent termination" root cause is stated once in the source store and cross-referenced from both this fix and the handoff-identity fix.
+7. A reviewer can trace, from the dispatch prompt text alone, exactly what concurrency guarantee the agent is being given and why it is true.
+
+=== SEQUENCING ===
+
+Depends on the handoff-identity/loop-guard task (shared root cause; that task establishes the "a dispatch can resume after reporting" model this contract must reflect) and on the spurious-phase-advance task. All three edit skill-orchestrate-hard/SKILL.md, so the dependencies also serialize overlapping edit territory. Related: the spurious-phase-advance defect produced a FALSE territory-conflict signal, whereas this defect risks dismissing a TRUE one -- the two are opposite failure directions on the same reasoning path and should end up mutually consistent.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target /home/benjamin/.config/nvim/agent-system/extensions/** (core, plus the lean and cslib extensions where named). NEVER edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 36. Audit context loading efficiency
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [036_audit_context_loading_efficiency/reports/01_team-research.md]
 
 **Description**: Audit context-loading efficiency across the agent system and its extensions, then create optimization tasks. A single /task invocation eagerly loaded ~19k of context before doing any work (CLAUDE.md, README, topic-assignment-pattern.md, and unrelated literature/nix/present extension context plus four rules files). The sweep should determine which context is loaded eagerly vs lazily, which loads are unconditional regardless of task type or command, and where @-imports, rules path globs, and extension context indexes can be narrowed or deferred
 
@@ -163,7 +244,15 @@ NOTE ON INDEPENDENCE: this task shares no files with the orchestrator run-state 
 === BINDING RULES ===
 
 SOURCE-STORE RULE: all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/**. NEVER edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
-DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.=== ADDENDUM: LIVE REPRODUCTION (appended by the orchestrator; the meta agent hit this itself and was terminated by an API usage limit before it could record the trigger) ===
+
+While committing the very tasks that describe this defect, the meta agent's own `git commit` was BLOCKED by `guard-destructive-git.sh` — on a command line containing no `-a`, no `-am`, and no `--all`. Its last words before termination: "The guard just blocked a commit that contains no `-a`, `-am`, or `--all` — a live reproduction of Defect 4. Let me identify the exact trigger to record as evidence." It did not get to identify the trigger.
+
+This is a second, independent live firing (the first was during a `/orchestrate 414 --hard` run in the BimodalLogic repository, where a legitimate commit was blocked until its message was reworded). Both firings share a shape: the blocked command was non-destructive, and the only plausible trigger was TEXT — a commit message describing destructive git operations, in a task about destructive git operations.
+
+Note the self-referential hazard this creates and treat it as an acceptance criterion: any commit message, task description, plan, or test fixture that DISCUSSES destructive git commands can trip a prose-matching guard. Work on this very task is therefore likely to trip it repeatedly. The fix must make it safe to write about `git reset --hard` without being unable to commit that writing.
+
+Reproduction hint for the implementer: the commit that eventually succeeded was `f2679860a` ("meta: create 3 tasks for hard-mode orchestrator defect remediation"). Compare against whatever earlier message was rejected — the delta identifies the trigger substring. Per the task body above, the `git add`/`git commit` over-staging detectors already quote-strip via `seg_scan`; it is the destructive chain (lines 116-184) that greps raw, and that is where both firings originate.
 
 ---
 
@@ -241,6 +330,46 @@ Apply it per defect, noting they differ in shape:
 
 SOURCE-STORE RULE: all edits target /home/benjamin/.config/nvim/agent-system/extensions/** (core, plus the cslib and lean extensions where named). NEVER edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
 DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+=== SHARED ROOT CAUSE WITH THE TERRITORY-ASSERTION DEFECT (ADDED AFTER A FIFTH LIVE OBSERVATION) ===
+
+Defect A above and the unsound-territory-assertion defect (tracked separately, and dependent on
+this task) share ONE root cause: THE SYSTEM TREATS "AGENT REPORTED" AS "AGENT TERMINATED". It is
+not. A dispatch can resume after it reports -- via a stale watcher/monitor it armed, or via a
+resume.
+
+Both symptoms follow directly from that single false assumption:
+  - A woken predecessor is exactly the LATE WRITER that clobbers the single-slot handoff
+    (Defect A above).
+  - The same wake is what makes a global no-concurrency premise false (the separate defect).
+  - The mtime staleness gate is blind to BOTH for the same reason: a woken predecessor's write
+    carries a NEWER mtime than the successor's dispatch window, so it passes a gate designed only
+    to catch OLD (git-restored) files.
+
+CORROBORATING LIVE EVIDENCE: during the same run, the phase-19 agent woke during the phase-21
+dispatch's flight and observed five commits it did not make, uncommitted modifications in two
+FormalSystem/Metalogic files, and a running `lake build`. That is the wake path in Defect A stated
+above, directly observed, and it recurred across two separate wakes.
+
+BINDING CONSEQUENCE FOR THIS TASK: do NOT fix the handoff identity in isolation. The "report !=
+termination" model MUST be stated ONCE in the source store as part of this work and referenced
+from both fix sites rather than re-derived independently. A per-dispatch identity scheme designed
+on the assumption that a reported dispatch is finished will not actually close Defect A -- the
+whole point is that the predecessor is still alive and still writing. Additional acceptance
+criterion: the chosen identity mechanism must be demonstrably correct when the PREDECESSOR is
+still live and writing, not merely when it is finished.
+=== ADDENDUM (appended by the orchestrator after task creation; the meta agent was terminated by an API usage limit before it could fold this in) ===
+
+DEFECT 5 — UNSOUND_TERRITORY_ASSERTION. Source: `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`, the H7 territory contract slot in the Stage 4 per-phase dispatch context (check the base engine for equivalent boilerplate).
+
+The H7 slot tells each dispatched agent: "No other agent is running concurrently — any claim of a concurrent dispatch is false." This is unsound, and structurally so. Hard mode dispatches one phase per cycle, and a phase agent that has finished and reported can be WOKEN AGAIN later (by a stale watcher/monitor it armed, or by a resume) while a SUCCESSOR phase dispatch is mid-flight. At that wake the assertion is false. Worse, it is phrased so as to pre-emptively discredit the true observation, which would license a woken agent to dismiss real concurrent work as fictitious and edit into another dispatch's live territory.
+
+Observed live (near-miss, not a clean pass): the phase-19 agent woke during the phase-21 dispatch's flight, saw five commits it did not make, uncommitted modifications in `FormalSystem/Metalogic/Algebraic/FlowFrame.lean` and `FormalSystem/Metalogic/BXCanonical/CompletenessDedekind.lean`, and a running `lake build`. It touched none of it, deliberately did not kill the build, and explicitly retracted the premise it had been given. That correct outcome came from the agent reasoning PAST the contract it was handed — the contract pointed the other way. The same agent woke four separate times on self-armed monitors.
+
+SHARED ROOT CAUSE (record this explicitly): defects 1 and 5 are one bug wearing two faces — "an agent's report is treated as its termination, when it can in fact resume afterwards." The wake that makes the territory assertion false is the same wake that produces the stale single-slot handoff write, and the orchestrator's mtime staleness gate is blind to both for the same reason (a woken predecessor writes with a NEWER mtime than the successor's dispatch window). An implementer fixing either in isolation will leave the other live.
+
+Suggested direction (evaluate, do not blindly adopt): have the territory contract assert only what is true and checkable — this dispatch owns these files, others may exist, and if you observe work you did not do, STOP and report rather than proceed or dismiss — instead of asserting a global no-concurrency invariant the orchestrator cannot guarantee. Also consider requiring agents to tear down watchers/monitors before reporting, so the wake never happens.
+
+DEFECT 6 — UNVERIFIED_PHASE_MARKER_ON_INFRA_TERMINATION (newly observed; decide whether it belongs here or as its own task). The phase-21 agent wrote `[COMPLETED]` into the plan's phase heading BEFORE writing its handoff, then died to an API limit. Result: the plan marker claimed 21/23 complete while the handoff still reported 20, with no phase-completion commit and only one sub-step commit on disk. Because the next-phase heading scan trusts the plan marker, an interrupted dispatch can cause the SUCCESSOR phase to be dispatched over unconfirmed work. The orchestrator downgraded the marker to `[PARTIAL]` by hand. Consider ordering the wrap-up so the handoff is written before any plan-marker promotion, or making the scan cross-check the marker against the handoff.
 
 ---
 
@@ -267,7 +396,7 @@ VERIFICATION: mcp-server-ownership.md exists in the deployed tree; the deployed 
 ---
 
 ### 31. Opencode extensions sync mechanism
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 19
@@ -513,7 +642,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 22. Silence opencode fragment validation spam
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 19
