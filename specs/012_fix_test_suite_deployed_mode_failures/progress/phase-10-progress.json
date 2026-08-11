@@ -2,7 +2,7 @@
   "phase": 10,
   "phase_name": "Redeploy through a sanctioned path and confirm a consistent tree",
   "started_at": "2026-08-11T02:35:00Z",
-  "last_updated": "2026-08-11T02:40:00Z",
+  "last_updated": "2026-08-11T03:05:00Z",
   "objectives": [
     {
       "id": 1,
@@ -13,14 +13,39 @@
     },
     {
       "id": 2,
-      "description": "Obtain a redeploy through a sanctioned path: (a) orchestrator inter-cycle redeploy checkpoint, (b) explicit operator action -- never self-invoked",
-      "status": "in_progress",
+      "description": "Obtain a redeploy through a sanctioned path -- never self-invoked",
+      "status": "done",
       "files_touched": [],
-      "note": "Per the binding constraint (deploy-headless.sh is manual-by-default, exactly one sanctioned automated caller which is the orchestrator's own inter-cycle checkpoint, never the implementer), this dispatch does NOT self-invoke deploy-headless.sh. Confirmed via diff that the deployed .claude/ tree does not yet reflect Phases 6-9's source changes (claude-refresh.sh, test-claude-refresh-matcher.sh, index-entries.json all DIFFER; the pre-existing system-defect-record.sh and system-defect-discrimination.md drift also still stands). Sent a status message to team-lead requesting the sanctioned redeploy (either the inter-cycle checkpoint or an explicit operator action) -- awaiting response."
+      "note": "This dispatch requested the redeploy from the team lead rather than self-invoking deploy-headless.sh, per the binding constraint. The team lead reported the user explicitly authorized a one-time `bash .claude/scripts/deploy-headless.sh` run, which exited 0, 'Resynced 5 extension(s)'. CORRECTION recorded from team lead: there is no inter-cycle redeploy checkpoint reachable on a single-task /orchestrate path (that checkpoint is skill-orchestrate Stage MT-3 step 7, multi-task mode only), so escalating directly to an explicit operator action was correct, not a fallback from a first-preference path that simply hadn't fired yet."
+    },
+    {
+      "id": 3,
+      "description": "After the redeploy, diff source against deployed for every file this task modified across all phases (18 from Phases 1-5 plus claude-refresh.sh, test-claude-refresh-matcher.sh, index-entries.json) and confirm byte-identity",
+      "status": "done",
+      "files_touched": [],
+      "note": "Independently re-measured (not just trusting the team lead's spot check) all 20 deployable files: IDENTICAL for all 20. index-entries.json has no direct deployed counterpart at .claude/context/index-entries.json -- confirmed this is expected (the deploy engine merges every extension's source index-entries.json into one deployed .claude/context/index.json), and confirmed that merged file's entry for patterns/system-defect-discrimination.md carries the corrected line_count: 397."
+    },
+    {
+      "id": 4,
+      "description": "Specifically confirm the two recorded drift files now match: system-defect-record.sh and system-defect-discrimination.md",
+      "status": "done",
+      "files_touched": [],
+      "note": "Both confirmed IDENTICAL via direct diff -q."
+    },
+    {
+      "id": 5,
+      "description": "Run the deployed .claude/scripts/tests/run-all.sh once and record its counts verbatim",
+      "status": "done",
+      "files_touched": [],
+      "note": "36 passed, 0 failed, 0 skipped, 36 total."
     }
   ],
-  "current_objective": 2,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [],
+  "corrections_from_team_lead": [
+    "There is NO inter-cycle redeploy checkpoint reachable on this task's single-task /orchestrate path -- that checkpoint is skill-orchestrate Stage MT-3 step 7, multi-task mode only. Escalating directly to requesting an explicit operator action, as this dispatch did, was correct.",
+    "agent-system/extensions/literature/index-entries.json is NOT dirty / not mid-edit -- it simply does not appear in git status because it is outside this task's file_scope. What IS mid-edit in that extension: literature-index.md, literature-briefing.sh, literature-search.sh, plus an untracked scripts/literature-pyenv/. The conclusion (leave the literature line_count mismatch alone, report don't fix) was correct; the originally-stated reason (mid-edit) was not the actual reason (out of file_scope)."
+  ]
 }

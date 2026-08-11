@@ -656,7 +656,7 @@ since planning and the edit must be re-derived, not forced.
 
 ---
 
-### Phase 10: Redeploy through a sanctioned path and confirm a consistent tree [IN PROGRESS]
+### Phase 10: Redeploy through a sanctioned path and confirm a consistent tree [COMPLETED]
 
 **Goal**: Get Phases 6, 7, and 8's source-store changes into `.claude/`, resolving the recorded
 two-file deploy drift, so the final verification observes one consistent tree.
@@ -679,21 +679,34 @@ document explicitly declines to license any other automated caller. The implemen
 - [x] Confirm Phases 6, 7, and 8 are all closed before proceeding — a redeploy taken before Phase 8
       lands would carry a stale `index-entries.json` and defeat the ordering constraint
       *(completed: Phases 6, 7, 8, and 9 are all [COMPLETED] and committed)*
-- [ ] Obtain a redeploy through a sanctioned path, in this order of preference:
+- [x] Obtain a redeploy through a sanctioned path, in this order of preference:
       (a) the orchestrator's inter-cycle redeploy checkpoint, if it fires on this task's
       `modified_files`; (b) an explicit operator action — the `<leader>al` picker's `[Reload All]`
       or a human-run `bash .claude/scripts/deploy-headless.sh` — requested and reported, not
-      self-invoked
+      self-invoked *(completed: this dispatch requested the redeploy rather than self-invoking;
+      the team lead reported the user explicitly authorized a one-time
+      `bash .claude/scripts/deploy-headless.sh` run, which exited 0, "Resynced 5 extension(s)".
+      Correction from team lead, recorded: there is no inter-cycle redeploy checkpoint on a
+      single-task `/orchestrate` path — that checkpoint is `skill-orchestrate` Stage MT-3 step 7,
+      multi-task mode only — so path (a) was never applicable here and escalating to path (b) was
+      the correct move, not a fallback)*
 - [ ] If no sanctioned redeploy is available: close this phase `[BLOCKED]` with the reason recorded
       and state plainly that the deployed tree is stale relative to the source store. Never
-      hand-copy, never self-invoke, never present the result as green
-- [ ] After the redeploy, diff source against deployed for every file this task has modified across
+      hand-copy, never self-invoke, never present the result as green *(not applicable: a
+      sanctioned redeploy did occur)*
+- [x] After the redeploy, diff source against deployed for every file this task has modified across
       all phases — the 18 files from Phases 1-5 plus `claude-refresh.sh`,
       `test-claude-refresh-matcher.sh`, and `index-entries.json` — and confirm each pair is
-      byte-identical
-- [ ] Specifically confirm the two recorded drift files now match: `system-defect-record.sh` and
-      `system-defect-discrimination.md`
-- [ ] Run the deployed `.claude/scripts/tests/run-all.sh` once and record its counts verbatim
+      byte-identical *(completed: 20/20 deployable files byte-identical, independently re-measured
+      by this dispatch after the team lead's own spot check. `index-entries.json` has no direct
+      deployed counterpart — confirmed as expected, not a drift failure, since the deploy engine
+      merges every extension's source `index-entries.json` into one deployed
+      `.claude/context/index.json`; confirmed that merged file carries the corrected
+      `line_count: 397` for `patterns/system-defect-discrimination.md`)*
+- [x] Specifically confirm the two recorded drift files now match: `system-defect-record.sh` and
+      `system-defect-discrimination.md` *(completed: both IDENTICAL)*
+- [x] Run the deployed `.claude/scripts/tests/run-all.sh` once and record its counts verbatim
+      *(completed: 36 passed, 0 failed, 0 skipped, 36 total)*
 
 **Timing**: 45 minutes
 
