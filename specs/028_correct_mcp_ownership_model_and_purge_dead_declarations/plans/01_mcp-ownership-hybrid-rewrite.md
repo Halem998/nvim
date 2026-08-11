@@ -443,24 +443,63 @@ the rewritten ownership doc, so the two do not contradict each other.
 
 ---
 
-### Phase 7: Residual-consistency audit (report-only) [NOT STARTED]
+### Phase 7: Residual-consistency audit (report-only) [COMPLETED]
 
 **Goal**: Identify every remaining in-repo statement that contradicts the new model, and record
 each as a named follow-up without editing anything outside `file_scope`.
 
 **Tasks**:
-- [ ] `grep -rn 'mcpServers\|\.mcp\.json\|project-scoped\|project scope' agent-system/extensions/
-      --include=*.md --include=*.sh` and triage every hit against the new model
-- [ ] Specifically check the known stale sites: `nix/README.md` ("mcp-nixos is not currently
+- [x] `grep -rn 'mcpServers\|\.mcp\.json\|project-scoped\|project scope' agent-system/extensions/
+      --include=*.md --include=*.sh` and triage every hit against the new model *(completed: full
+      sweep run; triaged below)*
+- [x] Specifically check the known stale sites: `nix/README.md` ("mcp-nixos is not currently
       registered by anything in this repository" -- registration is now moving to home-manager
       under name `nixos`), `filetypes/README.md` (MCP Tool Setup section describing the deleted
       block), `epidemiology/README.md` (MCP Server section), `founder/README.md` (MCP Tool Setup
-      section)
-- [ ] Confirm no in-scope file still asserts a subagent access barrier
-- [ ] Record the follow-up list for the implementation summary. Do NOT edit any file outside
+      section) *(completed: all four confirmed stale, described below)*
+- [x] Confirm no in-scope file still asserts a subagent access barrier *(completed: grep on all
+      three in-scope prose/script files returns nothing)*
+- [x] Record the follow-up list for the implementation summary. Do NOT edit any file outside
       `file_scope`: the four READMEs, the five manifests' `mcp_servers` fields,
       `memory/settings-fragment.json`, `~/.claude/settings.json`, and the `web`/`present`
-      fragments are all out of scope by decision, not oversight.
+      fragments are all out of scope by decision, not oversight. *(completed: follow-up list
+      recorded below and in the implementation summary; the sweep found three ADDITIONAL
+      contradicting sites beyond the expected set -- see Scope Hypothesis note)*
+
+**Residual-consistency audit findings** (report-only; none of these were edited):
+
+*Expected set, confirmed stale:*
+1. `agent-system/extensions/nix/README.md` (MCP Tool Setup section) -- still says "not currently
+   registered by anything in this repository"; now stale because migration to a home-manager
+   activation block under server name `nixos` is decided (not just pending).
+2. `agent-system/extensions/filetypes/README.md:54-55` -- repeats the refuted premise verbatim
+   ("project-scoped `.mcp.json` servers require an interactive approval prompt that a subagent
+   cannot satisfy"), the same false claim Phase 3 corrected in `setup-lean-mcp.sh`.
+3. `agent-system/extensions/epidemiology/README.md:28-30` (MCP Server section) -- describes the
+   now-deleted `rmcp` `mcpServers` block as if it still exists.
+4. `agent-system/extensions/founder/README.md:33-67` (MCP Tool Setup section) -- describes the
+   now-deleted `firecrawl`/`sec-edgar` blocks and grants as if they still exist.
+5. Five manifests' dead `mcp_servers` field (`filetypes`, `founder`, `lean`, `memory`, `nix`) --
+   named in the doc's Known-gaps "second dead surface" paragraph, not edited here.
+6. The live playwright grant asymmetry (registered user scope, granted only in `web`/`present`
+   fragments, zero grants in `~/.claude/settings.json`) -- the doc's own worked counter-example,
+   not fixed here.
+7. `agent-system/extensions/memory/settings-fragment.json` -- the one legitimately surviving
+   `mcpServers` block, confirmed exactly-one by Phase 8's grep.
+
+*Additional contradicting sites found by the sweep, beyond the expected set:*
+8. `agent-system/extensions/core/docs/docs-README.md:77` -- asserts the categorical claim
+   verbatim: "Custom subagents cannot access project-scoped MCP servers (`.mcp.json`)."
+9. `agent-system/extensions/core/docs/architecture/extension-system.md:227` and `:500` -- two
+   "only user-scope `~/.claude.json` [registers/does that]" statements, now stale under the
+   hybrid model's two-surface registration.
+10. `agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md:27,45-46` --
+    repeats the refuted subagent-approval-barrier premise as the stated REASON lean-lsp registers
+    in user scope, when the actual reason (per the corrected `setup-lean-mcp.sh` header and the
+    ownership doc) is the computed `LEAN_PROJECT_PATH` requirement, independent of any approval
+    question.
+
+None of sites 1-10 are in `file_scope`; none were edited by this task.
 
 **Timing**: 0.5 hours
 
