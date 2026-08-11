@@ -1,11 +1,11 @@
 {
   "version": "1.1.0",
-  "next_project_number": 27,
+  "next_project_number": 28,
   "active_projects": [
     {
       "project_number": 23,
       "project_name": "document_mcp_registration_ownership_boundary",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Document MCP registration vs permission ownership boundary; reconcile lean-lsp three-way duplication",
       "topic": "mcp-integration",
@@ -18,8 +18,9 @@
       ],
       "description": "Define and document the ownership boundary between the four competing MCP registration/permission mechanisms, and reconcile the existing lean-lsp three-way duplication.\n\nPROBLEM: the agent system now has FOUR mechanisms that can register an MCP server or grant its permissions, with no documented boundary between them:\n(1) A home-manager activation block writing to ~/.claude.json (user scope). This is how the playwright MCP server was registered; it is connected and healthy, exposing 24 browser_* tools.\n(2) Per-extension settings-fragment.json, deployed via the manifest's settings section ({\"source\": \"settings-fragment.json\", \"target\": \".claude/settings.local.json\"}). Used by nix (mcp-nixos plus 2 enumerated tool permissions) and lean (lean-lsp plus 21 enumerated tool permissions).\n(3) core/root-files/settings.json, deployed to .claude/settings.json as INSTALL-ONCE. Currently carries a mcp__lean-lsp__* WILDCARD in permissions.allow.\n(4) core/scripts/setup-lean-mcp.sh, which registers lean-lsp directly into user scope ~/.claude.json.\n\nEVIDENCE THE PROBLEM IS REAL AND ALREADY BITING: lean-lsp is currently registered or permitted by THREE of these simultaneously (mechanisms 2, 3, and 4), and mechanisms 2 and 3 disagree about form -- the extension fragment enumerates 21 individual tools while core grants a blanket wildcard. This is precisely the duplication the playwright integration must avoid repeating.\n\nKEY ARCHITECTURAL CONSTRAINT (already recorded in core/scripts/setup-lean-mcp.sh's own header): custom subagents CANNOT access project-scoped MCP servers (.mcp.json); user scope (~/.claude.json) is required for subagent access. Since agents are the consumers of browser tools, this argues that REGISTRATION belongs in user scope (home-manager or a setup script), while PERMISSION GRANTS must live in the settings files the host app reads. Confirm or refute this split rather than assuming it.\n\nDELIVERABLE: a decision recorded in the source store stating which mechanism owns MCP server REGISTRATION, which owns PERMISSION grants, why, and how the two compose. Update permission-configuration.md and/or extension-system.md, adding a context pattern if warranted. Reconcile the lean-lsp wildcard-vs-enumeration split, or explicitly justify keeping it.\n\nACCEPTANCE: a future extension author can read one document and know where to declare a new MCP server and its permissions without creating a fifth duplicate path.\n\nSOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-08-11T05:30:49Z",
-      "last_updated": "2026-08-11T05:30:49Z",
-      "artifacts": []
+      "last_updated": "2026-08-11T05:34:54Z",
+      "artifacts": [],
+      "session_id": "sess_1786426440_e14088_23"
     },
     {
       "project_number": 24,
@@ -464,6 +465,28 @@
       ],
       "session_id": "sess_1786394806_0d5dd8",
       "completion_summary": "Deleted the dead/corrupting vault-transition-comment step from commands/todo.md and skill-todo/SKILL.md, added a durable rationale note referencing the Step 5.6.2 precedent, renumbered commands/todo.md's vault substeps to 5.7.1-5.7.8, and verified the fix by measurement: strict YAML parse of specs/TODO.md's frontmatter (no stray key), five-bucket survivor accounting via command grep (0 in-scope survivors, matching the research report's internally-inconsistent Executive Summary claim of 3 being resolved in favor of its own detailed accounting section's 0), and a doc-lint gate pass."
+    },
+    {
+      "project_number": 27,
+      "project_name": "remove_dead_opencode_command_router",
+      "title": "Remove the dead .opencode command router and its self-referential test scripts",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [],
+      "file_scope": [
+        ".opencode/scripts/execute-command.sh",
+        ".opencode/scripts/test-execution-system.sh",
+        ".opencode/scripts/test-execution.sh",
+        ".opencode/scripts/test-command.sh",
+        ".opencode/scripts/test-results.md",
+        ".opencode/scripts/README.md"
+      ],
+      "description": ".opencode/scripts/execute-command.sh is a command router that cannot execute anything and is called by nothing but its own tests. Delete it and the three test scripts that exist only to exercise it.\n\nSCOPE NOTE -- THIS IS NOT THE SYNTAX-ERROR TASK. A duplicated case pattern in this file was already fixed in this repo; the file parses cleanly under `bash -n` today, and separately-tracked metrics-sync work already records that fix as done. Do not re-open it. The work here is deletion of a file that is dead for reasons unrelated to that syntax defect. If someone arrives expecting a one-line syntax repair, that repair has already landed.\n\nMEASURED EVIDENCE (live, this repo, do not re-derive):\n\n(1) Its runtime dependency has never existed. Both live branches of its case statement emit a heredoc that runs\n        source \"$OPENCODE_ROOT/context/core/patterns/command-integration.sh\"\n        execute_lean_command \"$command_name\" \"$arguments\"\n    .opencode/context/core/patterns/command-integration.sh is absent. A repo-wide grep for `execute_lean_command` across all *.sh returns matches ONLY inside execute-command.sh's own two echo strings -- the function is defined nowhere. So every successful dispatch path terminates in a missing source file followed by an undefined function. The router has no working branch; the only reachable non-error outcome is the `*)` unknown-command arm that exits 1.\n\n(2) Nothing invokes it. Files referencing execute-command.sh outside specs/**:\n        .opencode/scripts/execute-command.sh    (itself: shebang comment + usage string)\n        .opencode/scripts/test-execution-system.sh   (3 references)\n        .opencode/scripts/test-execution.sh          (1 reference)\n        .opencode/scripts/test-command.sh            (1 reference)\n        .opencode/scripts/test-results.md            (prose describing those tests)\n    opencode.json contains no reference to it. No file under lua/ references it or .opencode/scripts at all. There is no other live execution path wired to this router -- it is not the mechanism by which .opencode commands actually run.\n\n(3) The three test scripts test nothing else. They are 49, 16, and 10 lines; every reference each one makes is to execute-command.sh. Deleting the router without them would leave three scripts whose entire purpose is invoking a file that no longer exists.\n\n(4) It is stale. Last commit touching .opencode/scripts predates this task by roughly five months.\n\nWORK:\n  1. Delete .opencode/scripts/execute-command.sh.\n  2. Delete .opencode/scripts/test-execution-system.sh, test-execution.sh, and test-command.sh.\n  3. Resolve .opencode/scripts/test-results.md -- it documents results for the deleted tests. Decide explicitly between deleting it and reducing it to a note recording that the router was removed; do not leave it describing tests that no longer exist.\n  4. Confirm .opencode/scripts/README.md needs no edit. A grep for execute-command / test-execution / test-command / test-results against it currently returns nothing, so the expected outcome is no change -- but state that you re-checked rather than assuming, since the README is the natural place for a stale pointer to survive.\n\nEDIT TARGET (binding): edit .opencode/** directly. A find across agent-system/ for execute-command.sh and test-execution*.sh returns nothing -- .opencode/ has no source-store counterpart in this repo and is separately git-tracked, so the source-store/deploy-boundary rule that governs .claude/** does not apply here. Do NOT attempt to locate or edit an agent-system source for these files; there is none.\n\nDOWNSTREAM PROPAGATION (in scope to decide, not necessarily to perform): four other repos carry copies of this same router -- Logos/Theory, protocol, ModelChecker, and OpenCode. All four still contain the duplicated case pattern and therefore FAIL `bash -n`, and all four are likewise missing command-integration.sh. This repo is the reload source, so the intended mechanism is that deleting here propagates on the next reload. Verify whether reload actually removes downstream files or only adds and overwrites them -- a reload that never deletes would leave four broken copies in place indefinitely, which is a materially different outcome. Record the finding either way; if propagation does not delete, say so plainly and note what a follow-up would need to cover rather than silently assuming the copies are handled.\n\nACCEPTANCE: after the change, a repo-wide grep for `execute-command.sh` outside specs/** returns zero hits (or only hits inside a deliberately-retained note from item 3, accounted for individually). `bash -n` passes across every remaining .opencode/scripts/*.sh -- it already does for all thirteen non-router scripts, so this must not regress. assess-repo-health.sh reports build_errors unchanged or lower, and specifically not higher, than its pre-change value; report both numbers rather than asserting improvement.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "created": "2026-08-11T05:34:57Z",
+      "last_updated": "2026-08-11T05:34:57Z",
+      "artifacts": [],
+      "session_id": "sess_1786426497_6d2b36"
     }
   ],
   "completed_projects": [],

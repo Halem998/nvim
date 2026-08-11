@@ -1,5 +1,5 @@
 ---
-next_project_number: 27
+next_project_number: 28
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 27
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,19,20,22,23 | -- | agent-system, extensions, orchestration-concurrency, ... |
+| 1 | 14,16,17,18,19,20,22,23,27 | -- | agent-system, extensions, orchestration-concurrency, ... |
 | 2 | 9,13,24 | 17,18,23 | agent-system, mcp-integration |
 | 3 | 25,26 | 24 | mcp-integration |
 
@@ -25,6 +25,7 @@ next_project_number: 27
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
+27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 
 ### Extensions
 
@@ -37,12 +38,57 @@ next_project_number: 27
 
 ### Mcp Integration
 
-23 [NOT STARTED] — Define and document the ownership boundary between the four compe
+23 [RESEARCHING] — Define and document the ownership boundary between the four compe
   └─ 24 [NOT STARTED] — Add a deliberately scoped Playwright MCP permission allowlist so 
     └─ 25 [NOT STARTED] — Activate the already-designed but parked Playwright MCP integrati
     └─ 26 [NOT STARTED] — Migrate slidev deck screenshot verification from the standalone n
 
 ## Tasks
+
+### 27. Remove the dead .opencode command router and its self-referential test scripts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: .opencode/scripts/execute-command.sh is a command router that cannot execute anything and is called by nothing but its own tests. Delete it and the three test scripts that exist only to exercise it.
+
+SCOPE NOTE -- THIS IS NOT THE SYNTAX-ERROR TASK. A duplicated case pattern in this file was already fixed in this repo; the file parses cleanly under `bash -n` today, and separately-tracked metrics-sync work already records that fix as done. Do not re-open it. The work here is deletion of a file that is dead for reasons unrelated to that syntax defect. If someone arrives expecting a one-line syntax repair, that repair has already landed.
+
+MEASURED EVIDENCE (live, this repo, do not re-derive):
+
+(1) Its runtime dependency has never existed. Both live branches of its case statement emit a heredoc that runs
+        source "$OPENCODE_ROOT/context/core/patterns/command-integration.sh"
+        execute_lean_command "$command_name" "$arguments"
+    .opencode/context/core/patterns/command-integration.sh is absent. A repo-wide grep for `execute_lean_command` across all *.sh returns matches ONLY inside execute-command.sh's own two echo strings -- the function is defined nowhere. So every successful dispatch path terminates in a missing source file followed by an undefined function. The router has no working branch; the only reachable non-error outcome is the `*)` unknown-command arm that exits 1.
+
+(2) Nothing invokes it. Files referencing execute-command.sh outside specs/**:
+        .opencode/scripts/execute-command.sh    (itself: shebang comment + usage string)
+        .opencode/scripts/test-execution-system.sh   (3 references)
+        .opencode/scripts/test-execution.sh          (1 reference)
+        .opencode/scripts/test-command.sh            (1 reference)
+        .opencode/scripts/test-results.md            (prose describing those tests)
+    opencode.json contains no reference to it. No file under lua/ references it or .opencode/scripts at all. There is no other live execution path wired to this router -- it is not the mechanism by which .opencode commands actually run.
+
+(3) The three test scripts test nothing else. They are 49, 16, and 10 lines; every reference each one makes is to execute-command.sh. Deleting the router without them would leave three scripts whose entire purpose is invoking a file that no longer exists.
+
+(4) It is stale. Last commit touching .opencode/scripts predates this task by roughly five months.
+
+WORK:
+  1. Delete .opencode/scripts/execute-command.sh.
+  2. Delete .opencode/scripts/test-execution-system.sh, test-execution.sh, and test-command.sh.
+  3. Resolve .opencode/scripts/test-results.md -- it documents results for the deleted tests. Decide explicitly between deleting it and reducing it to a note recording that the router was removed; do not leave it describing tests that no longer exist.
+  4. Confirm .opencode/scripts/README.md needs no edit. A grep for execute-command / test-execution / test-command / test-results against it currently returns nothing, so the expected outcome is no change -- but state that you re-checked rather than assuming, since the README is the natural place for a stale pointer to survive.
+
+EDIT TARGET (binding): edit .opencode/** directly. A find across agent-system/ for execute-command.sh and test-execution*.sh returns nothing -- .opencode/ has no source-store counterpart in this repo and is separately git-tracked, so the source-store/deploy-boundary rule that governs .claude/** does not apply here. Do NOT attempt to locate or edit an agent-system source for these files; there is none.
+
+DOWNSTREAM PROPAGATION (in scope to decide, not necessarily to perform): four other repos carry copies of this same router -- Logos/Theory, protocol, ModelChecker, and OpenCode. All four still contain the duplicated case pattern and therefore FAIL `bash -n`, and all four are likewise missing command-integration.sh. This repo is the reload source, so the intended mechanism is that deleting here propagates on the next reload. Verify whether reload actually removes downstream files or only adds and overwrites them -- a reload that never deletes would leave four broken copies in place indefinitely, which is a materially different outcome. Record the finding either way; if propagation does not delete, say so plainly and note what a follow-up would need to cover rather than silently assuming the copies are handled.
+
+ACCEPTANCE: after the change, a repo-wide grep for `execute-command.sh` outside specs/** returns zero hits (or only hits inside a deliberately-retained note from item 3, accounted for individually). `bash -n` passes across every remaining .opencode/scripts/*.sh -- it already does for all thirteen non-router scripts, so this must not regress. assess-repo-health.sh reports build_errors unchanged or lower, and specifically not higher, than its pre-change value; report both numbers rather than asserting improvement.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 26. Migrate slidev deck verification from standalone npm Playwright script to MCP server
 - **Effort**: 3-6 hours
@@ -123,7 +169,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 23. Document MCP registration vs permission ownership boundary; reconcile lean-lsp three-way duplication
 - **Effort**: 1-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: mcp-integration
 - **Dependencies**: None
