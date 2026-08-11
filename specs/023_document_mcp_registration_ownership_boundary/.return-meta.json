@@ -1,17 +1,62 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/023_document_mcp_registration_ownership_boundary/plans/01_mcp-ownership-boundary.md",
-      "summary": "Seven-phase plan creating the canonical context/patterns/mcp-server-ownership.md, correcting four docs plus two extension READMEs that assert the wrong MCP registration path, and collapsing the lean-lsp three-way duplication to one registration mechanism and one wildcard permission grant."
+      "type": "summary",
+      "path": "specs/023_document_mcp_registration_ownership_boundary/summaries/01_mcp-ownership-boundary-summary.md",
+      "summary": "All 7 phases completed: new canonical mcp-server-ownership.md document, corrections across six named docs plus four additional Phase-7-sweep sites, and the lean-lsp permission duplication collapsed to one wildcard grant."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wrote agent-system/extensions/core/context/patterns/mcp-server-ownership.md as the canonical registration/permission ownership reference, corrected every wrong 'settings file or manifest.json registers an MCP server' assertion found across a repo-wide sweep (ten files total, four beyond the six the plan named up front), and collapsed the lean-lsp three-way permission duplication to a single wildcard in lean's own settings-fragment.json with core's domain-specific wildcard removed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/docs/architecture/extension-system.md",
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/docs/guides/permission-configuration.md",
+    "agent-system/extensions/core/context/patterns/mcp-tool-recovery.md",
+    "agent-system/extensions/core/root-files/settings.json",
+    "agent-system/extensions/lean/settings-fragment.json",
+    "agent-system/extensions/lean/README.md",
+    "agent-system/extensions/nix/README.md",
+    "agent-system/extensions/core/scripts/setup-lean-mcp.sh",
+    "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/core/templates/extension-readme-template.md",
+    "agent-system/extensions/filetypes/README.md",
+    "agent-system/extensions/core/docs/guides/adding-domains.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's extension system, MCP server REGISTRATION and PERMISSION are two fully independent axes with different owners. Registration happens ONLY in user-scope ~/.claude.json (via a host-level/home-manager activation block or a core/scripts/ setup script, e.g. setup-lean-mcp.sh). An mcpServers key inside settings.json/settings.local.json -- and therefore inside any extension's settings-fragment.json -- is completely inert; Claude Code never reads those files for server definitions. Permission (mcp__{server}__* grants) DOES belong in settings-fragment.json, scoped by domain: extension-specific grants in the owning extension's own fragment, domain-agnostic grants only in core's root-files/settings.json. A settings-declared server shows up nowhere in `claude mcp list` (absent, not failing-to-connect) -- that absence is the diagnostic tell. See agent-system/extensions/core/context/patterns/mcp-server-ownership.md for the full writeup.",
+      "category": "PATTERN",
+      "source_artifact": "specs/023_document_mcp_registration_ownership_boundary/summaries/01_mcp-ownership-boundary-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["mcp", "registration", "permissions", "settings-fragment", "claude.json"]
+    },
+    {
+      "content": "Prefer a single wildcard MCP permission grant (\"mcp__{server}__*\") over enumerating each tool by name in permissions.allow. An enumeration silently under-grants as the server adds tools over time -- a missed update reintroduces prompting for the new tool with no error signal. This repo's lean-lsp permission drifted to a stale 21-entry enumeration (missing newer tools) duplicated across two files before being collapsed to one wildcard in the owning extension's own settings-fragment.json.",
+      "category": "PATTERN",
+      "source_artifact": "specs/023_document_mcp_registration_ownership_boundary/summaries/01_mcp-ownership-boundary-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["mcp", "permissions", "wildcard", "enumeration-drift", "lean-lsp"]
+    },
+    {
+      "content": "When a documentation/meta task edits only agent-system/extensions/** (the source store) without redeploying, check-extension-docs.sh will report 'deployed script/doc content drift (deployed != extension source)' for every touched file that has a deployed .claude/** counterpart. This is expected and non-blocking, not a defect -- the source-store/deploy boundary rule (.claude/rules/source-store-deploy-boundary.md) means .claude/** is a disposable, manually-regenerated artifact. Triage check-extension-docs.sh output by confirming every FAIL/WARN traces either to files this task touched (expected drift, safe to ignore pre-regeneration) or predates the task entirely (unrelated, out of scope) -- never treat source-vs-deployed drift itself as something to fix without a redeploy.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/023_document_mcp_registration_ownership_boundary/summaries/01_mcp-ownership-boundary-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["check-extension-docs", "source-store", "deploy-drift", "regeneration", "meta-task"]
     }
   ],
   "metadata": {
     "session_id": "sess_1786426440_e14088",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "memory_candidates": []
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
