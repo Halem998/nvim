@@ -141,24 +141,24 @@ scope explicitly rather than fixing it silently.
 
 ---
 
-### Phase 2: Close the `line_count` Drift [NOT STARTED]
+### Phase 2: Close the `line_count` Drift [COMPLETED]
 
 **Goal**: Make the `web` extension pass the `Rule R` index-truth check.
 
 **Tasks**:
-- [ ] Re-measure the truth directly:
-      `wc -l agent-system/extensions/web/context/project/web/README.md`
-- [ ] In `agent-system/extensions/web/index-entries.json`, update the `line_count` of the entry
+- [x] Re-measure the truth directly:
+      `wc -l agent-system/extensions/web/context/project/web/README.md` *(completed: 116)*
+- [x] In `agent-system/extensions/web/index-entries.json`, update the `line_count` of the entry
       whose `path` is `project/web/README.md` from `110` to the measured value. Change **only**
-      that one numeric field.
-- [ ] Confirm the file is still valid JSON (`python3 -c "import json;json.load(open(...))"` or
-      `jq empty`).
-- [ ] Confirm no other entry in that file drifted, read-only:
+      that one numeric field. *(completed: 110 -> 116)*
+- [x] Confirm the file is still valid JSON (`python3 -c "import json;json.load(open(...))"` or
+      `jq empty`). *(completed: valid)*
+- [x] Confirm no other entry in that file drifted, read-only:
       `bash .claude/scripts/generate-context-line-counts.sh --check` — inspect its `web` findings
       only. **Do NOT run `--write`**: it rewrites every extension's counts and produces an
-      out-of-scope diff.
-- [ ] Re-run `REPO_ROOT=$(pwd) bash .claude/scripts/check-extension-docs.sh` and confirm the
-      `web` row now reads `PASS`.
+      out-of-scope diff. *(completed: "web: 24 entries, 24 exact, 0 mismatch")*
+- [x] Re-run `REPO_ROOT=$(pwd) bash .claude/scripts/check-extension-docs.sh` and confirm the
+      `web` row now reads `PASS`. *(completed: web PASS)*
 
 **Timing**: 20 minutes
 

@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Close the line_count Drift",
+  "started_at": "2026-08-11T00:10:00Z",
+  "last_updated": "2026-08-11T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-measure truth: wc -l README.md", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Update line_count 110 -> 116 in index-entries.json", "status": "done", "files_touched": ["agent-system/extensions/web/index-entries.json"]},
+    {"id": 3, "description": "Confirm valid JSON", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no other web drift via generate-context-line-counts.sh --check", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-run check-extension-docs.sh, confirm web PASS", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": {
+    "measured_line_count": 116,
+    "line_count_check_result": "web: 24 entries, 24 exact, 0 mismatch, 0 null, 0 missing source",
+    "gate_result": "web PASS"
+  }
+}

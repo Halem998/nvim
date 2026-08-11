@@ -11,7 +11,7 @@
           "web"
         ]
       },
-      "line_count": 110,
+      "line_count": 116,
       "domain": "project",
       "subdomain": "web",
       "summary": "Web context overview with directory structure and loading strategy"
