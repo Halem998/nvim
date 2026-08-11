@@ -1,9 +1,64 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/036_audit_context_loading_efficiency/summaries/01_context-loading-optimization-summary.md",
+      "summary": "Implementation summary with before/after eager-surface byte accounting (~17.5k -> ~10.4k tokens predicted) and deviation record."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Normalized all @-references in generated-CLAUDE.md merge sources to plain backticked paths (52 refs across 10 source-store files), applied the rules-frontmatter triage (2 rules gated, largest rule split into eager principle + lazy taxonomy companion, 2 deliberate-eager decisions recorded), re-sited literature command rows from core to the literature extension, documented the eager-vs-lazy channel inventory and volatility constraint in core context, and created follow-up tasks 41-44. Predicted session-start eager surface drops ~41% (to ~10.4k tokens) at next redeploy; all lint gates pass."
+  },
+  "modified_files": [
+    "agent-system/extensions/nix/EXTENSION.md",
+    "agent-system/extensions/present/EXTENSION.md",
+    "agent-system/extensions/literature/merge-sources/claudemd.md",
+    "agent-system/extensions/web/EXTENSION.md",
+    "agent-system/extensions/cslib/EXTENSION.md",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/email/EXTENSION.md",
+    "agent-system/extensions/nvim/EXTENSION.md",
+    "agent-system/extensions/formal/EXTENSION.md",
+    "agent-system/extensions/lean/EXTENSION.md",
+    "agent-system/extensions/nvim/rules/neovim-lua.md",
+    "agent-system/extensions/web/rules/web-astro.md",
+    "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
+    "agent-system/extensions/core/rules/source-store-deploy-boundary.md",
+    "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+    "agent-system/extensions/core/hooks/validate-no-task-references.sh",
+    "agent-system/extensions/core/scripts/check-task-references.sh",
+    "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh",
+    "agent-system/extensions/core/context/contracts/no-task-references-bullet.md",
+    "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh",
+    "agent-system/extensions/core/context/architecture/context-layers.md",
+    "agent-system/extensions/core/context/patterns/context-discovery.md",
+    ".memory/10-Memories/MEM-insight-context-loading-by-at-reference.md",
+    "specs/state.json",
+    "specs/TODO.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When triaging whether a .claude/rules/*.md file may safely gain paths: frontmatter (deferring it from the eager set), apply the eager-safety test: is the rule's enforcement pre-write or post-write? A rule backed only by a PostToolUse/non-blocking hook must stay eager, because a paths:-gated agent would learn the rule only after the violating write landed. Style/convention rules scoped to specific file types are safe to gate with their declared scope. Whichever way the decision goes, record it in the rule file itself (comment or frontmatter) so absence of frontmatter reads as a decision, not an omission. Open question to test empirically before gating any enforcement rule: whether a paths:-gated rule fires before or only after the matching write reaches the tool layer.",
+      "category": "PATTERN",
+      "source_artifact": "specs/036_audit_context_loading_efficiency/summaries/01_context-loading-optimization-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["rules-frontmatter", "paths-glob", "eager-context", "hook-timing", "context-loading"]
+    },
+    {
+      "content": "check-extension-docs.sh reports 'deployed content drift (deployed != extension source)' FAILs on rules and scripts whenever the source store (agent-system/extensions/**) is edited without redeploying .claude/. For source-store-only tasks (where redeploy is deliberately deferred to a later deploy vehicle), these drift FAILs are the expected and correct pre-redeploy state, not regressions — verify the touched extensions' content checks pass and note the drift as clearing at next deploy. Merge-source and EXTENSION.md edits do not trigger the drift check; only deployed-category files (rules/, scripts/, hooks/) do.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/036_audit_context_loading_efficiency/summaries/01_context-loading-optimization-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["check-extension-docs", "content-drift", "source-store", "deploy-boundary", "lint-interpretation"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786463507_5fe0a8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }

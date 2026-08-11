@@ -1,15 +1,21 @@
 {
-  "status": "planned",
-  "summary": "Created 7-phase implementation plan from the team research report. Scope: convert resolving @context/... refs to plain paths (nix/present/literature/web/cslib), normalize inert @.claude/... and volatile @specs/... refs downward in core/email/nvim/formal/lean sources (never upward -- no volatile files in the eager prefix), apply the F4 rules triage (gate neovim-lua.md, split no-task-references rule, keep source-store-deploy-boundary eager), re-site literature command rows to the literature extension, document @-resolution semantics and the eager-channel inventory, and create 4 follow-up tasks (measurement harness, verify-deploy context gates, email dead-safety-import defect, task.md slimming). All edits target agent-system/extensions/**; expected session-start surface at next redeploy: ~17.5k -> ~9.5k tokens (-46%).",
+  "status": "implemented",
+  "summary": "All 7 plan phases completed and committed per-phase. Every @-reference in generated-CLAUDE.md merge sources normalized downward to plain backticked paths (resolving and inert classes both); rules triage applied (neovim-lua.md and web-astro.md gated with paths:, no-task-references rule split into eager principle + lazy taxonomy companion at context/standards/task-reference-exemptions.md, deliberate-eager decisions recorded); literature rows re-sited from core to the literature extension; eager-vs-lazy channel inventory and no-volatile-files constraint documented in context-layers.md; follow-up tasks 41-44 created. Predicted eager surface: 41,434 B (~10.4k tokens) vs ~69.9 KB (~17.5k) baseline, ~41% reduction, delivered at next redeploy. All lint gates green (check-task-references, lint-agent-contracts, lint-routing-wiring exit 0; hook test suite 31/31). check-extension-docs drift FAILs on the Phase 3 rule/script edits are the intended pre-redeploy state (redeploy is a plan Non-Goal); the literature-index.md line_count FAIL is another session's pre-existing in-flight work.",
   "artifacts": [
+    {
+      "path": "specs/036_audit_context_loading_efficiency/summaries/01_context-loading-optimization-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary with before/after byte accounting and deviation record"
+    },
     {
       "path": "specs/036_audit_context_loading_efficiency/plans/01_context-loading-optimization.md",
       "type": "plan",
-      "summary": "7-phase plan (6h, waves [1,2,3,5]->[4]->[6]->[7]) executing the audit's cheap wins in the source store plus follow-up task creation"
+      "summary": "Plan with all 7 phase headings [COMPLETED] and per-item completion/deviation annotations"
     }
   ],
   "blockers": [],
-  "phases_completed": 0,
+  "phases_completed": 7,
   "phases_total": 7,
-  "next_action_hint": "Dispatch /implement 36; Phases 1, 2, 3, 5 are parallelizable (disjoint file sets), Phase 4 requires Phase 2, Phase 6 creates follow-up tasks after all edits, Phase 7 is the full lint sweep"
+  "plan_markers_verified": true,
+  "next_action_hint": "Proceed to task completion (postflight). Delivery of the source-store edits happens at the next deploy; the deployed-vs-source drift flagged by check-extension-docs.sh clears then. Follow-up tasks 41-44 are queued in state.json."
 }
