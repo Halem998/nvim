@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "artifacts": [
     {
       "type": "plan",
@@ -7,15 +7,11 @@
       "summary": "Seven-phase plan creating the canonical context/patterns/mcp-server-ownership.md, correcting four docs plus two extension READMEs that assert the wrong MCP registration path, and collapsing the lean-lsp three-way duplication to one registration mechanism and one wildcard permission grant."
     }
   ],
-  "next_steps": "Run /implement 23 to execute the plan",
   "metadata": {
-    "session_id": "sess_1786426440_e14088_23",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 3,
-    "dependency_waves": [[1], [2, 3, 4, 5], [6], [7]]
+    "session_id": "sess_1786426440_e14088",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
   "memory_candidates": []
 }

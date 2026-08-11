@@ -1,7 +1,7 @@
 # Implementation Plan: MCP Registration/Permission Ownership Boundary
 
 - **Task**: 23 - Document MCP registration vs permission ownership boundary; reconcile lean-lsp three-way duplication
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/023_document_mcp_registration_ownership_boundary/reports/01_mcp-registration-ownership-boundary.md
@@ -117,23 +117,23 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Author the canonical ownership document [NOT STARTED]
+### Phase 1: Author the canonical ownership document [COMPLETED]
 
 **Goal**: Create `agent-system/extensions/core/context/patterns/mcp-server-ownership.md` as the
 single document that answers "where do I declare a new MCP server and its permissions?"
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/patterns/mcp-server-ownership.md`.
-- [ ] Open with a one-paragraph statement of the two independent axes: REGISTRATION (which file
+- [x] Create `agent-system/extensions/core/context/patterns/mcp-server-ownership.md`. *(completed)*
+- [x] Open with a one-paragraph statement of the two independent axes: REGISTRATION (which file
       makes a server exist and connect) and PERMISSION (which file grants its tools without a
-      prompt). State plainly that neither substitutes for the other.
-- [ ] Write the **Registration** section: user-scope `~/.claude.json` is the only mechanism that
+      prompt). State plainly that neither substitutes for the other. *(completed)*
+- [x] Write the **Registration** section: user-scope `~/.claude.json` is the only mechanism that
       registers a server for agent use. Two sanctioned ways to write it: (a) a host-level /
       home-manager activation block, for servers with no per-project computed arguments; (b) a
       setup script under `core/scripts/`, mirroring `setup-lean-mcp.sh`'s shape (detect/compute
       per-project args, then `jq`-merge into `~/.claude.json`'s top-level `mcpServers`), for
-      servers that need one.
-- [ ] Write the **Not registration** subsection stating, as an empirically verified fact, that an
+      servers that need one. *(completed)*
+- [x] Write the **Not registration** subsection stating, as an empirically verified fact, that an
       `mcpServers` key inside `settings.json`/`settings.local.json` (and therefore inside an
       extension's `settings-fragment.json`) has no effect: Claude Code never reads those files for
       server definitions. Record the evidence shape (a `claude mcp list` run showing only
@@ -142,30 +142,30 @@ single document that answers "where do I declare a new MCP server and its permis
       documents only `enabledMcpjsonServers`, `disabledMcpjsonServers`,
       `enableAllProjectMcpServers`, `allowedMcpServers`, `deniedMcpServers`,
       `allowManagedMcpServersOnly` -- all of which approve or deny servers defined elsewhere, none
-      of which define one).
-- [ ] Write the **Permission** section: domain-specific `mcp__{server}__*` grants go in that
+      of which define one). *(completed)*
+- [x] Write the **Permission** section: domain-specific `mcp__{server}__*` grants go in that
       extension's `settings-fragment.json` `permissions.allow`; core's `root-files/settings.json`
       `permissions.allow` is reserved for grants that apply regardless of which extensions are
       loaded. State the wildcard-over-enumeration preference and why (an enumeration silently
       under-grants as a server's tool surface grows; a wildcard cannot drift), with the observed
-      lean-lsp enumeration drift as the worked example.
-- [ ] Write the **Composition** section: a tool is usable without a prompt only if its server shows
+      lean-lsp enumeration drift as the worked example. *(completed)*
+- [x] Write the **Composition** section: a tool is usable without a prompt only if its server shows
       `Connected` in `claude mcp list` AND an active `permissions.allow` list matches it. Give the
       two failure shapes (connected-but-prompting, granted-but-absent) and which axis to fix for
-      each.
-- [ ] Write a short **Decision procedure** the author can follow top to bottom: pick a registration
+      each. *(completed)*
+- [x] Write a short **Decision procedure** the author can follow top to bottom: pick a registration
       mechanism (a or b), write the permission grant in the extension's own fragment, verify with
-      `claude mcp list` plus a tool call.
-- [ ] Write a **Known gaps** section naming the five extensions whose `settings-fragment.json`
+      `claude mcp list` plus a tool call. *(completed)*
+- [x] Write a **Known gaps** section naming the five extensions whose `settings-fragment.json`
       still declares a non-functional `mcpServers` block (`nix`, `memory`, `filetypes`, `founder`,
       `epidemiology`) and the servers thereby unregistered (`mcp-nixos`, `obsidian-memory`,
       `openpyxl`, `superdoc`, `firecrawl`, `sec-edgar`, `rmcp`), explicitly flagged as a pending
-      follow-up so their presence is not read as a counter-example to this document.
-- [ ] Write a **Related Documentation** section linking `permission-configuration.md`,
+      follow-up so their presence is not read as a counter-example to this document. *(completed)*
+- [x] Write a **Related Documentation** section linking `permission-configuration.md`,
       `extension-system.md` (Settings Merging), `creating-extensions.md`, and
-      `mcp-tool-recovery.md`.
-- [ ] Verify no task-number citations appear anywhere in the file; cite filenames and section
-      headings as anchors instead.
+      `mcp-tool-recovery.md`. *(completed)*
+- [x] Verify no task-number citations appear anywhere in the file; cite filenames and section
+      headings as anchors instead. *(completed: grep for task-number patterns returns clean)*
 
 **Timing**: 45 minutes
 
