@@ -291,30 +291,32 @@ it as in scope for this phase.
 
 ---
 
-### Phase 4: Add the ownership section to the permission guide and cross-link recovery [NOT STARTED]
+### Phase 4: Add the ownership section to the permission guide and cross-link recovery [COMPLETED]
 
 **Goal**: Give `permission-configuration.md` -- the doc an author reaches for when asking "where do
 permissions go?" -- an explicit MCP subsection stating the two axes, and cross-link the pattern
 from `mcp-tool-recovery.md`.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/docs/guides/permission-configuration.md`, add a top-level
+- [x] In `agent-system/extensions/core/docs/guides/permission-configuration.md`, add a top-level
       section covering MCP servers: the registration/permission split, that settings files grant
       but never register, and the extension-fragment vs. core-settings scoping rule for
-      `mcp__{server}__*` grants.
-- [ ] State the wildcard-over-enumeration preference in that section, since this is the guide an
-      author consults when writing a `permissions.allow` entry.
-- [ ] Link to `../../context/patterns/mcp-server-ownership.md` as the canonical reference, so the
+      `mcp__{server}__*` grants. *(completed)*
+- [x] State the wildcard-over-enumeration preference in that section, since this is the guide an
+      author consults when writing a `permissions.allow` entry. *(completed)*
+- [x] Link to `../../context/patterns/mcp-server-ownership.md` as the canonical reference, so the
       guide carries the decision summary and the pattern file carries the full procedure.
-- [ ] Add the new section to the file's `## Table of Contents` numbered list, keeping the existing
-      numbering contiguous and the anchor slug matching the heading.
-- [ ] Extend the existing `### Settings File Location: a Host-App Constraint` subsection, which
+      *(completed)*
+- [x] Add the new section to the file's `## Table of Contents` numbered list, keeping the existing
+      numbering contiguous and the anchor slug matching the heading. *(completed)*
+- [x] Extend the existing `### Settings File Location: a Host-App Constraint` subsection, which
       currently says these settings files hold "MCP server configuration", to say instead that they
       hold MCP *permission grants* -- that phrase is itself one of the wrong assertions.
-- [ ] In `agent-system/extensions/core/context/patterns/mcp-tool-recovery.md`, add a
+      *(completed)*
+- [x] In `agent-system/extensions/core/context/patterns/mcp-tool-recovery.md`, add a
       `mcp-server-ownership.md` link to its `## Related Documentation` section, and make the
       existing "may indicate MCP not in user scope (check ~/.claude.json)" guidance point at the
-      canonical doc for the reason.
+      canonical doc for the reason. *(completed)*
 
 **Timing**: 30 minutes
 

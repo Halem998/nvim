@@ -9,14 +9,15 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Permission System Architecture](#permission-system-architecture)
-3. [Permission Evaluation Order](#permission-evaluation-order)
-4. [Glob Pattern Syntax](#glob-pattern-syntax)
-5. [Examples by Agent Type](#examples-by-agent-type)
-6. [Safety Boundaries](#safety-boundaries)
-7. [Debugging Permission Denials](#debugging-permission-denials)
-8. [Common Permission Patterns](#common-permission-patterns)
-9. [Troubleshooting](#troubleshooting)
+2. [MCP Server Registration and Permissions](#mcp-server-registration-and-permissions)
+3. [Permission System Architecture](#permission-system-architecture)
+4. [Permission Evaluation Order](#permission-evaluation-order)
+5. [Glob Pattern Syntax](#glob-pattern-syntax)
+6. [Examples by Agent Type](#examples-by-agent-type)
+7. [Safety Boundaries](#safety-boundaries)
+8. [Debugging Permission Denials](#debugging-permission-denials)
+9. [Common Permission Patterns](#common-permission-patterns)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -35,7 +36,9 @@ The OpenCode agent system uses a declarative permission model defined in agent f
 ### Settings File Location: a Host-App Constraint
 
 `.claude/settings.json` and `.claude/settings.local.json` (and their OpenCode equivalents under
-`.opencode/`) hold permission grants/denies plus hooks and MCP server configuration. Unlike the
+`.opencode/`) hold permission grants/denies plus hooks and MCP *permission* grants -- never MCP
+server registration; see the [MCP Server Registration and Permissions](#mcp-server-registration-and-permissions)
+section below. Unlike the
 extension selection manifest (`.claude-extensions.json` / `.opencode-extensions.json`, now at the
 project root) or the runtime logs directory (`.agent-logs/`, also at the project root), these two
 settings files **cannot** be relocated out of `base_dir`: Claude Code (and OpenCode) hardcode
@@ -61,6 +64,36 @@ different mechanism than a path move:
   load loop runs (not after) -- restoring first means the loop's own settings-fragment merges land
   on top of the restored base and survive, rather than being clobbered by a later restore. Staging
   is cleared once the restore succeeds.
+
+---
+
+## MCP Server Registration and Permissions
+
+MCP tool availability rests on two independent axes, and this guide -- the one an author reaches
+for when writing a `permissions.allow` entry -- covers only the permission half. **Registration**
+(which file makes a server exist and connect) and **permission** (which file grants its tools
+without a prompt) never substitute for one another.
+
+**Settings files grant; they never register.** An `mcpServers` key inside
+`settings.json`/`settings.local.json` -- and therefore inside an extension's
+`settings-fragment.json`, which merges into one of those two files -- has no effect. Claude Code
+never reads those files for server definitions; only user-scope `~/.claude.json` registers a
+server (written by a host-level activation block or a `core/scripts/` setup script such as
+`setup-lean-mcp.sh`).
+
+**Scoping an `mcp__{server}__*` grant** follows the same domain boundary as any other permission:
+a domain-specific grant (tools only one extension's agents use) belongs in that extension's own
+`settings-fragment.json` `permissions.allow`; core's `root-files/settings.json` is reserved for
+grants that apply regardless of which extensions are loaded.
+
+**Prefer a wildcard over an enumeration** (`"mcp__{server}__*"` rather than one entry per tool
+name). An enumeration silently under-grants as the server's tool surface grows -- a missed update
+reintroduces prompting for the new tool with no error to signal the gap -- while a wildcard cannot
+drift.
+
+See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full
+registration procedure, the evidence behind "settings files never register," and the known gaps
+across other extensions still carrying a dead `mcpServers` block.
 
 ---
 

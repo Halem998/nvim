@@ -34,7 +34,9 @@ This pattern provides defensive strategies for graceful degradation when MCP too
 
 **Symptoms**:
 - Tool returns error immediately
-- May indicate MCP not in user scope (check ~/.claude.json)
+- May indicate the server is not registered in user scope -- check `~/.claude.json`, and see
+  [MCP Server Ownership](mcp-server-ownership.md) for the full registration/permission split and
+  why a `settings.json`/`settings-fragment.json` `mcpServers` block will never fix this
 
 ---
 
@@ -249,6 +251,8 @@ success  error
 
 ## Related Documentation
 
+- [MCP Server Ownership](mcp-server-ownership.md) - Registration vs. permission ownership
+  boundary; the canonical reference for "Tool Unavailable" above
 - [Early Metadata Pattern](early-metadata-pattern.md) - Early metadata file creation for interruption recovery
 - [Error Handling Rule](../../rules/error-handling.md) - Error handling rules and mcp_abort_error type
 - [Return Metadata Format](../formats/return-metadata-file.md) - Metadata file schema with partial_progress

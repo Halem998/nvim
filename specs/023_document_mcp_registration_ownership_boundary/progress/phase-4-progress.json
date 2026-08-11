@@ -1,0 +1,12 @@
+{
+  "phase": 4,
+  "phase_name": "Add the ownership section to the permission guide and cross-link recovery",
+  "started_at": "2026-08-11T06:07:00Z",
+  "last_updated": "2026-08-11T06:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add MCP Server Registration and Permissions section + ToC entry + Host-App-Constraint wording fix to permission-configuration.md; cross-link mcp-tool-recovery.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/permission-configuration.md", "agent-system/extensions/core/context/patterns/mcp-tool-recovery.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
