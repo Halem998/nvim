@@ -15,8 +15,8 @@
     },
     {
       "approach": "crafted 2-hunk patch applied via git apply --cached",
-      "result": "success",
-      "reason": "isolated staging to exactly the 2 in-scope line_count corrections, leaving task 28's stray edit untouched in the working tree"
+      "result": "partial_failure_then_corrected",
+      "reason": "index-only staging succeeded, but committing via 'git commit -- <pathspec>' unexpectedly auto-included the working-tree (not just staged) content for the named path, silently re-absorbing task 28's stray edit into commit b24213ad7. Corrected in a follow-up commit (0a9bca598) that reverted the third field back to its HEAD~1 value (183), then the working tree was manually restored to 298 so task 28's uncommitted work was neither lost nor misattributed. Lesson: 'git commit -- <pathspec>' is NOT equivalent to committing only the index for that path; it behaves like a scoped 'git commit -a'."
     }
   ],
   "handoff_count": 0
