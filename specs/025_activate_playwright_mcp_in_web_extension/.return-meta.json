@@ -1,10 +1,48 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/025_activate_playwright_mcp_in_web_extension/summaries/01_activate-playwright-mcp-summary.md",
+      "summary": "Verify-and-close-gaps implementation summary: closed the index-entries.json line_count drift, confirmed all seven Phase 3 acceptance criteria as verified no-ops, and recorded the .opencode stale-copy decision (independently-maintained live deliverable, no edit made, follow-up recommended)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Verified and closed the one real gap left by the prior over-reaching research dispatch: fixed a line_count drift in agent-system/extensions/web/index-entries.json (110 -> 116) so the web extension passes REPO_ROOT=$(pwd) check-extension-docs.sh. Confirmed all seven acceptance criteria for the Playwright MCP activation as verified no-ops against file contents on disk, and recorded an evidenced decision that .opencode/extensions/web/ is an independently-maintained live deliverable still carrying the stale browser_verify_text_visible reference, out of scope for this task's source-store-only edit rule."
+  },
+  "modified_files": [
+    "agent-system/extensions/web/index-entries.json",
+    "specs/025_activate_playwright_mcp_in_web_extension/plans/01_activate-playwright-mcp.md",
+    "specs/025_activate_playwright_mcp_in_web_extension/progress/phase-1-progress.json",
+    "specs/025_activate_playwright_mcp_in_web_extension/progress/phase-2-progress.json",
+    "specs/025_activate_playwright_mcp_in_web_extension/progress/phase-3-progress.json",
+    "specs/025_activate_playwright_mcp_in_web_extension/progress/phase-4-progress.json",
+    "specs/025_activate_playwright_mcp_in_web_extension/summaries/01_activate-playwright-mcp-summary.md",
+    "specs/025_activate_playwright_mcp_in_web_extension/.return-meta.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a doc-lint gate reports a line_count mismatch for a prose file that was just edited (index-entries.json's Rule R check), fix it with a single scoped numeric-field edit at the specific entry, verified with wc -l plus generate-context-line-counts.sh --check (read-only). Never run generate-context-line-counts.sh --write to fix a single-extension drift -- it rewrites line_count across every extension in the repo, producing a large unreviewable diff far outside the task's actual scope.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/025_activate_playwright_mcp_in_web_extension/summaries/01_activate-playwright-mcp-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["line_count-drift", "index-entries.json", "generate-context-line-counts", "scoped-edit", "doc-lint"]
+    },
+    {
+      "content": "A misleadingly-titled git commit is not proof of its own claim: a commit titled 'purge .opencode/extensions/{present,web}' in this repo's history in fact touched only 8 unrelated lines of one file and never deleted the directory. When auditing whether a tracked-but-possibly-stale directory (e.g. .opencode/extensions/**, a hand-maintained mirror of agent-system/extensions/**) is a deploy artifact or an independently-maintained deliverable, check three things directly rather than trusting a commit title: (1) whether any live (non-deprecated) deploy script actually writes that path, (2) whether the file's own @-reference convention matches the presumed source (a mismatched reference root like @.opencode/... vs @.claude/... indicates a separately-authored copy, not a generated one), (3) whether git log shows periodic deliberate 'mirror' commits vs automated regeneration commits.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/025_activate_playwright_mcp_in_web_extension/summaries/01_activate-playwright-mcp-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [".opencode-mirror", "deploy-artifact-detection", "commit-title-verification", "source-store-boundary"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786426440_e14088",
     "agent_type": "general-implementation-agent",
     "task_number": 25,
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
