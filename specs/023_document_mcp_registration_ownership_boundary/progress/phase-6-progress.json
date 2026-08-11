@@ -1,0 +1,13 @@
+{
+  "phase": 6,
+  "phase_name": "Correct the extension-facing registration statements",
+  "started_at": "2026-08-11T06:20:00Z",
+  "last_updated": "2026-08-11T06:28:00Z",
+  "objectives": [
+    {"id": 1, "description": "Correct lean/README.md and nix/README.md MCP Tool Setup registration statements (including a real invocation-line fix in lean's README), and precision-fix setup-lean-mcp.sh's header comment", "status": "done", "files_touched": ["agent-system/extensions/lean/README.md", "agent-system/extensions/nix/README.md", "agent-system/extensions/core/scripts/setup-lean-mcp.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "lean/README.md's invocation line was factually wrong (npx -y lean-lsp-mcp@latest) versus what setup-lean-mcp.sh actually configures (uvx lean-lsp-mcp with LEAN_PROJECT_PATH env) -- corrected per the phase's own task instruction to confirm and fix."
+}

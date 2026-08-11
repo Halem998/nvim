@@ -23,7 +23,16 @@ Provides real-time package and option lookups against nixpkgs and NixOS modules.
 uvx mcp-nixos
 ```
 
-Configured automatically in `manifest.json`. Requires `uv` to be installed on your system (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
+`mcp-nixos` is **not currently registered** by anything in this repository -- registering an MCP
+server requires a write to user-scope `~/.claude.json` (a host-level/home-manager activation
+block or a `core/scripts/` setup script), and no such mechanism exists yet for this server. The
+`mcpServers` block that may appear in this extension's `settings-fragment.json` has no effect;
+Claude Code never reads settings files for server definitions. Agents therefore fall back to the
+WebSearch/CLI path already documented in
+[mcp-nixos-integration.md](context/project/nix/tools/mcp-nixos-integration.md). Registering
+this server in user scope is a pending follow-up. See
+[MCP Server Ownership](../core/context/patterns/mcp-server-ownership.md) for the full
+registration/permission split. Requires `uv` to be installed on your system (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
 
 **Capabilities** (used by `nix-research-agent` and `nix-implementation-agent`):
 

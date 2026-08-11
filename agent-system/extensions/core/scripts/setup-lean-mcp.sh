@@ -2,9 +2,11 @@
 #
 # setup-lean-mcp.sh - Configure lean-lsp MCP server in user scope
 #
-# This script adds the lean-lsp MCP server to ~/.claude.json (user scope)
-# to work around Claude Code platform bugs where custom subagents cannot
-# access project-scoped MCP servers (.mcp.json).
+# This script adds the lean-lsp MCP server to ~/.claude.json (user scope). Project-scoped
+# `.mcp.json` servers require an interactive approval prompt that a subagent cannot satisfy,
+# so registering in user scope -- never gated by per-server approval -- is the reliable choice.
+# See agent-system/extensions/core/context/patterns/mcp-server-ownership.md for the full
+# registration/permission split.
 #
 # Usage: ./setup-lean-mcp.sh [OPTIONS]
 #

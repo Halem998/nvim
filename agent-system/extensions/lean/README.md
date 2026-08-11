@@ -22,10 +22,16 @@ Loaded via the extension picker. Once loaded, the `/lake` and `/lean` commands b
 The `lean-lsp` MCP server provides live Lean LSP access for agents.
 
 ```bash
-npx -y lean-lsp-mcp@latest
+uvx lean-lsp-mcp
 ```
 
-Configured automatically in `manifest.json`. No API key required. The server depends on a working Lean 4 toolchain (installed via `elan`).
+Registration is performed by the operator running `core/scripts/setup-lean-mcp.sh`, which writes
+this server into user-scope `~/.claude.json` with a computed `LEAN_PROJECT_PATH`. Permissions are
+granted by this extension's own `settings-fragment.json` (`mcp__lean-lsp__*`, a wildcard). Neither
+`manifest.json` nor a settings file registers the server -- see
+[MCP Server Ownership](../core/context/patterns/mcp-server-ownership.md) for the full
+registration/permission split. No API key required. The server depends on a working Lean 4
+toolchain (installed via `elan`).
 
 **Capabilities** (used by `lean-research-agent` and `lean-implementation-agent`):
 

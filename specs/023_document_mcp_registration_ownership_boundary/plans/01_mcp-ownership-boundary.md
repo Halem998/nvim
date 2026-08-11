@@ -389,32 +389,37 @@ here.
 
 ---
 
-### Phase 6: Correct the extension-facing registration statements [NOT STARTED]
+### Phase 6: Correct the extension-facing registration statements [COMPLETED]
 
 **Goal**: Make the lean and nix READMEs describe the actual registration path, and restate
 `setup-lean-mcp.sh`'s header claim precisely rather than categorically.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/lean/README.md`'s `## MCP Tool Setup` section, replace
+- [x] In `agent-system/extensions/lean/README.md`'s `## MCP Tool Setup` section, replace
       "Configured automatically in `manifest.json`" with the accurate path: registration is
       performed by the operator running `core/scripts/setup-lean-mcp.sh`, which writes the server
       into user-scope `~/.claude.json` with a computed project path; permissions are granted by
       this extension's own `settings-fragment.json`. Link the canonical pattern document.
-- [ ] Confirm the invocation line in that section matches what `setup-lean-mcp.sh` actually
-      configures, and correct it if it does not.
-- [ ] In `agent-system/extensions/nix/README.md`'s `## MCP Tool Setup` section, replace
+      *(completed)*
+- [x] Confirm the invocation line in that section matches what `setup-lean-mcp.sh` actually
+      configures, and correct it if it does not. *(completed: it did not match -- README showed
+      `npx -y lean-lsp-mcp@latest`, script actually configures `uvx lean-lsp-mcp`; corrected)*
+- [x] In `agent-system/extensions/nix/README.md`'s `## MCP Tool Setup` section, replace
       "Configured automatically in `manifest.json`" with an accurate statement that `mcp-nixos` is
       **not currently registered** by anything in this repo, that the `mcpServers` block in the
       extension's settings fragment has no effect, and that agents therefore fall back to the
       WebSearch/CLI path already documented in `context/project/nix/tools/mcp-nixos-integration.md`.
       Link the canonical pattern document and note that registration is a pending follow-up.
-- [ ] In `agent-system/extensions/core/scripts/setup-lean-mcp.sh`'s header comment, replace the
+      *(completed)*
+- [x] In `agent-system/extensions/core/scripts/setup-lean-mcp.sh`'s header comment, replace the
       categorical claim that custom subagents cannot access project-scoped MCP servers with the
       precise mechanism: project-scoped `.mcp.json` servers require an interactive approval prompt
       that a subagent cannot satisfy, so user-scope registration (never gated by per-server
       approval) is the reliable choice. Leave the operative conclusion -- user scope is required --
-      intact, and change no executable line.
-- [ ] Confirm no task-number citations were introduced in any of the three files.
+      intact, and change no executable line. *(completed: diff is comment-only, every changed line
+      begins with `#`)*
+- [x] Confirm no task-number citations were introduced in any of the three files. *(completed:
+      grep for task-number patterns returns clean across all three)*
 
 **Timing**: 30 minutes
 
