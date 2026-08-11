@@ -1,7 +1,7 @@
 # Implementation Plan: Task #25
 
 - **Task**: 25 - Activate the already-designed but parked Playwright MCP integration in the web extension, and reconcile its drifted tool list against the live server.
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None (prerequisite MCP registration and `settings-fragment.json` allowlist work already committed)
 - **Research Inputs**: specs/025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md

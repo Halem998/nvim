@@ -11,7 +11,7 @@ next_project_number: 28
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,19,20,22,25,27 | -- | agent-system, extensions, orchestration-concurrency, ... |
+| 1 | 14,16,17,18,19,20,22,27 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 9,13 | 17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -34,10 +34,6 @@ next_project_number: 28
 ### Orchestration Concurrency
 
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
-
-### Mcp Integration
-
-25 [IMPLEMENTING] — Activate the already-designed but parked Playwright MCP integrati
 
 ## Tasks
 
@@ -115,12 +111,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 25. Activate parked Playwright MCP integration in web extension and reconcile drifted tool list
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: mcp-integration
 - **Dependencies**: Task 23, Task 24
 - **Research**: [025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md]
 - **Plan**: [025_activate_playwright_mcp_in_web_extension/plans/01_activate-playwright-mcp.md]
+- **Summary**: [025_activate_playwright_mcp_in_web_extension/summaries/01_activate-playwright-mcp-summary.md]
 
 **Description**: Activate the already-designed but parked Playwright MCP integration in the web extension, and reconcile its drifted tool list against the live server.
 
