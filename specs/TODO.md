@@ -1,5 +1,5 @@
 ---
-next_project_number: 33
+next_project_number: 36
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 33
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,19,20,27,28 | -- | agent-system, extensions, orchestration-concurrency |
-| 2 | 9,13,22,31 | 17,18,19 | agent-system, extensions |
+| 1 | 14,16,17,18,19,20,27,28,33,34 | -- | agent-system, extensions, orchestration-concurrency |
+| 2 | 9,13,22,31,35 | 17,18,19,33 | agent-system, extensions, orchestration-concurrency |
 | 3 | 29 | 22 | agent-system |
 | 4 | 30 | 29 | agent-system |
 | 5 | 32 | 28,30,31 | agent-system |
@@ -28,8 +28,9 @@ next_project_number: 33
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
-28 [NOT STARTED] — Rewrite the canonical MCP ownership document, whose central premi
+28 [RESEARCHING] — Rewrite the canonical MCP ownership document, whose central premi
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta
+34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -38,14 +39,201 @@ next_project_number: 33
 
 ### Extensions
 
-19 [NOT STARTED] — Reloading extensions in a consuming repo emits roughly 60 lines o
+19 [RESEARCHING] — Reloading extensions in a consuming repo emits roughly 60 lines o
   └─ 22 [NOT STARTED] — Silence and correct opencode-agents.json fragment validation spam
 
 ### Orchestration Concurrency
 
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
+33 [NOT STARTED] — Fix two coupled, high-severity run-state-integrity defects in the
+  └─ 35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
 
 ## Tasks
+
+### 35. Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: Task 33
+
+**Description**: Remove or correctly gate a one-time preflight side effect that marks a plan phase [IN PROGRESS] when no agent is dispatched for it. Observed live during a real `/orchestrate --hard` run (prior run, cycle 13).
+
+=== OBSERVED FAILURE ===
+
+Phase 19 was left marked [IN PROGRESS] with no dispatch behind it. That false marker then misled the phase-18 agent into reporting a nonexistent CONCURRENT DISPATCH -- a false territory-conflict signal. Correcting it required a /revise run. So the impact is not cosmetic: a bogus phase marker feeds directly into the territory-contract reasoning (H7) that hard mode relies on, and produces a fabricated conflict report.
+
+=== THE REAL OWNER IS NOT skill-base.sh ===
+
+This matters -- do not start from the wrong file. Investigation established:
+
+  - `skill_preflight_update` in agent-system/extensions/core/scripts/skill-base.sh (lines 214-232) contains NO phase logic at all. It only shells out to update-task-status.sh, fires a hook, and appends an event.
+
+  - THE ACTUAL OWNER is agent-system/extensions/core/scripts/update-task-status.sh, function `update_plan_file()`, block at lines 525-583. It is guarded by `if [[ "$operation" == "preflight" ]]` at line 526. It selects the highest-versioned plan file, runs `grep -m1 -E "${PHASE_HEADING_ERE}.*\[NOT STARTED\]"`, and calls `update-phase-status.sh "$task_number" "$project_name" "$first_phase" "IN_PROGRESS"` at line 578, with no check that any agent will actually be dispatched for that phase. The dry-run echo at line 501 confirms the documented intent.
+
+  - IMPORTANT SCOPE WIDENING: the guard is keyed on the OPERATION SLOT `preflight`, NOT on `implement`. So this side effect fires for research and plan preflights too, not only implement preflights. Confirm the true breadth before choosing a fix.
+
+  - Call sites are in skill-orchestrate-hard/SKILL.md Stage 4 (heading line 482): lines 489 (research), 578 (plan), 695 (implement), and 849 (implement, continuation-available sub-state, already annotated "Defense-in-depth: status is typically already 'implementing' here, so this is usually a no-op").
+
+=== THE CODE ALREADY DOCUMENTS ITSELF AS REDUNDANT ===
+
+Comments in update-task-status.sh lines 575-577 state the call is "Superseded by the base agent owning every per-phase transition directly; this call is a redundant convenience". If per-phase transitions are genuinely owned by the dispatched agent now, the strongest fix is to DELETE the convenience rather than gate it. Verify that claim against the current agents before acting on it -- if some path still depends on the auto-advance, deletion would silently regress it.
+
+A PARTIAL GUARD ALREADY EXISTS: `has_nonconforming_phase_headings` (line 561) skips the convenience when phase headings do not conform. Nothing gates it on actual dispatch. That existing guard shows where a dispatch-awareness check would naturally slot in.
+
+=== EXISTING TEST COVERAGE IS INSUFFICIENT ===
+
+scripts/tests/test-skill-base-lifecycle.sh lines 251-271 exercise only the state.json transition, never the plan-file phase side effect. The regression that would have caught this defect does not exist yet.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. A preflight that does not dispatch an agent for a given phase never marks that phase [IN PROGRESS].
+2. The chosen fix is justified explicitly as either (a) deletion of a genuinely redundant convenience, having verified the dispatched agent owns every per-phase transition, or (b) a dispatch-awareness gate, having identified a path that still needs the auto-advance. Record which and why.
+3. The behaviour is settled for ALL THREE operation slots the `operation == "preflight"` guard currently covers (research, plan, implement), not implement alone.
+4. A regression test asserts the plan-file phase marker is untouched by a non-dispatching preflight, covering the side effect that test-skill-base-lifecycle.sh currently misses.
+5. No phase marker is left [IN PROGRESS] without a corresponding dispatch, so the territory-conflict reasoning can no longer be fed a fabricated concurrent dispatch.
+
+=== CO-MAINTENANCE ===
+
+The two orchestrate SKILL.md files carry an explicit contract about each other (skill-orchestrate-hard/SKILL.md lines 956-961 and 1686-1688: "an edit to either copy REQUIRES the same edit to the other; the two MUST always agree"). If this fix changes anything at the Stage 4 preflight CALL SITES rather than solely inside update-task-status.sh, the corresponding change MUST be made in skill-orchestrate/SKILL.md as well. Verify base mode's preflight call sites for the same side effect regardless, since both engines call the same shared helper -- the defect is in shared code and is therefore very likely to affect base mode identically.
+
+=== SEQUENCING ===
+
+Depends on the handoff-identity and loop-guard task because both edit skill-orchestrate-hard/SKILL.md; the dependency serializes the overlapping edit territory. The root-cause file here (update-task-status.sh) is disjoint from that task.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/**. NEVER edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 34. Anchor guard-destructive-git.sh destructive-pattern matching to argv, not commit-message prose
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Fix a false-positive class in the destructive-git PreToolUse guard, observed live during a real `/orchestrate --hard` run: a legitimate, entirely non-destructive `git commit` was BLOCKED purely because its message text contained wording resembling a destructive pattern. It succeeded only after the message was reworded. A guard that can be tripped by prose is both a false-positive source and, more importantly, evidence that the matching is not anchored where it should be.
+
+FILE: agent-system/extensions/core/hooks/guard-destructive-git.sh (222 lines). Registered as a PreToolUse Bash hook at agent-system/extensions/core/root-files/settings.json line 51.
+
+=== THE CLAIM IS PARTIALLY ACCURATE -- SCOPE IT CORRECTLY ===
+
+The guard reads the raw top-level Bash command string at line 54 (`COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')`) and every detector then greps that string, or `[^;&|]`-delimited segments of it. But the detectors are NOT uniform, and the fix must only touch the broken half:
+
+ALREADY SAFE (do not regress these): the `git add` over-staging detector (lines 76-89) and the `git commit` over-staging detector (lines 95-104) ALREADY strip quoted spans before flag-scanning, building `seg_scan=$(echo "$seg" | sed -e 's/\"[^\"]*\"/\"\"/g' -e "s/'[^']*'/''/g")`. Their rationale is stated at lines 70-72: "Quoted spans are stripped before flag-scanning so free-text commit messages (e.g. -m \"fix -a bug\") never false-positive." This is the correct pattern and the fix should extend it, not reinvent it.
+
+VULNERABLE (the actual defect): the entire destructive-command MATCHED chain at lines 116-184 greps the raw string/segments with NO seg_scan quote-stripping:
+  - line 120, `git reset --hard`: regex '(^|[;&|][[:space:]]*)git[[:space:]]+reset[^;&|]*--hard\b'
+  - line 126, `git checkout -- <path>`: matches a bare ` -- ` anywhere after `git checkout` in the segment
+  - lines 133-142, `git restore`: matches any `git restore ...` segment lacking the literal `--staged`; conversely a message containing `--staged` would FALSELY EXEMPT the command
+  - lines 148-162, `git clean`: HAS_F / HAS_D scan the RAW segment, so a message such as `git clean -n -m "remove -d dirs and -f files"` sets both flags
+  - lines 173-183, forced checkout/switch: '(^|[^-])-[a-zA-Z]*f[a-zA-Z]*([[:space:]]|$)|--force' on raw segment text, so `git switch -c foo -m "hotfix -f rollout"` trips it
+
+HIGHEST-RISK PRACTICAL CASE (matches the live observation): a single git command whose own -m / -c message argument contains flag-like or command-like prose. Example: `git commit -m "revert the git clean -fd fallout"` contains the literal substring `git clean` and `-fd`, so the line-148 detector matches on the raw command and blocks an ordinary commit.
+
+SECONDARY DEFECT FOUND WHILE INVESTIGATING: the `git commit` segment regex at line 95 uses `[^;&|]*`, so a commit message containing a literal `|`, `;`, or `&` truncates the segment mid-message and can leak the message tail into the next scan. Segment splitting on shell metacharacters is not quote-aware anywhere in the file. Decide whether to fix this as part of the same change or record it explicitly as out of scope.
+
+=== NO TEST COVERAGE EXISTS ===
+
+Verified: `grep -rn guard-destructive` across the extension returns only root-files/settings.json line 51, the script's own header, and two "modeled on / mirrors" references in hooks/validate-no-task-references.sh (lines 8 and 50). scripts/tests/ contains 30 suites and none covers this hook; there is no hooks test directory at all. This task must CREATE the first test suite for it, following the house conventions used by the sibling suites in scripts/tests/ and wiring it into run-all.sh.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. Destructive-pattern matching is anchored to argv flags and subcommands, not to free-text message content. A commit whose message merely mentions destructive wording is never blocked.
+2. Genuine destructive commands are STILL blocked. Every currently-detected destructive form must remain detected -- this fix must not open a bypass in which an attacker or an agent hides a real `git clean -fd` behind quoting. Explicitly test both directions.
+3. The false-exemption inverse is also closed: a quoted `--staged` in a message must not exempt a real `git restore` (lines 133-142).
+4. A new regression suite at scripts/tests/test-guard-destructive-git.sh covers, at minimum: the observed false positive; each of the five vulnerable detectors at lines 116-184; a true-positive case per detector; and the already-safe `git add` / `git commit` over-staging detectors to prevent regression.
+5. The new suite is wired into scripts/tests/run-all.sh and passes in both source-store and deployed modes.
+6. The header comment at lines 41-47, which currently frames "the whole tool_input.command string" as the sole observation boundary, is updated to describe the actual post-fix matching contract.
+
+NOTE ON INDEPENDENCE: this task shares no files with the orchestrator run-state work and can proceed in parallel with it.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/**. NEVER edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 33. Give .orchestrator-handoff.json per-dispatch identity and fix the exhausted-loop-guard resume deadlock
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: None
+
+**Description**: Fix two coupled, high-severity run-state-integrity defects in the orchestrator engines. Both were observed live during a real `/orchestrate --hard` run in a separate repository; both are recorded system-defect observations with concrete evidence, not speculation. They are combined into one task because they live in the same two files, share the same co-maintenance contract, and overlap heavily on edit territory.
+
+=== DEFECT A: HANDOFF_SINGLE_SLOT_OVERWRITE (observed twice: prior run cycle 13, and again cycle 2 of the following run) ===
+
+PROBLEM: `.orchestrator-handoff.json` is a single fixed path per task, shared by every per-phase dispatch. Path construction carries no phase number, cycle number, dispatch id, or agent name:
+  - skill-orchestrate-hard/SKILL.md line 142: HANDOFF_PATH_ABS="${TASK_DIR_ABS}/.orchestrator-handoff.json"
+  - skill-orchestrate/SKILL.md line 66: the same literal expression.
+Hard mode dispatches one phase per cycle, so successive phases all write the same slot (hard-mode Stage 4 handlers at lines ~495, 546, 582, 699, 849 all write/overwrite it).
+
+OBSERVED FAILURE: a subagent that stops and is later resumed writes the slot AGAIN, after the orchestrator has already dispatched the NEXT phase. Concretely: the phase-19 agent's late write landed at mtime 1786458768, while the phase-20 dispatch window had opened at 1786458762 -- the late write is 6 seconds INSIDE the successor's window.
+
+WHY THE EXISTING GATE CANNOT CATCH IT: Stage 5's staleness gate is purely mtime-based. Hard mode lines 1000-1006, base mode lines 581-620 (byte-identical apart from the notice prefix) compute `handoff_mtime` via stat and mark the handoff stale only when `handoff_mtime -lt dispatch_start_ts`. A late predecessor write has a NEWER mtime than the successor's dispatch start, so it passes the gate and is read as the successor's own result. The orchestrator would then apply the WRONG phase's `phases_completed`, `status`, and `blockers`.
+
+NO CONTENT-SIDE IDENTITY EXISTS TODAY: the handoff-present read block (hard lines 1267-1345 and base equivalents) reads `.status`, `.summary`, `.next_action_hint`, `.phases_completed`, `.phases_total`, `.skeleton`, `.plan_markers_verified`, `.artifacts[0].*`, `.blockers[0].*`, and `.continuation_context.handoff_path // .continuation_path` -- never any phase or dispatch identifier. The schema at context/schemas/orchestrator-handoff-schema.json DOES define a `phase` property, but (i) it is NOT in the `required` array, (ii) docs/architecture/handoff-schema.md lines 148-149 label it "optional, informational", and (iii) its enum is the LIFECYCLE phase [research, plan, implement, revise], so it cannot discriminate plan phase 19 from plan phase 20 -- both are "implement". The nominally-present identity field is therefore useless for this purpose as it stands.
+
+THE STANDARD'S OWN RATIONALE IS UNDERMINED: context/standards/orchestrator-runtime-files.md classifies the handoff as "Durable provenance (tracked)" and justifies tracking it on the grounds that "a documented freshness gate already protects against exactly that 'restored from an old commit' scenario". That rationale only ever considered the git-restoration hazard (an OLD mtime, which the gate does catch). It never considered the late-writer hazard (a NEW mtime from a predecessor agent), which the gate structurally cannot catch. docs/architecture/handoff-schema.md line 49 already states "A handoff at the correct path is not necessarily *this dispatch's* handoff" and then offers only mtime as the mitigation. base SKILL.md line 1204 separately acknowledges "a stale handoff from an unrelated prior hard-mode dispatch happens to sit at that path".
+
+WHY THE PRIOR RUN SURVIVED: the prior run's own recorded note said "read-before-overwrite held this run, so no data was lost in practice". That ordering is luck. It is not enforced anywhere.
+
+SUGGESTED DIRECTION (evaluate during research/plan, do NOT blindly adopt): give the handoff a per-dispatch identity. Candidate approaches include phase-scoped filenames plus a pointer file, or embedding a dispatch-id and/or numeric plan-phase in the handoff CONTENT which the orchestrator verifies against the phase it actually dispatched. The goal is content-based discrimination rather than timestamp-based. Weigh this against the file's current "Durable provenance (tracked)" classification and the stray-handoff sweep, both of which assume a static filename.
+
+BLAST RADIUS (verified by grep across the source store): the handoff is referenced by core agents (general-implementation-agent, general-implementation-hard-agent, general-research-agent, general-research-hard-agent), core skills (skill-orchestrate, skill-orchestrate-hard, skill-implementer-hard, skill-team-implement), the schema, validate-handoff.sh, hooks/validate-handoff-location.sh, skill-base.sh, orchestrate-triage-classify.sh, orchestrate-recover-outcome.sh, orchestrate-dry-run-report.sh, reconcile-task-status.sh, several context patterns and contracts, AND non-core extensions: cslib (cslib-implementation-agent, cslib-implementation-hard-agent, cslib-research-agent, skill-cslib-implementation-hard, skill-cslib-research) and lean (lean-implementation-hard-agent, skill-lean-implementation-hard, context/contracts/anti-analysis.md). Any change to the identity contract MUST sweep the non-core extensions too, not just core.
+
+=== DEFECT B: EXHAUSTED_LOOP_GUARD_RESUME_DEADLOCK (hit at the start of the following run) ===
+
+PROBLEM: when a run terminates at MAX_CYCLES, Stage 7 prints a resume instruction, but the loop guard persists `cycle_count` across invocations and Stage 2's resume branch reads it back with no invocation discrimination. The very next invocation therefore reads cycle_count == MAX_CYCLES, the `while` loop condition is immediately false, nothing is dispatched, and the run exits at Stage 7 printing the same instruction again. The documented resume path is a guaranteed no-op.
+
+HARD MODE EVIDENCE (skill-orchestrate-hard/SKILL.md):
+  - MAX_CYCLES=13 (line 225); loop_guard_file at line 231
+  - unconditional resume read at lines 317-327: cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
+  - loop condition line 414: while [ "$cycle_count" -lt "$MAX_CYCLES" ]
+  - Stage 7 (heading line 1563), lines 1576-1581: prints "Run /orchestrate $task_number --hard to resume, or /implement $task_number --hard for manual phase dispatch."
+  - Stage 8 cleanup lines 1663-1666: `rm -f "$loop_guard_file"` runs ONLY on successful completion -- "Leave loop guard and churn state on partial for resume."
+So on partial exit the guard is preserved carrying cycle_count == 13 == MAX_CYCLES, and the next invocation deadlocks.
+
+THE STALENESS DETECTOR DOES NOT CATCH THIS: the hard-mode `loop-guard-staleness` detector (sentinel-delimited, lines 247-315) has exactly three OR-combined signals -- max_cycles drift (263-266), plan_version drift (271-276), and mtime age (280-289, threshold ORCHESTRATOR_LOOP_GUARD_STALE_DAYS default 7 days). On a genuine same-plan resume none of them fire: max_cycles is unchanged, plan_version is unchanged, and the guard was just written so its mtime is fresh. A budget-exhausted-but-current guard is invisible to all three. Hard mode therefore self-heals only after the 7-day mtime backstop.
+
+BASE MODE IS STRICTLY WORSE (skill-orchestrate/SKILL.md): MAX_CYCLES=5 (line 99), resume read at lines 112-130, and there is NO staleness detector at all (`grep -c loop-guard-staleness` returns 0). The file documents the absence as deliberate at lines 91-96: the guard is "per-cycle runtime state with no freshness check on read ... any syntactically valid guard file at this path is trusted, with no session_id or mtime comparison". Line 113 repeats "Resume: read existing guard. No session_id or mtime check". Exhaustion messages at lines 1263-1266 and 1298 both say "Run /orchestrate $task_number to continue." Guard rm -f only on clean exit (line 1286). Base mode therefore deadlocks PERMANENTLY with no self-healing path whatsoever.
+
+OPERATIONAL IMPACT: the operator has no sanctioned way to resume an exhausted run. The observed run only proceeded because the exhausted guard was archived by hand.
+
+CRITICAL EXISTING CONSTRAINT THE FIX MUST RESPECT: the loop guard already carries a `guard_session_id`, and scripts/test-session-runtime-files.sh Case 3 asserts that loop-guard and churn-state session_id mismatch handling MUST be a log line and MUST NEVER be a gate. Its stated rationale: "Guards the top risk: a future 'make it consistent' edit that hard-fails these files would break legitimate conversational-turn resume." The test fails if the mismatch block contains hard-fail/abort/exit/return 1, and fails if it does not log an INFO line. So the naive fix -- resetting cycle_count whenever session_id differs -- is explicitly forbidden by an existing regression test protecting a real behaviour. Any solution must distinguish a NEW OPERATOR-INITIATED INVOCATION from a CONVERSATIONAL-TURN RESUME WITHIN the same invocation. Do not weaken or delete Case 3 without a recorded justification.
+
+SUGGESTED DIRECTION (evaluate, do not blindly adopt): a new operator-initiated invocation should receive a fresh work-cycle budget while preserving the cross-invocation history the guard carries. Decide EXPLICITLY whether cycle_count is per-invocation or per-task, then make Stage 2, Stage 7, Stage 8 cleanup, and the resume message all agree on that answer. Consider whether budget exhaustion should become a fourth staleness signal, or whether it needs a different mechanism entirely given that an exhausted guard is current rather than stale.
+
+=== CO-MAINTENANCE (BINDING ACCEPTANCE CRITERION, NOT AN AFTERTHOUGHT) ===
+
+skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md carry an explicit co-maintenance contract about each other. skill-orchestrate-hard/SKILL.md lines 956-961: "The two MUST stay in sync: this file pair is where a one-sided fix is a known recurring defect class, because hard mode's single-task stages are a structurally separate reimplementation rather than a thin wrapper." And lines 1686-1688: "CO-MAINTENANCE: an edit to either copy REQUIRES the same edit to the other; the two MUST always agree." Supporting rationale at lines 60-64.
+
+Apply it per defect, noting they differ in shape:
+  - Defect A: the Stage 5 gate is a VERBATIM TWIN (hard 985-1030 / base 581-620). A one-sided fix here reproduces exactly the named recurring defect class. Both copies MUST be fixed together.
+  - Defect B: ASYMMETRIC. The 3-signal detector exists only in hard mode; base mode documents its absence as deliberate. The base-mode fix is therefore NET-NEW code, not a mirror edit. Do not mechanically copy the hard-mode block into base without first deciding whether base mode should gain a detector at all, or whether budget exhaustion should be handled by a mechanism that suits both. Record the decision either way. Related precedent: base line 1518 records a similar asymmetry as "Hard-mode finding, recorded, not acted on".
+
+=== ACCEPTANCE CRITERIA ===
+
+1. A predecessor phase's late handoff write can no longer be mistaken for the successor phase's result, demonstrated by a regression test that reproduces the observed timing (late write with mtime INSIDE the successor's dispatch window) and asserts the orchestrator rejects it.
+2. Whatever identity mechanism is chosen is reflected consistently in: the JSON schema, validate-handoff.sh, docs/architecture/handoff-schema.md, context/standards/orchestrator-runtime-files.md (including its now-incomplete tracking rationale), every core writer/reader listed above, and the cslib and lean extension writers.
+3. An operator invoking the documented resume command on a task whose previous run exhausted MAX_CYCLES actually dispatches work, in BOTH base and hard mode. Covered by a regression test.
+4. Stage 2, Stage 7, Stage 8 cleanup, and the printed resume message agree on a single explicit answer to "is cycle_count per-invocation or per-task", and that answer is documented in the source store.
+5. scripts/test-session-runtime-files.sh Case 3 still passes unmodified, or its modification carries a recorded justification.
+6. Both SKILL.md files are updated in lockstep for Defect A; for Defect B the asymmetry decision is recorded in both files.
+7. Existing suites still pass: test-validate-handoff.sh, test-handoff-reader-parity.sh, test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh, test-validate-handoff-location.sh, test-session-runtime-files.sh.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target /home/benjamin/.config/nvim/agent-system/extensions/** (core, plus the cslib and lean extensions where named). NEVER edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 32. Redeploy and remediate install once settings
 - **Status**: [NOT STARTED]
@@ -128,7 +316,7 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 ---
 
 ### 28. Correct mcp ownership model and purge dead declarations
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -476,7 +664,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 19. Fix opencode agent-fragment path resolution and validator fail-fast
 - **Effort**: 3h
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
