@@ -1,7 +1,7 @@
 # Implementation Plan: Task #26
 
 - **Task**: 26 - Migrate slidev deck screenshot verification from the standalone npm Playwright script to the live Playwright MCP server
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: 24 (scoped Playwright MCP permission allowlist) — completed
 - **Research Inputs**: specs/026_migrate_slidev_verification_to_playwright_mcp/reports/01_slidev-verification-mcp-migration.md
