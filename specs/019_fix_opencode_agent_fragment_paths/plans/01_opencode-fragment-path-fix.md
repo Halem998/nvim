@@ -1,7 +1,7 @@
 # Implementation Plan: Fix opencode agent-fragment path resolution and validator fail-fast
 
 - **Task**: 19 - Fix opencode agent-fragment path resolution and validator fail-fast
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/019_fix_opencode_agent_fragment_paths/reports/01_opencode-fragment-path-fix.md`
@@ -354,34 +354,39 @@ and confirm none inspects merge granularity.
 
 ---
 
-### Phase 6: After-measurement, residual-noise report, and sibling handoff record [NOT STARTED]
+### Phase 6: After-measurement, residual-noise report, and sibling handoff record [COMPLETED]
 
 **Goal**: Produce the measured after-state, quantify what noise remains and why, and record the
 two out-of-scope facts the sibling tasks need. This phase is the deliverable the coordination
 depends on; it is not a formality.
 
 **Tasks**:
-- [ ] Re-run all four Phase 1 measurement arms unchanged, with the same commands, and diff against
-      the baseline.
-- [ ] Confirm the live arm now emits zero `{file:...}` validation warnings and that
+- [x] Re-run all four Phase 1 measurement arms unchanged, with the same commands, and diff against
+      the baseline. *(completed: see summary's Noise Measurement section)*
+- [x] Confirm the live arm now emits zero `{file:...}` validation warnings and that
       `jq '.agent | keys | length'` on the generated `opencode.json` has risen by the expected
-      number of restored keys for the loaded extensions.
-- [ ] Confirm the structural arm now reports zero unresolvable-by-construction references and zero
-      basename-vs-manifest mismatches across all 12 fragments.
-- [ ] Delete `opencode.json` and `opencode.json.managed`; confirm `git status --porcelain` shows
-      no new untracked root files.
-- [ ] Confirm `git status` shows modifications only under `agent-system/extensions/` and
+      number of restored keys for the loaded extensions. *(completed: 2 -> 0 WARN lines, 9 -> 13
+      agent keys, +4 exactly matching nix's and nvim's 4 agent-key refs)*
+- [x] Confirm the structural arm now reports zero unresolvable-by-construction references and zero
+      basename-vs-manifest mismatches across all 12 fragments. *(completed: basename-vs-manifest
+      mismatches 1 -> 0 across all 12; repo-root resolvability rose from 0/34 to 4/34, bounded by
+      which extensions are currently deployed in this repo -- see summary for why that arm is
+      deploy-state-dependent post-fix while basename-vs-manifest is not)*
+- [x] Delete `opencode.json` and `opencode.json.managed`; confirm `git status --porcelain` shows
+      no new untracked root files. *(completed)*
+- [x] Confirm `git status` shows modifications only under `agent-system/extensions/` and
       `lua/neotex/plugins/ai/shared/extensions/merge.lua` — no `.claude/**` writes, no
-      `.opencode/extensions/**` writes.
-- [ ] Confirm no task-number citation was introduced into any edited fragment or into `merge.lua`.
-- [ ] Write the **Noise Measurement** section of the implementation summary, containing: the
+      `.opencode/extensions/**` writes. *(completed)*
+- [x] Confirm no task-number citation was introduced into any edited fragment or into `merge.lua`.
+      *(completed: check-task-references.sh passes with 0 unexempted occurrences)*
+- [x] Write the **Noise Measurement** section of the implementation summary, containing: the
       before/after table for all four arms; the explicit statement of what percentage of the
       original warning noise this fix eliminated, measured rather than estimated; and the
       **residual noise inventory** — specifically that `verify.lua`'s key-parity check still
       reports missing-from-fragment entries for `epidemiology`, `lean`, and `present` (whose
       fragments intentionally cover fewer agents than their manifests declare), which is a
-      distinct noise source this task does not address.
-- [ ] Write the **Scope Boundaries and Sibling Interactions** section of the summary, recording:
+      distinct noise source this task does not address. *(completed)*
+- [x] Write the **Scope Boundaries and Sibling Interactions** section of the summary, recording:
       (a) the OpenCode content-flavor gap — references now resolve, but the resolved bodies are
       Claude-flavored and are not functionally correct OpenCode prompts, a pre-existing gap left
       deliberately open; and (b) the mirror interaction — `present` and `lean` were edited here in
@@ -390,7 +395,7 @@ depends on; it is not a formality.
       `nix`'s mirror still carries a self-contained per-extension path convention that a one-way
       sync would regress. Note also that the OpenCode config preset reads its fragments from
       `.opencode/extensions/`, not from the source store this task edited, so nothing done here
-      changes mirror behavior.
+      changes mirror behavior. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -418,20 +423,29 @@ extension so the sibling task inherits a list rather than a percentage.
 
 ## Testing & Validation
 
-- [ ] `jq empty` passes on all 12 `agent-system/extensions/*/opencode-agents.json`.
-- [ ] `grep -rn 'opencode/agent/subagents\|\.claude/extensions/lean' agent-system/extensions/`
-      returns no matches.
-- [ ] Every `{file:...}` basename across all 12 fragments appears in its extension's
-      `manifest.json` `provides.agents`.
-- [ ] `merge.lua` loads clean under `nvim --headless`.
-- [ ] Headless harness: a fragment with two bad references names both, deterministically, in one
-      message.
-- [ ] Headless harness: a fragment with one good and one bad reference merges the good key and
-      skips only the bad one.
-- [ ] Live end-to-end generation for the loaded extensions emits zero `{file:...}` warnings and
-      contains every expected agent key.
-- [ ] No modifications outside `agent-system/extensions/**`, `lua/.../merge.lua`, and `specs/**`.
-- [ ] No task-number citations in any deliverable file outside `specs/**`.
+- [x] `jq empty` passes on all 12 `agent-system/extensions/*/opencode-agents.json`. *(completed)*
+- [x] `grep -rn 'opencode/agent/subagents\|\.claude/extensions/lean' agent-system/extensions/`
+      returns no matches. *(completed with a scope note: the literal pattern as written also
+      matches unrelated, legitimate `@.claude/extensions/lean/context/...` documentation
+      self-references elsewhere in the `lean`/`cslib` extensions -- 37 such matches exist and are
+      correct, pre-existing content, not part of this bug. The bug-scoped check -- the same
+      pattern restricted to `agent-system/extensions/*/opencode-agents.json`, and narrowed to
+      `.claude/extensions/lean/agents` for the directory this task actually fixed -- returns zero
+      matches, confirming the fix. See the summary's Decisions section for the same clarification.)*
+- [x] Every `{file:...}` basename across all 12 fragments appears in its extension's
+      `manifest.json` `provides.agents`. *(completed: 0 mismatches across all 12)*
+- [x] `merge.lua` loads clean under `nvim --headless`. *(completed)*
+- [x] Headless harness: a fragment with two bad references names both, deterministically, in one
+      message. *(completed: Phase 4 harness, byte-identical across 3 runs)*
+- [x] Headless harness: a fragment with one good and one bad reference merges the good key and
+      skips only the bad one. *(completed: Phase 5 harness)*
+- [x] Live end-to-end generation for the loaded extensions emits zero `{file:...}` warnings and
+      contains every expected agent key. *(completed: 0 WARN, 13 agent keys including all 4
+      restored nix/nvim agents)*
+- [x] No modifications outside `agent-system/extensions/**`, `lua/.../merge.lua`, and `specs/**`.
+      *(completed: confirmed via git status scope check)*
+- [x] No task-number citations in any deliverable file outside `specs/**`. *(completed:
+      check-task-references.sh passes)*
 
 ## Artifacts & Outputs
 
