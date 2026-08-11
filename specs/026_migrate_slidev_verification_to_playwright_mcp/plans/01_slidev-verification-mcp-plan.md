@@ -331,30 +331,32 @@ change, record it as a reasoned exclusion.
 
 ---
 
-### Phase 5: Founder No-Op Assertion and Final Consistency Gate [NOT STARTED]
+### Phase 5: Founder No-Op Assertion and Final Consistency Gate [COMPLETED]
 
 **Goal**: Record the founder no-op as an explicit evidenced assertion, and run the full gate set
 confirming the keep-plus-add outcome landed consistently.
 
 **Tasks**:
-- [ ] Confirm by inspection that `founder/agents/deck-builder-agent.md`'s only Playwright content
+- [x] Confirm by inspection that `founder/agents/deck-builder-agent.md`'s only Playwright content
       is the CLI availability probe gating the non-blocking PDF export stage, and that
       `founder/context/project/founder/patterns/slidev-deck-template.md`'s mentions are all
-      `slidev export` PDF-capability documentation
-- [ ] Confirm neither founder file references `playwright-verify.mjs` or any per-slide
-      verification phase
-- [ ] Make **no functional edit** to either founder file; record the no-op assertion, with the
+      `slidev export` PDF-capability documentation *(completed)*
+- [x] Confirm neither founder file references `playwright-verify.mjs` or any per-slide
+      verification phase *(completed)*
+- [x] Make **no functional edit** to either founder file; record the no-op assertion, with the
       grep evidence, in the implementation summary so the task's declared file scope is not read
-      as an unfinished TODO
-- [ ] Record in the summary that `founder` intentionally receives no MCP permission plumbing under
+      as an unfinished TODO *(completed — see summary Follow-ups)*
+- [x] Record in the summary that `founder` intentionally receives no MCP permission plumbing under
       this scope, and that a future task adding visual verification to its deck pipeline would
-      need the identical treatment (fragment entry + Allowed Tools addition)
-- [ ] Record in the summary that the 9-tool safe list now exists in two extension fragments
+      need the identical treatment (fragment entry + Allowed Tools addition) *(completed)*
+- [x] Record in the summary that the 9-tool safe list now exists in two extension fragments
       (`web`, `present`) and that a change to Playwright's safe-tool surface must update both
-- [ ] Record in the summary which acceptance branch was satisfied ("continued existence is
+      *(completed)*
+- [x] Record in the summary which acceptance branch was satisfied ("continued existence is
       explicitly justified in writing") and where that justification now lives, by filename and
-      section heading
-- [ ] Run the repo-wide gates below
+      section heading *(completed)*
+- [x] Run the repo-wide gates below *(completed — see Verification below; one unplanned
+      line_count-mismatch fix applied and recorded as a deviation)*
 
 **Timing**: 0.5 hours
 

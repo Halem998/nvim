@@ -871,7 +871,7 @@
         "footer"
       ],
       "summary": "Slidev implementation gotchas (footer, Mermaid, PDF export, lz-string)",
-      "line_count": 253,
+      "line_count": 294,
       "load_when": {
         "task_types": [
           "present"
