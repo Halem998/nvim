@@ -27,7 +27,7 @@ PR submission, PR review, and quality vetting. Inherits `lean-lsp` MCP from the 
 
 ### Context
 
-- @context/project/cslib/domain/hard-mode-selection.md - When to use `--hard`, contracts, cost
-- @context/project/cslib/standards/ci-pipeline.md - Ordered CI verification pipeline
-- @context/project/cslib/tools/lake-commands.md - Lake build, test, lint, and shake commands
-- @context/project/cslib/domain/contributing-standards.md - CONTRIBUTING.md standards summary
+- `context/project/cslib/domain/hard-mode-selection.md` - When to use `--hard`, contracts, cost
+- `context/project/cslib/standards/ci-pipeline.md` - Ordered CI verification pipeline
+- `context/project/cslib/tools/lake-commands.md` - Lake build, test, lint, and shake commands
+- `context/project/cslib/domain/contributing-standards.md` - CONTRIBUTING.md standards summary

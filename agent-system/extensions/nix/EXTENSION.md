@@ -24,8 +24,8 @@ mappings above.
 
 ### Context
 
-- @context/project/nix/README.md - Key technologies, directory map, loading strategy
-- @context/project/nix/domain/flakes.md - Flake structure, inputs/outputs, build verification
-- @context/project/nix/tools/nixos-rebuild-guide.md - System rebuild, testing, rollback
-- @context/project/nix/tools/home-manager-guide.md - Home Manager CLI and configuration workflows
-- @context/project/nix/tools/mcp-nixos-integration.md - MCP-NixOS tools and CLI fallbacks
+- `context/project/nix/README.md` - Key technologies, directory map, loading strategy
+- `context/project/nix/domain/flakes.md` - Flake structure, inputs/outputs, build verification
+- `context/project/nix/tools/nixos-rebuild-guide.md` - System rebuild, testing, rollback
+- `context/project/nix/tools/home-manager-guide.md` - Home Manager CLI and configuration workflows
+- `context/project/nix/tools/mcp-nixos-integration.md` - MCP-NixOS tools and CLI fallbacks

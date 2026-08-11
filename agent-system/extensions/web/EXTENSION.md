@@ -19,7 +19,7 @@ Web development support for Astro/Tailwind/TypeScript sites deployed to Cloudfla
 
 ### Context
 
-- @context/project/web/domain/web-reference.md - Technologies, build commands, deployment tracking
-- @context/project/web/domain/astro-framework.md - Astro 5/6 framework reference
-- @context/project/web/domain/tailwind-v4.md - Tailwind CSS v4 configuration
-- @context/project/web/standards/web-style-guide.md - Naming conventions and coding standards
+- `context/project/web/domain/web-reference.md` - Technologies, build commands, deployment tracking
+- `context/project/web/domain/astro-framework.md` - Astro 5/6 framework reference
+- `context/project/web/domain/tailwind-v4.md` - Tailwind CSS v4 configuration
+- `context/project/web/standards/web-style-guide.md` - Naming conventions and coding standards

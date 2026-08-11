@@ -1,7 +1,7 @@
 # Implementation Plan: Task #36
 
 - **Task**: 36 - Audit context loading efficiency
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None (soft coordination: task 29 for manifest-schema changes is deferred to follow-up tasks; task 32 is the redeploy delivery vehicle; task 31 governs the .opencode/ mirror boundary)
 - **Research Inputs**: specs/036_audit_context_loading_efficiency/reports/01_team-research.md
@@ -74,16 +74,16 @@ No roadmap_path was provided in the delegation context (roadmap consultation ski
 
 Phases within the same wave can execute in parallel (disjoint file sets: Phase 1 = nix/present/literature extension sources; Phase 2 = email/nvim/formal/lean sources + core merge source; Phase 3 = rules sources; Phase 5 = core context docs + memory file).
 
-### Phase 1: De-`@` the resolving extension context references [NOT STARTED]
+### Phase 1: De-`@` the resolving extension context references [COMPLETED]
 
 **Goal**: Stop the unconditional eager inlining of extension domain context (~4.5k tokens/session from nix alone; ~5.7k more wherever literature is loaded) by converting resolving `@context/...` bullets to plain backticked paths.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/nix/EXTENSION.md`: convert the 5 `@context/project/nix/...` Context bullets to plain backticked paths (keep the one-line descriptions).
-- [ ] In `agent-system/extensions/present/EXTENSION.md`: convert its resolving `@context/...` refs the same way.
-- [ ] In `agent-system/extensions/literature/merge-sources/claudemd.md`: convert its resolving `@context/...` refs the same way. Note: this file has uncommitted local modifications — read current content first and preserve unrelated in-flight changes.
-- [ ] Sweep the remaining extensions the research census flagged as using the resolving form (`web`, `cslib`) and apply the same conversion.
-- [ ] Confirm each converted file's path targets still exist in the source store (pointer integrity — the paths must be real, just not `@`-prefixed).
+- [x] In `agent-system/extensions/nix/EXTENSION.md`: convert the 5 `@context/project/nix/...` Context bullets to plain backticked paths (keep the one-line descriptions). *(completed)*
+- [x] In `agent-system/extensions/present/EXTENSION.md`: convert its resolving `@context/...` refs the same way. *(completed: 5 bullets)*
+- [x] In `agent-system/extensions/literature/merge-sources/claudemd.md`: convert its resolving `@context/...` refs the same way. Note: this file has uncommitted local modifications — read current content first and preserve unrelated in-flight changes. *(completed: 5 bullets, in-flight changes preserved)*
+- [x] Sweep the remaining extensions the research census flagged as using the resolving form (`web`, `cslib`) and apply the same conversion. *(completed: web 4, cslib 4)*
+- [x] Confirm each converted file's path targets still exist in the source store (pointer integrity — the paths must be real, just not `@`-prefixed). *(completed: all 23 paths exist)*
 
 **Timing**: 45 minutes
 

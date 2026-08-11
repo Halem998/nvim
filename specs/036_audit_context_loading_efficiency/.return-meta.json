@@ -1,21 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/036_audit_context_loading_efficiency/plans/01_context-loading-optimization.md",
-      "summary": "7-phase plan: normalize all @-references downward to plain paths, apply rules-frontmatter triage, re-site literature rows, document resolution semantics, and create 4 follow-up optimization tasks"
-    }
-  ],
-  "next_steps": "Run /implement 36 to execute the plan",
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
     "session_id": "sess_1786463507_5fe0a8",
-    "agent_type": "planner-agent",
+    "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 6,
-    "dependency_waves": [[1, 2, 3, 5], [4], [6], [7]]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

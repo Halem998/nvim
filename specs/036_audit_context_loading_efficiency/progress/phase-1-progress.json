@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "De-@ the resolving extension context references",
+  "started_at": "2026-08-11T00:00:00Z",
+  "last_updated": "2026-08-11T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert nix EXTENSION.md @context/ bullets to plain backticked paths", "status": "done", "files_touched": ["agent-system/extensions/nix/EXTENSION.md"]},
+    {"id": 2, "description": "Convert present EXTENSION.md resolving @context/ refs", "status": "done", "files_touched": ["agent-system/extensions/present/EXTENSION.md"]},
+    {"id": 3, "description": "Convert literature merge-sources/claudemd.md resolving refs", "status": "done", "files_touched": ["agent-system/extensions/literature/merge-sources/claudemd.md"]},
+    {"id": 4, "description": "Sweep web and cslib EXTENSION.md for same conversion", "status": "done", "files_touched": ["agent-system/extensions/web/EXTENSION.md", "agent-system/extensions/cslib/EXTENSION.md"]},
+    {"id": 5, "description": "Confirm converted paths exist in source store", "status": "done", "files_touched": [], "note": "All 23 converted paths exist. check-extension-docs.sh: touched extensions pass; literature FAIL is a pre-existing line_count mismatch in literature-index.md (in-flight uncommitted work from another session, untouched by this phase)."}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

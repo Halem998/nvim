@@ -26,11 +26,11 @@ FTS5-backed search, agent context briefing, and Zotero integration.
 
 ### Context Pointers
 
-- @context/project/literature/domain/literature-index.md — global/per-repo index schemas, repo layout
-- @context/project/literature/patterns/literature-command-modes.md — two-mode `/literature`, discovery tiers
-- @context/project/literature/patterns/agent-exploration.md — `--lit` briefing+tools pattern, corpus navigation
-- @context/project/literature/tools/zotero-scripts.md — Zotero script inventory, setup, and related pointers
-- @context/project/literature/domain/format-decision.md — markdown retained as the sole convert/chunk/index format
+- `context/project/literature/domain/literature-index.md` — global/per-repo index schemas, repo layout
+- `context/project/literature/patterns/literature-command-modes.md` — two-mode `/literature`, discovery tiers
+- `context/project/literature/patterns/agent-exploration.md` — `--lit` briefing+tools pattern, corpus navigation
+- `context/project/literature/tools/zotero-scripts.md` — Zotero script inventory, setup, and related pointers
+- `context/project/literature/domain/format-decision.md` — markdown retained as the sole convert/chunk/index format
 
 ## Literature Mode (`--lit`)
 

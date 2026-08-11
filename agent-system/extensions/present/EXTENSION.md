@@ -28,8 +28,8 @@ All other `present:*` task types use `skill-planner` / `planner-agent` for the p
 
 ### Context
 
-- @context/project/present/domain/talk-modes-and-library.md - Talk modes (duration, slide counts) and the talk library
-- @context/project/present/domain/presentation-types.md - Per-mode audience, format, and selection guide
-- @context/project/present/domain/grant-workflow.md - Grant proposal development workflow
-- @context/project/present/patterns/talk-structure.md - Cross-mode slide organization patterns
-- @context/project/present/standards/character-limits.md - Section length and formatting limits
+- `context/project/present/domain/talk-modes-and-library.md` - Talk modes (duration, slide counts) and the talk library
+- `context/project/present/domain/presentation-types.md` - Per-mode audience, format, and selection guide
+- `context/project/present/domain/grant-workflow.md` - Grant proposal development workflow
+- `context/project/present/patterns/talk-structure.md` - Cross-mode slide organization patterns
+- `context/project/present/standards/character-limits.md` - Section length and formatting limits
