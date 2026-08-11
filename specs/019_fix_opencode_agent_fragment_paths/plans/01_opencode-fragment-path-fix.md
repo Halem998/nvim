@@ -263,24 +263,28 @@ phase: it must report zero mismatches across all 12.
 
 ---
 
-### Phase 4: Validator report-all in `validate_opencode_fragment` [NOT STARTED]
+### Phase 4: Validator report-all in `validate_opencode_fragment` [COMPLETED]
 
 **Goal**: Make the validator collect every missing reference in a fragment and return them all in
 one deterministic message, instead of returning on the first miss under nondeterministic
 `pairs()` order.
 
 **Tasks**:
-- [ ] In `M.validate_opencode_fragment`, accumulate every `(agent_name, file_path)` whose
-      resolved path is unreadable rather than returning on the first one.
-- [ ] Sort the accumulated misses by agent name so repeated runs produce identical output — the
+- [x] In `M.validate_opencode_fragment`, accumulate every `(agent_name, file_path)` whose
+      resolved path is unreadable rather than returning on the first one. *(completed)*
+- [x] Sort the accumulated misses by agent name so repeated runs produce identical output — the
       nondeterministic-ordering complaint in the research is as much a defect as the truncation.
-- [ ] Return `false` plus a single message enumerating all misses when any exist; return
+      *(completed: agent_names collected then table.sort()'d before iteration)*
+- [x] Return `false` plus a single message enumerating all misses when any exist; return
       `true, nil` when none do. Keep the two-value `(boolean, string|nil)` shape so the caller's
-      contract is unchanged in type.
-- [ ] Additionally return, or otherwise make available to the caller, the per-agent miss set that
+      contract is unchanged in type. *(completed: first two return values unchanged in type; see
+      deviation note below on the added third value)*
+- [x] Additionally return, or otherwise make available to the caller, the per-agent miss set that
       Phase 5 needs for per-key degradation. Do not force Phase 5 to re-derive it by re-parsing
-      the message string.
-- [ ] Keep the existing LuaDoc annotation block accurate for the new return contract.
+      the message string. *(completed: added a third return value, `missing_by_key` (agent_name ->
+      file_path map), consumed directly by Phase 5 -- a Lua multi-return addition, not a change to
+      the first two values' type, consistent with "unchanged in type")*
+- [x] Keep the existing LuaDoc annotation block accurate for the new return contract. *(completed)*
 
 **Timing**: 0.75 hours
 

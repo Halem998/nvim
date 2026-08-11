@@ -878,16 +878,37 @@ function M.generate_claudemd(project_dir, config)
   return true, nil
 end
 
---- Validate that all {file:...} references in an opencode fragment point to existing files
---- Iterates over agent entries and checks each prompt that uses {file:PATH} syntax.
+--- Validate that all {file:...} references in an opencode fragment point to existing files.
+--- Iterates over agent entries and checks each prompt that uses {file:PATH} syntax, collecting
+--- EVERY missing reference (not just the first) so a caller gets the full, deterministic extent
+--- of a fragment's breakage in one report instead of one nondeterministic %pairs()%-order name
+--- per invocation.
 --- @param fragment table Fragment with agent definitions {agent = {...}}
 --- @param project_dir string Project directory for resolving relative paths
 --- @return boolean valid True if all references exist
---- @return string|nil error Error message if validation fails
+--- @return string|nil error Single message enumerating every missing reference, sorted by agent
+---   name for deterministic output across repeated runs; nil when valid is true
+--- @return table|nil missing_by_key Map of agent_name -> missing file_path for every agent whose
+---   {file:...} reference failed to resolve; nil when valid is true. Callers needing per-key
+---   degradation (see M.generate_opencode_json) consume this directly instead of re-parsing the
+---   error message string.
 function M.validate_opencode_fragment(fragment, project_dir)
   local source_agents = fragment.agent or (type(fragment) == "table" and not vim.isarray(fragment) and fragment) or {}
 
-  for agent_name, agent_def in pairs(source_agents) do
+  -- Sort agent names first so iteration order -- and therefore the accumulated miss list and
+  -- the resulting message -- is deterministic across repeated runs, independent of pairs()'s
+  -- nondeterministic table iteration order.
+  local agent_names = {}
+  for agent_name, _ in pairs(source_agents) do
+    table.insert(agent_names, agent_name)
+  end
+  table.sort(agent_names)
+
+  local miss_messages = {}
+  local missing_by_key = {}
+
+  for _, agent_name in ipairs(agent_names) do
+    local agent_def = source_agents[agent_name]
     if type(agent_def) == "table" and agent_def.prompt then
       local prompt = agent_def.prompt
       -- Check for {file:PATH} syntax
@@ -895,16 +916,21 @@ function M.validate_opencode_fragment(fragment, project_dir)
       if file_path then
         local abs_path = project_dir .. "/" .. file_path
         if vim.fn.filereadable(abs_path) ~= 1 then
-          return false, string.format(
+          table.insert(miss_messages, string.format(
             "Agent '%s' references missing file: %s",
             agent_name, file_path
-          )
+          ))
+          missing_by_key[agent_name] = file_path
         end
       end
     end
   end
 
-  return true, nil
+  if #miss_messages > 0 then
+    return false, table.concat(miss_messages, "; "), missing_by_key
+  end
+
+  return true, nil, nil
 end
 
 --- Generate opencode.json as a fully computed artifact.
