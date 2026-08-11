@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "summary": "Confirmed zot v0.10.0 is now installed and live (the seed report's sole remaining hard blocker has resolved), captured its updated flag/schema surface, and found a bigger blocker for work item 3: the entire literature extension is absent from the deployed .claude/ tree and untracked in .claude-extensions.json, so the default headless deploy flow cannot activate it. Also confirmed zot's live-database search/duplicates commands are a ready-made DOI-dedup building block and that the freshness export is still stale.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/038_activate_zotero_write_back_path/reports/02_zotero-write-back-activation-research.md",
+      "summary": "Follow-up research superseding the seed report's blocker status: zot CLI now installed/live, new flag surface documented, extension-activation blocker discovered for work item 3, DOI-dedup building block identified, freshness hazard re-confirmed live."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "plan_markers_verified": null,
+  "continuation_path": null,
+  "next_action_hint": "Run /plan 38 -- the plan must re-scope work item 3 to include first-time literature-extension activation (interactive picker load, or a deliberate headless manager.load(\"literature\", {confirm=false}) call) before the normal deploy-headless.sh resync can deploy the three previously-inactive zotero scripts. Work item 2 (live envelope confirmation) is now technically unblocked but requires an explicit, planned real-write test design against the user's production Zotero library -- not a silent step."
+}
