@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Purge the three retirement fragments",
+  "started_at": "2026-08-11T15:10:00Z",
+  "last_updated": "2026-08-11T15:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture pre-change doclint baseline", "status": "done", "files_touched": ["specs/tmp/doclint-baseline.txt"]},
+    {"id": 2, "description": "epidemiology settings-fragment.json -> {}", "status": "done", "files_touched": ["agent-system/extensions/epidemiology/settings-fragment.json"]},
+    {"id": 3, "description": "filetypes settings-fragment.json -> {}", "status": "done", "files_touched": ["agent-system/extensions/filetypes/settings-fragment.json"]},
+    {"id": 4, "description": "founder settings-fragment.json -> {}", "status": "done", "files_touched": ["agent-system/extensions/founder/settings-fragment.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

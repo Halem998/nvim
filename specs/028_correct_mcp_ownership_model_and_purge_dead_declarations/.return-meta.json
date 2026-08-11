@@ -1,60 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/plans/01_mcp-ownership-hybrid-rewrite.md",
-      "summary": "8-phase plan (6 dependency waves, 4.5h) rewriting the MCP ownership doc to the hybrid registration model with the same-scope grant rule, correcting the refuted premise in setup-lean-mcp.sh, fixing the transposed Known-gaps attribution, and purging four dead mcpServers blocks plus five orphaned grants."
-    }
-  ],
-  "next_steps": "Run /implement 28 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1786459614_0c9ada_28",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ],
-    "phase_count": 8,
-    "estimated_hours": 4.5,
-    "dependency_waves": [
-      [
-        1,
-        2,
-        3
-      ],
-      [
-        4
-      ],
-      [
-        5
-      ],
-      [
-        6
-      ],
-      [
-        7
-      ],
-      [
-        8
-      ]
-    ]
-  },
-  "memory_candidates": [
-    {
-      "content": "Before writing 'verification X passes' into a plan's acceptance criteria, RUN X first to capture its baseline. A repo-wide lint (check-extension-docs.sh here) was already failing at baseline on two extensions -- one of them a deployed-vs-source drift on the exact file the task was about to edit -- so a literal 'the lint passes' criterion was unachievable and would have either blocked the implementer or tempted an out-of-scope redeploy to make it green. The fix is a DELTA criterion: capture the baseline output to a file in the first phase, and make the final gate 'no failure absent from the baseline', naming the expected carried-over failures explicitly so they are not mistaken for regressions. The same discipline catches task-description verification criteria that are simply wrong (a 'grep confirms zero surviving X' criterion where an out-of-scope file legitimately retains one X: the correct assertion is exactly-one, and a zero result would itself indicate an out-of-scope edit).",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/plans/01_mcp-ownership-hybrid-rewrite.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "verification-baseline",
-        "lint-delta",
-        "plan-acceptance-criteria",
-        "pre-existing-failures",
-        "scope-hypothesis"
-      ]
-    }
-  ]
+    "session_id": "sess_1786459614_0c9ada",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

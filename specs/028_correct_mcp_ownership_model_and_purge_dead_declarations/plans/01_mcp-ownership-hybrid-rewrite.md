@@ -1,7 +1,7 @@
 # Implementation Plan: MCP Ownership Hybrid Rewrite and Dead-Declaration Purge
 
 - **Task**: 28 - Correct the MCP ownership model and purge the dead declarations
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md
@@ -137,24 +137,24 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Purge the three retirement fragments [NOT STARTED]
+### Phase 1: Purge the three retirement fragments [COMPLETED]
 
 **Goal**: Delete the dead `mcpServers` blocks from `epidemiology`, `filetypes`, and `founder`
 settings fragments, plus founder's five orphaned permission grants, leaving each file as `{}`.
 
 **Tasks**:
-- [ ] Capture the pre-change baseline for later delta comparison:
+- [x] Capture the pre-change baseline for later delta comparison:
       `mkdir -p specs/tmp && REPO_ROOT=$(pwd) bash .claude/scripts/check-extension-docs.sh > specs/tmp/doclint-baseline.txt 2>&1`
-      (expected: 2 FAILs -- `core` setup-lean-mcp.sh drift, `literature` pre-existing)
-- [ ] `agent-system/extensions/epidemiology/settings-fragment.json` -> `{}` (removes
-      `mcpServers.rmcp`; the file has no other key)
-- [ ] `agent-system/extensions/filetypes/settings-fragment.json` -> `{}` (removes
-      `mcpServers.superdoc` and `mcpServers.openpyxl`; no other key)
-- [ ] `agent-system/extensions/founder/settings-fragment.json` -> `{}` (removes
+      (expected: 2 FAILs -- `core` setup-lean-mcp.sh drift, `literature` pre-existing) *(completed: baseline confirmed exactly 2 FAILs as expected)*
+- [x] `agent-system/extensions/epidemiology/settings-fragment.json` -> `{}` (removes
+      `mcpServers.rmcp`; the file has no other key) *(completed)*
+- [x] `agent-system/extensions/filetypes/settings-fragment.json` -> `{}` (removes
+      `mcpServers.superdoc` and `mcpServers.openpyxl`; no other key) *(completed)*
+- [x] `agent-system/extensions/founder/settings-fragment.json` -> `{}` (removes
       `mcpServers.sec-edgar`, `mcpServers.firecrawl`, AND the whole `permissions` object holding
       the 5 grants: `mcp__firecrawl__scrape`, `mcp__firecrawl__crawl`, `mcp__firecrawl__map`,
-      `mcp__firecrawl__extract`, `mcp__sec-edgar__*`)
-- [ ] Confirm each file parses: `jq empty <file>` for all three
+      `mcp__firecrawl__extract`, `mcp__sec-edgar__*`) *(completed)*
+- [x] Confirm each file parses: `jq empty <file>` for all three *(completed)*
 
 **Timing**: 0.3 hours
 
@@ -181,17 +181,17 @@ an unanticipated key, keep it and report the deviation rather than reducing to `
 
 ---
 
-### Phase 2: Surgical purge of the nix fragment [NOT STARTED]
+### Phase 2: Surgical purge of the nix fragment [COMPLETED]
 
 **Goal**: Delete `nix`'s dead `mcpServers` block while preserving both `mcp__nixos__*` permission
 grants byte-for-byte.
 
 **Tasks**:
-- [ ] Delete the `mcpServers` object (which declares the server under the trap name `mcp-nixos`)
-      from `agent-system/extensions/nix/settings-fragment.json`
-- [ ] Leave `permissions.allow` holding exactly `mcp__nixos__nix` and `mcp__nixos__nix_versions`,
-      unchanged in spelling and order
-- [ ] Confirm the resulting file is the 8-line object with only the `permissions` key
+- [x] Delete the `mcpServers` object (which declares the server under the trap name `mcp-nixos`)
+      from `agent-system/extensions/nix/settings-fragment.json` *(completed)*
+- [x] Leave `permissions.allow` holding exactly `mcp__nixos__nix` and `mcp__nixos__nix_versions`,
+      unchanged in spelling and order *(completed)*
+- [x] Confirm the resulting file is the 8-line object with only the `permissions` key *(completed)*
 
 **Timing**: 0.2 hours
 
@@ -216,28 +216,29 @@ server exposes exactly those two tools. Confirm with the jq equality assertion b
 
 ---
 
-### Phase 3: Correct the refuted premise in setup-lean-mcp.sh [NOT STARTED]
+### Phase 3: Correct the refuted premise in setup-lean-mcp.sh [COMPLETED]
 
 **Goal**: Replace the header comment's false access-barrier justification with the accurate,
 narrower statement of the real friction cost, without changing any executable line.
 
 **Tasks**:
-- [ ] Rewrite lines 5-9 of `agent-system/extensions/core/scripts/setup-lean-mcp.sh`. The current
+- [x] Rewrite lines 5-9 of `agent-system/extensions/core/scripts/setup-lean-mcp.sh`. The current
       text -- "Project-scoped `.mcp.json` servers require an interactive approval prompt that a
       subagent cannot satisfy, so registering in user scope -- never gated by per-server approval
-      -- is the reliable choice." -- must go.
-- [ ] The replacement must convey all three parts of the corrected synthesis: (a) a subagent CAN
+      -- is the reliable choice." -- must go. *(completed)*
+- [x] The replacement must convey all three parts of the corrected synthesis: (a) a subagent CAN
       reach a project-scoped server once the workspace is trusted (directly demonstrated, twice,
       with permission pre-granted); (b) a fresh clone still carries a one-time interactive
       workspace-trust step (added in Claude Code v2.1.196) that user-scope registration does not,
       and a cloned repository cannot approve its own servers -- a real friction cost, not a
       blocker; (c) `lean-lsp` stays in user scope because it needs a per-project computed
       `LEAN_PROJECT_PATH`, which is the actual reason, independent of any approval question.
-- [ ] Keep the existing cross-reference line pointing at
-      `agent-system/extensions/core/context/patterns/mcp-server-ownership.md`
-- [ ] Verify the `--help` output still renders: the help handler prints `sed -n '2,/^$/p' "$0"`,
+      *(completed: all three parts present)*
+- [x] Keep the existing cross-reference line pointing at
+      `agent-system/extensions/core/context/patterns/mcp-server-ownership.md` *(completed)*
+- [x] Verify the `--help` output still renders: the help handler prints `sed -n '2,/^$/p' "$0"`,
       so the rewritten block must stay inside the contiguous `#`-comment run that ends at the
-      first blank line, and every added line must start with `# `
+      first blank line, and every added line must start with `# ` *(completed: verified above)*
 
 **Timing**: 0.3 hours
 
