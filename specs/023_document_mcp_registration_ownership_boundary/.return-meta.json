@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "task_number": 23,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786426440_e14088_23",
+  "findings_count": 8,
+  "next_steps": "Run /plan 23 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/023_document_mcp_registration_ownership_boundary/reports/01_mcp-registration-ownership-boundary.md",
+      "summary": "Empirically confirms (via live claude mcp list, ~/.claude.json, and .claude/settings.local.json inspection) that settings.json/settings.local.json mcpServers keys are non-functional for MCP registration; only user-scope ~/.claude.json registers a server. Defines the registration-vs-permission ownership boundary across the four mechanisms, reconciles the lean-lsp wildcard-vs-enumeration duplication, and flags the same dead mcpServers pattern in five other extensions (nix, memory, filetypes, founder, epidemiology)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this agent-system repo, settings.json/settings.local.json's `mcpServers` key (the documented path in extension-system.md for extension-provided MCP servers via settings-fragment.json) is NOT honored by Claude Code (v2.1.227) -- confirmed via `claude mcp list` showing only user-scope ~/.claude.json-registered servers (lean-lsp, playwright) as Connected, while settings.local.json-declared servers (mcp-nixos, obsidian-memory) don't appear at all. Only user-scope ~/.claude.json (via home-manager activation block for static servers, or a core/scripts/ setup script for servers needing per-project computed args) actually registers an MCP server. Six extensions (lean, nix, memory, filetypes, founder, epidemiology) carry this same non-functional mcpServers-in-settings-fragment pattern.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/023_document_mcp_registration_ownership_boundary/reports/01_mcp-registration-ownership-boundary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["mcp", "settings.local.json", "mcpServers", "claude.json", "extension-system", "registration-scope"]
+    },
+    {
+      "content": "Claude Code subagents inherit MCP tools available in the main conversation (per official docs), but project-scoped .mcp.json servers require an interactive approval prompt that a subagent cannot satisfy -- this approval-prompt deadlock, not a categorical access wall, is the likely real mechanism behind claims like 'subagents cannot access project-scoped MCP servers.' User-scope ~/.claude.json registration has no such approval gate, so it is the reliable choice for servers that subagents must reach.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/023_document_mcp_registration_ownership_boundary/reports/01_mcp-registration-ownership-boundary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["mcp", "subagent", "approval-prompt", "project-scope", "claude-code-platform"]
+    },
+    {
+      "content": "Wildcard permission grants (mcp__{server}__*) for an MCP server's tools are more maintainable than enumerated tool-name lists: in this repo, lean/settings-fragment.json's 21-tool enumeration for lean-lsp had already drifted out of date (missing lean_minimal_hypotheses and lean_references, both present in the live server), while core's mcp__lean-lsp__* wildcard could not drift by construction. Prefer wildcards for MCP permission grants unless a specific tool must be excluded.",
+      "category": "PATTERN",
+      "source_artifact": "specs/023_document_mcp_registration_ownership_boundary/reports/01_mcp-registration-ownership-boundary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["mcp", "permissions", "wildcard", "enumeration-drift", "lean-lsp"]
+    }
+  ]
+}
