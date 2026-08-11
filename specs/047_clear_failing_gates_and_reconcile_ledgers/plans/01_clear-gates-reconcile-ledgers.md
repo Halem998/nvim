@@ -383,33 +383,40 @@ these 3 is an over-close and must be reverted.
 
 ---
 
-### Phase 7: Register the missing review reports and refresh statistics [NOT STARTED]
+### Phase 7: Register the missing review reports and refresh statistics [COMPLETED]
 
 **Goal**: Make `specs/reviews/state.json` list every review report present on disk, with a
 recomputed `statistics` block.
 
 **Tasks**:
-- [ ] Enumerate `specs/reviews/*.md` on disk and diff against the `review_id`s already registered.
-- [ ] Add an entry for `review-2026-07-29-agent-system.md` using the existing entry shape
+- [x] Enumerate `specs/reviews/*.md` on disk and diff against the `review_id`s already registered.
+      *(completed: 6 on disk, 4 registered, exactly 2 missing — matches Scope Hypothesis)*
+- [x] Add an entry for `review-2026-07-29-agent-system.md` using the existing entry shape
       (`review_id`, `date`, `scope`, `report_path`, `summary` with
       `files_reviewed`/`critical_issues`/`high_issues`/`medium_issues`/`low_issues`, `tasks_created`,
       `registries_updated`). Set `tasks_created: []` — the review's own Section 3 states its proposed
-      meta tasks were "for user review — none created".
-- [ ] For that review's severity counts, record `0/0/0/0` and write the reasoning down explicitly:
+      meta tasks were "for user review — none created". *(completed; `files_reviewed: 0`, following
+      the precedent set by the already-registered `review-2026-08-11` entry for a similarly
+      non-diff-based qualitative review)*
+- [x] For that review's severity counts, record `0/0/0/0` and write the reasoning down explicitly:
       the report contains no critical/high/medium/low taxonomy in its own text (it uses root-cause
       and wave/task framing), so zeros record "no severity triage performed", not "no issues found".
       Do not invent counts. Capture this reasoning in the commit message and the summary.
-- [ ] Add an entry for `review-2026-08-10-agent-system-refactor-capstone.md` with severities taken
+      *(completed)*
+- [x] Add an entry for `review-2026-08-10-agent-system-refactor-capstone.md` with severities taken
       from its own Section 7 defect ledger: critical 1, high 2, medium 5, low 1 (the tenth,
       `delegation_interrupted`, is unclassified/historical and is excluded from the counts), and
       `tasks_created: [1007, 1008, 1009, 1010, 1011]` — stale pre-vault-reset numbers preserved
       verbatim, consistent with how the already-registered entries preserve their own historical
-      numbers.
-- [ ] Recompute `statistics`: `total_reviews: 6`; `last_review: "2026-08-11"` (unchanged);
+      numbers. *(completed)*
+- [x] Recompute `statistics`: `total_reviews: 6`; `last_review: "2026-08-11"` (unchanged);
       `total_issues_found` = 32 + 0 + 9 = 41; `total_tasks_created` = 9 + 0 + 5 = 14. Re-derive each
-      figure from the file rather than trusting these numbers.
-- [ ] Update `_last_updated` to the current ISO8601 timestamp.
-- [ ] Confirm `jq empty specs/reviews/state.json` parses and entries stay ordered by date.
+      figure from the file rather than trusting these numbers. *(completed: independently
+      re-derived via jq sums over the final file — 6 reviews, 41 issues, 14 tasks, exact match)*
+- [x] Update `_last_updated` to the current ISO8601 timestamp. *(completed: 2026-08-11T22:32:00Z)*
+- [x] Confirm `jq empty specs/reviews/state.json` parses and entries stay ordered by date.
+      *(completed: valid JSON; entries were initially appended out of date order (08-11 preceding
+      07-29/08-10) and were re-sorted into strict date order as a follow-up correction)*
 
 **Timing**: 0.5 hours
 

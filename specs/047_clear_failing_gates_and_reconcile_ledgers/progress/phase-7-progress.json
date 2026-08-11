@@ -1,0 +1,23 @@
+{
+  "phase": 7,
+  "phase_name": "Register the missing review reports and refresh statistics",
+  "started_at": "2026-08-11T22:31:00Z",
+  "last_updated": "2026-08-11T22:33:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Enumerate on-disk reviews vs registered, add 2 missing entries with sourced data, recompute statistics, update _last_updated, validate JSON and date ordering",
+      "status": "done",
+      "files_touched": ["specs/reviews/state.json"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "append new entries at end of reviews array",
+      "result": "corrected",
+      "reason": "appending at the end put 08-11 before 07-29/08-10, breaking date ordering; re-sorted the array by date field as a follow-up correction"
+    }
+  ],
+  "handoff_count": 0
+}
