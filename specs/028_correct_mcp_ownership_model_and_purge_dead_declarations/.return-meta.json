@@ -1,8 +1,39 @@
 {
-  "status": "in_progress",
+  "status": "researched",
   "agent_type": "general-research-agent",
   "delegation_path": ["orchestrator", "research", "general-research-agent"],
   "task_number": 28,
   "session_id": "sess_1786459614_0c9ada_28",
-  "artifacts": []
+  "findings_count": 5,
+  "next_steps": "Run /plan 28 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md",
+      "summary": "Verifies all five brief items against the live tree; confirms items 3-5 exactly with file:line evidence, locates item 1's premise in setup-lean-mcp.sh (out of scope) rather than the doc itself, and independently reproduces the item 2 playwright/lean-lsp scope-mismatch with exact grant-file evidence. Specifies precise section-by-section doc rewrite content and exact deletion ranges for all four settings-fragment.json files."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Claude Code MCP tool availability rests on two independent axes: registration (which surface makes a server exist/connect: local or user ~/.claude.json, or project .mcp.json) and permission (which settings file grants its tools without prompting). A recurring, verifiable failure mode is scope mismatch: a server registered at user scope (machine-wide) but only granted permission inside per-project extension settings-fragment.json files that merge into project-local settings.local.json. This leaves every project lacking that specific extension prompting/denying on every call. Fix: grant permissions at the SAME scope where the server is registered (user-scope registration -> grant in ~/.claude/settings.json; project-scope registration -> grant in the owning extension's settings-fragment.json). Verified concrete example in this repo: playwright (user-scope registered, but grants only in web/present extension fragments, absent from ~/.claude/settings.json) vs. lean-lsp (user-scope registered AND user-scope granted -- the correct pattern).",
+      "category": "PATTERN",
+      "source_artifact": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["mcp", "permissions", "registration-scope", "claude-code", "settings-fragment"]
+    },
+    {
+      "content": "An mcpServers key inside settings.json/settings.local.json (or an extension's settings-fragment.json, which merges into it) has zero effect in Claude Code -- it never registers a server. The only registration surfaces are ~/.claude.json (local/user scope) and .mcp.json (project scope). A manifest.json's mcp_servers field is an equally dead, independent third copy of the same non-registering declaration; when auditing one dead mcpServers block, check the extension's manifest.json for a parallel dead mcp_servers field too -- both need cleanup, not just the settings-fragment one.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["mcp", "manifest.json", "settings-fragment", "dead-declaration", "claude-code"]
+    },
+    {
+      "content": "Before treating a task brief's quoted claim as literally present in a target file, grep for the exact substrings first. In this case, a brief described a doc's 'central premise' as a specific quoted justification, but the doc contained zero matches for any of the load-bearing terms (.mcp.json, project-scoped, subagent) -- the actual claim lived in a different, out-of-scope file (a script's header comment) that the doc merely links to. The doc's real defect was an omission (never mentioning a legitimate registration surface at all) with the same practical effect, not the literal sentence described. Always verify a brief's factual claims against the file before planning edits around them.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["research-verification", "grep-first", "brief-accuracy", "premise-checking"]
+    }
+  ]
 }

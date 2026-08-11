@@ -28,7 +28,7 @@ next_project_number: 36
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
-28 [RESEARCHING] — Rewrite the canonical MCP ownership document, whose central premi
+28 [RESEARCHED] — Rewrite the canonical MCP ownership document, whose central premi
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
@@ -316,10 +316,11 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 ---
 
 ### 28. Correct mcp ownership model and purge dead declarations
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md]
 
 **Description**: Rewrite the canonical MCP ownership document, whose central premise has been empirically DISPROVEN, and purge the dead server declarations it catalogues.
 
