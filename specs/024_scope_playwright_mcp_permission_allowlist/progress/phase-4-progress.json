@@ -1,0 +1,30 @@
+{
+  "phase": 4,
+  "phase_name": "Record the enumeration-over-wildcard exception",
+  "started_at": "2026-08-10T00:20:00Z",
+  "last_updated": "2026-08-10T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add carve-out subsection to mcp-server-ownership.md after Wildcard over enumeration, before Composition",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add one-sentence pointer in permission-configuration.md to the new carve-out subsection",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/guides/permission-configuration.md"]
+    },
+    {
+      "id": 3,
+      "description": "Add settings-fragment.json to web/README.md Architecture directory tree",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/web/README.md"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

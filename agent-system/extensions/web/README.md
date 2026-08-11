@@ -22,6 +22,7 @@ web/
 ├── manifest.json              # Extension configuration
 ├── EXTENSION.md               # CLAUDE.md merge content
 ├── index-entries.json         # Context discovery entries
+├── settings-fragment.json     # Scoped MCP permission grants (merged into .claude/settings.local.json)
 ├── README.md                  # This file
 │
 ├── skills/

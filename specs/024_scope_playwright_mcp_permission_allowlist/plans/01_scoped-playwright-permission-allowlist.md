@@ -325,13 +325,13 @@ sha256sum -c <(printf '%s  %s\n' "$PRE_SETTINGS_SHA" "$FIX/.claude/settings.json
 
 ---
 
-### Phase 4: Record the enumeration-over-wildcard exception [NOT STARTED]
+### Phase 4: Record the enumeration-over-wildcard exception [COMPLETED]
 
 **Goal**: The deliberate deviation from the codebase's general "prefer a wildcard" guidance is
 documented at the exact point a future maintainer would otherwise "fix" it away.
 
 **Tasks**:
-- [ ] Edit `/home/benjamin/.config/nvim/agent-system/extensions/core/context/patterns/mcp-server-ownership.md`:
+- [x] Edit `/home/benjamin/.config/nvim/agent-system/extensions/core/context/patterns/mcp-server-ownership.md`:
       add a short subsection immediately after the existing `### Wildcard over enumeration`
       subsection (before `## Composition`) stating the carve-out. It must say: when a server
       intentionally splits its tool surface into a safe/always-allow tier and an
@@ -341,26 +341,29 @@ documented at the exact point a future maintainer would otherwise "fix" it away.
       tools that must keep prompting (`browser_evaluate`, `browser_file_upload`,
       `browser_run_code_unsafe`), and state explicitly that collapsing that enumeration into
       `mcp__playwright__*` would reopen an arbitrary-execution and file-upload hole.
-- [ ] State the accepted cost honestly: this enumeration inherits exactly the drift weakness the
+      *(completed: new "Carve-out" subsection added)*
+- [x] State the accepted cost honestly: this enumeration inherits exactly the drift weakness the
       preceding subsection describes -- a newly added safe Playwright tool will prompt until the
       list is updated. That is the deliberate price of keeping the unsafe tier prompting.
-- [ ] Edit `/home/benjamin/.config/nvim/agent-system/extensions/core/docs/guides/permission-configuration.md`:
+      *(completed)*
+- [x] Edit `/home/benjamin/.config/nvim/agent-system/extensions/core/docs/guides/permission-configuration.md`:
       the "Prefer a wildcard over an enumeration" paragraph currently states the rule with no
       carve-out. Add a one-sentence pointer to the new subsection in `mcp-server-ownership.md` so
       the two documents cannot drift into contradiction. Do not restate the carve-out's content
-      here -- point to it.
-- [ ] Edit `/home/benjamin/.config/nvim/agent-system/extensions/web/README.md`: add
+      here -- point to it. *(completed)*
+- [x] Edit `/home/benjamin/.config/nvim/agent-system/extensions/web/README.md`: add
       `settings-fragment.json` to the `## Architecture` directory tree (alongside `manifest.json`,
       `EXTENSION.md`, `index-entries.json`, `README.md`) with a one-line comment such as
       `# Scoped MCP permission grants (merged into .claude/settings.local.json)`. This also clears
       the doc-lint's README-older-than-manifest drift warning that Phase 2's manifest edit
-      otherwise introduces.
-- [ ] **Binding constraint**: none of these three files may cite a task number ("task 24",
+      otherwise introduces. *(completed)*
+- [x] **Binding constraint**: none of these three files may cite a task number ("task 24",
       "tasks 25-26", "(task N)"). All three live outside `specs/**`. Reference durable anchors
       instead -- the fragment's file path, the `### Wildcard over enumeration` subsection name,
-      the tool names themselves.
-- [ ] Do not add the `web` extension to `mcp-server-ownership.md`'s "Known gaps" table. That table
+      the tool names themselves. *(completed: verified via grep, no matches)*
+- [x] Do not add the `web` extension to `mcp-server-ownership.md`'s "Known gaps" table. That table
       lists extensions carrying a dead `mcpServers` block; the new fragment deliberately has none.
+      *(completed: table unmodified)*
 
 **Timing**: 0.5 hours
 

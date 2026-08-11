@@ -90,6 +90,29 @@ lean's own `settings-fragment.json`, and a dead `mcpServers` registration block 
 fragment — none of which needed to coexist. The correct end state is one wildcard in lean's own
 fragment and nothing in core.
 
+### Carve-out: safe/unsafe tool splits require enumeration
+
+The wildcard preference above assumes every tool a server exposes is equally fine to
+always-allow. When a server intentionally splits its own tool surface into a safe/always-allow
+tier and an unsafe/always-prompt tier, a wildcard cannot express that split — it grants
+everything, collapsing the two tiers into one. Enumeration is **required** here, not merely
+tolerated.
+
+The worked example is `agent-system/extensions/web/settings-fragment.json`, which enumerates
+exactly the 9 safe `mcp__playwright__browser_*` tools (navigate, snapshot, take_screenshot,
+console_messages, network_requests, click, type, find, wait_for) and deliberately omits
+`browser_evaluate`, `browser_file_upload`, and `browser_run_code_unsafe` from every allow list.
+Those three tools must keep prompting: `browser_evaluate` and `browser_run_code_unsafe` run
+arbitrary code, and `browser_file_upload` reads arbitrary local files onto a page. Collapsing the
+enumeration into a `mcp__playwright__*` wildcard — the same simplification legitimately applied to
+`lean-lsp` above — would silently re-grant all three and reopen an arbitrary-execution and
+file-upload hole.
+
+**Accepted cost, stated honestly**: this enumeration inherits exactly the drift weakness the
+"Wildcard over enumeration" section above describes — a newly added safe Playwright tool will
+prompt until this list is updated to include it. That is the deliberate price of keeping the
+unsafe tier prompting; it is not an oversight to "fix" by wildcarding.
+
 ---
 
 ## Composition

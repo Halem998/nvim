@@ -89,7 +89,10 @@ grants that apply regardless of which extensions are loaded.
 **Prefer a wildcard over an enumeration** (`"mcp__{server}__*"` rather than one entry per tool
 name). An enumeration silently under-grants as the server's tool surface grows -- a missed update
 reintroduces prompting for the new tool with no error to signal the gap -- while a wildcard cannot
-drift.
+drift. **Carve-out**: when a server intentionally splits its tools into a safe/always-allow tier
+and an unsafe/always-prompt tier, a wildcard cannot express that split and enumeration is
+required -- see the "Carve-out: safe/unsafe tool splits require enumeration" subsection in
+[MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the worked example.
 
 See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full
 registration procedure, the evidence behind "settings files never register," and the known gaps
