@@ -99,7 +99,6 @@
         "agent-system/extensions/core/context/orchestration/"
       ],
       "dependencies": [
-        1015,
         18
       ],
       "artifacts": []

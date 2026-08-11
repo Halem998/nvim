@@ -607,7 +607,7 @@ the actual count must be reported rather than silently absorbed.
 
 ---
 
-### Phase 9: Remove the dangling dependency entry in specs/state.json [NOT STARTED]
+### Phase 9: Remove the dangling dependency entry in specs/state.json [COMPLETED]
 
 **Goal**: Clear `verify-deploy.sh` gate 10's dangling-dependency finding by removing the
 vault-renumbering leftover, without inventing a replacement target.
@@ -618,16 +618,21 @@ renumbering subtracted 1000 from `project_number` values but did not rewrite `de
 Removing the dead entry is the honest fix.
 
 **Tasks**:
-- [ ] Re-read task 9's `dependencies` array and confirm it still reads `[1015, 18]` before editing
-- [ ] Confirm `18` resolves to a real entry (active or archived); if it does not, report that
-      finding rather than silently removing it too
-- [ ] Remove only the `1015` element with a surgical `jq` edit on that one array. Do NOT invent a
-      replacement target, do NOT renumber, and do NOT rewrite any other field
-- [ ] Never assign `.artifacts = [...]` wholesale anywhere in this edit (append-only rule)
-- [ ] Re-read the array immediately and confirm it now reads `[18]`
-- [ ] Run `bash .claude/scripts/validate-state.sh --deep` and confirm the dangling-dependency
-      finding is gone and no new finding appeared
-- [ ] Regenerate TODO.md via `bash .claude/scripts/generate-todo.sh` rather than editing it
+- [x] Re-read task 9's `dependencies` array and confirm it still reads `[1015, 18]` before editing
+      *(completed)*
+- [x] Confirm `18` resolves to a real entry (active or archived); if it does not, report that
+      finding rather than silently removing it too *(completed: 18 exists in active_projects)*
+- [x] Remove only the `1015` element with a surgical `jq` edit on that one array. Do NOT invent a
+      replacement target, do NOT renumber, and do NOT rewrite any other field *(completed)*
+- [x] Never assign `.artifacts = [...]` wholesale anywhere in this edit (append-only rule)
+      *(completed: .artifacts was not touched by this edit)*
+- [x] Re-read the array immediately and confirm it now reads `[18]` *(completed)*
+- [x] Run `bash .claude/scripts/validate-state.sh --deep` and confirm the dangling-dependency
+      finding is gone and no new finding appeared *(completed: dangling-dependency PASS
+      immediately; TODO.md-out-of-sync FAIL appeared until objective 6's regeneration, then
+      15/15 PASS, 0 failed)*
+- [x] Regenerate TODO.md via `bash .claude/scripts/generate-todo.sh` rather than editing it
+      *(completed)*
 
 **Timing**: 15 minutes
 
