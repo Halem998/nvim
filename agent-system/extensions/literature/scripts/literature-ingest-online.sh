@@ -69,6 +69,19 @@
 #                                         corrective edge case documented in Phase 6 below),
 #                                         then ingested/patched/registered same as above.
 #
+# EXPORT FRESHNESS + LIVE DEDUP GUARD: before either the create-item or the attach-to-existing
+# branch runs its Zotero write, this script consults zotero-export-freshness.sh.
+# ZOTERO_EXPORT_FRESH is the only clean pass; ZOTERO_EXPORT_STALE,
+# ZOTERO_EXPORT_FRESHNESS_UNKNOWN, and ZOTERO_EXPORT_FRESHNESS_ABSENT are all treated as "not
+# confirmed fresh" (matching zotero-search.sh's own treatment) and mark the run as requiring
+# live-library re-verification of the classification -- re-verify-then-proceed, never an
+# unconditional refusal, because the export is persistently stale in normal operation and an
+# unconditional refusal would block all ingest. The concrete re-verification mechanism is the
+# DOI-normalized, live-library dedup check (check_live_doi_duplicate(), see below), which
+# performs a hard stop (ONLINE_INGEST_DUPLICATE_DETECTED, create-item path only) on a confirmed
+# duplicate. A non-fresh classification with no DOI to check falls through honestly (logged, not
+# silently treated as a pass) to the existing, non-blocking check_duplicate_title() heuristic.
+#
 # EXIT CODES:
 #   0   ONLINE_INGEST_INGESTED or ONLINE_INGEST_ATTACHED printed (full success)
 #   1   ONLINE_INGEST_NO_PDF printed (honest stop, no side effects)
@@ -281,9 +294,45 @@ check_duplicate_title() {
 }
 
 # ---------------------------------------------------------------------------
+# Helper: classify $LITERATURE_DIR/zotero-library.json's freshness relative to the live Zotero
+# sqlite database via zotero-export-freshness.sh. ZOTERO_EXPORT_FRESH is the only clean pass;
+# every other token (STALE, FRESHNESS_UNKNOWN, FRESHNESS_ABSENT) is "not confirmed fresh" and
+# sets EXPORT_NEEDS_REVERIFICATION=true rather than stopping outright -- re-verify-then-proceed,
+# matching how zotero-search.sh already treats these same tokens. Sets three globals:
+#   EXPORT_FRESHNESS_TOKEN         the raw directive token
+#   EXPORT_FRESHNESS_CONFIRMED     "true" only for ZOTERO_EXPORT_FRESH
+#   EXPORT_NEEDS_REVERIFICATION    "true" for anything else; consumed by
+#                                  check_live_doi_duplicate() below as the concrete
+#                                  re-verification mechanism.
+# ---------------------------------------------------------------------------
+check_export_freshness() {
+  local rc=0
+  EXPORT_FRESHNESS_TOKEN="$("$SCRIPT_DIR/zotero-export-freshness.sh" 2>/tmp/ingest-online-freshness-stderr.$$)" || rc=$?
+  local rationale
+  rationale="$(cat /tmp/ingest-online-freshness-stderr.$$ 2>/dev/null || true)"
+  rm -f /tmp/ingest-online-freshness-stderr.$$
+  if [ "$rc" -ne 0 ] || [ -z "$EXPORT_FRESHNESS_TOKEN" ]; then
+    log "WARNING: zotero-export-freshness.sh failed or produced no token (exit $rc); treating as not confirmed fresh: $rationale"
+    EXPORT_FRESHNESS_TOKEN="ZOTERO_EXPORT_FRESHNESS_UNKNOWN"
+  fi
+  case "$EXPORT_FRESHNESS_TOKEN" in
+    ZOTERO_EXPORT_FRESH)
+      log "Export freshness: $EXPORT_FRESHNESS_TOKEN -- $rationale"
+      EXPORT_FRESHNESS_CONFIRMED=true
+      EXPORT_NEEDS_REVERIFICATION=false
+      ;;
+    *)
+      log "WARNING: export freshness not confirmed ($EXPORT_FRESHNESS_TOKEN): $rationale -- live-library re-verification required before any item creation."
+      EXPORT_FRESHNESS_CONFIRMED=false
+      EXPORT_NEEDS_REVERIFICATION=true
+      ;;
+  esac
+}
+
+# ---------------------------------------------------------------------------
 # Helper: extract the first non-empty/non-null value across several plausible jq field paths
 # on a JSON envelope. `zot add --pdf`'s exact data.* field names are NOT independently
-# confirmed in this environment (no zot/Zotero account available) -- see
+# confirmed against a real call yet -- see
 # zotero-item-creation.md. This defensive multi-path lookup is the mitigation.
 # ---------------------------------------------------------------------------
 extract_envelope_field() {
@@ -483,7 +532,12 @@ fi
 # --dry-run: stop here with a preview of planned invocations, no side effects.
 # ===========================================================================
 if [ "$DRY_RUN" = "true" ]; then
+  check_export_freshness
   if [ "$CLASSIFICATION" = "resolvable" ]; then
+    log "[dry-run] Export freshness: $EXPORT_FRESHNESS_TOKEN (needs_reverification=$EXPORT_NEEDS_REVERIFICATION)"
+    if [ "$EXPORT_NEEDS_REVERIFICATION" = "true" ]; then
+      log "[dry-run] Would perform DOI-normalized live-library re-verification (check_live_doi_duplicate) before create-item, since the export is not confirmed fresh"
+    fi
     log "[dry-run] Would download: $PDF_URL_RAW -> $STAGING_PATH"
     log "[dry-run] Would run: $SCRIPT_DIR/zotero-write.sh item-add --pdf $STAGING_PATH ${DOI_RAW:+--doi $DOI_RAW} --idempotency-key ${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}"
     log "[dry-run] Would run: $SCRIPT_DIR/literature-ingest.sh <resolved_storage_or_staging_path> --no-local"
@@ -491,6 +545,7 @@ if [ "$DRY_RUN" = "true" ]; then
     echo "ONLINE_INGEST_INGESTED"
     exit 0
   else
+    log "[dry-run] Export freshness: $EXPORT_FRESHNESS_TOKEN (needs_reverification=$EXPORT_NEEDS_REVERIFICATION; attach-to-existing path performs no dedup check, matching the real path)"
     log "[dry-run] Would resolve doc_id=$DOC_ID's citation_key to a real Zotero item key via zotero-resolve-pdf.sh"
     log "[dry-run] Would (if a PDF URL is discoverable) download + verify, then run: $SCRIPT_DIR/zotero-write.sh attach-file <resolved_key> $STAGING_PATH --idempotency-key ${IDEM_KEY:-online-ingest-attach-$SANITIZED_DOC_ID}"
     log "[dry-run] Would run: $SCRIPT_DIR/literature-ingest.sh <resolved_storage_or_staging_path> --no-local"
@@ -504,6 +559,8 @@ fi
 # Resolvable (open_access / arXiv) path: download + verify + create-item + delegate + patch
 # ===========================================================================
 if [ "$CLASSIFICATION" = "resolvable" ]; then
+  check_export_freshness
+
   check_duplicate_title "$TITLE"
 
   if ! download_and_verify "$PDF_URL_RAW" "$STAGING_PATH"; then
@@ -556,6 +613,11 @@ fi
 # Existing-no-pdf (in_zotero_no_pdf) path: resolve real key -> attach -> delegate -> patch
 # ===========================================================================
 if [ "$CLASSIFICATION" = "existing_no_pdf" ]; then
+  check_export_freshness
+  if [ "$EXPORT_NEEDS_REVERIFICATION" = "true" ]; then
+    log "Export freshness not confirmed ($EXPORT_FRESHNESS_TOKEN) for doc_id=$DOC_ID; flagging for visibility. This branch resolves the real Zotero item key live via zotero-resolve-pdf.sh below (never from the stale export), and already handles a stale-snapshot classification via its own non-empty resolved_path corrective edge case -- that existing behavior is unchanged by this gate."
+  fi
+
   RESOLVER_RECORD="$(jq -n --arg title "$TITLE" --argjson authors "$AUTHORS_JSON" --argjson year "$YEAR_JSON" \
     '{title: $title, authors: $authors, year: $year, zotero_key: null}')"
 

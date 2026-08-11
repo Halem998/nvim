@@ -271,7 +271,7 @@ deferring it.
 
 ---
 
-### Phase 3: Wire the export-freshness gate into the write path [NOT STARTED]
+### Phase 3: Wire the export-freshness gate into the write path [COMPLETED]
 
 **Goal**: Make `literature-ingest-online.sh` consult `zotero-export-freshness.sh` before any
 Zotero write, so a stale CSL-JSON export cannot drive an unverified item creation. Satisfies the
@@ -279,31 +279,36 @@ first half of acceptance criterion 3 and work item 4.
 
 **Tasks**:
 
-- [ ] Add a `check_export_freshness()` helper near the existing `check_duplicate_title()` helper.
+- [x] Add a `check_export_freshness()` helper near the existing `check_duplicate_title()` helper.
       It invokes `"$SCRIPT_DIR/zotero-export-freshness.sh"`, captures the single stdout directive
       token, and returns a classification the callers branch on. Treat `ZOTERO_EXPORT_FRESH` as
       the only clean pass; `ZOTERO_EXPORT_STALE`, `ZOTERO_EXPORT_FRESHNESS_UNKNOWN`, and
       `ZOTERO_EXPORT_FRESHNESS_ABSENT` are all "not confirmed fresh", matching how
-      `zotero-search.sh` already treats them.
-- [ ] Implement the task's "refuse **or** re-verify" as re-verify-then-proceed: on a not-fresh
+      `zotero-search.sh` already treats them. *(completed)*
+- [x] Implement the task's "refuse **or** re-verify" as re-verify-then-proceed: on a not-fresh
       result, log a visible warning naming the token and rationale, and mark the run as requiring
       live-library re-verification of the classification. Do not unconditionally refuse — the
       export is persistently stale in this environment and an unconditional refusal would block
-      all ingest.
-- [ ] Insert the call in the `resolvable` (create-item) branch immediately before
+      all ingest. *(completed: EXPORT_NEEDS_REVERIFICATION global, consumed by Phase 4's dedup)*
+- [x] Insert the call in the `resolvable` (create-item) branch immediately before
       `check_duplicate_title "$TITLE"` — i.e. before `download_and_verify` and well before the
-      `zotero-write.sh item-add` invocation.
-- [ ] Insert the call in the `existing_no_pdf` (attach-to-existing) branch before the
+      `zotero-write.sh item-add` invocation. *(completed)*
+- [x] Insert the call in the `existing_no_pdf` (attach-to-existing) branch before the
       `zotero-resolve-pdf.sh` resolution, so a stale-snapshot classification is flagged there too.
       Note that this branch already has a corrective edge case for stale snapshots (the
       non-empty `resolved_path` check) — the new gate complements it, and must not disturb it.
-- [ ] Add the not-fresh stop directive to the script's STABLE CONTRACT header block, following
+      *(completed: existing resolved_path corrective edge case left byte-unchanged)*
+- [x] Add the not-fresh stop directive to the script's STABLE CONTRACT header block, following
       the existing `ONLINE_INGEST_*` naming convention already documented there, and describe the
-      re-verification behavior alongside the existing directive tokens.
-- [ ] Extend the `--dry-run` preview so it reports the freshness classification and what the run
+      re-verification behavior alongside the existing directive tokens. *(completed: new
+      "EXPORT FRESHNESS + LIVE DEDUP GUARD" header subsection added, forward-referencing the
+      Phase 4 `ONLINE_INGEST_DUPLICATE_DETECTED` token registered in that phase)*
+- [x] Extend the `--dry-run` preview so it reports the freshness classification and what the run
       would do about it, keeping the dry-run branch an honest preview of the real path.
-- [ ] Leave `download_and_verify()`, the `%PDF` gate, `directive_stop()`, and every existing exit
-      code untouched.
+      *(completed: verified via fixture runs below)*
+- [x] Leave `download_and_verify()`, the `%PDF` gate, `directive_stop()`, and every existing exit
+      code untouched. *(completed: git diff on the file touches no line inside download_and_verify()
+      or directive_stop(), confirmed by targeted diff grep)*
 
 **Timing**: 1 hour
 
