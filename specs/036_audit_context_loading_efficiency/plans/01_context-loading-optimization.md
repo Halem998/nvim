@@ -172,14 +172,14 @@ Phases within the same wave can execute in parallel (disjoint file sets: Phase 1
 
 ---
 
-### Phase 4: Re-site literature rows from core to the literature extension [IN PROGRESS]
+### Phase 4: Re-site literature rows from core to the literature extension [COMPLETED]
 
 **Goal**: Stop `/literature` and `/cite` documentation from rendering in every deploy regardless of whether the literature extension is loaded (F8 mis-siting).
 
 **Tasks**:
-- [ ] Move the `/literature` command rows (7 rows), the `/cite` rows (2 rows), and the `skill-literature` Skill-to-Agent mapping row from `agent-system/extensions/core/merge-sources/claudemd.md` into `agent-system/extensions/literature/merge-sources/claudemd.md`, verbatim.
-- [ ] Confirm the literature merge source's existing structure accommodates command-table and skill-table rows (it already carries the `--lit` section); place moved rows under appropriate headings.
-- [ ] Diff both files to confirm the move is net-zero: every moved row appears exactly once, in the literature source.
+- [x] Move the `/literature` command rows (7 rows), the `/cite` rows (2 rows), and the `skill-literature` Skill-to-Agent mapping row from `agent-system/extensions/core/merge-sources/claudemd.md` into `agent-system/extensions/literature/merge-sources/claudemd.md`, verbatim. *(deviation: altered — destination already carried a current v2.0.0 command table and skill row; core's 10 rows removed, only the two still-live rows missing there (--index FILE, --convert [FILE]) carried over; stale rows for removed flags (--scan, --search, --task) dropped rather than duplicated)*
+- [x] Confirm the literature merge source's existing structure accommodates command-table and skill-table rows (it already carries the `--lit` section); place moved rows under appropriate headings. *(completed: rows placed in the existing Commands table)*
+- [x] Diff both files to confirm the move is net-zero: every moved row appears exactly once, in the literature source. *(completed: core retains only the legitimate --lit pointer prose; literature table has 11 command/skill rows)*
 
 **Timing**: 30 minutes
 

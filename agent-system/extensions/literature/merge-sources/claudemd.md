@@ -21,6 +21,8 @@ FTS5-backed search, agent context briefing, and Zotero integration.
 | `/literature` | `/literature ~/path/to/file.pdf` | Ingest a specific PDF/DJVU (Mode B) |
 | `/literature` | `/literature ~/dir/` | Ingest all PDFs in a directory (Mode B) |
 | `/literature` | `/literature --validate` | Validate the sub-index against the global index |
+| `/literature` | `/literature --index FILE` | Add/update index entry for existing markdown file |
+| `/literature` | `/literature --convert [FILE]` | Convert PDF/DJVU to markdown with chunking |
 | `/cite` | `/cite N` | Verify all citations in task N artifacts |
 | `/cite` | `/cite N --gaps` | Also flag citations found in Zotero but lacking a PDF |
 

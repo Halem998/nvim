@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Re-site literature rows from core to the literature extension",
+  "started_at": "2026-08-11T01:10:00Z",
+  "last_updated": "2026-08-11T01:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove /literature, /cite, and skill-literature rows from core merge source", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 2, "description": "Ensure literature merge source carries the command/skill rows", "status": "done", "files_touched": ["agent-system/extensions/literature/merge-sources/claudemd.md"], "note": "Destination already carried a current v2.0.0 command table and skill-mapping row; only the two still-live rows missing there (--index FILE, --convert [FILE]) were carried over from core. Core's stale rows for removed flags (--scan, --search, --task) were dropped, not duplicated."},
+    {"id": 3, "description": "Diff both files: net-zero for live content", "status": "done", "files_touched": [], "note": "Core retains only the legitimate --lit section pointer prose mentioning the literature merge-source path. Literature table: 11 command/skill rows. check-extension-docs core FAILs are deployed-vs-source content drift, the intended pre-redeploy state (redeploy is a plan Non-Goal); literature FAIL is the pre-existing line_count mismatch."}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "4.1", "description": "Move rows verbatim into literature merge source", "type": "altered", "reason": "Destination already documented /literature and /cite with a newer v2.0.0 (Mode A/B) table; duplicating core's stale rows verbatim would document removed flags (--scan, --search, --task) that the current command rejects. Carried over only the still-live --index and --convert rows; deleted the stale rows.", "annotation": "*(deviation: altered — destination already current; only live missing rows carried over, stale rows dropped)*"}
+  ],
+  "handoff_count": 0
+}
