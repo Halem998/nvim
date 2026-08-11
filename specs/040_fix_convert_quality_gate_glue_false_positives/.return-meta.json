@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786480706_506b3d_40",
+  "task_number": 40,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md",
+      "summary": "Locates sentence_boundary_glue_count (literature-convert.sh:655) and run_quality_gate (:680), confirms the regex engine is plain Python re, empirically verifies the false-positive counts (4 and 7) against the two named real corpus papers, proposes and simulation-validates a strip-then-count exemption fix for Ph.D. and quantifier/binder notation that leaves the >=3 threshold and the other four gate checks untouched, and specs the two required negative/positive regression fixtures against the existing generate-test-fixtures.py / test-literature-convert.sh patterns."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/literature/scripts/literature-convert.sh, the entire quality-gate block (column_interleaving_flagged, sentence_boundary_glue_count, run_quality_gate, etc.) runs inside a `python3 << 'PYEOF'` heredoc (lines ~256-767), not grep/awk. Any regex work on these checks should use Python `re` semantics (including its fixed-width-only lookbehind constraint), not POSIX ERE.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literature-convert.sh", "quality-gate", "python-heredoc", "regex-engine"]
+    },
+    {
+      "content": "Pattern for narrowing an overly-broad quality-gate regex without raising its numeric threshold or using lookbehind: strip the known-benign exemption substrings first via re.sub (each exemption span must fully contain the raw match span it exempts, e.g. `Ph.D` contains `h.D`, `∀x.P` contains `x.P`), THEN run the original re.findall on the residue. Verified against real corpus text for the literature pipeline's sentence_boundary_glue_count false positives on `Ph.D.` bibliography entries and `∀x.P`/`∃x.P` quantifier notation.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["regex-narrowing", "quality-gate", "exemption-pattern", "strip-then-count", "false-positive"]
+    },
+    {
+      "content": "docs/architecture/handoff-schema.md's 'Handoff Writers' table is the settled decision: .orchestrator-handoff.json is hard-mode-implement-only. Base-mode skill-researcher/skill-planner/skill-implementer never write one, even under orchestrator_mode: true -- base-mode research/plan/implement return via .return-meta.json only, recovered by orchestrate-recover-outcome.sh. A delegation message asking a research agent to write .orchestrator-handoff.json conflicts with this contract and should be flagged back to the delegator rather than followed.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["orchestrator-handoff", "handoff-schema", "base-mode", "research-agent-contract"]
+    }
+  ],
+  "next_steps": "Run /plan 40 to create implementation plan"
+}
