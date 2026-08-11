@@ -1,5 +1,5 @@
 ---
-next_project_number: 47
+next_project_number: 51
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 47
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,33,34,38,40,41,41,42,43,44,45,46 | -- | agent-system, extensions, literature, ... |
+| 1 | 14,16,17,18,20,22,27,28,31,33,34,38,40,41,41,42,43,44,45,46,47,48,49,50 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
 | 2 | 9,13,29,35,39 | 17,18,22,33,38 | agent-system, literature, orchestration-concurrency |
 | 3 | 30,37 | 29,35 | agent-system, orchestration-concurrency |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -33,9 +33,15 @@ next_project_number: 47
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
+47 [NOT STARTED] — Clear the two failing verification gates and reconcile the defect
+50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
+
+### Commit Scoping Concurrency
+
+48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
 
 ### Extensions
 
@@ -45,9 +51,9 @@ next_project_number: 47
 
 ### Literature
 
-38 [PLANNED] — Activate the literature extension's designed-but-inactive Zotero 
+38 [IMPLEMENTING] — Activate the literature extension's designed-but-inactive Zotero 
   └─ 39 [NOT STARTED] — Upgrade the literature extension's Zotero integration beyond bare
-40 [PLANNED] — The `sentence_boundary_glue_count` quality-gate check in `agent-s
+40 [IMPLEMENTING] — The `sentence_boundary_glue_count` quality-gate check in `agent-s
 
 ### Orchestration Concurrency
 
@@ -60,12 +66,140 @@ next_project_number: 47
 
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+49 [NOT STARTED] — Cut the measured context cost of the highest-traffic command path
 
 ### Email
 
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 
 ## Tasks
+
+### 50. Restore verification trust and close hygiene residue
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Make the verification surface trustworthy, and close the doc-truth and duplication residue. Grouped because each item individually is too small to dispatch, and all of them undermine confidence in the same gate suite.
+
+(1) THE SHELL TEST SUITE IS NON-DETERMINISTIC (highest value item here). Measured across five consecutive runs of scripts/tests/run-all.sh: exit 1, 0, 1, 0, 0 -- roughly a 2-in-5 failure rate, with passing runs reporting a clean 36/36. During the same review, verify-deploy.sh gate 8 passed while a standalone run failed minutes later. A gate that passes 60% of the time is not evidence of health in either direction. It is also actively harmful to the refactor's own acceptance gate: the capstone attributed a real failure to "a flaky lock-contention test attributable to concurrent sibling sessions, not a deploy defect" WITHOUT being able to confirm that, precisely because the suite cannot distinguish the two. Diagnose the contention (the suite runs concurrently with other live sessions holding the same locks), then either isolate the affected tests from shared global state or make them wait deterministically. A test that is merely retried is not fixed. ACCEPTANCE: 10 consecutive runs, executed while at least one other session is active, all report the same result.
+
+(2) THE DEPLOY NON-DETERMINISM FINDING HAS NO OWNER. The capstone's defect ledger dispositions err_1786350581240_JyztWt (deploy_nondeterministic_merge) as "folds into" the orphan-file parity task, and leaves err_1786350581208_23mAsn (deploy_merge_content_loss, observed once, then 0-of-3 on re-check) as entry-only. The parity task's actual text discusses only the four orphan files -- it never mentions ordering or content loss. The fold was recorded but never performed, so capstone DEPLOY sub-item ii ("running the deploy twice is byte-identical") is failing with nobody assigned. A fold recorded but not performed is exactly the failure mode a defect ledger exists to prevent; note that as a process finding, not only a technical one. WORK: run the scratch wipe-pair procedure, establish whether context/index.json and settings.json still differ by object-key/array-element ordering beyond the expected generated timestamp, re-check the settings.local.json content-loss observation, and either fix the ordering non-determinism or record an explicit decision that semantic equality under `jq -S` is the standard and byte-identity is not required. Either resolution is acceptable; the current silent ambiguity is not.
+
+(3) RE-SCOPE OR SATISFY THE LIVE-CYCLE DEFECT CRITERION. The capstone requires that a clean orchestration cycle emit no system_defect event and that the deferred-defect surface render empty. specs/events.jsonl now holds 5 such events (3 from 2026-08-08 plus 2 newer: OFF_SCHEMA_STATUS and META_MISSING_AFTER_NARRATION). Both new events are correctly-firing detectors catching real agent-compliance slips -- the recorder working as designed, not noise. DO NOT FIX THOSE TWO DEFECTS HERE: the OFF_SCHEMA_STATUS handoff-key problem belongs to the in-flight handoff identity-contract task, and META_MISSING_AFTER_NARRATION belongs to the in-flight nonterminal-fanout task. Both should have the observation appended to them. What is unowned, and what belongs HERE, is the criterion itself: decide whether "zero defect events on a clean run" is the right acceptance bar given a recorder that will legitimately fire whenever any agent slips, or whether it should be re-scoped to "no NEW defect classes" -- the same precedent the capstone already set for its unverifiable gate-out criterion. Record the decision where the acceptance criteria live.
+
+(4) DUPLICATION WITH AN AVAILABLE SHARED MECHANISM. (a) The literal one-liner `sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')` appears 43 times across 35 command and skill files, while common_session_id() exists in scripts/lib/common.sh and is already wired into command-gate-in.sh. (b) The jq Issue #1132 safety block appears in 34 source files against a canonical home in context/patterns/jq-escaping-workarounds.md and a CLAUDE.md section -- roughly 8 KB of duplication, and 8 of those copies sit inside present/ skills where they are per-invocation cost. Replace both with calls/pointers. Note that some sites may not be convertible where sourcing common.sh a second time is genuinely awkward; name any residual rather than forcing it.
+
+(5) DEAD AND UNDOCUMENTED MACHINERY. (a) scripts/literature-retrieve.sh (7.9 KB) is deprecated by its own header ("superseded by literature-briefing.sh ... Do not add new usages"), has zero automated callers, yet is still declared in the core manifest's provides.scripts and therefore deploys every time. This repository already runs a rigorous quarantine-never-delete convention -- scripts/deprecated/ holds 11 such scripts, removed from provides so they never deploy -- and this one file simply missed the process. Put it through the same process. (b) /zulip and skill-zulip are live and deployed but have zero mentions in the generated CLAUDE.md: no Command Reference row, no extension section. (c) scripts/check-runtime-file-tracking.sh is legitimately operator-invoked-only, like its five documented siblings, but is missing from CLAUDE.md's Utility Scripts table, so a future dead-code sweep will flag it as an orphan. (d) Six `@.claude/docs/...` references remain in meta-builder-agent.md, context/architecture/system-overview.md, context/architecture/component-checklist.md and context/patterns/thin-wrapper-skill.md; they carry no runtime cost, but they model the exact syntax the context-loading audit spent a phase normalizing away.
+
+(6) TAXONOMY AND ROADMAP DRIFT. specs/state.json's active_topics omits `context-loading` and `email`, both live topics on existing tasks, so generate-task-order.sh renders them through its append-extras path with a stderr warning instead of in curated order; meanwhile seven declared topics now have zero tasks. Separately, specs/ROADMAP.md no longer describes the work in flight -- its Phase 1 is documentation-infrastructure items that appear nowhere in the active task set, and its Success Metrics cite a task number and an extension count from a previous era. Because /review's roadmap-integration step annotates against this file, a stale roadmap makes that step a guaranteed no-op. Reconcile the topics and rewrite the roadmap to describe the actual workstreams.
+
+NEGATIVE FINDINGS -- DO NOT RE-INVESTIGATE THESE. A caller analysis across all 138 scripts and hooks found only literature-retrieve.sh dead; the rest have live callers, including ones reachable only through skill-base.sh's dynamic hooks[$hook_name] manifest lookup and run-all.sh's glob discovery. All 193 files under context/ have live references and are enrolled in context/index.json, a real dynamic-discovery layer -- there are no orphans there and no bytes to recover. docs/ (455 KB) costs zero runtime tokens: CLAUDE.md references it only by backticked path, never @-import. Recording these so they are not re-derived.
+
+THIS TASK IS A BUNDLE AND IS A REASONABLE CANDIDATE FOR EXPANSION -- items 1-3 are verification trustworthiness, items 4-6 are hygiene. If driven as one unit, commit them as separate phases.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 49. Cut context cost orchestrate skills and eager rules
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: context-loading
+- **Dependencies**: None
+
+**Description**: Cut the measured context cost of the highest-traffic command paths. Two independent levers, both remediation -- the measurement and gating work is owned by other tasks and must not be duplicated here.
+
+MEASURED BASELINE (deployed tree, taken live). Tokens consumed before a command does any work, computed as eager session prefix + command body + skill body + agent body: /orchestrate 82.8k, /distill 44.8k, /todo 43.8k, /implement 41.3k, /meta 37.0k, /plan 34.1k, /research 33.4k. Session-start eager prefix alone is 74,136 B (~18.5k tokens).
+
+LEVER 1 -- THE ORCHESTRATE SKILLS (largest per-invocation cost in the system). skill-orchestrate/SKILL.md is 175,303 B; skill-orchestrate-hard/SKILL.md is 107,121 B. A SKILL.md body is loaded IN FULL on every invocation -- confirmed, no include/partial/fragment/compose mechanism exists in install-extension.sh and deploy is a byte-for-byte copy. Structural measurement: 72.6% and 74.2% of those two files respectively is fenced bash, almost all of it in large multi-line blocks (17 blocks / 121,413 B in the standard skill; 17 blocks / 76,966 B in the hard one). At least 28,421 bytes across 427 substantive lines are byte-identical between the two files -- a floor, since near-duplicates differing only by a log prefix are not counted.
+
+THE FILES DOCUMENT THIS THEMSELVES. skill-orchestrate-hard/SKILL.md around lines 956-964: "HARD-MODE TWIN of the append_detected_defect helper in skill-orchestrate/SKILL.md's Stage 5. The two MUST stay in sync -- this file pair is where a one-sided fix is a known recurring defect class, because hard mode's single-task stages are a structurally separate reimplementation rather than a thin wrapper." So this is simultaneously a token cost and an acknowledged correctness liability.
+
+TWO EXTRACTION MECHANISMS, AND THE DIFFERENCE IS THE WHOLE POINT: moving reference PROSE into context/** saves tokens only on invocations that do not need it, because a backticked path is inert text the agent may still choose to Read. Moving procedural BASH into an executable script invoked by a one-line `bash .claude/scripts/foo.sh args` removes it from context entirely -- the script's source is never loaded. The second is far stronger and is already the established pattern here (roughly 20 orchestrate-*.sh scripts already exist; the residual large blocks are simply the logic that was never pushed out). Prefer it. Also extend skill-base.sh's proven skill_* shared-function pattern to cover the duplicated Stage 5 logic (staleness gate, stray-handoff sweep, append_detected_defect) and the structurally-identical postflight-merge blocks, so the duplication closes by construction rather than by discipline. Do NOT invent a new build-time include mechanism -- reuse infrastructure already exercised in production.
+
+COORDINATION WARNING: the handoff staleness gate and the stray-handoff sweep are exactly the code another in-flight task is redesigning (the handoff single-slot-overwrite / loop-guard-deadlock work, which changes the handoff identity contract across both engines and the non-core extensions). Sequence against it or coordinate territory explicitly; extracting that logic into a shared function while its semantics are being rewritten will produce a painful merge. If that task has not landed, extract the postflight-merge and defect-append blocks first and leave the staleness gate for last.
+
+LEVER 2 -- THE EAGER RULES BUDGET (cost paid by EVERY session, not per invocation). The completed context-loading audit predicted a post-deploy eager surface of 41,434 B, and that prediction is accurate for what it modelled: parent chain 3,815 + generated CLAUDE.md 33,624 + two deliberately-eager rules 4,235 = 41,674 B. But it counted every rule carrying `paths:` frontmatter as lazy. Six of them loaded anyway in a real session: git-workflow.md 11,147 B (paths: specs/**/* and .claude/**/*), error-handling.md 5,420 B (.claude/**/*), artifact-formats.md 5,360 B (specs/**/*), state-management.md 5,148 B (specs/**/*), pr-prohibition.md 4,628 B (paths: "**/*", unconditionally eager), workflows.md 759 B (.claude/**/*) -- 32,462 B total. Actual measured eager load is therefore 74,136 B, 78% above the model.
+
+THE GENERALIZABLE LESSON: in a repository whose entire workflow lives under specs/** and .claude/**, gating a rule on those globs is nominal laziness, not real laziness. The rule fires every session. Treat the rules directory as a deliberate eager BUDGET with a stated ceiling, not as a set of individually-gated files.
+
+WORK FOR LEVER 2: split the large rules into a short eager core plus a lazily-referenced companion under context/standards/ -- git-workflow.md (the largest at 11 KB) keeping only the commit-message convention and the forbidden-operations list, with the staging-scope and git-safety narrative moved out; the same treatment for error-handling.md and state-management.md. Slim pr-prohibition.md, whose 4.6 KB includes two CSLib /pr subsections that are inert in deploys without that extension. Preserve behavior: a rule's eager core must still carry everything an agent must know BEFORE acting, since a pointer read after the fact is useless for a pre-write constraint. Where a rule is deliberately kept eager, record the decision in-file as the source-store-deploy-boundary rule already does.
+
+LEVER 3 -- COMMAND BODIES (smaller, cheap). commands/todo.md is 49,254 B; its ## Notes section (~7,851 B) is reference material extractable to context/patterns/. commands/orchestrate.md is 42,282 B; its ## Batch Orchestrate Results output template (~6,739 B) is needed only in batch mode.
+
+BOUNDARIES -- DO NOT DUPLICATE EXISTING TASKS:
+  - Do NOT build an eager-context measurement harness. That is the existing eager_context_measurement_harness task. Consume it if it has landed; otherwise measure ad hoc and hand the numbers over.
+  - Do NOT build a broken-@-ref lint or a context-budget gate. Those are the existing verify_deploy_context_gates task.
+  - Do NOT slim commands/task.md. That is the existing slim_task_command_body task -- but see the correction below before starting it.
+
+TWO CORRECTIONS TO HAND TO THOSE TASKS (record them in the summary; do not silently act on another task's scope):
+  (a) The measurement harness's stated model enumerates rules "lacking `paths:` frontmatter or carrying `paths: \"**/*\"`". That misses the actual dominant case measured above -- rules whose paths: glob is `.claude/**/*` or `specs/**/*`, which is where 32,462 B of the eager surface actually hides. The harness must model glob MATCH against a representative session's touched paths, not merely absent-or-universal frontmatter, or it will under-report by roughly the same 78%.
+  (b) The task.md slimming target appears mis-chosen. Structural analysis found task.md to be procedural and mode-specific, already citing standards by pointer rather than restating them -- roughly 0-1 KB is extractable, against todo.md's ~7.9 KB and orchestrate.md's ~6.7 KB. Recommend re-pointing that task at todo.md/orchestrate.md, or dropping it.
+
+ACCEPTANCE: report measured before/after bytes for every file touched, using the same eager-prefix + command + skill + agent accounting as the baseline table above -- an unquantified "slimmed" claim is not acceptable. The 28,421+ bytes of literal duplication between the two orchestrate skills exists in exactly one place afterward, and both skills call it by name. Existing orchestration tests pass unmodified. No command loses a behavior: every mode remains fully specified, inline or via an explicit pointer the executing agent is instructed to follow.
+
+THIS TASK IS LARGE AND MAY WARRANT EXPANSION. Levers 1 and 2 are independent in territory (skills versus rules) and can proceed in parallel; if it is driven as one unit, treat them as separate phases with separate commits.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 48. Propagate scoped commit to all call sites
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: commit-scoping-concurrency
+- **Dependencies**: None
+
+**Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
+
+THE MECHANISM ALREADY EXISTS AND IS CORRECT. scripts/git-commit-scoped.sh describes itself as "the single sanctioned implementation of the scoped-commit contract". It was built to close a documented concurrency defect: a bare `git commit` sweeping in a file that another concurrently-running agent had staged but not yet committed. The fix is sound. Adoption simply stopped.
+
+MEASURED STATE: 85 occurrences of raw `git commit -m` across 70 command/skill files in the source store. Only 5 files call git-commit-scoped.sh -- skill-implementer, skill-planner, skill-team-implement, skill-orchestrate, and commands/orchestrate.md. The remaining 65 files still hand-roll the vulnerable raw form, including the highest-traffic core commands: research.md, plan.md, implement.md, todo.md, task.md, errors.md, review.md.
+
+WHY THIS IS NOT THEORETICAL: the review that produced this task ran with eight concurrent Claude sessions active on the same machine, several in this same repository. Under that load every /research, /plan, /task, /todo, /errors and /review commit is currently capable of capturing another session's staged work. Concurrent multi-session operation is the normal working mode here, not an edge case.
+
+THIS IS ALSO THE SHARPEST LIVE INSTANCE of the "duplicated mechanism instead of shared mechanism" root cause named in the opening refactor review. Unlike most instances of that pattern, the shared mechanism here is already written, already tested, and already proven at 5 sites -- so the work is propagation and verification, not design.
+
+WORK: migrate call sites to git-commit-scoped.sh, highest-traffic first. Suggested ordering: (a) core commands research.md, plan.md, implement.md, todo.md, task.md, errors.md, review.md; (b) remaining core skills; (c) non-core extension commands and skills (founder, present, filetypes, lean, web, epidemiology, literature, memory, cslib).
+
+DO NOT MECHANICALLY REWRITE ALL 85 SITES. Some call sites may legitimately differ -- a commit whose staging scope is genuinely not task-scoped, or a test fixture that must exercise the raw form. Inspect each; where a site should NOT be migrated, record why in the summary rather than silently skipping it. A migration that converts 85 of 85 without noting a single exception is more likely to be careless than thorough.
+
+ALSO SETTLE: whether the raw form should be blocked mechanically once migration lands (a lint in the verify-deploy gate list, in the same family as lint-state-writer-boundary.sh, which already polices the analogous state.json write boundary). Without such a gate the pattern regrows on the next new command. If a lint is added, it must exempt git-commit-scoped.sh itself and its tests.
+
+ACCEPTANCE: `grep -rl 'git commit -m' agent-system/extensions/` returns only git-commit-scoped.sh and its test files, or returns additional files each of which is named in the summary with a stated reason for exemption. Existing test suites still pass. At least one migrated command is exercised end-to-end (a real commit through the converted path) rather than only inspected statically.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 47. Clear failing gates and reconcile ledgers
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Clear the two failing verification gates and reconcile the defect/review ledgers against reality. All three items are bookkeeping the validators have already caught; none require design work.
+
+(1) DUPLICATE project_number 41 in specs/state.json. Two active tasks both carry 41: `eager_context_measurement_harness` (created 16:14:06Z, has directory specs/041_eager_context_measurement_harness/) and `move_session_state_files_out_of_specs_root` (created 16:17:10Z, NO directory). A concurrent-creation collision; git log shows next_project_number was already restored past the collision but the duplicate entry itself was never renumbered. This FAILs validate-state.sh --deep and, through it, verify-deploy.sh gate 10. FIX: renumber the directory-less entry (move_session_state_files_out_of_specs_root) to the next free number, advance next_project_number, regenerate TODO.md via generate-todo.sh. Route the write through scripts/state-write.sh -- never a hand-rolled jq read-modify-write.
+
+(2) DOC-LINT FAILURES (verify-deploy.sh gate 3). Three index-entries.json line_count values are stale: context/architecture/context-layers.md (declared 134, actual 194), context/patterns/context-discovery.md (375 vs 379) in the core extension, and project/literature/domain/literature-index.md (117 vs 144) in the literature extension. generate-context-line-counts.sh --check confirms exactly 3 numeric mismatches out of 481 entries; --write corrects them mechanically. Separately, deployed context/standards/task-reference-exemptions.md has NO entry in context/index.json at all (Rule S failure) -- it was created by the context-loading audit but never enrolled in the source index-entries.json. Add the entry.
+
+BOUNDARY (do not absorb adjacent work): this task does NOT decide the one-directional declared-vs-deployed parity question, and does NOT resolve the four orphan files present in the live tree but absent from a clean regenerate. That decision belongs to the existing resolve_deploy_orphan_file_parity task, which is blocked on the deploy-staleness diagnosis. The missing index entry here is the INVERSE case (a deployed file with no declaration) and is a one-line addition, not a parity design decision. Keep them separate.
+
+(3) LEDGER DRIFT. specs/errors.json holds 11 entries, 10 marked unfixed, but at least three are demonstrably fixed in code: hook_regex_defect (hooks/validate-handoff-location.sh now reads [0-9]{3,}, so the 4-digit-directory blocking argument no longer holds), plus test_suite_deployed_mode_failures and test_suite_failure_undocumented (tests/run-all.sh now reports 36/36 when it completes). Verify each before closing -- do not mass-close on this description's say-so. Mark the confirmed ones fixed with their closing evidence. Separately, specs/reviews/state.json records 3 reviews and _last_updated 2026-07-04 while 4 review reports exist on disk; the 2026-07-29 and 2026-08-10 reports were never registered, and a fifth was added by the review that created this task. Register the missing entries and refresh the statistics block.
+
+WHY THIS MATTERS BEYOND TIDINESS: the error-tracking layer was built to close a named root cause ("the error-tracking/self-healing layer is fiction"). It works -- it caught real defects -- but nothing closes entries when fixes land, so a ledger that only grows is as uninformative as no ledger. Consider whether ledger closure can be wired into the postflight path so this does not recur as a manual sweep. If it cannot be automated cheaply, say so and record the reasoning rather than leaving it implied.
+
+ACCEPTANCE: verify-deploy.sh --findings reports 23/23; validate-state.sh --deep exits 0 with zero FAIL findings; specs/errors.json contains no entry marked unfixed whose defect is demonstrably fixed in the current tree, with per-entry closing evidence recorded; specs/reviews/state.json lists every review report present on disk.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. Writes under specs/** are exempt and expected here.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 46. Fix present extension compound skill routing
 - **Status**: [NOT STARTED]
@@ -143,7 +277,7 @@ next_project_number: 47
 
 ### 40. Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -235,7 +369,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 38. Activate and harden the Zotero write-back path in the literature extension
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
