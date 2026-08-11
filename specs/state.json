@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 46,
+  "next_project_number": 47,
   "active_projects": [
+    {
+      "project_number": 46,
+      "project_name": "fix_present_extension_compound_skill_routing",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Fix present extension compound-skill routing so /implement resolves to a real skill. The present manifest's routing.implement declares \"present:grant\" -> \"skill-grant:assemble\" and \"present:slides\" -> \"skill-slides:assemble\", but the shared routing resolver (scripts/lib/manifest-routing-lib.sh, consumed via command-route-skill.sh) returns those values verbatim with no colon splitting, and no skill directories named skill-grant:assemble or skill-slides:assemble exist -- only skill-grant and skill-slides do. Running /implement on a present:grant or present:slides task therefore resolves SKILL_NAME to a nonexistent skill (verified: resolver returned skill-grant:assemble via noncore-exact). skill-grant/SKILL.md documents \"assemble\" as a workflow_type value, not part of the skill name, so the manifest is encoding skill + workflow_type in one field that no consumer ever splits. Decide whether the fix belongs in the manifest (drop the :suffix and carry workflow_type another way) or in the resolver (split on the first colon and expose the suffix as a workflow_type/sub-mode variable), implement it, and add a lint check so any routing or routing_hard value naming a nonexistent skill fails verify-deploy -- lint-routing-wiring.sh currently validates declared agent names but not skill names. Scope is exactly 2 occurrences, both in agent-system/extensions/present/manifest.json under routing.implement; present declares no routing_hard, and no other extension uses colon-bearing routing values. Found during a deploy-integrity audit of the Logos/Theory repo.",
+      "topic": "extensions",
+      "created": "2026-08-11T16:37:52Z",
+      "last_updated": "2026-08-11T16:37:52Z"
+    },
     {
       "project_number": 45,
       "project_name": "global_update_extension_repo_registry",
