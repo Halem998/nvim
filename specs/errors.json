@@ -33,7 +33,9 @@
         "suggested_action": "Widen quantifier to [0-9]{3,} in agent-system/extensions/core/hooks/validate-handoff-location.sh",
         "auto_recoverable": false
       },
-      "fix_status": "unfixed"
+      "fix_status": "fixed",
+      "fixed_date": "2026-08-11T22:24:54Z",
+      "fix_task": 47
     },
     {
       "id": "err_1786349061524_pY97cE",
@@ -152,7 +154,9 @@
       "recovery": {
         "suggested_action": "Fix .opencode/scripts/command-gate-in.sh to source the canonical session-id generator from lib/common.sh instead of inlining its own sess_$(date +%s)_... construction; fold into whichever run-all.sh follow-up task is open (the batch already recorded a REPO_ROOT path-depth follow-up), do not spawn a duplicate task."
       },
-      "fix_status": "unfixed"
+      "fix_status": "fixed",
+      "fixed_date": "2026-08-11T22:24:54Z",
+      "fix_task": 47
     },
     {
       "id": "err_1786350581339_Q4VnFy",
@@ -185,7 +189,9 @@
         "suggested_action": "Make REPO_ROOT derivation depth-independent (git rev-parse --show-toplevel with a depth fallback, as test-deploy-propagation.sh already does); then triage the remaining six failures individually",
         "auto_recoverable": false
       },
-      "fix_status": "unfixed"
+      "fix_status": "fixed",
+      "fixed_date": "2026-08-11T22:24:54Z",
+      "fix_task": 47
     }
   ]
 }

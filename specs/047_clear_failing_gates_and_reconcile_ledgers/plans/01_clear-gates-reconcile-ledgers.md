@@ -284,32 +284,36 @@ finding set, not a scope violation — no gate other than 3 was red.)*
 
 ---
 
-### Phase 5: Close the three verified-fixed errors.json entries [NOT STARTED]
+### Phase 5: Close the three verified-fixed errors.json entries [COMPLETED]
 
 **Goal**: Mark exactly the three entries with direct evidence as fixed, each closure carrying its
 own recorded evidence.
 
 **Tasks**:
-- [ ] Re-confirm each entry's fix independently before closing it (do not close on the report's
+- [x] Re-confirm each entry's fix independently before closing it (do not close on the report's
       say-so alone):
       - `hook_regex_defect` (`err_1786349061492_XpY38x`): read
         `agent-system/extensions/core/hooks/validate-handoff-location.sh` and confirm the regex uses
-        the `{3,}` quantifier, which matches 4+-digit task directories.
+        the `{3,}` quantifier, which matches 4+-digit task directories. *(completed: line 65 uses
+        `[0-9]{3,}`)*
       - `test_suite_deployed_mode_failures` (`err_1786368358319_8jwcdo`) and
         `test_suite_failure_undocumented` (`err_1786350581305_8cNAZ7`): run
         `bash agent-system/extensions/core/scripts/tests/run-all.sh` and
         `bash .claude/scripts/tests/run-all.sh`, and confirm 0 failed in both. Record the actual
-        counts observed, not the report's figures.
-- [ ] Close each entry individually via
+        counts observed, not the report's figures. *(completed: source-store 39 passed, 0 failed,
+        39 total; deployed 38 passed, 0 failed, 38 total)*
+- [x] Close each entry individually via
       `bash .claude/scripts/errors-append.sh update --id <ID> --fix-status fixed --fix-task 47
-      --fixed-date <ISO8601>`. One invocation per entry — no batch/mass close.
-- [ ] Record the per-entry closing evidence. `errors-schema.json` declares no evidence property and
+      --fixed-date <ISO8601>`. One invocation per entry — no batch/mass close. *(completed: 3
+      separate invocations)*
+- [x] Record the per-entry closing evidence. `errors-schema.json` declares no evidence property and
       `errors-append.sh update` mutates only `fix_status`/`fixed_date`/`fix_task`, so DO NOT invent
       an evidence field in `errors.json`. Record evidence in the implementation summary as a table
       (`id` / `type` / `evidence` / `command run` / `observed output`) and echo the one-line
-      evidence in each phase commit message.
-- [ ] Confirm `jq empty specs/errors.json` still parses and that only the 3 intended records
-      changed (`git diff specs/errors.json`).
+      evidence in each phase commit message. *(completed: table in summary, evidence in commit
+      message)*
+- [x] Confirm `jq empty specs/errors.json` still parses and that only the 3 intended records
+      changed (`git diff specs/errors.json`). *(completed: valid JSON, exactly 3 hunks changed)*
 
 **Timing**: 0.6 hours
 
