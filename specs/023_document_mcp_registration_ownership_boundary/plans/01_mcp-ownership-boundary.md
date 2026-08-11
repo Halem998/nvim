@@ -233,30 +233,34 @@ entry, not a file list) before concluding no manifest edit is owed.
 
 ---
 
-### Phase 3: Correct the architecture and extension-authoring docs [NOT STARTED]
+### Phase 3: Correct the architecture and extension-authoring docs [COMPLETED]
 
 **Goal**: Remove the two source-store assertions that a settings fragment or manifest field
 registers an MCP server, and point both docs at the canonical reference.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/docs/architecture/extension-system.md`, `## Settings
+- [x] In `agent-system/extensions/core/docs/architecture/extension-system.md`, `## Settings
       Merging`: replace the `settings-fragment.json` example that shows an `mcpServers` block (the
       `latex-compile` example) with a `permissions.allow` example, so the illustrative example no
-      longer demonstrates a non-functional pattern.
-- [ ] In the same section, replace the existing note about `mcp_servers` with a plain statement
+      longer demonstrates a non-functional pattern. *(completed)*
+- [x] In the same section, replace the existing note about `mcp_servers` with a plain statement
       that **neither** `manifest.json`'s `mcp_servers` field **nor** an `mcpServers` key inside a
       settings fragment registers a server, and link to
       `../../context/patterns/mcp-server-ownership.md` for where registration actually happens.
-- [ ] Update the manifest-schema `Note on mcp_servers` earlier in the same file so it no longer
+      *(completed)*
+- [x] Update the manifest-schema `Note on mcp_servers` earlier in the same file so it no longer
       says "MCP server configurations must be in a `settings-fragment.json` file" -- that sentence
-      is the specific wrong instruction this task exists to retire.
-- [ ] In `agent-system/extensions/core/docs/guides/creating-extensions.md`, correct the
+      is the specific wrong instruction this task exists to retire. *(completed)*
+- [x] In `agent-system/extensions/core/docs/guides/creating-extensions.md`, correct the
       `mcp_servers` row of the manifest Field Reference table so it states the field is inert and
       points to the canonical reference instead of describing it as "MCP server configs to merge".
-- [ ] In the same file, remove or annotate the `"mcp_servers": {}` line in the example manifest so
-      a copy-paste author does not reproduce a dead field.
-- [ ] Confirm the `MCP Tool Setup` README-section guidance in that file still reads correctly given
-      the corrected registration path.
+      *(completed)*
+- [x] In the same file, remove or annotate the `"mcp_servers": {}` line in the example manifest so
+      a copy-paste author does not reproduce a dead field. *(completed: removed and replaced with
+      an explanatory "On `mcp_servers`" note)*
+- [x] Confirm the `MCP Tool Setup` README-section guidance in that file still reads correctly given
+      the corrected registration path. *(completed: guidance is conditional prose, "if the
+      extension configures MCP servers", unaffected by the registration-path correction)*
 
 **Timing**: 30 minutes
 

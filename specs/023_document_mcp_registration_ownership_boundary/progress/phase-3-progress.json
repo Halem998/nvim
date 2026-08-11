@@ -1,0 +1,13 @@
+{
+  "phase": 3,
+  "phase_name": "Correct the architecture and extension-authoring docs",
+  "started_at": "2026-08-11T06:00:00Z",
+  "last_updated": "2026-08-11T06:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Correct extension-system.md (Settings Merging example+note, manifest-schema note, and Install-Once section wording) and creating-extensions.md (field-reference row, example manifest)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/extension-system.md", "agent-system/extensions/core/docs/guides/creating-extensions.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Widened scope per Phase 3's own Scope Hypothesis instruction: extension-system.md line ~572 (Install-Once section) also asserted settings.json/settings.local.json hold 'MCP server configuration' -- corrected alongside the four named sites since it is the same wrong-assertion pattern."
+}

@@ -96,10 +96,15 @@ Follow the templates below for each file type.
       "source": "index-entries.json",
       "target": ".claude/context/index.json"
     }
-  },
-  "mcp_servers": {}
+  }
 }
 ```
+
+**On `mcp_servers`**: omit it. It is inert -- not consumed by the loader -- and a template that
+included it would only invite a copy-paste author to reproduce a dead field. If your extension
+uses an MCP server, register it in user-scope `~/.claude.json` (host-level activation block or a
+`core/scripts/` setup script) and grant its tools in your `settings-fragment.json`'s
+`permissions.allow`. See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md).
 
 **Field Reference**:
 
@@ -112,7 +117,7 @@ Follow the templates below for each file type.
 | `dependencies` | No | Extensions that must load first (auto-loaded silently) |
 | `provides` | Yes | Lists all files/directories provided |
 | `merge_targets` | Yes | Defines CLAUDE.md and index.json merging |
-| `mcp_servers` | No | MCP server configs to merge |
+| `mcp_servers` | No | Inert -- not consumed by the loader; MCP servers are registered in user-scope `~/.claude.json`, never via a manifest field. See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md). |
 
 For the complete manifest schema with all field descriptions and examples, see [Extension System Architecture](../architecture/extension-system.md#manifest-schema).
 

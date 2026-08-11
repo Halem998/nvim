@@ -224,7 +224,7 @@ The manifest declares what the extension provides:
 | `provides` | object | yes | What files/directories the extension provides (12 categories) |
 | `merge_targets` | object | yes | Files that get merged (CLAUDE.md, index.json, settings.json) |
 
-**Note on `mcp_servers`**: This field may appear in some manifests but is NOT directly consumed by the loader. MCP server configurations must be in a `settings-fragment.json` file referenced by `merge_targets.settings.source`. See [Settings Merging](#settings-merging) below.
+**Note on `mcp_servers`**: This field may appear in some manifests but is NOT directly consumed by the loader, and it does not register an MCP server. Neither this field nor an `mcpServers` key inside a `settings-fragment.json` file registers a server -- only user-scope `~/.claude.json` does that. See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full registration/permission split, and [Settings Merging](#settings-merging) below for what a `settings-fragment.json` file actually merges (permission grants).
 
 **Note on `section_id`**: The `section_id` field in `merge_targets.claudemd` is vestigial for the CLAUDE.md use case. `generate_claudemd()` regenerates CLAUDE.md completely from all loaded extension `EXTENSION.md` files; it does not use section markers.
 
@@ -470,7 +470,7 @@ When loaded, these entries are appended to the main `context/index.json`. Agents
 
 ## Settings Merging
 
-Extensions can provide settings and MCP server configurations via a `settings-fragment.json` file, referenced in the manifest via `merge_targets.settings`:
+Extensions can provide settings and permission grants (including MCP tool permissions) via a `settings-fragment.json` file, referenced in the manifest via `merge_targets.settings`:
 
 **Manifest declaration**:
 ```json
@@ -484,19 +484,24 @@ Extensions can provide settings and MCP server configurations via a `settings-fr
 }
 ```
 
-**settings-fragment.json** (example with MCP server):
+**settings-fragment.json** (example with a permission grant):
 ```json
 {
-  "mcpServers": {
-    "latex-compile": {
-      "command": "latex-mcp",
-      "args": ["--format", "pdf"]
-    }
+  "permissions": {
+    "allow": [
+      "mcp__latex-compile__*"
+    ]
   }
 }
 ```
 
-**Note**: The `mcp_servers` top-level field that may appear in some manifests is NOT directly consumed by the loader. All settings merging goes through the `merge_targets.settings` mechanism.
+**Note**: Neither `manifest.json`'s `mcp_servers` field nor an `mcpServers` key inside a settings
+fragment registers an MCP server -- Claude Code never reads `settings.json`/`settings.local.json`
+for server definitions, only user-scope `~/.claude.json`. All settings merging goes through the
+`merge_targets.settings` mechanism, but that mechanism's only functional MCP-related effect is
+permission grants like the example above. See
+[MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for where registration
+actually happens.
 
 **Merge behavior** (via `merge_settings()`):
 - Arrays are appended (deduplicated)
@@ -565,8 +570,10 @@ file:
   project has its own copy, no future load, reload, or sync ever overwrites it.
 
 This asymmetry exists because `settings.json`/`settings.local.json` hold project-specific
-permission grants, hooks, and MCP server configuration that must survive every extension
+permission grants (including MCP tool permissions) and hooks that must survive every extension
 operation -- unlike `.gitignore`, which is safe to keep in lockstep with the extension source.
+MCP server *registration* lives outside either file, in user-scope `~/.claude.json` -- see
+[MCP Server Ownership](../../context/patterns/mcp-server-ownership.md).
 `manager.unload` (`init.lua`) mirrors the same install-once set (`loader_mod.
 INSTALL_ONCE_ROOT_FILES`) by excluding these two filenames from the files it deletes, so an
 unload-then-load reload cycle (`manager.reload`) cannot clobber them either -- install-once at load
