@@ -11,8 +11,8 @@ next_project_number: 52
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 16,17,18,20,22,27,28,31,33,34,38,41,43,45,46,47,51 | -- | agent-system, extensions, literature, ... |
-| 2 | 9,13,14,29,35,39,42,48 | 16,17,18,22,33,38,41,47 | agent-system, commit-scoping-concurrency, literature, ... |
+| 1 | 16,17,18,20,22,27,28,31,33,34,39,41,43,45,46,47,51 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,13,14,29,35,42,48 | 16,17,18,22,33,41,47 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
 | 3 | 30,37,49,50 | 29,33,35,41,48 | agent-system, orchestration-concurrency, context-loading |
 | 4 | 32,44 | 28,30,31,49 | agent-system, context-loading |
 
@@ -52,8 +52,7 @@ next_project_number: 52
 
 ### Literature
 
-38 [IMPLEMENTING] — Activate the literature extension's designed-but-inactive Zotero 
-  └─ 39 [NOT STARTED] — Upgrade the literature extension's Zotero integration beyond bare
+39 [NOT STARTED] — Upgrade the literature extension's Zotero integration beyond bare
 
 ### Orchestration Concurrency
 
@@ -371,12 +370,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 38. Activate and harden the Zotero write-back path in the literature extension
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [038_activate_zotero_write_back_path/reports/02_zotero-write-back-activation-research.md]
 - **Plan**: [038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md]
+- **Summary**: [038_activate_zotero_write_back_path/summaries/02_zotero-write-back-activation-summary.md]
 
 **Description**: Activate the literature extension's designed-but-inactive Zotero write-back path (create items + attach PDFs during online literature discovery) and harden it against the two correctness hazards found in review. All environment facts below were verified live on 2026-08-11 — do not re-derive them, but DO re-confirm before editing since the environment may have moved on. Full detail in the seed report.
 

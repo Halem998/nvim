@@ -854,7 +854,7 @@
     {
       "project_number": 38,
       "project_name": "activate_zotero_write_back_path",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Activate and harden the Zotero write-back path in the literature extension",
       "topic": "literature",
@@ -882,11 +882,16 @@
           "path": "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md",
           "type": "plan",
           "summary": "implementation plan"
+        },
+        {
+          "path": "specs/038_activate_zotero_write_back_path/summaries/02_zotero-write-back-activation-summary.md",
+          "type": "summary",
+          "summary": "Completed Phase 6 (gated live envelope confirmation) and Phase 7 (literature extension activation, deploy, byte-identity verification)"
         }
       ],
       "created": "2026-08-11T16:05:00Z",
-      "last_updated": "2026-08-11T20:56:01Z",
-      "session_id": "sess_1786480706_506b3d_38"
+      "last_updated": "2026-08-11T21:36:43Z",
+      "session_id": "sess_1786480706_506b3d"
     },
     {
       "project_number": 39,

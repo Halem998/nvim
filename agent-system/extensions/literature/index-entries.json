@@ -20,7 +20,7 @@
         "briefing"
       ],
       "summary": "Unified index schema: global Literature/ repo structure, per-repo sub-index (specs/literature-index.json), and runtime resolution",
-      "line_count": 117,
+      "line_count": 144,
       "load_when": {
         "agents": [
           "literature-agent"
@@ -202,7 +202,7 @@
         "in_zotero_no_pdf"
       ],
       "summary": "How literature-ingest-online.sh creates a Zotero item with PDF attachment (item-add wrapping zot add --pdf), envelope-field mitigation, %PDF gate, storage re-pointing, in_zotero_no_pdf sub-path",
-      "line_count": 124,
+      "line_count": 207,
       "load_when": {
         "agents": [
           "literature-agent",
@@ -429,7 +429,7 @@
         "literature-ingest-online"
       ],
       "summary": "Inventory of the Zotero-related scripts shipped by this extension (search, read, write, setup, chunk, attach-chunks, cite-extract, online-ingest bridge) plus the separate-argument search gotcha",
-      "line_count": 29,
+      "line_count": 31,
       "load_when": {
         "agents": [
           "literature-agent",
@@ -441,6 +441,70 @@
           "/cite"
         ]
       }
+    },
+    {
+      "path": "guides/literature-organization.md",
+      "domain": "core",
+      "subdomain": "guides",
+      "topics": [
+        "literature",
+        "specs-literature",
+        "organization",
+        "lit-flag"
+      ],
+      "keywords": [
+        "specs/literature",
+        "index.json",
+        "chunking",
+        "token-budget",
+        "directory-structure"
+      ],
+      "summary": "Reference guide for the specs/literature/ directory layout (flat vs subdirectory) and how --lit injection selects and budgets content from it",
+      "line_count": 342,
+      "load_when": {
+        "agents": [
+          "general-research-agent",
+          "planner-agent",
+          "general-implementation-agent"
+        ],
+        "commands": [
+          "/research",
+          "/plan",
+          "/implement",
+          "/orchestrate"
+        ]
+      },
+      "on_demand": true
+    },
+    {
+      "path": "project/literature/patterns/chunk-file-conventions.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "chunking",
+        "fts5",
+        "fidelity"
+      ],
+      "keywords": [
+        "chunk_NNNN.md",
+        "double-count",
+        "word_ratio",
+        "literature-build-index",
+        "literature-fidelity-audit"
+      ],
+      "summary": "chunk_NNNN.md files are index-only re-splits of a canonical document, not additional content -- whole-document metrics must exclude them or double-count",
+      "line_count": 40,
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/cite"
+        ]
+      },
+      "on_demand": true
     }
   ]
 }

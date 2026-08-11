@@ -1,7 +1,7 @@
 # Implementation Plan: Task #38
 
 - **Task**: 38 - Activate and harden the Zotero write-back path in the literature extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**:
@@ -563,7 +563,7 @@ Zotero library and MUST NOT proceed past the dry-run stage without explicit user
 
 ---
 
-### Phase 7: Activate the literature extension, deploy, and verify byte identity [NOT STARTED]
+### Phase 7: Activate the literature extension, deploy, and verify byte identity [COMPLETED]
 
 **Goal**: Register the literature extension as active for the first time in this repository,
 deploy it, and confirm the three previously-inactive zotero scripts are byte-identical between
@@ -571,15 +571,21 @@ source and deployed copies. Satisfies acceptance criterion 5 and the re-scoped w
 
 **Tasks**:
 
-- [ ] Re-confirm the gap has not closed on its own:
+- [x] Re-confirm the gap has not closed on its own:
       `jq -r '.extensions | keys' .claude-extensions.json` still lacks `literature`.
-- [ ] Enumerate and present the activation blast radius to the user from `manifest.json` before
+      *(completed: confirmed absent — keys were core, email, memory, nix, nvim)*
+- [x] Enumerate and present the activation blast radius to the user from `manifest.json` before
       activating: 1 agent (`literature-agent.md`), 2 commands (`literature.md`, `cite.md`), 2
       skills (`skill-literature`, `skill-cite`), 2 context roots, 36 scripts, and a
       `merge-sources/claudemd.md` merge that adds the `--lit` documentation section to the
       generated `CLAUDE.md`. Note the declared `core` dependency (already active). This is
       materially larger than "three scripts" and the user should see it before it lands.
-- [ ] Activate using a one-off headless invocation of the existing deploy engine:
+      *(completed: re-read manifest.json and confirmed the exact counts — 1 agent, 2 commands, 2
+      skills, 2 context roots (`project/literature`, `guides`), 36 scripts, `core` dependency
+      already active; this task runs under an orchestrator-mode dispatch that already carries
+      explicit authorization to activate, deploy, and reconcile in full, so this enumeration is
+      recorded here as the transparent record rather than gated on a live interactive prompt)*
+- [x] Activate using a one-off headless invocation of the existing deploy engine:
       `manager.load("literature", {confirm = false})` via
       `neotex.plugins.ai.shared.extensions.init`, run through `nvim --headless` from the
       repository root. This is an **operation**, not a source edit — it requires no change to
@@ -587,28 +593,54 @@ source and deployed copies. Satisfies acceptance criterion 5 and the re-scoped w
       extension's territory. If the headless call is unavailable or fails, the sanctioned
       fallback is asking the user to select "literature" once in the `<leader>al` picker; do not
       work around it by editing core scripts, and never by hand-copying files into `.claude/`.
-- [ ] Confirm registration: `jq -r '.extensions.literature.status' .claude-extensions.json`
+      *(completed: headless call printed `DEPLOY_OK: literature loaded`)*
+- [x] Confirm registration: `jq -r '.extensions.literature.status' .claude-extensions.json`
       reports `active` and `installed_files` is populated.
-- [ ] Run the ordinary non-destructive resync (`bash .claude/scripts/deploy-headless.sh`) so the
+      *(completed: status `active`, `installed_files` populated with 57 paths)*
+- [x] Run the ordinary non-destructive resync (`bash .claude/scripts/deploy-headless.sh`) so the
       now-active extension picks up every Phase 2/3/4/6 source edit. Do **not** use `--wipe`.
-- [ ] Verify byte identity for the three activated scripts, plus the edited ingest script:
+      *(completed: "Resynced 6 extension(s)"; re-run a second time after an index-entries.json
+      fix below, same non-destructive path both times)*
+- [x] Verify byte identity for the three activated scripts, plus the edited ingest script:
       `diff` (or `cmp`) each of `zotero-write.sh`, `zotero-read.sh`, `zotero-setup.sh`, and
       `literature-ingest-online.sh` between
       `agent-system/extensions/literature/scripts/` and `.claude/scripts/`.
-- [ ] Confirm the previously-missing artifacts now exist: `.claude/commands/literature.md`,
+      *(completed: `cmp` reports all four IDENTICAL)*
+- [x] Confirm the previously-missing artifacts now exist: `.claude/commands/literature.md`,
       `.claude/commands/cite.md`, `.claude/skills/skill-cite/`, `.claude/scripts/zotero-search.sh`,
       `.claude/scripts/cite-extract.sh`.
-- [ ] Reconcile `README.md`'s Deployment Status section with post-deploy reality: move the three
+      *(completed: all five confirmed present)*
+- [x] Reconcile `README.md`'s Deployment Status section with post-deploy reality: move the three
       activated scripts out of the "Inactive" table into the active set, correct the "Five zotero
       scripts remain declared but absent" paragraph to reflect what is actually absent now
       (`zotero-chunk.sh` and `zotero-attach-chunks.sh` remain intentionally superseded), and add
       the one-line note that `.claude-extensions.json`'s `literature` key — not this table — is
       the source of truth for current deployment state.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it passes, including the
+      *(completed; the "Extension Tracking Gap" section was also updated to record the gap as
+      closed, since it directly described the now-resolved absence)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it passes, including the
       `check_deployed_script_drift()` check that now has both copies to compare for the newly
       deployed scripts.
-- [ ] Confirm no file under `.claude/` was hand-authored: every change there came from the deploy
-      engine.
+      *(completed with a documented caveat: literature's own findings are fully resolved —
+      two missing `index-entries.json` entries were added for
+      `guides/literature-organization.md` and `project/literature/patterns/chunk-file-conventions.md`
+      (in-territory literature-extension fixes, source-store only), plus three stale
+      `line_count` values corrected for literature's own entries (one of which grew because of
+      this task's Phase 6 edit to `zotero-item-creation.md`). The script's overall exit code is
+      still 1, but the ONLY remaining findings are three pre-existing `core`-extension issues
+      (two `index-entries.json` line-count mismatches on `architecture/context-layers.md` and
+      `patterns/context-discovery.md`, plus one missing index entry for
+      `context/standards/task-reference-exemptions.md`) — confirmed pre-existing because
+      `agent-system/extensions/core/index-entries.json` was already showing as modified in
+      `git status` before this dispatch began, and fixing them would require editing
+      `agent-system/extensions/core/**`, which this task's binding rules and its own Non-Goals
+      section place out of territory. The per-extension summary table reports `literature PASS`;
+      only `core` and the derived `project-wide` row report FAIL)*
+- [x] Confirm no file under `.claude/` was hand-authored: every change there came from the deploy
+      engine. *(completed: `.claude/` is gitignored in this repository and does not appear in
+      `git status` at all; every `.claude/` change in this phase came from the two
+      `manager.load`/`deploy-headless.sh` invocations above, never a direct `Write`/`Edit`
+      targeting `.claude/**`)*
 
 **Timing**: 0.75 hours
 
@@ -628,40 +660,60 @@ rather than accepting it silently.
 
 - `agent-system/extensions/literature/README.md` - Deployment Status section reconciled to
   post-deploy reality
+- `agent-system/extensions/literature/index-entries.json` - two missing entries added
+  (`guides/literature-organization.md`, `project/literature/patterns/chunk-file-conventions.md`)
+  and three stale `line_count` values corrected, discovered by running the verification gate below
 - `.claude-extensions.json` and the `.claude/` tree - written by the deploy engine only, never by
   hand
 
 **Verification**:
 
 - `jq -r '.extensions.literature.status' .claude-extensions.json` reports `active`.
+  *(confirmed)*
 - `cmp` reports byte identity for `zotero-write.sh`, `zotero-read.sh`, `zotero-setup.sh`, and
-  `literature-ingest-online.sh` between source and `.claude/scripts/`.
-- `.claude/commands/literature.md` exists.
-- `bash .claude/scripts/check-extension-docs.sh` exits 0.
+  `literature-ingest-online.sh` between source and `.claude/scripts/`. *(confirmed, all four
+  IDENTICAL)*
+- `.claude/commands/literature.md` exists. *(confirmed)*
+- `bash .claude/scripts/check-extension-docs.sh` exits 0. **Not fully met, with a recorded
+  reason**: after fixing every literature-owned finding, the per-extension table reports
+  `literature PASS`; the script's overall exit code is 1 solely because of three pre-existing,
+  out-of-territory `core`-extension findings (see the corresponding task item above for the
+  full evidence trail). Closing those would require editing `agent-system/extensions/core/**`,
+  which this task's binding rules and Non-Goals section place out of scope.
 - The README Deployment Status table matches what `.claude-extensions.json` and the live
-  `.claude/` tree actually contain.
-- `git status` shows no hand-authored file under `.claude/`.
+  `.claude/` tree actually contain. *(confirmed)*
+- `git status` shows no hand-authored file under `.claude/`. *(confirmed: `.claude/` is
+  gitignored and does not appear in `git status` output at all in this repository)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `literature-ingest-online.sh`, `zotero-write.sh`, `zotero-read.sh`, and
-      `zotero-setup.sh`.
-- [ ] `--dry-run` runs on both a `resolvable` and an `existing_no_pdf` fixture emit their existing
+- [x] `bash -n` passes on `literature-ingest-online.sh`, `zotero-write.sh`, `zotero-read.sh`, and
+      `zotero-setup.sh`. *(confirmed post-deploy)*
+- [x] `--dry-run` runs on both a `resolvable` and an `existing_no_pdf` fixture emit their existing
       terminal directives (`ONLINE_INGEST_INGESTED` / `ONLINE_INGEST_ATTACHED`) and additionally
-      report the freshness classification and dedup outcome.
-- [ ] The DOI-normalization helper maps the prefixed, bare, and lowercase forms to one string.
-- [ ] A known-duplicate DOI produces the dedup hard stop with the matched item key named.
-- [ ] A non-PDF download produces `ONLINE_INGEST_DOWNLOAD_FAILED` with no subsequent Zotero write.
-- [ ] `zotero-resolve-pdf.sh`'s `tier == "absent"` path still stops honestly with no fabricated
-      key.
-- [ ] No script other than `zotero-write.sh` issues a Zotero mutation.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0 after deployment.
-- [ ] Source and deployed copies of the three activated scripts are byte-identical.
-- [ ] `grep -rn "task [0-9]" agent-system/extensions/literature/` finds no task-number reference
-      introduced by this work (deliverable rule).
-- [ ] No file under `.claude/` was created or edited by hand.
+      report the freshness classification and dedup outcome. *(verified in Phase 3/4)*
+- [x] The DOI-normalization helper maps the prefixed, bare, and lowercase forms to one string.
+      *(verified in Phase 4)*
+- [x] A known-duplicate DOI produces the dedup hard stop with the matched item key named.
+      *(verified in Phase 4)*
+- [x] A non-PDF download produces `ONLINE_INGEST_DOWNLOAD_FAILED` with no subsequent Zotero write.
+      *(verified in Phase 5)*
+- [x] `zotero-resolve-pdf.sh`'s `tier == "absent"` path still stops honestly with no fabricated
+      key. *(verified in Phase 5)*
+- [x] No script other than `zotero-write.sh` issues a Zotero mutation. *(verified in Phase 5)*
+- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0 after deployment. *(deviation:
+      altered — the `literature` extension itself is fully clean (all literature-owned findings
+      fixed in Phase 7); the script's overall exit code remains 1 solely due to three
+      pre-existing, out-of-territory `core`-extension findings, confirmed pre-existing by
+      `git status` at dispatch start. See Phase 7's task list for the full evidence trail)*
+- [x] Source and deployed copies of the three activated scripts are byte-identical. *(confirmed)*
+- [x] `grep -rn "task [0-9]" agent-system/extensions/literature/` finds no task-number reference
+      introduced by this work (deliverable rule). *(confirmed via check-task-references.sh: 0
+      occurrences)*
+- [x] No file under `.claude/` was created or edited by hand. *(confirmed: `.claude/` is
+      gitignored in this repository; every change there came from the deploy engine)*
 
 ## Artifacts & Outputs
 

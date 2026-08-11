@@ -154,30 +154,32 @@ Scripts are in `.claude/extensions/literature/scripts/zotero-*.sh`.
 ### Deployment Status
 
 This section is the authoritative record of which zotero/cite artifacts are live vs.
-intentionally undeployed, and why (established by the zotero/cite deployment-status audit).
+intentionally undeployed, and why (established by the zotero/cite deployment-status audit, then
+reconciled after the extension's first-time activation).
 
-**Active once the extension is registered (deployed byte-for-byte from this directory to
-`.claude/scripts/`, `.claude/skills/`, `.claude/commands/`)**:
-- `cite-extract.sh`, `skill-cite/`, `cite.md` — the `/cite` trio, built end-to-end for deployment
-  by the same audit that closed this deployment gap.
+**Active — the extension is registered in `.claude-extensions.json` (`status: "active"`) and
+deployed byte-for-byte from this directory to `.claude/scripts/`, `.claude/skills/`,
+`.claude/commands/`, `.claude/agents/`, and `.claude/context/`.** This includes every script in
+`manifest.json` `provides.scripts` except the two named as intentionally superseded below —
+in particular:
+- `zotero-read.sh`, `zotero-write.sh`, `zotero-setup.sh` — `zot` v0.10.0 and a
+  `library+files+write` API key are both available; these are deployed and confirmed
+  byte-identical to their source copies. `zotero-write.sh` is the single write choke-point,
+  called from `literature-ingest-online.sh`'s `item-add`/`attach-file` calls (see
+  `context/project/literature/patterns/zotero-item-creation.md` for the live-confirmed envelope
+  evidence).
+- `cite-extract.sh`, `skill-cite/`, `cite.md` — the `/cite` trio.
 - `zotero-search.sh` — already load-bearing via a source-path fallback in
   `skill-literature/SKILL.md`; deployed for consistency with the other live scripts.
 
-**Deployment status caveat**: as of this writing the literature extension itself is not
-registered in `.claude-extensions.json` (its key is absent from `.extensions`), so none of the
-artifacts above are actually present in the live `.claude/` tree yet — this table records the
-aspirational, post-activation deployment plan, not current fact.
-`jq -r '.extensions.literature.status' .claude-extensions.json` is the source of truth for
-"is this deployed right now"; consult it before relying on anything in this table.
+`jq -r '.extensions.literature.status' .claude-extensions.json` remains the source of truth for
+"is this deployed right now" — this table records what that command currently reports, not an
+aspirational plan.
 
-**Inactive (intentionally NOT deployed as part of the zotero suite — remain source-only in this
-directory)**:
+**Inactive (intentionally NOT deployed — superseded, remain source-only in this directory)**:
 
 | Artifact | Reason |
 |----------|--------|
-| `zotero-read.sh` | `zot` v0.10.0 and a `library+files+write` API key are both available; this script is undeployed because the extension itself is not registered in `.claude-extensions.json`. No live caller. |
-| `zotero-write.sh` | `zot` v0.10.0 and a `library+files+write` API key are both available; this script is undeployed because the extension itself is not registered in `.claude-extensions.json`. Has a live SOURCE-tree caller (`literature-ingest-online.sh`'s `item-add`/`attach-file` calls, added by the online-ingest-bridge work — see `context/project/literature/patterns/zotero-item-creation.md`). |
-| `zotero-setup.sh` | `zot` v0.10.0 and a `library+files+write` API key are both available; this script is undeployed because the extension itself is not registered in `.claude-extensions.json`. No live caller. |
 | `zotero-chunk.sh` | Superseded by the read-only briefing+tools design; write-back-to-Zotero chunking is orthogonal to the current pipeline. No live caller. |
 | `zotero-attach-chunks.sh` | Superseded by the same read-only design. No live caller. |
 
@@ -187,8 +189,8 @@ their add/remove-from-index logic is reimplemented inline via `jq` in
 `.claude/extensions/literature/scripts/deprecated/` and dropped from `manifest.json`
 `provides.scripts`; see `scripts/deprecated/README.md` for the quarantine note.
 
-Five zotero scripts above remain declared in `manifest.json` `provides.scripts` but are
-absent from `.claude/scripts/` — this is intentional. The drift guard
+The two intentionally superseded scripts above remain declared in `manifest.json`
+`provides.scripts` but are absent from `.claude/scripts/` — this is intentional. The drift guard
 (`check-extension-docs.sh` `check_deployed_script_drift()`) skips scripts whose deployed copy is
 absent (it only `FAIL`s on *content mismatch* when both source and deployed copies exist), so
 leaving these undeployed produces an expected `info "script not deployed, skipping drift check"`
@@ -206,14 +208,14 @@ owned by that earlier addition); the drift guard compares it against source and 
 no mismatch, so it does not appear in the "skipping drift check" list above. Its `provides.scripts`
 declaration and deployed copy are consistent, not drift.
 
-### Extension Tracking Gap
+### Extension Tracking Gap — Closed
 
-The literature extension has no entry in the project-root extension manifest
-(`.claude-extensions.json`) despite this substantial partial deployment (the `/cite` trio and
-`zotero-search.sh` are now live). The deployment-status audit intentionally does **not**
-fabricate a manifest entry here: the `merged_sections` metadata is loader-owned state, and
-hand-authoring it risks introducing the exact kind of drift this audit is closing. Proper
-registration of the literature extension via the extension-loader flow is a named follow-up.
+The literature extension previously had no entry in the project-root extension manifest
+(`.claude-extensions.json`), even though the `/cite` trio and `zotero-search.sh` were already
+live. That gap is now closed: the extension was registered via the ordinary extension-loader
+flow (never by hand-authoring `.claude-extensions.json` — the `merged_sections` metadata it
+carries is loader-owned state), and `jq -r '.extensions.literature.status'
+.claude-extensions.json` reports `active` with a populated `installed_files` array.
 
 ---
 

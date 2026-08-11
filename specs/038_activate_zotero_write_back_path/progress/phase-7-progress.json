@@ -1,0 +1,34 @@
+{
+  "phase": 7,
+  "phase_name": "Activate the literature extension, deploy, and verify byte identity",
+  "started_at": "2026-08-11T21:26:00Z",
+  "last_updated": "2026-08-11T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm the literature key is still absent from .claude-extensions.json", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Enumerate and record the activation blast radius from manifest.json", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Activate literature via one-off headless manager.load call", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm registration active with populated installed_files", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run ordinary non-destructive resync (deploy-headless.sh)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Verify byte identity for zotero-write.sh, zotero-read.sh, zotero-setup.sh, literature-ingest-online.sh", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm previously-missing artifacts now exist", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Reconcile README.md Deployment Status section with post-deploy reality", "status": "done", "files_touched": [
+      "agent-system/extensions/literature/README.md"
+    ]},
+    {"id": 9, "description": "Run check-extension-docs.sh; fix in-territory literature findings", "status": "done", "files_touched": [
+      "agent-system/extensions/literature/index-entries.json"
+    ]},
+    {"id": 10, "description": "Confirm no hand-authored .claude/** file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.testing-validation",
+      "description": "bash .claude/scripts/check-extension-docs.sh exits 0 after deployment",
+      "type": "altered",
+      "reason": "The literature extension itself is fully clean after fixing two missing index-entries.json entries and three stale line_count values (all literature-owned, source-store-only fixes). The script's overall exit code remains 1 solely due to three pre-existing core-extension findings (two index-entries.json line_count mismatches, one missing index entry for context/standards/task-reference-exemptions.md), confirmed pre-existing via git status at dispatch start (agent-system/extensions/core/index-entries.json was already modified before this dispatch began). Fixing those would require editing agent-system/extensions/core/**, which this task's binding rules and Non-Goals section place out of territory.",
+      "annotation": "*(deviation: altered -- the literature extension itself is fully clean (all literature-owned findings fixed in Phase 7); the script's overall exit code remains 1 solely due to three pre-existing, out-of-territory core-extension findings, confirmed pre-existing by git status at dispatch start. See Phase 7's task list for the full evidence trail)*"
+    }
+  ]
+}

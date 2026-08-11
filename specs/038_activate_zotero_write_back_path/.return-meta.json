@@ -1,9 +1,50 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/038_activate_zotero_write_back_path/summaries/02_zotero-write-back-activation-summary.md",
+      "summary": "Completed Phase 6 (gated live envelope confirmation against production Zotero library) and Phase 7 (literature extension activation, deploy, byte-identity verification, and README reconciliation)"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the Zotero write-back activation task by performing the user-gated real item-add/attach-file test against the production library (item key QWF66MNX, confirmed the .data.key envelope field, and surfaced a storage-quota block on attachment), then activating and deploying the literature extension for the first time and reconciling its README deployment-status documentation with post-deploy reality."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/context/project/literature/patterns/zotero-item-creation.md",
+    "agent-system/extensions/literature/index-entries.json",
+    "agent-system/extensions/literature/README.md",
+    "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "zot (zotero-cli-cc) write commands (add/attach) hit the Web API directly and mutate the live server-side library, but zot's READ commands (search/read/stats, and therefore zotero-read.sh) query the local SQLite database only. A Web-API write is invisible to local reads until a running Zotero desktop client syncs it down (the item-add response's `sync_required: true` field documents this). A DOI-normalized live-library dedup check built on zotero-read.sh is therefore 'last-locally-synced', not 'current server state' -- a duplicate created moments earlier via the Web API (e.g. by a concurrent process) would not yet be visible to it.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/038_activate_zotero_write_back_path/summaries/02_zotero-write-back-activation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["zotero", "zot-cli", "web-api", "sqlite-sync-lag", "dedup"]
+    },
+    {
+      "content": "A Zotero attach-file call that is rejected by the account's storage quota (Web API 413 'File would exceed quota') is NOT a clean no-op: Zotero's attach flow creates the child attachment item's metadata record (linkMode/filename/contentType) in a separate API call BEFORE uploading file bytes, and that record persists (md5/mtime null) even when the upload itself fails. A quota-rejected attach therefore leaves an orphaned, file-less attachment stub as a child of the target item. Confirm and clean up via a direct GET on .../items/<KEY>/children.",
+      "category": "PATTERN",
+      "source_artifact": "specs/038_activate_zotero_write_back_path/summaries/02_zotero-write-back-activation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["zotero", "attach-file", "quota-413", "orphaned-attachment", "web-api"]
+    },
+    {
+      "content": "When activating a never-before-deployed extension in this repo's agent-system/extensions/ layout, running check-extension-docs.sh after deploy can surface Rule S (deployed file missing from index-entries.json) and Rule R (stale line_count) findings that are genuinely the activating extension's own gaps, not caused by the activation itself -- fix them in the extension's own source-store index-entries.json (never in core, and never in the deployed .claude/ tree) and redeploy to verify. Pre-existing findings in OTHER extensions (e.g. core) surfaced by the same run are a separate, usually out-of-territory concern -- check git status before assuming a FAIL was caused by your own work.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/038_activate_zotero_write_back_path/summaries/02_zotero-write-back-activation-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["extension-activation", "check-extension-docs", "index-entries.json", "rule-s", "rule-r"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786480706_506b3d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }
