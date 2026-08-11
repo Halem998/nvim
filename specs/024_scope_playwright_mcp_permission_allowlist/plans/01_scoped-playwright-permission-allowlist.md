@@ -1,7 +1,7 @@
 # Implementation Plan: Task #24
 
 - **Task**: 24 - Scope Playwright MCP permission allowlist to safe browser tools, solving install-once propagation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: Task 23 (completed - MCP registration/permission ownership boundary)
 - **Research Inputs**: specs/024_scope_playwright_mcp_permission_allowlist/reports/01_scoped-playwright-permission-allowlist.md
@@ -122,12 +122,12 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Create the web settings fragment [NOT STARTED]
+### Phase 1: Create the web settings fragment [COMPLETED]
 
 **Goal**: The 9-tool enumeration exists as a valid, minimal JSON fragment in the source store.
 
 **Tasks**:
-- [ ] Write `/home/benjamin/.config/nvim/agent-system/extensions/web/settings-fragment.json` with
+- [x] Write `/home/benjamin/.config/nvim/agent-system/extensions/web/settings-fragment.json` with
       exactly this content (2-space indent, matching `lean`/`nix` fragment style):
       ```json
       {
@@ -146,9 +146,12 @@ Phases within the same wave can execute in parallel.
         }
       }
       ```
-- [ ] Do NOT add an `mcpServers` key. Do NOT add `deny`, `ask`, or any other permission tier.
-- [ ] Do NOT add a `mcp__playwright__*` wildcard entry alongside the enumeration -- a wildcard
+      *(completed)*
+- [x] Do NOT add an `mcpServers` key. Do NOT add `deny`, `ask`, or any other permission tier.
+      *(completed: fragment has exactly one top-level key)*
+- [x] Do NOT add a `mcp__playwright__*` wildcard entry alongside the enumeration -- a wildcard
       anywhere in the allow list re-grants the three unsafe tools regardless of what else is listed.
+      *(completed: no wildcard present, verified via jq)*
 
 **Timing**: 0.25 hours
 

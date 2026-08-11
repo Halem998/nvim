@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Create the web settings fragment",
+  "started_at": "2026-08-10T00:00:00Z",
+  "last_updated": "2026-08-10T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write web/settings-fragment.json with exactly the 9-tool enumeration, no mcpServers/deny/ask, no wildcard",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/web/settings-fragment.json"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
