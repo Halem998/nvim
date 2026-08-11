@@ -1,40 +1,31 @@
 {
-  "status": "researched",
-  "started_at": "2026-08-10T23:38:00Z",
-  "completed_at": "2026-08-10T23:45:00Z",
+  "status": "planned",
+  "summary": "Created a verify-and-close-gaps plan (5 phases, 1.75h) for the already-committed Playwright MCP activation work. Planning-time verification found the research report's flagged 'cannot run the doc-lint gate' blocker is false (the gate runs against the source store via a documented REPO_ROOT override) and that running it surfaces a real FAIL: index-entries.json line_count drift for project/web/README.md (declared 110, actual 116). Also found the invented tool name browser_verify_text_visible surviving as usable guidance in the git-tracked .opencode/extensions/web copy, which the plan handles as an evidenced decision phase rather than an out-of-scope edit.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md",
-      "summary": "Activated the parked Playwright MCP design in web-implementation-agent.md, reconciled the drifted tool list (browser_verify_text_visible -> browser_find/browser_wait_for) against the real 24-tool server, and added a new playwright-mcp-guide.md context file covering the unprompted/prompting permission split and when-to-drive-a-browser guidance."
+      "type": "plan",
+      "path": "specs/025_activate_playwright_mcp_in_web_extension/plans/01_activate-playwright-mcp.md",
+      "summary": "5-phase verify-and-close-gaps plan: doc-lint baseline, line_count drift fix, acceptance-criteria audit, .opencode decision record, close-out"
     }
   ],
-  "partial_progress": {
-    "stage": "completed",
-    "details": "All source-store edits made and verified; report written"
-  },
   "metadata": {
     "session_id": "sess_1786426440_e14088_25",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
+    "task_number": 25,
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 1.75,
+    "dependency_waves": [[1], [2, 3, 4], [5]]
   },
   "memory_candidates": [
     {
-      "content": "When a Playwright (or similar) MCP server intentionally splits its tool surface into an always-allow safe tier and a prompting unsafe tier, that split must be mirrored consistently across every file that names the tool list: the settings-fragment.json allowlist enumeration, any context-file tool reference table, and any agent-file 'unprompted tools' bullet. None of these wildcard as the server's tool surface grows, so a server upgrade requires a coordinated edit across all of them, not just the settings fragment. See agent-system/extensions/web/settings-fragment.json, agent-system/extensions/web/context/project/web/tools/playwright-mcp-guide.md, and agent-system/extensions/web/agents/web-implementation-agent.md as the worked three-way example.",
+      "content": "When a research dispatch exceeds its role and performs implementation edits, the follow-on plan must be a verify-and-close-gaps plan built against the files on disk, not against the research report's claims about them. Independently re-verify the report's assertions before planning: in the Playwright-MCP web-extension activation, two of the report's claims failed verification. It flagged check-extension-docs.sh as unrunnable from the source-store tree, but the script's EXT_DIR defaults to $REPO_ROOT/agent-system/extensions (it lints the SOURCE store, not the deploy tree) and its header documents an explicit 'REPO_ROOT=$(pwd)' override for deliberate source-store invocation. Running it then surfaced a real FAIL the report asserted did not exist: a Rule R index-entries.json line_count mismatch caused by the report's own README edit adding lines without updating the declared count. General lesson: a self-reported 'gate could not be run' blocker is a hypothesis to test, not a fact to plan around, and any prose edit to an indexed context file must be paired with a line_count update (verify via generate-context-line-counts.sh --check, scoped read-only; --write rewrites every extension).",
       "category": "PATTERN",
-      "source_artifact": "specs/025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md",
+      "source_artifact": "specs/025_activate_playwright_mcp_in_web_extension/plans/01_activate-playwright-mcp.md",
       "confidence": 0.85,
-      "suggested_keywords": ["mcp", "playwright", "permission-split", "settings-fragment", "tool-drift"]
-    },
-    {
-      "content": "check-extension-docs.sh refuses to run from the agent-system source-store tree (agent-system/extensions/core/scripts/) with an explicit error explaining that its relative '../..' path resolution assumes a deployed .claude/scripts/ or .opencode/scripts/ location. A source-store-only edit session cannot self-verify with this lint; a deploy-then-relint pass is a separate follow-up step, not something achievable in the same session as the source edits.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["check-extension-docs", "lint", "source-store", "deploy-boundary", "verification"]
+      "suggested_keywords": ["check-extension-docs", "line_count-drift", "index-entries", "research-overreach", "verify-and-close-gaps", "source-store-lint"]
     }
   ],
-  "next_steps": "Run /plan 25 to create implementation plan"
+  "next_steps": "Run /implement 25 to execute the plan"
 }
