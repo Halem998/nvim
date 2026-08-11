@@ -37,7 +37,7 @@ next_project_number: 28
 
 ### Mcp Integration
 
-24 [NOT STARTED] — Add a deliberately scoped Playwright MCP permission allowlist so 
+24 [RESEARCHED] — Add a deliberately scoped Playwright MCP permission allowlist so 
   └─ 25 [NOT STARTED] — Activate the already-designed but parked Playwright MCP integrati
   └─ 26 [NOT STARTED] — Migrate slidev deck screenshot verification from the standalone n
 
@@ -141,10 +141,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 24. Scope Playwright MCP permission allowlist to safe browser tools, solving install-once propagation
 - **Effort**: 1-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: mcp-integration
 - **Dependencies**: Task 23
+- **Research**: [024_scope_playwright_mcp_permission_allowlist/reports/01_scoped-playwright-permission-allowlist.md]
 
 **Description**: Add a deliberately scoped Playwright MCP permission allowlist so autonomous runs stop stalling, without blanket-allowing arbitrary execution.
 
