@@ -1,39 +1,19 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "task_number": 24,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
   "session_id": "sess_1786426440_e14088_24",
-  "findings_count": 9,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/024_scope_playwright_mcp_permission_allowlist/reports/01_scoped-playwright-permission-allowlist.md",
-      "summary": "Recommends adding a 9-tool mcp__playwright__* permission enumeration via a new agent-system/extensions/web/settings-fragment.json + manifest merge_targets.settings entry, deployed to .claude/settings.local.json (not install-once), which is the confirmed sanctioned mechanism for reaching already-initialized projects."
+      "type": "plan",
+      "path": "specs/024_scope_playwright_mcp_permission_allowlist/plans/01_scoped-playwright-permission-allowlist.md",
+      "summary": "5-phase plan: create web/settings-fragment.json with 9 enumerated safe playwright tools, wire merge_targets.settings in web/manifest.json mirroring nix/lean, verify additive merge against a pre-seeded fixture with a pre-existing .claude/settings.json, document the enumeration-over-wildcard carve-out, and assert core/root-files/settings.json is unchanged."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In this repo's extension-loader system, `merge_targets.settings` in an extension's manifest.json (source: settings-fragment.json, target: .claude/settings.local.json) is deployed via process_merge_targets/merge_settings (init.lua/merge.lua), a completely separate code path from loader.lua's copy_category. It performs an additive, idempotent deep-merge (never overwrites existing scalars, dedups array items via vim.deep_equal) and is NOT gated by the install_once flag, which applies only to the root_files category (core/root-files/settings.json). This is the sanctioned way to add permission grants that must reach an already-initialized project -- confirmed independently by check-extension-docs.sh's check_settings_merge_source_coverage rationale.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/024_scope_playwright_mcp_permission_allowlist/reports/01_scoped-playwright-permission-allowlist.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["settings-fragment", "merge_targets", "install-once", "settings.local.json", "extension-loader"]
-    },
-    {
-      "content": "MCP permission grants should prefer a wildcard (mcp__{server}__*) over enumeration EXCEPT when a server intentionally splits its tool surface into a safe/always-allow tier and an unsafe/always-prompt tier (e.g. Playwright's browser_navigate/browser_click/etc. vs browser_evaluate/browser_run_code_unsafe/browser_file_upload). In that case enumeration of only the safe tools is required, not technical debt -- a wildcard would silently re-grant the unsafe tools too.",
-      "category": "PATTERN",
-      "source_artifact": "specs/024_scope_playwright_mcp_permission_allowlist/reports/01_scoped-playwright-permission-allowlist.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["mcp-permissions", "wildcard-vs-enumeration", "playwright", "partial-trust", "settings-fragment"]
-    },
-    {
-      "content": "Three code paths trigger an extension's merge_targets.settings re-merge in this repo's extension loader: (1) manager.load(name) on a not-yet-loaded extension, (2) manager.reload(name), which unloads then loads a single named extension, and (3) the picker's 'Reload All' bulk resync, which calls manager.load(name, {force=true}) for every already-active extension (bypassing the is_loaded short-circuit) rather than unloading everything first. Any of the three picks up new settings-fragment.json entries.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/024_scope_playwright_mcp_permission_allowlist/reports/01_scoped-playwright-permission-allowlist.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["manager.reload", "reload-all", "force-load", "extension-lifecycle"]
-    }
-  ],
-  "next_steps": "Run /plan 24 to create implementation plan"
+  "phase_count": 5,
+  "estimated_hours": 2,
+  "dependency_waves": [[1], [2, 4], [3], [5]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 24 to execute the plan"
 }

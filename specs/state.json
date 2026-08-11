@@ -42,7 +42,7 @@
     {
       "project_number": 24,
       "project_name": "scope_playwright_mcp_permission_allowlist",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Scope Playwright MCP permission allowlist to safe browser tools, solving install-once propagation",
       "topic": "mcp-integration",
@@ -56,12 +56,17 @@
       ],
       "description": "Add a deliberately scoped Playwright MCP permission allowlist so autonomous runs stop stalling, without blanket-allowing arbitrary execution.\n\nPROBLEM: mcp__playwright__* is absent from every settings allowlist while mcp__lean-lsp__* is present, so every browser call raises a permission prompt. Under /orchestrate there is no human available to answer, so autonomous runs stall.\n\nDESIGN (fixed by user decision, not open for redesign): allowlist ONLY the safe navigation and inspection tools -- browser_navigate, browser_snapshot, browser_take_screenshot, browser_console_messages, browser_network_requests, browser_click, browser_type, browser_find, browser_wait_for. Deliberately OMIT browser_run_code_unsafe, browser_evaluate, and browser_file_upload: these are arbitrary-execution/upload tools and MUST continue to prompt.\n\nGRANULARITY IS ALREADY PROVEN EXPRESSIBLE -- DO NOT RE-RESEARCH THIS. nix/settings-fragment.json allowlists mcp__nixos__nix and mcp__nixos__nix_versions individually; lean/settings-fragment.json enumerates 21 individual mcp__lean-lsp__lean_* entries; founder's fragment likewise enumerates individual tool names. Per-tool MCP permission entries work.\n\n'KEEP PROMPTING' NEEDS NO ask/deny RULE: omission from permissions.allow already yields a prompt. The existing permissions.deny list is Bash-only (rm -rf /, rm -rf ~, sudo *, chmod 777 *) and there is no ask key in use anywhere. Do not invent one.\n\nTHE REAL HAZARD -- INSTALL-ONCE PROPAGATION: core/root-files/settings.json deploys to .claude/settings.json under install-once semantics (loader.lua's copy_category('root_files'), gated by CATEGORY_DESCRIPTORS.root_files.install_once; manager.unload also excludes these files via loader_mod.INSTALL_ONCE_ROOT_FILES). Once a project has its own .claude/settings.json, reloading or re-loading the providing extension NEVER overwrites it. Therefore simply editing core/root-files/settings.json will NOT reach any existing project. This task must establish how the new grants actually propagate -- for example via an extension settings-fragment.json (which targets .claude/settings.local.json and is not install-once), via user-scope settings, or via a documented migration step -- consistent with the ownership boundary decided in the prerequisite task.\n\nACCEPTANCE: in a project that ALREADY has a .claude/settings.json, the 9 safe browser tools run without prompting, and browser_run_code_unsafe, browser_evaluate, and browser_file_upload still prompt. Verify against a pre-existing settings file, not a freshly generated one -- a fresh project would mask the install-once defect.\n\nSOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-08-11T05:30:49Z",
-      "last_updated": "2026-08-11T06:18:33Z",
+      "last_updated": "2026-08-11T06:23:50Z",
       "artifacts": [
         {
           "path": "specs/024_scope_playwright_mcp_permission_allowlist/reports/01_scoped-playwright-permission-allowlist.md",
           "type": "report",
           "summary": "Recommends a 9-tool playwright permission enumeration via a new web/settings-fragment.json + manifest merge_targets.settings entry, deployed to .claude/settings.local.json (not install-once)."
+        },
+        {
+          "path": "specs/024_scope_playwright_mcp_permission_allowlist/plans/01_scoped-playwright-permission-allowlist.md",
+          "type": "plan",
+          "summary": "Five-phase plan creating web/settings-fragment.json with 9 enumerated safe browser tools plus a manifest merge_targets.settings block, with fixture-based verification against a pre-existing settings file."
         }
       ],
       "session_id": "sess_1786426440_e14088_24"
