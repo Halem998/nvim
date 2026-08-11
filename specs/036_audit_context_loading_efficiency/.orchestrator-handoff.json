@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Created 7-phase implementation plan from the team research report. Scope: convert resolving @context/... refs to plain paths (nix/present/literature/web/cslib), normalize inert @.claude/... and volatile @specs/... refs downward in core/email/nvim/formal/lean sources (never upward -- no volatile files in the eager prefix), apply the F4 rules triage (gate neovim-lua.md, split no-task-references rule, keep source-store-deploy-boundary eager), re-site literature command rows to the literature extension, document @-resolution semantics and the eager-channel inventory, and create 4 follow-up tasks (measurement harness, verify-deploy context gates, email dead-safety-import defect, task.md slimming). All edits target agent-system/extensions/**; expected session-start surface at next redeploy: ~17.5k -> ~9.5k tokens (-46%).",
+  "artifacts": [
+    {
+      "path": "specs/036_audit_context_loading_efficiency/plans/01_context-loading-optimization.md",
+      "type": "plan",
+      "summary": "7-phase plan (6h, waves [1,2,3,5]->[4]->[6]->[7]) executing the audit's cheap wins in the source store plus follow-up task creation"
+    }
+  ],
+  "blockers": [],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "next_action_hint": "Dispatch /implement 36; Phases 1, 2, 3, 5 are parallelizable (disjoint file sets), Phase 4 requires Phase 2, Phase 6 creates follow-up tasks after all edits, Phase 7 is the full lint sweep"
+}
