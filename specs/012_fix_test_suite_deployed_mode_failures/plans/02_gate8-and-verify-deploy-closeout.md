@@ -1,8 +1,8 @@
 # Implementation Plan: Close the gate-8 flake and the standing verify-deploy failures
 
 - **Task**: 12 - Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and further suites
-- **Status**: [IMPLEMENTING]
-- **Effort**: 8.75 hours total (4.75 completed in Phases 1-5, 4.0 remaining in Phases 6-11)
+- **Status**: [COMPLETED]
+- **Effort**: 8.75 hours total (4.75 completed in Phases 1-5, 4.0 completed in Phases 6-11)
 - **Dependencies**: None (one advisory overlap: the opencode session-id duplication task owns `test-common-lib.sh`)
 - **Research Inputs**:
   - specs/012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md
@@ -731,7 +731,7 @@ sanctioned deploy, never a hand-write.
 
 ---
 
-### Phase 11: Repeated-sample verification and the final honest record [IN PROGRESS]
+### Phase 11: Repeated-sample verification and the final honest record [COMPLETED]
 
 **Goal**: Prove the result against a repeated sample rather than a single run, and give every
 remaining failure a written, evidenced justification.
@@ -747,27 +747,40 @@ original diagnosis used, so the before/after comparison is like-for-like. **Or**
 failure carries a written, evidenced justification. Never an unqualified green.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` 20 consecutive times via a single backgrounded
+- [x] Run `bash .claude/scripts/verify-deploy.sh` 20 consecutive times via a single backgrounded
       driver loop that appends each run's exit code and any findings to a log. Budget ~140s per run
-      (~47 minutes total)
-- [ ] Report the observed fraction verbatim — "N/20 runs reported 0 findings" — never rounded,
-      never extrapolated, never described as green on a partial sample
+      (~47 minutes total) *(completed: 20/20 runs finished; raw logs preserved at
+      `specs/012_fix_test_suite_deployed_mode_failures/reports/phase-11-verify-deploy-sample/`
+      — run-1.log through run-20.log, summary.log, driver.log)*
+- [x] Report the observed fraction verbatim — "N/20 runs reported 0 findings" — never rounded,
+      never extrapolated, never described as green on a partial sample *(completed: 0/20 runs
+      reported 0 findings; 20/20 runs reported exit=1 with exactly 1 finding each — see summary)*
 - [ ] If the wall-clock budget is genuinely exhausted before 20 runs, report the actual N and the
-      observed fraction, and state plainly that the sample is smaller than the bar
-- [ ] For any run that reports findings, capture the gate number and the verbatim finding text.
-      Group identical findings and report each group's frequency out of the sample
-- [ ] Confirm gate 3 (Rule R / line counts), gate 5 (deploy drift), gate 8 (shell test suite
+      observed fraction, and state plainly that the sample is smaller than the bar *(deviation:
+      skipped — not applicable, all 20 runs completed within budget)*
+- [x] For any run that reports findings, capture the gate number and the verbatim finding text.
+      Group identical findings and report each group's frequency out of the sample *(completed:
+      one finding group, frequency 20/20 — `FINDING gate3 [literature] FAIL: Rule R:
+      index-entries.json entry 'project/literature/domain/literature-index.md' line_count
+      mismatch: declared 117, actual 144`)*
+- [x] Confirm gate 3 (Rule R / line counts), gate 5 (deploy drift), gate 8 (shell test suite
       runner), and gate 10 (dangling dependencies) each pass across the whole sample — these are
-      the four gates Phases 6-10 targeted
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm no new doc-lint failures
+      the four gates Phases 6-10 targeted *(completed: gate 5, gate 8, and gate 10 report PASS in
+      all 20/20 runs; gate 3 reports PASS for the core-extension Rule R check this task fixed in
+      all 20/20 runs, and FAILs only for the pre-existing, out-of-scope literature-extension
+      entry in all 20/20 runs)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm no new doc-lint failures
       beyond the pre-existing, unrelated literature/zotero never-deployed advisory block
-- [ ] Write the residual-failure justification table in the implementation summary — one row per
+      *(completed: 19/20 extensions PASS; literature FAILs on the same pre-existing line_count
+      mismatch; the never-deployed zotero/literature advisory block is present and unchanged)*
+- [x] Write the residual-failure justification table in the implementation summary — one row per
       still-failing gate or suite, with the reason and the evidence supporting it. Reuse the
-      `Item | Reason | Evidence` column shape
-- [ ] State the final counts as measured in the summary's first sentence. If any failure remains,
-      say so there — never bury it
-- [ ] Confirm no deliverable outside `specs/**` gained a task-number reference (the task-reference
-      lint gate plus a direct grep over every file this plan's phases touched)
+      `Item | Reason | Evidence` column shape *(completed)*
+- [x] State the final counts as measured in the summary's first sentence. If any failure remains,
+      say so there — never bury it *(completed)*
+- [x] Confirm no deliverable outside `specs/**` gained a task-number reference (the task-reference
+      lint gate plus a direct grep over every file this plan's phases touched) *(completed:
+      `check-task-references.sh` reports PASS, 0 unexempted occurrences)*
 
 **Timing**: 1.25 hours (including the ~47-minute sample)
 
@@ -805,19 +818,27 @@ Carried forward from Phases 1-5 (already satisfied):
 - [x] Full deployed `run-all.sh`: 34 passed, 0 failed, 34 total (confirmed twice)
 
 Remaining (Phases 6-11):
-- [ ] `bash -n` clean on `claude-refresh.sh` and `test-claude-refresh-matcher.sh`
-- [ ] The unmodified matcher suite behaves equivalently against the seamed script (Phase 6
-      production-equivalence proof)
-- [ ] 20 consecutive isolated runs of `test-claude-refresh-matcher.sh`: fraction reported verbatim,
-      bar is 20/20
-- [ ] `generate-context-line-counts.sh --check` clean after `--write`
-- [ ] `validate-state.sh --deep` reports no dangling-dependency finding
-- [ ] Every source/deploy pair in the modified-file set diffs byte-identical after the redeploy
-- [ ] 20 consecutive `verify-deploy.sh` runs: fraction reported verbatim, bar is 20/20 with 0
-      findings, or a justified residual per failure
-- [ ] `check-extension-docs.sh` shows no new failures
-- [ ] Zero hand-authored files under `.claude/**`
-- [ ] Zero task-number references in deliverables outside `specs/**`
+- [x] `bash -n` clean on `claude-refresh.sh` and `test-claude-refresh-matcher.sh` *(completed:
+      Phase 6/7 verification)*
+- [x] The unmodified matcher suite behaves equivalently against the seamed script (Phase 6
+      production-equivalence proof) *(completed)*
+- [x] 20 consecutive isolated runs of `test-claude-refresh-matcher.sh`: fraction reported verbatim,
+      bar is 20/20 *(completed: 20/20, Phase 7 objective 6)*
+- [x] `generate-context-line-counts.sh --check` clean after `--write` *(completed: core-scoped
+      check reports 134/134 exact, 0 mismatch — Phase 8)*
+- [x] `validate-state.sh --deep` reports no dangling-dependency finding *(completed: PASS in
+      20/20 Phase 11 sample runs)*
+- [x] Every source/deploy pair in the modified-file set diffs byte-identical after the redeploy
+      *(completed: Phase 10)*
+- [x] 20 consecutive `verify-deploy.sh` runs: fraction reported verbatim, bar is 20/20 with 0
+      findings, or a justified residual per failure *(completed: 0/20 clean; 20/20 carry exactly
+      one justified, pre-existing, out-of-scope residual — see summary's residual-failure table)*
+- [x] `check-extension-docs.sh` shows no new failures *(completed: 19/20 extensions PASS; the one
+      literature FAIL is the same pre-existing, out-of-scope residual)*
+- [x] Zero hand-authored files under `.claude/**` *(completed: all edits made under
+      `agent-system/extensions/**`, deployed only via `deploy-headless.sh`)*
+- [x] Zero task-number references in deliverables outside `specs/**` *(completed:
+      `check-task-references.sh` PASS)*
 
 ## Artifacts & Outputs
 

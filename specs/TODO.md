@@ -11,14 +11,13 @@ next_project_number: 23
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 12,14,16,17,18,19,20,22 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 14,16,17,18,19,20,22 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 9,13 | 17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-12 [IMPLEMENTING] — tests/run-all.sh is red and has been treated as permanently-expec
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
   └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
@@ -356,13 +355,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 12. Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md]
-- **Summary**: [012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md]
 - **Plan**: [012_fix_test_suite_deployed_mode_failures/plans/02_gate8-and-verify-deploy-closeout.md]
+- **Summary**: [012_fix_test_suite_deployed_mode_failures/summaries/02_gate8-and-verify-deploy-closeout-summary.md]
 
 **Description**: tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.
 

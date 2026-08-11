@@ -1,28 +1,17 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/012_fix_test_suite_deployed_mode_failures/plans/02_gate8-and-verify-deploy-closeout.md",
-      "summary": "Revised 11-phase plan preserving Phases 1-5 verbatim and replacing the vague Phase 6 with six evidenced phases (6-11): injectable liveness seam, scripted-probe assertion (c), line_count fix, dangling-dependency removal, sanctioned redeploy, and a 20-run repeated-sample acceptance bar"
-    }
+  "status": "implemented",
+  "modified_files": [
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/claude-refresh.sh",
+    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"
   ],
-  "next_steps": "Run /implement 12 to execute Phases 6-11 of the revised plan",
+  "completion_summary": "Gate-8 flake eliminated: 0 findings attributable to this task across 20 consecutive verify-deploy.sh runs (was 4/20). Root cause was test-claude-refresh-matcher.sh's real-process liveness assertion; fixed via an injectable _pid_is_alive seam in claude-refresh.sh plus a deterministic scripted probe. Poll-budget widening was disproven, not adopted. Standing deploy drift, an index-entries line_count mismatch, and a dangling state.json dependency were also cleared. One residual remains and is deliberately unfixed: a pre-existing, out-of-scope literature index-entries line_count mismatch (117 vs 144) present in all 20 runs and belonging to a concurrent effort.",
   "metadata": {
-    "session_id": "sess_1786403913_d02558",
-    "agent_type": "reviser-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "revise", "reviser-agent"],
-    "phase_count": 11,
-    "phases_preserved": 5,
-    "phases_added": 6,
-    "estimated_hours": 8.75,
-    "remaining_hours": 4.0,
-    "plan_version": 2,
-    "dependency_waves": [[1, 2, 3], [4], [5], [6, 8, 9], [7], [10], [11]],
-    "reports_integrated": [
-      "reports/01_run-all-deployed-mode-triage.md",
-      "state.json description: === SCOPE EXTENSION (folded in after gate-8 diagnosis; user-approved) ==="
-    ]
+    "cycles_used": 1,
+    "final_state": "completed",
+    "phases_completed": 11,
+    "phases_total": 11,
+    "plan_markers_verified": "true",
+    "sample": "20/20 runs, 1 pre-existing out-of-scope finding each"
   }
 }
