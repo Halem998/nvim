@@ -1,17 +1,17 @@
 ---
-next_project_number: 22
+next_project_number: 23
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-08-10. Generated from state.json dependency graph.*
+*Updated 2026-08-11. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 12,14,16,17,18,19,20 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 12,14,16,17,18,19,20,22 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 9,13 | 17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -29,12 +29,73 @@ next_project_number: 22
 ### Extensions
 
 19 [NOT STARTED] — Reloading extensions in a consuming repo emits roughly 60 lines o
+22 [NOT STARTED] — Silence and correct opencode-agents.json fragment validation spam
 
 ### Orchestration Concurrency
 
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
 
 ## Tasks
+
+### 22. Silence opencode fragment validation spam
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Silence and correct opencode-agents.json fragment validation spam on extension reload.
+
+SYMPTOM (observed live): reloading .claude/ via <leader>al from a project with an
+opencode.json.managed marker emits ~60 WARN notifications of the form "Extension 'X'
+opencode-agents.json validation failed: Agent 'Y' references missing file: Z. Skipping
+fragment." before "Resynced 12 extension(s)".
+
+EMITTER: M.generate_opencode_json in lua/neotex/plugins/ai/shared/extensions/merge.lua
+(vim.notify at ~line 994), gated on an opencode.json.managed marker check (~line 931), with
+per-fragment validation by M.validate_opencode_fragment (~line 887), which resolves each agent
+prompt's {file:PATH} against project_dir.
+
+THREE DISTINCT DEFECT CLASSES (measured against a live project, not assumed):
+
+(1) MISSING DEPLOY TARGETS -- 16 of 18 {file:} refs across python (2), present (5), nix (2),
+and filetypes (7) point at .opencode/agent/subagents/*-agent.md files that were never
+deployed. The .opencode/agent/subagents/ directory DOES exist and holds 15 agent files
+(core, lean, latex, typst, math, logic, physics, formal, meta-builder, planner,
+code-reviewer), but none for those four extensions. So this is a partial-deploy gap, not a
+wholly absent tree.
+
+(2) LEAN WRONG-PATH BUG (independent of any opencode policy decision) --
+agent-system/extensions/lean/opencode-agents.json is the ONLY fragment using a .claude/ path
+shape. It references .claude/extensions/lean/agents/lean-research-agent.md and
+.claude/extensions/lean/agents/lean-implementation-agent.md, neither of which exists anywhere,
+while the CORRECT files .opencode/agent/subagents/lean-research-agent.md and
+.opencode/agent/subagents/lean-implementation-agent.md ALREADY EXIST on disk. This is a plain
+mis-pathed reference, fixable on its own merits regardless of what is decided about opencode.
+
+(3) NOTIFICATION SPAM AND SIMULTANEOUS UNDER-REPORTING -- the same 5 messages repeat ~12 times
+because generation runs once per resynced extension rather than once per reload. Separately,
+validate_opencode_fragment iterates with pairs() and returns on the FIRST missing ref, so only
+one broken ref per extension is ever named, and WHICH one varies nondeterministically between
+runs (python alternates python-research/python-implementation; filetypes alternates
+scrape/filetypes-spreadsheet). The true breakage (18 refs) is therefore both over-announced in
+aggregate and under-reported per message.
+
+BINDING CONSTRAINT (from the user): .opencode/ is NOT currently used and may be excluded from
+scope, BUT the fix MUST NOT damage or delete .opencode/ infrastructure. The opencode-agents.json
+fragments, the validator function, the managed-marker gating, and the existing .opencode/ tree
+must all survive intact so .opencode/ can be refactored in the future. Prefer suppressing or
+gating the noise over removing the mechanism.
+
+ACCEPTANCE: a <leader>al reload from a project carrying an opencode.json.managed marker
+produces no validation-failure spam; the lean fragment's two refs resolve to real files;
+whatever gating approach is chosen is documented; and no opencode fragment, no validator
+function, and no .opencode/ file is deleted.
+
+SOURCE-STORE RULE (binding): edit lua/** for the Lua emitter and agent-system/extensions/** for
+the JSON fragments; never edit .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 21. Vault transition comment is wiped by TODO.md regeneration, corrupts frontmatter where it runs
 - **Status**: [COMPLETED]

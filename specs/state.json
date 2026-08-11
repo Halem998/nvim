@@ -1,7 +1,21 @@
 {
   "version": "1.1.0",
-  "next_project_number": 22,
+  "next_project_number": 23,
   "active_projects": [
+    {
+      "project_number": 22,
+      "project_name": "silence_opencode_fragment_validation_spam",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Silence and correct opencode-agents.json fragment validation spam on extension reload.\n\nSYMPTOM (observed live): reloading .claude/ via <leader>al from a project with an\nopencode.json.managed marker emits ~60 WARN notifications of the form \"Extension 'X'\nopencode-agents.json validation failed: Agent 'Y' references missing file: Z. Skipping\nfragment.\" before \"Resynced 12 extension(s)\".\n\nEMITTER: M.generate_opencode_json in lua/neotex/plugins/ai/shared/extensions/merge.lua\n(vim.notify at ~line 994), gated on an opencode.json.managed marker check (~line 931), with\nper-fragment validation by M.validate_opencode_fragment (~line 887), which resolves each agent\nprompt's {file:PATH} against project_dir.\n\nTHREE DISTINCT DEFECT CLASSES (measured against a live project, not assumed):\n\n(1) MISSING DEPLOY TARGETS -- 16 of 18 {file:} refs across python (2), present (5), nix (2),\nand filetypes (7) point at .opencode/agent/subagents/*-agent.md files that were never\ndeployed. The .opencode/agent/subagents/ directory DOES exist and holds 15 agent files\n(core, lean, latex, typst, math, logic, physics, formal, meta-builder, planner,\ncode-reviewer), but none for those four extensions. So this is a partial-deploy gap, not a\nwholly absent tree.\n\n(2) LEAN WRONG-PATH BUG (independent of any opencode policy decision) --\nagent-system/extensions/lean/opencode-agents.json is the ONLY fragment using a .claude/ path\nshape. It references .claude/extensions/lean/agents/lean-research-agent.md and\n.claude/extensions/lean/agents/lean-implementation-agent.md, neither of which exists anywhere,\nwhile the CORRECT files .opencode/agent/subagents/lean-research-agent.md and\n.opencode/agent/subagents/lean-implementation-agent.md ALREADY EXIST on disk. This is a plain\nmis-pathed reference, fixable on its own merits regardless of what is decided about opencode.\n\n(3) NOTIFICATION SPAM AND SIMULTANEOUS UNDER-REPORTING -- the same 5 messages repeat ~12 times\nbecause generation runs once per resynced extension rather than once per reload. Separately,\nvalidate_opencode_fragment iterates with pairs() and returns on the FIRST missing ref, so only\none broken ref per extension is ever named, and WHICH one varies nondeterministically between\nruns (python alternates python-research/python-implementation; filetypes alternates\nscrape/filetypes-spreadsheet). The true breakage (18 refs) is therefore both over-announced in\naggregate and under-reported per message.\n\nBINDING CONSTRAINT (from the user): .opencode/ is NOT currently used and may be excluded from\nscope, BUT the fix MUST NOT damage or delete .opencode/ infrastructure. The opencode-agents.json\nfragments, the validator function, the managed-marker gating, and the existing .opencode/ tree\nmust all survive intact so .opencode/ can be refactored in the future. Prefer suppressing or\ngating the noise over removing the mechanism.\n\nACCEPTANCE: a <leader>al reload from a project carrying an opencode.json.managed marker\nproduces no validation-failure spam; the lean fragment's two refs resolve to real files;\nwhatever gating approach is chosen is documented; and no opencode fragment, no validator\nfunction, and no .opencode/ file is deleted.\n\nSOURCE-STORE RULE (binding): edit lua/** for the Lua emitter and agent-system/extensions/** for\nthe JSON fragments; never edit .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "topic": "extensions",
+      "file_scope": [
+        "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+        "agent-system/extensions/lean/opencode-agents.json"
+      ],
+      "created": "2026-08-11T01:16:30Z",
+      "last_updated": "2026-08-11T01:16:30Z"
+    },
     {
       "project_number": 16,
       "project_name": "fix_command_register_acquire_session_id_parity",
