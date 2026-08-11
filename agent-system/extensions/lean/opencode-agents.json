@@ -3,7 +3,7 @@
     "lean-research": {
       "description": "Research Lean 4 theorem proving and Mathlib",
       "mode": "subagent",
-      "prompt": "{file:.claude/extensions/lean/agents/lean-research-agent.md}",
+      "prompt": "{file:.claude/agents/lean-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "lean-implementation": {
       "description": "Implement Lean 4 proofs and definitions",
       "mode": "subagent",
-      "prompt": "{file:.claude/extensions/lean/agents/lean-implementation-agent.md}",
+      "prompt": "{file:.claude/agents/lean-implementation-agent.md}",
       "tools": {
         "read": true,
         "write": true,

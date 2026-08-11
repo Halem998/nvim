@@ -222,22 +222,22 @@ equals the Phase 1 census count for those 11 files, and that a repo-wide
 
 ---
 
-### Phase 3: Correct the two non-uniform fragments [NOT STARTED]
+### Phase 3: Correct the two non-uniform fragments [COMPLETED]
 
 **Goal**: Fix `lean`'s wrong directory and `present`'s stale basename plus its mismatched agent
 key — the two problems a uniform directory swap cannot reach.
 
 **Tasks**:
-- [ ] `lean`: rewrite both `{file:.claude/extensions/lean/agents/<name>.md}` references to
+- [x] `lean`: rewrite both `{file:.claude/extensions/lean/agents/<name>.md}` references to
       `{file:.claude/agents/<name>.md}`, preserving the `lean-research-agent.md` and
       `lean-implementation-agent.md` basenames (both confirmed present in `lean`'s manifest and
-      in `agent-system/extensions/lean/agents/`).
-- [ ] `present`: change the `slides` entry's `{file:...}` basename from `slides-agent.md` to
-      `slides-research-agent.md`.
-- [ ] `present`: rename the agent key `slides` to `slides-research`, so the key matches its
+      in `agent-system/extensions/lean/agents/`). *(completed)*
+- [x] `present`: change the `slides` entry's `{file:...}` basename from `slides-agent.md` to
+      `slides-research-agent.md`. *(completed)*
+- [x] `present`: rename the agent key `slides` to `slides-research`, so the key matches its
       manifest-derived name and `verify.lua`'s key-parity check stops reporting it as
-      missing-from-manifest.
-- [ ] Confirm both files parse (`jq empty`).
+      missing-from-manifest. *(completed)*
+- [x] Confirm both files parse (`jq empty`). *(completed: both pass)*
 
 **Timing**: 0.5 hours
 

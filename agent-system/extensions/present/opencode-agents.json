@@ -60,10 +60,10 @@
         "websearch": true
       }
     },
-    "slides": {
+    "slides-research": {
       "description": "Synthesize research materials into academic presentations",
       "mode": "subagent",
-      "prompt": "{file:.claude/agents/slides-agent.md}",
+      "prompt": "{file:.claude/agents/slides-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
