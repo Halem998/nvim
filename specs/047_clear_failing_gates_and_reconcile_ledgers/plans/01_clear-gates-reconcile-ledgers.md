@@ -180,23 +180,32 @@ silently accepting them.
 
 ---
 
-### Phase 3: Register the missing context/standards index entry [NOT STARTED]
+### Phase 3: Register the missing context/standards index entry [COMPLETED]
 
 **Goal**: Add the one missing source index entry for
 `context/standards/task-reference-exemptions.md`, clearing the Rule S failure at its source.
 
 **Tasks**:
-- [ ] Confirm the file has no entry anywhere: search `index-entries.json` across all extensions for
-      `task-reference-exemptions`.
-- [ ] Confirm the file's actual line count with `wc -l` and use that value, not the report's.
-- [ ] Add the entry to `agent-system/extensions/core/index-entries.json`, modeled on the
+- [x] Confirm the file has no entry anywhere: search `index-entries.json` across all extensions for
+      `task-reference-exemptions`. *(completed: zero hits)*
+- [x] Confirm the file's actual line count with `wc -l` and use that value, not the report's.
+      *(completed: 103, matches report)*
+- [x] Add the entry to `agent-system/extensions/core/index-entries.json`, modeled on the
       neighboring `subdomain: "standards"` entries and on the `architecture/context-layers.md` /
       `patterns/context-discovery.md` shape (`on_demand: true`, empty `load_when`), since this doc
       is loaded via plain backticked reference rather than an eager import or a command hook.
-- [ ] Place the entry in the file's existing ordering convention for `standards/` entries.
-- [ ] Validate the file parses: `jq empty agent-system/extensions/core/index-entries.json`.
-- [ ] Re-run `generate-context-line-counts.sh --check` and confirm the new entry reports an exact
-      match (0 mismatch, 0 missing source).
+      *(completed)*
+- [x] Place the entry in the file's existing ordering convention for `standards/` entries.
+      *(completed: the first 16 `standards/` entries are alphabetical, but the 3 most recently
+      added — `git-staging-scope.md`, `orchestrator-runtime-files.md`,
+      `context-tier-semantics.md` — are appended out of alpha order at the end of the block,
+      establishing an append-at-end convention for new entries; the new entry follows that
+      convention, appended immediately after `context-tier-semantics.md`, the last entry in the
+      file)*
+- [x] Validate the file parses: `jq empty agent-system/extensions/core/index-entries.json`.
+      *(completed)*
+- [x] Re-run `generate-context-line-counts.sh --check` and confirm the new entry reports an exact
+      match (0 mismatch, 0 missing source). *(completed: 484 entries, 484 exact, 0 mismatch)*
 
 **Timing**: 0.4 hours
 

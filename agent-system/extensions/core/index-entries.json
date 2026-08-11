@@ -3086,6 +3086,29 @@
         "task_types": []
       },
       "on_demand": true
+    },
+    {
+      "path": "standards/task-reference-exemptions.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Full task-reference exemption taxonomy and enforcement narrative, companion to the always-eager no-task-references-in-deliverables.md rule",
+      "line_count": 103,
+      "keywords": [
+        "task-references",
+        "exemptions",
+        "deliverables",
+        "durable-anchors",
+        "task-ref-ok"
+      ],
+      "topics": [
+        "quality"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     }
   ]
 }

@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Register the missing context/standards index entry",
+  "started_at": "2026-08-11T22:15:00Z",
+  "last_updated": "2026-08-11T22:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm no existing entry, confirm wc -l line count (103), add entry modeled on architecture/context-layers.md shape appended at end of standards block, validate jq and re-check", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "hand-crafted single-hunk patch applied via git apply --cached (learned from phase 2 mistake)",
+      "result": "success",
+      "reason": "isolated staging to only the new-entry addition hunk, leaving task 28's stray mcp-server-ownership.md line_count edit untouched in the working tree; committed with a BARE 'git commit -m' (no trailing pathspec) to avoid the phase-2 lesson that 'git commit -- <pathspec>' auto-includes working-tree changes for that path regardless of index state"
+    }
+  ],
+  "handoff_count": 0
+}
