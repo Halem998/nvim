@@ -257,16 +257,16 @@ Phases within the same wave can execute in parallel (disjoint file sets: Phase 1
 
 ---
 
-### Phase 7: Full verification sweep [NOT STARTED]
+### Phase 7: Full verification sweep [COMPLETED]
 
 **Goal**: Close the task with the complete gate set over the source store, confirming the normalization is total and nothing regressed.
 
 **Tasks**:
-- [ ] Census grep: `grep -rnoE '@[A-Za-z0-9._/-]+\.md|@specs/[A-Za-z0-9._/-]+|@README\.md' agent-system/extensions/*/EXTENSION.md agent-system/extensions/*/merge-sources/*.md` — expect zero hits outside code fences/illustrative contexts; justify any survivor inline.
-- [ ] Frontmatter check: every rule under `agent-system/extensions/*/rules/*.md` either has `paths:` frontmatter or is one of the two recorded deliberate-eager files (`source-store-deploy-boundary.md`, plus the slimmed `no-task-references-in-deliverables.md` which remains eager by design).
-- [ ] Run the full lint set: `check-extension-docs.sh`, `check-task-references.sh`, `lint-agent-contracts.sh`, `lint-routing-wiring.sh`, and `bash -n` over any touched `.sh` files.
-- [ ] Predicted-surface estimate: sum `wc -c` of the post-edit eager set (parent chain + core merge source + loaded extensions' EXTENSION.md + the two deliberate-eager rules) and record the before/after numbers in the implementation summary — expected ~9.5k tokens against the audited ~17.5k baseline. This is a source-store prediction, not a live-tree measurement.
-- [ ] Confirm zero writes landed under `.claude/**` (git status shows only `agent-system/**`, `specs/**`, and `.memory/**` changes).
+- [x] Census grep: `grep -rnoE '@[A-Za-z0-9._/-]+\.md|@specs/[A-Za-z0-9._/-]+|@README\.md' agent-system/extensions/*/EXTENSION.md agent-system/extensions/*/merge-sources/*.md` — expect zero hits outside code fences/illustrative contexts; justify any survivor inline. *(completed: CLEAN, zero hits)*
+- [x] Frontmatter check: every rule under `agent-system/extensions/*/rules/*.md` either has `paths:` frontmatter or is one of the two recorded deliberate-eager files (`source-store-deploy-boundary.md`, plus the slimmed `no-task-references-in-deliverables.md` which remains eager by design). *(completed: exactly those two remain frontmatter-less)*
+- [x] Run the full lint set: `check-extension-docs.sh`, `check-task-references.sh`, `lint-agent-contracts.sh`, `lint-routing-wiring.sh`, and `bash -n` over any touched `.sh` files. *(completed: task-references/agent-contracts/routing-wiring exit 0, bash -n clean; check-extension-docs remaining FAILs are deployed-vs-source drift on Phase 3 edits — the intended pre-redeploy state per the no-redeploy Non-Goal — plus a pre-existing literature-index line_count mismatch from another session's in-flight work)*
+- [x] Predicted-surface estimate: sum `wc -c` of the post-edit eager set (parent chain + core merge source + loaded extensions' EXTENSION.md + the two deliberate-eager rules) and record the before/after numbers in the implementation summary — expected ~9.5k tokens against the audited ~17.5k baseline. This is a source-store prediction, not a live-tree measurement. *(completed: 41,434 B ~10.4k tokens predicted vs ~69.9 KB ~17.5k baseline, ~41% reduction)*
+- [x] Confirm zero writes landed under `.claude/**` (git status shows only `agent-system/**`, `specs/**`, and `.memory/**` changes). *(completed: no .claude/ paths in git status)*
 
 **Timing**: 30 minutes
 

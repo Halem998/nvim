@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 45,
+  "next_project_number": 42,
   "active_projects": [
+    {
+      "project_number": 41,
+      "project_name": "move_session_state_files_out_of_specs_root",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Move per-session state files cluttering the specs/ root (.orchestrator-multi-state-sess_* and .return-meta-*.json files) into a dot-prefixed directory, or handle otherwise as most appropriate",
+      "topic": "agent-system",
+      "created": "2026-08-11T16:17:10Z",
+      "last_updated": "2026-08-11T16:17:10Z"
+    },
     {
       "project_number": 36,
       "project_name": "audit_context_loading_efficiency",
@@ -901,7 +911,7 @@
       "status": "not_started",
       "task_type": "meta",
       "title": "Build eager-context measurement harness (measure-eager-context.sh)",
-      "topic": "context-loading",
+      "topic": "agent-system",
       "effort": "2-4 hours",
       "dependencies": [],
       "file_scope": [
