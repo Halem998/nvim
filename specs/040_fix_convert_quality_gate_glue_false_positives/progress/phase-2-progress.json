@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Add both fixture builders to generate-test-fixtures.py",
+  "started_at": "2026-08-11T21:50:00Z",
+  "last_updated": "2026-08-11T22:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add build_biblio_quantifier_pdf(out_path) using Phase 1 confirmed text", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py"]},
+    {"id": 2, "description": "Use TextWriter+helv for binder lines with docstring explaining why", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py"]},
+    {"id": 3, "description": "Add build_fused_word_pdf(out_path) using Phase 1 confirmed text", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py"]},
+    {"id": 4, "description": "Add main() dispatch branches for biblio-quantifier and fused-word", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py"]},
+    {"id": 5, "description": "Update module docstring Usage: block", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py"]},
+    {"id": 6, "description": "Regenerate both PDFs and re-measure raw glue count offline, confirm binder chars survive extraction", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "evidence": {
+    "ast_parse": "clean",
+    "git_diff_stat": "1 file changed, 110 insertions(+) -- generate-test-fixtures.py only, existing builders untouched",
+    "regenerated_biblio_quantifier": {"exit_code": 3, "raw_glue_count": 7, "matches_phase1": true},
+    "regenerated_fused_word": {"exit_code": 3, "raw_glue_count": 3, "matches_phase1": true},
+    "binder_chars_survive_extraction": {"∀x.P": true, "∃y.E": true, "∃x.Q": true, "Ph.D": true}
+  }
+}

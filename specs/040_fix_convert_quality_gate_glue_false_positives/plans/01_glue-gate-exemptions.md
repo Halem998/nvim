@@ -180,28 +180,32 @@ hypotheses, and the fixture text is tuned until the measurements hold, not the o
 
 ---
 
-### Phase 2: Add both fixture builders to generate-test-fixtures.py [NOT STARTED]
+### Phase 2: Add both fixture builders to generate-test-fixtures.py [COMPLETED]
 
 **Goal**: Promote the Phase 1-confirmed fixture text into two new builders in
 `generate-test-fixtures.py`, wired into `main()`'s dispatch, following the existing builders'
 shape and docstring convention.
 
 **Tasks**:
-- [ ] Add `build_biblio_quantifier_pdf(out_path)`: single-page, single-column body text plus a
+- [x] Add `build_biblio_quantifier_pdf(out_path)`: single-page, single-column body text plus a
       References block with the confirmed `Ph.D. thesis,` entries and a body block with the
-      confirmed binder notation
-- [ ] Use `fitz.TextWriter` + `fitz.Font("helv")` for every line carrying a binder character, and
+      confirmed binder notation *(completed)*
+- [x] Use `fitz.TextWriter` + `fitz.Font("helv")` for every line carrying a binder character, and
       record in that builder's docstring *why* (`insert_text` with a base-14 font silently
       substitutes `·` for `∀`; `china-ss` drops it) — mirroring how `build_two_column_pdf`'s
-      docstring records its own `insert_text`-was-wrong lesson
-- [ ] Add `build_fused_word_pdf(out_path)`: single-page, single-column body text with the confirmed
+      docstring records its own `insert_text`-was-wrong lesson *(completed)*
+- [x] Add `build_fused_word_pdf(out_path)`: single-page, single-column body text with the confirmed
       3+ fused sentence boundaries, containing no `Ph.D` and no `∀∃λ`; record in its docstring that
       this is the Goldblatt/Hodkinson/Venema fusion signature the check exists to catch
-- [ ] Add `elif kind == "biblio-quantifier":` and `elif kind == "fused-word":` branches to `main()`
-- [ ] Update the module docstring's `Usage:` block with the two new kinds
-- [ ] Regenerate both PDFs through the new builders into a scratch dir and re-measure the raw
+      *(completed)*
+- [x] Add `elif kind == "biblio-quantifier":` and `elif kind == "fused-word":` branches to `main()`
+      *(completed)*
+- [x] Update the module docstring's `Usage:` block with the two new kinds *(completed)*
+- [x] Regenerate both PDFs through the new builders into a scratch dir and re-measure the raw
       `[a-z]\.[A-Z]` count over the extracted markdown offline (independent of the converter's exit
       code), confirming the Phase 1 numbers still hold now that the text lives in the builders
+      *(completed: 7 and 3, exactly matching Phase 1; binder characters confirmed present verbatim
+      in the extracted text)*
 
 **Timing**: 0.75 hours
 

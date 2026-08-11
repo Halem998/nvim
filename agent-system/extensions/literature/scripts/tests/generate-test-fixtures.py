@@ -9,6 +9,8 @@ on (a hard prerequisite of this whole pipeline, so no new dependency here).
 Usage:
     generate-test-fixtures.py two-column <output.pdf>
     generate-test-fixtures.py bold-heading <output.pdf>
+    generate-test-fixtures.py biblio-quantifier <output.pdf>
+    generate-test-fixtures.py fused-word <output.pdf>
 """
 import sys
 
@@ -85,6 +87,110 @@ def build_bold_heading_pdf(out_path):
     doc.close()
 
 
+def build_biblio_quantifier_pdf(out_path):
+    """A single-page, single-column document mirroring the two real-corpus
+    false-positive cases for `sentence_boundary_glue_count`
+    (literature-convert.sh): a References block heavy with `Ph.D. thesis,`
+    entries (the Pym-O'Hearn-Yang 2004 case) and a body line carrying
+    single-letter-variable quantifier/binder notation (the Ishtiaq-O'Hearn
+    2001 case). This is the NEGATIVE fixture: it must PASS the quality gate
+    (exit 0) once the two-exemption strip-then-count fix is in place.
+
+    The binder line uses fitz.TextWriter + fitz.Font("helv") rather than
+    insert_text() with a base-14 font: insert_text() silently substitutes
+    U+00B7 (middle dot) for U+2200/U+2203 under 'helv', and drops them
+    entirely under the built-in CJK font 'china-ss' — neither failure
+    raises, so the binder characters would silently vanish from the
+    extracted text with insert_text(). TextWriter's round-trip through
+    get_text() was verified to preserve `∀x.P`, `∃y.E`, `∃x.Q` exactly.
+    Confirmed during the red-baseline spike (never against
+    ~/Projects/Literature/): raw `[a-z]\\.[A-Z]` count 7 (4 `Ph.D`, 3
+    binder-adjacent), exit 3 pre-fix with sentence-boundary-glue as the sole
+    gate reason, residue 0 after the two exemption `re.sub` passes."""
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)
+
+    y = 72
+    page.insert_text((72, y), "Assumptions and Notation", fontsize=14, fontname="hebo")
+    y += 28
+    body_lines = [
+        "This section fixes notation used throughout the development below.",
+        "We work in a first-order setting with the usual connectives and quantifiers.",
+        "Resource composition is written using the separating conjunction symbol.",
+        "The semantics is given relative to a Kripke resource monoid structure.",
+    ]
+    for line in body_lines:
+        page.insert_text((72, y), line, fontsize=10)
+        y += 16
+
+    y += 12
+    tw = fitz.TextWriter(page.rect)
+    tw.append(
+        (72, y),
+        "Formally we require ∀x.P and ∃y.E and ∃x.Q hold in the model.",
+        font=fitz.Font("helv"),
+        fontsize=11,
+    )
+    tw.write_text(page)
+    y += 30
+
+    page.insert_text((72, y), "References", fontsize=14, fontname="hebo")
+    y += 24
+    biblio = [
+        "A. Author. A Study of Resource Semantics. Ph.D. thesis, University of Nowhere, 2001.",
+        "B. Writer. Bunched Logics and Their Models. Ph.D. thesis, University of Elsewhere, 2003.",
+        "C. Scholar. Assertions for Pointer Programs. Ph.D. thesis, University of Someplace, 2005.",
+        "D. Researcher. Separation and Sharing. Ph.D. thesis, University of Anywhere, 2007.",
+    ]
+    for line in biblio:
+        page.insert_text((72, y), line, fontsize=10)
+        y += 16
+
+    doc.save(out_path)
+    doc.close()
+
+
+def build_fused_word_pdf(out_path):
+    """A single-page, single-column document carrying the genuine
+    Goldblatt/Hodkinson/Venema fused-sentence-boundary defect signature
+    (a lowercase letter, period, uppercase letter with no intervening
+    space — pymupdf4llm was observed to drop the space in this exact shape
+    around `<sup>`/`<sub>` markdown spans on that real corpus document).
+    Contains zero `Ph.D` and zero `∀∃λ` binder characters,
+    so it is structurally immune to the two new exemptions and stays
+    unaffected by the fix. This is the POSITIVE fixture: it must STILL FAIL
+    the quality gate (exit 3, output diverted to `rejected_path`) after the
+    fix lands, proving the check's real purpose survives the narrowing.
+
+    Each fused-boundary line is deliberately kept under ~70 characters:
+    insert_text() does not wrap, and a single line wider than the page's
+    usable width is silently truncated mid-word rather than wrapped or
+    rejected — discovered during the red-baseline spike when a longer line
+    clipped the intended fusion boundary entirely. Confirmed during that
+    spike (never against ~/Projects/Literature/): raw count 3 (exactly at
+    threshold), exit 3 with sentence-boundary-glue as the sole gate reason,
+    residue still 3 after the exemption strip (unaffected, as intended)."""
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)
+
+    y = 72
+    page.insert_text((72, y), "Introduction", fontsize=14, fontname="hebo")
+    y += 28
+    lines = [
+        "We begin by recalling the basic definitions used below in this note.",
+        "The proof proceeds by induction.The base case is trivial to check.",
+        "Another sentence fuses here.A third fusion occurs at this point.",
+        "This step follows directly.The next line completes the argument.",
+        "This concludes the informal overview of the argument given above.",
+    ]
+    for line in lines:
+        page.insert_text((72, y), line, fontsize=10)
+        y += 16
+
+    doc.save(out_path)
+    doc.close()
+
+
 def main():
     if len(sys.argv) != 3:
         print(__doc__, file=sys.stderr)
@@ -94,6 +200,10 @@ def main():
         build_two_column_pdf(out_path)
     elif kind == "bold-heading":
         build_bold_heading_pdf(out_path)
+    elif kind == "biblio-quantifier":
+        build_biblio_quantifier_pdf(out_path)
+    elif kind == "fused-word":
+        build_fused_word_pdf(out_path)
     else:
         print(f"Unknown fixture kind: {kind}", file=sys.stderr)
         sys.exit(1)
