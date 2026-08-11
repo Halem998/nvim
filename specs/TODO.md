@@ -1,5 +1,5 @@
 ---
-next_project_number: 51
+next_project_number: 52
 ---
 
 # TODO
@@ -11,16 +11,15 @@ next_project_number: 51
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,33,34,38,41,41,42,43,44,45,46,47,48,49,50 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
-| 2 | 9,13,29,35,39 | 17,18,22,33,38 | agent-system, literature, orchestration-concurrency |
-| 3 | 30,37 | 29,35 | agent-system, orchestration-concurrency |
-| 4 | 32 | 28,30,31 | agent-system |
+| 1 | 16,17,18,20,22,27,28,31,33,34,38,41,43,45,46,47,51 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,13,14,29,35,39,42,48 | 16,17,18,22,33,38,41,47 | agent-system, commit-scoping-concurrency, literature, ... |
+| 3 | 30,37,49,50 | 29,33,35,41,48 | agent-system, orchestration-concurrency, context-loading |
+| 4 | 32,44 | 28,30,31,49 | agent-system, context-loading |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
   └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
@@ -34,10 +33,12 @@ next_project_number: 51
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
 47 [NOT STARTED] — Clear the two failing verification gates and reconcile the defect
-50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
+51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
+14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
+50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 
 ### Commit Scoping Concurrency
 
@@ -66,6 +67,7 @@ next_project_number: 51
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 49 [NOT STARTED] — Cut the measured context cost of the highest-traffic command path
+  └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/ (see above)
 
 ### Email
 
@@ -73,11 +75,21 @@ next_project_number: 51
 
 ## Tasks
 
-### 50. Restore verification trust and close hygiene residue
+### 51. Move session state files out of specs root
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+
+**Description**: Move per-session state files cluttering the specs/ root (.orchestrator-multi-state-sess_* and .return-meta-*.json files) into a dot-prefixed directory, or handle otherwise as most appropriate
+
+---
+
+### 50. Restore verification trust and close hygiene residue
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 47, Task 48
 
 **Description**: Make the verification surface trustworthy, and close the doc-truth and duplication residue. Grouped because each item individually is too small to dispatch, and all of them undermine confidence in the same gate suite.
 
@@ -106,7 +118,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: context-loading
-- **Dependencies**: None
+- **Dependencies**: Task 33, Task 41, Task 48
 
 **Description**: Cut the measured context cost of the highest-traffic command paths. Two independent levers, both remediation -- the measurement and gating work is owned by other tasks and must not be duplicated here.
 
@@ -150,7 +162,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: commit-scoping-concurrency
-- **Dependencies**: None
+- **Dependencies**: Task 16, Task 47
 
 **Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
 
@@ -225,7 +237,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: context-loading
-- **Dependencies**: None
+- **Dependencies**: Task 49
 
 **Description**: LOWER PRIORITY (per-invocation cost, not per-session). `commands/task.md` measures 37,465 bytes (~9.4k tokens) loaded on every `/task` invocation, plus ~2.8k tokens of imports it pulls in — the largest single per-invocation context contributor found by the context-loading audit. Slim the command body by moving reference material (long option tables, worked examples, edge-case narratives) into lazily-loaded context files under the core extension's context tree, keeping the command body to the decision logic and dispatch instructions an invocation actually needs. Preserve behavior: every mode (--recover, --expand, --sync, --abandon, multi-task creation) must remain fully specified — either inline or via an explicit pointer the executing agent is instructed to follow. Measure before/after bytes and record them in the implementation summary. CONSTRAINTS: all edits target agent-system/extensions/core/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**; do not change command behavior, only where its prose lives.
 
@@ -247,19 +259,9 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: context-loading
-- **Dependencies**: None
+- **Dependencies**: Task 41
 
 **Description**: Add two context gates to the deploy verification pipeline. (a) Broken-@-ref lint: every `@path` token appearing in generated CLAUDE.md (and in the merge sources that produce it) must either RESOLVE relative to its containing file's directory or be explicitly marked citation-only; a ref that resolves to a nonexistent path is silently inert today (no error, no load) and must fail the gate loudly. The desired end-state for this repo is zero `@`-refs in merge sources (downward normalization to plain backticked paths is already applied), so the lint primarily guards against regression. (b) Warning-first context-budget gate: compute the predicted eager surface (reuse or invoke the measurement harness if it exists by then) and WARN when it exceeds a configured budget; escalate to a hard failure only after the warning tier has proven stable. Consider a per-extension `merge_targets.claudemd.max_bytes` manifest field — NOTE THE SEQUENCING DEPENDENCY: manifest-schema changes must coordinate with the in-flight manifest-schema work (correct-mcp-ownership / extension-manifest efforts); if that work is unsettled when this task starts, implement the budget with an external config and defer the manifest field. CONSTRAINTS: gates must read the source store and the freshly generated output, never trust the possibly-stale deployed .claude/** tree; volatile files (specs/TODO.md, state.json, errors.json) appearing in the eager set is always a FAILURE, not a warning; all edits target agent-system/extensions/**; no task-number references in deliverables outside specs/**.
-
----
-
-### 41. Move session state files out of specs root
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: agent-system
-- **Dependencies**: None
-
-**Description**: Move per-session state files cluttering the specs/ root (.orchestrator-multi-state-sess_* and .return-meta-*.json files) into a dot-prefixed directory, or handle otherwise as most appropriate
 
 ---
 
@@ -1276,7 +1278,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 33
 
 **Description**: Two dispatches in a single batch fanned out to phase sub-agents and terminated before writing a terminal status, costing a recovery cycle each. Recorded as err_1786344051474_RcIhk6.
 
