@@ -1,42 +1,19 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 47,
+  "session_id": "sess_1786484451_3e8bc1_47",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/047_clear_failing_gates_and_reconcile_ledgers/reports/01_clear-failing-gates-and-reconcile-ledgers.md",
-      "summary": "Verifies current state of all three bookkeeping items: duplicate project_number already fixed, doc-lint gate needs 2 line_count corrections + 1 missing index entry (literature mismatch already fixed), errors.json has 3 confirmed-fixable entries (plus 1 unconfirmed candidate) and reviews/state.json is missing 2 of 6 on-disk reports with extracted registration data."
+      "type": "plan",
+      "path": "specs/047_clear_failing_gates_and_reconcile_ledgers/plans/01_clear-gates-reconcile-ledgers.md",
+      "summary": "8-phase plan clearing the doc-lint gate (line_count fixes, missing index entry, mandatory redeploy) and reconciling specs/errors.json and specs/reviews/state.json, with state.json item verification-only"
     }
   ],
-  "next_steps": "Run /plan 47 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1786484451_3e8bc1_47",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo, verify-deploy.sh gate 3 / check-extension-docs.sh Rule S checks the DEPLOYED .claude/context/index.json for orphan markdown files, not the source-store index-entries.json directly. Editing only agent-system/extensions/*/index-entries.json (adding an entry or fixing a line_count) will not clear the gate until a redeploy/regenerate step (deploy-headless.sh or the picker's [Regenerate]) propagates the source-store index-entries.json into the deployed .claude/context/index.json. Any task that fixes an index-entries.json mismatch or adds a missing entry must include a redeploy step before re-checking verify-deploy.sh.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/047_clear_failing_gates_and_reconcile_ledgers/reports/01_clear-failing-gates-and-reconcile-ledgers.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "check-extension-docs", "Rule S", "index-entries.json", "deploy", "regenerate"]
-    },
-    {
-      "content": "errors-append.sh already has an 'update' subcommand (errors-append.sh update --id ERR_ID --fix-status fixed --fixed-date ISO8601 --fix-task N) for closing specs/errors.json ledger entries, but as of this task it has zero callers anywhere in the codebase -- the closure tool exists but nothing (no postflight, no skill) ever invokes it, which is why the ledger only grows. A cheap partial automation would be a plan/task-declared 'resolves_error_ids' field that postflight reads to call errors-append.sh update automatically when the declaring phase's own verification passes; full automatic semantic matching (inferring which entry a change fixes) is not cheap and requires human/agent judgment.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/047_clear_failing_gates_and_reconcile_ledgers/reports/01_clear-failing-gates-and-reconcile-ledgers.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["errors.json", "errors-append.sh", "ledger closure", "postflight automation", "fix_status"]
-    },
-    {
-      "content": "specs/state.json task numbers get renumbered by vault-reset operations (see .claude/rules/state-management.md), which means historical references to task numbers inside specs/errors.json messages and specs/reviews/*.md review reports (e.g. 'spawned task 1007') can go stale/unresolvable against current active_projects without that being a defect -- these files are specs/** artifacts explicitly exempted from the no-task-references rule, and the established precedent (existing reviews/state.json entries citing task numbers like 402/606/817-819 that also don't resolve to current tasks) is to keep the historical number as originally recorded rather than renumber it retroactively.",
-      "category": "PATTERN",
-      "source_artifact": "specs/047_clear_failing_gates_and_reconcile_ledgers/reports/01_clear-failing-gates-and-reconcile-ledgers.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["vault-reset", "task renumbering", "reviews state.json", "errors.json", "historical task numbers"]
-    }
-  ],
-  "modified_files": []
+  "phase_count": 8,
+  "estimated_hours": 3,
+  "dependency_waves": [[1, 2, 5, 7], [3, 6], [4], [8]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 47 to execute the plan"
 }

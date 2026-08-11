@@ -32,7 +32,7 @@ next_project_number: 52
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
-47 [RESEARCHED] — Clear the two failing verification gates and reconcile the defect
+47 [PLANNED] — Clear the two failing verification gates and reconcile the defect
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
@@ -187,11 +187,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 47. Clear failing gates and reconcile ledgers
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [047_clear_failing_gates_and_reconcile_ledgers/reports/01_clear-failing-gates-and-reconcile-ledgers.md]
+- **Plan**: [047_clear_failing_gates_and_reconcile_ledgers/plans/01_clear-gates-reconcile-ledgers.md]
 
 **Description**: Clear the two failing verification gates and reconcile the defect/review ledgers against reality. All three items are bookkeeping the validators have already caught; none require design work.
 
