@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Correct the two core line_count mismatches",
+  "started_at": "2026-08-11T22:01:00Z",
+  "last_updated": "2026-08-11T22:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run --check, confirm exactly 2 mismatches matching Scope Hypothesis, run --write, re-check for 0 mismatches", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "git-commit-scoped.sh whole-file staging",
+      "result": "rejected",
+      "reason": "working tree also carries an unrelated pre-existing uncommitted stray edit to the same file belonging to task 28 (patterns/mcp-server-ownership.md line_count 183->298, currently [implementing]); whole-file staging would misattribute task 28's work into this task's commit"
+    },
+    {
+      "approach": "crafted 2-hunk patch applied via git apply --cached",
+      "result": "success",
+      "reason": "isolated staging to exactly the 2 in-scope line_count corrections, leaving task 28's stray edit untouched in the working tree"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -133,19 +133,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Correct the two core line_count mismatches [NOT STARTED]
+### Phase 2: Correct the two core line_count mismatches [COMPLETED]
 
 **Goal**: Bring `agent-system/extensions/core/index-entries.json` `line_count` values back in sync
 with the files on disk.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --check` and capture the finding
-      list before any edit.
-- [ ] Confirm the mismatch set is exactly the two core entries named in the Scope Hypothesis.
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --write`.
-- [ ] Re-run `--check` and confirm zero numeric mismatches across all extensions.
-- [ ] Inspect `git diff agent-system/extensions/core/index-entries.json` and confirm the diff
-      touches only `line_count` values.
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --check` and capture the finding
+      list before any edit. *(completed)*
+- [x] Confirm the mismatch set is exactly the two core entries named in the Scope Hypothesis.
+      *(completed: exact match)*
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --write`. *(completed: 2 changed)*
+- [x] Re-run `--check` and confirm zero numeric mismatches across all extensions. *(completed: 483
+      exact, 0 mismatch)*
+- [x] Inspect `git diff agent-system/extensions/core/index-entries.json` and confirm the diff
+      touches only `line_count` values. *(completed: the working tree also carried an unrelated
+      pre-existing uncommitted stray edit to a third entry, `patterns/mcp-server-ownership.md`
+      (183 -> 298), belonging to the separate in-flight task rewriting that document — that
+      task's status is `[implementing]` in state.json. That change is also a `line_count`-only
+      value, verified correct against `wc -l`, but it is out of this task's scope and was staged
+      and committed separately from this task's two entries via a hand-crafted 2-hunk patch
+      applied with `git apply --cached`, deliberately bypassing `git-commit-scoped.sh`'s
+      whole-file `git add` because it cannot stage at hunk granularity — see the Phase 2 progress
+      file's `approaches_tried` for the full reasoning. The stray edit remains uncommitted in the
+      working tree, untouched by this task.)*
 
 **Timing**: 0.3 hours
 

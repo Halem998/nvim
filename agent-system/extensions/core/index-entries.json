@@ -26,7 +26,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "Context layer architecture overview",
-      "line_count": 134,
+      "line_count": 194,
       "keywords": [
         "context",
         "layers",
@@ -901,7 +901,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context discovery query patterns",
-      "line_count": 375,
+      "line_count": 379,
       "keywords": [
         "patterns",
         "context",
@@ -1084,7 +1084,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Registration vs. permission ownership boundary for MCP servers",
-      "line_count": 183,
+      "line_count": 298,
       "keywords": [
         "mcp",
         "registration",
