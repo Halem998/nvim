@@ -1,5 +1,5 @@
 ---
-next_project_number: 23
+next_project_number: 27
 ---
 
 # TODO
@@ -11,8 +11,9 @@ next_project_number: 23
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,19,20,22 | -- | agent-system, extensions, orchestration-concurrency |
-| 2 | 9,13 | 17,18 | agent-system |
+| 1 | 14,16,17,18,19,20,22,23 | -- | agent-system, extensions, orchestration-concurrency, ... |
+| 2 | 9,13,24 | 17,18,23 | agent-system, mcp-integration |
+| 3 | 25,26 | 24 | mcp-integration |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -34,7 +35,119 @@ next_project_number: 23
 
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
 
+### Mcp Integration
+
+23 [NOT STARTED] — Define and document the ownership boundary between the four compe
+  └─ 24 [NOT STARTED] — Add a deliberately scoped Playwright MCP permission allowlist so 
+    └─ 25 [NOT STARTED] — Activate the already-designed but parked Playwright MCP integrati
+    └─ 26 [NOT STARTED] — Migrate slidev deck screenshot verification from the standalone n
+
 ## Tasks
+
+### 26. Migrate slidev deck verification from standalone npm Playwright script to MCP server
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: mcp-integration
+- **Dependencies**: Task 24
+
+**Description**: Migrate slidev deck screenshot verification from the standalone npm Playwright script to the live Playwright MCP server, removing the duplicate Playwright install path.
+
+PROBLEM: the present and founder extensions carry their own Playwright usage that predates the MCP server and duplicates its capability. agent-system/extensions/present/context/project/present/talk/templates/playwright-verify.mjs is a standalone Node script requiring a separate npm Playwright install and its own browser binaries. Related references appear in present/context/project/present/talk/patterns/slidev-pitfalls.md, present/context/project/present/domain/talk-modes-and-library.md, present/context/project/present/talk/templates/slidev-project/README.md, present/index-entries.json, present/context/project/present/talk/index.json, founder/agents/deck-builder-agent.md, and founder/context/project/founder/patterns/slidev-deck-template.md.
+
+WORK: replace the standalone-script verification path with the MCP server (browser_navigate plus browser_snapshot / browser_take_screenshot), so the system has ONE browser automation mechanism rather than two independent Playwright installs. Update the referencing context files, agent docs, and index entries consistently so nothing points at a removed path.
+
+CAUTION -- VERIFY PARITY BEFORE DELETING: confirm the .mjs script's full capability is genuinely covered by the MCP tool set before removing it. A standalone script can do things a permissioned MCP surface cannot: custom in-page evaluation loops, batch or offline runs with no agent in the loop, and deterministic CI invocation. Note specifically that browser_evaluate and browser_run_code_unsafe are deliberately NOT allowlisted and will prompt, so any verification logic depending on in-page evaluation may not migrate cleanly. If full parity is not achievable, DOCUMENT THE RESIDUAL GAP and keep the script for that narrow case rather than forcing the migration and silently losing coverage.
+
+DEPENDS ON the permission work: this migration is only viable once the safe browser tools run without prompting.
+
+ACCEPTANCE: deck screenshot verification runs through the MCP server; the duplicate npm Playwright install path is removed, or its continued existence is explicitly justified in writing; all referencing docs and index entries are consistent with the outcome.
+
+SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/present/** and /home/benjamin/.config/nvim/agent-system/extensions/founder/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 25. Activate parked Playwright MCP integration in web extension and reconcile drifted tool list
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: mcp-integration
+- **Dependencies**: Task 23, Task 24
+
+**Description**: Activate the already-designed but parked Playwright MCP integration in the web extension, and reconcile its drifted tool list against the live server.
+
+THIS IS AN ACTIVATION TASK, NOT A GREENFIELD BUILD. A complete design already exists in agent-system/extensions/web/agents/web-implementation-agent.md (approximately lines 50-63) under the heading '**Playwright MCP** (deferred -- not yet active)' with '**Status**: Deferred pending browser binary installation'. That precondition is now satisfied: the server is registered at user scope, connected and healthy, exposing 24 browser_* tools.
+
+DO NOT REMOVE THE web-research-agent BLOCK. agent-system/extensions/web/agents/web-research-agent.md line 4 carries 'disallowedTools: mcp__playwright__*'. This is DELIBERATE ROLE-SCOPING, not an obstacle to clear: web-implementation-agent symmetrically blocks mcp__context7__* instead. Each agent blocks the MCP server that is not its job -- research reads docs, implementation drives browsers. Leave BOTH blocks in place.
+
+WORK:
+(1) Flip the deferred status to active in web-implementation-agent.md.
+(2) PRESERVE the usage conditions already written there: prefer accessibility snapshots over screenshots (lower token cost, more useful); do NOT use Playwright for tasks verifiable with 'pnpm build' alone; only use when the implementation plan includes visual verification steps.
+(3) RECONCILE THE DRIFTED SPEC. The parked section lists browser_verify_text_visible, which does NOT exist among the server's actual tools. Map the deferred spec's INTENT onto real tools -- for example, text-visibility assertions map onto browser_find and/or browser_wait_for. The real 24-tool set is: browser_navigate, browser_navigate_back, browser_snapshot, browser_take_screenshot, browser_click, browser_type, browser_fill_form, browser_find, browser_hover, browser_drag, browser_drop, browser_select_option, browser_press_key, browser_wait_for, browser_resize, browser_tabs, browser_close, browser_handle_dialog, browser_console_messages, browser_network_request, browser_network_requests, browser_evaluate, browser_file_upload, browser_run_code_unsafe.
+(4) Teach WHEN to drive a browser, not merely how: screenshot and visual verification of a running app, console and network inspection for debugging, end-to-end UI checks. Add a context file under agent-system/extensions/web/context/ and register it in web/index-entries.json if a new file is created.
+(5) Keep guidance consistent with the permission split from the prerequisite task: guidance must NOT instruct agents to rely on tools that still prompt (browser_run_code_unsafe, browser_evaluate, browser_file_upload), since that would reintroduce the autonomous-run stall.
+
+ACCEPTANCE: web-implementation-agent documents an active, accurate Playwright MCP capability naming only tools that actually exist; web-research-agent's disallowedTools line is unchanged; no guidance depends on a tool that still prompts.
+
+SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/web/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 24. Scope Playwright MCP permission allowlist to safe browser tools, solving install-once propagation
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: mcp-integration
+- **Dependencies**: Task 23
+
+**Description**: Add a deliberately scoped Playwright MCP permission allowlist so autonomous runs stop stalling, without blanket-allowing arbitrary execution.
+
+PROBLEM: mcp__playwright__* is absent from every settings allowlist while mcp__lean-lsp__* is present, so every browser call raises a permission prompt. Under /orchestrate there is no human available to answer, so autonomous runs stall.
+
+DESIGN (fixed by user decision, not open for redesign): allowlist ONLY the safe navigation and inspection tools -- browser_navigate, browser_snapshot, browser_take_screenshot, browser_console_messages, browser_network_requests, browser_click, browser_type, browser_find, browser_wait_for. Deliberately OMIT browser_run_code_unsafe, browser_evaluate, and browser_file_upload: these are arbitrary-execution/upload tools and MUST continue to prompt.
+
+GRANULARITY IS ALREADY PROVEN EXPRESSIBLE -- DO NOT RE-RESEARCH THIS. nix/settings-fragment.json allowlists mcp__nixos__nix and mcp__nixos__nix_versions individually; lean/settings-fragment.json enumerates 21 individual mcp__lean-lsp__lean_* entries; founder's fragment likewise enumerates individual tool names. Per-tool MCP permission entries work.
+
+'KEEP PROMPTING' NEEDS NO ask/deny RULE: omission from permissions.allow already yields a prompt. The existing permissions.deny list is Bash-only (rm -rf /, rm -rf ~, sudo *, chmod 777 *) and there is no ask key in use anywhere. Do not invent one.
+
+THE REAL HAZARD -- INSTALL-ONCE PROPAGATION: core/root-files/settings.json deploys to .claude/settings.json under install-once semantics (loader.lua's copy_category('root_files'), gated by CATEGORY_DESCRIPTORS.root_files.install_once; manager.unload also excludes these files via loader_mod.INSTALL_ONCE_ROOT_FILES). Once a project has its own .claude/settings.json, reloading or re-loading the providing extension NEVER overwrites it. Therefore simply editing core/root-files/settings.json will NOT reach any existing project. This task must establish how the new grants actually propagate -- for example via an extension settings-fragment.json (which targets .claude/settings.local.json and is not install-once), via user-scope settings, or via a documented migration step -- consistent with the ownership boundary decided in the prerequisite task.
+
+ACCEPTANCE: in a project that ALREADY has a .claude/settings.json, the 9 safe browser tools run without prompting, and browser_run_code_unsafe, browser_evaluate, and browser_file_upload still prompt. Verify against a pre-existing settings file, not a freshly generated one -- a fresh project would mask the install-once defect.
+
+SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 23. Document MCP registration vs permission ownership boundary; reconcile lean-lsp three-way duplication
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: mcp-integration
+- **Dependencies**: None
+
+**Description**: Define and document the ownership boundary between the four competing MCP registration/permission mechanisms, and reconcile the existing lean-lsp three-way duplication.
+
+PROBLEM: the agent system now has FOUR mechanisms that can register an MCP server or grant its permissions, with no documented boundary between them:
+(1) A home-manager activation block writing to ~/.claude.json (user scope). This is how the playwright MCP server was registered; it is connected and healthy, exposing 24 browser_* tools.
+(2) Per-extension settings-fragment.json, deployed via the manifest's settings section ({"source": "settings-fragment.json", "target": ".claude/settings.local.json"}). Used by nix (mcp-nixos plus 2 enumerated tool permissions) and lean (lean-lsp plus 21 enumerated tool permissions).
+(3) core/root-files/settings.json, deployed to .claude/settings.json as INSTALL-ONCE. Currently carries a mcp__lean-lsp__* WILDCARD in permissions.allow.
+(4) core/scripts/setup-lean-mcp.sh, which registers lean-lsp directly into user scope ~/.claude.json.
+
+EVIDENCE THE PROBLEM IS REAL AND ALREADY BITING: lean-lsp is currently registered or permitted by THREE of these simultaneously (mechanisms 2, 3, and 4), and mechanisms 2 and 3 disagree about form -- the extension fragment enumerates 21 individual tools while core grants a blanket wildcard. This is precisely the duplication the playwright integration must avoid repeating.
+
+KEY ARCHITECTURAL CONSTRAINT (already recorded in core/scripts/setup-lean-mcp.sh's own header): custom subagents CANNOT access project-scoped MCP servers (.mcp.json); user scope (~/.claude.json) is required for subagent access. Since agents are the consumers of browser tools, this argues that REGISTRATION belongs in user scope (home-manager or a setup script), while PERMISSION GRANTS must live in the settings files the host app reads. Confirm or refute this split rather than assuming it.
+
+DELIVERABLE: a decision recorded in the source store stating which mechanism owns MCP server REGISTRATION, which owns PERMISSION grants, why, and how the two compose. Update permission-configuration.md and/or extension-system.md, adding a context pattern if warranted. Reconcile the lean-lsp wildcard-vs-enumeration split, or explicitly justify keeping it.
+
+ACCEPTANCE: a future extension author can read one document and know where to declare a new MCP server and its permissions without creating a fifth duplicate path.
+
+SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 22. Silence opencode fragment validation spam
 - **Status**: [NOT STARTED]
