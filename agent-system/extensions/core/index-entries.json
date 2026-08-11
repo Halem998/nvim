@@ -1080,6 +1080,28 @@
       }
     },
     {
+      "path": "patterns/mcp-server-ownership.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Registration vs. permission ownership boundary for MCP servers",
+      "line_count": 160,
+      "keywords": [
+        "mcp",
+        "registration",
+        "permissions",
+        "settings",
+        "patterns"
+      ],
+      "topics": [
+        "mcp-ownership"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
       "path": "patterns/metadata-file-return.md",
       "domain": "core",
       "subdomain": "patterns",

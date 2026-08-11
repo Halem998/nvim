@@ -1,0 +1,12 @@
+{
+  "phase": 2,
+  "phase_name": "Register the new context file in core's index",
+  "started_at": "2026-08-11T05:56:00Z",
+  "last_updated": "2026-08-11T05:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add mcp-server-ownership.md entry to core index-entries.json with correct schema fields and line_count", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -188,25 +188,27 @@ single document that answers "where do I declare a new MCP server and its permis
 
 ---
 
-### Phase 2: Register the new context file in core's index [NOT STARTED]
+### Phase 2: Register the new context file in core's index [COMPLETED]
 
 **Goal**: Add an `index-entries.json` entry for the new pattern file so it is discoverable by the
 context-discovery machinery and passes the index-truth and schema-conformance doc-lint gates.
 
 **Tasks**:
-- [ ] Add an entry to `agent-system/extensions/core/index-entries.json` for
+- [x] Add an entry to `agent-system/extensions/core/index-entries.json` for
       `patterns/mcp-server-ownership.md`, copying the field shape of the adjacent
       `patterns/mcp-tool-recovery.md` entry: `path`, `domain` (`core`), `subdomain` (`patterns`),
       `summary`, `line_count`, `keywords`, `topics`, `load_when` (`agents`, `commands`,
-      `task_types`).
-- [ ] Use only the schema's real field set -- no `description`, no `tags`, and no `load_when` keys
+      `task_types`). *(completed)*
+- [x] Use only the schema's real field set -- no `description`, no `tags`, and no `load_when` keys
       beyond `agents`/`commands`/`task_types`; the schema-conformance gate rejects those.
-- [ ] Choose keywords that a future author would actually query on (for example `mcp`,
+      *(completed)*
+- [x] Choose keywords that a future author would actually query on (for example `mcp`,
       `registration`, `permissions`, `settings`, `patterns`) and place the entry adjacent to the
-      existing `mcp-tool-recovery.md` entry for readability.
-- [ ] Set `line_count` from `wc -l` of the file as written in Phase 1, or run
+      existing `mcp-tool-recovery.md` entry for readability. *(completed)*
+- [x] Set `line_count` from `wc -l` of the file as written in Phase 1, or run
       `bash .claude/scripts/generate-context-line-counts.sh --write` and confirm it fills the value
-      rather than hand-guessing it.
+      rather than hand-guessing it. *(completed: line_count 160 confirmed by --check with 0
+      mismatches under core)*
 
 **Timing**: 20 minutes
 
