@@ -77,14 +77,21 @@ without a prompt) never substitute for one another.
 **Settings files grant; they never register.** An `mcpServers` key inside
 `settings.json`/`settings.local.json` -- and therefore inside an extension's
 `settings-fragment.json`, which merges into one of those two files -- has no effect. Claude Code
-never reads those files for server definitions; only user-scope `~/.claude.json` registers a
-server (written by a host-level activation block or a `core/scripts/` setup script such as
-`setup-lean-mcp.sh`).
+never reads those files for server definitions. Registration happens on exactly two surfaces:
+user-scope `~/.claude.json` (written by a host-level/home-manager activation block or a
+`core/scripts/` setup script such as `setup-lean-mcp.sh`) and project-scoped `.mcp.json` at the
+project root (for extension-owned, repo-local servers).
 
-**Scoping an `mcp__{server}__*` grant** follows the same domain boundary as any other permission:
-a domain-specific grant (tools only one extension's agents use) belongs in that extension's own
-`settings-fragment.json` `permissions.allow`; core's `root-files/settings.json` is reserved for
-grants that apply regardless of which extensions are loaded.
+**Scoping an `mcp__{server}__*` grant** follows the same domain boundary as any other permission,
+with one governing rule on top: **grant permissions at the same scope where the server is
+registered.** User-scope registration -> grant in `~/.claude/settings.json`; project-scope
+registration -> grant in the owning extension's own `settings-fragment.json`
+`permissions.allow`. Getting this backwards is the recurring failure mode: a project-scope grant
+only helps projects where that specific extension is loaded, so every other project's calls fall
+back to a prompt -- and DENY outright in a headless run. See the "Grant permissions at the same
+scope where the server is registered" subsection in
+[MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full treatment,
+including the `lean-lsp`/`playwright` worked example pair.
 
 **Prefer a wildcard over an enumeration** (`"mcp__{server}__*"` rather than one entry per tool
 name). An enumeration silently under-grants as the server's tool surface grows -- a missed update
@@ -95,8 +102,9 @@ required -- see the "Carve-out: safe/unsafe tool splits require enumeration" sub
 [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the worked example.
 
 See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full
-registration procedure, the evidence behind "settings files never register," and the known gaps
-across other extensions still carrying a dead `mcpServers` block.
+registration procedure, the evidence behind "settings files never register," the workspace-trust
+caveat, the session-start snapshot trap, and the one remaining extension (`memory`) still
+carrying a dead `mcpServers` block.
 
 ---
 

@@ -1,0 +1,13 @@
+{
+  "phase": 6,
+  "phase_name": "Sync permission-configuration.md's MCP section",
+  "started_at": "2026-08-11T15:31:00Z",
+  "last_updated": "2026-08-11T15:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Correct registration-surface sentence, add same-scope grant rule summary, reword stale closing cross-reference", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/permission-configuration.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

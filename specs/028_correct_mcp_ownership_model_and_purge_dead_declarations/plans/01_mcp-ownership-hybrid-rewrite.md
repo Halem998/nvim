@@ -399,26 +399,30 @@ path before writing the remaining-gap sentence. If more survive, the prose must 
 
 ---
 
-### Phase 6: Sync permission-configuration.md's MCP section [NOT STARTED]
+### Phase 6: Sync permission-configuration.md's MCP section [COMPLETED]
 
 **Goal**: Bring the guide's "MCP Server Registration and Permissions" section into agreement with
 the rewritten ownership doc, so the two do not contradict each other.
 
 **Tasks**:
-- [ ] Correct the sentence asserting "only user-scope `~/.claude.json` registers a server" to
+- [x] Correct the sentence asserting "only user-scope `~/.claude.json` registers a server" to
       name both registration surfaces (`~/.claude.json` and project-scoped `.mcp.json`)
-- [ ] Keep the "Settings files grant; they never register" statement -- it is still true and is
+      *(completed)*
+- [x] Keep the "Settings files grant; they never register" statement -- it is still true and is
       the guide's most useful line -- but ensure it no longer implies user scope is the sole
-      registration alternative
-- [ ] Add a one-paragraph summary of the same-scope grant rule with a pointer to the ownership
+      registration alternative *(completed)*
+- [x] Add a one-paragraph summary of the same-scope grant rule with a pointer to the ownership
       doc's new subsection for the full treatment (the guide summarizes; the pattern doc owns)
-- [ ] Update the closing cross-reference, which currently promises "the known gaps across other
+      *(completed)*
+- [x] Update the closing cross-reference, which currently promises "the known gaps across other
       extensions still carrying a dead `mcpServers` block" -- after Phase 5 only `memory` does,
-      so reword rather than leave a stale promise
-- [ ] Check the "Settings File Location: a Host-App Constraint" subsection's cross-reference to
-      the MCP section still reads correctly given the edits
-- [ ] Verify the in-page anchor `#mcp-server-registration-and-permissions` and the Table of
-      Contents entry still match the section heading if it changed
+      so reword rather than leave a stale promise *(completed)*
+- [x] Check the "Settings File Location: a Host-App Constraint" subsection's cross-reference to
+      the MCP section still reads correctly given the edits *(completed: heading and anchor
+      unchanged, cross-reference still resolves)*
+- [x] Verify the in-page anchor `#mcp-server-registration-and-permissions` and the Table of
+      Contents entry still match the section heading if it changed *(completed: heading text
+      unchanged, anchor still matches)*
 
 **Timing**: 0.5 hours
 
