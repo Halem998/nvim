@@ -1006,22 +1006,36 @@ function M.generate_opencode_json(project_dir, config)
       if vim.fn.filereadable(fragment_path) == 1 then
         local fragment = read_json(fragment_path)
         if fragment then
-          local valid, err = M.validate_opencode_fragment(fragment, project_dir)
-          if valid then
-            local source_agents = fragment.agent
-              or (type(fragment) == "table" and not vim.isarray(fragment) and fragment)
-              or {}
-            for key, value in pairs(source_agents) do
-              if base.agent[key] == nil then
-                base.agent[key] = value
-              end
+          -- Per-agent-key degradation: a fragment with one bad {file:...} reference no longer
+          -- discards its whole agent set. Every agent whose own reference resolves is merged;
+          -- only the individual offending key(s) are skipped, using the missing_by_key map
+          -- validate_opencode_fragment now returns for exactly this purpose.
+          local _, _, missing_by_key = M.validate_opencode_fragment(fragment, project_dir)
+          missing_by_key = missing_by_key or {}
+          local source_agents = fragment.agent
+            or (type(fragment) == "table" and not vim.isarray(fragment) and fragment)
+            or {}
+          local skipped_keys = {}
+          for key, value in pairs(source_agents) do
+            if missing_by_key[key] then
+              table.insert(skipped_keys, key)
+            elseif base.agent[key] == nil then
+              -- First-writer-wins semantics preserved for keys that do merge.
+              base.agent[key] = value
             end
-          else
+          end
+          if #skipped_keys > 0 then
+            table.sort(skipped_keys)
+            local skip_details = {}
+            for _, key in ipairs(skipped_keys) do
+              table.insert(skip_details, string.format("%s (missing %s)", key, missing_by_key[key]))
+            end
             vim.schedule(function()
               vim.notify(
                 string.format(
-                  "Extension '%s' opencode-agents.json validation failed: %s. Skipping fragment.",
-                  ext_name, err
+                  "Extension '%s' opencode-agents.json: skipped agent key(s) %s due to unresolved "
+                    .. "{file:...} reference(s); the rest of this fragment was merged.",
+                  ext_name, table.concat(skip_details, ", ")
                 ),
                 vim.log.levels.WARN
               )

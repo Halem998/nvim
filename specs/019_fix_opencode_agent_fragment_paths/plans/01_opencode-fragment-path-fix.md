@@ -311,20 +311,23 @@ external caller has appeared, enumerate and build it as this tier requires.
 
 ---
 
-### Phase 5: Per-agent-key degradation in `generate_opencode_json` [NOT STARTED]
+### Phase 5: Per-agent-key degradation in `generate_opencode_json` [COMPLETED]
 
 **Goal**: Stop one bad reference from discarding an entire extension's agent set. Merge every
 agent whose own `{file:...}` resolves; skip only the individual offending keys.
 
 **Tasks**:
-- [ ] Replace the all-or-nothing `if valid then ... else skip fragment` branch with a per-key
-      merge that consults the per-agent miss set from Phase 4.
-- [ ] Preserve the existing first-writer-wins semantics (`if base.agent[key] == nil then`) for
-      keys that do merge.
-- [ ] Emit one `WARN` per fragment naming every skipped key and its missing path, stating clearly
+- [x] Replace the all-or-nothing `if valid then ... else skip fragment` branch with a per-key
+      merge that consults the per-agent miss set from Phase 4. *(completed)*
+- [x] Preserve the existing first-writer-wins semantics (`if base.agent[key] == nil then`) for
+      keys that do merge. *(completed: preserved via `elseif base.agent[key] == nil then`)*
+- [x] Emit one `WARN` per fragment naming every skipped key and its missing path, stating clearly
       that the named keys were skipped and the rest of the fragment was merged — the current
       message says "Skipping fragment", which will be actively wrong after this change.
-- [ ] Leave `generate_opencode_json`'s `(boolean, string|nil)` signature unchanged.
+      *(completed: new message names each skipped key with its missing path and states the rest
+      of the fragment was merged)*
+- [x] Leave `generate_opencode_json`'s `(boolean, string|nil)` signature unchanged. *(completed:
+      unchanged)*
 
 **Timing**: 0.75 hours
 
