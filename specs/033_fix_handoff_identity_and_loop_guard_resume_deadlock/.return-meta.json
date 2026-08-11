@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md",
+      "summary": "Verifies all cited file:line evidence, maps every handoff writer/reader across core/cslib/lean, evaluates candidate identity mechanisms against a still-live predecessor, resolves the Defect B session_id/cycle_count crux (per-task cumulative budget, explicit-override fix rather than a staleness signal or session_id gate), assesses defects 5 and 6, and proposes a shared report-vs-termination pattern file."
+    }
+  ],
+  "next_steps": "Run /plan 33 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786488637_a3dbe7",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"]
+  },
+  "findings_count": 6,
+  "memory_candidates": [
+    {
+      "content": "In this repo's orchestrator engines, session_id is minted exactly once per /orchestrate command invocation (common_session_id() at GATE IN) and never regenerated mid-run, so a persisted-file's session_id mismatch is a fully reliable 'this is a different invocation' signal. Despite that reliability, scripts/test-session-runtime-files.sh Case 3 forbids gating cycle_count resets on it, because the loop guard is deliberately a per-task, cross-invocation cumulative budget -- gating on session_id would let an operator bypass MAX_CYCLES by simply re-invoking. When a budget/guard is meant to survive re-invocation by design, a reliable new-invocation signal is still the wrong lever to reset it; the correct fix for genuine exhaustion is an explicit, operator-typed override, not an automatic detector tied to invocation identity.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["session_id", "loop-guard", "cycle_count", "orchestrator", "cross-invocation-state"]
+    },
+    {
+      "content": "A staleness/freshness gate based only on file mtime (mtime < dispatch_start_ts) cannot detect a 'late writer' hazard where a predecessor process wakes and writes AFTER a successor's window opened -- that write has a NEWER mtime than the window start, so it passes the gate meant to catch only OLD (e.g. git-restored) files. Any single-slot shared-state file written by a process that can resume after reporting needs a content-embedded, orchestrator-minted identity (e.g. a monotonic dispatch_seq unknown to the predecessor in advance) rather than relying on timestamp comparison alone.",
+      "category": "PATTERN",
+      "source_artifact": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["staleness-gate", "mtime", "handoff", "concurrency", "dispatch-identity"]
+    }
+  ]
+}
