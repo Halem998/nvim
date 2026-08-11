@@ -1,5 +1,5 @@
 ---
-next_project_number: 36
+next_project_number: 37
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 36
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,19,20,27,28,33,34 | -- | agent-system, extensions, orchestration-concurrency |
+| 1 | 14,16,17,18,19,20,27,28,33,34,36 | -- | agent-system, extensions, orchestration-concurrency |
 | 2 | 9,13,22,31,35 | 17,18,19,33 | agent-system, extensions, orchestration-concurrency |
 | 3 | 29 | 22 | agent-system |
 | 4 | 30 | 29 | agent-system |
@@ -28,9 +28,10 @@ next_project_number: 36
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
-28 [PLANNED] — Rewrite the canonical MCP ownership document, whose central premi
+28 [IMPLEMENTING] — Rewrite the canonical MCP ownership document, whose central premi
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
+36 [NOT STARTED] — Audit context-loading efficiency across the agent system and its 
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -49,6 +50,16 @@ next_project_number: 36
   └─ 35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
 
 ## Tasks
+
+### 36. Audit context loading efficiency
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Audit context-loading efficiency across the agent system and its extensions, then create optimization tasks. A single /task invocation eagerly loaded ~19k of context before doing any work (CLAUDE.md, README, topic-assignment-pattern.md, and unrelated literature/nix/present extension context plus four rules files). The sweep should determine which context is loaded eagerly vs lazily, which loads are unconditional regardless of task type or command, and where @-imports, rules path globs, and extension context indexes can be narrowed or deferred
+
+---
 
 ### 35. Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]
 - **Effort**: 1-3 hours
@@ -316,7 +327,7 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 ---
 
 ### 28. Correct mcp ownership model and purge dead declarations
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
