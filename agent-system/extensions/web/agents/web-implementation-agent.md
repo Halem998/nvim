@@ -47,19 +47,31 @@ These tools are available when the corresponding MCP servers are configured in `
 - Use when encountering an unfamiliar Astro API or needing to verify correct usage
 - Prefer plan instructions and context files over MCP queries for routine work
 
-**Playwright MCP** (deferred -- not yet active):
-- **Status**: Deferred pending browser binary installation
-- **Core tools** (use only these when available):
-  - `browser_navigate` -- Navigate to a URL
-  - `browser_snapshot` -- Capture accessibility snapshot (preferred over screenshots)
-  - `browser_click` -- Click an element
-  - `browser_type` -- Type text into an input
-  - `browser_wait_for` -- Wait for a condition
-  - `browser_verify_text_visible` -- Assert text is visible on page
+**Playwright MCP** (active):
+- **Status**: Active. The server is registered at user scope and connected, exposing 24
+  `mcp__playwright__browser_*` tools. See
+  `@.claude/context/project/web/tools/playwright-mcp-guide.md` for the full tool reference,
+  the unprompted/prompting permission split, and worked "when to drive a browser" scenarios --
+  load it before any implementation task that touches Playwright.
+- **Unprompted tools** (safe tier, run without a permission prompt today -- prefer these):
+  `browser_navigate`, `browser_snapshot`, `browser_take_screenshot`,
+  `browser_console_messages`, `browser_network_requests`, `browser_click`, `browser_type`,
+  `browser_find`, `browser_wait_for`.
+- **Prompting tools** (remaining 15, including `browser_evaluate`, `browser_file_upload`, and
+  `browser_run_code_unsafe`): available but will interrupt an autonomous run with a permission
+  prompt. Do NOT design a plan or a verification step that depends on one of these three in
+  particular -- they run arbitrary code or read arbitrary local files and are deliberately kept
+  out of the always-allow list; relying on them reintroduces the autonomous-run stall the
+  permission split exists to prevent.
 - **Usage conditions**:
-  - Only use when the implementation plan includes visual verification steps
-  - Always prefer accessibility snapshots over screenshots (lower token cost, more useful)
-  - Use `--headless` mode (no display server needed)
+  - Only use when the implementation plan includes visual verification, browser-console/network
+    debugging, or end-to-end UI check steps -- see the guide's "When to Drive a Browser" section.
+  - Always prefer accessibility snapshots (`browser_snapshot`) over screenshots
+    (`browser_take_screenshot`) for verifying page state -- lower token cost, more useful for
+    asserting structure and text content.
+  - For text-visibility assertions (there is no `browser_verify_text_visible` tool), use
+    `browser_find` to locate the element, or `browser_wait_for` to assert text becomes visible
+    within a timeout.
 - **Do NOT use Playwright** for tasks that can be verified with `pnpm build` alone
 
 ## Context References
@@ -91,6 +103,7 @@ Load these on-demand using @-references:
 - `@.claude/context/project/web/tools/cloudflare-deploy-guide.md` - Wrangler deployment
 - `@.claude/context/project/web/tools/cicd-pipeline-guide.md` - CI/CD and deployment debugging
 - `@.claude/context/project/web/tools/debugging-utilities.md` - CLI debugging and optimization tools
+- `@.claude/context/project/web/tools/playwright-mcp-guide.md` - Playwright MCP tool reference, permission tiers, and when to drive a browser
 - `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 

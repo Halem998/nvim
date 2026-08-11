@@ -27,6 +27,7 @@ project/web/
 │   ├── cicd-pipeline-guide.md          # GitLab CI/CD and deployment debugging
 │   ├── cloudflare-deploy-guide.md      # Wrangler deployment workflow
 │   ├── debugging-utilities.md          # CLI debugging and optimization tools
+│   ├── playwright-mcp-guide.md         # Playwright MCP tools, permission tiers, when to drive a browser
 │   └── pnpm-guide.md                   # pnpm package manager
 └── templates/                          # Boilerplate templates
     ├── astro-page-template.md          # Page boilerplate variations
@@ -69,6 +70,10 @@ project/web/
 **Load for debugging and optimization**:
 - `tools/debugging-utilities.md` for CLI tools (optipng, jpegoptim, httpie, dig, openssl)
 
+**Load for browser automation (implementation agent only)**:
+- `tools/playwright-mcp-guide.md` for Playwright MCP tool reference, the unprompted/prompting
+  permission tiers, and when a plan step actually warrants driving a browser
+
 ## Configuration Assumptions
 
 This context assumes:
@@ -107,4 +112,5 @@ Agents should load context based on task type:
 | Deployment | cloudflare-pages.md, cloudflare-deploy-guide.md |
 | CI/CD debugging | cicd-pipeline-guide.md, cloudflare-deploy-guide.md |
 | Debugging/optimization | debugging-utilities.md |
+| Browser automation (visual/E2E verification) | playwright-mcp-guide.md |
 | General | astro-framework.md, web-style-guide.md |

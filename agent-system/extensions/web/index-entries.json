@@ -289,6 +289,21 @@
       "summary": "CLI debugging and optimization tools (optipng, httpie, dig, etc.)"
     },
     {
+      "path": "project/web/tools/playwright-mcp-guide.md",
+      "load_when": {
+        "agents": [
+          "web-implementation-agent"
+        ],
+        "task_types": [
+          "web"
+        ]
+      },
+      "line_count": 80,
+      "domain": "project",
+      "subdomain": "web",
+      "summary": "Playwright MCP tool reference, permission tiers (unprompted vs. prompting), and when to drive a browser"
+    },
+    {
       "path": "project/web/templates/astro-page-template.md",
       "load_when": {
         "agents": [

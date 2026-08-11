@@ -80,7 +80,7 @@
     {
       "project_number": 25,
       "project_name": "activate_playwright_mcp_in_web_extension",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Activate parked Playwright MCP integration in web extension and reconcile drifted tool list",
       "topic": "mcp-integration",
@@ -96,13 +96,20 @@
       ],
       "description": "Activate the already-designed but parked Playwright MCP integration in the web extension, and reconcile its drifted tool list against the live server.\n\nTHIS IS AN ACTIVATION TASK, NOT A GREENFIELD BUILD. A complete design already exists in agent-system/extensions/web/agents/web-implementation-agent.md (approximately lines 50-63) under the heading '**Playwright MCP** (deferred -- not yet active)' with '**Status**: Deferred pending browser binary installation'. That precondition is now satisfied: the server is registered at user scope, connected and healthy, exposing 24 browser_* tools.\n\nDO NOT REMOVE THE web-research-agent BLOCK. agent-system/extensions/web/agents/web-research-agent.md line 4 carries 'disallowedTools: mcp__playwright__*'. This is DELIBERATE ROLE-SCOPING, not an obstacle to clear: web-implementation-agent symmetrically blocks mcp__context7__* instead. Each agent blocks the MCP server that is not its job -- research reads docs, implementation drives browsers. Leave BOTH blocks in place.\n\nWORK:\n(1) Flip the deferred status to active in web-implementation-agent.md.\n(2) PRESERVE the usage conditions already written there: prefer accessibility snapshots over screenshots (lower token cost, more useful); do NOT use Playwright for tasks verifiable with 'pnpm build' alone; only use when the implementation plan includes visual verification steps.\n(3) RECONCILE THE DRIFTED SPEC. The parked section lists browser_verify_text_visible, which does NOT exist among the server's actual tools. Map the deferred spec's INTENT onto real tools -- for example, text-visibility assertions map onto browser_find and/or browser_wait_for. The real 24-tool set is: browser_navigate, browser_navigate_back, browser_snapshot, browser_take_screenshot, browser_click, browser_type, browser_fill_form, browser_find, browser_hover, browser_drag, browser_drop, browser_select_option, browser_press_key, browser_wait_for, browser_resize, browser_tabs, browser_close, browser_handle_dialog, browser_console_messages, browser_network_request, browser_network_requests, browser_evaluate, browser_file_upload, browser_run_code_unsafe.\n(4) Teach WHEN to drive a browser, not merely how: screenshot and visual verification of a running app, console and network inspection for debugging, end-to-end UI checks. Add a context file under agent-system/extensions/web/context/ and register it in web/index-entries.json if a new file is created.\n(5) Keep guidance consistent with the permission split from the prerequisite task: guidance must NOT instruct agents to rely on tools that still prompt (browser_run_code_unsafe, browser_evaluate, browser_file_upload), since that would reintroduce the autonomous-run stall.\n\nACCEPTANCE: web-implementation-agent documents an active, accurate Playwright MCP capability naming only tools that actually exist; web-research-agent's disallowedTools line is unchanged; no guidance depends on a tool that still prompts.\n\nSOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/web/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-08-11T05:30:49Z",
-      "last_updated": "2026-08-11T05:30:49Z",
-      "artifacts": []
+      "last_updated": "2026-08-11T06:43:15Z",
+      "artifacts": [
+        {
+          "path": "specs/025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md",
+          "type": "report",
+          "summary": "Activated the parked Playwright MCP design, reconciled the drifted tool list against the real 24-tool server, and added a playwright-mcp-guide.md context file."
+        }
+      ],
+      "session_id": "sess_1786426440_e14088_25"
     },
     {
       "project_number": 26,
       "project_name": "migrate_slidev_verification_to_playwright_mcp",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Migrate slidev deck verification from standalone npm Playwright script to MCP server",
       "topic": "mcp-integration",
@@ -120,8 +127,9 @@
       ],
       "description": "Migrate slidev deck screenshot verification from the standalone npm Playwright script to the live Playwright MCP server, removing the duplicate Playwright install path.\n\nPROBLEM: the present and founder extensions carry their own Playwright usage that predates the MCP server and duplicates its capability. agent-system/extensions/present/context/project/present/talk/templates/playwright-verify.mjs is a standalone Node script requiring a separate npm Playwright install and its own browser binaries. Related references appear in present/context/project/present/talk/patterns/slidev-pitfalls.md, present/context/project/present/domain/talk-modes-and-library.md, present/context/project/present/talk/templates/slidev-project/README.md, present/index-entries.json, present/context/project/present/talk/index.json, founder/agents/deck-builder-agent.md, and founder/context/project/founder/patterns/slidev-deck-template.md.\n\nWORK: replace the standalone-script verification path with the MCP server (browser_navigate plus browser_snapshot / browser_take_screenshot), so the system has ONE browser automation mechanism rather than two independent Playwright installs. Update the referencing context files, agent docs, and index entries consistently so nothing points at a removed path.\n\nCAUTION -- VERIFY PARITY BEFORE DELETING: confirm the .mjs script's full capability is genuinely covered by the MCP tool set before removing it. A standalone script can do things a permissioned MCP surface cannot: custom in-page evaluation loops, batch or offline runs with no agent in the loop, and deterministic CI invocation. Note specifically that browser_evaluate and browser_run_code_unsafe are deliberately NOT allowlisted and will prompt, so any verification logic depending on in-page evaluation may not migrate cleanly. If full parity is not achievable, DOCUMENT THE RESIDUAL GAP and keep the script for that narrow case rather than forcing the migration and silently losing coverage.\n\nDEPENDS ON the permission work: this migration is only viable once the safe browser tools run without prompting.\n\nACCEPTANCE: deck screenshot verification runs through the MCP server; the duplicate npm Playwright install path is removed, or its continued existence is explicitly justified in writing; all referencing docs and index entries are consistent with the outcome.\n\nSOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/present/** and /home/benjamin/.config/nvim/agent-system/extensions/founder/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-08-11T05:30:49Z",
-      "last_updated": "2026-08-11T05:30:49Z",
-      "artifacts": []
+      "last_updated": "2026-08-11T06:38:40Z",
+      "artifacts": [],
+      "session_id": "sess_1786426440_e14088_26"
     },
     {
       "project_number": 22,

@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "started_at": "2026-08-10T23:38:00Z",
+  "completed_at": "2026-08-10T23:45:00Z",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md",
+      "summary": "Activated the parked Playwright MCP design in web-implementation-agent.md, reconciled the drifted tool list (browser_verify_text_visible -> browser_find/browser_wait_for) against the real 24-tool server, and added a new playwright-mcp-guide.md context file covering the unprompted/prompting permission split and when-to-drive-a-browser guidance."
+    }
+  ],
+  "partial_progress": {
+    "stage": "completed",
+    "details": "All source-store edits made and verified; report written"
+  },
+  "metadata": {
+    "session_id": "sess_1786426440_e14088_25",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "When a Playwright (or similar) MCP server intentionally splits its tool surface into an always-allow safe tier and a prompting unsafe tier, that split must be mirrored consistently across every file that names the tool list: the settings-fragment.json allowlist enumeration, any context-file tool reference table, and any agent-file 'unprompted tools' bullet. None of these wildcard as the server's tool surface grows, so a server upgrade requires a coordinated edit across all of them, not just the settings fragment. See agent-system/extensions/web/settings-fragment.json, agent-system/extensions/web/context/project/web/tools/playwright-mcp-guide.md, and agent-system/extensions/web/agents/web-implementation-agent.md as the worked three-way example.",
+      "category": "PATTERN",
+      "source_artifact": "specs/025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["mcp", "playwright", "permission-split", "settings-fragment", "tool-drift"]
+    },
+    {
+      "content": "check-extension-docs.sh refuses to run from the agent-system source-store tree (agent-system/extensions/core/scripts/) with an explicit error explaining that its relative '../..' path resolution assumes a deployed .claude/scripts/ or .opencode/scripts/ location. A source-store-only edit session cannot self-verify with this lint; a deploy-then-relint pass is a separate follow-up step, not something achievable in the same session as the source edits.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-extension-docs", "lint", "source-store", "deploy-boundary", "verification"]
+    }
+  ],
+  "next_steps": "Run /plan 25 to create implementation plan"
+}
