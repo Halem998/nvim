@@ -340,40 +340,41 @@ same-scope grant rule, and record the workspace-trust caveat and session-snapsho
 
 ---
 
-### Phase 5: Rewrite the Known-gaps section [NOT STARTED]
+### Phase 5: Rewrite the Known-gaps section [COMPLETED]
 
 **Goal**: Fix the transposed `sec-edgar` attribution, record the four retirements and the one
 pending nix migration, and replace the now-mostly-empty table with prose.
 
 **Tasks**:
-- [ ] Fix the transposition first, so the record of what was deleted is accurate: the current
+- [x] Fix the transposition first, so the record of what was deleted is accurate: the current
       table has `epidemiology` = `sec-edgar, rmcp` (wrong -- epidemiology declared ONLY `rmcp`)
       and `founder` = `firecrawl` (wrong -- founder declared BOTH `firecrawl` AND `sec-edgar`).
-      Two errors, one transposed value.
-- [ ] Replace the five-row table with prose, since only `memory` still carries a live dead block
-      after this task
-- [ ] **Retirement paragraph** (four extensions, deliberate): `epidemiology` (`rmcp`),
+      Two errors, one transposed value. *(completed)*
+- [x] Replace the five-row table with prose, since only `memory` still carries a live dead block
+      after this task *(completed)*
+- [x] **Retirement paragraph** (four extensions, deliberate): `epidemiology` (`rmcp`),
       `filetypes` (`openpyxl`, `superdoc`), and `founder` (`firecrawl`, `sec-edgar`) previously
       carried dead `mcpServers` blocks for these five servers; those blocks are deleted, along
       with founder's five orphaned `mcp__firecrawl__*` / `mcp__sec-edgar__*` permission grants.
       State plainly that this is a deliberate retirement, not an oversight -- these servers are
       not being migrated to functioning registration, and reviving any of them requires a fresh
       registration decision under the hybrid model above, not a revival of the deleted block.
-- [ ] **Migration paragraph** (`nix`, distinct from retirement): the dead block (declared under
+      *(completed)*
+- [x] **Migration paragraph** (`nix`, distinct from retirement): the dead block (declared under
       the name `mcp-nixos`) is deleted; registration is moving to a home-manager activation block
       in a separate NixOS configuration repository under server name `nixos`. Verified by running
       `uvx mcp-nixos`, which exposes exactly two tools, `nix` and `nix_versions`, matching the two
       `mcp__nixos__nix` / `mcp__nixos__nix_versions` grants this repo retains. Warn by name: do
       not delete those grants, and do not "fix" the deleted block by reinstating it as
       `mcp-nixos` -- that name would produce `mcp__mcp-nixos__*` tools and break both grants and
-      every doc cross-reference.
-- [ ] **Remaining-gap sentence**: `memory` (`obsidian-memory`) still carries a dead block in its
-      own fragment and is untouched here.
-- [ ] **Second dead surface, named as a follow-up**: five extensions (`filetypes`, `founder`,
+      every doc cross-reference. *(completed)*
+- [x] **Remaining-gap sentence**: `memory` (`obsidian-memory`) still carries a dead block in its
+      own fragment and is untouched here. *(completed)*
+- [x] **Second dead surface, named as a follow-up**: five extensions (`filetypes`, `founder`,
       `lean`, `memory`, `nix`) additionally carry the identical dead declaration in their
       `manifest.json` `mcp_servers` field -- an independent second surface this task does not
       touch. Confirm the doc's existing "a `manifest.json` `mcp_servers` field is equally inert"
-      statement survives, and attach the follow-up note to it.
+      statement survives, and attach the follow-up note to it. *(completed)*
 
 **Timing**: 0.8 hours
 

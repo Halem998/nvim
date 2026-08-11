@@ -252,24 +252,35 @@ Follow top to bottom when adding a new server:
 
 ## Known gaps
 
-Five extensions still declare a non-functional `mcpServers` block in their own
-`settings-fragment.json`, left in place as a named-but-not-fixed follow-up rather than corrected
-here:
+**Retirement (deliberate, four extensions).** `epidemiology` (`rmcp`), `filetypes` (`openpyxl`,
+`superdoc`), and `founder` (`firecrawl`, `sec-edgar`) previously carried dead `mcpServers` blocks
+declaring these five servers in their own `settings-fragment.json` files. Those blocks are
+deleted, along with founder's five orphaned `mcp__firecrawl__*` / `mcp__sec-edgar__*` permission
+grants that pointed at them. This is a **deliberate retirement, not an oversight** — these five
+servers are not being migrated to functioning registration. Reviving any of them requires a fresh
+registration decision under the hybrid model above (pick a scope, register there, grant at that
+same scope), not a revival of the deleted block.
 
-| Extension | Server(s) named in the dead block |
-|---|---|
-| `nix` | `mcp-nixos` |
-| `memory` | `obsidian-memory` |
-| `filetypes` | `openpyxl`, `superdoc` |
-| `founder` | `firecrawl` |
-| `epidemiology` | `sec-edgar`, `rmcp` |
+**Migration (distinct from retirement, one extension).** `nix`'s dead block — which declared the
+server under the trap name `mcp-nixos` — is likewise deleted. Registration is *moving*, not being
+retired: a home-manager activation block in a separate NixOS configuration repository will
+register the server under the name `nixos`. This is verified against the live server: running
+`uvx mcp-nixos` exposes exactly two tools, `nix` and `nix_versions`, matching the two
+`mcp__nixos__nix` / `mcp__nixos__nix_versions` grants this repo retains in
+`agent-system/extensions/nix/settings-fragment.json`. **Do not** delete those two grants, and
+**do not** "fix" the deleted block by reinstating it under the name `mcp-nixos` — that name would
+produce `mcp__mcp-nixos__*` tools, breaking both existing grants and every doc cross-reference
+that assumes the `nixos` name.
 
-None of these servers is registered in user scope by anything in this repository today. Their
-agents fall back to WebSearch/CLI equivalents where documented (see, for example,
-`context/project/nix/tools/mcp-nixos-integration.md`'s graceful-degradation section). Registering
-them is a pending follow-up, not a defect this document's presence should be read to excuse —
-treat every one of these five blocks as the same misleading example this document warns against,
-not as a counter-example to the registration rule above.
+**Remaining gap.** `memory` (`obsidian-memory`) still carries a dead `mcpServers` block in its own
+`settings-fragment.json` and is untouched by the retirement/migration above — it is a genuine,
+still-open gap, not yet resolved either way.
+
+**Second dead surface (follow-up, not touched here).** Five extensions — `filetypes`, `founder`,
+`lean`, `memory`, and `nix` — additionally carry the identical dead declaration in their
+`manifest.json` `mcp_servers` field. This is an independent second surface: a `manifest.json`
+`mcp_servers` field is equally inert (see "Not registration" above), and correcting it in these
+five manifests is a recorded follow-up, not performed by this document's own edits.
 
 ---
 
