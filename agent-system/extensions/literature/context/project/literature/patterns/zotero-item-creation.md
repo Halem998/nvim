@@ -29,28 +29,85 @@ help text states plainly that metadata is "not auto-resolved by API" for the PDF
 Whenever a discovery record carries a known DOI, pass `--doi` together with `--pdf` so the
 created item gets Crossref-enriched metadata rather than the bare PDF-derived shell.
 
-## 2. The `zot add --pdf` envelope's exact `data.*` field names are an unconfirmed empirical unknown
+## 2. The `zot add --pdf` envelope's `data.*` field names: confirmed for item creation, still open for attachment success
 
-A real call against the production library has not yet been made. This means the item key,
-attachment key, and storage-path field names inside the JSON envelope `zot add --pdf` returns
-(`{"ok": bool, "data": {...}, "meta": {...}}` per `zotero-cli-cc`'s documented shape) have **not**
-been independently confirmed against a real call.
+A live call was made against the production library (904-item account, user-gated, single
+authorized `item-add` + `attach-file` pair; item key `QWF66MNX`, DOI
+`10.26686/ajl.v22i2.5680`). This confirms the item-creation field paths and narrows, but does not
+close, the attachment-key question below.
 
-**Mitigation applied**: `literature-ingest-online.sh`'s `extract_envelope_field()` and
-`resolve_storage_path_from_envelope()` helpers probe several plausible jq field paths in order
-(e.g. `.data.key`, `.data.item.key`, `.data.itemKey` for the item key; `.data.attachment.key`,
-`.data.attachmentKey`, `.data.attachment_key`, `.data.attachments[0].key` for the attachment key)
-rather than assuming one shape. If none resolve, the script does not fail hard — it falls back to
-the original staging download path for `source_path`/`zotero_path`, logs a visible (non-silent)
-warning, and continues. `zotero-write.sh` itself does not parse the envelope at all; like every
-other operation, it passes `zot`'s stdout straight through unmodified, so the parsing
-responsibility (and the defensive multi-path lookup) lives entirely in the caller.
+**Confirmed item-key path**: `.data.key` resolves and is the correct item key
+(`"QWF66MNX"` in the live call). The other two candidates named in the original mitigation,
+`.data.item.key` and `.data.itemKey`, are **not present** in the real envelope — remove them as
+live candidates for the item-key lookup specifically (see the probing-retention decision below
+for why the helper still keeps multi-path probing overall).
 
-**Required follow-up**: the first time this bridge is exercised against a real `zot` installation
-and a real, configured Zotero library, capture `jq '.data'` on the raw envelope from both a real
-`item-add` call and a real `attach-file` call, and update this document with the confirmed field
-paths. Until then, treat the multi-path probing above as the load-bearing mechanism, not a
-placeholder.
+**Confirmed sibling fields on a successful `item-add` with `--doi`**: `.data.doi` (echoes the
+posted DOI), `.data.resolved.{title,author,journal,date}` (Crossref-enriched metadata — populated
+because `--doi` accompanied `--pdf`; a `--pdf`-only call would not populate this per section 1),
+`.data.sync_required` (boolean, `true` in the live call — see the sync-lag caveat below),
+`.data.next` (an array of one or more suggested follow-up shell commands, e.g. a manual
+`zot attach <key> --file <path>` retry — present specifically because the internal attach step
+below failed), and, only on that failure, `.data.attachment_error` (a string containing the raw
+Zotero API error).
+
+**Sync-lag caveat, confirmed empirically**: `zot`'s read commands (`search`, `read`, `stats` —
+everything `zotero-read.sh` wraps) query the **local SQLite database only**, never the Web API
+live state. Immediately after the live `item-add` call above, `zot read QWF66MNX` and
+`zot search` for its DOI both returned "not found" / no hits, and `zot stats` still reported the
+pre-creation item count — because no Zotero desktop client was running to sync the new item down
+(`.data.sync_required: true` documents exactly this gap). Practically: a duplicate created via the
+Web API is invisible to Phase 4's `check_live_doi_duplicate()` dedup check until a desktop client
+syncs it down, so "live" there means "last-locally-synced", not "current server state" — worth
+knowing, though no code change is in scope for this phase.
+
+**Attachment-key path: still unconfirmed, for a concrete and reproducible reason.** Both real
+attach attempts in this session — `item-add`'s internal attach step, and the standalone
+`attach-file` call that followed it — failed identically with a Zotero API `413` error:
+`"File would exceed quota (2745.6 > 300)"` (megabytes; this account's storage quota is already far
+exceeded by existing content, independent of this test's 1.5 MB PDF). Neither call reached a
+successful attachment envelope, so none of the four candidate attachment-key paths
+(`.data.attachment.key`, `.data.attachmentKey`, `.data.attachment_key`,
+`.data.attachments[0].key`) could be ruled in or out. On this failure the envelope carries **no**
+`.data.*` at all — it is `{"ok": false, "error": {"code", "message", "retryable", "hint",
+"context"}}`. The bridge/local route (`zot attach --via-bridge`) was not a viable alternative
+either: Zotero desktop was confirmed unreachable at test time (no listener on
+`127.0.0.1:23119`), and `zot attach`'s default auto-detect route itself confirmed
+`via_bridge: false` (dry-run preview) before the real, also-quota-rejected call.
+
+**A second, more consequential finding from the same failure**: both quota-rejected attach
+attempts left an **orphaned attachment item record** as a child of the parent item — confirmed via
+a direct, read-only Web-API `GET .../items/QWF66MNX/children` call (not a write; performed purely
+to gather this evidence). Zotero's attach flow creates the child attachment item's metadata record
+(`itemType: attachment`, `linkMode: imported_file`, `filename`, `contentType`) in a separate call
+*before* uploading file bytes; when the upload itself is rejected by quota, that empty record
+(`md5: null`, `mtime: null` — no file ever attached) persists rather than being rolled back. This
+live call therefore produced one parent item (`QWF66MNX`) plus two orphaned, file-less
+attachment-record children (`5J2WMXDD` from the internal attach, `CB99228V` from the standalone
+`attach-file` call). All three are children/parent of the same rollback unit — see the
+implementation summary for the rollback instruction.
+
+**Mitigation applied** (unchanged in mechanism, strengthened by the finding above):
+`literature-ingest-online.sh`'s `extract_envelope_field()` and `resolve_storage_path_from_envelope()`
+helpers probe several plausible jq field paths in order rather than assuming one shape. If none
+resolve, the script does not fail hard — it falls back to the original staging download path for
+`source_path`/`zotero_path`, logs a visible (non-silent) warning, and continues. `zotero-write.sh`
+itself does not parse the envelope at all; like every other operation, it passes `zot`'s stdout
+straight through unmodified, so the parsing responsibility (and the defensive multi-path lookup)
+lives entirely in the caller.
+
+**Probing-retention decision: keep the multi-path probing (plan's recommended default), now for a
+stronger reason than "costs nothing."** The live test confirmed the item-key path
+(`.data.key`) and eliminated two dead candidates for it, but produced **zero** successful
+attachment envelopes to confirm or eliminate any attachment-key candidate — the account's storage
+quota blocks the only reachable route (Web API/cloud; the bridge route requires a running desktop
+client, unavailable in this environment) regardless of file size. Simplifying
+`resolve_storage_path_from_envelope()`'s attachment-key lookup to a single guessed path now, with
+literally no positive evidence for any candidate, would be strictly worse than keeping the
+existing defensive probe. **Required follow-up, unchanged in substance**: the attachment-key
+confirmation remains open until either the account's storage quota is resolved (paid tier, or
+freed space) or a `--via-bridge` run against a running Zotero desktop is performed — at that
+point, repeat this same live-call procedure and update this section.
 
 ## 3. The mandatory `%PDF` magic-byte gate runs before ANY Zotero write
 
@@ -100,6 +157,17 @@ in the local `storage/<key>/` tree until the desktop is running and syncs it dow
 "Sync attachment files" enabled). On a headless ingest host — where the desktop is routinely not
 running — hitting the staging-path fallback above is therefore the **expected common case**, not
 a rare failure mode.
+
+**Live-confirmed outcome (a user-gated, single-item production test)**: the auto-detected route
+confirmed `via_bridge: false` (Zotero desktop unreachable at test time), so
+both the internal attach inside `item-add` and the standalone `attach-file` call took the
+Web-API/cloud route as predicted. The file landed in **neither** cloud storage nor local
+`storage/<key>/` — the upload was rejected with a `413` storage-quota error before any bytes
+transferred (`"File would exceed quota (2745.6 > 300)"`, i.e. this account's existing usage
+already far exceeds its 300 MB quota, independent of this test's file size). See section 2 above
+for the full envelope evidence and the resulting orphaned-attachment-record finding. The bridge
+route was not available to test as an alternative: Zotero desktop was confirmed unreachable for
+the whole exercise, so no route in this environment currently reaches a successful file upload.
 
 ## 5. `in_zotero_no_pdf` is an attach-to-existing problem, not a create-item problem
 

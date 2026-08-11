@@ -1,0 +1,38 @@
+{
+  "phase": 6,
+  "phase_name": "Gated live envelope confirmation against the production library",
+  "started_at": "2026-08-11T21:15:00Z",
+  "last_updated": "2026-08-11T21:24:47Z",
+  "objectives": [
+    {"id": 1, "description": "Draft and get user approval for the test design", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm DOI not already in library via normalization + zotero-read.sh search", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run --dry-run item-add preview and record output", "status": "done", "files_touched": []},
+    {"id": 4, "description": "User confirmation gate passed", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run real item-add through zotero-write.sh; capture jq '.data'", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run real attach-file through zotero-write.sh; capture jq '.data'", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record confirmed field paths in zotero-item-creation.md section 2", "status": "done", "files_touched": [
+      "agent-system/extensions/literature/context/project/literature/patterns/zotero-item-creation.md"
+    ]},
+    {"id": 8, "description": "State and justify probing-retention decision", "status": "done", "files_touched": [
+      "agent-system/extensions/literature/context/project/literature/patterns/zotero-item-creation.md"
+    ]},
+    {"id": 9, "description": "Record storage-route outcome in section 4", "status": "done", "files_touched": [
+      "agent-system/extensions/literature/context/project/literature/patterns/zotero-item-creation.md"
+    ]},
+    {"id": 10, "description": "Report created item key and rollback instruction", "status": "done", "files_touched": [
+      "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md"
+    ]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.7",
+      "description": "Record the confirmed field paths in zotero-item-creation.md section 2 and note which probed candidates resolved",
+      "type": "altered",
+      "reason": "Only the item-key path (.data.key) could be live-confirmed. Both real attach attempts (internal item-add attach, and standalone attach-file) failed identically with a Zotero API 413 storage-quota error before reaching a successful attachment envelope, so none of the four attachment-key candidates could be confirmed or eliminated. This is a real external API constraint (account storage quota already exceeded, and the only alternative --via-bridge route is unavailable since Zotero desktop is not running), not a scope reduction or gate decline.",
+      "annotation": "*(completed: .data.key confirmed as the item-key path; the four attachment-key candidates remain unconfirmed -- see Reasoned Exclusions below)*"
+    }
+  ]
+}

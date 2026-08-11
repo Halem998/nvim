@@ -472,7 +472,7 @@ criterion 4 and work item 6.
 
 ---
 
-### Phase 6: Gated live envelope confirmation against the production library [NOT STARTED]
+### Phase 6: Gated live envelope confirmation against the production library [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Confirm the real `.data.*` field paths returned by `zot add --pdf` and `zot attach`, and
 record them, closing the standing empirical unknown. Satisfies acceptance criterion 2 and work
@@ -481,40 +481,54 @@ Zotero library and MUST NOT proceed past the dry-run stage without explicit user
 
 **Tasks**:
 
-- [ ] Draft the test design and present it to the user for approval before any non-`--dry-run`
+- [x] Draft the test design and present it to the user for approval before any non-`--dry-run`
       call. The design must name: the specific DOI and PDF to be added (a real, useful
       open-access paper worth having in the library — never throwaway garbage), the exact
       commands, what will be captured, and the rollback path (Zotero trash/delete by the recorded
-      item key).
-- [ ] Confirm the chosen DOI is not already in the library using the Phase 4 normalization plus
+      item key). *(completed: Holliday, "Possibility Frames and Forcing for Modal Logic", DOI
+      10.26686/ajl.v22i2.5680, PDF verified at the arXiv mirror; approved by the user)*
+- [x] Confirm the chosen DOI is not already in the library using the Phase 4 normalization plus
       `zotero-read.sh search` — the same code path the write guard uses, so the test also
-      exercises it.
-- [ ] Run `zot --json add --doi <doi> --pdf <verified-pdf> --dry-run --idempotency-key <key>`
-      first and record the preview output.
-- [ ] **GATE**: obtain explicit user confirmation to proceed with the real write. If the user
+      exercises it. *(completed: `zotero-read.sh search "10.26686/ajl.v22i2.5680"` returned `[]`
+      — no existing item)*
+- [x] Run `zot --json add --doi <doi> --pdf <verified-pdf> --dry-run --idempotency-key <key>`
+      first and record the preview output. *(completed: dry-run preview recorded, `ok: true`,
+      `data.would.{source,pdf,doi_override,resolve_metadata}`)*
+- [x] **GATE**: obtain explicit user confirmation to proceed with the real write. If the user
       declines or does not respond, stop here and close the phase
       `[COMPLETED WITH EXCLUSIONS]` with a `#### Reasoned Exclusions` record — acceptance
       criterion 2 explicitly permits documenting why confirmation is still pending.
-- [ ] After confirmation: run the real `item-add` through `zotero-write.sh` (not `zot` directly,
+      *(completed: gate explicitly passed by the user before this dispatch)*
+- [x] After confirmation: run the real `item-add` through `zotero-write.sh` (not `zot` directly,
       so the choke-point is what gets exercised), capture the full stdout, and record
-      `jq '.data'` on the envelope.
-- [ ] Run one real `attach-file` — attaching a second verified PDF to an existing item, or to the
+      `jq '.data'` on the envelope. *(completed: item created, key `QWF66MNX`; see
+      `zotero-item-creation.md` section 2 for the full envelope)*
+- [x] Run one real `attach-file` — attaching a second verified PDF to an existing item, or to the
       item just created — through `zotero-write.sh`, and record `jq '.data'` on that envelope.
-- [ ] Record the confirmed field paths in `zotero-item-creation.md` section 2, replacing the
+      *(completed: attach-file run against `QWF66MNX`; failed with a `413` storage-quota error —
+      see below, this is a captured real envelope, not a skipped step)*
+- [x] Record the confirmed field paths in `zotero-item-creation.md` section 2, replacing the
       "unconfirmed empirical unknown" framing with the observed shape. Note which of the probed
       candidates (`.data.key`, `.data.item.key`, `.data.itemKey`;
       `.data.attachment.key`, `.data.attachmentKey`, `.data.attachment_key`,
-      `.data.attachments[0].key`) actually resolved.
-- [ ] Decide, and state the reason for, either simplifying `extract_envelope_field()` /
+      `.data.attachments[0].key`) actually resolved. *(completed: `.data.key` confirmed as the
+      item-key path; the four attachment-key candidates remain unconfirmed — see Reasoned
+      Exclusions below)*
+- [x] Decide, and state the reason for, either simplifying `extract_envelope_field()` /
       `resolve_storage_path_from_envelope()` to the confirmed paths or keeping the multi-path
       probing. Recommended default: keep the probing (it costs nothing and insulates against
       `zot`'s envelope changing across releases, as its flag surface already has between v0.7.0
       and v0.10.0) and state that reason explicitly in the doc rather than leaving it implicit.
-- [ ] Record whether the attachment landed in local `storage/<key>/` or took the cloud route, and
+      *(completed: decision recorded in `zotero-item-creation.md` section 2 — keep the probing,
+      for the strengthened reason that zero attachment-success envelopes were obtainable in this
+      environment)*
+- [x] Record whether the attachment landed in local `storage/<key>/` or took the cloud route, and
       whether `item-add`'s internal attach step is bridge-routable — the open question Phase 1's
-      `zot schema` capture narrowed but did not close.
-- [ ] Report the created item key to the user, along with the rollback instruction, whether or
-      not the item is kept.
+      `zot schema` capture narrowed but did not close. *(completed: neither — the cloud route was
+      taken (confirmed `via_bridge: false`) but the upload was rejected by a storage-quota error
+      before any bytes transferred; recorded in section 4)*
+- [x] Report the created item key to the user, along with the rollback instruction, whether or
+      not the item is kept. *(completed: see implementation summary)*
 
 **Timing**: 0.75 hours
 
@@ -533,10 +547,19 @@ Zotero library and MUST NOT proceed past the dry-run stage without explicit user
 - Either: `zotero-item-creation.md` section 2 records live-confirmed field paths with the raw
   `jq '.data'` evidence, **or** the phase carries `[COMPLETED WITH EXCLUSIONS]` with a
   `#### Reasoned Exclusions` record stating exactly why confirmation is still pending.
+  *(satisfied: item-key path confirmed with raw evidence; attachment-key path closed via the
+  Reasoned Exclusions record below)*
 - If a real write occurred: the created item key is recorded and reported, and the
-  probing-retention decision is stated with its reason.
-- No write was made without the explicit user gate having been passed.
+  probing-retention decision is stated with its reason. *(satisfied: key `QWF66MNX`)*
+- No write was made without the explicit user gate having been passed. *(satisfied)*
 - `zotero-write.sh` was the entry point for both real calls (choke-point preserved).
+  *(satisfied)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Live confirmation of the four attachment-key candidate field paths (`.data.attachment.key`, `.data.attachmentKey`, `.data.attachment_key`, `.data.attachments[0].key`) | Both real attach attempts (the internal attach inside `item-add`, and the standalone `attach-file` call) failed identically with a Zotero API `413` error before reaching a successful attachment envelope. The account's storage quota is already far exceeded independent of this test's 1.5 MB file, and the only alternative route (`--via-bridge`, local desktop import) was unavailable because Zotero desktop was confirmed unreachable at test time. No route in this environment currently reaches a successful file upload, so this specific empirical unknown cannot be closed without an external change (quota increase, freed space, or a running desktop client). | `zotero-write.sh item-add` real-call stdout: `"attachment_error": "... Code: 413 ... Response: File would exceed quota (2745.6 &gt; 300)"`. `zotero-write.sh attach-file` real-call stdout: `{"ok": false, "error": {"code": "api_error", "message": "... Code: 413 ... File would exceed quota ..."}}`. Dry-run preview for the attach-file call recorded `"via_bridge": false`. Both raw envelopes and the dry-run preview are recorded in `zotero-item-creation.md` section 2. |
 
 ---
 
