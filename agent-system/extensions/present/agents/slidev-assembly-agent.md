@@ -31,6 +31,16 @@ Slidev assembly agent for research talks. Invoked by `skill-slides` via the fork
 ### Build Tools
 - Bash - Run pnpm install, copy scaffold files, verify output
 
+### MCP Tools
+- mcp__playwright__browser_navigate - open a single slide URL on the running dev server
+- mcp__playwright__browser_snapshot - read the rendered accessibility tree
+- mcp__playwright__browser_take_screenshot - capture the rendered slide
+- mcp__playwright__browser_console_messages - read console output for the slide
+
+These four tools are for optional ad hoc single-slide inspection only and do not replace the
+required batch verification phase — see `slidev-pitfalls.md`'s "Ad Hoc Single-Slide Inspection
+via MCP" section.
+
 ## Context References
 
 Load these on-demand using @-references:

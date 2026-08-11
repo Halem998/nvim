@@ -241,6 +241,27 @@ For each slide, the script:
 
 Exit code 0 means all slides passed. Exit code 1 means at least one slide failed.
 
+### Why This Phase Uses a Script, Not MCP Tools
+
+`playwright-verify.mjs` stays as the required batch verification mechanism rather than being
+replaced by the live Playwright MCP server. In order of weight:
+
+1. **Determinism and CI capability**: the script's exit code is the only mechanism in this
+   system that can gate a build with no agent or human turn in the loop. No Playwright MCP tool
+   offers a headless/CI entry point — `browser_navigate` and its siblings always require a live
+   agent turn. If a future CI step needs to gate deck PRs, only the script can provide that hook.
+2. **Cost at scale**: a faithful MCP replication of the per-slide loop costs roughly 4 tool
+   round-trips per slide (navigate, console messages, snapshot, take screenshot) against one
+   `node` invocation for the whole deck. A 30-40 slide deck would cost 120-160 agent tool calls
+   under MCP versus a single script run — a real efficiency regression at scale, not merely an
+   aesthetic preference for the script.
+3. **Check fidelity**: the blank-slide/visible-error-text check depends on in-page evaluation
+   (`document.body.innerText` length and substring matching), and its only exact equivalent tool,
+   `browser_evaluate`, is deliberately unpermissioned. `browser_snapshot`'s accessibility tree is
+   the nearest safe substitute, but it substitutes a qualitative agent read of the tree for a
+   mechanical byte-length threshold — a legitimate but different check, not a drop-in
+   replacement.
+
 ### Fixing Common Errors
 
 When slides fail verification:
@@ -251,3 +272,23 @@ When slides fail verification:
 - **lz-string / CJS module error**: ensure `.npmrc` has `shamefully-hoist=true`, `lz-string-esm.js` exists, and `vite.config.ts` aliases it
 - **Black boxes on inline code**: see "Inline Code Black Boxes (Shiki CSS Override)" section above
 - **Vue components in markdown tables**: see "Vue Components in Markdown Tables" section above
+
+## Ad Hoc Single-Slide Inspection via MCP
+
+With the dev server already running, an agent fixing one broken slide can use the Playwright MCP
+server to confirm the fix without re-running the full batch script:
+
+1. `browser_navigate` to `localhost:{port}/{slideNumber}` for the specific slide just edited
+2. `browser_take_screenshot` (or `browser_snapshot` for the accessibility tree) to visually
+   confirm the fix rendered as expected
+3. `browser_console_messages` to read console output for that slide
+
+This workflow **complements and does not replace** the required batch verification phase — a
+deck is not verified until `playwright-verify.mjs` exits 0 for every slide. It exists purely for
+faster iteration while mid-edit on a single slide, when re-running the whole batch script (and
+waiting on the dev server + full-deck loop) would be slower than confirming one fix directly.
+
+**Open caveat**: `browser_console_messages`'s coverage of uncaught exceptions has not been
+empirically verified against the script's separate `page.on('pageerror', ...)` listener. Do not
+treat ad hoc console-message reading as equal error coverage to a batch run — the batch script
+remains the authoritative gate for error detection.

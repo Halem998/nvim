@@ -174,25 +174,27 @@ wildcard entry, or any tool name absent from `web`'s list, fails this phase.
 
 ---
 
-### Phase 2: Authorize MCP Tools in slidev-assembly-agent's Contract [NOT STARTED]
+### Phase 2: Authorize MCP Tools in slidev-assembly-agent's Contract [COMPLETED]
 
 **Goal**: Add an explicit "MCP Tools" subsection to the agent's Allowed Tools section — the
 settings-fragment grant governs prompting, not whether the agent's own contract authorizes the
 call.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/present/agents/slidev-assembly-agent.md`, add an `### MCP Tools`
+- [x] In `agent-system/extensions/present/agents/slidev-assembly-agent.md`, add an `### MCP Tools`
       subsection under `## Allowed Tools`, placed after the existing `### Build Tools`
       subsection and matching the sibling subsections' bullet style (`- ToolName - purpose`)
-- [ ] List exactly the 4 tools needed for ad hoc single-slide inspection, each with a one-line
+      *(completed)*
+- [x] List exactly the 4 tools needed for ad hoc single-slide inspection, each with a one-line
       purpose: `mcp__playwright__browser_navigate` (open a single slide URL on the running dev
       server), `mcp__playwright__browser_snapshot` (read the rendered accessibility tree),
       `mcp__playwright__browser_take_screenshot` (capture the rendered slide),
       `mcp__playwright__browser_console_messages` (read console output for the slide)
-- [ ] Add a one-sentence scope note under the subsection stating these are for optional ad hoc
+      *(completed)*
+- [x] Add a one-sentence scope note under the subsection stating these are for optional ad hoc
       single-slide inspection and do not replace the batch verification phase, cross-referencing
-      `slidev-pitfalls.md` by filename and section heading (never by task number)
-- [ ] Leave the `### File Operations` and `### Build Tools` subsections unchanged
+      `slidev-pitfalls.md` by filename and section heading (never by task number) *(completed)*
+- [x] Leave the `### File Operations` and `### Build Tools` subsections unchanged *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -219,38 +221,40 @@ absent from `present/settings-fragment.json` would prompt at runtime and is a de
 
 ---
 
-### Phase 3: Written Justification and Ad Hoc MCP Inspection Workflow [NOT STARTED]
+### Phase 3: Written Justification and Ad Hoc MCP Inspection Workflow [COMPLETED]
 
 **Goal**: Produce the acceptance criterion's required written justification for keeping the batch
 script, and document the additive ad hoc MCP workflow as explicitly complementary. This phase
 produces the task's primary deliverable.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/present/context/project/present/talk/patterns/slidev-pitfalls.md`,
+- [x] In `agent-system/extensions/present/context/project/present/talk/patterns/slidev-pitfalls.md`,
       add a "Why This Phase Uses a Script, Not MCP Tools" subsection inside the existing
       `## Required Final Phase: Playwright Verification` section, placed after the existing
-      "What the Script Checks" subsection
-- [ ] State the three justifications in that subsection, in order of weight: (1) **determinism
+      "What the Script Checks" subsection *(completed)*
+- [x] State the three justifications in that subsection, in order of weight: (1) **determinism
       and CI capability** — the script's exit code is the only mechanism here that gates without
       an agent or human in the loop, and no MCP tool has a headless entry point; (2) **cost at
       scale** — a faithful replication is ~4 tool round-trips per slide against one `node`
       invocation, so a 30-40 slide deck costs 120-160 tool calls; (3) **check fidelity** —
       the blank/error-text check depends on in-page evaluation, whose only equivalent tool is
       deliberately unpermissioned, and the accessibility-tree snapshot is a qualitative proxy
-      rather than a mechanical threshold
-- [ ] Add a `## Ad Hoc Single-Slide Inspection via MCP` section as a sibling of (and after) the
+      rather than a mechanical threshold *(completed)*
+- [x] Add a `## Ad Hoc Single-Slide Inspection via MCP` section as a sibling of (and after) the
       `## Required Final Phase: Playwright Verification` section, describing the workflow: with
       the dev server already running, navigate to `localhost:{port}/{slideNumber}`, then take a
       screenshot or read the accessibility snapshot to confirm a just-applied fix, plus read
-      console messages for that slide
-- [ ] State in that new section, explicitly, that this **complements and does not replace** the
+      console messages for that slide *(completed)*
+- [x] State in that new section, explicitly, that this **complements and does not replace** the
       required batch phase, and that a deck is not verified until the batch script exits 0
-- [ ] Record the open caveat in that section: console-message reading is not confirmed equivalent
+      *(completed)*
+- [x] Record the open caveat in that section: console-message reading is not confirmed equivalent
       to the script's separate uncaught-exception listener, so ad hoc console output must not be
-      treated as equal error coverage to a batch run
-- [ ] Do not modify the existing phase template code fence, the "What the Script Checks" list, or
-      the "NixOS Playwright Workaround" section
-- [ ] Do not introduce any line beginning `### Phase ` outside the existing fenced code block
+      treated as equal error coverage to a batch run *(completed)*
+- [x] Do not modify the existing phase template code fence, the "What the Script Checks" list, or
+      the "NixOS Playwright Workaround" section *(completed — confirmed via diff read-through)*
+- [x] Do not introduce any line beginning `### Phase ` outside the existing fenced code block
+      *(completed — grep count unchanged at 2)*
 
 **Timing**: 1 hour
 
