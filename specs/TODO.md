@@ -47,7 +47,7 @@ next_project_number: 47
 
 38 [PLANNED] — Activate the literature extension's designed-but-inactive Zotero 
   └─ 39 [NOT STARTED] — Upgrade the literature extension's Zotero integration beyond bare
-40 [PLANNING] — The `sentence_boundary_glue_count` quality-gate check in `agent-s
+40 [PLANNED] — The `sentence_boundary_glue_count` quality-gate check in `agent-s
 
 ### Orchestration Concurrency
 
@@ -143,11 +143,12 @@ next_project_number: 47
 
 ### 40. Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
 - **Effort**: 1-3 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md]
+- **Plan**: [040_fix_convert_quality_gate_glue_false_positives/plans/01_glue-gate-exemptions.md]
 
 **Description**: The `sentence_boundary_glue_count` quality-gate check in `agent-system/extensions/literature/scripts/literature-convert.sh` (function at line 655, called from `run_quality_gate` at line 690, threshold `>= 3`) rejects otherwise-clean conversions of logic and math papers. The regex `[a-z]\.[A-Z]` matches two benign patterns endemic to this corpus: (1) `Ph.D.` in bibliography entries — the `h.D` transition, extremely common in reference lists; (2) single-letter-variable quantifier/binder notation such as `∀x.P`, `∃x.P`, `∃y.E` — the `x.P` transition, standard in logic papers.
 

@@ -919,7 +919,7 @@
     {
       "project_number": 40,
       "project_name": "fix_convert_quality_gate_glue_false_positives",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation",
       "topic": "literature",
@@ -936,10 +936,15 @@
           "path": "specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md",
           "type": "report",
           "summary": "research report"
+        },
+        {
+          "path": "specs/040_fix_convert_quality_gate_glue_false_positives/plans/01_glue-gate-exemptions.md",
+          "type": "plan",
+          "summary": "implementation plan"
         }
       ],
       "created": "2026-08-11T16:06:30Z",
-      "last_updated": "2026-08-11T20:48:54Z",
+      "last_updated": "2026-08-11T20:55:22Z",
       "session_id": "sess_1786480706_506b3d_40"
     },
     {

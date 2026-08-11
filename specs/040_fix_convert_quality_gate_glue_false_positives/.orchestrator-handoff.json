@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Created a 5-phase implementation plan for the sentence-boundary-glue exemption fix: a red-baseline fixture spike, both fixture builders, the strip-then-count fix plus docstring, test wiring as required non-skipping assertions, and an acceptance/scope-guard pass. Planning also retired the report's main fixture risk by proving fitz.TextWriter round-trips the binder characters that insert_text silently mangles.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/040_fix_convert_quality_gate_glue_false_positives/plans/01_glue-gate-exemptions.md",
+      "summary": "5-phase plan, 3 hours, 4 dependency waves; strip-then-count exemption fix plus both-polarity hermetic regression fixtures"
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Run /implement 40 to execute the plan; Phase 1 is a scratch-only red-baseline spike that must confirm both fixtures are RED with sentence-boundary-glue as the sole gate reason before any source edit."
+}

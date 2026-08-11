@@ -1,39 +1,27 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1786480706_506b3d_40",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 40,
-  "findings_count": 6,
+  "session_id": "sess_1786480706_506b3d_40",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md",
-      "summary": "Locates sentence_boundary_glue_count (literature-convert.sh:655) and run_quality_gate (:680), confirms the regex engine is plain Python re, empirically verifies the false-positive counts (4 and 7) against the two named real corpus papers, proposes and simulation-validates a strip-then-count exemption fix for Ph.D. and quantifier/binder notation that leaves the >=3 threshold and the other four gate checks untouched, and specs the two required negative/positive regression fixtures against the existing generate-test-fixtures.py / test-literature-convert.sh patterns."
+      "type": "plan",
+      "path": "specs/040_fix_convert_quality_gate_glue_false_positives/plans/01_glue-gate-exemptions.md",
+      "summary": "5-phase implementation plan for the sentence-boundary-glue exemption fix and both-polarity regression fixtures"
     }
   ],
+  "phase_count": 5,
+  "estimated_hours": 3,
+  "dependency_waves": [[1], [2, 3], [4], [5]],
   "memory_candidates": [
     {
-      "content": "In agent-system/extensions/literature/scripts/literature-convert.sh, the entire quality-gate block (column_interleaving_flagged, sentence_boundary_glue_count, run_quality_gate, etc.) runs inside a `python3 << 'PYEOF'` heredoc (lines ~256-767), not grep/awk. Any regex work on these checks should use Python `re` semantics (including its fixed-width-only lookbehind constraint), not POSIX ERE.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["literature-convert.sh", "quality-gate", "python-heredoc", "regex-engine"]
-    },
-    {
-      "content": "Pattern for narrowing an overly-broad quality-gate regex without raising its numeric threshold or using lookbehind: strip the known-benign exemption substrings first via re.sub (each exemption span must fully contain the raw match span it exempts, e.g. `Ph.D` contains `h.D`, `∀x.P` contains `x.P`), THEN run the original re.findall on the residue. Verified against real corpus text for the literature pipeline's sentence_boundary_glue_count false positives on `Ph.D.` bibliography entries and `∀x.P`/`∃x.P` quantifier notation.",
+      "content": "PyMuPDF hermetic PDF fixtures cannot carry non-Latin-1 characters (math symbols like the U+2200/U+2203 binders) via page.insert_text(): with a base-14 font such as 'helv' the character is silently substituted with a middle dot (U+00B7), and with the built-in CJK font 'china-ss' it is dropped entirely. Neither failure raises. fitz.Font(name).has_glyph() is NOT a reliable predictor -- it reports a nonzero glyph id for U+2200 under 'helv' even though insert_text mangles it. The working hermetic path (no extra dependency, no system font file, no pymupdf_fonts package) is the TextWriter API: tw = fitz.TextWriter(page.rect); tw.append(pos, text, font=fitz.Font('helv'), fontsize=n); tw.write_text(page). Verified round-trip: the extracted text preserves the binder characters exactly. General lesson: for any PDF fixture asserting on extracted text, verify the round-trip through get_text() rather than trusting the source string literal -- a silently substituted glyph turns a two-condition test into a one-condition test with no visible failure.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["regex-narrowing", "quality-gate", "exemption-pattern", "strip-then-count", "false-positive"]
-    },
-    {
-      "content": "docs/architecture/handoff-schema.md's 'Handoff Writers' table is the settled decision: .orchestrator-handoff.json is hard-mode-implement-only. Base-mode skill-researcher/skill-planner/skill-implementer never write one, even under orchestrator_mode: true -- base-mode research/plan/implement return via .return-meta.json only, recovered by orchestrate-recover-outcome.sh. A delegation message asking a research agent to write .orchestrator-handoff.json conflicts with this contract and should be flagged back to the delegator rather than followed.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["orchestrator-handoff", "handoff-schema", "base-mode", "research-agent-contract"]
+      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/plans/01_glue-gate-exemptions.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["pymupdf", "fitz", "textwriter", "pdf-fixture", "unicode-glyph", "insert_text"]
     }
   ],
-  "next_steps": "Run /plan 40 to create implementation plan"
+  "next_steps": "Run /implement 40 to execute the plan"
 }
