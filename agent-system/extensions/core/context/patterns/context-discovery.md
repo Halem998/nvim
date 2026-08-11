@@ -26,8 +26,12 @@ other and of the three-layer context-index architecture above:
    (e.g. `paths: "**/*"` on `pr-prohibition.md` matches every path; `paths: specs/**/*` on
    `state-management.md` matches only `specs/` paths). This is a harness mechanism, unrelated to
    `.claude/context/index.json` and unrelated to any `@`-import list.
-2. **`CLAUDE.md` `@`-import list**: the curated subset of rules listed under CLAUDE.md's
-   "Rules References" section, pulled in via `@`-reference syntax.
+2. **`CLAUDE.md` "Rules References" list**: the curated subset of rules listed under CLAUDE.md's
+   "Rules References" section. These entries are plain backticked paths (documentation pointers),
+   deliberately NOT resolving `@`-imports — see the "Eager vs. Lazy Loading Channels" section of
+   `architecture/context-layers.md` for the full channel inventory, the `@`-resolution semantics
+   (directory-relative; broken refs are silently inert), and the
+   no-volatile-files-in-eager-prefix constraint.
 
 A rule file can be live via path 1 alone, with no entry in path 2's list at all — this is common
 and not a defect. **A dead-code audit MUST check a rule file's own `paths:` frontmatter before

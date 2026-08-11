@@ -200,15 +200,15 @@ Phases within the same wave can execute in parallel (disjoint file sets: Phase 1
 
 ---
 
-### Phase 5: Document resolution semantics, channel inventory, and the volatility constraint [NOT STARTED]
+### Phase 5: Document resolution semantics, channel inventory, and the volatility constraint [COMPLETED]
 
 **Goal**: Make the audit's master finding durable knowledge so the next author cannot re-introduce the accident: record `@`-resolution semantics, the eager-channel inventory, and the no-volatile-files-in-eager-prefix constraint in core context.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/architecture/context-layers.md`: add a section on eager-vs-lazy channels — the native CLAUDE.md chain, `@`-import resolution (relative to the containing file's directory; `@.claude/...` from within `.claude/CLAUDE.md` is silently inert), rules `paths:` globs (absence = eager; presence = deferred to first path touch), and preflight injection (memory/`--lit`). State the volatility constraint explicitly: files that change per task operation must never be `@`-imported into the eager prefix.
-- [ ] In `agent-system/extensions/core/context/patterns/context-discovery.md`: add a short cross-reference to the new channel-inventory section (do not duplicate content).
-- [ ] Extend the existing memory `.memory/10-Memories/MEM-insight-context-loading-by-at-reference.md` with the generated-CLAUDE.md-side facts (directory-relative resolution, the two path-style classes, the downward-normalization decision) rather than creating a new memory. No task numbers in the memory body outside frontmatter provenance conventions.
-- [ ] Record the open question from the audit as a stated unknown in the channel-inventory section: whether a `paths:`-gated rule fires before or only after the matching write — flagged as requiring an empirical test before anyone gates an enforcement rule.
+- [x] In `agent-system/extensions/core/context/architecture/context-layers.md`: add a section on eager-vs-lazy channels — the native CLAUDE.md chain, `@`-import resolution (relative to the containing file's directory; `@.claude/...` from within `.claude/CLAUDE.md` is silently inert), rules `paths:` globs (absence = eager; presence = deferred to first path touch), and preflight injection (memory/`--lit`). State the volatility constraint explicitly: files that change per task operation must never be `@`-imported into the eager prefix. *(completed: "Eager vs. Lazy Loading Channels" section, 4-channel inventory + constraint)*
+- [x] In `agent-system/extensions/core/context/patterns/context-discovery.md`: add a short cross-reference to the new channel-inventory section (do not duplicate content). *(completed: also corrected the stale "@-import list" description of Rules References)*
+- [x] Extend the existing memory `.memory/10-Memories/MEM-insight-context-loading-by-at-reference.md` with the generated-CLAUDE.md-side facts (directory-relative resolution, the two path-style classes, the downward-normalization decision) rather than creating a new memory. No task numbers in the memory body outside frontmatter provenance conventions. *(completed)*
+- [x] Record the open question from the audit as a stated unknown in the channel-inventory section: whether a `paths:`-gated rule fires before or only after the matching write — flagged as requiring an empirical test before anyone gates an enforcement rule. *(completed: stated-unknown bullet in channel 3)*
 
 **Timing**: 1 hour
 

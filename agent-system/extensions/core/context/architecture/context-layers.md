@@ -124,6 +124,66 @@ task that adds a core contract and assumes it now reaches extension implementers
 because a central hook exists is working from a false premise; this file is where that premise
 gets checked.
 
+## Eager vs. Lazy Loading Channels
+
+The layers above describe where content *lives*; this section is the canonical inventory of how
+content *enters an agent's context window*, and when. Four channels exist, and each is either
+eager (in the session-start prompt prefix, paid on every invocation) or lazy (loaded on demand).
+
+### Channel inventory
+
+1. **Native CLAUDE.md chain (eager)**. Claude Code walks upward from the working directory and
+   inlines every `CLAUDE.md` it finds (e.g. `~/.config/CLAUDE.md`, the repo's `CLAUDE.md`, and
+   the generated `.claude/CLAUDE.md`). This is unconditional and is the baseline eager surface.
+
+2. **`@`-import resolution (eager when it resolves; silently inert when it does not)**.
+   An `@path` reference inside a CLAUDE.md file is resolved **relative to the containing file's
+   directory** and, if the target exists, the whole target file is inlined eagerly into the
+   prompt prefix. Two consequences of the directory-relative rule, measured during the
+   context-loading audit:
+   - From within `.claude/CLAUDE.md`, a ref written `@context/...` resolves (to
+     `.claude/context/...`) and eagerly inlines the entire file.
+   - From within `.claude/CLAUDE.md`, a ref written `@.claude/...` resolves to the nonexistent
+     `.claude/.claude/...` and loads **nothing** — no error, no warning. A broken `@`-ref is
+     indistinguishable from a working one to a reader of the file.
+   Because of this trap, generated-CLAUDE.md merge sources in this repo use **plain backticked
+   paths, never `@`-refs**: a path is a pointer an agent may follow with Read, and eager
+   inlining is reserved for a deliberate decision, not a side effect of path style.
+
+3. **Rules `paths:` frontmatter (absence = eager; presence = deferred)**. A file under
+   `.claude/rules/` with no `paths:` YAML frontmatter is injected eagerly for every session. A
+   rule with a `paths:` glob is deferred until a touched or referenced path matches the glob.
+   Absence of frontmatter must therefore be a *decision*, not an omission — a deliberately-eager
+   rule should carry a comment recording why (see `rules/source-store-deploy-boundary.md` for
+   the pattern: its enforcement hook is PostToolUse/non-blocking, so learning the rule only
+   after the first matching write would be too late).
+   - **Stated unknown**: whether a `paths:`-gated rule fires *before* or only *after* the
+     matching write reaches the tool layer has not been empirically established here. Before
+     gating any rule whose value depends on pre-write timing (i.e. any enforcement rule), run an
+     empirical test; do not assume either timing.
+
+4. **Preflight injection (per-invocation, command-scoped)**. Memory retrieval
+   (`<memory-context>`, suppressed by `--clean`) and literature briefing (`--lit`) are injected
+   by command preflight stages into a single dispatch — they cost per invocation, not per
+   session, and are governed by their own flags.
+
+### The no-volatile-files-in-eager-prefix constraint
+
+Files that change on every task operation — `specs/TODO.md`, `specs/state.json`,
+`specs/errors.json`, and anything else mutated by the task lifecycle — must **never** be
+`@`-imported into the eager prefix. Two independent reasons:
+
+- **Cache economics**: the eager prefix is a cached prompt prefix; a volatile file in it
+  invalidates the cache on every task operation, converting a one-time cost into a
+  per-invocation cost.
+- **Staleness**: the inlined snapshot is frozen at session start and silently diverges from the
+  file on disk, which is worse than not loading it at all — agents should Read these files at
+  point of use.
+
+When auditing or "fixing" path references in merge sources, the forbidden direction is repairing
+a broken-looking ref *upward* into a resolving `@`-form. The correct normalization is always
+downward to a plain backticked path.
+
 ## Verification Summary
 
 Confirmed by code review (2026-03-25) of the extension loader source:

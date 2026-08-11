@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Document resolution semantics, channel inventory, and the volatility constraint",
+  "started_at": "2026-08-11T01:30:00Z",
+  "last_updated": "2026-08-11T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add eager-vs-lazy channels section to context-layers.md with volatility constraint", "status": "done", "files_touched": ["agent-system/extensions/core/context/architecture/context-layers.md"]},
+    {"id": 2, "description": "Cross-reference in context-discovery.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/context-discovery.md"], "note": "Also corrected the now-stale 'pulled in via @-reference syntax' description of the Rules References list."},
+    {"id": 3, "description": "Extend MEM-insight-context-loading-by-at-reference.md with CLAUDE.md-side facts", "status": "done", "files_touched": [".memory/10-Memories/MEM-insight-context-loading-by-at-reference.md"]},
+    {"id": 4, "description": "Record the paths:-gated-rule timing open question as a stated unknown", "status": "done", "files_touched": [], "note": "Recorded inline in channel 3 of the new context-layers.md section."}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
