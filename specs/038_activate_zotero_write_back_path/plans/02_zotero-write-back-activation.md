@@ -414,7 +414,7 @@ acceptance criterion 3 and work item 5.
 
 ---
 
-### Phase 5: Verify the preserved invariants and the write choke-point [NOT STARTED]
+### Phase 5: Verify the preserved invariants and the write choke-point [COMPLETED]
 
 **Goal**: Demonstrate — with evidence, not assertion — that the three named invariants and the
 single-write-choke-point property survive Phases 3 and 4 unchanged. Satisfies acceptance
@@ -422,26 +422,36 @@ criterion 4 and work item 6.
 
 **Tasks**:
 
-- [ ] Magic-byte gate: produce a `git diff` excerpt showing `download_and_verify()` and its
+- [x] Magic-byte gate: produce a `git diff` excerpt showing `download_and_verify()` and its
       `[ "$magic" != "%PDF" ]` check are unchanged across the whole task's diff, and confirm both
       call sites still stop via `directive_stop "ONLINE_INGEST_DOWNLOAD_FAILED"` before any
-      Zotero write.
-- [ ] Exercise the gate: point a fixture at a non-PDF file (or a URL returning HTML) and confirm
+      Zotero write. *(completed: `diff` of the extracted function body against the pre-task
+      commit is byte-identical)*
+- [x] Exercise the gate: point a fixture at a non-PDF file (or a URL returning HTML) and confirm
       `ONLINE_INGEST_DOWNLOAD_FAILED` is emitted and no `zotero-write.sh` call follows.
-- [ ] DOI-only-fallback honest surfacing: confirm the `--doi`-without-`--pdf` fallback is still
+      *(completed: local HTTP fixture serving HTML at a `.pdf` URL -> magic-byte check failed,
+      `ONLINE_INGEST_DOWNLOAD_FAILED` printed, exit 2, no "Created Zotero item" log line)*
+- [x] DOI-only-fallback honest surfacing: confirm the `--doi`-without-`--pdf` fallback is still
       documented and still surfaced as "no PDF attached" rather than a success, in both
       `zotero-write.sh`'s header and `zotero-item-creation.md`; confirm the
-      `ONLINE_INGEST_NO_PDF` stop path is unchanged.
-- [ ] Never-fabricate-keys: confirm the `tier == "absent"` full stop in the `existing_no_pdf`
+      `ONLINE_INGEST_NO_PDF` stop path is unchanged. *(completed: both docs still state the
+      DOI-only fallback honestly; `ONLINE_INGEST_NO_PDF` call sites unchanged in the task diff
+      except for surrounding header prose)*
+- [x] Never-fabricate-keys: confirm the `tier == "absent"` full stop in the `existing_no_pdf`
       branch and the "returned tier=X but no zotero_key" stop are both unchanged, and that
       neither Phase 3's nor Phase 4's insertions introduce any code path that synthesizes an item
-      key.
-- [ ] Write choke-point: run
+      key. *(completed: `diff` of the `existing_no_pdf` branch body against the pre-task commit
+      shows only the new freshness-check insertion; the tier==absent stop, the no-zotero_key
+      stop, and the resolved_path corrective edge case are byte-identical)*
+- [x] Write choke-point: run
       `grep -rn "zot \|zot add\|zot attach\|api.zotero.org" agent-system/extensions/literature/scripts/`
       and confirm every mutating call still routes through `zotero-write.sh`; no caller invokes
-      `zot`'s write subcommands or the Web API directly.
-- [ ] Record all of the above as an evidence block in the implementation notes, so the acceptance
-      criterion is closed by demonstration rather than by claim.
+      `zot`'s write subcommands or the Web API directly. *(completed: `zot note/tag/attach/add`
+      write subcommands appear only inside `zotero-write.sh`; `zotero-read.sh` and
+      `zotero-setup.sh` use only read-only `zot` subcommands)*
+- [x] Record all of the above as an evidence block in the implementation notes, so the acceptance
+      criterion is closed by demonstration rather than by claim. *(completed: evidence recorded
+      inline in this checklist)*
 
 **Timing**: 0.5 hours
 
