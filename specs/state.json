@@ -945,7 +945,7 @@
         {
           "path": "specs/040_fix_convert_quality_gate_glue_false_positives/summaries/01_glue-gate-exemptions-summary.md",
           "type": "summary",
-          "summary": "Implementation summary: strip-then-count exemption fix, both-polarity fixtures, all 5 acceptance criteria confirmed"
+          "summary": "implementation summary"
         }
       ],
       "created": "2026-08-11T16:06:30Z",
