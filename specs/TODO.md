@@ -11,8 +11,8 @@ next_project_number: 52
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 16,17,18,20,22,27,28,31,33,34,39,41,43,45,46,47,51 | -- | agent-system, extensions, literature, ... |
-| 2 | 9,13,14,29,35,42,48 | 16,17,18,22,33,41,47 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
+| 1 | 16,17,18,20,22,27,28,31,33,34,39,41,43,45,46,51 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,13,14,29,35,42,48 | 16,17,18,22,33,41 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
 | 3 | 30,37,49,50 | 29,33,35,41,48 | agent-system, orchestration-concurrency, context-loading |
 | 4 | 32,44 | 28,30,31,49 | agent-system, context-loading |
 
@@ -32,7 +32,6 @@ next_project_number: 52
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
-47 [IMPLEMENTING] — Clear the two failing verification gates and reconcile the defect
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
@@ -187,12 +186,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 47. Clear failing gates and reconcile ledgers
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [047_clear_failing_gates_and_reconcile_ledgers/reports/01_clear-failing-gates-and-reconcile-ledgers.md]
 - **Plan**: [047_clear_failing_gates_and_reconcile_ledgers/plans/01_clear-gates-reconcile-ledgers.md]
+- **Summary**: [047_clear_failing_gates_and_reconcile_ledgers/summaries/01_clear-gates-reconcile-ledgers-summary.md]
 
 **Description**: Clear the two failing verification gates and reconcile the defect/review ledgers against reality. All three items are bookkeeping the validators have already caught; none require design work.
 
