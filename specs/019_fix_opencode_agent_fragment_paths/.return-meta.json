@@ -1,41 +1,19 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "task_number": 19,
+  "session_id": "sess_1786459614_0c9ada_19",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/019_fix_opencode_agent_fragment_paths/reports/01_opencode-fragment-path-fix.md",
-      "summary": "Recommends repointing all 12 opencode-agents.json fragments' {file:...} references at .claude/agents/<agent>.md (Option a), degrading merge.lua's validator to report-all/per-key instead of fail-fast/per-fragment, and flags a content-mismatch caveat plus a partially-diverged .opencode/extensions/ mirror that a future sync task must reconcile."
+      "type": "plan",
+      "path": "specs/019_fix_opencode_agent_fragment_paths/plans/01_opencode-fragment-path-fix.md",
+      "summary": "6-phase plan: repoint all 12 opencode-agents.json fragments at .claude/agents/, correct lean's directory and present's stale slides basename/key, convert merge.lua's validator from fail-fast to report-all and its generator from per-fragment to per-agent-key degradation, with a measured before/after noise record as an explicit handoff deliverable."
     }
   ],
-  "next_steps": "Run /plan 19 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1786459614_0c9ada_19",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo's extension system, opencode.json generation (merge.lua generate_opencode_json) is gated behind a project-root opencode.json.managed sidecar file — if that marker is absent, the whole opencode fragment validation/merge path is a no-op, regardless of which extensions are loaded or active. Useful when debugging why opencode-related warnings appear in one consuming repo but not another.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/019_fix_opencode_agent_fragment_paths/reports/01_opencode-fragment-path-fix.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["opencode.json", "managed marker", "generate_opencode_json", "merge.lua", "extension system"]
-    },
-    {
-      "content": "The extension system has two parallel, parameterized deploy profiles (lua/neotex/plugins/ai/shared/extensions/config.lua M.claude() and M.opencode()), each with its own base_dir, agents_subdir, and source-of-truth global_extensions_dir. M.opencode()'s source is .opencode/extensions/ (an absolute, global path under ~/.config/nvim), NOT agent-system/extensions/ (which is M.claude()'s source). Code that reads {file:...} literal path strings from opencode-agents.json fragments resolves them relative to project_dir regardless of which profile triggered the call, so a fragment's path convention must match whatever gets deployed under the profile that actually invokes it, not the other profile.",
-      "category": "PATTERN",
-      "source_artifact": "specs/019_fix_opencode_agent_fragment_paths/reports/01_opencode-fragment-path-fix.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["config.lua", "dual profile", "claude vs opencode", "agents_subdir", "global_extensions_dir"]
-    },
-    {
-      "content": ".opencode/extensions/ is a second, git-tracked (not gitignored) mirror of the same extensions found in agent-system/extensions/, predating the migration that made agent-system/extensions/ canonical. It has independently diverged for at least nix (self-contained {file:.opencode/extensions/<ext>/agents/<name>.md} path convention) and present (already-correct slides-research agent key, absent the stale 'slides' bug found in the canonical copy) — meaning the canonical store is not strictly ahead of the mirror, and a one-directional sync would regress already-fixed mirror content for those extensions.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/019_fix_opencode_agent_fragment_paths/reports/01_opencode-fragment-path-fix.md",
-      "confidence": 0.85,
-      "suggested_keywords": [".opencode/extensions", "mirror drift", "sync direction", "agent-system/extensions", "canonical store"]
-    }
-  ]
+  "phase_count": 6,
+  "estimated_hours": 5,
+  "dependency_waves": [[1], [2, 3, 4], [5], [6]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 19 to execute the plan"
 }

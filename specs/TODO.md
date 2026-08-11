@@ -28,7 +28,7 @@ next_project_number: 36
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
-28 [RESEARCHED] — Rewrite the canonical MCP ownership document, whose central premi
+28 [PLANNING] — Rewrite the canonical MCP ownership document, whose central premi
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
@@ -39,7 +39,7 @@ next_project_number: 36
 
 ### Extensions
 
-19 [RESEARCHED] — Reloading extensions in a consuming repo emits roughly 60 lines o
+19 [PLANNED] — Reloading extensions in a consuming repo emits roughly 60 lines o
   └─ 22 [NOT STARTED] — Silence and correct opencode-agents.json fragment validation spam
 
 ### Orchestration Concurrency
@@ -316,7 +316,7 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 ---
 
 ### 28. Correct mcp ownership model and purge dead declarations
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -665,11 +665,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 19. Fix opencode agent-fragment path resolution and validator fail-fast
 - **Effort**: 3h
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [019_fix_opencode_agent_fragment_paths/reports/01_opencode-fragment-path-fix.md]
+- **Plan**: [019_fix_opencode_agent_fragment_paths/plans/01_opencode-fragment-path-fix.md]
 
 **Description**: Reloading extensions in a consuming repo emits roughly 60 lines of "Extension '<name>' opencode-agents.json validation failed: Agent '<agent>' references missing file: <path>. Skipping fragment." The resync otherwise succeeds and the Claude Code deploy is correct and complete, so nothing the user relies on today is broken. .opencode/ is NOT currently in use, though the user intends to return to it. Priority is therefore low: the present cost is misleading reload noise, and the real cost is latent, namely that whenever OpenCode is picked back up, 18 agents will be silently missing behind noise that has already been trained into background.
 
