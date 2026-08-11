@@ -1,7 +1,7 @@
 # Implementation Plan: Clear Failing Gates and Reconcile Ledgers
 
 - **Task**: 47 - Clear the two failing verification gates and reconcile the defect/review ledgers against reality
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/047_clear_failing_gates_and_reconcile_ledgers/reports/01_clear-failing-gates-and-reconcile-ledgers.md
@@ -106,16 +106,16 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Re-verify state.json duplicate resolution [NOT STARTED]
+### Phase 1: Re-verify state.json duplicate resolution [COMPLETED]
 
 **Goal**: Confirm item 1 needs no fix, producing the evidence the acceptance criterion requires.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/validate-state.sh --deep` and capture full output.
-- [ ] Confirm exit code 0 and zero FAIL findings.
-- [ ] Confirm the specific `--deep` check "All active_projects[].project_number values are unique"
-      passes, and that the TODO.md-in-sync check passes.
-- [ ] Record the passed/warning/failed counts verbatim for the summary.
+- [x] Run `bash .claude/scripts/validate-state.sh --deep` and capture full output. *(completed)*
+- [x] Confirm exit code 0 and zero FAIL findings. *(completed: 15/0/0)*
+- [x] Confirm the specific `--deep` check "All active_projects[].project_number values are unique"
+      passes, and that the TODO.md-in-sync check passes. *(completed: both PASS)*
+- [x] Record the passed/warning/failed counts verbatim for the summary. *(completed: Passed 15, Warnings 0, Failed 0)*
 
 **Timing**: 0.2 hours
 

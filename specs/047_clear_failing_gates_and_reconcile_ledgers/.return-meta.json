@@ -1,19 +1,16 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 47,
-  "session_id": "sess_1786484451_3e8bc1_47",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/047_clear_failing_gates_and_reconcile_ledgers/plans/01_clear-gates-reconcile-ledgers.md",
-      "summary": "8-phase plan clearing the doc-lint gate (line_count fixes, missing index entry, mandatory redeploy) and reconciling specs/errors.json and specs/reviews/state.json, with state.json item verification-only"
-    }
-  ],
-  "phase_count": 8,
-  "estimated_hours": 3,
-  "dependency_waves": [[1, 2, 5, 7], [3, 6], [4], [8]],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 47 to execute the plan"
+  "session_id": "sess_1786484451_3e8bc1",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [],
+  "metadata": {
+    "session_id": "sess_1786484451_3e8bc1",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }
