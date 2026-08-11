@@ -1,7 +1,46 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 40,
   "session_id": "sess_1786480706_506b3d",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/040_fix_convert_quality_gate_glue_false_positives/summaries/01_glue-gate-exemptions-summary.md",
+      "summary": "Strip-then-count exemption fix for Ph.D./binder-notation false positives in sentence_boundary_glue_count, both-polarity hermetic regression fixtures wired as required assertions, all 5 acceptance criteria confirmed"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Narrowed sentence_boundary_glue_count in literature-convert.sh with a two-pass exemption strip (Ph.D. bibliography entries, single-letter-variable quantifier/binder notation) applied before counting, leaving the >= 3 threshold and the other four gate checks byte-identical to HEAD. Added build_biblio_quantifier_pdf and build_fused_word_pdf to generate-test-fixtures.py and wired Test 3/Test 3b into test-literature-convert.sh as required, non-skipping assertions (11 passed, 0 failed). Confirmed offline against the two named real papers' existing corpus markdown (read-only): both drop from their true false-positive counts (4 and 7) to 0."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-convert.sh",
+    "agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py",
+    "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "PyMuPDF page.insert_text(point, text, fontsize=n) does NOT wrap. A single line whose rendered width exceeds the page's usable width (page width minus the x-origin, e.g. ~540pt on a 612pt-wide US-letter page starting at x=72) is silently truncated mid-word on extraction -- no exception, no return-value signal distinguishable from a normal single-line insert (insert_text returns 1 in both the truncated and non-truncated single-line case in this PyMuPDF version). This can silently corrupt a hermetic PDF fixture's intended text content (e.g. clipping the very sentence-fusion boundary a regression test is trying to construct) with no visible failure until the extracted text is inspected. General lesson: for any PDF-fixture line built with insert_text() (not insert_textbox(), which does wrap), keep it well under ~70-90 characters at 10pt body-text sizes, or verify the round-trip through get_text() rather than trusting the source string literal's full content survived.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/summaries/01_glue-gate-exemptions-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["pymupdf", "fitz", "insert_text", "pdf-fixture", "text-truncation", "line-width"]
+    },
+    {
+      "content": "When re-running an offline regex/text-analysis check against a corpus directory's on-disk markdown for read-only acceptance verification, do not assume a single non-chunked {doc_id}.md file still exists -- a downstream RAG/embedding pipeline may have replaced it with overlapping chunk_NNNN.md fragments, each carrying a per-chunk citation header line prepended to its body text. Naively concatenating such fragment files with no separator (e.g. `text += open(f).read()`) glues the end of one fragment directly onto the next fragment's header line with no intervening whitespace, fabricating spurious zero-space-transition hits that look identical to the real defect signature a check like this is trying to measure. Join fragments with a blank line (or otherwise insert a separator) before running any pattern that is sensitive to word/sentence-boundary whitespace, and re-derive raw counts fresh rather than trusting a prior research pass's cached numbers to still be reproducible via the same method.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/summaries/01_glue-gate-exemptions-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["corpus-verification", "text-concatenation", "chunking", "regex-false-positive", "read-only-check"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786480706_506b3d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
