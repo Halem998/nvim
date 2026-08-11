@@ -1,31 +1,10 @@
 {
-  "status": "planned",
-  "summary": "Created a verify-and-close-gaps plan (5 phases, 1.75h) for the already-committed Playwright MCP activation work. Planning-time verification found the research report's flagged 'cannot run the doc-lint gate' blocker is false (the gate runs against the source store via a documented REPO_ROOT override) and that running it surfaces a real FAIL: index-entries.json line_count drift for project/web/README.md (declared 110, actual 116). Also found the invented tool name browser_verify_text_visible surviving as usable guidance in the git-tracked .opencode/extensions/web copy, which the plan handles as an evidenced decision phase rather than an out-of-scope edit.",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/025_activate_playwright_mcp_in_web_extension/plans/01_activate-playwright-mcp.md",
-      "summary": "5-phase verify-and-close-gaps plan: doc-lint baseline, line_count drift fix, acceptance-criteria audit, .opencode decision record, close-out"
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1786426440_e14088_25",
-    "agent_type": "planner-agent",
+    "session_id": "sess_1786426440_e14088",
+    "agent_type": "general-implementation-agent",
     "task_number": 25,
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 1.75,
-    "dependency_waves": [[1], [2, 3, 4], [5]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a research dispatch exceeds its role and performs implementation edits, the follow-on plan must be a verify-and-close-gaps plan built against the files on disk, not against the research report's claims about them. Independently re-verify the report's assertions before planning: in the Playwright-MCP web-extension activation, two of the report's claims failed verification. It flagged check-extension-docs.sh as unrunnable from the source-store tree, but the script's EXT_DIR defaults to $REPO_ROOT/agent-system/extensions (it lints the SOURCE store, not the deploy tree) and its header documents an explicit 'REPO_ROOT=$(pwd)' override for deliberate source-store invocation. Running it then surfaced a real FAIL the report asserted did not exist: a Rule R index-entries.json line_count mismatch caused by the report's own README edit adding lines without updating the declared count. General lesson: a self-reported 'gate could not be run' blocker is a hypothesis to test, not a fact to plan around, and any prose edit to an indexed context file must be paired with a line_count update (verify via generate-context-line-counts.sh --check, scoped read-only; --write rewrites every extension).",
-      "category": "PATTERN",
-      "source_artifact": "specs/025_activate_playwright_mcp_in_web_extension/plans/01_activate-playwright-mcp.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "line_count-drift", "index-entries", "research-overreach", "verify-and-close-gaps", "source-store-lint"]
-    }
-  ],
-  "next_steps": "Run /implement 25 to execute the plan"
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

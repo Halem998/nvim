@@ -1,7 +1,7 @@
 # Implementation Plan: Task #25
 
 - **Task**: 25 - Activate the already-designed but parked Playwright MCP integration in the web extension, and reconcile its drifted tool list against the live server.
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None (prerequisite MCP registration and `settings-fragment.json` allowlist work already committed)
 - **Research Inputs**: specs/025_activate_playwright_mcp_in_web_extension/reports/01_activate-playwright-mcp.md
@@ -96,27 +96,29 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Establish the Doc-Lint Baseline [NOT STARTED]
+### Phase 1: Establish the Doc-Lint Baseline [COMPLETED]
 
 **Goal**: Run the gate the research phase claimed could not be run, and separate failures caused
 by these edits from pre-existing ones.
 
 **Tasks**:
-- [ ] Run the gate against the source store from the repo root:
-      `REPO_ROOT=$(pwd) bash .claude/scripts/check-extension-docs.sh`
-- [ ] Capture the `web` extension's stanza verbatim (the `[web]` block) and the per-extension
-      Summary table.
-- [ ] Classify each `web` finding as **caused-by-these-edits** or **pre-existing**. Expected
-      classification, to be confirmed not assumed:
+- [x] Run the gate against the source store from the repo root:
+      `REPO_ROOT=$(pwd) bash .claude/scripts/check-extension-docs.sh` *(completed)*
+- [x] Capture the `web` extension's stanza verbatim (the `[web]` block) and the per-extension
+      Summary table. *(completed)*
+- [x] Classify each `web` finding as **caused-by-these-edits** or **pre-existing**. Expected
+      classification, to be confirmed not assumed: *(completed: classification confirmed exactly as expected)*
       - `FAIL: Rule R: index-entries.json entry 'project/web/README.md' line_count mismatch:
         declared 110, actual 116` -> caused by these edits (Phase 2 fixes it)
       - `rule not deployed, skipping drift check: web-astro.md` -> pre-existing (informational)
       - `WARN: routing target not deployed (extension not installed): skill-web-research` and
         `skill-web-implementation` -> pre-existing (web extension is not installed in this repo)
-- [ ] Confirm `core` and `literature` are the only other failing extensions and that neither
-      failure names a `web` path. Record them as out of scope.
-- [ ] Record the exact command used, so the summary can state the compensating-check question is
-      closed by a real run rather than by an argument.
+- [x] Confirm `core` and `literature` are the only other failing extensions and that neither
+      failure names a `web` path. Record them as out of scope. *(completed: core FAIL is
+      scripts/setup-lean-mcp.sh drift; literature FAIL is a separate line_count mismatch on
+      project/literature/domain/literature-index.md; neither names a web path)*
+- [x] Record the exact command used, so the summary can state the compensating-check question is
+      closed by a real run rather than by an argument. *(completed)*
 
 **Timing**: 20 minutes
 
