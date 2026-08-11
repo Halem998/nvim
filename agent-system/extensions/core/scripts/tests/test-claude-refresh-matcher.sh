@@ -12,8 +12,12 @@
 # are called directly by name rather than through a subprocess per case, and is never
 # instrumented or modified to "know" it is under test.
 #
-# Assertion (c) drives a REAL backgrounded process (`sleep 300 &`) rather than a pure string
-# fixture, matching the existing precedent of real subprocess-driven suites.
+# Assertion (c) drives a deterministic scripted probe over claude-refresh.sh's overridable
+# `_pid_is_alive` seam, rather than a real backgrounded process. This replaced an earlier
+# REAL-process fixture (a backgrounded 300-second `sleep` helper) after that fixture was
+# measured to cause a 20-83%
+# false-failure rate (`kill -0` observing a killed-but-unreaped zombie as alive) -- see the
+# trade-off comment inline at the assertion (c) block below for the full record.
 #
 # Mutation check (required by shell-script-testing.md's "Mutation checks for regex-shaped
 # fixes"): see the dedicated section below. This fix is a full structural redesign, not a
@@ -52,10 +56,6 @@ fi
 
 WORKDIR="$(mktemp -d)"
 cleanup() {
-  # Best-effort: kill any sleep helper left running if a case exited early.
-  if [ -n "${SLEEP_HELPER_PID:-}" ]; then
-    kill "$SLEEP_HELPER_PID" 2>/dev/null || true
-  fi
   [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"
 }
 trap cleanup EXIT
@@ -107,42 +107,58 @@ else
 fi
 
 # =====================================================================
-# Assertion (c): inhibitor-target liveness, driven by a REAL process
+# Assertion (c): inhibitor-target liveness, driven by a deterministic scripted probe
 # =====================================================================
-sleep 300 &
-SLEEP_HELPER_PID=$!
-
-INHIBITOR_ARGS="systemd-inhibit --what=sleep:idle --who=claude-code --why=Claude Code session --mode=block tail --pid=${SLEEP_HELPER_PID} -f /dev/null"
-
-if is_live_inhibitor_target "$INHIBITOR_ARGS"; then
-  pass "is_live_inhibitor_target: excludes an inhibitor whose target (pid $SLEEP_HELPER_PID) is alive"
-else
-  fail "is_live_inhibitor_target: did NOT exclude an inhibitor whose target (pid $SLEEP_HELPER_PID) is alive"
-fi
-
-kill "$SLEEP_HELPER_PID" 2>/dev/null
-# Poll (bounded, non-blocking) rather than a plain `wait`, which has been observed to stall
-# under load on this machine for a backgrounded job in a non-interactive script. Reaping the
-# now-zombie child is left to the shell's normal exit-time cleanup rather than an explicit
-# `wait` here, so this step can never itself block the suite.
+# Trade-off (recorded, not silent): this assertion previously drove a REAL backgrounded
+# process (a backgrounded 300-second `sleep` helper), killed it, and polled up to 8s for
+# `kill -0` to observe the reap
+# before asserting liveness semantics. That mechanism was measured to fail 20% of the time
+# inside verify-deploy.sh's gate 8 (43% standalone on an idle machine, 83% in a mirror copy):
+# `kill -0` reports a killed-but-unreaped zombie as alive, so the "dead" case's poll loop
+# could burn its full budget and still observe a false "alive". Two real-process repairs were
+# tried and both failed under test: a naive `wait` hung ~300s (this suite used to leak a
+# 300-second `sleep` helper inheriting stdout/stderr, so any reader using command substitution
+# blocked for the full 300s), and `kill -9` + `wait` + detached streams killed the test
+# script itself (RC=137, 20/20). Further widening the poll budget was also disproven: no
+# finite budget helps a 43-83% failure rate.
 #
-# Budget widened from 10x0.2s (2s) to 40x0.2s (8s): both this poll and is_live_inhibitor_target
-# itself use `kill -0`, which can still report a not-yet-reaped zombie as "alive" -- observed to
-# need more than 2s of headroom when run.sh:run-all.sh's suite-runner executes this suite
-# alongside ~25 concurrent others, each contending for CPU/process-table scheduling. This widens
-# only the test's own patience; it does not change is_live_inhibitor_target's production
-# semantics or its documented live-check trade-off.
-for _ in $(seq 1 40); do
-  kill -0 "$SLEEP_HELPER_PID" 2>/dev/null || break
-  sleep 0.2
-done
+# The fix routes the liveness syscall through claude-refresh.sh's overridable `_pid_is_alive`
+# seam and substitutes a deterministic, test-local override for the duration of this block
+# only. What remains real: the `--pid=([0-9]+)` extraction runs against a genuine
+# `systemd-inhibit ... tail --pid=<N> -f /dev/null` argv string in both directions, both
+# liveness directions are exercised, and the no-`--pid` rejection path below is unaffected.
+# What is substituted: only the underlying `kill -0` syscall -- no real process is spawned,
+# killed, or waited on for this assertion anymore.
+ALIVE_PID_LITERAL=424242
+DEAD_PID_LITERAL=424243
 
-if is_live_inhibitor_target "$INHIBITOR_ARGS"; then
-  fail "is_live_inhibitor_target: still excludes the SAME inhibitor after its target (pid $SLEEP_HELPER_PID) was killed -- tautological check"
+# Test-local override of the production seam. Restored immediately after this block so it
+# cannot leak into any later assertion in this same shell.
+_pid_is_alive() {
+  [ "$1" = "$ALIVE_PID_LITERAL" ]
+}
+
+INHIBITOR_ARGS_ALIVE="systemd-inhibit --what=sleep:idle --who=claude-code --why=Claude Code session --mode=block tail --pid=${ALIVE_PID_LITERAL} -f /dev/null"
+INHIBITOR_ARGS_DEAD="systemd-inhibit --what=sleep:idle --who=claude-code --why=Claude Code session --mode=block tail --pid=${DEAD_PID_LITERAL} -f /dev/null"
+
+if is_live_inhibitor_target "$INHIBITOR_ARGS_ALIVE"; then
+  pass "is_live_inhibitor_target: excludes an inhibitor whose target (pid $ALIVE_PID_LITERAL) is alive"
 else
-  pass "is_live_inhibitor_target: no longer excludes the SAME inhibitor once its target (pid $SLEEP_HELPER_PID) is dead -- genuine liveness test"
+  fail "is_live_inhibitor_target: did NOT exclude an inhibitor whose target (pid $ALIVE_PID_LITERAL) is alive"
 fi
-SLEEP_HELPER_PID=""
+
+if is_live_inhibitor_target "$INHIBITOR_ARGS_DEAD"; then
+  fail "is_live_inhibitor_target: incorrectly excludes an inhibitor whose target (pid $DEAD_PID_LITERAL) is dead -- tautological check"
+else
+  pass "is_live_inhibitor_target: does not exclude an inhibitor once its target (pid $DEAD_PID_LITERAL) is dead -- genuine liveness test"
+fi
+
+# Restore the production seam definition immediately -- the override above must not leak
+# into any assertion below this line (verified by the no-`--pid` case immediately following,
+# and by assertion (d) further below).
+_pid_is_alive() {
+  kill -0 "$1" 2>/dev/null
+}
 
 # A row with no --pid=<N> at all must never be treated as a live inhibitor.
 if is_live_inhibitor_target "systemd-inhibit --what=sleep:idle --who=someone --mode=block sleep infinity"; then
