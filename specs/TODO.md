@@ -1,5 +1,5 @@
 ---
-next_project_number: 41
+next_project_number: 45
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 41
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,33,34,36,38,40 | -- | agent-system, extensions, literature, ... |
+| 1 | 14,16,17,18,20,22,27,28,31,33,34,36,38,40,41,42,43,44 | -- | agent-system, extensions, literature, ... |
 | 2 | 9,13,29,35,39 | 17,18,22,33,38 | agent-system, literature, orchestration-concurrency |
 | 3 | 30,37 | 29,35 | agent-system, orchestration-concurrency |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -54,7 +54,61 @@ next_project_number: 41
   └─ 35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
     └─ 37 [NOT STARTED] — Make the concurrency premise handed to per-phase dispatch agents 
 
+### Context Loading
+
+41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
+42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
+44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+
+### Email
+
+43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
+
 ## Tasks
+
+### 44. Slim commands/task.md, the largest per-invocation context contributor
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: context-loading
+- **Dependencies**: None
+
+**Description**: LOWER PRIORITY (per-invocation cost, not per-session). `commands/task.md` measures 37,465 bytes (~9.4k tokens) loaded on every `/task` invocation, plus ~2.8k tokens of imports it pulls in — the largest single per-invocation context contributor found by the context-loading audit. Slim the command body by moving reference material (long option tables, worked examples, edge-case narratives) into lazily-loaded context files under the core extension's context tree, keeping the command body to the decision logic and dispatch instructions an invocation actually needs. Preserve behavior: every mode (--recover, --expand, --sync, --abandon, multi-task creation) must remain fully specified — either inline or via an explicit pointer the executing agent is instructed to follow. Measure before/after bytes and record them in the implementation summary. CONSTRAINTS: all edits target agent-system/extensions/core/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**; do not change command behavior, only where its prose lives.
+
+---
+
+### 43. Decide and implement how email safety context actually reaches agents (live defect: five inert safety pointers)
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: email
+- **Dependencies**: None
+
+**Description**: LIVE DEFECT, not an efficiency item: the email extension's five 'non-negotiable' safety context pointers (safety-invariants.md, wrapper-contracts.md, index-architecture.md, staleness-detection.md, archive-mode-risk.md) were written as `@.claude/context/...` imports in the merge-source era — a form that resolves to a nonexistent path and silently loads NOTHING. They have since been normalized to plain backticked paths (still non-loading by design), so the question the audit deferred is now unavoidable: how does safety-invariants.md actually reach an agent before it mutates a mailbox? Decide deliberately between: (a) making the safety pointers genuinely eager in the email extension's CLAUDE.md contribution, accepting roughly 13k tokens of every-session cost in deploys where email is loaded; (b) establishing that the wrapper contracts (five nix-built wrapper binaries as the only mutation path) plus the email skills'/agent's own explicit context-loading instructions already carry the enforcement, and recording that as the documented decision; or (c) a middle path such as eager-loading ONLY safety-invariants.md (the smallest, most critical file) while the rest stay lazy. Verify empirically what skill-email-cleanup, skill-email-sync, and email-implementation-agent load today before choosing. Whatever the choice, record it in the email extension's docs so the next audit does not re-litigate. CONSTRAINTS: all edits target agent-system/extensions/** (source store); no volatile files in any eager prefix; no task-number references in deliverables outside specs/**.
+
+---
+
+### 42. Add verify-deploy gates: broken-@-ref lint and warning-first context-budget gate
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: context-loading
+- **Dependencies**: None
+
+**Description**: Add two context gates to the deploy verification pipeline. (a) Broken-@-ref lint: every `@path` token appearing in generated CLAUDE.md (and in the merge sources that produce it) must either RESOLVE relative to its containing file's directory or be explicitly marked citation-only; a ref that resolves to a nonexistent path is silently inert today (no error, no load) and must fail the gate loudly. The desired end-state for this repo is zero `@`-refs in merge sources (downward normalization to plain backticked paths is already applied), so the lint primarily guards against regression. (b) Warning-first context-budget gate: compute the predicted eager surface (reuse or invoke the measurement harness if it exists by then) and WARN when it exceeds a configured budget; escalate to a hard failure only after the warning tier has proven stable. Consider a per-extension `merge_targets.claudemd.max_bytes` manifest field — NOTE THE SEQUENCING DEPENDENCY: manifest-schema changes must coordinate with the in-flight manifest-schema work (correct-mcp-ownership / extension-manifest efforts); if that work is unsettled when this task starts, implement the budget with an external config and defer the manifest field. CONSTRAINTS: gates must read the source store and the freshly generated output, never trust the possibly-stale deployed .claude/** tree; volatile files (specs/TODO.md, state.json, errors.json) appearing in the eager set is always a FAILURE, not a warning; all edits target agent-system/extensions/**; no task-number references in deliverables outside specs/**.
+
+---
+
+### 41. Build eager-context measurement harness (measure-eager-context.sh)
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: context-loading
+- **Dependencies**: None
+
+**Description**: Create `measure-eager-context.sh` in the core extension's scripts: a harness that PREDICTS the session-start eager context set from the source store plus a fresh regenerate — never by measuring the live `.claude/` tree (stale-deploy concern; the deployed tree routinely lags the source store). The eager set to model: (1) the parent CLAUDE.md chain (e.g. ~/.config/CLAUDE.md, repo CLAUDE.md, generated .claude/CLAUDE.md); (2) the generated CLAUDE.md content assembled from core + loaded extensions' merge sources; (3) any RESOLVING `@`-imports found in that chain (directory-relative resolution — see context/architecture/context-layers.md 'Eager vs. Lazy Loading Channels'); (4) rules lacking `paths:` frontmatter or carrying `paths: "**/*"`. Emit bytes and estimated tokens (bytes/4) per contributing source plus a total, in a stable machine-parseable format. Provide a `--check`/`--write` split following the precedent of `generate-context-line-counts.sh` (`--check` reports, `--write` records a baseline snapshot for later drift comparison). The audit baseline to compare against: ~69.9 KB / ~17.5k tokens before downward normalization; predicted ~9.5k tokens after. CONSTRAINTS: no volatile files (specs/TODO.md, state.json, errors.json) may ever be counted as legitimately eager — flag any found; all edits target agent-system/extensions/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**.
+
+---
 
 ### 40. Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
 - **Effort**: 1-3 hours

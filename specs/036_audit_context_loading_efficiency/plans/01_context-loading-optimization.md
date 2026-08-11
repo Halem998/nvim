@@ -226,16 +226,16 @@ Phases within the same wave can execute in parallel (disjoint file sets: Phase 1
 
 ---
 
-### Phase 6: Create follow-up optimization tasks [NOT STARTED]
+### Phase 6: Create follow-up optimization tasks [COMPLETED]
 
 **Goal**: Discharge the task description's "create optimization tasks" requirement for the durable deliverables that exceed this task's safe scope.
 
 **Tasks**:
-- [ ] Create task: **Eager-context measurement harness** (`measure-eager-context.sh`, type `meta`) — predicts the eager set from source store + fresh regenerate (parent CLAUDE.md chain, generated CLAUDE.md, resolving `@`-imports, rules lacking `paths:` or with `**/*`), emits bytes/est-tokens per contributing source, `--check`/`--write` split like `generate-context-line-counts.sh`. Note in the description: must never measure the live `.claude/` tree (stale-deploy concern).
-- [ ] Create task: **verify-deploy context gates** (type `meta`) — (a) broken-`@`-ref lint: every `@path` in generated CLAUDE.md must resolve or be explicitly citation-only; (b) warning-first context-budget gate; consider per-extension `merge_targets.claudemd.max_bytes`. Note the sequencing dependency on the in-flight manifest-schema work in the description.
-- [ ] Create task: **Email safety-context loading decision** (type `email` or `meta`) — the five "non-negotiable" safety pointers load nothing; decide deliberately whether they should be eager (accepting ~13k tokens) or whether wrapper contracts + agent definitions already carry enforcement. Frame as a live defect, not an efficiency item.
-- [ ] Create task: **Slim `commands/task.md`** (type `meta`, lower priority) — 37,465 B (~9.4k tokens) per `/task` invocation plus its ~2.8k-token import; largest single per-invocation contributor.
-- [ ] For each: allocate numbers from `next_project_number`, append entries to `specs/state.json` `active_projects` via jq (append `+=`, never wholesale array replacement), create `specs/{NNN}_{SLUG}/` directories, then run `bash .claude/scripts/generate-todo.sh`.
+- [x] Create task: **Eager-context measurement harness** (`measure-eager-context.sh`, type `meta`) — predicts the eager set from source store + fresh regenerate (parent CLAUDE.md chain, generated CLAUDE.md, resolving `@`-imports, rules lacking `paths:` or with `**/*`), emits bytes/est-tokens per contributing source, `--check`/`--write` split like `generate-context-line-counts.sh`. Note in the description: must never measure the live `.claude/` tree (stale-deploy concern). *(completed: task 41)*
+- [x] Create task: **verify-deploy context gates** (type `meta`) — (a) broken-`@`-ref lint: every `@path` in generated CLAUDE.md must resolve or be explicitly citation-only; (b) warning-first context-budget gate; consider per-extension `merge_targets.claudemd.max_bytes`. Note the sequencing dependency on the in-flight manifest-schema work in the description. *(completed: task 42, sequencing dependency noted)*
+- [x] Create task: **Email safety-context loading decision** (type `email` or `meta`) — the five "non-negotiable" safety pointers load nothing; decide deliberately whether they should be eager (accepting ~13k tokens) or whether wrapper contracts + agent definitions already carry enforcement. Frame as a live defect, not an efficiency item. *(completed: task 43, type meta with topic email, framed as live defect)*
+- [x] Create task: **Slim `commands/task.md`** (type `meta`, lower priority) — 37,465 B (~9.4k tokens) per `/task` invocation plus its ~2.8k-token import; largest single per-invocation contributor. *(completed: task 44)*
+- [x] For each: allocate numbers from `next_project_number`, append entries to `specs/state.json` `active_projects` via jq (append `+=`, never wholesale array replacement), create `specs/{NNN}_{SLUG}/` directories, then run `bash .claude/scripts/generate-todo.sh`. *(completed: 41-44 allocated, next_project_number now 45, dirs created, TODO.md regenerated)*
 
 **Timing**: 45 minutes
 
