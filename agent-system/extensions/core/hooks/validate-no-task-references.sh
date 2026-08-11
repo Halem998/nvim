@@ -17,7 +17,8 @@
 # "task N" or "tasks N-M", since task numbers are renumbered during vault operations and are
 # meaningless to a future reader with no access to (or interest in) the task tracker. Durable
 # anchors (filenames, section headings, decision-record names) should be used instead. The
-# Exemption Taxonomy in that rule file documents every marker-exempted category (command-usage
+# Exemption Taxonomy (now in context/standards/task-reference-exemptions.md, the rule's lazy
+# companion) documents every marker-exempted category (command-usage
 # examples, quoted historical anti-patterns, test fixtures, memory frontmatter provenance, etc.)
 # -- this hook consumes that taxonomy mechanically via strip_exempt_regions, never re-implementing
 # exemption logic of its own.
@@ -28,7 +29,8 @@ set -euo pipefail
 # Sourced from the hook's own directory (siblings under .claude/: hooks/ and scripts/), so
 # resolution is independent of the tool's cwd. Neither TASK_SEP, TASK_PATTERN, PHASE_PATTERN,
 # nor exemption logic is defined here after this rewrite -- see
-# rules/no-task-references-in-deliverables.md's Exemption Taxonomy for the single source of
+# context/standards/task-reference-exemptions.md's Exemption Taxonomy (companion to
+# rules/no-task-references-in-deliverables.md) for the single source of
 # truth both this hook and check-task-references.sh consume.
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB="$HOOK_DIR/../scripts/lib/task-reference-patterns.sh"

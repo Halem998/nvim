@@ -1,3 +1,7 @@
+---
+paths: ["src/**/*.astro", "src/**/*.ts", "src/**/*.tsx"]
+---
+
 # Astro Web Development Rules
 
 ## Path Pattern

@@ -6,7 +6,8 @@
 # unexempted task-number citations, using the SAME shared pattern/exemption library the write-
 # time guard hook consumes (scripts/lib/task-reference-patterns.sh). Neither this script nor the
 # hook defines TASK_PATTERN, PHASE_PATTERN, or exemption logic locally -- see that library and
-# rules/no-task-references-in-deliverables.md's Exemption Taxonomy section for the single source
+# context/standards/task-reference-exemptions.md's Exemption Taxonomy section (companion to
+# rules/no-task-references-in-deliverables.md) for the single source
 # of truth both consume.
 #
 # `specs/**` is the one path-level exemption (task-management artifacts) and is skipped via

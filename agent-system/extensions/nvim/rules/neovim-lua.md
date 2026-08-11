@@ -1,3 +1,7 @@
+---
+paths: ["lua/**/*.lua", "after/**/*.lua", "*.lua"]
+---
+
 # Neovim Lua Development Rules
 
 ## Path Pattern

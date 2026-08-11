@@ -48,7 +48,7 @@ An agent MUST carry this bullet **if and only if it authors deliverable files ou
 - Research agents whose only output is a report under `specs/**/reports/` (e.g.
   `general-research-agent`, domain research agents, `general-research-hard-agent`). A research
   report is itself a `specs/**` artifact — exempt under this rule's own exemption category 1 (see
-  `.claude/rules/no-task-references-in-deliverables.md`'s Exemption Taxonomy) — so an agent that
+  `.claude/context/standards/task-reference-exemptions.md`'s Exemption Taxonomy) — so an agent that
   produces nothing else has no deliverable-authoring surface this bullet needs to guard.
 
 Document-authoring agents in `filetypes/`, `present/`, and `founder/` (which generate XLSX,

@@ -138,16 +138,16 @@ Phases within the same wave can execute in parallel (disjoint file sets: Phase 1
 
 ---
 
-### Phase 3: Rules frontmatter triage [NOT STARTED]
+### Phase 3: Rules frontmatter triage [COMPLETED]
 
 **Goal**: Apply the F4 verdicts so that eager rule injection is a decision, not an omission: gate the neovim rule by path, split the largest rule into eager-principle + lazy-taxonomy, and record the deliberate keep-eager decisions.
 
 **Tasks**:
-- [ ] Add YAML `paths:` frontmatter to `agent-system/extensions/nvim/rules/neovim-lua.md` matching its own declared scope: `lua/**/*.lua`, `after/**/*.lua`, `*.lua`.
-- [ ] Split `agent-system/extensions/core/rules/no-task-references-in-deliverables.md`: keep a short always-eager rule file (~15 lines: principle, exceptions summary, pointer to the taxonomy and to `scripts/lib/task-reference-patterns.sh` as the mechanical source of truth) and move the 7-category Exemption Taxonomy table plus the detailed Enforcement narrative to a lazily-loaded companion (e.g. `agent-system/extensions/core/context/standards/task-reference-exemptions.md` — confirm the natural home against the existing context tree at implementation time).
-- [ ] Update every cross-reference to the moved taxonomy content: the enforcement-history decision record pointer, `check-task-references.sh` / `validate-no-task-references.sh` header comments if they cite the rule's sections, and any docs naming the taxonomy's location.
-- [ ] Do NOT add `paths:` to `agent-system/extensions/core/rules/source-store-deploy-boundary.md` — add a brief comment in that file recording the decision (its hook is PostToolUse/non-blocking; deferral risks learning the rule after the violating write) so a future optimizer does not re-litigate silently. Do not cite this task's number in the comment.
-- [ ] Leave `pr-prohibition.md`'s `paths: "**/*"` glob unchanged (deliberate: universal-scope deferred-tier rule); no edit needed beyond confirming it has frontmatter.
+- [x] Add YAML `paths:` frontmatter to `agent-system/extensions/nvim/rules/neovim-lua.md` matching its own declared scope: `lua/**/*.lua`, `after/**/*.lua`, `*.lua`. *(completed)*
+- [x] Split `agent-system/extensions/core/rules/no-task-references-in-deliverables.md`: keep a short always-eager rule file (~15 lines: principle, exceptions summary, pointer to the taxonomy and to `scripts/lib/task-reference-patterns.sh` as the mechanical source of truth) and move the 7-category Exemption Taxonomy table plus the detailed Enforcement narrative to a lazily-loaded companion (e.g. `agent-system/extensions/core/context/standards/task-reference-exemptions.md` — confirm the natural home against the existing context tree at implementation time). *(completed: companion created at the hypothesized path; all 7 categories preserved verbatim)*
+- [x] Update every cross-reference to the moved taxonomy content: the enforcement-history decision record pointer, `check-task-references.sh` / `validate-no-task-references.sh` header comments if they cite the rule's sections, and any docs naming the taxonomy's location. *(completed: 5 files updated — hook, lint script, shared lib, bullet fragment, hook test)*
+- [x] Do NOT add `paths:` to `agent-system/extensions/core/rules/source-store-deploy-boundary.md` — add a brief comment in that file recording the decision (its hook is PostToolUse/non-blocking; deferral risks learning the rule after the violating write) so a future optimizer does not re-litigate silently. Do not cite this task's number in the comment. *(completed)*
+- [x] Leave `pr-prohibition.md`'s `paths: "**/*"` glob unchanged (deliberate: universal-scope deferred-tier rule); no edit needed beyond confirming it has frontmatter. *(completed: frontmatter confirmed)* *(deviation: altered — also gated web-astro.md with paths: frontmatter, a 4th frontmatter-less rule surfaced by the Scope Hypothesis check and triaged per its instruction)*
 
 **Timing**: 1.5 hours
 

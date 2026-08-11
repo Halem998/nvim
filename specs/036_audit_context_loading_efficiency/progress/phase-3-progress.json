@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Rules frontmatter triage",
+  "started_at": "2026-08-11T00:45:00Z",
+  "last_updated": "2026-08-11T01:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add paths: frontmatter to neovim-lua.md", "status": "done", "files_touched": ["agent-system/extensions/nvim/rules/neovim-lua.md"]},
+    {"id": 2, "description": "Split no-task-references rule into eager principle + lazy taxonomy companion", "status": "done", "files_touched": ["agent-system/extensions/core/rules/no-task-references-in-deliverables.md", "agent-system/extensions/core/context/standards/task-reference-exemptions.md"]},
+    {"id": 3, "description": "Update cross-references to moved taxonomy content", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-no-task-references.sh", "agent-system/extensions/core/scripts/check-task-references.sh", "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh", "agent-system/extensions/core/context/contracts/no-task-references-bullet.md", "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"]},
+    {"id": 4, "description": "Decision note in source-store-deploy-boundary.md (keep eager)", "status": "done", "files_touched": ["agent-system/extensions/core/rules/source-store-deploy-boundary.md"]},
+    {"id": 5, "description": "Confirm pr-prohibition.md frontmatter unchanged; triage extra frontmatter-less rule web-astro.md", "status": "done", "files_touched": ["agent-system/extensions/web/rules/web-astro.md"], "note": "pr-prohibition.md confirmed to carry paths: \"**/*\" frontmatter, untouched. Scope-hypothesis check surfaced web-astro.md as a 4th frontmatter-less rule; triaged per plan instruction (style rule, same class as neovim-lua) and gated with its own declared scope."}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "3.5", "description": "Extra frontmatter-less rule web-astro.md surfaced beyond the hypothesized 3", "type": "altered", "reason": "Plan's Scope Hypothesis instructed triaging any additional frontmatter-less rules by the eager-safety test; web-astro.md is a pre-write style rule scoped to web files, so paths: gating is safe", "annotation": "*(deviation: altered — also gated web-astro.md with paths: frontmatter per Scope Hypothesis instruction)*"}
+  ],
+  "handoff_count": 0
+}

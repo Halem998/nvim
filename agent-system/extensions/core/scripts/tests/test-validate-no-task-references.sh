@@ -171,8 +171,8 @@ fi
 # task-ref-ok:end
 
 # =====================================================================
-# Exemption fixtures: one per remaining Exemption Taxonomy category (rules/
-# no-task-references-in-deliverables.md's "## Exemption Taxonomy" section). Kept OUTSIDE the
+# Exemption fixtures: one per remaining Exemption Taxonomy category (context/standards/
+# task-reference-exemptions.md's "## Exemption Taxonomy" section, the rule's companion). Kept OUTSIDE the
 # block above -- each begin/end pair below is self-contained (never nested inside another),
 # per this file's own header note on strip_exempt_regions' toggle semantics.
 # =====================================================================

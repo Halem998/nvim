@@ -1,5 +1,11 @@
 # Source Store / Deploy Boundary
 
+<!-- Deliberately eager (no `paths:` frontmatter): this rule's only automated enforcement is a
+PostToolUse, non-blocking hook, so an agent gated on first path-touch would learn the rule only
+AFTER the violating write landed. Keeping it eager is a recorded decision from the
+context-loading audit (see context/architecture/context-layers.md, eager-vs-lazy channels) —
+do not add a `paths:` glob here without first moving enforcement to a pre-write gate. -->
+
 ## Path Pattern
 
 Applies to: any write whose target path is `.claude/**` in a repository whose source store is

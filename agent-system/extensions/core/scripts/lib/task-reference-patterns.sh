@@ -5,7 +5,8 @@
 # (scripts/check-task-references.sh) and the write-time guard hook
 # (hooks/validate-no-task-references.sh). Neither consumer defines TASK_SEP, TASK_PATTERN,
 # PHASE_PATTERN, or exemption logic locally -- this is the ONLY place they are defined. See
-# rules/no-task-references-in-deliverables.md's "Exemption Taxonomy" section for the policy this
+# context/standards/task-reference-exemptions.md's "Exemption Taxonomy" section (companion to
+# rules/no-task-references-in-deliverables.md) for the policy this
 # code implements.
 #
 # Usage: `source` this file, then use $TASK_PATTERN / $PHASE_PATTERN with `grep -E` (case-
@@ -65,7 +66,7 @@ is_exempt_path() {
 # itself -- both pipe their candidate content through this function before matching TASK_PATTERN
 # or PHASE_PATTERN against what remains.
 #
-# Marker convention (documented in rules/no-task-references-in-deliverables.md's Exemption
+# Marker convention (documented in context/standards/task-reference-exemptions.md's Exemption
 # Taxonomy section):
 #   - Block form: a line containing the substring "task-ref-ok:begin" opens an exempt region
 #     that runs through (and includes) the next line containing "task-ref-ok:end". Comment
