@@ -1,16 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 47,
   "session_id": "sess_1786484451_3e8bc1",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/047_clear_failing_gates_and_reconcile_ledgers/summaries/01_clear-gates-reconcile-ledgers-summary.md",
+      "summary": "All 8 phases complete: state.json duplicate re-verified (no fix needed), 2 core line_count mismatches corrected, missing standards index entry registered, redeployed to clear the doc-lint gate, 4 errors.json entries closed with independently re-confirmed evidence, 2 missing review reports registered with recomputed statistics, and the postflight-automation recommendation recorded. All 4 acceptance criteria pass: verify-deploy.sh 23/23, validate-state.sh --deep 15/0/0, errors.json fully reconciled, reviews/state.json complete."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Cleared both failing verification gates (doc-lint gate 3 and the errors/reviews ledger drift) and reconciled specs/errors.json (4 entries closed with independent evidence) and specs/reviews/state.json (2 reports registered, statistics recomputed). verify-deploy.sh --findings now reports 23/23 and validate-state.sh --deep exits 0 with zero FAIL findings."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/index-entries.json",
+    "specs/errors.json",
+    "specs/reviews/state.json",
+    ".claude-extensions.json",
+    "specs/047_clear_failing_gates_and_reconcile_ledgers/plans/01_clear-gates-reconcile-ledgers.md",
+    "specs/047_clear_failing_gates_and_reconcile_ledgers/summaries/01_clear-gates-reconcile-ledgers-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "`git commit -- <pathspec>` is NOT equivalent to committing only what's staged for that path -- it auto-includes CURRENT WORKING-TREE changes for any named path, regardless of index state. If you use `git apply --cached <patch>` to stage only some hunks of a file (to avoid sweeping in an unrelated concurrent task's uncommitted edit to the same file), a subsequent `git commit -m ... -- <path>` will silently re-absorb the unstaged working-tree hunks too. The safe pattern: stage exactly what you want with `git add`/`git apply --cached`, then commit with a BARE `git commit -m ...` (no trailing pathspec) so only the index content is committed.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/047_clear_failing_gates_and_reconcile_ledgers/summaries/01_clear-gates-reconcile-ledgers-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["git", "commit", "pathspec", "staging", "git-apply-cached", "scoped-commit"]
+    },
+    {
+      "content": "When a shared JSON ledger/index file (e.g. index-entries.json) already carries an unrelated uncommitted stray edit from a different in-flight task before your own edit begins, isolate your commit to only your own hunks via a hand-crafted patch applied with `git apply --cached`, rather than whole-file `git add` via a generic scoped-commit helper. Cross-check `specs/state.json` for any task with status `implementing`/`researching` whose file_scope or description names the same file before assuming a stray working-tree diff is safe to sweep into your commit.",
+      "category": "PATTERN",
+      "source_artifact": "specs/047_clear_failing_gates_and_reconcile_ledgers/summaries/01_clear-gates-reconcile-ledgers-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-scoping", "concurrent-tasks", "stray-edits", "index-entries.json", "parallel-dispatch"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786484451_3e8bc1",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 8,
     "phases_total": 8
   }
 }

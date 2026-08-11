@@ -1,7 +1,7 @@
 # Implementation Plan: Clear Failing Gates and Reconcile Ledgers
 
 - **Task**: 47 - Clear the two failing verification gates and reconcile the defect/review ledgers against reality
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/047_clear_failing_gates_and_reconcile_ledgers/reports/01_clear-failing-gates-and-reconcile-ledgers.md
@@ -442,34 +442,45 @@ likewise hypotheses to be re-derived from the actual per-entry sums after the ad
 
 ---
 
-### Phase 8: Record postflight-automation reasoning and run final acceptance [NOT STARTED]
+### Phase 8: Record postflight-automation reasoning and run final acceptance [COMPLETED]
 
 **Goal**: Answer the postflight auto-closure question in writing (without building it) and verify
 every acceptance criterion in one pass.
 
 **Tasks**:
-- [ ] Confirm the finding before recording it: `grep -rn "errors-append.sh update"` across
+- [x] Confirm the finding before recording it: `grep -rn "errors-append.sh update"` across
       `agent-system/extensions/` and confirm the only matches are the script's own usage/doc
-      comments (zero real callers).
-- [ ] Write the postflight-automation recommendation into the implementation summary: full semantic
+      comments (zero real callers). *(completed: 8 matches, all in errors-append.sh's own
+      header/usage, commands/errors.md's docs, errors-schema.json's field descriptions, and
+      errors-format.md's docs — zero programmatic callers)*
+- [x] Write the postflight-automation recommendation into the implementation summary: full semantic
       matching between "a change landed" and "which entry it fixes" requires judgment and is not
       cheaply automatable; the narrow, cheap partial automation is that `errors-append.sh update`
       already supports `--fix-status fixed --fix-task N` and has zero callers, so a future task
       could let a plan or phase declare which error ids it resolves and have postflight invoke the
       existing subcommand when that field is present and the phase's verification passed. Flag that
-      this needs a schema decision and is deliberately not built here.
-- [ ] Run the full acceptance set and capture output:
-      - `bash .claude/scripts/verify-deploy.sh --findings` -> 23/23
-      - `bash .claude/scripts/validate-state.sh --deep` -> exit 0, zero FAIL
+      this needs a schema decision and is deliberately not built here. *(completed: see summary)*
+- [x] Run the full acceptance set and capture output:
+      - `bash .claude/scripts/verify-deploy.sh --findings` -> 23/23 *(completed: 23/23, 0 failures)*
+      - `bash .claude/scripts/validate-state.sh --deep` -> exit 0, zero FAIL *(completed: 15/0/0)*
       - `jq '[.errors[] | select(.fix_status == "unfixed")] | .[].id' specs/errors.json` -> review
         the remaining list and confirm none is demonstrably fixed by this task's evidence
-      - review-report registration completeness check from Phase 7
-- [ ] Write the implementation summary at
+        *(completed: 6 remain unfixed — delegation_interrupted, deploy_ghost_index_entries,
+        defect_vocabulary_gap, deploy_nondeterministic_merge, deploy_orphan_files_undercounted,
+        acceptance_criterion_not_instrumented — all confirmed unrelated to this task's evidence
+        or explicitly out of scope)*
+      - review-report registration completeness check from Phase 7 *(completed: all 6 on-disk
+        reports have a matching state.json entry)*
+- [x] Write the implementation summary at
       `specs/047_clear_failing_gates_and_reconcile_ledgers/summaries/01_clear-gates-reconcile-ledgers-summary.md`,
       including the per-entry closing-evidence table (Phase 5), the Phase 6 decision, the Phase 7
       severity-choice reasoning, the Phase 4 deploy rationale, and this recommendation.
-- [ ] Confirm no file under `.claude/**` was hand-authored: `git status` plus a review of the
-      phase-by-phase modified-file list.
+      *(completed)*
+- [x] Confirm no file under `.claude/**` was hand-authored: `git status` plus a review of the
+      phase-by-phase modified-file list. *(completed: `.claude/` is entirely gitignored and shows
+      zero tracked entries in `git status --porcelain`; every phase-by-phase file touched by this
+      task lives under `agent-system/extensions/**`, `specs/**`, or the repo-root
+      `.claude-extensions.json` manifest — no `.claude/**` path was ever a Write/Edit target)*
 
 **Timing**: 0.5 hours
 
