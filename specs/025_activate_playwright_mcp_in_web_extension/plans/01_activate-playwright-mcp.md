@@ -182,19 +182,20 @@ additional `web` drift, fix those entries too and note the widened scope in the 
 
 ---
 
-### Phase 3: Audit the Acceptance Criteria Against File Contents [NOT STARTED]
+### Phase 3: Audit the Acceptance Criteria Against File Contents [COMPLETED]
 
 **Goal**: Confirm each acceptance criterion against what is actually on disk. Criteria already
 satisfied are recorded as **verified no-ops** — do not manufacture rework for them.
 
 **Tasks**:
-- [ ] **Criterion: research agent's block is unchanged.** Confirm line 4 of
+- [x] **Criterion: research agent's block is unchanged.** Confirm line 4 of
       `agent-system/extensions/web/agents/web-research-agent.md` still reads exactly
       `disallowedTools: mcp__playwright__*`, and that the file does not appear in commit
       `1610a6a35`'s changed-file list (`git show --stat 1610a6a35`). Also confirm the symmetric
       `disallowedTools: mcp__context7__*` on line 4 of `web-implementation-agent.md` survives.
-      *(Expected: verified no-op — the file is absent from that commit's file list.)*
-- [ ] **Criterion: no guidance depends on a prompting tool.** Extract every `browser_*` name that
+      *(completed: verified no-op — both lines confirmed intact; web-research-agent.md absent
+      from that commit's file list)*
+- [x] **Criterion: no guidance depends on a prompting tool.** Extract every `browser_*` name that
       appears in an instruction-to-act position (a "use X", "combine X", "prefer X" sentence, or a
       Tasks/verification step) in both
       `agent-system/extensions/web/agents/web-implementation-agent.md` and
@@ -203,36 +204,45 @@ satisfied are recorded as **verified no-ops** — do not manufacture rework for 
       `browser_take_screenshot`, `browser_console_messages`, `browser_network_requests`,
       `browser_click`, `browser_type`, `browser_find`, `browser_wait_for`. Names appearing only in
       the 24-tool reference table or in a prohibition ("never depend on `browser_evaluate`") are
-      correct and are NOT violations.
-- [ ] **Criterion: the 9-tool list matches the allowlist exactly.** Diff the "Unprompted tools"
+      correct and are NOT violations. *(completed: verified no-op — every instruction-position
+      name falls inside the unprompted 9; the three escape hatches appear only in prohibitions)*
+- [x] **Criterion: the 9-tool list matches the allowlist exactly.** Diff the "Unprompted tools"
       bullet in `web-implementation-agent.md`, the "Permission Tiers" list in
       `playwright-mcp-guide.md`, and the `permissions.allow` array in
       `agent-system/extensions/web/settings-fragment.json` (strip the `mcp__playwright__` prefix).
       All three must name the same 9 tools, no more and no fewer. The research report flags these
-      three files as an intentional must-stay-in-sync trio.
-- [ ] **Criterion: the 24-tool reference is accurate.** Check the guide's tool table against the
+      three files as an intentional must-stay-in-sync trio. *(completed: verified no-op — all
+      three name the identical 9 tools)*
+- [x] **Criterion: the 24-tool reference is accurate.** Check the guide's tool table against the
       task description's authoritative 24-name list — every name present, none invented, none
       missing. Note in particular that both `browser_network_request` (singular) and
-      `browser_network_requests` (plural) are real, distinct tools.
-- [ ] **Criterion: no invented tool name survives as usable guidance in the source store.**
+      `browser_network_requests` (plural) are real, distinct tools. *(completed: verified no-op —
+      table's 8 category rows sum to exactly 24, matching the live tool surface)*
+- [x] **Criterion: no invented tool name survives as usable guidance in the source store.**
       `grep -rn "browser_verify_text_visible" agent-system/extensions/web/`. The two expected hits
       (`web-implementation-agent.md` and `playwright-mcp-guide.md`) both state that the tool does
       **not** exist and map the intent onto `browser_find` / `browser_wait_for`. **These are
       correct and MUST be preserved** — a negative mention teaching that a name is fake is the fix,
-      not the defect. Only a hit presenting the name as usable is a violation.
-- [ ] **Criterion: the deferred status is genuinely flipped.** Confirm no
+      not the defect. Only a hit presenting the name as usable is a violation. *(completed:
+      verified no-op — exactly 2 hits, both corrections, both preserved unedited)*
+- [x] **Criterion: the deferred status is genuinely flipped.** Confirm no
       `deferred`/`not yet active`/`Deferred pending browser binary installation` phrasing remains
       in the Playwright subsection of `web-implementation-agent.md`, and that the preserved usage
       conditions (prefer snapshots over screenshots; do not use Playwright for what `pnpm build`
       verifies alone; only when the plan includes a visual/debug/e2e step) are all still present.
-- [ ] Confirm the guide's `@.claude/context/patterns/mcp-server-ownership.md` reference follows
+      *(completed: verified no-op — subsection reads "active"/"Status: Active", no deferred
+      phrasing remains, all three usage conditions present)*
+- [x] Confirm the guide's `@.claude/context/patterns/mcp-server-ownership.md` reference follows
       house convention. The source file exists at
       `agent-system/extensions/core/context/patterns/mcp-server-ownership.md`; the deployed path
       is absent here only because that context is not deployed in this repo, exactly as the
       agent file's own `@.claude/context/project/web/...` references are. *(Expected: verified
       no-op — consistent with convention, not a dangling reference. Record the reasoning; do not
-      rewrite the reference to a source-store path.)*
-- [ ] For every criterion above, write down **verified no-op** or **gap found: {description}**.
+      rewrite the reference to a source-store path.)* *(completed: verified no-op — source file
+      confirmed present, convention consistent)*
+- [x] For every criterion above, write down **verified no-op** or **gap found: {description}**.
+      *(completed: all seven criteria recorded as verified no-op; zero gaps found; zero file
+      edits made in this phase — see phase-3-progress.json notes for full evidence)*
 
 **Timing**: 35 minutes
 
@@ -256,7 +266,7 @@ under `agent-system/extensions/web/**` and note the deviation on this phase's ch
 
 ---
 
-### Phase 4: Decide and Record the `.opencode` Stale-Copy Question [NOT STARTED]
+### Phase 4: Decide and Record the `.opencode` Stale-Copy Question [COMPLETED]
 
 **Goal**: Resolve, with evidence and an explicit written decision, the one place where the
 invented tool name genuinely survives as usable guidance — outside the source store.
@@ -269,14 +279,23 @@ tree in `.claude/rules/no-task-references-in-deliverables.md`. Complicating it: 
 titled `purge .opencode/extensions/{present,web}`, yet the directory is present and tracked today.
 
 **Tasks**:
-- [ ] Determine whether `.opencode/extensions/web/` is generated from the source store or
+- [x] Determine whether `.opencode/extensions/web/` is generated from the source store or
       independently maintained. Evidence to gather: whether any deploy script writes
       `.opencode/extensions/` (planning found only a README mention and a `deprecated/` script);
       `git log --oneline -- .opencode/extensions/web/` and whether the purge commit was reverted
       or the tree re-added; whether the file's content is a stale copy of the pre-edit source
       (`diff .opencode/extensions/web/agents/web-implementation-agent.md
-      agent-system/extensions/web/agents/web-implementation-agent.md`).
-- [ ] Apply this decision rule and record which branch was taken and why:
+      agent-system/extensions/web/agents/web-implementation-agent.md`). *(completed: no live
+      deploy script writes .opencode/extensions/ — only a deprecated script mentions it; the
+      "purge" commit (80f967a7f) actually touched only 8 unrelated lines of this file, never
+      deleting the tree; the file uses `@.opencode/context/...` references distinct from the
+      source-store file's `@.claude/context/...` convention, and diverges in frontmatter/wording
+      beyond the Playwright section — consistent with a hand-maintained parallel copy, not a
+      stale generated snapshot)*
+- [x] Apply this decision rule and record which branch was taken and why: *(completed: **Branch
+      3 selected — independently-maintained live deliverable**. Updates land only via deliberate
+      task-driven "mirror" commits — e.g. "task 167 phase 4: mirror changes to .opencode/",
+      "task 395 phase 2: update opencode mirror references" — never via automated regeneration)*
       - **If it is a generated/deploy artifact** — record the finding, make NO edit, and note that
         the stale name resolves on the next regeneration. Hand-edits to a generated tree are
         silently wiped.
@@ -288,8 +307,10 @@ titled `purge .opencode/extensions/{present,web}`, yet the directory is present 
         store, and recommend a scoped follow-up. Still make no edit under this plan, because the
         binding constraint for this task scopes all edits to
         `agent-system/extensions/web/**`.
-- [ ] Write the decision, its evidence, and its branch into the implementation summary so a
-      reader can see the criterion was assessed rather than skipped.
+- [x] Write the decision, its evidence, and its branch into the implementation summary so a
+      reader can see the criterion was assessed rather than skipped. *(completed: recorded in
+      phase-4-progress.json notes and carried into the closing summary's "Recorded decision"
+      section)*
 
 **Timing**: 20 minutes
 

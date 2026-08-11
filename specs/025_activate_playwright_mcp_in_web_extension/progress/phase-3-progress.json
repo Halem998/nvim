@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Audit the Acceptance Criteria Against File Contents",
+  "started_at": "2026-08-11T00:25:00Z",
+  "last_updated": "2026-08-11T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm research agent's disallowedTools block unchanged", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm no guidance depends on a prompting tool", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm the 9-tool list matches the allowlist exactly across three files", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm the 24-tool reference is accurate", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm no invented tool name survives as usable guidance in source store", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm deferred status genuinely flipped, usage conditions preserved", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm mcp-server-ownership.md reference follows house convention", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": {
+    "criterion_1": "verified no-op: web-research-agent.md line 4 = 'disallowedTools: mcp__playwright__*' intact; file absent from commit 1610a6a35's file list; web-implementation-agent.md line 4 = 'disallowedTools: mcp__context7__*' also intact",
+    "criterion_2": "verified no-op: every browser_* name in an instruction-to-act position in web-implementation-agent.md (lines 56-59, 69-74) and playwright-mcp-guide.md (lines 13-23, 75-80) falls inside the unprompted 9: browser_navigate, browser_snapshot, browser_take_screenshot, browser_console_messages, browser_network_requests, browser_click, browser_type, browser_find, browser_wait_for. The escape hatches (browser_evaluate, browser_file_upload, browser_run_code_unsafe) appear only in prohibition sentences",
+    "criterion_3": "verified no-op: settings-fragment.json permissions.allow (9 entries), web-implementation-agent.md 'Unprompted tools' bullet, and playwright-mcp-guide.md 'Permission Tiers' section all name the identical 9 tools (browser_navigate, browser_snapshot, browser_take_screenshot, browser_console_messages, browser_network_requests, browser_click, browser_type, browser_find, browser_wait_for), no more no fewer",
+    "criterion_4": "verified no-op: guide's 24-tool table (2 navigation + 2 page-state + 8 interaction + 2 finding/waiting + 3 viewport/tabs + 1 dialogs + 3 debugging + 3 escape-hatches = 24) matches the live 24-tool mcp__playwright__* surface exactly, including both browser_network_request (singular) and browser_network_requests (plural) as distinct real tools",
+    "criterion_5": "verified no-op: grep -rn browser_verify_text_visible agent-system/extensions/web/ finds exactly 2 hits (web-implementation-agent.md:72, playwright-mcp-guide.md:43), both stating the tool does NOT exist and mapping intent onto browser_find/browser_wait_for -- correctly preserved, not defects",
+    "criterion_6": "verified no-op: web-implementation-agent.md's Playwright subsection reads '**Playwright MCP** (active)' / '**Status**: Active' with no deferred/not-yet-active/pending-browser-binary phrasing remaining; preserved usage conditions (prefer snapshots over screenshots; do not use for what pnpm build verifies alone; only when plan includes visual/debug/e2e step) all present at lines 66-75",
+    "criterion_7": "verified no-op: agent-system/extensions/core/context/patterns/mcp-server-ownership.md exists at the source-store path the guide's @.claude/context/patterns/mcp-server-ownership.md reference names; consistent with the agent file's own @.claude/context/project/web/... reference convention, which is also absent from this undeployed repo -- not a dangling reference, house convention followed"
+  }
+}

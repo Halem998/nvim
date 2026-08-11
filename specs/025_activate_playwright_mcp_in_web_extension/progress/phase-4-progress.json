@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Decide and Record the .opencode Stale-Copy Question",
+  "started_at": "2026-08-11T00:45:00Z",
+  "last_updated": "2026-08-11T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Determine whether .opencode/extensions/web/ is generated or independently maintained", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Apply the three-branch decision rule and record which branch was taken", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write the decision, evidence, and branch into the implementation summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": {
+    "evidence": [
+      "grep -rl '.opencode/extensions' across agent-system/extensions/core/scripts/ finds only agent-system/extensions/core/scripts/deprecated/validate-extension-index.sh (a deprecated script) -- no live deploy script writes .opencode/extensions/",
+      "deploy-headless.sh contains no .opencode reference",
+      ".opencode/extensions/web/agents/web-implementation-agent.md uses @.opencode/context/project/web/... reference paths, distinct from the source-store agent file's @.claude/context/project/web/... convention -- this is a separately-authored file, not a deploy byproduct of the same source",
+      "diff between the two files shows substantive content differences beyond the Playwright section (model: field, Invoked By wording, Context References prefix) -- consistent with a hand-maintained parallel copy rather than a stale generated snapshot",
+      "git log -- .opencode/extensions/web/agents/web-implementation-agent.md shows periodic task-driven mirror-update commits: 'task 167 phase 4: mirror changes to .opencode/', 'task 395 phase 2: update opencode mirror references' -- updates happen via explicit tasks, not automated regeneration",
+      "the commit titled 'task 941 phase 12.2: purge .opencode/extensions/{present,web}' (80f967a7f) in fact only touched 8 lines of this file (unrelated co-author-string cleanup) -- the directory was never actually purged despite the misleading title; it remains git-tracked and present today"
+    ],
+    "branch_selected": "Branch 3: independently-maintained live deliverable",
+    "rationale": "No deploy/regeneration mechanism writes .opencode/extensions/web/; it is updated only by deliberate, task-driven 'mirror' commits, and its content diverges from the source-store file in ways (different @-reference root, different frontmatter) inconsistent with being a generated copy of the same source. It is git-tracked (not gitignored) and named as a deliverable tree by no-task-references-in-deliverables.md.",
+    "decision": "Record that the acceptance criterion 'no invented tool names survive anywhere' is NOT fully met outside the source store: .opencode/extensions/web/agents/web-implementation-agent.md:57 still presents `browser_verify_text_visible` as a usable Core tool, and its Playwright subsection still reads 'deferred -- not yet active'. No edit was made under this plan -- the binding source-store rule scopes all edits to agent-system/extensions/web/**, and this plan's non-goals explicitly forbid .opencode edits. Recommend a separate, scoped follow-up task to mirror the activated Playwright section (and the drifted tool name) into .opencode/extensions/web/agents/web-implementation-agent.md, following the same pattern as the prior 'mirror changes to .opencode/' tasks.",
+    "git_status_check": ".opencode untouched by this phase -- confirmed via git status --short .opencode returning empty"
+  }
+}
