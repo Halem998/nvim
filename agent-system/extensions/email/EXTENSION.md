@@ -30,8 +30,8 @@ Direct-execution skills (no agent dispatch):
 
 ### Context Pointers
 
-- @.claude/context/project/email/domain/safety-invariants.md
-- @.claude/context/project/email/domain/wrapper-contracts.md
-- @.claude/context/project/email/domain/index-architecture.md
-- @.claude/context/project/email/domain/staleness-detection.md
-- @.claude/context/project/email/domain/archive-mode-risk.md
+- `.claude/context/project/email/domain/safety-invariants.md`
+- `.claude/context/project/email/domain/wrapper-contracts.md`
+- `.claude/context/project/email/domain/index-architecture.md`
+- `.claude/context/project/email/domain/staleness-detection.md`
+- `.claude/context/project/email/domain/archive-mode-risk.md`

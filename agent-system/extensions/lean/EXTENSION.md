@@ -28,8 +28,8 @@ Rules (both apply to `**/*.lean`): `lean4.md` — Lean 4 conventions and MCP too
 
 ### Context Pointers
 
-- @.claude/extensions/lean/context/project/lean4/README.md - Lean context index and navigation
-- @.claude/extensions/lean/context/project/lean4/domain/hard-mode.md - `--hard` routing, agents, contracts
-- @.claude/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md - Lean MCP server tool reference
-- @.claude/extensions/lean/context/project/lean4/tools/blocked-mcp-tools.md - Blocked tools and alternatives
-- @.claude/extensions/lean/context/project/lean4/patterns/mcp-fallback-table.md - MCP tool fallback strategies
+- `.claude/extensions/lean/context/project/lean4/README.md` - Lean context index and navigation
+- `.claude/extensions/lean/context/project/lean4/domain/hard-mode.md` - `--hard` routing, agents, contracts
+- `.claude/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md` - Lean MCP server tool reference
+- `.claude/extensions/lean/context/project/lean4/tools/blocked-mcp-tools.md` - Blocked tools and alternatives
+- `.claude/extensions/lean/context/project/lean4/patterns/mcp-fallback-table.md` - MCP tool fallback strategies

@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Normalize the inert @.claude/... and volatile refs to plain paths",
+  "started_at": "2026-08-11T00:25:00Z",
+  "last_updated": "2026-08-11T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert core merge-sources/claudemd.md inert/volatile @-refs to plain paths", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 2, "description": "Convert email EXTENSION.md 5 safety pointers to plain paths", "status": "done", "files_touched": ["agent-system/extensions/email/EXTENSION.md"]},
+    {"id": 3, "description": "Convert nvim EXTENSION.md 3 context imports to plain paths", "status": "done", "files_touched": ["agent-system/extensions/nvim/EXTENSION.md"]},
+    {"id": 4, "description": "Convert formal and lean EXTENSION.md broken refs", "status": "done", "files_touched": ["agent-system/extensions/formal/EXTENSION.md", "agent-system/extensions/lean/EXTENSION.md"]},
+    {"id": 5, "description": "Prose fix: lazy-context-loading bullet in core Important Notes", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -1,11 +1,11 @@
-Task management and agent orchestration for project development. For comprehensive documentation, see @.claude/docs/docs-README.md.
+Task management and agent orchestration for project development. For comprehensive documentation, see `.claude/docs/docs-README.md`.
 
 ## Quick Reference
 
-- **Task List**: @specs/TODO.md
-- **Machine State**: @specs/state.json
-- **Error Tracking**: @specs/errors.json
-- **Architecture**: @.claude/docs/docs-README.md
+- **Task List**: `specs/TODO.md`
+- **Machine State**: `specs/state.json`
+- **Error Tracking**: `specs/errors.json`
+- **Architecture**: `.claude/docs/docs-README.md`
 
 ## Project Structure
 
@@ -301,14 +301,14 @@ CLAUDE.md only where the literature extension is loaded. See
 ## Rules References
 
 Core rules (auto-applied by file path):
-- @.claude/rules/state-management.md - Task state patterns (specs/**)
-- @.claude/rules/git-workflow.md - Commit conventions
-- @.claude/rules/error-handling.md - Error recovery (.claude/**)
-- @.claude/rules/artifact-formats.md - Report/plan formats (specs/**)
-- @.claude/rules/workflows.md - Command lifecycle (.claude/**)
-- @.claude/rules/plan-format-enforcement.md - Plan format checklist (specs/**)
-- @.claude/rules/no-task-references-in-deliverables.md - No task-number citations outside specs/**
-- @.claude/rules/source-store-deploy-boundary.md - .claude/** is a disposable deploy artifact; edit agent-system/extensions/** instead
+- `.claude/rules/state-management.md` - Task state patterns (specs/**)
+- `.claude/rules/git-workflow.md` - Commit conventions
+- `.claude/rules/error-handling.md` - Error recovery (.claude/**)
+- `.claude/rules/artifact-formats.md` - Report/plan formats (specs/**)
+- `.claude/rules/workflows.md` - Command lifecycle (.claude/**)
+- `.claude/rules/plan-format-enforcement.md` - Plan format checklist (specs/**)
+- `.claude/rules/no-task-references-in-deliverables.md` - No task-number citations outside specs/**
+- `.claude/rules/source-store-deploy-boundary.md` - .claude/** is a disposable deploy artifact; edit agent-system/extensions/** instead
 
 **Extension Rules**: When extensions are loaded, additional rules are added (e.g., {domain}-rules.md for domain-specific development).
 
@@ -330,8 +330,8 @@ See `.claude/context/architecture/context-layers.md` for the full five-layer con
 ## Context Imports
 
 Core context (always available):
-- @.claude/context/repo/project-overview.md
-- @README.md
+- `.claude/context/repo/project-overview.md`
+- `README.md`
 
 **Extension Context**: Available when extensions are loaded via the extension picker. Query `index.json` for extension-specific context files.
 
@@ -359,7 +359,7 @@ select(.type == "plan" | not)
 select(.type != "plan")
 ```
 
-Full documentation: @.claude/context/patterns/jq-escaping-workarounds.md
+Full documentation: `.claude/context/patterns/jq-escaping-workarounds.md`
 
 ## Syncprotect
 
@@ -369,5 +369,5 @@ The `.syncprotect` file lives at the **project root** (not inside `.claude/`) an
 
 - Update status BEFORE starting work (preflight) and AFTER completing (postflight)
 - state.json = machine truth, TODO.md = user visibility
-- All skills use lazy context loading via @-references
+- All skills use lazy context loading: plain backticked path references resolved on demand (never eager `@`-imports)
 - Session ID format: `sess_{timestamp}_{random}` - generated at GATE IN, included in commits

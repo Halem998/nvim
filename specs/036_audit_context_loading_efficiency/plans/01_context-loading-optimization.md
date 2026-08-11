@@ -106,16 +106,16 @@ Phases within the same wave can execute in parallel (disjoint file sets: Phase 1
 
 ---
 
-### Phase 2: Normalize the inert `@.claude/...` and volatile refs to plain paths [NOT STARTED]
+### Phase 2: Normalize the inert `@.claude/...` and volatile refs to plain paths [COMPLETED]
 
 **Goal**: Disarm the trap where a future "path fix" repairs broken refs upward (+~16k tokens/session, volatile files in the cached prefix) by converting every inert `@`-form to the same plain-path convention. Zero token delta today; removes the hazard.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/merge-sources/claudemd.md`: convert to plain backticked paths — the Quick Reference rows (`@specs/TODO.md`, `@specs/state.json`, `@specs/errors.json`, `@.claude/docs/docs-README.md`), the docs-README reference in the preamble, the 8-entry Rules References list (`@.claude/rules/*.md`), the Context Imports list (`@.claude/context/repo/project-overview.md`, `@README.md`), and the jq-workarounds ref (`@.claude/context/patterns/jq-escaping-workarounds.md`).
-- [ ] In `agent-system/extensions/email/EXTENSION.md`: convert the 5 `@.claude/context/project/email/domain/*` Context Pointers to plain paths. Do NOT make them resolve — the eager-safety question is escalated in Phase 6 as its own task.
-- [ ] In `agent-system/extensions/nvim/EXTENSION.md`: convert the 3 `@.claude/context/project/neovim/*` Context Imports to plain paths.
-- [ ] In `agent-system/extensions/formal/EXTENSION.md` and `agent-system/extensions/lean/EXTENSION.md` (research census: same broken form): convert the same way.
-- [ ] Prose fix: update the "All skills use lazy context loading via @-references" bullet in core's merge source (Important Notes) if it survives — after this phase, the honest phrasing is plain-path references resolved on demand.
+- [x] In `agent-system/extensions/core/merge-sources/claudemd.md`: convert to plain backticked paths — the Quick Reference rows (`@specs/TODO.md`, `@specs/state.json`, `@specs/errors.json`, `@.claude/docs/docs-README.md`), the docs-README reference in the preamble, the 8-entry Rules References list (`@.claude/rules/*.md`), the Context Imports list (`@.claude/context/repo/project-overview.md`, `@README.md`), and the jq-workarounds ref (`@.claude/context/patterns/jq-escaping-workarounds.md`). *(completed: all 16 refs converted)*
+- [x] In `agent-system/extensions/email/EXTENSION.md`: convert the 5 `@.claude/context/project/email/domain/*` Context Pointers to plain paths. Do NOT make them resolve — the eager-safety question is escalated in Phase 6 as its own task. *(completed)*
+- [x] In `agent-system/extensions/nvim/EXTENSION.md`: convert the 3 `@.claude/context/project/neovim/*` Context Imports to plain paths. *(completed)*
+- [x] In `agent-system/extensions/formal/EXTENSION.md` and `agent-system/extensions/lean/EXTENSION.md` (research census: same broken form): convert the same way. *(completed: formal 6 fenced refs, lean 5 bullets)*
+- [x] Prose fix: update the "All skills use lazy context loading via @-references" bullet in core's merge source (Important Notes) if it survives — after this phase, the honest phrasing is plain-path references resolved on demand. *(completed)*
 
 **Timing**: 1 hour
 
