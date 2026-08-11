@@ -11,9 +11,8 @@ next_project_number: 28
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,19,20,22,23,27 | -- | agent-system, extensions, orchestration-concurrency, ... |
-| 2 | 9,13,24 | 17,18,23 | agent-system, mcp-integration |
-| 3 | 25,26 | 24 | mcp-integration |
+| 1 | 14,16,17,18,19,20,22,24,27 | -- | agent-system, extensions, orchestration-concurrency, ... |
+| 2 | 9,13,25,26 | 17,18,24 | agent-system, mcp-integration |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -38,10 +37,9 @@ next_project_number: 28
 
 ### Mcp Integration
 
-23 [PLANNED] — Define and document the ownership boundary between the four compe
-  └─ 24 [NOT STARTED] — Add a deliberately scoped Playwright MCP permission allowlist so 
-    └─ 25 [NOT STARTED] — Activate the already-designed but parked Playwright MCP integrati
-    └─ 26 [NOT STARTED] — Migrate slidev deck screenshot verification from the standalone n
+24 [NOT STARTED] — Add a deliberately scoped Playwright MCP permission allowlist so 
+  └─ 25 [NOT STARTED] — Activate the already-designed but parked Playwright MCP integrati
+  └─ 26 [NOT STARTED] — Migrate slidev deck screenshot verification from the standalone n
 
 ## Tasks
 
@@ -169,12 +167,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 23. Document MCP registration vs permission ownership boundary; reconcile lean-lsp three-way duplication
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: mcp-integration
 - **Dependencies**: None
 - **Research**: [023_document_mcp_registration_ownership_boundary/reports/01_mcp-registration-ownership-boundary.md]
 - **Plan**: [023_document_mcp_registration_ownership_boundary/plans/01_mcp-ownership-boundary.md]
+- **Summary**: [023_document_mcp_registration_ownership_boundary/summaries/01_mcp-ownership-boundary-summary.md]
 
 **Description**: Define and document the ownership boundary between the four competing MCP registration/permission mechanisms, and reconcile the existing lean-lsp three-way duplication.
 

@@ -5,7 +5,7 @@
     {
       "project_number": 23,
       "project_name": "document_mcp_registration_ownership_boundary",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "title": "Document MCP registration vs permission ownership boundary; reconcile lean-lsp three-way duplication",
       "topic": "mcp-integration",
@@ -18,7 +18,7 @@
       ],
       "description": "Define and document the ownership boundary between the four competing MCP registration/permission mechanisms, and reconcile the existing lean-lsp three-way duplication.\n\nPROBLEM: the agent system now has FOUR mechanisms that can register an MCP server or grant its permissions, with no documented boundary between them:\n(1) A home-manager activation block writing to ~/.claude.json (user scope). This is how the playwright MCP server was registered; it is connected and healthy, exposing 24 browser_* tools.\n(2) Per-extension settings-fragment.json, deployed via the manifest's settings section ({\"source\": \"settings-fragment.json\", \"target\": \".claude/settings.local.json\"}). Used by nix (mcp-nixos plus 2 enumerated tool permissions) and lean (lean-lsp plus 21 enumerated tool permissions).\n(3) core/root-files/settings.json, deployed to .claude/settings.json as INSTALL-ONCE. Currently carries a mcp__lean-lsp__* WILDCARD in permissions.allow.\n(4) core/scripts/setup-lean-mcp.sh, which registers lean-lsp directly into user scope ~/.claude.json.\n\nEVIDENCE THE PROBLEM IS REAL AND ALREADY BITING: lean-lsp is currently registered or permitted by THREE of these simultaneously (mechanisms 2, 3, and 4), and mechanisms 2 and 3 disagree about form -- the extension fragment enumerates 21 individual tools while core grants a blanket wildcard. This is precisely the duplication the playwright integration must avoid repeating.\n\nKEY ARCHITECTURAL CONSTRAINT (already recorded in core/scripts/setup-lean-mcp.sh's own header): custom subagents CANNOT access project-scoped MCP servers (.mcp.json); user scope (~/.claude.json) is required for subagent access. Since agents are the consumers of browser tools, this argues that REGISTRATION belongs in user scope (home-manager or a setup script), while PERMISSION GRANTS must live in the settings files the host app reads. Confirm or refute this split rather than assuming it.\n\nDELIVERABLE: a decision recorded in the source store stating which mechanism owns MCP server REGISTRATION, which owns PERMISSION grants, why, and how the two compose. Update permission-configuration.md and/or extension-system.md, adding a context pattern if warranted. Reconcile the lean-lsp wildcard-vs-enumeration split, or explicitly justify keeping it.\n\nACCEPTANCE: a future extension author can read one document and know where to declare a new MCP server and its permissions without creating a fifth duplicate path.\n\nSOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-08-11T05:30:49Z",
-      "last_updated": "2026-08-11T05:47:50Z",
+      "last_updated": "2026-08-11T06:09:56Z",
       "artifacts": [
         {
           "path": "specs/023_document_mcp_registration_ownership_boundary/reports/01_mcp-registration-ownership-boundary.md",
@@ -29,9 +29,15 @@
           "path": "specs/023_document_mcp_registration_ownership_boundary/plans/01_mcp-ownership-boundary.md",
           "type": "plan",
           "summary": "Seven-phase plan creating the canonical mcp-server-ownership.md pattern, correcting docs asserting the wrong MCP registration path, and collapsing the lean-lsp three-way duplication."
+        },
+        {
+          "path": "specs/023_document_mcp_registration_ownership_boundary/summaries/01_mcp-ownership-boundary-summary.md",
+          "type": "summary",
+          "summary": "All 7 phases completed: canonical mcp-server-ownership.md, corrections across ten doc sites, lean-lsp duplication collapsed."
         }
       ],
-      "session_id": "sess_1786426440_e14088_23"
+      "session_id": "sess_1786426440_e14088_23",
+      "completion_summary": "Wrote agent-system/extensions/core/context/patterns/mcp-server-ownership.md as the canonical registration/permission ownership reference, corrected every wrong 'settings file or manifest.json registers an MCP server' assertion found across a repo-wide sweep (ten files total, four beyond the six the plan named up front), and collapsed the lean-lsp three-way permission duplication to a single wildcard in lean's own settings-fragment.json with core's domain-specific wildcard removed."
     },
     {
       "project_number": 24,
