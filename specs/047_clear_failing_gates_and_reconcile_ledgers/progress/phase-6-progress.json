@@ -1,0 +1,18 @@
+{
+  "phase": 6,
+  "phase_name": "Adjudicate lock_session_self_contention",
+  "started_at": "2026-08-11T22:27:00Z",
+  "last_updated": "2026-08-11T22:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Trace full MT-1/MT-3/MT-4 call chain in skill-orchestrate/SKILL.md, confirm bare session_id used consistently, decide close or leave open",
+      "status": "done",
+      "files_touched": ["specs/errors.json"],
+      "note": "Decision: CLOSED. All 6 traced call sites (session-register L1418, batch-admit L1628, acquire L1960, dispatch L2009, release L2395, session-release L2545) use bare $session_id consistently, with explicit invariant comments in the text itself."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

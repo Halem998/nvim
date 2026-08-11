@@ -337,28 +337,35 @@ these 3 is an over-close and must be reverted.
 
 ---
 
-### Phase 6: Adjudicate lock_session_self_contention [NOT STARTED]
+### Phase 6: Adjudicate lock_session_self_contention [COMPLETED]
 
 **Goal**: Independently decide whether `lock_session_self_contention`
 (`err_1786349061524_pY97cE`) may be closed, and record the reasoning either way.
 
 **Tasks**:
-- [ ] Read the full MT-1 / MT-3 / MT-4 call chain in
+- [x] Read the full MT-1 / MT-3 / MT-4 call chain in
       `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` and trace every
-      `task-lock.sh acquire` / `release` / `session-register` call site.
-- [ ] Confirm whether the acquire argument, the release argument, and the batch registration all
+      `task-lock.sh acquire` / `release` / `session-register` call site. *(completed: traced
+      session-register at line 1418, orchestrate-batch-admit.sh --session-id at line 1628,
+      acquire at line 1960, dispatch session_id at line 2009, release at line 2395,
+      session-release at line 2545)*
+- [x] Confirm whether the acquire argument, the release argument, and the batch registration all
       use the bare `$session_id` consistently (the reported fix), with no remaining
-      `${session_id}_${task_num}` suffixed form on any of the three.
-- [ ] Decide:
+      `${session_id}_${task_num}` suffixed form on any of the three. *(completed: all 6 traced
+      call sites use the bare `$session_id`; the SKILL.md text itself carries explicit invariant
+      comments at lines 1963-1968 and 2397-2398 documenting the bare-value requirement)*
+- [x] Decide:
       - If the trace is consistent end to end, close the entry with
         `errors-append.sh update --id err_1786349061524_pY97cE --fix-status fixed --fix-task 47`
-        and record the traced call sites as the evidence.
+        and record the traced call sites as the evidence. *(completed: DECISION = CLOSED — trace
+        is consistent end to end)*
       - If any inconsistency or unreadable path remains, LEAVE THE ENTRY OPEN and record why. An
         open entry here is a valid outcome, not a phase failure — the acceptance criterion only
         forbids leaving unfixed an entry that is *demonstrably* fixed.
-- [ ] Do not execute a live multi-task `/orchestrate` dispatch to test this; it is out of scope and
+- [x] Do not execute a live multi-task `/orchestrate` dispatch to test this; it is out of scope and
       flagged as risky. Textual tracing is the sanctioned confirmation method for this phase.
-- [ ] Record the decision and its basis in the summary.
+      *(completed: no live dispatch executed, textual tracing only)*
+- [x] Record the decision and its basis in the summary. *(completed: see implementation summary)*
 
 **Timing**: 0.4 hours
 

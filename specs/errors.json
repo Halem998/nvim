@@ -52,7 +52,9 @@
         "suggested_action": "Pass bare session_id to the task-lock.sh acquire/release calls at SKILL.md:1960, matching the batch-admit call site",
         "auto_recoverable": false
       },
-      "fix_status": "unfixed"
+      "fix_status": "fixed",
+      "fixed_date": "2026-08-11T22:24:54Z",
+      "fix_task": 47
     },
     {
       "id": "err_1786349061556_LuKGif",
