@@ -1,0 +1,13 @@
+{
+  "phase": 5,
+  "phase_name": "Reconcile the lean-lsp permission duplication",
+  "started_at": "2026-08-11T06:14:00Z",
+  "last_updated": "2026-08-11T06:18:00Z",
+  "commit_mode": "atomic-batch",
+  "objectives": [
+    {"id": 1, "description": "Remove core's domain-specific mcp__lean-lsp__* wildcard and lean's 21-entry enumeration plus dead mcpServers block, replacing with a single wildcard in lean's own fragment, as one atomic unit", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json", "agent-system/extensions/lean/settings-fragment.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

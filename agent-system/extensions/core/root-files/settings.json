@@ -23,8 +23,7 @@
       "Task",
       "TaskCreate",
       "TaskUpdate",
-      "Skill",
-      "mcp__lean-lsp__*"
+      "Skill"
     ],
     "deny": [
       "Bash(rm -rf /)",

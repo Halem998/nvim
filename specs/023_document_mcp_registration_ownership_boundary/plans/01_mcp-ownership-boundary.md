@@ -337,24 +337,26 @@ from `mcp-tool-recovery.md`.
 
 ---
 
-### Phase 5: Reconcile the lean-lsp permission duplication [NOT STARTED]
+### Phase 5: Reconcile the lean-lsp permission duplication [COMPLETED]
 
 **Goal**: Collapse the three-way lean-lsp duplication on the permission axis to a single wildcard
 in lean's own fragment, and remove the dead registration block.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/root-files/settings.json`, remove the `"mcp__lean-lsp__*"`
+- [x] In `agent-system/extensions/core/root-files/settings.json`, remove the `"mcp__lean-lsp__*"`
       entry from `permissions.allow` -- a domain-specific grant does not belong in the
-      domain-agnostic core file.
-- [ ] In `agent-system/extensions/lean/settings-fragment.json`, replace the 21-entry
+      domain-agnostic core file. *(completed)*
+- [x] In `agent-system/extensions/lean/settings-fragment.json`, replace the 21-entry
       `mcp__lean-lsp__lean_*` enumeration in `permissions.allow` with the single wildcard
-      `"mcp__lean-lsp__*"`.
-- [ ] In the same file, delete the `mcpServers` block entirely -- it is non-functional and its
-      presence is exactly the misleading example the canonical doc now warns against.
-- [ ] Keep both files valid JSON with the surrounding structure otherwise untouched (no reordering
-      or reformatting of unrelated keys).
-- [ ] Treat these two edits as one unit: the intermediate state where core's wildcard is gone but
-      lean's replacement is not yet in place is expected-red and must not be committed.
+      `"mcp__lean-lsp__*"`. *(completed)*
+- [x] In the same file, delete the `mcpServers` block entirely -- it is non-functional and its
+      presence is exactly the misleading example the canonical doc now warns against. *(completed)*
+- [x] Keep both files valid JSON with the surrounding structure otherwise untouched (no reordering
+      or reformatting of unrelated keys). *(completed: diff shows a single removed line in core's
+      settings.json)*
+- [x] Treat these two edits as one unit: the intermediate state where core's wildcard is gone but
+      lean's replacement is not yet in place is expected-red and must not be committed. *(completed:
+      both edits are being staged and committed together as one atomic-batch commit)*
 
 **Timing**: 20 minutes
 
