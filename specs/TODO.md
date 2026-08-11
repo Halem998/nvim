@@ -11,8 +11,8 @@ next_project_number: 28
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,19,20,22,24,27 | -- | agent-system, extensions, orchestration-concurrency, ... |
-| 2 | 9,13,25,26 | 17,18,24 | agent-system, mcp-integration |
+| 1 | 14,16,17,18,19,20,22,25,26,27 | -- | agent-system, extensions, orchestration-concurrency, ... |
+| 2 | 9,13 | 17,18 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -37,9 +37,8 @@ next_project_number: 28
 
 ### Mcp Integration
 
-24 [PLANNED] — Add a deliberately scoped Playwright MCP permission allowlist so 
-  └─ 25 [NOT STARTED] — Activate the already-designed but parked Playwright MCP integrati
-  └─ 26 [NOT STARTED] — Migrate slidev deck screenshot verification from the standalone n
+25 [NOT STARTED] — Activate the already-designed but parked Playwright MCP integrati
+26 [NOT STARTED] — Migrate slidev deck screenshot verification from the standalone n
 
 ## Tasks
 
@@ -141,12 +140,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 24. Scope Playwright MCP permission allowlist to safe browser tools, solving install-once propagation
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: mcp-integration
 - **Dependencies**: Task 23
 - **Research**: [024_scope_playwright_mcp_permission_allowlist/reports/01_scoped-playwright-permission-allowlist.md]
 - **Plan**: [024_scope_playwright_mcp_permission_allowlist/plans/01_scoped-playwright-permission-allowlist.md]
+- **Summary**: [024_scope_playwright_mcp_permission_allowlist/summaries/01_scoped-playwright-permission-allowlist-summary.md]
 
 **Description**: Add a deliberately scoped Playwright MCP permission allowlist so autonomous runs stop stalling, without blanket-allowing arbitrary execution.
 
