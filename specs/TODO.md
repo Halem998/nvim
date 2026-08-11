@@ -1,5 +1,5 @@
 ---
-next_project_number: 38
+next_project_number: 40
 ---
 
 # TODO
@@ -41,6 +41,11 @@ next_project_number: 38
 
 22 [RESEARCHING] — Silence and correct opencode-agents.json fragment validation spam
 
+### Literature
+
+38 [NOT STARTED] — Activate and harden the Zotero write-back path in the literature
+  └─ 39 [NOT STARTED] — Upgrade Zotero metadata resolution and plan the Zotero 10 backen
+
 ### Orchestration Concurrency
 
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
@@ -49,6 +54,81 @@ next_project_number: 38
     └─ 37 [NOT STARTED] — Make the concurrency premise handed to per-phase dispatch agents 
 
 ## Tasks
+
+### 39. Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 38
+- **Research**: [039_zotero_metadata_resolution_upgrade/reports/01_zotero-tooling-landscape.md]
+
+**Description**: Upgrade the literature extension's Zotero integration beyond bare write-path activation: add a real metadata-resolution step for web-discovered sources, decide the MCP question, gate auto-attach on storage quota, and record the Zotero 10 backend-swap plan. Grounded in verified Aug-2026 tooling research — see the seed report before re-deriving any landscape claim.
+
+=== WORK ITEMS ===
+
+1. TRANSLATION-SERVER INTEGRATION (the pipeline's thinnest point today). The online ingest bridge currently relies on `zot add --pdf`'s DOI-from-PDF extraction for metadata, which fails on books, preprints without embedded DOIs, and scans. Integrate the official `zotero/translation-server` (HTTP, port 1969; service provisioning is the ~/.dotfiles repo's job — its task 129): call `POST /search` (DOI/ISBN/arXiv ID, preferred when Tier-3 discovery already has an identifier) or `POST /web` (URL fallback) to resolve full Zotero JSON BEFORE item creation, and pass that metadata through the create path. Degrade gracefully (current behavior) when the service is down, and surface which resolution path produced the record.
+
+2. ZOTERO-MCP ADOPTION DECISION. Evaluate adding 54yyyu/zotero-mcp (de-facto standard, ~4.6k stars, hybrid mode = local-API reads + Web-API writes, add-by-DOI/URL/ISBN, OA-PDF cascade) as an INTERACTIVE complement for `/research --lit` sessions. The deterministic scripts remain the pipeline of record — community practice in 2026 is exactly this split. Deliverable is a recorded decision (adopt/defer with reasons); if adopted, registration scope and permission grants follow the grant-at-registration-scope principle already established for MCP servers in the ~/.dotfiles Claude configuration, and the registration itself lands there, not here.
+
+3. STORAGE-QUOTA GATE. Stored-file uploads via the Web API count against the zotero.org 300 MB free tier (948 attachments already exist locally; the account's plan/usage is unverified). Verify quota state and encode an explicit auto-attach policy in the ingest bridge rather than discovering the ceiling by failure. Note the upload flow's `{"exists": 1}` content-hash dedup for PDF bytes.
+
+4. ZOTERO 10 BACKEND-SWAP PLAN (plan, do NOT implement while 10 is beta). Zotero 10 ships native local writes (items + file upload) at `localhost:23119/api/` with consent-based local API keys via `POST /api/local/authorize` — eliminating cloud round-trips and the storage quota for attached files. Record the swap plan against the single write choke-point (`zotero-write.sh`) so callers never change; explicitly reject `/connector/saveItems` as a write contract (undocumented internal protocol).
+
+=== ACCEPTANCE CRITERIA ===
+
+1. Web-discovered sources get translation-server-resolved metadata when an identifier or URL is available, with honest surfacing of which resolution path was used and graceful degradation when the service is unreachable.
+2. The MCP decision is recorded with reasons; no MCP registration or grants are hand-edited in this repo either way.
+3. Auto-attach policy is explicit and quota-aware; no silent quota-exhaustion failure mode remains.
+4. The Zotero 10 swap plan exists in the extension's context docs, names the choke-point, and states what stays constant for callers.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target agent-system/extensions/literature/**. NEVER edit the deployed .claude/** tree.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 38. Activate and harden the Zotero write-back path in the literature extension
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+- **Research**: [038_activate_zotero_write_back_path/reports/01_zotero-integration-review.md]
+
+**Description**: Activate the literature extension's designed-but-inactive Zotero write-back path (create items + attach PDFs during online literature discovery) and harden it against the two correctness hazards found in review. All environment facts below were verified live on 2026-08-11 — do not re-derive them, but DO re-confirm before editing since the environment may have moved on. Full detail in the seed report.
+
+=== VERIFIED FACTS THAT CHANGE THE PICTURE ===
+
+1. THE API-KEY BLOCKER HAS SILENTLY RESOLVED. `ZOTERO_API_KEY` is now set in the environment (currently hardcoded in `~/.config/fish/conf.d/private.fish`; proper provisioning is the ~/.dotfiles repo's job) and was verified via `GET https://api.zotero.org/keys/current`: full `library + files + write` access. The README deployment-status table and `zotero-write.sh`'s header both still claim no key is configured — that documentation is now WRONG.
+2. THE ONE REMAINING HARD BLOCKER is that `zot` (zotero-cli-cc) is not installed. The package is real and actively maintained: PyPI 0.10.0 (2026-07-15), summary "Zotero CLI for Claude Code — SQLite reads + Web API writes". Extension docs pin v0.7.0; re-verify flags and the `zot add` envelope against the current release. CROSS-REPO DEPENDENCY: installation is provisioned by the ~/.dotfiles repo (its task 129, Nix-managed, PATH-visible binary) — this task cannot fully complete its live-verification items until that lands.
+3. STALE-EXPORT HAZARD IS LIVE: `zotero-library.json` was generated 2026-07-01 but the live database (at the correctly-resolved data dir `/home/benjamin/Documents/Zotero`; beware the decoy `~/Zotero`) was written 2026-08-05; `zotero-export-freshness.sh` correctly emits ZOTERO_EXPORT_STALE. Tier-2 classification reads this export, and the Web API has NO server-side dedup, so a stale export → misclassified-as-new → duplicate item creation. The guard exists but nothing on the write path consults it.
+4. The `zot add --pdf` envelope field names remain an unconfirmed empirical unknown (documented in `context/project/literature/patterns/zotero-item-creation.md` section 2, with defensive multi-path probing as the standing mitigation).
+
+=== WORK ITEMS ===
+
+1. CORRECT STALE DOCS: README deployment-status table, `zotero-write.sh` header, tool-requirements version pin, and any remaining "no API key available" claims.
+2. LIVE ENVELOPE CONFIRMATION (after `zot` lands): capture `jq '.data'` from one real `item-add` and one real `attach-file` call against the real library; record confirmed field paths in `zotero-item-creation.md`; then either simplify the multi-path probing or keep it with a stated reason. Use `--dry-run` first; the mandatory `%PDF` magic-byte gate and honest-surfacing invariants must be preserved unchanged.
+3. DEPLOY the inactive scripts (`zotero-write.sh`, `zotero-read.sh`, `zotero-setup.sh`) through the normal extension deploy flow; update the deployment-status table accordingly.
+4. WIRE THE FRESHNESS GATE INTO THE WRITE PATH: on ZOTERO_EXPORT_STALE, refuse item-add or re-verify classification against the live library before any write.
+5. PRE-WRITE DEDUP: DOI-normalized lookup (lowercase, strip the `https://doi.org/` prefix) against the LIVE library (Web API search or local sqlite read), never the export snapshot, before any `item-add`.
+6. PRESERVE THE CHOKE-POINT: `zotero-write.sh` remains the single write entry so a future backend swap (Zotero 10 local API — follow-on task) never touches callers.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. No extension doc claims the API key is missing; the version pin matches the provisioned `zot`.
+2. `zotero-item-creation.md` records live-confirmed envelope field paths (or documents exactly why confirmation is still pending, if the cross-repo provisioning has not landed).
+3. The write path refuses or re-verifies on a stale export, and performs DOI-normalized live dedup before creating any item.
+4. The magic-byte gate, DOI-only-fallback honest surfacing, and never-fabricate-keys invariants are demonstrably unchanged.
+5. Deployed vs. source copies of the three activated scripts are byte-identical and the deployment-status table reflects reality.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target agent-system/extensions/literature/**. NEVER edit the deployed .claude/** tree — it is gitignored, disposable, and regenerated from the source store.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 37. Replace the unsound no-concurrency premise with a wired, checkable territory contract for per-phase dispatch
 - **Effort**: 3-6 hours
