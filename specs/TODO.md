@@ -38,7 +38,7 @@ next_project_number: 28
 
 ### Mcp Integration
 
-23 [RESEARCHED] — Define and document the ownership boundary between the four compe
+23 [PLANNED] — Define and document the ownership boundary between the four compe
   └─ 24 [NOT STARTED] — Add a deliberately scoped Playwright MCP permission allowlist so 
     └─ 25 [NOT STARTED] — Activate the already-designed but parked Playwright MCP integrati
     └─ 26 [NOT STARTED] — Migrate slidev deck screenshot verification from the standalone n
@@ -169,11 +169,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 23. Document MCP registration vs permission ownership boundary; reconcile lean-lsp three-way duplication
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: mcp-integration
 - **Dependencies**: None
 - **Research**: [023_document_mcp_registration_ownership_boundary/reports/01_mcp-registration-ownership-boundary.md]
+- **Plan**: [023_document_mcp_registration_ownership_boundary/plans/01_mcp-ownership-boundary.md]
 
 **Description**: Define and document the ownership boundary between the four competing MCP registration/permission mechanisms, and reconcile the existing lean-lsp three-way duplication.
 
