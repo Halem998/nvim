@@ -1,18 +1,37 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "summary": "Confirmed zot v0.10.0 is now installed and live (the seed report's sole remaining hard blocker has resolved), captured its updated flag/schema surface, and found a bigger blocker for work item 3: the entire literature extension is absent from the deployed .claude/ tree and untracked in .claude-extensions.json, so the default headless deploy flow cannot activate it. Also confirmed zot's live-database search/duplicates commands are a ready-made DOI-dedup building block and that the freshness export is still stale.",
+  "status": "planned",
+  "task_number": 38,
+  "phases_completed": 0,
+  "phases_total": 7,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/038_activate_zotero_write_back_path/reports/02_zotero-write-back-activation-research.md",
-      "summary": "Follow-up research superseding the seed report's blocker status: zot CLI now installed/live, new flag surface documented, extension-activation blocker discovered for work item 3, DOI-dedup building block identified, freshness hazard re-confirmed live."
+      "type": "plan",
+      "path": "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md",
+      "summary": "7-phase, 5.5-hour plan covering all 6 work items and all 5 acceptance criteria: env re-confirmation, stale-doc correction, export-freshness gating, DOI-normalized live dedup, invariant-preservation evidence, user-gated live envelope confirmation, and first-time extension activation plus deploy with byte-identity verification."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 0,
-  "blockers": [],
-  "plan_markers_verified": null,
-  "continuation_path": null,
-  "next_action_hint": "Run /plan 38 -- the plan must re-scope work item 3 to include first-time literature-extension activation (interactive picker load, or a deliberate headless manager.load(\"literature\", {confirm=false}) call) before the normal deploy-headless.sh resync can deploy the three previously-inactive zotero scripts. Work item 2 (live envelope confirmation) is now technically unblocked but requires an explicit, planned real-write test design against the user's production Zotero library -- not a silent step."
+  "completion_data": {
+    "completion_summary": "Created the implementation plan. Phase structure: (1) re-confirm zot v0.10.0 / API key scope / deployed-tree gap and capture the zot schema surface; (2) correct stale docs across README, zotero-write.sh header, zotero-scripts.md, zotero-item-creation.md, zotero-integration.md; (3) wire zotero-export-freshness.sh into both write branches of literature-ingest-online.sh as re-verify-then-proceed; (4) add normalize_doi() plus a hard-stop live-library DOI dedup via zotero-read.sh search with exact .data[].doi equality; (5) evidence-based verification that the %PDF gate, DOI-only-fallback honest surfacing, never-fabricate-keys stop, and the zotero-write.sh choke-point are unchanged; (6) user-gated real item-add and attach-file against the production library to confirm envelope field paths, with [COMPLETED WITH EXCLUSIONS] as the sanctioned outcome if the gate is declined; (7) first-time extension activation via a one-off headless manager.load('literature', {confirm=false}) call, resync, byte-identity verification, and post-deploy reconciliation of the deployment-status table."
+  },
+  "modified_files": [
+    "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md"
+  ],
+  "known_deviations": [
+    "Work item 3 is re-scoped per follow-up research: the entire literature extension is absent from the deployed .claude/ tree and untracked in .claude-extensions.json (re-confirmed live at plan time: keys are core,email,memory,nix,nvim). deploy-headless.sh's default mode only resyncs currently-active extensions, so Phase 7 performs first-time activation before any resync.",
+    "Phase 7 chooses the headless manager.load('literature', {confirm=false}) option over adding a --load flag to deploy-headless.sh. Rationale: activation is an operation, not a source edit, so it needs no change to core-extension scripted infrastructure and keeps every edit inside agent-system/extensions/literature/** per the binding source-store rule. The interactive <leader>al picker is named as the sanctioned fallback.",
+    "Phase 7's activation blast radius is materially larger than 'three scripts': 1 agent, 2 commands, 2 skills, 2 context roots, 36 scripts, and a merge-sources/claudemd.md merge that adds the --lit section to the generated CLAUDE.md. The phase requires presenting this to the user before activating.",
+    "Phase 6 performs a real, hard-to-reverse write into the user's 904-item production Zotero library and carries a hard user-confirmation gate before the first non-dry-run call. Declining the gate is an accepted outcome that closes the phase [COMPLETED WITH EXCLUSIONS], which acceptance criterion 2 explicitly permits ('or documents exactly why confirmation is still pending').",
+    "Work item 4's 'refuse OR re-verify' is planned as re-verify-then-proceed rather than unconditional refusal, because the export is persistently stale in this environment (still ZOTERO_EXPORT_STALE) and an unconditional refusal would block all ingest. The Phase 4 live-library DOI check is the concrete re-verification mechanism.",
+    "Phases 3 and 4 both edit literature-ingest-online.sh and are deliberately serialized (Phase 4 depends on 3) rather than parallelized, to avoid conflicting edits to the same file."
+  ],
+  "metadata": {
+    "session_id": "sess_1786480706_506b3d_38",
+    "agent_type": "planner-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "plan_path": "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md",
+    "phase_count": 7,
+    "estimated_hours": 5.5,
+    "dependency_waves": [[1], [2, 3], [4], [5], [6], [7]]
+  }
 }

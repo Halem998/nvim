@@ -45,9 +45,9 @@ next_project_number: 47
 
 ### Literature
 
-38 [RESEARCHED] — Activate the literature extension's designed-but-inactive Zotero 
+38 [PLANNED] — Activate the literature extension's designed-but-inactive Zotero 
   └─ 39 [NOT STARTED] — Upgrade the literature extension's Zotero integration beyond bare
-40 [RESEARCHED] — The `sentence_boundary_glue_count` quality-gate check in `agent-s
+40 [PLANNING] — The `sentence_boundary_glue_count` quality-gate check in `agent-s
 
 ### Orchestration Concurrency
 
@@ -143,7 +143,7 @@ next_project_number: 47
 
 ### 40. Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -234,11 +234,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 38. Activate and harden the Zotero write-back path in the literature extension
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [038_activate_zotero_write_back_path/reports/02_zotero-write-back-activation-research.md]
+- **Plan**: [038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md]
 
 **Description**: Activate the literature extension's designed-but-inactive Zotero write-back path (create items + attach PDFs during online literature discovery) and harden it against the two correctness hazards found in review. All environment facts below were verified live on 2026-08-11 — do not re-derive them, but DO re-confirm before editing since the environment may have moved on. Full detail in the seed report.
 

@@ -1,39 +1,29 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1786480706_506b3d_38",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 38,
-  "findings_count": 6,
+  "session_id": "sess_1786480706_506b3d_38",
+  "delegation_depth": 2,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/038_activate_zotero_write_back_path/reports/02_zotero-write-back-activation-research.md",
-      "summary": "Follow-up research: zot v0.10.0 is now installed and live (the seed report's one remaining hard blocker has resolved); discovered a bigger blocker for work item 3 -- the entire literature extension is absent from the deployed .claude/ tree and untracked in .claude-extensions.json, so the default headless deploy flow cannot activate it; confirmed zot's live-database-backed search/duplicates commands are a ready-made DOI-dedup building block; confirmed the freshness export is still stale; documented new zot v0.10.0 flags (--via-bridge, zot schema) not reflected in extension docs."
+      "type": "plan",
+      "path": "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md",
+      "summary": "7-phase, 5.5-hour implementation plan covering all 6 work items and all 5 acceptance criteria for activating and hardening the Zotero write-back path."
     }
   ],
+  "summary": "Created a 7-phase plan (5.5 hours, 6 dependency waves) for the Zotero write-back activation. Phase 1 re-confirms the environment (zot v0.10.0 confirmed live at plan time) and captures the zot schema surface. Phase 2 corrects stale docs across five files. Phase 3 wires zotero-export-freshness.sh into both write branches of literature-ingest-online.sh. Phase 4 adds DOI normalization plus a hard-stop live-library dedup via zotero-read.sh search. Phase 5 records evidence that the %PDF gate, DOI-only-fallback honest surfacing, never-fabricate-keys stop, and the zotero-write.sh choke-point are unchanged. Phase 6 performs the live envelope confirmation behind a hard user-confirmation gate against the production library. Phase 7 activates the literature extension for the first time via a headless manager.load call, resyncs, and verifies byte identity.",
+  "phase_count": 7,
+  "estimated_hours": 5.5,
+  "dependency_waves": [[1], [2, 3], [4], [5], [6], [7]],
   "memory_candidates": [
     {
-      "content": "In this repo, deploy-headless.sh's default (non-destructive) mode only force-resyncs extensions already marked active in .claude-extensions.json (plus bootstraps 'core' unconditionally). It CANNOT activate a brand-new extension that has no entry in that file -- resync_all skips anything not already tracked as active. First-time activation requires either the interactive <leader>al picker (which calls manager.load and durably registers the extension), or a deliberate headless call to manager.load(name, {confirm=false}) (the same mechanism deploy-headless.sh already uses internally to bootstrap 'core'). A documented 'Deployment Status: Active' claim in an extension's own README is NOT reliable evidence the extension is actually deployed in the live .claude/ tree -- it can drift arbitrarily once the extension is untracked in .claude-extensions.json. Always cross-check against .claude-extensions.json's active-extension keys and a direct filesystem check of .claude/ before trusting a README's deployment table.",
+      "content": "A documented 'deployment status' table inside an extension's own README can drift arbitrarily far from the live deploy tree when the extension has no entry in the project's extension-state file (.claude-extensions.json). The non-destructive deploy resync only force-resyncs extensions the state file already marks active, so running it repeatedly on an unregistered extension silently deploys nothing -- the operation succeeds and changes nothing. Any plan whose step is 'deploy these scripts through the normal deploy flow' must first verify the owning extension is registered as active; if it is not, first-time activation (a manager.load call or one pass through the interactive picker) is a prerequisite, not an implementation detail. The correct diagnostic is to read the extension-state file's keys, never the extension's own documentation. Activation is an operation, not a source edit, so it can satisfy a source-store/deploy boundary rule that forbids editing the deploy tree or another extension's source.",
       "category": "INSIGHT",
-      "source_artifact": "specs/038_activate_zotero_write_back_path/reports/02_zotero-write-back-activation-research.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "extension activation", "manager.load", "claude-extensions.json", "deployment status drift"]
-    },
-    {
-      "content": "The zotero-cli-cc (zot) CLI ships a 'zot schema <command>' introspection command (e.g. 'zot schema add') that emits machine-readable param schemas (types, flags, since-version, safety_tier) for any subcommand -- a durable way to re-verify a wrapper script's flag assumptions against the installed zot version without re-deriving them from --help text by hand. It documents input params only, not output/response envelope shapes -- confirming .data.* field names in a write-command's response still requires an actual (or --dry-run, which only shows a preview 'would' object, not the real envelope) live call.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/038_activate_zotero_write_back_path/reports/02_zotero-write-back-activation-research.md",
+      "source_artifact": "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md",
       "confidence": 0.85,
-      "suggested_keywords": ["zot", "zotero-cli-cc", "schema introspection", "CLI flag verification"]
-    },
-    {
-      "content": "zot's read commands (search, list, duplicates, stats) resolve their own data directory via 'zot config show' independently of any extension-specific ZOT_DATA_DIR env var or index file, and read the LIVE Zotero SQLite database directly -- never a Better BibTeX CSL-JSON export snapshot. 'zot search <doi>' and 'zot duplicates --by doi' are therefore immune to CSL-JSON export staleness and are ready-made building blocks for DOI-normalized dedup checks against a live library, without needing to hand-roll a Web API search or sqlite read. zot's search matching is case-insensitive but does NOT strip URL-scheme DOI prefixes (https://doi.org/...) -- callers must still normalize (lowercase + strip prefix) before querying, and should verify the .doi field of returned hits for exact equality rather than trusting substring-match presence alone.",
-      "category": "PATTERN",
-      "source_artifact": "specs/038_activate_zotero_write_back_path/reports/02_zotero-write-back-activation-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["zot", "zotero", "DOI normalization", "dedup", "live database vs export staleness"]
+      "suggested_keywords": ["extension-activation", "deploy-headless", "claude-extensions-json", "deployment-status-drift", "manager-load", "resync-noop"]
     }
   ],
-  "next_steps": "Run /plan 38 to create implementation plan"
+  "next_steps": "Run /implement 38 to execute the plan"
 }

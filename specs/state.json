@@ -852,7 +852,7 @@
     {
       "project_number": 38,
       "project_name": "activate_zotero_write_back_path",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Activate and harden the Zotero write-back path in the literature extension",
       "topic": "literature",
@@ -875,10 +875,15 @@
           "path": "specs/038_activate_zotero_write_back_path/reports/02_zotero-write-back-activation-research.md",
           "type": "report",
           "summary": "research report"
+        },
+        {
+          "path": "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md",
+          "type": "plan",
+          "summary": "implementation plan"
         }
       ],
       "created": "2026-08-11T16:05:00Z",
-      "last_updated": "2026-08-11T20:48:08Z",
+      "last_updated": "2026-08-11T20:55:15Z",
       "session_id": "sess_1786480706_506b3d_38"
     },
     {
@@ -914,7 +919,7 @@
     {
       "project_number": 40,
       "project_name": "fix_convert_quality_gate_glue_false_positives",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "title": "Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation",
       "topic": "literature",
@@ -934,7 +939,7 @@
         }
       ],
       "created": "2026-08-11T16:06:30Z",
-      "last_updated": "2026-08-11T20:48:15Z",
+      "last_updated": "2026-08-11T20:48:54Z",
       "session_id": "sess_1786480706_506b3d_40"
     },
     {
