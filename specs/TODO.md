@@ -1,5 +1,5 @@
 ---
-next_project_number: 42
+next_project_number: 46
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 42
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,33,34,38,40,41,41,42,43,44 | -- | agent-system, extensions, literature, ... |
+| 1 | 14,16,17,18,20,22,27,28,31,33,34,38,40,41,41,42,43,44,45 | -- | agent-system, extensions, literature, ... |
 | 2 | 9,13,29,35,39 | 17,18,22,33,38 | agent-system, literature, orchestration-concurrency |
 | 3 | 30,37 | 29,35 | agent-system, orchestration-concurrency |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -40,6 +40,7 @@ next_project_number: 42
 ### Extensions
 
 22 [RESEARCHING] — Silence and correct opencode-agents.json fragment validation spam
+45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 
 ### Literature
 
@@ -64,6 +65,16 @@ next_project_number: 42
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 
 ## Tasks
+
+### 45. Global update extension repo registry
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Implement <leader>al repo registration and 'Global Update' action: when <leader>al loads extensions into other repos, register those repos and their loaded extensions in this nvim repo; add a 'Global Update' entry (similar to 'Reload All') that reloads all extensions already loaded in each registered repo, reporting any failures in a message and otherwise success as a count of the total
+
+---
 
 ### 44. Slim commands/task.md, the largest per-invocation context contributor
 - **Effort**: 2-4 hours

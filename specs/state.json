@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 45,
+  "next_project_number": 46,
   "active_projects": [
+    {
+      "project_number": 45,
+      "project_name": "global_update_extension_repo_registry",
+      "status": "not_started",
+      "task_type": "general",
+      "description": "Implement <leader>al repo registration and 'Global Update' action: when <leader>al loads extensions into other repos, register those repos and their loaded extensions in this nvim repo; add a 'Global Update' entry (similar to 'Reload All') that reloads all extensions already loaded in each registered repo, reporting any failures in a message and otherwise success as a count of the total",
+      "topic": "extensions",
+      "created": "2026-08-11T16:32:04Z",
+      "last_updated": "2026-08-11T16:32:04Z"
+    },
     {
       "project_number": 41,
       "project_name": "move_session_state_files_out_of_specs_root",
