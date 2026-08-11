@@ -32,7 +32,7 @@ next_project_number: 52
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
-47 [NOT STARTED] — Clear the two failing verification gates and reconcile the defect
+47 [RESEARCHING] — Clear the two failing verification gates and reconcile the defect
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
@@ -52,7 +52,7 @@ next_project_number: 52
 
 ### Literature
 
-39 [NOT STARTED] — Upgrade the literature extension's Zotero integration beyond bare
+39 [RESEARCHED] — Upgrade the literature extension's Zotero integration beyond bare
 
 ### Orchestration Concurrency
 
@@ -187,7 +187,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 47. Clear failing gates and reconcile ledgers
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -336,11 +336,11 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 39. Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 38
-- **Research**: [039_zotero_metadata_resolution_upgrade/reports/01_zotero-tooling-landscape.md]
+- **Research**: [039_zotero_metadata_resolution_upgrade/reports/02_zotero-metadata-resolution-design.md]
 
 **Description**: Upgrade the literature extension's Zotero integration beyond bare write-path activation: add a real metadata-resolution step for web-discovered sources, decide the MCP question, gate auto-attach on storage quota, and record the Zotero 10 backend-swap plan. Grounded in verified Aug-2026 tooling research — see the seed report before re-deriving any landscape claim.
 
