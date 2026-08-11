@@ -259,63 +259,65 @@ narrower statement of the real friction cost, without changing any executable li
 
 ---
 
-### Phase 4: Rewrite the ownership doc's registration model [NOT STARTED]
+### Phase 4: Rewrite the ownership doc's registration model [COMPLETED]
 
 **Goal**: Replace the user-scope-only Registration section with the hybrid model, add the
 same-scope grant rule, and record the workspace-trust caveat and session-snapshot trap.
 
 **Tasks**:
-- [ ] **Registration section**: replace the line asserting user-scope `~/.claude.json` is "the
+- [x] **Registration section**: replace the line asserting user-scope `~/.claude.json` is "the
       only mechanism that registers an MCP server" with the two-surface statement -- the
       registration surfaces are exactly `~/.claude.json` (local, keyed per project, and user,
       top-level) and `.mcp.json` (project scope, in the project root). Nothing else registers.
-- [ ] State the hybrid track selection: (1) extension-owned, repo-local servers -- no per-project
+      *(completed)*
+- [x] State the hybrid track selection: (1) extension-owned, repo-local servers -- no per-project
       computed arguments, usefulness ends at this repo's boundary -> project-scoped `.mcp.json`;
       (2) genuine machine capabilities (installed once per machine, useful across every project,
       e.g. `playwright`) or servers needing per-project computed arguments (e.g. `lean-lsp`'s
       `LEAN_PROJECT_PATH`) -> user scope, via a home-manager activation block or a
       `core/scripts/` setup script. The selection question: does this server's usefulness end at
       this repo's boundary, and does it need no computed args? Yes to both -> project scope;
-      otherwise user scope.
-- [ ] Add the governing rule as its own named subsection: **grant permissions at the same scope
+      otherwise user scope. *(completed)*
+- [x] Add the governing rule as its own named subsection: **grant permissions at the same scope
       where the server is registered.** User-scope registration -> grant in the user-scope
       settings file (`~/.claude/settings.json`). Project-scope registration -> grant in the owning
       extension's `settings-fragment.json`, per the existing domain-specific/domain-agnostic
       split. Explain the failure mode: a project-scope grant only helps projects where that
       specific extension happens to be loaded, leaving every other project's calls to prompt --
-      and in headless runs, to DENY outright, which is why autonomous runs stall.
-- [ ] Add the worked example pair: `lean-lsp` as the in-repo positive control (registered user
+      and in headless runs, to DENY outright, which is why autonomous runs stall. *(completed)*
+- [x] Add the worked example pair: `lean-lsp` as the in-repo positive control (registered user
       scope in `~/.claude.json`, granted user scope via `mcp__lean-lsp__*` in
       `~/.claude/settings.json` -- symmetric, correct); `playwright` as the live counter-example
       (registered user scope, but the 9-tool safe-tier enumeration appears only in the `web` and
       `present` extension fragments, with zero playwright entries in `~/.claude/settings.json`).
-      State that fixing playwright is a separate follow-up, not performed here.
-- [ ] Add the **workspace-trust caveat**, stated at its true strength: Claude Code v2.1.196 added
+      State that fixing playwright is a separate follow-up, not performed here. *(completed)*
+- [x] Add the **workspace-trust caveat**, stated at its true strength: Claude Code v2.1.196 added
       a workspace-trust gate for `.mcp.json`, and a cloned repository cannot approve its own
       servers. Once a workspace is trusted, project-scoped servers are fully reachable by
       subagents -- directly demonstrated. A fresh clone therefore carries a one-time interactive
       trust step that user-scope registration does not. Record it as a real friction cost of the
       hybrid model; do not present it as a blocker, and do not present the original claim as pure
-      error.
-- [ ] Add the **session-start snapshot trap** as its own short subsection: an already-RUNNING
+      error. *(completed)*
+- [x] Add the **session-start snapshot trap** as its own short subsection: an already-RUNNING
       session cannot see a server added to `.mcp.json` after that session started, and this
       affects the main session identically -- it is a session-start tool-registry snapshot
       effect, not a scope or subagent property. Anyone re-testing MUST use a fresh session or
       `claude -p`. State plainly that this trap produced the original wrong conclusion.
-- [ ] Keep the "Not registration" subsection's settings-file rebuttal intact (it remains true and
+      *(completed)*
+- [x] Keep the "Not registration" subsection's settings-file rebuttal intact (it remains true and
       is unaffected by adding project scope), but adjust any wording that implies user scope is
-      the sole alternative.
-- [ ] **Decision procedure section**: insert a new first fork (project-scope-repo-local vs.
+      the sole alternative. *(completed)*
+- [x] **Decision procedure section**: insert a new first fork (project-scope-repo-local vs.
       user-scope-machine-or-computed); the existing per-project-computed-args fork now applies
-      only inside the user-scope branch. Fold the same-scope grant rule into step 2.
-- [ ] **Composition section**: update the two-row symptom table so the "granted but tool absent"
-      row's fix names both registration surfaces, not user scope alone.
-- [ ] Add the small facts an author needs: `mcp__server__*` is a valid grant form and bare
+      only inside the user-scope branch. Fold the same-scope grant rule into step 2. *(completed)*
+- [x] **Composition section**: update the two-row symptom table so the "granted but tool absent"
+      row's fix names both registration surfaces, not user scope alone. *(completed)*
+- [x] Add the small facts an author needs: `mcp__server__*` is a valid grant form and bare
       `mcp__server` is NOT; omission from `permissions.allow` prompts interactively but DENIES in
       headless; Claude Code v2.1.202 makes HTTP servers declared without an explicit `type` field
-      fail fast.
-- [ ] Re-check every relative link in the sections touched still resolves from the file's own
-      directory
+      fail fast. *(completed)*
+- [x] Re-check every relative link in the sections touched still resolves from the file's own
+      directory *(completed: verified all 4 relative links resolve)*
 
 **Timing**: 1.7 hours
 

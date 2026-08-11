@@ -20,35 +20,117 @@ first tool call, so both must be verified independently.
 
 ## Registration
 
-User-scope `~/.claude.json` is the only mechanism that registers an MCP server for agent use.
-There are two sanctioned ways to write into it:
+MCP servers register through exactly two files: `~/.claude.json` and `.mcp.json`. Nothing else
+registers a server — see "Not registration" below. `~/.claude.json` itself carries two internal
+scopes — **local** (per-project entries keyed under that project's own path, private to the
+machine) and **user** (top-level, applying across every project) — but only the user scope is a
+sanctioned registration mechanism in this repo; nothing here writes to the local scope. That
+leaves an actionable, binary choice for extension authors:
 
-1. **A host-level or home-manager activation block**, for servers with no per-project computed
-   arguments. The activation block writes the server's `command`/`args`/`env` directly into
-   `~/.claude.json`'s top-level `mcpServers` object once, outside of any single project's
-   lifecycle.
-2. **A setup script under `core/scripts/`**, mirroring `setup-lean-mcp.sh`'s shape, for servers
-   that need per-project computed arguments (for example, a project path detected at setup time).
-   The script detects or computes those arguments, then `jq`-merges the result into
-   `~/.claude.json`'s top-level `mcpServers`, preserving whatever the file already holds for other
-   servers.
+1. **Project-scoped `.mcp.json`**, at the project root. A JSON file, in the same
+   `mcpServers`-object shape as `~/.claude.json`, declaring servers usable only within this
+   repository. This is the surface for extension-owned, repo-local servers.
+2. **User-scope `~/.claude.json`** (its top-level `mcpServers` object, not the local per-project
+   one), written by one of two sanctioned mechanisms:
+   - **A host-level or home-manager activation block**, for servers with no per-project computed
+     arguments. The activation block writes the server's `command`/`args`/`env` directly into
+     `~/.claude.json`'s top-level `mcpServers` object once, outside of any single project's
+     lifecycle.
+   - **A setup script under `core/scripts/`**, mirroring `setup-lean-mcp.sh`'s shape, for servers
+     that need per-project computed arguments (for example, a project path detected at setup
+     time). The script detects or computes those arguments, then `jq`-merges the result into
+     `~/.claude.json`'s top-level `mcpServers`, preserving whatever the file already holds for
+     other servers.
 
-Both paths write to the same destination and are otherwise interchangeable; the choice is driven
-entirely by whether the server needs per-project computed arguments.
+### Choosing a registration surface (the hybrid model)
+
+The two surfaces are not interchangeable — pick one by asking a single question: **does this
+server's usefulness end at this repository's boundary, and does it need no per-project computed
+arguments?**
+
+- **Yes to both → project-scoped `.mcp.json`.** The server is extension-owned and repo-local; it
+  has no reason to exist for any other project. This is the primary surface for new
+  extension-declared servers going forward.
+- **No to either → user scope.** Two shapes recur in this repo today:
+  - **Genuine machine capability** — installed once per machine, useful across every project,
+    independent of which repository is open. `playwright` is the worked example: a Nix-built
+    wrapper binary plus a machine-level browser cache, registered once via a home-manager
+    activation block.
+  - **Per-project computed arguments needed** — the server's configuration depends on something
+    computed at setup time for *this* project specifically. `lean-lsp` is the worked example: it
+    needs a computed `LEAN_PROJECT_PATH`, so `core/scripts/setup-lean-mcp.sh` computes it and
+    merges the result into user scope.
+
+### Grant permissions at the same scope where the server is registered
+
+This is the governing rule the hybrid model depends on, and getting it backwards is the most
+common way a configuration looks correct until the first tool call:
+
+- **User-scope registration → grant in user scope**, in `~/.claude/settings.json`
+  (`root-files/settings.json` in the source store). The server is reachable from any project, so
+  its grant must be too.
+- **Project-scope registration → grant in the owning extension's `settings-fragment.json`**, per
+  the domain-specific/domain-agnostic split described under "Permission" below.
+
+**The failure mode this rule prevents**: a project-scope grant only helps projects where that
+specific extension happens to be loaded. Every other project's calls to that server's tools fall
+back to an interactive prompt — and in a headless run, a prompt cannot be answered, so the call is
+DENIED outright. This is exactly why an autonomous run can stall on a tool call that works fine
+interactively elsewhere: the server is registered somewhere reachable, but the grant was written
+to the wrong scope for the run's actual project.
+
+**Worked pair**: `lean-lsp` is the in-repo positive control — registered in user scope
+(`~/.claude.json`) and granted in user scope via a `mcp__lean-lsp__*` wildcard in
+`~/.claude/settings.json`. Symmetric, correct. `playwright` is the live counter-example —
+registered in user scope, but its 9-tool safe-tier enumeration (see the "Carve-out" subsection
+below) appears only inside the `web` and `present` extensions' `settings-fragment.json` files,
+with zero `mcp__playwright__*` entries in `~/.claude/settings.json` itself. Every project without
+`web` or `present` loaded prompts (or DENIES headlessly) on every playwright call. Fixing this
+asymmetry is a separate follow-up, not performed here — it is recorded, not corrected, by this
+document.
+
+### Workspace trust (a real friction cost, not a blocker)
+
+Claude Code v2.1.196 added a workspace-trust gate for `.mcp.json`: a fresh clone (or any
+not-yet-trusted workspace) requires a one-time interactive approval before a project-scoped server
+is used, and a cloned repository cannot approve its own servers — there is no way to pre-authorize
+trust from inside the repo itself. **Once a workspace is trusted, project-scoped servers are fully
+reachable by dispatched subagents** — directly demonstrated, twice, including via the
+general-research-agent class this system actually dispatches, with the permission pre-granted so
+permission was not a confound. There is no categorical subagent access barrier to project scope.
+
+This makes the trust step a real, honest friction cost of the hybrid model relative to pure user
+scope — user-scope registration is never gated by a per-server approval — but it is a one-time
+setup cost, not a per-call or per-session obstacle, and it is not a reason to avoid project scope
+for repo-local servers.
+
+### The session-start snapshot trap
+
+A session's tool registry is a snapshot taken at startup. **An already-running session cannot see
+a server added to `.mcp.json` after that session started** — and this affects the MAIN session
+identically to any subagent; it is not a subagent-specific limitation. This snapshot effect is
+exactly what produced the original wrong conclusion that subagents cannot reach project-scoped
+servers: the server was reachable, but the session used to test it had already started before the
+server was added.
+
+**Anyone re-verifying registration or reachability MUST use a fresh session (or `claude -p`),
+never an already-running one.** Testing from a stale session reproduces the same false negative
+every time, regardless of how correctly the server is registered or permitted.
 
 ### Not registration
 
 An `mcpServers` key inside `settings.json` or `settings.local.json` — and therefore inside an
 extension's `settings-fragment.json`, which merges into one of those two files — has **no
-effect**. Claude Code never reads those files for server definitions; it reads only user-scope
-`~/.claude.json`. This is an empirically verified fact, not an inference from documentation
-silence:
+effect**. Claude Code never reads those files for server definitions; it reads only the two
+surfaces above, `~/.claude.json` (user scope) and project-scoped `.mcp.json`. This is an
+empirically verified fact, not an inference from documentation silence:
 
-- **Evidence shape**: running `claude mcp list` shows only servers registered in user scope as
-  `Connected`. A server whose only declaration is an `mcpServers` block in a settings file does
-  not appear in the list at all — it is absent, not present-but-failing-to-connect. Absence is the
-  tell: a misconfigured-but-registered server would still show up (as `Failed` or similar); a
-  settings-declared server shows up nowhere because the file was never consulted for registration.
+- **Evidence shape**: running `claude mcp list` shows only servers registered via one of those two
+  surfaces as `Connected`. A server whose only declaration is an `mcpServers` block in a settings
+  file does not appear in the list at all — it is absent, not present-but-failing-to-connect.
+  Absence is the tell: a misconfigured-but-registered server would still show up (as `Failed` or
+  similar); a settings-declared server shows up nowhere because the file was never consulted for
+  registration.
 - **Doc-side corroboration**: the settings-file schema documents only `enabledMcpjsonServers`,
   `disabledMcpjsonServers`, `enableAllProjectMcpServers`, `allowedMcpServers`,
   `deniedMcpServers`, and `allowManagedMcpServersOnly`. Every one of these keys approves, denies,
@@ -123,8 +205,8 @@ name. The two failure shapes point to different fixes:
 
 | Symptom | Registration | Permission | Fix |
 |---|---|---|---|
-| Connected, but every call prompts | OK (`Connected`) | Missing or non-matching grant | Add/correct the `mcp__{server}__*` entry in the owning extension's `settings-fragment.json` |
-| Granted, but the tool is simply absent | Missing (not in `~/.claude.json`) | Present but moot | Register the server in user scope (activation block or setup script) — a permission grant cannot conjure a server that was never connected |
+| Connected, but every call prompts | OK (`Connected`) | Missing or non-matching grant | Add/correct the `mcp__{server}__*` entry at the SAME scope as registration — the owning extension's `settings-fragment.json` for project-scope, `~/.claude/settings.json` for user-scope |
+| Granted, but the tool is simply absent | Missing (not in `~/.claude.json` or project-scoped `.mcp.json`) | Present but moot | Register the server on the appropriate surface — project-scoped `.mcp.json`, a user-scope activation block, or a user-scope setup script — a permission grant cannot conjure a server that was never connected |
 
 Checking only one axis and concluding "it's configured" is the recurring mistake this document
 exists to prevent — always verify both.
@@ -135,14 +217,36 @@ exists to prevent — always verify both.
 
 Follow top to bottom when adding a new server:
 
-1. **Pick a registration mechanism.** No per-project computed arguments needed → a host-level or
-   home-manager activation block. Per-project computed arguments needed → a setup script under
-   `core/scripts/`, mirroring `setup-lean-mcp.sh`.
-2. **Write the permission grant** in the *extension's own* `settings-fragment.json`
-   `permissions.allow`, as a wildcard (`"mcp__{server}__*"`), not core's settings and not an
-   enumeration.
-3. **Verify both axes**: run `claude mcp list` and confirm the server shows `Connected`, then make
-   one real tool call and confirm it does not prompt.
+1. **Pick a scope first.** Does this server's usefulness end at this repository's boundary, and
+   does it need no per-project computed arguments? Yes to both → project scope. Otherwise → user
+   scope. (See "Choosing a registration surface" above.)
+2. **Pick a registration mechanism within that scope.**
+   - Project scope: add the server to the project root's `.mcp.json`.
+   - User scope, no per-project computed arguments needed → a host-level or home-manager
+     activation block.
+   - User scope, per-project computed arguments needed → a setup script under `core/scripts/`,
+     mirroring `setup-lean-mcp.sh`.
+3. **Write the permission grant at the SAME scope as registration** (see "Grant permissions at
+   the same scope where the server is registered" above): project-scope registration → the owning
+   extension's `settings-fragment.json` `permissions.allow`; user-scope registration →
+   `~/.claude/settings.json`. Either way, use a wildcard (`"mcp__{server}__*"`), not core's
+   settings and not an enumeration — unless the server needs a safe/unsafe split (see "Carve-out"
+   above).
+4. **Verify both axes from a fresh session** (never an already-running one — see "The
+   session-start snapshot trap" above): run `claude mcp list` and confirm the server shows
+   `Connected`, then make one real tool call and confirm it does not prompt.
+
+### Small facts worth knowing
+
+- **Grant form**: `"mcp__{server}__*"` (with the trailing wildcard) is a valid grant. Bare
+  `"mcp__{server}"` (no tool suffix) is NOT — it grants nothing.
+- **Omission behavior differs by run mode**: a tool call whose permission is absent from every
+  `permissions.allow` prompts interactively in an interactive session, but is DENIED outright in a
+  headless run — there is no one to answer the prompt. This is the mechanism behind the
+  playwright stall described above.
+- **HTTP servers need an explicit `type`**: as of Claude Code v2.1.202, an HTTP-transport MCP
+  server declared without an explicit `"type"` field fails fast at connection time. Always set
+  `"type"` explicitly for HTTP servers.
 
 ---
 
