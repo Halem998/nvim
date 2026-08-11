@@ -738,8 +738,26 @@ sync-lag/quota/bridge-unavailability facts).
   `systemctl --user status zotero-translation-server`, `bash
   .claude/scripts/zotero-export-freshness.sh`, `bash .claude/scripts/zotero-read.sh search
   "10.26686/ajl.v22i2.5680"`, `command -v zotero-mcp`, `claude mcp list`, `cmp` between the source
-  and deployed `zotero-write.sh`. No item was created, no attachment was uploaded, and no
-  `~/.dotfiles` file was edited or service toggle flipped by this session.
+  and deployed `zotero-write.sh`. Re-probed again at 21:53:28 UTC (port 1969, `keys/current`,
+  `zotero-mcp`, `zot --help`) with identical results, to rule out a stale-probe artifact.
+- **Authorized `~/.dotfiles` enable/test/revert cycle** (21:56-22:00 UTC; full account in the
+  Live Verification section's dedicated subsection): `git status --porcelain`/`git log` (pre-state
+  baseline) -> `Edit home.nix` (add `services.zoteroTranslationServer.enable = true;`) ->
+  `home-manager switch --flake .#benjamin` -> `systemctl --user status zotero-translation-server`
+  + `ss -lntp | grep 1969` (confirm listening) -> nine `curl` calls against `127.0.0.1:1969`
+  exercising `POST /search` (x3: good DOI, bogus DOI, malformed text) and `POST /web` (x6: arXiv
+  abstract page, SEP landing page, two multi-result pages that returned `500`, an arXiv listing
+  page that returned a real `300 Multiple Choices`, and the follow-up selection `POST` that
+  resolved it to `200`) -> `Edit home.nix` (remove the added line, precise inverse edit rather
+  than `git checkout`, which the repo's own destructive-git guard hook correctly blocked on a
+  dirty tree) -> `git diff`/`git status --porcelain` (confirm byte-identical to baseline) ->
+  `home-manager switch --flake .#benjamin` again -> `ss -lntp | grep 1969` +
+  `systemctl --user list-unit-files` + `systemctl --user status` + `git status` (confirm full
+  revert). No item was created, no attachment was uploaded to the user's production Zotero
+  library, no MCP registration was touched, and no other `~/.dotfiles` file was modified.
 - No files under `agent-system/extensions/literature/**` or the deployed `.claude/**` tree were
-  modified in this research pass; all recommendations (including the two Work Item 3 corrections
-  from live verification) are for `/plan 39` to turn into phased implementation work.
+  modified in this research pass; the one file modified outside this repository
+  (`~/.dotfiles/home.nix`) was returned to its exact pre-change state and verified via `git diff`
+  before this report was finalized. All recommendations (including the Work Item 3 correction and
+  the Work Item 1 `/web`-itemType refinement from live verification) are for `/plan 39` to turn
+  into phased implementation work.
