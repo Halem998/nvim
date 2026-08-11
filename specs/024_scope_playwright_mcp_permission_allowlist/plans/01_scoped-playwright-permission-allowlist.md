@@ -186,13 +186,13 @@ red fragment.
 
 ---
 
-### Phase 2: Wire merge_targets.settings into the web manifest [NOT STARTED]
+### Phase 2: Wire merge_targets.settings into the web manifest [COMPLETED]
 
 **Goal**: The loader knows to merge the fragment into `.claude/settings.local.json` on every
 load/reload of `web`.
 
 **Tasks**:
-- [ ] Edit `/home/benjamin/.config/nvim/agent-system/extensions/web/manifest.json`, inserting into
+- [x] Edit `/home/benjamin/.config/nvim/agent-system/extensions/web/manifest.json`, inserting into
       the existing `merge_targets` object, immediately after the `claudemd` entry and before
       `index` (matching `nix`/`lean` key ordering):
       ```json
@@ -201,13 +201,15 @@ load/reload of `web`.
         "target": ".claude/settings.local.json"
       },
       ```
-- [ ] Use a textual `Edit`, not a `jq` rewrite -- `jq` reserializes the whole file and would churn
-      formatting and key order across the entire manifest.
-- [ ] Change nothing else in the manifest: `name`, `version`, `description`, `task_type`,
+      *(completed)*
+- [x] Use a textual `Edit`, not a `jq` rewrite -- `jq` reserializes the whole file and would churn
+      formatting and key order across the entire manifest. *(completed: used Edit tool)*
+- [x] Change nothing else in the manifest: `name`, `version`, `description`, `task_type`,
       `dependencies`, `provides`, `routing`, `routing_agents`, and the other three `merge_targets`
-      entries all stay byte-identical.
-- [ ] Do NOT add `settings-fragment.json` to `provides.*`. It is a merge source, not a deployed
+      entries all stay byte-identical. *(completed: git diff shows only the 4 added lines)*
+- [x] Do NOT add `settings-fragment.json` to `provides.*`. It is a merge source, not a deployed
       file category -- `nix` and `lean` both declare it only under `merge_targets`.
+      *(completed)*
 
 **Timing**: 0.25 hours
 

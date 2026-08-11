@@ -53,6 +53,10 @@
       "target": ".claude/CLAUDE.md",
       "section_id": "extension_web"
     },
+    "settings": {
+      "source": "settings-fragment.json",
+      "target": ".claude/settings.local.json"
+    },
     "index": {
       "source": "index-entries.json",
       "target": ".claude/context/index.json"
