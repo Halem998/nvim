@@ -1,83 +1,53 @@
 {
   "phase": 6,
-  "phase_name": "Final gate, honest re-measurement, and residual-failure justification",
-  "started_at": "2026-08-10T18:50:00Z",
-  "last_updated": "2026-08-10T18:12:00Z",
+  "phase_name": "Extract the injectable liveness seam in claude-refresh.sh",
+  "started_at": "2026-08-11T01:32:00Z",
+  "last_updated": "2026-08-11T01:40:00Z",
+  "note": "This file was previously populated by a differently-numbered Phase 6 from the superseded plan version (plans/01_run-all-deployed-mode-fixes.md, 'Final gate, honest re-measurement...'). That plan's Phase 6 content is superseded by plans/02_gate8-and-verify-deploy-closeout.md's Phase 6 ('Extract the injectable liveness seam') and is overwritten here to track the current plan's Phase 6 definition.",
   "objectives": [
     {
       "id": 1,
-      "description": "Run full source-store run-all.sh, record measured counts verbatim",
+      "description": "Add overridable _pid_is_alive seam immediately above is_live_inhibitor_target, extracted verbatim from the kill -0 syscall",
       "status": "done",
-      "files_touched": [],
-      "note": "Post-redeploy re-measurement: 37 passed, 0 failed, 0 skipped, 37 total, confirmed on two separate runs (one earlier standalone run hit an unrelated flake in test-claude-refresh-matcher.sh, self-resolved on rerun; see objective 8 below)"
+      "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]
     },
     {
       "id": 2,
-      "description": "Run deployed run-all.sh, record measured counts verbatim",
+      "description": "Replace the final line of is_live_inhibitor_target with _pid_is_alive \"$target_pid\", changing nothing else in the function",
       "status": "done",
-      "files_touched": [],
-      "note": "Post-redeploy re-measurement: 34 passed, 0 failed, 0 skipped, 34 total, confirmed on two separate runs. Supersedes the prior interim 28/6/34 record -- the redeploy landed and all 6 previously-red suites are now green. Independently matches team-lead's own measurement."
+      "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]
     },
     {
       "id": 3,
-      "description": "Run verify-deploy.sh, record every gate result",
+      "description": "Leave the function's existing explanatory comment block intact, add one sentence naming the seam",
       "status": "done",
-      "files_touched": [],
-      "note": "Post-redeploy: this dispatch's own runs measured 23/23 checks passing (including gate 8) on every one of 7 sequential full verify-deploy.sh --findings invocations captured in this dispatch. However gate 8 specifically is reported by team-lead as failing intermittently post-redeploy (~4 of 9 invocations, both --findings and plain mode), which this dispatch's smaller sample did not reproduce -- see objective 8's flake diagnosis. Not resolved; recorded as an evidenced residual."
+      "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"],
+      "note": "Added one sentence to the existing comment block; kept grep -c '_pid_is_alive' at exactly 2 (definition + call site) per the phase's own verification criterion by wording the added sentence without repeating the literal symbol name."
     },
     {
       "id": 4,
-      "description": "Run check-extension-docs.sh, confirm no new doc-lint failures",
+      "description": "Confirm no other call site in the repository already defines or uses a symbol named _pid_is_alive",
       "status": "done",
       "files_touched": [],
-      "note": "Covered by verify-deploy.sh gate 3 (doc-lint, which is check-extension-docs.sh --quiet under the hood) passing cleanly across all of this dispatch's runs post-redeploy. The 18-file drift from the prior interim measurement is gone."
+      "note": "grep -rn '_pid_is_alive' agent-system/extensions/ returned 0 hits before this phase's edit; grep -rn '_pid_is_alive' agent-system/ | grep -v claude-refresh.sh returns 0 hits after."
     },
     {
       "id": 5,
-      "description": "Write residual-failure justification table in the implementation summary",
+      "description": "Run bash -n on the edited script",
       "status": "done",
-      "files_touched": [
-        "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md"
-      ],
-      "note": "Table rewritten: all 6 REPO_ROOT-related residuals from the interim snapshot are now resolved (post-redeploy green). The only remaining row is the gate 8 intermittent flake, with test-claude-refresh-matcher.sh named as the leading suspect."
+      "files_touched": [],
+      "note": "bash -n agent-system/extensions/core/scripts/claude-refresh.sh exits 0"
     },
     {
       "id": 6,
-      "description": "State final pass/fail/total counts as measured, first sentence of summary if any failure remains",
-      "status": "done",
-      "files_touched": []
-    },
-    {
-      "id": 7,
-      "description": "Confirm no deliverable outside specs/** gained a task-number reference",
+      "description": "Equivalence proof: run the unmodified test-claude-refresh-matcher.sh against the seamed script and confirm every assertion other than the known-flaky (c)-dead case behaves exactly as before",
       "status": "done",
       "files_touched": [],
-      "note": "Re-confirmed via verify-deploy.sh gate 4 (task-reference lint, PASS on every run) plus a direct grep of every file this task touched, plus the plan/summary/progress files written in this dispatch"
-    },
-    {
-      "id": 8,
-      "description": "Diagnose the gate-8 intermittent-failure report (team-lead's finding that verify-deploy.sh gate 8 fails roughly 4/9 times post-redeploy, while direct run-all.sh invocations pass consistently)",
-      "status": "blocked",
-      "files_touched": [],
-      "note": "Ran two background sequential-loop scripts (8 planned + 6 planned invocations of `bash .claude/scripts/verify-deploy.sh --findings`) to reproduce. Stopped early per team-lead's instruction to checkpoint and stop (context-clearing imminent) after 7 completed invocations across both loops (5 + 2): all 7 measured 23/23 PASS, gate 8 included -- the flake was NOT reproduced in this dispatch's own sample. This is a small, inconclusive sample against team-lead's larger 9-run sample showing ~4 failures; it neither confirms nor refutes the flake, it only fails to reproduce it in fewer trials.\n\nLeading hypothesis, NOT confirmed: gate 8 internally re-runs the SOURCE-STORE run-all.sh (verify-deploy.sh:399 always targets agent-system/extensions/core/scripts/tests/run-all.sh, never the deployed copy, regardless of which tree verify-deploy.sh is checking). On this dispatch's very first standalone source-store run-all.sh invocation (before the team-lead message, unrelated to any loop), a real failure was observed: test-claude-refresh-matcher.sh's 'is_live_inhibitor_target: still excludes the SAME inhibitor after its target (pid N) was killed -- tautological check' assertion FAILed, then PASSed cleanly on an immediate rerun. This suite is NOT one of the 18 files this task touched and is NOT the Phase 5 write_holder() race recurring -- it is a pre-existing, self-documented, load-sensitive flake: the suite backgrounds a real `sleep 300 &` process, kills it, then polls up to 8s for `kill -0` to report it dead before asserting liveness semantics, and its own comment states this budget was 'widened once already ... observed to need more than 2s of headroom when run alongside ~25 concurrent others'. Under run-all.sh's ~37-suite full sequence (the same load context gate 8 creates), this budget can plausibly still be exceeded on a loaded system, producing an intermittent, load-correlated failure unrelated to task-lock.sh.\n\nAlternative hypothesis considered and NOT supported by code review: a residual write_holder()/cmd_acquire race in task-lock.sh, of the same shape Phase 5 fixed. Re-reading cmd_acquire's mkdir-then-branch flow and write_holder's mkdir -p fix (both already deployed) shows every write_holder call site is now covered by the unconditional mkdir -p recreate -- the specific TOCTOU window Phase 5 diagnosed and fixed is structurally closed. No new race was identified in this dispatch's code review.\n\nNot resolved. Recommended next step: a dedicated follow-up task to (a) run a larger, unattended sample (15-20x) of `verify-deploy.sh --findings`, capturing `FINDING gate8` lines and the raw run_all_output on every failure, specifically watching for test-claude-refresh-matcher.sh's assertion text vs. any task-lock.sh/holder.json text; (b) if test-claude-refresh-matcher.sh is confirmed as the cause, widen its poll budget further (e.g. 8s -> 16-20s) or decouple the liveness assertion from real-process timing entirely (e.g. an injectable/mockable liveness predicate) rather than repeatedly widening a load-sensitive timing budget."
+      "note": "Ran the unmodified suite once against the seamed script: 12 passed, 0 failed, including the (c)-dead assertion in this particular run (the flake is probabilistic, not deterministic, so a single passing run does not disprove it -- but production equivalence is demonstrated since the seam is a verbatim extraction of the same kill -0 expression)."
     }
   ],
-  "current_objective": 8,
-  "approaches_tried": [
-    {
-      "approach": "Two sequential background loops of `bash .claude/scripts/verify-deploy.sh --findings` (8 + 6 planned invocations) to reproduce gate 8's intermittent failure and capture which suite fails",
-      "result": "not_reproduced_in_available_sample",
-      "reason": "Stopped after 7 of 14 planned invocations (5 from loop A, 2 from loop B) per team-lead's explicit instruction to checkpoint findings to disk and stop rather than exhaust the full loop, given an imminent context clear. All 7 completed invocations measured 23/23 PASS; no failure was captured to inspect via --findings. Sample too small relative to team-lead's own 9-run, ~4-failure sample to draw a conclusion either way."
-    }
-  ],
+  "current_objective": null,
+  "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": [
-    {
-      "task_id": "6.8",
-      "description": "Diagnose and, if possible, fix the gate-8 intermittent-failure report",
-      "type": "deferred",
-      "reason": "Reproduction loop was stopped early (7 of 14 planned invocations) per an explicit instruction to checkpoint to disk and stop before a context clear, rather than complete the statistically-meaningful sample originally planned. The leading hypothesis (test-claude-refresh-matcher.sh's load-sensitive PID-liveness poll, unrelated to this task's own suites) is recorded with its supporting evidence, but is not confirmed as the sole or root cause.",
-      "annotation": "*(deviation: deferred — gate-8 flake diagnosis stopped early per team-lead instruction before reaching a confirmed root cause; recorded as an evidenced residual naming test-claude-refresh-matcher.sh as the leading suspect, with a recommended follow-up task)*"
-    }
-  ]
+  "deviations": []
 }

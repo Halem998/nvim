@@ -134,7 +134,17 @@ is_owned_by_current_uid() {
 # process's comm never matches it, so today's observed inhibitors are already excluded
 # before reaching this predicate. It remains a required, independently-callable/testable
 # layer of defense-in-depth (see the plan's Risks table) rather than dead code to be
-# pruned -- do not remove it as "redundant".
+# pruned -- do not remove it as "redundant". The liveness check itself is routed through
+# an overridable seam below so a test can substitute a deterministic probe.
+#
+# Overridable liveness seam. Extracted verbatim from is_live_inhibitor_target so a test
+# can substitute a deterministic probe for the kill -0 syscall without instrumenting the
+# production predicate or teaching it that it is under test. Production behavior is
+# equivalent to the previously-inlined form.
+_pid_is_alive() {
+    kill -0 "$1" 2>/dev/null
+}
+
 is_live_inhibitor_target() {
     local args="$1"
     local target_pid
@@ -145,7 +155,7 @@ is_live_inhibitor_target() {
         return 1
     fi
 
-    kill -0 "$target_pid" 2>/dev/null
+    _pid_is_alive "$target_pid"
 }
 
 # Function to get process age in human-readable format. Reads etimes from the

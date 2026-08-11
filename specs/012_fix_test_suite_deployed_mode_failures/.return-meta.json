@@ -1,49 +1,28 @@
 {
-  "status": "partial",
-  "partial_progress": {
-    "stage": "phase_6_gate8_flake_unresolved_residual",
-    "details": "Phases 1-5 are complete and verified. Phase 4 (redeploy + deployed-mode re-measurement) is now COMPLETED: the inter-cycle redeploy checkpoint fired once the previously-blocking sibling dispatch's commits cleared, deploy-headless.sh ran successfully, and this dispatch independently confirmed both modes measure clean when run directly (source-store run-all.sh 37/0/37, deployed run-all.sh 34/0/34, each on two separate runs) and that all 18 files this task modified are byte-identical between the source store and the deployed tree. Phase 6 stays PARTIAL for one reason: verify-deploy.sh gate 8 (which internally re-runs source-store run-all.sh) is independently reported by team-lead as failing intermittently post-redeploy (~4/9 invocations), which this dispatch's own smaller reproduction sample (7 of 14 planned invocations, stopped early on explicit instruction to checkpoint and stop ahead of an imminent context clear) did not reproduce. The leading hypothesis from code review -- test-claude-refresh-matcher.sh's pre-existing, self-documented, load-sensitive kill -0 liveness poll, NOT a recurrence of the Phase 5 write_holder() race, which code review confirmed is structurally closed at every call site -- is recorded as an evidenced but unconfirmed residual, with a recommended follow-up task, not presented as fixed or as a resolved defect.",
-    "phases_completed": 5,
-    "phases_total": 6
-  },
+  "status": "planned",
   "artifacts": [
     {
-      "type": "summary",
-      "path": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
-      "summary": "Phases 1-5 complete and verified; Phase 4 now COMPLETED with independently-confirmed post-redeploy measurements (source-store run-all.sh 37/0/37, deployed run-all.sh 34/0/34). Phase 6 stays PARTIAL: verify-deploy.sh gate 8's intermittent failure (reported by team-lead, ~4/9) was not reproduced in this dispatch's smaller sample and is recorded as an evidenced, unresolved residual naming test-claude-refresh-matcher.sh as the leading suspect, with a recommended follow-up task."
+      "type": "plan",
+      "path": "specs/012_fix_test_suite_deployed_mode_failures/plans/02_gate8-and-verify-deploy-closeout.md",
+      "summary": "Revised 11-phase plan preserving Phases 1-5 verbatim and replacing the vague Phase 6 with six evidenced phases (6-11): injectable liveness seam, scripted-probe assertion (c), line_count fix, dangling-dependency removal, sanctioned redeploy, and a 20-run repeated-sample acceptance bar"
     }
   ],
-  "completion_data": {
-    "completion_summary": "Confirmed the redeploy landed and both run-all.sh modes now measure clean (source-store 37/0/37, deployed 34/0/34), closing Phase 4. Attempted to reproduce and diagnose verify-deploy.sh gate 8's reported intermittent failure but was asked to checkpoint and stop before reaching a confirmed root cause; recorded test-claude-refresh-matcher.sh (a pre-existing, unrelated, load-sensitive flake) as the leading suspect, with code review ruling out a recurrence of the Phase 5 task-lock.sh race. Phase 6 remains open pending a dedicated follow-up diagnostic."
-  },
-  "modified_files": [],
-  "memory_candidates": [
-    {
-      "content": "When a teammate reports 'you appear idle' based on stale artifact mtimes while you are actually mid-diagnosis on a slow background reproduction loop (e.g. 8x sequential ~3-minute verify-deploy.sh runs), send an immediate SendMessage status update with concrete partial findings rather than waiting silently for the loop to finish. Silence during a genuinely long-running diagnostic reads identically to having done nothing, from the outside -- there is no way for a caller to distinguish 'actively working on a slow task' from 'stalled' without an explicit interim signal. Checkpoint the reasoning and partial evidence gathered so far to a message (or to disk) well before the full loop completes, especially when a session context-clear is a live possibility.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["status checkpoint", "background reproduction loop", "silence reads as idle", "SendMessage interim update", "context-clear risk"]
-    },
-    {
-      "content": "When a shell-based CI/lint gate internally re-invokes a full test suite runner as a captured command substitution ($(...)), `ps`/`pstree` can show the intermediate subshell with the SAME argv as its parent script (e.g. a gate script appearing to recursively re-invoke itself), because bash's fork-for-command-substitution does not always rewrite argv before exec'ing the final command. This is a normal, benign artifact of process-tree inspection, not evidence of accidental recursion -- verify by checking whether the 'child' process's own children match the expected real invocation (e.g. the actual test-runner script) before concluding there is a recursion bug.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["ps pstree subshell argv", "command substitution fork", "process tree debugging", "false recursion signal"]
-    },
-    {
-      "content": "A test suite that drives a REAL backgrounded process (e.g. `sleep 300 &`, killed and then polled with `kill -0` to confirm death before asserting liveness-check semantics) is inherently load-sensitive: under a fuller concurrent suite run, PID reap/zombie-cleanup can take longer than an isolated run, producing an intermittent failure correlated with system load rather than with any defect in the code under test. If such a suite's own comments already document a prior widening of its polling budget for exactly this reason, treat that as a strong signal that further intermittent failures in a heavier-load context (e.g. inside a CI gate that re-runs the full suite alongside dozens of others) are very likely the SAME pre-existing load-sensitivity, not a new defect -- before assuming an unrelated recent change (e.g. a concurrency fix in a completely different subsystem) is the cause.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/1012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["load-sensitive test flake", "kill -0 zombie reap timing", "self-documented widened budget", "intermittent CI gate failure", "leading suspect vs confirmed cause"]
-    }
-  ],
+  "next_steps": "Run /implement 12 to execute Phases 6-11 of the revised plan",
   "metadata": {
-    "session_id": "sess_1786378789_92e564",
-    "agent_type": "general-implementation-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "session_id": "sess_1786403913_d02558",
+    "agent_type": "reviser-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "revise", "reviser-agent"],
+    "phase_count": 11,
+    "phases_preserved": 5,
+    "phases_added": 6,
+    "estimated_hours": 8.75,
+    "remaining_hours": 4.0,
+    "plan_version": 2,
+    "dependency_waves": [[1, 2, 3], [4], [5], [6, 8, 9], [7], [10], [11]],
+    "reports_integrated": [
+      "reports/01_run-all-deployed-mode-triage.md",
+      "state.json description: === SCOPE EXTENSION (folded in after gate-8 diagnosis; user-approved) ==="
+    ]
   }
 }

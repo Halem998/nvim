@@ -18,7 +18,7 @@ next_project_number: 23
 
 ### Agent System
 
-12 [PARTIAL] — tests/run-all.sh is red and has been treated as permanently-expec
+12 [IMPLEMENTING] — tests/run-all.sh is red and has been treated as permanently-expec
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
   └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
@@ -356,13 +356,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 12. Fix run-all.sh deployed-mode failures: REPO_ROOT depth derivation and 6 further suites
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [012_fix_test_suite_deployed_mode_failures/reports/01_run-all-deployed-mode-triage.md]
-- **Plan**: [012_fix_test_suite_deployed_mode_failures/plans/01_run-all-deployed-mode-fixes.md]
 - **Summary**: [012_fix_test_suite_deployed_mode_failures/summaries/01_run-all-deployed-mode-fixes-summary.md]
+- **Plan**: [012_fix_test_suite_deployed_mode_failures/plans/02_gate8-and-verify-deploy-closeout.md]
 
 **Description**: tests/run-all.sh is red and has been treated as permanently-expected background noise, which is how a real regression would hide. This task makes it green or documents each residual failure.
 
@@ -393,6 +393,59 @@ ACCEPTANCE: run-all.sh reports 0 failures, OR every residual failure has a writt
 
 SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+=== SCOPE EXTENSION (folded in after gate-8 diagnosis; user-approved) ===
+
+The Phase 6 residual is now diagnosed with captured evidence, and TWO items are folded into
+this task rather than spawned separately.
+
+(A) GATE-8 FLAKE -- ROOT CAUSE CONFIRMED, not a hypothesis. Measured 4/20 (20%) failures inside
+verify-deploy.sh gate 8; 13/30 (43%) standalone on an idle machine; 25/30 (83%) in a mirror
+copy. All four captured gate-8 failures are byte-identical apart from PID:
+  [FAIL] is_live_inhibitor_target: still excludes the SAME inhibitor after its target
+  (pid NNNNNNN) was killed -- tautological check
+in agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh (assertion (c)).
+Mechanism proven directly: kill -0 returns success for a killed-but-unreaped child; wait reaps
+in 2ms. Failing runs averaged 141.5s vs 131.0s passing -- a 10.5s delta against the 8.0s poll
+budget, i.e. every failure burns the full 40 x 0.2s loop.
+  RULED OUT: task-lock.sh / holder.json TOCTOU. Zero occurrences across all 20 runs.
+  CORRECTED ASSUMPTIONS: the flake is NOT load-sensitive (43% on an idle machine; CPU burners
+  did not reproduce it). Widening the poll budget is DISPROVEN as a fix -- no finite budget
+  helps a 43-83% failure, and the helper sometimes genuinely survives the kill, so widening
+  only makes each failure slower. Two real-process repairs also failed under test: naive wait
+  hung ~300s (the suite leaks a `sleep 300` helper inheriting stdout/stderr, so any reader
+  using command substitution blocks for the full 300s -- one run measured 300022ms), and
+  kill -9 + wait + detached streams killed the test script itself (RC=137, 20/20).
+  REQUIRED FIX (injectable predicate, not budget widening): extract the bare
+  kill -0 "$target_pid" in agent-system/extensions/core/scripts/claude-refresh.sh's
+  is_live_inhibitor_target (lines ~138-149) into an overridable seam (e.g. _pid_is_alive), and
+  replace lines ~112-145 of test-claude-refresh-matcher.sh (helper at 112, kill at 123, poll
+  loop at 135-138, failing assertion at 140-144) with a scripted probe. Keep the "alive"
+  direction as-is (deterministic; no reaping involved). This preserves the argv-parsing
+  coverage the assertion exists to protect. NOTE: it does weaken the file's documented
+  "driven by a REAL process" intent (line ~15) -- record that trade-off in the replacement
+  comment rather than leaving it silent.
+
+(B) STANDING VERIFY-DEPLOY FAILURES -- verify-deploy.sh exited non-zero on 20/20 runs
+INDEPENDENT of gate 8, so fixing gate 8 alone will NOT turn it green. Phase 6's acceptance
+criterion cannot be met without these:
+  - Deploy drift (gates 3 and 5): agent-system/extensions/core/scripts/system-defect-record.sh
+    (source 354 lines / deployed 352) and
+    agent-system/extensions/core/context/patterns/system-defect-discrimination.md
+    (source 397 / deployed 382). Source is AHEAD of deploy; a deploy-headless.sh run resolves
+    both.
+  - line_count mismatch (gate 3, Rule R): agent-system/extensions/core/index-entries.json
+    (~line 1034) declares line_count 382 for patterns/system-defect-discrimination.md; the
+    actual file is 397 lines. generate-context-line-counts.sh --write is the sanctioned fixer.
+  - Dangling dependency (gate 10): specs/state.json task 9 carries dependencies [1015, 18].
+    1015 exists in NEITHER active_projects NOR the archive, and neither does 15 -- it is a
+    vault-renumbering leftover (renumbering subtracted 1000 from project_number values but did
+    not rewrite dependencies arrays). Removing the dead 1015 entry is the honest fix; do not
+    invent a replacement target.
+
+ACCEPTANCE (revised): verify-deploy.sh reports 0 findings across a repeated sample (not a
+single lucky run -- the flake was 20% inside gate 8, so a single green run is not evidence),
+OR every residual failure carries a written, evidenced justification. Report counts honestly;
+never an unqualified green.
 
 ---
 
