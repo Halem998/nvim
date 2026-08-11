@@ -3,7 +3,7 @@
     "typst-research": {
       "description": "Research Typst documentation and formatting topics",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/typst-research-agent.md}",
+      "prompt": "{file:.claude/agents/typst-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "typst-implementation": {
       "description": "Implement Typst documents and formatting",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/typst-implementation-agent.md}",
+      "prompt": "{file:.claude/agents/typst-implementation-agent.md}",
       "tools": {
         "read": true,
         "write": true,

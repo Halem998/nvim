@@ -3,7 +3,7 @@
     "filetypes-router": {
       "description": "Routes file conversion tasks to appropriate specialist agents",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/filetypes-router-agent.md}",
+      "prompt": "{file:.claude/agents/filetypes-router-agent.md}",
       "tools": {
         "read": true,
         "grep": true,
@@ -13,7 +13,7 @@
     "document": {
       "description": "Convert and process document files (DOCX, PDF, etc.)",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/document-agent.md}",
+      "prompt": "{file:.claude/agents/document-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -26,7 +26,7 @@
     "filetypes-spreadsheet": {
       "description": "Convert spreadsheets to LaTeX/Typst tables",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/filetypes-spreadsheet-agent.md}",
+      "prompt": "{file:.claude/agents/filetypes-spreadsheet-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -39,7 +39,7 @@
     "presentation": {
       "description": "Extract presentations and generate slide decks",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/presentation-agent.md}",
+      "prompt": "{file:.claude/agents/presentation-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -52,7 +52,7 @@
     "scrape": {
       "description": "Web scraping and content extraction",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/scrape-agent.md}",
+      "prompt": "{file:.claude/agents/scrape-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -67,7 +67,7 @@
     "docx-edit": {
       "description": "In-place DOCX document editing and manipulation",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/docx-edit-agent.md}",
+      "prompt": "{file:.claude/agents/docx-edit-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -80,7 +80,7 @@
     "sheet": {
       "description": "XLSX creation, editing, and analysis using openpyxl and pandas",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/sheet-agent.md}",
+      "prompt": "{file:.claude/agents/sheet-agent.md}",
       "tools": {
         "read": true,
         "write": true,

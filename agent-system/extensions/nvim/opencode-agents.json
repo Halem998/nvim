@@ -3,7 +3,7 @@
     "neovim-research": {
       "description": "Research Neovim configuration and plugin tasks",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/neovim-research-agent.md}",
+      "prompt": "{file:.claude/agents/neovim-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "neovim-implementation": {
       "description": "Implement Neovim configuration and plugins",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/neovim-implementation-agent.md}",
+      "prompt": "{file:.claude/agents/neovim-implementation-agent.md}",
       "tools": {
         "read": true,
         "write": true,

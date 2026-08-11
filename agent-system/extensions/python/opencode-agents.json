@@ -3,7 +3,7 @@
     "python-research": {
       "description": "Research Python development topics and libraries",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/python-research-agent.md}",
+      "prompt": "{file:.claude/agents/python-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "python-implementation": {
       "description": "Implement Python code and applications",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/python-implementation-agent.md}",
+      "prompt": "{file:.claude/agents/python-implementation-agent.md}",
       "tools": {
         "read": true,
         "write": true,

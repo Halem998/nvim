@@ -3,7 +3,7 @@
     "nix-research": {
       "description": "Research Nix, NixOS, and flakes",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/nix-research-agent.md}",
+      "prompt": "{file:.claude/agents/nix-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "nix-implementation": {
       "description": "Implement Nix expressions and configurations",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/nix-implementation-agent.md}",
+      "prompt": "{file:.claude/agents/nix-implementation-agent.md}",
       "tools": {
         "read": true,
         "write": true,

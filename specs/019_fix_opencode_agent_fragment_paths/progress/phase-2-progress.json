@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Repoint the 11 uniform fragments to .claude/agents/",
+  "started_at": "2026-08-11T01:00:00Z",
+  "last_updated": "2026-08-11T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite directory prefix in all 11 uniform fragments", "status": "done", "files_touched": [
+      "agent-system/extensions/epidemiology/opencode-agents.json",
+      "agent-system/extensions/filetypes/opencode-agents.json",
+      "agent-system/extensions/formal/opencode-agents.json",
+      "agent-system/extensions/latex/opencode-agents.json",
+      "agent-system/extensions/nix/opencode-agents.json",
+      "agent-system/extensions/nvim/opencode-agents.json",
+      "agent-system/extensions/present/opencode-agents.json",
+      "agent-system/extensions/python/opencode-agents.json",
+      "agent-system/extensions/typst/opencode-agents.json",
+      "agent-system/extensions/web/opencode-agents.json",
+      "agent-system/extensions/z3/opencode-agents.json"
+    ]},
+    {"id": 2, "description": "Verify jq empty parses and no stale prefix remains", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

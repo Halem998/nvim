@@ -3,7 +3,7 @@
     "latex-research": {
       "description": "Research LaTeX documentation and formatting topics",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/latex-research-agent.md}",
+      "prompt": "{file:.claude/agents/latex-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "latex-implementation": {
       "description": "Implement LaTeX documents and formatting",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/latex-implementation-agent.md}",
+      "prompt": "{file:.claude/agents/latex-implementation-agent.md}",
       "tools": {
         "read": true,
         "write": true,

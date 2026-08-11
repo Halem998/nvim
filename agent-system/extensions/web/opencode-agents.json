@@ -3,7 +3,7 @@
     "web-research": {
       "description": "Research web development with Astro, Tailwind CSS v4, and Cloudflare",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/web-research-agent.md}",
+      "prompt": "{file:.claude/agents/web-research-agent.md}",
       "tools": {
         "write": false,
         "edit": false,
@@ -18,7 +18,7 @@
     "web-implementation": {
       "description": "Implement web applications with Astro and Tailwind",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/web-implementation-agent.md}",
+      "prompt": "{file:.claude/agents/web-implementation-agent.md}",
       "tools": {
         "write": true,
         "edit": true,

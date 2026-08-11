@@ -174,19 +174,22 @@ differ from the research's estimates, say so explicitly rather than restating th
 
 ---
 
-### Phase 2: Repoint the 11 uniform fragments to `.claude/agents/` [NOT STARTED]
+### Phase 2: Repoint the 11 uniform fragments to `.claude/agents/` [COMPLETED]
 
 **Goal**: Replace the `.opencode/agent/subagents/` directory prefix with `.claude/agents/` in
 every fragment that uses it, leaving basenames untouched.
 
 **Tasks**:
-- [ ] For each of `epidemiology`, `filetypes`, `formal`, `latex`, `nix`, `nvim`, `present`,
+- [x] For each of `epidemiology`, `filetypes`, `formal`, `latex`, `nix`, `nvim`, `present`,
       `python`, `typst`, `web`, `z3`: rewrite each `{file:.opencode/agent/subagents/<name>.md}`
-      to `{file:.claude/agents/<name>.md}`.
-- [ ] Do not alter any basename in this phase. `present`'s stale `slides-agent.md` basename is
-      Phase 3's territory — this phase only moves its directory prefix.
-- [ ] Confirm each edited file still parses (`jq empty <file>`).
-- [ ] Confirm no `.opencode/agent/subagents/` reference remains in any of the 11.
+      to `{file:.claude/agents/<name>.md}`. *(completed: 32 substitutions across 11 files, matching
+      the Phase 1 census for these fragments)*
+- [x] Do not alter any basename in this phase. `present`'s stale `slides-agent.md` basename is
+      Phase 3's territory — this phase only moves its directory prefix. *(completed: confirmed
+      present's basename mismatch persists exactly as before, deferred to Phase 3)*
+- [x] Confirm each edited file still parses (`jq empty <file>`). *(completed: all 11 pass)*
+- [x] Confirm no `.opencode/agent/subagents/` reference remains in any of the 11. *(completed:
+      repo-wide grep confirms zero matches)*
 
 **Timing**: 0.75 hours
 

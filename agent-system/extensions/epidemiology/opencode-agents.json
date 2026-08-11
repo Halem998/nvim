@@ -3,7 +3,7 @@
     "epidemiology-research": {
       "description": "Research epidemiology modeling and analysis tasks",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/epi-research-agent.md}",
+      "prompt": "{file:.claude/agents/epi-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "epidemiology-implementation": {
       "description": "Implement epidemiology models and analysis code",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/epi-implement-agent.md}",
+      "prompt": "{file:.claude/agents/epi-implement-agent.md}",
       "tools": {
         "read": true,
         "write": true,

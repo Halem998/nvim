@@ -3,7 +3,7 @@
     "grant": {
       "description": "Research funders and draft grant proposals",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/grant-agent.md}",
+      "prompt": "{file:.claude/agents/grant-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "budget": {
       "description": "Generate grant budget spreadsheets with Excel formulas",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/budget-agent.md}",
+      "prompt": "{file:.claude/agents/budget-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -33,7 +33,7 @@
     "timeline": {
       "description": "Plan research project timelines with WBS and PERT scheduling",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/timeline-agent.md}",
+      "prompt": "{file:.claude/agents/timeline-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -48,7 +48,7 @@
     "funds": {
       "description": "Analyze research funding landscape and portfolio",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/funds-agent.md}",
+      "prompt": "{file:.claude/agents/funds-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -63,7 +63,7 @@
     "slides": {
       "description": "Synthesize research materials into academic presentations",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/slides-agent.md}",
+      "prompt": "{file:.claude/agents/slides-agent.md}",
       "tools": {
         "read": true,
         "write": true,

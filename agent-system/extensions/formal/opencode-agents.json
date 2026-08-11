@@ -3,7 +3,7 @@
     "formal-research": {
       "description": "Research formal methods and verification topics",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/formal-research-agent.md}",
+      "prompt": "{file:.claude/agents/formal-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "logic-research": {
       "description": "Research mathematical logic and proof theory",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/logic-research-agent.md}",
+      "prompt": "{file:.claude/agents/logic-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -33,7 +33,7 @@
     "math-research": {
       "description": "Research mathematics and abstract algebra topics",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/math-research-agent.md}",
+      "prompt": "{file:.claude/agents/math-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -48,7 +48,7 @@
     "physics-research": {
       "description": "Research physics and mathematical physics topics",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/physics-research-agent.md}",
+      "prompt": "{file:.claude/agents/physics-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,

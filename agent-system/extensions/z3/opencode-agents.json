@@ -3,7 +3,7 @@
     "z3-research": {
       "description": "Research Z3 SMT solver and constraint programming",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/z3-research-agent.md}",
+      "prompt": "{file:.claude/agents/z3-research-agent.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -18,7 +18,7 @@
     "z3-implementation": {
       "description": "Implement Z3 constraints and SMT formulas",
       "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/z3-implementation-agent.md}",
+      "prompt": "{file:.claude/agents/z3-implementation-agent.md}",
       "tools": {
         "read": true,
         "write": true,
