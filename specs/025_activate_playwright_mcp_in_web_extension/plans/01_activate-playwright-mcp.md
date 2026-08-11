@@ -327,22 +327,26 @@ titled `purge .opencode/extensions/{present,web}`, yet the directory is present 
 
 ---
 
-### Phase 5: Close Out and Record Compensating Evidence [NOT STARTED]
+### Phase 5: Close Out and Record Compensating Evidence [COMPLETED]
 
 **Goal**: Re-run the gate after all changes and produce a summary that distinguishes gaps closed
 from criteria verified as no-ops.
 
 **Tasks**:
-- [ ] Re-run `REPO_ROOT=$(pwd) bash .claude/scripts/check-extension-docs.sh` and confirm
+- [x] Re-run `REPO_ROOT=$(pwd) bash .claude/scripts/check-extension-docs.sh` and confirm
       `web PASS` in the Summary table, with the pre-existing `core` / `literature` failures
-      unchanged from the Phase 1 baseline.
-- [ ] Re-confirm `agent-system/extensions/web/index-entries.json` parses as valid JSON.
-- [ ] Confirm the working-tree diff for this task touches only
+      unchanged from the Phase 1 baseline. *(completed: web PASS; core FAIL and literature FAIL
+      unchanged)*
+- [x] Re-confirm `agent-system/extensions/web/index-entries.json` parses as valid JSON.
+      *(completed: valid)*
+- [x] Confirm the working-tree diff for this task touches only
       `agent-system/extensions/web/index-entries.json` (plus any Phase 3 gap fix under
       `agent-system/extensions/web/**`) and `specs/**`. Confirm `git status --short` shows no
-      modification under `.claude/` or `.opencode/`.
-- [ ] Write `specs/025_activate_playwright_mcp_in_web_extension/summaries/01_activate-playwright-mcp-summary.md`
-      with these sections:
+      modification under `.claude/` or `.opencode/`. *(completed: diff since 1610a6a35's parent
+      confined to agent-system/extensions/web/** and specs/**; git status --short .claude
+      .opencode empty)*
+- [x] Write `specs/025_activate_playwright_mcp_in_web_extension/summaries/01_activate-playwright-mcp-summary.md`
+      with these sections: *(completed)*
       - **Gaps closed**: the `line_count` drift, with before/after values and the gate output.
       - **Verified no-ops**: each Phase 3 criterion already satisfied by the committed work, with
         its evidence. State plainly that these required no rework.
