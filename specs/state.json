@@ -109,7 +109,7 @@
     {
       "project_number": 26,
       "project_name": "migrate_slidev_verification_to_playwright_mcp",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Migrate slidev deck verification from standalone npm Playwright script to MCP server",
       "topic": "mcp-integration",
@@ -127,8 +127,14 @@
       ],
       "description": "Migrate slidev deck screenshot verification from the standalone npm Playwright script to the live Playwright MCP server, removing the duplicate Playwright install path.\n\nPROBLEM: the present and founder extensions carry their own Playwright usage that predates the MCP server and duplicates its capability. agent-system/extensions/present/context/project/present/talk/templates/playwright-verify.mjs is a standalone Node script requiring a separate npm Playwright install and its own browser binaries. Related references appear in present/context/project/present/talk/patterns/slidev-pitfalls.md, present/context/project/present/domain/talk-modes-and-library.md, present/context/project/present/talk/templates/slidev-project/README.md, present/index-entries.json, present/context/project/present/talk/index.json, founder/agents/deck-builder-agent.md, and founder/context/project/founder/patterns/slidev-deck-template.md.\n\nWORK: replace the standalone-script verification path with the MCP server (browser_navigate plus browser_snapshot / browser_take_screenshot), so the system has ONE browser automation mechanism rather than two independent Playwright installs. Update the referencing context files, agent docs, and index entries consistently so nothing points at a removed path.\n\nCAUTION -- VERIFY PARITY BEFORE DELETING: confirm the .mjs script's full capability is genuinely covered by the MCP tool set before removing it. A standalone script can do things a permissioned MCP surface cannot: custom in-page evaluation loops, batch or offline runs with no agent in the loop, and deterministic CI invocation. Note specifically that browser_evaluate and browser_run_code_unsafe are deliberately NOT allowlisted and will prompt, so any verification logic depending on in-page evaluation may not migrate cleanly. If full parity is not achievable, DOCUMENT THE RESIDUAL GAP and keep the script for that narrow case rather than forcing the migration and silently losing coverage.\n\nDEPENDS ON the permission work: this migration is only viable once the safe browser tools run without prompting.\n\nACCEPTANCE: deck screenshot verification runs through the MCP server; the duplicate npm Playwright install path is removed, or its continued existence is explicitly justified in writing; all referencing docs and index entries are consistent with the outcome.\n\nSOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/present/** and /home/benjamin/.config/nvim/agent-system/extensions/founder/**. Never edit any deployed .claude/** tree -- those are gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-08-11T05:30:49Z",
-      "last_updated": "2026-08-11T06:38:40Z",
-      "artifacts": [],
+      "last_updated": "2026-08-11T06:46:18Z",
+      "artifacts": [
+        {
+          "path": "specs/026_migrate_slidev_verification_to_playwright_mcp/reports/01_slidev-verification-mcp-migration.md",
+          "type": "report",
+          "summary": "Recommends keeping playwright-verify.mjs as the batch verification path and adding Playwright MCP as an optional ad hoc capability; confirms present/founder do not inherit web's permission grant."
+        }
+      ],
       "session_id": "sess_1786426440_e14088_26"
     },
     {
