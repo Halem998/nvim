@@ -1,7 +1,7 @@
 # Implementation Plan: Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
 
 - **Task**: 40 - Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md
@@ -335,29 +335,35 @@ non-skipping assertions following the suite's existing `t_pass`/`t_fail` pattern
 
 ---
 
-### Phase 5: Acceptance verification and scope guard [NOT STARTED]
+### Phase 5: Acceptance verification and scope guard [COMPLETED]
 
 **Goal**: Confirm all five acceptance criteria hold and that nothing outside the intended scope
 changed.
 
 **Tasks**:
-- [ ] Re-run the full suite from a clean scratch state; record PASS/FAIL counts
-- [ ] Criterion 1: re-run the offline regex simulation from the research report over the two named
+- [x] Re-run the full suite from a clean scratch state; record PASS/FAIL counts *(completed: 11
+      passed, 0 failed, exit 0)*
+- [x] Criterion 1: re-run the offline regex simulation from the research report over the two named
       papers' existing corpus markdown (read-only, no reconversion, no writes) and confirm both
-      drop to 0 under the shipped function body
-- [ ] Criterion 2: confirm Test 3b's exit-3 + `rejected_path` assertions pass
-- [ ] Criterion 3: confirm both fixtures are produced by `generate-test-fixtures.py` and both tests
+      drop to 0 under the shipped function body *(completed: 4->0 and 7->0, matching the research
+      report's raw counts exactly; note — the only surviving on-disk markdown for both papers is
+      the RAG-chunked `chunk_*.md` fragments, joined with a blank-line separator to avoid an
+      artificial concatenation-boundary glue artifact between per-chunk citation headers)*
+- [x] Criterion 2: confirm Test 3b's exit-3 + `rejected_path` assertions pass *(completed)*
+- [x] Criterion 3: confirm both fixtures are produced by `generate-test-fixtures.py` and both tests
       are required (no `if [ -n "${VAR:-}" ]` skip guard, no `t_log WARNING ... skipping`)
-- [ ] Criterion 4: read the shipped docstring and confirm it records both exemptions plus the two
-      empirical cases
-- [ ] Criterion 5: `git diff` on `literature-convert.sh` and confirm the `>= 3` comparison and all
-      four other gate checks are byte-identical to HEAD
-- [ ] Scope guard: `git status --short` shows changes only under
+      *(completed)*
+- [x] Criterion 4: read the shipped docstring and confirm it records both exemptions plus the two
+      empirical cases *(completed)*
+- [x] Criterion 5: `git diff` on `literature-convert.sh` and confirm the `>= 3` comparison and all
+      four other gate checks are byte-identical to HEAD *(completed)*
+- [x] Scope guard: `git status --short` shows changes only under
       `agent-system/extensions/literature/scripts/**` (plus `specs/**` artifacts); zero `.claude/**`
-      paths modified
-- [ ] Deliverable-rule guard: `grep -rn` for task-number references in the three touched files
-      returns nothing newly added
-- [ ] Write the implementation summary to `summaries/01_glue-gate-exemptions-summary.md`
+      paths modified *(completed)*
+- [x] Deliverable-rule guard: `grep -rn` for task-number references in the three touched files
+      returns nothing newly added *(completed)*
+- [x] Write the implementation summary to `summaries/01_glue-gate-exemptions-summary.md`
+      *(completed)*
 
 **Timing**: 0.5 hours
 

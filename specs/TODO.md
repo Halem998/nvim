@@ -11,7 +11,7 @@ next_project_number: 51
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,33,34,38,40,41,41,42,43,44,45,46,47,48,49,50 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 1 | 14,16,17,18,20,22,27,28,31,33,34,38,41,41,42,43,44,45,46,47,48,49,50 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
 | 2 | 9,13,29,35,39 | 17,18,22,33,38 | agent-system, literature, orchestration-concurrency |
 | 3 | 30,37 | 29,35 | agent-system, orchestration-concurrency |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -53,7 +53,6 @@ next_project_number: 51
 
 38 [IMPLEMENTING] — Activate the literature extension's designed-but-inactive Zotero 
   └─ 39 [NOT STARTED] — Upgrade the literature extension's Zotero integration beyond bare
-40 [IMPLEMENTING] — The `sentence_boundary_glue_count` quality-gate check in `agent-s
 
 ### Orchestration Concurrency
 
@@ -277,12 +276,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 40. Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
 - **Effort**: 1-3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md]
 - **Plan**: [040_fix_convert_quality_gate_glue_false_positives/plans/01_glue-gate-exemptions.md]
+- **Summary**: [040_fix_convert_quality_gate_glue_false_positives/summaries/01_glue-gate-exemptions-summary.md]
 
 **Description**: The `sentence_boundary_glue_count` quality-gate check in `agent-system/extensions/literature/scripts/literature-convert.sh` (function at line 655, called from `run_quality_gate` at line 690, threshold `>= 3`) rejects otherwise-clean conversions of logic and math papers. The regex `[a-z]\.[A-Z]` matches two benign patterns endemic to this corpus: (1) `Ph.D.` in bibliography entries — the `h.D` transition, extremely common in reference lists; (2) single-letter-variable quantifier/binder notation such as `∀x.P`, `∃x.P`, `∃y.E` — the `x.P` transition, standard in logic papers.
 

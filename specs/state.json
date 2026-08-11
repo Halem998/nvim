@@ -919,7 +919,7 @@
     {
       "project_number": 40,
       "project_name": "fix_convert_quality_gate_glue_false_positives",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation",
       "topic": "literature",
@@ -941,11 +941,16 @@
           "path": "specs/040_fix_convert_quality_gate_glue_false_positives/plans/01_glue-gate-exemptions.md",
           "type": "plan",
           "summary": "implementation plan"
+        },
+        {
+          "path": "specs/040_fix_convert_quality_gate_glue_false_positives/summaries/01_glue-gate-exemptions-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: strip-then-count exemption fix, both-polarity fixtures, all 5 acceptance criteria confirmed"
         }
       ],
       "created": "2026-08-11T16:06:30Z",
-      "last_updated": "2026-08-11T20:56:05Z",
-      "session_id": "sess_1786480706_506b3d_40"
+      "last_updated": "2026-08-11T21:09:09Z",
+      "session_id": "sess_1786480706_506b3d"
     },
     {
       "project_number": 41,
