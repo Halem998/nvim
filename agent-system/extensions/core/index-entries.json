@@ -1035,7 +1035,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, and dedup rule",
-      "line_count": 382,
+      "line_count": 397,
       "keywords": [
         "patterns",
         "orchestrate",

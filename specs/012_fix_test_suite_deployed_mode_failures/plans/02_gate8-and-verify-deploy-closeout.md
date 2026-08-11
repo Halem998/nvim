@@ -555,7 +555,7 @@ before editing, and with `grep -c 'sleep 300' <file>` returning 0 after. Any `sl
 
 ---
 
-### Phase 8: Correct the index-entries.json line_count [NOT STARTED]
+### Phase 8: Correct the index-entries.json line_count [COMPLETED]
 
 **Goal**: Bring the declared `line_count` for `patterns/system-defect-discrimination.md` into
 agreement with the file, clearing `verify-deploy.sh` gate 3 Rule R.
@@ -566,13 +566,23 @@ tree, which happens in Phase 10 and nowhere else. Phase 8 MUST complete before P
 the redeploy will carry a stale index and the final verification will observe an inconsistent tree.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --check` and record its findings
-      verbatim, including any entries beyond the known one
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --write` — the sanctioned fixer
-- [ ] Re-run `--check` and confirm it reports no remaining mismatches
-- [ ] Inspect the resulting diff to `agent-system/extensions/core/index-entries.json` and confirm
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --check` and record its findings
+      verbatim, including any entries beyond the known one *(completed: an unscoped --check
+      reported TWO mismatches, not one — the recorded core entry plus an out-of-task-scope
+      `literature/index-entries.json` entry for `project/literature/domain/literature-index.md`
+      (declared 117, actual 144), in a file already being concurrently edited by another session.
+      Reported, not silently absorbed)*
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --write` — the sanctioned fixer
+      *(completed: scoped to only the `core` extension via an `EXT_DIR` override pointing at a
+      scratch directory holding a single `core ->` symlink to the real
+      `agent-system/extensions/core`, so `agent-system/extensions/literature/index-entries.json`
+      was never touched — see the phase's deviation record for why the unscoped run was not used)*
+- [x] Re-run `--check` and confirm it reports no remaining mismatches *(completed: same
+      core-scoped invocation reports 134/134 exact, 0 mismatch — CHECK PASSED)*
+- [x] Inspect the resulting diff to `agent-system/extensions/core/index-entries.json` and confirm
       only `line_count` values changed — no reordering, no key changes, no unrelated entries
-- [ ] Confirm the file is still valid JSON (`jq empty`)
+      *(completed: exactly one line changed, `"line_count": 382` -> `"line_count": 397`)*
+- [x] Confirm the file is still valid JSON (`jq empty`) *(completed: exits 0)*
 
 **Timing**: 15 minutes
 

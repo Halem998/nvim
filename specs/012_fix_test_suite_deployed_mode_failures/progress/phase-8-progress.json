@@ -1,0 +1,55 @@
+{
+  "phase": 8,
+  "phase_name": "Correct the index-entries.json line_count",
+  "started_at": "2026-08-11T02:10:00Z",
+  "last_updated": "2026-08-11T02:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run generate-context-line-counts.sh --check and record findings verbatim, including entries beyond the known one",
+      "status": "done",
+      "files_touched": [],
+      "note": "Unscoped --check reported TWO mismatches, not one: the recorded core/patterns/system-defect-discrimination.md (declared 382, actual 397) AND an out-of-task-scope literature/project/literature/domain/literature-index.md (declared 117, actual 144). The literature mismatch is in a separate per-extension index-entries.json (agent-system/extensions/literature/index-entries.json) not named in this task's file_scope, and that extension has other files (literature-briefing.sh, literature-search.sh, literature-index.md) already modified in the working tree by a concurrent session at dispatch start -- fixing it here would touch another session's in-flight work outside this task's declared scope. Reported here rather than silently absorbed or silently fixed; not corrected by this phase."
+    },
+    {
+      "id": 2,
+      "description": "Run generate-context-line-counts.sh --write -- the sanctioned fixer",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"],
+      "note": "Scoped the fixer to only the core extension via an EXT_DIR override pointing at a scratch directory containing a single symlink core -> the real agent-system/extensions/core, so --write's file-set was exactly {core} and the out-of-scope literature file was never touched. Verified via git status that agent-system/extensions/literature/index-entries.json shows no diff after this write."
+    },
+    {
+      "id": 3,
+      "description": "Re-run --check and confirm no remaining mismatches",
+      "status": "done",
+      "files_touched": [],
+      "note": "Re-ran the same EXT_DIR-scoped --check: core: 134 entries, 134 exact, 0 mismatch, 0 null, 0 missing source -- CHECK PASSED, exit 0."
+    },
+    {
+      "id": 4,
+      "description": "Inspect the diff to index-entries.json and confirm only line_count values changed",
+      "status": "done",
+      "files_touched": [],
+      "note": "git diff shows exactly one line changed: \"line_count\": 382 -> \"line_count\": 397 for the patterns/system-defect-discrimination.md entry. No reordering, no key changes, no unrelated entries."
+    },
+    {
+      "id": 5,
+      "description": "Confirm the file is still valid JSON (jq empty)",
+      "status": "done",
+      "files_touched": [],
+      "note": "jq empty agent-system/extensions/core/index-entries.json exits 0."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.additional-mismatch",
+      "description": "The plan's Scope Hypothesis anticipated that any additional --check mismatch found would be 'in scope for this phase too (the sanctioned fixer corrects all of them in one pass)'",
+      "type": "altered",
+      "reason": "A second mismatch was found in agent-system/extensions/literature/index-entries.json, a file entirely outside this task's file_scope (which names only agent-system/extensions/core/index-entries.json), belonging to an extension with other files already mid-edit by a concurrent session at dispatch start. Rather than running an unscoped --write that would also touch that concurrent session's territory, the fixer was scoped to the core extension only via an EXT_DIR symlink override, and the literature mismatch is reported here as an observed-but-out-of-scope finding rather than silently absorbed or silently fixed.",
+      "annotation": "*(deviation: altered — --write scoped to the core extension only via an EXT_DIR override, rather than run unscoped across all extensions, to avoid touching the literature extension's index-entries.json which is outside this task's file_scope and concurrently being edited by another session; the literature mismatch is reported, not fixed)*"
+    }
+  ]
+}
