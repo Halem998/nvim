@@ -1,27 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 40,
-  "session_id": "sess_1786480706_506b3d_40",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/040_fix_convert_quality_gate_glue_false_positives/plans/01_glue-gate-exemptions.md",
-      "summary": "5-phase implementation plan for the sentence-boundary-glue exemption fix and both-polarity regression fixtures"
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 3,
-  "dependency_waves": [[1], [2, 3], [4], [5]],
-  "memory_candidates": [
-    {
-      "content": "PyMuPDF hermetic PDF fixtures cannot carry non-Latin-1 characters (math symbols like the U+2200/U+2203 binders) via page.insert_text(): with a base-14 font such as 'helv' the character is silently substituted with a middle dot (U+00B7), and with the built-in CJK font 'china-ss' it is dropped entirely. Neither failure raises. fitz.Font(name).has_glyph() is NOT a reliable predictor -- it reports a nonzero glyph id for U+2200 under 'helv' even though insert_text mangles it. The working hermetic path (no extra dependency, no system font file, no pymupdf_fonts package) is the TextWriter API: tw = fitz.TextWriter(page.rect); tw.append(pos, text, font=fitz.Font('helv'), fontsize=n); tw.write_text(page). Verified round-trip: the extracted text preserves the binder characters exactly. General lesson: for any PDF fixture asserting on extracted text, verify the round-trip through get_text() rather than trusting the source string literal -- a silently substituted glyph turns a two-condition test into a one-condition test with no visible failure.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/040_fix_convert_quality_gate_glue_false_positives/plans/01_glue-gate-exemptions.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["pymupdf", "fitz", "textwriter", "pdf-fixture", "unicode-glyph", "insert_text"]
-    }
-  ],
-  "next_steps": "Run /implement 40 to execute the plan"
+  "session_id": "sess_1786480706_506b3d",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }

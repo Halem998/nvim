@@ -1,0 +1,46 @@
+{
+  "phase": 1,
+  "phase_name": "Red-baseline spike - prove both fixtures exercise the check",
+  "started_at": "2026-08-11T21:30:00Z",
+  "last_updated": "2026-08-11T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Build both fixture PDFs in scratch dir (TextWriter for binder chars)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run each through literature-convert.sh with LITERATURE_CONVERTER=pymupdf, capture exit code and stderr", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Record exit code, raw glue count, and gate reason strings for each fixture", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm both fixtures RED (exit 3), raw counts >=3, sole reason is sentence-boundary-glue", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm negative fixture residue after exemption strip is 0, positive fixture residue >=3", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Long single insert_text() line spanning >90 chars at fontsize 10", "result": "failed", "reason": "PyMuPDF insert_text() does not wrap; a line wider than the page's usable width is silently truncated mid-word, which nearly hid the intended fusion boundary in the positive fixture. Fixed by keeping each insert_text() line under ~70 chars."}
+  ],
+  "handoff_count": 0,
+  "evidence": {
+    "negative_fixture_biblio_quantifier": {
+      "exit_code": 3,
+      "raw_glue_count": 7,
+      "gate_reasons": ["sentence-boundary-glue: 7 zero-space word/sentence-fusion transition(s) found (threshold 3)"],
+      "post_exemption_residue": 0
+    },
+    "positive_fixture_fused_word": {
+      "exit_code": 3,
+      "raw_glue_count": 3,
+      "gate_reasons": ["sentence-boundary-glue: 3 zero-space word/sentence-fusion transition(s) found (threshold 3)"],
+      "post_exemption_residue": 3
+    },
+    "confirmed_fixture_text": {
+      "negative_binder_line": "Formally we require ∀x.P and ∃y.E and ∃x.Q hold in the model. (via fitz.TextWriter + fitz.Font(\"helv\"))",
+      "negative_biblio_lines": [
+        "A. Author. A Study of Resource Semantics. Ph.D. thesis, University of Nowhere, 2001.",
+        "B. Writer. Bunched Logics and Their Models. Ph.D. thesis, University of Elsewhere, 2003.",
+        "C. Scholar. Assertions for Pointer Programs. Ph.D. thesis, University of Someplace, 2005.",
+        "D. Researcher. Separation and Sharing. Ph.D. thesis, University of Anywhere, 2007."
+      ],
+      "positive_fused_lines": [
+        "The proof proceeds by induction.The base case is trivial to check.",
+        "Another sentence fuses here.A third fusion occurs at this point.",
+        "This step follows directly.The next line completes the argument."
+      ]
+    }
+  }
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
 
 - **Task**: 40 - Fix sentence-boundary-glue gate false positives on Ph.D. and quantifier notation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/040_fix_convert_quality_gate_glue_false_positives/reports/01_glue-gate-false-positives.md
@@ -125,30 +125,37 @@ from the converter's exit code, so it stays valid regardless of whether Phase 3 
 
 ---
 
-### Phase 1: Red-baseline spike — prove both fixtures exercise the check [NOT STARTED]
+### Phase 1: Red-baseline spike — prove both fixtures exercise the check [COMPLETED]
 
 **Goal**: Before any source-store edit, build both fixture PDFs in a scratch directory, run them
 through the *unmodified* converter, and record the pre-fix evidence that each fixture actually
 exercises the sentence-boundary-glue check and nothing else.
 
 **Tasks**:
-- [ ] In a scratch temp dir (never `~/Projects/Literature/`), write a throwaway script that builds
+- [x] In a scratch temp dir (never `~/Projects/Literature/`), write a throwaway script that builds
       two single-page PDFs with the intended fixture text:
       - negative: single-column body text + a "References" block with 3-4 `Ph.D. thesis,` entries +
         a body block with `∀x.P`, `∃y.E`, `∃x.Q`, using `fitz.TextWriter` +
         `fitz.Font("helv")` for any line containing a binder character
       - positive: single-column body text with 3+ fused sentence boundaries (lowercase, period,
         uppercase, no space), containing zero `Ph.D` and zero `∀∃λ`
-- [ ] Run each through `agent-system/extensions/literature/scripts/literature-convert.sh` with
-      `LITERATURE_CONVERTER=pymupdf`, capturing exit code and stderr
-- [ ] Record for each fixture: exit code, the raw `len(re.findall(r"[a-z]\.[A-Z]", text))` over the
+      *(completed: scratch script built both PDFs; discovered and fixed an unrelated PyMuPDF
+      pitfall — `insert_text()` silently truncates a line wider than the page's usable width
+      instead of wrapping, which had clipped the intended fusion boundary in the positive
+      fixture until lines were kept under ~70 chars)*
+- [x] Run each through `agent-system/extensions/literature/scripts/literature-convert.sh` with
+      `LITERATURE_CONVERTER=pymupdf`, capturing exit code and stderr *(completed)*
+- [x] Record for each fixture: exit code, the raw `len(re.findall(r"[a-z]\.[A-Z]", text))` over the
       produced `.md`/`.md.rejected`, and the full list of gate reason strings from stderr
-- [ ] Confirm both fixtures are RED (exit 3) pre-fix, that both raw counts are `>= 3`, and that
-      `sentence-boundary-glue` is the ONLY reason string reported for each
-- [ ] Confirm the negative fixture's residue after the two exemption `re.sub` passes is 0, and the
-      positive fixture's residue is `>= 3`
-- [ ] If any confirmation fails, adjust the fixture text in scratch until all hold — this is the
-      phase's whole purpose; do not proceed to Phase 2 on unconfirmed text
+      *(completed: negative 7 hits, positive 3 hits, both exit 3, sole reason
+      sentence-boundary-glue for each — see progress/phase-1-progress.json)*
+- [x] Confirm both fixtures are RED (exit 3) pre-fix, that both raw counts are `>= 3`, and that
+      `sentence-boundary-glue` is the ONLY reason string reported for each *(completed)*
+- [x] Confirm the negative fixture's residue after the two exemption `re.sub` passes is 0, and the
+      positive fixture's residue is `>= 3` *(completed: negative residue 0, positive residue 3)*
+- [x] If any confirmation fails, adjust the fixture text in scratch until all hold — this is the
+      phase's whole purpose; do not proceed to Phase 2 on unconfirmed text *(completed: all held
+      on the first fully-corrected attempt after the insert_text truncation fix)*
 
 **Timing**: 0.5 hours
 
