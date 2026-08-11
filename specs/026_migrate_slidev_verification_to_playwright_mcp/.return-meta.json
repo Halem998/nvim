@@ -1,40 +1,27 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 26,
   "session_id": "sess_1786426440_e14088_26",
-  "findings_count": 9,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/026_migrate_slidev_verification_to_playwright_mcp/reports/01_slidev-verification-mcp-migration.md",
-      "summary": "Parity analysis of the standalone Playwright verify script vs. the MCP server; recommends keeping the batch script (determinism, cost, blank-check fidelity) while adding MCP tools as an optional ad hoc single-slide debugging capability, plus the required present-extension permission-grant plumbing (new settings-fragment.json + manifest merge_targets.settings entry) since present/founder do not inherit web's grants."
+      "type": "plan",
+      "path": "specs/026_migrate_slidev_verification_to_playwright_mcp/plans/01_slidev-verification-mcp-plan.md",
+      "summary": "5-phase plan implementing the researched keep-plus-add outcome: keep playwright-verify.mjs as the required batch verification gate with a written justification, and add scoped Playwright MCP tools to the present extension as an optional ad hoc single-slide debugging capability."
     }
   ],
+  "phase_count": 5,
+  "estimated_hours": 3.5,
+  "dependency_waves": [[1], [2, 3], [4], [5]],
   "memory_candidates": [
     {
-      "content": "In this repo's extension system, a domain-specific MCP permission grant (settings-fragment.json permissions.allow) does NOT propagate across extensions unless the consuming extension either (a) declares the granting extension as a manifest dependency (auto-load, but pulls in all of its agents/skills/rules too) or (b) has its own settings-fragment.json copying the grant. Extensions with overlapping tool needs (e.g. web, present, founder all wanting Playwright MCP tools) each need their own settings-fragment.json enumeration under the safe/unsafe carve-out rule -- a wildcard cannot express a safe/unsafe split, so this duplication is accepted, documented drift, not a bug to fix by wildcarding.",
+      "content": "When a task asks to remove a 'duplicate' dependency, first separate the PACKAGE from the CODEPATH. A single package pin can serve two independent consumers - one removable, one structural. In the present extension, playwright-chromium serves both Slidev's own slidev-export PDF pipeline (an unremovable dependency of @slidev/cli itself) and a standalone verification script's independent browser-launch loop. Only the second is the duplicate in scope; the package pin cannot be removed under any outcome. Planning a removal against the package name rather than the codepath produces a plan that cannot succeed. A related permission-scope corollary: an MCP tool grant does not arrive transitively - a consuming extension needs its own settings-fragment.json plus a manifest merge_targets.settings entry, and adding the granting extension as a dependency instead drags in its unrelated agents, skills, and rules.",
       "category": "PATTERN",
-      "source_artifact": "specs/026_migrate_slidev_verification_to_playwright_mcp/reports/01_slidev-verification-mcp-migration.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["mcp-permission-scope", "settings-fragment", "extension-dependency", "playwright", "manifest-merge-targets"]
-    },
-    {
-      "content": "When a codebase pins an npm package (e.g. playwright-chromium) for two independent reasons -- a third-party tool's own internal dependency (Slidev's `slidev export` PDF pipeline) and a project's own custom script (a verify script's browser automation loop) -- removing the custom script does NOT remove the npm install requirement. Before recommending 'remove the duplicate install,' separate which consumer actually owns the dependency; only the consumer being deprecated is in scope for removal.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/026_migrate_slidev_verification_to_playwright_mcp/reports/01_slidev-verification-mcp-migration.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["dependency-parity", "npm-devDependency", "migration-scope", "slidev", "playwright-chromium"]
-    },
-    {
-      "content": "MCP tool-based browser verification (Playwright MCP) fundamentally cannot replicate a standalone script's deterministic exit-code/CI/no-agent-in-the-loop invocation, and is materially more expensive per-check (one agent tool-call round trip per navigate/inspect step vs. one script invocation covering N slides). When comparing a standalone automation script against an MCP-tool equivalent, weigh these two axes explicitly rather than assuming the MCP path is a strict upgrade -- a 'keep the script for batch/CI use, add MCP for ad hoc single-item debugging' split is often the correct outcome rather than full migration.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/026_migrate_slidev_verification_to_playwright_mcp/reports/01_slidev-verification-mcp-migration.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["mcp-vs-script", "playwright-mcp", "determinism", "cost-tradeoff", "browser-automation"]
+      "source_artifact": "specs/026_migrate_slidev_verification_to_playwright_mcp/plans/01_slidev-verification-mcp-plan.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["duplicate-dependency", "removal-scope", "codepath-vs-package", "mcp-permission-grant", "settings-fragment", "extension-boundary"]
     }
   ],
-  "next_steps": "Run /plan 26 to create implementation plan",
-  "partial_progress": null
+  "next_steps": "Run /implement 26 to execute the plan"
 }

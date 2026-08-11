@@ -37,8 +37,8 @@ next_project_number: 28
 
 ### Mcp Integration
 
-25 [RESEARCHED] — Activate the already-designed but parked Playwright MCP integrati
-26 [RESEARCHED] — Migrate slidev deck screenshot verification from the standalone n
+25 [PLANNING] — Activate the already-designed but parked Playwright MCP integrati
+26 [PLANNED] — Migrate slidev deck screenshot verification from the standalone n
 
 ## Tasks
 
@@ -89,11 +89,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 26. Migrate slidev deck verification from standalone npm Playwright script to MCP server
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: mcp-integration
 - **Dependencies**: Task 24
 - **Research**: [026_migrate_slidev_verification_to_playwright_mcp/reports/01_slidev-verification-mcp-migration.md]
+- **Plan**: [026_migrate_slidev_verification_to_playwright_mcp/plans/01_slidev-verification-mcp-plan.md]
 
 **Description**: Migrate slidev deck screenshot verification from the standalone npm Playwright script to the live Playwright MCP server, removing the duplicate Playwright install path.
 
@@ -114,7 +115,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 25. Activate parked Playwright MCP integration in web extension and reconcile drifted tool list
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: mcp-integration
 - **Dependencies**: Task 23, Task 24
