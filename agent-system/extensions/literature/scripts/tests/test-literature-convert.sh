@@ -197,6 +197,65 @@ case "$EXIT2B" in
 esac
 
 # ============================================================
+# Test 3: sentence-boundary-glue exemptions (negative) — locks in that two
+# benign, corpus-endemic patterns (Ph.D. bibliography entries and
+# single-letter-variable quantifier/binder notation such as ∀x.P, ∃y.E,
+# ∃x.Q) never trip the sentence-boundary-glue quality-gate check. Strict
+# (exit 0 required), not exit-0-or-3 like Test 1/Test 2b, since locking in
+# "these benign patterns never fail the gate" is precisely this test's
+# purpose.
+# ============================================================
+
+FIXTURE_BQ="$WORKDIR/biblio_quantifier.pdf"
+python3 "$FIXTURE_GEN" biblio-quantifier "$FIXTURE_BQ" >/dev/null
+
+OUT_BQ="$WORKDIR/out_bq"
+mkdir -p "$OUT_BQ"
+STDERR_BQ="$WORKDIR/stderr_bq.log"
+LITERATURE_CONVERTER=pymupdf "$CONVERT_SH" "$FIXTURE_BQ" "$OUT_BQ" >/dev/null 2>"$STDERR_BQ"
+EXIT_BQ=$?
+
+if [ "$EXIT_BQ" -eq 0 ] && [ -f "$OUT_BQ/biblio_quantifier.md" ]; then
+  t_pass "sentence-boundary-glue exemptions (negative): exit 0, final .md written"
+else
+  t_fail "sentence-boundary-glue exemptions (negative): expected exit 0 with output; got exit $EXIT_BQ — stderr:"
+  cat "$STDERR_BQ" >&2
+fi
+
+# ============================================================
+# Test 3b: genuine fused-word corruption still rejected (positive) — proves
+# the exemptions added for Test 3 did not widen the check enough to also
+# hide the real zero-space word/sentence-fusion defect signature this check
+# exists to catch (mirrors Test 1's exit-3 branch assertions). Additionally
+# asserts the rejection reason is specifically sentence-boundary-glue, so
+# this test cannot pass for the wrong reason if another gate check starts
+# firing instead.
+# ============================================================
+
+FIXTURE_FW="$WORKDIR/fused_word.pdf"
+python3 "$FIXTURE_GEN" fused-word "$FIXTURE_FW" >/dev/null
+
+OUT_FW="$WORKDIR/out_fw"
+mkdir -p "$OUT_FW"
+STDERR_FW="$WORKDIR/stderr_fw.log"
+LITERATURE_CONVERTER=pymupdf "$CONVERT_SH" "$FIXTURE_FW" "$OUT_FW" >/dev/null 2>"$STDERR_FW"
+EXIT_FW=$?
+
+if [ "$EXIT_FW" -eq 3 ] && [ -f "$OUT_FW/fused_word.md.rejected" ] && [ ! -f "$OUT_FW/fused_word.md" ]; then
+  t_pass "genuine fused-word corruption still rejected (positive): exit 3, .rejected written, no final .md"
+else
+  t_fail "genuine fused-word corruption still rejected (positive): expected exit 3 with .rejected and no final .md; got exit $EXIT_FW — stderr:"
+  cat "$STDERR_FW" >&2
+fi
+
+if grep -q "sentence-boundary-glue" "$STDERR_FW"; then
+  t_pass "genuine fused-word corruption still rejected (positive): rejection reason is sentence-boundary-glue"
+else
+  t_fail "genuine fused-word corruption still rejected (positive): rejection reason was NOT sentence-boundary-glue — stderr:"
+  cat "$STDERR_FW" >&2
+fi
+
+# ============================================================
 # Supplementary: no-TOC heading tightening (BUG 3 upstream cause), locked in
 # as a regression fixture. Not one of Phase 6's two required tests, but
 # cheap and directly protects the Phase 3 fix beyond the ad-hoc verification

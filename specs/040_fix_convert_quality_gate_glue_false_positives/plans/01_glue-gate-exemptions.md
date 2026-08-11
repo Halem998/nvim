@@ -287,30 +287,32 @@ and `grep -n "glue_count >= 3" literature-convert.sh` still matching the origina
 
 ---
 
-### Phase 4: Wire both fixtures into test-literature-convert.sh [NOT STARTED]
+### Phase 4: Wire both fixtures into test-literature-convert.sh [COMPLETED]
 
 **Goal**: Add Test 3 (negative, strict exit 0) and Test 3b (positive, strict exit 3) as required,
 non-skipping assertions following the suite's existing `t_pass`/`t_fail` pattern, scratch-dir only.
 
 **Tasks**:
-- [ ] Add a "Test 3: sentence-boundary-glue exemptions (negative)" section: generate
+- [x] Add a "Test 3: sentence-boundary-glue exemptions (negative)" section: generate
       `biblio-quantifier` into `$WORKDIR`, run with `LITERATURE_CONVERTER=pymupdf` into its own
       `$WORKDIR/outN`, assert exit 0 AND the final `.md` exists — strict like Test 2, not
       exit-0-or-3 like Test 1/Test 2b, since locking in "these benign patterns never fail the gate"
-      is precisely this test's purpose
-- [ ] On failure, `t_fail` with the captured stderr (so a regression names the gate reason), matching
-      the existing failure-reporting style
-- [ ] Add a "Test 3b: genuine fused-word corruption still rejected (positive)" section: generate
+      is precisely this test's purpose *(completed)*
+- [x] On failure, `t_fail` with the captured stderr (so a regression names the gate reason), matching
+      the existing failure-reporting style *(completed)*
+- [x] Add a "Test 3b: genuine fused-word corruption still rejected (positive)" section: generate
       `fused-word`, run forced-fallback, assert exit 3 AND `.md.rejected` exists AND the final `.md`
-      does NOT exist — mirroring Test 1's exit-3 branch assertions
-- [ ] Additionally assert the rejection reason is the sentence-boundary-glue one (grep stderr), so
-      Test 3b cannot pass for the wrong reason if another check starts firing
-- [ ] Place both sections after the existing Test 2/2b block and before the supplementary no-TOC
-      heading section, keeping the file's existing section-banner comment style
-- [ ] Confirm both use `$WORKDIR` (the existing `mktemp -d` + `trap 'rm -rf "$WORKDIR"' EXIT`) and
-      that no added line reads or writes `~/Projects/Literature/`
-- [ ] Do not add task-number references to any comment in this file
-- [ ] Run the full suite; all tests including the two new ones must pass
+      does NOT exist — mirroring Test 1's exit-3 branch assertions *(completed)*
+- [x] Additionally assert the rejection reason is the sentence-boundary-glue one (grep stderr), so
+      Test 3b cannot pass for the wrong reason if another check starts firing *(completed)*
+- [x] Place both sections after the existing Test 2/2b block and before the supplementary no-TOC
+      heading section, keeping the file's existing section-banner comment style *(completed)*
+- [x] Confirm both use `$WORKDIR` (the existing `mktemp -d` + `trap 'rm -rf "$WORKDIR"' EXIT`) and
+      that no added line reads or writes `~/Projects/Literature/` *(completed)*
+- [x] Do not add task-number references to any comment in this file *(completed)*
+- [x] Run the full suite; all tests including the two new ones must pass *(completed: 11 passed, 0
+      failed, exit 0; non-vacuity confirmed by reverting the fix in a standalone scratch copy —
+      Test 3 flips to FAIL, Test 3b stays PASS)*
 
 **Timing**: 0.75 hours
 

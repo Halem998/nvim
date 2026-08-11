@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Wire both fixtures into test-literature-convert.sh",
+  "started_at": "2026-08-11T22:30:00Z",
+  "last_updated": "2026-08-11T22:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Test 3 section: negative fixture, strict exit 0 + final .md exists", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 2, "description": "On failure t_fail with captured stderr", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 3, "description": "Add Test 3b section: positive fixture, strict exit 3 + .rejected exists + no final .md", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 4, "description": "Assert rejection reason is sentence-boundary-glue via grep on stderr", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 5, "description": "Place sections after Test 2/2b, before no-TOC heading section, matching banner style", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 6, "description": "Confirm scratch-only WORKDIR usage, no ~/Projects/Literature/ reads/writes, no task-number refs", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run full suite, all tests including two new pass", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "evidence": {
+    "bash_n": "clean",
+    "full_suite_result": "11 passed, 0 failed, exit 0",
+    "projects_literature_grep": "only 2 pre-existing header-comment lines (13, 291), no new operative reference",
+    "non_vacuity_check": "reverted the fix in a standalone scratch copy (never the working tree) -- Test 3 flipped to FAIL (exit 3 instead of expected 0), Test 3b stayed PASS. Result: 10 passed, 1 failed. Confirms Test 3 is non-vacuous."
+  }
+}
