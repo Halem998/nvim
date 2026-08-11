@@ -1,29 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 38,
-  "session_id": "sess_1786480706_506b3d_38",
-  "delegation_depth": 2,
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md",
-      "summary": "7-phase, 5.5-hour implementation plan covering all 6 work items and all 5 acceptance criteria for activating and hardening the Zotero write-back path."
-    }
-  ],
-  "summary": "Created a 7-phase plan (5.5 hours, 6 dependency waves) for the Zotero write-back activation. Phase 1 re-confirms the environment (zot v0.10.0 confirmed live at plan time) and captures the zot schema surface. Phase 2 corrects stale docs across five files. Phase 3 wires zotero-export-freshness.sh into both write branches of literature-ingest-online.sh. Phase 4 adds DOI normalization plus a hard-stop live-library dedup via zotero-read.sh search. Phase 5 records evidence that the %PDF gate, DOI-only-fallback honest surfacing, never-fabricate-keys stop, and the zotero-write.sh choke-point are unchanged. Phase 6 performs the live envelope confirmation behind a hard user-confirmation gate against the production library. Phase 7 activates the literature extension for the first time via a headless manager.load call, resyncs, and verifies byte identity.",
-  "phase_count": 7,
-  "estimated_hours": 5.5,
-  "dependency_waves": [[1], [2, 3], [4], [5], [6], [7]],
-  "memory_candidates": [
-    {
-      "content": "A documented 'deployment status' table inside an extension's own README can drift arbitrarily far from the live deploy tree when the extension has no entry in the project's extension-state file (.claude-extensions.json). The non-destructive deploy resync only force-resyncs extensions the state file already marks active, so running it repeatedly on an unregistered extension silently deploys nothing -- the operation succeeds and changes nothing. Any plan whose step is 'deploy these scripts through the normal deploy flow' must first verify the owning extension is registered as active; if it is not, first-time activation (a manager.load call or one pass through the interactive picker) is a prerequisite, not an implementation detail. The correct diagnostic is to read the extension-state file's keys, never the extension's own documentation. Activation is an operation, not a source edit, so it can satisfy a source-store/deploy boundary rule that forbids editing the deploy tree or another extension's source.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["extension-activation", "deploy-headless", "claude-extensions-json", "deployment-status-drift", "manager-load", "resync-noop"]
-    }
-  ],
-  "next_steps": "Run /implement 38 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786480706_506b3d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

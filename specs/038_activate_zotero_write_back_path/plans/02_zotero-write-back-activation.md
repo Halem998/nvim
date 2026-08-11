@@ -1,7 +1,7 @@
 # Implementation Plan: Task #38
 
 - **Task**: 38 - Activate and harden the Zotero write-back path in the literature extension
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**:
@@ -125,7 +125,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Re-confirm the environment and capture the live `zot` surface [NOT STARTED]
+### Phase 1: Re-confirm the environment and capture the live `zot` surface [COMPLETED]
 
 **Goal**: Establish, with recorded evidence, the environment facts every later phase depends on,
 and capture the `zot` v0.10.0 parameter surface that the corrected docs will cite. Read-only and
@@ -133,24 +133,29 @@ and capture the `zot` v0.10.0 parameter surface that the corrected docs will cit
 
 **Tasks**:
 
-- [ ] Re-confirm `command -v zot` and `zot --version`; record the exact output. If `zot` is
+- [x] Re-confirm `command -v zot` and `zot --version`; record the exact output. If `zot` is
       absent or below v0.10.0, stop and mark this phase `[BLOCKED]` — Phases 3-7 depend on it.
-- [ ] Re-confirm `zot config show` (library ID, API key presence, data dir, database OK) and that
+      *(completed: `/home/benjamin/.nix-profile/bin/zot`, `zot, version 0.10.0`)*
+- [x] Re-confirm `zot config show` (library ID, API key presence, data dir, database OK) and that
       the resolved data dir is `/home/benjamin/Documents/Zotero`, not the `~/Zotero` decoy.
-- [ ] Re-confirm the API key scope via
+      *(completed: data dir confirmed, database OK)*
+- [x] Re-confirm the API key scope via
       `curl -s https://api.zotero.org/keys/current -H "Zotero-API-Key: $ZOTERO_API_KEY"` and
-      record `.access.user`.
-- [ ] Capture `zot schema add` and `zot schema attach` output, plus `zot add --help` and
+      record `.access.user`. *(completed: `library+files+write` all true)*
+- [x] Capture `zot schema add` and `zot schema attach` output, plus `zot add --help` and
       `zot attach --help`, into the working notes. These are the citable source for the corrected
-      version pin and flag documentation.
-- [ ] Re-run `bash agent-system/extensions/literature/scripts/zotero-export-freshness.sh` and
-      record the emitted directive token and the stderr rationale.
-- [ ] Re-confirm the deployed-tree gap: `ls .claude/scripts/zotero-write.sh`,
+      version pin and flag documentation. *(completed)*
+- [x] Re-run `bash agent-system/extensions/literature/scripts/zotero-export-freshness.sh` and
+      record the emitted directive token and the stderr rationale. *(completed: `ZOTERO_EXPORT_STALE`,
+      export 2026-07-01 predates sqlite mtime 2026-08-05)*
+- [x] Re-confirm the deployed-tree gap: `ls .claude/scripts/zotero-write.sh`,
       `ls .claude/commands/literature.md`, and
-      `jq -r '.extensions | keys' .claude-extensions.json`.
-- [ ] Confirm whether Zotero desktop is reachable
+      `jq -r '.extensions | keys' .claude-extensions.json`. *(completed: both missing;
+      extensions = core,email,memory,nix,nvim)*
+- [x] Confirm whether Zotero desktop is reachable
       (`curl -s --max-time 2 http://127.0.0.1:23119/connector/ping`), since it determines
       `zot attach`'s default route and therefore what Phase 6 will observe.
+      *(completed: unreachable, connection refused)*
 
 **Timing**: 0.5 hours
 
