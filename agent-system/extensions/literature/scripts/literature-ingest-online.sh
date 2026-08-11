@@ -68,6 +68,18 @@
 #                                         Zotero item (or found already attached, in the
 #                                         corrective edge case documented in Phase 6 below),
 #                                         then ingested/patched/registered same as above.
+#   ONLINE_INGEST_DUPLICATE_DETECTED     create-item path only: the DOI-normalized live-library
+#                                         dedup check found an existing Zotero item whose `.doi`
+#                                         matches the record's (normalized) DOI. Hard stop --
+#                                         deliberately stricter than the non-blocking
+#                                         check_duplicate_title() -- because the Web API performs
+#                                         no server-side dedup. NO Zotero write is attempted.
+#   ONLINE_INGEST_DEDUP_CHECK_FAILED     create-item path only: the live dedup check itself could
+#                                         not be performed (zotero-read.sh search failed or
+#                                         returned unparseable output). Never conflated with "no
+#                                         duplicate found" -- stops rather than proceeding without
+#                                         a dedup guarantee, consistent with this script's
+#                                         never-fabricate posture.
 #
 # EXPORT FRESHNESS + LIVE DEDUP GUARD: before either the create-item or the attach-to-existing
 # branch runs its Zotero write, this script consults zotero-export-freshness.sh.
@@ -90,6 +102,8 @@
 #   4   ONLINE_INGEST_ZOTERO_RESOLVE_FAILED printed
 #   5   ONLINE_INGEST_ZOTERO_ATTACH_FAILED printed
 #   6   ONLINE_INGEST_PIPELINE_FAILED printed
+#   7   ONLINE_INGEST_DUPLICATE_DETECTED printed
+#   8   ONLINE_INGEST_DEDUP_CHECK_FAILED printed
 #   64  Argument/usage error or malformed/unsupported input record. NO directive token is
 #       printed to stdout for this case (usage text goes to stderr only) -- callers can
 #       distinguish "never classified" from every classified terminal state above by checking
@@ -99,9 +113,14 @@
 #   ONLINE_INGEST_RESOLVABLE-equivalent internal state, or the in_zotero_no_pdf path). It prints
 #   the classification's directive token PLUS a human-readable preview of the planned
 #   `zotero-write.sh item-add`/`attach-file` and `literature-ingest.sh` invocations to stderr,
-#   with NO network download, NO Zotero write, and NO delegated ingest call. This mirrors "would
-#   run" previews used by zotero-write.sh's own `--dry-run` operations. Exit code follows the
-#   same table above (0 for a resolvable classification, 1 for ONLINE_INGEST_NO_PDF, etc).
+#   with NO PDF download, NO Zotero write, and NO delegated ingest call. The resolvable path DOES
+#   perform the real, read-only export-freshness check and (when a DOI is present) the real
+#   DOI-normalized live-library dedup check (a `zot search` read, never a write) and honors a
+#   confirmed-duplicate hard stop exactly as the real path would -- an honest preview, not a
+#   simulation, since neither check has a side effect. This mirrors "would run" previews used by
+#   zotero-write.sh's own `--dry-run` operations. Exit code follows the same table above (0 for a
+#   resolvable classification with no duplicate, 1 for ONLINE_INGEST_NO_PDF, 7 for a
+#   dry-run-detected ONLINE_INGEST_DUPLICATE_DETECTED, etc).
 #
 # ENVIRONMENT:
 #   LITERATURE_DIR    Global library root (default: ~/Projects/Literature), same convention as
@@ -330,6 +349,106 @@ check_export_freshness() {
 }
 
 # ---------------------------------------------------------------------------
+# Helper: normalize a DOI for exact-equality comparison -- lowercase, and strip a leading
+# https://doi.org/, http://doi.org/, or bare doi.org/ prefix. Load-bearing, not defensive-only:
+# `zot search` with the URL-prefixed form returns zero hits while the bare lowercase form
+# returns one, so an un-normalized comparison would silently miss real duplicates.
+# ---------------------------------------------------------------------------
+normalize_doi() {
+  local doi="$1"
+  doi="$(echo "$doi" | tr '[:upper:]' '[:lower:]')"
+  doi="${doi#https://doi.org/}"
+  doi="${doi#http://doi.org/}"
+  doi="${doi#doi.org/}"
+  echo "$doi"
+}
+
+# ---------------------------------------------------------------------------
+# Helper: DOI-normalized, live-library duplicate check via `zotero-read.sh search`, which reads
+# the live SQLite database (never the stale zotero-library.json export). A bare "search returned
+# something" is NOT a match -- `zot search` also matches title/author/tag text, so results are
+# filtered to an exact match on the normalized `.data[].doi` field (also normalized, since the
+# live database stores DOIs in their original, non-lowercased case).
+#
+# Return codes (never both prints output AND returns non-zero for the same call):
+#   0  duplicate found -- stdout is the matched item's key
+#   1  no duplicate found
+#   2  dedup could not be performed (zotero-read.sh failed or returned unparseable output) --
+#      never conflated with "no duplicate found"
+# ---------------------------------------------------------------------------
+check_live_doi_duplicate() {
+  local normalized_doi="$1"
+  local search_out rc=0
+  search_out="$("$SCRIPT_DIR/zotero-read.sh" search "$normalized_doi" 2>/tmp/ingest-online-dedup-stderr.$$)" || rc=$?
+  local stderr_out
+  stderr_out="$(cat /tmp/ingest-online-dedup-stderr.$$ 2>/dev/null || true)"
+  rm -f /tmp/ingest-online-dedup-stderr.$$
+
+  if [ "$rc" -ne 0 ]; then
+    log "ERROR: zotero-read.sh search failed (exit $rc) while checking for a live duplicate of doi=$normalized_doi: $stderr_out"
+    return 2
+  fi
+  if ! echo "$search_out" | jq -e . >/dev/null 2>&1; then
+    log "ERROR: zotero-read.sh search returned unparseable output while checking doi=$normalized_doi"
+    return 2
+  fi
+
+  local matched_key
+  matched_key="$(jq -r --arg doi "$normalized_doi" '
+      [ .[]? | select(
+          (.doi // "" | ascii_downcase
+            | sub("^https://doi\\.org/"; "")
+            | sub("^http://doi\\.org/"; "")
+            | sub("^doi\\.org/"; ""))
+          == $doi
+        ) ] | .[0].key // empty
+    ' <<<"$search_out")"
+
+  if [ -n "$matched_key" ]; then
+    echo "$matched_key"
+    return 0
+  fi
+  return 1
+}
+
+# ---------------------------------------------------------------------------
+# Helper: the resolvable (create-item) branch's pre-download checks -- DOI-normalized live
+# dedup, which also serves as the concrete re-verification mechanism Phase 3's freshness gate
+# defers to. Shared verbatim between the real resolvable path and its --dry-run preview: the
+# dedup check is read-only (a `zot search`), so running it (and honoring its hard stop) under
+# --dry-run is a genuine preview of the real path, not a simulation of one. A confirmed
+# duplicate or a failed dedup check both stop via directive_stop() -- safe under --dry-run too,
+# since directive_stop() never performs a write.
+# ---------------------------------------------------------------------------
+resolvable_predownload_checks() {
+  if [ -z "$DOI_RAW" ]; then
+    log "doc_id=$DOC_ID carries no DOI; DOI-normalized live dedup cannot run. Falling through to the non-blocking title-similarity check (dedup NOT silently treated as passed)."
+    return 0
+  fi
+
+  NORMALIZED_DOI="$(normalize_doi "$DOI_RAW")"
+  if [ "$EXPORT_NEEDS_REVERIFICATION" = "true" ]; then
+    log "Export freshness not confirmed ($EXPORT_FRESHNESS_TOKEN); the DOI-normalized live-library dedup check below is the required re-verification against the live library."
+  fi
+
+  local dedup_rc=0
+  DEDUP_MATCH_KEY="$(check_live_doi_duplicate "$NORMALIZED_DOI")" || dedup_rc=$?
+  case "$dedup_rc" in
+    0)
+      directive_stop "ONLINE_INGEST_DUPLICATE_DETECTED" 7 \
+        "DOI-normalized live-library dedup found an existing Zotero item (key=$DEDUP_MATCH_KEY) matching doi=$NORMALIZED_DOI for doc_id=$DOC_ID; refusing to create a duplicate item. The Web API performs no server-side dedup, so this check is the only guard against it."
+      ;;
+    1)
+      log "DOI-normalized live-library dedup: no existing item found for doi=$NORMALIZED_DOI (doc_id=$DOC_ID); proceeding."
+      ;;
+    *)
+      directive_stop "ONLINE_INGEST_DEDUP_CHECK_FAILED" 8 \
+        "DOI-normalized live-library dedup could not be performed for doc_id=$DOC_ID (doi=$NORMALIZED_DOI): zotero-read.sh search failed or returned unparseable output. Refusing to proceed without a dedup guarantee, consistent with this script's never-fabricate posture."
+      ;;
+  esac
+}
+
+# ---------------------------------------------------------------------------
 # Helper: extract the first non-empty/non-null value across several plausible jq field paths
 # on a JSON envelope. `zot add --pdf`'s exact data.* field names are NOT independently
 # confirmed against a real call yet -- see
@@ -535,9 +654,8 @@ if [ "$DRY_RUN" = "true" ]; then
   check_export_freshness
   if [ "$CLASSIFICATION" = "resolvable" ]; then
     log "[dry-run] Export freshness: $EXPORT_FRESHNESS_TOKEN (needs_reverification=$EXPORT_NEEDS_REVERIFICATION)"
-    if [ "$EXPORT_NEEDS_REVERIFICATION" = "true" ]; then
-      log "[dry-run] Would perform DOI-normalized live-library re-verification (check_live_doi_duplicate) before create-item, since the export is not confirmed fresh"
-    fi
+    resolvable_predownload_checks
+    log "[dry-run] DOI-normalized live-library dedup passed (or no DOI to check); would proceed"
     log "[dry-run] Would download: $PDF_URL_RAW -> $STAGING_PATH"
     log "[dry-run] Would run: $SCRIPT_DIR/zotero-write.sh item-add --pdf $STAGING_PATH ${DOI_RAW:+--doi $DOI_RAW} --idempotency-key ${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}"
     log "[dry-run] Would run: $SCRIPT_DIR/literature-ingest.sh <resolved_storage_or_staging_path> --no-local"
@@ -560,6 +678,8 @@ fi
 # ===========================================================================
 if [ "$CLASSIFICATION" = "resolvable" ]; then
   check_export_freshness
+
+  resolvable_predownload_checks
 
   check_duplicate_title "$TITLE"
 

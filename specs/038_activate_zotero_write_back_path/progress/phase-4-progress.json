@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Add DOI-normalized live pre-write dedup",
+  "started_at": "2026-08-11T21:55:00Z",
+  "last_updated": "2026-08-11T22:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add normalize_doi() helper", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 2, "description": "Add check_live_doi_duplicate() helper", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 3, "description": "Wire hard-stop dedup into resolvable branch via shared helper", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 4, "description": "STABLE CONTRACT header updates + dry-run dedup preview", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 5, "description": "Verify normalization, known-duplicate, known-absent, no-DOI fixtures", "status": "done",
+     "files_touched": ["specs/038_activate_zotero_write_back_path/plans/02_zotero-write-back-activation.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

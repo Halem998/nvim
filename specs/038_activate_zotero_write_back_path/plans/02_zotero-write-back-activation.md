@@ -336,7 +336,7 @@ first half of acceptance criterion 3 and work item 4.
 
 ---
 
-### Phase 4: Add DOI-normalized live pre-write dedup [NOT STARTED]
+### Phase 4: Add DOI-normalized live pre-write dedup [COMPLETED]
 
 **Goal**: Refuse to create a duplicate Zotero item by checking the normalized DOI against the
 **live** library (never the export snapshot) before any `item-add`. Satisfies the second half of
@@ -344,35 +344,45 @@ acceptance criterion 3 and work item 5.
 
 **Tasks**:
 
-- [ ] Add a `normalize_doi()` helper implementing exactly the task's specification: lowercase,
+- [x] Add a `normalize_doi()` helper implementing exactly the task's specification: lowercase,
       and strip a leading `https://doi.org/` prefix (also handle the `http://` and bare
       `doi.org/` variants). Research confirmed this is load-bearing: `zot search` with the
       URL-prefixed form returns zero hits while the bare lowercase form returns one.
-- [ ] Add a `check_live_doi_duplicate()` helper that calls
+      *(completed: verified all three forms normalize to the same string)*
+- [x] Add a `check_live_doi_duplicate()` helper that calls
       `"$SCRIPT_DIR/zotero-read.sh" search "<normalized_doi>"` and parses the JSON result. Reuse
       `zotero-read.sh` rather than hand-rolling a new Web-API or sqlite reader — `zot`'s read
       commands already query the live SQLite database, independently of the stale export.
-- [ ] Verify the match by exact equality on the result's `.data[].doi` field against the
+      *(completed)*
+- [x] Verify the match by exact equality on the result's `.data[].doi` field against the
       normalized query DOI. A bare "search returned something" is not a match: `zot search` also
       matches title/author/tag text, so a DOI substring could overlap unrelated content.
-- [ ] Make a confirmed match a **hard stop** in the `resolvable` create-item branch, emitting a
+      *(completed: the stored `.doi` field is also normalized before the equality check, since
+      the live database stores DOIs in their original, non-lowercased case)*
+- [x] Make a confirmed match a **hard stop** in the `resolvable` create-item branch, emitting a
       new named directive token (following the existing `ONLINE_INGEST_*` convention) with the
       matched item key in the message. This is deliberately stricter than the existing,
       non-blocking `check_duplicate_title()`, because the Web API performs no server-side dedup.
-- [ ] Place the check after `check_export_freshness()` (Phase 3) and before
+      *(completed: `ONLINE_INGEST_DUPLICATE_DETECTED`, exit 7)*
+- [x] Place the check after `check_export_freshness()` (Phase 3) and before
       `download_and_verify()`, so no bytes are fetched for an item that already exists.
-- [ ] Handle the no-DOI case honestly: when the discovery record carries no DOI, the dedup check
+      *(completed: via the shared `resolvable_predownload_checks()` helper)*
+- [x] Handle the no-DOI case honestly: when the discovery record carries no DOI, the dedup check
       cannot run. Log that fact visibly and fall through to the existing title-similarity check
-      rather than silently claiming a dedup pass.
-- [ ] Handle `zotero-read.sh` failure honestly: a non-zero exit or unparseable output is
+      rather than silently claiming a dedup pass. *(completed)*
+- [x] Handle `zotero-read.sh` failure honestly: a non-zero exit or unparseable output is
       "dedup could not be performed", logged visibly, not treated as "no duplicate found".
       Decide and document whether that condition stops or proceeds; given the never-fabricate
-      posture elsewhere in this script, stopping is the consistent choice.
-- [ ] When Phase 3's freshness classification was not-fresh, use this live check as the
+      posture elsewhere in this script, stopping is the consistent choice. *(completed:
+      `ONLINE_INGEST_DEDUP_CHECK_FAILED`, exit 8, stops)*
+- [x] When Phase 3's freshness classification was not-fresh, use this live check as the
       re-verification Phase 3 defers to — this is the mechanism that makes "re-verify against the
-      live library" concrete rather than aspirational.
-- [ ] Register the new directive token in the STABLE CONTRACT header block and extend the
-      `--dry-run` preview to report the dedup outcome.
+      live library" concrete rather than aspirational. *(completed: logged explicitly when
+      EXPORT_NEEDS_REVERIFICATION=true)*
+- [x] Register the new directive token in the STABLE CONTRACT header block and extend the
+      `--dry-run` preview to report the dedup outcome. *(completed: both new tokens registered
+      with exit codes 7/8; dry-run now performs the real read-only dedup check and honors its
+      hard stop, verified via fixture runs below)*
 
 **Timing**: 1.25 hours
 
