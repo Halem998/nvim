@@ -231,27 +231,32 @@ than one Rule S failure of this shape exists, handle only the ones that are the 
 
 ---
 
-### Phase 4: Redeploy and clear the doc-lint gate [NOT STARTED]
+### Phase 4: Redeploy and clear the doc-lint gate [COMPLETED]
 
 **Goal**: Propagate the Phase 2 and Phase 3 source-store edits into the deployed
 `.claude/context/index.json` so Rule S and gate 3 actually clear, then confirm 23/23.
 
 **Tasks**:
-- [ ] Run the NON-DESTRUCTIVE deploy: `bash .claude/scripts/deploy-headless.sh` (default mode, no
-      flag). Do NOT pass `--wipe`.
-- [ ] Capture the reported artifact/extension counts.
-- [ ] Confirm `.claude/context/index.json` now contains the `standards/task-reference-exemptions.md`
-      entry and the two corrected `line_count` values.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm zero Rule S failures.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh --findings` and confirm 23/23 with zero FINDING
-      lines.
-- [ ] Confirm the 4 out-of-scope orphan files are still present in the live tree (the default deploy
+- [x] Run the NON-DESTRUCTIVE deploy: `bash .claude/scripts/deploy-headless.sh` (default mode, no
+      flag). Do NOT pass `--wipe`. *(completed: no `--wipe` used)*
+- [x] Capture the reported artifact/extension counts. *(completed: "Resynced 6 extension(s)")*
+- [x] Confirm `.claude/context/index.json` now contains the `standards/task-reference-exemptions.md`
+      entry and the two corrected `line_count` values. *(completed: entry present; 194 and 379
+      confirmed)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm zero Rule S failures.
+      *(completed: all extensions PASS, "PASS: all extensions OK")*
+- [x] Run `bash .claude/scripts/verify-deploy.sh --findings` and confirm 23/23 with zero FINDING
+      lines. *(completed: "[verify-deploy] PASS -- 23 check(s), 0 failure(s)")*
+- [x] Confirm the 4 out-of-scope orphan files are still present in the live tree (the default deploy
       mode removes nothing); record this explicitly so the excluded parity work is demonstrably
-      untouched.
-- [ ] Record the deploy authorization rationale in the summary: this invocation is the declared
+      untouched. *(completed: all 4 confirmed present —
+      `context/orchestration/orchestration-validation.md`,
+      `context/orchestration/subagent-validation.md`, `docs/architecture/architecture-spec.md`,
+      `docs/README.md`)*
+- [x] Record the deploy authorization rationale in the summary: this invocation is the declared
       purpose of this phase, explicitly and deliberately made, with its output logged — not a
       silent side effect of an unrelated operation — and it sets no precedent for any other
-      automated call site.
+      automated call site. *(completed: see implementation summary)*
 
 **Timing**: 0.5 hours
 
@@ -262,7 +267,12 @@ than one Rule S failure of this shape exists, handle only the ones that are the 
 **Scope Hypothesis**: `verify-deploy.sh --findings` currently reports 22/23 with exactly 3 gate-3
 findings and no other gate affected. Re-run it BEFORE deploying to confirm the 22/23 baseline and
 the exact finding set; if any gate other than 3 is red at baseline, that is out of this task's
-scope and must be reported rather than fixed here.
+scope and must be reported rather than fixed here. *(Observed: the 22/23 count matched exactly,
+and only gate 3 was red, but the exact finding set was 1 FINDING line — the Rule S entry for
+`task-reference-exemptions.md` — not 3. The 2 `line_count` mismatches from Phase 2 never
+surfaced as separate gate-3 FINDING lines even before that phase landed; Rule S only enumerates
+missing/orphaned index entries, not line_count numeric drift. This is a narrower-than-estimated
+finding set, not a scope violation — no gate other than 3 was red.)*
 
 **Files to modify**:
 - The deployed `.claude/` tree (regenerated from the source store; no hand-authored writes)
