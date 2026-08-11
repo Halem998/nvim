@@ -60,7 +60,7 @@
       "description": "Reusable scripts and templates for Slidev and PowerPoint projects",
       "path": "templates/",
       "items": [
-        { "name": "playwright-verify", "file": "playwright-verify.mjs", "description": "Playwright slide verification script -- copy to scripts/verify-slides.mjs in each project" },
+        { "name": "playwright-verify", "file": "playwright-verify.mjs", "description": "Required batch verification gate for every slide (deterministic, exit-code-driven) -- copy to scripts/verify-slides.mjs in each project; see slidev-pitfalls.md for the ad hoc MCP debugging capability that complements it" },
         { "name": "pptx-project", "file": "pptx-project/", "description": "PowerPoint generation template with theme mappings and skeleton script", "files": ["theme_mappings.json", "generate_deck.py", "README.md"] }
       ]
     }

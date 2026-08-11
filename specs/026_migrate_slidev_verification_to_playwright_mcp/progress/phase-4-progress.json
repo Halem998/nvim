@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Downstream Reference and Index Consistency Sweep",
+  "started_at": "2026-08-10T00:30:00Z",
+  "last_updated": "2026-08-10T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update talk-modes-and-library.md table row wording", "status": "done", "files_touched": ["agent-system/extensions/present/context/project/present/domain/talk-modes-and-library.md"]},
+    {"id": 2, "description": "Update slidev-project/README.md package.json row wording (dual role)", "status": "done", "files_touched": ["agent-system/extensions/present/context/project/present/talk/templates/slidev-project/README.md"]},
+    {"id": 3, "description": "Update talk/index.json playwright-verify description", "status": "done", "files_touched": ["agent-system/extensions/present/context/project/present/talk/index.json"]},
+    {"id": 4, "description": "Update present/index-entries.json playwright-verify.mjs summary", "status": "done", "files_touched": ["agent-system/extensions/present/index-entries.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Re-ran grep -rni playwright sweep across present and founder; confirmed exactly the 4 asserted sites needed wording changes, no additional sites found."
+}

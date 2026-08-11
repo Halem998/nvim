@@ -964,7 +964,7 @@
         "verify",
         "slides"
       ],
-      "summary": "Playwright slide verification script for Slidev decks",
+      "summary": "Required batch Playwright slide verification script for Slidev decks -- deterministic exit-code gate, complemented (not replaced) by an ad hoc MCP inspection workflow",
       "line_count": 127,
       "load_when": {
         "task_types": [

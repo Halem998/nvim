@@ -26,7 +26,7 @@ The talk library lives at `context/project/present/talk/`. It is registered in
 |-----------|----------|
 | `talk/patterns/` | Slide structure definitions for each talk mode, plus Slidev and python-pptx generation guidance |
 | `talk/contents/` | Slidev-compatible markdown templates for individual slide types (methods, discussion, conclusions, acknowledgments) |
-| `talk/templates/` | Project scaffolds: a Slidev project skeleton, a python-pptx generation project, and a Playwright verification script |
+| `talk/templates/` | Project scaffolds: a Slidev project skeleton, a python-pptx generation project, and the required batch Playwright verification script (`playwright-verify.mjs`) |
 | `talk/components/` | Vue components for Slidev decks: FigurePanel, DataTable, CitationBlock, StatResult, FlowDiagram |
 | `talk/themes/` | Visual themes: academic-clean, clinical-teal, and ucsf-institutional |
 | `talk/critique-rubric.md` | Six-category critique rubric with severity definitions and a talk-type priority matrix |

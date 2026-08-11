@@ -7,7 +7,7 @@ to the project root when creating a new deck.
 
 | File | Purpose |
 |------|---------|
-| `package.json` | Pins `@slidev/cli`, `lz-string`, `vue`, and `playwright-chromium`. Replace `DECK_NAME` and `DECK_DESCRIPTION` with project-specific values. |
+| `package.json` | Pins `@slidev/cli`, `lz-string`, `vue`, and `playwright-chromium` -- the latter is required both by Slidev's own `slidev export` PDF pipeline and by the batch `playwright-verify.mjs` verification script, so it is not a removable duplicate. Replace `DECK_NAME` and `DECK_DESCRIPTION` with project-specific values. |
 | `.npmrc` | Enables `shamefully-hoist=true` for pnpm strict layout compatibility. |
 | `vite.config.ts` | Aliases `lz-string` to the local ESM shim, resolving CJS/ESM incompatibility. |
 | `lz-string-esm.js` | Self-contained ESM build of lz-string (vendored, WTFPL license). |

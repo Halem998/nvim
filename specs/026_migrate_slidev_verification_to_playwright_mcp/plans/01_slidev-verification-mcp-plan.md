@@ -277,27 +277,29 @@ produces the task's primary deliverable.
 
 ---
 
-### Phase 4: Downstream Reference and Index Consistency Sweep [NOT STARTED]
+### Phase 4: Downstream Reference and Index Consistency Sweep [COMPLETED]
 
 **Goal**: Make every remaining pointer to the verification script consistent with the
 keep-plus-add outcome — nothing implying the script was migrated away, nothing pointing at a
 removed path.
 
 **Tasks**:
-- [ ] `present/context/project/present/domain/talk-modes-and-library.md`: update the
+- [x] `present/context/project/present/domain/talk-modes-and-library.md`: update the
       `talk/templates/` table row so the verification script is described as the batch
-      verification mechanism rather than a bare "a Playwright verification script"
-- [ ] `present/context/project/present/talk/templates/slidev-project/README.md`: update the
+      verification mechanism rather than a bare "a Playwright verification script" *(completed)*
+- [x] `present/context/project/present/talk/templates/slidev-project/README.md`: update the
       `package.json` row so `playwright-chromium`'s dual role is explicit — required by Slidev's
       own PDF export **and** used by the batch verification script — so a future reader does not
-      mistake it for a removable duplicate
-- [ ] `present/context/project/present/talk/index.json`: update the `playwright-verify` entry's
+      mistake it for a removable duplicate *(completed)*
+- [x] `present/context/project/present/talk/index.json`: update the `playwright-verify` entry's
       `description` to reflect its status as the required batch verification gate (keeping the
-      existing "copy to scripts/verify-slides.mjs in each project" guidance)
-- [ ] `present/index-entries.json`: update the `project/present/talk/templates/playwright-verify.mjs`
+      existing "copy to scripts/verify-slides.mjs in each project" guidance) *(completed)*
+- [x] `present/index-entries.json`: update the `project/present/talk/templates/playwright-verify.mjs`
       entry's `summary` to match, and confirm its keyword list still resolves for discovery
-- [ ] Do not change any `path`, `file`, or `name` field in either index — no path is being removed
-- [ ] Do not change `line_count` fields (the `.mjs` file itself is untouched)
+      *(completed — keyword list unchanged: playwright, verify, slides)*
+- [x] Do not change any `path`, `file`, or `name` field in either index — no path is being removed
+      *(completed — confirmed via diff and jq re-query)*
+- [x] Do not change `line_count` fields (the `.mjs` file itself is untouched) *(completed — line_count still 127)*
 
 **Timing**: 0.75 hours
 
