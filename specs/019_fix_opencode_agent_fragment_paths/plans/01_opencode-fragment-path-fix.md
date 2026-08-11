@@ -1,7 +1,7 @@
 # Implementation Plan: Fix opencode agent-fragment path resolution and validator fail-fast
 
 - **Task**: 19 - Fix opencode agent-fragment path resolution and validator fail-fast
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/019_fix_opencode_agent_fragment_paths/reports/01_opencode-fragment-path-fix.md`
@@ -122,30 +122,36 @@ Phases within the same wave can execute in parallel. Wave 2 is genuinely paralle
 territory: Phase 2 owns the 11 uniform fragment files, Phase 3 owns `lean` + `present`, Phase 4
 owns `merge.lua`. No two wave-2 phases touch the same file.
 
-### Phase 1: Baseline noise census and measurement harness [NOT STARTED]
+### Phase 1: Baseline noise census and measurement harness [COMPLETED]
 
 **Goal**: Capture the before-state noise numbers, by both measurement arms, before any edit. This
 is the baseline half of the measurement deliverable the sibling task depends on.
 
 **Tasks**:
-- [ ] Census every `{file:...}` reference across all 12 fragments; record the total count and the
+- [x] Census every `{file:...}` reference across all 12 fragments; record the total count and the
       per-fragment breakdown (`grep -o '{file:[^}]*}' agent-system/extensions/*/opencode-agents.json`).
-- [ ] **Structural arm (all 12 fragments, deploy-independent)**: for each fragment, check whether
+      *(completed: measured 34 total references, correcting the research's ~30 estimate)*
+- [x] **Structural arm (all 12 fragments, deploy-independent)**: for each fragment, check whether
       each `{file:...}` basename appears in that extension's `manifest.json` `provides.agents`.
       Record the count of mismatches. Expected baseline: 1 (`present`'s `slides-agent.md`).
-- [ ] **Structural arm, resolvability**: record how many of the referenced paths are readable from
-      the repo root today. Expected baseline: 0.
-- [ ] **Key-parity arm (all 12, deploy-independent)**: run the fragment-keys-vs-manifest symmetric
+      *(completed: measured 1 mismatch, matches expectation)*
+- [x] **Structural arm, resolvability**: record how many of the referenced paths are readable from
+      the repo root today. Expected baseline: 0. *(completed: measured 0/34 resolvable)*
+- [x] **Key-parity arm (all 12, deploy-independent)**: run the fragment-keys-vs-manifest symmetric
       difference that `verify.lua`'s `verify_opencode_json_merge` performs, and record per-extension
       `missing_from_fragment` / `missing_from_manifest`. This is the separate noise source that
-      will partially survive the fix.
-- [ ] **Live arm (loaded extensions only)**: create a temporary `opencode.json.managed` marker at
+      will partially survive the fix. *(completed: epidemiology 2+2, lean 2+0, present 5+1 --
+      matches research's measured numbers)*
+- [x] **Live arm (loaded extensions only)**: create a temporary `opencode.json.managed` marker at
       the repo root, drive `generate_opencode_json` headlessly, and capture (a) the number of
       `WARN` lines it emits and (b) `jq '.agent | keys | length'` of the produced `opencode.json`.
-      Note in the record which extensions were loaded at measurement time.
-- [ ] Delete `opencode.json` and `opencode.json.managed`; confirm `git status --porcelain` shows
-      no new untracked root files.
-- [ ] Write the raw command outputs to the scratchpad and keep them for Phase 6's diff.
+      Note in the record which extensions were loaded at measurement time. *(completed: extensions
+      loaded today with fragments are nix and nvim only; 2 WARN lines, 9 agent keys in generated
+      opencode.json -- zero nix/nvim agents merged)*
+- [x] Delete `opencode.json` and `opencode.json.managed`; confirm `git status --porcelain` shows
+      no new untracked root files. *(completed)*
+- [x] Write the raw command outputs to the scratchpad and keep them for Phase 6's diff.
+      *(completed: scratchpad/phase1-*.txt and phase1-baseline-record.md)*
 
 **Timing**: 0.75 hours
 

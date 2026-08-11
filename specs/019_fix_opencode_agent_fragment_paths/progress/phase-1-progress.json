@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline noise census and measurement harness",
+  "started_at": "2026-08-11T00:00:00Z",
+  "last_updated": "2026-08-11T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Census every {file:...} reference across all 12 fragments", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Structural arm: basename-vs-manifest mismatch count", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Structural arm: resolvability count", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Key-parity arm: fragment-keys-vs-manifest symmetric difference", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Live arm: drive generate_opencode_json headlessly", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Cleanup opencode.json/opencode.json.managed, confirm git status clean", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
