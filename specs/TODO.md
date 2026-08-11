@@ -37,7 +37,7 @@ next_project_number: 28
 
 ### Mcp Integration
 
-25 [PLANNED] — Activate the already-designed but parked Playwright MCP integrati
+25 [IMPLEMENTING] — Activate the already-designed but parked Playwright MCP integrati
 26 [IMPLEMENTING] — Migrate slidev deck screenshot verification from the standalone n
 
 ## Tasks
@@ -115,7 +115,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 25. Activate parked Playwright MCP integration in web extension and reconcile drifted tool list
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: mcp-integration
 - **Dependencies**: Task 23, Task 24

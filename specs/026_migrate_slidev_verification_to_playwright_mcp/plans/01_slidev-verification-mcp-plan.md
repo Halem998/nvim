@@ -1,7 +1,7 @@
 # Implementation Plan: Task #26
 
 - **Task**: 26 - Migrate slidev deck screenshot verification from the standalone npm Playwright script to the live Playwright MCP server
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: 24 (scoped Playwright MCP permission allowlist) — completed
 - **Research Inputs**: specs/026_migrate_slidev_verification_to_playwright_mcp/reports/01_slidev-verification-mcp-migration.md
@@ -122,29 +122,29 @@ Phases within the same wave can execute in parallel. Phases 2 and 3 touch disjoi
 
 ---
 
-### Phase 1: Present Extension Playwright Permission Plumbing [NOT STARTED]
+### Phase 1: Present Extension Playwright Permission Plumbing [COMPLETED]
 
 **Goal**: Give `present` its own scoped Playwright MCP grant, mirroring `web`'s established
 shape, so the ad hoc debugging capability runs without prompting.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/present/settings-fragment.json` containing a single
+- [x] Create `agent-system/extensions/present/settings-fragment.json` containing a single
       `permissions.allow` array with exactly these 9 entries, copied verbatim from
       `agent-system/extensions/web/settings-fragment.json`:
       `mcp__playwright__browser_navigate`, `mcp__playwright__browser_snapshot`,
       `mcp__playwright__browser_take_screenshot`, `mcp__playwright__browser_console_messages`,
       `mcp__playwright__browser_network_requests`, `mcp__playwright__browser_click`,
       `mcp__playwright__browser_type`, `mcp__playwright__browser_find`,
-      `mcp__playwright__browser_wait_for`
-- [ ] Do NOT add an `mcpServers` block — the `playwright` server is registered in user scope
+      `mcp__playwright__browser_wait_for` *(completed)*
+- [x] Do NOT add an `mcpServers` block — the `playwright` server is registered in user scope
       (`~/.claude.json`), independent of any extension; `web`'s fragment likewise declares only
-      `permissions`
-- [ ] Add a `"settings"` entry to `agent-system/extensions/present/manifest.json`'s
+      `permissions` *(completed)*
+- [x] Add a `"settings"` entry to `agent-system/extensions/present/manifest.json`'s
       `merge_targets`, matching `web`'s exactly:
-      `{"source": "settings-fragment.json", "target": ".claude/settings.local.json"}`
-- [ ] Add a `settings-fragment.json` line to the Architecture tree in
+      `{"source": "settings-fragment.json", "target": ".claude/settings.local.json"}` *(completed)*
+- [x] Add a `settings-fragment.json` line to the Architecture tree in
       `agent-system/extensions/present/README.md`, with a comment matching `web/README.md`'s
-      phrasing ("Scoped MCP permission grants (merged into .claude/settings.local.json)")
+      phrasing ("Scoped MCP permission grants (merged into .claude/settings.local.json)") *(completed)*
 
 **Timing**: 0.75 hours
 
