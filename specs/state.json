@@ -171,7 +171,10 @@
         "agent-system/extensions/lean/opencode-agents.json"
       ],
       "created": "2026-08-11T01:16:30Z",
-      "last_updated": "2026-08-11T01:16:30Z"
+      "last_updated": "2026-08-11T01:16:30Z",
+      "dependencies": [
+        19
+      ]
     },
     {
       "project_number": 16,
@@ -583,7 +586,10 @@
       "project_name": "generate_mcp_json_from_extension_manifests",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [],
+      "dependencies": [
+        19,
+        22
+      ],
       "file_scope": [
         "lua/neotex/plugins/ai/shared/extensions/merge.lua",
         "lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua",
@@ -617,7 +623,9 @@
       "project_name": "opencode_extensions_sync_mechanism",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [],
+      "dependencies": [
+        19
+      ],
       "file_scope": [
         ".opencode/extensions/",
         "agent-system/extensions/core/scripts/lint/"

@@ -11,9 +11,11 @@ next_project_number: 33
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,19,20,22,27,28,29,31 | -- | agent-system, extensions, orchestration-concurrency |
-| 2 | 9,13,30 | 17,18,29 | agent-system |
-| 3 | 32 | 28,30,31 | agent-system |
+| 1 | 14,16,17,18,19,20,27,28 | -- | agent-system, extensions, orchestration-concurrency |
+| 2 | 9,13,22,31 | 17,18,19 | agent-system, extensions |
+| 3 | 29 | 22 | agent-system |
+| 4 | 30 | 29 | agent-system |
+| 5 | 32 | 28,30,31 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -37,7 +39,7 @@ next_project_number: 33
 ### Extensions
 
 19 [NOT STARTED] — Reloading extensions in a consuming repo emits roughly 60 lines o
-22 [NOT STARTED] — Silence and correct opencode-agents.json fragment validation spam
+  └─ 22 [NOT STARTED] — Silence and correct opencode-agents.json fragment validation spam
 
 ### Orchestration Concurrency
 
@@ -71,7 +73,7 @@ VERIFICATION: mcp-server-ownership.md exists in the deployed tree; the deployed 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 19
 
 **Description**: Give the .opencode/extensions/ mirror a real generation path from the source store, so it stops silently drifting, and fix the live defect that drift has already produced.
 
@@ -109,7 +111,7 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 19, Task 22
 
 **Description**: Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
 
@@ -315,7 +317,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 19
 
 **Description**: Silence and correct opencode-agents.json fragment validation spam on extension reload.
 
