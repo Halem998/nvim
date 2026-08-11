@@ -39,7 +39,7 @@ next_project_number: 36
 
 ### Extensions
 
-19 [RESEARCHING] — Reloading extensions in a consuming repo emits roughly 60 lines o
+19 [RESEARCHED] — Reloading extensions in a consuming repo emits roughly 60 lines o
   └─ 22 [NOT STARTED] — Silence and correct opencode-agents.json fragment validation spam
 
 ### Orchestration Concurrency
@@ -665,10 +665,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 19. Fix opencode agent-fragment path resolution and validator fail-fast
 - **Effort**: 3h
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [019_fix_opencode_agent_fragment_paths/reports/01_opencode-fragment-path-fix.md]
 
 **Description**: Reloading extensions in a consuming repo emits roughly 60 lines of "Extension '<name>' opencode-agents.json validation failed: Agent '<agent>' references missing file: <path>. Skipping fragment." The resync otherwise succeeds and the Claude Code deploy is correct and complete, so nothing the user relies on today is broken. .opencode/ is NOT currently in use, though the user intends to return to it. Priority is therefore low: the present cost is misleading reload noise, and the real cost is latent, namely that whenever OpenCode is picked back up, 18 agents will be silently missing behind noise that has already been trained into background.
 
