@@ -56,7 +56,7 @@ next_project_number: 52
 ### Orchestration Concurrency
 
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
-33 [RESEARCHED] — Fix two coupled, high-severity run-state-integrity defects in the
+33 [PLANNED] — Fix two coupled, high-severity run-state-integrity defects in the
   └─ 35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
     └─ 37 [NOT STARTED] — Make the concurrency premise handed to per-phase dispatch agents 
 
@@ -624,11 +624,12 @@ Reproduction hint for the implementer: the commit that eventually succeeded was 
 
 ### 33. Give .orchestrator-handoff.json per-dispatch identity and fix the exhausted-loop-guard resume deadlock
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
 - **Research**: [033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md]
+- **Plan**: [033_fix_handoff_identity_and_loop_guard_resume_deadlock/plans/01_handoff-identity-loop-guard-fix.md]
 
 **Description**: Fix two coupled, high-severity run-state-integrity defects in the orchestrator engines. Both were observed live during a real `/orchestrate --hard` run in a separate repository; both are recorded system-defect observations with concrete evidence, not speculation. They are combined into one task because they live in the same two files, share the same co-maintenance contract, and overlap heavily on edit territory.
 

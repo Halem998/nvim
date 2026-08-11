@@ -1,34 +1,31 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "session_id": "sess_1786488637_a3dbe7",
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "planner-agent"],
+  "delegation_depth": 1,
+  "task_number": 33,
+  "task_name": "fix_handoff_identity_and_loop_guard_resume_deadlock",
+  "task_type": "meta",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md",
-      "summary": "Verifies all cited file:line evidence, maps every handoff writer/reader across core/cslib/lean, evaluates candidate identity mechanisms against a still-live predecessor, resolves the Defect B session_id/cycle_count crux (per-task cumulative budget, explicit-override fix rather than a staleness signal or session_id gate), assesses defects 5 and 6, and proposes a shared report-vs-termination pattern file."
+      "type": "plan",
+      "path": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/plans/01_handoff-identity-loop-guard-fix.md",
+      "summary": "13-phase plan closing Defects A (dispatch_seq per-dispatch handoff identity), B (operator-typed budget-continuation override), 5 (sound, wired territory contract), and 6 (handoff-before-marker ordering), with a shared report-vs-termination pattern file, two new regression suites, and a consistency sweep across core, cslib, and lean."
     }
   ],
-  "next_steps": "Run /plan 33 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1786488637_a3dbe7",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"]
-  },
-  "findings_count": 6,
+  "phase_count": 13,
+  "estimated_hours": 16,
+  "dependency_waves": [[1, 2], [3, 5], [4, 6, 8], [7, 9], [10, 11], [12], [13]],
+  "summary": "Phased implementation plan for the coupled handoff-identity and loop-guard-resume defects. Every edit target is under agent-system/extensions/**; the Stage 5 gate is planned as a lockstep verbatim twin across both engines while Defect B's asymmetry is recorded in both rather than mirrored.",
+  "next_steps": "Run /implement 33 to execute the plan",
   "memory_candidates": [
     {
-      "content": "In this repo's orchestrator engines, session_id is minted exactly once per /orchestrate command invocation (common_session_id() at GATE IN) and never regenerated mid-run, so a persisted-file's session_id mismatch is a fully reliable 'this is a different invocation' signal. Despite that reliability, scripts/test-session-runtime-files.sh Case 3 forbids gating cycle_count resets on it, because the loop guard is deliberately a per-task, cross-invocation cumulative budget -- gating on session_id would let an operator bypass MAX_CYCLES by simply re-invoking. When a budget/guard is meant to survive re-invocation by design, a reliable new-invocation signal is still the wrong lever to reset it; the correct fix for genuine exhaustion is an explicit, operator-typed override, not an automatic detector tied to invocation identity.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["session_id", "loop-guard", "cycle_count", "orchestrator", "cross-invocation-state"]
-    },
-    {
-      "content": "A staleness/freshness gate based only on file mtime (mtime < dispatch_start_ts) cannot detect a 'late writer' hazard where a predecessor process wakes and writes AFTER a successor's window opened -- that write has a NEWER mtime than the window start, so it passes the gate meant to catch only OLD (e.g. git-restored) files. Any single-slot shared-state file written by a process that can resume after reporting needs a content-embedded, orchestrator-minted identity (e.g. a monotonic dispatch_seq unknown to the predecessor in advance) rather than relying on timestamp comparison alone.",
+      "content": "When a plan must edit two co-maintained files that are structurally separate reimplementations of each other (the base/hard orchestrate SKILL.md pair), phase them as (a) a leader phase that authors the change in one file, then (b) a follower phase that depends on the leader and copies it verbatim apart from named, enumerated differences (log prefix, self-attribution strings), then (c) a test phase that asserts the parity mechanically. Splitting the pair across phases is only safe when an automated parity assertion exists or is added — otherwise land both in one phase. Separately, when many phases touch the same large file, build the wave table from the union of content dependencies AND file-territory overlap, and state the overlap check explicitly under the table; same-wave phases must touch disjoint file sets or the 'parallel' claim is false.",
       "category": "PATTERN",
-      "source_artifact": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["staleness-gate", "mtime", "handoff", "concurrency", "dispatch-identity"]
+      "source_artifact": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/plans/01_handoff-identity-loop-guard-fix.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["co-maintenance", "verbatim-twin", "phase-dependency-waves", "file-territory", "parity-test", "orchestrate-engines"]
     }
   ]
 }

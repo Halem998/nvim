@@ -753,7 +753,7 @@
     {
       "project_number": 33,
       "project_name": "fix_handoff_identity_and_loop_guard_resume_deadlock",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Give .orchestrator-handoff.json per-dispatch identity and fix the exhausted-loop-guard resume deadlock",
       "topic": "orchestration-concurrency",
@@ -781,10 +781,15 @@
           "path": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md",
           "type": "report",
           "summary": "Verifies cited evidence, maps handoff writers/readers across core/cslib/lean, evaluates identity mechanisms against a still-live predecessor, resolves the loop-guard resume crux, and proposes a shared report-vs-termination pattern file."
+        },
+        {
+          "path": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/plans/01_handoff-identity-loop-guard-fix.md",
+          "type": "plan",
+          "summary": "13-phase plan closing the four defects with a shared report-vs-termination pattern file, two new regression suites, and a consistency sweep across core, cslib, and lean."
         }
       ],
       "created": "2026-08-11T14:50:22Z",
-      "last_updated": "2026-08-11T22:59:44Z",
+      "last_updated": "2026-08-11T23:07:39Z",
       "session_id": "sess_1786488637_a3dbe7"
     },
     {
