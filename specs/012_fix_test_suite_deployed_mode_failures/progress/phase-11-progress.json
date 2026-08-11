@@ -1,0 +1,70 @@
+{
+  "phase": 11,
+  "phase_name": "Repeated-sample verification and the final honest record",
+  "started_at": "2026-08-11T03:10:00Z",
+  "last_updated": "2026-08-11T03:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run verify-deploy.sh 20 consecutive times via a backgrounded driver loop, appending each run's exit code and findings to a log",
+      "status": "in_progress",
+      "files_touched": [],
+      "note": "Driver script at /tmp/claude-1000/-home-benjamin--config-nvim/7f4de83a-1f73-4f31-aa20-2793dd3b8c11/scratchpad/run-verify-deploy-sample.sh, running in background (PID captured at launch), logging to .../phase11-verify-deploy-sample/{summary.log, run-N.log}. A Monitor is armed to notify on completion (~47 min budget). Run 1 (first sample point): exit=1, 1 finding -- gate3 [literature] Rule R line_count mismatch (117 declared / 144 actual), matching the team lead's confirmed pre-existing, out-of-scope literature finding."
+    },
+    {
+      "id": 2,
+      "description": "Report the observed fraction verbatim",
+      "status": "not_started",
+      "files_touched": [],
+      "note": "Pending sample completion."
+    },
+    {
+      "id": 3,
+      "description": "If wall-clock budget exhausted before 20 runs, report actual N and observed fraction",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "For any run reporting findings, capture gate number and verbatim finding text, grouped by frequency",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Confirm gates 3, 5, 8, 10 each pass across the whole sample",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Run check-extension-docs.sh and confirm no new doc-lint failures beyond the pre-existing literature/zotero never-deployed advisory block",
+      "status": "done",
+      "files_touched": [],
+      "note": "Ran standalone (independent of the 20-run sample). Result: literature FAIL for the exact same pre-existing Rule R line_count mismatch (117/144) already confirmed by the team lead as out-of-scope and pre-existing -- not a new failure. All other 19 extensions PASS. Also confirmed the large block of 'script not deployed, skipping drift check' / ADVISORY lines for zotero-*/literature-* scripts under the literature extension is the pre-existing never-deployed advisory block the plan anticipated."
+    },
+    {
+      "id": 7,
+      "description": "Write the residual-failure justification table in the implementation summary",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "State the final counts as measured in the summary's first sentence",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Confirm no deliverable outside specs/** gained a task-number reference (lint gate plus direct grep over every file this plan's phases touched)",
+      "status": "done",
+      "files_touched": [],
+      "note": "bash .claude/scripts/check-task-references.sh: PASS, 0 unexempted occurrences across all 4 scanned trees (agent-system/extensions, .opencode, lua, .memory). Also ran a targeted ad hoc grep over the exact 20 deliverable files this task's phases touched; the two incidental hits (test-update-task-status.sh's pre-existing fixture-assertion string containing 'task 1', and test-errors-append.sh's already task-ref-ok-marked category-3 command-usage example) are both pre-existing, already-exempted content, not introduced by this task, consistent with the canonical checker's clean PASS."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

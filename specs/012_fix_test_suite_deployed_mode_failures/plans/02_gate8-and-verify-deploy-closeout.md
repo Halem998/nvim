@@ -731,7 +731,7 @@ sanctioned deploy, never a hand-write.
 
 ---
 
-### Phase 11: Repeated-sample verification and the final honest record [NOT STARTED]
+### Phase 11: Repeated-sample verification and the final honest record [IN PROGRESS]
 
 **Goal**: Prove the result against a repeated sample rather than a single run, and give every
 remaining failure a written, evidenced justification.
