@@ -180,7 +180,7 @@ notes and consumed by Phases 2, 3, 4, and 6)
 
 ---
 
-### Phase 2: Correct the stale documentation claims [NOT STARTED]
+### Phase 2: Correct the stale documentation claims [COMPLETED]
 
 **Goal**: Remove every extension-doc statement that the Zotero API key is missing, that `zot` is
 not installed, or that the zotero suite is deployed when it is not — and align the version pin
@@ -188,49 +188,52 @@ with the `zot` release confirmed in Phase 1. Satisfies acceptance criterion 1.
 
 **Tasks**:
 
-- [ ] `README.md` "Deployment Status" section: correct the three "Blocked on external `zot` CLI,
+- [x] `README.md` "Deployment Status" section: correct the three "Blocked on external `zot` CLI,
       not installed" / "no configured Zotero API key" reasons for `zotero-read.sh`,
       `zotero-write.sh`, and `zotero-setup.sh`. State the accurate current reason: `zot` v0.10.0
       and a `library+files+write` API key are both available; these scripts are undeployed
-      because the extension itself is not registered in `.claude-extensions.json`.
-- [ ] `README.md`: correct the "Active (deployed byte-for-byte ...)" claim for `cite-extract.sh`,
+      because the extension itself is not registered in `.claude-extensions.json`. *(completed)*
+- [x] `README.md`: correct the "Active (deployed byte-for-byte ...)" claim for `cite-extract.sh`,
       `skill-cite/`, `cite.md`, and `zotero-search.sh` — none of these exist in the live
       `.claude/` tree. State that the whole extension is currently unregistered and that
       `.claude-extensions.json`'s `literature` key is the source of truth for "is this deployed
-      right now", distinct from this table's aspirational record.
-- [ ] `README.md` tool-requirements line (`- **zot** (zotero-cli-cc v0.7.0)`): update the version
+      right now", distinct from this table's aspirational record. *(completed)*
+- [x] `README.md` tool-requirements line (`- **zot** (zotero-cli-cc v0.7.0)`): update the version
       pin to the version recorded in Phase 1, and change "Optional" to reflect that the write
-      path requires it.
-- [ ] `scripts/zotero-write.sh` header: rewrite the "item-add empirical note" paragraph. Remove
+      path requires it. *(completed)*
+- [x] `scripts/zotero-write.sh` header: rewrite the "item-add empirical note" paragraph. Remove
       the "no `zot` binary or configured Zotero account is available in this development
       environment" claim. Keep the envelope-field-names-unconfirmed statement (still true until
       Phase 6 lands) and keep the pointer to `zotero-item-creation.md`. Do not change any
-      executable line of the script in this phase.
-- [ ] `context/project/literature/tools/zotero-scripts.md` header: replace the blanket "and are
+      executable line of the script in this phase. *(completed)*
+- [x] `context/project/literature/tools/zotero-scripts.md` header: replace the blanket "and are
       deployed to `.claude/scripts/`" claim with an accurate statement plus a pointer to the
-      README's Deployment Status section as the nuanced record.
-- [ ] `context/project/literature/patterns/zotero-item-creation.md` section 2: remove the "No
+      README's Deployment Status section as the nuanced record. *(completed)*
+- [x] `context/project/literature/patterns/zotero-item-creation.md` section 2: remove the "No
       `zot` binary, and no configured Zotero API key/account, is present in every development
       environment" claim. Retain the unconfirmed-envelope framing and the "Required follow-up"
-      paragraph — Phase 6 is what closes those.
-- [ ] `context/project/literature/patterns/zotero-item-creation.md` section 1: add the Phase 1
+      paragraph — Phase 6 is what closes those. *(completed)*
+- [x] `context/project/literature/patterns/zotero-item-creation.md` section 1: add the Phase 1
       finding that `zot add --pdf` does not auto-resolve metadata via the API, so `--doi` should
       accompany `--pdf` whenever a DOI is known, and a `--pdf`-only create yields a barer item.
-- [ ] `context/project/literature/patterns/zotero-item-creation.md` section 4: state that when
+      *(completed)*
+- [x] `context/project/literature/patterns/zotero-item-creation.md` section 4: state that when
       Zotero desktop is unreachable, `zot attach` takes the Web-API/cloud route and the local
       `storage/<key>/` copy does not appear until the desktop syncs it down — so the staging-path
       fallback is the expected common case for headless ingest, not a rare failure mode. Note
       that `zot attach` exposes `--via-bridge`/`--no-via-bridge` (auto-detect by default) and
-      that `zotero-write.sh` passes neither.
-- [ ] `context/project/literature/patterns/zotero-item-creation.md` section 6: correct the
-      "which is not installed in this environment either" clause about the real CLI.
-- [ ] `context/project/literature/domain/zotero-integration.md`: grep for and correct any
-      remaining "no API key" / "not installed" / version-pin claims.
-- [ ] Grep the whole extension for residual stale claims:
+      that `zotero-write.sh` passes neither. *(completed)*
+- [x] `context/project/literature/patterns/zotero-item-creation.md` section 6: correct the
+      "which is not installed in this environment either" clause about the real CLI. *(completed)*
+- [x] `context/project/literature/domain/zotero-integration.md`: grep for and correct any
+      remaining "no API key" / "not installed" / version-pin claims. *(completed: no stale claims
+      found in this file — grep returned zero hits)*
+- [x] Grep the whole extension for residual stale claims:
       `grep -rn "not installed\|no API key\|0\.7\.0" agent-system/extensions/literature/` and
       confirm every remaining hit is a legitimate runtime error message (e.g.
       `zotero-read.sh: zot not installed; install via: ...`) rather than a false environment
-      claim.
+      claim. *(completed: every remaining hit across the extension is a runtime dependency-check
+      error string or exit-code doc comment, none asserts this environment lacks `zot`)*
 
 **Timing**: 0.75 hours
 

@@ -32,12 +32,11 @@
 #   2 - ZOTERO_API_KEY not set; zot not installed
 #
 # item-add empirical note: `zot add --pdf`'s exact `data.*` envelope field names (item key,
-# attachment key, storage-path) are NOT independently confirmed in this repository -- no `zot`
-# binary or configured Zotero account is available in this development environment to make a
-# live call. `zotero-write.sh` itself does not need to parse the envelope (it passes `zot`'s
-# stdout straight through, same as every other operation here); the caller
-# (`literature-ingest-online.sh`) is the one that inspects `.data.*` and does so defensively
-# across several plausible field-name candidates. See
+# attachment key, storage-path) are NOT independently confirmed in this repository -- a live
+# call has not yet been made against the production library. `zotero-write.sh` itself does not
+# need to parse the envelope (it passes `zot`'s stdout straight through, same as every other
+# operation here); the caller (`literature-ingest-online.sh`) is the one that inspects `.data.*`
+# and does so defensively across several plausible field-name candidates. See
 # `context/project/literature/patterns/zotero-item-creation.md` for the full note and the
 # required live-confirmation follow-up.
 #

@@ -156,21 +156,28 @@ Scripts are in `.claude/extensions/literature/scripts/zotero-*.sh`.
 This section is the authoritative record of which zotero/cite artifacts are live vs.
 intentionally undeployed, and why (established by the zotero/cite deployment-status audit).
 
-**Active (deployed byte-for-byte from this directory to `.claude/scripts/`, `.claude/skills/`,
-`.claude/commands/`)**:
-- `cite-extract.sh`, `skill-cite/`, `cite.md` — the `/cite` trio, built end-to-end and deployed
+**Active once the extension is registered (deployed byte-for-byte from this directory to
+`.claude/scripts/`, `.claude/skills/`, `.claude/commands/`)**:
+- `cite-extract.sh`, `skill-cite/`, `cite.md` — the `/cite` trio, built end-to-end for deployment
   by the same audit that closed this deployment gap.
 - `zotero-search.sh` — already load-bearing via a source-path fallback in
   `skill-literature/SKILL.md`; deployed for consistency with the other live scripts.
+
+**Deployment status caveat**: as of this writing the literature extension itself is not
+registered in `.claude-extensions.json` (its key is absent from `.extensions`), so none of the
+artifacts above are actually present in the live `.claude/` tree yet — this table records the
+aspirational, post-activation deployment plan, not current fact.
+`jq -r '.extensions.literature.status' .claude-extensions.json` is the source of truth for
+"is this deployed right now"; consult it before relying on anything in this table.
 
 **Inactive (intentionally NOT deployed as part of the zotero suite — remain source-only in this
 directory)**:
 
 | Artifact | Reason |
 |----------|--------|
-| `zotero-read.sh` | Blocked on external `zot` CLI (`zotero-cli-cc`), which is not installed in this environment. No live caller. |
-| `zotero-write.sh` | Blocked on external `zot` CLI, not installed. Now has a live SOURCE-tree caller (`literature-ingest-online.sh`'s `item-add`/`attach-file` calls, added by the online-ingest-bridge work — see `context/project/literature/patterns/zotero-item-creation.md`), but the runtime blocker is unchanged: no `zot` binary or configured Zotero API key is available in this environment to exercise it live. |
-| `zotero-setup.sh` | Blocked on external `zot` CLI, not installed. No live caller. |
+| `zotero-read.sh` | `zot` v0.10.0 and a `library+files+write` API key are both available; this script is undeployed because the extension itself is not registered in `.claude-extensions.json`. No live caller. |
+| `zotero-write.sh` | `zot` v0.10.0 and a `library+files+write` API key are both available; this script is undeployed because the extension itself is not registered in `.claude-extensions.json`. Has a live SOURCE-tree caller (`literature-ingest-online.sh`'s `item-add`/`attach-file` calls, added by the online-ingest-bridge work — see `context/project/literature/patterns/zotero-item-creation.md`). |
+| `zotero-setup.sh` | `zot` v0.10.0 and a `library+files+write` API key are both available; this script is undeployed because the extension itself is not registered in `.claude-extensions.json`. No live caller. |
 | `zotero-chunk.sh` | Superseded by the read-only briefing+tools design; write-back-to-Zotero chunking is orthogonal to the current pipeline. No live caller. |
 | `zotero-attach-chunks.sh` | Superseded by the same read-only design. No live caller. |
 
@@ -252,7 +259,9 @@ Each `index.json` entry in the global repo includes:
 - **pdftotext** (from poppler_utils): Required for PDF conversion
 - **pdfinfo** (from poppler_utils): Used for page count detection
 - **djvutxt** (from djvulibre): Required for DJVU conversion (optional)
-- **zot** (zotero-cli-cc v0.7.0): Optional, for Zotero direct access
+- **zot** (zotero-cli-cc v0.10.0): Required for the Zotero write-back path (`zotero-write.sh`,
+  `zotero-read.sh`, `zotero-setup.sh`); read-only discovery (Mode A Tier 2, `zotero-search.sh`)
+  still works from the CSL-JSON export without it.
 
 Install via Nix: `nix-env -iA nixpkgs.poppler_utils nixpkgs.djvulibre`
 

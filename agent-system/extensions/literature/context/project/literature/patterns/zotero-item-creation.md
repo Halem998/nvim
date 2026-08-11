@@ -22,11 +22,17 @@ The local HTTP API at `127.0.0.1:23119` is confirmed read-only (every endpoint i
 cannot create items. All writes — including `item-add` — go through the Web API via `zot`, using
 the same `$ZOTERO_API_KEY` dependency `zotero-write.sh` already requires for its other operations.
 
+`zot add --help` documents that a `--doi`-driven create fetches metadata (title, authors,
+journal, year, ...) from Crossref before posting, but a `--pdf`-only create does **not**: its
+help text states plainly that metadata is "not auto-resolved by API" for the PDF path. A
+`--pdf`-only create therefore yields a barer item than one created with `--doi` alongside it.
+Whenever a discovery record carries a known DOI, pass `--doi` together with `--pdf` so the
+created item gets Crossref-enriched metadata rather than the bare PDF-derived shell.
+
 ## 2. The `zot add --pdf` envelope's exact `data.*` field names are an unconfirmed empirical unknown
 
-No `zot` binary, and no configured Zotero API key/account, is present in every development
-environment this bridge has been built and tested in so far. This means the item key, attachment
-key, and storage-path field names inside the JSON envelope `zot add --pdf` returns
+A real call against the production library has not yet been made. This means the item key,
+attachment key, and storage-path field names inside the JSON envelope `zot add --pdf` returns
 (`{"ok": bool, "data": {...}, "meta": {...}}` per `zotero-cli-cc`'s documented shape) have **not**
 been independently confirmed against a real call.
 
@@ -86,6 +92,15 @@ If the resolved storage path does not exist (unconfirmed field names above, or t
 landed yet), the bridge falls back to the original staging path and logs this honestly as a
 follow-up rather than claiming a false success.
 
+`zot attach` exposes `--via-bridge`/`--no-via-bridge` (default: auto-detect — bridge when the
+Zotero desktop is reachable, else the Web API); `zotero-write.sh` passes neither, so it always
+takes the auto-detected route. When the Zotero desktop is not running, `zot attach` auto-detects
+the Web-API/cloud route: the file is stored in zotero.org cloud storage and does **not** appear
+in the local `storage/<key>/` tree until the desktop is running and syncs it down (requires
+"Sync attachment files" enabled). On a headless ingest host — where the desktop is routinely not
+running — hitting the staging-path fallback above is therefore the **expected common case**, not
+a rare failure mode.
+
 ## 5. `in_zotero_no_pdf` is an attach-to-existing problem, not a create-item problem
 
 A Tier-2 discovery record with `status == "in_zotero_no_pdf"` refers to an item that **already
@@ -112,7 +127,7 @@ server to that port for testing purposes). To avoid any risk of touching a real 
 library, live-API mocking was abandoned mid-testing. What was verified instead: the honest
 `tier == "absent"` stop path (a safe, read-only real-API call with a fabricated, guaranteed-
 non-matching title), full end-to-end exercise of the create-item path using a stub `zot`
-executable (never the real CLI, which is not installed in this environment either), and code-level
+executable (rather than a real write call against the production library), and code-level
 reuse confirmation that the attach-to-existing path shares every downstream helper
 (`download_and_verify`, `resolve_storage_path_from_envelope`, the `literature-ingest.sh` delegate,
 the metadata patch, and the sub-index upsert) with the already-fully-tested create-item path.

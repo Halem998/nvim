@@ -1,7 +1,9 @@
 # Zotero Script Inventory
 
-The scripts below ship with the literature extension under `scripts/` and are deployed to
-`.claude/scripts/`.
+The scripts below ship with the literature extension under `scripts/`. Deployment to
+`.claude/scripts/` follows from the extension being registered active in
+`.claude-extensions.json`; see the README's "Deployment Status" section for the current,
+per-script live/inactive record — this inventory is not itself a deployment claim.
 
 | Script | Purpose |
 |--------|---------|
