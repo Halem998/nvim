@@ -1,7 +1,7 @@
 # Implementation Plan: Task #24
 
 - **Task**: 24 - Scope Playwright MCP permission allowlist to safe browser tools, solving install-once propagation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: Task 23 (completed - MCP registration/permission ownership boundary)
 - **Research Inputs**: specs/024_scope_playwright_mcp_permission_allowlist/reports/01_scoped-playwright-permission-allowlist.md
@@ -396,33 +396,53 @@ documented at the exact point a future maintainer would otherwise "fix" it away.
 
 ---
 
-### Phase 5: Final gates and no-collateral-change assertions [NOT STARTED]
+### Phase 5: Final gates and no-collateral-change assertions [COMPLETED]
 
 **Goal**: The repository-wide gates pass, the deploy tree is untouched, and
 `core/root-files/settings.json` is confirmed unchanged.
 
 **Tasks**:
-- [ ] Run the doc-lint with an explicit source-store override:
+- [x] Run the doc-lint with an explicit source-store override:
       `cd /home/benjamin/.config/nvim && REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`
       and confirm no new FAIL attributable to `web` or `core`. Pre-existing failures/advisories
       unrelated to this change are recorded, not fixed here.
-- [ ] Run the repo-wide task-reference lint:
+      *(completed: `web` reports PASS. `core` initially reported a NEW FAIL -- a
+      `line_count` mismatch for `patterns/mcp-server-ownership.md` in
+      `core/index-entries.json` (declared 160, actual 183 after Phase 4's edit) -- corrected by
+      updating that one entry's `line_count` to 183 via a targeted Edit (not the global
+      `generate-context-line-counts.sh --write`, which would also have touched the unrelated,
+      pre-existing `literature` mismatch). After the fix, `core`'s only remaining FAIL is
+      `deployed script content drift: scripts/setup-lean-mcp.sh` and a `README.md older than
+      manifest.json` WARN, both pre-existing and unmodified by this task (confirmed via
+      `git log`/`git status` showing neither file touched here); `literature`'s pre-existing FAIL
+      is likewise unrelated and untouched.)*
+- [x] Run the repo-wide task-reference lint:
       `cd /home/benjamin/.config/nvim && bash .claude/scripts/check-task-references.sh` (or its
       source-store equivalent) and confirm it exits 0.
-- [ ] Assert `core/root-files/settings.json` is byte-identical to HEAD:
+      *(completed: PASS, 0 unexempted occurrences across all 4 scanned trees)*
+- [x] Assert `core/root-files/settings.json` is byte-identical to HEAD:
       `git diff --quiet -- agent-system/extensions/core/root-files/settings.json && echo UNCHANGED`
       This is the positive confirmation that the plan's deliberate no-op on that declared
-      `file_scope` entry held.
-- [ ] Assert the deployed tree was never written: `git status --short -- .claude/` produces no
+      `file_scope` entry held. *(completed: printed UNCHANGED)*
+- [x] Assert the deployed tree was never written: `git status --short -- .claude/` produces no
       output attributable to this task, and no `.claude/settings*.json` was edited by hand.
-- [ ] Assert no `mcp__playwright__*` wildcard exists anywhere in the source store:
+      *(completed: no output)*
+- [x] Assert no `mcp__playwright__*` wildcard exists anywhere in the source store:
       `grep -rn 'mcp__playwright__\*' agent-system/extensions/ || echo "no wildcard"`.
-- [ ] Assert the 3 unsafe tools are granted nowhere in the source store:
+      *(completed with a documented refinement: the literal grep finds two matches, both
+      pre-existing-or-benign, neither a permission grant --
+      `web/agents/web-research-agent.md`'s `disallowedTools: mcp__playwright__*` (pre-existing,
+      unmodified by this task, and a denial, the opposite of a grant) and this task's own
+      required Phase 4 prose in `mcp-server-ownership.md` naming the anti-pattern string by
+      example, as Phase 4's own task text mandated. A targeted check of every
+      `settings-fragment.json` in the source store for a wildcard grant found none.)*
+- [x] Assert the 3 unsafe tools are granted nowhere in the source store:
       `grep -rnE 'mcp__playwright__(browser_evaluate|browser_file_upload|browser_run_code_unsafe)' agent-system/extensions/ || echo "none granted"`.
-- [ ] Write the implementation summary, recording: the fixture path and pre-seed contents from
+      *(completed: printed "none granted")*
+- [x] Write the implementation summary, recording: the fixture path and pre-seed contents from
       Phase 3, the merge's `tracked` return value, the idempotency result from the second run, and
       the explicit statement that `core/root-files/settings.json` was intentionally left unchanged
-      with the two-part rationale from the Overview.
+      with the two-part rationale from the Overview. *(completed)*
 
 **Timing**: 0.25 hours
 
@@ -447,24 +467,24 @@ documented at the exact point a future maintainer would otherwise "fix" it away.
 
 ## Testing & Validation
 
-- [ ] `jq empty` passes on `web/settings-fragment.json` and `web/manifest.json`.
-- [ ] The fragment has exactly one top-level key (`permissions`) -- no `mcpServers`, no `ask`, no
+- [x] `jq empty` passes on `web/settings-fragment.json` and `web/manifest.json`.
+- [x] The fragment has exactly one top-level key (`permissions`) -- no `mcpServers`, no `ask`, no
       `deny`.
-- [ ] `permissions.allow` has exactly 9 entries, all prefixed `mcp__playwright__browser_`, no
+- [x] `permissions.allow` has exactly 9 entries, all prefixed `mcp__playwright__browser_`, no
       wildcard.
-- [ ] `browser_evaluate`, `browser_file_upload`, and `browser_run_code_unsafe` appear in no allow
+- [x] `browser_evaluate`, `browser_file_upload`, and `browser_run_code_unsafe` appear in no allow
       list anywhere in `agent-system/extensions/**`.
-- [ ] `merge_targets.settings` in `web/manifest.json` is structurally identical to `nix`'s and
+- [x] `merge_targets.settings` in `web/manifest.json` is structurally identical to `nix`'s and
       `lean`'s, and its declared `source` file exists on disk.
-- [ ] Merging the fragment into a **pre-existing** `.claude/settings.local.json` in a fixture
+- [x] Merging the fragment into a **pre-existing** `.claude/settings.local.json` in a fixture
       project that also has a **pre-existing** `.claude/settings.json` yields all 9 grants while
       preserving the pre-existing allow-list entry and leaving `settings.json` byte-identical.
-- [ ] Re-running the merge produces no duplicate entries (exactly 9 `mcp__playwright__*` entries
+- [x] Re-running the merge produces no duplicate entries (exactly 9 `mcp__playwright__*` entries
       after two runs).
-- [ ] `check-extension-docs.sh` reports no new FAIL for `web` or `core`.
-- [ ] `check-task-references.sh` exits 0.
-- [ ] `agent-system/extensions/core/root-files/settings.json` is unchanged from HEAD.
-- [ ] No file under any `.claude/**` deploy tree was created or modified.
+- [x] `check-extension-docs.sh` reports no new FAIL for `web` or `core`.
+- [x] `check-task-references.sh` exits 0.
+- [x] `agent-system/extensions/core/root-files/settings.json` is unchanged from HEAD.
+- [x] No file under any `.claude/**` deploy tree was created or modified.
 
 ## Artifacts & Outputs
 

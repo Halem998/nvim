@@ -1084,7 +1084,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Registration vs. permission ownership boundary for MCP servers",
-      "line_count": 160,
+      "line_count": 183,
       "keywords": [
         "mcp",
         "registration",

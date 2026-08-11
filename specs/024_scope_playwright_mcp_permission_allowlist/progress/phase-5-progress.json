@@ -1,0 +1,32 @@
+{
+  "phase": 5,
+  "phase_name": "Final gates and no-collateral-change assertions",
+  "started_at": "2026-08-10T01:05:00Z",
+  "last_updated": "2026-08-10T01:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run doc-lint, task-reference lint, root-files/settings.json unchanged assertion, deploy-tree-untouched assertion, wildcard/unsafe-tool grep assertions",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]
+    },
+    {
+      "id": 2,
+      "description": "Write the implementation summary",
+      "status": "done",
+      "files_touched": ["specs/024_scope_playwright_mcp_permission_allowlist/summaries/01_scoped-playwright-permission-allowlist-summary.md"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Phase 4's mcp-server-ownership.md edit grew the file to 183 lines, causing a new doc-lint line_count FAIL against core/index-entries.json's declared 160.",
+      "type": "altered",
+      "reason": "Corrected with a single targeted Edit to the one affected entry rather than running the global generate-context-line-counts.sh --write, which would also have rewritten an unrelated pre-existing literature mismatch out of scope for this task.",
+      "annotation": "*(deviation: altered — corrected index-entries.json line_count for mcp-server-ownership.md)*"
+    }
+  ]
+}
