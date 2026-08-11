@@ -1,9 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/026_migrate_slidev_verification_to_playwright_mcp/summaries/01_slidev-verification-mcp-plan-summary.md",
+      "summary": "Keep-plus-add outcome: playwright-verify.mjs kept as required batch gate, Playwright MCP added as optional ad hoc single-slide debugging capability for present/slidev-assembly-agent, with written justification and consistency sweep."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Gave the present extension its own scoped Playwright MCP permission grant (9-tool enumeration mirroring web's), authorized slidev-assembly-agent to call 4 of those tools for ad hoc single-slide inspection, and added a written justification in slidev-pitfalls.md for keeping playwright-verify.mjs as the required batch verification gate alongside the new ad hoc MCP workflow. Swept 4 downstream doc/index references for wording consistency and confirmed founder needs no functional edit."
+  },
+  "modified_files": [
+    "agent-system/extensions/present/settings-fragment.json",
+    "agent-system/extensions/present/manifest.json",
+    "agent-system/extensions/present/README.md",
+    "agent-system/extensions/present/agents/slidev-assembly-agent.md",
+    "agent-system/extensions/present/context/project/present/talk/patterns/slidev-pitfalls.md",
+    "agent-system/extensions/present/context/project/present/domain/talk-modes-and-library.md",
+    "agent-system/extensions/present/context/project/present/talk/templates/slidev-project/README.md",
+    "agent-system/extensions/present/context/project/present/talk/index.json",
+    "agent-system/extensions/present/index-entries.json",
+    "specs/026_migrate_slidev_verification_to_playwright_mcp/summaries/01_slidev-verification-mcp-plan-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When an extension needs its own scoped MCP permission grant mirroring an existing extension's (e.g. present needing web's Playwright grant), create a new settings-fragment.json in the consuming extension with the exact enumerated tool list copied verbatim, plus a manifest.json merge_targets.settings entry ({\"source\": \"settings-fragment.json\", \"target\": \".claude/settings.local.json\"}), rather than adding the source extension as a dependency. Adding as a dependency pulls in unrelated agents/skills/rules; a wildcard grant (mcp__server__*) is never acceptable when the server has a documented safe/unsafe tool split, per mcp-server-ownership.md's carve-out.",
+      "category": "PATTERN",
+      "source_artifact": "specs/026_migrate_slidev_verification_to_playwright_mcp/summaries/01_slidev-verification-mcp-plan-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["mcp-permission-grant", "settings-fragment", "extension-scoping", "playwright-mcp", "manifest-merge-targets"]
+    },
+    {
+      "content": "check-extension-docs.sh enforces that every index-entries.json entry's declared line_count matches the actual file's line count. Editing a prose file that is also indexed (e.g. a *.md file listed in an extension's index-entries.json) requires updating its line_count field in the same change, or the doc-lint gate regresses. The repo provides generate-context-line-counts.sh --write to auto-fix these, but running it unscoped touches every extension's index -- always diff the result and revert any out-of-scope file it touched before committing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/026_migrate_slidev_verification_to_playwright_mcp/summaries/01_slidev-verification-mcp-plan-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs", "line_count", "index-entries.json", "generate-context-line-counts", "doc-lint"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786426440_e14088",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
