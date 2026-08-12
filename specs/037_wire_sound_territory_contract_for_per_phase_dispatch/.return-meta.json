@@ -1,18 +1,32 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/plans/01_close-residual-territory-gaps.md",
-      "summary": "Six-phase plan closing the two residual territory/handoff gaps: wrap-up.md teardown obligation, territory.md rescope, a recorded base-mode territory decision, and the agent-side STOP-and-report tie-in, with all already-landed work treated as verification-only."
+      "type": "summary",
+      "path": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/summaries/01_close-residual-territory-gaps-summary.md",
+      "summary": "All six phases completed: wrap-up.md teardown obligation, territory.md rescope, recorded base-mode territory decision (mirrored in both engines), STOP-and-report tie-in in both implementation agents, index line-count regeneration, and full acceptance-criteria verification after deploy-headless.sh."
     }
   ],
+  "completion_data": {
+    "completion_summary": "Closed both residual territory/handoff gaps: added a teardown-precedes-handoff obligation to wrap-up.md, rescoped territory.md to its single-phase-dispatch consumer, recorded a mutual base-vs-hard territory decision naming the woken-predecessor blindness of file_scope deferral as an open gap, and tied the STOP-and-report duty into both implementation agents. All five acceptance criteria verified after redeploy."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/context/contracts/territory.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/summaries/01_close-residual-territory-gaps-summary.md"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1786517897_9e95c0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }
