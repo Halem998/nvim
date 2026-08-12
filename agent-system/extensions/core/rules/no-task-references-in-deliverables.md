@@ -1,5 +1,12 @@
 # No Task-Number References in Deliverables
 
+<!-- Deliberately eager (no `paths:` frontmatter): this rule gates writes across the entire
+repo -- any deliverable file, in any location, could be about to receive a task-number
+reference. A glob narrow enough to matter would have to be "**/*", which buys nothing over no
+frontmatter at all (see `source-store-deploy-boundary.md` and `pr-prohibition.md` for the same
+reasoning applied to their own universal-scope rules). This is a deliberate decision recorded
+here during the eager-context-budget audit, not an omission. -->
+
 ## Path Pattern
 
 Applies to: the entire repository EXCEPT `specs/**/*` (task-management artifacts), git commit

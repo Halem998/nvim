@@ -464,41 +464,55 @@ phase does not deploy.
 
 ---
 
-### Phase 7: Redeploy, Re-Measure, and Record the Eager Budget Ceiling [NOT STARTED]
+### Phase 7: Redeploy, Re-Measure, and Record the Eager Budget Ceiling [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Prove the eager surface actually shrank against the deployed tree using the same
 accounting as the baseline, record a numeric ceiling so the next regression is detectable, and
 close every acceptance criterion.
 
 **Tasks**:
-- [ ] Add the in-file "why eager" comment to
+- [x] Add the in-file "why eager" comment to
       `agent-system/extensions/core/rules/no-task-references-in-deliverables.md` (eager by
       omission today, not by a recorded decision), matching `source-store-deploy-boundary.md`'s
       style: this rule gates writes across the entire repo, so any glob narrow enough to matter
-      would have to be `"**/*"`, which buys nothing over no frontmatter.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the `.claude/` tree from source.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and `bash .claude/scripts/check-extension-docs.sh`;
-      both must exit 0. Investigate and fix any failure before measuring.
-- [ ] Re-measure with the Phase 1 canonical command: parent chain, generated `.claude/CLAUDE.md`,
-      the six eager rules individually, and the whole-prefix `cat | wc -c`.
-- [ ] Build the final before/after table covering EVERY file touched (both rules and merge
+      would have to be `"**/*"`, which buys nothing over no frontmatter. *(completed)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the `.claude/` tree from source.
+      *(completed: run 3 times as Phase 7's own source edits landed in two waves)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and `bash .claude/scripts/check-extension-docs.sh`;
+      both must exit 0. Investigate and fix any failure before measuring. *(deviation: altered —
+      both were run and investigated in full; `check-extension-docs.sh` reports exactly one
+      pre-existing FAIL and `verify-deploy.sh` reports exactly two, both confirmed via `git log`
+      to predate this task's Phase 1 baseline commit and to touch files no phase of this plan
+      owns. See baseline-bytes.md's "Post-Deploy Drift Attribution" section for the full
+      investigation and the reasoned decision not to fix out-of-territory drift)*
+- [x] Re-measure with the Phase 1 canonical command: parent chain, generated `.claude/CLAUDE.md`,
+      the six eager rules individually, and the whole-prefix `cat | wc -c`. *(completed:
+      3,815 / 42,798 / 23,547 / 70,160)*
+- [x] Build the final before/after table covering EVERY file touched (both rules and merge
       sources, plus each new companion's size as lazily-loaded content), with absolute bytes and
-      percentage change per file, plus the class totals and the whole-prefix total.
-- [ ] Run the pre-action audit: for each of `git-workflow.md`, `error-handling.md`,
+      percentage change per file, plus the class totals and the whole-prefix total. *(completed,
+      see baseline-bytes.md's Phase 7 section)*
+- [x] Run the pre-action audit: for each of `git-workflow.md`, `error-handling.md`,
       `state-management.md`, `pr-prohibition.md`, re-read the trimmed file against the research
       report's classification table and confirm every row classified pre-action is present.
       Report the audit as a checklist with a locatable quote per item, not as an assertion.
-- [ ] Record the eager budget ceiling in
+      *(completed, see baseline-bytes.md's Pre-Action Audit section)*
+- [x] Record the eager budget ceiling in
       `agent-system/extensions/core/context/architecture/context-layers.md`, as a new bullet or
       short subsection under channel 3 ("Rules `paths:` frontmatter") — the existing home of the
       "absence of frontmatter must be a decision, not an omission" norm. State: the class being
       bounded (rules that eagerly load in a representative session — those gated on `specs/**/*`,
       `.claude/**/*`, `"**/*"`, or no frontmatter), the numeric ceiling, the measurement command,
       and the measured figure at the time of writing. Recommended ceiling is 20,000 B; state the
-      ceiling only after measuring, and never state one the tree already violates.
-- [ ] Diff the post-deploy `.claude/` tree and attribute every change to a named phase. Report any
-      unattributable drift rather than absorbing it.
-- [ ] In the implementation summary, record verbatim the correction to hand to the
+      ceiling only after measuring, and never state one the tree already violates. *(deviation:
+      altered — the achieved six-rule total (23,547 B) exceeded 20,000 B, so per the plan's own
+      Risk table the ceiling was recorded at 24,000 B (achieved + headroom) instead, with the
+      reasoning recorded in-file, rather than stating a ceiling the tree already violates)*
+- [x] Diff the post-deploy `.claude/` tree and attribute every change to a named phase. Report any
+      unattributable drift rather than absorbing it. *(completed: `.claude/` is git-ignored, so
+      attribution rests on content-hash-equality PASS plus per-phase commit history; one
+      pre-existing unattributable item found and reported — see baseline-bytes.md)*
+- [x] In the implementation summary, record verbatim the correction to hand to the
       eager-context measurement-harness task: its stated model ("rules lacking `paths:` frontmatter
       or carrying `paths: "**/*"`") catches only 8,863 B of the measured 30,518 B, missing
       `git-workflow.md`, `artifact-formats.md`, and `state-management.md` (21,655 B combined,
@@ -506,10 +520,10 @@ close every acceptance criterion.
       match a real session's touched paths. The harness must glob-MATCH each rule's `paths:` value
       against a representative touched-path set (at minimum `specs/**` and `.claude/**`), not
       merely check for absent-or-universal frontmatter. Record only; make no edit to that task's
-      territory.
-- [ ] Note in the summary that `artifact-formats.md` and core's `merge-sources/claudemd.md` were
+      territory. *(completed, recorded in baseline-bytes.md and the implementation summary)*
+- [x] Note in the summary that `artifact-formats.md` and core's `merge-sources/claudemd.md` were
       audited and deliberately left untouched, with the reason, so a future reader does not read
-      their absence as an oversight.
+      their absence as an oversight. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -540,22 +554,34 @@ shortfall is a finding to report with its cause, not a reason to cut a KEEP-list
 - The ceiling statement in `context-layers.md` names a number, a class, and a measurement command,
   and the measured figure is at or below it.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` exits 0 | Two of 23 checks FAIL, both confirmed pre-existing and outside this plan's territory contract (no phase of this plan owns `context/contracts/**` or `specs/state.json`). Check 3 (doc-lint): `context/contracts/return-meta-artifacts-template.md` has no `index-entries.json` entry — added by an earlier, unrelated commit and apparently never deployed before this task's own redeploy first surfaced it. Check 10 (`validate-state.sh --deep`): 4 unknown `active_projects[]` fields (`blockers`, `parent_task`, `priority`, `subtasks`) already present in `specs/state.json` at this task's own Phase 1 baseline commit. Fixing either would mean editing files this plan's territory contract does not own, contradicting the plan's own Risk-table instruction to report unattributable drift rather than absorb it. | `git log -- agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md` shows the file was added by a prior, unrelated "record contract posture" commit with no accompanying index entry. `git show 3a2e795a2ac2004ab80f1169ffaad7565902fa97 -- specs/state.json` (this task's Phase 1 baseline HEAD, the "expand into subtasks" commit) shows the 4 unknown fields already present before Phase 1 ran. A clean re-run of `verify-deploy.sh` after all 7 phases (no concurrent deploys) reports exactly these same 2 failures and no others: `/tmp/verify-deploy-final2.log`, 21/23 PASS including check 5's content-hash-equality PASS (proves every file this plan touched deployed correctly) and check 8's shell-test-suite PASS (42/42, confirming an earlier transient 3rd failure was concurrent-deploy contention, not a regression). |
+| `check-extension-docs.sh` exits 0 | Same root cause as the `verify-deploy.sh` row above — the doc-lint FAIL is check 3 of that same run. Isolated confirmation: `bash .claude/scripts/check-extension-docs.sh` run standalone after the final redeploy reports `core PASS`, `cslib PASS`, and exactly one `project-wide FAIL` for the pre-existing Rule S item. | Direct standalone run, captured above in `baseline-bytes.md`'s Phase 7 section: `core PASS / cslib PASS / project-wide FAIL: Rule S: ... return-meta-artifacts-template.md ...`. |
+
 ---
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 after the redeploy.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0 (covers index Rules R/S/T for every
-      new companion and the relocated CSLib file).
-- [ ] `bash .claude/scripts/generate-context-line-counts.sh --check` reports no `line_count` drift.
-- [ ] `bash .claude/scripts/lint/lint-agent-contracts.sh` exits 0 (agent contracts reference
-      several of the trimmed rules).
-- [ ] Reference sweep: `grep -rn "git-workflow\|error-handling\|state-management\|pr-prohibition" agent-system/extensions/ --include=*.md`
-      surfaces no pointer to a heading or paragraph that no longer exists.
-- [ ] Pre-action audit passes for all four trimmed rules, with a locatable quote per retained
-      constraint.
-- [ ] Whole-prefix byte figure measured against the redeployed tree and recorded.
-- [ ] The relocated CSLib content is present and intact in the `cslib` extension.
+- [x] `bash .claude/scripts/verify-deploy.sh` exits 0 after the redeploy. *(deviation: altered —
+      21/23 checks pass; 2 pre-existing, out-of-territory failures remain, see Phase 7's
+      `#### Reasoned Exclusions`)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0 (covers index Rules R/S/T for every
+      new companion and the relocated CSLib file). *(deviation: altered — `core`/`cslib` both
+      PASS; one pre-existing `project-wide` FAIL remains, see Phase 7's `#### Reasoned Exclusions`)*
+- [x] `bash .claude/scripts/generate-context-line-counts.sh --check` reports no `line_count` drift.
+      *(completed: 486/486 exact)*
+- [x] `bash .claude/scripts/lint/lint-agent-contracts.sh` exits 0 (agent contracts reference
+      several of the trimmed rules). *(completed: 106 passed, 0 failed)*
+- [x] Reference sweep: `grep -rn "git-workflow\|error-handling\|state-management\|pr-prohibition" agent-system/extensions/ --include=*.md`
+      surfaces no pointer to a heading or paragraph that no longer exists. *(completed)*
+- [x] Pre-action audit passes for all four trimmed rules, with a locatable quote per retained
+      constraint. *(completed, see baseline-bytes.md)*
+- [x] Whole-prefix byte figure measured against the redeployed tree and recorded. *(completed:
+      70,160 B, down from 80,808 B)*
+- [x] The relocated CSLib content is present and intact in the `cslib` extension. *(completed)*
 
 ## Artifacts & Outputs
 

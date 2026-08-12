@@ -1,0 +1,39 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy, Re-Measure, and Record the Eager Budget Ceiling",
+  "started_at": "2026-08-12T02:00:00Z",
+  "last_updated": "2026-08-12T02:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add why-eager comment to no-task-references-in-deliverables.md", "status": "done", "files_touched": [
+      "agent-system/extensions/core/rules/no-task-references-in-deliverables.md"
+    ]},
+    {"id": 2, "description": "Run deploy-headless.sh (x3), verify-deploy.sh, check-extension-docs.sh; investigate and attribute all failures", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-measure canonical figures, build final before/after table, pre-action audit", "status": "done", "files_touched": [
+      "specs/054_split_eager_rules_budget/baseline-bytes.md"
+    ]},
+    {"id": 4, "description": "Record eager budget ceiling in context-layers.md", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/architecture/context-layers.md",
+      "agent-system/extensions/core/index-entries.json"
+    ]},
+    {"id": 5, "description": "Record Reasoned Exclusions for the two pre-existing verify-deploy.sh failures", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.verification",
+      "description": "verify-deploy.sh and check-extension-docs.sh exit 0",
+      "type": "altered",
+      "reason": "Two pre-existing, out-of-territory failures (Rule S on a task-52 file, validate-state.sh --deep on task-49-introduced state.json fields) confirmed via git log to predate this task's Phase 1 baseline; reported per the plan's own Risk-table instruction rather than fixed out of territory.",
+      "annotation": "*(deviation: altered — 21/23 and core/cslib PASS respectively; see Phase 7's Reasoned Exclusions)*"
+    },
+    {
+      "task_id": "7.ceiling",
+      "description": "Record eager budget ceiling at 20,000 B after measuring",
+      "type": "altered",
+      "reason": "Achieved six-rule total (23,547 B) exceeded the originally-recommended 20,000 B, so per the plan's own Risk table the ceiling was set at 24,000 B (achieved + headroom) instead, with reasoning recorded in-file.",
+      "annotation": "*(deviation: altered — ceiling recorded at 24,000 B, not 20,000 B)*"
+    }
+  ]
+}

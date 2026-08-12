@@ -161,6 +161,31 @@ eager (in the session-start prompt prefix, paid on every invocation) or lazy (lo
      matching write reaches the tool layer has not been empirically established here. Before
      gating any rule whose value depends on pre-write timing (i.e. any enforcement rule), run an
      empirical test; do not assume either timing.
+   - **Eager budget ceiling**: the class being bounded is every `rules/*.md` file that eagerly
+     loads in a representative session — no `paths:` frontmatter, or a `paths:` glob (`specs/**/*`,
+     `.claude/**/*`, or `"**/*"`) that matches a representative touched-path set (at minimum
+     `specs/**` and `.claude/**` — see the eager-context measurement-harness correction in
+     `specs/054_split_eager_rules_budget/baseline-bytes.md` for why a narrower
+     "absent-or-universal-only" check under-counts this class). Measurement command:
+     `cat ~/.config/CLAUDE.md ~/.config/nvim/CLAUDE.md .claude/CLAUDE.md .claude/rules/git-workflow.md .claude/rules/artifact-formats.md .claude/rules/state-management.md .claude/rules/pr-prohibition.md .claude/rules/source-store-deploy-boundary.md .claude/rules/no-task-references-in-deliverables.md | wc -c`
+     for the whole-prefix figure, or sum `wc -c` over just the six named rules for the class total
+     alone. Measured class total at the time of writing (after a split-and-relocate pass over the
+     four largest rules): **23,547 B** (six rules), whole-prefix **70,160 B** — down from a prior
+     30,518 B / 80,808 B baseline, but the six-rule total still exceeds the originally-recommended
+     20,000 B figure by 3,547 B: the KEEP-list discipline that split pass followed (preserve every
+     forbidden-operations list, write-gating prohibition, and terminal-state restriction in full,
+     never trim a pre-action constraint to hit a byte target) landed each eager core somewhat
+     larger than the pre-split hypothesis. **The ceiling for this class is therefore set at
+     24,000 B** (achieved 23,547 B plus a small stated headroom), not the original 20,000 B
+     recommendation — stating a ceiling the tree already violates would be worse than no ceiling.
+     A future change that pushes the six-rule class total above 24,000 B should trigger the same
+     split-and-relocate treatment documented in `context/standards/git-workflow-narrative.md`,
+     `context/standards/error-recovery-strategies.md`, and the CSLib
+     `context/project/cslib/pr-command-workflow.md` relocation: move reactive/elaborative content
+     to a lazily-loaded companion, keep only pre-action-binding constraints eager. Closing the
+     remaining gap to a stricter ceiling would require either revisiting the KEEP-list discipline
+     above (risky — it exists to prevent constraint loss) or the `artifact-formats.md`
+     Example-Flow trim (~700 B, audited but deliberately left untouched by this split pass).
 
 4. **Preflight injection (per-invocation, command-scoped)**. Memory retrieval
    (`<memory-context>`, suppressed by `--clean`) and literature briefing (`--lit`) are injected

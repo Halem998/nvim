@@ -26,7 +26,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "Context layer architecture overview",
-      "line_count": 194,
+      "line_count": 219,
       "keywords": [
         "context",
         "layers",
