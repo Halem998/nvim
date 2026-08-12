@@ -1,7 +1,48 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 58,
-  "session_id": "sess_1786569271_8c6819",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/058_add_version_consistency_gate_to_tag/summaries/01_version-consistency-gate-summary.md",
+      "summary": "Implementation summary for the /tag version-consistency gate: Step 3.5 in skill-tag/SKILL.md, commands/tag.md doc parity, 10-fixture extraction verification, and 12-cell end-to-end outcome matrix."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a fail-closed version-consistency gate (Step 3.5) to skill-tag/SKILL.md between Step 3 and Step 4, with bounded-depth multi-ecosystem manifest detection (pyproject.toml, setup.cfg, setup.py, package.json, Cargo.toml), a --skip-version-check escape hatch, three Error Handling transcripts, and matching commands/tag.md Workflow/Requirements/Usage updates. Verified against a 10-case fixture set and a 12-cell (3 repos x 4 invocation modes) end-to-end outcome matrix, with the deployed .claude/ copies confirmed byte-identical to the source store after redeploy."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-tag/SKILL.md",
+    "agent-system/extensions/core/commands/tag.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Portable, ecosystem-general shell one-liners to read a package's declared version without a language runtime, verified sandbox-safe (sed/grep/jq only, no GNU-awk 3-arg match()): pyproject.toml (PEP 621) -- `sed -n '/^\\[project\\]/,/^\\[/p' f | grep -m1 '^version[[:space:]]*=' | sed -E 's/^version[[:space:]]*=[[:space:]]*\"([^\"]*)\".*/\\1/'` (section-scoped so a later [tool.poetry] table never false-matches); setup.cfg [metadata] with the same pattern minus quotes; setup.py via a best-effort literal-kwarg grep (correctly yields empty, not a false positive, for programmatic versions); package.json via `jq -r '.version // empty'`; Cargo.toml [package] with the pyproject-style pattern (correctly yields empty for `version.workspace = true`, since the `.` breaks the anchor). All five fall through to empty (not a false match) for the 'version not statically declared here' cases (PEP 621 dynamic, Cargo workspace inheritance) -- treat that as an honest signal, not a bug to work around.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/058_add_version_consistency_gate_to_tag/summaries/01_version-consistency-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["version-detection", "pyproject-toml", "package-json", "cargo-toml", "portable-shell", "manifest-discovery"]
+    },
+    {
+      "content": "When a skill/command markdown file documents a shell step's expected output as an 'Error Handling' transcript, verify the transcript by diffing it token-by-token against the actual `echo` string literals in that step's code block -- do not write the transcript from a design doc's suggested wording and assume it matches. A transcript documenting a message the code does not actually emit is worse than no transcript, because it looks authoritative. When multiple discovered items (not just one) can appear in a mismatch report, an inline single-value 'Error: X does not match Y' line does not generalize -- move the enumerable facts to a separate labeled list below the Error line instead of forcing them into one interpolated sentence.",
+      "category": "PATTERN",
+      "source_artifact": "specs/058_add_version_consistency_gate_to_tag/summaries/01_version-consistency-gate-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["error-transcripts", "doc-code-parity", "skill-md", "verification", "multi-item-error-messages"]
+    },
+    {
+      "content": "To end-to-end test a new shell step embedded in a skill's markdown documentation before trusting it, extract the step's code block verbatim by line-range (sed -n '<start>,<end>p') directly from the source-store .md file -- not a hand-retyped copy -- and assemble it with the preceding steps' variable-setup blocks (also extracted verbatim) into a runnable harness script. This proves the *actual documented code* works, including its interaction with sibling steps' variables, rather than testing a paraphrase that could silently diverge from what ships.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/058_add_version_consistency_gate_to_tag/summaries/01_version-consistency-gate-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["shell-testing", "skill-md-verification", "harness-extraction", "sed-line-range", "end-to-end-testing"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786569271_8c6819",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
