@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "artifacts": [
     {
       "type": "plan",
@@ -7,15 +7,12 @@
       "summary": "Six-phase plan closing the two residual territory/handoff gaps: wrap-up.md teardown obligation, territory.md rescope, a recorded base-mode territory decision, and the agent-side STOP-and-report tie-in, with all already-landed work treated as verification-only."
     }
   ],
-  "next_steps": "Run /implement 37 to execute the plan",
   "metadata": {
-    "session_id": "sess_1786517897_9e95c0_37",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 2.75,
-    "dependency_waves": [[1], [2, 3, 4], [5], [6]]
-  },
-  "memory_candidates": []
+    "session_id": "sess_1786517897_9e95c0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }

@@ -1,0 +1,54 @@
+{
+  "phase": 1,
+  "phase_name": "Verify Landed State (No Edits)",
+  "started_at": "2026-08-12T07:59:37Z",
+  "last_updated": "2026-08-12T08:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm hard engine's territory dispatch key and concurrency_note",
+      "status": "done",
+      "files_touched": [],
+      "note": "grep -n territory skill-orchestrate-hard/SKILL.md: hits at frontmatter description (L3), context pointer (L90), dispatch-context 'territory' key (L814), owned_files/read_only_files/forbidden_files, concurrency_note. Parallel Wave Dispatch DISABLED section present at L954-969 (H7 reference). concurrency_note verbatim: \"This declaration asserts only which files THIS dispatch owns. It does NOT assert exclusive access -- a still-live predecessor may exist. If you observe foreign commits, foreign uncommitted modifications, or a running build you did not start, STOP and report it rather than proceeding or dismissing it. See context/contracts/territory.md and context/patterns/dispatch-report-not-termination.md.\""
+    },
+    {
+      "id": 2,
+      "description": "Confirm territory.md Template carries locally-checkable sentence, STOP-and-report instruction, Explicit removal note",
+      "status": "done",
+      "files_touched": [],
+      "note": "Confirmed at lines 93 (asserts only what is locally checkable), 99 (STOP and report it), 103 (Explicit removal note)."
+    },
+    {
+      "id": 3,
+      "description": "Confirm report != termination model stated in exactly one place",
+      "status": "done",
+      "files_touched": [],
+      "note": "grep -rln dispatch-report-not-termination agent-system/ | wc -l = 23 referencing files. ls agent-system/extensions/*/context/patterns/dispatch-report-not-termination.md returns exactly one path: agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md. Phase 6 baseline: 23 referencing files, 1 canonical file."
+    },
+    {
+      "id": 4,
+      "description": "Confirm lean and cslib hard agents reference the pattern file",
+      "status": "done",
+      "files_touched": [],
+      "note": "One hit each: lean-implementation-hard-agent.md:277, cslib-implementation-hard-agent.md:313."
+    },
+    {
+      "id": 5,
+      "description": "Confirm general-implementation-hard-agent.md Stage 3.6 exists, gated correctly, exactly four steps",
+      "status": "done",
+      "files_touched": [],
+      "note": "Stage 3.6 at line 144, gate 'If territory parameters were provided in delegation context', four numbered steps (read contract, verify owned_files, note blockers, read_only_files for outside reads). None mentions foreign commits/modifications/builds. Precondition for Phase 5 confirmed."
+    },
+    {
+      "id": 6,
+      "description": "Restate source-store boundary before editing phases begin",
+      "status": "done",
+      "files_touched": [],
+      "note": "All Phases 2-6 edits target agent-system/extensions/** only, per file scope in delegation context. No .claude/** hand-edit planned."
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #37
 
 - **Task**: 37 - Close the two residual gaps left by the territory/handoff work
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: 33, 35 (both landed)
 - **Research Inputs**: specs/037_wire_sound_territory_contract_for_per_phase_dispatch/reports/01_close-two-residual-gaps.md
@@ -109,37 +109,37 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Verify Landed State (No Edits) [NOT STARTED]
+### Phase 1: Verify Landed State (No Edits) [COMPLETED]
 
 **Goal**: Cheaply re-confirm all five already-landed items so the rest of the plan proceeds on a
 checked foundation, and produce the exact `concurrency_note` text Phase 4 may need to reuse
 verbatim. This phase writes no repository files.
 
 **Tasks**:
-- [ ] Confirm the hard engine's `territory` dispatch key and `concurrency_note`:
+- [x] Confirm the hard engine's `territory` dispatch key and `concurrency_note`:
       `grep -n territory agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`
       Expect hits at the frontmatter description, the H7 bullet, the context pointer, the Stage 4
       dispatch-context comment, the `"territory"` key, its `concurrency_note`, and the
       Parallel-Wave-Disabled section. Copy the `concurrency_note` string verbatim into scratch for
-      Phase 4's possible reuse. Do NOT edit it.
-- [ ] Confirm `context/contracts/territory.md`'s Template still carries the "asserts only what is
+      Phase 4's possible reuse. Do NOT edit it. *(completed: verified, all expected hits present, concurrency_note copied to progress/phase-1-progress.json)*
+- [x] Confirm `context/contracts/territory.md`'s Template still carries the "asserts only what is
       locally checkable" sentence, the STOP-and-report instruction, and the "Explicit removal note"
-      anti-regression clause. Do NOT edit them in this phase.
-- [ ] Confirm the "report != termination" model is stated in exactly one place:
+      anti-regression clause. Do NOT edit them in this phase. *(completed: confirmed at lines 93, 99, 103)*
+- [x] Confirm the "report != termination" model is stated in exactly one place:
       `grep -rln "dispatch-report-not-termination" agent-system/ | wc -l` returns a nonzero
       referencing-file count, and `ls agent-system/extensions/*/context/patterns/dispatch-report-not-termination.md`
-      returns exactly one file. Record both numbers as the Phase 6 baseline.
-- [ ] Confirm the lean and cslib hard agents still reference the pattern file:
+      returns exactly one file. Record both numbers as the Phase 6 baseline. *(completed: 23 referencing files, exactly 1 canonical pattern file)*
+- [x] Confirm the lean and cslib hard agents still reference the pattern file:
       `grep -n "dispatch-report-not-termination" agent-system/extensions/lean/agents/lean-implementation-hard-agent.md agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md`
-      Expect one hit in each. No extension fan-out is required; do not add any.
-- [ ] Confirm `general-implementation-hard-agent.md` Stage 3.6 exists, is gated on
+      Expect one hit in each. No extension fan-out is required; do not add any. *(completed: one hit in each)*
+- [x] Confirm `general-implementation-hard-agent.md` Stage 3.6 exists, is gated on
       `If territory parameters were provided in delegation context`, and has exactly four numbered
       steps none of which mentions foreign commits/modifications/builds. This is the precondition
-      for Phase 5's correction.
-- [ ] Restate the source-store boundary before any editing phase begins: every edit in Phases 2-6
-      targets `agent-system/extensions/**`. No `.claude/**` file is hand-edited at any point.
-- [ ] If ANY of the above verifications fails (the landed state is not as research reported),
-      STOP and report rather than proceeding — the remaining phases assume this foundation.
+      for Phase 5's correction. *(completed: confirmed at line 144, four steps, gate intact)*
+- [x] Restate the source-store boundary before any editing phase begins: every edit in Phases 2-6
+      targets `agent-system/extensions/**`. No `.claude/**` file is hand-edited at any point. *(completed)*
+- [x] If ANY of the above verifications fails (the landed state is not as research reported),
+      STOP and report rather than proceeding — the remaining phases assume this foundation. *(completed: none failed, proceeding)*
 
 **Timing**: 20 minutes
 
