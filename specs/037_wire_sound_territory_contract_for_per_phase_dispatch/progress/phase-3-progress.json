@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Rescope territory.md to Its Actual Consumer",
+  "started_at": "2026-08-12T08:20:00Z",
+  "last_updated": "2026-08-12T08:28:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Atomic batch: rescope territory.md opening paragraph and Template preamble, plus conditional index-entries.json summary update",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/territory.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "note": "Opening paragraph rewritten to name skill-orchestrate-hard single-phase dispatch as shipped consumer while retaining H7 identifier and parallel-dispatch applicability. Template preamble changed from 'each parallel dispatch context' to 'each dispatch context'. index-entries.json summary field updated to drop 'for parallel dispatch' framing (contradicted rescoped opening). Verified: grep -n H7 still hits; grep for 'exclusive access|no other agent is active' returns only the anti-regression note's own quoted examples; jq empty passes. Read top-to-bottom: opening and Template preamble agree."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

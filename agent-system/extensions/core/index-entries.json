@@ -2475,7 +2475,7 @@
       "path": "contracts/territory.md",
       "domain": "core",
       "subdomain": "contracts",
-      "summary": "H7 territory contract: file ownership, plan-section territory, commit protocol for parallel dispatch",
+      "summary": "H7 territory contract: file ownership, plan-section territory, commit protocol for hard-mode single-phase dispatch (also applicable to parallel dispatch)",
       "line_count": 107,
       "keywords": [
         "territory",

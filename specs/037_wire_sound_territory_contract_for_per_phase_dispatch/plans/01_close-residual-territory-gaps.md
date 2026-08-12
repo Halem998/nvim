@@ -207,34 +207,34 @@ criterion 1.
 
 ---
 
-### Phase 3: Rescope territory.md to Its Actual Consumer [NOT STARTED]
+### Phase 3: Rescope territory.md to Its Actual Consumer [COMPLETED]
 
 **Goal**: Make `context/contracts/territory.md`'s opening scope and Template preamble accurately
 describe how the contract is consumed today — single-phase hard-mode dispatch — satisfying
 acceptance criterion 3.
 
 **Tasks**:
-- [ ] Edit the opening paragraph of
+- [x] Edit the opening paragraph of
       `agent-system/extensions/core/context/contracts/territory.md` (currently "This contract
       implements H7: Territory Contracts for Parallel Dispatch. It governs file ownership and
       commit coordination when multiple agents are dispatched simultaneously to work on different
       phases of the same plan.") so it states that the contract's shipped consumer today is
       `skill-orchestrate-hard`'s single-phase dispatch, while remaining applicable to parallel
       dispatch should it be re-enabled. Retain the `H7` identifier — it is asserted by
-      `lint-contract-compliance.sh`.
-- [ ] Edit the Template preamble (currently "The orchestrator includes this in each parallel
+      `lint-contract-compliance.sh`. *(completed)*
+- [x] Edit the Template preamble (currently "The orchestrator includes this in each parallel
       dispatch context:") so it reads as each dispatch context, not each *parallel* dispatch
-      context.
-- [ ] Treat both edits as ONE change: the file must not be left describing single-phase dispatch in
-      one place and parallel-only dispatch in the other.
-- [ ] Leave the "File Territory", "Plan-Section Territory", "Commit Protocol", "Handoff Merge
+      context. *(completed)*
+- [x] Treat both edits as ONE change: the file must not be left describing single-phase dispatch in
+      one place and parallel-only dispatch in the other. *(completed: verified by top-to-bottom read)*
+- [x] Leave the "File Territory", "Plan-Section Territory", "Commit Protocol", "Handoff Merge
       Rule", the Template body, and the "Explicit removal note" untouched. In particular, do not
       weaken or reword the Template's "does NOT assert that no other agent is concurrently active"
-      sentence or the STOP-and-report instruction.
-- [ ] Update the `contracts/territory.md` `summary` field in
+      sentence or the STOP-and-report instruction. *(completed: only the two named sites touched)*
+- [x] Update the `contracts/territory.md` `summary` field in
       `agent-system/extensions/core/index-entries.json` if its "for parallel dispatch" wording now
       contradicts the rescoped opening. Do not touch its `line_count` here — Phase 6 regenerates
-      all line counts mechanically.
+      all line counts mechanically. *(completed: summary updated, line_count untouched)*
 
 **Timing**: 30 minutes
 
