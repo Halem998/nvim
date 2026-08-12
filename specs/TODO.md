@@ -56,7 +56,7 @@ next_project_number: 53
 
 ### Orchestration Concurrency
 
-37 [NOT STARTED] — Close the two residual gaps left by the territory/handoff work. T
+37 [RESEARCHED] — Close the two residual gaps left by the territory/handoff work. T
 
 ### Context Loading
 
@@ -450,10 +450,11 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 37. Replace the unsound no-concurrency premise with a wired, checkable territory contract for per-phase dispatch
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 33, Task 35
+- **Research**: [037_wire_sound_territory_contract_for_per_phase_dispatch/reports/01_close-two-residual-gaps.md]
 
 **Description**: Close the two residual gaps left by the territory/handoff work. This task was originally scoped as "wire a sound territory contract into per-phase dispatch." That wiring has since LANDED as part of the handoff-identity and loop-guard work, which folded this defect in as its DEFECT 5. Most of the original scope is therefore already satisfied. Two verified gaps remain, and they are the entire remaining deliverable.
 
