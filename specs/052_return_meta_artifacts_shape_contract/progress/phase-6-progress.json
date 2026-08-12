@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "phase_name": "Close the Handoff-Present Detection Hole",
+  "started_at": "2026-08-12T00:00:00Z",
+  "last_updated": "2026-08-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add advisory ARTIFACTS_SHAPE_MISMATCH probe to skill-orchestrate/SKILL.md Stage 5 handoff-present branch, rewrite residual-gap note", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Add matching probe to skill-orchestrate-hard/SKILL.md after determining it has the identical gap", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.5",
+      "description": "Scope Hypothesis asserted skill-orchestrate-hard/SKILL.md already computed ARTIFACTS_SHAPE_MISMATCH on the handoff-present branch",
+      "type": "altered",
+      "reason": "A grep-only pass initially confirmed the hypothesis (orchestrate-recover-outcome.sh IS called elsewhere in the file), but reading the handoff-present branch in full -- exactly what the Scope Hypothesis instructed -- showed it is structurally identical to base mode's, with the same gap. The same advisory probe was applied to hard mode too, and the residual-gap note corrected before being finalized.",
+      "annotation": "recorded in Phase 6 task checklist item 5"
+    }
+  ],
+  "handoff_count": 0
+}

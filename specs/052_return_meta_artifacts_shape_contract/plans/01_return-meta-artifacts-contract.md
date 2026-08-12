@@ -436,29 +436,39 @@ invisible.
 
 ---
 
-### Phase 6: Close the Handoff-Present Detection Hole [NOT STARTED]
+### Phase 6: Close the Handoff-Present Detection Hole [COMPLETED]
 
 **Goal**: Make `ARTIFACTS_SHAPE_MISMATCH` computable on both orchestrator paths, not only after
 recovery, and retire the residual-gap note that currently records the opposite.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`, extend Stage 5's
+- [x] In `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`, extend Stage 5's
       handoff-present branch (branch 3, the `else` arm) to invoke
       `orchestrate-recover-outcome.sh` as an **advisory evidence probe only**: read
-      `evidence_suspect`/`evidence_reason` and ignore every other field.
-- [ ] State explicitly, at the call site, that the probe never overrides the handoff-derived
+      `evidence_suspect`/`evidence_reason` and ignore every other field. *(completed; verified
+      end-to-end against a bare-string fixture, confirming the probe fires
+      evidence_reason=ARTIFACTS_SHAPE_MISMATCH and calls append_detected_defect)*
+- [x] State explicitly, at the call site, that the probe never overrides the handoff-derived
       outcome, never changes `dispatch_status`, and never drives a status transition. Its sole
       effect is the loud notice plus the `system-defect-record.sh` call that branch 2 already
-      performs for the same class.
-- [ ] Handle the probe's exit codes correctly: exit 1 and exit 2 must both be treated as "no
+      performs for the same class. *(completed)*
+- [x] Handle the probe's exit codes correctly: exit 1 and exit 2 must both be treated as "no
       signal available" and must not be escalated, since a handoff-present dispatch legitimately
-      may have no recoverable `.return-meta.json`.
-- [ ] Rewrite the "Known residual gap (recorded, not fixed here)" note so it describes what is now
+      may have no recoverable `.return-meta.json`. *(completed)*
+- [x] Rewrite the "Known residual gap (recorded, not fixed here)" note so it describes what is now
       true. Do not delete it — replace it with a statement that the hole is closed and by what
-      mechanism, so the history stays legible.
-- [ ] Determine whether `skill-orchestrate-hard/SKILL.md` has the same structural hole on its own
+      mechanism, so the history stays legible. *(completed)*
+- [x] Determine whether `skill-orchestrate-hard/SKILL.md` has the same structural hole on its own
       handoff-present branch. If it does, apply the same probe. If it does not, record that
-      finding at the corresponding site so the two engines visibly agree.
+      finding at the corresponding site so the two engines visibly agree. *(completed: this
+      phase's own Scope Hypothesis anticipated exactly this risk -- "the presence of the call
+      elsewhere in the file does not establish that this specific branch reaches it." That is
+      precisely what happened: an initial grep-only pass wrongly concluded hard mode already had
+      coverage, because `orchestrate-recover-outcome.sh` IS called elsewhere in that file (the
+      recovered-path branch 2 mirror). Reading the handoff-present branch in full showed it is
+      structurally identical to base mode's -- same gap. The same advisory probe was applied to
+      `skill-orchestrate-hard/SKILL.md` at the corresponding location, and base mode's
+      residual-gap note text was corrected accordingly before being finalized.)*
 
 **Timing**: 1.5 hours
 

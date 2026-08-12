@@ -1524,6 +1524,50 @@ else
     plan_markers_verified="${cpc_c#plan_markers_verified=}"
   fi
 
+  # ── Advisory evidence probe: ARTIFACTS_SHAPE_MISMATCH on the handoff-present path ─────────
+  # Mirrors base-mode `skill-orchestrate/SKILL.md`'s identical Stage 5 addition byte-for-byte
+  # apart from the `[hard-orchestrate]` log prefix and this file's own attributed-path/
+  # detecting-site strings — closes the same residual gap named in base mode's "MUST NOT
+  # (Context Flatness Constraint) — Recovery exception (phase-marker grep)" note: this branch,
+  # the handoff-present path, never called `orchestrate-recover-outcome.sh`, so
+  # `ARTIFACTS_SHAPE_MISMATCH` was never *computed* here at all — only the recovered-path
+  # occurrence (this file's own branch-2 arm above) had a consumer.
+  #
+  # ADVISORY ONLY, by construction: this probe NEVER overrides the handoff-derived outcome,
+  # NEVER changes dispatch_status, and NEVER drives a status transition. Its sole effect,
+  # mirroring the recovered-path arm above for the same defect class, is the loud stderr notice
+  # plus the non-fatal system-defect-record.sh call below. The handoff this branch already
+  # parsed above (dispatch_status, phases_completed/total, handoff_artifact_path/type/summary)
+  # remains the sole source of truth for this cycle's outcome — this probe reads a SEPARATE file
+  # (.return-meta.json, if any) purely for its evidence_suspect/evidence_reason fields and
+  # ignores every other field it returns.
+  #
+  # Exit-code handling: exit 0 (recovered=true) is the only code whose evidence fields are
+  # consulted. Exit 1 and exit 2 both mean "no signal available" and are NOT escalated — a
+  # handoff-present dispatch legitimately may have no recoverable `.return-meta.json`.
+  artifacts_probe_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$TASK_DIR" "${dispatch_start_ts:-9999999999}" 2>/dev/null)
+  artifacts_probe_exit=$?
+  if [ "$artifacts_probe_exit" -eq 0 ]; then
+    artifacts_probe_suspect=$(echo "$artifacts_probe_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || artifacts_probe_suspect=false
+    artifacts_probe_reason=$(echo "$artifacts_probe_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || artifacts_probe_reason="NONE"
+    if [ "$artifacts_probe_suspect" = "true" ] && [ "$artifacts_probe_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then
+      echo "[hard-orchestrate] EVIDENCE: advisory probe over this dispatch's .return-meta.json (handoff-present path) reports a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — advisory only; the handoff-derived outcome above is unaffected." >&2
+      probe_record_result=$(bash .claude/scripts/system-defect-record.sh \
+        --defect-class ARTIFACTS_SHAPE_MISMATCH \
+        --detecting-site "skill-orchestrate-hard/SKILL.md:stage-5-handoff-present-probe" \
+        --task "$task_number" --session "$session_id" \
+        --message "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
+        --attributed-path "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      append_detected_defect "ARTIFACTS_SHAPE_MISMATCH" \
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+        "skill-orchestrate-hard/SKILL.md:stage-5-handoff-present-probe" \
+        "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
+        "$probe_record_result"
+    fi
+  fi
+  # exit 1/exit 2 (recovered=false, or usage/jq error): no signal available, nothing to do here.
+
   # Drift detection: arithmetic gate (cheap check before expensive inspection fork) — same as base
   if [ "$phases_total" -gt 0 ] && [ "$dispatch_status" = "partial" ]; then
     completion_ratio=$(awk "BEGIN { printf \"%.4f\", $phases_completed / $phases_total }")

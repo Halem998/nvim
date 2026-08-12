@@ -1091,6 +1091,50 @@ else
     plan_markers_verified="${cpc_c#plan_markers_verified=}"
   fi
 
+  # ── Advisory evidence probe: ARTIFACTS_SHAPE_MISMATCH on the handoff-present path ─────────
+  # Closes the residual gap this branch's own comment used to name as open (see the rewritten
+  # note under "MUST NOT (Context Flatness Constraint) — Recovery exception (phase-marker
+  # grep)" below): branch (3), the handoff-present path, never called
+  # orchestrate-recover-outcome.sh, so ARTIFACTS_SHAPE_MISMATCH was never *computed* here at
+  # all — only the recovered-path occurrence (branch 2's arm above) had a consumer.
+  #
+  # ADVISORY ONLY, by construction: this probe NEVER overrides the handoff-derived outcome,
+  # NEVER changes dispatch_status, and NEVER drives a status transition. Its sole effect,
+  # mirroring branch 2's own ARTIFACTS_SHAPE_MISMATCH arm for the same defect class, is the
+  # loud stderr notice plus the non-fatal system-defect-record.sh call below. The handoff this
+  # branch already parsed above (dispatch_status, phases_completed/total,
+  # handoff_artifact_path/type/summary) remains the sole source of truth for this cycle's
+  # outcome — this probe reads a SEPARATE file (.return-meta.json, if any) purely for its
+  # evidence_suspect/evidence_reason fields and ignores every other field it returns.
+  #
+  # Exit-code handling: exit 0 (recovered=true) is the only code whose evidence fields are
+  # consulted. Exit 1 and exit 2 both mean "no signal available" and are NOT escalated — a
+  # handoff-present dispatch legitimately may have no recoverable `.return-meta.json` (e.g. a
+  # hard-mode dispatch that only ever writes the handoff), so a probe miss here is silent, not
+  # a defect.
+  artifacts_probe_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$TASK_DIR" "${dispatch_start_ts:-9999999999}" 2>/dev/null)
+  artifacts_probe_exit=$?
+  if [ "$artifacts_probe_exit" -eq 0 ]; then
+    artifacts_probe_suspect=$(echo "$artifacts_probe_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || artifacts_probe_suspect=false
+    artifacts_probe_reason=$(echo "$artifacts_probe_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || artifacts_probe_reason="NONE"
+    if [ "$artifacts_probe_suspect" = "true" ] && [ "$artifacts_probe_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then
+      echo "[orchestrate] EVIDENCE: advisory probe over this dispatch's .return-meta.json (handoff-present path) reports a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — advisory only; the handoff-derived outcome above is unaffected." >&2
+      probe_record_result=$(bash .claude/scripts/system-defect-record.sh \
+        --defect-class ARTIFACTS_SHAPE_MISMATCH \
+        --detecting-site "skill-orchestrate/SKILL.md:stage-5-handoff-present-probe" \
+        --task "$task_number" --session "$session_id" \
+        --message "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
+        --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      append_detected_defect "ARTIFACTS_SHAPE_MISMATCH" \
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+        "skill-orchestrate/SKILL.md:stage-5-handoff-present-probe" \
+        "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
+        "$probe_record_result"
+    fi
+  fi
+  # exit 1/exit 2 (recovered=false, or usage/jq error): no signal available, nothing to do here.
+
   # Drift detection: arithmetic gate (cheap check before expensive inspection fork)
   if [ "$phases_total" -gt 0 ] && [ "$dispatch_status" = "partial" ]; then
     # Use awk for floating-point comparison (bash only does integer math)
@@ -2842,11 +2886,24 @@ against the plan file's `### Phase N: {name} [STATUS]` heading lines to recover
   `system-defect-record.sh` consumer call) — it shares branch (2)'s `recovered=true`
   precondition but never calls `skill_corroborate_phase_counts` and performs no `grep -c` of any
   kind, so it does not add a fourth reachable branch to this phase-marker-recovery enumeration.
-  **Known residual gap (recorded, not fixed here)**: branch (3), the handoff-present path
-  (Stage 5's `else`), never calls `orchestrate-recover-outcome.sh`, so `ARTIFACTS_SHAPE_MISMATCH`
-  is never *computed* there at all — the new consumer arm above covers only the recovered-path
-  occurrence of this signal. Closing that detection hole is out of scope for this work; it is
-  named here so a future reader does not assume full coverage.
+  **Residual gap closed**: branch (3), the handoff-present path (Stage 5's `else`), now also
+  calls `orchestrate-recover-outcome.sh` — as an ADVISORY EVIDENCE PROBE ONLY, immediately after
+  this branch's own PHASES_ZERO_ON_SUCCESS-style corroboration block. The probe reads only
+  `evidence_suspect`/`evidence_reason` from a separate `.return-meta.json` read (if any exists
+  for this dispatch) and ignores every other field the script returns; it never overrides the
+  handoff-derived outcome above, never changes `dispatch_status`, and never drives a status
+  transition. On a fired `ARTIFACTS_SHAPE_MISMATCH` signal its sole effect mirrors branch (2)'s
+  own arm for the same class: a loud `[orchestrate] EVIDENCE:` stderr notice plus the same
+  non-fatal `system-defect-record.sh` call and `append_detected_defect` log entry. Exit 1 and
+  exit 2 from the probe (no recoverable `.return-meta.json`, or a usage/jq error) are both
+  treated as "no signal available" and are not escalated — a handoff-present dispatch
+  legitimately may have nothing left to probe. `skill-orchestrate-hard/SKILL.md` was checked for
+  the same structural hole on its own handoff-present branch (its "Evidence corroboration
+  (handoff-present branch)" block, structurally identical to this one) and found to have the
+  IDENTICAL gap — its existing `orchestrate-recover-outcome.sh` call sites are all on the
+  recovered-path branch (this file's branch (2) mirror), not the handoff-present branch. The
+  same advisory probe was applied there too, at the corresponding location, so both engines
+  visibly agree.
 - **Diagnostic in branch (1), evidence-based escalation in branches (2) and (3)**: in branch (1)
   the recovered counts are logged and recorded in the loop guard only — they never synthesize a
   `dispatch_status` and never drive a status transition, since there is no recoverable outcome
