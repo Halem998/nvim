@@ -1,7 +1,7 @@
 # Implementation Plan: Task #54
 
 - **Task**: 54 - split_eager_rules_budget
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None (territory disjoint from LEVER 1 / LEVER 3 siblings; parallel-safe)
 - **Research Inputs**: specs/054_split_eager_rules_budget/reports/01_split-eager-rules-budget.md

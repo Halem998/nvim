@@ -35,31 +35,55 @@
       "category": "PATTERN",
       "source_artifact": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["eager-rules", "rule-split", "context-standards-companion", "index-entries", "keep-list-discipline"]
+      "suggested_keywords": [
+        "eager-rules",
+        "rule-split",
+        "context-standards-companion",
+        "index-entries",
+        "keep-list-discipline"
+      ]
     },
     {
       "content": "When a redeploy (deploy-headless.sh) surfaces verify-deploy.sh or check-extension-docs.sh failures that are unrelated to the current task's own edits, do not silently fix them out of territory. First confirm via git log/git show whether the offending file or field predates the task's own Phase 1 baseline commit -- if so, it is pre-existing drift, not a regression this task caused. Report it explicitly (a #### Reasoned Exclusions table with Item | Reason | Evidence columns, per plan-format.md's COMPLETED WITH EXCLUSIONS mechanism) rather than absorbing an unrelated fix into this task's commits. .claude/ is git-ignored in this repo, so drift attribution for the deployed tree cannot use git diff directly -- instead rely on verify-deploy.sh's content-hash-equality check (proves deployed == source for everything this task touched) plus the task's own per-phase commit history in agent-system/extensions/**.",
       "category": "WORKFLOW",
       "source_artifact": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy", "reasoned-exclusions", "out-of-territory-drift", "claude-gitignored", "content-hash-equality"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "reasoned-exclusions",
+        "out-of-territory-drift",
+        "claude-gitignored",
+        "content-hash-equality"
+      ]
     },
     {
       "content": "A backgrounded verify-deploy.sh or deploy-headless.sh run can produce a transient extra failure (observed: tests/run-all.sh reporting FAIL) when a second deploy-headless.sh runs concurrently with an in-flight verify-deploy.sh -- likely file-lock or mid-write contention, not a real regression. If a verify-deploy.sh run reports an unexpected NEW failure beyond the known/expected set, re-run it cleanly (no concurrent deploy in flight) before concluding it is a real defect; a clean re-run resolved the spurious failure here with 42/42 test suites passing.",
       "category": "INSIGHT",
       "source_artifact": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["verify-deploy", "concurrent-deploy", "flaky-test", "deploy-headless"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "concurrent-deploy",
+        "flaky-test",
+        "deploy-headless"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786553686_448e27",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "task_number": 54,
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   },
   "errors": []
 }

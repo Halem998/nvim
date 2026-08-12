@@ -11,7 +11,7 @@ next_project_number: 57
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53,54 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
 | 2 | 9,13,29,42,50,55,56 | 17,18,22,41,48 | agent-system, context-loading |
 | 3 | 30 | 29 | agent-system |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -60,7 +60,6 @@ next_project_number: 57
 ### Context Loading
 
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-54 [NOT STARTED] — LEVER 2 of the context-cost work (eager rules budget). This is th
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
 55 [NOT STARTED] — LEVER 1 of the context-cost work (the two orchestrate skills). Th
 56 [NOT STARTED] — LEVER 3 of the context-cost work (command bodies). Smallest and c
@@ -122,10 +121,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 54. Split eager rules budget
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: context-loading
 - **Dependencies**: None
+- **Research**: [054_split_eager_rules_budget/reports/01_split-eager-rules-budget.md]
+- **Plan**: [054_split_eager_rules_budget/plans/01_split-eager-rules-budget.md]
+- **Summary**: [054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md]
 
 **Description**: LEVER 2 of the context-cost work (eager rules budget). This is the cost paid by EVERY session in every repo running this system, not a per-invocation cost, and it is the one lever whose territory (rules/** and merge-sources/**) is disjoint from the orchestrate skills and the command bodies, so it can proceed independently and in parallel with its sibling subtasks.
 

@@ -5,14 +5,39 @@
     {
       "project_number": 54,
       "project_name": "split_eager_rules_budget",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "context-loading",
       "description": "LEVER 2 of the context-cost work (eager rules budget). This is the cost paid by EVERY session in every repo running this system, not a per-invocation cost, and it is the one lever whose territory (rules/** and merge-sources/**) is disjoint from the orchestrate skills and the command bodies, so it can proceed independently and in parallel with its sibling subtasks.\n\nMEASURED LIVE, 2026-08-12, this repo deployed tree. Actual session-start eager prefix is 80,808 bytes (~20.2k tokens): parent chain 3,815 + generated .claude/CLAUDE.md 46,475 + six rules that demonstrably loaded in a real interactive session before any file was read: git-workflow.md 11,147, artifact-formats.md 5,360, state-management.md 5,148, pr-prohibition.md 4,628, source-store-deploy-boundary.md 2,746, no-task-references-in-deliverables.md 1,489 (30,518 total). Two deltas against the baseline recorded when the parent task was written: total eager prefix 74,136 -> 80,808 (+9%), and generated CLAUDE.md 33,624 -> 46,475 (+38%). The surface is growing, not holding.\n\nTHE GENERALIZABLE LESSON, restated because it is the whole point: in a repository whose entire workflow lives under specs/** and .claude/**, gating a rule on those globs is nominal laziness, not real laziness. The rule fires every session. Treat the rules directory as a deliberate eager BUDGET with a stated ceiling, not as a set of individually-gated files.\n\nWORK ITEM 1, THE RULES. Split each large rule into a short eager core plus a lazily-referenced companion under context/standards/. git-workflow.md (largest at 11,147 B) keeps only the commit-message convention and the forbidden-operations list; the staging-scope narrative and the git-safety/snapshot narrative move out. Same treatment for error-handling.md (5,420 B) and state-management.md (5,148 B). Slim pr-prohibition.md (4,628 B), whose body includes two CSLib /pr subsections that are inert prose in every deploy without that extension.\n\nWORK ITEM 2, THE GENERATED CLAUDE.md. At 46,475 B it is now the single largest eager contributor, larger than all six rules combined, and it grew 38% since the baseline. Audit which merge sources drive that growth and slim them at the source. Known offender: the literature extension contributes a Literature Mode (--lit) section that appears TWICE under two headings in the generated output, with the second copy running several KB of directive-level detail (the six-directive resolver contract, the four-option AskUserQuestion wording, the sub-index decision flow) that belongs in context/project/literature/patterns/ behind a pointer. Verify before cutting; do not assume the duplication is identical.\n\nPRESERVE BEHAVIOR, THE BINDING CONSTRAINT. A rule eager core must still carry everything an agent must know BEFORE acting. A pointer read after the fact is useless for a pre-write constraint, so anything that gates a write (the destructive-git prohibitions, the source-store boundary, the no-task-references prohibition) stays eager by construction. Where a rule is deliberately kept eager, record that decision in-file, as source-store-deploy-boundary.md already does.\n\nACCEPTANCE. Report measured before/after bytes for every file touched, using the same eager-prefix accounting as the baseline above. An unquantified \"slimmed\" claim is not acceptable. No rule loses a pre-action constraint. State an explicit eager budget ceiling in the rules directory README or equivalent so the next regression is detectable rather than merely regrettable.\n\nCORRECTION TO HAND TO THE MEASUREMENT-HARNESS TASK (record it in the summary; do NOT act on another task scope). That task states its model as enumerating rules \"lacking paths: frontmatter or carrying paths: **/*\". That misses the dominant case measured here: rules whose paths: glob is .claude/**/* or specs/**/*, which is exactly where 30,518 B of the eager surface hides. The harness must model glob MATCH against a representative session touched-path set, not merely absent-or-universal frontmatter, or it will under-report by roughly 78%.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.",
       "parent_task": 49,
       "dependencies": [],
       "created": "2026-08-12T16:47:50Z",
-      "last_updated": "2026-08-12T16:47:50Z"
+      "last_updated": "2026-08-12T17:49:55Z",
+      "file_scope": [
+        "agent-system/extensions/core/rules/",
+        "agent-system/extensions/core/context/standards/",
+        "agent-system/extensions/core/merge-sources/",
+        "agent-system/extensions/literature/merge-sources/"
+      ],
+      "session_id": "sess_1786553686_448e27",
+      "artifacts": [
+        {
+          "path": "specs/054_split_eager_rules_budget/reports/01_split-eager-rules-budget.md",
+          "type": "report",
+          "summary": "Measured per-file split boundaries and byte estimates for the four named rules, verified the literature CLAUDE.md duplication claim, audited core merge-sources, recommended a ceiling location, and recorded (without acting on) the measurement-harness correction."
+        },
+        {
+          "path": "specs/054_split_eager_rules_budget/plans/01_split-eager-rules-budget.md",
+          "type": "plan",
+          "summary": "Seven-phase plan: baseline byte capture; split git-workflow.md, error-handling.md, state-management.md into eager pre-action cores plus context/standards companions; relocate pr-prohibition.md's CSLib /pr sections into the cslib extension; cut the literature merge-source's 5,255 B Interactive Sub-Index subsection to a pointer at lit-stage4a-flow.md; redeploy, re-measure against the 80,808 B baseline, and record a numeric eager budget ceiling in context-layers.md channel 3."
+        },
+        {
+          "path": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
+          "type": "summary",
+          "summary": "Split four oversized eager rules into pre-action cores plus lazy companions, relocated CSLib /pr content, cut the literature merge-source's redundant subsection, redeployed and re-measured the eager prefix from 80,808 B to 70,160 B, and recorded a 24,000 B eager budget ceiling in context-layers.md."
+        }
+      ],
+      "completion_summary": "Reduced the session-start eager context prefix from 80,808 B to 70,160 B (-13.2%) via a four-rule split-and-relocate pass, a CSLib /pr content relocation, and a literature merge-source cut, then recorded a numeric eager budget ceiling. Two pre-existing, out-of-territory verify-deploy.sh failures were investigated, attributed via git log to predate this task, and reported rather than absorbed (Phase 7 closed as COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record)."
     },
     {
       "project_number": 55,
@@ -26,7 +51,12 @@
         48
       ],
       "created": "2026-08-12T16:47:50Z",
-      "last_updated": "2026-08-12T16:47:50Z"
+      "last_updated": "2026-08-12T16:54:27Z",
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+        "agent-system/extensions/core/scripts/skill-base.sh"
+      ]
     },
     {
       "project_number": 56,
@@ -40,7 +70,12 @@
         48
       ],
       "created": "2026-08-12T16:47:50Z",
-      "last_updated": "2026-08-12T16:47:50Z"
+      "last_updated": "2026-08-12T16:54:27Z",
+      "file_scope": [
+        "agent-system/extensions/core/commands/todo.md",
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/context/patterns/"
+      ]
     },
     {
       "project_number": 53,
