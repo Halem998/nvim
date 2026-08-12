@@ -917,3 +917,106 @@ skill_corroborate_phase_counts() {
   echo "phases_completed=${_cpc_out_completed} phases_total=${_cpc_out_total} plan_markers_verified=${_cpc_out_verified}"
   return "$_cpc_rc"
 }
+
+# ── Orchestrate-engine dedup: named-shim targets ─────────────────────────────────────────────────
+# The three functions below are the single home for logic that used to be verbatim-twinned
+# (byte-identical, or identical-but-for-a-notice-prefix) between skill-orchestrate/SKILL.md and
+# skill-orchestrate-hard/SKILL.md's Stage 2 and Stage 4/5. Both SKILL.md files keep a <=3-line
+# local function with the SAME NAME the pre-dedup code used (`mint_dispatch_seq`,
+# `append_detected_defect`, `hard_orchestrate_propagate_completion`), delegating to these shared
+# implementations — "named-shim preservation". This is required, not stylistic: two tests
+# (test-handoff-dispatch-identity.sh, test-loop-guard-budget-override.sh) `eval` literal SKILL.md
+# regions in a subshell whose cwd is a temp workdir, and one of them stubs `append_detected_defect`
+# by that exact name, so a call site inside those regions must never be renamed or replaced by a
+# script invocation. See specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md for the full
+# evidence this design is built on.
+#
+# Per the "no ambient global for a value that differs per engine" rule, `loop_guard_file` and the
+# notice prefix are always explicit parameters below. `task_number` and `cycle_count` remain
+# ambient (read directly, matching the pre-dedup inline bodies) because they are the SAME-SHAPED
+# value in both engines' calling scope, not per-engine-differing state.
+
+# skill_orchestrate_mint_dispatch_seq <loop_guard_file>
+# Increments the dispatch_seq_counter persisted in the loop guard and returns the new value on
+# stdout. Call immediately before every Agent dispatch that writes .orchestrator-handoff.json,
+# adjacent to the dispatch_start_ts capture (Defect A). Persisting on every mint (not only at
+# Stage 3b) guarantees the value survives a resume and is never repeated within this task, even
+# across separate /orchestrate invocations. See
+# context/patterns/dispatch-report-not-termination.md for why an orchestrator-minted value is
+# required rather than content the dispatched agent could echo unprompted.
+skill_orchestrate_mint_dispatch_seq() {
+  local loop_guard_file="$1"
+  dispatch_seq_counter=$((dispatch_seq_counter + 1))
+  jq --argjson seq "$dispatch_seq_counter" \
+     --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '.dispatch_seq_counter = $seq | .last_updated = $updated' \
+    "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+  echo "$dispatch_seq_counter"
+}
+
+# skill_orchestrate_append_detected_defect <loop_guard_file> <notice_prefix> <class>
+#   <attributed_path> <site> <detail> [record_result]
+# Appends one entry to `.detected_defects` on the given loop guard file and emits the
+# `[system-defect:auto]` notice on stderr itself, so no call site can append without announcing.
+# The append is UNCONDITIONAL: never gated on the recorder's exit code, nor on a
+# `SUPPRESSED:recursion_guard`/`SUPPRESSED:duplicate` value on its stdout. `record_result` records
+# that outcome for the operator; it never decides whether the entry exists. `.detected_defects +=
+# [...]` is safe against a guard file written before the field existed: jq's `null + [x]` is
+# `[x]`, so the log self-heals rather than erroring.
+skill_orchestrate_append_detected_defect() {
+  local loop_guard_file="$1" notice_prefix="$2" class="$3" attributed_path="$4" site="$5" \
+        detail="$6" record_result="${7:-}"
+  jq --argjson entry "$(jq -c -n \
+        --argjson task "$task_number" --arg class "$class" --arg path "$attributed_path" \
+        --arg site "$site" --argjson cycle "${cycle_count:-0}" --arg detail "$detail" \
+        --arg rr "$record_result" \
+        '{task:$task, defect_class:$class, attributed_source_path:$path,
+          detecting_site:$site, cycle:$cycle, detail:$detail,
+          record_result: (if $rr == "" then null else $rr end)}')" \
+      '.detected_defects += [$entry]' \
+      "$loop_guard_file" > "${loop_guard_file}.tmp" \
+    && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+  echo "${notice_prefix} [system-defect:auto] queued for postflight summary — defect_class=${class} attributed_path=${attributed_path} detecting_site=${site}" >&2
+}
+
+# skill_orchestrate_propagate_completion <task_number> <task_type> <task_dir> <dispatch_start_ts>
+#   [precomputed_json] [notice_prefix]
+# Single propagation path for every terminal "implemented" exit in both orchestrate engines. A
+# new terminal exit path added to either SKILL.md MUST call this helper rather than re-inlining a
+# completion-propagation block. When precomputed_json is non-empty, it is used directly (avoiding
+# a second .return-meta.json read within the same cycle — e.g. the Stage 5 `implemented` tail,
+# which already has $recover_json from the recovery branch above it). Otherwise this helper
+# issues the one read via orchestrate-recover-outcome.sh itself. notice_prefix defaults to
+# `[orchestrate]`; the hard engine's shim passes `[hard-orchestrate]`.
+skill_orchestrate_propagate_completion() {
+  local task_number="$1"
+  local task_type="$2"
+  local task_dir="$3"
+  local dispatch_start_ts_arg="$4"
+  local precomputed_json="${5:-}"
+  local notice_prefix="${6:-[orchestrate]}"
+
+  local completion_json
+  if [ -n "$precomputed_json" ]; then
+    completion_json="$precomputed_json"
+  else
+    completion_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$task_dir" "$dispatch_start_ts_arg" 2>/dev/null)
+  fi
+  # NOTE: default via `[ -z ] && completion_json='{}'`, never `"${completion_json:-{}}"` — bash
+  # parameter-expansion default-word matching stops at the FIRST unescaped `}`, so that inline
+  # idiom silently appends a stray trailing `}` to any non-empty value, corrupting the JSON and
+  # forcing every jq call below to fail closed to "" via `2>/dev/null`.
+  [ -z "${completion_json:-}" ] && completion_json='{}'
+
+  local completion_summary roadmap_items
+  completion_summary=$(echo "$completion_json" | jq -r '.completion_summary // ""' 2>/dev/null) || completion_summary=""
+  roadmap_items=$(echo "$completion_json" | jq -c '.roadmap_items // []' 2>/dev/null) || roadmap_items="[]"
+
+  skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
+
+  if [ -z "$completion_summary" ]; then
+    local completion_reason
+    completion_reason=$(echo "$completion_json" | jq -r '.reason // "unknown"' 2>/dev/null) || completion_reason="unknown"
+    echo "${notice_prefix} WARNING: task completed with empty completion_summary (reason=${completion_reason})" >&2
+  fi
+}

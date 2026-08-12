@@ -212,22 +212,15 @@ else
   fi
 fi
 
-# mint_dispatch_seq(): increments the dispatch_seq_counter persisted in the loop guard and
-# returns the new value on stdout. Verbatim-twin helper to
-# skill-orchestrate-hard/SKILL.md's Stage 2 mint_dispatch_seq(). Call immediately before every
-# Agent dispatch that writes .orchestrator-handoff.json, adjacent to the dispatch_start_ts
-# capture (Defect A). Persisting on every mint (not only at Stage 3b) guarantees the value
-# survives a resume and is never repeated within this task, even across separate /orchestrate
-# invocations. See context/patterns/dispatch-report-not-termination.md for why an
-# orchestrator-minted value is required rather than content the dispatched agent could echo
-# unprompted.
+# mint_dispatch_seq(): named-shim to the single shared implementation,
+# skill_orchestrate_mint_dispatch_seq (scripts/skill-base.sh) — see that function's header for the
+# full contract. Kept as a locally-named function (not called directly by name) because Stage 4/5
+# call sites below still say `mint_dispatch_seq`, and this file pair is where a one-sided rename
+# is a known recurring defect class. Source is defensive/idempotent: this Stage 2 fence has no
+# earlier explicit source line of its own to depend on.
+source .claude/scripts/skill-base.sh
 mint_dispatch_seq() {
-  dispatch_seq_counter=$((dispatch_seq_counter + 1))
-  jq --argjson seq "$dispatch_seq_counter" \
-     --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    '.dispatch_seq_counter = $seq | .last_updated = $updated' \
-    "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
-  echo "$dispatch_seq_counter"
+  skill_orchestrate_mint_dispatch_seq "$loop_guard_file"
 }
 
 # Blocker escalation counter (reset each /orchestrate invocation)
@@ -642,30 +635,16 @@ Never read the full research report, plan, or implementation summary — only th
 infra_exempt_cycle=false
 
 # ── System-defect observation log ─────────────────────────────────────────────
-# One append idiom, reused at every detection site in this stage, matching this file's own
-# loop-guard mutation idiom (`jq ... "$loop_guard_file" > "${loop_guard_file}.tmp" && mv ...`).
-# The full contract — entry shape, unconditional-append rule, notice format, MUST-NOTs — is
-# defined ONCE in Stage MT-1's `detected_defects` declaration and is not restated here.
-#
-# The helper emits the `[system-defect:auto]` notice itself, so no site can append without
-# announcing. The append is UNCONDITIONAL: never gated on the recorder's exit code, nor on a
-# `SUPPRESSED:recursion_guard`/`SUPPRESSED:duplicate` value on its stdout. `record_result`
-# records that outcome for the operator; it never decides whether the entry exists.
-#
-# `.detected_defects += [...]` is safe against a guard file written before the field existed:
-# jq's `null + [x]` is `[x]`, so the log self-heals rather than erroring.
+# Named-shim to the single shared implementation, skill_orchestrate_append_detected_defect
+# (scripts/skill-base.sh) — see that function's header for the full contract (entry shape,
+# unconditional-append rule, notice format, MUST-NOTs). Kept as a locally-named function because
+# test-handoff-dispatch-identity.sh stubs `append_detected_defect` by this exact name and `eval`s
+# a region below that calls it — a renamed call site would silently defeat that stub. Source is
+# defensive/idempotent: this Stage 5 fence has no earlier explicit source line of its own to
+# depend on.
+source .claude/scripts/skill-base.sh
 append_detected_defect() {  # class, attributed_path, site, detail, record_result
-  jq --argjson entry "$(jq -c -n \
-        --argjson task "$task_number" --arg class "$1" --arg path "$2" \
-        --arg site "$3" --argjson cycle "${cycle_count:-0}" --arg detail "$4" \
-        --arg rr "${5:-}" \
-        '{task:$task, defect_class:$class, attributed_source_path:$path,
-          detecting_site:$site, cycle:$cycle, detail:$detail,
-          record_result: (if $rr == "" then null else $rr end)}')" \
-      '.detected_defects += [$entry]' \
-      "$loop_guard_file" > "${loop_guard_file}.tmp" \
-    && mv "${loop_guard_file}.tmp" "$loop_guard_file"
-  echo "[orchestrate] [system-defect:auto] queued for postflight summary — defect_class=$1 attributed_path=$2 detecting_site=$3" >&2
+  skill_orchestrate_append_detected_defect "$loop_guard_file" "[orchestrate]" "$1" "$2" "$3" "$4" "${5:-}"
 }
 
 # ── Staleness gate ────────────────────────────────────────────────────────────
@@ -1199,31 +1178,16 @@ if [ "$have_outcome" = "true" ]; then
         # here, not a veto over a decision this state machine made deliberately and loggedly.
         skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
 
-        # Populate completion_summary/roadmap_items. The handoff schema has no such field (H9
-        # wrap-up writes only status/summary/blockers/artifacts/phase counts — see
-        # docs/architecture/handoff-schema.md), so a handoff-present dispatch never populates
-        # these here for free; `.return-meta.json`'s `completion_data` is the only source. Reuse
-        # this cycle's own `$recover_json` when the recovery branch above already ran (guarded on
-        # non-empty, never on control-flow position — see that branch's own comment), otherwise
-        # issue one additional read through the same shared script so there is still only ONE
-        # reader of `.return-meta.json` in the codebase.
-        if [ -n "${recover_json:-}" ]; then
-          completion_json="$recover_json"
-        else
-          completion_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$TASK_DIR" "${dispatch_start_ts:-9999999999}" 2>/dev/null)
-        fi
-        # NOTE: default via `[ -z ] && completion_json='{}'`, never `"${completion_json:-{}}"` —
-        # bash parameter-expansion default-word matching stops at the FIRST unescaped `}`, so that
-        # inline idiom silently appends a stray trailing `}` to any non-empty value, corrupting the
-        # JSON and forcing every jq call below to fail closed to "" via `2>/dev/null`.
-        [ -z "${completion_json:-}" ] && completion_json='{}'
-        completion_summary=$(echo "$completion_json" | jq -r '.completion_summary // ""' 2>/dev/null) || completion_summary=""
-        roadmap_items=$(echo "$completion_json" | jq -c '.roadmap_items // []' 2>/dev/null) || roadmap_items="[]"
-        skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$TASK_TYPE"
-        if [ -z "$completion_summary" ]; then
-          completion_reason=$(echo "$completion_json" | jq -r '.reason // "unknown"' 2>/dev/null) || completion_reason="unknown"
-          echo "[orchestrate] WARNING: task completed with empty completion_summary (reason=${completion_reason})" >&2
-        fi
+        # Populate completion_summary/roadmap_items via the single shared propagation path,
+        # skill_orchestrate_propagate_completion (scripts/skill-base.sh) — see that function's
+        # header for the full contract (handoff schema has no such field; `.return-meta.json`'s
+        # `completion_data` is the only source; reuse `$recover_json` when the recovery branch
+        # above already ran, otherwise the helper issues the one read itself). This is the same
+        # call skill-orchestrate-hard/SKILL.md's `hard_orchestrate_propagate_completion` shim
+        # makes, so both engines cannot drift apart on this logic again.
+        source .claude/scripts/skill-base.sh
+        skill_orchestrate_propagate_completion "$task_number" "$TASK_TYPE" "$TASK_DIR" \
+          "${dispatch_start_ts:-9999999999}" "${recover_json:-}" "[orchestrate]"
       else
         # `skill_gate_completion_claim`'s Case 3/3 (phases_total == 0 AND plan_markers_verified
         # != "true") already called system-defect-record.sh internally. Re-derive that case here

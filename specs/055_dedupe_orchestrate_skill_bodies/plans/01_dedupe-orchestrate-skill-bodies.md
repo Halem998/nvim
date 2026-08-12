@@ -171,31 +171,36 @@ plan's prose — is authoritative for all later phases.
 
 ---
 
-### Phase 2: Promote the Helper Trio to skill-base.sh Behind Named Shims [NOT STARTED]
+### Phase 2: Promote the Helper Trio to skill-base.sh Behind Named Shims [COMPLETED]
 
 **Goal**: Move the three verbatim-twin helpers into one home in `scripts/skill-base.sh`, while
 each engine retains the locally-named entry point the tests and existing call sites depend on.
 
 **Tasks**:
-- [ ] Add `skill_orchestrate_mint_dispatch_seq <loop_guard_file>` to `scripts/skill-base.sh`,
-      carrying the single copy of the increment-and-echo logic and its explanatory comments.
-- [ ] Add `skill_orchestrate_append_detected_defect <loop_guard_file> <notice_prefix> <class>
+- [x] Add `skill_orchestrate_mint_dispatch_seq <loop_guard_file>` to `scripts/skill-base.sh`,
+      carrying the single copy of the increment-and-echo logic and its explanatory comments. *(completed)*
+- [x] Add `skill_orchestrate_append_detected_defect <loop_guard_file> <notice_prefix> <class>
       <attributed_path> <site> <detail> <record_result>` — guard-file path and notice prefix as
-      **explicit parameters**, never ambient globals.
-- [ ] Add `skill_orchestrate_propagate_completion <task_number> <task_type> <task_dir>
+      **explicit parameters**, never ambient globals. *(completed)*
+- [x] Add `skill_orchestrate_propagate_completion <task_number> <task_type> <task_dir>
       <dispatch_start_ts> [recover_json]`, promoted from the hard file's local
-      `hard_orchestrate_propagate_completion`.
-- [ ] In **both** SKILL.md files, replace the full local bodies of `mint_dispatch_seq()` and
+      `hard_orchestrate_propagate_completion`. *(completed: added an extra optional 6th
+      `notice_prefix` param, defaulting to `[orchestrate]`, so the shared function itself never
+      hardcodes an engine-specific prefix — consistent with the "notice prefix is always an
+      explicit parameter" risk mitigation)*
+- [x] In **both** SKILL.md files, replace the full local bodies of `mint_dispatch_seq()` and
       `append_detected_defect()` with <=3-line shims delegating to the shared functions, preserving
       the exact function names and call signatures. Add a defensive idempotent `source` of
       `skill-base.sh` in each code fence that needs it, matching the pattern the Stage 5 fence
-      already uses for `skill_corroborate_phase_counts`.
-- [ ] In the hard file, replace `hard_orchestrate_propagate_completion`'s body with a shim (both
-      call sites keep calling the local name unchanged).
-- [ ] In the base file, replace the still-inline `completion_json`/`completion_summary`/
+      already uses for `skill_corroborate_phase_counts`. *(completed)*
+- [x] In the hard file, replace `hard_orchestrate_propagate_completion`'s body with a shim (both
+      call sites keep calling the local name unchanged). *(completed)*
+- [x] In the base file, replace the still-inline `completion_json`/`completion_summary`/
       `roadmap_items` propagation logic inside the `implemented` case with a call to the shared
-      function.
-- [ ] Confirm no call site **inside** a Phase 1 locked region was renamed.
+      function. *(completed)*
+- [x] Confirm no call site **inside** a Phase 1 locked region was renamed. *(completed: verified
+      via test-handoff-dispatch-identity.sh pass — 22/22 — and by re-reading both locked regions
+      after edit; the only edits inside either region were none, all shims sit strictly outside)*
 
 **Timing**: 1.5 hours
 
