@@ -1,7 +1,7 @@
 # Implementation Plan: Version-Consistency Gate for /tag
 
 - **Task**: 58 - Add a version-consistency preflight gate to /tag so a tag can never be created or pushed while the package being released declares a different version
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/058_add_version_consistency_gate_to_tag/reports/01_version-consistency-gate.md`
@@ -444,30 +444,36 @@ mentioning the step sequence exists, it must be updated too rather than left sta
 
 ---
 
-### Phase 5: End-to-End Verification and Deploy Check [NOT STARTED]
+### Phase 5: End-to-End Verification and Deploy Check [COMPLETED]
 
 **Goal**: Confirm the gate behaves correctly on all four invocation paths against real fixture
 repos, that the source-store edits survive a redeploy, and that the full repo gate set passes.
 
 **Tasks**:
-- [ ] Build three throwaway git repos in the scratchpad, each with a real tag history so
-      `git describe --tags --abbrev=0` returns a value:
+- [x] Build three throwaway git repos in the scratchpad, each with a real tag history so
+      `git describe --tags --abbrev=0` returns a value: *(completed)*
   - **R1 (match)**: `pyproject.toml` declaring the version the gate will compute
   - **R2 (mismatch, subdirectory)**: `code/pyproject.toml` declaring a stale version — the real
     observed-failure shape
   - **R3 (no manifest)**: Lua/Nix-style repo with no manifest at all
-- [ ] Extract the Step 3.5 block from `SKILL.md` into a runnable harness script (prepending the
+- [x] Extract the Step 3.5 block from `SKILL.md` into a runnable harness script (prepending the
       Step 1 and Step 3 variable setup) and run it in each repo under each of: default, `--dry-run`,
-      `--force`, `--skip-version-check`.
-- [ ] Record the 12-cell outcome matrix (3 repos x 4 modes) with actual exit codes and output.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` (or the repo's equivalent regeneration path) and
+      `--force`, `--skip-version-check`. *(completed: harness assembles Step 1 + Step 3 + Step 3.5 +
+      Step 5 dry-run block, all sed-extracted verbatim from SKILL.md by line range)*
+- [x] Record the 12-cell outcome matrix (3 repos x 4 modes) with actual exit codes and output.
+      *(completed — see summary for the full matrix)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` (or the repo's equivalent regeneration path) and
       confirm `.claude/skills/skill-tag/SKILL.md` and `.claude/commands/tag.md` now contain the new
       content — proving the edits went to the source store and not to the deploy artifact.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm no new
+      *(completed: diff against source-store copies shows exact match post-redeploy)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm no new
       findings versus a pre-change baseline (capture the baseline before the redeploy if not
-      already captured).
-- [ ] Run the repo-wide task-reference lint (`check-task-references.sh`) and confirm clean.
-- [ ] Commit each green sub-step as it lands, per the commit-per-green-substep mandate.
+      already captured). *(completed: ran the deployed .claude/scripts/ copy pre- and post-redeploy;
+      diff shows no new findings — pre-existing unrelated project-wide Rule S FAIL is unchanged)*
+- [x] Run the repo-wide task-reference lint (`check-task-references.sh`) and confirm clean.
+      *(completed: PASS, 0 unexempted occurrences)*
+- [x] Commit each green sub-step as it lands, per the commit-per-green-substep mandate.
+      *(completed: phases 1-4 each committed individually; phase 5 committed at close)*
 
 **Timing**: 1 hour
 
@@ -500,20 +506,20 @@ result; a cell that cannot be run must be reported as unrun, never inferred from
 
 ## Testing & Validation
 
-- [ ] All 10 Phase 1 fixtures produce the documented extraction result (6 versions, 4 empties).
-- [ ] The `[project]`-scoped extraction returns `1.3.0`, not `9.9.9`, on the mixed Poetry fixture.
-- [ ] `node_modules` decoys are excluded from discovery.
-- [ ] A subdirectory manifest at depth 2 is discovered.
-- [ ] Step 3.5's line number precedes the `if [ "$dry_run" = true ]` line number in `SKILL.md`.
-- [ ] The 12-cell matrix (R1/R2/R3 x default/`--dry-run`/`--force`/`--skip-version-check`) is fully
+- [x] All 10 Phase 1 fixtures produce the documented extraction result (6 versions, 4 empties).
+- [x] The `[project]`-scoped extraction returns `1.3.0`, not `9.9.9`, on the mixed Poetry fixture.
+- [x] `node_modules` decoys are excluded from discovery.
+- [x] A subdirectory manifest at depth 2 is discovered.
+- [x] Step 3.5's line number precedes the `if [ "$dry_run" = true ]` line number in `SKILL.md`.
+- [x] The 12-cell matrix (R1/R2/R3 x default/`--dry-run`/`--force`/`--skip-version-check`) is fully
       executed and recorded, with R2-under-`--dry-run` failing closed.
-- [ ] No-manifest repo (R3) behavior is unchanged apart from the added notice line.
-- [ ] Error transcripts in `SKILL.md` match the strings the code actually emits.
-- [ ] `commands/tag.md` Workflow has 8 items, Requirements has 5 bullets, flag tables agree across
+- [x] No-manifest repo (R3) behavior is unchanged apart from the added notice line.
+- [x] Error transcripts in `SKILL.md` match the strings the code actually emits.
+- [x] `commands/tag.md` Workflow has 8 items, Requirements has 5 bullets, flag tables agree across
       both files.
-- [ ] `check-extension-docs.sh` clean relative to baseline.
-- [ ] No task-number references in either modified file.
-- [ ] Redeploy propagates both files into `.claude/`.
+- [x] `check-extension-docs.sh` clean relative to baseline.
+- [x] No task-number references in either modified file.
+- [x] Redeploy propagates both files into `.claude/`.
 
 ## Artifacts & Outputs
 
