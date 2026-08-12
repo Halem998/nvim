@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-08-12T18:59:28Z",
+  "eager_prefix": {
+    "files": [
+      {"label": "parent CLAUDE.md", "path": "/home/benjamin/.config/CLAUDE.md", "bytes": 769},
+      {"label": "repo CLAUDE.md", "path": "CLAUDE.md", "bytes": 3046},
+      {"label": ".claude/CLAUDE.md (assembled)", "path": ".claude/CLAUDE.md", "bytes": 42798},
+      {"label": ".claude/rules/artifact-formats.md", "path": ".claude/rules/artifact-formats.md", "bytes": 5360},
+      {"label": ".claude/rules/git-workflow.md", "path": ".claude/rules/git-workflow.md", "bytes": 7000},
+      {"label": ".claude/rules/no-task-references-in-deliverables.md", "path": ".claude/rules/no-task-references-in-deliverables.md", "bytes": 2017},
+      {"label": ".claude/rules/pr-prohibition.md", "path": ".claude/rules/pr-prohibition.md", "bytes": 2574},
+      {"label": ".claude/rules/source-store-deploy-boundary.md", "path": ".claude/rules/source-store-deploy-boundary.md", "bytes": 2746},
+      {"label": ".claude/rules/state-management.md", "path": ".claude/rules/state-management.md", "bytes": 3850}
+    ],
+    "total_bytes": 70160
+  },
+  "assembled_claude_md_bytes": 42798,
+  "merge_sources": {
+    "core": {"path": "agent-system/extensions/core/merge-sources/claudemd.md", "bytes": 24770},
+    "cslib": {"path": "agent-system/extensions/cslib/EXTENSION.md", "bytes": 2426},
+    "email": {"path": "agent-system/extensions/email/EXTENSION.md", "bytes": 2185},
+    "epidemiology": {"path": "agent-system/extensions/epidemiology/EXTENSION.md", "bytes": 2259},
+    "filetypes": {"path": "agent-system/extensions/filetypes/EXTENSION.md", "bytes": 1336},
+    "formal": {"path": "agent-system/extensions/formal/EXTENSION.md", "bytes": 2068},
+    "founder": {"path": "agent-system/extensions/founder/EXTENSION.md", "bytes": 2760},
+    "latex": {"path": "agent-system/extensions/latex/EXTENSION.md", "bytes": 700},
+    "lean": {"path": "agent-system/extensions/lean/EXTENSION.md", "bytes": 1633},
+    "literature": {"path": "agent-system/extensions/literature/merge-sources/claudemd.md", "bytes": 8673},
+    "memory": {"path": "agent-system/extensions/memory/EXTENSION.md", "bytes": 4054},
+    "nix": {"path": "agent-system/extensions/nix/EXTENSION.md", "bytes": 1385},
+    "nvim": {"path": "agent-system/extensions/nvim/EXTENSION.md", "bytes": 1491},
+    "present": {"path": "agent-system/extensions/present/EXTENSION.md", "bytes": 2647},
+    "python": {"path": "agent-system/extensions/python/EXTENSION.md", "bytes": 862},
+    "typst": {"path": "agent-system/extensions/typst/EXTENSION.md", "bytes": 954},
+    "web": {"path": "agent-system/extensions/web/EXTENSION.md", "bytes": 1044},
+    "z3": {"path": "agent-system/extensions/z3/EXTENSION.md", "bytes": 970}
+  }
+}

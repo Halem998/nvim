@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline Measurement Harness",
+  "started_at": "2026-08-12T18:56:21Z",
+  "last_updated": "2026-08-12T19:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create measure-eager-surface.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-eager-surface.sh"]},
+    {"id": 2, "description": "Support --baseline and --compare", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-eager-surface.sh"]},
+    {"id": 3, "description": "Declare script in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Run script, confirm 70160 B / 42798 B exact", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write baseline snapshot to task dir", "status": "done", "files_touched": ["specs/057_cut_generated_claudemd_eager_surface/baseline-measurement.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
