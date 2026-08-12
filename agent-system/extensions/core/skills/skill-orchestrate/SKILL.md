@@ -939,161 +939,31 @@ fi
 # Reached from EITHER the handoff-present branch above OR a successful return-meta recovery —
 # never duplicated between them. A duplicated `case "$dispatch_status"` is exactly the drift
 # this fallback mechanism exists to prevent (see Phase 2 of the plan that introduced it).
+#
+# Single shared implementation, orchestrate-stage5-postflight.sh — see that script's header for
+# the full contract (the researched/planned/implemented/partial|failed|blocked/Tier C case
+# ladder, the completion-claim gate, the completion-propagation call, the artifact-linking
+# block). This is the same call skill-orchestrate-hard/SKILL.md's Stage 5 makes, so the two
+# engines cannot drift apart on this logic again. The script performs the real state.json/
+# TODO.md writes, but the actual loop-halting decision (`EXIT (partial)`) and the cycle_count
+# increment below stay HERE, applied inline from the script's decision JSON — this is the
+# mitigation for the state-swallowing risk: a script boundary must never silently absorb an
+# orchestrator loop-control transition.
 if [ "$have_outcome" = "true" ]; then
-  # Postflight status update: trigger state.json + TODO.md Task Order regeneration
-  #
-  # dispatch_status accept-list: the normative enumeration of these six values is
-  # context/formats/return-metadata-file.md's status vocabulary, which declares itself normative
-  # for .orchestrator-handoff.json's `status` field too (not just .return-meta.json) — keep this
-  # list and that table in sync rather than letting them drift independently. That table has a
-  # SEVENTH row, `in_progress`, deliberately NOT accepted here: it is early-metadata-only (Stage 0
-  # of a writer's own execution) and never a legal terminal dispatch outcome, so a handoff
-  # carrying it means the writer never finished — correctly routed to the off-schema arm below,
-  # not treated as an unexplained gap in this six-value list.
-  offschema_dispatch_status=false
-  case "$dispatch_status" in
-    researched)
-      skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status"
-      ;;
-    planned)
-      skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status"
-      ;;
-    implemented)
-      # Completion-claim verification gate: a dispatch reporting "implemented" must not flip the
-      # whole task to `completed` without corroborating evidence. The three-case fail-closed
-      # logic lives in ONE place — skill_gate_completion_claim in skill-base.sh — so base mode,
-      # hard mode, and multi-task mode cannot drift apart again. See that function's header for
-      # the full case table (phase accounting present-and-complete always allows,
-      # present-and-incomplete always refuses, absent falls back to plan_markers_verified — both
-      # the recovered path above AND the handoff-present branch's own read set
-      # plan_markers_verified="absent" by default, so an absent phase count on either an
-      # "implemented" claim recovered from .return-meta.json or one read directly from a fresh
-      # handoff is conservatively refused here, not allowed, UNLESS one of the two
-      # evidence-corroboration call sites above already flipped it to "true" via
-      # skill_corroborate_phase_counts — the recovered-path corroboration block, or the
-      # handoff-present branch's own "Evidence corroboration (handoff-present branch)" block —
-      # from an independent, corroborating plan-heading read).
-      if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
-           "$plan_markers_verified" "[orchestrate]"; then
-        # `warn`, deliberately NOT `refuse`: the script-side backstop reads the plan file's own
-        # phase headings — structurally different evidence — so it is a valuable SECOND OPINION
-        # here, not a veto over a decision this state machine made deliberately and loggedly.
-        skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
+  stage5_postflight_json=$(bash .claude/scripts/orchestrate-stage5-postflight.sh \
+    "$task_number" "$session_id" "$TASK_TYPE" "$TASK_DIR" "$dispatch_status" \
+    "$phases_completed" "$phases_total" "$plan_markers_verified" \
+    "$handoff_artifact_path" "$handoff_artifact_type" "$handoff_artifact_summary" \
+    "[orchestrate]" "skill-orchestrate/SKILL.md:stage-5-tier-c" \
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" "" \
+    "${dispatch_start_ts:-9999999999}" "$handoff_file" "$loop_guard_file" "${cycle_count:-0}")
+  offschema_dispatch_status=$(echo "$stage5_postflight_json" | jq -r '.offschema_dispatch_status')
 
-        # Populate completion_summary/roadmap_items via the single shared propagation path,
-        # skill_orchestrate_propagate_completion (scripts/skill-base.sh) — see that function's
-        # header for the full contract (handoff schema has no such field; `.return-meta.json`'s
-        # `completion_data` is the only source; reuse `$recover_json` when the recovery branch
-        # above already ran, otherwise the helper issues the one read itself). This is the same
-        # call skill-orchestrate-hard/SKILL.md's `hard_orchestrate_propagate_completion` shim
-        # makes, so both engines cannot drift apart on this logic again.
-        source .claude/scripts/skill-base.sh
-        skill_orchestrate_propagate_completion "$task_number" "$TASK_TYPE" "$TASK_DIR" \
-          "${dispatch_start_ts:-9999999999}" "${recover_json:-}" "[orchestrate]"
-      else
-        # `skill_gate_completion_claim`'s Case 3/3 (phases_total == 0 AND plan_markers_verified
-        # != "true") already called system-defect-record.sh internally. Re-derive that case here
-        # from variables this caller already holds, so the observation reaches this run's ledger
-        # without reading or editing scripts/skill-base.sh. Case 1 (phases_total > 0, incomplete)
-        # is an ordinary refuse and is NOT a defect — it must not append.
-        #
-        # `record_result` is empty here: the recorder was invoked inside the gate function, not
-        # by this caller, so its stdout is not observable from this scope.
-        #
-        # This branch ONLY observes. It performs no skill_postflight_update and no state
-        # transition — the no-transition semantics documented immediately below are unchanged.
-        if [ "${phases_total:-0}" -eq 0 ] && [ "${plan_markers_verified:-}" != "true" ]; then
-          append_detected_defect "META_MISSING_AFTER_NARRATION" \
-            "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
-            "scripts/skill-base.sh:skill_gate_completion_claim" \
-            "completion claimed with phases_total=0 and unverified plan markers" ""
-        fi
-      fi
-      # On refuse: no status transition. State stays `implementing`, the gate already logged which
-      # case fired, `cycle_count` still increments at the end of this stage, and Stage 4
-      # re-dispatches implement next cycle against the same plan. MAX_CYCLES bounds this, so a
-      # misreporting agent exits `partial` rather than looping forever.
-      ;;
-    partial|failed|blocked)
-      # Tier B — in-enum exception outcome, explicitly recognized (never the silent catch-all).
-      # Deliberately NO skill_postflight_update call: skill_postflight_update in
-      # scripts/skill-base.sh has its own internal `case "$status" in researched|planned|
-      # implemented) ... *) ... skip` accept-list, so a call from here would no-op one layer
-      # deeper regardless. That is a known, currently-NON-FUNCTIONAL gap (see this task's plan's
-      # "What remains NON-FUNCTIONAL" table and the named follow-up to admit partial/blocked into
-      # that accept-list) — not something this branch can silently paper over.
-      echo "[orchestrate] Dispatch status '$dispatch_status' — recognized exception outcome. No state.json transition is performed here; the task remains at its current in-flight status. This cycle's loop counter still advances." >&2
-      ;;
-    *)
-      # Tier C — off-schema. dispatch_status is neither a success value nor a recognized
-      # exception value: it may be empty (missing `status` field), the literal `in_progress`
-      # (early-metadata-only, never a legal terminal value — see the accept-list comment above),
-      # or any other unrecognized string. A silent no-op here is exactly the defect this
-      # three-tier structure exists to close — a dispatch that in fact succeeded could be
-      # stranded and indistinguishable from one that produced nothing.
-      offschema_dispatch_status=true
-      # Phase identification ONLY — artifacts[0].type (report|plan|summary) reliably names WHICH
-      # phase wrote the artifact but is NEVER a success-vs-partial signal: the schema's own
-      # examples pair `summary` with both `implemented` and `partial` outcomes. This inference
-      # must never be used to synthesize a success verdict for a missing/invalid dispatch_status.
-      case "$handoff_artifact_type" in
-        report)  inferred_phase="research" ;;
-        plan)    inferred_phase="plan" ;;
-        summary) inferred_phase="implement" ;;
-        *)       inferred_phase="unknown" ;;
-      esac
-      offschema_display="${dispatch_status:-<empty>}"
-      echo "[OFF-SCHEMA DISPATCH STATUS - '${offschema_display}' is not in the handoff status vocabulary (researched|planned|implemented|partial|failed|blocked); the dispatch may have SUCCEEDED but its outcome cannot be trusted or applied]" >&2
-      echo "[orchestrate] ERROR: handoff $handoff_file carries an off-schema dispatch_status. Inferred phase (from artifacts[0].type, naming only — not a success signal): $inferred_phase. Remedy: inspect the handoff and the dispatch's own .return-meta.json by hand, then re-run /orchestrate $task_number." >&2
-      # Deliverable 2(b): record this Class (a) "loud but unactioned" detection. No
-      # dispatched-agent-name variable is unambiguously in scope at this shared, stage-agnostic
-      # Tier C arm, so attribution names this detecting site's own SKILL.md per Signal B's
-      # "detecting site itself" allowance.
-      record_result=$(bash .claude/scripts/system-defect-record.sh \
-        --defect-class OFF_SCHEMA_STATUS \
-        --detecting-site "skill-orchestrate/SKILL.md:stage-5-tier-c" \
-        --task "$task_number" --session "$session_id" \
-        --message "handoff dispatch_status '${offschema_display}' is off-schema" \
-        --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
-        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
-      append_detected_defect "OFF_SCHEMA_STATUS" \
-        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
-        "skill-orchestrate/SKILL.md:stage-5-tier-c" \
-        "handoff dispatch_status '${offschema_display}' is off-schema" \
-        "$record_result"
-      ;;
-  esac
-
-  # Artifact linking: extract artifact path/type (from the handoff or recovered return-meta) and
-  # link in TODO.md + state.json.
-  if [ -n "$handoff_artifact_path" ] && [ "$handoff_artifact_path" != "null" ]; then
-    case "$handoff_artifact_type" in
-      report)
-        field_name='**Research**'
-        next_field='**Plan**'
-        ;;
-      plan)
-        field_name='**Plan**'
-        next_field='**Description**'
-        ;;
-      summary)
-        field_name='**Summary**'
-        next_field='**Description**'
-        ;;
-      *)
-        field_name='**Summary**'
-        next_field='**Description**'
-        ;;
-    esac
-    skill_link_artifacts "$task_number" "$handoff_artifact_path" "$handoff_artifact_type" \
-      "$handoff_artifact_summary" "$field_name" "$next_field"
-  fi
-
-  # Off-schema halt — consumed HERE, after artifact linking above has already run, not as an
-  # inline exit inside the case statement. This preserves the dispatch's evidence (the artifact,
-  # if any, is still linked into TODO.md/state.json) rather than discarding it. Mirrors Stage 4's
-  # "Unknown state" handler precedent.
-  if [ "${offschema_dispatch_status:-false}" = "true" ]; then
+  # Off-schema halt — consumed HERE, after the script's own artifact linking has already run,
+  # not as an inline exit inside the case statement. This preserves the dispatch's evidence (the
+  # artifact, if any, is still linked into TODO.md/state.json) rather than discarding it. Mirrors
+  # Stage 4's "Unknown state" handler precedent.
+  if [ "$offschema_dispatch_status" = "true" ]; then
     echo "[orchestrate] Halting: task $task_number left at its current status. Any artifact produced by this dispatch was still linked above, preserving the evidence." >&2
     EXIT (partial)
   fi

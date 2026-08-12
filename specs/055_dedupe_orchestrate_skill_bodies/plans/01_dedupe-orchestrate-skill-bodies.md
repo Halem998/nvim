@@ -289,32 +289,43 @@ phase's commit message rather than trusting this estimate.
 
 ---
 
-### Phase 4: Extract the Stage 5 Postflight Status-Transition and Artifact-Link Tail [NOT STARTED]
+### Phase 4: Extract the Stage 5 Postflight Status-Transition and Artifact-Link Tail [COMPLETED]
 
 **Goal**: Collapse the `case "$dispatch_status"` postflight tail — the largest remaining duplicate
 and the riskiest, because it drives loop control state — into one shared script that **decides**
 while the caller **applies**.
 
 **Tasks**:
-- [ ] Enumerate every `case` arm in both engines' tails before editing (`researched`, `planned`,
+- [x] Enumerate every `case` arm in both engines' tails before editing (`researched`, `planned`,
       `implemented`, `partial|failed|blocked`, plus the artifact-type inference sub-`case` and each
-      engine's hard-only arms). Record the enumeration; it is the completeness checklist.
-- [ ] Create `agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh`. Inputs are
+      engine's hard-only arms). Record the enumeration; it is the completeness checklist. *(completed:
+      researched/planned/implemented/partial-failed-blocked/Tier-C — identical arms in both files;
+      hard-only addition is the `echo "[hard-orchestrate] skeleton=${skeleton} at refusal."`
+      diagnostic inside the `implemented` arm's refusal branch, preserved via the
+      `implemented_gate_passed` decision field)*
+- [x] Create `agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh`. Inputs are
       already-resolved scalars: `dispatch_status`, `dispatch_summary`, `phases_completed`,
       `phases_total`, `plan_markers_verified`, `handoff_artifact_{path,type,summary}`,
       `task_number`, `session_id`, `TASK_TYPE`, `TASK_DIR`, notice prefix, detecting-site string.
-- [ ] The script prints a decision JSON (at minimum: next state, `offschema_dispatch_status`,
+      *(completed: also takes `tier_c_detecting_site` as a full literal string — base/hard
+      disagree beyond a shared prefix — `command_suffix`, `handoff_file`, `loop_guard_file`, and
+      `cycle_count`, the additional explicit parameters the shared functions it calls require)*
+- [x] The script prints a decision JSON (at minimum: next state, `offschema_dispatch_status`,
       whether to halt, inferred phase, artifact-link outcome). **It never sets loop state itself** —
       the caller applies the transition inline. This is the mitigation for the state-swallowing risk.
-- [ ] Keep hard-only handling out of the shared path: `skeleton` and `sorry_inventory` reads and
+      *(completed: `offschema_dispatch_status`, `implemented_gate_passed`, `artifact_linked`,
+      `halt`, `inferred_phase`; the caller applies `EXIT (partial)` and the cycle_count increment)*
+- [x] Keep hard-only handling out of the shared path: `skeleton` and `sorry_inventory` reads and
       their logging stay inline in the hard file, or are passed as explicit opt-in flags whose
-      absence is the base-mode default. Never fold them into a common arm.
-- [ ] Do not touch the base file's Stage-5-location `marker-handoff-crosscheck` region or the hard
-      file's H1-location equivalent. They are intentionally non-parallel.
-- [ ] Preserve the three literal `handoff_artifact_{path,type,summary}=$(echo "$handoff" | jq -r ...)`
-      reads in both files — `test-handoff-reader-parity.sh` greps them file-wide.
-- [ ] Wire both engines; the two call sites must differ only by the tolerated substitutions plus the
-      hard-only flags.
+      absence is the base-mode default. Never fold them into a common arm. *(completed)*
+- [x] Do not touch the base file's Stage-5-location `marker-handoff-crosscheck` region or the hard
+      file's H1-location equivalent. They are intentionally non-parallel. *(completed — verified
+      untouched by re-reading both regions after edit)*
+- [x] Preserve the three literal `handoff_artifact_{path,type,summary}=$(echo "$handoff" | jq -r ...)`
+      reads in both files — `test-handoff-reader-parity.sh` greps them file-wide. *(completed —
+      19/19 pass)*
+- [x] Wire both engines; the two call sites must differ only by the tolerated substitutions plus the
+      hard-only flags. *(completed)*
 
 **Timing**: 2 hours
 
