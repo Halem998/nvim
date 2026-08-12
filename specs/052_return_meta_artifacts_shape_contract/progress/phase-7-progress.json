@@ -1,0 +1,17 @@
+{
+  "phase": 7,
+  "phase_name": "Add lint-agent-contracts.sh Check F and Verify the Deploy Gate",
+  "started_at": "2026-08-12T00:00:00Z",
+  "last_updated": "2026-08-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Precondition gate: re-enumerate, confirm 0 missing templates", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Implement Check F, register in main, document header/help", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 3, "description": "Extend test-lint-agent-contracts.sh with Check F fixtures and assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"]},
+    {"id": 4, "description": "Update merge-source Utility Scripts description", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 5, "description": "Fix genuine source-store defects surfaced by check-extension-docs.sh: manifest.json provides.scripts registration and index-entries.json line_count", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json", "agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

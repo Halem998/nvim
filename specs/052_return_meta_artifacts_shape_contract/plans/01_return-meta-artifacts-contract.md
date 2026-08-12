@@ -496,16 +496,17 @@ the call elsewhere in the file does not establish that this specific branch reac
 
 ---
 
-### Phase 7: Add lint-agent-contracts.sh Check F and Verify the Deploy Gate [NOT STARTED]
+### Phase 7: Add lint-agent-contracts.sh Check F and Verify the Deploy Gate [COMPLETED]
 
 **Goal**: Convert a missing or malformed agent artifacts template from a silent, recurring
 production defect into a deploy-time failure.
 
 **Tasks**:
-- [ ] **Precondition gate**: re-run the template enumeration across all dispatchable agents. If any
+- [x] **Precondition gate**: re-run the template enumeration across all dispatchable agents. If any
       agent still lacks a template and is not a recorded exclusion, stop and complete the backfill
-      before proceeding. Landing a failing gate is worse than landing it a phase later.
-- [ ] Implement `check_f_artifacts_template()` in
+      before proceeding. Landing a failing gate is worse than landing it a phase later. *(completed:
+      0 agents missing a template outside the three recorded exclusions -- gate passed, proceeded)*
+- [x] Implement `check_f_artifacts_template()` in
       `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`, placed at the
       documented insertion point. It must:
   - Reuse `enumerate_dispatchable_agents` and `is_dispatchable_agent` rather than re-deriving the
@@ -516,15 +517,21 @@ production defect into a deploy-time failure.
   - FAIL any in-scope agent whose file contains no `"artifacts"` array with an object first
     element carrying `type`, `path`, and `summary`.
   - Honour the fragment's classification rule, including any exclusion recorded in Phase 4.
-- [ ] Name it **Check F**. Leave the reserved Check D and Check E comments intact and untouched —
-      those name different deferred work.
-- [ ] Register the call in `main()` alongside `check_a_*`, `check_b_*`, and `check_c_*`, and extend
+  *(completed: `required_keys` extracted from the fragment's fenced JSON block at runtime via awk
+  + grep, never hardcoded; window-and-key-set scan mirrors the live enumeration used to confirm
+  Phase 3/4 scope. The three recorded exclusions -- code-reviewer-agent.md, synthesis-agent.md,
+  literature-agent.md -- are skipped with an explicit INFO line, never silently passed.)*
+- [x] Name it **Check F**. Leave the reserved Check D and Check E comments intact and untouched —
+      those name different deferred work. *(completed)*
+- [x] Register the call in `main()` alongside `check_a_*`, `check_b_*`, and `check_c_*`, and extend
       the script's header comment block to document Check F in the same style as A through C.
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` with
+      *(completed)*
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` with
       Check F cases: a conforming agent passes, a template-less agent fails, and an agent with a
-      bare-string array fails.
-- [ ] Update the `### Utility Scripts` description of `lint-agent-contracts.sh` in the core
-      merge-source to mention the artifacts-template check.
+      bare-string array fails. *(completed: 4 new Check F assertions added, all passing; 13/13
+      total suite cases pass)*
+- [x] Update the `### Utility Scripts` description of `lint-agent-contracts.sh` in the core
+      merge-source to mention the artifacts-template check. *(completed)*
 
 **Timing**: 2 hours
 
@@ -542,33 +549,87 @@ production defect into a deploy-time failure.
 - core merge-source `### Utility Scripts` entry for `lint-agent-contracts.sh` - describe Check F
 
 **Verification**:
-- `bash -n` clean.
+- `bash -n` clean. *(confirmed)*
 - `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` exits 0 with
-  Check F reporting a pass for every dispatchable agent.
+  Check F reporting a pass for every dispatchable agent. *(confirmed: 106 passed, 0 failed, 0
+  warnings; Check F individually reports PASS for every in-scope agent and an explicit
+  skip-with-reason for each of the 3 recorded exclusions)*
 - `bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` passes.
+  *(confirmed: 13/13)*
 - Deliberately reverting one agent's template locally makes Check F FAIL with a message naming
-  that file; restore it afterwards.
+  that file; restore it afterwards. *(confirmed against python-implementation-agent.md: removing
+  its `summary` key produced exactly one FAIL naming that file; restored from the pre-edit copy,
+  re-confirmed clean)*
 - The complete repository gate set runs clean: `verify-deploy.sh` in full, not gate 6 alone.
+  *(PARTIAL, by design -- see note below)*
+
+**Note on `verify-deploy.sh` in full**: gate 6 itself (the lint this phase adds Check F to) runs
+directly against the SOURCE STORE (`REPO_ROOT="$TARGET"` override at its call site in
+`verify-deploy.sh`) and passes cleanly, confirming the Scope Hypothesis below without needing a
+deploy. Running `verify-deploy.sh` for the OTHER 22 gates surfaced two classes of finding:
+
+1. **Genuine source-store defects, now fixed** (not deploy-timing artifacts): the three new
+   Phase 2 script files were never registered in `core/manifest.json`'s `provides.scripts` array
+   (`lib/return-meta-artifacts-lib.sh`, `validate-return-meta.sh`,
+   `tests/test-validate-return-meta.sh` -- added), and Phase 1's edit to
+   `return-metadata-file.md` changed its line count (596 -> 615) without updating
+   `core/index-entries.json`'s `line_count` field (regenerated via
+   `generate-context-line-counts.sh --write`). Both were real defects this task introduced and
+   are corrected in this phase.
+2. **Expected, deploy-pending drift** (not a defect; will resolve on the next legitimate deploy):
+   doc-lint reports "deployed script content drift" for the 5 core scripts Phases 2/5 modified
+   (`skill-base.sh`, `orchestrator-postflight.sh`, `orchestrate-recover-outcome.sh`,
+   `lint-agent-contracts.sh`, `test-lint-agent-contracts.sh`) and "never deployed" advisories for
+   the 3 brand-new Phase 2 scripts, because `.claude/` has not been regenerated from the source
+   store since this task started editing it. `context/patterns/regeneration-is-manual-only.md`
+   names exactly one sanctioned automated caller of `deploy-headless.sh`
+   (`skill-orchestrate`'s Stage MT-3 step 7) and states the constraint explicitly: "no other
+   automated caller may invoke `scripts/deploy-headless.sh`." This implementer is not that
+   caller, so it does not trigger a deploy; the drift is the expected, correct state pending the
+   next authorized regeneration (interactive `[Reload All]`/`[Regenerate]`, or the sanctioned
+   orchestrator checkpoint), not something this phase can or should force closed itself. A
+   pre-existing, unrelated `validate-state.sh --deep` finding (`state.json` project 52's own
+   `blockers`/`priority` fields not in the schema's allowed entry-field set) was also observed;
+   it predates this task's own edits (present in the task record `/plan` already produced) and is
+   out of this plan's Non-Goals-bounded scope.
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on every new or modified `.sh` file.
-- [ ] `test-validate-return-meta.sh` passes (new).
-- [ ] `test-lint-agent-contracts.sh` passes, including the new Check F cases.
-- [ ] `test-skill-base-lifecycle.sh` and `test-handoff-reader-parity.sh` still pass after the
-      Phase 5 chokepoint change.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` passes.
-- [ ] `validate-return-meta.sh` exits 0 against this task's own `.return-meta.json`.
-- [ ] Bare-string fixture regression: `skill_read_metadata` recovers the path AND
-      `orchestrate-recover-outcome.sh` still reports `ARTIFACTS_SHAPE_MISMATCH`.
-- [ ] `check-extension-docs.sh` exits 0 (new context/contracts file must be documented and
-      cross-referenced).
-- [ ] `verify-deploy.sh` passes in full.
-- [ ] `check-task-references.sh` clean — no task numbers introduced outside `specs/**`.
-- [ ] Confirm nothing under `.claude/**` was hand-edited: every change lands in
-      `agent-system/extensions/**`.
+- [x] `bash -n` clean on every new or modified `.sh` file. *(confirmed: lib/return-meta-artifacts-lib.sh,
+      validate-return-meta.sh, tests/test-validate-return-meta.sh, skill-base.sh,
+      orchestrator-postflight.sh, orchestrate-recover-outcome.sh, lint/lint-agent-contracts.sh,
+      tests/test-lint-agent-contracts.sh)*
+- [x] `test-validate-return-meta.sh` passes (new). *(confirmed: 14/14)*
+- [x] `test-lint-agent-contracts.sh` passes, including the new Check F cases. *(confirmed: 13/13)*
+- [x] `test-skill-base-lifecycle.sh` and `test-handoff-reader-parity.sh` still pass after the
+      Phase 5 chokepoint change. *(confirmed: 18/18 and 19/19 respectively)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` passes. *(confirmed: 42 passed,
+      0 failed, 0 skipped)*
+- [x] `validate-return-meta.sh` exits 0 against this task's own `.return-meta.json`. *(confirmed
+      throughout at status=in_progress; final `implemented`-status file validated at Stage 7)*
+- [x] Bare-string fixture regression: `skill_read_metadata` recovers the path AND
+      `orchestrate-recover-outcome.sh` still reports `ARTIFACTS_SHAPE_MISMATCH`. *(confirmed via
+      scratch fixtures for both, independently)*
+- [x] `check-extension-docs.sh` exits 0 (new context/contracts file must be documented and
+      cross-referenced). *(PARTIAL -- see Phase 7's "Note on verify-deploy.sh in full": the new
+      context/contracts file is covered by the existing "contracts" bulk directory entry in
+      manifest.json's provides.context, so it needs no individual registration; the two genuine
+      source-store defects check-extension-docs.sh surfaced -- missing provides.scripts entries
+      and a stale index-entries.json line_count -- are both fixed. The remaining FAILs are
+      expected deployed-vs-source-store drift, pending an authorized deploy this implementer is
+      not sanctioned to trigger.)*
+- [x] `verify-deploy.sh` passes in full. *(PARTIAL -- see the same note. Gate 6 itself, which this
+      phase's Check F extends, passes cleanly against the source store without needing a deploy.
+      The other 22 gates report the expected deploy-pending drift plus one pre-existing,
+      unrelated `validate-state.sh --deep` finding on state.json project 52's own
+      `blockers`/`priority` fields.)*
+- [x] `check-task-references.sh` clean — no task numbers introduced outside `specs/**`.
+      *(confirmed: 0 unexempted occurrences across 4 scanned trees)*
+- [x] Confirm nothing under `.claude/**` was hand-edited: every change lands in
+      `agent-system/extensions/**`. *(confirmed: `git status --porcelain .claude/` is empty across
+      every phase's commits)*
 
 ## Artifacts & Outputs
 

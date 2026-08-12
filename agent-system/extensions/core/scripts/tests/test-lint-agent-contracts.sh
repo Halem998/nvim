@@ -19,6 +19,7 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LINT_SRC="$SCRIPT_DIR/../lint/lint-agent-contracts.sh"
 FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/no-task-references-bullet.md"
+ARTIFACTS_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/return-meta-artifacts-template.md"
 
 PASSED=0
 FAILED=0
@@ -35,6 +36,10 @@ if [ ! -f "$FRAGMENT_SRC" ]; then
   echo "ERROR: expected canonical fragment at $FRAGMENT_SRC" >&2
   exit 1
 fi
+if [ ! -f "$ARTIFACTS_FRAGMENT_SRC" ]; then
+  echo "ERROR: expected canonical fragment at $ARTIFACTS_FRAGMENT_SRC" >&2
+  exit 1
+fi
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
@@ -45,8 +50,21 @@ mkdir -p "$WORKDIR/agent-system/extensions/core/agents"
 mkdir -p "$WORKDIR/agent-system/extensions/core/context/contracts"
 mkdir -p "$WORKDIR/agent-system/extensions/core/docs/reference/standards"
 cp "$FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/no-task-references-bullet.md"
+cp "$ARTIFACTS_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"
 
 BULLET_LINE='Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead'
+
+# A correctly-shaped artifacts template, used by every fixture that should PASS Check F (i.e.
+# every fixture not specifically testing a Check F violation).
+ARTIFACTS_TEMPLATE_BLOCK='```json
+"artifacts": [
+  {
+    "type": "summary",
+    "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md",
+    "summary": "One-line description."
+  }
+]
+```'
 
 # run_lint: invokes the real lint script against the scratch tree, capturing stdout+exit code.
 run_lint() {
@@ -69,6 +87,10 @@ allowed-tools: Read, Write
 
 # Rogue Key Agent
 
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
 ## Critical Requirements
 
 **MUST NOT**:
@@ -85,6 +107,10 @@ description: fixture agent with no model field
 ---
 
 # No Model Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
 
 ## Critical Requirements
 
@@ -105,6 +131,10 @@ model: sonnet
 ---
 
 # General Implementation Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
 
 ## Critical Requirements
 
@@ -128,17 +158,90 @@ EOF
 cat > "$WORKDIR/agent-system/extensions/core/agents/compliant-agent.md" <<EOF
 ---
 name: compliant-agent
-description: fixture agent that fully complies with all three checks
+description: fixture agent that fully complies with all four checks
 model: sonnet
 tools: Read, Write
 ---
 
 # Compliant Agent
 
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
 ## Critical Requirements
 
 **MUST NOT**:
 1. $BULLET_LINE
+EOF
+
+# =====================================================================
+# Fixture: template-less agent -- no "artifacts" occurrence at all -- must fail Check F.
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/check-f-templateless-agent.md" <<EOF
+---
+name: check-f-templateless-agent
+description: fixture agent with no artifacts template at all
+model: sonnet
+---
+
+# Check F Templateless Agent
+
+## Write Metadata
+
+Write to \`specs/{NNN}_{SLUG}/.return-meta.json\`.
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+EOF
+
+# =====================================================================
+# Fixture: bare-string artifacts array -- has the "artifacts" key, but never as an object with
+# type/path/summary -- must fail Check F (the exact malformed shape this whole task closes).
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/check-f-barestring-agent.md" <<EOF
+---
+name: check-f-barestring-agent
+description: fixture agent whose artifacts array is a bare-string array (the malformed shape)
+model: sonnet
+---
+
+# Check F Barestring Agent
+
+## Write Metadata
+
+\`\`\`json
+"artifacts": ["specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md"]
+\`\`\`
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+EOF
+
+# =====================================================================
+# Fixture: conforming Check F agent -- carries the correct object-shaped template -- must pass.
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/check-f-conforming-agent.md" <<EOF
+---
+name: check-f-conforming-agent
+description: fixture agent carrying a correct object-shaped artifacts template
+model: sonnet
+---
+
+# Check F Conforming Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
 EOF
 
 result="$(run_lint)"
@@ -188,6 +291,37 @@ if echo "$out" | grep -F "compliant-agent.md" | grep -q "FAIL"; then
   fail "negative: compliant-agent.md unexpectedly failed a check"
 else
   pass "negative: compliant-agent.md produces no FAIL against it"
+fi
+
+# Positive: check-f-templateless-agent.md (no artifacts key at all) fails Check F.
+if echo "$out" | grep -qF "check-f-templateless-agent.md: missing an object-shaped artifacts array"; then
+  pass "positive: check-f-templateless-agent.md fails Check F (no artifacts template)"
+else
+  fail "positive: expected Check F failure for check-f-templateless-agent.md, not found in output"
+fi
+
+# Positive: check-f-barestring-agent.md (bare-string array, the malformed shape this task
+# closes) fails Check F.
+if echo "$out" | grep -qF "check-f-barestring-agent.md: missing an object-shaped artifacts array"; then
+  pass "positive: check-f-barestring-agent.md fails Check F (bare-string artifacts array)"
+else
+  fail "positive: expected Check F failure for check-f-barestring-agent.md, not found in output"
+fi
+
+# Negative: check-f-conforming-agent.md (correct object-shaped template) passes Check F --
+# produces no FAIL line against it.
+if echo "$out" | grep -F "check-f-conforming-agent.md" | grep -q "FAIL"; then
+  fail "negative: check-f-conforming-agent.md unexpectedly failed a check"
+else
+  pass "negative: check-f-conforming-agent.md produces no FAIL against it"
+fi
+
+# Positive: check-f-conforming-agent.md explicitly PASSES Check F (not just "no FAIL" -- a
+# genuine pass line naming it).
+if echo "$out" | grep -qF "check-f-conforming-agent.md: carries an object-shaped artifacts template"; then
+  pass "positive: check-f-conforming-agent.md explicitly passes Check F"
+else
+  fail "positive: expected an explicit Check F PASS line for check-f-conforming-agent.md, not found in output"
 fi
 
 # =====================================================================

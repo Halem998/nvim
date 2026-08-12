@@ -383,7 +383,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 596,
+      "line_count": 615,
       "keywords": [
         "format",
         "metadata",

@@ -13,6 +13,14 @@
 #      the classification rule in context/contracts/no-task-references-bullet.md. The expected
 #      bullet text is read from that fragment file at runtime, never hardcoded here, so the
 #      fragment stays load-bearing rather than decorative.
+#   F. Return-meta `artifacts` template presence: every dispatchable agent that writes
+#      `.return-meta.json` must carry an object-shaped `artifacts` array (keys `type`, `path`,
+#      `summary`) somewhere in its file -- a bare-string array or a missing template both FAIL.
+#      The required key set is read from context/contracts/return-meta-artifacts-template.md's
+#      fenced JSON template at runtime, never hardcoded here, mirroring Check C's own
+#      read-from-fragment mechanism. A small, explicitly recorded exclusion list (agents that do
+#      NOT write `.return-meta.json` at all -- see that fragment's classification rule) is
+#      skipped, not failed.
 #
 # Dispatchable-agent detector (shared, reusable): a file under an `agents/`-named path counts as
 # a dispatchable agent only if its first line is `---` and its frontmatter block contains a
@@ -23,6 +31,7 @@
 # body-skeleton-drift lint (Check D) and the deferred terminal-metadata-presence lint (Check E)
 # are expected to reuse `is_dispatchable_agent`/`enumerate_dispatchable_agents` rather than
 # re-deriving the detector -- see the commented insertion point near the bottom of this file.
+# Check F (implemented, unlike D/E) already reuses both, per the same instruction.
 #
 # Root resolution: uses `git rev-parse --show-toplevel` (falling back to a `REPO_ROOT` env
 # override, then to a script-relative default) rather than the scripts/-depth-specific
@@ -63,6 +72,7 @@ while [[ $# -gt 0 ]]; do
       echo "  A. Frontmatter key validity (allowed-tools:/mcp-servers: forbidden; unknown keys warned)"
       echo "  B. model: presence and validity (opus|sonnet|haiku)"
       echo "  C. No-task-references MUST-NOT bullet presence for the curated in-scope agent set"
+      echo "  F. Return-meta artifacts template presence (object-shaped, keys read from the fragment)"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found, 2 = environment/usage error"
       exit 0
@@ -87,6 +97,7 @@ fi
 AGENTS_ROOT="$REPO_ROOT/agent-system/extensions"
 STANDARD_FILE="$REPO_ROOT/agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"
 FRAGMENT_FILE="$REPO_ROOT/agent-system/extensions/core/context/contracts/no-task-references-bullet.md"
+ARTIFACTS_TEMPLATE_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"
 
 if [[ ! -d "$AGENTS_ROOT" ]]; then
   echo "ERROR: agents root not found at $AGENTS_ROOT" >&2
@@ -296,6 +307,108 @@ check_c_no_task_references_bullet() {
   done
 }
 
+# ── Check F: return-meta artifacts template presence ────────────────────────────────────────
+# Recorded exclusions: dispatchable agents that do NOT write `.return-meta.json` at all, per
+# context/contracts/return-meta-artifacts-template.md's classification rule ("An agent MUST
+# carry this template if and only if it writes .return-meta.json"). Confirmed by reading each
+# file's full terminal-metadata behavior, not inferred from absence alone:
+#   - core/agents/code-reviewer-agent.md: console-only bullet-summary return, no file-based
+#     metadata exchange anywhere in the file.
+#   - core/agents/synthesis-agent.md: Output Contract states the lead uses only its compact
+#     console summary for postflight metadata; never writes .return-meta.json.
+#   - literature/agents/literature-agent.md: zero occurrences of ".return-meta.json" anywhere.
+EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS=(
+  "agent-system/extensions/core/agents/code-reviewer-agent.md"
+  "agent-system/extensions/core/agents/synthesis-agent.md"
+  "agent-system/extensions/literature/agents/literature-agent.md"
+)
+
+is_excluded_from_artifacts_template() {
+  local rel="$1"
+  local ex
+  for ex in "${EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS[@]}"; do
+    [[ "$rel" == "$ex" ]] && return 0
+  done
+  return 1
+}
+
+# Scans $1 for an "artifacts" occurrence whose following ~6 lines contain ALL of the required
+# keys (passed as remaining args) as quoted-key patterns ("key":). This is the same
+# window-and-key-set logic used to re-verify Phase 3/4's scope live during authoring -- a bare
+# `"artifacts": []` or `"artifacts": ["path.md"]` never satisfies this (no `"type":`/`"path":`/
+# `"summary":` keys appear together in its window), only a genuine object-shaped element does.
+has_artifacts_object_shape() {
+  local f="$1"
+  shift
+  local -a keys=("$@")
+  local lines
+  lines="$(grep -n '"artifacts"' "$f" 2>/dev/null | cut -d: -f1)"
+  [[ -z "$lines" ]] && return 1
+  local line window all_present k
+  for line in $lines; do
+    window="$(sed -n "${line},$((line + 6))p" "$f")"
+    all_present=true
+    for k in "${keys[@]}"; do
+      if ! grep -qE "\"${k}\"[[:space:]]*:" <<<"$window"; then
+        all_present=false
+        break
+      fi
+    done
+    [[ "$all_present" == "true" ]] && return 0
+  done
+  return 1
+}
+
+check_f_artifacts_template() {
+  echo ""
+  echo "--- Check F: return-meta artifacts template presence ---"
+
+  if [[ ! -f "$ARTIFACTS_TEMPLATE_FRAGMENT" ]]; then
+    log_fail "Check F: canonical fragment not found at ${ARTIFACTS_TEMPLATE_FRAGMENT#"$REPO_ROOT"/} -- cannot verify template shape"
+    return
+  fi
+
+  # Extract the required key set from the fragment's fenced JSON block at runtime -- never
+  # hardcoded here, mirroring Check C's read-from-fragment mechanism.
+  local fragment_json
+  fragment_json="$(awk '/^```json$/{flag=1;next} /^```$/{if(flag) exit} flag' "$ARTIFACTS_TEMPLATE_FRAGMENT")"
+  if [[ -z "$fragment_json" ]]; then
+    log_fail "Check F: could not extract fenced JSON template from fragment file"
+    return
+  fi
+  local -a required_keys
+  mapfile -t required_keys < <(grep -oE '"[a-zA-Z_]+":' <<<"$fragment_json" | tr -d '":' | sort -u)
+  if [[ "${#required_keys[@]}" -eq 0 ]]; then
+    log_fail "Check F: could not extract any keys from the fragment's fenced JSON template"
+    return
+  fi
+  log_info "Check F: required keys from fragment: ${required_keys[*]}"
+
+  local any_agent=false
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    any_agent=true
+    local rel
+    rel="$(rel_path "$f")"
+    if is_excluded_from_artifacts_template "$rel"; then
+      log_info "Check F: $rel is a recorded exclusion (does not write .return-meta.json) -- skipped"
+      continue
+    fi
+    log_info "Checking $rel"
+    if has_artifacts_object_shape "$f" "${required_keys[@]}"; then
+      log_pass "$rel: carries an object-shaped artifacts template (keys: ${required_keys[*]})"
+    else
+      log_fail "$rel: missing an object-shaped artifacts array with keys (${required_keys[*]}) -- expected shape from $(rel_path "$ARTIFACTS_TEMPLATE_FRAGMENT")"
+    fi
+  done < <(enumerate_dispatchable_agents)
+
+  if [[ "$any_agent" == false ]]; then
+    log_fail "Check F: no dispatchable agents found under $AGENTS_ROOT"
+  else
+    log_pass "Check F: scanned all dispatchable agents for the return-meta artifacts template"
+  fi
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) and
 # Check E (terminal-metadata section presence, keyed off return-metadata-file.md's normative
@@ -317,6 +430,7 @@ main() {
   check_a_frontmatter_key_validity
   check_b_model_presence
   check_c_no_task_references_bullet
+  check_f_artifacts_template
 
   echo ""
   echo "========================================"
