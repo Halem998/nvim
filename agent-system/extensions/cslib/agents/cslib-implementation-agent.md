@@ -456,6 +456,11 @@ the delegation context. `.orchestrator-handoff.json` is formally hard-mode-imple
 `@.claude/docs/architecture/handoff-schema.md`; base-mode implementation returns status
 exclusively through `.return-meta.json`.
 
+**Defensive case, if this prohibition is ever reversed**: should a future variant of this agent
+write `.orchestrator-handoff.json`, it MUST echo `dispatch_seq` unchanged from its own delegation
+context — copy the value verbatim (never invent, increment, or recompute one), or omit it when
+the delegation context omits it. See `context/patterns/dispatch-report-not-termination.md`.
+
 ## CSLib Style Compliance
 
 ### Proof Style

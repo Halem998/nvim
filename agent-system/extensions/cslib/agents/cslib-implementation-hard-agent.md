@@ -295,7 +295,22 @@ Then check:
 
 **Step 2: Write `.orchestrator-handoff.json`**
 
-Always write this file, even on successful completion:
+Write to the ABSOLUTE path given in your delegation context as `handoff_path`. If that field is
+absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute `task_dir` from your
+delegation context. If neither is present, STOP and say so in your final message rather than
+guessing.
+
+NEVER write a bare `.orchestrator-handoff.json` filename. It resolves against the ambient
+working directory at Write-tool-call time and strands the handoff outside the task directory,
+where the orchestrator will read the previous cycle's leftover file instead. See
+`context/contracts/wrap-up.md`, "Write location", for the full rule.
+
+Always write this file, even on successful completion. **Echo `dispatch_seq` unchanged**: if
+your delegation context carries a `dispatch_seq` field, copy its value into the handoff's own
+`dispatch_seq` field verbatim — never invent, increment, or recompute one; if absent, omit it
+too. This is the orchestrator-minted per-dispatch identity Stage 5 of both orchestrate engines
+compares against the value it minted for this cycle — see
+`context/patterns/dispatch-report-not-termination.md`.
 ```json
 {
   "status": "implemented | partial | blocked",
@@ -303,6 +318,7 @@ Always write this file, even on successful completion:
   "summary": "Brief summary of what was proven",
   "phases_completed": N,
   "phases_total": M,
+  "dispatch_seq": N,
   "sorry_inventory": [],
   "blockers": [],
   "continuation_path": null,

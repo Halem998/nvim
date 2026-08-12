@@ -120,6 +120,12 @@ either — `.return-meta.json` is the sole status channel for research, and
 `skill-orchestrate`'s Stage 5 already treats an absent handoff from a research dispatch as the
 expected outcome and recovers through `scripts/orchestrate-recover-outcome.sh`.
 
+**Defensive case, if this prohibition is ever reversed**: should a future variant of this skill's
+subagent write `.orchestrator-handoff.json`, it MUST echo `dispatch_seq` unchanged from its own
+delegation context — copy the value verbatim (never invent, increment, or recompute one), or
+omit it when the delegation context omits it. See
+`context/patterns/dispatch-report-not-termination.md`.
+
 ### Stage 6: Update Task Status (Postflight)
 Update state.json and TODO.md based on result.
 

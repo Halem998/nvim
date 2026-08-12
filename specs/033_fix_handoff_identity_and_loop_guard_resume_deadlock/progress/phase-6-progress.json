@@ -1,0 +1,33 @@
+{
+  "phase": 6,
+  "phase_name": "Extension writer contracts (cslib, lean) plus cslib handoff_path prerequisite",
+  "started_at": "2026-08-12T03:50:00Z",
+  "last_updated": "2026-08-12T04:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "cslib-implementation-hard-agent.md prerequisite fix + dispatch_seq", "status": "done", "files_touched": ["agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md"]},
+    {"id": 2, "description": "cslib writer contracts", "status": "done", "files_touched": [
+      "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-research-agent.md",
+      "agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md",
+      "agent-system/extensions/cslib/skills/skill-cslib-research/SKILL.md"
+    ]},
+    {"id": 3, "description": "lean writer contracts", "status": "done", "files_touched": [
+      "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+      "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+      "agent-system/extensions/lean/context/contracts/anti-analysis.md"
+    ]},
+    {"id": 4, "description": "index-entries.json line_count fix for wrap-up.md and anti-analysis.md", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.note",
+      "description": "check-extension-docs.sh reports deployed-script content drift for validate-handoff.sh/test-validate-handoff.sh against the not-yet-redeployed .claude/ tree",
+      "type": "deferred",
+      "reason": "Phase 13 explicitly owns the redeploy + full gate run against the redeployed tree; running deploy-headless.sh mid-plan is out of this phase's scope",
+      "annotation": "*(deviation: deferred to task 13's redeploy)*"
+    }
+  ]
+}

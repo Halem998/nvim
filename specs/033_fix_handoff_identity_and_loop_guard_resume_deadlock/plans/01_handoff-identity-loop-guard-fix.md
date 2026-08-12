@@ -377,25 +377,29 @@ out of this phase's scope and are handled elsewhere in the plan.
 
 ---
 
-### Phase 6: Extension writer contracts (cslib, lean) plus the cslib `handoff_path` prerequisite [NOT STARTED]
+### Phase 6: Extension writer contracts (cslib, lean) plus the cslib `handoff_path` prerequisite [COMPLETED]
 
 **Goal**: Sweep the non-core writers the acceptance criteria name, and close the pre-existing
 cslib gap that would otherwise make cslib deaf to any dynamic handoff contract.
 
 **Tasks**:
-- [ ] **Prerequisite fix**: change `cslib-implementation-hard-agent.md`'s handoff-write step from
+- [x] **Prerequisite fix**: change `cslib-implementation-hard-agent.md`'s handoff-write step from
       the hardcoded bare `.orchestrator-handoff.json` filename to the dynamic form lean already
       uses — write to the absolute path given in the delegation context as `handoff_path`, with
       `{task_dir}/.orchestrator-handoff.json` as the documented fallback when that field is
-      absent. Match lean's wording so the two extensions do not drift.
-- [ ] Add the `dispatch_seq` echo-back instruction to every cslib writer:
+      absent. Match lean's wording so the two extensions do not drift. *(completed: wording
+      matched verbatim to lean-implementation-hard-agent.md's Step 1)*
+- [x] Add the `dispatch_seq` echo-back instruction to every cslib writer:
       `cslib-implementation-hard-agent.md`, `cslib-implementation-agent.md`,
       `cslib-research-agent.md`, `skill-cslib-implementation-hard/SKILL.md`,
-      `skill-cslib-research/SKILL.md`.
-- [ ] Add the same instruction to every lean writer: `lean-implementation-hard-agent.md`,
+      `skill-cslib-research/SKILL.md`. *(completed: the two non-writer files
+      (cslib-implementation-agent.md, cslib-research-agent.md) get a defensive-case note next to
+      their existing "MUST NOT write" prohibition, matching Phase 5's core precedent)*
+- [x] Add the same instruction to every lean writer: `lean-implementation-hard-agent.md`,
       `skill-lean-implementation-hard/SKILL.md`, and `lean/context/contracts/anti-analysis.md`
-      where it describes the handoff write.
-- [ ] Use the same wording as Phase 5's core contract so a future reader can diff them.
+      where it describes the handoff write. *(completed)*
+- [x] Use the same wording as Phase 5's core contract so a future reader can diff them.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -270,6 +270,12 @@ working directory at Write-tool-call time and strands the handoff outside the ta
 where the orchestrator will read the previous cycle's leftover file instead. See
 `context/contracts/wrap-up.md`, "Write location", for the full rule.
 
+**Echo `dispatch_seq` unchanged.** If your delegation context carries a `dispatch_seq` field,
+copy its value into the handoff's own `dispatch_seq` field verbatim — never invent, increment,
+or recompute one; if absent, omit it too. This is the orchestrator-minted per-dispatch identity
+Stage 5 of both orchestrate engines compares against the value it minted for this cycle — see
+`context/patterns/dispatch-report-not-termination.md`.
+
 ```json
 {
   "status": "implemented | partial | blocked",
@@ -277,6 +283,7 @@ where the orchestrator will read the previous cycle's leftover file instead. See
   "summary": "Brief summary of what was accomplished",
   "phases_completed": N,
   "phases_total": M,
+  "dispatch_seq": N,
   "sorry_inventory": [
     {
       "file": "Theories/Foo.lean",

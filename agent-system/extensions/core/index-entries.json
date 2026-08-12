@@ -2566,7 +2566,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 163,
+      "line_count": 172,
       "keywords": [
         "wrap-up",
         "handoff",

@@ -184,9 +184,16 @@ Prepare delegation context for the subagent with per-phase dispatch parameters:
   "continuation_context": {continuation_context_or_null},
   "metadata_file_path": "specs/{N}_{SLUG}/.return-meta.json",
   "task_dir": "{ABSOLUTE path to the task directory}",
-  "handoff_path": "{ABSOLUTE path the agent MUST write its handoff to}"
+  "handoff_path": "{ABSOLUTE path the agent MUST write its handoff to}",
+  "dispatch_seq": "{dispatch_seq from this skill's own delegation context, forwarded unchanged; omit if absent}"
 }
 ```
+
+**Forward `dispatch_seq` unchanged.** If this skill's own delegation context carries a
+`dispatch_seq` field, forward it into the sub-agent's delegation context above verbatim — the
+same pass-through treatment already given to `territory` and `handoff_path`. Never invent,
+increment, or recompute a value at this layer; only the orchestrator mints one. If absent, omit
+the field. See `context/patterns/dispatch-report-not-termination.md`.
 
 ---
 

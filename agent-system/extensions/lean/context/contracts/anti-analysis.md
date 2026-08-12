@@ -109,3 +109,10 @@ to track leaf and strategic sorries across dispatch boundaries. At the end of ea
    follow_up_task}`
 3. The orchestrator uses sorry_inventory to dispatch targeted follow-ups
 4. A dispatch with sorries but an empty sorry_inventory is NON-CONFORMING
+
+**Echo `dispatch_seq` alongside `sorry_inventory`.** The same handoff write that carries
+`sorry_inventory` MUST also echo `dispatch_seq` unchanged from the delegation context, when
+present — copy the value verbatim (never invent, increment, or recompute one); omit it when the
+delegation context omits it. This is the orchestrator-minted per-dispatch identity Stage 5 of
+both orchestrate engines compares against the value it minted for the current cycle — see
+`context/patterns/dispatch-report-not-termination.md`.

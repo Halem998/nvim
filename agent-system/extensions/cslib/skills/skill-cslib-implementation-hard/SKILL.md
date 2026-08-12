@@ -203,9 +203,16 @@ Pass anti-analysis contract reference and territory params (when applicable):
   "phase_number": "{next_phase when orchestrator_mode=true, null otherwise}",
   "territory": "{territory params from orchestrate-hard dispatch, null if not provided}",
   "orchestrator_mode": "{orchestrator_mode}",
-  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
+  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json",
+  "dispatch_seq": "{dispatch_seq from this skill's own delegation context, forwarded unchanged; omit if absent}"
 }
 ```
+
+**Forward `dispatch_seq` unchanged.** If this skill's own delegation context carries a
+`dispatch_seq` field, forward it into the sub-agent's delegation context above verbatim — the
+same pass-through treatment already given to `territory`. Never invent, increment, or recompute
+a value at this layer; only the orchestrator mints one. If absent, omit the field. See
+`context/patterns/dispatch-report-not-termination.md`.
 
 > **CRITICAL**: No source reading before delegation. The subagent handles all codebase exploration.
 
