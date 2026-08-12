@@ -1,7 +1,7 @@
 # Implementation Plan: Task #1016
 
 - **Task**: 1016 - Fix the register-bare/acquire-suffixed session-id pattern in research.md, plan.md, implement.md
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None (the reference fix in `skill-orchestrate/SKILL.md` Stage MT-4 has already landed)
 - **Research Inputs**: specs/1016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md
