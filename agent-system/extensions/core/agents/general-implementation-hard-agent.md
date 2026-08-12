@@ -355,7 +355,15 @@ where the orchestrator will instead read the previous cycle's leftover file. See
 Always write this file, even on successful completion. `artifacts` MUST name the implementation
 summary file this dispatch produced, with `type: "summary"` — omitting it (or leaving it `[]`
 on an `implemented` handoff) silently breaks artifact linking, because both orchestrate engines
-read `.artifacts[0].path` to decide whether to call `skill_link_artifacts`:
+read `.artifacts[0].path` to decide whether to call `skill_link_artifacts`.
+
+**Echo `dispatch_seq` unchanged.** If your delegation context carries a `dispatch_seq` field,
+copy its value into the handoff's own `dispatch_seq` field verbatim — never invent, increment,
+or recompute one. This is the orchestrator-minted per-dispatch identity Stage 5 of both
+orchestrate engines compares against the value it minted for this cycle, to discriminate a
+still-live predecessor's late write from this dispatch's own report (see
+`context/patterns/dispatch-report-not-termination.md`). If `dispatch_seq` is absent from your
+delegation context, omit it from the handoff too — do not fabricate a value.
 ```json
 {
   "status": "implemented | partial | blocked",
@@ -365,6 +373,7 @@ read `.artifacts[0].path` to decide whether to call `skill_link_artifacts`:
   ],
   "phases_completed": N,
   "phases_total": M,
+  "dispatch_seq": N,
   "sorry_inventory": [],
   "blockers": [],
   "continuation_path": null

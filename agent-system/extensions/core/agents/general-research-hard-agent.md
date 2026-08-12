@@ -205,6 +205,14 @@ and its consumer allowlist are implementation-agent-only. A minimal prior-handof
 `skill-researcher{,-hard}` (Option B, mirroring `subagent-continuation-loop.md`'s `is_successor`
 shape) is a recommended follow-up task, not implemented here.
 
+**Defensive case, if this scoping decision is ever reversed**: should a future variant of this
+agent write `.orchestrator-handoff.json`, it MUST echo `dispatch_seq` unchanged — copy the value
+from the delegation context's `dispatch_seq` field into the handoff's own `dispatch_seq` field
+verbatim (never invent, increment, or recompute one), or omit it entirely when the delegation
+context omits it. This is the orchestrator-minted per-dispatch identity Stage 5 of both
+orchestrate engines compares against the value it minted for this cycle — see
+`context/patterns/dispatch-report-not-termination.md`.
+
 ### Stage 4: Synthesize Findings
 
 Compile discovered information:

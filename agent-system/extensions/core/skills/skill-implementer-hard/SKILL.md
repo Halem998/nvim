@@ -258,9 +258,19 @@ Ladder), and territory params (when applicable):
   "orchestrator_mode": "{orchestrator_mode}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json",
   "task_dir": "{task_dir_abs — ABSOLUTE path to the task directory}",
-  "handoff_path": "{handoff_path_abs — ABSOLUTE path the agent MUST write its handoff to}"
+  "handoff_path": "{handoff_path_abs — ABSOLUTE path the agent MUST write its handoff to}",
+  "dispatch_seq": "{dispatch_seq from this skill's own delegation context, forwarded unchanged; omit if absent}"
 }
 ```
+
+**Forward `dispatch_seq` unchanged.** If this skill's own delegation context (i.e. the context an
+orchestrate-hard dispatch passed to it) carries a `dispatch_seq` field, forward it into the
+sub-agent's delegation context above verbatim — the same pass-through treatment already given to
+`handoff_path` and `territory`. Never invent, increment, or recompute a value at this layer; only
+the orchestrator mints one. If absent, omit the field rather than fabricating a value. This is
+the orchestrator-minted per-dispatch identity Stage 5 of both orchestrate engines compares
+against the value it minted for the current cycle — see
+`context/patterns/dispatch-report-not-termination.md`.
 
 > **CRITICAL**: No source reading before delegation. The subagent handles all codebase exploration.
 

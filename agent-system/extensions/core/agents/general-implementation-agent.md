@@ -684,7 +684,12 @@ marker-repair pass above — never fabricated, never left at their zero-valued d
 NEVER be `null`. They are written at the handoff's **top level**, which contrasts with
 `.return-meta.json`'s nested placement documented in the "Phase-count nesting" callout above —
 the two files use the same field names with different nesting rules, and a shape correct for one
-is wrong for the other.
+is wrong for the other. In this same defensive case, also echo `dispatch_seq` unchanged: if the
+delegation context carries a `dispatch_seq` field, copy its value into the handoff's own
+`dispatch_seq` field verbatim (never invent, increment, or recompute one); if absent from the
+delegation context, omit it from the handoff too. This is the orchestrator-minted per-dispatch
+identity Stage 5 of both orchestrate engines compares against the value it minted for this
+cycle — see `context/patterns/dispatch-report-not-termination.md`.
 
 ### Stage 8: Return Brief Text Summary
 

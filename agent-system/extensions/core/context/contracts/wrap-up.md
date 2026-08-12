@@ -47,6 +47,7 @@ Required fields:
   "skeleton": false,
   "phases_completed": 2,
   "phases_total": 5,
+  "dispatch_seq": 4,
   "sorry_inventory": [],
   "blockers": [
     {
@@ -70,6 +71,14 @@ Required fields:
   `implemented` handoff silently prevents the summary artifact from being linked. Name the
   implementation summary file with `type: "summary"`.
 - `phase`: Optional, informational. Not required.
+- `dispatch_seq`: Optional (but REQUIRED-TO-ECHO whenever present in your delegation context).
+  Copy the delegation context's `dispatch_seq` value into this field UNCHANGED — never invent,
+  increment, or recompute one; that minting happens only in the orchestrator, immediately before
+  the `Agent` call. Omit this field when your delegation context omits it — do not fabricate a
+  value. This is the orchestrator-minted per-dispatch identity Stage 5 of both orchestrate
+  engines compares against the value it minted for the current cycle, to discriminate a
+  still-live predecessor's late write from this dispatch's own report. See
+  `context/patterns/dispatch-report-not-termination.md`.
 - `skeleton`: Boolean, default `false`. `true` ONLY when `status == "implemented"` and
   completeness rests on one or more strategic sorries meeting the `anti-analysis.md`
   strategic-sorry policy — the "implemented (skeleton)" outcome. MUST be `false` or absent when

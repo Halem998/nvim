@@ -329,20 +329,26 @@ context object carrying `handoff_path` is a dispatch site needing `dispatch_seq`
 
 ---
 
-### Phase 5: Core writer contracts [NOT STARTED]
+### Phase 5: Core writer contracts [COMPLETED]
 
 **Goal**: Every core agent and skill that writes a handoff echoes `dispatch_seq` back unchanged.
 
 **Tasks**:
-- [ ] Add the echo-back instruction to each core writer: read `dispatch_seq` from the delegation
+- [x] Add the echo-back instruction to each core writer: read `dispatch_seq` from the delegation
       context and write it into the handoff unchanged; if the field is absent from the delegation
-      context, omit it rather than inventing a value.
-- [ ] Update `context/contracts/wrap-up.md`'s H9 handoff-write contract to include `dispatch_seq`
+      context, omit it rather than inventing a value. *(completed: the two research agents and
+      skill-team-implement are non-writers of .orchestrator-handoff.json by design, so their
+      instruction is framed as a defensive/forward-pass note rather than an active writer path —
+      confirmed via grep that neither writes the file today)*
+- [x] Update `context/contracts/wrap-up.md`'s H9 handoff-write contract to include `dispatch_seq`
       in the required-echo field set, since that file is the contract the agents reference.
-- [ ] Update `context/formats/return-metadata-file.md` only if it documents the handoff's field
-      set; if it does not, leave it untouched and record that in the phase's report.
-- [ ] Do not restate the report-vs-termination model in any of these files — a one-line pointer
-      to the pattern file is the maximum.
+      *(completed)*
+- [x] Update `context/formats/return-metadata-file.md` only if it documents the handoff's field
+      set; if it does not, leave it untouched and record that in the phase's report. *(completed:
+      left untouched -- it documents only the phases_completed/phases_total nesting contrast, not
+      the full handoff field set)*
+- [x] Do not restate the report-vs-termination model in any of these files — a one-line pointer
+      to the pattern file is the maximum. *(completed)*
 
 **Timing**: 1.5 hours
 

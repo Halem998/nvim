@@ -530,6 +530,13 @@ the same two field names are always written at the top level. A writer instructi
 one file is wrong for the other; do not move these two fields to the top level of this JSON
 object.
 
+**This skill does not write `.orchestrator-handoff.json`** — only `.return-meta.json` (below), so
+there is no dispatch_seq field to echo in the normal path. **Defensive case**: should a future
+variant of this skill write `.orchestrator-handoff.json`, it MUST echo `dispatch_seq` unchanged
+from its own delegation context — copy the value verbatim (never invent, increment, or recompute
+one) or omit it when the delegation context omits it. See
+`context/patterns/dispatch-report-not-termination.md`.
+
 ```json
 {
   "status": "implemented",
