@@ -1,33 +1,21 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1786517897_9e95c0_37",
-  "task_number": 37,
-  "dispatch_seq": 4,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/reports/01_close-two-residual-gaps.md",
-      "summary": "Verifies the landed territory/handoff work and characterizes the two remaining gaps: watcher/monitor teardown missing from wrap-up.md, and a missing base-mode territory decision record plus stale territory.md scope framing."
+      "type": "plan",
+      "path": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/plans/01_close-residual-territory-gaps.md",
+      "summary": "Six-phase plan closing the two residual territory/handoff gaps: wrap-up.md teardown obligation, territory.md rescope, a recorded base-mode territory decision, and the agent-side STOP-and-report tie-in, with all already-landed work treated as verification-only."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "This codebase has an established inline 'decision record' idiom for base-vs-hard engine asymmetries: a **Decision record**:/**Asymmetry decision (recorded...)**: prose block placed directly in the governing SKILL.md near the relevant mechanism, explicitly noting when the two /orchestrate engines deliberately diverge and why, 'so both engines visibly agree.' See skill-orchestrate/SKILL.md lines 244-260 (loop-guard-staleness asymmetry) for the reusable template. There is no separate ADR/decisions directory in this repo -- decision records live inline in the file whose behavior they govern.",
-      "category": "PATTERN",
-      "source_artifact": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/reports/01_close-two-residual-gaps.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["decision-record", "orchestrate", "asymmetry", "skill-orchestrate", "hard-mode", "co-maintenance"]
-    },
-    {
-      "content": "Base mode's file_scope-collision deferral (skill-orchestrate/SKILL.md Stage MT-3, defer_ledger) only compares tasks being admitted in the CURRENT cycle against each other and against live-registered sessions' file_scope. It has no mechanism against a woken predecessor from an EARLIER cycle that already reported but is still live (self-armed watcher or operator resume) -- that case is structurally invisible to the admission-time check. Any future territory/concurrency work on base mode must address this blindness explicitly rather than citing file_scope deferral as already-sufficient.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/reports/01_close-two-residual-gaps.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["file_scope", "defer_ledger", "woken-predecessor", "territory", "orchestrate", "concurrency"]
-    }
-  ],
-  "next_steps": "Run /plan 37 to create implementation plan"
+  "next_steps": "Run /implement 37 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1786517897_9e95c0_37",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 2.75,
+    "dependency_waves": [[1], [2, 3, 4], [5], [6]]
+  },
+  "memory_candidates": []
 }

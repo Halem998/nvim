@@ -897,7 +897,7 @@
     {
       "project_number": 37,
       "project_name": "wire_sound_territory_contract_for_per_phase_dispatch",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Replace the unsound no-concurrency premise with a wired, checkable territory contract for per-phase dispatch",
       "topic": "orchestration-concurrency",
@@ -922,10 +922,15 @@
           "path": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/reports/01_close-two-residual-gaps.md",
           "type": "report",
           "summary": "Confirms both residual gaps are real, verifies the already-landed territory wiring, and identifies a reusable in-file decision-record idiom for the base-mode asymmetry."
+        },
+        {
+          "path": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/plans/01_close-residual-territory-gaps.md",
+          "type": "plan",
+          "summary": "Six-phase plan closing the teardown-contract and base-mode-decision gaps, opening with a verification-only phase over the already-landed territory wiring."
         }
       ],
       "created": "2026-08-11T15:21:10Z",
-      "last_updated": "2026-08-12T07:53:25Z",
+      "last_updated": "2026-08-12T07:58:27Z",
       "session_id": "sess_1786517897_9e95c0_37"
     },
     {
