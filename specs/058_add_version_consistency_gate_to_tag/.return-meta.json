@@ -20,29 +20,55 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/058_add_version_consistency_gate_to_tag/summaries/01_version-consistency-gate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["version-detection", "pyproject-toml", "package-json", "cargo-toml", "portable-shell", "manifest-discovery"]
+      "suggested_keywords": [
+        "version-detection",
+        "pyproject-toml",
+        "package-json",
+        "cargo-toml",
+        "portable-shell",
+        "manifest-discovery"
+      ]
     },
     {
       "content": "When a skill/command markdown file documents a shell step's expected output as an 'Error Handling' transcript, verify the transcript by diffing it token-by-token against the actual `echo` string literals in that step's code block -- do not write the transcript from a design doc's suggested wording and assume it matches. A transcript documenting a message the code does not actually emit is worse than no transcript, because it looks authoritative. When multiple discovered items (not just one) can appear in a mismatch report, an inline single-value 'Error: X does not match Y' line does not generalize -- move the enumerable facts to a separate labeled list below the Error line instead of forcing them into one interpolated sentence.",
       "category": "PATTERN",
       "source_artifact": "specs/058_add_version_consistency_gate_to_tag/summaries/01_version-consistency-gate-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["error-transcripts", "doc-code-parity", "skill-md", "verification", "multi-item-error-messages"]
+      "suggested_keywords": [
+        "error-transcripts",
+        "doc-code-parity",
+        "skill-md",
+        "verification",
+        "multi-item-error-messages"
+      ]
     },
     {
       "content": "To end-to-end test a new shell step embedded in a skill's markdown documentation before trusting it, extract the step's code block verbatim by line-range (sed -n '<start>,<end>p') directly from the source-store .md file -- not a hand-retyped copy -- and assemble it with the preceding steps' variable-setup blocks (also extracted verbatim) into a runnable harness script. This proves the *actual documented code* works, including its interaction with sibling steps' variables, rather than testing a paraphrase that could silently diverge from what ships.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/058_add_version_consistency_gate_to_tag/summaries/01_version-consistency-gate-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["shell-testing", "skill-md-verification", "harness-extraction", "sed-line-range", "end-to-end-testing"]
+      "suggested_keywords": [
+        "shell-testing",
+        "skill-md-verification",
+        "harness-extraction",
+        "sed-line-range",
+        "end-to-end-testing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786569271_8c6819",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
-    "phases_total": 5
+    "phases_total": 5,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }
