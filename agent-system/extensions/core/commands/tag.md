@@ -21,7 +21,7 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 ## Usage
 
 ```bash
-/tag [--patch|--minor|--major] [--force] [--dry-run]
+/tag [--patch|--minor|--major] [--force] [--dry-run] [--skip-version-check]
 ```
 
 | Flag | Description |
@@ -31,6 +31,7 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 | `--major` | Increment major version, reset minor and patch: `v0.2.3` -> `v1.0.0` |
 | `--force` | Skip confirmation prompt |
 | `--dry-run` | Show what would be done without executing |
+| `--skip-version-check` | Explicit override for a declared-version mismatch; still reports the divergence |
 
 ---
 
@@ -49,11 +50,12 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 
 1. **Validate Git State**: Check for clean working tree and up-to-date branch
 2. **Compute Version**: Calculate new version based on increment type
-3. **Display Summary**: Show commits since last tag
-4. **Confirm**: Interactive confirmation (unless --force)
-5. **Create Tag**: `git tag vX.Y.Z`
-6. **Push Tag**: `git push origin vX.Y.Z`
-7. **Update State**: Record deployment in state.json
+3. **Validate Version Consistency**: Compare declared package version against computed tag; fail on mismatch
+4. **Display Summary**: Show commits since last tag
+5. **Confirm**: Interactive confirmation (unless --force)
+6. **Create Tag**: `git tag vX.Y.Z`
+7. **Push Tag**: `git push origin vX.Y.Z`
+8. **Update State**: Record deployment in state.json
 
 ---
 
@@ -63,6 +65,8 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 - On a branch (not detached HEAD)
 - Up-to-date with remote
 - No existing tag with computed version
+- Declared package version (if any manifest declares one) matches the computed tag version — a
+  repo with no manifest satisfies this requirement vacuously
 
 ---
 

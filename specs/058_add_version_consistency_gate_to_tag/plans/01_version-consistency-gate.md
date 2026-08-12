@@ -397,24 +397,25 @@ will actually see is specified, not left to improvisation at runtime.
 
 ---
 
-### Phase 4: Doc Parity in commands/tag.md [NOT STARTED]
+### Phase 4: Doc Parity in commands/tag.md [COMPLETED]
 
 **Goal**: Make the documented contract in `commands/tag.md` agree with the implemented gate, per
 DR-2. No lint enforces this, so it is verified by hand against the Phase 2 output.
 
 **Tasks**:
-- [ ] Insert a new Workflow item between current item 2 (**Compute Version**) and current item 3
+- [x] Insert a new Workflow item between current item 2 (**Compute Version**) and current item 3
       (**Display Summary**): `**Validate Version Consistency**: Compare declared package version
-      against computed tag; fail on mismatch`. Renumber the following items 4-8.
-- [ ] Append a fifth Requirements bullet: declared package version (if any manifest declares one)
+      against computed tag; fail on mismatch`. Renumber the following items 4-8. *(completed)*
+- [x] Append a fifth Requirements bullet: declared package version (if any manifest declares one)
       matches the computed tag version. Phrase it to make the conditionality explicit — a repo with
       no manifest satisfies this requirement vacuously, and the bullet must not read as though a
-      manifest is now mandatory.
-- [ ] Add a `--skip-version-check` row to the Usage flag table, describing it as an explicit
-      override that still reports the divergence.
-- [ ] Confirm the new Workflow item's position matches the gate's actual position in `SKILL.md`
+      manifest is now mandatory. *(completed)*
+- [x] Add a `--skip-version-check` row to the Usage flag table, describing it as an explicit
+      override that still reports the divergence. *(completed)*
+- [x] Confirm the new Workflow item's position matches the gate's actual position in `SKILL.md`
       (before Display Summary, before the dry-run exit) — the ordering is the load-bearing part.
-- [ ] No task numbers anywhere in this file.
+      *(completed)*
+- [x] No task numbers anywhere in this file. *(completed: grep clean)*
 
 **Timing**: 0.5 hours
 

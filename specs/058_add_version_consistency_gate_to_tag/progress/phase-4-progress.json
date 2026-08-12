@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Doc Parity in commands/tag.md",
+  "started_at": "2026-08-12T22:15:00Z",
+  "last_updated": "2026-08-12T22:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert Workflow item 3 (Validate Version Consistency), renumber 4-8", "status": "done", "files_touched": ["agent-system/extensions/core/commands/tag.md"]},
+    {"id": 2, "description": "Append fifth Requirements bullet (conditional)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/tag.md"]},
+    {"id": 3, "description": "Add --skip-version-check row to Usage flag table", "status": "done", "files_touched": ["agent-system/extensions/core/commands/tag.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "Workflow: 8 sequential items, item 3 = Validate Version Consistency before Display Summary. Requirements: 5 bullets, 5th is conditional/vacuous-when-no-manifest. Flag sets in tag.md and SKILL.md match exactly (--patch/--minor/--major/--force/--dry-run/--skip-version-check). grep for task references clean.",
+  "deviations": []
+}
