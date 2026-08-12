@@ -692,28 +692,35 @@ at a dispatch site that today has no `territory` key at all.
 
 ---
 
-### Phase 12: Defect 6 — handoff before marker promotion, plus heading-scan cross-check [NOT STARTED]
+### Phase 12: Defect 6 — handoff before marker promotion, plus heading-scan cross-check [COMPLETED]
 
 **Goal**: An interrupted dispatch can no longer leave the plan's phase markers ahead of the
 handoff, and the successor is not dispatched over unconfirmed work.
 
 **Tasks**:
-- [ ] In `context/contracts/wrap-up.md`, add an explicit ordering rule between the Incremental
+- [x] In `context/contracts/wrap-up.md`, add an explicit ordering rule between the Incremental
       Commit Discipline and the terminal handoff write: a phase heading MUST NOT be promoted to
       `[COMPLETED]` before the handoff reflecting that phase has been written. State it as an
       ordering constraint with a named rationale (an agent that dies between the two leaves the
-      plan file ahead of the handoff by construction).
-- [ ] Add the cross-check to `skill-orchestrate-hard/SKILL.md`'s Stage 4 `next_phase`
+      plan file ahead of the handoff by construction). *(completed)*
+- [x] Add the cross-check to `skill-orchestrate-hard/SKILL.md`'s Stage 4 `next_phase`
       heading-status scan: compare the marker-derived completed count against the handoff's own
       `phases_completed`. On disagreement, do not silently dispatch the successor — emit a loud
       notice and treat the disputed phase as `[PARTIAL]`, matching the manual downgrade the
-      operator performed in the observed incident.
-- [ ] Apply the equivalent cross-check to `skill-orchestrate/SKILL.md`'s recovery-count /
-      `next_phase` greps.
-- [ ] Use the canonical phase-heading patterns from `scripts/lib/phase-heading-patterns.sh` rather
+      operator performed in the observed incident. *(completed: downgrades the specific
+      (phases_completed + 1)-th [COMPLETED]/[COMPLETED WITH EXCLUSIONS] heading via sed, then
+      exits partial rather than dispatching)*
+- [x] Apply the equivalent cross-check to `skill-orchestrate/SKILL.md`'s recovery-count /
+      `next_phase` greps. *(completed: base mode has no discrete next_phase selection to gate --
+      it always re-dispatches the whole plan -- so the equivalent site is the handoff-present
+      branch's phases_completed read; the cross-check there is diagnostic-and-downgrading rather
+      than dispatch-refusing, but takes the same downgrade action)*
+- [x] Use the canonical phase-heading patterns from `scripts/lib/phase-heading-patterns.sh` rather
       than re-deriving a regex, and honor its ordering obligation: run
       `has_nonconforming_phase_headings` over the whole file before any filtered scan the
-      cross-check depends on.
+      cross-check depends on. *(completed: hard engine's cross-check runs inside the elif branch
+      reached only after that check already passed earlier in the same block; base engine's
+      cross-check runs its own has_nonconforming_phase_headings check first)*
 
 **Timing**: 1.5 hours
 

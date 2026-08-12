@@ -756,6 +756,33 @@ if [ "$phase_scan_inconclusive" = "true" ]; then
   EXIT (partial, non-conforming phase heading — next phase unknown)
 
 elif [ -n "$next_phase" ]; then
+  # --- marker-handoff-crosscheck:begin ---
+  # Defect 6: an interrupted dispatch can leave the plan's phase markers ahead of the handoff
+  # (marker claims [COMPLETED], handoff's own phases_completed has not confirmed it yet -- see
+  # context/contracts/wrap-up.md's "Ordering: Handoff Write Precedes Marker Promotion"). Compare
+  # the marker-derived completed count against the handoff's own phases_completed (already read
+  # above) before trusting the heading scan's next_phase selection. The `has_nonconforming_phase_headings`
+  # ordering obligation is already satisfied here by construction: this elif branch is reached
+  # only after that check already ran (and passed) earlier in this same block.
+  marker_completed_count=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$plan_path" 2>/dev/null || echo 0)
+  if [ "$marker_completed_count" != "$phases_completed" ]; then
+    echo "[hard-orchestrate] H1: MARKER/HANDOFF MISMATCH — plan file shows ${marker_completed_count} phase(s) marked [COMPLETED]/[COMPLETED WITH EXCLUSIONS], but the handoff's own phases_completed=${phases_completed}. Not dispatching the successor over unconfirmed work." >&2
+    if [ "$marker_completed_count" -gt "$phases_completed" ]; then
+      # Downgrade the specific disputed phase heading -- the (phases_completed + 1)-th
+      # [COMPLETED]/[COMPLETED WITH EXCLUSIONS] heading by order of appearance -- to [PARTIAL],
+      # matching the manual downgrade the operator performed in the observed incident.
+      disputed_line=$(grep -nE "$PHASE_HEADING_DONE_ERE" "$plan_path" | sed -n "$((phases_completed + 1))p")
+      if [ -n "$disputed_line" ]; then
+        disputed_linenum="${disputed_line%%:*}"
+        disputed_text="${disputed_line#*:}"
+        echo "[hard-orchestrate] H1: downgrading disputed phase heading to [PARTIAL]: ${disputed_text}" >&2
+        sed -i -E "${disputed_linenum}s/\[(COMPLETED|COMPLETED WITH EXCLUSIONS)\]/[PARTIAL]/" "$plan_path"
+      fi
+    fi
+    EXIT (partial, marker/handoff phases_completed mismatch — plan=${marker_completed_count} handoff=${phases_completed})
+  fi
+  # --- marker-handoff-crosscheck:end ---
+
   echo "[hard-orchestrate] H1: Per-phase dispatch — phase $next_phase (heading-scan)" >&2
 
   # Mint this phase's dispatch identity (Defect A) before building dispatch_context, so the

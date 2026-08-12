@@ -1020,6 +1020,42 @@ else
   echo "[orchestrate] Dispatch result: $dispatch_status — $dispatch_summary"
   [ "$phases_total" -gt 0 ] && echo "[orchestrate] Phase progress: $phases_completed/$phases_total"
 
+  # --- marker-handoff-crosscheck:begin ---
+  # Defect 6, base-engine equivalent of the hard engine's heading-scan cross-check. Base mode has
+  # no discrete per-phase next_phase selection to gate (it always re-dispatches the whole plan),
+  # so this cross-check is diagnostic-and-downgrading rather than dispatch-refusing: it compares
+  # the plan's own [COMPLETED]/[COMPLETED WITH EXCLUSIONS] marker count against this handoff's
+  # phases_completed and, on a mismatch where the plan claims MORE than the handoff confirms,
+  # downgrades the specific disputed phase heading to [PARTIAL] -- the same action the hard
+  # engine's cross-check takes, and the same manual downgrade the operator performed in the
+  # observed incident. See context/contracts/wrap-up.md's "Ordering: Handoff Write Precedes
+  # Marker Promotion" for why this state is reachable at all.
+  crosscheck_plan_path="${plan_path:-}"
+  if [ -z "$crosscheck_plan_path" ]; then
+    crosscheck_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+  fi
+  if [ -n "$crosscheck_plan_path" ] && [ -f "$crosscheck_plan_path" ]; then
+    . .claude/scripts/lib/phase-heading-patterns.sh
+    if has_nonconforming_phase_headings "$crosscheck_plan_path"; then
+      warn_nonconforming "$crosscheck_plan_path" "orchestrate-marker-handoff-crosscheck" || true
+    else
+      marker_completed_count=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$crosscheck_plan_path" 2>/dev/null) || marker_completed_count=0
+      if [ "$marker_completed_count" != "$phases_completed" ]; then
+        echo "[orchestrate] MARKER/HANDOFF MISMATCH — plan file shows ${marker_completed_count} phase(s) marked [COMPLETED]/[COMPLETED WITH EXCLUSIONS], but this handoff's own phases_completed=${phases_completed}." >&2
+        if [ "$marker_completed_count" -gt "$phases_completed" ]; then
+          disputed_line=$(grep -nE "$PHASE_HEADING_DONE_ERE" "$crosscheck_plan_path" | sed -n "$((phases_completed + 1))p")
+          if [ -n "$disputed_line" ]; then
+            disputed_linenum="${disputed_line%%:*}"
+            disputed_text="${disputed_line#*:}"
+            echo "[orchestrate] Downgrading disputed phase heading to [PARTIAL]: ${disputed_text}" >&2
+            sed -i -E "${disputed_linenum}s/\[(COMPLETED|COMPLETED WITH EXCLUSIONS)\]/[PARTIAL]/" "$crosscheck_plan_path"
+          fi
+        fi
+      fi
+    fi
+  fi
+  # --- marker-handoff-crosscheck:end ---
+
   # ── Evidence corroboration (handoff-present branch) ──────────────────────────
   # PRECONDITION: reachable ONLY here — a handoff IS present and fresh (this is the `else` of
   # the missing/stale-handoff branch above), dispatch_status is "implemented", AND phases_total

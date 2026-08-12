@@ -1,0 +1,14 @@
+{
+  "phase": 12,
+  "phase_name": "Defect 6 -- handoff before marker promotion, plus heading-scan cross-check",
+  "started_at": "2026-08-12T07:25:00Z",
+  "last_updated": "2026-08-12T07:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "wrap-up.md ordering rule", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/wrap-up.md"]},
+    {"id": 2, "description": "Hard engine heading-scan cross-check", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 3, "description": "Base engine equivalent cross-check", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

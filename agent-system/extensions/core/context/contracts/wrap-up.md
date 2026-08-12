@@ -144,6 +144,28 @@ Session: {session_id}"
 2. Check that no previously-passing tests now fail
 3. Verify no sorry was introduced without being in the sorry_inventory
 
+## Ordering: Handoff Write Precedes Marker Promotion (Defect 6)
+
+**A phase heading MUST NOT be promoted to `[COMPLETED]` before the handoff reflecting that phase
+has been written.** Phase-heading `[COMPLETED]` promotion is one of the commit triggers listed
+above ("A phase checklist item is verified done"), which happens as part of this dispatch's
+ongoing Incremental Commit Discipline; the terminal `.orchestrator-handoff.json` write happens
+once, at the very end, "before terminating." Left unstated, these two events have no ordering
+relationship to each other.
+
+**Rationale**: an agent that marks a phase heading `[COMPLETED]` and then dies (API limit, infra
+failure, any unrecoverable interruption) before reaching its terminal handoff write leaves the
+plan file AHEAD of the handoff by construction — the plan claims more progress than the handoff
+can confirm. A successor reading the plan's own markers to decide what to dispatch next (see both
+orchestrate engines' heading-scan cross-check) would then dispatch over unconfirmed work.
+
+**The ordering constraint**: within a single dispatch, write (or update) the terminal handoff
+BEFORE the corresponding phase heading is promoted to `[COMPLETED]` in the same commit — or, if
+the handoff is written once at the very end of a multi-phase dispatch, ensure the handoff's own
+`phases_completed` accounts for every phase heading already promoted, so the two are never
+observed out of sync by a reader. Do not promote a phase heading and defer the handoff update to
+a later, uncommitted step.
+
 ## Build-Green Invariant
 
 At every commit, the following invariants hold:
