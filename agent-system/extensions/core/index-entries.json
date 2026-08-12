@@ -1084,7 +1084,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Registration vs. permission ownership boundary for MCP servers",
-      "line_count": 183,
+      "line_count": 298,
       "keywords": [
         "mcp",
         "registration",
@@ -2802,6 +2802,29 @@
       }
     },
     {
+      "path": "patterns/dispatch-report-not-termination.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Shared root cause: a dispatched agent's report is not proof of termination; two named instances (late handoff write, unsound territory assertion)",
+      "line_count": 70,
+      "keywords": [
+        "dispatch-seq",
+        "handoff",
+        "territory",
+        "woken-predecessor",
+        "watcher-teardown"
+      ],
+      "topics": [
+        "orchestration",
+        "run-state-integrity"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
       "path": "patterns/context-exhaustion-detection.md",
       "domain": "core",
       "subdomain": "patterns",
@@ -3048,7 +3071,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 272,
+      "line_count": 281,
       "keywords": [
         "runtime-files",
         "cleanup",

@@ -1,7 +1,7 @@
 # Implementation Plan: fix_handoff_identity_and_loop_guard_resume_deadlock
 
 - **Task**: 33 - fix_handoff_identity_and_loop_guard_resume_deadlock
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 16 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md
@@ -123,13 +123,13 @@ specifically because it may need to touch the base engine.
 
 ---
 
-### Phase 1: Shared "report != termination" model and runtime-files rationale [NOT STARTED]
+### Phase 1: Shared "report != termination" model and runtime-files rationale [COMPLETED]
 
 **Goal**: State the shared root cause once, in one new file, and correct the now-false tracking
 rationale that depends on it.
 
 **Tasks**:
-- [ ] Create `context/patterns/dispatch-report-not-termination.md` stating: a dispatched agent
+- [x] Create `context/patterns/dispatch-report-not-termination.md` stating: a dispatched agent
       that has reported may still be live (via a self-armed watcher/monitor, or an operator
       resume) and may still commit and write files concurrently with the next dispatch. Include
       the two named instances: (1) a woken predecessor's late write always carries a NEWER mtime
@@ -137,17 +137,18 @@ rationale that depends on it.
       (2) a woken predecessor reading a global "no concurrent agent" assertion has no way to
       recognize its own liveness as the exception that assertion failed to name. Draft wording is
       in the research report's "Shared Report != Termination Model" section — refine, do not
-      restate verbatim elsewhere.
-- [ ] Add a "tear down watchers/monitors before reporting" directive to the pattern file so the
-      wake path is reduced at source, not only tolerated.
-- [ ] In `context/standards/orchestrator-runtime-files.md`, rewrite the
+      restate verbatim elsewhere. *(completed)*
+- [x] Add a "tear down watchers/monitors before reporting" directive to the pattern file so the
+      wake path is reduced at source, not only tolerated. *(completed)*
+- [x] In `context/standards/orchestrator-runtime-files.md`, rewrite the
       `.orchestrator-handoff.json` "Durable provenance (tracked)" rationale: its current
       justification (a documented freshness gate already protects against the "restored from an
       old commit" scenario) is true only for the git-restoration hazard and false for the
       late-writer hazard. Name both hazards, and point at the new pattern file for the second.
-- [ ] Register the new file in `agent-system/extensions/core/index-entries.json` with an accurate
+      *(completed)*
+- [x] Register the new file in `agent-system/extensions/core/index-entries.json` with an accurate
       `line_count` (or run `.claude/scripts/generate-context-line-counts.sh --write` and take its
-      value).
+      value). *(completed)*
 
 **Timing**: 1 hour
 

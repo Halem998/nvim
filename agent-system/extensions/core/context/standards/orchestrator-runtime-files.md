@@ -17,9 +17,18 @@ Every runtime file falls into exactly one of two classes:
   with **no freshness check**. If a stale copy of one of these were restored from git history, it
   would silently corrupt in-flight orchestration state (a wrong `cycle_count`, a stale mutex, a
   bogus churn counter) with nothing to catch it.
-- **Durable provenance (tracked)** — per-dispatch audit trail that a documented freshness gate
-  already protects against exactly that "restored from an old commit" scenario, so tracking it
-  costs nothing beyond history noise and gains a genuine audit trail of what each dispatch did.
+- **Durable provenance (tracked)** — per-dispatch audit trail. Two distinct hazards apply here,
+  and the "documented freshness gate" protects against only one of them. The **git-restoration
+  hazard** (a stale copy silently reappearing from history) is fully covered by the mtime-window
+  freshness gate described below. The **late-writer hazard** — a dispatch that reported once,
+  woke via a self-armed watcher or an operator resume, and wrote again while still live — is
+  NOT covered by mtime alone: a woken predecessor's late write carries a *newer* mtime than the
+  successor's dispatch window by construction, so it passes an mtime-only check. That hazard is
+  covered instead by the orchestrator-minted `dispatch_seq` identity check (see
+  `docs/architecture/handoff-schema.md`), and its root cause is stated once in
+  `context/patterns/dispatch-report-not-termination.md` — see that file rather than restating it
+  here. With both hazards covered, tracking this file costs nothing beyond history noise and
+  gains a genuine audit trail of what each dispatch did.
 
 ### Class Table
 
