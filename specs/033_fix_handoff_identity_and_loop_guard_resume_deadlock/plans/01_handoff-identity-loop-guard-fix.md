@@ -741,34 +741,54 @@ handoff, and the successor is not dispatched over unconfirmed work.
 
 ---
 
-### Phase 13: Consistency sweep, redeploy, and full gate run [NOT STARTED]
+### Phase 13: Consistency sweep, redeploy, and full gate run [COMPLETED]
 
 **Goal**: Acceptance criteria 2, 5, and 7 — prove nothing was left on the old contract and every
 named suite still passes.
 
 **Tasks**:
-- [ ] Re-run the blast-radius grep
+- [x] Re-run the blast-radius grep
       (`grep -rln "orchestrator-handoff.json" agent-system/extensions/`) and confirm every writer
       carries the `dispatch_seq` echo and every reader/validator agrees with the schema. Record any
       file deliberately excluded (e.g. the literature extension's doc-only reference) with its
-      reason.
-- [ ] Confirm the four documents the criteria name are mutually consistent: the schema,
+      reason. *(completed: full 43-file grep re-run. Writers (9 core + 5 cslib + 3 lean, all from
+      Phases 5/6) confirmed to mention dispatch_seq. Excluded as readers/docs, no dispatch_seq
+      concern -- orchestrate-dry-run-report.sh, skill-base.sh, orchestrate-recover-outcome.sh,
+      orchestrate-triage-classify.sh, reconcile-task-status.sh, check-runtime-file-tracking.sh,
+      hooks/validate-handoff-location.sh, test-reconcile-handoff-status.sh,
+      test-validate-handoff-location.sh, test-orchestrate-triage-classify.sh,
+      orchestrate-state-machine.md, context-protective-lead.md, lit-stage4a-flow.md,
+      infra-failure-discrimination.md, git-staging-scope.md, return-metadata-file.md (reviewed in
+      Phase 5, no full field-set documentation), literature/merge-sources/claudemd.md (doc-only,
+      per plan's own explicit exclusion) -- none hardcode a closed field-set assumption that
+      dispatch_seq's addition would break)*
+- [x] Confirm the four documents the criteria name are mutually consistent: the schema,
       `validate-handoff.sh`, `docs/architecture/handoff-schema.md`, and
-      `context/standards/orchestrator-runtime-files.md`.
-- [ ] Redeploy the source store into `.claude/` via `bash .claude/scripts/deploy-headless.sh` so
-      the deployed tree matches, then run `bash .claude/scripts/verify-deploy.sh`.
-- [ ] Run all six named existing suites plus the two new ones:
+      `context/standards/orchestrator-runtime-files.md`. *(completed: all four mention
+      dispatch_seq consistently)*
+- [x] Redeploy the source store into `.claude/` via `bash .claude/scripts/deploy-headless.sh` so
+      the deployed tree matches, then run `bash .claude/scripts/verify-deploy.sh`. *(completed:
+      verify-deploy.sh PASS -- 23 check(s), 0 failure(s), after two redeploy passes -- the first
+      surfaced two new test scripts missing from manifest.json's provides.scripts and three
+      further index-entries.json line_count drifts from Phases 11/12, both fixed before the
+      second pass)*
+- [x] Run all six named existing suites plus the two new ones:
       `test-validate-handoff.sh`, `test-handoff-reader-parity.sh`, `test-loop-guard-staleness.sh`,
       `test-reconcile-handoff-status.sh`, `test-validate-handoff-location.sh`,
       `test-session-runtime-files.sh`, `test-handoff-dispatch-identity.sh`,
-      `test-loop-guard-budget-override.sh`.
-- [ ] Run the lints: `check-extension-docs.sh`, `lint/lint-agent-contracts.sh`,
+      `test-loop-guard-budget-override.sh`. *(completed: all 8 pass against the redeployed
+      .claude/ tree)*
+- [x] Run the lints: `check-extension-docs.sh`, `lint/lint-agent-contracts.sh`,
       `lint/lint-routing-wiring.sh`, `lint/lint-contract-compliance.sh`,
-      `generate-context-line-counts.sh --check`.
-- [ ] Confirm no `.claude/**` file was hand-edited during implementation
-      (`git status` plus a review of the phase reports).
-- [ ] Confirm no task-number reference was introduced outside `specs/**`
-      (`bash .claude/scripts/check-task-references.sh` if present).
+      `generate-context-line-counts.sh --check`. *(completed: all 5 pass)*
+- [x] Confirm no `.claude/**` file was hand-edited during implementation
+      (`git status` plus a review of the phase reports). *(completed: .claude/ is fully
+      gitignored -- `git status --porcelain -- .claude/` returns nothing; every edit this task
+      made targeted agent-system/extensions/** or specs/**, confirmed via the phase-by-phase
+      commit history)*
+- [x] Confirm no task-number reference was introduced outside `specs/**`
+      (`bash .claude/scripts/check-task-references.sh` if present). *(completed: PASS -- 0
+      unexempted task-reference occurrences across 4 scanned trees)*
 
 **Timing**: 1.5 hours
 

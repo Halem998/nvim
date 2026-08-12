@@ -578,7 +578,7 @@
     },
     {
       "path": "contracts/anti-analysis.md",
-      "line_count": 111,
+      "line_count": 118,
       "load_when": {
         "agents": [
           "lean-research-hard-agent",

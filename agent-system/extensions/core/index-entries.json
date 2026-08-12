@@ -2476,7 +2476,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H7 territory contract: file ownership, plan-section territory, commit protocol for parallel dispatch",
-      "line_count": 82,
+      "line_count": 107,
       "keywords": [
         "territory",
         "file-ownership",
@@ -2566,7 +2566,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 172,
+      "line_count": 194,
       "keywords": [
         "wrap-up",
         "handoff",
@@ -3071,7 +3071,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 281,
+      "line_count": 321,
       "keywords": [
         "runtime-files",
         "cleanup",
