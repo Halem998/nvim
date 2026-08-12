@@ -11,7 +11,7 @@ next_project_number: 58
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53,57 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
 | 2 | 9,13,29,42,50,55,56 | 17,18,22,41,48 | agent-system, context-loading |
 | 3 | 30 | 29 | agent-system |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -60,7 +60,6 @@ next_project_number: 58
 ### Context Loading
 
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-57 [NOT STARTED] — Cut the generated .claude/CLAUDE.md eager surface without losing 
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
 55 [NOT STARTED] — LEVER 1 of the context-cost work (the two orchestrate skills). Th
 56 [NOT STARTED] — LEVER 3 of the context-cost work (command bodies). Smallest and c
@@ -72,10 +71,13 @@ next_project_number: 58
 ## Tasks
 
 ### 57. Cut generated claudemd eager surface
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: context-loading
 - **Dependencies**: None
+- **Research**: [057_cut_generated_claudemd_eager_surface/reports/01_cut-claudemd-eager-surface.md]
+- **Plan**: [057_cut_generated_claudemd_eager_surface/plans/01_cut-claudemd-eager-surface.md]
+- **Summary**: [057_cut_generated_claudemd_eager_surface/summaries/01_cut-claudemd-eager-surface-summary.md]
 
 **Description**: Cut the generated .claude/CLAUDE.md eager surface without losing capability, refactoring capabilities to remove redundancy where a workflow can be preserved rather than merely trimmed.
 

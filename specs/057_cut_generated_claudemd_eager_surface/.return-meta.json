@@ -39,29 +39,54 @@
       "category": "INSIGHT",
       "source_artifact": "specs/057_cut_generated_claudemd_eager_surface/summaries/01_cut-claudemd-eager-surface-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["index-entries.json", "context-index", "docs-tree", "check-extension-docs", "manifest-authoritative"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "context-index",
+        "docs-tree",
+        "check-extension-docs",
+        "manifest-authoritative"
+      ]
     },
     {
       "content": "A repeatable byte-accounting harness script (print a table + total, --baseline to snapshot JSON, --compare to diff against a snapshot) is a cheap, high-leverage pattern for any 'reduce eager context surface' task: it makes every phase's claimed saving independently re-verifiable rather than trusting a hand-run wc -c that goes stale as soon as another phase touches the same files.",
       "category": "PATTERN",
       "source_artifact": "specs/057_cut_generated_claudemd_eager_surface/summaries/01_cut-claudemd-eager-surface-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["measurement-harness", "byte-accounting", "before-after-delta", "eager-context", "reproducible-measurement"]
+      "suggested_keywords": [
+        "measurement-harness",
+        "byte-accounting",
+        "before-after-delta",
+        "eager-context",
+        "reproducible-measurement"
+      ]
     },
     {
       "content": "When a merge-source edit changes a context/ file's line count (e.g. editing a guide's Scope note), check-extension-docs.sh's Rule R (check_line_count_accuracy) will flag a stale line_count in that extension's index-entries.json. Always re-run `wc -l` and update the entry's line_count as part of the same edit, not as an afterthought discovered by a later lint run.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/057_cut_generated_claudemd_eager_surface/summaries/01_cut-claudemd-eager-surface-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["line_count", "index-entries.json", "Rule R", "check-extension-docs", "drift"]
+      "suggested_keywords": [
+        "line_count",
+        "index-entries.json",
+        "Rule R",
+        "check-extension-docs",
+        "drift"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786559689_4684a9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }
