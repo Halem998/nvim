@@ -763,8 +763,15 @@ elif [ -n "$next_phase" ]; then
   # file's other three dispatch sites.
   dispatch_seq=$(mint_dispatch_seq)
 
-  # Determine territory for this phase (single-phase dispatch, no parallel territory needed —
-  # parallel wave dispatch is disabled, see "Tool Constraints (Pure Dispatcher)" above)
+  # Territory (H7, Defect 5): no cross-agent FILE conflict exists within this orchestrator's OWN
+  # dispatches (parallel wave dispatch is disabled — see "Tool Constraints (Pure Dispatcher)"
+  # above, exactly one blocking Agent call per cycle). Defect 5 is a DIFFERENT concern: a woken
+  # PREDECESSOR dispatch (see context/patterns/dispatch-report-not-termination.md) resuming
+  # outside this orchestrator's own control flow. The orchestrator does not parse the plan's
+  # "Files to modify" list itself (that would expand the Read allowlist in "Tool Constraints"
+  # above beyond its enumerated bounded uses) — it points the agent at the plan/phase location it
+  # already has in this same context, and the agent (unrestricted in what it may read) derives
+  # its own owned_files from the phase's own section.
   dispatch_context='{
     "task_number": '$task_number',
     "task_type": "'$TASK_TYPE'",
@@ -776,7 +783,13 @@ elif [ -n "$next_phase" ]; then
     "phase_number": '$next_phase',
     "task_dir": "'$TASK_DIR_ABS'",
     "handoff_path": "'$HANDOFF_PATH_ABS'",
-    "dispatch_seq": '$dispatch_seq'
+    "dispatch_seq": '$dispatch_seq',
+    "territory": {
+      "owned_files": "derive from plan_path'\''s Phase '$next_phase' \"Files to modify\" list",
+      "read_only_files": [],
+      "forbidden_files": [],
+      "concurrency_note": "This declaration asserts only which files THIS dispatch owns. It does NOT assert exclusive access -- a still-live predecessor may exist. If you observe foreign commits, foreign uncommitted modifications, or a running build you did not start, STOP and report it rather than proceeding or dismissing it. See context/contracts/territory.md and context/patterns/dispatch-report-not-termination.md."
+    }
   }'
 
   # This preflight sits inside the `if [ -n "$next_phase" ]` branch ONLY — never in the
@@ -912,6 +925,14 @@ orchestrator dispatches exactly one phase per cycle and blocks on its return —
 simultaneous/background `Agent` calls. Territory contracts (H7) still inform the single-phase
 dispatch context (see "Tool Constraints (Pure Dispatcher)" above), but never fan out into
 parallel dispatch.
+
+**Scope of this claim (Defect 5 correction)**: this is a statement about what THIS orchestrator's
+own Stage 4 does — it never issues two concurrent `Agent` calls — not a claim about the state of
+the world. It does NOT mean no other agent can be concurrently active: a previously-dispatched
+agent may still be live via a self-armed watcher/monitor or an operator resume (see
+`context/patterns/dispatch-report-not-termination.md`), entirely outside this orchestrator's own
+control flow. "No parallel dispatch" and "no concurrency" are different claims; only the former
+is asserted here.
 <!-- END 772: Parallel Wave Dispatch — DISABLED -->
 
 #### State: `partial`

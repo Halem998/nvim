@@ -64,9 +64,19 @@ to update it. The protocol:
 1. **Read current state**: Always read the file immediately before writing
 2. **Merge, not clobber**: Merge your results into the existing JSON, do not overwrite
 3. **Atomic update**: Write the merged result in a single Write operation
-4. **Conflict resolution**: If two agents update simultaneously, last-write wins ONLY
-   for fields specific to the writing agent's phase. Shared fields (e.g., `status`)
-   require re-read-merge.
+4. **Conflict resolution — reviewed against the `dispatch_seq` contract (Defect A)**: "last-write
+   wins" is NOT a safe default for identifying whose write should be trusted — the whole point of
+   `dispatch_seq` (see `context/patterns/dispatch-report-not-termination.md`) is that the
+   chronologically LAST write to this file is not necessarily the current dispatch's own write; a
+   woken predecessor's late write is, by construction, always the most recent one on disk. Do not
+   read "last-write wins" as license to trust whichever write happened most recently in time.
+   What DOES still hold, and is unaffected by this correction: two DIFFERENT phases' agents
+   merging their own PHASE-SPECIFIC fields into the same handoff round-trip (read, add this
+   phase's own data, write) do not need to coordinate with each other on those fields, because
+   each phase's fields are disjoint. Fields shared across phases (e.g. `status`,
+   `phases_completed`) still require re-read-merge, as before. The orchestrator's own Stage 5
+   `dispatch_seq` gate — not "most recent mtime" and not "most recent write" — is the actual
+   authority for which write is treated as this cycle's own.
 
 ## Territory Declaration Template
 
@@ -79,4 +89,19 @@ Territory for this dispatch:
 - Shared state file: .orchestrator-handoff.json (merge-write protocol required)
 - Phase: {phase number and name}
 - Scope: Do not work outside this phase's checklist items
+
+This declaration asserts only what is locally checkable: which files THIS dispatch owns. It does
+NOT assert that no other agent is concurrently active — a dispatch that has reported once may
+still be live (a self-armed watcher/monitor, or an operator resume) and may still be committing
+or writing files concurrently with this one. See
+`context/patterns/dispatch-report-not-termination.md` for why. If you observe work you did not
+do — a foreign commit, a foreign uncommitted modification, a running build you did not start —
+STOP and report it. Do not proceed as though it were fictitious, and do not silently dismiss it
+as noise.
 ```
+
+**Explicit removal note**: no version of this template, past or present, licenses a dispatched
+agent to conclude "I am the only agent working on this task" from anything stated here. If a
+future edit reintroduces language that reads that way (e.g. "you have exclusive access" or "no
+other agent is active"), that is a regression against this contract's intent — remove it rather
+than resolve the tension in the agent's favor.

@@ -635,32 +635,39 @@ both engines.
 
 ---
 
-### Phase 11: Defect 5 — sound territory assertion, actually wired [NOT STARTED]
+### Phase 11: Defect 5 — sound territory assertion, actually wired [COMPLETED]
 
 **Goal**: Replace an unsound global no-concurrency claim with a checkable local one, and inject it
 at a dispatch site that today has no `territory` key at all.
 
 **Tasks**:
-- [ ] Rewrite `context/contracts/territory.md`'s Territory Declaration Template to assert only
+- [x] Rewrite `context/contracts/territory.md`'s Territory Declaration Template to assert only
       what is true and checkable: this dispatch owns these files; other work may exist
       concurrently; if you observe work you did not do (foreign commits, foreign uncommitted
       modifications, a running build you did not start), STOP and report it rather than proceeding
       or dismissing it. Explicitly remove any framing that would license a woken agent to
-      dismiss a true observation of concurrent work as fictitious.
-- [ ] Add a one-line pointer to `context/patterns/dispatch-report-not-termination.md` explaining
+      dismiss a true observation of concurrent work as fictitious. *(completed)*
+- [x] Add a one-line pointer to `context/patterns/dispatch-report-not-termination.md` explaining
       why the global claim is unsound (a reported dispatch may still be live). Do not restate.
-- [ ] Review the "shared state file / merge-write protocol" bullets in the same file against the
+      *(completed)*
+- [x] Review the "shared state file / merge-write protocol" bullets in the same file against the
       new `dispatch_seq` contract and correct anything that now contradicts it (in particular any
-      "last-write wins" phrasing that assumes the writer is the current dispatch).
-- [ ] **Wiring**: add a `territory` key to `skill-orchestrate-hard/SKILL.md`'s Stage 4 per-phase
+      "last-write wins" phrasing that assumes the writer is the current dispatch). *(completed:
+      corrected the Handoff Merge Rule's conflict-resolution bullet)*
+- [x] **Wiring**: add a `territory` key to `skill-orchestrate-hard/SKILL.md`'s Stage 4 per-phase
       `dispatch_context` JSON literal, populated from the phase's own file list, so the contract
       is actually delivered to the dispatched agent. There is no such key today — this is new
-      wiring, not a prose change.
-- [ ] Check `skill-orchestrate/SKILL.md` for equivalent boilerplate; if base mode has no per-phase
+      wiring, not a prose change. *(completed: owned_files points the agent at the plan's own
+      Phase N "Files to modify" section rather than the orchestrator pre-parsing it itself, to
+      avoid expanding the orchestrator's Read allowlist beyond its enumerated bounded uses --
+      the agent is unrestricted in what it may read)*
+- [x] Check `skill-orchestrate/SKILL.md` for equivalent boilerplate; if base mode has no per-phase
       territory construction, record that as a deliberate non-change rather than inventing one.
-- [ ] Review the hard engine's "Parallel Wave Dispatch: DISABLED" framing and scope it explicitly
+      *(completed: confirmed via grep -- base mode dispatches the whole plan, not per-phase, and
+      has no territory construction anywhere; recorded non-change, no edit made)*
+- [x] Review the hard engine's "Parallel Wave Dispatch: DISABLED" framing and scope it explicitly
       to what this orchestrator's own Stage 4 does (it never issues two concurrent `Agent` calls),
-      so it can no longer be read as a claim about the state of the world.
+      so it can no longer be read as a claim about the state of the world. *(completed)*
 
 **Timing**: 1.5 hours
 
