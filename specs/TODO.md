@@ -56,7 +56,7 @@ next_project_number: 53
 
 ### Orchestration Concurrency
 
-35 [RESEARCHED] — Remove or correctly gate a one-time preflight side effect that ma
+35 [PLANNED] — Remove or correctly gate a one-time preflight side effect that ma
   └─ 37 [NOT STARTED] — Close the two residual gaps left by the territory/handoff work. T
 
 ### Context Loading
@@ -619,11 +619,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 35. Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 16, Task 33
 - **Research**: [035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md]
+- **Plan**: [035_stop_preflight_spurious_phase_advance/plans/01_delete-preflight-phase-autoadvance.md]
 
 **Description**: Remove or correctly gate a one-time preflight side effect that marks a plan phase [IN PROGRESS] when no agent is dispatched for it. Observed live during a real `/orchestrate --hard` run (prior run, cycle 13).
 

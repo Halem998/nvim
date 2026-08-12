@@ -856,7 +856,7 @@
     {
       "project_number": 35,
       "project_name": "stop_preflight_spurious_phase_advance",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]",
       "topic": "orchestration-concurrency",
@@ -877,10 +877,15 @@
           "path": "specs/035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md",
           "type": "report",
           "summary": "Root-causes the false-in-progress phase marker to a criteria divergence between the preflight plan-file scan and the orchestrator next-phase scan; recommends deletion of the redundant convenience block plus a regression test."
+        },
+        {
+          "path": "specs/035_stop_preflight_spurious_phase_advance/plans/01_delete-preflight-phase-autoadvance.md",
+          "type": "plan",
+          "summary": "Six-phase plan deleting the redundant preflight phase auto-advance block, with interleaved redeploy phases and positive-control regression tests."
         }
       ],
       "created": "2026-08-11T14:50:22Z",
-      "last_updated": "2026-08-12T07:04:36Z",
+      "last_updated": "2026-08-12T07:10:46Z",
       "session_id": "sess_1786517897_9e95c0_35"
     },
     {
