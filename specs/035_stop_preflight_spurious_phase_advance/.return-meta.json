@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786517897_9e95c0_35",
+  "task_number": 35,
+  "findings_count": 8,
+  "next_steps": "Run /plan 35 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md",
+      "summary": "Root-causes the phase-19 false-in-progress bug to a criteria divergence between update-task-status.sh's independent 'first NOT STARTED' phase scan and the orchestrator's own PHASE_STATUS_OPEN_ERE next-phase scan; refutes the task's 'scope widening' hypothesis (research/plan target_status already can't reach the block); recommends deletion (not gating) of update-task-status.sh lines 526-585, justified by confirming both implementation agents already self-mark their own dispatched phase IN_PROGRESS; identifies the one stale comment block in skill-orchestrate-hard/SKILL.md (lines 822-827) needing an update and confirms no matching comment exists in skill-orchestrate/SKILL.md; specifies the regression-test gap and its fix location in test-update-task-status.sh."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/update-task-status.sh, update_plan_file() has an early return `if [[ \"$target_status\" != \"implement\" ]]; then return 0; fi` BEFORE any operation==preflight/postflight branching. Any claim that a PHASE 3 (plan-file/phase-marker) side effect in this function applies to research or plan target_status should be verified against this guard first -- it is easy to misread the nested `operation==preflight` check deeper in the function as the only gate and wrongly conclude the side effect applies to all three operation slots.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["update-task-status.sh", "target_status guard", "preflight", "phase marker", "orchestrate-hard"]
+    },
+    {
+      "content": "Pattern: two independent scans over the same plan-file phase headings, using different match criteria to answer 'which phase is next', can silently diverge and mis-stamp the wrong phase. Observed case: skill-orchestrate-hard/SKILL.md's per-phase dispatch selects next_phase via PHASE_STATUS_OPEN_ERE (NOT STARTED|IN PROGRESS|PARTIAL|BLOCKED), while update-task-status.sh's auto-advance convenience independently grepped for the first [NOT STARTED]-only heading -- when the true next/resumed phase was already [IN PROGRESS] (e.g. a continuation resume), the two scans disagreed and a later, undispatched phase got falsely marked [IN PROGRESS]. Any future convenience that touches phase headings should take the target phase number as an explicit parameter rather than re-deriving it independently.",
+      "category": "PATTERN",
+      "source_artifact": "specs/035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["phase-heading-patterns", "orchestrate-hard", "territory conflict", "H7", "scan divergence"]
+    },
+    {
+      "content": "Both general-implementation-agent.md (base engine) and general-implementation-hard-agent.md (hard engine) unconditionally call update-phase-status.sh ... IN_PROGRESS themselves as the first action of Stage 4A when starting any phase (base: 'for each phase starting from resume point'; hard: 'same contract as base agent'). Any preflight-side convenience that pre-marks a phase [IN PROGRESS] before dispatch is therefore provably redundant in both engines -- useful precedent when auditing other 'convenience' side effects for genuine necessity vs. safe deletion.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["general-implementation-agent", "general-implementation-hard-agent", "Stage 4A", "update-phase-status.sh", "redundant convenience"]
+    }
+  ]
+}

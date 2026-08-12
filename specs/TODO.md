@@ -11,11 +11,10 @@ next_project_number: 53
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,18,20,22,27,28,31,34,39,41,43,45,46,51,52 | -- | agent-system, extensions, literature, ... |
-| 2 | 9,29,35,42,48 | 16,18,22,41 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
-| 3 | 30,37,49,50 | 29,35,41,48 | agent-system, orchestration-concurrency, context-loading |
-| 4 | 17,32,44 | 28,30,31,37,49 | agent-system, context-loading |
-| 5 | 13 | 17 | agent-system |
+| 1 | 14,18,20,22,27,28,31,34,35,39,41,43,45,46,48,51,52 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 2 | 9,29,37,42,49,50 | 18,22,35,41,48 | agent-system, orchestration-concurrency, context-loading |
+| 3 | 17,30,44 | 29,37,49 | agent-system, context-loading |
+| 4 | 13,32 | 17,28,30,31 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -57,9 +56,8 @@ next_project_number: 53
 
 ### Orchestration Concurrency
 
-16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
-  └─ 35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
-    └─ 37 [NOT STARTED] — Close the two residual gaps left by the territory/handoff work. T
+35 [RESEARCHED] — Remove or correctly gate a one-time preflight side effect that ma
+  └─ 37 [NOT STARTED] — Close the two residual gaps left by the territory/handoff work. T
 
 ### Context Loading
 
@@ -621,10 +619,11 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 35. Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]
 - **Effort**: 1-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 16, Task 33
+- **Research**: [035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md]
 
 **Description**: Remove or correctly gate a one-time preflight side effect that marks a plan phase [IN PROGRESS] when no agent is dispatched for it. Observed live during a real `/orchestrate --hard` run (prior run, cycle 13).
 
@@ -1370,7 +1369,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 16. Fix command register acquire session id parity
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None

@@ -272,19 +272,19 @@
     {
       "project_number": 16,
       "project_name": "fix_command_register_acquire_session_id_parity",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Fix the register-bare/acquire-suffixed session-id pattern in the research.md, plan.md, and implement.md command files.\n\nTARGET: agent-system/extensions/core/commands/research.md, agent-system/extensions/core/commands/plan.md, agent-system/extensions/core/commands/implement.md.\n\nCONTEXT: skill-orchestrate/SKILL.md carried a defect where the in-flight session registry was registered under the bare session_id but the per-task lock was acquired and released under a task-suffixed variant. Because the session-contention self-exclusion is an exact string match, the batch never recognized its own registration and every acquire aborted deterministically. That defect was fixed in skill-orchestrate, and the fix recorded that these three multi-task command files exhibit the structurally identical register-bare/acquire-suffixed pattern and are likely to carry the same latent bug.\n\nWORK: verify whether each of the three command files actually reproduces the defect (the registration site, the acquire/release sites, and any dispatch context whose session_id feeds a downstream task-lock heartbeat call). Unify the session-id used across register/acquire/release/heartbeat in each file that is affected. Extend the existing register/acquire parity regression coverage to cover these consumers rather than adding a parallel test harness.\n\nREFERENCE: the parity invariant is stated in agent-system/extensions/core/context/patterns/task-lock.md (Consumers section); the existing regression group lives in agent-system/extensions/core/scripts/test-conflict-predicate.sh.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "topic": "orchestration-concurrency",
       "created": "2026-08-10T15:19:39Z",
-      "last_updated": "2026-08-10T18:43:31Z",
+      "last_updated": "2026-08-12T06:58:42Z",
       "file_scope": [
         "agent-system/extensions/core/commands/research.md",
         "agent-system/extensions/core/commands/plan.md",
         "agent-system/extensions/core/commands/implement.md",
         "agent-system/extensions/core/scripts/test-conflict-predicate.sh"
       ],
-      "session_id": "sess_1786386280_bc7e55_1016",
+      "session_id": "sess_1786517897_9e95c0",
       "artifacts": [
         {
           "path": "specs/016_fix_command_register_acquire_session_id_parity/reports/01_register-acquire-session-id-parity.md",
@@ -856,7 +856,7 @@
     {
       "project_number": 35,
       "project_name": "stop_preflight_spurious_phase_advance",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]",
       "topic": "orchestration-concurrency",
@@ -872,10 +872,16 @@
         "agent-system/extensions/core/scripts/tests/test-update-task-status.sh"
       ],
       "description": "Remove or correctly gate a one-time preflight side effect that marks a plan phase [IN PROGRESS] when no agent is dispatched for it. Observed live during a real `/orchestrate --hard` run (prior run, cycle 13).\n\n=== OBSERVED FAILURE ===\n\nPhase 19 was left marked [IN PROGRESS] with no dispatch behind it. That false marker then misled the phase-18 agent into reporting a nonexistent CONCURRENT DISPATCH -- a false territory-conflict signal. Correcting it required a /revise run. So the impact is not cosmetic: a bogus phase marker feeds directly into the territory-contract reasoning (H7) that hard mode relies on, and produces a fabricated conflict report.\n\n=== THE REAL OWNER IS NOT skill-base.sh ===\n\nThis matters -- do not start from the wrong file. Investigation established:\n\n  - `skill_preflight_update` in agent-system/extensions/core/scripts/skill-base.sh (lines 214-232) contains NO phase logic at all. It only shells out to update-task-status.sh, fires a hook, and appends an event.\n\n  - THE ACTUAL OWNER is agent-system/extensions/core/scripts/update-task-status.sh, function `update_plan_file()`, block at lines 525-583. It is guarded by `if [[ \"$operation\" == \"preflight\" ]]` at line 526. It selects the highest-versioned plan file, runs `grep -m1 -E \"${PHASE_HEADING_ERE}.*\\[NOT STARTED\\]\"`, and calls `update-phase-status.sh \"$task_number\" \"$project_name\" \"$first_phase\" \"IN_PROGRESS\"` at line 578, with no check that any agent will actually be dispatched for that phase. The dry-run echo at line 501 confirms the documented intent.\n\n  - IMPORTANT SCOPE WIDENING: the guard is keyed on the OPERATION SLOT `preflight`, NOT on `implement`. So this side effect fires for research and plan preflights too, not only implement preflights. Confirm the true breadth before choosing a fix.\n\n  - Call sites are in skill-orchestrate-hard/SKILL.md Stage 4 (heading line 482): lines 489 (research), 578 (plan), 695 (implement), and 849 (implement, continuation-available sub-state, already annotated \"Defense-in-depth: status is typically already 'implementing' here, so this is usually a no-op\").\n\n=== THE CODE ALREADY DOCUMENTS ITSELF AS REDUNDANT ===\n\nComments in update-task-status.sh lines 575-577 state the call is \"Superseded by the base agent owning every per-phase transition directly; this call is a redundant convenience\". If per-phase transitions are genuinely owned by the dispatched agent now, the strongest fix is to DELETE the convenience rather than gate it. Verify that claim against the current agents before acting on it -- if some path still depends on the auto-advance, deletion would silently regress it.\n\nA PARTIAL GUARD ALREADY EXISTS: `has_nonconforming_phase_headings` (line 561) skips the convenience when phase headings do not conform. Nothing gates it on actual dispatch. That existing guard shows where a dispatch-awareness check would naturally slot in.\n\n=== EXISTING TEST COVERAGE IS INSUFFICIENT ===\n\nscripts/tests/test-skill-base-lifecycle.sh lines 251-271 exercise only the state.json transition, never the plan-file phase side effect. The regression that would have caught this defect does not exist yet.\n\n=== ACCEPTANCE CRITERIA ===\n\n1. A preflight that does not dispatch an agent for a given phase never marks that phase [IN PROGRESS].\n2. The chosen fix is justified explicitly as either (a) deletion of a genuinely redundant convenience, having verified the dispatched agent owns every per-phase transition, or (b) a dispatch-awareness gate, having identified a path that still needs the auto-advance. Record which and why.\n3. The behaviour is settled for ALL THREE operation slots the `operation == \"preflight\"` guard currently covers (research, plan, implement), not implement alone.\n4. A regression test asserts the plan-file phase marker is untouched by a non-dispatching preflight, covering the side effect that test-skill-base-lifecycle.sh currently misses.\n5. No phase marker is left [IN PROGRESS] without a corresponding dispatch, so the territory-conflict reasoning can no longer be fed a fabricated concurrent dispatch.\n\n=== CO-MAINTENANCE ===\n\nThe two orchestrate SKILL.md files carry an explicit contract about each other (skill-orchestrate-hard/SKILL.md lines 956-961 and 1686-1688: \"an edit to either copy REQUIRES the same edit to the other; the two MUST always agree\"). If this fix changes anything at the Stage 4 preflight CALL SITES rather than solely inside update-task-status.sh, the corresponding change MUST be made in skill-orchestrate/SKILL.md as well. Verify base mode's preflight call sites for the same side effect regardless, since both engines call the same shared helper -- the defect is in shared code and is therefore very likely to affect base mode identically.\n\n=== SEQUENCING ===\n\nDepends on the handoff-identity and loop-guard task because both edit skill-orchestrate-hard/SKILL.md; the dependency serializes the overlapping edit territory. The root-cause file here (update-task-status.sh) is disjoint from that task.\n\n=== BINDING RULES ===\n\nSOURCE-STORE RULE: all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/**. NEVER edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store, so hand-edits there are silently wiped.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.",
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md",
+          "type": "report",
+          "summary": "Root-causes the false-in-progress phase marker to a criteria divergence between the preflight plan-file scan and the orchestrator next-phase scan; recommends deletion of the redundant convenience block plus a regression test."
+        }
+      ],
       "created": "2026-08-11T14:50:22Z",
-      "last_updated": "2026-08-11T14:50:22Z",
-      "session_id": "sess_1786459100_b7c4e2_35"
+      "last_updated": "2026-08-12T07:04:36Z",
+      "session_id": "sess_1786517897_9e95c0_35"
     },
     {
       "project_number": 37,
