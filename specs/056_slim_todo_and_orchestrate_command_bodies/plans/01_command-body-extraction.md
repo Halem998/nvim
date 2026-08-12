@@ -350,7 +350,7 @@ in Phases 2-3.
 
 ---
 
-### Phase 5: Acceptance verification — re-measure, re-run tests, end-to-end pointer read [NOT STARTED]
+### Phase 5: Acceptance verification — re-measure, re-run tests, end-to-end pointer read [COMPLETED]
 
 **Goal**: Prove the three acceptance properties: measured before/after bytes reported, existing
 tests pass unmodified, and every extracted region is reachable by an explicit follow-this-pointer
@@ -358,33 +358,79 @@ instruction — the last one verified by actually reading each command body end 
 executing agent would, not by assuming it from the diff.
 
 **Tasks**:
-- [ ] Re-measure: `wc -c` both command files; compute absolute and percentage deltas against the
+- [x] Re-measure: `wc -c` both command files; compute absolute and percentage deltas against the
       Phase 1 baseline. Also record the sizes of both new `context/patterns/` files, so the
-      accounting shows content relocated rather than lost.
-- [ ] Re-run the identical test set from Phase 1, **unmodified**:
+      accounting shows content relocated rather than lost. *(completed: todo.md 49,254 -> 41,855 B
+      (-7,399 B, -15.0%); orchestrate.md 43,180 -> 36,774 B (-6,406 B, -14.8%);
+      todo-archival-reference.md 8,298 B; orchestrate-batch-results-template.md 7,211 B — see
+      Phase 6 summary for the full reconciliation table)*
+- [x] Re-run the identical test set from Phase 1, **unmodified**:
       `scripts/tests/run-all.sh`, `scripts/test-session-runtime-files.sh`,
       `scripts/lint/lint-state-writer-boundary.sh`. Compare per-test results against the Phase 1
       baseline. Any test modified to make it pass invalidates the acceptance criterion — if a test
-      genuinely must change, stop and report rather than editing it.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` and the
+      genuinely must change, stop and report rather than editing it. *(completed: run-all.sh
+      42 passed/0 failed (identical to baseline); test-session-runtime-files.sh 6 passed/0 failed
+      (identical); lint-state-writer-boundary.sh 0 violations (identical). Zero test files
+      modified — confirmed by `git diff --stat` scoped to this task's commits showing no changes
+      under scripts/)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` and the
       repo-wide task-reference lint (`check-task-references.sh`) to confirm no task-number
-      references leaked into the new deliverable files.
-- [ ] **END-TO-END READ (explicit, not assumed) — `commands/todo.md`**: read the resulting file
+      references leaked into the new deliverable files. *(completed: lint-contract-compliance.sh
+      "Passed: 24, Warnings: 0, Failed: 0"; check-task-references.sh (no path scope, all four
+      tree roots) "PASS: 0 unexempted task-reference occurrences across 4 tree(s)")*
+- [x] **END-TO-END READ (explicit, not assumed) — `commands/todo.md`**: read the resulting file
       from first line to last, in order, as the agent executing `/todo` would. At each step that
       previously relied on `## Notes` content (Steps 2.5, 2.6, 3, 5.5, and the jq-classification
       guidance in Step 3), confirm the executing agent is told, in imperative form, to read a
       named file, and that the named file exists and contains the needed content. Record the
-      per-step confirmation as a list, not a single "verified" claim.
-- [ ] **END-TO-END READ (explicit, not assumed) — `commands/orchestrate.md`**: read the resulting
+      per-step confirmation as a list, not a single "verified" claim. *(completed — per-step
+      record:
+      1. Step 2.5 "Detect Orphaned Directories" (line 44): self-contained bash logic; the whole
+         command body (including the end-of-file pointer block) is loaded into context before any
+         step executes, and the pointer at lines 1029-1033 explicitly names Step 2.5 as depending
+         on `.claude/context/patterns/todo-archival-reference.md`'s orphan-category definitions.
+      2. Step 2.6 "Detect Misplaced Directories" (line 100): same reasoning; pointer names this
+         step too.
+      3. Step 3 "Prepare Archive List" subtasks-defer guard, jq-classification guidance (line 148):
+         imperative pointer sited INLINE at the exact point of need — "READ
+         `.claude/context/patterns/jq-escaping-workarounds.md` before writing the classification
+         logic below" — confirmed present at lines 148-150, directly preceding the `case`
+         statement it governs.
+      4. Step 5.5 "Update Roadmap for Archived Tasks" (line 696): delegates formatting logic to
+         `roadmap-integration.sh`; the end-of-file pointer names this step as depending on the
+         relocated roadmap annotation-format definitions.
+      5. The end-of-file pointer block itself (lines 1029-1033) reads "READ that file before
+         executing any of those steps" — confirmed imperative, not "see also"; confirmed the named
+         file exists at `agent-system/extensions/core/context/patterns/todo-archival-reference.md`
+         and contains the needed content (byte-diff verified in Phase 2).
+      6. Steps 5.7 (~812-937) and 6 (~939-965) read and confirmed byte-identical to the pre-edit
+         original — no-touch zones verified by direct read, not only by diff hunk range.)*
+- [x] **END-TO-END READ (explicit, not assumed) — `commands/orchestrate.md`**: read the resulting
       file from first line to last, in order, following the MULTI-TASK DISPATCH path through to
       Step 5. Confirm the executing agent reaches an imperative instruction to read the batch
       results template file, that the instruction states the template must be followed exactly,
       and that the STOP instruction still follows it. Record the confirmation explicitly.
-- [ ] For each of the two pointers, apply the passive/imperative test: would an agent reading only
+      *(completed — path record: `### MULTI-TASK DISPATCH` (line 97) -> `#### Step 1: Batch
+      Validation` (99) -> `#### Step 1.5: Pre-Dispatch Review` (123) -> `#### Step 2: Dependency
+      Graph Construction` (145) -> `#### Step 3: Topological Wave Assignment` (174) -> `#### Step
+      4: Wave Execution` (345) -> `#### Step 5: Commit Reconciliation and Consolidated Output`
+      (420), read in full to its end. At line 553-556, immediately after the "Re-run sequence
+      derivation" note and in place of the former fence, the pointer reads: "**Consolidated
+      Output**: READ `.claude/context/patterns/orchestrate-batch-results-template.md` now and emit
+      the batch results using that template. The template MUST be followed exactly — its
+      per-section rendering conditions are part of the contract, not commentary." Confirmed
+      imperative ("READ ... now"), confirmed "MUST be followed exactly" language present, and
+      confirmed line 558 "**After consolidated output, STOP. Do not continue to CHECKPOINT 1.**"
+      immediately follows, unchanged.)*
+- [x] For each of the two pointers, apply the passive/imperative test: would an agent reading only
       the command body know it is REQUIRED to open the referenced file at that moment? If the
-      wording admits "see also" reading, rewrite it before closing this phase.
-- [ ] Confirm no file under `.claude/**` was written by this work
-      (`git status --short` shows only `agent-system/**` and `specs/**` paths).
+      wording admits "see also" reading, rewrite it before closing this phase. *(completed: both
+      pointers pass — todo.md's reads "READ that file before executing any of those steps";
+      orchestrate.md's reads "READ ... now ... MUST be followed exactly". Neither uses "see also"
+      or "for more detail" phrasing; no rewrite needed.)*
+- [x] Confirm no file under `.claude/**` was written by this work
+      (`git status --short` shows only `agent-system/**` and `specs/**` paths). *(completed:
+      `git status --short | grep '^\.claude'` returns no matches across this task's commits)*
 
 **Timing**: 45 minutes
 
