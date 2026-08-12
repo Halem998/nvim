@@ -221,14 +221,14 @@ differs from the hypothesis, handle every occurrence found, not just the predict
 
 ---
 
-### Phase 3: Extract `orchestrate.md` batch-results output template [NOT STARTED]
+### Phase 3: Extract `orchestrate.md` batch-results output template [COMPLETED]
 
 **Goal**: Move the `## Batch Orchestrate Results` fenced template out of the `/orchestrate`
 command body — where it is needed only on the multi-task path — into a new `context/patterns/`
 file, replacing it with an imperative must-follow-exactly pointer at the Step 5 call site.
 
 **Tasks**:
-- [ ] Create
+- [x] Create
       `agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md`
       containing the fence content from `commands/orchestrate.md` lines 555-691 **verbatim**,
       including all nine `###`-level subsections (ZERO DISPATCH, Succeeded, Failed, Skipped,
@@ -236,22 +236,31 @@ file, replacing it with an imperative must-follow-exactly pointer at the Step 5 
       checkpoint), Pre-Existing Deploy-Verify Failures (Not Deferred), System Defects Detected,
       Next Steps) and every interleaved "rendered only when X" / "populated from Y" gating rule.
       Preserve the content inside a markdown fence so the template remains copy-exact, and add a
-      short preamble naming which command and which step consumes it.
-- [ ] Delete the fence (and the now-orphaned `**Consolidated Output**:` label if it reads better
+      short preamble naming which command and which step consumes it. *(completed: direct count
+      found 10 `###` subsections, not nine as hypothesized — the plan's own enumerated list
+      already names all 10, including "Next Steps"; all 10 included verbatim, byte-diff confirmed)*
+- [x] Delete the fence (and the now-orphaned `**Consolidated Output**:` label if it reads better
       folded into the pointer) from `commands/orchestrate.md` and replace it with an imperative
       pointer, e.g.: "**Consolidated Output**: READ
       `.claude/context/patterns/orchestrate-batch-results-template.md` now and emit the batch
       results using that template. The template MUST be followed exactly — its per-section
-      rendering conditions are part of the contract, not commentary."
-- [ ] Preserve everything surrounding the fence unchanged: the "Re-run sequence derivation" note
+      rendering conditions are part of the contract, not commentary." *(completed: pointer uses
+      this exact wording, folded into the Consolidated Output label)*
+- [x] Preserve everything surrounding the fence unchanged: the "Re-run sequence derivation" note
       immediately above, and the "**After consolidated output, STOP. Do not continue to CHECKPOINT
-      1.**" line immediately below. Both are decision logic and stay inline.
-- [ ] Confirm nothing else in `commands/orchestrate.md` refers to the extracted block by name
+      1.**" line immediately below. Both are decision logic and stay inline. *(completed: both
+      confirmed present and unchanged around the new pointer)*
+- [x] Confirm nothing else in `commands/orchestrate.md` refers to the extracted block by name
       (`grep -n 'Batch Orchestrate Results\|Consolidated Output' commands/orchestrate.md`).
-- [ ] Confirm the diff does not touch Step 5 Commit Reconciliation (~lines 420-534), which
+      *(completed: only the Step 5 heading (line 420, unrelated wording), the {validated_count}
+      cross-reference note (line 503, inside the no-touch zone, unchanged), and the new pointer
+      itself (line 553) match)*
+- [x] Confirm the diff does not touch Step 5 Commit Reconciliation (~lines 420-534), which
       `test-session-runtime-files.sh` Case 2 greps for `file_session_id` and
-      `mt_state_file_valid`.
-- [ ] Confirm the new file contains no task-number references and no emojis.
+      `mt_state_file_valid`. *(completed: single diff hunk starts at line 553; file_session_id/
+      mt_state_file_valid at lines 428-435 untouched)*
+- [x] Confirm the new file contains no task-number references and no emojis. *(completed:
+      check-task-references.sh and emoji grep both clean)*
 
 **Timing**: 45 minutes
 

@@ -1,0 +1,28 @@
+{
+  "phase": 3,
+  "phase_name": "Extract orchestrate.md batch-results output template",
+  "started_at": "2026-08-12T21:05:00Z",
+  "last_updated": "2026-08-12T21:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create orchestrate-batch-results-template.md with verbatim fence content", "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 2, "description": "Delete fence from orchestrate.md, add imperative must-follow-exactly pointer", "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 3, "description": "Preserve surrounding decision logic (re-run derivation note, STOP line)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Grep confirm no other name reference to the extracted block", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm Step 5 Commit Reconciliation zone untouched", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm no task-number references or emojis in new file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Plan hypothesized nine ###-level subsections in the fence content",
+      "type": "altered",
+      "reason": "Direct count found 10 ###-level subsections (the plan's own parenthetical list already names all 10, including Next Steps); used the measured count per the phase's Scope Hypothesis instruction rather than the stale 'nine' summary figure",
+      "annotation": "*(deviation: altered — measured 10 subsections, not 9; plan's own enumerated list already named all 10)*"
+    }
+  ]
+}
