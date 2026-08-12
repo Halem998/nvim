@@ -21,7 +21,12 @@
     "phase": {
       "type": "string",
       "enum": ["research", "plan", "implement", "revise"],
-      "description": "Optional, informational. Names which lifecycle phase produced this handoff."
+      "description": "Optional, informational. Names which lifecycle phase produced this handoff. This four-value lifecycle enum cannot discriminate one plan phase's dispatch from another's and is NOT an identity mechanism -- see dispatch_seq below for the field that is."
+    },
+    "dispatch_seq": {
+      "type": "integer",
+      "description": "Orchestrator-minted, unforgeable per-dispatch identity. Minted by the orchestrator immediately before the Agent tool call for this dispatch, embedded in the dispatch's delegation context, and echoed back unchanged by the dispatched agent in this handoff. Stage 5 of both orchestrate engines compares the handoff's dispatch_seq against the value minted for the current cycle to discriminate a still-live predecessor's late write (which always carries a newer mtime than the current dispatch window, defeating an mtime-only staleness check) from this dispatch's own report. Absent when the writer predates this contract or omits it by omission -- readers WARN on absent, they do not reject; only a present-but-mismatched value is rejected. Not in the required set for exactly this reason.",
+      "minimum": 0
     },
     "summary": {
       "type": "string",

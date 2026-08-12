@@ -170,30 +170,30 @@ rationale that depends on it.
 
 ---
 
-### Phase 2: `dispatch_seq` wire format — schema, validator, schema doc [NOT STARTED]
+### Phase 2: `dispatch_seq` wire format — schema, validator, schema doc [COMPLETED]
 
 **Goal**: Define the `dispatch_seq` field once, in the three places that define the handoff wire
 contract, so every later phase codes against a settled shape.
 
 **Tasks**:
-- [ ] Add `dispatch_seq` to `context/schemas/orchestrator-handoff-schema.json` as a top-level
+- [x] Add `dispatch_seq` to `context/schemas/orchestrator-handoff-schema.json` as a top-level
       integer property. Do NOT add it to `required` — a writer that omits it must degrade to a
       loud warning, not a hard rejection (see Phase 3's gate posture). Document in its
       `description` that it is minted by the orchestrator immediately before the `Agent` call, is
       echoed back unchanged by the dispatched agent, and exists specifically so a still-live
-      predecessor's late write can be discriminated from this dispatch's own.
-- [ ] Extend `scripts/validate-handoff.sh` with a `dispatch_seq` check in the same style as the
+      predecessor's late write can be discriminated from this dispatch's own. *(completed)*
+- [x] Extend `scripts/validate-handoff.sh` with a `dispatch_seq` check in the same style as the
       existing conditionally-required checks: present-and-integer passes; absent emits a WARN
       naming the writer contract; present-but-not-an-integer FAILs. Update the script's usage/help
-      text block alongside it.
-- [ ] Update `docs/architecture/handoff-schema.md`: document `dispatch_seq`, and correct the
+      text block alongside it. *(completed)*
+- [x] Update `docs/architecture/handoff-schema.md`: document `dispatch_seq`, and correct the
       existing statement that "a handoff at the correct path is not necessarily *this dispatch's*
       handoff" so it names `dispatch_seq` as the discriminator rather than offering mtime as the
       only mitigation. Also correct the `phase` field's documentation to say explicitly that its
       four-value lifecycle enum cannot discriminate one plan phase from another and is not an
-      identity mechanism.
-- [ ] Extend `scripts/tests/test-validate-handoff.sh` with cases for all three `dispatch_seq`
-      outcomes (valid integer, absent, non-integer).
+      identity mechanism. *(completed)*
+- [x] Extend `scripts/tests/test-validate-handoff.sh` with cases for all three `dispatch_seq`
+      outcomes (valid integer, absent, non-integer). *(completed)*
 
 **Timing**: 1.5 hours
 

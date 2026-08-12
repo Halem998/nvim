@@ -49,7 +49,17 @@ Bash-redirect writer ever be introduced.
 **Readers MUST check freshness.** A handoff at the correct path is not necessarily *this
 dispatch's* handoff. Both orchestrators compare the file's mtime against `dispatch_start_ts` —
 the same dispatch window already captured for infra-failure discrimination — and treat an
-out-of-window handoff exactly as they treat a missing one.
+out-of-window handoff exactly as they treat a missing one. **mtime alone is not sufficient**: a
+still-live predecessor that wakes (via a self-armed watcher/monitor, or an operator resume — see
+`context/patterns/dispatch-report-not-termination.md`) and writes late always produces a newer
+mtime than the current dispatch window, so the late write passes an mtime-only check and looks
+exactly like this dispatch's own on-time report. The actual discriminator is `dispatch_seq`: an
+orchestrator-minted, unforgeable per-dispatch identity embedded in the delegation context before
+the `Agent` call and echoed back unchanged in the handoff. Stage 5 of both engines compares the
+handoff's `dispatch_seq` against the value minted for the current cycle, rejecting a mismatch
+even when the mtime check alone would have passed. The mtime check is retained as a second line
+of defense against a different hazard (a handoff silently restored from an old git commit); it is
+not itself sufficient against a woken predecessor.
 
 **Dual-Consumer Note**: `orchestrator_mode` has TWO independent consumers as of the
 sparse-literature-detection reconciliation (see `EXTENSION.md`'s "Sparse-Coverage Detection"
@@ -151,6 +161,26 @@ Which lifecycle phase just completed. Not required by the schema — information
 - `"plan"`: `/plan` skill completed
 - `"implement"`: `/implement` skill completed (full or partial)
 - `"revise"`: `/revise` skill completed
+
+**Not an identity mechanism.** This four-value lifecycle enum cannot discriminate one plan
+phase's dispatch from another's — it names which *kind* of skill ran, not which cycle. Do not
+use it, or attempt to extend it, as a substitute for `dispatch_seq` below.
+
+### `dispatch_seq` (optional, integer)
+Orchestrator-minted, unforgeable per-dispatch identity. See "Readers MUST check freshness" above
+for the full rationale. Minted by the orchestrator immediately before the `Agent` tool call,
+embedded in that dispatch's delegation context (alongside `handoff_path`), and echoed back
+unchanged by the dispatched agent in this field. Stage 5 of both `skill-orchestrate` and
+`skill-orchestrate-hard` compares this value against the value minted for the current cycle:
+- Match (or field absent from the handoff): accepted, subject to the existing mtime check.
+- Mismatch: rejected — `handoff_stale=true`, the same loud-error path the mtime check already
+  takes, naming both the expected and observed values.
+- Absent: a loud WARN naming the writer contract, never a rejection. The strict
+  reject-on-absent form is deliberately not adopted, so a writer that predates this field (or
+  omits it) degrades to mtime-only discrimination rather than being treated as an error.
+
+Not in the schema's `required` set for exactly this reason — see
+`context/schemas/orchestrator-handoff-schema.json`.
 
 ### `status` (required)
 Outcome of this dispatch cycle.

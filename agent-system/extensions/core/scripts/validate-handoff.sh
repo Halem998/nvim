@@ -36,7 +36,7 @@ while [[ $# -gt 0 ]]; do
       echo "see also wrap-up.md's H9 prose contract)."
       echo ""
       echo "Required fields: status, summary, artifacts, phases_completed, phases_total, blockers"
-      echo "Optional fields: phase, plan_markers_verified, skeleton, sorry_inventory,"
+      echo "Optional fields: phase, plan_markers_verified, skeleton, sorry_inventory, dispatch_seq,"
       echo "  continuation_path, continuation_context (deprecated, read-only), next_action_hint,"
       echo "  git_checkpoint"
       echo "Conditionally-required field: skeleton (boolean, defaults to false)"
@@ -52,6 +52,8 @@ while [[ $# -gt 0 ]]; do
       echo "  - skeleton=true requires status=='implemented', a non-empty sorry_inventory, and every"
       echo "    strategic:true entry must have non-empty assumption/why_deferred and non-null"
       echo "    follow_up_task"
+      echo "  - dispatch_seq: present-and-integer passes; absent WARNs (never rejects -- the strict"
+      echo "    reject-on-absent form is deliberately not adopted); present-but-non-integer FAILs"
       echo ""
       echo "Exit codes: 0 = valid, 1 = invalid, 3 = file not found"
       exit 0
@@ -225,6 +227,16 @@ else
   else
     log_pass "Optional field present: sorry_inventory"
   fi
+fi
+
+# --- Check 3b: dispatch_seq validation (conditionally-required, same idiom as skeleton) ---
+dispatch_seq_raw=$(jq -r ".dispatch_seq // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+if [[ "$dispatch_seq_raw" == "__MISSING__" ]] || [[ "$dispatch_seq_raw" == "null" ]]; then
+  log_warn "Optional field absent: dispatch_seq (writer contract: echo back the delegation context's dispatch_seq unchanged; see context/patterns/dispatch-report-not-termination.md and docs/architecture/handoff-schema.md)"
+elif [[ "$dispatch_seq_raw" =~ ^-?[0-9]+$ ]]; then
+  log_pass "dispatch_seq present and is an integer: $dispatch_seq_raw"
+else
+  log_fail "dispatch_seq present but not an integer: '$dispatch_seq_raw'"
 fi
 
 # continuation_path or continuation_context (one of these two forms is acceptable)

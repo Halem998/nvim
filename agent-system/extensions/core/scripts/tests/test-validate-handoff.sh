@@ -174,6 +174,50 @@ assert_reject "reject-off-vocab-status" '{
 }'
 
 # =====================================================================
+# dispatch_seq fixtures (three outcomes: valid integer, absent, non-integer)
+# =====================================================================
+
+# Accept 5: dispatch_seq present and a valid integer -- PASS, exit 0.
+assert_accept "accept-dispatch-seq-integer" '{
+  "status": "implemented",
+  "summary": "Implemented with a valid dispatch_seq echoed back.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/000_x/summaries/01_x-summary.md"}
+  ],
+  "phases_completed": 1,
+  "phases_total": 1,
+  "blockers": [],
+  "dispatch_seq": 7
+}'
+
+# Accept 6: dispatch_seq absent entirely -- WARN, not a rejection (exit 0). Covers a writer that
+# predates this contract or omits it by omission; the strict reject-on-absent form is
+# deliberately not adopted.
+assert_accept "accept-dispatch-seq-absent" '{
+  "status": "implemented",
+  "summary": "Implemented with no dispatch_seq field at all.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/000_x/summaries/01_x-summary.md"}
+  ],
+  "phases_completed": 1,
+  "phases_total": 1,
+  "blockers": []
+}'
+
+# Reject 5: dispatch_seq present but not an integer -- FAIL, exit non-zero.
+assert_reject "reject-dispatch-seq-non-integer" '{
+  "status": "implemented",
+  "summary": "Implemented with a malformed dispatch_seq.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/000_x/summaries/01_x-summary.md"}
+  ],
+  "phases_completed": 1,
+  "phases_total": 1,
+  "blockers": [],
+  "dispatch_seq": "not-an-integer"
+}'
+
+# =====================================================================
 # Summary
 # =====================================================================
 info "Validator resolved to: $VALIDATOR"
