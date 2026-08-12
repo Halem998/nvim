@@ -166,6 +166,21 @@ the handoff is written once at the very end of a multi-phase dispatch, ensure th
 observed out of sync by a reader. Do not promote a phase heading and defer the handoff update to
 a later, uncommitted step.
 
+## Teardown Precedes the Terminal Handoff Write
+
+**Any watcher, monitor, or background job an agent arms during its own dispatch MUST be torn
+down BEFORE that agent writes the terminal `.orchestrator-handoff.json`.** This is an
+operational obligation, not a suggestion: a backgrounded `Bash` invocation (`run_in_background`),
+a file/process watcher, or a monitor loop started to observe some condition during this dispatch
+is this agent's own responsibility to stop before it reports. Leaving one running past the
+terminal handoff write is a defect — it leaves an artifact of this dispatch alive after the
+dispatch has told the orchestrator it is done.
+
+**Standing limitation**: this teardown obligation cannot prevent a resume-driven wake — an
+operator or a later cycle restarting work that observes state this agent left behind. It
+complements, and never replaces, the sound territory contract's ownership declaration and
+STOP-and-report duty. See `context/patterns/dispatch-report-not-termination.md`.
+
 ## Build-Green Invariant
 
 At every commit, the following invariants hold:

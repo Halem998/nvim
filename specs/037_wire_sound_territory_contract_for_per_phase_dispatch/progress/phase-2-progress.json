@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Teardown Obligation in wrap-up.md (Gap 1)",
+  "started_at": "2026-08-12T08:10:00Z",
+  "last_updated": "2026-08-12T08:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add new ## Teardown Precedes the Terminal Handoff Write section to wrap-up.md, between Defect-6 ordering section and Build-Green Invariant, stating the obligation operationally with a one-line pointer and the standing-limitation sentence",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/wrap-up.md"],
+      "note": "Section added at line 169. grep -inE 'watch|monitor|background|teardown' now returns 5 hits (was 0). New section contains exactly 1 occurrence of dispatch-report-not-termination (pointer sentence, not paraphrase). git diff --stat shows one hunk, 15 insertions, 0 deletions -- no other section altered."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

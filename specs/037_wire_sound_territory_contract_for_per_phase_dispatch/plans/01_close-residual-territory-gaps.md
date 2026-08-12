@@ -162,29 +162,29 @@ baseline rather than asserting the planned number.
 
 ---
 
-### Phase 2: Teardown Obligation in wrap-up.md (Gap 1) [NOT STARTED]
+### Phase 2: Teardown Obligation in wrap-up.md (Gap 1) [COMPLETED]
 
 **Goal**: Add watcher/monitor/background-job teardown to `context/contracts/wrap-up.md` as an
 operational obligation discharged before the terminal handoff write, satisfying acceptance
 criterion 1.
 
 **Tasks**:
-- [ ] Add a new `##`-level section to `agent-system/extensions/core/context/contracts/wrap-up.md`,
+- [x] Add a new `##`-level section to `agent-system/extensions/core/context/contracts/wrap-up.md`,
       placed immediately after the existing "Ordering: Handoff Write Precedes Marker Promotion
       (Defect 6)" section and before "Build-Green Invariant", titled in that section's own
-      "precedes" idiom (e.g. `## Teardown Precedes the Terminal Handoff Write`).
-- [ ] State the obligation operationally and in the imperative: every agent that arms a
+      "precedes" idiom (e.g. `## Teardown Precedes the Terminal Handoff Write`). *(completed)*
+- [x] State the obligation operationally and in the imperative: every agent that arms a
       watcher, monitor, or background job during its own dispatch MUST tear it down BEFORE writing
       the terminal `.orchestrator-handoff.json`. Name the concrete artifacts an agent actually
       arms in this system (backgrounded `Bash` invocations, file/process watchers, monitor loops)
-      so the obligation is checkable rather than abstract.
-- [ ] Give the rationale as a ONE-LINE POINTER only, mirroring the existing idiom already used in
+      so the obligation is checkable rather than abstract. *(completed)*
+- [x] Give the rationale as a ONE-LINE POINTER only, mirroring the existing idiom already used in
       wrap-up.md's `dispatch_seq` field-semantics bullet:
       `See \`context/patterns/dispatch-report-not-termination.md\`.` Do NOT restate, summarize, or
-      re-argue that file's model — acceptance criterion 5 forbids a second statement of it.
-- [ ] Record the standing limitation in one sentence: teardown cannot prevent a resume-driven wake,
-      so it complements — never replaces — the sound territory contract.
-- [ ] Do NOT modify any other section of wrap-up.md. This is an addition, not a restructure.
+      re-argue that file's model — acceptance criterion 5 forbids a second statement of it. *(completed)*
+- [x] Record the standing limitation in one sentence: teardown cannot prevent a resume-driven wake,
+      so it complements — never replaces — the sound territory contract. *(completed)*
+- [x] Do NOT modify any other section of wrap-up.md. This is an addition, not a restructure. *(completed: verified via git diff --stat, single hunk)*
 
 **Timing**: 30 minutes
 
