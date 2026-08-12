@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "summary": "Created a 7-phase implementation plan (10h) for the .return-meta.json artifacts shape contract. Records the explicit decision the task demanded: the contract stays STRICT (bare-string arrays are never valid, and validate-return-meta.sh fails on them) while the single shared consumer chokepoint normalizes to avoid losing artifact links, emitting a loud stderr notice and recording an ARTIFACTS_SHAPE_MISMATCH system defect. Phases: (1) canonical contract fragment + normative doc update, (2) validate-return-meta.sh with --fix plus a shared scripts/lib inference anchor, (3-4) inline-template backfill across ~23 agent files, (5) chokepoint normalization in skill_read_metadata, (6) closing the handoff-present detection hole in skill-orchestrate, (7) lint-agent-contracts.sh Check F wired through the existing verify-deploy gate 6. Planning re-verified the agent sweep live and found a third tier the research did not separate: planner-agent, planner-hard-agent, general-research-hard-agent and general-implementation-hard-agent already carry the PROSE warning about .artifacts[0].path yet still have no inline JSON template -- prose alone is the configuration that already failed in production.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/052_return_meta_artifacts_shape_contract/plans/01_return-meta-artifacts-contract.md",
+      "summary": "Seven-phase plan closing the .return-meta.json artifacts shape gap"
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": [],
+  "dispatch_seq": 1,
+  "next_action_hint": "Run /implement 52. Phase 1 is wave 1 and unblocks everything else. Phases 2, 3, 4 and 6 can run in parallel once Phase 1 lands. Phase 7 must not land before phases 3 and 4 complete, or verify-deploy.sh gate 6 will fail for every subsequent run."
+}

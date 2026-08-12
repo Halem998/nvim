@@ -122,9 +122,28 @@ Each artifact object:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `type` | string | Yes | `report`, `plan`, `summary`, `implementation` |
+| `type` | string | Yes | `report`, `plan`, `summary`, `implementation`, `handoff` |
 | `path` | string | Yes | Relative path from project root |
 | `summary` | string | Yes | Brief 1-sentence description |
+
+**A bare-string array element is never valid, in any context.** `"artifacts": ["path/to/file.md"]`
+is not an accepted shorthand for the object shape above — every element MUST be an object carrying
+non-empty `type`, `path`, and `summary`. This is enforced at four layers, none of which alone is
+sufficient:
+
+| Layer | Posture |
+|-------|---------|
+| This normative doc | Strict. A bare-string array is never valid, in any context. |
+| `validate-return-meta.sh` | Strict. Bare strings FAIL (exit 1). `--fix` performs the unambiguous repair on request, never implicitly. |
+| Consumer chokepoint (`skill_read_metadata` in `scripts/skill-base.sh`) | Normalizes so the artifact link is not lost, but emits a loud stderr notice AND records an `ARTIFACTS_SHAPE_MISMATCH` system defect. |
+| Agent contracts | Strict. Every dispatchable agent that writes `.return-meta.json` carries a correct inline template; `lint-agent-contracts.sh` Check F fails the deploy if one does not. |
+
+The canonical copyable template every agent uses, the classification rule for which agents must
+carry it, and the path-segment type-inference table are recorded in one place:
+`context/contracts/return-meta-artifacts-template.md` (source:
+`agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md`). Copy the
+template from that fragment, not from this schema document — this document states the rule, the
+fragment holds the exact copyable text.
 
 ### next_steps (optional)
 
