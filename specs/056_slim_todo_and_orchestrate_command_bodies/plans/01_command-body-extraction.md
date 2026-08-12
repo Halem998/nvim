@@ -1,7 +1,7 @@
 # Implementation Plan: Task #56
 
 - **Task**: 56 - LEVER 3 of the context-cost work (command bodies): slim todo.md and orchestrate.md
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None blocking (state.json lists `dependencies: [48]`, an auto-added
   file-scope-overlap edge consulted only for multi-task wave assignment; research confirmed it is
@@ -455,22 +455,25 @@ and expected if the imperative test fails)
 
 ---
 
-### Phase 6: Summary with measurement table and recorded sibling-task recommendation [NOT STARTED]
+### Phase 6: Summary with measurement table and recorded sibling-task recommendation [COMPLETED]
 
 **Goal**: Produce the implementation summary carrying the acceptance evidence and the explicit,
 recorded recommendation about the standing sibling task — so the decision is on the record rather
 than silently inherited.
 
 **Tasks**:
-- [ ] Write `specs/056_slim_todo_and_orchestrate_command_bodies/summaries/01_command-body-extraction-summary.md`
-      per `summary-format.md`.
-- [ ] Include the before/after measurement table from Phase 5: per-file before bytes, after bytes,
+- [x] Write `specs/056_slim_todo_and_orchestrate_command_bodies/summaries/01_command-body-extraction-summary.md`
+      per `summary-format.md`. *(completed)*
+- [x] Include the before/after measurement table from Phase 5: per-file before bytes, after bytes,
       absolute delta, percentage delta, plus the size of each new `context/patterns/` file, with a
       line stating total content relocated vs. total content removed (these should reconcile).
-- [ ] Include the test result: which suite was run, that it was run unmodified, and the
-      before/after comparison.
-- [ ] Include the per-step pointer-reachability record from Phase 5's two end-to-end reads.
-- [ ] **Record the sibling-task recommendation explicitly**: research independently verified and
+      *(completed: Measurement Table section)*
+- [x] Include the test result: which suite was run, that it was run unmodified, and the
+      before/after comparison. *(completed: Verification section)*
+- [x] Include the per-step pointer-reachability record from Phase 5's two end-to-end reads.
+      *(completed: Pointer-Reachability Record section, added with the full 6-item todo.md record
+      and the full orchestrate.md path-and-pointer record)*
+- [x] **Record the sibling-task recommendation explicitly**: research independently verified and
       REJECTED the premise behind the standing proposal to slim `commands/task.md` as "the largest
       per-invocation context contributor". Measured, `task.md` is 37,465 B — the *smallest* of the
       three command files (`todo.md` 49,254 B, `orchestrate.md` 43,180 B) — and it is procedural
@@ -480,15 +483,18 @@ than silently inherited.
       re-pointing it at `todo.md`/`orchestrate.md` is redundant because this work already covers
       both. Note the one caveat: if the original concern was actually about `task.md`'s *imported*
       context chain rather than its command body, that is a different lever (import-chain
-      trimming) needing a freshly scoped task, not a repoint of the existing one.
-- [ ] State explicitly in the summary that no action was taken on that other task's scope — only
-      the recommendation is recorded.
-- [ ] Note the residual finding for future readers: `orchestrate.md` is on the
+      trimming) needing a freshly scoped task, not a repoint of the existing one. *(completed:
+      Sibling-Task Recommendation section)*
+- [x] State explicitly in the summary that no action was taken on that other task's scope — only
+      the recommendation is recorded. *(completed: final line of the Sibling-Task Recommendation
+      section)*
+- [x] Note the residual finding for future readers: `orchestrate.md` is on the
       orchestrator-critical-path inclusion table, so a future `/orchestrate` batch that
       co-dispatches this file's editors alongside another task may defer on the self-modification
-      admission gate; solo dispatch is unaffected.
-- [ ] Confirm the summary contains no emojis, and that task-number references appear only inside
-      `specs/**` (which the summary is).
+      admission gate; solo dispatch is unaffected. *(completed: Residual Finding section)*
+- [x] Confirm the summary contains no emojis, and that task-number references appear only inside
+      `specs/**` (which the summary is). *(completed: emoji grep clean; the summary itself is
+      under specs/**, so its own task-number references are exempt per the deliverable rule)*
 
 **Timing**: 30 minutes
 

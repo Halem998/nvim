@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "phase_name": "Summary with measurement table and recorded sibling-task recommendation",
+  "started_at": "2026-08-12T21:50:00Z",
+  "last_updated": "2026-08-12T21:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write implementation summary per summary-format.md", "status": "done",
+      "files_touched": ["specs/056_slim_todo_and_orchestrate_command_bodies/summaries/01_command-body-extraction-summary.md"]},
+    {"id": 2, "description": "Include before/after measurement table", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Include test result summary", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Include per-step pointer-reachability record", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record sibling-task recommendation (drop task.md-slimming task)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "State no action taken on other task's scope", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Note residual finding about orchestrator-critical-path inclusion table", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Confirm summary has no emojis and task-refs stay inside specs/", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
