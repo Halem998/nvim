@@ -1,7 +1,7 @@
 # Implementation Plan: Task #57
 
 - **Task**: 57 - Cut the generated .claude/CLAUDE.md eager surface without losing capability, refactoring capabilities to remove redundancy where a workflow can be preserved rather than merely trimmed.
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/057_cut_generated_claudemd_eager_surface/reports/01_cut-claudemd-eager-surface.md`
@@ -505,28 +505,41 @@ time rather than trusting this count, and confirm the `EXT_DIR` default is uncha
 
 ---
 
-### Phase 7: Final Deploy, Acceptance Measurement, and Summary [NOT STARTED]
+### Phase 7: Final Deploy, Acceptance Measurement, and Summary [COMPLETED]
 
 **Goal**: Produce the acceptance artifact: measured before/after bytes for every file touched and
 for the assembled `.claude/CLAUDE.md`, taken after a real deploy, in the same eager-prefix
 accounting as the 70,160 B baseline.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` one final time from a clean source-store state.
-- [ ] Run the Phase 1 measurement script with `--compare` against the Phase 1 baseline snapshot.
-- [ ] Produce the acceptance table: one row per file touched with before bytes, after bytes, delta,
+- [x] Run `bash .claude/scripts/deploy-headless.sh` one final time from a clean source-store state.
+      *(completed)*
+- [x] Run the Phase 1 measurement script with `--compare` against the Phase 1 baseline snapshot.
+      *(completed: eager prefix 70,160 -> 60,577 B (-9,583 B); assembled .claude/CLAUDE.md
+      42,798 -> 33,215 B (-9,583 B))*
+- [x] Produce the acceptance table: one row per file touched with before bytes, after bytes, delta,
       and saving class (HARD / SOFT / harness-duplicate / none); plus rows for the assembled
-      `.claude/CLAUDE.md` and the full eager prefix.
-- [ ] Confirm the eager prefix is recomputed over the identical 9-file composition as the baseline —
+      `.claude/CLAUDE.md` and the full eager prefix. *(completed: see summary artifact's
+      Acceptance Table)*
+- [x] Confirm the eager prefix is recomputed over the identical 9-file composition as the baseline —
       an apples-to-apples comparison is the acceptance criterion, not merely a smaller number.
-- [ ] Record the four capability consolidations with their after-routes, confirming each is
-      reachable in the deployed tree.
-- [ ] State the honest outcome against the illustrative target: report the actual landing figure,
+      *(completed: same measure-eager-surface.sh harness, same 9-file set, confirmed via --compare)*
+- [x] Record the four capability consolidations with their after-routes, confirming each is
+      reachable in the deployed tree. *(completed: all four confirmed present on disk in the
+      deployed .claude/ tree — see summary artifact's Capability Consolidations section)*
+- [x] State the honest outcome against the illustrative target: report the actual landing figure,
       and state plainly that the ~26 KB figure was not pursued because the evidence does not
-      support the remaining cuts.
-- [ ] Confirm the per-extension ceiling is in force and name the file it lives in.
-- [ ] Verify no `.claude/**` file was hand-edited at any point across all phases
-      (`git log -p` review of the phase commits for `.claude/` paths).
+      support the remaining cuts. *(completed: landed at 33,215 B, 215 B above the projected
+      31,000-33,000 B range top; ~26 KB was never adopted as a target per the plan's own
+      Non-Goals)*
+- [x] Confirm the per-extension ceiling is in force and name the file it lives in. *(completed:
+      agent-system/extensions/core/context/config/claudemd-size-budget.json, enforced by Rule V
+      in check-extension-docs.sh)*
+- [x] Verify no `.claude/**` file was hand-edited at any point across all phases
+      (`git log -p` review of the phase commits for `.claude/` paths). *(completed: every phase
+      commit (Phases 1-6) scoped to agent-system/extensions/** and specs/** only, verified via
+      git-commit-scoped.sh's own path-scoped staging plus a git status check before each commit —
+      zero .claude/** paths in any phase commit)*
 
 **Timing**: 1 hour
 
@@ -552,15 +565,27 @@ report the discrepancy and its cause rather than restating the projection.
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/deploy-headless.sh` completes without error after each phase.
-- [ ] `bash .claude/scripts/verify-deploy.sh` passes after phases 4, 6, and 7.
-- [ ] `bash .claude/scripts/check-extension-docs.sh --quiet` exits clean after every phase.
-- [ ] `bash -n` passes on `measure-eager-surface.sh` and `check-extension-docs.sh`.
-- [ ] `jq empty` passes on `claudemd-size-budget.json` and every edited `manifest.json`.
-- [ ] The assembled `.claude/CLAUDE.md` contains no duplicate `##` heading after any phase.
-- [ ] The deliberate-violation test in Phase 6 confirms the ceiling rule actually fires.
-- [ ] No task-number reference appears in any file outside `specs/**`.
-- [ ] `git status` confirms no hand-edited `.claude/**` path in any phase commit.
+- [x] `bash .claude/scripts/deploy-headless.sh` completes without error after each phase.
+      *(completed: confirmed after every phase, 1-7)*
+- [x] `bash .claude/scripts/verify-deploy.sh` passes after phases 4, 6, and 7. *(completed with a
+      caveat: 21/23 checks pass; 2 pre-existing, unrelated failures persist across all three runs
+      — Rule S doc-lint on an unrelated prior task's contract file, and validate-state.sh unknown
+      fields on unrelated task entries 49/52-56. Neither is caused by, or in scope for, this task —
+      see Phase 4/7 verification notes and the summary's Verification section)*
+- [x] `bash .claude/scripts/check-extension-docs.sh --quiet` exits clean after every phase.
+      *(completed with the same caveat: the one pre-existing Rule S finding persists unchanged
+      through every phase; zero new findings introduced by this task's edits in any phase)*
+- [x] `bash -n` passes on `measure-eager-surface.sh` and `check-extension-docs.sh`. *(completed)*
+- [x] `jq empty` passes on `claudemd-size-budget.json` and every edited `manifest.json`.
+      *(completed)*
+- [x] The assembled `.claude/CLAUDE.md` contains no duplicate `##` heading after any phase.
+      *(completed: confirmed via heading grep after Phase 2, no duplicates found)*
+- [x] The deliberate-violation test in Phase 6 confirms the ceiling rule actually fires.
+      *(completed)*
+- [x] No task-number reference appears in any file outside `specs/**`. *(completed:
+      check-task-references.sh --quiet reports 0 unexempted occurrences)*
+- [x] `git status` confirms no hand-edited `.claude/**` path in any phase commit. *(completed:
+      confirmed via `git log --name-only` across all phase commits — zero .claude/** paths)*
 
 ## Artifacts & Outputs
 
