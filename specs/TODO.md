@@ -1,5 +1,5 @@
 ---
-next_project_number: 58
+next_project_number: 59
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 58
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53,58 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
 | 2 | 9,13,29,42,50,56 | 17,18,22,41,48 | agent-system, context-loading |
 | 3 | 30 | 29 | agent-system |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -34,6 +34,7 @@ next_project_number: 58
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
+58 [NOT STARTED] — Add a version-consistency preflight gate to /tag so a tag can nev
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -61,13 +62,51 @@ next_project_number: 58
 
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
-56 [NOT STARTED] — LEVER 3 of the context-cost work (command bodies). Smallest and c
+56 [RESEARCHING] — LEVER 3 of the context-cost work (command bodies). Smallest and c
 
 ### Email
 
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 
 ## Tasks
+
+### 58. Add version-consistency preflight gate to /tag
+- **Effort**: 2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Add a version-consistency preflight gate to /tag so a tag can never be created or pushed while the package being released declares a different version.
+
+THE DEFECT. skill-tag computes the next version purely from git tag history: Step 3 "Compute New Version" runs `git describe --tags --abbrev=0`, sed-parses the major/minor/patch components, and increments per the flag. It never reads the version DECLARED by the package being released. Step 2 "Validate Git State" checks exactly four things -- clean working tree, not detached HEAD, not behind remote, and (in Step 3) that the computed tag does not already exist. None of the four consult a package manifest. So the computed tag and the shipped artifact's version are free to disagree, and nothing in /tag notices.
+
+OBSERVED FAILURE (real, in the ModelChecker repo). `/tag --patch` computed v1.3.1 from the v1.3.0 tag and pushed it while code/pyproject.toml still declared version = "1.3.0". The Release workflow builds from the declared version and asserts it matches the tag, so it aborted with:
+
+    ERROR: Installed version (1.3.0) doesn't match tag (1.3.1)
+
+Job outcomes: 1 matrix cell failed, 8 cancelled by fail-fast, and Build distribution / Publish to TestPyPI / Publish to PyPI / Create GitHub Release all SKIPPED. Nothing was published -- the downstream CI gate did its job. But the tag had ALREADY been pushed to the remote, so recovery meant deleting and re-pushing a published tag. Remote-mutating cleanup after the fact is precisely what a preflight gate exists to prevent; catching this in CI is strictly worse than catching it before `git tag`.
+
+WHAT THE FIX MUST ACCOMPLISH (design deliberately left open for research/planning).
+
+(1) A preflight gate that reads the declared package version, compares it against the computed tag version, and on mismatch fails closed with an actionable message naming BOTH versions and the file to edit. It must run BEFORE `git tag` (Step 5) and BEFORE `git push` (Step 6).
+
+(2) Version-source detection must be ecosystem-general, not hardcoded. /tag is a global, cross-repo skill. At minimum consider: Python (pyproject.toml [project] version, setup.py, setup.cfg), Node (package.json version), Rust (Cargo.toml [package] version). Lua/Nix and many others declare no version at all.
+
+(3) The no-version-declared case must be handled EXPLICITLY and must be neither a silent pass nor a hard failure. Many repos legitimately have no package manifest and /tag must keep working there unchanged. A visible "no declared version found, skipping consistency check" notice is the shape to aim for -- the user should be able to tell from the transcript that the check was skipped rather than passed.
+
+(4) DESIGN DECISION FOR THE PLANNING PHASE, not to be settled during research: should the gate offer to perform the version bump itself, or only report and stop? Report-and-stop is the safer default given /tag's user-only, deployment-triggering nature -- an auto-bump would mutate a source file from inside a command whose documented job is tagging, and would then need its own commit before the tag could point at it. Record the decision and its rationale rather than silently picking one.
+
+(5) --dry-run MUST exercise this check. A dry run that prints "would tag v1.3.1" while the manifest says 1.3.0 is actively misleading, and is exactly the preview a user would rely on to avoid this failure. Note that the current Step 5 dry-run branch exits before any further validation, so ordering matters.
+
+(6) Decide whether the Requirements list in commands/tag.md needs a matching entry (it currently lists the same four conditions as Step 2), and whether the Workflow list there should name the new gate, so the documented contract and the implemented gate agree. A gate that exists in the skill but not in the command doc is a doc-truth defect of the kind this repo already tracks.
+
+SCOPE NOTE. The fix_return_meta_lifecycle_ordering entry declares the broad prefixes agent-system/extensions/core/skills/ and agent-system/extensions/core/commands/ in its file_scope, which prefix-overlaps these two files. That overlap is almost certainly spurious -- it concerns .return-meta.json lifecycle ordering in agent-dispatching skills, and skill-tag is direct-execution, user-only, and emits no return-meta -- so no dependency is declared here. If its implementation turns out to touch skill-tag/SKILL.md after all, serialize then.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/core/**, never .claude/**. The deployed .claude/skills/skill-tag/SKILL.md and .claude/commands/tag.md are disposable artifacts regenerated from the source store.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 57. Cut generated claudemd eager surface
 - **Status**: [COMPLETED]
@@ -115,7 +154,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 56. Slim todo and orchestrate command bodies
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: context-loading
 - **Dependencies**: Task 48

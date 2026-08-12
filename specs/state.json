@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 58,
+  "next_project_number": 59,
   "active_projects": [
     {
       "project_number": 57,
@@ -116,7 +116,7 @@
     {
       "project_number": 56,
       "project_name": "slim_todo_and_orchestrate_command_bodies",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "context-loading",
       "description": "LEVER 3 of the context-cost work (command bodies). Smallest and cheapest of the three levers; listed separately so it does not get starved by the two larger ones and so its edit territory does not collide with theirs.\n\nMEASURED (source store, 2026-08-12): commands/todo.md is 49,254 bytes and commands/orchestrate.md is 43,180 bytes. A command body is loaded in full on every invocation of that command. Two extractable regions were identified: the ## Notes section of todo.md (~7,851 B), which is reference material belonging under context/patterns/, and the ## Batch Orchestrate Results output template in orchestrate.md (~6,739 B), which is needed only in batch mode and can be pointed at rather than inlined.\n\nWORK: move those two regions out, keeping each command body to the decision logic and dispatch instructions an invocation actually needs. Re-measure both regions before cutting -- the byte figures above are from the audit and the files may have drifted, as the orchestrate skills demonstrably did (+12% and +19% over the same interval).\n\nPRESERVE BEHAVIOR: no command loses a behavior. Every mode stays fully specified, either inline or via an explicit pointer the executing agent is instructed to follow. A reference that an agent is not told to follow is a deletion, not an extraction.\n\nCARRY THIS CORRECTION FORWARD (record it in the summary; do not silently act on another task scope). There is a separate standing task to slim commands/task.md as \"the largest per-invocation context contributor\". Structural analysis contradicts that premise: task.md is procedural and mode-specific, already cites standards by pointer rather than restating them, and yields roughly 0-1 KB of extractable material, against todo.md ~7.9 KB and orchestrate.md ~6.7 KB. Recommend re-pointing that task at todo.md/orchestrate.md, or dropping it as redundant with this subtask. Make the recommendation explicit in the summary so the decision is recorded rather than inherited.\n\nTERRITORY: agent-system/extensions/core/commands/todo.md, commands/orchestrate.md, and the new context/patterns/ destinations. Note the overlap risk: the scoped-commit propagation work also edits todo.md and orchestrate.md, at their `git commit -m` call sites specifically. Coordinate or sequence against it; the regions differ, but the files do not.\n\nACCEPTANCE: report measured before/after bytes for both command files. Existing tests pass unmodified. Every extracted region is reachable from the command body by an explicit follow-this-pointer instruction, verified by reading the resulting command body end to end as an executing agent would.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.",
@@ -125,12 +125,13 @@
         48
       ],
       "created": "2026-08-12T16:47:50Z",
-      "last_updated": "2026-08-12T16:54:27Z",
+      "last_updated": "2026-08-12T20:44:09Z",
       "file_scope": [
         "agent-system/extensions/core/commands/todo.md",
         "agent-system/extensions/core/commands/orchestrate.md",
         "agent-system/extensions/core/context/patterns/"
-      ]
+      ],
+      "session_id": "sess_1786567429_185c13"
     },
     {
       "project_number": 53,
@@ -1368,6 +1369,24 @@
         47,
         48
       ]
+    },
+    {
+      "project_number": 58,
+      "project_name": "add_version_consistency_gate_to_tag",
+      "title": "Add version-consistency preflight gate to /tag",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "description": "Add a version-consistency preflight gate to /tag so a tag can never be created or pushed while the package being released declares a different version.\n\nTHE DEFECT. skill-tag computes the next version purely from git tag history: Step 3 \"Compute New Version\" runs `git describe --tags --abbrev=0`, sed-parses the major/minor/patch components, and increments per the flag. It never reads the version DECLARED by the package being released. Step 2 \"Validate Git State\" checks exactly four things -- clean working tree, not detached HEAD, not behind remote, and (in Step 3) that the computed tag does not already exist. None of the four consult a package manifest. So the computed tag and the shipped artifact's version are free to disagree, and nothing in /tag notices.\n\nOBSERVED FAILURE (real, in the ModelChecker repo). `/tag --patch` computed v1.3.1 from the v1.3.0 tag and pushed it while code/pyproject.toml still declared version = \"1.3.0\". The Release workflow builds from the declared version and asserts it matches the tag, so it aborted with:\n\n    ERROR: Installed version (1.3.0) doesn't match tag (1.3.1)\n\nJob outcomes: 1 matrix cell failed, 8 cancelled by fail-fast, and Build distribution / Publish to TestPyPI / Publish to PyPI / Create GitHub Release all SKIPPED. Nothing was published -- the downstream CI gate did its job. But the tag had ALREADY been pushed to the remote, so recovery meant deleting and re-pushing a published tag. Remote-mutating cleanup after the fact is precisely what a preflight gate exists to prevent; catching this in CI is strictly worse than catching it before `git tag`.\n\nWHAT THE FIX MUST ACCOMPLISH (design deliberately left open for research/planning).\n\n(1) A preflight gate that reads the declared package version, compares it against the computed tag version, and on mismatch fails closed with an actionable message naming BOTH versions and the file to edit. It must run BEFORE `git tag` (Step 5) and BEFORE `git push` (Step 6).\n\n(2) Version-source detection must be ecosystem-general, not hardcoded. /tag is a global, cross-repo skill. At minimum consider: Python (pyproject.toml [project] version, setup.py, setup.cfg), Node (package.json version), Rust (Cargo.toml [package] version). Lua/Nix and many others declare no version at all.\n\n(3) The no-version-declared case must be handled EXPLICITLY and must be neither a silent pass nor a hard failure. Many repos legitimately have no package manifest and /tag must keep working there unchanged. A visible \"no declared version found, skipping consistency check\" notice is the shape to aim for -- the user should be able to tell from the transcript that the check was skipped rather than passed.\n\n(4) DESIGN DECISION FOR THE PLANNING PHASE, not to be settled during research: should the gate offer to perform the version bump itself, or only report and stop? Report-and-stop is the safer default given /tag's user-only, deployment-triggering nature -- an auto-bump would mutate a source file from inside a command whose documented job is tagging, and would then need its own commit before the tag could point at it. Record the decision and its rationale rather than silently picking one.\n\n(5) --dry-run MUST exercise this check. A dry run that prints \"would tag v1.3.1\" while the manifest says 1.3.0 is actively misleading, and is exactly the preview a user would rely on to avoid this failure. Note that the current Step 5 dry-run branch exits before any further validation, so ordering matters.\n\n(6) Decide whether the Requirements list in commands/tag.md needs a matching entry (it currently lists the same four conditions as Step 2), and whether the Workflow list there should name the new gate, so the documented contract and the implemented gate agree. A gate that exists in the skill but not in the command doc is a doc-truth defect of the kind this repo already tracks.\n\nSCOPE NOTE. The fix_return_meta_lifecycle_ordering entry declares the broad prefixes agent-system/extensions/core/skills/ and agent-system/extensions/core/commands/ in its file_scope, which prefix-overlaps these two files. That overlap is almost certainly spurious -- it concerns .return-meta.json lifecycle ordering in agent-dispatching skills, and skill-tag is direct-execution, user-only, and emits no return-meta -- so no dependency is declared here. If its implementation turns out to touch skill-tag/SKILL.md after all, serialize then.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/core/**, never .claude/**. The deployed .claude/skills/skill-tag/SKILL.md and .claude/commands/tag.md are disposable artifacts regenerated from the source store.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.\n",
+      "priority": "high",
+      "effort": "2 hours",
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-tag/SKILL.md",
+        "agent-system/extensions/core/commands/tag.md"
+      ],
+      "dependencies": [],
+      "artifacts": [],
+      "created": "2026-08-12T20:45:36Z"
     }
   ],
   "completed_projects": [],
