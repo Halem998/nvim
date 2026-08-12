@@ -2476,7 +2476,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H7 territory contract: file ownership, plan-section territory, commit protocol for hard-mode single-phase dispatch (also applicable to parallel dispatch)",
-      "line_count": 107,
+      "line_count": 111,
       "keywords": [
         "territory",
         "file-ownership",
@@ -2566,7 +2566,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 194,
+      "line_count": 209,
       "keywords": [
         "wrap-up",
         "handoff",

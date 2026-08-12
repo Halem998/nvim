@@ -897,7 +897,7 @@
     {
       "project_number": 37,
       "project_name": "wire_sound_territory_contract_for_per_phase_dispatch",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Replace the unsound no-concurrency premise with a wired, checkable territory contract for per-phase dispatch",
       "topic": "orchestration-concurrency",
@@ -930,7 +930,7 @@
         }
       ],
       "created": "2026-08-11T15:21:10Z",
-      "last_updated": "2026-08-12T07:58:27Z",
+      "last_updated": "2026-08-12T07:58:41Z",
       "session_id": "sess_1786517897_9e95c0_37"
     },
     {

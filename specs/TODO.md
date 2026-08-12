@@ -56,7 +56,7 @@ next_project_number: 53
 
 ### Orchestration Concurrency
 
-37 [PLANNED] — Close the two residual gaps left by the territory/handoff work. T
+37 [IMPLEMENTING] — Close the two residual gaps left by the territory/handoff work. T
 
 ### Context Loading
 
@@ -450,7 +450,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 37. Replace the unsound no-concurrency premise with a wired, checkable territory contract for per-phase dispatch
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 33, Task 35

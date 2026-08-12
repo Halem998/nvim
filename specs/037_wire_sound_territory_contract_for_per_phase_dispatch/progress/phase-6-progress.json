@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "phase_name": "Index Counts, Deploy, and Acceptance Gates",
+  "started_at": "2026-08-12T09:00:00Z",
+  "last_updated": "2026-08-12T09:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Regenerate index-entries.json line_count fields, run check-extension-docs, deploy-headless, lint-contract-compliance, verify all five acceptance criteria, confirm source-store boundary, write summary",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json",
+        "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/summaries/01_close-residual-territory-gaps-summary.md"
+      ],
+      "note": "generate-context-line-counts.sh --check found exactly the predicted 2 mismatches (territory.md 107->111, wrap-up.md 194->209); --write applied, re-check clean. check-extension-docs.sh PASS (20/20 extensions). deploy-headless.sh ran successfully before any deployed-tree read. lint-contract-compliance.sh 24/24 PASS. All five acceptance criteria confirmed directly (see summary). Source-store boundary held (.claude/ gitignored, no tracked drift). Summary written."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

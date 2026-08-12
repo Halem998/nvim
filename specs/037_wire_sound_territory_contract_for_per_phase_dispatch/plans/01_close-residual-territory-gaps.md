@@ -392,41 +392,41 @@ the base-agent half the Phase 4 decision commits to.
 
 ---
 
-### Phase 6: Index Counts, Deploy, and Acceptance Gates [NOT STARTED]
+### Phase 6: Index Counts, Deploy, and Acceptance Gates [COMPLETED]
 
 **Goal**: Reconcile the mechanical side effects of the content edits, regenerate the deployed tree
 so the orchestrator-critical files in scope are live, and verify all five acceptance criteria.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --write` to correct the now-stale
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --write` to correct the now-stale
       `line_count` fields for `contracts/wrap-up.md` and `contracts/territory.md` in
       `agent-system/extensions/core/index-entries.json`. Confirm with `--check` that it reports
-      clean afterwards.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and resolve any failure it reports against
-      the files this task touched.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repo's standard
+      clean afterwards. *(completed: 194->209, 107->111; --check now clean, 0 mismatches)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and resolve any failure it reports against
+      the files this task touched. *(completed: PASS across all 20 extensions, no new failures)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repo's standard
       deploy entry point) BEFORE any verification below that reads the deployed `.claude/**` tree.
-      Several files in scope are orchestrator-critical and are copied into the deployed tree.
-- [ ] Run `bash .claude/scripts/lint/lint-contract-compliance.sh` and confirm it still passes —
+      Several files in scope are orchestrator-critical and are copied into the deployed tree. *(completed)*
+- [x] Run `bash .claude/scripts/lint/lint-contract-compliance.sh` and confirm it still passes —
       `territory.md`'s `H7` identifier and the hard agents' contract references must survive the
-      Phase 3 rescope.
-- [ ] **Acceptance criterion 1**: confirm wrap-up.md carries the teardown obligation before the
-      terminal handoff write, as a pointer rather than a re-derivation.
-- [ ] **Acceptance criterion 2**: confirm the base-mode decision record exists, is findable from
-      both engines, and names the woken-predecessor blindness of `file_scope` deferral.
-- [ ] **Acceptance criterion 3**: confirm territory.md's opening and Template preamble both
-      describe today's consumption.
-- [ ] **Acceptance criterion 4**: re-run Phase 1's verification greps and confirm nothing landed
+      Phase 3 rescope. *(completed: 24/24 PASS)*
+- [x] **Acceptance criterion 1**: confirm wrap-up.md carries the teardown obligation before the
+      terminal handoff write, as a pointer rather than a re-derivation. *(completed)*
+- [x] **Acceptance criterion 2**: confirm the base-mode decision record exists, is findable from
+      both engines, and names the woken-predecessor blindness of `file_scope` deferral. *(completed)*
+- [x] **Acceptance criterion 3**: confirm territory.md's opening and Template preamble both
+      describe today's consumption. *(completed)*
+- [x] **Acceptance criterion 4**: re-run Phase 1's verification greps and confirm nothing landed
       previously was churned. Specifically confirm the hard engine's `concurrency_note` string is
-      byte-identical to the Phase 1 scratch copy.
-- [ ] **Acceptance criterion 5**: confirm exactly one file still states the "report != termination"
+      byte-identical to the Phase 1 scratch copy. *(completed: byte-identical)*
+- [x] **Acceptance criterion 5**: confirm exactly one file still states the "report != termination"
       model — `ls agent-system/extensions/*/context/patterns/dispatch-report-not-termination.md`
-      returns one path — and that every mention added by Phases 2, 4, and 5 is a one-line pointer.
-- [ ] Confirm the source-store boundary held: `git status --short` shows no modified path under any
+      returns one path — and that every mention added by Phases 2, 4, and 5 is a one-line pointer. *(completed: one path returned)*
+- [x] Confirm the source-store boundary held: `git status --short` shows no modified path under any
       `.claude/` tree attributable to hand-editing (deploy-written files excepted, and `.claude/` is
-      gitignored here).
-- [ ] Write the implementation summary to
-      `specs/037_wire_sound_territory_contract_for_per_phase_dispatch/summaries/01_close-residual-territory-gaps-summary.md`.
+      gitignored here). *(completed: .claude/ gitignored, no tracked drift)*
+- [x] Write the implementation summary to
+      `specs/037_wire_sound_territory_contract_for_per_phase_dispatch/summaries/01_close-residual-territory-gaps-summary.md`. *(completed)*
 
 **Timing**: 40 minutes
 
