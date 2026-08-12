@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Extract todo.md Notes and repoint the internal cross-reference",
+  "started_at": "2026-08-12T20:58:00Z",
+  "last_updated": "2026-08-12T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create todo-archival-reference.md with verbatim Notes content", "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/todo-archival-reference.md"]},
+    {"id": 2, "description": "Delete Notes region from todo.md, add imperative pointer block", "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 3, "description": "Repoint line ~148 cross-reference to jq-escaping-workarounds.md", "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 4, "description": "Grep confirm zero stale Notes references remain", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm deployed-path form used consistently", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm no task-number references or emojis", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

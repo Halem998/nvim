@@ -1,0 +1,30 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline measurement and green test baseline",
+  "started_at": "2026-08-12T20:57:00Z",
+  "last_updated": "2026-08-12T20:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record wc -c for both command files", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-confirm both region boundaries", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Measure each region exactly", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run existing test suite unmodified and record results", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Note any pre-existing failures", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Write baseline numbers for later phases", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "baseline": {
+    "todo_md_before_bytes": 49254,
+    "orchestrate_md_before_bytes": 43180,
+    "task_md_bytes": 37465,
+    "notes_region_lines": "1028-1195",
+    "notes_region_bytes": 7851,
+    "fence_region_lines": "555-691",
+    "fence_region_bytes": 6648,
+    "test_run_all": "42 passed, 0 failed, 0 skipped, 42 total",
+    "test_session_runtime_files": "6 passed, 0 failed",
+    "lint_state_writer_boundary": "0 violations",
+    "pre_existing_failures": "none"
+  }
+}
