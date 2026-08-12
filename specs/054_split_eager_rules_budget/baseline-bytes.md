@@ -156,6 +156,24 @@ declare `provides.context: ["project/cslib"]` and `task_type: "pr"` routes throu
 reports cslib clean (only pre-existing WARNs for routing targets not deployed, since cslib is not
 the currently active extension set — unrelated to this change).
 
+| 6 | `literature/merge-sources/claudemd.md` | 12,851 | 8,673 | -4,178 | -32.5% |
+| 6 | `core/merge-sources/claudemd.md` (heading reworded only) | 24,707 | 24,770 | +63 | collision fix |
+
+**Phase 6 note**: `context/patterns/lit-stage4a-flow.md` confirmed to exist and is the file all
+six `--lit`-capable skills import directly (confirmed via grep: `skill-researcher/SKILL.md` etc.
+carry `Follow @.claude/context/patterns/lit-stage4a-flow.md in full`). No skill or script depends
+on the removed CLAUDE.md prose itself — `skill-literature/SKILL.md`'s one reference to
+"Interactive Sub-Index Setup Detection" names the still-present HEADING for orientation, not the
+removed body text, so it remains valid. All four user-facing choices (Use global corpus now /
+Create curation task / Search online to ingest / Skip this run) and the "no silent fallback"
+guarantee are restated in the condensed replacement; both pointer paths
+(`context/patterns/lit-stage4a-flow.md`, `scripts/literature-lit-flag-resolve.sh`) resolve to
+files that exist. The core stub's duplicate H2 was resolved by rewording it to
+"## Literature Mode (`--lit`) — Extension Pointer" rather than dropping it, since it still serves
+non-literature deploys; net core-merge-source change is +63 B, not a saving (expected — Phase 6's
+saving is entirely in the literature merge source). The generated-file effect is confirmed
+separately at redeploy in Phase 7.
+
 **Phase 2 check-extension-docs.sh note**: `check-extension-docs.sh` reports
 `FAIL: deployed rule content drift (deployed != extension source): rules/git-workflow.md` at this
 point in the plan. This is EXPECTED and BY DESIGN: the deployed `.claude/` tree is written only by

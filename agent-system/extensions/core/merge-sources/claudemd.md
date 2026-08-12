@@ -282,11 +282,11 @@ manifest blocks, agent-name declaration rules) and `context/guides/hard-mode-rou
 in state.json. Each invocation of `/research`, `/plan`, `/implement`, or `/orchestrate` must
 explicitly pass `--hard` to activate hard mode.
 
-## Literature Mode (`--lit`)
+## Literature Mode (`--lit`) — Extension Pointer
 
-The `--lit` documentation now lives in the literature extension's merge source
-(`agent-system/extensions/literature/merge-sources/claudemd.md`), merged into generated
-CLAUDE.md only where the literature extension is loaded. See
+Full `--lit` documentation lives in the literature extension's merge source
+(`agent-system/extensions/literature/merge-sources/claudemd.md`); when that extension is loaded,
+its own `## Literature Mode (--lit)` section is merged in below with the complete contract. See
 `context/patterns/context-discovery.md` for the general context-loading model.
 
 ## Rules References

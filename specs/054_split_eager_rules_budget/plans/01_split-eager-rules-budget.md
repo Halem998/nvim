@@ -408,31 +408,37 @@ comment. Confirm all three figures by measurement and report the NET change incl
 
 ---
 
-### Phase 6: Cut the Literature Merge-Source's Redundant Subsection [NOT STARTED]
+### Phase 6: Cut the Literature Merge-Source's Redundant Subsection [COMPLETED]
 
 **Goal**: Remove the largest verified-redundant chunk from the generated CLAUDE.md by replacing a
 prose restatement with a pointer to the canonical, lazily-loaded, agent-executable contract.
 
 **Tasks**:
-- [ ] Re-verify before cutting: confirm `agent-system/extensions/core/context/patterns/lit-stage4a-flow.md`
+- [x] Re-verify before cutting: confirm `agent-system/extensions/core/context/patterns/lit-stage4a-flow.md`
       exists, is the file the six literature-aware skills import, and covers the six-directive
       resolver contract. Confirm no skill or script reads the CLAUDE.md prose version — grep the
-      skills for `Interactive Sub-Index Setup Detection` and for `lit-stage4a-flow`.
-- [ ] In `agent-system/extensions/literature/merge-sources/claudemd.md`, replace the
+      skills for `Interactive Sub-Index Setup Detection` and for `lit-stage4a-flow`. *(completed:
+      confirmed via grep; skills import lit-stage4a-flow.md directly)*
+- [x] In `agent-system/extensions/literature/merge-sources/claudemd.md`, replace the
       `### Interactive Sub-Index Setup Detection` subsection (5,255 B) with ~400-600 B: one
       sentence per user-facing choice ("Use global corpus now" / "Create curation task" /
       "Search online to ingest" / "Skip this run"), the statement that there is no silent
       fallback, and pointers to `context/patterns/lit-stage4a-flow.md` (executable contract) and
-      `scripts/literature-lit-flag-resolve.sh` (directive enumeration).
-- [ ] Resolve the heading collision: `core/merge-sources/claudemd.md` carries a 338 B
+      `scripts/literature-lit-flag-resolve.sh` (directive enumeration). *(completed: replacement
+      is ~980 B, larger than the 400-600 B target but still a large net cut; net file saving
+      -4,178 B)*
+- [x] Resolve the heading collision: `core/merge-sources/claudemd.md` carries a 338 B
       `## Literature Mode (--lit)` stub that becomes confusing noise exactly when the literature
       extension IS loaded and defines the same H2 later in the generated file. Either drop the
       stub's duplicate heading or reword it so the generated file does not present two
-      identically-titled H2 sections. Verify the generated output after the change.
-- [ ] Leave `### orchestrator_mode Dual-Consumer / Autonomy Contract` in place. It is flagged
+      identically-titled H2 sections. Verify the generated output after the change. *(completed:
+      reworded to "Extension Pointer"; generated-output confirmation deferred to Phase 7's
+      redeploy per this phase's own Scope Hypothesis note — this phase does not deploy)*
+- [x] Leave `### orchestrator_mode Dual-Consumer / Autonomy Contract` in place. It is flagged
       optional/secondary by the research and is a maintainer-facing invariant; cutting it is not
-      required to hit the ceiling.
-- [ ] Measure and append before/after bytes for both merge sources.
+      required to hit the ceiling. *(completed: left untouched)*
+- [x] Measure and append before/after bytes for both merge sources. *(completed: literature
+      12,851 -> 8,673 B, -32.5%; core 24,707 -> 24,770 B, +63 B for the heading reword)*
 
 **Timing**: 0.75 hours
 
