@@ -174,6 +174,18 @@ fi
 status=$(echo "$meta_json" | jq -r '.status // "unknown"')
 phases_completed=$(echo "$meta_json" | jq -r '.metadata.phases_completed // .partial_progress.phases_completed // 0')
 phases_total=$(echo "$meta_json" | jq -r '.metadata.phases_total // .partial_progress.phases_total // 0')
+
+# ─── Deliberately RAW, never normalized (do not "fix" this) ────────────────────────────────
+# This block reads .artifacts[0].{path,type,summary} directly off the raw on-disk JSON, with NO
+# bare-string-to-object normalization applied. That is intentional, not an oversight: this
+# script's own ARTIFACTS_SHAPE_MISMATCH signature below depends on observing a non-empty
+# `artifacts` array that resolves to an EMPTY artifact_path -- exactly what a bare-string element
+# produces before normalization. The chokepoint that DOES normalize (in-memory only, never
+# rewriting the on-disk file) is `skill_read_metadata` in scripts/skill-base.sh; this script is a
+# separate, independent reader that does not source skill-base.sh, precisely so its detector
+# keeps seeing the unrepaired shape. Normalizing here would blind ARTIFACTS_SHAPE_MISMATCH
+# exactly when it is needed. See context/formats/return-metadata-file.md's `artifacts (required)`
+# section for the full four-layer posture this asymmetry implements.
 if artifact_path=$(echo "$meta_json" | jq -r '.artifacts[0].path // ""'); then
   artifact_path_rc=0
 else

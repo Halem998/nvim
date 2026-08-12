@@ -200,11 +200,18 @@ handoff_path=""
 reflection="null"
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
-  status=$(jq -r '.status' "$metadata_file")
-  artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
-  artifact_type_from_meta=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
-  artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
-  memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
+  # Route status/artifacts/memory_candidates through the shared skill_read_metadata chokepoint
+  # (already sourced above) rather than duplicating the .artifacts[0].* jq expressions here --
+  # this is the SAME normalizing chokepoint skill_read_metadata implements: a malformed
+  # (bare-string) artifacts array is recovered in-memory (never rewritten on disk), loudly
+  # warned on stderr, and recorded as ARTIFACTS_SHAPE_MISMATCH. See
+  # context/formats/return-metadata-file.md's `artifacts (required)` section.
+  skill_read_metadata "$padded_num" "$project_name"
+  status="$SUBAGENT_STATUS"
+  artifact_path="$ARTIFACT_PATH"
+  artifact_type_from_meta="$ARTIFACT_TYPE"
+  artifact_summary="$ARTIFACT_SUMMARY"
+  memory_candidates="$MEMORY_CANDIDATES"
   reflection=$(jq -c '.reflection // null' "$metadata_file")
 
   # implement-specific fields (safe to read for all operations — will be empty for non-implement)

@@ -376,29 +376,41 @@ terminal-metadata section before editing.
 
 ---
 
-### Phase 5: Normalize at the Consumer Chokepoint with a Loud, Recorded Notice [NOT STARTED]
+### Phase 5: Normalize at the Consumer Chokepoint with a Loud, Recorded Notice [COMPLETED]
 
 **Goal**: Stop losing artifact links to a malformed array, without making the defect free or
 invisible.
 
 **Tasks**:
-- [ ] Modify `skill_read_metadata` in `agent-system/extensions/core/scripts/skill-base.sh` to
+- [x] Modify `skill_read_metadata` in `agent-system/extensions/core/scripts/skill-base.sh` to
       source `return-meta-artifacts-lib.sh` and run `normalize_artifacts_array` on the in-memory
       JSON before resolving `ARTIFACT_PATH`/`ARTIFACT_TYPE`/`ARTIFACT_SUMMARY`. Normalization is
-      **read-side only** — it must not rewrite the on-disk file.
-- [ ] When any element was promoted, emit a loud stderr notice in the established banner family
+      **read-side only** — it must not rewrite the on-disk file. *(completed: verified via a
+      scratch fixture -- normalized path/type/summary resolved correctly and the on-disk file was
+      confirmed byte-identical before and after)*
+- [x] When any element was promoted, emit a loud stderr notice in the established banner family
       (same shape as the existing `[postflight] WARNING:` and `[hard-orchestrate] EVIDENCE:`
-      lines), naming the file, the offending index, and the inferred type.
-- [ ] Record the occurrence via `system-defect-record.sh --defect-class ARTIFACTS_SHAPE_MISMATCH`,
+      lines), naming the file, the offending index, and the inferred type. *(completed: `[skill-base]
+      WARNING: ARTIFACTS_SHAPE_MISMATCH in <file>: artifacts[<i>] is a bare string ('<path>'),
+      normalized in-memory to type='<type>' ...`)*
+- [x] Record the occurrence via `system-defect-record.sh --defect-class ARTIFACTS_SHAPE_MISMATCH`,
       which already accepts that class. Failure to record must be non-blocking and must not
-      suppress the stderr notice.
-- [ ] Apply the same treatment to `orchestrator-postflight.sh`'s direct `.artifacts[0].*` reads,
+      suppress the stderr notice. *(completed: `--dispatched-agent` attribution from the file's own
+      `.metadata.agent_type`, wrapped in `|| echo "Note: ... non-fatal"`; verified the notice still
+      printed when the recorder itself failed for environmental reasons during manual testing)*
+- [x] Apply the same treatment to `orchestrator-postflight.sh`'s direct `.artifacts[0].*` reads,
       which bypass `skill_read_metadata` even though that script already sources `skill-base.sh`.
       Prefer routing those reads through the shared function over duplicating the jq expressions.
-- [ ] **Leave `orchestrate-recover-outcome.sh` reading raw.** Add an inline comment at its
+      *(completed: `status`/`artifact_path`/`artifact_type_from_meta`/`artifact_summary`/
+      `memory_candidates` now come from `skill_read_metadata`'s exports; `reflection`/
+      `completion_data`/`handoff_path` remain direct jq reads, unaffected by this contract)*
+- [x] **Leave `orchestrate-recover-outcome.sh` reading raw.** Add an inline comment at its
       artifact-resolution block stating that it deliberately does not normalize, because its
       `ARTIFACTS_SHAPE_MISMATCH` computation depends on observing the unrepaired shape. Name the
       chokepoint that does normalize so a future reader does not "fix" the apparent inconsistency.
+      *(completed: verified the regression check directly -- against a bare-string fixture the
+      script still reports `evidence_reason=ARTIFACTS_SHAPE_MISMATCH`; against a well-formed
+      fixture it reports `evidence_reason=NONE`)*
 
 **Timing**: 2 hours
 

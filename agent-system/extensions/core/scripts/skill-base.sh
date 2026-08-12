@@ -341,9 +341,78 @@ skill_read_metadata() {
     MEMORY_CANDIDATES="[]"
   else
     SUBAGENT_STATUS=$(jq -r '.status' "$meta_file")
-    ARTIFACT_PATH=$(jq -r '.artifacts[0].path // ""' "$meta_file")
-    ARTIFACT_TYPE=$(jq -r '.artifacts[0].type // ""' "$meta_file")
-    ARTIFACT_SUMMARY=$(jq -r '.artifacts[0].summary // ""' "$meta_file")
+
+    # ─── Read-side artifacts-shape normalization (chokepoint) ──────────────────────────────
+    # Per context/formats/return-metadata-file.md's `artifacts (required)` four-layer posture:
+    # this is the ONE consumer chokepoint that normalizes a malformed (bare-string) `artifacts`
+    # array so the artifact link is not silently lost -- IN MEMORY ONLY, the on-disk file is
+    # never rewritten here (contrast with `validate-return-meta.sh --fix`, which does rewrite,
+    # opt-in only). Every promotion is loud (stderr banner) and recorded
+    # (ARTIFACTS_SHAPE_MISMATCH). This does NOT widen the normative schema -- see
+    # context/contracts/return-meta-artifacts-template.md.
+    #
+    # Deploy-tree-first / source-store-fallback candidate resolution, matching
+    # skill_corroborate_phase_counts' own resolution below so this function works both
+    # post-deploy (.claude/scripts/lib/...) and in a source-store-only checkout
+    # (agent-system/extensions/core/scripts/lib/...).
+    local _ram_lib_candidates=(
+      ".claude/scripts/lib/return-meta-artifacts-lib.sh"
+      "$(dirname "${BASH_SOURCE[0]}")/lib/return-meta-artifacts-lib.sh"
+    )
+    local _ram_lib=""
+    local _ram_candidate
+    for _ram_candidate in "${_ram_lib_candidates[@]}"; do
+      if [ -f "$_ram_candidate" ]; then
+        _ram_lib="$_ram_candidate"
+        break
+      fi
+    done
+
+    local _artifacts_raw _artifacts_normalized
+    _artifacts_raw=$(jq -c '.artifacts // []' "$meta_file" 2>/dev/null || echo '[]')
+
+    if [ -n "$_ram_lib" ] && echo "$_artifacts_raw" | jq -e 'any(.[]; type == "string")' >/dev/null 2>&1; then
+      # shellcheck disable=SC1090
+      source "$_ram_lib"
+      _artifacts_normalized=$(normalize_artifacts_array "$_artifacts_raw" 2>/dev/null)
+
+      # Loud stderr banner naming the file, each offending index, and its inferred type --
+      # same banner family as the existing `[postflight] WARNING:` / `[hard-orchestrate]
+      # EVIDENCE:` lines.
+      local _ram_len _ram_i _ram_el _ram_path _ram_type
+      _ram_len=$(echo "$_artifacts_raw" | jq 'length')
+      for ((_ram_i = 0; _ram_i < _ram_len; _ram_i++)); do
+        _ram_el=$(echo "$_artifacts_raw" | jq -c ".[$_ram_i]")
+        if echo "$_ram_el" | jq -e 'type == "string"' >/dev/null 2>&1; then
+          _ram_path=$(echo "$_ram_el" | jq -r '.')
+          _ram_type=$(infer_artifact_type "$_ram_path")
+          echo "[skill-base] WARNING: ARTIFACTS_SHAPE_MISMATCH in ${meta_file}: artifacts[${_ram_i}] is a bare string ('${_ram_path}'), normalized in-memory to type='${_ram_type}' (on-disk file left unchanged; run validate-return-meta.sh --fix to repair on disk)" >&2
+        fi
+      done
+
+      # Record the defect (non-blocking -- a recorder failure must never break postflight).
+      # Attribution: the agent that produced the malformed shape, read from the file's own
+      # metadata.agent_type. --session omitted (this function receives no session_id
+      # parameter); system-defect-record.sh's D5 fallback synthesizes one when absent.
+      local _ram_agent_type _ram_task_number
+      _ram_agent_type=$(jq -r '.metadata.agent_type // ""' "$meta_file" 2>/dev/null)
+      _ram_task_number=$((10#$padded_num))
+      if [ -n "$_ram_agent_type" ]; then
+        bash .claude/scripts/system-defect-record.sh \
+          --defect-class ARTIFACTS_SHAPE_MISMATCH \
+          --detecting-site "scripts/skill-base.sh:skill_read_metadata" \
+          --task "$_ram_task_number" \
+          --message "bare-string artifacts array in ${meta_file}, normalized read-side by skill_read_metadata" \
+          --dispatched-agent "$_ram_agent_type" \
+          >/dev/null 2>&1 || echo "Note: system-defect recording failed (non-fatal)" >&2
+      fi
+    else
+      _artifacts_normalized="$_artifacts_raw"
+    fi
+
+    ARTIFACT_PATH=$(echo "$_artifacts_normalized" | jq -r '.[0].path // ""' 2>/dev/null)
+    ARTIFACT_TYPE=$(echo "$_artifacts_normalized" | jq -r '.[0].type // ""' 2>/dev/null)
+    ARTIFACT_SUMMARY=$(echo "$_artifacts_normalized" | jq -r '.[0].summary // ""' 2>/dev/null)
     MEMORY_CANDIDATES=$(jq -c '.memory_candidates // []' "$meta_file")
   fi
   export SUBAGENT_STATUS ARTIFACT_PATH ARTIFACT_TYPE ARTIFACT_SUMMARY MEMORY_CANDIDATES
