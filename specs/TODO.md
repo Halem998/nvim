@@ -11,9 +11,9 @@ next_project_number: 53
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,18,20,22,27,28,31,34,37,39,41,43,45,46,48,51,52 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
-| 2 | 9,17,29,42,49,50 | 18,22,37,41,48 | agent-system, context-loading |
-| 3 | 13,30,44 | 17,29,49 | agent-system, context-loading |
+| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,45,46,48,51,52 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 2 | 9,13,29,42,49,50 | 17,18,22,41,48 | agent-system, context-loading |
+| 3 | 30,44 | 29,49 | agent-system, context-loading |
 | 4 | 32 | 28,30,31 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -21,6 +21,8 @@ next_project_number: 53
 ### Agent System
 
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
+17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
+  └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
@@ -32,9 +34,6 @@ next_project_number: 53
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
-13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
-17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
-  └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and (see above)
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -53,10 +52,6 @@ next_project_number: 53
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-
-### Orchestration Concurrency
-
-37 [IMPLEMENTING] — Close the two residual gaps left by the territory/handoff work. T
 
 ### Context Loading
 
@@ -450,12 +445,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 37. Replace the unsound no-concurrency premise with a wired, checkable territory contract for per-phase dispatch
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 33, Task 35
 - **Research**: [037_wire_sound_territory_contract_for_per_phase_dispatch/reports/01_close-two-residual-gaps.md]
 - **Plan**: [037_wire_sound_territory_contract_for_per_phase_dispatch/plans/01_close-residual-territory-gaps.md]
+- **Summary**: [037_wire_sound_territory_contract_for_per_phase_dispatch/summaries/01_close-residual-territory-gaps-summary.md]
 
 **Description**: Close the two residual gaps left by the territory/handoff work. This task was originally scoped as "wire a sound territory contract into per-phase dispatch." That wiring has since LANDED as part of the handoff-identity and loop-guard work, which folded this defect in as its DEFECT 5. Most of the original scope is therefore already satisfied. Two verified gaps remain, and they are the entire remaining deliverable.
 

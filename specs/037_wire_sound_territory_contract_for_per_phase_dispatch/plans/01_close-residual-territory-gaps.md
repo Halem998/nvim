@@ -1,7 +1,7 @@
 # Implementation Plan: Task #37
 
 - **Task**: 37 - Close the two residual gaps left by the territory/handoff work
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: 33, 35 (both landed)
 - **Research Inputs**: specs/037_wire_sound_territory_contract_for_per_phase_dispatch/reports/01_close-two-residual-gaps.md

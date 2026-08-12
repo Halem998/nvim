@@ -897,7 +897,7 @@
     {
       "project_number": 37,
       "project_name": "wire_sound_territory_contract_for_per_phase_dispatch",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Replace the unsound no-concurrency premise with a wired, checkable territory contract for per-phase dispatch",
       "topic": "orchestration-concurrency",
@@ -927,11 +927,17 @@
           "path": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/plans/01_close-residual-territory-gaps.md",
           "type": "plan",
           "summary": "Six-phase plan closing the teardown-contract and base-mode-decision gaps, opening with a verification-only phase over the already-landed territory wiring."
+        },
+        {
+          "path": "specs/037_wire_sound_territory_contract_for_per_phase_dispatch/summaries/01_close-residual-territory-gaps-summary.md",
+          "type": "summary",
+          "summary": "Added the teardown obligation to the wrap-up contract, rescoped territory.md to its shipped single-phase consumer, and recorded the base-mode territory decision naming woken-predecessor blindness as an open gap."
         }
       ],
       "created": "2026-08-11T15:21:10Z",
-      "last_updated": "2026-08-12T07:58:41Z",
-      "session_id": "sess_1786517897_9e95c0_37"
+      "last_updated": "2026-08-12T08:09:40Z",
+      "session_id": "sess_1786517897_9e95c0_37",
+      "completion_summary": "Closed both residual territory/handoff gaps: added a teardown-precedes-handoff obligation to wrap-up.md, rescoped territory.md to its single-phase-dispatch consumer, recorded a mutual base-vs-hard territory decision naming the woken-predecessor blindness of file_scope deferral as an open gap, and tied the STOP-and-report duty into both implementation agents. All five acceptance criteria verified after redeploy."
     },
     {
       "project_number": 38,
