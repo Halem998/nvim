@@ -1,37 +1,27 @@
 {
-  "status": "researched",
-  "summary": "Researched skill-tag's missing version-consistency gate: confirmed the defect (no step reads a declared package version anywhere in skill-tag/SKILL.md), pinpointed the required insertion point (new step between current Step 3 and Step 4, dictated by the dry-run exit-0 ordering in Step 5), verified portable sed/grep/jq extraction commands for pyproject.toml, setup.cfg, setup.py, package.json, and Cargo.toml (including the PEP 621 dynamic-version and Cargo workspace-inheritance no-version edge cases), and surfaced a critical finding that the real observed failure's manifest lives in a subdirectory (code/pyproject.toml) rather than repo root, so manifest discovery needs bounded-depth search with vendor-dir exclusions rather than a root-only check. Design decision on auto-bump vs. report-and-stop deliberately left open for planning, with tradeoffs recorded.",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 58,
+  "session_id": "sess_1786569271_8c6819",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "/home/benjamin/.config/nvim/specs/058_add_version_consistency_gate_to_tag/reports/01_version-consistency-gate.md",
-      "summary": "Full research findings: codebase analysis of skill-tag/SKILL.md and commands/tag.md, ecosystem version-manifest survey with sandbox-verified extraction commands, insertion-point analysis, doc-truth enforcement gap, and open design tradeoffs for the planner."
+      "type": "plan",
+      "path": "specs/058_add_version_consistency_gate_to_tag/plans/01_version-consistency-gate.md",
+      "summary": "5-phase plan adding a fail-closed version-consistency gate (Step 3.5) to skill-tag with bounded-depth multi-ecosystem manifest detection, explicit skip notice, and commands/tag.md doc parity."
     }
   ],
-  "findings_count": 8,
+  "phase_count": 5,
+  "estimated_hours": 4,
+  "dependency_waves": [[1], [2], [3, 4], [5]],
   "memory_candidates": [
     {
-      "content": "Portable (non-GNU-awk-dependent) shell patterns for extracting a declared package version from common manifest formats, verified working: pyproject.toml [project] table -- `sed -n '/^\\[project\\]/,/^\\[/p' f | grep -m1 '^version[[:space:]]*=' | sed -E 's/^version[[:space:]]*=[[:space:]]*\"([^\"]*)\".*/\\1/'`; Cargo.toml [package] table uses the identical shape with [package] as the anchor; setup.cfg [metadata] section is the same shape but the value is unquoted (`s/^version[[:space:]]*=[[:space:]]*([^ ]*).*/\\1/`); package.json is `jq -r '.version // empty' f`. All four correctly return empty (not a false match) on PEP 621 `dynamic = [\"version\"]` and Cargo `version.workspace = true`, because the anchored version= pattern simply doesn't match those lines -- this is the desired 'no static version declared here' outcome, not a bug to special-case.",
-      "category": "TECHNIQUE",
-      "source_artifact": "/home/benjamin/.config/nvim/specs/058_add_version_consistency_gate_to_tag/reports/01_version-consistency-gate.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["version-extraction", "pyproject.toml", "Cargo.toml", "package.json", "sed", "manifest-parsing", "semver"]
-    },
-    {
-      "content": "When a task's own bug report cites a real observed failure with a concrete file path, that path is load-bearing evidence, not incidental detail -- the ModelChecker failure that motivated a version-consistency gate for /tag declares its version in code/pyproject.toml, a subdirectory, not repo root. A root-only manifest search would silently miss the exact case that motivated the task. Always check whether a cited real-world failure's file paths contradict an assumption (like 'manifest is at repo root') before designing a detection mechanism around that assumption.",
-      "category": "INSIGHT",
-      "source_artifact": "/home/benjamin/.config/nvim/specs/058_add_version_consistency_gate_to_tag/reports/01_version-consistency-gate.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["evidence-grounding", "task-research", "manifest-discovery", "root-cause-analysis"]
+      "content": "When adding a preflight gate to a command whose execution has an early-exit branch (e.g. a --dry-run branch that runs `exit 0` before the real work), the gate's insertion point is FORCED, not chosen: it must sit strictly before the early exit, or the gate silently never fires on that path. The valid insertion window is bounded below by the first point at which the gate's inputs exist, and above by the earliest exit branch. In skill-tag/SKILL.md this window was exactly one step wide (after Step 3 computes new_version, before Step 5's dry-run exit 0). Before placing any new validation in a multi-step shell/skill flow, locate every `exit` in the flow and compute the window explicitly rather than appending the check near the operation it guards.",
+      "category": "PATTERN",
+      "source_artifact": "specs/058_add_version_consistency_gate_to_tag/plans/01_version-consistency-gate.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["preflight-gate", "early-exit", "dry-run", "insertion-point", "validation-ordering", "skill-steps"]
     }
   ],
-  "next_steps": "Run /plan 58 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1786569271_8c6819",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "task_type": "meta",
-    "dispatch_seq": 1
-  }
+  "next_steps": "Run /implement 58 to execute the plan"
 }
