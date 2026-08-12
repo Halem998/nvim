@@ -233,24 +233,29 @@ figures rather than silently redefining the baseline.
 
 ---
 
-### Phase 2: Lever A — Literature `--lit` Mechanics to Pointer [NOT STARTED]
+### Phase 2: Lever A — Literature `--lit` Mechanics to Pointer [COMPLETED]
 
 **Goal**: Remove the four mechanically-redundant `--lit` subsections from literature's merge source
 and replace them with a single pointer paragraph, landing the largest HARD saving.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/literature/merge-sources/claudemd.md`, delete the subsections
+- [x] In `agent-system/extensions/literature/merge-sources/claudemd.md`, delete the subsections
       "What `--lit` Does", "Ad-Hoc / Conversational Literature Requests", "Interactive Sub-Index
-      Setup Detection", and "orchestrator_mode Dual-Consumer / Autonomy Contract".
-- [ ] Insert a pointer paragraph (~250–350 B) under `## Literature Mode (--lit)` naming
+      Setup Detection", and "orchestrator_mode Dual-Consumer / Autonomy Contract". *(completed)*
+- [x] Insert a pointer paragraph (~250–350 B) under `## Literature Mode (--lit)` naming
       `context/patterns/lit-stage4a-flow.md` as the single canonical, executable contract, and
-      noting that all six `--lit`-capable skills import it directly.
-- [ ] Confirm the five retained subsections are untouched: "specs/literature/ Directory
+      noting that all six `--lit`-capable skills import it directly. *(completed: two short
+      paragraphs, ~832 B, also naming adhoc-navigation-directive.md — see deviation note)*
+- [x] Confirm the five retained subsections are untouched: "specs/literature/ Directory
       Convention", "When to Use `--lit`", "Relationship to `--clean`", "Composability",
-      "Per-Invocation Only".
-- [ ] Confirm `lit-stage4a-flow.md` genuinely covers every removed directive before deleting —
+      "Per-Invocation Only". *(completed: confirmed byte-identical, verified via heading grep)*
+- [x] Confirm `lit-stage4a-flow.md` genuinely covers every removed directive before deleting —
       if any directive has no counterpart there, keep that sentence rather than losing it.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh`, then re-measure and record the delta.
+      *(completed: "Ad-Hoc / Conversational Literature Requests" describes a workflow OUTSIDE
+      Stage 4a with no counterpart in lit-stage4a-flow.md — see deviation note)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh`, then re-measure and record the delta.
+      *(completed: merge source 8,673 B -> 4,908 B (-3,765 B); assembled .claude/CLAUDE.md
+      42,798 B -> 39,033 B (-3,765 B))*
 
 **Timing**: 1 hour
 

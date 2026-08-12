@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Lever A - Literature --lit Mechanics to Pointer",
+  "started_at": "2026-08-12T19:01:00Z",
+  "last_updated": "2026-08-12T19:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete four --lit subsections, insert pointer paragraph(s)", "status": "done", "files_touched": ["agent-system/extensions/literature/merge-sources/claudemd.md"]},
+    {"id": 2, "description": "Confirm five retained subsections untouched", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Deploy and re-measure delta", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "Insert a single ~250-350 B pointer paragraph naming lit-stage4a-flow.md",
+      "type": "altered",
+      "reason": "Verification found lit-stage4a-flow.md covers 'What --lit Does', 'Interactive Sub-Index Setup Detection', and the orchestrator_mode dual-consumer contract, but does NOT cover 'Ad-Hoc / Conversational Literature Requests' -- a distinct workflow that runs OUTSIDE any --lit dispatch, in the primary/root session, via a different file (adhoc-navigation-directive.md). Per the plan's own Phase 2 contingency ('if any removed --lit directive turns out to have no counterpart in lit-stage4a-flow.md, retain that sentence and reduce the claimed saving accordingly'), a second short paragraph naming adhoc-navigation-directive.md was retained instead of dropping the directive. Net result: two short paragraphs (~832 B total) instead of one (~250-350 B), reducing the measured saving from ~4,300 B (plan estimate) to the actual measured -3,765 B.",
+      "annotation": "*(deviation: altered — kept a second pointer paragraph for the Ad-Hoc/Conversational directive, which has no counterpart in lit-stage4a-flow.md; net saving -3,765 B vs the ~4,300 B estimate)*"
+    }
+  ]
+}

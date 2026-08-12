@@ -40,68 +40,17 @@ Literature mode produces a live, navigate-on-demand `<literature-briefing>` bloc
 prompts — never a static content dump. Use this when a task involves implementing from a paper,
 specification, or reference document.
 
-### What `--lit` Does
+The resolver directives, the four interactive sub-index setup options, sparse-coverage
+re-prompting, and the `orchestrator_mode` dual-consumer contract are canonically defined in
+`context/patterns/lit-stage4a-flow.md` — the single executable Stage 4a block that
+`skill-researcher`, `skill-planner`, `skill-implementer`, and their `-hard` variants all import
+directly and execute verbatim, rather than each maintaining its own copy. Read that file for the
+full mechanics; this section is a pointer, not a second copy.
 
-When `--lit` is passed to `/research`, `/plan`, `/implement`, or `/orchestrate`:
-- `--lit` triggers `literature-briefing.sh` to build a live `<literature-briefing>` block against
-  a corpus of pre-segmented literature chunks — the agent navigates on demand rather than
-  receiving injected file content.
-- Two source modes, matching `literature-briefing.sh`:
-  - **Per-repo mode** (default, no args): sourced from the per-repo sub-index
-    `specs/literature-index.json`, resolved against the global `$LITERATURE_DIR/index.json`.
-  - **Global-corpus mode** (`literature-briefing.sh --global "<query>"`): a live relevance search
-    over the global Literature corpus, used when no per-repo sub-index exists (see "Interactive
-    Sub-Index Setup Detection" below for when this mode is selected).
-- Both modes emit a single `<literature-briefing>` block containing document/chunk metadata plus
-  a "How to Use" footer instructing the agent to run `literature-search.sh` and `Read` specific
-  chunks on demand — no full-file content is ever injected.
-- The block is injected after `<memory-context>` (if any) and before task-specific instructions.
-- If `--lit` is not passed (`LIT_DISABLED`), nothing is injected. If a per-repo sub-index and the
-  global index are both absent (`GLOBAL_MISSING`), the skill emits a visible notice that no
-  literature is available and continues without a briefing — this is never a silent no-op (see
-  "Interactive Sub-Index Setup Detection" for the full missing-sub-index decision flow).
-- The only numeric limiter on any live path is `--top-n` (default 8 chunks), which applies to
-  global-corpus mode only.
-- **Sparse-coverage detection**: `literature-briefing.sh` also emits a machine-readable
-  `<!-- lit-coverage mode=repo|global seg_count=N sparse=true|false threshold=T -->` marker and,
-  when `sparse=true`, a loud `[SPARSE COVERAGE - N segment(s), threshold T]` banner (same family
-  as `[UNVERIFIED ...]` / `[DEGRADED RETRIEVAL ...]`). Sparse is `seg_count < threshold` (never
-  `<=`). `LITERATURE_SPARSE_THRESHOLD` (env var, default `3`) controls the threshold for both
-  this marker and the resolver's `SPARSE_PROMPT_NEEDED` directive below.
-
-### Ad-Hoc / Conversational Literature Requests
-
-Stage 4a (below) only runs inside a `/research|/plan|/implement|/orchestrate --lit` dispatch. When
-a user instead asks conversationally — outside any such dispatch — to consult "the literature", a
-paper, or otherwise invoke `--lit`-like behavior, the primary/root session follows
-`.claude/context/project/literature/patterns/adhoc-navigation-directive.md`: it runs
-`literature-lit-flag-resolve.sh --orchestrator-mode false` and surfaces the SAME three-option
-interactive question as Stage 4a ("Use global corpus now" / "Create curation task" / "Skip this
-run") — never silently injecting nothing and never silently auto-searching.
-
-### Interactive Sub-Index Setup Detection
-
-When `--lit` is used and the per-repo sub-index is missing or sparse, each `--lit`-capable skill
-resolves the case via `.claude/scripts/literature-lit-flag-resolve.sh` and, in interactive
-contexts, offers exactly four choices: **Use global corpus now** (recommended, live search
-against the global Literature corpus, no setup); **Create curation task** (populates
-`specs/literature-index.json` for future runs); **Search online to ingest** (discovers and
-ingests candidate sources, then re-briefs); or **Skip this run** (explicit, logged). There is no
-silent fallback — every branch, including autonomous (`orchestrator_mode == true`) contexts that
-cannot prompt a human, emits a visible notice. The full six-directive resolver contract, the
-per-branch mechanics, and the sparse-coverage re-prompt behavior are the executable, canonical
-contract at `.claude/context/patterns/lit-stage4a-flow.md`, which all six `--lit`-capable skills
-import directly — never via this file.
-
-### orchestrator_mode Dual-Consumer / Autonomy Contract
-
-`orchestrator_mode` has TWO independent consumers: (1) the `.orchestrator-handoff.json`
-write-gate (see `docs/architecture/handoff-schema.md`), and (2) the literature Stage 4a autonomy
-gate above (`AUTONOMOUS_GLOBAL` / the autonomous branch of `SPARSE_PROMPT_NEEDED`). Both
-`skill-orchestrate` and `skill-orchestrate-hard` pass `orchestrator_mode: true` uniformly for
-research, plan, AND implement dispatches so the literature autonomy contract holds across all
-three `/orchestrate --lit` phases — never just the implement phase. A future change to either
-consumer's meaning MUST re-check the other before landing.
+Outside a `/research|/plan|/implement|/orchestrate --lit` dispatch, a conversational request to
+consult "the literature" is handled by the primary/root session via
+`context/project/literature/patterns/adhoc-navigation-directive.md`, which surfaces the same
+interactive options defined in `lit-stage4a-flow.md`.
 
 ### specs/literature/ Directory Convention
 
