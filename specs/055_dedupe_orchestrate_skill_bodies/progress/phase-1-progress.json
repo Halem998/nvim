@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Locked-Region Manifest and Baseline Measurement",
+  "started_at": "2026-08-12T19:49:39Z",
+  "last_updated": "2026-08-12T20:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record extraction anchors for six tests", "status": "done", "files_touched": ["specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md"]},
+    {"id": 2, "description": "Resolve anchors to line ranges", "status": "done", "files_touched": ["specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md"]},
+    {"id": 3, "description": "Record locked identifiers", "status": "done", "files_touched": ["specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md"]},
+    {"id": 4, "description": "Record command-route-agent.sh counts", "status": "done", "files_touched": ["specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md"]},
+    {"id": 5, "description": "Write manifest", "status": "done", "files_touched": ["specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md"]},
+    {"id": 6, "description": "Record baseline bytes", "status": "done", "files_touched": ["specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md"]},
+    {"id": 7, "description": "Run full test suite baseline", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
