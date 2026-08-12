@@ -3185,6 +3185,56 @@
           "/implement"
         ]
       }
+    },
+    {
+      "path": "patterns/todo-archival-reference.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Archival-status definitions, orphan/misplaced-directory categories, roadmap annotation formats, and jq/shell escaping rules for /todo",
+      "line_count": 174,
+      "keywords": [
+        "patterns",
+        "todo",
+        "archival",
+        "orphan",
+        "roadmap",
+        "jq"
+      ],
+      "topics": [
+        "archival"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/todo"
+        ]
+      }
+    },
+    {
+      "path": "patterns/orchestrate-batch-results-template.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
+      "line_count": 146,
+      "keywords": [
+        "patterns",
+        "orchestrate",
+        "batch",
+        "results",
+        "template",
+        "output"
+      ],
+      "topics": [
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/orchestrate"
+        ]
+      }
     }
   ]
 }

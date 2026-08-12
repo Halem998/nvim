@@ -288,32 +288,43 @@ running the name grep over the whole file; use the measured boundaries, not the 
 
 ---
 
-### Phase 4: Register both destination files in the context index [NOT STARTED]
+### Phase 4: Register both destination files in the context index [COMPLETED]
 
 **Goal**: Make both new `context/patterns/` files discoverable through the same mechanism their
 sibling pattern files use, so the extraction is a relocation within the system rather than a move
 to an unindexed corner.
 
 **Tasks**:
-- [ ] Add an entry to `agent-system/extensions/core/index-entries.json` (under `.entries`) for
+- [x] Add an entry to `agent-system/extensions/core/index-entries.json` (under `.entries`) for
       `patterns/todo-archival-reference.md`: `domain: "core"`, `subdomain: "patterns"`, a
       one-line `summary`, accurate `line_count`, `keywords`, `topics`, and
       `load_when: {agents: [], task_types: [], commands: ["/todo"]}` — matching the shape of the
-      existing `patterns/roadmap-update.md` entry.
-- [ ] Add the parallel entry for `patterns/orchestrate-batch-results-template.md` with
+      existing `patterns/roadmap-update.md` entry. *(completed: entry added, jq-validated against
+      the sibling entry's shape; `on_demand` omitted to match the sibling)*
+- [x] Add the parallel entry for `patterns/orchestrate-batch-results-template.md` with
       `load_when: {agents: [], task_types: [], commands: ["/orchestrate"]}` — matching the
-      existing `patterns/batch-orchestration-guardrails.md` entry.
-- [ ] Compute `line_count` from the actual written files (`wc -l`), do not estimate.
-- [ ] Check whether `agent-system/extensions/core/manifest.json` needs an edit. Investigation
+      existing `patterns/batch-orchestration-guardrails.md` entry. *(completed)*
+- [x] Compute `line_count` from the actual written files (`wc -l`), do not estimate. *(completed:
+      174 lines for todo-archival-reference.md, 146 for orchestrate-batch-results-template.md,
+      via `wc -l`)*
+- [x] Check whether `agent-system/extensions/core/manifest.json` needs an edit. Investigation
       during planning found `provides.context` lists the `patterns` directory wholesale rather
       than individual files, so new files under `patterns/` should already deploy without a
       manifest change. Confirm this by inspecting `.provides.context` before deciding; edit the
-      manifest only if the confirmation fails.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh` and
-      `bash agent-system/extensions/core/scripts/validate-context-index.sh`.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-double-loading-check.sh` — the
+      manifest only if the confirmation fails. *(completed: `jq '.provides.context' manifest.json`
+      confirmed the array lists `"patterns"` as a bare directory-level string, not individual
+      files — Scope Hypothesis confirmed, no manifest edit made)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh` and
+      `bash agent-system/extensions/core/scripts/validate-context-index.sh`. *(completed: schema
+      test "Results: 9 passed, 0 failed"; validate-context-index.sh run via its documented
+      `REPO_ROOT=$(pwd)` source-store override, validating the currently-deployed
+      `.claude/context/index.json` — "Validation PASSED", 210 entries, 0 errors, 0 warnings. This
+      validates the pre-existing deployed index, not the source-store edit made here, since no
+      deploy/regeneration was run per the MUST NOT below)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-double-loading-check.sh` — the
       empty-`agents[]`-with-populated-`commands[]` shape is the "direct command, not
-      agent-dispatched" case its Case 2 covers, so this should pass.
+      agent-dispatched" case its Case 2 covers, so this should pass. *(completed: "Passed: 16,
+      Failed: 0")*
 
 **Timing**: 30 minutes
 
