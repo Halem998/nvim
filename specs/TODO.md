@@ -1,5 +1,5 @@
 ---
-next_project_number: 52
+next_project_number: 53
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 52
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,34,35,39,41,43,45,46,51 | -- | agent-system, extensions, literature, ... |
+| 1 | 14,16,17,18,20,22,27,28,31,34,35,39,41,43,45,46,51,52 | -- | agent-system, extensions, literature, ... |
 | 2 | 9,13,29,37,42,48 | 16,17,18,22,35,41 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
 | 3 | 30,49,50 | 29,41,48 | agent-system, context-loading |
 | 4 | 32,44 | 28,30,31,49 | agent-system, context-loading |
@@ -66,11 +66,47 @@ next_project_number: 52
 49 [NOT STARTED] — Cut the measured context cost of the highest-traffic command path
   └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/ (see above)
 
+### Agent Contracts
+
+52 [RESEARCHED] — The .return-meta.json `artifacts` field is normatively an array o
+
 ### Email
 
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 
 ## Tasks
+
+### 52. Return meta artifacts shape contract
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: agent-contracts
+- **Dependencies**: None
+- **Research**: [052_return_meta_artifacts_shape_contract/reports/01_return-meta-artifacts-shape.md]
+
+**Description**: The .return-meta.json `artifacts` field is normatively an array of objects ({type, path, summary}), but nothing enforces that shape and roughly a quarter of dispatchable agents never show it inline. A python-implementation-agent dispatch wrote a bare-string array instead; the consumer could not resolve a path from it, so artifact linking silently produced nothing. The work was complete and correct -- only the machine-readable pointer to it was lost. Detected live during an autonomous /orchestrate run in a consumer repository, recorded as system defect evt_1786510331206_WBl5l1.
+
+EVIDENCE (do not re-derive; full sweep in the research report):
+- ~19 dispatchable agents contain no "artifacts" key at all, so they are given no inline shape to copy: all of python/, typst/, z3/, latex/; core/planner-agent, core/planner-hard-agent, core/code-reviewer-agent, core/general-research-hard-agent, core/spawn-agent, core/synthesis-agent; lean hard agents; cslib-research-hard-agent; email-implementation-agent; literature-agent.
+- A further group has an "artifacts" key but no adjacent "type" field (cslib-vet-agent, filetypes-router-agent, the lean non-hard agents): shape unconfirmed, each needs reading in full.
+- core/general-implementation-agent.md carries a correct inline template and is the model to copy.
+- Behavior is NON-DETERMINISTIC: in the same observed run, python-research-agent and core/planner-agent (both template-less) emitted CORRECT arrays while python-implementation-agent did not. Sometimes-works is the worst profile for detection.
+- There is NO validate-return-meta.sh. validate-handoff.sh, validate-artifact.sh, validate-state.sh, validate-index.sh, validate-wiring.sh all exist; the return-meta sibling does not.
+- Detection is structurally partial: orchestrate-recover-outcome.sh computes ARTIFACTS_SHAPE_MISMATCH only on the RECOVERED path. skill-orchestrate/SKILL.md's own "Known residual gap" note states the handoff-present path never calls that script, so the signal is never computed there. A malformed array from a dispatch that DID write a handoff is invisible to every existing mechanism.
+
+WORK (see the research report for full rationale and open questions):
+1. Add validate-return-meta.sh, the missing sibling of validate-handoff.sh. Consider a --fix mode promoting a bare string to {path} with type inferred from the path segment (reports/ -> report, plans/ -> plan, summaries/ -> summary), which is an unambiguous repair.
+2. Give every dispatchable agent an inline artifacts template, copied from core/general-implementation-agent.md. Mechanical; would have prevented the observed failure outright.
+3. Close the handoff-present detection hole named in skill-orchestrate/SKILL.md's residual-gap note.
+4. Consider a verify-deploy.sh lint gate in the lint-agent-contracts.sh family asserting every dispatchable agent declares a correctly-shaped template.
+
+DECIDE EXPLICITLY: whether the consumer becomes tolerant of bare strings (accept and normalize) or the contract stays strict with the failure made loud. Tolerance risks entrenching the malformed shape; strictness risks losing artifacts until every agent is fixed. Normalizing at a single chokepoint paired with a loud notice may capture both.
+
+NOT COVERED BY fix_return_meta_lifecycle_ordering, which concerns WHEN .return-meta.json is deleted relative to command-gate-out.sh consuming it. The two are independent: fixing the ordering would still consume a malformed array, and fixing the shape would still be defeated by premature deletion.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 51. Move session state files out of specs root
 - **Status**: [NOT STARTED]

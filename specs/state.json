@@ -1,7 +1,39 @@
 {
   "version": "1.1.0",
-  "next_project_number": 52,
+  "next_project_number": 53,
   "active_projects": [
+    {
+      "project_number": 52,
+      "project_name": "return_meta_artifacts_shape_contract",
+      "status": "researched",
+      "task_type": "meta",
+      "topic": "agent-contracts",
+      "priority": "high",
+      "description": "The .return-meta.json `artifacts` field is normatively an array of objects ({type, path, summary}), but nothing enforces that shape and roughly a quarter of dispatchable agents never show it inline. A python-implementation-agent dispatch wrote a bare-string array instead; the consumer could not resolve a path from it, so artifact linking silently produced nothing. The work was complete and correct -- only the machine-readable pointer to it was lost. Detected live during an autonomous /orchestrate run in a consumer repository, recorded as system defect evt_1786510331206_WBl5l1.\n\nEVIDENCE (do not re-derive; full sweep in the research report):\n- ~19 dispatchable agents contain no \"artifacts\" key at all, so they are given no inline shape to copy: all of python/, typst/, z3/, latex/; core/planner-agent, core/planner-hard-agent, core/code-reviewer-agent, core/general-research-hard-agent, core/spawn-agent, core/synthesis-agent; lean hard agents; cslib-research-hard-agent; email-implementation-agent; literature-agent.\n- A further group has an \"artifacts\" key but no adjacent \"type\" field (cslib-vet-agent, filetypes-router-agent, the lean non-hard agents): shape unconfirmed, each needs reading in full.\n- core/general-implementation-agent.md carries a correct inline template and is the model to copy.\n- Behavior is NON-DETERMINISTIC: in the same observed run, python-research-agent and core/planner-agent (both template-less) emitted CORRECT arrays while python-implementation-agent did not. Sometimes-works is the worst profile for detection.\n- There is NO validate-return-meta.sh. validate-handoff.sh, validate-artifact.sh, validate-state.sh, validate-index.sh, validate-wiring.sh all exist; the return-meta sibling does not.\n- Detection is structurally partial: orchestrate-recover-outcome.sh computes ARTIFACTS_SHAPE_MISMATCH only on the RECOVERED path. skill-orchestrate/SKILL.md's own \"Known residual gap\" note states the handoff-present path never calls that script, so the signal is never computed there. A malformed array from a dispatch that DID write a handoff is invisible to every existing mechanism.\n\nWORK (see the research report for full rationale and open questions):\n1. Add validate-return-meta.sh, the missing sibling of validate-handoff.sh. Consider a --fix mode promoting a bare string to {path} with type inferred from the path segment (reports/ -> report, plans/ -> plan, summaries/ -> summary), which is an unambiguous repair.\n2. Give every dispatchable agent an inline artifacts template, copied from core/general-implementation-agent.md. Mechanical; would have prevented the observed failure outright.\n3. Close the handoff-present detection hole named in skill-orchestrate/SKILL.md's residual-gap note.\n4. Consider a verify-deploy.sh lint gate in the lint-agent-contracts.sh family asserting every dispatchable agent declares a correctly-shaped template.\n\nDECIDE EXPLICITLY: whether the consumer becomes tolerant of bare strings (accept and normalize) or the contract stays strict with the failure made loud. Tolerance risks entrenching the malformed shape; strictness risks losing artifacts until every agent is fixed. Normalizing at a single chokepoint paired with a loud notice may capture both.\n\nNOT COVERED BY fix_return_meta_lifecycle_ordering, which concerns WHEN .return-meta.json is deleted relative to command-gate-out.sh consuming it. The two are independent: fixing the ordering would still consume a malformed array, and fixing the shape would still be defeated by premature deletion.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/validate-return-meta.sh",
+        "agent-system/extensions/core/context/formats/return-metadata-file.md",
+        "agent-system/extensions/core/agents/",
+        "agent-system/extensions/python/agents/",
+        "agent-system/extensions/z3/agents/",
+        "agent-system/extensions/typst/agents/",
+        "agent-system/extensions/latex/agents/",
+        "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/052_return_meta_artifacts_shape_contract/reports/01_return-meta-artifacts-shape.md",
+          "summary": "Swept every dispatchable agent for an inline artifacts template, confirmed no return-meta validator exists, and located the handoff-present detection hole."
+        }
+      ],
+      "blockers": null,
+      "created": "2026-08-11T23:20:00Z",
+      "last_updated": "2026-08-11T23:20:00Z",
+      "next_artifact_number": 2
+    },
     {
       "project_number": 46,
       "project_name": "fix_present_extension_compound_skill_routing",
