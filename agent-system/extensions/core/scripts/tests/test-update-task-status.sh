@@ -364,6 +364,74 @@ else
 fi
 
 # =====================================================================
+# Case 10: implement preflight regression guard -- a preflight that dispatches nothing for a
+# phase must never advance that phase's marker, because a false [IN PROGRESS] marker feeds
+# fabricated territory-conflict signals into hard-mode dispatch reasoning (the defect this
+# suite's authoring plan deletes update_plan_file()'s auto-advance convenience to fix). Asserts
+# a non-dispatching implement preflight leaves plan phase headings byte-identical, with a
+# required positive control proving the fixture plan file was actually found and processed.
+# =====================================================================
+info "=== Case 10: implement preflight leaves phase headings byte-identical ==="
+FIXTURE_ROOT="$WORKDIR/case10"
+build_fixture_repo "$FIXTURE_ROOT"
+# 'planned' is a legitimate resting status from which an implement preflight is valid.
+jq '.active_projects[0].status = "planned"' "$FIXTURE_ROOT/specs/state.json" > "$WORKDIR/c10-state.json.tmp"
+mv "$WORKDIR/c10-state.json.tmp" "$FIXTURE_ROOT/specs/state.json"
+mkdir -p "$FIXTURE_ROOT/specs/001_fixture_task/plans"
+cat > "$FIXTURE_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md" << 'PLANEOF'
+# Implementation Plan: Fixture Task
+
+- **Status**: [NOT STARTED]
+
+## Implementation Phases
+
+### Phase 1: First phase [NOT STARTED]
+
+### Phase 2: Second phase [NOT STARTED]
+PLANEOF
+
+C10_PLAN="$FIXTURE_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md"
+BEFORE_HEADINGS="$(grep -E '^### Phase ' "$C10_PLAN")"
+
+if UTS preflight 1 implement sess_test_c10 >"$WORKDIR/c10.out" 2>"$WORKDIR/c10.err"; then
+  C10_EXIT=0
+else
+  C10_EXIT=$?
+fi
+
+AFTER_HEADINGS="$(grep -E '^### Phase ' "$C10_PLAN")"
+
+if [[ "$BEFORE_HEADINGS" == "$AFTER_HEADINGS" ]]; then
+  pass "implement preflight leaves plan phase headings byte-identical (no dispatch, no advance)"
+else
+  fail "implement preflight changed phase headings unexpectedly -- before:
+$BEFORE_HEADINGS
+-- after:
+$AFTER_HEADINGS"
+fi
+
+if grep -q '\[IN PROGRESS\]' "$C10_PLAN"; then
+  fail "implement preflight left a phase heading marked [IN PROGRESS] -- the deleted auto-advance regressed"
+else
+  pass "no phase heading contains [IN PROGRESS] after a non-dispatching implement preflight"
+fi
+
+# Positive control (required): the call must have exited 0 AND the plan-level Status line must
+# have flipped to [IMPLEMENTING], proving update_plan_file() was entered and the fixture plan
+# file was found -- without this, the case above would pass even if the fixture were never
+# located, making it worthless as a regression guard.
+if [[ "$C10_EXIT" -eq 0 ]]; then
+  pass "Case 10 positive control: implement preflight call exited 0 (see $WORKDIR/c10.err on failure)"
+else
+  fail "Case 10 positive control: implement preflight call exited $C10_EXIT (see $WORKDIR/c10.err)"
+fi
+if grep -qE '^- \*\*Status\*\*: \[IMPLEMENTING\]' "$C10_PLAN"; then
+  pass "Case 10 positive control: plan-level Status line flipped to [IMPLEMENTING] (function was entered, plan file was found)"
+else
+  fail "Case 10 positive control: plan-level Status line did not flip to [IMPLEMENTING] -- the byte-identity assertion above would be vacuous"
+fi
+
+# =====================================================================
 # Real-tree contamination guard (delta check against the pre-suite baseline; see
 # test-skill-base-lifecycle.sh's identical guard for why this is a delta, not an absolute
 # emptiness check).

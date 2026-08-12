@@ -258,34 +258,34 @@ against it — the empirical check that deletion regressed nothing.
 
 ---
 
-### Phase 3: Primary regression case in test-update-task-status.sh [NOT STARTED]
+### Phase 3: Primary regression case in test-update-task-status.sh [COMPLETED]
 
 **Goal**: a case proving a non-dispatching implement preflight leaves plan phase headings exactly
 as it found them — the coverage AC 4 requires.
 
 **Tasks**:
-- [ ] Read the suite's existing case list and the fixture setup used by the `--phase-check` cases
+- [x] Read the suite's existing case list and the fixture setup used by the `--phase-check` cases
       (which build their own plan file inline; `build_fixture_repo` itself does **not** create
-      one). Reuse that shape rather than inventing a new one.
-- [ ] Append a new case after the last existing one, following the file's established structure:
+      one). Reuse that shape rather than inventing a new one. *(completed)*
+- [x] Append a new case after the last existing one, following the file's established structure:
       `info` banner, fresh `FIXTURE_ROOT`, `build_fixture_repo`, `UTS`/`task_status` helpers,
-      `pass`/`fail` assertions.
-- [ ] In the fixture, set the task's `status` to a value from which an implement preflight is
+      `pass`/`fail` assertions. *(completed: Case 10)*
+- [x] In the fixture, set the task's `status` to a value from which an implement preflight is
       legitimate (e.g. `planned`), and create
       `specs/001_fixture_task/plans/01_fixture-plan.md` with a plan-level
       `- **Status**: [NOT STARTED]` line and at least **two** conforming phase headings, both
-      `[NOT STARTED]`.
-- [ ] Snapshot every `^### Phase ` line before the call, run
+      `[NOT STARTED]`. *(completed)*
+- [x] Snapshot every `^### Phase ` line before the call, run
       `UTS preflight 1 implement sess_test_<n>`, snapshot again, and assert the two snapshots are
-      byte-identical.
-- [ ] Assert additionally and specifically that no phase heading contains `[IN PROGRESS]` after
-      the call.
-- [ ] **Positive control (required)**: assert the call exited 0 **and** that the plan-level
+      byte-identical. *(completed)*
+- [x] Assert additionally and specifically that no phase heading contains `[IN PROGRESS]` after
+      the call. *(completed)*
+- [x] **Positive control (required)**: assert the call exited 0 **and** that the plan-level
       `- **Status**:` line became `[IMPLEMENTING]`. Without this, the case would pass even if the
-      fixture plan file were never found, making it worthless as a regression guard.
-- [ ] Add a case header comment naming the regression guarded: a preflight that dispatches nothing
+      fixture plan file were never found, making it worthless as a regression guard. *(completed)*
+- [x] Add a case header comment naming the regression guarded: a preflight that dispatches nothing
       for a phase must never advance that phase's marker, because a false marker feeds fabricated
-      territory-conflict signals into hard-mode dispatch reasoning.
+      territory-conflict signals into hard-mode dispatch reasoning. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -304,11 +304,17 @@ script, add it, or the case will pass vacuously.
   case
 
 **Verification**:
-- Suite exits 0 with the new case reported PASS, and the total case count increased
-- Non-vacuity is evidenced by the positive-control assertion passing in the same run
+- Suite exits 0 with the new case reported PASS, and the total case count increased *(confirmed:
+  23 passed, 0 failed, up from the pre-existing 19)*
+- Non-vacuity is evidenced by the positive-control assertion passing in the same run *(confirmed)*
 - Sanity check the guard's teeth: temporarily point the case at a plan file whose phase 1 heading
   is pre-set to `[IN PROGRESS]` and confirm the byte-identity assertion still behaves as designed,
-  then revert the temporary change
+  then revert the temporary change *(confirmed: ran the fixture with phase 1 pre-set to
+  `[IN PROGRESS]` against the pre-fix (buggy) `update-task-status.sh` from commit `2bf768775~1` in
+  an isolated scratch fixture -- phase 2 was incorrectly advanced to `[IN PROGRESS]` too,
+  reproducing the exact defect and proving Case 10's byte-identity/no-`[IN PROGRESS]` assertions
+  would catch a reintroduced regression; scratch fixture discarded afterward, no repo files
+  touched)*
 
 ---
 
