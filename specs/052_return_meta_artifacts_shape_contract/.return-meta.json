@@ -1,12 +1,81 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/052_return_meta_artifacts_shape_contract/summaries/01_return-meta-artifacts-contract-summary.md",
+      "summary": "Seven-phase implementation closing the .return-meta.json artifacts shape gap: canonical fragment, validate-return-meta.sh, agent-template backfill across 23 dispatchable agents, chokepoint normalization, handoff-present detection-hole closure on both orchestrator engines, and a new deploy-time lint Check F."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the .return-meta.json artifacts-array shape gap across all 7 planned phases: canonical contract fragment, validate-return-meta.sh with --fix, inline object templates backfilled across every dispatchable agent that writes .return-meta.json (3 recorded exclusions), read-side chokepoint normalization with a loud recorded notice, handoff-present ARTIFACTS_SHAPE_MISMATCH detection-hole closure on both orchestrator engines, and a new lint-agent-contracts.sh Check F wired through the existing verify-deploy.sh gate 6."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-research-hard-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/agents/planner-hard-agent.md",
+    "agent-system/extensions/core/agents/spawn-agent.md",
+    "agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/lib/return-meta-artifacts-lib.sh",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh",
+    "agent-system/extensions/core/scripts/validate-return-meta.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/cslib/agents/cslib-research-hard-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-vet-agent.md",
+    "agent-system/extensions/email/agents/email-implementation-agent.md",
+    "agent-system/extensions/filetypes/agents/filetypes-router-agent.md",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+    "agent-system/extensions/latex/agents/latex-research-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/lean/agents/lean-research-agent.md",
+    "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+    "agent-system/extensions/python/agents/python-implementation-agent.md",
+    "agent-system/extensions/python/agents/python-research-agent.md",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/typst/agents/typst-research-agent.md",
+    "agent-system/extensions/z3/agents/z3-implementation-agent.md",
+    "agent-system/extensions/z3/agents/z3-research-agent.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In lint-agent-contracts.sh, the shared rel_path() helper returns paths relative to REPO_ROOT (e.g. 'agent-system/extensions/core/agents/x.md'), NOT relative to AGENTS_ROOT (e.g. 'core/agents/x.md') -- but Check C's pre-existing IN_SCOPE_RELATIVE_PATHS array uses the AGENTS_ROOT-relative form, because Check C never actually compares rel_path() output against that array (it builds the file path FROM the array instead). A new check that DOES compare rel_path(f) against a curated exclusion/inclusion list must use the REPO_ROOT-relative form or every entry silently mismatches. Caught only by actually running the lint and observing recorded exclusions were not being skipped -- a bare code review would likely have missed it since both forms look equally plausible.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/052_return_meta_artifacts_shape_contract/summaries/01_return-meta-artifacts-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["lint-agent-contracts", "rel_path", "path-basis-mismatch", "bash", "exclusion-list"]
+    },
+    {
+      "content": "When a plan phase Scope Hypothesis asserts that a sibling file/engine 'already computes signal X' based on a grep hit elsewhere in that file, treat the grep hit as inconclusive until the specific branch in question is read in full. In this task, orchestrate-recover-outcome.sh WAS called elsewhere in skill-orchestrate-hard/SKILL.md (the recovered-path branch), which superficially looked like coverage for the handoff-present branch too -- but reading the handoff-present branch itself showed it never called that script at all. The plan's own Scope Hypothesis text had already named this exact risk ('the presence of the call elsewhere in the file does not establish that this specific branch reaches it'), and it fired in practice.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/052_return_meta_artifacts_shape_contract/summaries/01_return-meta-artifacts-contract-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["scope-hypothesis", "grep-is-not-proof", "read-the-branch", "orchestrate", "verification-discipline"]
+    },
+    {
+      "content": "check-extension-docs.sh / verify-deploy.sh findings against source-store-only edits split into two classes that must be triaged differently: (1) genuine source-store defects independent of deploy timing -- a new script file not registered in the extension manifest.json's provides.scripts array, or a context file whose line_count in index-entries.json is now stale (fixable via generate-context-line-counts.sh --write) -- these are real bugs to fix regardless of deploy state; (2) expected 'deployed script content drift' / 'never deployed' findings for files legitimately changed in the source store but not yet deployed -- this is the correct, expected state when an implementer is not the sanctioned automated deploy-headless.sh caller (see context/patterns/regeneration-is-manual-only.md), and should be documented as pending-deploy, not chased.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/052_return_meta_artifacts_shape_contract/summaries/01_return-meta-artifacts-contract-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs", "verify-deploy", "manifest-registration", "deploy-drift", "source-store-boundary"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786548103_b23c8a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 7,
     "phases_total": 7
   }
 }
