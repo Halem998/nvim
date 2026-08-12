@@ -540,28 +540,33 @@ and make Stage 7's message honest.
 
 ---
 
-### Phase 9: Defect B — base engine override, command flag, recorded asymmetry [NOT STARTED]
+### Phase 9: Defect B — base engine override, command flag, recorded asymmetry [COMPLETED]
 
 **Goal**: Close the same deadlock in base mode (which today has zero self-healing), and document
 the flag at the command surface.
 
 **Tasks**:
-- [ ] Apply the same override mechanism to `skill-orchestrate/SKILL.md` Stage 2 (exhaustion branch
+- [x] Apply the same override mechanism to `skill-orchestrate/SKILL.md` Stage 2 (exhaustion branch
       + archive-and-reinit + honest refusal when the flag is absent) and Stage 7 (both exhaustion
-      messages must name `/orchestrate {N} --continue-budget`).
-- [ ] Leave base Stage 8's guard `rm -f`-on-clean-exit-only behavior unchanged, with the same
-      explicit comment.
-- [ ] Record the SAME `cycle_count` per-task/cumulative decision in base's Stage 2 comment block.
-- [ ] Record the asymmetry decision in base too, in the file's existing "recorded, not acted on"
+      messages must name `/orchestrate {N} --continue-budget`). *(completed)*
+- [x] Leave base Stage 8's guard `rm -f`-on-clean-exit-only behavior unchanged, with the same
+      explicit comment. *(completed)*
+- [x] Record the SAME `cycle_count` per-task/cumulative decision in base's Stage 2 comment block.
+      *(completed)*
+- [x] Record the asymmetry decision in base too, in the file's existing "recorded, not acted on"
       style: the 3-signal detector's absence here remains deliberate and undecided by this work;
       the override is orthogonal to it and does not require deciding it. Mirror the decision text
       from Phase 8 so the two records visibly agree, while noting the mechanism itself is
-      asymmetric (net-new code here, not a mirror of hard's detector).
-- [ ] Add `--continue-budget` to `commands/orchestrate.md`'s flag table and thread it into the
+      asymmetric (net-new code here, not a mirror of hard's detector). *(completed)*
+- [x] Add `--continue-budget` to `commands/orchestrate.md`'s flag table and thread it into the
       skill delegation context alongside `lit_flag`, following how `--lit` and
-      `allow_self_modifying` are already threaded.
-- [ ] Keep base's `guard_session_id != session_id` mismatch block's 3-line shape byte-stable — it
-      is the exact anchor Case 3 extracts from THIS file.
+      `allow_self_modifying` are already threaded. *(completed: also required adding
+      `--continue-budget` parsing to `scripts/parse-command-args.sh`, the actual shared parser
+      site `--lit`/`--allow-self-modifying` are parsed at -- not in this plan's original file
+      list but mechanically required for the flag to reach `commands/orchestrate.md` at all)*
+- [x] Keep base's `guard_session_id != session_id` mismatch block's 3-line shape byte-stable — it
+      is the exact anchor Case 3 extracts from THIS file. *(completed: confirmed via grep after
+      the Stage 2 edit AND test-session-runtime-files.sh run immediately after, 6/6 passed)*
 
 **Timing**: 1.5 hours
 

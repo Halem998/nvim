@@ -1,0 +1,24 @@
+{
+  "phase": 9,
+  "phase_name": "Defect B -- base engine override, command flag, recorded asymmetry",
+  "started_at": "2026-08-12T05:40:00Z",
+  "last_updated": "2026-08-12T06:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Base engine Stage 2 override mechanism", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Stage 7/8 messages and decision/asymmetry records", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "commands/orchestrate.md flag table + delegation context threading", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 4, "description": "parse-command-args.sh --continue-budget parsing (mechanically required)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/parse-command-args.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.scope",
+      "description": "Phase 9's file list named only skill-orchestrate/SKILL.md and commands/orchestrate.md",
+      "type": "altered",
+      "reason": "threading --continue-budget correctly requires editing scripts/parse-command-args.sh, the actual shared flag-parsing site --lit/--allow-self-modifying are parsed at; without it the flag has no parse path",
+      "annotation": "*(deviation: altered -- added parse-command-args.sh to the touched file set)*"
+    }
+  ]
+}

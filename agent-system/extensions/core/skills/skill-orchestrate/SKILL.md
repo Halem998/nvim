@@ -41,6 +41,10 @@ If `multi_task_mode` is true: skip Stages 1-8 entirely and proceed to Stage MT-1
 Read from delegation context:
 - `task_number` (from `task_context.task_number`)
 - `session_id`, `focus_prompt`, `lit_flag`
+- `continue_budget` (default: `false`) → `continue_budget_flag`. Defect B: explicit,
+  operator-typed budget-continuation override for an exhausted work-cycle budget, threaded from
+  the command's `--continue-budget` flag. Never inferred from `session_id`, mtime, or any
+  automatic signal. See Stage 2 below for the override mechanism.
 
 Resolve from `specs/state.json`:
 ```bash
@@ -108,6 +112,41 @@ loop_guard_file="${TASK_DIR}/.orchestrator-loop-guard"
 handoff_file="${HANDOFF_PATH_ABS}"
 
 mkdir -p "$TASK_DIR"
+
+# --- budget-continuation-override:begin ---
+# Defect B: cycle_count is a per-task, CUMULATIVE budget that survives re-invocation BY DESIGN --
+# it is deliberately NOT reset on a new session_id, because that would let an operator silently
+# bypass MAX_CYCLES by simply re-invoking /orchestrate. test-session-runtime-files.sh Case 3 is
+# the regression protecting this decision; this override must never disturb it. The override
+# below is the sanctioned, explicit, loudly-logged escape hatch for a genuinely exhausted budget
+# -- never automatic, never session_id-gated, never inferred from mtime. Verbatim-twin mechanism
+# to skill-orchestrate-hard/SKILL.md's Stage 2 (base mode has no loop-guard-staleness detector to
+# sit after, so this runs immediately before the pre-existing resume-read block below).
+if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
+  peek_cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
+  if [ "$peek_cycle_count" -ge "$MAX_CYCLES" ]; then
+    if [ "$continue_budget_flag" = "true" ]; then
+      exhaust_ts=$(date -u +%s)
+      exhausted_guard_dest="${TASK_DIR}/.exhausted-loop-guard-${exhaust_ts}.json"
+      echo "[orchestrate] BUDGET EXHAUSTED (cycle_count=${peek_cycle_count}/${MAX_CYCLES}) — --continue-budget authorized a fresh budget. Archiving exhausted guard to ${exhausted_guard_dest} for auditability, reinitializing at cycle_count=0 with cross-invocation history fields (dispatch_seq_counter, detected_defects) preserved." >&2
+      if cp "$loop_guard_file" "$exhausted_guard_dest" 2>/dev/null; then
+        # Reinit IN PLACE from the just-archived copy: reset only cycle_count, never wipe
+        # dispatch_seq_counter (must never repeat a value within this task) or detected_defects.
+        jq --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '.cycle_count = 0 | .last_updated = $updated' \
+          "$exhausted_guard_dest" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+      else
+        echo "[orchestrate] WARNING: could not archive exhausted guard to ${exhausted_guard_dest}; proceeding without archiving (cycle_count reset in place)." >&2
+        jq --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '.cycle_count = 0 | .last_updated = $updated' \
+          "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+      fi
+    else
+      echo "[orchestrate] ERROR: work-cycle budget exhausted (cycle_count=${peek_cycle_count}/${MAX_CYCLES}). This is a budget limit, not an error condition -- the task's plan may still have incomplete phases." >&2
+      echo "[orchestrate] To continue this task's work, explicitly authorize a fresh budget: /orchestrate ${task_number} --continue-budget" >&2
+      exit 1
+    fi
+  fi
+fi
+# --- budget-continuation-override:end ---
 
 if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   # Resume: read existing guard. No session_id or mtime check — see the ephemerality note above;
@@ -201,6 +240,25 @@ MAX_DRIFT_INSPECTIONS=1
 DRIFT_COMPLETION_THRESHOLD=0.70
 DRIFT_REVISION_THRESHOLD=0.30
 ```
+
+**On the `budget-continuation-override` region above (Defect B)**: this rewrites the SAME
+`loop_guard_file` in place (via the archived copy), specifically so `dispatch_seq_counter` and
+`detected_defects` are carried forward rather than reset to their fresh-init defaults. This is
+the same mechanism `skill-orchestrate-hard/SKILL.md`'s Stage 2 implements — the decision is
+identical in both engines — but the mechanism itself is necessarily NET-NEW code here rather than
+a byte-for-byte mirror, because base mode has no `loop-guard-staleness` detector region for it to
+sit adjacent to.
+
+**Decision record**: `cycle_count` is a per-task, cumulative budget that survives re-invocation by
+design — this is the existing, deliberate semantics (protected by
+`test-session-runtime-files.sh` Case 3), not a new decision introduced by this override. The same
+record appears in `skill-orchestrate-hard/SKILL.md`'s Stage 2 so both engines visibly agree.
+
+**Asymmetry decision (recorded, "recorded not acted on" style, mirroring the hard engine's
+record so the two visibly agree)**: whether base mode should ever gain the general 3-signal
+`loop-guard-staleness` detector hard mode has is a SEPARATE, undecided question — its absence
+here remains deliberate and is not settled by adding the budget-continuation override, which is
+orthogonal to it and requires no such detector to function correctly.
 
 ### Stage 3: State Machine Loop
 
@@ -1338,11 +1396,15 @@ at the end of every cycle — is what terminates the run. Worst-case iterations 
 are therefore `MAX_CYCLES + MAX_INFRA_FAILURES` = 8. Do NOT also increment `cycle_count` here:
 the cap's purpose is to stay outside the work-cycle budget.
 
-If MAX_CYCLES reached (cycle_count >= MAX_CYCLES):
+If MAX_CYCLES reached (cycle_count >= MAX_CYCLES). Note: with the Stage 2
+budget-continuation-override in place, this branch is now normally unreachable in practice for an
+already-exhausted guard — Stage 2 either exits early (flag absent) or resets cycle_count to 0
+(flag present) before the main loop ever opens. It remains correct as a defense-in-depth backstop
+for the rare case where MAX_CYCLES is reached DURING this same invocation's own loop:
 
 ```
 echo "[orchestrate] MAX_CYCLES ($MAX_CYCLES) reached for task $task_number."
-echo "Current state: $current_status. Run /orchestrate $task_number to continue."
+echo "Current state: $current_status. Run /orchestrate $task_number --continue-budget to authorize a fresh budget and continue."
 EXIT (partial)
 ```
 
@@ -1375,8 +1437,16 @@ On partial exit (MAX_CYCLES, in-flight warning, escalation cap):
 ```bash
 # Preserve loop guard for next /orchestrate invocation
 echo "[orchestrate] Task $task_number: orchestration paused."
-echo "Status: $current_status | Cycles: $cycle_count/$MAX_CYCLES | Run /orchestrate $task_number to continue."
+echo "Status: $current_status | Cycles: $cycle_count/$MAX_CYCLES | Run /orchestrate $task_number --continue-budget to continue once the budget is exhausted, or /orchestrate $task_number for an ordinary cross-turn resume."
 ```
+
+**Explicitly UNCHANGED by Defect B's budget-continuation override**: this cleanup site still only
+fires on full-loop termination (the "On clean exit" block above), never on a partial exit --
+including the Stage 2 exhaustion branch's flag-absent `exit 1`, which leaves the exhausted guard
+fully in place. This is correct, not an oversight: the guard's entire job is to persist across
+exactly this gap so an operator's subsequent `--continue-budget` invocation has something to read
+`cycle_count` from. All four sites that touch this guard's lifecycle -- Stage 2's exhaustion
+branch, this Stage 7 terminal condition, and this Stage 8 cleanup -- now visibly agree.
 
 Write metadata file. `status` here is the `.return-meta.json` skill-status vocabulary defined
 normatively in `context/formats/return-metadata-file.md` — it is NOT the state.json task-status
