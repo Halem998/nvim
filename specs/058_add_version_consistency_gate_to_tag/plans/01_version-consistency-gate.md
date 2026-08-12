@@ -1,7 +1,7 @@
 # Implementation Plan: Version-Consistency Gate for /tag
 
 - **Task**: 58 - Add a version-consistency preflight gate to /tag so a tag can never be created or pushed while the package being released declares a different version
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/058_add_version_consistency_gate_to_tag/reports/01_version-consistency-gate.md`
@@ -219,7 +219,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Build and Fixture-Verify the Detection Fragment [NOT STARTED]
+### Phase 1: Build and Fixture-Verify the Detection Fragment [COMPLETED]
 
 **Goal**: Produce a working, portable shell fragment that discovers manifests and extracts declared
 versions, proven against fixtures covering every case in the research report — *before* embedding
@@ -227,7 +227,7 @@ it in `SKILL.md`. This front-loads all the portability and false-match risk into
 source store is untouched and iteration is cheap.
 
 **Tasks**:
-- [ ] Create a scratch fixture tree under the session scratchpad (not the repo) with these cases:
+- [x] Create a scratch fixture tree under the session scratchpad (not the repo) with these cases: *(completed)*
   1. root `pyproject.toml` with `[project]` `version = "1.3.0"` AND a later `[tool.poetry]` table
      declaring `9.9.9` (proves the `[project]`-scoped `sed` range does not false-match Poetry)
   2. **subdirectory** `code/pyproject.toml` (the real observed-failure shape)
@@ -240,15 +240,18 @@ source store is untouched and iteration is cheap.
   8. `Cargo.toml` with `[package]` `version = "0.4.2"`
   9. `Cargo.toml` with `version.workspace = true` (must yield empty)
   10. a directory with no manifest at all (must yield the no-version-declared path)
-- [ ] Write the discovery command: `find "$repo_root" -maxdepth 3` with `-not -path` exclusions for
+- [x] Write the discovery command: `find "$repo_root" -maxdepth 3` with `-not -path` exclusions for
       `node_modules`, `.git`, `dist`, `build`, `target`, `__pycache__`, `.venv`, `venv`, and
-      `-name` clauses for the five manifest filenames.
-- [ ] Write a `extract_declared_version <file>` dispatch that branches on basename and applies the
+      `-name` clauses for the five manifest filenames. *(completed)*
+- [x] Write a `extract_declared_version <file>` dispatch that branches on basename and applies the
       matching sandbox-verified command from the research report verbatim (do not re-derive them —
       transcribe from `reports/01_version-consistency-gate.md` "External Resources" section).
-- [ ] Run the fragment against all 10 fixtures; record actual output per fixture.
-- [ ] Confirm the exclusion list actually suppresses `node_modules` decoys (case 7) rather than
-      merely being present in the command text.
+      *(completed)*
+- [x] Run the fragment against all 10 fixtures; record actual output per fixture. *(completed: all
+      10 matched documented expectation — 6 versions, 4 empties)*
+- [x] Confirm the exclusion list actually suppresses `node_modules` decoys (case 7) rather than
+      merely being present in the command text. *(completed: verified with grep -i node_modules on
+      output)*
 
 **Timing**: 0.75 hours
 

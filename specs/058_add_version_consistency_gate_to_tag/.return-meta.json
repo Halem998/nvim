@@ -1,27 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 58,
   "session_id": "sess_1786569271_8c6819",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/058_add_version_consistency_gate_to_tag/plans/01_version-consistency-gate.md",
-      "summary": "5-phase plan adding a fail-closed version-consistency gate (Step 3.5) to skill-tag with bounded-depth multi-ecosystem manifest detection, explicit skip notice, and commands/tag.md doc parity."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 4,
-  "dependency_waves": [[1], [2], [3, 4], [5]],
-  "memory_candidates": [
-    {
-      "content": "When adding a preflight gate to a command whose execution has an early-exit branch (e.g. a --dry-run branch that runs `exit 0` before the real work), the gate's insertion point is FORCED, not chosen: it must sit strictly before the early exit, or the gate silently never fires on that path. The valid insertion window is bounded below by the first point at which the gate's inputs exist, and above by the earliest exit branch. In skill-tag/SKILL.md this window was exactly one step wide (after Step 3 computes new_version, before Step 5's dry-run exit 0). Before placing any new validation in a multi-step shell/skill flow, locate every `exit` in the flow and compute the window explicitly rather than appending the check near the operation it guards.",
-      "category": "PATTERN",
-      "source_artifact": "specs/058_add_version_consistency_gate_to_tag/plans/01_version-consistency-gate.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["preflight-gate", "early-exit", "dry-run", "insertion-point", "validation-ordering", "skill-steps"]
-    }
-  ],
-  "next_steps": "Run /implement 58 to execute the plan"
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }

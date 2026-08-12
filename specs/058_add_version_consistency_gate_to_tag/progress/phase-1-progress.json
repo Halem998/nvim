@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Build and Fixture-Verify the Detection Fragment",
+  "started_at": "2026-08-12T21:20:00Z",
+  "last_updated": "2026-08-12T21:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create 10-case fixture tree under scratchpad", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write discovery find command with maxdepth 3 and exclusions", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write extract_declared_version dispatch transcribed from research report", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run fragment against all 10 fixtures; record actual output", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm node_modules exclusion suppresses decoys", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "results": {
+    "case1": "1.3.0 (not 9.9.9 - Poetry false-match guard holds)",
+    "case2": "1.3.0 (found at depth 2, proves root-only search would miss it)",
+    "case3": "empty (dynamic version)",
+    "case4": "3.2.1",
+    "case5": "4.5.6",
+    "case6": "empty (setup.py programmatic version, per DR-6)",
+    "case7": "2.1.0 (node_modules decoys excluded from discovery)",
+    "case8": "0.4.2",
+    "case9": "empty (Cargo workspace-inherited version)",
+    "case10": "no manifest found"
+  },
+  "deviations": []
+}
