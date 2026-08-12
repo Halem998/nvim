@@ -1,0 +1,17 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "summary": "Deleted update_plan_file()'s preflight per-phase auto-advance, added positive-controlled regression coverage in test-update-task-status.sh and test-skill-base-lifecycle.sh, retired the stale co-maintenance comment in skill-orchestrate-hard/SKILL.md, and fixed a third suite (test-resume-scan-nonconformance.sh) discovered during the final blast-radius gate sweep. All 6 plan phases complete; verify-deploy.sh passes 22/23 (sole remaining failure is pre-existing and unrelated to this task).",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/035_stop_preflight_spurious_phase_advance/summaries/01_delete-preflight-phase-autoadvance-summary.md",
+      "summary": "Deleted the preflight phase auto-advance convenience, added non-vacuous regression coverage in two suites plus a fix to a third, and retired the stale co-maintenance comment."
+    }
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "continuation_path": null,
+  "plan_markers_verified": true
+}

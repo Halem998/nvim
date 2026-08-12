@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Close the named coverage gap in test-skill-base-lifecycle.sh Group 4",
+  "started_at": "2026-08-12T01:20:00Z",
+  "last_updated": "2026-08-12T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend build_fixture_repo's copy loop with update-plan-status.sh and update-phase-status.sh, plus the top-of-file environment-check loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 2, "description": "Add implement-target Group 4 case with a real plan file, byte-identity + no-IN-PROGRESS assertions, and dual positive control", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 3, "description": "Leave existing plan-target cases untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Fixture status setup via hand-rolled jq '...' > tmp && mv tmp state.json (mirroring test-update-task-status.sh's Case 9/10 pattern)",
+      "result": "failed",
+      "reason": "lint-state-writer-boundary.sh gate 12 flagged it as a hand-rolled state.json write -- test-skill-base-lifecycle.sh (unlike test-update-task-status.sh) carries no whole-file allowlist entry for this pattern. Fixed by routing the fixture's status write through the fixture's own copied state-write.sh instead."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

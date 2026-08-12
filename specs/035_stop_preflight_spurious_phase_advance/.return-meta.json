@@ -1,8 +1,44 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "task_number": 35,
-  "session_id": "sess_1786517897_9e95c0",
-  "dispatch_seq": 3
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/035_stop_preflight_spurious_phase_advance/summaries/01_delete-preflight-phase-autoadvance-summary.md",
+      "summary": "Deleted update_plan_file()'s preflight per-phase auto-advance, added non-vacuous positive-controlled regression coverage in two suites, retired the stale co-maintenance comment, and fixed a third suite's structural assertion discovered during the final blast-radius gate sweep."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Deleted the preflight phase auto-advance convenience in update-task-status.sh that could mark an undispatched plan phase [IN PROGRESS], added positive-controlled regression coverage in test-update-task-status.sh and test-skill-base-lifecycle.sh, retired the stale co-maintenance comment in skill-orchestrate-hard/SKILL.md, and fixed a third suite (test-resume-scan-nonconformance.sh) whose structural assertion was pinned to the deleted code."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When deleting an internal implementation detail (a code block, a guard clause, a helper's inner branch), grep the whole repo for structural test assertions that verify the deleted detail's SHAPE, not just its BEHAVIOR (e.g. `grep -q 'specific_guard_call \"$var\"' target_file.sh`). Such tests are invisible to a plan's stated 'Files to modify' list because they were authored by a prior, unrelated task and never referenced the deletion target by name -- they surface only when the full test suite runner (not just the plan's named suites) is actually executed after the deletion. The fix is to update the assertion to check for ABSENCE of the deleted shape (proving a full, clean deletion) rather than reverting the deletion or leaving the suite red. Discovered via a full `verify-deploy.sh` / `run-all.sh` sweep after a source-store deletion in update-task-status.sh -- a structural test in test-resume-scan-nonconformance.sh asserted presence of a `has_nonconforming_phase_headings \"$plan_file\"` guard that was intentionally deleted as part of the same fix.",
+      "category": "PATTERN",
+      "source_artifact": "specs/035_stop_preflight_spurious_phase_advance/summaries/01_delete-preflight-phase-autoadvance-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-regression", "structural-assertion", "deletion-blast-radius", "verify-deploy", "run-all"]
+    },
+    {
+      "content": "In this agent system, a fixture-repo test suite that mutates a copied specs/state.json fixture must route the write through the fixture's own copied state-write.sh, not a hand-rolled `jq '<filter>' fixture/specs/state.json > tmp && mv tmp fixture/specs/state.json` sequence -- the latter trips scripts/lint/lint-state-writer-boundary.sh (a verify-deploy.sh gate) unless the calling test file has an explicit whole-file entry in that lint's EXCLUDED_FILES allowlist. state-write.sh resolves its own PROJECT_ROOT via a BASH_SOURCE-relative walk (common_repo_root), not cwd, so invoking the copy at `$FIXTURE_ROOT/.claude/scripts/state-write.sh '<jq-filter>' --session-id <id>` correctly targets the fixture's own specs/state.json with no extra path argument needed -- it 'just works' when copied into an isolated mktemp fixture.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/035_stop_preflight_spurious_phase_advance/summaries/01_delete-preflight-phase-autoadvance-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["state-write.sh", "fixture-repo", "lint-state-writer-boundary", "test-fixture-mutation", "verify-deploy"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786517897_9e95c0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

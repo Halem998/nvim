@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Primary regression case in test-update-task-status.sh",
+  "started_at": "2026-08-12T00:45:00Z",
+  "last_updated": "2026-08-12T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read existing case list and --phase-check fixture shape", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Append Case 10: implement preflight leaves phase headings byte-identical, with positive control", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-update-task-status.sh"]},
+    {"id": 3, "description": "Sanity-check the guard's teeth against the pre-fix (buggy) script in an isolated scratch fixture", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Initial positive-control regex '^\\*\\*Status\\*\\*: \\[IMPLEMENTING\\]' (missing the leading '- ' prefix update-plan-status.sh actually writes)",
+      "result": "failed",
+      "reason": "regex did not match the real '- **Status**: [IMPLEMENTING]' line format, causing a false FAIL despite the underlying write succeeding; fixed by adding the leading '- ' to the regex"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
