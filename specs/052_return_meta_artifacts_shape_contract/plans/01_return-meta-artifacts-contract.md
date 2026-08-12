@@ -173,13 +173,13 @@ holding the exact inline template text that every agent copies and Check F compa
 
 ---
 
-### Phase 2: Add validate-return-meta.sh and the Shared Inference Library [NOT STARTED]
+### Phase 2: Add validate-return-meta.sh and the Shared Inference Library [COMPLETED]
 
 **Goal**: Ship the missing sibling validator, with the path-to-type inference factored into a
 sourced anchor that Phase 5 reuses rather than re-deriving.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/return-meta-artifacts-lib.sh` exporting:
+- [x] Create `agent-system/extensions/core/scripts/lib/return-meta-artifacts-lib.sh` exporting:
   - `infer_artifact_type <path>` implementing the Phase 1 mapping, returning empty for an
     unrecognized segment (never guessing).
   - `normalize_artifacts_array <json>` promoting each bare-string element to
@@ -187,7 +187,9 @@ sourced anchor that Phase 5 reuses rather than re-deriving.
     emits on stdout, reports on stderr whether any element was promoted.
   - Follow the house conventions of `phase-heading-patterns.sh` and `task-reference-patterns.sh`:
     source-able from either the deployed or source-store copy, no side effects on source.
-- [ ] Create `agent-system/extensions/core/scripts/validate-return-meta.sh`, modeled on
+  *(completed: summary placeholder uses a non-empty "(auto-repaired...)" string rather than "" so
+  --fix's own output independently re-validates as passing)*
+- [x] Create `agent-system/extensions/core/scripts/validate-return-meta.sh`, modeled on
       `validate-handoff.sh` (same `--help` block shape, same colored output, same exit-code
       contract: `0` valid, `1` invalid, `3` file not found). Validation rules:
   - JSON parses.
@@ -202,17 +204,18 @@ sourced anchor that Phase 5 reuses rather than re-deriving.
     non-empty for `researched`, `planned`, and `implemented` (mirroring `validate-handoff.sh`).
   - `metadata.session_id`, `metadata.agent_type`, `metadata.delegation_depth`, and
     `metadata.delegation_path` are present.
-- [ ] Implement `--fix`: opt-in only. Sources the lib, promotes bare strings, writes atomically
+  *(completed)*
+- [x] Implement `--fix`: opt-in only. Sources the lib, promotes bare strings, writes atomically
       (temp file plus rename), prints a per-element diff of what it changed, and refuses on
-      unparseable JSON. Never invoked implicitly by any other script in this plan.
-- [ ] Add `validate-return-meta.sh` to the utility-script inventory in the core merge-source that
+      unparseable JSON. Never invoked implicitly by any other script in this plan. *(completed)*
+- [x] Add `validate-return-meta.sh` to the utility-script inventory in the core merge-source that
       generates CLAUDE.md's `### Utility Scripts` list, describing it as the `.return-meta.json`
-      sibling of `validate-handoff.sh`.
-- [ ] Add `agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh` following the
+      sibling of `validate-handoff.sh`. *(completed)*
+- [x] Add `agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh` following the
       conventions of the neighbouring tests, covering at minimum: a well-formed file (exit 0), a
       bare-string array (exit 1), a missing file (exit 3), an object missing `summary` (exit 1), a
       non-resolving path (exit 1), and a `--fix` round-trip that turns a failing file into a
-      passing one.
+      passing one. *(completed: 14 cases total)*
 
 **Timing**: 2 hours
 
