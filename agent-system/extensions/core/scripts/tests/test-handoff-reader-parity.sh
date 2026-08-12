@@ -309,6 +309,43 @@ else
   fi
 fi
 
+# ── dispatch_seq Stage 5 gate parity (Defect A) ─────────────────────────────────────────────────
+# Extracts the `dispatch-seq-gate:begin`/`:end` sentinel region from both engines and asserts
+# byte-equality after normalizing the two known-allowed differences: the notice prefix
+# (`[orchestrate]` vs `[hard-orchestrate]`) and each engine's own self-attribution strings
+# (`skill-orchestrate/SKILL.md` vs `skill-orchestrate-hard/SKILL.md`). This is the mechanical
+# backstop for the "one-sided fix of the Stage 5 verbatim twin" recurring defect class named in
+# this file pair's own Risks & Mitigations: a future edit landing in only one engine fails this
+# assertion instead of silently diverging.
+extract_sentinel_region() {
+  local file="$1"
+  awk '/dispatch-seq-gate:begin/{flag=1} flag{print} /dispatch-seq-gate:end/{if(flag){exit}}' "$file"
+}
+
+base_gate="$(extract_sentinel_region "$BASE_SKILL")"
+hard_gate="$(extract_sentinel_region "$HARD_SKILL")"
+
+if [[ -z "$base_gate" ]]; then
+  fail "dispatch_seq gate: could not extract dispatch-seq-gate:begin/:end region from $BASE_SKILL"
+elif [[ -z "$hard_gate" ]]; then
+  fail "dispatch_seq gate: could not extract dispatch-seq-gate:begin/:end region from $HARD_SKILL"
+else
+  # Normalize hard-mode-only strings down to the base-mode spelling before comparing.
+  normalized_hard="$(sed -e 's/hard-orchestrate/orchestrate/g' -e 's/skill-orchestrate-hard/skill-orchestrate/g' <<< "$hard_gate")"
+  # The hard engine also carries exactly one extra cross-reference comment line, tagged with the
+  # HARD-MODE-TWIN-CROSS-REFERENCE marker, with no counterpart line in the base file (matching the
+  # pre-existing append_detected_defect cross-reference convention, which also lives only in the
+  # hard file) -- strip that single tagged line before comparing so this expected, allowlisted
+  # asymmetry does not register as drift.
+  normalized_hard_no_twin="$(grep -v 'HARD-MODE-TWIN-CROSS-REFERENCE' <<< "$normalized_hard")"
+  if [[ "$base_gate" == "$normalized_hard_no_twin" ]]; then
+    pass "dispatch_seq gate: base and hard Stage 5 gate blocks are byte-identical apart from the notice prefix, self-attribution strings, and the hard-only cross-reference comment"
+  else
+    fail "dispatch_seq gate: base and hard Stage 5 gate blocks diverge beyond the allowed prefix/attribution/cross-reference differences"
+    diff <(echo "$base_gate") <(echo "$normalized_hard_no_twin") || true
+  fi
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────────────────────────────
 info "Base engine resolved to:  $BASE_SKILL"
 info "Hard engine resolved to:  $HARD_SKILL"

@@ -656,6 +656,7 @@ if [ -f "$handoff_file" ]; then
   fi
 fi
 
+# --- dispatch-seq-gate:begin ---
 # ── dispatch_seq identity gate (Defect A) ──────────────────────────────────────
 # The mtime check above is RETAINED as a second line of defense against the git-restoration
 # hazard, but it is structurally insufficient against a still-live predecessor: a woken
@@ -688,6 +689,7 @@ if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
     echo "[orchestrate] dispatch_seq match ($handoff_dispatch_seq) — handoff confirmed as this dispatch's own report." >&2
   fi
 fi
+# --- dispatch-seq-gate:end ---
 
 # ── Stray-handoff sweep ───────────────────────────────────────────────────────
 # Mechanism-agnostic backstop. The validate-handoff-location.sh PostToolUse hook catches

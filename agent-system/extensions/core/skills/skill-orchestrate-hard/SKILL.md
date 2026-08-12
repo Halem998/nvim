@@ -1066,11 +1066,9 @@ if [ -f "$handoff_file" ]; then
   fi
 fi
 
+# --- dispatch-seq-gate:begin ---
+# HARD-MODE-TWIN-CROSS-REFERENCE: byte-identical to skill-orchestrate/SKILL.md's Stage 5 block apart from the notice prefix and self-attribution strings; see test-handoff-reader-parity.sh's mechanical assertion.
 # ── dispatch_seq identity gate (Defect A) ──────────────────────────────────────
-# HARD-MODE TWIN of the equivalent block in `skill-orchestrate/SKILL.md`'s Stage 5. The two MUST
-# stay byte-identical apart from the notice prefix (`[hard-orchestrate]` here, `[orchestrate]`
-# there) and the --detecting-site / --attributed-path self-attribution strings — this file pair
-# is where a one-sided fix is a known recurring defect class (see Phase 7's parity assertion).
 # The mtime check above is RETAINED as a second line of defense against the git-restoration
 # hazard, but it is structurally insufficient against a still-live predecessor: a woken
 # predecessor's late write always carries a NEWER mtime than this dispatch's own window, so it
@@ -1102,6 +1100,7 @@ if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
     echo "[hard-orchestrate] dispatch_seq match ($handoff_dispatch_seq) — handoff confirmed as this dispatch's own report." >&2
   fi
 fi
+# --- dispatch-seq-gate:end ---
 
 # ── Stray-handoff sweep ───────────────────────────────────────────────────────
 # Mechanism-agnostic backstop. The validate-handoff-location.sh PostToolUse hook catches

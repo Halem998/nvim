@@ -431,13 +431,13 @@ not a writer, and is deliberately excluded.
 
 ---
 
-### Phase 7: Defect A regression test [NOT STARTED]
+### Phase 7: Defect A regression test [COMPLETED]
 
 **Goal**: Acceptance criterion 1 — a test that reproduces the observed timing (late write with
 mtime INSIDE the successor's dispatch window) and asserts rejection.
 
 **Tasks**:
-- [ ] Create `scripts/tests/test-handoff-dispatch-identity.sh` following the conventions of the
+- [x] Create `scripts/tests/test-handoff-dispatch-identity.sh` following the conventions of the
       sibling suites in that directory (same harness shape, same pass/fail reporting, same exit
       codes). Cases:
       1. Handoff whose `dispatch_seq` matches the current cycle's minted value and whose mtime is
@@ -448,11 +448,15 @@ mtime INSIDE the successor's dispatch window) and asserts rejection.
       3. Handoff with an old mtime (git-restoration hazard): still REJECTED by the retained mtime
          check.
       4. Handoff with no `dispatch_seq` at all: WARN, not rejected.
-- [ ] Assert the gate's behavior for BOTH engines — the test must extract and exercise the gate
+      *(completed: all 4 cases run against both engines' extracted regions, 22 assertions total)*
+- [x] Assert the gate's behavior for BOTH engines — the test must extract and exercise the gate
       logic from each SKILL.md, or assert their byte-equality, so a future one-sided edit fails
-      the suite.
-- [ ] Extend `scripts/tests/test-handoff-reader-parity.sh` with an assertion that the two Stage 5
-      gate blocks remain parity-equal on the `dispatch_seq` comparison.
+      the suite. *(completed: does both -- executes the gate logic from each engine's extraction
+      AND test-handoff-reader-parity.sh asserts byte-equality)*
+- [x] Extend `scripts/tests/test-handoff-reader-parity.sh` with an assertion that the two Stage 5
+      gate blocks remain parity-equal on the `dispatch_seq` comparison. *(completed: added
+      `dispatch-seq-gate:begin`/`:end` sentinel markers to both SKILL.md files to make the
+      region mechanically extractable)*
 
 **Timing**: 1.5 hours
 
