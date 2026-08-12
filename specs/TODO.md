@@ -11,7 +11,7 @@ next_project_number: 53
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,45,46,48,51,52 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,45,46,48,51 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
 | 2 | 9,13,29,42,49,50 | 17,18,22,41,48 | agent-system, context-loading |
 | 3 | 30,44 | 29,49 | agent-system, context-loading |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -60,10 +60,6 @@ next_project_number: 53
 49 [NOT STARTED] — Cut the measured context cost of the highest-traffic command path
   └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/ (see above)
 
-### Agent Contracts
-
-52 [RESEARCHED] — The .return-meta.json `artifacts` field is normatively an array o
-
 ### Email
 
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
@@ -71,11 +67,13 @@ next_project_number: 53
 ## Tasks
 
 ### 52. Return meta artifacts shape contract
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-contracts
 - **Dependencies**: None
 - **Research**: [052_return_meta_artifacts_shape_contract/reports/01_return-meta-artifacts-shape.md]
+- **Plan**: [052_return_meta_artifacts_shape_contract/plans/01_return-meta-artifacts-contract.md]
+- **Summary**: [052_return_meta_artifacts_shape_contract/summaries/01_return-meta-artifacts-contract-summary.md]
 
 **Description**: The .return-meta.json `artifacts` field is normatively an array of objects ({type, path, summary}), but nothing enforces that shape and roughly a quarter of dispatchable agents never show it inline. A python-implementation-agent dispatch wrote a bare-string array instead; the consumer could not resolve a path from it, so artifact linking silently produced nothing. The work was complete and correct -- only the machine-readable pointer to it was lost. Detected live during an autonomous /orchestrate run in a consumer repository, recorded as system defect evt_1786510331206_WBl5l1.
 

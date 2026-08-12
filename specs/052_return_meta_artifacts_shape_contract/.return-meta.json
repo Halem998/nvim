@@ -53,29 +53,64 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/052_return_meta_artifacts_shape_contract/summaries/01_return-meta-artifacts-contract-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["lint-agent-contracts", "rel_path", "path-basis-mismatch", "bash", "exclusion-list"]
+      "suggested_keywords": [
+        "lint-agent-contracts",
+        "rel_path",
+        "path-basis-mismatch",
+        "bash",
+        "exclusion-list"
+      ]
     },
     {
       "content": "When a plan phase Scope Hypothesis asserts that a sibling file/engine 'already computes signal X' based on a grep hit elsewhere in that file, treat the grep hit as inconclusive until the specific branch in question is read in full. In this task, orchestrate-recover-outcome.sh WAS called elsewhere in skill-orchestrate-hard/SKILL.md (the recovered-path branch), which superficially looked like coverage for the handoff-present branch too -- but reading the handoff-present branch itself showed it never called that script at all. The plan's own Scope Hypothesis text had already named this exact risk ('the presence of the call elsewhere in the file does not establish that this specific branch reaches it'), and it fired in practice.",
       "category": "INSIGHT",
       "source_artifact": "specs/052_return_meta_artifacts_shape_contract/summaries/01_return-meta-artifacts-contract-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["scope-hypothesis", "grep-is-not-proof", "read-the-branch", "orchestrate", "verification-discipline"]
+      "suggested_keywords": [
+        "scope-hypothesis",
+        "grep-is-not-proof",
+        "read-the-branch",
+        "orchestrate",
+        "verification-discipline"
+      ]
     },
     {
       "content": "check-extension-docs.sh / verify-deploy.sh findings against source-store-only edits split into two classes that must be triaged differently: (1) genuine source-store defects independent of deploy timing -- a new script file not registered in the extension manifest.json's provides.scripts array, or a context file whose line_count in index-entries.json is now stale (fixable via generate-context-line-counts.sh --write) -- these are real bugs to fix regardless of deploy state; (2) expected 'deployed script content drift' / 'never deployed' findings for files legitimately changed in the source store but not yet deployed -- this is the correct, expected state when an implementer is not the sanctioned automated deploy-headless.sh caller (see context/patterns/regeneration-is-manual-only.md), and should be documented as pending-deploy, not chased.",
       "category": "WORKFLOW",
       "source_artifact": "specs/052_return_meta_artifacts_shape_contract/summaries/01_return-meta-artifacts-contract-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "verify-deploy", "manifest-registration", "deploy-drift", "source-store-boundary"]
+      "suggested_keywords": [
+        "check-extension-docs",
+        "verify-deploy",
+        "manifest-registration",
+        "deploy-drift",
+        "source-store-boundary"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786548103_b23c8a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 2,
+    "final_state": "completed",
+    "detected_defects": [
+      {
+        "task": 52,
+        "defect_class": "HANDOFF_STALE_OR_ABSENT",
+        "attributed_source_path": "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "detecting_site": "skill-orchestrate/SKILL.md:stage-5-dispatch-seq-mismatch",
+        "cycle": 1,
+        "detail": "handoff dispatch_seq=1 does not match this cycle's minted dispatch_seq=2 (base-mode implement wrote no handoff; outcome recovered from .return-meta.json)",
+        "record_result": "evt_1786550950625_o2KoSv"
+      }
+    ]
   }
 }

@@ -5,7 +5,7 @@
     {
       "project_number": 52,
       "project_name": "return_meta_artifacts_shape_contract",
-      "status": "researched",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-contracts",
       "priority": "high",
@@ -27,12 +27,24 @@
           "type": "report",
           "path": "specs/052_return_meta_artifacts_shape_contract/reports/01_return-meta-artifacts-shape.md",
           "summary": "Swept every dispatchable agent for an inline artifacts template, confirmed no return-meta validator exists, and located the handoff-present detection hole."
+        },
+        {
+          "path": "specs/052_return_meta_artifacts_shape_contract/plans/01_return-meta-artifacts-contract.md",
+          "type": "plan",
+          "summary": "Seven-phase plan closing the .return-meta.json artifacts shape gap"
+        },
+        {
+          "path": "specs/052_return_meta_artifacts_shape_contract/summaries/01_return-meta-artifacts-contract-summary.md",
+          "type": "summary",
+          "summary": "Seven-phase implementation closing the .return-meta.json artifacts shape gap: canonical fragment, validate-return-meta.sh, agent-template backfill across 23 dispatchable agents, chokepoint normalization, handoff-present detection-hole closure on both orchestrator engines, and a new deploy-time lint Check F."
         }
       ],
       "blockers": null,
       "created": "2026-08-11T23:20:00Z",
-      "last_updated": "2026-08-11T23:20:00Z",
-      "next_artifact_number": 2
+      "last_updated": "2026-08-12T16:09:19Z",
+      "next_artifact_number": 2,
+      "session_id": "sess_1786548103_b23c8a",
+      "completion_summary": "Closed the .return-meta.json artifacts-array shape gap across all 7 planned phases: canonical contract fragment, validate-return-meta.sh with --fix, inline object templates backfilled across every dispatchable agent that writes .return-meta.json (3 recorded exclusions), read-side chokepoint normalization with a loud recorded notice, handoff-present ARTIFACTS_SHAPE_MISMATCH detection-hole closure on both orchestrator engines, and a new lint-agent-contracts.sh Check F wired through the existing verify-deploy.sh gate 6."
     },
     {
       "project_number": 46,
