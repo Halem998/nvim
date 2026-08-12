@@ -1,0 +1,23 @@
+{
+  "phase": 3,
+  "phase_name": "Error Handling Transcripts in SKILL.md",
+  "started_at": "2026-08-12T22:00:00Z",
+  "last_updated": "2026-08-12T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Version Mismatch transcript", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 2, "description": "Add No Declared Version Found transcript (informational)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 3, "description": "Add Version Check Skipped by Flag transcript", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Version Mismatch transcript's Error: line should inline a single declared version per the report's example wording",
+      "type": "altered",
+      "reason": "DR-3 requires checking and listing every discovered manifest, not prioritizing one; an inline single-value Error line does not generalize to multiple manifests, so the declared version and manifest path are named on the following 'Declared in:' lines instead. All three required facts (computed tag, declared version, manifest path) remain present.",
+      "annotation": "*(deviation: altered — Error line omits inline single declared-version value; facts moved to 'Declared in:' block for DR-3 multi-manifest support)*"
+    }
+  ]
+}

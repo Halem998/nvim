@@ -509,6 +509,50 @@ v0.2.0
 Resolution: Use a different increment type or check tag history.
 ```
 
+### Version Mismatch
+
+```
+=== Validating Version Consistency ===
+
+Error: Declared package version does not match computed tag (v1.3.1).
+
+Declared in:
+  code/pyproject.toml (version = "1.3.0")
+
+Resolution: Update the mismatched manifest(s) to 1.3.1, commit, then re-run /tag.
+Or pass --skip-version-check to proceed anyway (not recommended).
+```
+
+### No Declared Version Found
+
+This is an **informational** outcome, not a failure. `/tag` proceeds normally after printing it,
+in every invocation mode including `--dry-run`:
+
+```
+=== Validating Version Consistency ===
+
+No declared package version found (checked pyproject.toml, setup.cfg, setup.py,
+package.json, Cargo.toml near repo root). Skipping version-consistency check.
+```
+
+### Version Check Skipped by Flag
+
+`--skip-version-check` suppresses the *block*, not the *disclosure*: the mismatch is still
+printed in full before the override warning, so the transcript records exactly what was
+overridden.
+
+```
+=== Validating Version Consistency ===
+
+Error: Declared package version does not match computed tag (v1.3.1).
+
+Declared in:
+  code/pyproject.toml (version = "1.3.0")
+
+WARNING: --skip-version-check is set. Proceeding despite the mismatch above.
+Computed tag: v1.3.1. The declared version(s) listed above diverge from it.
+```
+
 ---
 
 ## Agent Restrictions

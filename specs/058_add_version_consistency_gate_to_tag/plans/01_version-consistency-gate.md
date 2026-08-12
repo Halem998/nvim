@@ -342,31 +342,38 @@ position, and by confirming `git status --short` shows exactly one modified path
 
 ---
 
-### Phase 3: Error Handling Transcripts in SKILL.md [NOT STARTED]
+### Phase 3: Error Handling Transcripts in SKILL.md [COMPLETED]
 
 **Goal**: Document the gate's three new user-visible outcomes in the file's `## Error Handling`
 section, in the same shape as the three transcripts already there — so the failure message a user
 will actually see is specified, not left to improvisation at runtime.
 
 **Tasks**:
-- [ ] Add a `### Version Mismatch` transcript after the existing `### Tag Already Exists`
+- [x] Add a `### Version Mismatch` transcript after the existing `### Tag Already Exists`
       transcript, following the established `=== Section ===` / `Error: ...` / blank /
       `Resolution: ...` shape. It must name (a) the computed tag version, (b) the declared version,
       (c) the manifest file path. Use the report's recommended wording as the base:
       `Error: Declared package version (1.3.0) does not match computed tag (v1.3.1).` followed by
       `Declared in: code/pyproject.toml (version = "1.3.0")` and a `Resolution:` line instructing
       the user to update that file, commit, and re-run.
-- [ ] Add a `### No Declared Version Found` transcript showing the skip notice. This is not an
+      *(deviation: altered — the "Error:" line omits the inline single declared-version value the
+      report's example uses, printing "Error: Declared package version does not match computed
+      tag ($new_version)." instead, because DR-3 requires checking and listing every discovered
+      manifest, not just one; the declared version(s) and manifest path(s) are named immediately
+      below under "Declared in:" instead of inline on the Error line. All three required facts —
+      computed tag, declared version, manifest path — are still present in the transcript.)*
+- [x] Add a `### No Declared Version Found` transcript showing the skip notice. This is not an
       error, so mark it explicitly as an informational outcome and place it so a reader does not
-      mistake it for a failure. It must enumerate the filenames that were checked.
-- [ ] Add a `### Version Check Skipped by Flag` transcript showing the `--skip-version-check`
+      mistake it for a failure. It must enumerate the filenames that were checked. *(completed)*
+- [x] Add a `### Version Check Skipped by Flag` transcript showing the `--skip-version-check`
       override warning, including both divergent versions (the flag suppresses the *block*, not the
-      *disclosure*).
-- [ ] Use a subdirectory manifest path (`code/pyproject.toml`) in the mismatch example rather than a
+      *disclosure*). *(completed)*
+- [x] Use a subdirectory manifest path (`code/pyproject.toml`) in the mismatch example rather than a
       root path, so the documentation itself carries the "manifests are not always at the root"
-      lesson.
-- [ ] Use no task numbers anywhere in these transcripts — this file is a deliverable outside
+      lesson. *(completed)*
+- [x] Use no task numbers anywhere in these transcripts — this file is a deliverable outside
       `specs/**`, so task-number references are prohibited. Cite behavior, not provenance.
+      *(completed: grep -nEi 'task [0-9]|tasks [0-9]' returns nothing)*
 
 **Timing**: 0.5 hours
 
