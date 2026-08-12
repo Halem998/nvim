@@ -344,29 +344,29 @@ re-litigate it):
 
 ---
 
-### Phase 5: Tie STOP-and-Report Into the Agent Files [NOT STARTED]
+### Phase 5: Tie STOP-and-Report Into the Agent Files [COMPLETED]
 
 **Goal**: Make the STOP-and-report duty for observed foreign work an explicit step in the agent
 files that operationalize the territory contract — the targeted correction research confirmed, plus
 the base-agent half the Phase 4 decision commits to.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/agents/general-implementation-hard-agent.md`, extend Stage
+- [x] In `agent-system/extensions/core/agents/general-implementation-hard-agent.md`, extend Stage
       3.6 ("Territory Check") with a fifth numbered step covering the STOP-and-report duty: if you
       observe work you did not do — a foreign commit, a foreign uncommitted modification, or a
       running build you did not start — STOP and report it in the handoff rather than proceeding or
       dismissing it as noise. Point at `context/contracts/territory.md` (already referenced by step
-      1) and add a one-line pointer to `context/patterns/dispatch-report-not-termination.md`.
-- [ ] Leave Stage 3.6's existing four steps and its `If territory parameters were provided in
-      delegation context` gate unchanged. This is an added step, not a rewrite.
-- [ ] In `agent-system/extensions/core/agents/general-implementation-agent.md`, add the same
+      1) and add a one-line pointer to `context/patterns/dispatch-report-not-termination.md`. *(completed)*
+- [x] Leave Stage 3.6's existing four steps and its `If territory parameters were provided in
+      delegation context` gate unchanged. This is an added step, not a rewrite. *(completed: gate byte-identical, verified via git diff)*
+- [x] In `agent-system/extensions/core/agents/general-implementation-agent.md`, add the same
       observation duty as a short, self-contained obligation, worded so it does NOT depend on a
       `territory` delegation-context parameter (base mode sends none, per the Phase 4 decision).
       Keep it to one short paragraph with a one-line pointer to
       `context/patterns/dispatch-report-not-termination.md`. Do not import the territory contract's
-      ownership machinery into the base agent.
-- [ ] Verify neither addition restates the "report != termination" model. Each is an operational
-      duty plus a pointer.
+      ownership machinery into the base agent. *(completed: new Stage 3.6 Observation Duty section)*
+- [x] Verify neither addition restates the "report != termination" model. Each is an operational
+      duty plus a pointer. *(completed)*
 
 **Timing**: 30 minutes
 

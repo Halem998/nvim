@@ -109,6 +109,14 @@ If resuming from a previous handoff, read the existing progress file and use its
 
 Reference: `@.claude/context/formats/progress-file.md` for full schema.
 
+### Stage 3.6: Observation Duty
+
+This obligation applies regardless of whether any `territory` parameter is present in delegation
+context — base mode sends none. If you observe work you did not do — a foreign commit, a foreign
+uncommitted modification, or a running build you did not start — STOP and report it in your
+handoff rather than proceeding or dismissing it as noise. See
+`context/patterns/dispatch-report-not-termination.md`.
+
 ### Stage 4: Execute File Operations Loop
 
 For each phase starting from resume point:

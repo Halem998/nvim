@@ -148,6 +148,10 @@ If `territory` parameters were provided in delegation context:
 2. Verify the target phase's files are in `territory.owned_files`
 3. If a needed file is NOT in territory, note it in the handoff blockers (do not unilaterally expand)
 4. All reads from files outside territory use `territory.read_only_files` list
+5. If you observe work you did not do — a foreign commit, a foreign uncommitted modification, or a
+   running build you did not start — STOP and report it in the handoff rather than proceeding or
+   dismissing it as noise. See `context/contracts/territory.md` (already read at step 1) and
+   `context/patterns/dispatch-report-not-termination.md`.
 
 ### Stage 4: Execute File Operations Loop
 
