@@ -202,6 +202,22 @@ Write to `specs/{NNN}_{SLUG}/.spawn-return.json`:
 
 Update `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific metadata fields: `proposed_task_count`. Set `next_steps` to `"Skill postflight will create tasks from .spawn-return.json"`.
 
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
+`summary` keys each) — **never an array of bare path strings**, per
+`@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section. A bare-string
+array silently breaks the orchestrator's `.artifacts[0].path` read. Copy this exact shape (source:
+`@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+"artifacts": [
+  {
+    "type": "report",
+    "path": "specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md",
+    "summary": "One-line description of the blocker analysis and proposed task count."
+  }
+]
+```
+
 ### Stage 7: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing: root cause, proposed task count with dependency summary, report path, return file status.

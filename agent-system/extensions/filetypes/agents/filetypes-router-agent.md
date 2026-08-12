@@ -153,7 +153,23 @@ Parameters:
 
 Pass through the sub-agent's return verbatim. The router does not modify successful results.
 
-**On success**: Return sub-agent JSON as-is.
+**On success**: Return sub-agent JSON as-is. The router itself never constructs a populated
+`artifacts` array on this path — the delegated sub-agent already wrote its own
+`.return-meta.json` with the object shape below (source:
+`@.claude/context/contracts/return-meta-artifacts-template.md`); the router's own writes (below)
+are the `status: "failed"` cases, where `artifacts: []` is correct and required — never a bare
+path string, per `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)`
+section:
+
+```json
+"artifacts": [
+  {
+    "type": "implementation",
+    "path": "{output_path}",
+    "summary": "One-line description of the converted output file."
+  }
+]
+```
 
 **On delegation failure**: Return router-level error:
 ```json

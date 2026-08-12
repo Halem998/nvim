@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Add validate-return-meta.sh and the Shared Inference Library",
+  "started_at": "2026-08-12T00:00:00Z",
+  "last_updated": "2026-08-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create return-meta-artifacts-lib.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/return-meta-artifacts-lib.sh"]},
+    {"id": 2, "description": "Create validate-return-meta.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-return-meta.sh"]},
+    {"id": 3, "description": "Add test-validate-return-meta.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh"]},
+    {"id": 4, "description": "Add utility-script inventory entry", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

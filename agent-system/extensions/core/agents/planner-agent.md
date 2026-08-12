@@ -337,7 +337,18 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `planned`. Include `
 **`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
 `summary` keys each) — **never an array of bare path strings**, per
 `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section. A bare-string
-array silently breaks the orchestrator's `.artifacts[0].path` read.
+array silently breaks the orchestrator's `.artifacts[0].path` read. Copy this exact shape (source:
+`@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+"artifacts": [
+  {
+    "type": "plan",
+    "path": "specs/{NNN}_{SLUG}/plans/{NN}_{short-slug}.md",
+    "summary": "One-line description of the plan's scope and phase count."
+  }
+]
+```
 
 ### Stage 7: Return Brief Text Summary
 

@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Record the Contract Posture and Create the Canonical Template Fragment",
+  "started_at": "2026-08-12T00:00:00Z",
+  "last_updated": "2026-08-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create return-meta-artifacts-template.md canonical fragment", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"]},
+    {"id": 2, "description": "Update return-metadata-file.md artifacts section", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

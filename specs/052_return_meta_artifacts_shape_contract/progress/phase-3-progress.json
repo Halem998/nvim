@@ -1,0 +1,30 @@
+{
+  "phase": 3,
+  "phase_name": "Backfill Templates -- Core Extension and Shape-Unconfirmed Agents",
+  "started_at": "2026-08-12T00:00:00Z",
+  "last_updated": "2026-08-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-enumerate and backfill 8 confirmed in-scope agents (atomic batch)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/agents/general-research-hard-agent.md",
+      "agent-system/extensions/core/agents/planner-agent.md",
+      "agent-system/extensions/core/agents/planner-hard-agent.md",
+      "agent-system/extensions/core/agents/spawn-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-vet-agent.md",
+      "agent-system/extensions/filetypes/agents/filetypes-router-agent.md",
+      "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+      "agent-system/extensions/lean/agents/lean-research-agent.md"
+    ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Add template to core/agents/code-reviewer-agent.md and core/agents/synthesis-agent.md",
+      "type": "skipped",
+      "reason": "Neither agent writes .return-meta.json at all (confirmed by reading both files in full) -- code-reviewer-agent.md returns a console-only bullet summary, synthesis-agent.md's Output Contract states the lead uses only its compact console summary for postflight metadata. Per Phase 1's classification rule, both are deliberate exclusions, mirroring the literature-agent precedent in Phase 4.",
+      "annotation": "recorded in Phase 3 task checklist as a deliberate exclusion, not silently dropped"
+    }
+  ],
+  "handoff_count": 0
+}

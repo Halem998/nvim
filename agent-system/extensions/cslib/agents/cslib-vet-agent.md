@@ -430,6 +430,22 @@ cat > "$metadata_file_path" << METAEOF
 METAEOF
 ```
 
+**`artifacts` shape, if populated**: this agent's own final write above uses `findings_path`
+rather than `artifacts` for its primary output pointer, so `artifacts` legitimately stays `[]`
+through Stage 0 and Stage 7 alike. If a future revision of this agent ever needs to link a
+generated file (e.g. `.vet-findings.json`) via `artifacts`, it MUST use the object shape below,
+never a bare path string (source: `@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+"artifacts": [
+  {
+    "type": "implementation",
+    "path": "specs/{NNN}_{SLUG}/.vet-findings.json",
+    "summary": "One-line description of the vetting findings."
+  }
+]
+```
+
 Return a brief text summary (3-6 bullets) covering tasks vetted, files analyzed, CI result,
 and violation counts by severity. Do NOT create fix tasks — the skill handles interactive
 selection and task creation.

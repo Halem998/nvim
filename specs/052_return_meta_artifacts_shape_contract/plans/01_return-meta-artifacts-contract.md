@@ -243,13 +243,13 @@ store. Confirm at implementation time by re-running
 
 ---
 
-### Phase 3: Backfill Templates -- Core Extension and Shape-Unconfirmed Agents [NOT STARTED]
+### Phase 3: Backfill Templates -- Core Extension and Shape-Unconfirmed Agents [COMPLETED]
 
 **Goal**: Give every core-extension agent and every "has the key but only ever shows `[]`" agent
 a correct inline object template.
 
 **Tasks**:
-- [ ] Re-enumerate the target set before editing (see Scope Hypothesis). Expected targets:
+- [x] Re-enumerate the target set before editing (see Scope Hypothesis). Expected targets:
   - No `artifacts` key at all: `core/agents/code-reviewer-agent.md`,
     `core/agents/general-research-hard-agent.md`, `core/agents/planner-agent.md`,
     `core/agents/planner-hard-agent.md`, `core/agents/spawn-agent.md`,
@@ -257,16 +257,31 @@ a correct inline object template.
   - Key present but only ever as an empty array, never showing the object shape:
     `cslib/agents/cslib-vet-agent.md`, `filetypes/agents/filetypes-router-agent.md`,
     `lean/agents/lean-implementation-agent.md`, `lean/agents/lean-research-agent.md`.
-- [ ] For each, insert the Phase 1 fragment's template verbatim into the agent's terminal-metadata
+  *(completed: the live re-enumeration matched this hypothesis exactly -- 19 no-key files
+  system-wide, split 6 core + 13 remaining-extension, plus 4 shape-unconfirmed, totaling the 10
+  files this phase asserts. DEVIATION found during editing, not during enumeration: reading
+  `code-reviewer-agent.md` and `synthesis-agent.md` in full showed neither agent writes
+  `.return-meta.json` at all -- `code-reviewer-agent.md`'s `## Return Format` section returns a
+  console-only bullet summary with no file-based metadata exchange, and `synthesis-agent.md`'s
+  `## Output Contract` explicitly states "The lead does NOT read the unified report. The lead
+  uses only this compact summary for postflight metadata." Per Phase 1's classification rule
+  ("every dispatchable agent that writes `.return-meta.json`"), both are OUT of scope and are
+  recorded here as deliberate exclusions -- mirroring the `literature-agent` precedent named in
+  Phase 4 -- rather than having a template added they would never use. Actual edit target: 8
+  files, not 10.)*
+- [x] For each, insert the Phase 1 fragment's template verbatim into the agent's terminal-metadata
       section, adjacent to wherever that agent already describes writing `.return-meta.json`.
       Adapt only the illustrative `type` value and `path` to the agent's own artifact kind; the
-      key set and object shape must remain byte-identical to the fragment.
-- [ ] For the four empty-array agents, keep the existing `"artifacts": []` early-metadata example
+      key set and object shape must remain byte-identical to the fragment. *(completed for the 8
+      confirmed in-scope files)*
+- [x] For the four empty-array agents, keep the existing `"artifacts": []` early-metadata example
       intact — it is correct for `in_progress` — and add the populated object example alongside it
-      so both the empty and populated shapes are visible.
-- [ ] Where an agent already carries only the prose `.artifacts[0].path` warning (notably
+      so both the empty and populated shapes are visible. *(completed)*
+- [x] Where an agent already carries only the prose `.artifacts[0].path` warning (notably
       `planner-agent` and `planner-hard-agent`), keep the prose and add the template. Prose alone
-      is the configuration that already failed in production; it is not a substitute.
+      is the configuration that already failed in production; it is not a substitute. *(completed;
+      also applied to `general-research-hard-agent.md`, the third such agent per Phase 1's
+      Research Integration note)*
 
 **Timing**: 1.5 hours
 

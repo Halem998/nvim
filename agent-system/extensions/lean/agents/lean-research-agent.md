@@ -223,6 +223,34 @@ Include a "Tactic Survey Results" section in the research report:
    }
    ```
 
+## Write Final Metadata
+
+Write to `specs/{N}_{SLUG}/.return-meta.json` with status `researched` once the report is
+written and verified non-empty. **`artifacts` shape (required)**: `artifacts` is a **required
+array of objects** (`type`, `path`, `summary` keys each) — **never an array of bare path
+strings**, per `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)`
+section. Copy this exact shape (source:
+`@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/{N}_{SLUG}/reports/{NN}_{short-slug}.md",
+      "summary": "One-line description of the report's scope and key findings."
+    }
+  ],
+  "metadata": {
+    "session_id": "{from delegation context}",
+    "agent_type": "lean-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "lean-research-agent"]
+  }
+}
+```
+
 ## Error Handling
 
 ### MCP Tool Error Recovery

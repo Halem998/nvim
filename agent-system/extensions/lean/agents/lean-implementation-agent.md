@@ -222,7 +222,13 @@ roadmap items):
     "axiom_count": 0,
     "build_passed": true
   },
-  "artifacts": [...],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+      "summary": "One-line description of what was proved or implemented."
+    }
+  ],
   "completion_data": {
     "completion_summary": "One to three sentences describing what was proved or implemented.",
     "roadmap_items": []
