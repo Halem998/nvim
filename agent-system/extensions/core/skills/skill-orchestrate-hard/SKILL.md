@@ -324,6 +324,11 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   # hard engines cannot drift apart. `// []` is the forward-compatible read for a guard file
   # written before the field existed, matching the `// 0` idiom above.
   detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
+  # dispatch_seq_counter: orchestrator-minted per-dispatch identity (Defect A). `// 0`
+  # forward-compatible read, matching cycle_count's own idiom — a guard written before this
+  # field existed resumes at 0, never repeating a value already minted this task since the
+  # counter only ever increments (see mint_dispatch_seq() below).
+  dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' "$loop_guard_file")
   echo "[hard-orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (burnout signals so far: $burnout_signals_this_session, infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
 else
   # Fresh start: create guard atomically via init-marker. A plain
@@ -351,20 +356,39 @@ else
       "detected_defects": [],
       "started": $started,
       "last_updated": $started,
-      "plan_version": $plan_version
+      "plan_version": $plan_version,
+      "dispatch_seq_counter": 0
     }' | bash .claude/scripts/task-lock.sh init-marker "$loop_guard_file"; then
     cycle_count=0
     burnout_signals_this_session=0
     infra_failures=0
     detected_defects='[]'
+    dispatch_seq_counter=0
   else
     cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
     burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' "$loop_guard_file")
     infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
     detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
+    dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' "$loop_guard_file")
     echo "[hard-orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES (burnout signals so far: $burnout_signals_this_session, infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
   fi
 fi
+
+# mint_dispatch_seq(): increments the dispatch_seq_counter persisted in the loop guard and
+# returns the new value on stdout. Call immediately before every Agent dispatch that writes
+# .orchestrator-handoff.json, adjacent to the dispatch_start_ts capture (Defect A). Persisting
+# on every mint (not only at Stage 3b) guarantees the value survives a resume and is never
+# repeated within this task, even across separate /orchestrate invocations. See
+# context/patterns/dispatch-report-not-termination.md for why an orchestrator-minted value is
+# required rather than content the dispatched agent could echo unprompted.
+mint_dispatch_seq() {
+  dispatch_seq_counter=$((dispatch_seq_counter + 1))
+  jq --argjson seq "$dispatch_seq_counter" \
+     --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '.dispatch_seq_counter = $seq | .last_updated = $updated' \
+    "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+  echo "$dispatch_seq_counter"
+}
 
 # Initialize or read churn state (per-target churn counters)
 if [ -f "$churn_file" ] && jq empty "$churn_file" 2>/dev/null; then
@@ -494,11 +518,12 @@ skill_preflight_update "$task_number" "research" "$session_id"
 # context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch.
 dispatch_start_ts=$(date -u +%s)
 dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
 
 Agent tool:
   subagent_type: $RESEARCH_AGENT
   prompt: "Research task $task_number: $DESCRIPTION${focus_prompt:+. Focus: $focus_prompt}"
-  delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS}
+  delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq}
 ```
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -545,6 +570,11 @@ if [ "$adversarial_verified" = "false" ]; then
       # context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch.
       dispatch_start_ts=$(date -u +%s)
       dispatch_was_transport_error=false
+      # Minted for consistency (every dispatch_start_ts site mints adjacent to it) even though
+      # this dispatch never writes .orchestrator-handoff.json and so has nothing to inject
+      # dispatch_seq into below -- see the no-handoff-path rationale in the comment immediately
+      # following.
+      dispatch_seq=$(mint_dispatch_seq)
 
       # $RESEARCH_AGENT never writes .orchestrator-handoff.json, per the Stage 3.6 "Scoping
       # Decision" in general-research-agent.md / general-research-hard-agent.md and the Handoff
@@ -581,11 +611,12 @@ if [ "$adversarial_verified" = "true" ]; then
   # context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch.
   dispatch_start_ts=$(date -u +%s)
   dispatch_was_transport_error=false
+  dispatch_seq=$(mint_dispatch_seq)
 
   Agent tool:
     subagent_type: $PLANNER_AGENT
     prompt: "Create hard-mode implementation plan for task $task_number${focus_prompt:+. Focus: $focus_prompt}"
-    delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, ...}
+    delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq, ...}
 
   # After the Agent tool returns, before Stage 5: judge the tool call's OWN outcome per
   # context/patterns/infra-failure-discrimination.md and set dispatch_was_transport_error=true
@@ -671,6 +702,11 @@ if [ "$phase_scan_inconclusive" = "true" ]; then
 elif [ -n "$next_phase" ]; then
   echo "[hard-orchestrate] H1: Per-phase dispatch — phase $next_phase (heading-scan)" >&2
 
+  # Mint this phase's dispatch identity (Defect A) before building dispatch_context, so the
+  # per-phase JSON literal below can carry it inline alongside handoff_path, matching this
+  # file's other three dispatch sites.
+  dispatch_seq=$(mint_dispatch_seq)
+
   # Determine territory for this phase (single-phase dispatch, no parallel territory needed —
   # parallel wave dispatch is disabled, see "Tool Constraints (Pure Dispatcher)" above)
   dispatch_context='{
@@ -683,7 +719,8 @@ elif [ -n "$next_phase" ]; then
     "roadmap_path": "specs/ROADMAP.md",
     "phase_number": '$next_phase',
     "task_dir": "'$TASK_DIR_ABS'",
-    "handoff_path": "'$HANDOFF_PATH_ABS'"
+    "handoff_path": "'$HANDOFF_PATH_ABS'",
+    "dispatch_seq": '$dispatch_seq'
   }'
 
   # This preflight sits inside the `if [ -n "$next_phase" ]` branch ONLY — never in the
@@ -987,7 +1024,10 @@ append_detected_defect() {  # class, attributed_path, site, detail, record_resul
 # A handoff sitting at the correct path does NOT prove this dispatch wrote it. If the current
 # dispatch wrote nothing (or wrote somewhere else), the PREVIOUS cycle's file is still there,
 # and reading it reports the previous cycle's status and phases_completed as if they were this
-# one's — a silent wrong answer, worse than a detected absence.
+# one's — a silent wrong answer, worse than a detected absence. mtime alone is structurally
+# insufficient against a still-live predecessor — see
+# context/patterns/dispatch-report-not-termination.md — which is why the dispatch_seq gate
+# below exists as a second, content-based check.
 #
 # Reuse the dispatch window already captured for infra-failure discrimination: dispatch_start_ts
 # is set via `date -u +%s` immediately before every Agent tool call above. This is the same
@@ -1023,6 +1063,39 @@ if [ -f "$handoff_file" ]; then
       "skill-orchestrate-hard/SKILL.md:stage-5-stale-handoff" \
       "handoff mtime $handoff_mtime predates this dispatch window ($stale_window_start)" \
       "$record_result"
+  fi
+fi
+
+# ── dispatch_seq identity gate (Defect A) ──────────────────────────────────────
+# The mtime check above is RETAINED as a second line of defense against the git-restoration
+# hazard, but it is structurally insufficient against a still-live predecessor: a woken
+# predecessor's late write always carries a NEWER mtime than this dispatch's own window, so it
+# passes the mtime check looking exactly like an on-time report. See
+# context/patterns/dispatch-report-not-termination.md for why mtime alone cannot discriminate
+# the two. dispatch_seq is the actual discriminator: an orchestrator-minted value only this
+# dispatch knows (minted via mint_dispatch_seq() in Stage 2, immediately before the Agent call),
+# echoed back unchanged by a legitimate writer.
+if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
+  handoff_dispatch_seq=$(jq -r '.dispatch_seq // empty' "$handoff_file" 2>/dev/null)
+  if [ -z "$handoff_dispatch_seq" ]; then
+    echo "[hard-orchestrate] WARN: handoff has no dispatch_seq field — writer predates or omits the dispatch_seq contract; degrading to mtime-only discrimination (see context/patterns/dispatch-report-not-termination.md)." >&2
+  elif [ "$handoff_dispatch_seq" != "${dispatch_seq:-}" ]; then
+    handoff_stale=true
+    echo "[hard-orchestrate] ERROR: DISPATCH_SEQ MISMATCH — handoff carries dispatch_seq=$handoff_dispatch_seq, this cycle minted dispatch_seq=${dispatch_seq:-<unset>}. This handoff was NOT written by the current dispatch (a still-live predecessor's late write, or a stale copy) — treating as missing." >&2
+    record_result=$(bash .claude/scripts/system-defect-record.sh \
+      --defect-class HANDOFF_STALE_OR_ABSENT \
+      --detecting-site "skill-orchestrate-hard/SKILL.md:stage-5-dispatch-seq-mismatch" \
+      --task "$task_number" --session "$session_id" \
+      --message "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${dispatch_seq:-<unset>}" \
+      --attributed-path "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+      2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+    append_detected_defect "HANDOFF_STALE_OR_ABSENT" \
+      "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+      "skill-orchestrate-hard/SKILL.md:stage-5-dispatch-seq-mismatch" \
+      "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${dispatch_seq:-<unset>}" \
+      "$record_result"
+  else
+    echo "[hard-orchestrate] dispatch_seq match ($handoff_dispatch_seq) — handoff confirmed as this dispatch's own report." >&2
   fi
 fi
 

@@ -225,32 +225,36 @@ the idiom differs from what this plan assumes, follow the script's actual conven
 
 ---
 
-### Phase 3: Hard engine — mint, inject, and gate on `dispatch_seq` [NOT STARTED]
+### Phase 3: Hard engine — mint, inject, and gate on `dispatch_seq` [COMPLETED]
 
 **Goal**: Make `skill-orchestrate-hard` the source of truth for what counts as the current
 dispatch, and reject any handoff that does not match.
 
 **Tasks**:
-- [ ] In Stage 2, initialize a monotonic `dispatch_seq` counter (persisted in the loop guard
+- [x] In Stage 2, initialize a monotonic `dispatch_seq` counter (persisted in the loop guard
       alongside `cycle_count`, with the `// 0` forward-compatible read idiom the other counters
-      already use, so it survives a resume and never repeats a value within a task).
-- [ ] Immediately before every `Agent` tool call in Stage 4, increment the counter and capture the
+      already use, so it survives a resume and never repeats a value within a task). *(completed:
+      dispatch_seq_counter field + mint_dispatch_seq() helper)*
+- [x] Immediately before every `Agent` tool call in Stage 4, increment the counter and capture the
       value into a shell variable for this dispatch, adjacent to the existing
       `dispatch_start_ts=$(date -u +%s)` capture. Cover every Stage 4 dispatch site: the research
       handler, the plan handler, and each implement/continuation/resume handler, plus the
-      revise/blocker-escalation dispatch if one exists in this engine.
-- [ ] Add `"dispatch_seq"` to each dispatch's delegation/dispatch context, next to the existing
+      revise/blocker-escalation dispatch if one exists in this engine. *(completed: all 4
+      dispatch_start_ts sites confirmed via grep now mint dispatch_seq; the per-phase site mints
+      just before dispatch_context construction so the literal can carry it inline)*
+- [x] Add `"dispatch_seq"` to each dispatch's delegation/dispatch context, next to the existing
       `handoff_path` key, including the per-phase `dispatch_context` JSON literal in Stage 4.
-- [ ] In Stage 5, extend the staleness gate: after the existing mtime check (which is KEPT as a
+      *(completed)*
+- [x] In Stage 5, extend the staleness gate: after the existing mtime check (which is KEPT as a
       second line of defense against the git-restoration hazard), read the handoff's
       `dispatch_seq` and compare it against the value minted for THIS cycle. On mismatch, set
       `handoff_stale=true` and take the same loud-error + `system-defect-record.sh` +
       `append_detected_defect` path the mtime branch already takes, with a distinct message
       naming both values. On absent, emit a WARN naming the writer contract and do NOT reject —
-      the strict form is deliberately not adopted in this task.
-- [ ] Add a one-line pointer to `context/patterns/dispatch-report-not-termination.md` in the
+      the strict form is deliberately not adopted in this task. *(completed)*
+- [x] Add a one-line pointer to `context/patterns/dispatch-report-not-termination.md` in the
       staleness-gate comment block, explaining why mtime alone is structurally insufficient. Do
-      not restate the model.
+      not restate the model. *(completed)*
 
 **Timing**: 1.5 hours
 
