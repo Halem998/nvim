@@ -201,25 +201,45 @@ be exactly 0. Do not trust the line numbers — anchor on content.
 
 ---
 
-### Phase 2: Redeploy and establish a green baseline [NOT STARTED]
+### Phase 2: Redeploy and establish a green baseline [COMPLETED]
 
 **Goal**: the deployed `.claude/` tree carries the Phase 1 fix, and the existing suites still pass
 against it — the empirical check that deletion regressed nothing.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` from the repo root to regenerate the deployed
+- [x] Run `bash .claude/scripts/deploy-headless.sh` from the repo root to regenerate the deployed
       tree from the source store. This is an explicit, deliberate invocation tied to the edit it
-      exists to make live, not a silent side effect.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh`; resolve any drift it reports (e.g.
+      exists to make live, not a silent side effect. *(completed)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh`; resolve any drift it reports (e.g.
       `index-entries.json` line-count drift from the Phase 1 edit) and re-run until it passes.
-- [ ] Confirm the deployed copy carries the fix:
+      *(completed: first run surfaced two unrelated-looking failures — gate 8 `run-all.sh` and
+      gate 10 `validate-state.sh --deep`. Gate 8 traced to a real, in-scope regression:
+      `test-resume-scan-nonconformance.sh`'s Site D structurally asserted the presence of the
+      now-deleted `has_nonconforming_phase_headings "$plan_file"` guard inside the deleted
+      auto-advance block. Fixed by updating that suite's Site D assertion to check for the
+      guard's ABSENCE instead (confirming full deletion, not a partial edit) — see Plan
+      Deviations. Gate 10 is pre-existing and unrelated (task 52's `blockers`/`priority` fields
+      predate this session; see below). Second run: 22/23 pass, only gate 10 remains, named
+      explicitly per the next task below.)*
+- [x] Confirm the deployed copy carries the fix:
       `grep -c 'update-phase-status.sh' .claude/scripts/update-task-status.sh` returns 0.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-update-task-status.sh` — all
-      existing cases (including the `--phase-check` cases 5-7) must pass.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` — all
-      groups must pass.
-- [ ] Record both suites' pass/fail counts; a pre-existing failure unrelated to this change must
-      be named explicitly rather than silently absorbed.
+      *(completed: deployed file contains only the two pre-existing, unrelated comment mentions
+      at the `--phase-check` backstop section, lines 274/307 — the actual auto-advance call and
+      its containing block are gone; `diff .claude/scripts/update-task-status.sh
+      agent-system/extensions/core/scripts/update-task-status.sh` reports IDENTICAL)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-update-task-status.sh` — all
+      existing cases (including the `--phase-check` cases 5-7) must pass. *(completed: 19 passed,
+      0 failed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` — all
+      groups must pass. *(completed: 14 passed, 0 failed)*
+- [x] Record both suites' pass/fail counts; a pre-existing failure unrelated to this change must
+      be named explicitly rather than silently absorbed. *(completed: test-update-task-status.sh
+      19/0, test-skill-base-lifecycle.sh 14/0. Named pre-existing unrelated failure:
+      `validate-state.sh --deep` (verify-deploy.sh gate 10) reports two FAIL-level findings —
+      "Unknown entry field: blockers" and "Unknown entry field: priority" — against project_number
+      52 in the real `specs/state.json`. This predates this dispatch (specs/state.json was
+      already `M`odified in `git status` before any Phase 1 edit) and is unrelated to
+      `update-task-status.sh`'s per-phase marker logic; left unresolved as out of scope.)*
 
 **Timing**: 0.25 hours
 

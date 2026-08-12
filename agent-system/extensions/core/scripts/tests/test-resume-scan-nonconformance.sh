@@ -18,11 +18,14 @@
 # sentinel-delimited `resume-scan-conformance-gate:begin`/`:end` regions (pure, executable bash),
 # plus structural (grep-based) assertions on the posture branches that immediately follow each
 # region, which contain pseudo-syntax and cannot themselves be executed. Site D
-# (update-task-status.sh's first_phase_heading guard) is covered by `bash -n` and structural grep
-# only in this suite, not by execution -- it is a real standalone script, but its guard is nested
-# inside a larger function or two levels deep in conditional logic not worth reproducing as a
-# fixture harness for a non-fatal convenience path; see Phase 4 of the implementation plan this
-# suite verifies.
+# (update-task-status.sh) is covered by `bash -n` and structural grep only in this suite, not by
+# execution -- it is a real standalone script; see Phase 4 of the implementation plan this suite
+# originally verified. The preflight phase auto-advance convenience Site D used to guard (the
+# first_phase_heading path, and its has_nonconforming_phase_headings guard) has since been
+# deleted outright -- update_plan_file() no longer writes any per-phase marker, on any path, so
+# Site D now asserts the ABSENCE of that deleted path's guard invocation rather than its
+# presence, confirming a full deletion rather than a partial edit that left the guard behind
+# without its caller.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (library
 # or a required SKILL.md file not found, or a sentinel marker pair missing).
@@ -396,9 +399,9 @@ else
   fail "Site D (update-task-status.sh): bash -n failed: $(cat "$WORKDIR/site-d.err")"
 fi
 if grep -q 'has_nonconforming_phase_headings "\$plan_file"' "$SITE_D_FILE"; then
-  pass "Site D: first_phase_heading path guarded by has_nonconforming_phase_headings"
+  fail "Site D: the first_phase_heading auto-advance convenience (and its has_nonconforming_phase_headings guard) should have been deleted outright, but the guard invocation is still present"
 else
-  fail "Site D: first_phase_heading path does not appear to be guarded by has_nonconforming_phase_headings"
+  pass "Site D: first_phase_heading auto-advance convenience and its guard were fully deleted -- update_plan_file() writes no per-phase marker on any path"
 fi
 
 # =====================================================================
