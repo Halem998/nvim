@@ -1,10 +1,65 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
+      "summary": "Split four oversized eager rules into pre-action cores plus lazy companions, relocated CSLib /pr content, cut the literature merge-source's redundant subsection, redeployed and re-measured the eager prefix from 80,808 B to 70,160 B, and recorded a 24,000 B eager budget ceiling in context-layers.md."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Reduced the session-start eager context prefix from 80,808 B to 70,160 B (-13.2%) via a four-rule split-and-relocate pass, a CSLib /pr content relocation, and a literature merge-source cut, then recorded a numeric eager budget ceiling. Two pre-existing, out-of-territory verify-deploy.sh failures were investigated, attributed via git log to predate this task, and reported rather than absorbed (Phase 7 closed as COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+    "agent-system/extensions/core/rules/error-handling.md",
+    "agent-system/extensions/core/context/standards/error-recovery-strategies.md",
+    "agent-system/extensions/core/rules/state-management.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/rules/pr-prohibition.md",
+    "agent-system/extensions/cslib/context/project/cslib/pr-command-workflow.md",
+    "agent-system/extensions/literature/merge-sources/claudemd.md",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
+    "agent-system/extensions/core/context/architecture/context-layers.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/cslib/index-entries.json",
+    "specs/054_split_eager_rules_budget/baseline-bytes.md",
+    "specs/054_split_eager_rules_budget/plans/01_split-eager-rules-budget.md",
+    "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Eager/lazy rule-split pattern for this repo's rules/*.md files: when a rule's paths: frontmatter is absent, specs/**/*, .claude/**/*, or \"**/*\" (all of which load eagerly in a representative session), and the file has grown large, split it into a short eager core (kept in rules/) plus a lazily-loaded companion under context/standards/ (or an existing context/reference/ doc if one already serves as that rule's elaboration home -- check before creating a third file). KEEP eager, verbatim: every forbidden-operations list, write-gating prohibition, and terminal-state restriction -- these are pre-action-binding, an agent must know them before acting. MOVE to the companion: mechanism detail, per-scenario elaboration, lifecycle descriptions, and reactive recovery narrative -- useful only after something has already happened. Always run a grep reference sweep (grep -rn \"<rulename>\" agent-system/extensions/) both before and after the split, since other files may name a specific heading as \"the authoritative home\" of some rule; keep that heading in the eager core even if its elaboration moves. Every new companion file needs an index-entries.json entry (line_count from wc -l) or check-extension-docs.sh Rule S fails after the next deploy.",
+      "category": "PATTERN",
+      "source_artifact": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["eager-rules", "rule-split", "context-standards-companion", "index-entries", "keep-list-discipline"]
+    },
+    {
+      "content": "When a redeploy (deploy-headless.sh) surfaces verify-deploy.sh or check-extension-docs.sh failures that are unrelated to the current task's own edits, do not silently fix them out of territory. First confirm via git log/git show whether the offending file or field predates the task's own Phase 1 baseline commit -- if so, it is pre-existing drift, not a regression this task caused. Report it explicitly (a #### Reasoned Exclusions table with Item | Reason | Evidence columns, per plan-format.md's COMPLETED WITH EXCLUSIONS mechanism) rather than absorbing an unrelated fix into this task's commits. .claude/ is git-ignored in this repo, so drift attribution for the deployed tree cannot use git diff directly -- instead rely on verify-deploy.sh's content-hash-equality check (proves deployed == source for everything this task touched) plus the task's own per-phase commit history in agent-system/extensions/**.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy", "reasoned-exclusions", "out-of-territory-drift", "claude-gitignored", "content-hash-equality"]
+    },
+    {
+      "content": "A backgrounded verify-deploy.sh or deploy-headless.sh run can produce a transient extra failure (observed: tests/run-all.sh reporting FAIL) when a second deploy-headless.sh runs concurrently with an in-flight verify-deploy.sh -- likely file-lock or mid-write contention, not a real regression. If a verify-deploy.sh run reports an unexpected NEW failure beyond the known/expected set, re-run it cleanly (no concurrent deploy in flight) before concluding it is a real defect; a clean re-run resolved the spurious failure here with 42/42 test suites passing.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verify-deploy", "concurrent-deploy", "flaky-test", "deploy-headless"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786553686_448e27",
     "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "task_number": 54
-  }
+    "task_number": 54,
+    "phases_completed": 7,
+    "phases_total": 7
+  },
+  "errors": []
 }
