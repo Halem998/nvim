@@ -318,26 +318,29 @@ script, add it, or the case will pass vacuously.
 
 ---
 
-### Phase 4: Close the named coverage gap in test-skill-base-lifecycle.sh Group 4 [NOT STARTED]
+### Phase 4: Close the named coverage gap in test-skill-base-lifecycle.sh Group 4 [COMPLETED]
 
 **Goal**: Group 4 exercises `skill_preflight_update` with `target_status="implement"` against a
 fixture that actually contains a plan file — the gap the task description calls out by name.
 
 **Tasks**:
-- [ ] Extend that suite's `build_fixture_repo` copy loop to also copy `update-plan-status.sh` and
+- [x] Extend that suite's `build_fixture_repo` copy loop to also copy `update-plan-status.sh` and
       `update-phase-status.sh` from the deployed scripts source. **Without this, the new case
       cannot fail even with the defect present**: `update_plan_file()` returns early with
-      "update-plan-status.sh not found or not executable".
-- [ ] Add a plan file to the fixture (or create it inline in the new case), with a plan-level
-      status line and at least two conforming `[NOT STARTED]` phase headings.
-- [ ] Add a Group 4 case that calls `skill_preflight_update 1 "implement" "sess_test_<n>"` against
+      "update-plan-status.sh not found or not executable". *(completed: also added both scripts
+      to the top-of-file environment-check loop for fail-fast consistency)*
+- [x] Add a plan file to the fixture (or create it inline in the new case), with a plan-level
+      status line and at least two conforming `[NOT STARTED]` phase headings. *(completed:
+      created inline in the new case, its own isolated fixture root)*
+- [x] Add a Group 4 case that calls `skill_preflight_update 1 "implement" "sess_test_<n>"` against
       that fixture, capturing stderr to a log file per the group's existing convention.
-- [ ] Assert the phase headings are unchanged and contain no `[IN PROGRESS]`.
-- [ ] **Positive control (required)**: assert the state.json status moved to `implementing` **and**
+      *(completed)*
+- [x] Assert the phase headings are unchanged and contain no `[IN PROGRESS]`. *(completed)*
+- [x] **Positive control (required)**: assert the state.json status moved to `implementing` **and**
       the plan-level status line became `[IMPLEMENTING]`, proving the wrapper reached
-      `update_plan_file()`'s plan-file logic.
-- [ ] Leave the existing `"plan"`-target cases untouched — they cover a different transition and
-      remain valid.
+      `update_plan_file()`'s plan-file logic. *(completed)*
+- [x] Leave the existing `"plan"`-target cases untouched — they cover a different transition and
+      remain valid. *(completed: unchanged, confirmed via git diff)*
 
 **Timing**: 0.5 hours
 
@@ -355,8 +358,9 @@ control passes rather than by trusting the count.
   `build_fixture_repo`'s copy loop; add the implement-target case to Group 4
 
 **Verification**:
-- Suite exits 0, all pre-existing groups still pass, new case reported PASS
-- Positive-control assertions pass in the same run
+- Suite exits 0, all pre-existing groups still pass, new case reported PASS *(confirmed: 18
+  passed, 0 failed, up from the pre-existing 14)*
+- Positive-control assertions pass in the same run *(confirmed)*
 
 ---
 

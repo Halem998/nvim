@@ -72,10 +72,12 @@ DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 if [[ ! -d "$DEPLOY_SCRIPTS_SRC" ]]; then
   echo "ERROR: deployed scripts tree not found at $DEPLOY_SCRIPTS_SRC -- this suite needs a" >&2
   echo "       real deployed .claude/scripts/ tree to copy update-task-status.sh's dependency" >&2
-  echo "       chain (state-write.sh, task-lock.sh, deploy-root-guard.sh, lib/*.sh) from." >&2
+  echo "       chain (state-write.sh, task-lock.sh, deploy-root-guard.sh, update-plan-status.sh," >&2
+  echo "       update-phase-status.sh, lib/*.sh) from." >&2
   exit 2
 fi
-for req in update-task-status.sh state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh; do
+for req in update-task-status.sh state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh \
+           update-plan-status.sh update-phase-status.sh; do
   if [[ ! -f "$DEPLOY_SCRIPTS_SRC/$req" ]]; then
     echo "ERROR: required deployed script missing: $DEPLOY_SCRIPTS_SRC/$req" >&2
     exit 2
@@ -110,7 +112,12 @@ BASELINE_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/nul
 build_fixture_repo() {
   local root="$1"
   mkdir -p "$root/.claude/scripts/lib" "$root/specs"
-  for f in update-task-status.sh state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh; do
+  # update-plan-status.sh and update-phase-status.sh are required for Group 4's implement-target
+  # case below to reach update_plan_file()'s plan-file logic at all -- without them,
+  # update-task-status.sh's plan_script executability check early-returns with "not found or not
+  # executable" and the case would pass vacuously even if a per-phase marker defect were present.
+  for f in update-task-status.sh state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh \
+           update-plan-status.sh update-phase-status.sh; do
     cp "$DEPLOY_SCRIPTS_SRC/$f" "$root/.claude/scripts/$f"
     chmod +x "$root/.claude/scripts/$f"
   done
@@ -297,6 +304,78 @@ else
 fi
 
 cd "$ORIG_PWD" || true
+
+# =====================================================================
+# Group 4 (implement-target case): skill_preflight_update against target_status="implement" with
+# a fixture that actually contains a plan file -- the coverage gap this suite's authoring plan
+# names explicitly. Every prior Group 4 case above passes only "plan", which never reaches
+# update_plan_file()'s plan-file logic at all (that function early-returns unless
+# target_status == "implement"), so this is the first case in this suite that can regress the
+# preflight phase auto-advance convenience that plan deletes. Uses its own fixture root, isolated
+# from the "plan"-target cases above.
+# =====================================================================
+info "=== skill_preflight_update (target_status=implement, with a real plan file) ==="
+
+IMPLEMENT_ROOT="$WORKDIR/lifecycle-implement-fixture"
+build_fixture_repo "$IMPLEMENT_ROOT"
+jq '.active_projects[0].status = "planned"' "$IMPLEMENT_ROOT/specs/state.json" > "$WORKDIR/implement-state.json.tmp"
+mv "$WORKDIR/implement-state.json.tmp" "$IMPLEMENT_ROOT/specs/state.json"
+mkdir -p "$IMPLEMENT_ROOT/specs/001_fixture_task/plans"
+cat > "$IMPLEMENT_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md" << 'PLANEOF'
+# Implementation Plan: Fixture Task
+
+- **Status**: [NOT STARTED]
+
+## Implementation Phases
+
+### Phase 1: First phase [NOT STARTED]
+
+### Phase 2: Second phase [NOT STARTED]
+PLANEOF
+IMPLEMENT_PLAN="$IMPLEMENT_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md"
+BEFORE_IMPLEMENT_HEADINGS="$(grep -E '^### Phase ' "$IMPLEMENT_PLAN")"
+
+cd "$IMPLEMENT_ROOT" || { fail "could not cd into implement-target fixture repo"; }
+skill_preflight_update 1 "implement" "sess_test_implement" 2>"$WORKDIR/implement-preflight-stderr.log"
+IMPLEMENT_PREFLIGHT_EXIT=$?
+cd "$ORIG_PWD" || true
+
+AFTER_IMPLEMENT_HEADINGS="$(grep -E '^### Phase ' "$IMPLEMENT_PLAN")"
+
+if [[ "$BEFORE_IMPLEMENT_HEADINGS" == "$AFTER_IMPLEMENT_HEADINGS" ]]; then
+  pass "skill_preflight_update (implement) leaves plan phase headings byte-identical (no dispatch, no advance)"
+else
+  fail "skill_preflight_update (implement) changed phase headings unexpectedly -- before:
+$BEFORE_IMPLEMENT_HEADINGS
+-- after:
+$AFTER_IMPLEMENT_HEADINGS"
+fi
+
+if grep -q '\[IN PROGRESS\]' "$IMPLEMENT_PLAN"; then
+  fail "skill_preflight_update (implement) left a phase heading marked [IN PROGRESS] -- the deleted auto-advance regressed"
+else
+  pass "no phase heading contains [IN PROGRESS] after skill_preflight_update (implement)"
+fi
+
+# Positive control (required): proves the wrapper actually reached update_plan_file()'s
+# plan-file logic -- without this, the assertions above would pass even if
+# update-plan-status.sh/update-phase-status.sh were still missing from build_fixture_repo's copy
+# loop and the plan-file write never happened at all.
+if [[ "$IMPLEMENT_PREFLIGHT_EXIT" -eq 0 ]]; then
+  new_implement_status=$(jq -r '.active_projects[0].status' "$IMPLEMENT_ROOT/specs/state.json" 2>/dev/null)
+  if [[ "$new_implement_status" == "implementing" ]]; then
+    pass "Positive control: skill_preflight_update (implement) moved state.json status to 'implementing'"
+  else
+    fail "Positive control: expected state.json status 'implementing', got '$new_implement_status' (see $WORKDIR/implement-preflight-stderr.log)"
+  fi
+else
+  fail "skill_preflight_update (implement) exited $IMPLEMENT_PREFLIGHT_EXIT (see $WORKDIR/implement-preflight-stderr.log)"
+fi
+if grep -qE '^- \*\*Status\*\*: \[IMPLEMENTING\]' "$IMPLEMENT_PLAN"; then
+  pass "Positive control: plan-level Status line flipped to [IMPLEMENTING] (update_plan_file() was entered, plan file was found)"
+else
+  fail "Positive control: plan-level Status line did not flip to [IMPLEMENTING] -- the byte-identity assertions above would be vacuous"
+fi
 
 # =====================================================================
 # Real-tree contamination guard: this suite must never leave a NEW mark on the actual repo's
