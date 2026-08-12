@@ -1,0 +1,20 @@
+# Utility Scripts Inventory
+
+Operator-facing scripts that are not invoked as part of the normal task lifecycle (research /
+plan / implement / postflight). Relocated here, unabridged, from CLAUDE.md's "Utility Scripts"
+subsection so the eager session-start context prefix does not carry operator-only reference
+material. Every entry below is unchanged from the original list — none was dropped or summarized
+away.
+
+- `.claude/scripts/assess-repo-health.sh` - Standalone repository-health probe: structural `bash -n`/`jq empty` checks over tracked `*.sh`/`*.json`, TODO/FIXME counts, and status derivation, emitted as one JSON `repository_health` object. Called by `/todo`'s Sync Repository Metrics stage (Step 5.6.1)
+- `.claude/scripts/validate-return-meta.sh` - The `.return-meta.json` sibling of `validate-handoff.sh`: validates status vocabulary, the strict object-shaped `artifacts` array (bare-string elements FAIL), `type` enum, on-disk path resolution, and required `metadata` sub-fields. `--fix` performs the unambiguous bare-string-to-object repair, opt-in only, never implicit
+- `.claude/scripts/export-to-markdown.sh` - Export .claude/ directory to consolidated markdown file
+- `.claude/scripts/check-extension-docs.sh` - Doc-lint: validate extension READMEs, manifests, and cross-references (exits non-zero on failures)
+- `.claude/scripts/generate-context-line-counts.sh` - Recompute `line_count` from `wc -l` for every entry in every extension's source `index-entries.json` (`--check` reports only, `--write` corrects in place)
+- `.claude/scripts/lint/lint-agent-contracts.sh` - Lint agent frontmatter (invalid key detection, `model:` presence), no-task-references bullet coverage, and return-meta `artifacts` object-shaped template presence (Check F) across every dispatchable agent
+- `.claude/scripts/lint/lint-routing-wiring.sh` - Lint every manifest's routing wiring: `routing`/`routing_hard` keys have `routing_agents`/`routing_agents_hard` counterparts, and every declared agent name exists on disk
+- `.claude/scripts/lint/lint-contract-compliance.sh` - Lint hard-mode H-technique contract wiring: hard agents reference their required contracts, all 5 contract files exist with H-technique identifiers, hard skills dispatch to the correct hard agent, `skill-orchestrate-hard` declares convergence-policing fields, `general-implementation-hard-agent` carries H2 vocabulary, and each hard agent has index coverage. Wired as a `verify-deploy.sh` gate; not automated beyond that — no other automated caller
+- `.claude/scripts/install-aliases.sh` - Installs `claude-refresh`/`claude-refresh-force`/`claude-cleanup` shell aliases. Invoked manually by an operator once per shell setup; no automated caller by design
+- `.claude/scripts/install-systemd-timer.sh` - Installs a user-level systemd timer that runs `claude-refresh` hourly to clean up orphaned processes. Invoked manually by an operator; no automated caller by design
+- `.claude/scripts/migrate-directory-padding.sh` - One-shot migration of unpadded task directories to the 3-digit zero-padded `{NNN}_{SLUG}` format. Invoked manually by an operator when needed; no automated caller by design
+- `.claude/scripts/verify-lean-mcp.sh` - Diagnoses whether `lean-lsp` is correctly configured in user-scope `~/.claude.json` for Claude Code subagents. Invoked manually by an operator; no automated caller by design

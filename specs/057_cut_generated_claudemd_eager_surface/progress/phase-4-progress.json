@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Lever D1 - Relocate Utility Scripts Inventory",
+  "started_at": "2026-08-12T19:11:00Z",
+  "last_updated": "2026-08-12T19:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create utility-scripts-inventory.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
+    {"id": 2, "description": "Replace Utility Scripts subsection with pointer", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 3, "description": "Index the new doc", "status": "done", "files_touched": ["agent-system/extensions/core/docs/docs-README.md"]},
+    {"id": 4, "description": "Confirm provides.docs coverage", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Deploy and re-measure delta", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Add an entry to agent-system/extensions/core/index-entries.json for the new document",
+      "type": "skipped",
+      "reason": "index-entries.json / .claude/context/index.json is scoped exclusively to files under context/ (index.schema.json's own field description: 'Relative path from .claude/context/ to the file'; Rule S/T in check-extension-docs.sh only scan .claude/context/**/*.md). The new document lives under docs/reference/, a sibling tree that is never indexed there -- confirmed by grep: no existing docs/reference/standards/*.md file (e.g. extension-slim-standard.md) has an index-entries.json entry. Adding one would be a schema violation, not a completion of the task. docs-README.md (the actual docs index for the docs/ tree) was updated instead, satisfying the task's own 'or the equivalent docs index' alternative.",
+      "annotation": "*(deviation: altered — index-entries.json entry skipped as out-of-scope for docs/ tree files; docs-README.md indexed instead, per the task's own 'or equivalent docs index' clause)*"
+    }
+  ]
+}

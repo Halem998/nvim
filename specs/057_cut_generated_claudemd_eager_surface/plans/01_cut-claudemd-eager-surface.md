@@ -328,23 +328,29 @@ retaining the pointer sentence. Confirm with `wc -c` before/after and the `--com
 
 ---
 
-### Phase 4: Lever D1 — Relocate Utility Scripts Inventory [NOT STARTED]
+### Phase 4: Lever D1 — Relocate Utility Scripts Inventory [COMPLETED]
 
 **Goal**: Move the operator-only "Utility Scripts" subsection off the eager path into a new
 canonical inventory document, preserving every entry verbatim.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` containing
+- [x] Create `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` containing
       the full "Utility Scripts" list, unabridged — every script and its "who calls it" annotation.
-- [ ] In `agent-system/extensions/core/merge-sources/claudemd.md`, replace the
+      *(completed: all 12 entries present, verbatim)*
+- [x] In `agent-system/extensions/core/merge-sources/claudemd.md`, replace the
       `### Utility Scripts` body with a one-line pointer (~300 B) naming the new document.
-- [ ] Add the new document to `agent-system/extensions/core/docs/docs-README.md` (or the equivalent
+      *(completed)*
+- [x] Add the new document to `agent-system/extensions/core/docs/docs-README.md` (or the equivalent
       docs index) so it is reachable, and add an entry to
-      `agent-system/extensions/core/index-entries.json`.
-- [ ] Confirm the new doc's directory is covered by `provides.docs` (directory-valued entries copy
-      recursively; if `reference` is not already listed, add it).
-- [ ] Verify no task-number references appear in the new document.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh`, then re-measure and record the delta.
+      `agent-system/extensions/core/index-entries.json`. *(completed with a deviation: the
+      index-entries.json addition was skipped — see deviation note; docs-README.md was updated)*
+- [x] Confirm the new doc's directory is covered by `provides.docs` (directory-valued entries copy
+      recursively; if `reference` is not already listed, add it). *(completed: `reference` was
+      already present in `provides.docs`; no manifest change needed)*
+- [x] Verify no task-number references appear in the new document. *(completed: none present)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh`, then re-measure and record the delta.
+      *(completed: core merge source 23,421 B -> 20,752 B (-2,669 B); assembled .claude/CLAUDE.md
+      37,684 B -> 35,015 B (-2,669 B))*
 
 **Timing**: 1.5 hours
 
@@ -367,10 +373,17 @@ checking that `.claude/docs/reference/utility-scripts-inventory.md` exists after
 **Verification**:
 - Measured before/after bytes recorded for every file touched and for `.claude/CLAUDE.md`.
 - `.claude/docs/reference/utility-scripts-inventory.md` exists after deploy (confirms the file
-  actually propagated, not just that it was authored).
+  actually propagated, not just that it was authored). Confirmed present, 12 entries.
 - Every script named in the original subsection appears in the new document — compare counts.
+  Confirmed: 12/12.
 - `bash .claude/scripts/check-extension-docs.sh --quiet` exits clean (Rule E cross-reference check).
-- `bash .claude/scripts/verify-deploy.sh` passes.
+  One pre-existing, unrelated FAIL remains (Rule S: `context/contracts/return-meta-artifacts-template.md`
+  has no index entry — introduced by a prior, unrelated task; not caused by this phase).
+- `bash .claude/scripts/verify-deploy.sh` passes. Two pre-existing, unrelated failures observed:
+  the same Rule S doc-lint finding, and `validate-state.sh --deep` flagging unknown fields
+  (`blockers`, `parent_task`, `priority`, `subtasks`) on unrelated task entries (49, 52-56) —
+  this task never touches `specs/state.json`. 21/23 checks pass; both failures pre-date this
+  task's changes.
 
 ---
 

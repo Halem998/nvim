@@ -33,6 +33,7 @@ This directory contains the documentation for the `.claude/` agent system. The s
 │   ├── command-template.md     # Command template
 │   └── agent-template.md       # Agent template
 ├── reference/                   # Reference standards
+│   ├── utility-scripts-inventory.md # Operator-only scripts catalog (relocated off CLAUDE.md's eager surface)
 │   └── standards/
 │       ├── agent-frontmatter-standard.md  # Agent/skill frontmatter spec
 │       ├── extension-slim-standard.md     # Extension slim format
