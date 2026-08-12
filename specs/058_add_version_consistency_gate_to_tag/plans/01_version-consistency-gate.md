@@ -280,24 +280,27 @@ finding — not the fixture — is what must be re-checked, and the divergence n
 
 ---
 
-### Phase 2: Insert Step 3.5 into skill-tag/SKILL.md [NOT STARTED]
+### Phase 2: Insert Step 3.5 into skill-tag/SKILL.md [COMPLETED]
 
 **Goal**: Embed the verified fragment as a complete new `### Step 3.5: Validate Version
 Consistency` section, wire the `--skip-version-check` flag through Step 1, and add the flag to the
 Command Syntax table — so the gate exists end to end in one coherent state.
 
 **Tasks**:
-- [ ] In Step 1 (Parse Arguments), add `skip_version_check=false` alongside the existing defaults
+- [x] In Step 1 (Parse Arguments), add `skip_version_check=false` alongside the existing defaults
       and a `if [[ "$*" == *"--skip-version-check"* ]]; then skip_version_check=true; fi` block,
-      matching the existing flag-parse style exactly.
-- [ ] Add a `--skip-version-check` row to the Command Syntax flag table near the top of the file.
-- [ ] Insert a new `### Step 3.5: Validate Version Consistency` section immediately after Step 3's
+      matching the existing flag-parse style exactly. *(completed)*
+- [x] Add a `--skip-version-check` row to the Command Syntax flag table near the top of the file.
+      *(completed)*
+- [x] Insert a new `### Step 3.5: Validate Version Consistency` section immediately after Step 3's
       closing code fence and immediately before `### Step 4: Display Summary`. This position is
       non-negotiable: it is the only placement where `new_version` exists AND the dry-run `exit 0`
-      has not yet run.
-- [ ] The new section opens with `echo ""` / `echo "=== Validating Version Consistency ==="` /
+      has not yet run. *(completed: verified line 154 < line 269 (Step 4) < line 305 (dry-run exit))*
+- [x] The new section opens with `echo ""` / `echo "=== Validating Version Consistency ==="` /
       `echo ""`, matching the `=== Section ===` banner convention used by Steps 2, 3, 4, 6, 7.
-- [ ] Body order within the block:
+      *(completed)*
+- [x] Body order within the block: *(completed: all 6 sub-items implemented and smoke-tested against
+      match/mismatch/mismatch+skip/no-manifest scenarios)*
   1. `new_version_bare="${new_version#v}"`
   2. discovery `find` into a manifest list
   3. loop calling the extraction dispatch; collect `path:version` pairs where version is non-empty
@@ -307,8 +310,8 @@ Command Syntax table — so the gate exists end to end in one coherent state.
      mismatch error naming both versions and every manifest found, then `exit 1` — unless
      `skip_version_check=true`, in which case print the loud override warning and fall through
   6. if all pairs match: print a one-line confirmation naming the manifest(s) and version
-- [ ] Do not renumber Steps 4-8. `3.5` is used deliberately to keep the existing step numbers and
-      their cross-references stable.
+- [x] Do not renumber Steps 4-8. `3.5` is used deliberately to keep the existing step numbers and
+      their cross-references stable. *(completed: grep confirms Steps 4-8 headings unchanged)*
 
 **Timing**: 1.25 hours
 

@@ -14,7 +14,7 @@ Direct execution skill for creating and pushing semantic version tags to trigger
 ## Command Syntax
 
 ```
-/tag [--patch|--minor|--major] [--force] [--dry-run]
+/tag [--patch|--minor|--major] [--force] [--dry-run] [--skip-version-check]
 ```
 
 | Flag | Description |
@@ -24,6 +24,7 @@ Direct execution skill for creating and pushing semantic version tags to trigger
 | `--major` | Increment major version, reset minor and patch: `v0.2.3` -> `v1.0.0` |
 | `--force` | Skip confirmation prompt |
 | `--dry-run` | Show what would be done without executing |
+| `--skip-version-check` | Bypass a declared-version mismatch (still prints a loud warning naming both versions) |
 
 ## Execution
 
@@ -36,6 +37,7 @@ Extract flags from command input:
 increment="patch"  # default
 force=false
 dry_run=false
+skip_version_check=false
 
 if [[ "$*" == *"--minor"* ]]; then
   increment="minor"
@@ -48,6 +50,9 @@ if [[ "$*" == *"--force"* ]]; then
 fi
 if [[ "$*" == *"--dry-run"* ]]; then
   dry_run=true
+fi
+if [[ "$*" == *"--skip-version-check"* ]]; then
+  skip_version_check=true
 fi
 ```
 
@@ -143,6 +148,121 @@ if git rev-parse "$new_version" >/dev/null 2>&1; then
   echo ""
   echo "Resolution: Use a different increment type or check tag history."
   exit 1
+fi
+```
+
+### Step 3.5: Validate Version Consistency
+
+Ensure any declared package version agrees with the computed tag before proceeding. This step
+runs for every invocation path — default, `--force`, and `--dry-run` alike — because it sits
+strictly before Step 5's `--dry-run` `exit 0`:
+
+```bash
+echo ""
+echo "=== Validating Version Consistency ==="
+echo ""
+
+new_version_bare="${new_version#v}"
+repo_root=$(git rev-parse --show-toplevel)
+
+# Bounded-depth discovery, excluding vendor/build directories (node_modules above all --
+# unbounded recursion in a Node repo finds thousands of package.json files).
+manifest_files=$(find "$repo_root" -maxdepth 3 \
+  -not -path '*/node_modules/*' \
+  -not -path '*/.git/*' \
+  -not -path '*/dist/*' \
+  -not -path '*/build/*' \
+  -not -path '*/target/*' \
+  -not -path '*/__pycache__/*' \
+  -not -path '*/.venv/*' \
+  -not -path '*/venv/*' \
+  \( -name pyproject.toml -o -name setup.cfg -o -name setup.py -o -name package.json -o -name Cargo.toml \) \
+  2>/dev/null | sort)
+
+extract_declared_version() {
+  local file="$1"
+  local base
+  base=$(basename "$file")
+  case "$base" in
+    pyproject.toml)
+      # [project]-scoped so a later [tool.poetry] table never false-matches.
+      sed -n '/^\[project\]/,/^\[/p' "$file" \
+        | grep -m1 '^version[[:space:]]*=' \
+        | sed -E 's/^version[[:space:]]*=[[:space:]]*"([^"]*)".*/\1/'
+      ;;
+    setup.cfg)
+      sed -n '/^\[metadata\]/,/^\[/p' "$file" \
+        | grep -m1 '^version[[:space:]]*=' \
+        | sed -E 's/^version[[:space:]]*=[[:space:]]*([^ ]*).*/\1/'
+      ;;
+    setup.py)
+      # Best-effort literal-kwarg heuristic. A non-match falls through to "no version
+      # declared", per DR-6 -- setup.py's version can be an arbitrary Python expression.
+      grep -m1 -E "version[[:space:]]*=[[:space:]]*['\"]" "$file" \
+        | sed -E "s/.*version[[:space:]]*=[[:space:]]*['\"]([^'\"]*)['\"].*/\1/"
+      ;;
+    package.json)
+      jq -r '.version // empty' "$file"
+      ;;
+    Cargo.toml)
+      sed -n '/^\[package\]/,/^\[/p' "$file" \
+        | grep -m1 '^version[[:space:]]*=' \
+        | sed -E 's/^version[[:space:]]*=[[:space:]]*"([^"]*)".*/\1/'
+      ;;
+  esac
+}
+
+# Collect path:version pairs for every manifest yielding a non-empty declared version.
+# PEP 621 `dynamic = ["version"]` and Cargo `version.workspace = true` correctly yield
+# empty here -- honest "not declared here" answers, not bugs.
+declared_pairs=""
+while IFS= read -r manifest; do
+  [ -z "$manifest" ] && continue
+  declared_version=$(extract_declared_version "$manifest")
+  if [ -n "$declared_version" ]; then
+    declared_pairs="${declared_pairs}${manifest}:${declared_version}"$'\n'
+  fi
+done <<< "$manifest_files"
+declared_pairs="${declared_pairs%$'\n'}"
+
+if [ -z "$declared_pairs" ]; then
+  echo "No declared package version found (checked pyproject.toml, setup.cfg, setup.py,"
+  echo "package.json, Cargo.toml near repo root). Skipping version-consistency check."
+else
+  # DR-3: check every discovered manifest; any single mismatch fails the gate.
+  mismatch_found=false
+  while IFS=: read -r manifest declared_version; do
+    [ -z "$manifest" ] && continue
+    declared_bare="${declared_version#v}"
+    if [ "$declared_bare" != "$new_version_bare" ]; then
+      mismatch_found=true
+    fi
+  done <<< "$declared_pairs"
+
+  if [ "$mismatch_found" = true ]; then
+    echo "Error: Declared package version does not match computed tag ($new_version)."
+    echo ""
+    echo "Declared in:"
+    while IFS=: read -r manifest declared_version; do
+      [ -z "$manifest" ] && continue
+      echo "  $manifest (version = \"$declared_version\")"
+    done <<< "$declared_pairs"
+    echo ""
+    if [ "$skip_version_check" = true ]; then
+      echo "WARNING: --skip-version-check is set. Proceeding despite the mismatch above."
+      echo "Computed tag: $new_version. The declared version(s) listed above diverge from it."
+    else
+      echo "Resolution: Update the mismatched manifest(s) to $new_version_bare, commit, then re-run /tag."
+      echo "Or pass --skip-version-check to proceed anyway (not recommended)."
+      exit 1
+    fi
+  else
+    echo "Version consistency: OK -- declared version(s) match computed tag ($new_version)."
+    while IFS=: read -r manifest declared_version; do
+      [ -z "$manifest" ] && continue
+      echo "  $manifest (version = \"$declared_version\")"
+    done <<< "$declared_pairs"
+  fi
 fi
 ```
 
