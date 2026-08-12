@@ -1,5 +1,5 @@
 ---
-next_project_number: 54
+next_project_number: 57
 ---
 
 # TODO
@@ -11,9 +11,9 @@ next_project_number: 54
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,45,46,48,51,53 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
-| 2 | 9,13,29,42,49,50 | 17,18,22,41,48 | agent-system, context-loading |
-| 3 | 30,44 | 29,49 | agent-system, context-loading |
+| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53,54 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 2 | 9,13,29,42,50,55,56 | 17,18,22,41,48 | agent-system, context-loading |
+| 3 | 30 | 29 | agent-system |
 | 4 | 32 | 28,30,31 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -59,16 +59,94 @@ next_project_number: 54
 
 ### Context Loading
 
-42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-49 [NOT STARTED] — Cut the measured context cost of the highest-traffic command path
-  └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/ (see above)
+54 [NOT STARTED] — LEVER 2 of the context-cost work (eager rules budget). This is th
+42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
+55 [NOT STARTED] — LEVER 1 of the context-cost work (the two orchestrate skills). Th
+56 [NOT STARTED] — LEVER 3 of the context-cost work (command bodies). Smallest and c
 
 ### Email
 
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 
 ## Tasks
+
+### 56. Slim todo and orchestrate command bodies
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: context-loading
+- **Dependencies**: Task 48
+
+**Description**: LEVER 3 of the context-cost work (command bodies). Smallest and cheapest of the three levers; listed separately so it does not get starved by the two larger ones and so its edit territory does not collide with theirs.
+
+MEASURED (source store, 2026-08-12): commands/todo.md is 49,254 bytes and commands/orchestrate.md is 43,180 bytes. A command body is loaded in full on every invocation of that command. Two extractable regions were identified: the ## Notes section of todo.md (~7,851 B), which is reference material belonging under context/patterns/, and the ## Batch Orchestrate Results output template in orchestrate.md (~6,739 B), which is needed only in batch mode and can be pointed at rather than inlined.
+
+WORK: move those two regions out, keeping each command body to the decision logic and dispatch instructions an invocation actually needs. Re-measure both regions before cutting -- the byte figures above are from the audit and the files may have drifted, as the orchestrate skills demonstrably did (+12% and +19% over the same interval).
+
+PRESERVE BEHAVIOR: no command loses a behavior. Every mode stays fully specified, either inline or via an explicit pointer the executing agent is instructed to follow. A reference that an agent is not told to follow is a deletion, not an extraction.
+
+CARRY THIS CORRECTION FORWARD (record it in the summary; do not silently act on another task scope). There is a separate standing task to slim commands/task.md as "the largest per-invocation context contributor". Structural analysis contradicts that premise: task.md is procedural and mode-specific, already cites standards by pointer rather than restating them, and yields roughly 0-1 KB of extractable material, against todo.md ~7.9 KB and orchestrate.md ~6.7 KB. Recommend re-pointing that task at todo.md/orchestrate.md, or dropping it as redundant with this subtask. Make the recommendation explicit in the summary so the decision is recorded rather than inherited.
+
+TERRITORY: agent-system/extensions/core/commands/todo.md, commands/orchestrate.md, and the new context/patterns/ destinations. Note the overlap risk: the scoped-commit propagation work also edits todo.md and orchestrate.md, at their `git commit -m` call sites specifically. Coordinate or sequence against it; the regions differ, but the files do not.
+
+ACCEPTANCE: report measured before/after bytes for both command files. Existing tests pass unmodified. Every extracted region is reachable from the command body by an explicit follow-this-pointer instruction, verified by reading the resulting command body end to end as an executing agent would.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 55. Dedupe orchestrate skill bodies
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: context-loading
+- **Dependencies**: Task 48
+
+**Description**: LEVER 1 of the context-cost work (the two orchestrate skills). This is the largest per-invocation cost in the system and simultaneously an acknowledged correctness liability, and it is getting worse: re-measured 2026-08-12, skill-orchestrate/SKILL.md is 196,171 bytes (baseline 175,303, +12%) and skill-orchestrate-hard/SKILL.md is 127,145 bytes (baseline 107,121, +19%). Both grew roughly 15% in the weeks between the audit and this expansion.
+
+A SKILL.md body is loaded IN FULL on every invocation. This is confirmed, not assumed: no include, partial, fragment, or compose mechanism exists in install-extension.sh, and deploy is a byte-for-byte copy. Structural measurement at baseline: 72.6% and 74.2% of the two files respectively is fenced bash, almost all in large multi-line blocks (17 blocks / 121,413 B in the standard skill; 17 blocks / 76,966 B in the hard one). At least 28,421 bytes across 427 substantive lines are byte-identical between the two files, and that is a floor, since near-duplicates differing only by a log prefix are not counted.
+
+THE FILES DOCUMENT THIS THEMSELVES. skill-orchestrate-hard/SKILL.md, around the append_detected_defect helper: "HARD-MODE TWIN of the append_detected_defect helper in skill-orchestrate/SKILL.md Stage 5. The two MUST stay in sync -- this file pair is where a one-sided fix is a known recurring defect class, because hard mode single-task stages are a structurally separate reimplementation rather than a thin wrapper." So closing the duplication is a correctness fix wearing a token-cost hat.
+
+TWO EXTRACTION MECHANISMS, AND THE DIFFERENCE IS THE WHOLE POINT. Moving reference PROSE into context/** saves tokens only on invocations that do not need it, because a backticked path is inert text the agent may still choose to Read. Moving procedural BASH into an executable script invoked by a one-line `bash .claude/scripts/foo.sh args` removes it from context entirely, because the script source is never loaded. The second is far stronger and is already the established pattern here: roughly 20 orchestrate-*.sh scripts already exist, and the residual large blocks are simply the logic that was never pushed out. Prefer it. Also extend the proven skill_* shared-function pattern in skill-base.sh to cover the duplicated Stage 5 logic (staleness gate, stray-handoff sweep, append_detected_defect) and the structurally identical postflight-merge blocks, so the duplication closes by construction rather than by discipline. Do NOT invent a new build-time include mechanism; reuse infrastructure already exercised in production.
+
+SEQUENCING NOTE, UPDATED. The parent task carried a coordination warning that the handoff staleness gate and stray-handoff sweep were being concurrently redesigned by the handoff identity-contract and loop-guard-deadlock work. That work is now COMPLETED, so the warning is discharged and the staleness gate no longer has to be extracted last. Re-read the current state of both engines before starting rather than trusting either that warning or this note.
+
+ACCEPTANCE. Report measured before/after bytes for every file touched, using eager-prefix + command + skill + agent accounting. The 28,421+ bytes of literal duplication between the two orchestrate skills exists in exactly ONE place afterward, and both skills call it by name. Existing orchestration tests pass unmodified. No mode loses a behavior: every mode remains fully specified, inline or via an explicit pointer the executing agent is instructed to follow.
+
+TERRITORY: agent-system/extensions/core/skills/skill-orchestrate/**, skill-orchestrate-hard/**, scripts/skill-base.sh, and new or extended scripts/orchestrate-*.sh. The rules and merge sources belong to the eager-budget sibling subtask; commands/todo.md and commands/orchestrate.md belong to the command-bodies sibling subtask.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 54. Split eager rules budget
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: context-loading
+- **Dependencies**: None
+
+**Description**: LEVER 2 of the context-cost work (eager rules budget). This is the cost paid by EVERY session in every repo running this system, not a per-invocation cost, and it is the one lever whose territory (rules/** and merge-sources/**) is disjoint from the orchestrate skills and the command bodies, so it can proceed independently and in parallel with its sibling subtasks.
+
+MEASURED LIVE, 2026-08-12, this repo deployed tree. Actual session-start eager prefix is 80,808 bytes (~20.2k tokens): parent chain 3,815 + generated .claude/CLAUDE.md 46,475 + six rules that demonstrably loaded in a real interactive session before any file was read: git-workflow.md 11,147, artifact-formats.md 5,360, state-management.md 5,148, pr-prohibition.md 4,628, source-store-deploy-boundary.md 2,746, no-task-references-in-deliverables.md 1,489 (30,518 total). Two deltas against the baseline recorded when the parent task was written: total eager prefix 74,136 -> 80,808 (+9%), and generated CLAUDE.md 33,624 -> 46,475 (+38%). The surface is growing, not holding.
+
+THE GENERALIZABLE LESSON, restated because it is the whole point: in a repository whose entire workflow lives under specs/** and .claude/**, gating a rule on those globs is nominal laziness, not real laziness. The rule fires every session. Treat the rules directory as a deliberate eager BUDGET with a stated ceiling, not as a set of individually-gated files.
+
+WORK ITEM 1, THE RULES. Split each large rule into a short eager core plus a lazily-referenced companion under context/standards/. git-workflow.md (largest at 11,147 B) keeps only the commit-message convention and the forbidden-operations list; the staging-scope narrative and the git-safety/snapshot narrative move out. Same treatment for error-handling.md (5,420 B) and state-management.md (5,148 B). Slim pr-prohibition.md (4,628 B), whose body includes two CSLib /pr subsections that are inert prose in every deploy without that extension.
+
+WORK ITEM 2, THE GENERATED CLAUDE.md. At 46,475 B it is now the single largest eager contributor, larger than all six rules combined, and it grew 38% since the baseline. Audit which merge sources drive that growth and slim them at the source. Known offender: the literature extension contributes a Literature Mode (--lit) section that appears TWICE under two headings in the generated output, with the second copy running several KB of directive-level detail (the six-directive resolver contract, the four-option AskUserQuestion wording, the sub-index decision flow) that belongs in context/project/literature/patterns/ behind a pointer. Verify before cutting; do not assume the duplication is identical.
+
+PRESERVE BEHAVIOR, THE BINDING CONSTRAINT. A rule eager core must still carry everything an agent must know BEFORE acting. A pointer read after the fact is useless for a pre-write constraint, so anything that gates a write (the destructive-git prohibitions, the source-store boundary, the no-task-references prohibition) stays eager by construction. Where a rule is deliberately kept eager, record that decision in-file, as source-store-deploy-boundary.md already does.
+
+ACCEPTANCE. Report measured before/after bytes for every file touched, using the same eager-prefix accounting as the baseline above. An unquantified "slimmed" claim is not acceptable. No rule loses a pre-action constraint. State an explicit eager budget ceiling in the rules directory README or equivalent so the next regression is detectable rather than merely regrettable.
+
+CORRECTION TO HAND TO THE MEASUREMENT-HARNESS TASK (record it in the summary; do NOT act on another task scope). That task states its model as enumerating rules "lacking paths: frontmatter or carrying paths: **/*". That misses the dominant case measured here: rules whose paths: glob is .claude/**/* or specs/**/*, which is exactly where 30,518 B of the eager surface hides. The harness must model glob MATCH against a representative session touched-path set, not merely absent-or-universal frontmatter, or it will under-report by roughly 78%.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 53. Suppress expected handoff absence defect
 - **Status**: [NOT STARTED]
@@ -171,7 +249,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 49. Cut context cost orchestrate skills and eager rules
-- **Status**: [NOT STARTED]
+- **Status**: [EXPANDED]
 - **Task Type**: meta
 - **Topic**: context-loading
 - **Dependencies**: Task 33, Task 41, Task 48
