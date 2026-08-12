@@ -34,7 +34,7 @@ next_project_number: 59
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
-58 [NOT STARTED] — Add a version-consistency preflight gate to /tag so a tag can nev
+58 [RESEARCHED] — Add a version-consistency preflight gate to /tag so a tag can nev
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -71,10 +71,11 @@ next_project_number: 59
 
 ### 58. Add version-consistency preflight gate to /tag
 - **Effort**: 2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [/home/benjamin/.config/nvim/specs/058_add_version_consistency_gate_to_tag/reports/01_version-consistency-gate.md]
 
 **Description**: Add a version-consistency preflight gate to /tag so a tag can never be created or pushed while the package being released declares a different version.
 
