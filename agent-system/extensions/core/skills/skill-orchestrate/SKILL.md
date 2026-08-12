@@ -1172,54 +1172,28 @@ back to `"completed"`.
 On clean exit:
 
 ```bash
-mkdir -p "${TASK_DIR}/summaries"
-# Merge onto the existing file rather than overwrite wholesale: an earlier writer (the
-# implementation agent) already populated modified_files/completion_data/etc. on this same
-# path, and a later writer MUST NOT clobber fields it does not own.
+# Single shared implementation, skill_orchestrate_merge_return_meta (scripts/skill-base.sh) — see
+# that function's header for the full contract, including WHY it takes a resolved
+# detected_defects JSON string rather than the loop-guard path (this clean-exit call reads it
+# from the EARLIER fence's `$detected_defects`, captured BEFORE the `rm -f "$loop_guard_file"`
+# cleanup above — the loop guard no longer exists by the time this fence runs).
+source .claude/scripts/skill-base.sh
 meta_file="${TASK_DIR}/.return-meta.json"
-existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
-tmp_meta=$(mktemp)
-echo "$existing_meta" | jq \
-  --arg status "implemented" \
-  --argjson cycles "$cycle_count" \
-  --arg final_state "$current_status" \
-  --argjson detected_defects "$detected_defects" \
-  '. * {
-    "status": $status,
-    "metadata": {
-      "cycles_used": $cycles,
-      "final_state": $final_state,
-      "detected_defects": $detected_defects
-    }
-  }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
+skill_orchestrate_merge_return_meta "$meta_file" "$detected_defects" "implemented" \
+  "$cycle_count" "$current_status"
 ```
 
 On partial exit:
 
 ```bash
-mkdir -p "${TASK_DIR}/summaries"
-# Merge onto the existing file rather than overwrite wholesale: an earlier writer (the
-# implementation agent) already populated modified_files/completion_data/etc. on this same
-# path, and a later writer MUST NOT clobber fields it does not own.
+# Same shared implementation as the clean-exit variant above. The loop guard is PRESERVED on
+# partial exit, so this reads it fresh immediately before the call — ordering is not
+# load-bearing here, but the read stays structurally identical to the clean-exit variant.
+source .claude/scripts/skill-base.sh
 meta_file="${TASK_DIR}/.return-meta.json"
-existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
-# The loop guard is PRESERVED on partial exit, so ordering is not load-bearing here — but the
-# two blocks are kept structurally identical to the clean-exit variant on purpose.
 detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file" 2>/dev/null || echo '[]')
-tmp_meta=$(mktemp)
-echo "$existing_meta" | jq \
-  --arg status "partial" \
-  --argjson cycles "$cycle_count" \
-  --arg final_state "$current_status" \
-  --argjson detected_defects "$detected_defects" \
-  '. * {
-    "status": $status,
-    "metadata": {
-      "cycles_used": $cycles,
-      "final_state": $final_state,
-      "detected_defects": $detected_defects
-    }
-  }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
+skill_orchestrate_merge_return_meta "$meta_file" "$detected_defects" "partial" \
+  "$cycle_count" "$current_status"
 ```
 
 ---

@@ -1020,3 +1020,44 @@ skill_orchestrate_propagate_completion() {
     echo "${notice_prefix} WARNING: task completed with empty completion_summary (reason=${completion_reason})" >&2
   fi
 }
+
+# skill_orchestrate_merge_return_meta <meta_file> <detected_defects_json> <status> <cycles_used>
+#   <final_state>
+# Shared Stage 8 postflight merge for both orchestrate engines' clean-exit and partial-exit
+# `.return-meta.json` writes. Merges onto the existing file rather than overwriting wholesale: an
+# earlier writer (the implementation agent) already populated modified_files/completion_data/etc.
+# on this same path, and this call MUST NOT clobber fields it does not own.
+#
+# `detected_defects_json` is a resolved JSON array STRING, not a loop-guard path. This is a
+# deliberate deviation from a naive "pass the loop-guard path and read inside" signature: the two
+# engines' clean-exit call sites read this value at DIFFERENT points relative to their own
+# `rm -f "$loop_guard_file"` cleanup —
+# skill-orchestrate/SKILL.md's clean-exit reads it BEFORE that rm, in an earlier fence, and
+# carries the ambient value forward (its own metadata-write section runs AFTER cleanup);
+# skill-orchestrate-hard/SKILL.md's clean-exit reads it in the SAME fence, BEFORE its own later
+# `rm -f`. If this function read the loop guard itself, the base-mode clean-exit call would
+# silently resolve to "[]" (the guard is already gone by the time that call happens), losing the
+# real observation log. Requiring the caller to resolve the value at the same point the pre-dedup
+# inline code did preserves this asymmetry exactly rather than papering over it.
+skill_orchestrate_merge_return_meta() {
+  local meta_file="$1" detected_defects_json="$2" status="$3" cycles_used="$4" final_state="$5"
+  local task_summaries_dir
+  task_summaries_dir="$(dirname "$meta_file")/summaries"
+  mkdir -p "$task_summaries_dir"
+  local existing_meta tmp_meta
+  existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
+  tmp_meta=$(mktemp)
+  echo "$existing_meta" | jq \
+    --arg status "$status" \
+    --argjson cycles "$cycles_used" \
+    --arg final_state "$final_state" \
+    --argjson detected_defects "$detected_defects_json" \
+    '. * {
+      "status": $status,
+      "metadata": {
+        "cycles_used": $cycles,
+        "final_state": $final_state,
+        "detected_defects": $detected_defects
+      }
+    }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
+}

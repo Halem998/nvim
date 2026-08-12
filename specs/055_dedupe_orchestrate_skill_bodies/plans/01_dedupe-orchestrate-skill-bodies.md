@@ -355,25 +355,33 @@ results.
 
 ---
 
-### Phase 5: Extract the Four .return-meta.json Postflight-Merge Blocks [NOT STARTED]
+### Phase 5: Extract the Four .return-meta.json Postflight-Merge Blocks [COMPLETED]
 
 **Goal**: Replace the four structurally identical Stage 8 merge blocks — two in each engine
 (clean-exit and terminal variants) — with a single shared function, so the merge-onto-existing
 discipline cannot drift into four separately-maintained copies.
 
 **Tasks**:
-- [ ] Locate all four blocks (each reads `detected_defects` from `$loop_guard_file`, then pipes
-      `$existing_meta` through a `jq` merge). Confirm the count before editing.
-- [ ] Add `skill_orchestrate_merge_return_meta` to `scripts/skill-base.sh`, taking the meta path,
+- [x] Locate all four blocks (each reads `detected_defects` from `$loop_guard_file`, then pipes
+      `$existing_meta` through a `jq` merge). Confirm the count before editing. *(completed: 4
+      confirmed, 2 per file)*
+- [x] Add `skill_orchestrate_merge_return_meta` to `scripts/skill-base.sh`, taking the meta path,
       loop-guard path, status, and the per-site fields (`cycles_used`, `final_state`) as explicit
-      parameters.
-- [ ] Preserve read-modify-write merge semantics exactly: producer-owned fields (`modified_files`,
+      parameters. *(completed with a recorded deviation: takes a resolved
+      `detected_defects_json` STRING, not a loop-guard path — the base engine's clean-exit call
+      site reads that value in an EARLIER fence, before its own `rm -f "$loop_guard_file"`
+      cleanup, so a function that re-reads from the guard path itself would silently see an
+      already-deleted file at that one call site. Requiring the caller to resolve the value at
+      the same point the pre-dedup inline code did preserves the base/hard ordering asymmetry
+      exactly; see the function's own header comment in skill-base.sh for the full rationale)*
+- [x] Preserve read-modify-write merge semantics exactly: producer-owned fields (`modified_files`,
       `completion_data`, `memory_candidates`, `reflection`, `artifacts`) MUST survive untouched, per
-      the return-metadata schema's Multiple Sequential Writers rule.
-- [ ] Wire all four sites; each becomes a single call.
-- [ ] Preserve each site's distinguishing comment (the hard file's note on why `cycles_used` and
+      the return-metadata schema's Multiple Sequential Writers rule. *(completed — verified via a
+      standalone fixture call showing modified_files/completion_data/memory_candidates untouched)*
+- [x] Wire all four sites; each becomes a single call. *(completed)*
+- [x] Preserve each site's distinguishing comment (the hard file's note on why `cycles_used` and
       `final_state` are written there, and the "Same merge-onto-existing discipline as the
-      clean-exit variant above" note) as a one-line comment at the call site.
+      clean-exit variant above" note) as a one-line comment at the call site. *(completed)*
 
 **Timing**: 1 hour
 

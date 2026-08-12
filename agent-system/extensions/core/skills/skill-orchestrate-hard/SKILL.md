@@ -1488,52 +1488,26 @@ gap is not this change's purpose, and nothing else about hard-mode metadata is b
 On clean exit:
 
 ```bash
-mkdir -p "${TASK_DIR}/summaries"
-# Merge onto the existing file rather than overwrite wholesale: an earlier writer (the
-# implementation agent) already populated modified_files/completion_data/etc. on this same
-# path, and a later writer MUST NOT clobber fields it does not own.
+# Single shared implementation, skill_orchestrate_merge_return_meta (scripts/skill-base.sh) — see
+# that function's header for the full contract. Read the run's system-defect observation log
+# while the loop guard still exists (this fence runs BEFORE the `rm -f` cleanup below, unlike
+# the base engine's own clean-exit ordering — see that function's header for the asymmetry).
+source .claude/scripts/skill-base.sh
 meta_file="${TASK_DIR}/.return-meta.json"
-existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
-# Read the run's system-defect observation log while the loop guard still exists.
 detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file" 2>/dev/null || echo '[]')
-tmp_meta=$(mktemp)
-echo "$existing_meta" | jq \
-  --arg status "implemented" \
-  --argjson cycles "$cycle_count" \
-  --arg final_state "$current_status" \
-  --argjson detected_defects "$detected_defects" \
-  '. * {
-    "status": $status,
-    "metadata": {
-      "cycles_used": $cycles,
-      "final_state": $final_state,
-      "detected_defects": $detected_defects
-    }
-  }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
+skill_orchestrate_merge_return_meta "$meta_file" "$detected_defects" "implemented" \
+  "$cycle_count" "$current_status"
 ```
 
 On partial exit:
 
 ```bash
-mkdir -p "${TASK_DIR}/summaries"
-# Same merge-onto-existing discipline as the clean-exit variant above.
+# Same shared implementation and merge-onto-existing discipline as the clean-exit variant above.
+source .claude/scripts/skill-base.sh
 meta_file="${TASK_DIR}/.return-meta.json"
-existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
 detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file" 2>/dev/null || echo '[]')
-tmp_meta=$(mktemp)
-echo "$existing_meta" | jq \
-  --arg status "partial" \
-  --argjson cycles "$cycle_count" \
-  --arg final_state "$current_status" \
-  --argjson detected_defects "$detected_defects" \
-  '. * {
-    "status": $status,
-    "metadata": {
-      "cycles_used": $cycles,
-      "final_state": $final_state,
-      "detected_defects": $detected_defects
-    }
-  }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
+skill_orchestrate_merge_return_meta "$meta_file" "$detected_defects" "partial" \
+  "$cycle_count" "$current_status"
 ```
 
 **Cleanup.**
