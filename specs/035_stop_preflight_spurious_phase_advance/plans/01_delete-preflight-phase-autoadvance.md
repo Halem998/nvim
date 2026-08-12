@@ -1,7 +1,7 @@
 # Implementation Plan: Task #35
 
 - **Task**: 35 - Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: 16, 33 (both completed; task 33 shares `skill-orchestrate-hard/SKILL.md` edit territory)
 - **Research Inputs**: specs/035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md

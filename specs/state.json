@@ -856,7 +856,7 @@
     {
       "project_number": 35,
       "project_name": "stop_preflight_spurious_phase_advance",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "title": "Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]",
       "topic": "orchestration-concurrency",
@@ -882,11 +882,17 @@
           "path": "specs/035_stop_preflight_spurious_phase_advance/plans/01_delete-preflight-phase-autoadvance.md",
           "type": "plan",
           "summary": "Six-phase plan deleting the redundant preflight phase auto-advance block, with interleaved redeploy phases and positive-control regression tests."
+        },
+        {
+          "path": "specs/035_stop_preflight_spurious_phase_advance/summaries/01_delete-preflight-phase-autoadvance-summary.md",
+          "type": "summary",
+          "summary": "Deleted the preflight per-phase auto-advance block, fixed two downstream gate regressions it exposed, and added positive-control regression coverage in two suites."
         }
       ],
       "created": "2026-08-11T14:50:22Z",
-      "last_updated": "2026-08-12T07:10:46Z",
-      "session_id": "sess_1786517897_9e95c0_35"
+      "last_updated": "2026-08-12T07:41:28Z",
+      "session_id": "sess_1786517897_9e95c0_35",
+      "completion_summary": "Deleted the preflight phase auto-advance convenience in update-task-status.sh that could mark an undispatched plan phase [IN PROGRESS], added positive-controlled regression coverage in test-update-task-status.sh and test-skill-base-lifecycle.sh, retired the stale co-maintenance comment in skill-orchestrate-hard/SKILL.md, and fixed a third suite (test-resume-scan-nonconformance.sh) whose structural assertion was pinned to the deleted code."
     },
     {
       "project_number": 37,

@@ -11,10 +11,10 @@ next_project_number: 53
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,18,20,22,27,28,31,34,35,39,41,43,45,46,48,51,52 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
-| 2 | 9,29,37,42,49,50 | 18,22,35,41,48 | agent-system, orchestration-concurrency, context-loading |
-| 3 | 17,30,44 | 29,37,49 | agent-system, context-loading |
-| 4 | 13,32 | 17,28,30,31 | agent-system |
+| 1 | 14,18,20,22,27,28,31,34,37,39,41,43,45,46,48,51,52 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 2 | 9,17,29,42,49,50 | 18,22,37,41,48 | agent-system, context-loading |
+| 3 | 13,30,44 | 17,29,49 | agent-system, context-loading |
+| 4 | 32 | 28,30,31 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -56,8 +56,7 @@ next_project_number: 53
 
 ### Orchestration Concurrency
 
-35 [PLANNED] — Remove or correctly gate a one-time preflight side effect that ma
-  └─ 37 [NOT STARTED] — Close the two residual gaps left by the territory/handoff work. T
+37 [NOT STARTED] — Close the two residual gaps left by the territory/handoff work. T
 
 ### Context Loading
 
@@ -619,12 +618,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 35. Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 16, Task 33
 - **Research**: [035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md]
 - **Plan**: [035_stop_preflight_spurious_phase_advance/plans/01_delete-preflight-phase-autoadvance.md]
+- **Summary**: [035_stop_preflight_spurious_phase_advance/summaries/01_delete-preflight-phase-autoadvance-summary.md]
 
 **Description**: Remove or correctly gate a one-time preflight side effect that marks a plan phase [IN PROGRESS] when no agent is dispatched for it. Observed live during a real `/orchestrate --hard` run (prior run, cycle 13).
 
