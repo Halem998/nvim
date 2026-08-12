@@ -280,23 +280,32 @@ counts disagree, the grep is authoritative and every found site must be covered.
 
 ---
 
-### Phase 4: Base engine — verbatim twin of the Stage 5 gate, plus base dispatch sites [NOT STARTED]
+### Phase 4: Base engine — verbatim twin of the Stage 5 gate, plus base dispatch sites [COMPLETED]
 
 **Goal**: Honor the binding co-maintenance contract by landing the identical gate in
 `skill-orchestrate`, so this fix is not the next instance of the known one-sided-fix defect class.
 
 **Tasks**:
-- [ ] Copy Phase 3's Stage 5 gate extension into `skill-orchestrate/SKILL.md` VERBATIM, changing
+- [x] Copy Phase 3's Stage 5 gate extension into `skill-orchestrate/SKILL.md` VERBATIM, changing
       only the notice prefix (`[orchestrate]` vs `[hard-orchestrate]`) and the self-attributing
       `--detecting-site` / `--attributed-path` strings, exactly as the existing twin does.
-- [ ] Mirror the Stage 2 counter initialization.
-- [ ] Mint and inject `dispatch_seq` at every base-engine dispatch site: the single-task Stage 4
+      *(completed)*
+- [x] Mirror the Stage 2 counter initialization. *(completed)*
+- [x] Mint and inject `dispatch_seq` at every base-engine dispatch site: the single-task Stage 4
       research/plan/implement/continuation/resume handlers, the Stage 6 blocker-escalation revise
       dispatch, AND the multi-task Stage MT-4 research/plan/implement dispatches (which build
-      their own per-task `handoff_path_abs` and are a separate set of call sites).
-- [ ] Add the same one-line pointer to `context/patterns/dispatch-report-not-termination.md`.
-- [ ] Diff the two gate blocks and confirm byte-equality apart from the prefix and attribution
-      strings before reporting.
+      their own per-task `handoff_path_abs` and are a separate set of call sites). *(completed:
+      the Stage 6 revise re-dispatch had no dispatch_start_ts capture at all -- added one
+      alongside the mint, matching every other handoff-writing site; MT-4 uses a batch-scoped
+      dispatch_seq_counter + per-task dispatch_seq map in mt_state_file since three tasks can
+      dispatch in one batched message)*
+- [x] Add the same one-line pointer to `context/patterns/dispatch-report-not-termination.md`.
+      *(completed)*
+- [x] Diff the two gate blocks and confirm byte-equality apart from the prefix and attribution
+      strings before reporting. *(completed: byte-identical apart from prefix/attribution and one
+      hard-mode-only "HARD-MODE TWIN of..." cross-reference comment, matching the existing
+      convention where such cross-reference comments live only in the hard-mode file -- see the
+      append_detected_defect precedent)*
 
 **Timing**: 1.5 hours
 

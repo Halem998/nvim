@@ -1067,6 +1067,10 @@ if [ -f "$handoff_file" ]; then
 fi
 
 # ── dispatch_seq identity gate (Defect A) ──────────────────────────────────────
+# HARD-MODE TWIN of the equivalent block in `skill-orchestrate/SKILL.md`'s Stage 5. The two MUST
+# stay byte-identical apart from the notice prefix (`[hard-orchestrate]` here, `[orchestrate]`
+# there) and the --detecting-site / --attributed-path self-attribution strings — this file pair
+# is where a one-sided fix is a known recurring defect class (see Phase 7's parity assertion).
 # The mtime check above is RETAINED as a second line of defense against the git-restoration
 # hazard, but it is structurally insufficient against a still-live predecessor: a woken
 # predecessor's late write always carries a NEWER mtime than this dispatch's own window, so it

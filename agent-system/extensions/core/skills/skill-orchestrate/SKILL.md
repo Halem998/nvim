@@ -118,6 +118,12 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   # declaration). `// []` is the forward-compatible read for a guard file written before this
   # field existed, matching the `// 0` idiom above.
   detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
+  # dispatch_seq_counter: orchestrator-minted per-dispatch identity (Defect A), verbatim-twin
+  # field to skill-orchestrate-hard/SKILL.md's Stage 2. `// 0` forward-compatible read, matching
+  # cycle_count's own idiom — a guard written before this field existed resumes at 0, never
+  # repeating a value already minted this task since the counter only ever increments (see
+  # mint_dispatch_seq() below).
+  dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' "$loop_guard_file")
   # Observational-only session_id tracking (NEVER a gate — see Ephemeral note above and
   # context/standards/status-markers.md's rationale: SESSION_ID is regenerated per /orchestrate
   # invocation, while this guard is explicitly designed to survive across conversational turns.
@@ -148,11 +154,13 @@ else
       "current_state": "reading",
       "detected_defects": [],
       "started": $started,
-      "last_updated": $started
+      "last_updated": $started,
+      "dispatch_seq_counter": 0
     }' | bash .claude/scripts/task-lock.sh init-marker "$loop_guard_file"; then
     cycle_count=0
     infra_failures=0
     detected_defects='[]'
+    dispatch_seq_counter=0
     echo "[orchestrate] Starting fresh — MAX_CYCLES=$MAX_CYCLES, MAX_INFRA_FAILURES=$MAX_INFRA_FAILURES"
   else
     # Lost the creation race: another writer won. Resume from their guard, reading BOTH
@@ -160,9 +168,28 @@ else
     cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
     infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
     detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
+    dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' "$loop_guard_file")
     echo "[orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
   fi
 fi
+
+# mint_dispatch_seq(): increments the dispatch_seq_counter persisted in the loop guard and
+# returns the new value on stdout. Verbatim-twin helper to
+# skill-orchestrate-hard/SKILL.md's Stage 2 mint_dispatch_seq(). Call immediately before every
+# Agent dispatch that writes .orchestrator-handoff.json, adjacent to the dispatch_start_ts
+# capture (Defect A). Persisting on every mint (not only at Stage 3b) guarantees the value
+# survives a resume and is never repeated within this task, even across separate /orchestrate
+# invocations. See context/patterns/dispatch-report-not-termination.md for why an
+# orchestrator-minted value is required rather than content the dispatched agent could echo
+# unprompted.
+mint_dispatch_seq() {
+  dispatch_seq_counter=$((dispatch_seq_counter + 1))
+  jq --argjson seq "$dispatch_seq_counter" \
+     --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '.dispatch_seq_counter = $seq | .last_updated = $updated' \
+    "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+  echo "$dispatch_seq_counter"
+}
 
 # Blocker escalation counter (reset each /orchestrate invocation)
 blocker_escalation_count=0
@@ -254,6 +281,7 @@ skill_preflight_update "$task_number" "research" "$session_id"
 # stale `true` can never carry over from a previous cycle.
 dispatch_start_ts=$(date -u +%s)
 dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
 ```
 
 Invoke the Agent tool:
@@ -262,7 +290,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -302,6 +330,7 @@ skill_preflight_update "$task_number" "plan" "$session_id"
 # stale `true` can never carry over from a previous cycle.
 dispatch_start_ts=$(date -u +%s)
 dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
 ```
 
 Invoke the Agent tool:
@@ -310,7 +339,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$PLANNER_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
+| `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -342,6 +371,7 @@ skill_preflight_update "$task_number" "implement" "$session_id"
 # stale `true` can never carry over from a previous cycle.
 dispatch_start_ts=$(date -u +%s)
 dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
 ```
 
 Invoke the Agent tool:
@@ -350,7 +380,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Implement task $task_number following the plan" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -413,6 +443,7 @@ skill_preflight_update "$task_number" "implement" "$session_id"
 # stale `true` can never carry over from a previous cycle.
 dispatch_start_ts=$(date -u +%s)
 dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
 ```
 
 Invoke the Agent tool:
@@ -421,7 +452,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Resume implementation for task $task_number from continuation handoff" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -469,6 +500,7 @@ skill_preflight_update "$task_number" "implement" "$session_id"
 # stale `true` can never carry over from a previous cycle.
 dispatch_start_ts=$(date -u +%s)
 dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
 ```
 
 Read plan path:
@@ -482,7 +514,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Resume implementation for task $task_number (no continuation handoff; resume context recovered from the prior dispatch's return metadata)" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -582,7 +614,10 @@ append_detected_defect() {  # class, attributed_path, site, detail, record_resul
 # A handoff sitting at the correct path does NOT prove this dispatch wrote it. If the current
 # dispatch wrote nothing (or wrote somewhere else), the PREVIOUS cycle's file is still there,
 # and reading it reports the previous cycle's status and phases_completed as if they were this
-# one's — a silent wrong answer, worse than a detected absence.
+# one's — a silent wrong answer, worse than a detected absence. mtime alone is structurally
+# insufficient against a still-live predecessor — see
+# context/patterns/dispatch-report-not-termination.md — which is why the dispatch_seq gate
+# below exists as a second, content-based check.
 #
 # Reuse the dispatch window already captured for infra-failure discrimination: dispatch_start_ts
 # is set via `date -u +%s` immediately before every Agent tool call above. This is the same
@@ -618,6 +653,39 @@ if [ -f "$handoff_file" ]; then
       "skill-orchestrate/SKILL.md:stage-5-stale-handoff" \
       "handoff mtime $handoff_mtime predates this dispatch window ($stale_window_start)" \
       "$record_result"
+  fi
+fi
+
+# ── dispatch_seq identity gate (Defect A) ──────────────────────────────────────
+# The mtime check above is RETAINED as a second line of defense against the git-restoration
+# hazard, but it is structurally insufficient against a still-live predecessor: a woken
+# predecessor's late write always carries a NEWER mtime than this dispatch's own window, so it
+# passes the mtime check looking exactly like an on-time report. See
+# context/patterns/dispatch-report-not-termination.md for why mtime alone cannot discriminate
+# the two. dispatch_seq is the actual discriminator: an orchestrator-minted value only this
+# dispatch knows (minted via mint_dispatch_seq() in Stage 2, immediately before the Agent call),
+# echoed back unchanged by a legitimate writer.
+if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
+  handoff_dispatch_seq=$(jq -r '.dispatch_seq // empty' "$handoff_file" 2>/dev/null)
+  if [ -z "$handoff_dispatch_seq" ]; then
+    echo "[orchestrate] WARN: handoff has no dispatch_seq field — writer predates or omits the dispatch_seq contract; degrading to mtime-only discrimination (see context/patterns/dispatch-report-not-termination.md)." >&2
+  elif [ "$handoff_dispatch_seq" != "${dispatch_seq:-}" ]; then
+    handoff_stale=true
+    echo "[orchestrate] ERROR: DISPATCH_SEQ MISMATCH — handoff carries dispatch_seq=$handoff_dispatch_seq, this cycle minted dispatch_seq=${dispatch_seq:-<unset>}. This handoff was NOT written by the current dispatch (a still-live predecessor's late write, or a stale copy) — treating as missing." >&2
+    record_result=$(bash .claude/scripts/system-defect-record.sh \
+      --defect-class HANDOFF_STALE_OR_ABSENT \
+      --detecting-site "skill-orchestrate/SKILL.md:stage-5-dispatch-seq-mismatch" \
+      --task "$task_number" --session "$session_id" \
+      --message "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${dispatch_seq:-<unset>}" \
+      --attributed-path "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+      2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+    append_detected_defect "HANDOFF_STALE_OR_ABSENT" \
+      "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" \
+      "skill-orchestrate/SKILL.md:stage-5-dispatch-seq-mismatch" \
+      "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${dispatch_seq:-<unset>}" \
+      "$record_result"
+  else
+    echo "[orchestrate] dispatch_seq match ($handoff_dispatch_seq) — handoff confirmed as this dispatch's own report." >&2
   fi
 fi
 
@@ -1220,11 +1288,21 @@ After Agent tool returns: read handoff to confirm revision.
 
 **Step 5: RE-DISPATCH IMPLEMENT** — Read revised plan path, then invoke the Agent tool:
 
+```bash
+# Dispatch window for infra-failure discrimination and the Stage 5 staleness/dispatch_seq gate
+# — see context/patterns/infra-failure-discrimination.md. This dispatch writes
+# .orchestrator-handoff.json (orchestrator_mode: true) and therefore needs its own dispatch
+# window and dispatch_seq minted here, the same as every other handoff-writing dispatch site.
+dispatch_start_ts=$(date -u +%s)
+dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
+```
+
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Implement task $task_number following the revised plan" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, session_id, orchestrator_mode: true, plan_path: revised_plan_path, roadmap_path: "specs/ROADMAP.md", task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
+| `context` | `{ task_number, session_id, orchestrator_mode: true, plan_path: revised_plan_path, roadmap_path: "specs/ROADMAP.md", task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 After Agent tool returns: read handoff.
 
@@ -1395,7 +1473,11 @@ Initialize `mt_state_file = "specs/.orchestrator-multi-state-${session_id}.json"
 `task_numbers`, `waves`, `max_cycles`, `cycle_count: 0`, `failed_tasks: []`,
 `completed_tasks: []`, `current_statuses: {}`, `task_dirs: {}`, `research_agents: {}`,
 `implement_agents: {}`, `infra_failures: {}` (map task_num -> count, default 0),
-`dispatch_start_ts: {}` (map task_num -> unix seconds, written at dispatch time), and
+`dispatch_start_ts: {}` (map task_num -> unix seconds, written at dispatch time),
+`dispatch_seq_counter: 0` (batch-scoped monotonic counter, Defect A — never repeats a value
+across the whole batch, mirroring the single-task engine's loop-guard `dispatch_seq_counter`),
+`dispatch_seq: {}` (map task_num -> the `dispatch_seq` minted for that task's most recent
+dispatch, written at dispatch time alongside `dispatch_start_ts[$t]`), and
 `deferred_self_modifying: []` — an APPEND-ONLY OBSERVATION LOG (persists across every cycle of
 this same `mt_state_file`, never reset mid-invocation) of task numbers the self-modification gate
 has deferred AT LEAST ONCE this invocation. As of the narrowed same-cycle scope, this is NO LONGER
@@ -1983,22 +2065,34 @@ separate round-trip and do not violate the BATCHING RULE above. `update-task-sta
 idempotent, so calling it once per task per cycle is always safe, including repeated
 continuation-resume cycles.
 
+Minting `dispatch_seq` for a batch dispatch (Defect A, applies to all three loops below):
+increment the SAME batch-scoped `dispatch_seq_counter` and record the minted value into
+`dispatch_seq[$t]`, in the same jq write that records `dispatch_start_ts[$t]` — one atomic
+read-modify-write per task, so two tasks dispatched in the same batched message never collide on
+the counter:
+```bash
+task_dispatch_seq=$(jq -r '(.dispatch_seq_counter // 0) + 1' "$mt_state_file")
+jq --arg t "$task_num" --argjson ts "$(date -u +%s)" --argjson seq "$task_dispatch_seq" \
+  '.dispatch_start_ts[$t] = $ts | .dispatch_seq[$t] = $seq | .dispatch_seq_counter = $seq' \
+  "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
+```
+
 For each task in `research_tasks`:
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
-- Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
+- Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }`
+- Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `plan_tasks`:
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
-- Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
+- Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - Read `research_artifact` path from `state.json` artifacts (type=report)
 - `skill_preflight_update "$task_num" "plan" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }`
+- Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `implement_tasks`:
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
-- Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
+- Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - Read `plan_path` from `task_dir/plans/` (latest .md)
 - Read `continuation` from `task_dir/.orchestrator-handoff.json`, resolving **either** accepted
   form — nested `continuation_context.handoff_path` or flat top-level `continuation_path` (same
@@ -2006,7 +2100,7 @@ For each task in `implement_tasks`:
   single-task Stage 4/Stage 5 handlers above) — and **normalizing** the result to
   `{ handoff_path, orchestrator_mode: true }`, or `null` if neither form is present
 - `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
+- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 
