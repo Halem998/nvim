@@ -138,47 +138,36 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 
 ## Skill-to-Agent Mapping
 
-| Skill | Agent | Model | Purpose |
-|-------|-------|-------|---------|
-| skill-researcher | general-research-agent | sonnet | General web/codebase research |
-| skill-planner | planner-agent | opus | Implementation plan creation |
-| skill-implementer | general-implementation-agent | sonnet | General file implementation |
-| skill-meta | meta-builder-agent | - | System building and task creation |
-| skill-status-sync | (direct execution) | - | Atomic status updates |
-| skill-refresh | (direct execution) | - | Process and file cleanup |
-| skill-todo | (direct execution) | - | Archive completed tasks with CHANGE_LOG updates |
-| skill-tag | (user-only) | - | Semantic version tagging for deployment |
-| skill-team-research | (team orchestration) | sonnet | Multi-agent parallel research (--team flag) |
-| skill-team-research (internal) | synthesis-agent | sonnet | Multi-output synthesis after teammate completion |
-| skill-team-plan | (team orchestration) | sonnet | Multi-agent parallel planning (--team flag) |
-| skill-team-implement | (team orchestration) | sonnet | Multi-agent parallel implementation (--team flag) |
-| skill-reviser | reviser-agent | opus | Plan revision and description update |
-| skill-spawn | spawn-agent | sonnet | Analyze blockers and spawn new tasks |
-| skill-orchestrate | (direct execution) | opus | Autonomous lifecycle state machine (/orchestrate command) |
-| skill-orchestrate-hard | (direct execution) | opus | Hard-mode orchestration: per-phase dispatch, adversarial verification, churn detection |
-| skill-researcher-hard | general-research-hard-agent | sonnet | Hard-mode research: adversarial verification (H4), reference grounding (H3) |
-| skill-planner-hard | planner-hard-agent | opus | Hard-mode planning: phase sizing (H8), postmortem constraints, wave declarations |
-| skill-implementer-hard | general-implementation-hard-agent | sonnet | Hard-mode implementation: anti-analysis (H2), wrap-up discipline (H9), territory (H7) |
-| skill-git-workflow | (direct execution) | - | Create scoped git commits for task operations |
-| skill-fix-it | (direct execution) | - | Scan for FIX:/TODO:/NOTE: tags and create tasks |
-| skill-project-overview | (direct execution) | - | Interactive repo scan and project-overview.md task creation |
-| /review | (direct execution) | - | Codebase analysis; code-reviewer-agent available for future skill integration |
+Per-skill/per-agent purpose descriptions and model tiers are provided natively by the harness's
+own Skill and Agent tool listings, injected free every session — they are not restated here. Each
+agent's own file frontmatter (`description:`, `model:`) is the durable source. The table below
+keeps only the Skill -> Agent pairing, which the harness does not provide.
 
-### Agents
-
-| Agent | Purpose |
-|-------|---------|
-| general-research-agent | General web/codebase research |
-| general-implementation-agent | General file implementation |
-| planner-agent | Implementation plan creation |
-| meta-builder-agent | System building and meta tasks |
-| code-reviewer-agent | Code quality assessment and review |
-| reviser-agent | Plan revision with research synthesis |
-| spawn-agent | Blocker analysis and task decomposition |
-| synthesis-agent | Multi-output synthesis for team research and team planning |
-| general-research-hard-agent | Hard-mode research with adversarial self-verification and reference grounding |
-| planner-hard-agent | Hard-mode planning with phase sizing constraints and postmortem rules |
-| general-implementation-hard-agent | Hard-mode implementation with anti-analysis contracts and per-phase focus |
+| Skill | Agent |
+|-------|-------|
+| skill-researcher | general-research-agent |
+| skill-planner | planner-agent |
+| skill-implementer | general-implementation-agent |
+| skill-meta | meta-builder-agent |
+| skill-status-sync | (direct execution) |
+| skill-refresh | (direct execution) |
+| skill-todo | (direct execution) |
+| skill-tag | (user-only) |
+| skill-team-research | (team orchestration) |
+| skill-team-research (internal) | synthesis-agent |
+| skill-team-plan | (team orchestration) |
+| skill-team-implement | (team orchestration) |
+| skill-reviser | reviser-agent |
+| skill-spawn | spawn-agent |
+| skill-orchestrate | (direct execution) |
+| skill-orchestrate-hard | (direct execution) |
+| skill-researcher-hard | general-research-hard-agent |
+| skill-planner-hard | planner-hard-agent |
+| skill-implementer-hard | general-implementation-hard-agent |
+| skill-git-workflow | (direct execution) |
+| skill-fix-it | (direct execution) |
+| skill-project-overview | (direct execution) |
+| /review | (direct execution) — code-reviewer-agent available for future skill integration |
 
 **Model Enforcement**: Agents declare preferred models via `model:` frontmatter field using a tiered policy: Opus for deep-reasoning agents (planner, meta-builder, reviser, formal/lean/math/logic) AND for orchestrator commands (`/research`, `/plan`, `/implement`) which accumulate large context across sequential sub-agent calls and require the 1M context auto-upgrade; Sonnet for worker agents (research, implementation, review, spawn, domain tasks) which have their own fresh context per invocation. Two independent flag dimensions override behavior at invocation time: effort flags (`--fast`, `--hard`) control reasoning depth, and model flags (`--haiku`, `--sonnet`, `--opus`, `--fable`) select the model family. These flags work on `/research`, `/plan`, and `/implement`. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
 

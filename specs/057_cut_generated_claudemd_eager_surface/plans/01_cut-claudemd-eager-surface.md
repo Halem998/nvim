@@ -387,25 +387,29 @@ checking that `.claude/docs/reference/utility-scripts-inventory.md` exists after
 
 ---
 
-### Phase 5: Lever D2 — Compress Skill-to-Agent Mapping [NOT STARTED]
+### Phase 5: Lever D2 — Compress Skill-to-Agent Mapping [COMPLETED]
 
 **Goal**: Drop the Purpose and Model columns and the `### Agents` subtable, which restate the
 harness's own native Skill/Agent tool listings, while keeping the unique Skill -> Agent pairing.
 
 **Tasks**:
-- [ ] Do the line-by-line sizing pass the research deferred: measure the exact bytes of the Purpose
+- [x] Do the line-by-line sizing pass the research deferred: measure the exact bytes of the Purpose
       column, the Model column, and the `### Agents` subtable before editing, and record them.
-- [ ] In `agent-system/extensions/core/merge-sources/claudemd.md`, reduce the Skill-to-Agent
-      Mapping table to Skill and Agent columns only.
-- [ ] Delete the `### Agents` subtable.
-- [ ] Add one sentence stating that per-skill and per-agent purpose descriptions are provided
+      *(completed: full 23-row Skill-to-Agent table = 2,421 B; `### Agents` subtable = 859 B)*
+- [x] In `agent-system/extensions/core/merge-sources/claudemd.md`, reduce the Skill-to-Agent
+      Mapping table to Skill and Agent columns only. *(completed)*
+- [x] Delete the `### Agents` subtable. *(completed)*
+- [x] Add one sentence stating that per-skill and per-agent purpose descriptions are provided
       natively by the harness's Skill and Agent tool listings, and that each agent's own file
-      frontmatter is the durable source.
-- [ ] Preserve the surrounding prose blocks unchanged: Model Enforcement, User-Only Skills,
-      Extension Skills, Team Mode Skills and its flag table.
-- [ ] Confirm no skill loses its agent pairing in the reduced table — the row count must be
-      unchanged.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh`, then re-measure and record the delta.
+      frontmatter is the durable source. *(completed: 3-sentence intro paragraph added above the
+      reduced table)*
+- [x] Preserve the surrounding prose blocks unchanged: Model Enforcement, User-Only Skills,
+      Extension Skills, Team Mode Skills and its flag table. *(completed: confirmed byte-identical)*
+- [x] Confirm no skill loses its agent pairing in the reduced table — the row count must be
+      unchanged. *(completed: 23 rows before, 23 rows after)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh`, then re-measure and record the delta.
+      *(completed: core merge source 20,752 B -> 18,952 B (-1,800 B); assembled .claude/CLAUDE.md
+      35,015 B -> 33,215 B (-1,800 B); exceeds the ~1,000-1,500 B estimate, reported as measured)*
 
 **Timing**: 1 hour
 
