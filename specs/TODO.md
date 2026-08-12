@@ -6,20 +6,21 @@ next_project_number: 52
 
 ## Task Order
 
-*Updated 2026-08-11. Generated from state.json dependency graph.*
+*Updated 2026-08-12. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 16,17,18,20,22,27,28,31,33,34,39,41,43,45,46,51 | -- | agent-system, extensions, literature, ... |
-| 2 | 9,13,14,29,35,42,48 | 16,17,18,22,33,41 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
-| 3 | 30,37,49,50 | 29,33,35,41,48 | agent-system, orchestration-concurrency, context-loading |
+| 1 | 14,16,17,18,20,22,27,28,31,34,35,39,41,43,45,46,51 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,13,29,37,42,48 | 16,17,18,22,35,41 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
+| 3 | 30,49,50 | 29,41,48 | agent-system, context-loading |
 | 4 | 32,44 | 28,30,31,49 | agent-system, context-loading |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
+14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
   └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
@@ -33,7 +34,6 @@ next_project_number: 52
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
-14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -56,9 +56,8 @@ next_project_number: 52
 ### Orchestration Concurrency
 
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
-33 [PLANNED] — Fix two coupled, high-severity run-state-integrity defects in the
-  └─ 35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
-    └─ 37 [NOT STARTED] — Make the concurrency premise handed to per-phase dispatch agents 
+35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
+  └─ 37 [NOT STARTED] — Make the concurrency premise handed to per-phase dispatch agents 
 
 ### Context Loading
 
@@ -624,12 +623,13 @@ Reproduction hint for the implementer: the commit that eventually succeeded was 
 
 ### 33. Give .orchestrator-handoff.json per-dispatch identity and fix the exhausted-loop-guard resume deadlock
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
 - **Research**: [033_fix_handoff_identity_and_loop_guard_resume_deadlock/reports/01_handoff-identity-and-loop-guard-resume.md]
 - **Plan**: [033_fix_handoff_identity_and_loop_guard_resume_deadlock/plans/01_handoff-identity-loop-guard-fix.md]
+- **Summary**: [033_fix_handoff_identity_and_loop_guard_resume_deadlock/summaries/01_handoff-identity-loop-guard-fix-summary.md]
 
 **Description**: Fix two coupled, high-severity run-state-integrity defects in the orchestrator engines. Both were observed live during a real `/orchestrate --hard` run in a separate repository; both are recorded system-defect observations with concrete evidence, not speculation. They are combined into one task because they live in the same two files, share the same co-maintenance contract, and overlap heavily on edit territory.
 
