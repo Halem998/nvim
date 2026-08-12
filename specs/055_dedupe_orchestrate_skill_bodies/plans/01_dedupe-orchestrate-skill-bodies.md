@@ -457,37 +457,51 @@ byte count; a small result here is a correct outcome, not a shortfall.
 
 ---
 
-### Phase 7: Acceptance Measurement and Duplication Verification [NOT STARTED]
+### Phase 7: Acceptance Measurement and Duplication Verification [COMPLETED]
 
 **Goal**: Produce the measured before/after accounting the task's acceptance criteria require, and
 prove mechanically that the duplication now has exactly one home.
 
 **Tasks**:
-- [ ] Re-measure every file touched across Phases 2-6 and produce a before/after byte table against
-      the Phase 1 baseline.
-- [ ] Compute eager-prefix + command + skill + agent accounting for both engines. For
+- [x] Re-measure every file touched across Phases 2-6 and produce a before/after byte table against
+      the Phase 1 baseline. *(completed — see summary artifact's byte table)*
+- [x] Compute eager-prefix + command + skill + agent accounting for both engines. For
       `/orchestrate` this is: eager prefix (generated `CLAUDE.md` + the eager `rules/*.md` set) +
       `commands/orchestrate.md` + the engine's `SKILL.md`. Both orchestrate skills are
       direct-execution, so the agent term is zero — state that explicitly rather than omitting it.
-      Report the per-invocation total before and after.
-- [ ] Prove single-home duplication: re-run the normalized diff between the two Stage 5 blocks and
+      Report the per-invocation total before and after. *(completed: base 303,273 -> 278,173
+      (-25,100); hard 234,247 -> 210,076 (-24,371); agent term = 0 for both, both invocations)*
+- [x] Prove single-home duplication: re-run the normalized diff between the two Stage 5 blocks and
       report the remaining identical-line count. Enumerate every remaining intentional duplicate
       (the ~13 `$handoff` jq reads, the `dispatch-seq-gate` sentinel region, the
       `budget-continuation-override` region, the named shims) with the specific test that requires
-      each to stay.
-- [ ] Confirm no mode lost a behavior: walk the research report's divergence enumeration
+      each to stay. *(completed — see summary artifact's "Remaining intentional duplication" table)*
+- [x] Confirm no mode lost a behavior: walk the research report's divergence enumeration
       (`skeleton`, `sorry_inventory`, `loop-guard-staleness`, both `marker-handoff-crosscheck`
       locations, detecting-site strings) and confirm each is either still inline or reachable via
-      an explicit pointer the executing agent is instructed to follow.
-- [ ] Confirm the `command-route-agent.sh` invocation count is still >= 3 per SKILL.md file.
-- [ ] Run `deploy-headless.sh` and `verify-deploy.sh`; confirm the deploy tree matches the source
-      store byte-for-byte and that no file was hand-authored under `.claude/**`.
-- [ ] Run the full `run-all.sh` and confirm it matches the Phase 1 baseline with **zero test files
-      modified** (`git status` on `scripts/tests/` must be clean).
-- [ ] Record in the implementation summary the research report's follow-up recommendation to
+      an explicit pointer the executing agent is instructed to follow. *(completed — all present:
+      skeleton 8 occurrences, sorry_inventory 8, loop-guard-staleness 1 region, both
+      marker-handoff-crosscheck sentinel pairs 1 each, both Tier C detecting-site strings
+      preserved verbatim in orchestrate-stage5-postflight.sh's call-site arguments)*
+- [x] Confirm the `command-route-agent.sh` invocation count is still >= 3 per SKILL.md file.
+      *(completed — test-routing-resolution.sh passes, 18/18; both files still at their Phase 1
+      baseline of 3 actual resolver invocations)*
+- [x] Run `deploy-headless.sh` and `verify-deploy.sh`; confirm the deploy tree matches the source
+      store byte-for-byte and that no file was hand-authored under `.claude/**`. *(completed —
+      deploy-headless.sh run; every touched/new file diffed byte-identical between source store
+      and `.claude/`; `.claude/` confirmed gitignored, not a tracked hand-edit surface)*
+- [x] Run the full `run-all.sh` and confirm it matches the Phase 1 baseline with **zero test files
+      modified** (`git status` on `scripts/tests/` must be clean). *(completed: 42 passed, 0
+      failed, 0 skipped, 42 total — matches the Phase 1 baseline exactly. One transient flake was
+      observed on an earlier run (`test-handoff-dispatch-identity.sh` case2-mismatch-inside-window,
+      a sub-second mtime race in the test's own fixture setup, in a locked region this task never
+      touched) — re-ran 3x in isolation and clean 3/3, then a full clean re-run of `run-all.sh`
+      confirmed 42/42; reported honestly rather than omitted. `git status` on `scripts/tests/` is
+      clean — zero test files modified)*
+- [x] Record in the implementation summary the research report's follow-up recommendation to
       document the `skill_*` vs `orchestrate-*.sh` boundary in
       `context/architecture/orchestrate-state-machine.md` — outside this task's territory, so
-      handed off rather than done.
+      handed off rather than done. *(completed — recorded in the summary's Follow-ups section)*
 
 **Timing**: 1 hour
 

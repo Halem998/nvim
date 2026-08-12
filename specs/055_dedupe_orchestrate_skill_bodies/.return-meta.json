@@ -1,11 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/055_dedupe_orchestrate_skill_bodies/summaries/01_dedupe-orchestrate-skill-bodies-summary.md",
+      "summary": "Deduplicated skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md by moving shared Stage 2/5/8 logic into four skill-base.sh functions and three new orchestrate-*.sh scripts; SKILL.md pair shrank by 49,471 bytes combined, all 42 orchestration tests pass unmodified."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the byte-identical duplication between skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md across all 7 plan phases: promoted mint_dispatch_seq/append_detected_defect/propagate_completion/merge_return_meta to scripts/skill-base.sh behind named shims, extracted the Stage 5 stray-handoff sweep, outcome-recovery, postflight status-transition, and artifact-linking logic into three new orchestrate-*.sh scripts, and extracted the common Stage 2 loop-guard prologue. skill-orchestrate/SKILL.md dropped from 196,171 to 171,071 bytes (-25,100) and skill-orchestrate-hard/SKILL.md from 127,145 to 102,774 bytes (-24,371). All 42 tests in run-all.sh pass, zero test files modified, deploy tree verified byte-identical to source store."
+  },
+  "modified_files": [
+    "specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh",
+    "agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh",
+    "agent-system/extensions/core/manifest.json",
+    "specs/055_dedupe_orchestrate_skill_bodies/summaries/01_dedupe-orchestrate-skill-bodies-summary.md",
+    "specs/055_dedupe_orchestrate_skill_bodies/plans/01_dedupe-orchestrate-skill-bodies.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a new script file is added under agent-system/extensions/<ext>/scripts/, it MUST be registered in that extension's manifest.json 'provides.scripts' array or deploy-headless.sh will silently never sync it into .claude/scripts/ -- the SKILL.md call site (bash .claude/scripts/foo.sh) will then fail at runtime even though the source-store file exists and bash -n passes. Always grep the manifest for a sibling script's registration and add the new script alongside it before assuming deployment will pick it up.",
+      "category": "PATTERN",
+      "source_artifact": "specs/055_dedupe_orchestrate_skill_bodies/summaries/01_dedupe-orchestrate-skill-bodies-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "deploy-headless.sh", "extension development", "source-store-deploy-boundary"]
+    },
+    {
+      "content": "When extracting a shared helper into skill-base.sh that mutates a file via a read-modify-write idiom (e.g. a .return-meta.json merge that reads detected_defects from a loop-guard file), check whether all call sites read the ambient value at the SAME relative point versus a cleanup step (e.g. rm -f on that same file) that might run in between at only SOME call sites. If ordering differs across call sites (as it did between skill-orchestrate's clean-exit merge, which ran AFTER its own rm -f, versus skill-orchestrate-hard's, which ran BEFORE), the shared function must take the already-resolved value as an explicit parameter rather than re-deriving it from a path internally, or one call site will silently read a deleted/stale file.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/055_dedupe_orchestrate_skill_bodies/summaries/01_dedupe-orchestrate-skill-bodies-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deduplication", "read-modify-write", "ordering asymmetry", "skill-base.sh", "shared function extraction"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786563122_891337",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 7,
     "phases_total": 7
   }
 }

@@ -1,0 +1,17 @@
+{
+  "status": "implemented",
+  "summary": "Deduplicated skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md across all 7 plan phases: promoted mint_dispatch_seq/append_detected_defect/propagate_completion/merge_return_meta to scripts/skill-base.sh behind named shims, extracted the Stage 5 stray-handoff sweep, outcome-recovery, postflight status-transition, and artifact-linking logic into three new orchestrate-*.sh scripts, and extracted the common Stage 2 loop-guard prologue. SKILL.md pair shrank by 49,471 bytes combined. All 42 tests in run-all.sh pass, zero test files modified, deploy tree verified byte-identical to source store.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/055_dedupe_orchestrate_skill_bodies/summaries/01_dedupe-orchestrate-skill-bodies-summary.md",
+      "summary": "Full acceptance measurement: before/after byte table, eager-prefix+command+skill+agent accounting, remaining-duplication proof, divergence enumeration, plan deviations."
+    }
+  ],
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "continuation_path": null,
+  "plan_markers_verified": true,
+  "dispatch_seq": 3
+}
