@@ -3132,6 +3132,32 @@
         "task_types": []
       },
       "on_demand": true
+    },
+    {
+      "path": "standards/git-workflow-narrative.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Reactive git-workflow elaboration: commit-per-green-substep mechanism detail, snapshot-mode narrative, session ID lifecycle, branch strategy, and commit-failure error handling",
+      "line_count": 92,
+      "keywords": [
+        "git-workflow",
+        "commit-per-green-substep",
+        "snapshot-modes",
+        "session-id",
+        "branch-strategy"
+      ],
+      "topics": [
+        "git-workflow"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "commands": [
+          "/implement"
+        ]
+      }
     }
   ]
 }

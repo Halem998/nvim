@@ -95,3 +95,29 @@ for any of the six.
 | Phase | File | Before (B) | After (B) | Delta (B) | % Change |
 |-------|------|-------------|-----------|-----------|----------|
 | 1 | (baseline only, no edits) | — | — | — | — |
+| 2 | `core/rules/git-workflow.md` | 11,147 | 7,000 | -4,147 | -37.2% |
+| 2 | `core/context/standards/git-workflow-narrative.md` (new, lazy) | 0 | 5,082 | +5,082 | new file |
+
+**Phase 2 note**: the achieved eager core (7,000 B) is higher than the research's ~4,200 B
+hypothesis. Reason: the full "No Destructive Git on Uncommitted Work" forbidden-operations list,
+exemption summary, and the "snapshot first" instruction were kept in full per the Risks table's
+explicit mitigation (only the mode-by-mode `--branch`/`--no-revert` prose moved), and the
+Commit Conventions tables plus the retained portions of Git Safety are inherently large. All
+KEEP-list items (Commit Conventions tables, Do Not Commit / Create Commits After, the
+Commit-Per-Green-Substep Mandate heading + binding paragraph, Never Run, Forbidden-on-a-dirty-tree,
+Not-blocked, Always Check Before Commit, Commit Message Format + Session ID format/generation) are
+present verbatim — confirmed by direct read of the trimmed file, not asserted.
+
+**Phase 2 check-extension-docs.sh note**: `check-extension-docs.sh` reports
+`FAIL: deployed rule content drift (deployed != extension source): rules/git-workflow.md` at this
+point in the plan. This is EXPECTED and BY DESIGN: the deployed `.claude/` tree is written only by
+the single `deploy-headless.sh` redeploy in Phase 7 (per this plan's binding rules and Non-Goals),
+so source-vs-deployed drift is expected to persist through Phases 2-6 and is resolved only once,
+in Phase 7. Five additional pre-existing drift FAILs (`lint-agent-contracts.sh`,
+`orchestrate-recover-outcome.sh`, `orchestrator-postflight.sh`, `skill-base.sh`,
+`test-lint-agent-contracts.sh`) were already present in the working tree BEFORE this task's Phase 1
+baseline commit (confirmed: Phase 1's `cmp` check found the six eager RULES byte-identical to
+deployed, but this drift check also covers `provides.scripts`, which Phase 1 did not check) — they
+belong to other, unrelated in-flight work and are out of this task's territory; not touched, not
+fixed here. `generate-context-line-counts.sh --check` passes clean (486/486 exact) confirming the
+new companion's `index-entries.json` entry is correct.

@@ -176,43 +176,46 @@ unrelated edit) in the baseline record before proceeding — do not silently ado
 
 ---
 
-### Phase 2: Split git-workflow.md (11,147 B, largest eager contributor) [NOT STARTED]
+### Phase 2: Split git-workflow.md (11,147 B, largest eager contributor) [COMPLETED]
 
 **Goal**: Reduce `git-workflow.md` to a pre-action core carrying every commit-format and
 forbidden-operation constraint, moving the elaborative narrative to a lazily-loaded companion,
 without breaking any cross-reference that names a moved section.
 
 **Tasks**:
-- [ ] Sweep references first: `grep -rn "git-workflow" agent-system/extensions/ --include=*.md --include=*.sh --include=*.json`
+- [x] Sweep references first: `grep -rn "git-workflow" agent-system/extensions/ --include=*.md --include=*.sh --include=*.json`
       and record every file that names a git-workflow section by heading. `plan-format.md` is
       known to name `### Commit-Per-Green-Substep Mandate` as the authoritative home of the
-      `Commit Mode` field's rules; there may be others.
-- [ ] Create `agent-system/extensions/core/context/standards/git-workflow-narrative.md` and move
+      `Commit Mode` field's rules; there may be others. *(completed: plan-format.md,
+      general-implementation-agent.md, skill-implementer/SKILL.md, and recovery.md name headings
+      that both survive the trim)*
+- [x] Create `agent-system/extensions/core/context/standards/git-workflow-narrative.md` and move
       into it, verbatim: the Commit-Per-Green-Substep Mandate elaboration (the sub-step
       granularity / green-means-verified / atomic-batch / staging-reuse bullets beyond the core
       mandate sentence), the No-Destructive-Git exemption and snapshot-mode narrative
       (`--branch` / `--no-revert` mode-by-mode prose), the Session ID Lifecycle description,
-      Branch Strategy, and the Error Handling (on commit / pre-commit hook failure) section.
-- [ ] KEEP eager in `git-workflow.md`, in full and unmodified: the Commit Conventions tables
+      Branch Strategy, and the Error Handling (on commit / pre-commit hook failure) section. *(completed)*
+- [x] KEEP eager in `git-workflow.md`, in full and unmodified: the Commit Conventions tables
       (task-scoped format + Standard Actions + System Operations), the "Do Not Commit" and
       "Create Commits After" lists, the `### Commit-Per-Green-Substep Mandate` HEADING with its
       one-paragraph binding statement plus a pointer to the companion, the "Never Run" list, the
       "Forbidden on a dirty tree" list, the "Not blocked" list, "Always Check Before Commit", and
-      the Commit Message Format + Session ID format/generation block.
-- [ ] Delete the Commit Scope examples subsection: `context/standards/git-staging-scope.md` is
+      the Commit Message Format + Session ID format/generation block. *(completed: confirmed by grep)*
+- [x] Delete the Commit Scope examples subsection: `context/standards/git-staging-scope.md` is
       already the pointed-to authoritative source and the pointer already exists in-file. Verify
-      the pointer survives the deletion.
-- [ ] Trim the trailing Examples block to a single example (the Standard Actions table already
-      carries the format).
-- [ ] Repoint every cross-reference found in the sweep that named a moved paragraph, so it now
+      the pointer survives the deletion. *(completed: pointer sentence retained)*
+- [x] Trim the trailing Examples block to a single example (the Standard Actions table already
+      carries the format). *(completed: kept the single task-ref-ok-marked canonical example)*
+- [x] Repoint every cross-reference found in the sweep that named a moved paragraph, so it now
       names either the retained heading or the companion file. Do not leave a reference pointing
-      at prose that no longer exists.
-- [ ] Add the `git-workflow-narrative.md` entry to `agent-system/extensions/core/index-entries.json`
+      at prose that no longer exists. *(completed: no repointing needed — every referenced heading
+      survived in the eager core)*
+- [x] Add the `git-workflow-narrative.md` entry to `agent-system/extensions/core/index-entries.json`
       with `domain: "core"`, `subdomain: "standards"`, a one-line summary, `line_count` from
       `wc -l`, keywords, topics, and a `load_when` block naming the implementation agents that
-      consume git guidance.
-- [ ] Measure and append to `baseline-bytes.md`: before/after bytes for `git-workflow.md` and the
-      byte size of the new companion.
+      consume git guidance. *(completed)*
+- [x] Measure and append to `baseline-bytes.md`: before/after bytes for `git-workflow.md` and the
+      byte size of the new companion. *(completed: 11,147 -> 7,000 B, -37.2%; companion 5,082 B)*
 
 **Timing**: 1.5 hours
 

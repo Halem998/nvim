@@ -63,62 +63,14 @@ contradictory version of this rule that listed "intermediate states" as uncommit
 language conflicted directly with the checkpoint-before-overflow and progress-file granularity
 this codebase already relies on for crash recovery, and has been removed.
 
-- **Sub-step granularity**: a "sub-step" is a `progress-file.md` objective transitioning to
-  `status: "done"` — the same unit `files_touched` accumulates against (see
-  `.claude/context/formats/progress-file.md`).
-- **"Green" means verified, not merely attempted**: the objective's own verification criteria
-  passed (a check ran and succeeded, files were confirmed to exist and be non-empty, or a
-  build/test step passed where applicable) — per `checkpoint-before-overflow.md`'s green/RED
-  distinction. "Some tool calls happened" is NOT green; an unverified edit is still
-  partial/incomplete work per the bullet above and stays uncommitted until it can be confirmed
-  green.
-- **Atomic-batch objectives**: a plan may declare a phase `Commit Mode: atomic-batch` (see
-  `context/formats/plan-format.md`'s `## Verification Tiers` section, the authoritative home of
-  the `Commit Mode` field definition). When it does, the sub-step IS the whole batch: one
-  `progress-file.md` objective spans the phase's declared file set, and intermediate per-file
-  states are expected to be red and MUST NOT be committed. This is consistent with, not an
-  exception to, the sub-step granularity definition above — "a `progress-file.md` objective
-  transitioning to `status: "done"`" was already unit-agnostic; this bullet makes the
-  multi-file case explicit rather than redefining it. The objective's own green criterion is the
-  batch-level verification taken at the phase's declared tier; one commit then covers the whole
-  batch. **Anti-abuse guard**: the batch must be declared in the plan in advance — an implementer
-  may NOT retroactively widen a batch to avoid committing already-green work.
-- **Staging reuses the existing `implement` scope verbatim** — task dir + `plan_path` + the
-  agent's self-reported `modified_files` (`.claude/context/standards/git-staging-scope.md`) and
-  `checkpoint-before-overflow.md`'s green-commit branch. This is NOT a second staging codepath:
-  the same under-stage-never-over-stage discipline and the same forbidden `git add -A` /
-  `git commit -am` operations apply identically to sub-step commits.
-- **Message convention**: see the `task {N} phase {P}.{O}: {objective_description}` row in
-  Standard Actions below — finer-grained than the existing per-phase row, used specifically for
-  a single objective's green commit within a phase still in progress.
+See `context/standards/git-workflow-narrative.md` for the sub-step granularity definition,
+the atomic-batch carve-out, the staging-reuse mechanism, and the message-convention pointer.
 
 ## Commit Scope
 
 See `.claude/context/standards/git-staging-scope.md` for the authoritative per-operation
 commit-scope contract (`research`/`plan`/`implement` staging rules, the proven `--team` staging
 template, and the fail-safe under-stage-not-over-stage direction).
-
-### Single-Task Operations
-Include only files related to that task:
-```
-task {N}: complete research
-
-Modified:
-  specs/TODO.md
-  specs/state.json
-  specs/{NNN}_task_slug/reports/01_research-findings.md
-```
-
-### Multi-Task Operations
-Group related changes:
-```
-todo: archive 5 completed tasks
-
-Modified:
-  specs/TODO.md
-  specs/state.json
-  specs/archive/state.json
-```
 
 ## Git Safety
 
@@ -158,25 +110,14 @@ dirty and no fresh snapshot exists.
    stays exempt: the safety commit makes the tree clean *before* the
    `git reset --hard {sha}` / `git clean -fd` rollback runs, so it is never blocked.
 2. A snapshot was just taken via `bash .claude/scripts/git-snapshot.sh` (the
-   sanctioned way to snapshot). The helper writes a durable `.patch` under
-   `specs/{NNN}_{SLUG}/` plus a belt-and-suspenders `git stash` (default mode), a
-   WIP commit on a scratch branch (`--branch` mode), or a non-mutating stored stash plus
-   an `untracked-backup-{ts}/` copy (`--no-revert` mode), then refreshes a short-lived,
-   single-use freshness marker that the hook consumes on the next matching
-   destructive command.
+   sanctioned way to snapshot). See `context/standards/git-workflow-narrative.md` for the
+   per-mode detail (default / `--branch` / `--no-revert`).
 
 Before any intentional rollback that would otherwise be blocked, run
 `bash .claude/scripts/git-snapshot.sh <task-number>` first, then retry the destructive
 command. Pass the task number explicitly — the no-argument form only resolves when
 exactly one task in `specs/state.json` has status `implementing`, which does not hold
 when several tasks are in flight at once.
-
-**The default and `--branch` modes both REVERT the working tree.** Both leave it clean
-at HEAD, with the uncommitted edits recoverable only from the reported patch, stash, or
-branch; `--branch` changes the recovery handle, not whether the revert happens. That is
-the intended behavior at this call site, because the snapshot sits immediately before an
-already-decided destructive command. For a purely defensive checkpoint where work
-continues afterwards, use `--no-revert`, which leaves the tree untouched.
 
 **Not blocked** (do not discard uncommitted changes): `git stash` (push),
 `git stash pop` / `git stash apply`, `git restore --staged <path>`, and non-forced
@@ -210,19 +151,10 @@ Session ID links commits to their originating command execution.
 session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ```
 
-**Lifecycle**:
-1. Generated at CHECKPOINT 1 (GATE IN)
-2. Passed through delegation to skill/agent
-3. Included in error logs for traceability
-4. Included in final git commit
+See `context/standards/git-workflow-narrative.md` for the Session ID lifecycle, Branch Strategy,
+and commit-failure Error Handling narrative.
 
 ### Examples
-
-```
-task {N}: create LaTeX documentation for Logos system
-
-Session: sess_1736700000_a1b2c3
-```
 
 <!-- task-ref-ok:begin canonical rendered commit-message example -->
 ```
@@ -231,35 +163,3 @@ task 259 phase 2: implement modal semantics evaluator
 Session: sess_1736701234_d4e5f6
 ```
 <!-- task-ref-ok:end -->
-
-```
-todo: archive {N} completed tasks
-
-Session: sess_1736702000_789abc
-```
-
-## Branch Strategy
-
-### Main Development
-- Work on `main` or feature branches
-- Commit frequently with descriptive messages
-- Keep commits atomic (one logical change per commit)
-
-### Task Branches (Optional)
-For complex multi-phase implementations:
-```
-task-{N}-{slug}
-```
-
-## Error Handling
-
-### On Commit Failure
-1. Log the failure
-2. Do not block the operation
-3. Preserve changes for manual commit
-4. Report to user that commit failed
-
-### On Pre-Commit Hook Failure
-1. Do not use --no-verify
-2. Fix the issue
-3. Create new commit (never amend failed commits)
