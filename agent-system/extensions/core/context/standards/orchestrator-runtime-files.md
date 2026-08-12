@@ -195,6 +195,46 @@ identical unconditional-trust shape in its own Stage 2 and is not changed by thi
 the Class Table row and Rationale paragraph above, both of which now state this asymmetry
 explicitly rather than leaving it to be inferred.
 
+### `cycle_count` semantics and the budget-continuation override (Defect B)
+
+`cycle_count` (the loop guard's work-cycle budget counter) is **per-task and cumulative across
+invocations, by design.** It is deliberately NOT reset when a new `session_id` appears, because
+`session_id` is regenerated on every `/orchestrate` invocation regardless of whether any work
+progressed — gating the budget on it would let an operator bypass `MAX_CYCLES` simply by
+re-invoking the command. `test-session-runtime-files.sh` Case 3 is the regression protecting this
+decision; no mechanism described in this document may disturb it.
+
+Both engines implement an explicit, operator-typed, loudly-logged **budget-continuation
+override** (`--continue-budget`) for the one legitimate case this semantics creates: a genuinely
+exhausted budget with real work still remaining. When `cycle_count >= MAX_CYCLES` is detected at
+Stage 2 (before the main loop opens):
+- **Flag absent**: the engine refuses immediately with an honest message naming the actual resume
+  command, rather than entering the main loop and running zero iterations before falling through
+  to a stale "MAX_CYCLES reached" message.
+- **Flag present**: the exhausted guard is archived aside (copied, for auditability) and the SAME
+  guard file is reinitialized in place with `cycle_count` reset to `0` while every other
+  cross-invocation history field — `dispatch_seq_counter` (Defect A; must never repeat a value
+  within a task), `detected_defects`, `plan_version`, `max_cycles` — is carried forward
+  unchanged. This is a distinct code path from the `loop-guard-staleness` detector's
+  archive-and-fall-through-to-fresh-init above; falling through to fresh-init here would reset
+  `dispatch_seq_counter` to `0`, silently violating the Defect A "never repeats" invariant.
+
+**Asymmetry decision (recorded once, referenced by both engines' own Stage 2 comments so all
+copies agree)**: budget exhaustion is deliberately NOT folded into the 3-signal
+`loop-guard-staleness` detector as a fourth signal. That detector's premise is "this guard's
+content has gone stale or been superseded" — a schema/lineage/age mismatch. An exhausted guard is
+neither stale nor superseded; its `cycle_count` is completely accurate, it has simply reached the
+budget ceiling. Conflating the two would misrepresent an accurate, current guard as a
+data-integrity problem rather than what it actually is: a budget limit awaiting an explicit human
+decision to lift. Whether base mode should ever gain the general 3-signal staleness detector at
+all remains a separate, undecided question — this override does not decide it, in either engine.
+
+**Guard lifecycle is unchanged by this override.** The loop guard is still `rm -f`'d only at
+full-loop termination (see the Class Table row above) — a partial exit via the flag-absent
+refusal, or any other partial exit, leaves the guard fully in place, exactly as before. The
+guard's entire job is to persist across exactly this gap so a subsequent `--continue-budget`
+invocation has `cycle_count` to read.
+
 ## Consumer Repo Setup
 
 There is no automatic way for the source store to deliver a repo-root `.gitignore` contribution —

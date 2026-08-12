@@ -113,6 +113,10 @@ multi_task_mode=$(echo "$delegation_context" | jq -r '.multi_task_mode // false'
 session_id=$(echo "$delegation_context" | jq -r '.session_id')
 focus_prompt=$(echo "$delegation_context" | jq -r '.focus_prompt // ""')
 effort_flag=$(echo "$delegation_context" | jq -r '.effort_flag // "hard"')
+# Defect B: explicit, operator-typed budget-continuation override. Parsed here (never inferred
+# from session_id, mtime, or any automatic signal) so Stage 2's MAX_CYCLES exhaustion branch can
+# read it. See Stage 2 below for the full override mechanism and its rationale.
+continue_budget_flag=$(echo "$delegation_context" | jq -r '.continue_budget // false')
 ```
 
 ---
@@ -314,6 +318,41 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
 fi
 # --- loop-guard-staleness:end ---
 
+# --- budget-continuation-override:begin ---
+# Defect B: cycle_count is a per-task, CUMULATIVE budget that survives re-invocation BY DESIGN --
+# it is deliberately NOT reset on a new session_id, because that would let an operator silently
+# bypass MAX_CYCLES by simply re-invoking /orchestrate --hard. test-session-runtime-files.sh
+# Case 3 is the regression protecting this decision; this override must never disturb it. The
+# override below is the sanctioned, explicit, loudly-logged escape hatch for a genuinely
+# exhausted budget -- never automatic, never session_id-gated, never inferred from mtime.
+if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
+  peek_cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
+  if [ "$peek_cycle_count" -ge "$MAX_CYCLES" ]; then
+    if [ "$continue_budget_flag" = "true" ]; then
+      exhaust_ts=$(date -u +%s)
+      exhausted_guard_dest="${TASK_DIR}/.exhausted-loop-guard-${exhaust_ts}.json"
+      echo "[hard-orchestrate] BUDGET EXHAUSTED (cycle_count=${peek_cycle_count}/${MAX_CYCLES}) — --continue-budget authorized a fresh budget. Archiving exhausted guard to ${exhausted_guard_dest} for auditability, reinitializing at cycle_count=0 with cross-invocation history fields (dispatch_seq_counter, detected_defects, plan_version) preserved." >&2
+      if cp "$loop_guard_file" "$exhausted_guard_dest" 2>/dev/null; then
+        # Reinit IN PLACE from the just-archived copy: reset only cycle_count, never wipe
+        # dispatch_seq_counter (must never repeat a value within this task -- see
+        # context/patterns/dispatch-report-not-termination.md) or the detected_defects
+        # observation log.
+        jq --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '.cycle_count = 0 | .last_updated = $updated' \
+          "$exhausted_guard_dest" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+      else
+        echo "[hard-orchestrate] WARNING: could not archive exhausted guard to ${exhausted_guard_dest}; proceeding without archiving (cycle_count reset in place)." >&2
+        jq --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '.cycle_count = 0 | .last_updated = $updated' \
+          "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+      fi
+    else
+      echo "[hard-orchestrate] ERROR: work-cycle budget exhausted (cycle_count=${peek_cycle_count}/${MAX_CYCLES}). This is a budget limit, not an error condition -- the task's plan may still have incomplete phases." >&2
+      echo "[hard-orchestrate] To continue this task's work, explicitly authorize a fresh budget: /orchestrate ${task_number} --hard --continue-budget" >&2
+      exit 1
+    fi
+  fi
+fi
+# --- budget-continuation-override:end ---
+
 if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
   burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' "$loop_guard_file")
@@ -429,6 +468,23 @@ naturally, seeding a new guard at `cycle_count: 0`; the same fall-through applie
 churn-state block if its file was co-archived. See
 `context/standards/orchestrator-runtime-files.md`'s "Operational staleness: a second, orthogonal
 freshness axis" for the full policy this region implements.
+
+**On the `budget-continuation-override` region above (Defect B)**: unlike the staleness region,
+this one does NOT fall through to the pre-existing fresh-init branch — it rewrites the SAME
+`loop_guard_file` in place (via the archived copy), specifically so `dispatch_seq_counter` and
+`detected_defects` are carried forward rather than reset to their fresh-init defaults. Falling
+through to fresh-init here would let `dispatch_seq` repeat a value already minted earlier in this
+task, violating the "never repeats a value within a task" invariant Defect A's fix depends on.
+
+**Asymmetry decision (recorded, not merely implied)**: budget exhaustion is deliberately NOT
+folded into the 3-signal `loop-guard-staleness` detector above as a fourth signal. That
+detector's premise is "this guard's CONTENT has gone stale/superseded" (a schema/lineage/age
+mismatch); an exhausted guard is neither stale nor superseded — its `cycle_count` is completely
+accurate, it has simply reached the budget ceiling. Conflating the two would make an accurate,
+current guard look like a data-integrity problem rather than what it actually is: a budget limit
+requiring an explicit human decision to lift. Whether base mode should ever gain the general
+3-signal staleness detector at all is a SEPARATE, undecided question, out of scope for this
+override and not settled by adding it here.
 
 ---
 
@@ -1650,11 +1706,15 @@ if [ "${infra_failures:-0}" -ge "$MAX_INFRA_FAILURES" ]; then
   EXIT (partial, cycle_count=$cycle_count)
 fi
 
-# MAX_CYCLES reached
+# MAX_CYCLES reached. Note: with the Stage 2 budget-continuation-override in place, this branch
+# is now normally unreachable in practice for an already-exhausted guard -- Stage 2 either exits
+# early (flag absent) or resets cycle_count to 0 (flag present) before the main loop ever opens.
+# It remains correct as a defense-in-depth backstop for the rare case where MAX_CYCLES is reached
+# DURING this same invocation's own loop (not from a resumed, pre-exhausted guard).
 if [ "$cycle_count" -ge "$MAX_CYCLES" ]; then
   echo "[hard-orchestrate] MAX_CYCLES ($MAX_CYCLES) reached for task $task_number."
   echo "Phases completed: $phases_completed of $phases_total"
-  echo "Run /orchestrate $task_number --hard to resume, or /implement $task_number --hard for manual phase dispatch."
+  echo "Run /orchestrate $task_number --hard --continue-budget to authorize a fresh budget and continue."
   EXIT (partial, cycle_count=$MAX_CYCLES)
 fi
 ```
@@ -1742,6 +1802,14 @@ rm -f "$churn_file"
 ```
 
 (Only on successful completion. Leave loop guard and churn state on partial for resume.)
+
+**Explicitly UNCHANGED by Defect B's budget-continuation override**: this cleanup site still only
+fires on full-loop termination, never on a partial exit -- including the Stage 2 exhaustion
+branch's flag-absent `exit 1`, which leaves the exhausted guard fully in place. This is correct,
+not an oversight: the guard's entire job is to persist across exactly this gap, so an operator's
+subsequent `--continue-budget` invocation has something to read `cycle_count` from. All four
+sites that touch this guard's lifecycle -- Stage 2's exhaustion branch, Stage 7's terminal
+condition, and this Stage 8 cleanup -- now visibly agree on this.
 
 ---
 

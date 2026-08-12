@@ -478,38 +478,46 @@ mtime INSIDE the successor's dispatch window) and asserts rejection.
 
 ---
 
-### Phase 8: Defect B — hard engine budget-continuation override [NOT STARTED]
+### Phase 8: Defect B — hard engine budget-continuation override [COMPLETED]
 
 **Goal**: Give the operator a sanctioned, explicit way to continue an exhausted run in hard mode,
 and make Stage 7's message honest.
 
 **Tasks**:
-- [ ] Record the decision explicitly, in the Stage 2 comment block: `cycle_count` is a per-task,
+- [x] Record the decision explicitly, in the Stage 2 comment block: `cycle_count` is a per-task,
       cumulative budget that survives re-invocation by design; it is deliberately NOT reset on a
       new `session_id`, because that would let re-invocation silently bypass MAX_CYCLES. Point at
-      `test-session-runtime-files.sh` Case 3 as the regression protecting this.
-- [ ] Parse a new explicit operator flag (name it `--continue-budget`) from the delegation
-      context. Do NOT infer it from `session_id`, mtime, or any automatic signal.
-- [ ] In Stage 2, after the existing staleness block and before the resume read: if
+      `test-session-runtime-files.sh` Case 3 as the regression protecting this. *(completed)*
+- [x] Parse a new explicit operator flag (name it `--continue-budget`) from the delegation
+      context. Do NOT infer it from `session_id`, mtime, or any automatic signal. *(completed:
+      `continue_budget_flag` parsed in Stage 0)*
+- [x] In Stage 2, after the existing staleness block and before the resume read: if
       `cycle_count >= MAX_CYCLES` AND the flag is present, archive the exhausted guard aside using
       the same `mv`-to-dated-name pattern the staleness detector already uses (for auditability),
       reinitialize at `cycle_count=0` preserving the cross-invocation history fields, and log
       loudly naming the exhausted count, the archive destination, and the flag that authorized it.
-- [ ] In Stage 2, if `cycle_count >= MAX_CYCLES` and the flag is ABSENT: exit immediately with a
+      *(completed: uses `cp` not `mv` for the archive step specifically because the SAME guard
+      path is then reinitialized in place from the copy, preserving dispatch_seq_counter and
+      detected_defects rather than falling through to fresh-init)*
+- [x] In Stage 2, if `cycle_count >= MAX_CYCLES` and the flag is ABSENT: exit immediately with a
       clear message naming the actual working command, instead of entering a loop that runs zero
-      times and falls through to a misleading Stage 7 message.
-- [ ] Update Stage 7's MAX_CYCLES branch to print the command that actually works
+      times and falls through to a misleading Stage 7 message. *(completed)*
+- [x] Update Stage 7's MAX_CYCLES branch to print the command that actually works
       (`/orchestrate {N} --hard --continue-budget`), not the current no-op instruction.
-- [ ] Leave Stage 8 cleanup UNCHANGED (guard still preserved on partial exit — correct, since the
+      *(completed)*
+- [x] Leave Stage 8 cleanup UNCHANGED (guard still preserved on partial exit — correct, since the
       guard's job is to persist across exactly this gap) and add a comment saying so explicitly,
-      so the four sites visibly agree.
-- [ ] Record, in this file, the asymmetry decision: budget exhaustion is deliberately NOT a fourth
+      so the four sites visibly agree. *(completed)*
+- [x] Record, in this file, the asymmetry decision: budget exhaustion is deliberately NOT a fourth
       signal in the 3-signal `loop-guard-staleness` detector, because that detector's premise is
       "content gone stale" while an exhausted guard is accurate. Also record that whether base mode
-      gains the general 3-signal detector is out of scope and not decided here.
-- [ ] Add the same decision record to `context/standards/orchestrator-runtime-files.md`'s loop-guard
-      entry so the semantics live in the standard, not only in the engines.
-- [ ] Keep the `guard_session_id != session_id` mismatch block's 3-line shape byte-stable.
+      gains the general 3-signal detector is out of scope and not decided here. *(completed)*
+- [x] Add the same decision record to `context/standards/orchestrator-runtime-files.md`'s loop-guard
+      entry so the semantics live in the standard, not only in the engines. *(completed)*
+- [x] Keep the `guard_session_id != session_id` mismatch block's 3-line shape byte-stable.
+      *(completed: that anchor lives only in skill-orchestrate/SKILL.md per
+      test-session-runtime-files.sh's LOOP_GUARD_SKILL resolution -- confirmed untouched by this
+      phase's hard-engine-only edits; test-session-runtime-files.sh run clean, 6/6 passed)*
 
 **Timing**: 1.5 hours
 
