@@ -11,18 +11,17 @@ next_project_number: 53
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,34,39,41,43,45,46,51,52 | -- | agent-system, extensions, literature, ... |
-| 2 | 9,13,29,35,42,48 | 16,17,18,22,41 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
+| 1 | 14,16,18,20,22,27,28,31,34,39,41,43,45,46,51,52 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,29,35,42,48 | 16,18,22,41 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
 | 3 | 30,37,49,50 | 29,35,41,48 | agent-system, orchestration-concurrency, context-loading |
-| 4 | 32,44 | 28,30,31,49 | agent-system, context-loading |
+| 4 | 17,32,44 | 28,30,31,37,49 | agent-system, context-loading |
+| 5 | 13 | 17 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
-17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
-  └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
@@ -34,6 +33,9 @@ next_project_number: 53
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
+13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
+17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
+  └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and (see above)
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -1346,7 +1348,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 16, Task 35, Task 37
 
 **Description**: command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.
 

@@ -515,7 +515,11 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [],
+      "dependencies": [
+        16,
+        35,
+        37
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/skill-base.sh",
         "agent-system/extensions/core/scripts/command-gate-out.sh",
