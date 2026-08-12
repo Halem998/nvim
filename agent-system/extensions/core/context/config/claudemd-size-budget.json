@@ -1,0 +1,19 @@
+{
+  "_comment": "Byte ceiling for shape-(a) claudemd merge sources (manifest.merge_targets.claudemd.source == 'merge-sources/claudemd.md'), enforced by check-extension-docs.sh. Derivation formula for each named ceiling: round the post-cut measured value up to the next 500 B, then add ~5% headroom. Re-derive after any further intentional cut so the ceiling tracks the new floor rather than staying frozen at a stale, looser value.",
+  "extensions": {
+    "core": {
+      "ceiling_bytes": 19950,
+      "measured_bytes": 18952,
+      "measured_at": "2026-08-12",
+      "derivation": "18,952 B rounded up to 19,000 B, plus 5% headroom (950 B) = 19,950 B"
+    },
+    "literature": {
+      "ceiling_bytes": 5250,
+      "measured_bytes": 4908,
+      "measured_at": "2026-08-12",
+      "derivation": "4,908 B rounded up to 5,000 B, plus 5% headroom (250 B) = 5,250 B"
+    }
+  },
+  "default_ceiling_bytes": 8000,
+  "default_ceiling_comment": "Applies to any future extension whose manifest declares merge_targets.claudemd.source == 'merge-sources/claudemd.md' but has no named entry above. Not derived from a measurement (no such extension exists yet) -- a conservative starting ceiling to catch an obviously runaway shape-(a) source; re-derive a named entry for that extension from its own measured value once one exists, per the derivation formula in _comment."
+}

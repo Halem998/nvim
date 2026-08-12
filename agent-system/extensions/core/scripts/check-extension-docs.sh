@@ -44,6 +44,10 @@
 #     SCHEMA_CONFORMANCE_GATE_MODE)
 #   - EXTENSION.md exceeding the 60-line limit from extension-slim-standard.md (severity
 #     controlled by SCHEMA_CONFORMANCE_GATE_MODE)
+#   - a shape-(a) claudemd merge source (manifest merge_targets.claudemd.source other than
+#     "EXTENSION.md", e.g. core/literature's merge-sources/claudemd.md) exceeding its
+#     per-extension byte ceiling declared in context/config/claudemd-size-budget.json (severity
+#     controlled by SCHEMA_CONFORMANCE_GATE_MODE)
 #
 # Rule letter index (checks named "Rule X" in function comments below, in first-introduced
 # order; unlettered checks are unnamed/structural and are not part of this index):
@@ -69,6 +73,7 @@
 #   S - check_deployed_index_orphans       : deployed context/*.md file with no index.json entry
 #   T - check_index_entries_schema         : source index-entries.json entry violates index.schema.json's field set
 #   U - check_extension_md_length          : EXTENSION.md exceeds the 60-line limit
+#   V - check_claudemd_size_budget         : shape-(a) claudemd merge source exceeds its configured byte ceiling
 #
 # Exit codes:
 #   0 - all extensions pass (Core Deploy-Drift Advisories, if any, do NOT affect this)
@@ -779,6 +784,53 @@ check_extension_md_length() {
   fi
 }
 
+# Rule V: shape-(a) claudemd merge source byte ceiling, per extension.
+#
+# Regression-prevention lever for the eager-CLAUDE.md-surface cut: without an enforced ceiling,
+# a shape-(a) merge source (manifest merge_targets.claudemd.source pointing at something OTHER
+# than "EXTENSION.md" -- today core and literature's merge-sources/claudemd.md) can silently
+# regrow past its measured post-cut size with no lint signal, the same class of drift Rule U
+# already prevents for shape-(b) EXTENSION.md files.
+#
+# Manifest-authoritative (same claudemd_source_for helper as Rule U): only budget-checks a source
+# that is genuinely this extension's declared claudemd merge source, and only when that source is
+# shape-(a) (non-empty and not "EXTENSION.md") -- shape-(b) extensions are Rule U's domain, not
+# this rule's.
+#
+# The budget config is read from the SOURCE STORE ($EXT_DIR/core/context/config/), not the
+# deployed tree: EXT_DIR already resolves to agent-system/extensions when this script runs (see
+# EXT_DIR's own definition above), so no deploy of the config file is required for this rule to
+# see current ceilings -- see claudemd-size-budget.json's own header comment for the full
+# rationale and the derivation formula for each named ceiling.
+check_claudemd_size_budget() {
+  local ext_path="$1"
+  local ext_name
+  ext_name=$(basename "$ext_path")
+
+  local source_rel
+  source_rel=$(claudemd_source_for "$ext_path")
+  [[ -n "$source_rel" && "$source_rel" != "EXTENSION.md" ]] || return 0
+
+  local source_abs="$ext_path/$source_rel"
+  [[ -f "$source_abs" ]] || return 0
+
+  local budget_file="$EXT_DIR/core/context/config/claudemd-size-budget.json"
+  [[ -f "$budget_file" ]] || return 0
+  jq empty "$budget_file" 2>/dev/null || return 0
+
+  local ceiling
+  ceiling=$(jq -r --arg n "$ext_name" '.extensions[$n].ceiling_bytes // .default_ceiling_bytes // empty' "$budget_file" 2>/dev/null)
+  [[ -n "$ceiling" ]] || return 0
+
+  local actual
+  actual=$(wc -c < "$source_abs")
+  actual=${actual// /}
+
+  if (( actual > ceiling )); then
+    schema_conformance_report "Rule V: shape-(a) claudemd merge source '$source_rel' is $actual B, exceeding its configured ceiling of $ceiling B (see context/config/claudemd-size-budget.json)"
+  fi
+}
+
 # Rules B + C: Routing target consistency and deployment
 #
 # Policy rationale (restored after a later sync reverted it from the stale extension-source
@@ -1341,6 +1393,7 @@ for ext_path in "$EXT_DIR"/*/; do
       check_line_count_accuracy "$ext_path"
       check_index_entries_schema "$ext_path"
       check_extension_md_length "$ext_path"
+      check_claudemd_size_budget "$ext_path"
       check_deployed_rule_drift "$ext_path"
       check_routing_consistency "$ext_path"
       check_deployed_skill_agents "$ext_path"

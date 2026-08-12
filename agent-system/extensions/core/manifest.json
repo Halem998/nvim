@@ -236,6 +236,7 @@
       "index.schema.json",
       "architecture",
       "checkpoints",
+      "config",
       "contracts",
       "formats",
       "guides",

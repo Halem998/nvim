@@ -434,36 +434,43 @@ actual delta; do not carry the estimate forward as a result.
 
 ---
 
-### Phase 6: Lever C — Shape-(a) Byte Ceiling and Lint Enforcement [NOT STARTED]
+### Phase 6: Lever C — Shape-(a) Byte Ceiling and Lint Enforcement [COMPLETED]
 
 **Goal**: Install an explicit per-extension byte ceiling for shape-(a) `merge-sources/claudemd.md`
 files in a named external config, enforced by `check-extension-docs.sh`, so the next regression is
 detectable. This is the only lever that prevents future growth.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/config/claudemd-size-budget.json` declaring a
+- [x] Create `agent-system/extensions/core/context/config/claudemd-size-budget.json` declaring a
       per-extension byte ceiling for each shape-(a) source (`core`, `literature`) plus a default
       for any future shape-(a) extension, with a comment field recording how each number was
-      derived.
-- [ ] Set each ceiling from the Phase 5 post-cut measured value plus explicit headroom (round up to
+      derived. *(completed)*
+- [x] Set each ceiling from the Phase 5 post-cut measured value plus explicit headroom (round up to
       the next 500 B, then add ~5%). Record the measured value alongside the ceiling.
-- [ ] Add a new rule to `agent-system/extensions/core/scripts/check-extension-docs.sh`, sibling to
+      *(completed: core 18,952 B -> ceiling 19,950 B; literature 4,908 B -> ceiling 5,250 B;
+      default 8,000 B for a future shape-(a) extension)*
+- [x] Add a new rule to `agent-system/extensions/core/scripts/check-extension-docs.sh`, sibling to
       Rule U, that reads the budget config from `$EXT_DIR/core/context/config/` and reports any
       shape-(a) source exceeding its ceiling. Use `claudemd_source_for()` to identify shape-(a)
       extensions (manifest-authoritative, matching Rule U's existing design).
-- [ ] Wire the new rule's severity to the existing `SCHEMA_CONFORMANCE_GATE_MODE` so it inherits
-      the same blocking-by-default posture as Rule U.
-- [ ] Update `agent-system/extensions/core/docs/reference/standards/extension-slim-standard.md`:
+      *(completed: `check_claudemd_size_budget`, Rule V)*
+- [x] Wire the new rule's severity to the existing `SCHEMA_CONFORMANCE_GATE_MODE` so it inherits
+      the same blocking-by-default posture as Rule U. *(completed: uses `schema_conformance_report`)*
+- [x] Update `agent-system/extensions/core/docs/reference/standards/extension-slim-standard.md`:
       extend its scope to cover shape-(a) sources, name the budget config as the ceiling's home,
       and **fix the confirmed doc/code drift** — the doc says the gate defaults to `advisory`,
       but the script sets `SCHEMA_CONFORMANCE_GATE_MODE="${SCHEMA_CONFORMANCE_GATE_MODE:-hard}"`.
-- [ ] Record explicitly, in the standard, that the ceiling deliberately lives in an external config
+      *(completed: new "Shape-(a) Merge Sources" section added; drift fixed to `hard`)*
+- [x] Record explicitly, in the standard, that the ceiling deliberately lives in an external config
       rather than a `manifest.json` field because manifest-schema work is in flight, and that
-      promoting it to a manifest field is a follow-up.
-- [ ] Optionally declare `config` in `core/manifest.json` `provides.context` for discoverability —
+      promoting it to a manifest field is a follow-up. *(completed)*
+- [x] Optionally declare `config` in `core/manifest.json` `provides.context` for discoverability —
       note this is not a functional dependency, since the checker reads the source store.
-- [ ] Verify the new rule actually fires: temporarily lower a ceiling below the measured value,
-      confirm the lint reports it, then restore.
+      *(completed)*
+- [x] Verify the new rule actually fires: temporarily lower a ceiling below the measured value,
+      confirm the lint reports it, then restore. *(completed: lowered core's ceiling to 100 B,
+      confirmed "Rule V: ... is 18952 B, exceeding its configured ceiling of 100 B" fired;
+      restored to 19,950 B, confirmed the report cleared)*
 
 **Timing**: 1.5 hours
 
@@ -486,11 +493,15 @@ time rather than trusting this count, and confirm the `EXT_DIR` default is uncha
 
 **Verification**:
 - Deliberate-violation test passes: an artificially low ceiling produces a report; restoring it
-  clears the report.
+  clears the report. Confirmed.
 - `bash .claude/scripts/check-extension-docs.sh --quiet` exits clean against real ceilings.
-- `bash .claude/scripts/verify-deploy.sh` passes (this gate runs the doc-lint).
-- `bash -n` passes on the modified script; `jq empty` passes on the new config.
-- The standard's stated default now matches the script's actual default.
+  Confirmed clean except the pre-existing, unrelated Rule S finding (see Phase 4).
+- `bash .claude/scripts/verify-deploy.sh` passes (this gate runs the doc-lint). Same two
+  pre-existing, unrelated failures as recorded in Phase 4 (Rule S; validate-state.sh unknown
+  fields on unrelated task entries); no new failures introduced by this phase.
+- `bash -n` passes on the modified script; `jq empty` passes on the new config. Confirmed.
+- The standard's stated default now matches the script's actual default. Confirmed: both say
+  `hard`.
 
 ---
 

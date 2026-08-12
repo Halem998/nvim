@@ -2,13 +2,13 @@
 
 ## Purpose
 
-EXTENSION.md files are injected into CLAUDE.md context when loaded via the extension picker. Large EXTENSION.md files waste context window budget on documentation that agents rarely need during routing. This standard defines maximum size and required content for EXTENSION.md files.
+EXTENSION.md files are injected into CLAUDE.md context when loaded via the extension picker. Large EXTENSION.md files waste context window budget on documentation that agents rarely need during routing. This standard defines maximum size and required content for EXTENSION.md files, and (see "Shape-(a) Merge Sources" below) extends the same discipline to shape-(a) `merge-sources/claudemd.md` sources.
 
 ## Size Limit
 
 **Maximum: 60 lines** for any EXTENSION.md file. Lint-enforced: `check-extension-docs.sh`'s
 Rule U flags any EXTENSION.md exceeding 60 lines (severity controlled by
-`SCHEMA_CONFORMANCE_GATE_MODE`, defaulting `advisory`) -- run the lint for the current violator
+`SCHEMA_CONFORMANCE_GATE_MODE`, defaulting `hard`) -- run the lint for the current violator
 count rather than trusting a hand-maintained total, which goes stale as extensions are added.
 
 ## Resource-Only / Non-EXTENSION.md-Source Extensions
@@ -22,6 +22,8 @@ cases fall outside this standard's scope entirely:
 
 - **A different claudemd source**: `core` points `merge_targets.claudemd.source` at
   `merge-sources/claudemd.md` instead of `EXTENSION.md`, and has no `EXTENSION.md` file at all.
+  This 60-line, LINE-count limit does not apply to that shape-(a) source -- but a separate
+  BYTE-count ceiling does; see "Shape-(a) Merge Sources" below.
 - **No claudemd source (resource-only extensions)**: an extension with zero
   `provides.skills`/`provides.commands` that shares only context (e.g. `slidev`) may omit
   `merge_targets.claudemd` entirely, per `creating-extensions.md`'s "Resource-Only Extensions"
@@ -32,6 +34,34 @@ cases fall outside this standard's scope entirely:
 Both `core/EXTENSION.md` and `slidev/EXTENSION.md` were deleted (not trimmed) because each was a
 100% content subset of its own `README.md` and neither was reachable from `generate_claudemd()`'s
 actual merge path.
+
+## Shape-(a) Merge Sources
+
+A shape-(a) source (`merge_targets.claudemd.source` naming something other than `EXTENSION.md`,
+e.g. `merge-sources/claudemd.md`) has no natural line-count analog to Rule U's 60-line limit --
+these files carry real, structured CLAUDE.md content (Task Management, Command Reference, and
+similar sections), not a slim routing summary. Instead, each shape-(a) source is held to an
+explicit **byte ceiling**, declared per-extension in
+`context/config/claudemd-size-budget.json` and enforced by `check-extension-docs.sh`'s Rule V
+(same `SCHEMA_CONFORMANCE_GATE_MODE` severity as Rule U). Today exactly two extensions are
+shape-(a): `core` and `literature`; re-derive the shape-(a) set live via
+`jq -r '.merge_targets.claudemd.source' agent-system/extensions/*/manifest.json` rather than
+trusting this count, which goes stale as extensions are added.
+
+Each named ceiling in the budget config is derived from that extension's own measured post-cut
+size (round up to the next 500 B, then add ~5% headroom), recorded alongside the ceiling with a
+`derivation` comment field. A `default_ceiling_bytes` value covers any future shape-(a)
+extension with no named entry yet.
+
+**Why an external config file, not a `manifest.json` field**: a manifest-schema task is in
+flight at the time this ceiling was introduced, so the ceiling deliberately lands as an external
+config rather than a new `merge_targets.claudemd.max_bytes` manifest field. Promoting it to a
+manifest field once that schema work lands is a natural follow-up, not a rejected design.
+`check-extension-docs.sh` reads the config from the SOURCE STORE
+(`agent-system/extensions/core/context/config/claudemd-size-budget.json`, resolved via its own
+`EXT_DIR`), so no deploy of the config file is required for Rule V to see current ceilings --
+declaring the `config` directory in `core/manifest.json`'s `provides.context` is a
+discoverability nicety, not a functional dependency for this rule.
 
 ## Required Sections
 
