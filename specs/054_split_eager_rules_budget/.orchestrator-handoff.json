@@ -1,0 +1,16 @@
+{
+  "dispatch_seq": 2,
+  "task_number": 54,
+  "status": "planned",
+  "stage": "plan",
+  "orchestrator_mode": true,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/054_split_eager_rules_budget/plans/01_split-eager-rules-budget.md",
+      "summary": "Seven-phase plan: baseline byte capture; split git-workflow.md, error-handling.md, state-management.md into eager pre-action cores plus context/standards companions; relocate pr-prohibition.md's CSLib /pr sections into the cslib extension; cut the literature merge-source's 5,255 B Interactive Sub-Index subsection to a pointer at lit-stage4a-flow.md; redeploy, re-measure against the 80,808 B baseline, and record a numeric eager budget ceiling in context-layers.md channel 3."
+    }
+  ],
+  "next_action": "Run /implement 54 to execute the plan.",
+  "notes": "Plan only; no files under agent-system/extensions/** or .claude/** were modified. Plan passes validate-artifact.sh plan --strict with 0 warnings. All research byte figures were independently re-confirmed at planning time against the live tree (parent chain 3,815 + generated CLAUDE.md 46,475 + six eager rules 30,518 = 80,808 exactly). Dependency waves [[1],[2,5,6],[3],[4],[7]]: phases 2/3/4 are serialized deliberately because all three append to core/index-entries.json, a shared write target; phases 5 and 6 are wave-parallel with 2 because their territory (cslib extension / merge-sources) is fully disjoint. Phase 7 is the only phase that runs deploy-headless.sh and the only phase that writes .claude/**. The measurement-harness correction is carried as a Phase 7 summary obligation, explicitly record-only, with no edit to that task's territory."
+}
