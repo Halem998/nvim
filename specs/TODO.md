@@ -1,5 +1,5 @@
 ---
-next_project_number: 57
+next_project_number: 58
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 57
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53,57 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
 | 2 | 9,13,29,42,50,55,56 | 17,18,22,41,48 | agent-system, context-loading |
 | 3 | 30 | 29 | agent-system |
 | 4 | 32 | 28,30,31 | agent-system |
@@ -60,6 +60,7 @@ next_project_number: 57
 ### Context Loading
 
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+57 [NOT STARTED] — Cut the generated .claude/CLAUDE.md eager surface without losing 
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
 55 [NOT STARTED] — LEVER 1 of the context-cost work (the two orchestrate skills). Th
 56 [NOT STARTED] — LEVER 3 of the context-cost work (command bodies). Smallest and c
@@ -69,6 +70,48 @@ next_project_number: 57
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 
 ## Tasks
+
+### 57. Cut generated claudemd eager surface
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: context-loading
+- **Dependencies**: None
+
+**Description**: Cut the generated .claude/CLAUDE.md eager surface without losing capability, refactoring capabilities to remove redundancy where a workflow can be preserved rather than merely trimmed.
+
+MEASURED LIVE, 2026-08-12, AFTER the eager-rules-budget work landed. Generated .claude/CLAUDE.md is 42,798 B — the single largest session-start eager contributor, larger than all six eagerly-loaded rules combined (23,547 B). Total session eager prefix is now 70,160 B (~17.5k tokens). CLAUDE.md is therefore ~61% of everything paid before an agent reads its first file.
+
+GENERATION MECHANISM (verified, not assumed — do not re-derive). .claude/CLAUDE.md is fully generated at deploy time; it is never hand-edited. Each extension declares merge_targets.claudemd in its manifest.json with a section_id, and the deploy engine assembles the sections. TWO source shapes exist today and BOTH are already supported by the existing engine:
+  (a) a dedicated merge-sources/claudemd.md — used ONLY by core (24,770 B) and literature (8,673 B);
+  (b) the extension's whole EXTENSION.md — used by the other 17 extensions.
+Currently-loaded extensions contribute: core 24,770 + literature 8,673 + ~9,400 from email, memory, nix, and nvim combined.
+
+CRITICAL CONSEQUENCE OF SHAPE (b), AND THE STRUCTURAL HEART OF THIS TASK: for 17 of 19 extensions the file that documents the extension for a HUMAN READER is the same file injected into EVERY session. There is no way to write reader-facing detail without paying per-session token cost, so the surface grows every time anyone improves an extension's documentation. That is why this file grew 33,624 -> 46,475 B (+38%) in a few weeks before the rules work clawed it back to 42,798. A one-time trim does not fix this; only a structural separation does.
+
+FOUR CANDIDATE LEVERS, measured, in the order they were judged most promising. RESEARCH MUST VALIDATE OR REJECT EACH ON EVIDENCE rather than adopting this ordering:
+
+  LEVER A (~6 KB): the literature extension spends 6,547 B on a "Literature Mode (--lit)" section describing flag semantics that matter ONLY when --lit is actually typed. Per-invocation information living in a per-session file. The canonical, executable contract already exists at context/patterns/lit-stage4a-flow.md and the six --lit-capable skills already import it DIRECTLY rather than through CLAUDE.md, so a pointer is very likely sufficient. Verify that claim before cutting.
+
+  LEVER B (~4 KB): "Hard Mode (--hard)" is 4,492 B — nine H-technique descriptions, a cost-multiplier table, and a 5-step routing-precedence ladder — none of which is needed unless --hard is typed. context/guides/hard-mode-routing.md already exists as the detailed home.
+
+  LEVER C (~4-6 KB now, and the only lever that CAPS FUTURE GROWTH): give each extension an optional merge-sources/claudemd.md carrying ONLY routing-critical facts (task types, skill-to-agent rows, command names, keyword_overrides), and stop merging EXTENSION.md. EXTENSION.md then stays full-length for human readers and costs zero session tokens. NOTE: this requires NO deploy-engine change — shape (a) is already implemented and already in production use by core and literature. Confirm that before planning any engine work.
+
+  LEVER D (judged lowest priority, listed so it is not silently skipped): "Skill-to-Agent Mapping" (5,346 B) and "Command Reference" (5,143 B) are genuinely load-bearing — agents route from them. If touched at all, the Model and Purpose columns are the droppable part and the skill-to-agent pairing is the load-bearing part. Establish empirically which columns any consumer actually reads before removing anything.
+
+REFACTORING CAPABILITIES IS IN SCOPE, NOT JUST RELOCATING PROSE. Where two capabilities have converged into near-duplicate documented workflows, consolidating them into one workflow with equivalent behavior is a legitimate and preferred outcome — redundancy removed at the source beats the same redundancy moved behind a pointer. The binding constraint is that the resulting workflow must remain equivalent in what a user can DO; a capability may be reached by a different route, but it may not disappear. Any such consolidation must be named explicitly in the summary with a before/after description of the affected workflow, never applied silently.
+
+THE BINDING DISTINCTION THIS TASK MUST NOT BLUR. Moving prose into context/** saves tokens ONLY on invocations that do not need it, because a backticked path is inert text an agent may still choose to Read. It is a real saving but a soft one. Removing genuine duplication, or replacing a restated contract with a pointer to a canonical file that consumers ALREADY read directly, is a hard saving. Prefer hard savings; label which kind each change is in the summary.
+
+PRESERVE BEHAVIOR. Anything an agent must know BEFORE acting stays eager, exactly as the rules work established. Routing facts an agent needs to select a skill or agent are pre-action by definition and stay. A pointer read after a wrong routing decision is useless.
+
+TARGET AND ACCEPTANCE. Report measured before/after bytes for every file touched and for the assembled .claude/CLAUDE.md, taken after a real deploy-headless.sh run, using the same eager-prefix accounting as the 70,160 B measurement above. An unquantified "slimmed" claim is not acceptable. A reasonable target is ~26 KB assembled, but a smaller measured cut with no capability loss beats a larger one that strands a workflow. State an explicit per-extension byte ceiling so the next regression is detectable rather than merely regrettable, and consider whether that ceiling belongs in manifest.json as a declarable field — COORDINATE FIRST if other manifest-schema work is in flight, and fall back to an external config if it is.
+
+VERIFY, DO NOT ASSUME. Every duplication claim in this description was measured at a single point in time and the tree moves. Re-measure before cutting. A prior pass on the sibling rules work found that a claimed "identical duplicate section" was in fact a stub-pointer plus a full section — a different problem with a different fix — so the habit of verifying first has already paid for itself here.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 56. Slim todo and orchestrate command bodies
 - **Status**: [NOT STARTED]
