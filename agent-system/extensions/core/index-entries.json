@@ -3158,6 +3158,33 @@
           "/implement"
         ]
       }
+    },
+    {
+      "path": "standards/error-recovery-strategies.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Per-error-type reactive recovery strategies (timeout, state sync, build error, jq parse failure, MCP abort, delegation interrupted) plus the full errors-append.sh CLI/field spec",
+      "line_count": 108,
+      "keywords": [
+        "error-recovery",
+        "errors-append",
+        "timeout-recovery",
+        "build-error-recovery",
+        "jq-parse-failure",
+        "mcp-abort-error"
+      ],
+      "topics": [
+        "error-handling"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "commands": [
+          "/implement"
+        ]
+      }
     }
   ]
 }

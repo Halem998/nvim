@@ -248,30 +248,33 @@ pre-action constraint to hit the number.
 
 ---
 
-### Phase 3: Split error-handling.md (5,420 B, latent `.claude/**/*` trigger) [NOT STARTED]
+### Phase 3: Split error-handling.md (5,420 B, latent `.claude/**/*` trigger) [COMPLETED]
 
 **Goal**: Move the entirely reactive recovery-strategy content out of the eager surface while
 keeping the taxonomy and the short response pattern that an agent may need before acting.
 
 **Tasks**:
-- [ ] Sweep references: `grep -rn "error-handling" agent-system/extensions/ --include=*.md`.
+- [x] Sweep references: `grep -rn "error-handling" agent-system/extensions/ --include=*.md`.
       Agent contracts are known to say "See `rules/error-handling.md` for general error patterns";
-      confirm none of them depend on a section being moved.
-- [ ] Create `agent-system/extensions/core/context/standards/error-recovery-strategies.md` and
+      confirm none of them depend on a section being moved. *(completed: all references name the
+      file generically or a heading that survived; none named a moved paragraph)*
+- [x] Create `agent-system/extensions/core/context/standards/error-recovery-strategies.md` and
       move into it, verbatim: the whole Recovery Strategies section (Timeout, State Sync, Build
       Error, jq Parse Failure, MCP Abort Error, Delegation Interrupted) and the detailed
-      `errors-append.sh` invocation plus field specification from "Log the Error".
-- [ ] KEEP eager in `error-handling.md`: the Error Categories taxonomy, a ~200 B "log via
+      `errors-append.sh` invocation plus field specification from "Log the Error". *(completed)*
+- [x] KEEP eager in `error-handling.md`: the Error Categories taxonomy, a ~200 B "log via
       `errors-append.sh`" one-liner plus pointers to `context/schemas/errors-schema.json` and
       `context/formats/errors-format.md`, the Preserve Progress / Enable Resume / Report Clearly
       bullets, the Severity Levels table, the Non-Blocking Errors list, and a pointer to the new
-      companion.
-- [ ] Verify the build-error recovery step's "never discard uncommitted changes" language survives
+      companion. *(completed: confirmed by grep)*
+- [x] Verify the build-error recovery step's "never discard uncommitted changes" language survives
       somewhere eager or is explicitly re-anchored: it is a write-gating constraint even though it
       sits inside a reactive section. If it moves, leave the prohibition itself in the eager core.
-- [ ] Add the companion's `index-entries.json` entry (`subdomain: "standards"`, accurate
-      `line_count`, schema-conforming fields).
-- [ ] Measure and append before/after bytes to `baseline-bytes.md`.
+      *(completed: re-anchored as a standalone `## Write-Gating Constraint` eager section)*
+- [x] Add the companion's `index-entries.json` entry (`subdomain: "standards"`, accurate
+      `line_count`, schema-conforming fields). *(completed)*
+- [x] Measure and append before/after bytes to `baseline-bytes.md`. *(completed: 5,420 -> 2,987 B,
+      -44.9%; companion 4,435 B)*
 
 **Timing**: 1 hour
 

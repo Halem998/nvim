@@ -108,6 +108,19 @@ Commit-Per-Green-Substep Mandate heading + binding paragraph, Never Run, Forbidd
 Not-blocked, Always Check Before Commit, Commit Message Format + Session ID format/generation) are
 present verbatim — confirmed by direct read of the trimmed file, not asserted.
 
+| 3 | `core/rules/error-handling.md` | 5,420 | 2,987 | -2,433 | -44.9% |
+| 3 | `core/context/standards/error-recovery-strategies.md` (new, lazy) | 0 | 4,435 | +4,435 | new file |
+
+**Phase 3 note**: this file was NOT one of the measured eager six (its `paths: .claude/**/*` glob
+did not match the session that produced the 30,518 B figure), so this saving is
+regression-prevention rather than an immediate cut to the 30,518 B six-rule total — reported here
+as its own line, not folded into that total. The write-gating "never discard uncommitted changes
+to reach a passing build" constraint was re-anchored as a standalone eager
+`## Write-Gating Constraint` section (confirmed present via grep) rather than left inside the
+now-moved Build Error Recovery narrative. All explicit KEEP items (Error Categories taxonomy,
+condensed Log-the-Error pointer, Preserve Progress/Enable Resume/Report Clearly, Severity Levels
+table, Non-Blocking Errors list) are present verbatim in the trimmed file.
+
 **Phase 2 check-extension-docs.sh note**: `check-extension-docs.sh` reports
 `FAIL: deployed rule content drift (deployed != extension source): rules/git-workflow.md` at this
 point in the plan. This is EXPECTED and BY DESIGN: the deployed `.claude/` tree is written only by
