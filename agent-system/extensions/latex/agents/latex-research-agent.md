@@ -95,7 +95,21 @@ Compile discovered information.
 Write to `specs/{N}_{SLUG}/reports/MM_{short-slug}.md`
 
 ### Stage 6: Write Metadata File
-Write to `specs/{N}_{SLUG}/.return-meta.json`
+Write to `specs/{N}_{SLUG}/.return-meta.json`. **`artifacts` shape (required)**: `artifacts` is
+a **required array of objects** (`type`, `path`, `summary` keys each) — **never an array of bare
+path strings**, per `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)`
+section. Copy this exact shape (source:
+`@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+"artifacts": [
+  {
+    "type": "report",
+    "path": "specs/{N}_{SLUG}/reports/{NN}_{short-slug}.md",
+    "summary": "One-line description of the report's scope and key findings."
+  }
+]
+```
 
 ### Stage 7: Return Brief Text Summary
 

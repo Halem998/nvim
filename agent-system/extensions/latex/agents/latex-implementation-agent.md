@@ -140,7 +140,21 @@ Write to `specs/{N}_{SLUG}/summaries/MM_{short-slug}-summary.md`. Include a `## 
 
 ### Stage 7: Write Metadata File
 
-Write to `specs/{N}_{SLUG}/.return-meta.json`
+Write to `specs/{N}_{SLUG}/.return-meta.json`. **`artifacts` shape (required)**: `artifacts` is
+a **required array of objects** (`type`, `path`, `summary` keys each) — **never an array of bare
+path strings**, per `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)`
+section. Copy this exact shape (source:
+`@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+"artifacts": [
+  {
+    "type": "summary",
+    "path": "specs/{N}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+    "summary": "One-line description of what the summary covers."
+  }
+]
+```
 
 ### Stage 8: Return Brief Text Summary
 

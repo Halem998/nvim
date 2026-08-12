@@ -394,6 +394,21 @@ Include:
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`.
 
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
+`summary` keys each) — **never an array of bare path strings**, per
+`@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section. Copy this
+exact shape (source: `@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+"artifacts": [
+  {
+    "type": "summary",
+    "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+    "summary": "One-line description of what was proved or implemented."
+  }
+]
+```
+
 Include `sorry_inventory` at top level (mirrors `.orchestrator-handoff.json`).
 Include `verification` object with sorry_count, vacuous_count, axiom_count, build_passed.
 Include `completion_data` per `@.claude/context/formats/return-metadata-file.md`

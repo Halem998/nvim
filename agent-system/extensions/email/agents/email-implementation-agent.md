@@ -144,6 +144,24 @@ manifest and record which IDs were actually mutated.
 Write the implementation summary and `.return-meta.json` per the standard formats referenced
 above. Use status `implemented`, `partial`, or `failed` (never `completed`).
 
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
+`summary` keys each) — **never an array of bare path strings**, per
+`@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section. This is
+independent of the `modified_files: []` wrapper-only posture below: `artifacts` always points at
+the `specs/**` implementation summary this agent writes every run, regardless of whether the run
+also touched any repo-tracked source file. Copy this exact shape (source:
+`@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+"artifacts": [
+  {
+    "type": "summary",
+    "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+    "summary": "One-line description of what the triage/cleanup run accomplished."
+  }
+]
+```
+
 **`modified_files`**: always emit this top-level field, per the "How Implementation Agents
 Populate modified_files" section of `@.claude/context/formats/return-metadata-file.md`.
 - If no repo-tracked file was `Write`/`Edit`-ed during the run, emit `"modified_files": []`. This

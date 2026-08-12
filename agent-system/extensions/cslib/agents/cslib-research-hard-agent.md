@@ -299,6 +299,21 @@ Agent-specific fields: `findings_count`, `adversarial_verification_triggered` (b
 `reference_grounding_tier` (1/2/3), `bibkey_verification_status`.
 Include `memory_candidates` array. Set `next_steps` to `"Run /plan {N} to create implementation plan"`.
 
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
+`summary` keys each) — **never an array of bare path strings**, per
+`@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section. Copy this
+exact shape (source: `@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+"artifacts": [
+  {
+    "type": "report",
+    "path": "specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md",
+    "summary": "One-line description of the report's scope and key findings."
+  }
+]
+```
+
 ### Stage 8: Return Brief Text Summary
 
 Return 3-6 bullet points: key findings, reference grounding tier applied, adversarial

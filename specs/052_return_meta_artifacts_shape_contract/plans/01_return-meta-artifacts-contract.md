@@ -312,13 +312,13 @@ and must be excluded (it has no frontmatter `name:` key).
 
 ---
 
-### Phase 4: Backfill Templates -- Remaining Extension Agents [NOT STARTED]
+### Phase 4: Backfill Templates -- Remaining Extension Agents [COMPLETED]
 
 **Goal**: Complete the backfill across the extensions the research named as entirely
 template-less.
 
 **Tasks**:
-- [ ] Re-enumerate before editing (see Scope Hypothesis). Expected targets:
+- [x] Re-enumerate before editing (see Scope Hypothesis). Expected targets:
       `python/agents/python-{implementation,research}-agent.md`,
       `typst/agents/typst-{implementation,research}-agent.md`,
       `z3/agents/z3-{implementation,research}-agent.md`,
@@ -326,15 +326,22 @@ template-less.
       `lean/agents/lean-{implementation,research}-hard-agent.md`,
       `cslib/agents/cslib-research-hard-agent.md`,
       `email/agents/email-implementation-agent.md`,
-      `literature/agents/literature-agent.md`.
-- [ ] Insert the Phase 1 fragment's template verbatim into each, using the same placement rule as
-      Phase 3.
-- [ ] For `email-implementation-agent`, keep the existing wrapper-only posture intact: its
+      `literature/agents/literature-agent.md`. *(completed: live re-enumeration -- 13 no-key files
+      after subtracting Phase 3's 6 core files from the system-wide 19 -- matched this hypothesis
+      exactly, no additions or removals)*
+- [x] Insert the Phase 1 fragment's template verbatim into each, using the same placement rule as
+      Phase 3. *(completed for the 12 confirmed .return-meta.json-writing files)*
+- [x] For `email-implementation-agent`, keep the existing wrapper-only posture intact: its
       `modified_files: []` behavior is documented as correct, and the artifacts template addition
-      must not imply it should start writing repo files.
-- [ ] For `literature-agent`, confirm it writes `.return-meta.json` at all before adding the
+      must not imply it should start writing repo files. *(completed: template points at the
+      specs/**-scoped implementation summary this agent always writes, with an explicit note that
+      this is independent of the modified_files: [] wrapper-only posture)*
+- [x] For `literature-agent`, confirm it writes `.return-meta.json` at all before adding the
       template; if it does not, record that finding rather than adding a template it will never
-      use, and note it as a deliberate exclusion for Phase 7's classification rule.
+      use, and note it as a deliberate exclusion for Phase 7's classification rule. *(completed:
+      confirmed by reading the full file -- zero occurrences of ".return-meta.json" anywhere.
+      literature-agent.md is a deliberate exclusion, matching this phase's own hypothesis exactly.
+      No template was added; the file was not modified.)*
 
 **Timing**: 1.5 hours
 
