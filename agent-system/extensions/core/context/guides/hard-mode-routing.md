@@ -8,10 +8,12 @@ agents. See `context/guides/manifest-routing-schema.md` for the full routing mod
 manifest blocks, core identification, and the declared-not-derived agent-name rule); this
 document focuses specifically on the `--hard` resolution path.
 
-**Scope**: This document covers the script/skill routing layer only.
-The CLAUDE.md "Routing Mechanism" and "Hard Mode" sections are maintained
-directly in CLAUDE.md itself, independently of this document. Do NOT edit
-CLAUDE.md based on this document.
+**Scope**: This document is the sole canonical home for the `--hard` routing-precedence rules.
+CLAUDE.md's "Routing Mechanism" subsection carries only a pointer to this document (and to
+`context/guides/manifest-routing-schema.md`) — the 5-step precedence list itself is maintained
+here only, not duplicated there. The rest of CLAUDE.md's "Hard Mode" section (What Hard Mode
+Does, When to Use, Cost Impact, Composability, Per-Invocation Only) is unrelated to this
+document's scope and is maintained directly in CLAUDE.md.
 
 ---
 

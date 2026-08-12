@@ -281,26 +281,30 @@ Phase 1 script's `--compare` delta on the assembled file.
 
 ---
 
-### Phase 3: Lever B — Hard Mode Routing Ladder Consolidation [NOT STARTED]
+### Phase 3: Lever B — Hard Mode Routing Ladder Consolidation [COMPLETED]
 
 **Goal**: Delete the restated 5-step routing ladder from core's merge source, keeping the
 cross-reference sentence already present, and make `hard-mode-routing.md` the sole canonical home.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/merge-sources/claudemd.md`, under
+- [x] In `agent-system/extensions/core/merge-sources/claudemd.md`, under
       `### Routing Mechanism`, delete the restated 5-step precedence list and its surrounding
-      explanatory prose.
-- [ ] Preserve verbatim the existing trailing cross-reference sentence naming
+      explanatory prose. *(completed)*
+- [x] Preserve verbatim the existing trailing cross-reference sentence naming
       `context/guides/manifest-routing-schema.md` and `context/guides/hard-mode-routing.md`.
       Verify it survived before deploying — this is the entire mitigation for the stranded-reader
-      risk.
-- [ ] In `agent-system/extensions/core/context/guides/hard-mode-routing.md`, update the **Scope**
+      risk. *(completed: preserved verbatim, confirmed present in deployed .claude/CLAUDE.md)*
+- [x] In `agent-system/extensions/core/context/guides/hard-mode-routing.md`, update the **Scope**
       note: drop "Do NOT edit CLAUDE.md based on this document" and state that this document is now
       the sole home for the `--hard` routing-precedence rules, with CLAUDE.md carrying only a
-      pointer.
-- [ ] Leave the other Hard Mode subsections untouched (What Hard Mode Does, When to Use, Cost
+      pointer. *(completed; also required a one-line line_count fix in core/index-entries.json,
+      169 -> 171, to keep Rule R clean — the Scope-note edit changed the file's line count)*
+- [x] Leave the other Hard Mode subsections untouched (What Hard Mode Does, When to Use, Cost
       Impact, Composability, Per-Invocation Only) — no duplication evidence exists for them.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh`, then re-measure and record the delta.
+      *(completed)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh`, then re-measure and record the delta.
+      *(completed: core merge source 24,770 B -> 23,421 B (-1,349 B); assembled .claude/CLAUDE.md
+      39,033 B -> 37,684 B (-1,349 B))*
 
 **Timing**: 1 hour
 

@@ -252,27 +252,9 @@ Use `--hard` when one or more of the following apply:
 
 Every routing consumer (`command-route-skill.sh` for skills, `command-route-agent.sh` for
 agents, called from `/research`, `/plan`, `/implement`, and both `/orchestrate` engines) shares
-one ladder, implemented once in `scripts/lib/manifest-routing-lib.sh`. `--hard` is resolved as a
-4th `effort_flag` argument, using a 5-step precedence (first match wins) against the
-`routing_hard`/`routing_agents_hard` manifest blocks instead of `routing`/`routing_agents`:
-
-1. **Non-core extension exact match** — scan non-core extension manifests for
-   `routing_hard[$op][$task_type]` (or `routing_agents_hard[$op][$task_type]`); first hit wins.
-2. **Non-core extension compound-key fallback** — if `task_type` contains `:`
-   and no hit yet, try `[$op][$base_type]` in non-core manifests.
-3. **Core extension exact match** — scan the core manifest (identified by `.name == "core"`) for
-   `[$op][$task_type]`.
-4. **Core extension compound-key fallback** — if `task_type` contains `:` and
-   no hit yet, try `[$op][$base_type]` in the core manifest.
-5. **`-hard` append fallback** (skill resolution only) — construct `${SKILL_NAME}-hard`; use it
-   only if `.claude/skills/${candidate}-hard/SKILL.md` exists on disk; otherwise emit a stderr
-   note and leave `SKILL_NAME` unchanged (safe default = standard skill). Agent resolution has no
-   equivalent step: a miss falls through directly to the caller-supplied hard default.
-
-Non-core extensions (Steps 1-2) are scanned before core (Steps 3-4), so a non-core entry for the
-same `($op, $task_type)` pair unconditionally overrides core. The SKILL.md existence safety gate
-applies only to Step 5; manifest-declared entries (Steps 1-4) are trusted to point to deployed
-skills. See `context/guides/manifest-routing-schema.md` for the full routing model (all four
+one ladder, implemented once in `scripts/lib/manifest-routing-lib.sh`, resolving `--hard` as a
+4th `effort_flag` argument against the `routing_hard`/`routing_agents_hard` manifest blocks.
+See `context/guides/manifest-routing-schema.md` for the full routing model (all four
 manifest blocks, agent-name declaration rules) and `context/guides/hard-mode-routing.md` for
 `--hard`-specific detail.
 
