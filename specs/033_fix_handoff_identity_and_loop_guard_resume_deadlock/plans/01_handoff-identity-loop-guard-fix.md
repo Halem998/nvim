@@ -588,13 +588,13 @@ the flag at the command surface.
 
 ---
 
-### Phase 10: Defect B regression test [NOT STARTED]
+### Phase 10: Defect B regression test [COMPLETED]
 
 **Goal**: Acceptance criterion 3 — prove the documented resume path actually dispatches work in
 both engines.
 
 **Tasks**:
-- [ ] Create `scripts/tests/test-loop-guard-budget-override.sh` following sibling-suite
+- [x] Create `scripts/tests/test-loop-guard-budget-override.sh` following sibling-suite
       conventions. Cases, run against BOTH engines:
       1. Guard at `cycle_count == MAX_CYCLES`, flag absent: engine refuses with the honest message
          and does NOT enter a zero-iteration loop.
@@ -604,11 +604,18 @@ both engines.
       3. Guard below MAX_CYCLES, flag present: normal resume, no archive, no reinit — the flag is
          inert when the budget is not exhausted.
       4. Guard with a different `guard_session_id` and a non-exhausted budget: still just an INFO
-         log, never a reset — asserting the Case 3 invariant from a second angle.
-- [ ] Assert Stage 7's printed message names the flag.
-- [ ] Confirm `scripts/test-session-runtime-files.sh` Case 3 is byte-unmodified relative to
+         log, never a reset — asserting the Case 3 invariant from a second angle. *(completed: 36
+         assertions across both engines; discovered during authoring that the guard_session_id
+         INFO log itself is base-engine-only -- skill-orchestrate-hard/SKILL.md's resume-read has
+         no such check at all -- so case 4's log-content assertion is base-only while the
+         never-reset invariant is asserted for both)*
+- [x] Assert Stage 7's printed message names the flag. *(completed)*
+- [x] Confirm `scripts/test-session-runtime-files.sh` Case 3 is byte-unmodified relative to
       `HEAD` (`git diff HEAD -- <path>` shows no change inside the Case 3 block); if a change was
       unavoidable, record the justification in the phase report and in the test file itself.
+      *(completed: git diff HEAD is empty for that file; test-loop-guard-budget-override.sh also
+      runs test-session-runtime-files.sh itself as its own final assertion, not just trusting a
+      hand-authored claim)*
 
 **Timing**: 1.5 hours
 

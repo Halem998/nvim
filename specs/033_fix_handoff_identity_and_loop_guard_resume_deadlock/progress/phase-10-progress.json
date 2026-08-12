@@ -1,0 +1,16 @@
+{
+  "phase": 10,
+  "phase_name": "Defect B regression test",
+  "started_at": "2026-08-12T06:20:00Z",
+  "last_updated": "2026-08-12T06:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-loop-guard-budget-override.sh with 4 cases x 2 engines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]},
+    {"id": 2, "description": "Stage 7 message assertion", "status": "done", "files_touched": []},
+    {"id": 3, "description": "test-session-runtime-files.sh byte-stability confirmed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "assert identical guard_session_id INFO log text in both engines", "result": "failed", "reason": "hard engine has no guard_session_id check at all in its resume-read block -- base-only pre-existing feature, not a parity gap in this task's scope"}
+  ],
+  "handoff_count": 0
+}
