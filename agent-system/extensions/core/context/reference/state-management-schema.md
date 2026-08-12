@@ -466,6 +466,53 @@ write "specs/${padded_num}_${slug}/reports/01_research-findings.md"
 }
 ```
 
+## Enforcement and Update-Pattern Narrative
+
+This section is the lazily-loaded elaboration for `rules/state-management.md`'s eager core. The
+rule's core keeps the "Artifacts Are Append-Only" prohibition and the State-First Update Pattern's
+two commands eager (an agent must know the prohibition and the commands before writing state); the
+mechanism detail behind them lives here.
+
+### Artifacts Are Append-Only — Enforcement Mechanism and Known Limitation
+
+**Enforcement mechanism**: `validate-state.sh --deep` checks, per `project_number` and per
+artifact `type`, that the count of paths removed relative to the prior git-committed version does
+not exceed the count of paths added — a FAIL-level finding on any pair that violates this. A
+genuine, intentional deletion is expressible via the repeatable
+`--allow-artifact-removal <project_number>[:<type>]` opt-in flag on the validator; every
+suppressed finding is still logged, never silent.
+
+**Known limitation**: enforcement is periodic, not write-time. It runs only when
+`validate-state.sh --deep` is invoked (currently via `verify-deploy.sh`'s gate 10), so a lossy
+direct-`jq` write can still land between validation passes, and a subsequent legitimate commit
+moves the comparison baseline forward, potentially hiding an earlier loss from a later diff. This
+trade-off is accepted rather than closed by this rule; closing it fully would require a
+synchronous (write-time) enforcement path, which is out of scope here.
+
+### State-First Update Pattern — Explanation
+
+When updating task status:
+
+1. **Write state.json** via `jq` (machine state is the sole source of truth)
+2. **Regenerate TODO.md** by calling `bash .claude/scripts/generate-todo.sh`
+
+`update-task-status.sh` performs both steps automatically. Agents must not Edit TODO.md directly
+for status or artifact changes — `generate-todo.sh` handles all TODO.md rendering from state.json.
+
+### Error Handling
+
+#### On Write Failure
+1. Do not update either file partially
+2. Log error with context
+3. Preserve original state
+4. Return error to caller
+
+#### On Inconsistency Detection
+1. Log the inconsistency
+2. Use git blame to determine latest
+3. Sync to latest version
+4. Use git for recovery of overwritten versions
+
 ## Related Documentation
 
 - [State Management Rule](../../../rules/state-management.md) - Behavioral constraints and update patterns

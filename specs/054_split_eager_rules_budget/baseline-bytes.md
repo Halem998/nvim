@@ -121,6 +121,24 @@ now-moved Build Error Recovery narrative. All explicit KEEP items (Error Categor
 condensed Log-the-Error pointer, Preserve Progress/Enable Resume/Report Clearly, Severity Levels
 table, Non-Blocking Errors list) are present verbatim in the trimmed file.
 
+| 4 | `core/rules/state-management.md` | 5,148 | 3,850 | -1,298 | -25.2% |
+| 4 | `core/context/reference/state-management-schema.md` (existing, appended) | 472 lines | 519 lines | +47 lines | destination for moved narrative |
+
+**Phase 4 note**: destination decision — the moved narrative (Artifacts-Are-Append-Only
+enforcement mechanism + known limitation, State-First Update Pattern explanation, Error Handling)
+was appended to the EXISTING `context/reference/state-management-schema.md` as a new
+"## Enforcement and Update-Pattern Narrative" section, rather than creating a third
+`context/standards/` companion. Reason: that schema doc is already the rule's designated
+elaboration home (referenced by its own "## Schema Reference" section and the `#file-scope-field`
+anchor), so appending there avoids fragmenting elaboration across three files for one rule. The
+ASCII status-transition diagram was NOT dropped (both the diagram and the bulleted Restrictions
+survive eager, per the "never drop both" instruction) since the achieved core (3,850 B) already
+lands close to the ~3,450 B hypothesis without needing that cut. All five KEEP items (Never edit
+TODO.md directly, Canonical Sources block, Artifacts-Are-Append-Only core prohibition +
+wholesale-assignment prohibition + `+=`/sanctioned-helper instruction, Status Transitions
+restrictions bullets, the two `update-task-status.sh`/`generate-todo.sh` one-liners, File
+Scope/Schema Reference pointers) are present verbatim — confirmed by grep.
+
 **Phase 2 check-extension-docs.sh note**: `check-extension-docs.sh` reports
 `FAIL: deployed rule content drift (deployed != extension source): rules/git-workflow.md` at this
 point in the plan. This is EXPECTED and BY DESIGN: the deployed `.claude/` tree is written only by

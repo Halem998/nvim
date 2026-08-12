@@ -35,19 +35,9 @@ equivalent) — never replace the array outright. Replacing the array silently d
 artifact link not re-included in the replacement, even though the underlying files remain on
 disk.
 
-**Enforcement mechanism**: `validate-state.sh --deep` checks, per `project_number` and per
-artifact `type`, that the count of paths removed relative to the prior git-committed version does
-not exceed the count of paths added — a FAIL-level finding on any pair that violates this. A
-genuine, intentional deletion is expressible via the repeatable
-`--allow-artifact-removal <project_number>[:<type>]` opt-in flag on the validator; every
-suppressed finding is still logged, never silent.
-
-**Known limitation**: enforcement is periodic, not write-time. It runs only when
-`validate-state.sh --deep` is invoked (currently via `verify-deploy.sh`'s gate 10), so a lossy
-direct-`jq` write can still land between validation passes, and a subsequent legitimate commit
-moves the comparison baseline forward, potentially hiding an earlier loss from a later diff. This
-trade-off is accepted rather than closed by this rule; closing it fully would require a
-synchronous (write-time) enforcement path, which is out of scope here.
+See `context/reference/state-management-schema.md`'s "Enforcement and Update-Pattern Narrative"
+section (Artifacts Are Append-Only subsection) for the enforcement mechanism and its known
+periodic-not-write-time limitation.
 
 ## Status Transitions
 
@@ -74,13 +64,6 @@ Any non-terminal -> [EXPANDED] (when divided into subtasks)
 
 ## State-First Update Pattern
 
-When updating task status:
-
-1. **Write state.json** via `jq` (machine state is the sole source of truth)
-2. **Regenerate TODO.md** by calling `bash .claude/scripts/generate-todo.sh`
-
-`update-task-status.sh` performs both steps automatically. Agents must not Edit TODO.md directly for status or artifact changes — `generate-todo.sh` handles all TODO.md rendering from state.json.
-
 ```bash
 # Full state-first update (preferred)
 bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id"
@@ -89,19 +72,9 @@ bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "
 bash .claude/scripts/generate-todo.sh
 ```
 
-## Error Handling
-
-### On Write Failure
-1. Do not update either file partially
-2. Log error with context
-3. Preserve original state
-4. Return error to caller
-
-### On Inconsistency Detection
-1. Log the inconsistency
-2. Use git blame to determine latest
-3. Sync to latest version
-4. Use git for recovery of overwritten versions
+See `context/reference/state-management-schema.md`'s "Enforcement and Update-Pattern Narrative"
+section for the two-step explanation and the On Write Failure / On Inconsistency Detection error
+handling.
 
 ## File Scope
 

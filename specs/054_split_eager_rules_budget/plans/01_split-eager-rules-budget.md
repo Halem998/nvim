@@ -301,30 +301,33 @@ it in a separate line of the accounting, not folded into the six-rule total.
 
 ---
 
-### Phase 4: Split state-management.md (5,148 B) [NOT STARTED]
+### Phase 4: Split state-management.md (5,148 B) [COMPLETED]
 
 **Goal**: Move the enforcement-mechanism and error-handling narrative out while keeping every
 write-gating prohibition and terminal-state restriction eager.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/context/reference/state-management-schema.md` FIRST and
+- [x] Read `agent-system/extensions/core/context/reference/state-management-schema.md` FIRST and
       decide whether the moved narrative belongs there (preferred, avoids a third home) or in a
-      new `context/standards/` companion. Record the decision and its reason.
-- [ ] Move: the "Enforcement mechanism" and "Known limitation" paragraphs under Artifacts Are
+      new `context/standards/` companion. Record the decision and its reason. *(completed: chose
+      the existing schema doc — see baseline-bytes.md Phase 4 note for the reason)*
+- [x] Move: the "Enforcement mechanism" and "Known limitation" paragraphs under Artifacts Are
       Append-Only, the explanatory prose around the State-First Update Pattern (keeping the two
       bash one-liners), and the Error Handling (On Write Failure / On Inconsistency Detection)
-      section.
-- [ ] KEEP eager in full: "Never edit TODO.md directly", the Canonical Sources block, the
+      section. *(completed)*
+- [x] KEEP eager in full: "Never edit TODO.md directly", the Canonical Sources block, the
       Artifacts Are Append-Only core prohibition including "Wholesale `.artifacts = [...]`
       assignment is prohibited" and the `+=` / sanctioned-helper instruction, the Status
       Transitions restrictions bullets (cannot transition from terminal states; cannot mark
       COMPLETED without all phases done), the `update-task-status.sh` / `generate-todo.sh`
-      one-liners, and the File Scope / Schema Reference pointers.
-- [ ] If the ASCII transition diagram is dropped for bytes, keep the bulleted restrictions
-      verbatim. Never drop both.
-- [ ] Add or update the `index-entries.json` entry for the destination file (new entry if a new
+      one-liners, and the File Scope / Schema Reference pointers. *(completed: confirmed by grep)*
+- [x] If the ASCII transition diagram is dropped for bytes, keep the bulleted restrictions
+      verbatim. Never drop both. *(completed: diagram was NOT dropped — not needed to hit target)*
+- [x] Add or update the `index-entries.json` entry for the destination file (new entry if a new
       companion; refresh `line_count` if content was appended to the existing schema doc).
-- [ ] Measure and append before/after bytes to `baseline-bytes.md`.
+      *(completed: refreshed line_count 472 -> 519)*
+- [x] Measure and append before/after bytes to `baseline-bytes.md`. *(completed: 5,148 -> 3,850 B,
+      -25.2%)*
 
 **Timing**: 1 hour
 

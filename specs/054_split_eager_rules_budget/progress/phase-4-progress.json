@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Split state-management.md",
+  "started_at": "2026-08-12T00:55:00Z",
+  "last_updated": "2026-08-12T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read schema doc, decide destination, move narrative, trim source", "status": "done", "files_touched": [
+      "agent-system/extensions/core/rules/state-management.md",
+      "agent-system/extensions/core/context/reference/state-management-schema.md"
+    ]},
+    {"id": 2, "description": "Refresh index-entries.json line_count for schema doc", "status": "done", "files_touched": [
+      "agent-system/extensions/core/index-entries.json"
+    ]},
+    {"id": 3, "description": "Measure before/after bytes, append to baseline-bytes.md", "status": "done", "files_touched": [
+      "specs/054_split_eager_rules_budget/baseline-bytes.md"
+    ]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
