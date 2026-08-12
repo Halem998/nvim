@@ -821,10 +821,16 @@ elif [ -n "$next_phase" ]; then
 
   # This preflight sits inside the `if [ -n "$next_phase" ]` branch ONLY — never in the
   # elif skeleton-exhaustion branch or the trailing else (all-complete) branch below, neither
-  # of which dispatches an implement agent. Its one-time side effects (workflow-active marker
-  # write, first-phase [NOT STARTED]->[IN PROGRESS] auto-advance) do not collide with the
-  # heading scan above, which already matches "IN PROGRESS" — so phase-1 auto-advance still
-  # resolves next_phase=1, and the call is an idempotent no-op on every later phase.
+  # of which dispatches an implement agent. Its remaining side effects are the workflow-active
+  # marker write and the plan-level [STATUS] stamp (via update-plan-status.sh) — it writes NO
+  # per-phase marker, on any path: the dispatched implementation agent owns every per-phase
+  # [IN PROGRESS]/[COMPLETED] transition directly via its own explicit phase-status calls, as
+  # the first action of processing whichever phase it actually works on (see Stage 4A of
+  # general-implementation-hard-agent). This is deliberate, not an oversight — a prior
+  # convenience here independently re-derived "the first NOT STARTED phase" with its own
+  # narrower scan and could advance a phase this dispatch never touched, diverging from the
+  # wider `next_phase` selection above whenever the dispatched phase was itself a resumed
+  # IN PROGRESS/PARTIAL/BLOCKED one; the convenience was deleted rather than gated.
   skill_preflight_update "$task_number" "implement" "$session_id"
 
   # Dispatch window for infra-failure discrimination — see

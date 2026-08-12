@@ -364,29 +364,34 @@ control passes rather than by trusting the count.
 
 ---
 
-### Phase 5: Retire the stale auto-advance comment and re-verify co-maintenance [NOT STARTED]
+### Phase 5: Retire the stale auto-advance comment and re-verify co-maintenance [COMPLETED]
 
 **Goal**: no prose in either orchestrate engine describes or relies on the deleted behavior, and
 the two SKILL.md copies remain in agreement.
 
 **Tasks**:
-- [ ] Run `grep -n "auto-advance\|first-phase\|first phase\|NOT STARTED\]->\[IN PROGRESS"` across
+- [x] Run `grep -n "auto-advance\|first-phase\|first phase\|NOT STARTED\]->\[IN PROGRESS"` across
       **both** `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` and
       `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` at implementation time,
-      before editing. Record the result for the summary.
-- [ ] In the hard-mode file, rewrite the comment block preceding the implement-dispatch
+      before editing. Record the result for the summary. *(completed: 2 hits, both in
+      skill-orchestrate-hard/SKILL.md lines 825-826; zero hits in skill-orchestrate/SKILL.md,
+      confirming the Scope Hypothesis)*
+- [x] In the hard-mode file, rewrite the comment block preceding the implement-dispatch
       `skill_preflight_update "$task_number" "implement" "$session_id"` call. Keep the still-true
       first sentence (this preflight sits inside the `if [ -n "$next_phase" ]` branch only, never
       the skeleton-exhaustion or all-complete branches). Replace the auto-advance reasoning with
       an accurate statement: the call's remaining side effects are the workflow-active marker
       write and the plan-level `[STATUS]` stamp; it writes no per-phase marker, because the
-      dispatched agent owns every per-phase transition.
-- [ ] Do not weaken or delete the surrounding territory/concurrency prose.
-- [ ] If — and only if — the fresh grep finds prose in `skill-orchestrate/SKILL.md` describing the
+      dispatched agent owns every per-phase transition. *(completed)*
+- [x] Do not weaken or delete the surrounding territory/concurrency prose. *(completed: confirmed
+      unchanged via git diff)*
+- [x] If — and only if — the fresh grep finds prose in `skill-orchestrate/SKILL.md` describing the
       deleted behavior, apply the equivalent edit there per the co-maintenance contract. If it
       finds none (the expected outcome, re-confirmed at planning time), record the verification
-      result explicitly in the summary and make no edit to that file.
-- [ ] Confirm no task-number reference is introduced (both files are outside `specs/**`).
+      result explicitly in the summary and make no edit to that file. *(completed: fresh grep
+      found none; no edit applied to skill-orchestrate/SKILL.md)*
+- [x] Confirm no task-number reference is introduced (both files are outside `specs/**`).
+      *(completed: `git diff ... | grep -iE '\btask [0-9]+\b'` finds none)*
 
 **Timing**: 0.25 hours
 
@@ -407,8 +412,9 @@ editing; a hit in the base-mode file converts this into a two-file edit.
 
 **Verification**:
 - Post-edit grep across both files returns no prose asserting a preflight phase auto-advance
-- Diff read-through confirms every changed hunk lies inside a comment region
-- The `skill_preflight_update` call line itself is unchanged
+  *(confirmed: zero hits)*
+- Diff read-through confirms every changed hunk lies inside a comment region *(confirmed)*
+- The `skill_preflight_update` call line itself is unchanged *(confirmed)*
 
 ---
 
