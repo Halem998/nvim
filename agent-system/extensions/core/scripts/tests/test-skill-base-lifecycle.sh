@@ -318,8 +318,12 @@ info "=== skill_preflight_update (target_status=implement, with a real plan file
 
 IMPLEMENT_ROOT="$WORKDIR/lifecycle-implement-fixture"
 build_fixture_repo "$IMPLEMENT_ROOT"
-jq '.active_projects[0].status = "planned"' "$IMPLEMENT_ROOT/specs/state.json" > "$WORKDIR/implement-state.json.tmp"
-mv "$WORKDIR/implement-state.json.tmp" "$IMPLEMENT_ROOT/specs/state.json"
+# Routed through the fixture's own copy of state-write.sh (the sanctioned state.json writer)
+# rather than a hand-rolled `jq ... > tmp && mv` sequence -- see
+# scripts/lint/lint-state-writer-boundary.sh's boundary contract, which this suite is not
+# exempt from (unlike test-update-task-status.sh's deliberate corrupt-state fixture).
+"$IMPLEMENT_ROOT/.claude/scripts/state-write.sh" '.active_projects[0].status = "planned"' \
+  --session-id "sess_test_implement_setup"
 mkdir -p "$IMPLEMENT_ROOT/specs/001_fixture_task/plans"
 cat > "$IMPLEMENT_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md" << 'PLANEOF'
 # Implementation Plan: Fixture Task

@@ -418,25 +418,36 @@ editing; a hit in the base-mode file converts this into a two-file edit.
 
 ---
 
-### Phase 6: Final redeploy and full gate [NOT STARTED]
+### Phase 6: Final redeploy and full gate [COMPLETED]
 
 **Goal**: the deployed tree matches the source store across all four edited files, and the full
 gate set passes.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to redeploy the edited scripts, tests, and
-      SKILL.md files.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and resolve any drift (including
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to redeploy the edited scripts, tests, and
+      SKILL.md files. *(completed)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and resolve any drift (including
       `index-entries.json` line counts via `generate-context-line-counts.sh --write` if flagged),
-      re-running until it passes.
-- [ ] Re-run both suites from the source-store path:
-      `test-update-task-status.sh` and `test-skill-base-lifecycle.sh`.
-- [ ] Re-run any orchestration-adjacent suites that exercise `update-task-status.sh` (discover via
+      re-running until it passes. *(completed: first run of this phase surfaced a genuine
+      regression, gate 12 `lint-state-writer-boundary.sh` -- the new Phase 4 case's inline
+      `jq '...' > tmp && mv tmp state.json` fixture-setup sequence tripped the hand-rolled-write
+      detector (only `test-update-task-status.sh` carries a whole-file allowlist entry for this
+      pattern; `test-skill-base-lifecycle.sh` does not). Fixed by routing the fixture's status
+      setup through the fixture's own copied `state-write.sh` (the sanctioned writer) instead of
+      hand-rolling jq+mv -- no new allowlist entry needed. Second run: 22/23 pass, only the same
+      pre-existing gate 10 (task 52 schema fields) remains.)*
+- [x] Re-run both suites from the source-store path:
+      `test-update-task-status.sh` and `test-skill-base-lifecycle.sh`. *(completed: 23 passed/0
+      failed and 18 passed/0 failed respectively)*
+- [x] Re-run any orchestration-adjacent suites that exercise `update-task-status.sh` (discover via
       `grep -rln 'update-task-status' agent-system/extensions/core/scripts/tests/`), so the
-      deletion's blast radius is checked, not assumed.
-- [ ] Confirm every acceptance criterion is discharged and cite the evidence for each in the
+      deletion's blast radius is checked, not assumed. *(completed: discovered 4 suites --
+      test-skill-base-lifecycle.sh (18/0), test-reconcile-handoff-status.sh (14/0),
+      test-resume-scan-nonconformance.sh (39/0, includes the Phase 2 Site D fix),
+      test-update-task-status.sh (23/0) -- all green)*
+- [x] Confirm every acceptance criterion is discharged and cite the evidence for each in the
       summary, including the AC 3 record (research/plan slots unreachable; premise refuted, no work
-      owed).
+      owed). *(completed: see summary artifact's "Acceptance Criteria Discharge" section)*
 
 **Timing**: 0.5 hours
 
@@ -448,24 +459,32 @@ gate set passes.
 - None beyond drift fixes surfaced by `verify-deploy.sh`, which are applied in the source store
 
 **Verification**:
-- `verify-deploy.sh` exits 0
-- Every discovered `update-task-status`-touching suite exits 0
+- `verify-deploy.sh` exits 0 *(confirmed: 22/23 checks pass; the sole remaining failure, gate 10
+  `validate-state.sh --deep` on task 52's `blockers`/`priority` fields, is pre-existing and
+  unrelated -- named in Phase 2)*
+- Every discovered `update-task-status`-touching suite exits 0 *(confirmed: all 4 suites, 94
+  cases total, 0 failures)*
 - Deployed `update-task-status.sh` and `skill-orchestrate-hard/SKILL.md` match their source-store
-  counterparts
+  counterparts *(confirmed via `diff`, along with all three edited test files)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on the edited shell scripts
-- [ ] `test-update-task-status.sh` passes, including the new byte-identity case with its positive
-      control
-- [ ] `test-skill-base-lifecycle.sh` passes, including the new implement-target Group 4 case with
-      its positive control
-- [ ] Every other test suite referencing `update-task-status` passes
-- [ ] `verify-deploy.sh` passes after the final redeploy
-- [ ] `grep` across `agent-system/extensions/core/` finds no remaining code or prose that advances
-      a phase marker from a preflight
+- [x] `bash -n` clean on the edited shell scripts *(confirmed for update-task-status.sh,
+      test-update-task-status.sh, test-skill-base-lifecycle.sh, test-resume-scan-nonconformance.sh)*
+- [x] `test-update-task-status.sh` passes, including the new byte-identity case with its positive
+      control *(23/0)*
+- [x] `test-skill-base-lifecycle.sh` passes, including the new implement-target Group 4 case with
+      its positive control *(18/0)*
+- [x] Every other test suite referencing `update-task-status` passes *(test-reconcile-handoff-status.sh
+      14/0, test-resume-scan-nonconformance.sh 39/0)*
+- [x] `verify-deploy.sh` passes after the final redeploy *(22/23; sole remaining failure is
+      pre-existing and unrelated, named above)*
+- [x] `grep` across `agent-system/extensions/core/` finds no remaining code or prose that advances
+      a phase marker from a preflight *(confirmed: repo-wide grep's only hits are the new test
+      files' own prose describing the deletion, unrelated `phase-closure.md` contract references,
+      and implementation-workflow.md's unrelated agent-side resume-detection description)*
 
 ## Artifacts & Outputs
 
