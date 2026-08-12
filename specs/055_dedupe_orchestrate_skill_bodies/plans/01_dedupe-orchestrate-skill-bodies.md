@@ -229,33 +229,38 @@ identifier, and the shared implementation exactly one.
 
 ---
 
-### Phase 3: Extract the Stage 5 Stray-Handoff Sweep and Outcome-Recovery Narrative [NOT STARTED]
+### Phase 3: Extract the Stage 5 Stray-Handoff Sweep and Outcome-Recovery Narrative [COMPLETED]
 
 **Goal**: Collapse the Stage 5 segment that begins strictly **after** `dispatch-seq-gate:end` —
 the stray-handoff sweep, the outcome-recovery orchestration, and the evidence-corroboration
 block — into one shared script, carrying its explanatory comments once instead of twice.
 
 **Tasks**:
-- [ ] Re-read the Phase 1 manifest. Confirm the segment's start point lies strictly after
+- [x] Re-read the Phase 1 manifest. Confirm the segment's start point lies strictly after
       `dispatch-seq-gate:end` in both files; the staleness/dispatch-seq region above it is
-      `eval`ed by a test and MUST NOT be touched in this phase or any later one.
-- [ ] Create `agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh` following the
+      `eval`ed by a test and MUST NOT be touched in this phase or any later one. *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh` following the
       `orchestrate-recover-outcome.sh` idiom: compute, print a single JSON object to stdout, exit
       non-zero on hard error. Inputs include `TASK_DIR`, `dispatch_start_ts`, `task_number`,
-      `session_id`, the notice prefix, and the engine's own `--detecting-site` string.
-- [ ] Move the stray-handoff sweep into the script: both `system-defect-record.sh` calls, the
+      `session_id`, the notice prefix, and the engine's own `--detecting-site` string. *(completed:
+      also takes handoff_file/handoff_stale/loop_guard_file/skill_attributed_path/cycle_count/
+      plan_path — the additional explicit parameters the shared functions it calls require)*
+- [x] Move the stray-handoff sweep into the script: both `system-defect-record.sh` calls, the
       `append_detected_defect` observation, and the move-aside-rather-than-delete `mv`, preserving
       the ordering invariant that both records are written **before** the `mv` so the observation
-      survives a failed move.
-- [ ] Move the outcome-recovery orchestration and its evidence-corroboration narrative
+      survives a failed move. *(completed)*
+- [x] Move the outcome-recovery orchestration and its evidence-corroboration narrative
       (`PHASES_ZERO_ON_SUCCESS` arm calling `skill_corroborate_phase_counts`, and the sibling
       `ARTIFACTS_SHAPE_MISMATCH` arm) into the script, preserving each arm's precondition semantics
       and its banner/log token text verbatim (`[UNVERIFIED PHASES CORROBORATED]` and the
-      "Corroborated by an independent source" tail).
-- [ ] Wire both engines: replace each inline copy with the single-line invocation plus the small
+      "Corroborated by an independent source" tail). *(completed)*
+- [x] Wire both engines: replace each inline copy with the single-line invocation plus the small
       `jq` reads of the returned decision JSON. The two call sites must differ **only** by the
-      notice prefix and the `--detecting-site` string.
-- [ ] Leave the `$handoff`-anchored one-line jq reads untouched and literally present.
+      notice prefix and the `--detecting-site` string. *(completed — the hard engine's call site
+      also sets `skeleton=false`/`sorry_inventory='[]'` after the call on the recovered=true path,
+      an intentional hard-only addition the shared script never touches)*
+- [x] Leave the `$handoff`-anchored one-line jq reads untouched and literally present. *(completed
+      — verified via test-handoff-reader-parity.sh pass, 19/19)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Extract the Stage 5 Stray-Handoff Sweep and Outcome-Recovery Narrative",
+  "started_at": "2026-08-12T20:45:00Z",
+  "last_updated": "2026-08-12T21:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm segment boundaries against Phase 1 manifest", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create orchestrate-stage5-gates.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh"]},
+    {"id": 3, "description": "Move stray-handoff sweep into script", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh"]},
+    {"id": 4, "description": "Move outcome-recovery + evidence-corroboration into script", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh"]},
+    {"id": 5, "description": "Wire both engines", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 6, "description": "Leave $handoff-anchored reads untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
