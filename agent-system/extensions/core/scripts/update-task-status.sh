@@ -467,7 +467,12 @@ fi
 # PHASE 3: Plan file status (optional, implement only)
 # ============================================================
 update_plan_file() {
-  # Only update plan file for implement operations
+  # This guard is the sole bound on every plan-file side effect below: research and plan
+  # operations never reach the plan-level [STATUS] write, because target_status is never
+  # "implement" for those operations. This function no longer touches any per-phase marker
+  # (no "first NOT STARTED phase" convenience) -- the dispatched implementation agent owns
+  # every per-phase [IN PROGRESS]/[COMPLETED] transition directly, via its own explicit
+  # phase-status calls. Only update plan file for implement operations.
   if [[ "$target_status" != "implement" ]]; then
     return 0
   fi
@@ -497,9 +502,6 @@ update_plan_file() {
 
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "[dry-run] Plan file: status -> [$plan_status] (via update-plan-status.sh)"
-    if [[ "$operation" == "preflight" ]]; then
-      echo "[dry-run] Phase status: first [NOT STARTED] phase -> [IN PROGRESS] (via update-phase-status.sh)"
-    fi
     return 0
   fi
 
@@ -520,67 +522,6 @@ update_plan_file() {
       exit 3
     else
       echo "Warning: plan file update failed (non-fatal)" >&2
-    fi
-  fi
-
-  # Auto-advance the first NOT STARTED phase to IN PROGRESS on implement preflight
-  if [[ "$operation" == "preflight" ]]; then
-    local phase_script="$SCRIPT_DIR/update-phase-status.sh"
-    if [[ -x "$phase_script" ]]; then
-      # Resolve plan directory (padded with unpadded fallback)
-      local padded_num
-      padded_num=$(printf "%03d" "$task_number")
-      local plan_dir="$PROJECT_ROOT/specs/${padded_num}_${project_name}/plans"
-      if [[ ! -d "$plan_dir" ]]; then
-        plan_dir="$PROJECT_ROOT/specs/${task_number}_${project_name}/plans"
-      fi
-
-      if [[ -d "$plan_dir" ]]; then
-        local plan_file
-        # Version-ordered selection (not mtime-ordered), same two-tier rule as
-        # update-plan-status.sh and update-phase-status.sh: prefer the MM_{short-slug}.md
-        # convention (artifact-formats.md), highest sequence wins; fall back to a plain name
-        # sort only when no conforming file exists. Not reusing update-plan-status.sh's
-        # stdout here: its idempotent no-op branch exits 0 emitting nothing, so its stdout is
-        # empty on a successful no-op and unusable as a path source.
-        plan_file=$(ls "$plan_dir"/[0-9][0-9]_*.md 2>/dev/null | sort | tail -1 || echo "")
-        if [[ -z "$plan_file" ]]; then
-          plan_file=$(ls "$plan_dir"/*.md 2>/dev/null | sort | tail -1 || echo "")
-        fi
-        if [[ -n "$plan_file" ]]; then
-          local first_phase first_phase_heading
-          # Sourced from scripts/lib/phase-heading-patterns.sh's heading-match form and
-          # extract_phase_number rather than a re-derived inline pattern + sed chain -- the sed
-          # chain could not distinguish a non-conforming heading from "no match", where
-          # extract_phase_number returns empty with a non-zero status instead of a truncated
-          # prefix.
-          #
-          # Whole-file conformance check BEFORE the filtered grep below (same ordering contract
-          # as the D3 gate above): a non-conforming heading is invisible to a
-          # PHASE_HEADING_ERE-filtered grep, so this convenience could silently mark a DIFFERENT
-          # phase IN_PROGRESS -- a wrong-phase write, not merely a missed convenience. Minimal
-          # guard only: on a hit, warn and skip the convenience entirely rather than guessing.
-          # The convenience's own non-fatal character is preserved exactly.
-          if has_nonconforming_phase_headings "$plan_file"; then
-            warn_nonconforming "$plan_file" "update-task-status-first-phase" || true
-            echo "[first-phase] Non-conforming phase heading(s) in $(basename "$plan_file") -- skipping the first-phase auto-advance convenience rather than advancing a wrong phase. Non-fatal; the dispatched agent owns every per-phase transition directly." >&2
-          else
-            first_phase_heading=$(grep -m1 -E "${PHASE_HEADING_ERE}.*\[NOT STARTED\]" "$plan_file" || echo "")
-            first_phase=""
-            if [[ -n "$first_phase_heading" ]]; then
-              first_phase=$(extract_phase_number "$first_phase_heading") || first_phase=""
-            fi
-            if [[ -n "$first_phase" ]]; then
-              # Superseded by the base agent owning every per-phase transition directly; this
-              # call is a redundant convenience, recoverable via the agent's own explicit calls.
-              # Non-fatal, and its stderr is no longer discarded.
-              "$phase_script" "$task_number" "$project_name" "$first_phase" "IN_PROGRESS" || {
-                echo "Warning: phase status update failed (non-fatal)" >&2
-              }
-            fi
-          fi
-        fi
-      fi
     fi
   fi
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #35
 
 - **Task**: 35 - Stop preflight from auto-advancing an undispatched plan phase to [IN PROGRESS]
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: 16, 33 (both completed; task 33 shares `skill-orchestrate-hard/SKILL.md` edit territory)
 - **Research Inputs**: specs/035_stop_preflight_spurious_phase_advance/reports/01_preflight-phase-advance-defect.md
@@ -138,37 +138,39 @@ files (`test-update-task-status.sh`, `test-skill-base-lifecycle.sh`,
 
 ---
 
-### Phase 1: Delete the preflight phase auto-advance convenience [NOT STARTED]
+### Phase 1: Delete the preflight phase auto-advance convenience [COMPLETED]
 
 **Goal**: `update_plan_file()` no longer writes any per-phase status marker, on any path.
 
 **Tasks**:
-- [ ] Re-read `update_plan_file()` in full in
+- [x] Re-read `update_plan_file()` in full in
       `agent-system/extensions/core/scripts/update-task-status.sh`. Locate the deletable unit by
       **content anchor, not line number**: the `if [[ "$operation" == "preflight" ]]; then`
       statement that follows the `update-plan-status.sh` invocation, headed by the comment
       `# Auto-advance the first NOT STARTED phase to IN PROGRESS on implement preflight` and whose
-      body opens `local phase_script="$SCRIPT_DIR/update-phase-status.sh"`.
-- [ ] Delete that entire `if ... fi` statement, including its nested `has_nonconforming_phase_headings`
+      body opens `local phase_script="$SCRIPT_DIR/update-phase-status.sh"`. *(completed)*
+- [x] Delete that entire `if ... fi` statement, including its nested `has_nonconforming_phase_headings`
       guard, the `plan_dir`/`plan_file` resolution, the `grep -m1` scan, and the
-      `update-phase-status.sh ... IN_PROGRESS` call.
-- [ ] Delete the nested dry-run preview inside the `DRY_RUN` branch (the
+      `update-phase-status.sh ... IN_PROGRESS` call. *(completed)*
+- [x] Delete the nested dry-run preview inside the `DRY_RUN` branch (the
       `if [[ "$operation" == "preflight" ]]` block echoing
       `[dry-run] Phase status: first [NOT STARTED] phase -> [IN PROGRESS] ...`), so the preview no
       longer advertises a side effect that no longer happens. Keep the surrounding
-      `[dry-run] Plan file: status -> ...` echo and the `return 0`.
-- [ ] Leave untouched, and confirm by diff read-through: the `target_status != implement` early
+      `[dry-run] Plan file: status -> ...` echo and the `return 0`. *(completed)*
+- [x] Leave untouched, and confirm by diff read-through: the `target_status != implement` early
       return, the `plan_status` case statement, the `project_name` lookup, the `plan_script`
       executability check, and the `update-plan-status.sh` invocation with its
-      postflight-fatal/preflight-warn branch.
-- [ ] Add a short comment at the retained `target_status != implement` guard recording that (a)
+      postflight-fatal/preflight-warn branch. *(completed: git diff confirms only the two deleted
+      regions and the one added comment changed)*
+- [x] Add a short comment at the retained `target_status != implement` guard recording that (a)
       this guard is the sole bound on plan-file side effects, which is why research and plan
       operations never reach them, and (b) this function no longer touches per-phase markers —
       the dispatched agent owns every per-phase transition directly. Use durable anchors only; no
-      task-number references (this file is outside `specs/**`).
-- [ ] Confirm the `scripts/lib/phase-heading-patterns.sh` sourcing block stays: its
+      task-number references (this file is outside `specs/**`). *(completed)*
+- [x] Confirm the `scripts/lib/phase-heading-patterns.sh` sourcing block stays: its
       `has_nonconforming_phase_headings` / `warn_nonconforming` / `PHASE_HEADING_TOTAL_ERE`
       exports are still consumed by the `--phase-check` backstop later in the same script.
+      *(completed: sourcing block and --phase-check usage confirmed unchanged)*
 
 **Timing**: 0.5 hours
 

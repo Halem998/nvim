@@ -1,32 +1,8 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 35,
-  "session_id": "sess_1786517897_9e95c0_35",
-  "dispatch_seq": 2,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/035_stop_preflight_spurious_phase_advance/plans/01_delete-preflight-phase-autoadvance.md",
-      "summary": "Six-phase plan deleting update_plan_file()'s preflight per-phase auto-advance, redeploying before any test is written, adding non-vacuous regression coverage to both named suites, and retiring the stale auto-advance comment in skill-orchestrate-hard/SKILL.md."
-    }
-  ],
-  "phase_count": 6,
-  "estimated_hours": 2.75,
-  "dependency_waves": [[1], [2], [3, 4, 5], [6]],
-  "modified_files": [
-    "specs/035_stop_preflight_spurious_phase_advance/plans/01_delete-preflight-phase-autoadvance.md",
-    "specs/035_stop_preflight_spurious_phase_advance/.return-meta.json"
-  ],
-  "memory_candidates": [
-    {
-      "content": "Defect class: two independent scans over the same artifact using DIFFERENT match criteria will silently disagree. In this agent system, update-task-status.sh's preflight convenience re-derived the target phase with a narrow `[NOT STARTED]`-only grep, while skill-orchestrate-hard's dispatch loop selected next_phase with a wider `NOT STARTED|IN PROGRESS|PARTIAL|BLOCKED` scan. Whenever the dispatched phase was a resumed/partial one, the narrow scan skipped past it and marked a LATER, undispatched phase [IN PROGRESS] -- which then fed a fabricated CONCURRENT DISPATCH territory-conflict report back into hard-mode reasoning. General rule: any convenience that mutates a per-item marker must take the target item as an explicit parameter from the caller that owns the selection, never independently re-derive it. A second, related trap: a fixture-based regression test for such a side effect passes VACUOUSLY if the fixture omits a dependency the code path early-returns on (here, update-plan-status.sh missing from the fixture copy loop). Every such test needs a positive control asserting the surrounding side effect DID happen.",
-      "category": "PATTERN",
-      "source_artifact": "specs/035_stop_preflight_spurious_phase_advance/plans/01_delete-preflight-phase-autoadvance.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["phase-marker", "divergent-scan", "re-derivation", "vacuous-test", "positive-control", "orchestration"]
-    }
-  ],
-  "next_steps": "Run /implement 35 to execute the plan"
+  "session_id": "sess_1786517897_9e95c0",
+  "dispatch_seq": 3
 }
