@@ -12,7 +12,7 @@ next_project_number: 58
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
-| 2 | 9,13,29,42,50,55,56 | 17,18,22,41,48 | agent-system, context-loading |
+| 2 | 9,13,29,42,50,56 | 17,18,22,41,48 | agent-system, context-loading |
 | 3 | 30 | 29 | agent-system |
 | 4 | 32 | 28,30,31 | agent-system |
 
@@ -61,7 +61,6 @@ next_project_number: 58
 
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
-55 [NOT STARTED] — LEVER 1 of the context-cost work (the two orchestrate skills). Th
 56 [NOT STARTED] — LEVER 3 of the context-cost work (command bodies). Smallest and c
 
 ### Email
@@ -141,10 +140,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 55. Dedupe orchestrate skill bodies
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: context-loading
 - **Dependencies**: Task 48
+- **Research**: [055_dedupe_orchestrate_skill_bodies/reports/01_dedupe-orchestrate-skill-bodies.md]
+- **Plan**: [055_dedupe_orchestrate_skill_bodies/plans/01_dedupe-orchestrate-skill-bodies.md]
+- **Summary**: [055_dedupe_orchestrate_skill_bodies/summaries/01_dedupe-orchestrate-skill-bodies-summary.md]
 
 **Description**: LEVER 1 of the context-cost work (the two orchestrate skills). This is the largest per-invocation cost in the system and simultaneously an acknowledged correctness liability, and it is getting worse: re-measured 2026-08-12, skill-orchestrate/SKILL.md is 196,171 bytes (baseline 175,303, +12%) and skill-orchestrate-hard/SKILL.md is 127,145 bytes (baseline 107,121, +19%). Both grew roughly 15% in the weeks between the audit and this expansion.
 

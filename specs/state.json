@@ -78,7 +78,7 @@
     {
       "project_number": 55,
       "project_name": "dedupe_orchestrate_skill_bodies",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "context-loading",
       "description": "LEVER 1 of the context-cost work (the two orchestrate skills). This is the largest per-invocation cost in the system and simultaneously an acknowledged correctness liability, and it is getting worse: re-measured 2026-08-12, skill-orchestrate/SKILL.md is 196,171 bytes (baseline 175,303, +12%) and skill-orchestrate-hard/SKILL.md is 127,145 bytes (baseline 107,121, +19%). Both grew roughly 15% in the weeks between the audit and this expansion.\n\nA SKILL.md body is loaded IN FULL on every invocation. This is confirmed, not assumed: no include, partial, fragment, or compose mechanism exists in install-extension.sh, and deploy is a byte-for-byte copy. Structural measurement at baseline: 72.6% and 74.2% of the two files respectively is fenced bash, almost all in large multi-line blocks (17 blocks / 121,413 B in the standard skill; 17 blocks / 76,966 B in the hard one). At least 28,421 bytes across 427 substantive lines are byte-identical between the two files, and that is a floor, since near-duplicates differing only by a log prefix are not counted.\n\nTHE FILES DOCUMENT THIS THEMSELVES. skill-orchestrate-hard/SKILL.md, around the append_detected_defect helper: \"HARD-MODE TWIN of the append_detected_defect helper in skill-orchestrate/SKILL.md Stage 5. The two MUST stay in sync -- this file pair is where a one-sided fix is a known recurring defect class, because hard mode single-task stages are a structurally separate reimplementation rather than a thin wrapper.\" So closing the duplication is a correctness fix wearing a token-cost hat.\n\nTWO EXTRACTION MECHANISMS, AND THE DIFFERENCE IS THE WHOLE POINT. Moving reference PROSE into context/** saves tokens only on invocations that do not need it, because a backticked path is inert text the agent may still choose to Read. Moving procedural BASH into an executable script invoked by a one-line `bash .claude/scripts/foo.sh args` removes it from context entirely, because the script source is never loaded. The second is far stronger and is already the established pattern here: roughly 20 orchestrate-*.sh scripts already exist, and the residual large blocks are simply the logic that was never pushed out. Prefer it. Also extend the proven skill_* shared-function pattern in skill-base.sh to cover the duplicated Stage 5 logic (staleness gate, stray-handoff sweep, append_detected_defect) and the structurally identical postflight-merge blocks, so the duplication closes by construction rather than by discipline. Do NOT invent a new build-time include mechanism; reuse infrastructure already exercised in production.\n\nSEQUENCING NOTE, UPDATED. The parent task carried a coordination warning that the handoff staleness gate and stray-handoff sweep were being concurrently redesigned by the handoff identity-contract and loop-guard-deadlock work. That work is now COMPLETED, so the warning is discharged and the staleness gate no longer has to be extracted last. Re-read the current state of both engines before starting rather than trusting either that warning or this note.\n\nACCEPTANCE. Report measured before/after bytes for every file touched, using eager-prefix + command + skill + agent accounting. The 28,421+ bytes of literal duplication between the two orchestrate skills exists in exactly ONE place afterward, and both skills call it by name. Existing orchestration tests pass unmodified. No mode loses a behavior: every mode remains fully specified, inline or via an explicit pointer the executing agent is instructed to follow.\n\nTERRITORY: agent-system/extensions/core/skills/skill-orchestrate/**, skill-orchestrate-hard/**, scripts/skill-base.sh, and new or extended scripts/orchestrate-*.sh. The rules and merge sources belong to the eager-budget sibling subtask; commands/todo.md and commands/orchestrate.md belong to the command-bodies sibling subtask.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.",
@@ -87,12 +87,31 @@
         48
       ],
       "created": "2026-08-12T16:47:50Z",
-      "last_updated": "2026-08-12T16:54:27Z",
+      "last_updated": "2026-08-12T20:43:21Z",
       "file_scope": [
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
         "agent-system/extensions/core/scripts/skill-base.sh"
-      ]
+      ],
+      "session_id": "sess_1786563122_891337",
+      "artifacts": [
+        {
+          "path": "specs/055_dedupe_orchestrate_skill_bodies/reports/01_dedupe-orchestrate-skill-bodies.md",
+          "type": "report",
+          "summary": "Structural analysis of the two orchestrate skill bodies; Stage 5 mega-block is the dominant dedupe target."
+        },
+        {
+          "path": "specs/055_dedupe_orchestrate_skill_bodies/plans/01_dedupe-orchestrate-skill-bodies.md",
+          "type": "plan",
+          "summary": "Seven-phase sequential dedupe plan designed around six test-locked literal regions."
+        },
+        {
+          "path": "specs/055_dedupe_orchestrate_skill_bodies/summaries/01_dedupe-orchestrate-skill-bodies-summary.md",
+          "type": "summary",
+          "summary": "Acceptance measurement: before/after byte tables, remaining-duplication proof, divergence enumeration."
+        }
+      ],
+      "completion_summary": "Closed the byte-identical duplication between skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md across all 7 plan phases: promoted mint_dispatch_seq/append_detected_defect/propagate_completion/merge_return_meta to scripts/skill-base.sh behind named shims, extracted the Stage 5 stray-handoff sweep, outcome-recovery, postflight status-transition, and artifact-linking logic into three new orchestrate-*.sh scripts, and extracted the common Stage 2 loop-guard prologue. skill-orchestrate/SKILL.md dropped from 196,171 to 171,071 bytes (-25,100) and skill-orchestrate-hard/SKILL.md from 127,145 to 102,774 bytes (-24,371). All 42 tests in run-all.sh pass, zero test files modified, deploy tree verified byte-identical to source store."
     },
     {
       "project_number": 56,

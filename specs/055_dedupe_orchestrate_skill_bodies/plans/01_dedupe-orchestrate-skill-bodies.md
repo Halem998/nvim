@@ -1,7 +1,7 @@
 # Implementation Plan: Task #55
 
 - **Task**: 55 - Dedupe orchestrate skill bodies (LEVER 1: the two orchestrate skills)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9.5 hours
 - **Dependencies**: Task 48
 - **Research Inputs**: specs/055_dedupe_orchestrate_skill_bodies/reports/01_dedupe-orchestrate-skill-bodies.md
