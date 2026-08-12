@@ -1,10 +1,63 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/056_slim_todo_and_orchestrate_command_bodies/summaries/01_command-body-extraction-summary.md",
+      "summary": "Measurement table, test results, per-step pointer-reachability record for both command bodies, and the recorded (not acted on) sibling-task drop recommendation for commands/task.md slimming."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extracted todo.md's ## Notes section (7,851 B) and orchestrate.md's ## Batch Orchestrate Results fenced template (6,648 B) verbatim into new context/patterns/ files, replacing each with an imperative moment-of-need pointer, repointing the one internal cross-reference into the extracted region, and registering both new files in index-entries.json. todo.md shrank from 49,254 B to 41,855 B (-15.0%) and orchestrate.md from 43,180 B to 36,774 B (-14.8%); the full existing test suite (42 tests plus targeted session-runtime and state-writer-boundary checks) passes unmodified, and both pointers were confirmed reachable and imperative by an explicit end-to-end read of each resulting command body."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/todo-archival-reference.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/056_slim_todo_and_orchestrate_command_bodies/summaries/01_command-body-extraction-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's Scope Hypothesis states an estimated count (e.g. 'nine ###-level subsections') but instructs the implementer to confirm by direct measurement, treat the plan's own enumerated parenthetical list as the more reliable signal than its summary number if the two disagree -- count the list items directly (grep -c '^### ') rather than trusting the prose figure. This happened extracting orchestrate.md's batch-results template: the plan said 'nine' but its own list named ten subsections including 'Next Steps'; the measured count (10) was correct and used, with the discrepancy recorded as a plan deviation rather than silently resolved.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/056_slim_todo_and_orchestrate_command_bodies/summaries/01_command-body-extraction-summary.md",
+      "confidence": 0.6,
+      "suggested_keywords": [
+        "scope-hypothesis",
+        "plan-drift",
+        "measurement",
+        "verbatim-extraction"
+      ]
+    },
+    {
+      "content": "A source-store validation script that hard-requires a deployed .claude/ tree (guarded by deploy-root-guard.sh) can still be run read-only against the CURRENTLY deployed tree via its documented REPO_ROOT=$(pwd) bash agent-system/extensions/<ext>/scripts/<script>.sh override -- this bypasses only the guard, not the script's target path, so it validates the pre-existing deployed artifact rather than uncommitted source-store edits. This is the correct way to satisfy a plan's 'run validate-context-index.sh' instruction without running a prohibited deploy/regeneration step: it confirms the deployed baseline is still valid, which is what the plan's constraint (no deploy) actually permits verifying.",
+      "category": "PATTERN",
+      "source_artifact": "specs/056_slim_todo_and_orchestrate_command_bodies/summaries/01_command-body-extraction-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "source-store",
+        "REPO_ROOT-override",
+        "validate-context-index",
+        "no-deploy-constraint"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786567429_185c13",
-    "agent_type": "general-research-agent",
+    "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

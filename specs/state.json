@@ -116,7 +116,7 @@
     {
       "project_number": 56,
       "project_name": "slim_todo_and_orchestrate_command_bodies",
-      "status": "researching",
+      "status": "completed",
       "task_type": "meta",
       "topic": "context-loading",
       "description": "LEVER 3 of the context-cost work (command bodies). Smallest and cheapest of the three levers; listed separately so it does not get starved by the two larger ones and so its edit territory does not collide with theirs.\n\nMEASURED (source store, 2026-08-12): commands/todo.md is 49,254 bytes and commands/orchestrate.md is 43,180 bytes. A command body is loaded in full on every invocation of that command. Two extractable regions were identified: the ## Notes section of todo.md (~7,851 B), which is reference material belonging under context/patterns/, and the ## Batch Orchestrate Results output template in orchestrate.md (~6,739 B), which is needed only in batch mode and can be pointed at rather than inlined.\n\nWORK: move those two regions out, keeping each command body to the decision logic and dispatch instructions an invocation actually needs. Re-measure both regions before cutting -- the byte figures above are from the audit and the files may have drifted, as the orchestrate skills demonstrably did (+12% and +19% over the same interval).\n\nPRESERVE BEHAVIOR: no command loses a behavior. Every mode stays fully specified, either inline or via an explicit pointer the executing agent is instructed to follow. A reference that an agent is not told to follow is a deletion, not an extraction.\n\nCARRY THIS CORRECTION FORWARD (record it in the summary; do not silently act on another task scope). There is a separate standing task to slim commands/task.md as \"the largest per-invocation context contributor\". Structural analysis contradicts that premise: task.md is procedural and mode-specific, already cites standards by pointer rather than restating them, and yields roughly 0-1 KB of extractable material, against todo.md ~7.9 KB and orchestrate.md ~6.7 KB. Recommend re-pointing that task at todo.md/orchestrate.md, or dropping it as redundant with this subtask. Make the recommendation explicit in the summary so the decision is recorded rather than inherited.\n\nTERRITORY: agent-system/extensions/core/commands/todo.md, commands/orchestrate.md, and the new context/patterns/ destinations. Note the overlap risk: the scoped-commit propagation work also edits todo.md and orchestrate.md, at their `git commit -m` call sites specifically. Coordinate or sequence against it; the regions differ, but the files do not.\n\nACCEPTANCE: report measured before/after bytes for both command files. Existing tests pass unmodified. Every extracted region is reachable from the command body by an explicit follow-this-pointer instruction, verified by reading the resulting command body end to end as an executing agent would.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.",
@@ -125,13 +125,31 @@
         48
       ],
       "created": "2026-08-12T16:47:50Z",
-      "last_updated": "2026-08-12T20:44:09Z",
+      "last_updated": "2026-08-12T21:12:49Z",
       "file_scope": [
         "agent-system/extensions/core/commands/todo.md",
         "agent-system/extensions/core/commands/orchestrate.md",
         "agent-system/extensions/core/context/patterns/"
       ],
-      "session_id": "sess_1786567429_185c13"
+      "session_id": "sess_1786567429_185c13",
+      "artifacts": [
+        {
+          "path": "specs/056_slim_todo_and_orchestrate_command_bodies/reports/01_command-body-region-extraction.md",
+          "type": "report",
+          "summary": "Region-level measurement of the two command bodies, test-grep survey, and a disconfirming check of a sibling task's premise."
+        },
+        {
+          "path": "specs/056_slim_todo_and_orchestrate_command_bodies/plans/01_command-body-extraction.md",
+          "type": "plan",
+          "summary": "Six-phase extraction plan with imperative-pointer verification and named no-touch regions."
+        },
+        {
+          "path": "specs/056_slim_todo_and_orchestrate_command_bodies/summaries/01_command-body-extraction-summary.md",
+          "type": "summary",
+          "summary": "Before/after byte measurement, pointer end-to-end verification records, and sibling-task recommendation."
+        }
+      ],
+      "completion_summary": "Extracted todo.md's ## Notes section (7,851 B) and orchestrate.md's ## Batch Orchestrate Results fenced template (6,648 B) verbatim into new context/patterns/ files, replacing each with an imperative moment-of-need pointer, repointing the one internal cross-reference into the extracted region, and registering both new files in index-entries.json. todo.md shrank from 49,254 B to 41,855 B (-15.0%) and orchestrate.md from 43,180 B to 36,774 B (-14.8%); the full existing test suite (42 tests plus targeted session-runtime and state-writer-boundary checks) passes unmodified, and both pointers were confirmed reachable and imperative by an explicit end-to-end read of each resulting command body."
     },
     {
       "project_number": 53,

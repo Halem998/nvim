@@ -12,7 +12,7 @@ next_project_number: 59
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53,58 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
-| 2 | 9,13,29,42,50,56 | 17,18,22,41,48 | agent-system, context-loading |
+| 2 | 9,13,29,42,50 | 17,18,22,41,48 | agent-system, context-loading |
 | 3 | 30 | 29 | agent-system |
 | 4 | 32 | 28,30,31 | agent-system |
 
@@ -62,7 +62,6 @@ next_project_number: 59
 
 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
-56 [RESEARCHING] — LEVER 3 of the context-cost work (command bodies). Smallest and c
 
 ### Email
 
@@ -154,10 +153,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 56. Slim todo and orchestrate command bodies
-- **Status**: [RESEARCHING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: context-loading
 - **Dependencies**: Task 48
+- **Research**: [056_slim_todo_and_orchestrate_command_bodies/reports/01_command-body-region-extraction.md]
+- **Plan**: [056_slim_todo_and_orchestrate_command_bodies/plans/01_command-body-extraction.md]
+- **Summary**: [056_slim_todo_and_orchestrate_command_bodies/summaries/01_command-body-extraction-summary.md]
 
 **Description**: LEVER 3 of the context-cost work (command bodies). Smallest and cheapest of the three levers; listed separately so it does not get starved by the two larger ones and so its edit territory does not collide with theirs.
 
