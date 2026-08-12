@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Record the Base-Mode Territory Decision (Gap 2)",
+  "started_at": "2026-08-12T08:35:00Z",
+  "last_updated": "2026-08-12T08:48:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Atomic batch: add Decision record / Asymmetry decision block to skill-orchestrate/SKILL.md adjacent to Stage MT-3 file_scope_collision/session_active branches, and mirrored acknowledgment paragraph to skill-orchestrate-hard/SKILL.md adjacent to its existing asymmetry record",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ],
+      "note": "Base engine: added Decision record + Asymmetry decision pair after the session_active branch (before Convergence guard section), stating (a) no territory key for base mode, (b) BATCHING RULE makes multi-task dispatch genuinely concurrent, (c) file_scope deferral is admission-time-only and blind to a woken predecessor -- named as OPEN gap, (d) one-line pointer to dispatch-report-not-termination.md. Hard engine: added one paragraph adjacent to existing 'Asymmetry decision (recorded, not merely implied)' record citing the base engine's record; territory key and concurrency_note untouched (verified byte-identical to Phase 1 scratch copy). Verified: grep -c territory in base SKILL.md = 2, both occurrences inside the decision-record block; grep -n -A2 -i admission shows the admission-time-only + woken-predecessor-blindness sentences; git diff --stat shows exactly one hunk in each file, purely additive (no deletions); dispatch-report-not-termination count in base SKILL.md increased by exactly 1."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

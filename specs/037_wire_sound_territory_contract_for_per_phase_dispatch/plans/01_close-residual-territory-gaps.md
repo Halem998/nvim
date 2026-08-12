@@ -261,7 +261,7 @@ acceptance criterion 3.
 
 ---
 
-### Phase 4: Record the Base-Mode Territory Decision (Gap 2) [NOT STARTED]
+### Phase 4: Record the Base-Mode Territory Decision (Gap 2) [COMPLETED]
 
 **Goal**: Record an explicit, mutual base-vs-hard decision on whether base mode gains a territory
 contract, satisfying acceptance criterion 2, using the codebase's established in-file
@@ -290,32 +290,32 @@ re-litigate it):
 > implementation agent in Phase 5, not via a territory dispatch key.
 
 **Tasks**:
-- [ ] Add a `**Decision record**:` / `**Asymmetry decision (recorded, ... so the two visibly
+- [x] Add a `**Decision record**:` / `**Asymmetry decision (recorded, ... so the two visibly
       agree)**:` block to `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`, reusing
       the exact prose idiom already established in that file at the loop-guard-staleness asymmetry
       record (the `**Decision record**:` / `**Asymmetry decision (recorded, "recorded not acted on"
       style, mirroring the hard engine's record so the two visibly agree)**:` pair). Do not invent
-      a new decision-record format and do not create a new file or directory for it.
-- [ ] Place the block where a future reader of the base engine will actually find it: adjacent to
+      a new decision-record format and do not create a new file or directory for it. *(completed)*
+- [x] Place the block where a future reader of the base engine will actually find it: adjacent to
       the Stage MT-3 `file_scope_collision` / `session_active` deferral branches whose limitation
       it names, or immediately after the Stage MT-4 BATCHING RULE. Choose one site; do not
-      duplicate the record at both.
-- [ ] The block MUST state, in its own words: (a) the decision (base mode does not gain a
+      duplicate the record at both. *(completed: placed adjacent to the session_active branch)*
+- [x] The block MUST state, in its own words: (a) the decision (base mode does not gain a
       `territory` dispatch key); (b) that base mode's multi-task dispatch is genuinely concurrent
       by construction (the BATCHING RULE's single-message requirement); (c) that `file_scope`
       deferral is ADMISSION-TIME ONLY and structurally blind to a woken predecessor from an earlier
       cycle — named explicitly as an OPEN residual gap, never as something `file_scope` covers;
       and (d) a one-line pointer to `context/patterns/dispatch-report-not-termination.md` for the
-      underlying model. No restatement of that model.
-- [ ] Add the mirrored acknowledgment to
+      underlying model. No restatement of that model. *(completed: all four elements present)*
+- [x] Add the mirrored acknowledgment to
       `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`, bounded to a single
       added paragraph adjacent to its existing `**Asymmetry decision (recorded, not merely
       implied)**` record, so the two engines visibly agree. State that the hard engine carries a
       `territory` dispatch key and the base engine deliberately does not, and cite the base
       engine's record. Do not modify the hard engine's `territory` key, its `concurrency_note`, or
-      any other hunk of that file.
-- [ ] Do NOT add a `territory` key, `owned_files`, `read_only_files`, or `forbidden_files` to any
-      base-mode dispatch context.
+      any other hunk of that file. *(completed: single hunk, concurrency_note byte-identical)*
+- [x] Do NOT add a `territory` key, `owned_files`, `read_only_files`, or `forbidden_files` to any
+      base-mode dispatch context. *(completed: none added)*
 
 **Timing**: 45 minutes
 

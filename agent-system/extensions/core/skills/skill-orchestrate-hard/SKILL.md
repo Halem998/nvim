@@ -486,6 +486,16 @@ requiring an explicit human decision to lift. Whether base mode should ever gain
 3-signal staleness detector at all is a SEPARATE, undecided question, out of scope for this
 override and not settled by adding it here.
 
+**Territory asymmetry acknowledgment (mirroring the base engine's record so the two visibly
+agree)**: this engine carries the `territory` dispatch key documented at Stage 4's dispatch
+context (`owned_files`/`read_only_files`/`forbidden_files`/`concurrency_note`) because its
+per-phase dispatch is single-agent-at-a-time; the base engine's multi-task dispatch is instead
+genuinely concurrent by construction and deliberately does NOT gain a `territory` key. See
+`skill-orchestrate/SKILL.md`'s own Decision record / Asymmetry decision pair, adjacent to its
+Stage MT-3 `file_scope_collision`/`session_active` deferral branches, for the full reasoning and
+the named open gap (admission-time-only `file_scope` deferral is blind to a woken predecessor
+from an earlier cycle).
+
 ---
 
 ### Stage 3: State Machine Loop

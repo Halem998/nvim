@@ -1919,6 +1919,26 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      Additionally, append to `mt_state_file.defer_ledger`:
      `{"task": task_number, "defer_reason": "session_active", "collision_scope": null, "cycle": cycle_count, "detail": "contending session {session_id} (liveness: {session_liveness_reason}) covers task #{colliding_task_number} at {overlapping_path}"}`.
 
+   **Decision record**: base mode does NOT gain a `territory` dispatch key. Its multi-task
+   dispatch is genuinely concurrent by construction — the Stage MT-4 BATCHING RULE requires every
+   cycle's dispatch batch to be issued as `Agent` tool calls in a single message, so multiple
+   agents run concurrently, each with its own `task_dir`, `handoff_path`, and declared
+   `file_scope`. A per-dispatch `owned_files` declaration would restate `file_scope` at a second
+   grain without adding any detection capability that `file_scope` deferral does not already
+   provide for the cross-task file-conflict case it covers.
+
+   **Asymmetry decision (recorded, "recorded not acted on" style, mirroring the hard engine's
+   record so the two visibly agree)**: the residual gap is recorded as OPEN, not as covered. The
+   `file_scope_collision` and `session_active` branches immediately above operate at ADMISSION
+   TIME ONLY — they compare tasks being admitted this cycle against each other and against
+   currently-registered live sessions. They are structurally blind to a woken predecessor from an
+   EARLIER cycle that already reported but is still live (a self-armed watcher/monitor, or an
+   operator resume). That case is not covered by `file_scope` deferral and is not closed by this
+   decision. What DOES apply to base mode is the observation half of the contract — the
+   STOP-and-report duty on foreign commits, foreign uncommitted modifications, or a running build
+   the agent did not start, wired into the base implementation agent independent of any territory
+   dispatch key. See `context/patterns/dispatch-report-not-termination.md`.
+
    **Convergence guard (post-admission empty-dispatch-batch check)**: removing the permanent
    `deferred_self_modifying` exclusion set (this step now only appends to an observation log, per
    Stage MT-1's schema definition) opens a narrow non-convergence mode the old permanent exclusion
