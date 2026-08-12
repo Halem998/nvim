@@ -394,6 +394,28 @@
         "contracts",
         "H4"
       ]
+    },
+    {
+      "path": "project/cslib/pr-command-workflow.md",
+      "domain": "project",
+      "subdomain": "cslib",
+      "summary": "CSLib /pr command workflow: pr-submission and pr-review task_type=pr flows, relocated from core rules/pr-prohibition.md",
+      "line_count": 58,
+      "keywords": [
+        "pr-command",
+        "pr-submission",
+        "pr-review",
+        "task-type-pr"
+      ],
+      "load_when": {
+        "agents": [
+          "cslib-research-agent",
+          "cslib-implementation-agent"
+        ],
+        "task_types": [
+          "pr"
+        ]
+      }
     }
   ]
 }

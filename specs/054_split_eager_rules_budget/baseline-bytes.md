@@ -139,6 +139,23 @@ wholesale-assignment prohibition + `+=`/sanctioned-helper instruction, Status Tr
 restrictions bullets, the two `update-task-status.sh`/`generate-todo.sh` one-liners, File
 Scope/Schema Reference pointers) are present verbatim — confirmed by grep.
 
+| 5 | `core/rules/pr-prohibition.md` | 4,628 | 2,574 | -2,054 | -44.4% |
+| 5 | `cslib/context/project/cslib/pr-command-workflow.md` (new, relocated) | 0 | 3,016 | +3,016 | relocated CSLib content |
+
+**Phase 5 note**: the two relocated CSLib subsections measured 2,999 B combined in the original
+file; the new file is 3,016 B (17 B larger, due to the new file's own H1 title and orienting
+intro paragraph explaining the relocation — the two workflow subsections themselves are
+byte-comparable, differing only in heading level/framing per the plan's stated tolerance). The
+eager core (2,574 B) includes the new `<!-- why-eager -->` in-file comment recording why
+`pr-prohibition.md`'s `paths: "**/*"` glob is deliberate. All three Prohibited Operations
+subsections, the Required Behavior list, and the "Never push branches or create PRs..." sentence
+are present verbatim in the trimmed file — confirmed by grep. `cslib/manifest.json` confirmed to
+declare `provides.context: ["project/cslib"]` and `task_type: "pr"` routes through cslib
+(`skill-pr-review-research`/`pr-review-implementation-agent` etc.) before writing.
+`generate-context-line-counts.sh --check` passes (line_count 58, exact). `check-extension-docs.sh`
+reports cslib clean (only pre-existing WARNs for routing targets not deployed, since cslib is not
+the currently active extension set — unrelated to this change).
+
 **Phase 2 check-extension-docs.sh note**: `check-extension-docs.sh` reports
 `FAIL: deployed rule content drift (deployed != extension source): rules/git-workflow.md` at this
 point in the plan. This is EXPECTED and BY DESIGN: the deployed `.claude/` tree is written only by

@@ -2,6 +2,12 @@
 paths: "**/*"
 ---
 
+<!-- why-eager: this rule gates writes (PR creation, git push, /merge invocation) across the
+     entire repo regardless of which path an agent is about to touch, so any glob narrow enough
+     to matter would have to be "**/*" -- which buys nothing over no frontmatter at all. The
+     universal glob is therefore a deliberate decision, not an omission; see
+     source-store-deploy-boundary.md for the sibling rule that documents this same reasoning. -->
+
 # PR and Push Prohibition
 
 ## Scope
@@ -46,57 +52,9 @@ Pull request creation and pushing to remote are deployment-adjacent operations t
 
 ## CSLib Extension: /pr Command
 
-**Deploy-conditional note**: the two "CSLib Extension" subsections below (`/pr` and
-`/pr --review`) describe the `/pr` command, which is provided by the CSLib extension and is not
-present in every deploy. Where CSLib is not loaded, these subsections are inert prose describing
-an unavailable command — they do not indicate the rule itself is dead, and the prohibitions in
-the sections above (which apply universally, independent of `/pr`) remain fully live regardless.
-
-For tasks with `task_type: "pr"` (CSLib pull request tasks), the workflow differs from the
-general `/merge` flow:
-
-1. **skill-pr-implementation** (invoked via `/implement N`): Analyzes the git diff and
-   composes `specs/{NNN}_{SLUG}/pr-description.md`. Transitions the task to `[PR READY]`.
-   Does NOT create branches or run CI.
-
-2. **`/pr {task_number}`** (user-invoked command): The single entry point for branch
-   creation, Mathlib cache fetch, the 7-step CI pipeline, PR title confirmation, and
-   `gh pr create` submission.
-
-The prohibition on agent-created PRs and agent pushes still applies. Only step 2 (the
-user-invoked `/pr` command) performs git push and PR creation.
-
-## CSLib Extension: /pr --review Workflow
-
-The `--review` flag to `/pr` creates tasks with `task_type: "pr"` and a `sources` array in
-state.json. These tasks use the pr-review skills:
-
-1. **`/pr --review <sources...>`** (user-invoked command): Creates a pr-type task with sources
-   (GitHub PR URLs, Zulip thread URLs, or free-text descriptions). This is the ONLY way to
-   create pr-review tasks.
-
-2. **`/research N`** (pr-type task): Routes to `skill-pr-review-research`, which fetches
-   GitHub PR data (reviews, comments, inline comments) and optionally Zulip thread data.
-   Produces a research report.
-
-3. **`/implement N`** (pr-type task with sources): Routes to `skill-pr-review-implementation`,
-   which dispatches to `pr-review-implementation-agent`. The agent composes `pr-response.md`
-   (GitHub PR comment) and optionally `zulip-response.md` (Zulip thread message). Transitions
-   task to `[PR READY]`.
-
-4. **`/pr N`** (when task is [PR READY] with sources): STEP 0.5 handles the posting workflow
-   -- commits/pushes any local changes, posts `pr-response.md` as a GitHub PR comment,
-   optionally sends `zulip-response.md` to Zulip. Transitions task to `[COMPLETED]`.
-
-### Distinguishing pr-submission vs pr-review
-
-| Condition | Workflow |
-|-----------|----------|
-| `task_type: "pr"`, `sources` absent or empty | pr-submission (legacy): `/implement` produces pr-description.md |
-| `task_type: "pr"`, `sources` present | pr-review: `/implement` produces pr-response.md + zulip-response.md |
-
-The dispatch within `skill-pr-review-implementation` checks for sources and forks to either
-the review path or the legacy pr-description path.
-
-The prohibition on agent-created PRs and agent pushes still applies to both workflows. Only
-`/pr N` (user-invoked) performs git push and GitHub API operations.
+The CSLib extension provides a `/pr` command (`/pr {task_number}` and `/pr --review`) for
+`task_type: "pr"` tasks; it is not present in every deploy. See
+`context/project/cslib/pr-command-workflow.md` for the full pr-submission and pr-review workflow
+detail. The prohibitions above apply universally, independent of `/pr` and of whether CSLib is
+loaded: only the CSLib-provided, user-invoked `/pr` command performs git push and PR/GitHub-API
+operations.

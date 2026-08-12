@@ -354,30 +354,33 @@ by reading the schema doc, not by assuming.
 
 ---
 
-### Phase 5: Slim pr-prohibition.md by Relocating CSLib Content [NOT STARTED]
+### Phase 5: Slim pr-prohibition.md by Relocating CSLib Content [COMPLETED]
 
 **Goal**: Move the two CSLib-only `/pr` subsections into the `cslib` extension where they are
 live, leaving core's universal prohibition rule as a small, purely prohibition-shaped file, and
 record the deliberate-eager decision in-file.
 
 **Tasks**:
-- [ ] Confirm the destination is wired: `jq '.provides.context' agent-system/extensions/cslib/manifest.json`
-      should include `project/cslib`. Confirm before writing, do not assume.
-- [ ] Create `agent-system/extensions/cslib/context/project/cslib/pr-command-workflow.md`
+- [x] Confirm the destination is wired: `jq '.provides.context' agent-system/extensions/cslib/manifest.json`
+      should include `project/cslib`. Confirm before writing, do not assume. *(completed:
+      confirmed `["project/cslib"]`)*
+- [x] Create `agent-system/extensions/cslib/context/project/cslib/pr-command-workflow.md`
       containing, verbatim, the `## CSLib Extension: /pr Command` and
       `## CSLib Extension: /pr --review Workflow` sections (2,999 B combined) including the
       pr-submission vs pr-review distinguishing table. This is a RELOCATION: the content must be
-      preserved intact where CSLib is deployed, not deleted as inert prose.
-- [ ] Add its entry to `agent-system/extensions/cslib/index-entries.json` (`domain: "cslib"`,
+      preserved intact where CSLib is deployed, not deleted as inert prose. *(completed)*
+- [x] Add its entry to `agent-system/extensions/cslib/index-entries.json` (`domain: "cslib"`,
       `subdomain: "project"` or matching the file's existing convention — read a neighbouring
-      entry first, accurate `line_count`).
-- [ ] Trim `core/rules/pr-prohibition.md` to: Scope, Prohibited Operations 1-3, Required Behavior,
+      entry first, accurate `line_count`). *(completed: matched neighbouring convention
+      domain: "project", subdomain: "cslib")*
+- [x] Trim `core/rules/pr-prohibition.md` to: Scope, Prohibited Operations 1-3, Required Behavior,
       Rationale, plus one pointer line for the CSLib `/pr` command. Remove the deploy-conditional
-      note paragraph along with the sections it qualified.
-- [ ] Add an in-file HTML comment to `pr-prohibition.md` recording WHY its `paths: "**/*"` glob is
+      note paragraph along with the sections it qualified. *(completed)*
+- [x] Add an in-file HTML comment to `pr-prohibition.md` recording WHY its `paths: "**/*"` glob is
       deliberate (it gates writes in every session regardless of path, so a narrower glob would be
-      unsound), matching the style already used in `source-store-deploy-boundary.md`.
-- [ ] Measure and append before/after bytes for `pr-prohibition.md` and the new CSLib file.
+      unsound), matching the style already used in `source-store-deploy-boundary.md`. *(completed)*
+- [x] Measure and append before/after bytes for `pr-prohibition.md` and the new CSLib file.
+      *(completed: 4,628 -> 2,574 B, -44.4%; CSLib file 3,016 B)*
 
 **Timing**: 1 hour
 

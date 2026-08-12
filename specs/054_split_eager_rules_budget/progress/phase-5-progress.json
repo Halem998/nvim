@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Slim pr-prohibition.md by Relocating CSLib Content",
+  "started_at": "2026-08-12T01:15:00Z",
+  "last_updated": "2026-08-12T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm cslib wiring, relocate CSLib /pr content, trim source, add why-eager comment", "status": "done", "files_touched": [
+      "agent-system/extensions/core/rules/pr-prohibition.md",
+      "agent-system/extensions/cslib/context/project/cslib/pr-command-workflow.md"
+    ]},
+    {"id": 2, "description": "Add cslib index-entries.json entry", "status": "done", "files_touched": [
+      "agent-system/extensions/cslib/index-entries.json"
+    ]},
+    {"id": 3, "description": "Measure before/after bytes, append to baseline-bytes.md", "status": "done", "files_touched": [
+      "specs/054_split_eager_rules_budget/baseline-bytes.md"
+    ]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
