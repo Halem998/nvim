@@ -11,9 +11,9 @@ next_project_number: 53
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,16,17,18,20,22,27,28,31,34,35,39,41,43,45,46,51,52 | -- | agent-system, extensions, literature, ... |
-| 2 | 9,13,29,37,42,48 | 16,17,18,22,35,41 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
-| 3 | 30,49,50 | 29,41,48 | agent-system, context-loading |
+| 1 | 14,16,17,18,20,22,27,28,31,34,39,41,43,45,46,51,52 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,13,29,35,42,48 | 16,17,18,22,41 | agent-system, commit-scoping-concurrency, orchestration-concurrency, ... |
+| 3 | 30,37,49,50 | 29,35,41,48 | agent-system, orchestration-concurrency, context-loading |
 | 4 | 32,44 | 28,30,31,49 | agent-system, context-loading |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -56,8 +56,8 @@ next_project_number: 53
 ### Orchestration Concurrency
 
 16 [IMPLEMENTING] — Fix the register-bare/acquire-suffixed session-id pattern in the 
-35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
-  └─ 37 [NOT STARTED] — Make the concurrency premise handed to per-phase dispatch agents 
+  └─ 35 [NOT STARTED] — Remove or correctly gate a one-time preflight side effect that ma
+    └─ 37 [NOT STARTED] — Close the two residual gaps left by the territory/handoff work. T
 
 ### Context Loading
 
@@ -456,70 +456,146 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 33, Task 35
 
-**Description**: Make the concurrency premise handed to per-phase dispatch agents SOUND and CHECKABLE. Observed live as a near-miss during a real `/orchestrate --hard` run.
+**Description**: Close the two residual gaps left by the territory/handoff work. This task was originally scoped as "wire a sound territory contract into per-phase dispatch." That wiring has since LANDED as part of the handoff-identity and loop-guard work, which folded this defect in as its DEFECT 5. Most of the original scope is therefore already satisfied. Two verified gaps remain, and they are the entire remaining deliverable.
 
-=== OBSERVED FAILURE (near-miss, not a clean pass) ===
+=== READ THIS FIRST: WHAT IS ALREADY DONE -- DO NOT REDO IT ===
 
-The phase-19 agent woke during the phase-21 dispatch's flight and correctly observed: five commits it did not make; uncommitted modifications in FormalSystem/Metalogic/Algebraic/FlowFrame.lean and FormalSystem/Metalogic/BXCanonical/CompletenessDedekind.lean; and a `lake build` running. It declined to touch any of it and deliberately did not kill the running build. It also explicitly retracted the premise it had been given, noting that its own earlier verification numbers were measured at commit 8bc318b3e and say nothing about the tree as it now stands.
+The hard engine's per-phase dispatch NOW SENDS A TERRITORY DECLARATION, and the shared root-cause model NOW EXISTS as a single canonical file. Any implementer who re-derives either will churn two orchestrator-critical files for nothing. Verify these, then move on:
 
-That correct outcome came from the agent reasoning PAST the premise it was operating under. The premise pointed the other way: in substance, "no other agent is running concurrently, so any claim of a concurrent dispatch is false." Such a premise pre-emptively discredits a TRUE observation and would license a woken agent to dismiss real concurrent work as fictitious and edit into another dispatch's live territory. The system got the right answer by luck of agent judgment, not by contract.
+VERIFY, DO NOT REDO (each was checked directly against the source store; re-verify cheaply with the grep given, do not re-implement):
 
-=== VERIFICATION CORRECTED THE ATTRIBUTION -- READ THIS BEFORE STARTING ===
+- Sound territory declaration is wired into hard-mode single-phase dispatch.
+  Check: `grep -n territory agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`
+  Expect: a `"territory"` key inside the Stage 4 `dispatch_context` JSON (~line 814) carrying
+  `owned_files` (derived by the agent from the phase's own "Files to modify" list),
+  `read_only_files`, `forbidden_files`, and a `concurrency_note`. The original description's
+  central finding -- "NO TERRITORY IS EVER SENT IN HARD MODE" -- IS NO LONGER TRUE. Do not act on it.
 
-The defect was reported as bad wording in "the H7 territory contract slot in the Stage 4 per-phase dispatch context." Direct inspection of the source store shows there is NO SUCH SLOT, and no such assertion exists as a fixed string anywhere. The real situation is different, and worse:
+- No global no-concurrency assertion survives; STOP-and-report is contractual.
+  The shipped `concurrency_note` asserts only which files THIS dispatch owns, explicitly disclaims
+  exclusive access, and requires the agent to STOP and report on observing foreign commits, foreign
+  uncommitted modifications, or a running build it did not start. `context/contracts/territory.md`
+  lines 93-107 carry the same text in the Territory Declaration Template, plus an explicit
+  anti-regression note forbidding reintroduction of "you have exclusive access" language.
 
-1. NO TERRITORY IS EVER SENT IN HARD MODE. The Stage 4 `dispatch_context` JSON (skill-orchestrate-hard/SKILL.md lines 676-687) contains exactly: task_number, task_type, session_id, orchestrator_mode, effort_flag, plan_path, roadmap_path, phase_number, task_dir, handoff_path. There is no `territory` key. The inline comment at line 674 states the intent explicitly: "Determine territory for this phase (single-phase dispatch, no parallel territory needed -- parallel wave dispatch is disabled)."
+- The agent-side territory check is no longer dead code -- but CONFIRM THIS.
+  `general-implementation-hard-agent.md` Stage 3.6 is gated on "If `territory` parameters were
+  provided in delegation context." The hard orchestrator now provides them, so the gate is live on
+  that path. Confirm it actually fires as intended before assuming it; if Stage 3.6's steps need an
+  explicit tie to the STOP-and-report duty (its four steps currently cover ownership and blockers,
+  not the foreign-work observation), that is a small in-scope correction -- not a rewrite.
 
-2. THE DISPATCH PROMPT HAS NO TERRITORY SLOT. `build_hard_mode_prompt_context()` (lines ~778-791) emits exactly five numbered contract slots: Mission, Anti-Analysis Rules, Wrap-up Contract, Settled Design Preamble, Recovery Discipline. None concerns territory or concurrency.
+- Extension hard agents share the pattern. `lean/agents/lean-implementation-hard-agent.md` and
+  `cslib/agents/cslib-implementation-hard-agent.md` both now reference
+  `context/patterns/dispatch-report-not-termination.md`. No further extension fan-out is needed.
 
-3. THE BASE ENGINE EMITS NO TERRITORY TEXT AT ALL. `grep -c territory skills/skill-orchestrate/SKILL.md` returns 0.
+- The shared root cause is stated ONCE, canonically.
+  `agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md` exists and is
+  referenced from ~23 files across core, lean, and cslib. DO NOT create a second statement of this
+  model anywhere. Reference that file with a one-line pointer, exactly as the existing fix sites do.
 
-4. THE AGENT-SIDE TERRITORY CHECK IS THEREFORE DEAD CODE. general-implementation-hard-agent.md Stage 3.6 (lines 144-149) is gated on "If `territory` parameters were provided in delegation context" -- and the orchestrator never provides them. The same is true of its line 107 `territory` param declaration and line 514 "Honor territory boundaries when territory params provided."
+=== MOTIVATION (COMPRESSED -- WHY TEARDOWN STILL MATTERS) ===
 
-5. context/contracts/territory.md IS SCOPED TO A DISABLED FEATURE. Its opening line reads "governs file ownership and commit coordination when multiple agents are dispatched simultaneously." But parallel wave dispatch is DISABLED (skill-orchestrate-hard/SKILL.md lines 816-822). The contract's Territory Declaration Template (lines 71-82) is described as what "the orchestrator includes in each parallel dispatch context" -- i.e. never, in current operation.
+Observed live as a near-miss during a real `/orchestrate --hard` run: a phase-19 agent WOKE during
+a later phase's dispatch and correctly observed five commits it had not made, uncommitted
+modifications in two Lean files, and a `lake build` it had not started. It declined to touch any of
+it, did not kill the running build, and explicitly retracted its own stale verification numbers as
+measured against an older commit. That correct outcome came from the agent reasoning PAST the
+premise it had been given -- the premise pointed the other way. The territory work has since made
+that STOP-and-report behavior contractual rather than fortunate.
 
-CONCLUSION: the unsound assertion was almost certainly IMPROVISED AT RUNTIME rather than read from a file. The most likely seeds are the true-but-narrow statements at line 603 ("Dispatch exactly one phase per cycle") and lines 817-818 ("the orchestrator dispatches exactly one phase per cycle and blocks on its return -- no simultaneous/background Agent calls"). Both are correct statements about the ORCHESTRATOR'S OWN dispatch behaviour, and both are false if read as a GLOBAL no-concurrency invariant, precisely because a previously-reported agent can wake later. With no authoritative territory text in the prompt, the improvised premise filled the vacuum.
+What that work did NOT address: the same agent had to stop a redundant SELF-ARMED MONITOR by hand
+across two separate wakes. The wake happened because the monitor was still armed when the agent
+reported. Teardown is the PREVENTION half of this defect cluster; the sound territory contract is
+the MITIGATION half, and it is done. An agent that tears down its own monitor before reporting
+never produces the wake at all.
 
-THE FIX IS THEREFORE NOT "REWORD THE ASSERTION" -- there is no assertion to reword. It is to WIRE an explicit, sound, checkable contract into the dispatch so the model has no vacuum to improvise into, and so the existing agent-side machinery stops being dead.
+STANDING LIMITATION (recorded in the original scoping, still true): teardown cannot prevent a
+RESUME-driven wake -- no teardown can. Teardown therefore COMPLEMENTS the sound territory contract;
+it does not replace it, and shipping it does not make the territory contract redundant.
 
-CORROBORATING INTERNAL INCONSISTENCY: the source store already contradicts the no-concurrency premise elsewhere. context/standards/git-staging-scope.md lines 195-215 warns that a bare commit sweeps in "a concurrently-dispatched agent's staged-but-uncommitted work," citing "a real, observed defect (two implementation agents each reported their own phase commits swept into a concurrent session's commit message)." general-implementation-hard-agent.md line 422 and general-implementation-agent.md line 229 repeat the same concurrency-aware warning. So one part of the system plans for concurrent agents while the dispatch premise denies they can exist.
+=== SHARED ROOT CAUSE (POINTER ONLY -- DO NOT RE-DERIVE) ===
 
-=== SUGGESTED DIRECTION (evaluate, do NOT blindly adopt) ===
+Both this defect and the `.orchestrator-handoff.json` single-slot overwrite defect share one root
+cause: the system treating "agent reported" as "agent terminated." That model is now stated once, in
+`agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md`, including a
+"Tear Down Watchers/Monitors Before Reporting" section (lines 52-59) that already states the MUST.
+Read that file; do not restate its argument in any new location.
 
-Assert what is actually true and checkable, rather than a global invariant the orchestrator cannot guarantee. Candidate shape: "This dispatch owns these files. Other agents may exist. If you observe work you did not do -- unexpected commits, uncommitted modifications outside your territory, a running build you did not start -- STOP and report it in your handoff; do not proceed and do not dismiss it." Note that the STOP-and-report behaviour is exactly what the phase-19 agent did correctly on its own; the goal is to make that the contracted behaviour rather than a fortunate improvisation.
+=== REMAINING GAP 1: WATCHER/MONITOR TEARDOWN IN THE WRAP-UP CONTRACT ===
 
-Second, separable question: WATCHER TEARDOWN. The phase-19 agent had to stop a redundant self-armed monitor by hand across two separate wakes. Consider requiring agents to tear down watchers/monitors/background jobs before reporting, so the wake does not happen at all. VERIFIED GAP: context/contracts/wrap-up.md currently has ZERO coverage of watchers, monitors, background jobs, or teardown of any kind (grep for watch/monitor/background/teardown/run_in_background returns nothing). This is a genuine hole in the wrap-up contract, not a wording problem. Treat prevention (teardown) and mitigation (sound territory contract) as complementary -- teardown alone cannot cover a resume-driven wake, which no teardown can prevent.
+`agent-system/extensions/core/context/contracts/wrap-up.md` has ZERO coverage of watchers,
+monitors, background jobs, or teardown of any kind. Verified: `grep -inE
+'watch|monitor|background|teardown|run_in_background'` over that file returns nothing (194 lines,
+sections: Handoff JSON Schema, Continuation Handoff Markdown, Incremental Commit Discipline,
+Handoff-Before-Marker Ordering, Build-Green Invariant, Domain Specialization).
 
-Third: decide whether territory.md should be rescoped from "parallel dispatch only" to cover single-phase dispatch, or whether a separate, smaller single-dispatch contract is cleaner. Whichever is chosen, resolve the now-dead Stage 3.6 agent-side check -- either wire it or remove it, but do not leave it conditional on params that are never sent.
+The gap is precise and narrower than "unstated anywhere": the teardown MUST already exists in the
+pattern file, but wrap-up.md -- the contract an agent actually loads at wrap-up time, and the one
+that enumerates what must happen "before terminating" -- never carries it. An agent following
+wrap-up.md to the letter can report with a monitor still armed and violate nothing it was given.
 
-=== SHARED ROOT CAUSE WITH THE HANDOFF DEFECT (RECORD THIS, DO NOT LOSE IT) ===
+Deliverable: add teardown to wrap-up.md as an obligation discharged BEFORE the terminal handoff
+write, consistent with that file's existing "Ordering: Handoff Write Precedes Marker Promotion"
+sequencing. State the obligation operationally in wrap-up.md; point at the pattern file for the WHY
+rather than re-arguing it. Alternatively, record explicitly and visibly why it is out of scope --
+but "already covered in the pattern file" is NOT an adequate reason, because the loading paths differ.
 
-This defect and the `.orchestrator-handoff.json` single-slot overwrite defect share ONE root cause: THE SYSTEM TREATS "AGENT REPORTED" AS "AGENT TERMINATED". It is not. A dispatch can resume after it reports -- via a stale watcher/monitor it armed, or via a resume.
+=== REMAINING GAP 2: BASE-MODE DECISION RECORD ===
 
-Both symptoms follow directly from that single false assumption:
-  - A woken predecessor is exactly the LATE WRITER that clobbers the single-slot handoff.
-  - The same wake is what makes a global no-concurrency premise false.
-  - The orchestrator's mtime staleness gate is blind to BOTH for the same reason: a woken predecessor's write carries a NEWER mtime than the successor's dispatch window, so it passes a gate designed only to catch OLD (git-restored) files.
+`agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` has ZERO territory mentions
+(`grep -c territory` returns 0), while the hard engine now has seven. `context/contracts/territory.md`
+still opens scoped to "file ownership and commit coordination when multiple agents are dispatched
+simultaneously," with its Territory Declaration Template described as what "the orchestrator includes
+in each parallel dispatch context" -- neither statement updated for the single-phase dispatch that
+now actually consumes it.
 
-A future implementer who fixes either symptom in isolation will very likely leave the other live. Any fix here MUST be reconciled against the handoff-identity work, and the shared "report != termination" model should be stated ONCE in the source store and referenced from both sites rather than re-derived independently.
+This is not droppable, because base mode GENUINELY DISPATCHES MULTIPLE AGENTS CONCURRENTLY: Stage
+MT-3's BATCHING RULE requires all Agent calls for a cycle to be issued in a SINGLE message
+specifically so they run concurrently. A sound territory contract may therefore matter MORE in base
+mode, not less.
 
-=== CO-MAINTENANCE (BINDING) ===
+Weigh honestly against what base mode already has: it defers tasks with overlapping `file_scope` and
+no dependency edge, logging "Deferring #{Y} to a later cycle to avoid concurrent edits to the same
+files" (in_batch and cross_batch variants, both recorded in `defer_ledger`). That mechanism is a real
+mitigation for FILE conflicts between tasks the orchestrator itself dispatches -- and it is
+structurally blind to the woken-predecessor case, which is this defect's actual subject. A decision
+that cites file_scope deferral as sufficient must address that blindness explicitly.
 
-skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md carry an explicit contract about each other (skill-orchestrate-hard/SKILL.md lines 956-961 and 1686-1688: "an edit to either copy REQUIRES the same edit to the other; the two MUST always agree"). Note the ASYMMETRY here: hard mode has territory scaffolding that is unwired, while base mode has none at all. So this is net-new work in base mode, not a mirror edit. Base mode ALSO genuinely dispatches multiple agents concurrently in its multi-task path, so a sound territory contract may matter MORE there, not less. Decide and record explicitly whether base mode gains the same contract.
+Deliverable: an EXPLICIT, RECORDED decision -- either wire base mode too, or record why not, with
+the file_scope-deferral limitation addressed either way. Plus: rescope territory.md's opening and
+its Template preamble to match reality (it is consumed by single-phase dispatch today, not only by
+parallel dispatch). An UNRECORDED ASYMMETRY between the two engines is the failure mode to avoid;
+the two carry an explicit mutual co-maintenance contract, so a silent divergence is a contract
+violation, not merely untidiness.
 
 === ACCEPTANCE CRITERIA ===
 
-1. No dispatch prompt asserts a global no-concurrency invariant, in either engine. The contract states only what the orchestrator can actually guarantee.
-2. A dispatched agent is contractually REQUIRED to stop and report on observing work it did not do, and is never instructed or licensed to dismiss such an observation as false.
-3. The territory contract is either genuinely wired into single-phase dispatch or explicitly and visibly scoped as inapplicable. No path is left where an agent-side territory check is gated on parameters the orchestrator never sends.
-4. Whatever is decided for general-implementation-hard-agent.md Stage 3.6 is applied consistently to the extension hard agents that share the pattern (lean, cslib).
-5. Watcher/monitor/background-job teardown before reporting is either added to context/contracts/wrap-up.md or explicitly recorded as out of scope with a reason.
-6. The shared "agent report != agent termination" root cause is stated once in the source store and cross-referenced from both this fix and the handoff-identity fix.
-7. A reviewer can trace, from the dispatch prompt text alone, exactly what concurrency guarantee the agent is being given and why it is true.
+1. Watcher/monitor/background-job teardown before the terminal handoff write is either present in
+   `context/contracts/wrap-up.md` as an operational obligation (with a pointer, not a re-derivation,
+   for the rationale), or explicitly recorded as out of scope with a reason that engages with the
+   differing loading paths of wrap-up.md and the pattern file.
+2. A recorded decision exists on whether base mode gains a territory contract, addressing base
+   mode's genuinely concurrent multi-task dispatch and the woken-predecessor blindness of its
+   existing file_scope collision deferral. If base mode is wired, the co-maintenance contract
+   between the two engines is honored; if not, the reason is written down where a future reader of
+   either engine will find it.
+3. `context/contracts/territory.md`'s opening scope and Template preamble accurately describe how
+   the contract is consumed today (single-phase dispatch), not only parallel dispatch.
+4. VERIFICATION ONLY (confirm, do not redo): the hard engine's `territory` dispatch key and its
+   `concurrency_note` are present and sound; `dispatch-report-not-termination.md` remains the single
+   statement of the shared root cause with no second copy introduced; the lean and cslib hard agents
+   still reference it; and `general-implementation-hard-agent.md` Stage 3.6 is genuinely live on the
+   hard dispatch path. Any correction here is a small targeted fix, never a rewrite.
+5. No new statement of the "report != termination" model is created. Every new mention is a
+   one-line pointer to the existing pattern file.
 
 === SEQUENCING ===
 
-Depends on the handoff-identity/loop-guard task (shared root cause; that task establishes the "a dispatch can resume after reporting" model this contract must reflect) and on the spurious-phase-advance task. All three edit skill-orchestrate-hard/SKILL.md, so the dependencies also serialize overlapping edit territory. Related: the spurious-phase-advance defect produced a FALSE territory-conflict signal, whereas this defect risks dismissing a TRUE one -- the two are opposite failure directions on the same reasoning path and should end up mutually consistent.
+The handoff-identity/loop-guard work and the spurious-phase-advance work are both landed; the
+dependency that motivated serialization of edits to `skill-orchestrate-hard/SKILL.md` is discharged.
+The remaining work touches `context/contracts/wrap-up.md`, `context/contracts/territory.md`, and
+possibly `skills/skill-orchestrate/SKILL.md` -- largely disjoint from the files those efforts churned.
 
 === BINDING RULES ===
 
@@ -546,7 +622,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
-- **Dependencies**: Task 33
+- **Dependencies**: Task 16, Task 33
 
 **Description**: Remove or correctly gate a one-time preflight side effect that marks a plan phase [IN PROGRESS] when no agent is dispatched for it. Observed live during a real `/orchestrate --hard` run (prior run, cycle 13).
 
