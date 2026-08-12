@@ -406,27 +406,32 @@ count is not four, adjust and record the actual count.
 
 ---
 
-### Phase 6: Extract the Common Stage 2 Loop-Guard Initializer Prologue [NOT STARTED]
+### Phase 6: Extract the Common Stage 2 Loop-Guard Initializer Prologue [COMPLETED]
 
 **Goal**: Share the genuinely-common portion of each engine's Stage 2 initializer, while leaving
 both the test-`eval`ed budget-override region and the intentional hard-only asymmetries untouched.
 
 **Tasks**:
-- [ ] Re-read the Phase 1 manifest and establish the exact boundaries of the `eval`ed region
+- [x] Re-read the Phase 1 manifest and establish the exact boundaries of the `eval`ed region
       (`budget-continuation-override:begin` through each engine's resume anchor). **Nothing inside
       those boundaries may be replaced by a script call** — `test-loop-guard-budget-override.sh`
-      `eval`s that text from a temp-workdir cwd.
-- [ ] Create `agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh` covering only
+      `eval`s that text from a temp-workdir cwd. *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh` covering only
       the common prologue that sits **outside** the locked region: the `MAX_INFRA_FAILURES`
       constant, `loop_guard_file`/`handoff_file` assignment, `mkdir -p "$TASK_DIR"`, and the
-      blocker-escalation/drift-detection constants.
-- [ ] Leave untouched: the hard file's `current_plan_version` computation, its 3-signal
+      blocker-escalation/drift-detection constants. *(completed with a scope correction: hard mode
+      has NO drift-detection constants at all — no Stage 5a Drift Inspection equivalent, its own
+      H5 divergence-audit plays that role — so only the blocker-escalation counter pair
+      (`blocker_escalation_count`, `MAX_BLOCKER_ESCALATIONS`) is genuinely shared; base's
+      drift-detection constants stay inline, base-only)*
+- [x] Leave untouched: the hard file's `current_plan_version` computation, its 3-signal
       `loop-guard-staleness` detector region, and its `churn_file` initialization. These are
       intentional hard-mode-only logic that the base file's own prose records as a separately
-      decided, currently-open question — out of scope for this task.
-- [ ] Leave the Stage 7 MAX_CYCLES message text intact in both files; the budget-override test
-      greps it for `--continue-budget`.
-- [ ] Wire both engines to the new script for the prologue only.
+      decided, currently-open question — out of scope for this task. *(completed)*
+- [x] Leave the Stage 7 MAX_CYCLES message text intact in both files; the budget-override test
+      greps it for `--continue-budget`. *(completed — verified via test pass)*
+- [x] Wire both engines to the new script for the prologue only. *(completed —
+      test-loop-guard-budget-override.sh 36/36, test-loop-guard-staleness.sh 28/28)*
 
 **Timing**: 1.5 hours
 

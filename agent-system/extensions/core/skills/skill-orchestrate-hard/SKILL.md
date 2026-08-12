@@ -227,17 +227,15 @@ count, burnout-signal count, or churn history. See
 
 ```bash
 MAX_CYCLES=13
-# Infrastructure-failure counter, separate from the work-cycle budget. See
-# context/patterns/infra-failure-discrimination.md. Flat (not scaled with MAX_CYCLES):
-# transport flakiness is unrelated to plan size. Value is identical to base — hard mode's
-# larger MAX_CYCLES does not change infra tolerance.
-MAX_INFRA_FAILURES=3
-loop_guard_file="${TASK_DIR}/.orchestrator-loop-guard"
-# Absolute: must name the same file the dispatched agent was told to write.
-handoff_file="${HANDOFF_PATH_ABS}"
+# Single shared implementation, orchestrate-loop-guard-init.sh — see that script's header for
+# the full contract. Same call skill-orchestrate/SKILL.md's Stage 2 makes for its own
+# genuinely-common portion — everything else in this stage (MAX_CYCLES's own value, the
+# hard-only loop-guard-staleness detector immediately below, churn-state init) stays per-engine.
+loop_guard_init_json=$(bash .claude/scripts/orchestrate-loop-guard-init.sh "$TASK_DIR" "${HANDOFF_PATH_ABS}")
+loop_guard_file=$(echo "$loop_guard_init_json" | jq -r '.loop_guard_file')
+handoff_file=$(echo "$loop_guard_init_json" | jq -r '.handoff_file')
+MAX_INFRA_FAILURES=$(echo "$loop_guard_init_json" | jq -r '.max_infra_failures')
 churn_file="${TASK_DIR}/.orchestrator-churn-state.json"
-
-mkdir -p "$TASK_DIR"
 
 # Live plan-lineage reference for the loop-guard-staleness detector (Stage 2, below) and the
 # guard's own `plan_version` schema field. Safe when plans/ does not exist yet (task in
@@ -447,8 +445,10 @@ else
   fi
 fi
 
-blocker_escalation_count=0
-MAX_BLOCKER_ESCALATIONS=2
+# Blocker escalation counter (reset each /orchestrate invocation) — from the same shared
+# orchestrate-loop-guard-init.sh call above.
+blocker_escalation_count=$(echo "$loop_guard_init_json" | jq -r '.blocker_escalation_count')
+MAX_BLOCKER_ESCALATIONS=$(echo "$loop_guard_init_json" | jq -r '.max_blocker_escalations')
 adversarial_verified=false
 ```
 

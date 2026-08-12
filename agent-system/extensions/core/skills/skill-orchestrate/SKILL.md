@@ -101,17 +101,18 @@ pair — exactly the hazard this file's gitignore coverage exists to prevent. Se
 
 ```bash
 MAX_CYCLES=5
-# Infrastructure-failure counter, separate from the work-cycle budget. See
-# context/patterns/infra-failure-discrimination.md. Flat (not scaled with MAX_CYCLES):
-# transport flakiness is unrelated to plan size.
-MAX_INFRA_FAILURES=3
-loop_guard_file="${TASK_DIR}/.orchestrator-loop-guard"
-# Absolute: this must name the same file the dispatched agent was told to write, and that
-# instruction is absolute. Comparing a relative read path against an absolute write path is how
-# a misplaced handoff goes unnoticed.
-handoff_file="${HANDOFF_PATH_ABS}"
-
-mkdir -p "$TASK_DIR"
+# Single shared implementation, orchestrate-loop-guard-init.sh — see that script's header for
+# the full contract (MAX_INFRA_FAILURES constant, loop_guard_file/handoff_file assignment,
+# mkdir -p "$TASK_DIR", and the blocker-escalation counter pair applied further below in this
+# same fence). This is the same call skill-orchestrate-hard/SKILL.md's Stage 2 makes for its own
+# genuinely-common portion — everything else in this stage (MAX_CYCLES's own value, the
+# hard-only loop-guard-staleness detector, churn-state init) stays per-engine, either because it
+# differs or because it sits inside the locked budget-continuation-override region below, which
+# this script and its call site never touch.
+loop_guard_init_json=$(bash .claude/scripts/orchestrate-loop-guard-init.sh "$TASK_DIR" "${HANDOFF_PATH_ABS}")
+loop_guard_file=$(echo "$loop_guard_init_json" | jq -r '.loop_guard_file')
+handoff_file=$(echo "$loop_guard_init_json" | jq -r '.handoff_file')
+MAX_INFRA_FAILURES=$(echo "$loop_guard_init_json" | jq -r '.max_infra_failures')
 
 # --- budget-continuation-override:begin ---
 # Defect B: cycle_count is a per-task, CUMULATIVE budget that survives re-invocation BY DESIGN --
@@ -223,11 +224,14 @@ mint_dispatch_seq() {
   skill_orchestrate_mint_dispatch_seq "$loop_guard_file"
 }
 
-# Blocker escalation counter (reset each /orchestrate invocation)
-blocker_escalation_count=0
-MAX_BLOCKER_ESCALATIONS=2
+# Blocker escalation counter (reset each /orchestrate invocation) — from the same shared
+# orchestrate-loop-guard-init.sh call above.
+blocker_escalation_count=$(echo "$loop_guard_init_json" | jq -r '.blocker_escalation_count')
+MAX_BLOCKER_ESCALATIONS=$(echo "$loop_guard_init_json" | jq -r '.max_blocker_escalations')
 
-# Drift detection constants (reset each /orchestrate invocation)
+# Drift detection constants (reset each /orchestrate invocation) — base-mode-only; hard mode has
+# no Stage 5a Drift Inspection equivalent (its own H5 divergence-audit mechanism plays that role
+# instead), so these stay out of the shared script.
 drift_inspection_count=0
 MAX_DRIFT_INSPECTIONS=1
 DRIFT_COMPLETION_THRESHOLD=0.70
