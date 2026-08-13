@@ -1,28 +1,25 @@
 ---
-next_project_number: 59
+next_project_number: 62
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-08-12. Generated from state.json dependency graph.*
+*Updated 2026-08-13. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,34,39,41,43,44,45,46,48,51,53 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
-| 2 | 9,13,29,42,50 | 17,18,22,41,48 | agent-system, context-loading |
-| 3 | 30 | 29 | agent-system |
-| 4 | 32 | 28,30,31 | agent-system |
+| 1 | 18,20,22,27,28,31,34,39,41,43,45,46,48,51,59 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 2 | 9,29,42,50,60,61 | 18,22,41,48,59 | agent-system, context-loading, orchestrate-admission-gate |
+| 3 | 14,17,30,44,53 | 29,60,61 | agent-system, orchestration-concurrency, context-loading |
+| 4 | 13,32 | 17,28,30,31 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
-17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
-  └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
@@ -34,6 +31,10 @@ next_project_number: 59
 34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
 41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
+13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
+14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
+17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
+  └─ 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and (see above)
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -59,14 +60,92 @@ next_project_number: 59
 
 ### Context Loading
 
-44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
+44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+
+### Orchestrate Admission Gate
+
+59 [NOT STARTED] — The /orchestrate batch-admission gate's specs/state.json collisio
+  └─ 60 [NOT STARTED] — Consumer-side half of the batch-admission gate redesign. The pred
+  └─ 61 [NOT STARTED] — Treat whole-directory-root file_scope declarations as a declarati
 
 ### Email
 
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 
 ## Tasks
+
+### 61. Surface coarse and duplicate file_scope declarations at task-creation time
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrate-admission-gate
+- **Dependencies**: Task 59
+
+**Description**: Treat whole-directory-root file_scope declarations as a declaration-quality problem caught at task creation, rather than as a runtime blocker discovered only when /orchestrate silently excludes a candidate.
+
+MOTIVATING EXAMPLE (real, from the live incident): a BimodalLogic documentation task named update_readme_and_module_docstrings declares ["README.md", "ROADMAP.md", "FormalSystem/", "FormalSystem/", "docs/"]. Note that FormalSystem/ appears TWICE. That single declaration exhibits both defects at once - a whole-directory root that swallows essentially every Lean task in the repo, and an exact duplicate entry. This repo has the same pattern: one idle task declares the bare directories commands/ and skills/, and another declares the bare directory context/.
+
+WORK:
+1. Flag whole-directory-root declarations (a bare top-level or near-top-level directory) at task creation and in state validation, with a warning that names the concrete blast radius - how many existing non-terminal tasks the declaration would overlap - rather than a generic caution.
+2. Detect and de-duplicate exact duplicate file_scope entries.
+3. Keep this advisory at creation time, not blocking. The point is to fix declaration quality upstream, not to add a second runtime gate.
+
+Relationship to the predicate task in this batch: that task stops coarse declarations from silently blocking dispatch; this task stops them from being written in the first place. Both are needed - the predicate fix alone leaves declaration quality unaddressed, and this task alone does nothing about the declarations already sitting in state.
+
+COLLISION WORKAROUND: this task's declared scope overlaps two idle tasks in this repo - one declaring commands/task.md exactly, and one declaring the bare directory commands/. Workaround dependencies[] edges have been written onto those two colliding tasks pointing AT this task - deliberately that direction, because writing them onto this task instead would block it until both completed, which is backwards.
+
+WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the dependencies[] edges added to the colliding tasks named above are artifacts of the very defect this batch fixes, not genuine ordering constraints. They exist only to dissolve the cross_batch file_scope collision that would otherwise permanently exclude this task from /orchestrate. Once the predicate fix is implemented and deployed, the collision no longer fires against idle tasks and every one of these edges must be removed.
+
+---
+
+### 60. Thread the evidence-gated verdict and --allow-scope-collision through admission consumers
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrate-admission-gate
+- **Dependencies**: Task 59
+
+**Description**: Consumer-side half of the batch-admission gate redesign. The predicate task in this batch changes the admission predicate and bumps the verdict schema to v5; this task updates every consumer that branches on it.
+
+WORK:
+1. Render the new advisory field emitted for provably-idle overlaps in the dispatch-path warning and in the batch results surface. The advisory must be loud - advisory never means unlogged or silent.
+2. Add an --allow-scope-collision per-invocation override, symmetric with the existing --allow-self-modifying. Thread it parser -> command -> both orchestrate skills. It must NEVER be passed to orchestrate-batch-admit.sh, which always computes and emits the honest verdict regardless; the override is a consumer decision not to ACT on an emitted verdict, with a loud bypass notice logged either way. Defaults off, per-invocation only. No override for file_scope_collision was ever considered and rejected in the corpus - this is a genuinely open addition, not a reversal of a recorded decision.
+3. Fold orchestrate-predispatch-review.sh's EXISTING Class D dependencies[]-edge suggestion into the dispatch-path warning. Class D already emits a suggestion to add the predecessor as a dependencies[] entry; the gap is only that it lives in a separate review surface rather than where the exclusion is actually reported. Do not build a new suggestion mechanism.
+4. Correct the false self-clearing claims. skill-orchestrate/SKILL.md claims BOTH collision branches become eligible again on a later cycle, which is false for cross_batch. The corpus is three-way contradictory here: the schema doc instead says the out-of-batch task is idle and will not advance on its own so a human resolves batch composition, while commands/orchestrate.md says the candidate is excluded from this run. Make all three agree with the post-fix behavior.
+5. Fix the stale schema-v3 prose in the two consumer files that still say v3 while emitting v4 (v5 after this batch).
+
+Co-maintenance: skill-orchestrate and skill-orchestrate-hard are transcription twins - every consumer change must land in both.
+
+This task declares orchestrator-critical paths and is therefore self_modifying, requiring solo dispatch. Expected and accepted.
+
+COLLISION WORKAROUND: this task's declared scope overlaps four idle tasks in this repo - two that declare skills/skill-orchestrate/SKILL.md, one that declares the bare directories commands/ and skills/ (which swallow this scope entirely), and one that declares the bare directory context/. Under the current gate this task would be permanently excluded from /orchestrate by the very defect it fixes. Workaround dependencies[] edges have been written onto those four colliding tasks pointing AT this task - deliberately that direction, because writing them onto this task instead would block it until all four completed, which is backwards and defeats the purpose.
+
+WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the dependencies[] edges added to the colliding tasks named above are artifacts of the very defect this batch fixes, not genuine ordering constraints. They exist only to dissolve the cross_batch file_scope collision that would otherwise permanently exclude this task from /orchestrate. Once the predicate fix is implemented and deployed, the collision no longer fires against idle tasks and every one of these edges must be removed.
+
+---
+
+### 59. Gate cross-batch file_scope collisions on execution evidence, not non-terminal status
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrate-admission-gate
+- **Dependencies**: None
+
+**Description**: The /orchestrate batch-admission gate's specs/state.json collision dimension defers a candidate against ANY non-terminal task whose file_scope overlaps it with no dependencies[] edge. Because a cross_batch defer can never self-clear (an idle task's status cannot change without a dispatch), any broad-scoped not_started task becomes a permanent blanket blocker. Observed in the BimodalLogic repo: an /orchestrate invocation permanently excluded a candidate on every cycle because an idle documentation task declaring the whole FormalSystem/ directory overlapped it. That colliding task held no lock, had no live session-registry entry, and could not have been editing anything; corroborated_by named non_terminal_status as the sole basis for the defer.
+
+ROOT CAUSE (verified during investigation): the dimension conflates ORDERING (both tasks will eventually touch these files, so one should land before the other) with CONCURRENCY (two agents are writing these files right now). Ordering belongs in dependencies[]; concurrency is already handled correctly by task-lock.sh and the v4 session_active dimension, whose session_contention() def in scripts/lib/file-scope-overlap.sh already gates on liveness via pid-alive / heartbeat staleness. Decisive evidence that this is an undeclared-ordering check rather than a genuine conflict check: adding a dependencies[] edge dissolves the collision entirely, which no real concurrent-write hazard could permit.
+
+Two further findings confirm the strictness was never actually derived. First, the blocking rationale in batch-admit-schema.md is self-refuting within a single sentence: it justifies the block as 'two sessions can concurrently edit the same files with no lock contention' while parenthetically conceding 'the colliding task holds no lock; it simply is not running'. Second, batch-orchestration-guardrails.md's Blocking-vs-Advisory decision table has NO cross_batch row at all - its file-scope row covers only the creation-time and runtime wave/cycle-split (in_batch) case. The verification-gap hazard does not defend this dimension either: the guardrails explicitly state it is 'UNAFFECTED BY THE SCOPE CHOICE IN EITHER DIRECTION' and scope it to self-modification.
+
+SCOPE OF FIX (deliberately narrow): narrow the state.json dimension's defer condition to actual execution evidence - an in-flight status in {researching, planning, implementing}. Live-session coverage stays session_active's job and must not be duplicated here. A provably-idle overlap becomes an admit verdict carrying a loud advisory field rather than a defer; the advisory must never be silent. in_batch behavior stays blocking and unchanged bit-for-bit, because both candidates there are genuinely about to be dispatched, which does satisfy the Blocking-vs-Advisory criterion. Bump the verdict schema to orchestrate-batch-admit-v5, correct the self-refuting rationale, and add the missing cross_batch row to the Blocking-vs-Advisory table.
+
+This narrowing is evidence-gating, not batch-size-gating, so it does not conflict with the guardrails' standing rejection of relaxing a blocking check as batch size grows. The shared overlap predicate is NOT changed: file-footprint-overlap.md explicitly disclaims any opinion on scan scope, so this is a comparison-set filter change only. Only three files pin the schema version string, so the version bump has a narrow blast radius, but consumers branching on defer_reason are updated separately by the consumer-side task in this batch.
+
+This task declares orchestrator-critical paths and is therefore self_modifying, requiring solo dispatch. Expected and accepted.
+
+CLOSING STEP: after this task is implemented AND deployed, remove the workaround dependencies[] edges recorded on the four colliding tasks in this repo's state (the ones pointing at this batch's three task numbers). Those edges exist only to work around the defect this task fixes and must not outlive it.
+
+WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the dependencies[] edges added to the colliding tasks named above are artifacts of the very defect this batch fixes, not genuine ordering constraints. They exist only to dissolve the cross_batch file_scope collision that would otherwise permanently exclude this task from /orchestrate. Once the predicate fix is implemented and deployed, the collision no longer fires against idle tasks and every one of these edges must be removed.
+
+---
 
 ### 58. Add version-consistency preflight gate to /tag
 - **Effort**: 2 hours
@@ -244,7 +323,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
-- **Dependencies**: None
+- **Dependencies**: Task 60
 
 **Description**: Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect when a contractual non-writer leaves no fresh handoff. Observed live on a clean, fully-successful base-mode /orchestrate run (recorded as evt_1786550950625_o2KoSv; the class already has 3 occurrences in specs/events.jsonl).
 
@@ -466,7 +545,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: context-loading
-- **Dependencies**: Task 49
+- **Dependencies**: Task 49, Task 59, Task 60, Task 61
 
 **Description**: LOWER PRIORITY (per-invocation cost, not per-session). `commands/task.md` measures 37,465 bytes (~9.4k tokens) loaded on every `/task` invocation, plus ~2.8k tokens of imports it pulls in — the largest single per-invocation context contributor found by the context-loading audit. Slim the command body by moving reference material (long option tables, worked examples, edge-case narratives) into lazily-loaded context files under the core extension's context tree, keeping the command body to the decision logic and dispatch instructions an invocation actually needs. Preserve behavior: every mode (--recover, --expand, --sync, --abandon, multi-task creation) must remain fully specified — either inline or via an explicit pointer the executing agent is instructed to follow. Measure before/after bytes and record them in the implementation summary. CONSTRAINTS: all edits target agent-system/extensions/core/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**; do not change command behavior, only where its prose lives.
 
@@ -1545,7 +1624,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 16, Task 35, Task 37
+- **Dependencies**: Task 16, Task 35, Task 37, Task 60, Task 61
 
 **Description**: command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.
 
@@ -1594,7 +1673,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 33
+- **Dependencies**: Task 33, Task 60
 
 **Description**: Two dispatches in a single batch fanned out to phase sub-agents and terminated before writing a terminal status, costing a recovery cycle each. Recorded as err_1786344051474_RcIhk6.
 
