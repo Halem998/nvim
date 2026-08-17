@@ -61,7 +61,7 @@ next_project_number: 66
       └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-60 [RESEARCHED] — Consumer-side half of the batch-admission gate redesign. The pred
+60 [PLANNED] — Consumer-side half of the batch-admission gate redesign. The pred
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 65 [NOT STARTED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
 
@@ -185,11 +185,12 @@ WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the
 ---
 
 ### 60. Thread the evidence-gated verdict and --allow-scope-collision through admission consumers
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 59
 - **Research**: [060_thread_evidence_gated_verdict_through_admission_consumers/reports/01_thread-evidence-gated-verdict.md]
+- **Plan**: [060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md]
 
 **Description**: Consumer-side half of the batch-admission gate redesign. The predicate task in this batch changes the admission predicate and bumps the verdict schema to v5; this task updates every consumer that branches on it.
 

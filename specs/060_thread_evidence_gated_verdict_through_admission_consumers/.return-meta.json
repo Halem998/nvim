@@ -1,32 +1,32 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1786999515_0afbe9_60",
-  "task_number": 60,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/reports/01_thread-evidence-gated-verdict.md",
-      "summary": "Maps all 5 WORK items to concrete file/line locations across the 9 declared consumer files; confirms task 59's predicate half is complete and live at schema v5 with idle_overlap_advisory already implemented; identifies the exact false self-clearing claim in skill-orchestrate/SKILL.md (line ~1538-1542) and the three-way corpus disagreement it creates; flags one open design question (--allow-scope-collision bypass scope: both collision_scope values vs. cross_batch only) and one likely-in-scope-by-inclusion item (orchestrate-dry-run-report.sh's missing idle_overlap_advisory rendering, not explicitly named in WORK 1's prose but in the declared file_scope)."
+      "type": "plan",
+      "path": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md",
+      "summary": "9-phase consumer-side threading plan covering all 5 WORK items across 8 source-store files, with two binding design decisions and a final deploy/verify phase."
     }
   ],
+  "next_steps": "Run /implement 60 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1786999515_0afbe9_60",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 9,
+    "estimated_hours": 7,
+    "dependency_waves": [[1, 6, 7], [2], [3], [4], [5], [8], [9]]
+  },
   "memory_candidates": [
     {
-      "content": "In this repo's orchestrate-batch-admit.sh subsystem, consumer-facing docs distinguish 'dispatch-path warning' (the live admission gate at skill-orchestrate/SKILL.md Stage MT-3 step 4.5, and its illustrative twin in commands/orchestrate.md) from a separate, earlier 'pre-dispatch review' surface (Step 1.5, orchestrate-predispatch-review.sh) that is advisory-loud but never blocking and runs on the full raw dependencies[] before wave narrowing. A gap named 'lives in a separate review surface rather than where the exclusion is actually reported' means: the review script already computes/prints a finding, but the actual defer/exclusion site (a different file, later in execution) doesn't repeat it — the fix folds the SAME computed string into the second site rather than building new logic.",
+      "content": "When a codebase carries an explicit consumer-side override flag (e.g. --allow-self-modifying in orchestrate), adding a sibling override is a mechanical 5-touch-point mirror in parse-command-args.sh (doc comment, default init, regex detection, FOCUS_PROMPT sed strip, export list) plus a threading chain command -> skill delegation context -> skill branch. The load-bearing invariant is that the override is NEVER passed to the predicate script: the predicate always computes and emits the honest verdict, and the flag is purely a consumer decision not to ACT on it, with a bypass notice logged whether or not the gate would otherwise have fired. Critically, a hazard's scope must be decomposed before a symmetric-looking flag is granted symmetric reach: for file_scope_collision, in_batch means two live co-dispatched agents editing the same files (a concurrent-write corruption hazard with a free bounded-retry remedy) while cross_batch means an idle out-of-batch task (a composition-judgment friction). Only the latter is a legitimate override target, so the flag's unqualified name must be contradicted explicitly in its help text.",
       "category": "PATTERN",
-      "source_artifact": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/reports/01_thread-evidence-gated-verdict.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrate-batch-admit", "predispatch-review", "dispatch-path-warning", "advisory-vs-blocking", "skill-orchestrate"]
-    },
-    {
-      "content": "skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md are explicit co-maintenance twins for the multi-task admission gate (file header states 'an edit to either copy REQUIRES the same edit to the other'). The hard-mode file sometimes takes a shortcut of saying 'unchanged from the base skill's handling' for a branch instead of transcribing it fully (e.g. its file_scope_collision bullet) — when the base skill's prose for that branch is corrected, the hard-mode file's shortcut pointer becomes stale/wrong too and must either be updated to match or converted into a full transcription, not just left as 'no change needed'.",
-      "category": "PATTERN",
-      "source_artifact": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/reports/01_thread-evidence-gated-verdict.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["co-maintenance", "skill-orchestrate-hard", "transcription-twin", "SKILL.md"]
+      "source_artifact": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md",
+      "confidence": 0.82,
+      "suggested_keywords": ["consumer-side-override", "admission-gate", "orchestrate", "parse-command-args", "file-scope-collision", "bypass-flag"]
     }
   ],
-  "next_steps": "Run /plan 60 to create implementation plan"
+  "modified_files": [
+    "specs/060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md"
+  ]
 }
