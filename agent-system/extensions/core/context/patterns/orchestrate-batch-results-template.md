@@ -59,6 +59,23 @@ Re-run sequence (dependency order; printed, not executed):
 | #44 | predecessor #43 failed |
 | #99 | terminal status [ABANDONED] |
 
+### Admitted (idle overlap advisory)
+
+(Renders whenever `idle_overlap_ledger` is non-empty — populated from that per-cycle accumulator,
+one row per admitted task carrying `idle_overlap_advisory`, per Stage MT-5 step 1/4's reporting
+instruction in `skill-orchestrate/SKILL.md`. These tasks were ADMITTED, not deferred — this
+section is placed on the admitted side, near the `### Deferred (...)` cluster below, because the
+overlap it surfaces is the same idle cross-batch mechanism those sections cover for the deferring
+case.)
+
+| Task | Colliding Task | Colliding Status | Overlapping Path | Note |
+|------|-----------------|--------------------|---------------------|------|
+| #24 | #25 | not_started | agent-system/extensions/core/scripts/orchestrate-batch-admit.sh | admitted; no execution evidence on colliding task — add a dependencies[] edge if ordering matters |
+
+Not an exclusion and not a failure: the task dispatched normally. Operator remedy (optional):
+add a `dependencies[]` edge between the two task numbers if ordering between them actually
+matters; otherwise no action is required.
+
 ### Deferred (self-modifying)
 
 (Renders on every batch, not only zero-dispatch ones — populated from

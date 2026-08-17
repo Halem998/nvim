@@ -1362,6 +1362,16 @@ subsection):
   separate operator remedies.
 - `forward_progress_violated: false` — initialized false, computed and written once at Stage MT-5
   from `dispatch_start_ts`. Never read by any loop condition.
+- `idle_overlap_ledger: []` — an APPEND-ONLY OBSERVATION LOG of every admitted verdict this cycle
+  carrying a non-empty `idle_overlap_advisory` (NEW in v5 — see Stage MT-3 step 4.5's "Idle
+  cross-batch overlap advisory" check above), entries of the form
+  `{"task": <int>, "colliding_task_number": <int>, "colliding_task_status": <string>, "overlapping_path": <string>, "cycle": <int>}`.
+  Follows `defer_ledger`'s exact shape and MUST NOT: never read by any eligibility check,
+  all-terminal check, circuit breaker, convergence guard, or admission branch — the candidates it
+  names were ADMITTED, not deferred, so this log excludes nothing. It is written for reporting
+  only, read at Stage MT-5 and by `commands/orchestrate.md` Step 5. It is never merged into
+  `defer_ledger` — that log's `defer_reason` vocabulary is load-bearing for admission reporting,
+  and an advisory has no `defer_reason` at all.
 
 **Hard-mode finding, recorded, not acted on**: `skills/skill-orchestrate-hard/SKILL.md` has no
 MT-stage implementation of its own — its Stage 0 states explicitly that when `multi_task_mode` is
@@ -1659,6 +1669,11 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      not blocking because no execution evidence exists. Add a dependencies[] edge between
      #{task_number} and #{colliding_task_number} if ordering matters.
    ```
+   Additionally, append to `mt_state_file.idle_overlap_ledger` (Stage MT-1's schema definition
+   above — an admit-side observation log, never an admission gate):
+   `{"task": task_number, "colliding_task_number": colliding_task_number, "colliding_task_status": colliding_task_status, "overlapping_path": overlapping_path, "cycle": cycle_count}`.
+   This feeds Stage MT-5's `### Admitted (idle overlap advisory)` reporting; it is independent of
+   `defer_ledger` and appended regardless of the verdict's own `decision`.
 
    This mirrors the same check documented in `orchestrate.md` Step 3 for the pre-computed wave
    schedule — both now describe a script call, not an inline loop; here it applies per-cycle to
@@ -2315,7 +2330,7 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_CYCLES_MT reached):
 
 1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `deferred_self_modifying`,
-   `deferred_deploy_checkpoint`, `dispatch_start_ts`, `defer_ledger`,
+   `deferred_deploy_checkpoint`, `dispatch_start_ts`, `defer_ledger`, `idle_overlap_ledger`,
    `verify_deploy_baseline_notices`, `detected_defects`, `current_statuses`, `cycles_used`,
    counts. `current_statuses`
    (refreshed every cycle by Stage MT-3 step 1) is what step 3 below consults to determine, per
@@ -2414,6 +2429,15 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
    with its `defer_reason` (see `commands/orchestrate.md` Step 5 for the actual rendering — this
    stage only supplies the data). This is additive to, and does not replace, the
    `deferred_self_modifying` and `deferred_deploy_checkpoint` reporting instructions above.
+
+   Whenever `idle_overlap_ledger` is non-empty, it MUST likewise be reported as its own
+   **distinct** category — never folded into any Deferred section (its entries are ADMITS, not
+   exclusions), never omitted merely because the batch otherwise succeeded (see
+   `commands/orchestrate.md`'s consolidated-output template, `### Admitted (idle overlap
+   advisory)` section, for the actual rendering — this stage only supplies the data). It has no
+   bearing on `exit_status` — an admitted-with-advisory task is a normal admit and is never
+   consulted by branch selection above, exactly like `detected_defects` and
+   `verify_deploy_baseline_notices`.
 5. Write `specs/.return-meta-multi-${session_id}.json`:
 ```bash
 jq -n \
@@ -2425,6 +2449,7 @@ jq -n \
   --argjson tasks_deferred_deploy_checkpoint "$deferred_deploy_checkpoint" \
   --argjson forward_progress_violated "$forward_progress_violated" \
   --argjson defer_ledger "$defer_ledger" \
+  --argjson idle_overlap_ledger "$idle_overlap_ledger" \
   --argjson detected_defects "$detected_defects" \
   --argjson verify_deploy_baseline_notices "$verify_deploy_baseline_notices" \
   --argjson cycles_used "$cycles_used" \
@@ -2438,6 +2463,7 @@ jq -n \
       "tasks_deferred_deploy_checkpoint": $tasks_deferred_deploy_checkpoint,
       "forward_progress_violated": $forward_progress_violated,
       "defer_ledger": $defer_ledger,
+      "idle_overlap_ledger": $idle_overlap_ledger,
       "detected_defects": $detected_defects,
       "verify_deploy_baseline_notices": $verify_deploy_baseline_notices,
       "cycles_used": $cycles_used,
@@ -2446,8 +2472,8 @@ jq -n \
   }' > "specs/.return-meta-multi-${session_id}.json"
 ```
 The top-level `status` field keeps its existing closed vocabulary (`"implemented"` / `"partial"`
-/ `"failed"`) and gains no new value; `forward_progress_violated` and `detected_defects` are
-carried only inside `metadata`, never as `status` values themselves.
+/ `"failed"`) and gains no new value; `forward_progress_violated`, `detected_defects`, and
+`idle_overlap_ledger` are carried only inside `metadata`, never as `status` values themselves.
 
 6. **In-flight session registry release**: alongside the `mt_state_file` remove/preserve handling
    above (step 3), release the batch's session registry entry — unconditionally, regardless of

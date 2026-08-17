@@ -362,25 +362,33 @@ is one of the three; `orchestrate-dry-run-report.sh` is deliberately handled sep
 
 ---
 
-### Phase 5: Render the advisory in the batch results surface (WORK 1b) [NOT STARTED]
+### Phase 5: Render the advisory in the batch results surface (WORK 1b) [COMPLETED]
 
 **Goal**: Advisory-carrying admits appear in the consolidated batch results output.
 
 **Tasks**:
 
-- [ ] `context/patterns/orchestrate-batch-results-template.md`: add a new `### Admitted (idle
+- [x] `context/patterns/orchestrate-batch-results-template.md`: add a new `### Admitted (idle
       overlap advisory)` subsection. Place it near the existing `### Deferred (...)` subsections
       but on the admitted side, since an advisory-carrying verdict is by definition an `admit`.
-- [ ] Columns: `Task | Colliding Task | Colliding Status | Overlapping Path | Note` — mirroring the
-      `idle_overlap_advisory` field set.
-- [ ] Render unconditionally-when-non-empty, following the existing
+      *(completed)*
+- [x] Columns: `Task | Colliding Task | Colliding Status | Overlapping Path | Note` — mirroring the
+      `idle_overlap_advisory` field set. *(completed)*
+- [x] Render unconditionally-when-non-empty, following the existing
       `### Deferred (redeploy checkpoint)` subsection's pattern verbatim (read it first; do not
-      invent a new conditional-render convention).
-- [ ] `skills/skill-orchestrate/SKILL.md` Stage MT-3/MT-5: confirm which accumulator structure
+      invent a new conditional-render convention). *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md` Stage MT-3/MT-5: confirm which accumulator structure
       collects per-cycle verdicts for the Stage MT-5 results render. If an accumulator for
       advisory-carrying admits already exists, wire the new subsection to it; if not, add one
-      alongside `defer_ledger`, following that field's shape.
-- [ ] Mirror the accumulator addition in `skills/skill-orchestrate-hard/SKILL.md`.
+      alongside `defer_ledger`, following that field's shape. *(completed: no existing accumulator
+      found; added `idle_overlap_ledger` to Stage MT-1's schema, wired its append into step 4.5's
+      advisory check, and wired it into Stage MT-5's read/report/write, following `defer_ledger`'s
+      shape exactly)*
+- [x] Mirror the accumulator addition in `skills/skill-orchestrate-hard/SKILL.md`. *(completed:
+      the hard twin's `## Multi-Task Mode` section states multi-task mode is entirely delegated to
+      the base skill's Stage MT-1 through MT-5 — the ledger has no separate hard-twin declaration,
+      matching how `defer_ledger`/`forward_progress_violated` are already handled; added an
+      "Accumulator note" recording this explicitly instead of a duplicate declaration)*
 
 **Timing**: 0.75 hours
 

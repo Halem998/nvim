@@ -1624,6 +1624,15 @@ task than the verdict's own subject. This fires IN ADDITION to any `session_acti
   not blocking because no execution evidence exists. Add a dependencies[] edge between
   #{task_number} and #{colliding_task_number} if ordering matters.
 ```
+**Accumulator note**: unlike this transcribed prose, the `idle_overlap_ledger` OBSERVATION LOG
+that backs the `### Admitted (idle overlap advisory)` consolidated-output section is NOT
+separately declared or written here — multi-task mode is entirely delegated to
+`skill-orchestrate/SKILL.md`'s Stage MT-1 through MT-5 per this file's own `## Multi-Task Mode`
+opening statement, so the ledger's schema, per-verdict append, and Stage MT-5 read/report/write
+all live solely in that base-skill file (Stage MT-1's schema declarations and Stage MT-5's
+reporting instructions). This matches how `defer_ledger` and `forward_progress_violated` are
+already handled: transcribed here as behavioral prose for corpus-agreement, but backed by a
+single shared accumulator in the base skill, never a second hard-twin copy.
 
 The verdict schema itself is not restated here — see `docs/architecture/batch-admit-schema.md`.
 The overlap predicate is not restated here — see `context/patterns/file-footprint-overlap.md`.

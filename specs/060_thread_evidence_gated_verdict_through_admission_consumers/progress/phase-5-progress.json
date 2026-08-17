@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Render the advisory in the batch results surface (WORK 1b)",
+  "started_at": "2026-08-17T01:02:00Z",
+  "last_updated": "2026-08-17T01:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the Admitted (idle overlap advisory) template subsection and wire the idle_overlap_ledger accumulator through Stage MT-1/MT-3/MT-5",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ],
+      "note": "Confirmed multi-task mode's Stage MT-1 through MT-5 machinery lives solely in skill-orchestrate/SKILL.md (the hard twin delegates entirely per its own Stage 0); the hard twin's mirror is an explicit Accumulator note rather than a duplicate declaration, matching the existing defer_ledger/forward_progress_violated precedent."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
