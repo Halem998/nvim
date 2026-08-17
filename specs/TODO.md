@@ -60,7 +60,7 @@ next_project_number: 65
         └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-59 [RESEARCHED] — The /orchestrate batch-admission gate's specs/state.json collisio
+59 [PLANNED] — The /orchestrate batch-admission gate's specs/state.json collisio
   └─ 60 [NOT STARTED] — Consumer-side half of the batch-admission gate redesign. The pred
     └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
       └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
@@ -200,11 +200,12 @@ WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the
 ---
 
 ### 59. Gate cross-batch file_scope collisions on execution evidence, not non-terminal status
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md]
+- **Plan**: [059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md]
 
 **Description**: The /orchestrate batch-admission gate's specs/state.json collision dimension defers a candidate against ANY non-terminal task whose file_scope overlaps it with no dependencies[] edge. Because a cross_batch defer can never self-clear (an idle task's status cannot change without a dispatch), any broad-scoped not_started task becomes a permanent blanket blocker. Observed in the BimodalLogic repo: an /orchestrate invocation permanently excluded a candidate on every cycle because an idle documentation task declaring the whole FormalSystem/ directory overlapped it. That colliding task held no lock, had no live session-registry entry, and could not have been editing anything; corroborated_by named non_terminal_status as the sole basis for the defer.
 

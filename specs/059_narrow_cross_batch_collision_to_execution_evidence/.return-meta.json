@@ -1,39 +1,27 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 59,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "session_id": "sess_1786995676_03939f",
-  "findings_count": 9,
+  "phase_count": 7,
+  "estimated_hours": 4.5,
+  "dependency_waves": [[1], [2], [3], [4, 5, 6], [7]],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
-      "summary": "Confirms the cross_batch defer-condition defect and root cause verbatim against the code, identifies the exact jq select() insertion point in orchestrate-batch-admit.sh's $hit computation, confirms in_batch is structurally unaffected, confirms exactly 3 files pin the v4 schema string, confirms zero regression risk but zero existing positive test coverage of the idle-cross-batch-overlap case, confirms the self-refuting rationale passage and the missing cross_batch Blocking-vs-Advisory row, and identifies the batch's sibling tasks (60, 61) and the four workaround-edge colliding tasks (53, 14, 17, 44) for the post-deploy CLOSING STEP."
+      "type": "plan",
+      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md",
+      "summary": "7-phase plan narrowing orchestrate-batch-admit.sh's cross_batch file_scope collision to execution evidence, bumping the verdict schema to v5, correcting the self-refuting blocking rationale, adding the missing cross_batch Blocking-vs-Advisory row, closing the idle-collider test gap, and removing the four workaround dependencies[] edges post-deploy."
     }
   ],
   "memory_candidates": [
     {
-      "content": "In this repo's orchestrate-batch-admit.sh, the collision-scan comparison-set construction and the per-candidate $hit selection are two separate jq stages: terminal/dependency-edge exclusion happens once when building $comparison_set, while the in_batch vs cross_batch directional/evidence test happens in the select() that computes $hit. A narrowing fix that must preserve in_batch behavior bit-for-bit while changing cross_batch behavior should add its new condition only inside the cross_batch disjunct of that select(), never touch the in_batch disjunct's existing $other_num < $c clause, and never touch $comparison_set construction (which is correctly the terminal/edge filter, not the evidence filter).",
+      "content": "When converting a formerly-unconditional blocking predicate into an evidence-gated one that must still surface the suppressed case loudly, materialize the candidate list once and derive BOTH selections from it rather than re-scanning. In this repo's orchestrate-batch-admit.sh the pattern is: build $overlaps (the full annotated overlap list, with the blocking/idle discriminator computed as a key on each element), then $hit = first blocking member and $idle_advisory = first suppressed member. This preserves the original first-match/ascending-order determinism for both, avoids a second invocation of the expensive overlap predicate, and keeps the untouched disjunct (in_batch) bit-for-bit identical because the comprehension body is copied verbatim with only the new discriminator key added.",
       "category": "PATTERN",
-      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrate-batch-admit", "file_scope_collision", "cross_batch", "jq select", "comparison-set"]
-    },
-    {
-      "content": "When narrowing a defer condition in a versioned NDJSON verdict schema in this codebase (orchestrate-batch-admit-v*), grep -rl '\"<schema-string>\"' across the extension root before estimating blast radius -- it reliably enumerates every file that must bump in lockstep (script emitter, schema doc, and any test asserting the literal $schema string), and cheaply confirms which sibling test files consume defer_reason/collision_scope only (no schema-string update needed).",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["schema version bump", "grep blast radius", "batch-admit-schema", "NDJSON verdict", "test coverage audit"]
-    },
-    {
-      "content": "This repo's batch-orchestration-guardrails.md Blocking-vs-Advisory criterion requires an advisory signal to still surface loudly, never silently -- when converting a formerly-blocking defer into an admit-with-advisory outcome, the established schema precedent to follow is self_modifying's shape (present on every verdict, never optional), not defer_reason's shape (present only on defer verdicts), because the new advisory condition fires precisely on the admit path where a defer_reason-shaped field would never be read.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
-      "confidence": 0.65,
-      "suggested_keywords": ["advisory field design", "blocking vs advisory", "verdict schema", "self_modifying", "loud never silent"]
+      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["evidence-gated predicate", "advisory field", "jq comprehension", "first-match determinism", "orchestrate-batch-admit", "bit-for-bit preservation"]
     }
   ],
-  "next_steps": "Run /plan 59 to create implementation plan"
+  "next_steps": "Run /implement 59 to execute the plan"
 }

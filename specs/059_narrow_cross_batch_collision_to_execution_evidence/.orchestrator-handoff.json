@@ -1,24 +1,28 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
-  "summary": "Confirmed the cross_batch defer-condition defect verbatim against orchestrate-batch-admit.sh: the collision-scan $hit selection never consults colliding-task status for cross_batch, only for in_batch. Fix is a single select() clause scoped to the cross_batch disjunct only, gating on status in {researching, planning, implementing}. Exactly 3 files pin the v4 schema string; existing cross_batch test fixtures already use status=implementing so they need no changes, but no fixture currently covers the idle-overlap case this task fixes -- new tests are required. Identified the self-refuting rationale passage and the missing cross_batch Blocking-vs-Advisory row. Identified sibling tasks 60/61 and the four workaround-edge tasks (53, 14, 17, 44) for the post-deploy CLOSING STEP.",
+  "status": "planned",
+  "dispatch_seq": 2,
+  "summary": "7-phase plan created. Settles the two open forks the research left: the advisory field is named idle_overlap_advisory and is a NESTED object (reusing the defer branch's colliding_task_number/colliding_task_status/overlapping_path/collision_scope vocabulary without overloading those top-level keys), present on all three post-scan verdicts whenever a suppressed idle cross-batch overlap exists; and the predicate is restructured into a materialized $overlaps list with $hit and $idle_overlap derived from it, so the advisory needs no second scopes_overlap_first scan and in_batch stays bit-for-bit identical. Phase order: baseline/hypothesis confirmation -> predicate narrowing -> atomic v4->v5 schema bump (script + the single test pin) -> three parallel doc/test phases -> final sweep, deploy, and workaround-edge removal. CORRECTION to the research report: the self-refuting 'concurrently edit the same files' passage is NOT in batch-orchestration-guardrails.md at lines 280-298; grep finds it only in orchestrate-batch-admit.sh's header and batch-admit-schema.md. The guardrails carrier is its Classification Table row, which is the same edit as the missing-cross_batch-row requirement.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
-      "summary": "Root-cause confirmation, exact fix location, schema-bump blast radius, test-coverage gap analysis, and doc-correction targets for narrowing the cross_batch collision defer to execution evidence."
+      "type": "plan",
+      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md",
+      "summary": "7-phase implementation plan, 4.5h, validated clean against plan-format.md."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 7,
   "blockers": [],
-  "next_action_hint": "plan",
+  "next_action_hint": "implement",
   "files_modified": [],
   "decisions_made": [
-    "Fix touches only the cross_batch disjunct of the $hit select() in orchestrate-batch-admit.sh; in_batch's existing 'other_num < c' clause stays untouched",
-    "In-flight status set confirmed as {researching, planning, implementing}, case-insensitive, matching the script's existing is_terminal convention",
-    "Consumer files (dry-run-report.sh, predispatch-review.sh, SKILL.md Stage MT-3 step 4.5) are task 60's scope, not this task's -- none are in this task's declared file_scope",
-    "New advisory field shape/name left as an open planning decision; candidate shapes documented in the report (mirroring self_modifying's always-present-on-verdict precedent)"
+    "Advisory field settled: idle_overlap_advisory, a nested object, present on the plain admit, the session_active defer, and the file_scope_collision defer whenever a suppressed idle cross-batch overlap exists; structurally absent on the three early-exit admits and both self_modifying branches",
+    "Predicate restructured to a materialized $overlaps list plus two derived selections ($hit = in_batch OR in_flight; $idle_overlap = cross_batch AND NOT in_flight), preserving ascending-order first-match determinism and avoiding a duplicate overlap scan",
+    "New jq def is_in_flight added alongside is_terminal, case-insensitive, matching the script's existing convention",
+    "Accepted behavior change recorded: a candidate overlapping both an idle lower-numbered cross_batch task and an in_batch task now reports collision_scope in_batch rather than cross_batch; the decision is defer either way",
+    "Phase 3 is a declared atomic-batch across orchestrate-batch-admit.sh and test-conflict-predicate.sh because the v5 emit sites and the v5 test pin cannot be green independently",
+    "Phase 6 requires a negative control: the new idle-collider tests must be shown to FAIL against the pre-fix predicate",
+    "Phase 7 gates workaround-edge removal on a successful deploy-headless.sh run; tasks 48 and 50 are explicitly left untouched (repo-wide file_scope, legitimate dependency)",
+    "file-footprint-overlap.md is a confirm-or-no-op decision in Phase 5, with a reasoned-exclusion record if unchanged; its algorithm content is never touched"
   ],
   "dead_ends": []
 }

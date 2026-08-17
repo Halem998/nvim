@@ -607,7 +607,7 @@
     {
       "project_number": 59,
       "project_name": "narrow_cross_batch_collision_to_execution_evidence",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "essential-refactor",
       "title": "Gate cross-batch file_scope collisions on execution evidence, not non-terminal status",
@@ -626,9 +626,14 @@
           "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
           "type": "report",
           "summary": "Root-cause confirmation, exact fix location, schema-bump blast radius, test-coverage gap analysis, and doc-correction targets."
+        },
+        {
+          "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md",
+          "type": "plan",
+          "summary": "7-phase implementation plan, 4.5h, validated clean against plan-format.md."
         }
       ],
-      "last_updated": "2026-08-17T19:46:29Z",
+      "last_updated": "2026-08-17T19:53:36Z",
       "session_id": "sess_1786995676_03939f"
     },
     {
