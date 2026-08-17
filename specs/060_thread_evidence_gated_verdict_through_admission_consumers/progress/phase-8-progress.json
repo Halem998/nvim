@@ -1,0 +1,24 @@
+{
+  "phase": 8,
+  "phase_name": "Thread --allow-scope-collision through command and both skills (WORK 2b)",
+  "started_at": "2026-08-17T01:52:00Z",
+  "last_updated": "2026-08-17T02:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Thread allow_scope_collision through commands/orchestrate.md (Options, STAGE 0, Step 4 args+JSON, cross_batch bullet), skill-orchestrate/SKILL.md (MT-1 field, step 4.5 override branch), skill-orchestrate-hard/SKILL.md (mirrored), multi-task-operations.md (Tier 1 cross-reference), and inspect task-lock.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+        "agent-system/extensions/core/context/patterns/multi-task-operations.md"
+      ],
+      "note": "task-lock.md required no edit -- closed with a #### Reasoned Exclusions record in the plan per D4."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

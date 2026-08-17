@@ -263,6 +263,15 @@ Conflict Response" section for the full ladder):
    clears — mirroring `skill-orchestrate`'s own `consecutive_no_dispatch_cycles`-break shape. A
    conflict must never error the invocation (section 10's Defer-Not-Fail contract).
 
+**`--allow-scope-collision` cross-reference (bounded, not silence)**: `/orchestrate`'s
+`--allow-scope-collision` flag (see `commands/orchestrate.md`'s `## Options`) overrides the
+CROSS-BATCH `file_scope_collision` admission gate only, never `in_batch` — this asymmetry is a
+deliberate design decision (D1 in the originating plan), not an oversight. Tier 1's bounded
+second pass above remains the SOLE remedy for an `in_batch` collision; there is no override flag
+for it, and none is planned, because an `in_batch` collision means the colliding task is a live
+concurrent co-dispatch in THIS SAME invocation — bypassing it would risk two agents editing the
+same files in the same pass, a hazard `--allow-scope-collision` deliberately does not reach.
+
 This is intentionally narrower than `/orchestrate`'s own multi-cycle Tier-1 resequencing
 (`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, which can retry the identical verdict across
 MANY cycles as tasks progress toward completion): plain multi-task commands get exactly one bonus

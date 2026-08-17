@@ -1217,6 +1217,10 @@ Read from delegation context:
 - `session_id`, `lit_flag`, `allow_self_modifying` (default: "false") — consumer-side opt-in
   bypass of the self-modification admission gate; never passed to `orchestrate-batch-admit.sh`
   itself (see Stage MT-3 step 4.5's `self_modifying` branch below)
+- `allow_scope_collision` (default: "false") — consumer-side opt-in bypass of the CROSS-BATCH
+  `file_scope_collision` admission gate only, never `in_batch` (D1); never passed to
+  `orchestrate-batch-admit.sh` itself (see Stage MT-3 step 4.5's `file_scope_collision` ->
+  `cross_batch` branch below)
 
 **Upstream review cross-reference**: raw dependency review already happened upstream, at
 `commands/orchestrate.md` Step 1.5 (Pre-Dispatch Review), before `dependency_graph` above was
@@ -1565,25 +1569,47 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
        Additionally, append to `mt_state_file.defer_ledger`:
        `{"task": Y, "defer_reason": "file_scope_collision", "collision_scope": "in_batch", "cycle": cycle_count, "detail": "colliding in-batch task #{X}"}`.
      - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation):
-       remove the candidate from this cycle's dispatch batch and log a **distinct** warning naming
-       the out-of-batch task and its `colliding_task_status`. This scope does NOT self-clear
-       within this invocation: the excluded candidate does NOT automatically become eligible
-       again this run — the colliding task is outside `task_numbers` and this loop has no
-       mechanism to advance it. A human resolves batch composition, or a future invocation
-       re-evaluates once the colliding task's status independently changes:
+       **consumer-side override check first** — if `allow_scope_collision == true` for this
+       invocation, do NOT act on this defer verdict: dispatch the candidate this cycle anyway,
+       exactly as if it had admitted. The verdict itself is unaffected by the flag — it is still
+       emitted, still carries `defer_reason: "file_scope_collision"` and
+       `collision_scope: "cross_batch"`, and `orchestrate-batch-admit.sh` is NEVER passed the
+       flag; the bypass is entirely a decision made here, at the consumer, about whether to act on
+       a verdict the script always computes honestly. Per D1, this override is
+       **cross-batch-only**: it is checked ONLY in this `cross_batch` sub-branch — the `in_batch`
+       branch above is NEVER bypassed by `allow_scope_collision`, regardless of whether it is
+       active, and has no override check of its own. Log a loud, distinct bypass notice whether or
+       not the gate would otherwise have fired, so a transcript reader can always tell the
+       override was active this invocation. On the bypass path, do NOT append to
+       `mt_state_file.defer_ledger` — a bypassed defer dispatches and must not be ledgered as a
+       defer:
+       ```
+       [orchestrate] BYPASS: --allow-scope-collision is active. Task #{task_number} has
+         overlapping file_scope with out-of-batch task #{colliding_task_number} (status:
+         {colliding_task_status}); dispatching this cycle anyway per explicit human-intent
+         override (cross-batch only).
+       ```
+       Otherwise (no override): remove the candidate from this cycle's dispatch batch and log a
+       **distinct** warning naming the out-of-batch task and its `colliding_task_status`. This
+       scope does NOT self-clear within this invocation: the excluded candidate does NOT
+       automatically become eligible again this run — the colliding task is outside
+       `task_numbers` and this loop has no mechanism to advance it. A human resolves batch
+       composition, or a future invocation re-evaluates once the colliding task's status
+       independently changes:
        ```
        [orchestrate] WARNING: Task #{task_number} has overlapping file_scope with task
          #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE this
          invocation's task_numbers. Excluding #{task_number} from this cycle — batch
          composition needs human review -- suggest adding #{suggested_predecessor} as a
-         dependencies[] entry on #{suggested_dependent} to serialize them.
+         dependencies[] entry on #{suggested_dependent} to serialize them. Pass
+         --allow-scope-collision for deliberate human-intent bypass (cross-batch only).
        ```
        Ordering rule for `suggested_predecessor`/`suggested_dependent` (the higher task number
        becomes the dependent, the lower becomes the predecessor): identical to, and sourced from,
        `orchestrate-predispatch-review.sh`'s Class D finding (jq computation and rendered string)
        — the two surfaces are one mechanism, printed at two moments (upstream Step 1.5 review, and
        here at the moment of exclusion).
-       Additionally, append to `mt_state_file.defer_ledger`:
+       Additionally (no-override path only), append to `mt_state_file.defer_ledger`:
        `{"task": task_number, "defer_reason": "file_scope_collision", "collision_scope": "cross_batch", "cycle": cycle_count, "detail": "colliding out-of-batch task #{colliding_task_number} (status: {colliding_task_status})"}`.
    - **`session_active`** (NEW in v4, reached only when the state.json collision scan above found
      no hit): a live registered session's own unioned `file_scope` overlaps the candidate's.

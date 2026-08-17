@@ -521,52 +521,61 @@ or fewer sites, match whatever the grep actually reports.
 
 ---
 
-### Phase 8: Thread `--allow-scope-collision` through command and both skills (WORK 2b) [NOT STARTED]
+### Phase 8: Thread `--allow-scope-collision` through command and both skills (WORK 2b) [COMPLETED]
 
 **Goal**: The flag reaches both orchestrate skills as delegation context and is acted on as a
 consumer-side `cross_batch` bypass, never reaching the predicate script.
 
 **Tasks**:
 
-- [ ] `commands/orchestrate.md`:
-  - [ ] `## Options` table (~L35): add a row mirroring the `--allow-self-modifying` row's voice,
-        naming the **cross-batch** scope explicitly (D1), default `false`.
-  - [ ] STAGE 0 (~L51-56): add `ALLOW_SCOPE_COLLISION_FLAG` to the parser-variable list and to the
-        "read here and passed into the Skill delegation context" prose.
-  - [ ] Step 4 Skill invocation `args:` string (~L394): add
-        `allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG}`.
-  - [ ] Step 4 delegation-context JSON (~L407): add
-        `"allow_scope_collision": "{ALLOW_SCOPE_COLLISION_FLAG}"`.
-  - [ ] `cross_batch` WARNING bullet (~L307-316): add the "consumer-side override check first"
+- [x] `commands/orchestrate.md`: *(completed)*
+  - [x] `## Options` table (~L35): add a row mirroring the `--allow-self-modifying` row's voice,
+        naming the **cross-batch** scope explicitly (D1), default `false`. *(completed)*
+  - [x] STAGE 0 (~L51-56): add `ALLOW_SCOPE_COLLISION_FLAG` to the parser-variable list and to the
+        "read here and passed into the Skill delegation context" prose. *(completed)*
+  - [x] Step 4 Skill invocation `args:` string (~L394): add
+        `allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG}`. *(completed)*
+  - [x] Step 4 delegation-context JSON (~L407): add
+        `"allow_scope_collision": "{ALLOW_SCOPE_COLLISION_FLAG}"`. *(completed)*
+  - [x] `cross_batch` WARNING bullet (~L307-316): add the "consumer-side override check first"
         framing that `--allow-self-modifying`'s bullet already has, naming `--allow-scope-collision`
         as the bypass and stating that `orchestrate-batch-admit.sh` is NEVER passed the flag.
-- [ ] `skills/skill-orchestrate/SKILL.md`:
-  - [ ] Stage MT-1 delegation-context field list (~L1217): add `allow_scope_collision`
-        (default `"false"`) alongside `allow_self_modifying`.
-  - [ ] Stage MT-3 step 4.5 `file_scope_collision` -> `cross_batch` branch (~L1552-1562): add the
+        *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md`: *(completed)*
+  - [x] Stage MT-1 delegation-context field list (~L1217): add `allow_scope_collision`
+        (default `"false"`) alongside `allow_self_modifying`. *(completed)*
+  - [x] Stage MT-3 step 4.5 `file_scope_collision` -> `cross_batch` branch (~L1552-1562): add the
         consumer-side override check, structurally mirroring the `self_modifying` branch's shape at
         L1505-1537 — check `allow_scope_collision == true`; if so dispatch the candidate this cycle
         anyway with a loud, distinct `[orchestrate] BYPASS:` notice; if not, keep today's behavior
-        verbatim.
-  - [ ] Per D1: the `in_batch` branch is explicitly NOT overridable. State this in the bullet so a
-        reader does not infer symmetry from the flag name.
-  - [ ] Per the `--allow-self-modifying` precedent: the bypass notice logs whether or not the gate
+        verbatim. *(completed)*
+  - [x] Per D1: the `in_batch` branch is explicitly NOT overridable. State this in the bullet so a
+        reader does not infer symmetry from the flag name. *(completed)*
+  - [x] Per the `--allow-self-modifying` precedent: the bypass notice logs whether or not the gate
         would otherwise have fired, so a transcript reader can always tell the override was active.
-  - [ ] Per the `self_modifying` branch's precedent: on the bypass path, do NOT append to
+        *(completed)*
+  - [x] Per the `self_modifying` branch's precedent: on the bypass path, do NOT append to
         `defer_ledger` — a bypassed defer dispatches and must not be ledgered as a defer.
-- [ ] `skills/skill-orchestrate-hard/SKILL.md`: mirror both edits. Its `file_scope_collision`
+        *(completed)*
+- [x] `skills/skill-orchestrate-hard/SKILL.md`: mirror both edits. Its `file_scope_collision`
       bullet is already a real transcription after Phase 2, so the override logic is added there
       directly. Add the delegation-context field if the hard twin has an equivalent field list; if
       it has none (the base skill's L1217 list has no hard-twin counterpart), the override read at
       its `file_scope_collision` bullet is the mirror, matching how its `self_modifying` bullet
       already reads `allow_self_modifying` without a declared field list. Record which applied.
-- [ ] `context/patterns/multi-task-operations.md` Tier 1 auto-sequence section (~L235-257): add a
+      *(completed: confirmed the hard twin has no delegation-context field-list declaration at
+      all — the `self_modifying` bullet reads `allow_self_modifying` inline with no such list —
+      so the override read at the `cross_batch` bullet is the mirror, matching that precedent
+      exactly)*
+- [x] `context/patterns/multi-task-operations.md` Tier 1 auto-sequence section (~L235-257): add a
       bounded cross-reference stating that `--allow-scope-collision` overrides `cross_batch` only
       and never `in_batch`, so Tier 1's bounded second pass remains the sole `in_batch` remedy
-      (D1, D4).
-- [ ] `context/patterns/task-lock.md`: inspect L141's `in_batch` `file_scope_collision` mention and
+      (D1, D4). *(completed)*
+- [x] `context/patterns/task-lock.md`: inspect L141's `in_batch` `file_scope_collision` mention and
       the "Four-Tier Conflict Response" section. Edit only if D1's asymmetry is contradicted there;
-      otherwise close with a `#### Reasoned Exclusions` record under this phase (D4).
+      otherwise close with a `#### Reasoned Exclusions` record under this phase (D4). *(completed:
+      inspected both — neither claims or contradicts D1's asymmetry; no edit needed. See
+      `#### Reasoned Exclusions` below.)*
 
 **Timing**: 1.5 hours
 
@@ -594,12 +603,24 @@ mirrored edit per hit that is a threading site (not a prose mention of the other
 **Verification**:
 
 - `grep -rn 'allow_scope_collision\|allow-scope-collision\|ALLOW_SCOPE_COLLISION' ` across the 9
-  declared files shows the flag at every intended threading site.
+  declared files shows the flag at every intended threading site. *(confirmed: 24 hits across
+  the 5 edited files)*
 - **Critical**: `grep -rn 'orchestrate-batch-admit.sh' ` across the corpus — every invocation site's
-  argument list is unchanged; the flag appears at none of them.
-- The bypass branch does not append to `defer_ledger`.
-- The `in_batch` branch is unchanged and explicitly documented as non-overridable.
-- Base skill and hard twin state the same override contract.
+  argument list is unchanged; the flag appears at none of them. *(confirmed: every literal
+  `bash .../orchestrate-batch-admit.sh --invocation-count ...` call site inspected — none carries
+  the new flag)*
+- The bypass branch does not append to `defer_ledger`. *(confirmed: the no-override path is
+  explicitly labelled "no-override path only" before the `defer_ledger` append in both base skill
+  and hard twin)*
+- The `in_batch` branch is unchanged and explicitly documented as non-overridable. *(confirmed)*
+- Base skill and hard twin state the same override contract. *(confirmed: both name D1's
+  cross-batch-only scope, the BYPASS notice, and the no-defer_ledger-append rule)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `context/patterns/task-lock.md` — no edit made | Inspected L141's `in_batch` `file_scope_collision` mention and the "Four-Tier Conflict Response" section (Tier 1 row, L912-914). Neither claims or implies that `--allow-scope-collision` (or any override) applies to `in_batch`, and neither states a false self-clearing claim requiring correction under D1/WORK 4. D4 explicitly anticipated this outcome as one of two acceptable branches ("If the implementer finds `task-lock.md` genuinely needs no edit, that is closed with a Reasoned Exclusions record"), so no edit is a plan-conformant outcome, not a deviation. | L130-144 (same-session bypass / fresh-vs-stale lock text, mentions `in_batch` only as an example of the pre-check catching in-batch collisions before lock acquire, no override claim); L905-932 (Four-Tier Conflict Response table and reachability notes, Tier 1 row already correctly attributes auto-sequence to `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 — exactly where the new override logic was added in this phase — with no claim of `--allow-scope-collision` applicability) |
 
 ---
 

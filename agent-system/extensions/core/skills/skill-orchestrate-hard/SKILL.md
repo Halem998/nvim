@@ -1587,7 +1587,15 @@ every defer verdict carries this REQUIRED discriminator):
     ladder — see `.claude/context/patterns/task-lock.md`'s "Four-Tier Conflict Response" section
     for the full ladder and how this multi-cycle re-sequencing compares to plain multi-task
     `/research`'s, `/plan`'s, and `/implement`'s bounded one-extra-pass equivalent.
-  - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation): does
+  - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation):
+    **consumer-side override check first** — if `allow_scope_collision == true` for this
+    invocation, do NOT act on this defer verdict; dispatch the candidate this cycle anyway and log
+    a loud, distinct bypass notice naming the out-of-batch task and its `colliding_task_status`,
+    whether or not the gate would otherwise have fired. `orchestrate-batch-admit.sh` is NEVER
+    passed the flag — the bypass is a consumer-side decision only. Per D1, this override is
+    **cross-batch-only**: the `in_batch` branch above is NEVER bypassed by `allow_scope_collision`
+    and has no override check of its own. On the bypass path, do NOT append to `defer_ledger` — a
+    bypassed defer dispatches and must not be ledgered as a defer. Otherwise (no override): does
     NOT self-clear within this invocation — the excluded candidate does NOT automatically become
     eligible again this run, since the colliding task is outside `task_numbers` and this loop has
     no mechanism to advance it. A human resolves batch composition, or a future invocation
