@@ -1,0 +1,11 @@
+{
+  "dispatch_seq": 5,
+  "task_number": 63,
+  "stage": "plan",
+  "status": "planned",
+  "session_id": "sess_1786989333_638258_63",
+  "plan_path": "specs/063_fix_hard_mode_agent_routing_downgrade/plans/01_fix-hard-mode-agent-routing.md",
+  "phase_count": 3,
+  "estimated_hours": 2.5,
+  "next_steps": "Run /implement 63 to execute the plan"
+}

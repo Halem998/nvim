@@ -72,7 +72,7 @@ next_project_number: 65
       └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/ (see above)
   └─ 61 [NOT STARTED] — Treat whole-directory-root file_scope declarations as a declarati
     └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u (see above)
-63 [PLANNING] — Fix the agent-side hard-mode routing downgrade. command-route-age
+63 [PLANNED] — Fix the agent-side hard-mode routing downgrade. command-route-age
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents (see above)
 
 ## Tasks
@@ -110,11 +110,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 63. Fix the agent-side hard-mode routing downgrade that discards declared domain agents
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [063_fix_hard_mode_agent_routing_downgrade/reports/01_agent-routing-hard-mode-parity.md]
+- **Plan**: [063_fix_hard_mode_agent_routing_downgrade/plans/01_fix-hard-mode-agent-routing.md]
 
 **Description**: Fix the agent-side hard-mode routing downgrade. command-route-agent.sh, given effort_flag=hard and a task_type whose extension declares no routing_agents_hard, falls through to the caller-supplied default_agent and DISCARDS the extension's declared standard agent. So --hard routes strictly worse than no flag, losing the domain agent entirely.
 
