@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
+      "summary": "Research on adding a WARN-level, blast-radius-driven whole-directory-root and duplicate file_scope declaration check to validate-state.sh, surfaced advisory in commands/task.md Create Task Mode."
+    }
+  ],
+  "next_steps": "Run /plan 61 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786999515_0afbe9_61",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 14
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo, file_scope is only populated by multi-task creators (/meta Component 4a, /fix-it, /spawn) -- the single-task /task Create Task Mode (commands/task.md) never sets file_scope for the new task. Any 'surface X at task creation' feature targeting /task therefore must scan the whole active_projects[] population post-write, not just the newly created entry's own (always-empty) file_scope.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["file_scope", "task.md", "task creation", "multi-task-creation-standard", "Component 4a"]
+    },
+    {
+      "content": "validate-state.sh base-mode checks (1-7) are all PASS/FAIL only -- zero WARN-level output today. --deep checks (D1-D5) require git history. verify-deploy.sh Gate 10 is validate-state.sh's ONLY existing caller (deploy-time, --deep, exit-code-based pass/fail: 0 passes even with WARNs, only exit 1 = FAIL-level fails the gate). Any new advisory check must use log_warn, never log_fail, or it silently turns pre-existing state.json issues into deploy blockers.",
+      "category": "PATTERN",
+      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["validate-state.sh", "verify-deploy.sh", "Gate 10", "log_warn", "advisory checks"]
+    },
+    {
+      "content": "The canonical file_scope overlap predicate (normalize: strip trailing slash; overlap: exact match or directory-prefix ancestor either direction) lives exactly once in scripts/lib/file-scope-overlap.sh, exported as both a bash function scopes_overlap() and a splice-able jq def block FILE_SCOPE_OVERLAP_JQ_DEFS. Every consumer (task-lock.sh, orchestrate-batch-admit.sh) sources or splices this rather than re-deriving it. Any new blast-radius/overlap computation in this codebase must do the same.",
+      "category": "PATTERN",
+      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["file-scope-overlap.sh", "overlap predicate", "shared library", "jq splice"]
+    }
+  ]
+}

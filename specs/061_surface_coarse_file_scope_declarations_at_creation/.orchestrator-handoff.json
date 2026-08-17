@@ -1,0 +1,25 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "phase": "research",
+  "summary": "Researched adding a WARN-level, blast-radius-driven whole-directory-root and duplicate file_scope declaration check to validate-state.sh (new base-mode checks, never log_fail, reusing scripts/lib/file-scope-overlap.sh's shared overlap predicate), surfaced as an advisory step in commands/task.md's Create Task Mode (Step 6.5, between state-write and git commit). Confirmed a live example (task 44) and no current duplicate-entry regressions.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
+      "summary": "Research on adding a WARN-level, blast-radius-driven whole-directory-root and duplicate file_scope declaration check to validate-state.sh, surfaced advisory in commands/task.md Create Task Mode."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Run /plan 61 to create implementation plan",
+  "decisions_made": [
+    "New checks belong in validate-state.sh base mode (no git dependency needed) and must use log_warn, never log_fail, to preserve verify-deploy.sh Gate 10's exit-code pass/fail contract and the task's advisory-not-blocking requirement.",
+    "Blast-radius computation must reuse scripts/lib/file-scope-overlap.sh's FILE_SCOPE_OVERLAP_JQ_DEFS/scopes_overlap(), never re-derive the normalize/overlap logic inline.",
+    "commands/task.md's new advisory step scans the whole active_projects[] population post-write (Step 6.5, before Step 7 git commit), not just the newly created task's own file_scope, because Create Task Mode never sets file_scope for the new task itself.",
+    "Coarseness trigger recommended as blast-radius-driven (directory-shaped entry AND overlaps >= N other non-terminal tasks), not a bare path-depth heuristic, and must not hardcode orchestrator-critical-paths.json's scope_roots (a different, self-modification-specific feature)."
+  ],
+  "dead_ends": [],
+  "files_modified": [],
+  "continuation_path": null,
+  "plan_markers_verified": null
+}
