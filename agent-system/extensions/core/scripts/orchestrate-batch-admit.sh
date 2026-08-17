@@ -72,9 +72,9 @@
 # only, with no behavioral benefit over documenting the narrowed meaning under the existing name.
 #
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order. Verdict
-# schema (pinned as "orchestrate-batch-admit-v4"; field order is stable):
+# schema (pinned as "orchestrate-batch-admit-v5"; field order is stable):
 #
-#   $schema                 string   Literal "orchestrate-batch-admit-v4".
+#   $schema                 string   Literal "orchestrate-batch-admit-v5".
 #   task_number              int     The candidate task number, echoed back.
 #   decision                 string  "admit" or "defer". Never "fail" — a candidate this script
 #                                     cannot resolve (unknown task, terminal status, empty/null
@@ -137,6 +137,26 @@
 #   reason                    string Present only when decision == "defer". Machine-templated
 #                                     human-readable summary; never the sole carrier of any fact
 #                                     already present as a structured field above.
+#   idle_overlap_advisory     object Present on ANY post-scan verdict (the plain "admit", the
+#                                     "session_active" defer, or the "file_scope_collision" defer)
+#                                     (NEW in v5) whenever the collision scan found a cross_batch
+#                                     overlap against a task with NO execution evidence (status not
+#                                     in {researching, planning, implementing}) that this script
+#                                     suppressed from blocking. Absent when no such idle overlap
+#                                     exists, and structurally absent on the three early-exit admit
+#                                     branches (unknown task / terminal status / empty file_scope)
+#                                     and both self_modifying branches, none of which reach the
+#                                     collision scan. Nested keys (first-match, ascending
+#                                     project_number, same convention as the collision scan itself):
+#                                     colliding_task_number (int), colliding_task_status (string,
+#                                     verbatim from state.json), overlapping_path (string, first
+#                                     overlapping path), collision_scope (string, always
+#                                     "cross_batch" here — an idle in_batch overlap cannot occur,
+#                                     see the narrowed deferral-direction rule below), and reason
+#                                     (string, machine-templated, names the remedy: add a
+#                                     dependencies[] edge if ordering between the two tasks
+#                                     matters). See docs/architecture/batch-admit-schema.md for the
+#                                     full field table and an example verdict.
 #
 # Precedence (D4): self-modification runs FIRST and SHORT-CIRCUITS the rest — a self-modifying
 # candidate never runs the collision scan or the session pass, regardless of whether it is
@@ -212,9 +232,18 @@
 #     lower-numbered collision when ITS verdict is computed). This preserves the pre-existing
 #     wave-split deferral direction bit-for-bit — nothing about in-batch behavior changes.
 #   - cross_batch (the colliding task is NOT one of this invocation's arguments): the candidate
-#     defers UNCONDITIONALLY, regardless of project_number ordering, because an out-of-batch task
-#     cannot itself be deferred by an invocation it is not part of — there is no symmetric
-#     "the other one defers instead" outcome available.
+#     defers ONLY while the colliding task carries execution evidence — status in
+#     {researching, planning, implementing} (case-insensitive; NARROWED in v5, was
+#     "unconditionally, regardless of project_number ordering" through v4). An out-of-batch task
+#     cannot itself be deferred by an invocation it is not part of, so there is still no symmetric
+#     "the other one defers instead" outcome available — but a cross_batch task that is provably
+#     IDLE (no execution evidence: not_started, blocked, partial, pr_ready, or any other
+#     non-in-flight non-terminal status) is no longer able to permanently block a candidate merely
+#     by sitting in state.json. An idle cross_batch overlap now ADMITS instead, carrying a loud
+#     idle_overlap_advisory (see the field list above) rather than silently vanishing. This is
+#     evidence-gating, not batch-size-gating: the check still runs the full comparison set at any
+#     batch size, and an idle overlap discovered in a batch of one behaves identically to one
+#     discovered in a batch of fifty.
 #
 # Determinism: among the surviving comparison set (terminal-excluded, edge-excluded, and — for
 # in_batch pairs only — direction-filtered), tasks are visited in ASCENDING project_number order;
@@ -223,20 +252,36 @@
 # first-match: the FIRST critical-path entry (in the data file's declared order, expanded across
 # scope_roots) that overlaps any of the candidate's own file_scope entries wins.
 #
-# Why this check is blocking, not advisory: the criterion imported for the blocking-vs-advisory
-# decision is "computable from on-disk state alone, and the harm of skipping it is silent and
-# hard to detect later." A cross-batch file_scope collision satisfies both halves — it requires
-# nothing but a read of specs/state.json, and if skipped, two sessions can concurrently edit the
-# same files with no lock contention (the colliding task holds no lock; it simply is not running)
-# and no visible symptom until a merge conflict or silently overwritten edit turns up much later.
-# That is precisely the profile the imported criterion assigns to "blocking." The self-modifying
-# check satisfies the same profile: it is computable from the candidate's own on-disk file_scope
+# Why this check is evidence-gated between blocking and advisory (REWRITTEN in v5 — the pre-v5
+# text asserted blanket blocking for the cross_batch case and is gone; it self-contradicted by
+# arguing concurrent-write harm from a task it simultaneously conceded "is not running"): the
+# criterion imported for the blocking-vs-advisory decision is "computable from on-disk state
+# alone, and the harm of skipping it is silent and hard to detect later." An in_batch collision,
+# and a cross_batch collision against a task carrying execution evidence (status in
+# {researching, planning, implementing}), both satisfy that criterion in full — both are
+# computable from a read of specs/state.json, and if skipped, two sessions can concurrently edit
+# the same files with no lock contention and no visible symptom until a merge conflict or a
+# silently overwritten edit turns up much later. Those stay BLOCKING. A cross_batch collision
+# against a task with NO execution evidence satisfies neither half: there is no second session
+# to concurrently edit anything — the colliding task simply is not running, and nothing is lost by
+# not blocking on it today. The only real residual concern is ORDERING (should the candidate wait
+# until the idle task eventually runs?), and ordering is exactly what dependencies[] exists to
+# express; it is not a concurrent-write hazard and does not belong behind a defer that can never
+# self-clear until the idle task changes status on its own. That case is ADVISORY: it admits, and
+# surfaces the suppressed overlap loudly via idle_overlap_advisory (see the field list above)
+# rather than silently. The self-modifying check is unaffected by this narrowing and keeps its own
+# unconditional blocking profile: it is computable from the candidate's own on-disk file_scope
 # alone, and the harm of skipping it — an unverifiable orchestrator-machinery fix bundled into a
-# multi-task batch commit — is silent and hard to attribute later. A later maintainer who reads
-# the general literature on false positives from coarse directory-prefix scope declarations and
-# is tempted to relax either check to advisory should re-derive the criterion above first — the
-# false-positive cost here is a deferred task, not silent data loss, so the two are not comparable
-# and the advisory relaxation is not warranted by that literature alone.
+# multi-task batch commit — is silent and hard to attribute later, regardless of what any other
+# task's status is. A later maintainer who reads the general literature on false positives from
+# coarse directory-prefix scope declarations and is tempted to relax either the in_batch check, the
+# in-flight cross_batch check, or the self-modifying check to advisory should re-derive the
+# criterion above first — the false-positive cost for all three of those is a deferred task, not
+# silent data loss, so the two are not comparable and the advisory relaxation is not warranted by
+# that literature alone. This narrowing is evidence-gating (does the colliding task carry proof of
+# being in flight?), not batch-size-gating (how many candidates are in this invocation?) — the
+# comparison set and its size are unchanged; only the disposition of a provably idle cross_batch
+# member changed.
 #
 # Exit codes:
 #   0 - verdicts were emitted successfully on stdout, REGARDLESS of how many are "defer".
@@ -415,13 +460,13 @@ if verdicts=$(jq -n -c \
   ([$all[] | select(.project_number == $c)] | first) as $entry |
 
   if ($entry == null) then
-    {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit",
+    {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
      self_modifying: (if $is_degraded then null else false end)}
   elif (($entry.status // "") | is_terminal) then
-    {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit",
+    {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
      self_modifying: (if $is_degraded then null else (self_mod_match($entry.file_scope; $crit) != null) end)}
   elif (($entry.file_scope // []) | length) == 0 then
-    {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit",
+    {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
      self_modifying: (if $is_degraded then null else false end)}
   else
     ($entry.dependencies // []) as $c_deps |
@@ -431,7 +476,7 @@ if verdicts=$(jq -n -c \
     if ($sm_flag == true) then
       if ($inv_count > 1) then
         {
-          "$schema": "orchestrate-batch-admit-v4",
+          "$schema": "orchestrate-batch-admit-v5",
           task_number: $c,
           decision: "defer",
           self_modifying: true,
@@ -442,7 +487,7 @@ if verdicts=$(jq -n -c \
         }
       else
         {
-          "$schema": "orchestrate-batch-admit-v4",
+          "$schema": "orchestrate-batch-admit-v5",
           task_number: $c,
           decision: "admit",
           self_modifying: true
@@ -500,10 +545,10 @@ if verdicts=$(jq -n -c \
         # this addition; this new flavor fires strictly where the predicate used to admit.
         session_contention($c_scope; $c; $own_sid; $all; $sess_list) as $sess_hit |
         if $sess_hit == null then
-          {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag
+          {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag
         else
           {
-            "$schema": "orchestrate-batch-admit-v4",
+            "$schema": "orchestrate-batch-admit-v5",
             task_number: $c,
             decision: "defer",
             self_modifying: $sm_flag,
@@ -533,7 +578,7 @@ if verdicts=$(jq -n -c \
           ["non_terminal_status"] + (if $session_corroborates then ["session_registry"] else [] end)
         ) as $corroborated_by |
         {
-          "$schema": "orchestrate-batch-admit-v4",
+          "$schema": "orchestrate-batch-admit-v5",
           task_number: $c,
           decision: "defer",
           self_modifying: $sm_flag,

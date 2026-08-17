@@ -316,37 +316,42 @@ program. The `$schema` string stays `v4` in this phase; the bump is Phase 3.
 
 ---
 
-### Phase 3: Bump the verdict schema to v5 [NOT STARTED]
+### Phase 3: Bump the verdict schema to v5 [COMPLETED]
 
 **Goal**: Move every `orchestrate-batch-admit-v4` literal in the script and in the test pin to
 `orchestrate-batch-admit-v5` in one atomic change, and correct the script header's rationale and
 `cross_batch` deferral-direction prose in the same pass.
 
 **Tasks**:
-- [ ] Replace all 5 `$schema` emit-site literals in `orchestrate-batch-admit.sh` with
-      `orchestrate-batch-admit-v5`.
-- [ ] Replace both header-comment mentions of the pinned schema string with `v5`.
-- [ ] Document `idle_overlap_advisory` in the header's verdict-schema field list, in the same style
+- [x] Replace all 5 `$schema` emit-site literals in `orchestrate-batch-admit.sh` with
+      `orchestrate-batch-admit-v5`. *(completed: Phase 1's baseline grep found 8 emit sites, not
+      the 5 the Scope Hypothesis guessed — all 8 replaced via a single `sed -i
+      's/orchestrate-batch-admit-v4/orchestrate-batch-admit-v5/g'` pass, which also covered the 2
+      header-prose mentions in the same operation)*
+- [x] Replace both header-comment mentions of the pinned schema string with `v5`. *(completed, same
+      sed pass as above)*
+- [x] Document `idle_overlap_advisory` in the header's verdict-schema field list, in the same style
       as the surrounding entries: name the nested keys, state that it is present on every post-scan
       verdict where a suppressed idle cross-batch overlap exists, and state the branches where it
       is structurally absent (three early-exit admits, both `self_modifying` branches).
-- [ ] Rewrite the header's `cross_batch` bullet under "Deferral-direction rule for
+      *(completed)*
+- [x] Rewrite the header's `cross_batch` bullet under "Deferral-direction rule for
       file_scope_collision": it no longer "defers UNCONDITIONALLY"; it defers only while the
       colliding task's status is in `{researching, planning, implementing}`, and otherwise admits
-      with `idle_overlap_advisory`. Keep the `in_batch` bullet's wording untouched.
-- [ ] Rewrite the header's "Why this check is blocking, not advisory" paragraph so it justifies
-      **evidence-gating** instead of blanket deferral, and so the self-contradiction is gone. The
-      corrected argument: a cross-batch overlap against an **in-flight** task satisfies both halves
-      of the imported criterion (computable from on-disk state; the harm of skipping is a silent
-      concurrent write). An overlap against a **provably idle** task satisfies neither — there is no
-      second session to write concurrently, so the only real concern is *ordering*, which belongs in
-      `dependencies[]` and is surfaced loudly by `idle_overlap_advisory` rather than by a defer that
-      can never self-clear. Preserve the paragraph's existing closing guidance about not relaxing
-      the check on false-positive grounds, and state explicitly that this narrowing is
-      evidence-gating, not batch-size-gating.
-- [ ] Update `test-conflict-predicate.sh`'s single `orchestrate-batch-admit-v4` assertion (case 3's
+      with `idle_overlap_advisory`. Keep the `in_batch` bullet's wording untouched. *(completed;
+      in_batch bullet byte-identical)*
+- [x] Rewrite the header's "Why this check is blocking, not advisory" paragraph so it justifies
+      **evidence-gating** instead of blanket deferral, and so the self-contradiction is gone.
+      *(completed: retitled to "Why this check is evidence-gated between blocking and advisory";
+      re-read confirms no sentence both asserts concurrent-edit harm and concedes the colliding
+      task is not running; preserves the false-positive-relaxation closing guidance; states
+      explicitly this is evidence-gating not batch-size-gating)*
+- [x] Update `test-conflict-predicate.sh`'s single `orchestrate-batch-admit-v4` assertion (case 3's
       non-regression check) to `orchestrate-batch-admit-v5`, and update the adjacent `info` message
-      text so it no longer says "v4".
+      text so it no longer says "v4". *(completed: line 216's assertion and its "schema is not v4"
+      info message both updated to v5; other nearby "v4" mentions in that file are historical
+      narration of which fields v4 introduced, still factually accurate post-v5, and left
+      untouched per Phase 4's own precedent for historical version references)*
 
 **Timing**: 50 minutes
 

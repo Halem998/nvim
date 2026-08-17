@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Bump the verdict schema to v5",
+  "started_at": "2026-08-17T00:45:00Z",
+  "last_updated": "2026-08-17T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace all v4 schema literals with v5 (script + header prose)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"], "note": "10 literals replaced (8 emit sites, not the 5 hypothesized; 2 header-prose)"},
+    {"id": 2, "description": "Document idle_overlap_advisory in header field list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 3, "description": "Rewrite cross_batch deferral-direction bullet", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "Rewrite blocking-rationale paragraph to evidence-gated argument", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 5, "description": "Update test-conflict-predicate.sh schema assertion + info message", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-conflict-predicate.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "v4_grep_scripts_dir": "zero hits",
+    "v5_count_in_script": "10, matches Phase 1 baseline v4 count in that file",
+    "bash_n": "pass on both scripts",
+    "predicate_suite": "32 passed, 0 failed",
+    "four_tier_suite": "11 passed, 0 failed",
+    "diff_scope": "exactly the two declared files (orchestrate-batch-admit.sh, test-conflict-predicate.sh)",
+    "rationale_reread": "confirmed no sentence both asserts concurrent-edit harm and concedes the colliding task is not running"
+  }
+}
