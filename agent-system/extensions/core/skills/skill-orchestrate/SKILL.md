@@ -1642,6 +1642,24 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    proceed without the check — orchestration cannot function at all under that condition
    regardless of this check, so proceeding is not a silent weakening of the gate.
 
+   **Idle cross-batch overlap advisory** (`idle_overlap_advisory`, NEW in v5): run
+   `jq -e '.idle_overlap_advisory'` on **every** verdict this cycle — `admit` verdicts included,
+   not only `defer` verdicts. Since v5, a `cross_batch` overlap against an out-of-batch task
+   carrying NO execution evidence no longer defers at all; the predicate admits the candidate and
+   attaches this field instead of silently dropping the suppressed overlap. This check runs
+   OUTSIDE and INDEPENDENTLY of the `.decision == "defer"` filter above — do not nest it inside
+   that filter, or every advisory on an `admit` verdict (the common case post-v5) is silently
+   skipped. When present, print a distinct ADVISORY line — never folded into an existing WARNING's
+   text, because the advisory may name a *different* colliding task than the verdict's own
+   subject, so the two lines must stay visually and semantically separate. This fires IN ADDITION
+   to any `session_active` or `file_scope_collision` WARNING already logged for the same verdict:
+   ```
+   [orchestrate] ADVISORY: Task #{task_number} has file_scope overlapping IDLE (status:
+     {colliding_task_status}) out-of-batch task #{colliding_task_number} at {overlapping_path};
+     not blocking because no execution evidence exists. Add a dependencies[] edge between
+     #{task_number} and #{colliding_task_number} if ordering matters.
+   ```
+
    This mirrors the same check documented in `orchestrate.md` Step 3 for the pre-computed wave
    schedule — both now describe a script call, not an inline loop; here it applies per-cycle to
    `eligible_tasks` since Multi-Task Mode dispatches cycle-by-cycle rather than strictly

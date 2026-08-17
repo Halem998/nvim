@@ -341,6 +341,22 @@ excluded task is neither failed nor marked blocked, and this script never writes
 without the check — orchestration cannot function at all under that condition regardless of this
 check, so proceeding is not a silent weakening of the gate.
 
+**Idle cross-batch overlap advisory** (`idle_overlap_advisory`, NEW in v5 — documentation-
+correctness only; this block is illustrative, the runtime behavior comes from
+`skill-orchestrate/SKILL.md`, which this mirrors exactly): run `jq -e '.idle_overlap_advisory'`
+on **every** verdict, `admit` included, OUTSIDE and INDEPENDENTLY of the `defer_reason` branching
+above — a v5 `cross_batch` overlap against an idle out-of-batch task no longer defers at all, it
+admits with this field attached. When present, print a distinct ADVISORY line — never folded into
+an existing WARNING's text, since the advisory may name a *different* colliding task than the
+verdict's own subject. This fires IN ADDITION to any `session_active` or `file_scope_collision`
+WARNING already logged for the same verdict:
+```
+[orchestrate] ADVISORY: Task #{task_number} has file_scope overlapping IDLE (status:
+  {colliding_task_status}) out-of-batch task #{colliding_task_number} at {overlapping_path};
+  not blocking because no execution evidence exists. Add a dependencies[] edge between
+  #{task_number} and #{colliding_task_number} if ordering matters.
+```
+
 This check is cheap (one `specs/state.json` read per invocation) and never silent. If it proves
 too aggressive in practice (over-splitting waves), it can be relaxed to warn-only by editing this
 section and the mirrored section in `.claude/skills/skill-orchestrate/SKILL.md` — see

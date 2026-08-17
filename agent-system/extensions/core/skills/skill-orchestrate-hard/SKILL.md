@@ -1608,6 +1608,23 @@ every defer verdict carries this REQUIRED discriminator):
 - **Degradation path**: exit 2 from `orchestrate-batch-admit.sh` means state is unavailable; log
   a loud warning and proceed without the check.
 
+**Idle cross-batch overlap advisory** (`idle_overlap_advisory`, NEW in v5): mirrors
+`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5's advisory check exactly — **CO-MAINTENANCE**:
+an edit to either copy REQUIRES the same edit to the other. Run `jq -e '.idle_overlap_advisory'`
+on **every** verdict this cycle, `admit` included, OUTSIDE and INDEPENDENTLY of the
+`defer_reason` branching above — a v5 `cross_batch` overlap against an idle out-of-batch task no
+longer defers at all, it admits with this field attached, so nesting the check inside the defer
+branching would silently skip the common case. When present, print a distinct ADVISORY line —
+never folded into an existing WARNING's text, since the advisory may name a *different* colliding
+task than the verdict's own subject. This fires IN ADDITION to any `session_active` or
+`file_scope_collision` WARNING already logged for the same verdict:
+```
+[orchestrate] ADVISORY: Task #{task_number} has file_scope overlapping IDLE (status:
+  {colliding_task_status}) out-of-batch task #{colliding_task_number} at {overlapping_path};
+  not blocking because no execution evidence exists. Add a dependencies[] edge between
+  #{task_number} and #{colliding_task_number} if ordering matters.
+```
+
 The verdict schema itself is not restated here — see `docs/architecture/batch-admit-schema.md`.
 The overlap predicate is not restated here — see `context/patterns/file-footprint-overlap.md`.
 

@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Render idle_overlap_advisory in the dispatch-path warnings (WORK 1a)",
+  "started_at": "2026-08-17T00:47:00Z",
+  "last_updated": "2026-08-17T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the idle_overlap_advisory ADVISORY-line check, outside the defer filter, to base skill, hard twin, and command doc",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

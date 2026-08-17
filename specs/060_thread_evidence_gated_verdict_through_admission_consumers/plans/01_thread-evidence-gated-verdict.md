@@ -308,32 +308,33 @@ site requiring the clause.
 
 ---
 
-### Phase 4: Render `idle_overlap_advisory` in the dispatch-path warnings (WORK 1a) [NOT STARTED]
+### Phase 4: Render `idle_overlap_advisory` in the dispatch-path warnings (WORK 1a) [COMPLETED]
 
 **Goal**: Whenever a verdict carries `idle_overlap_advisory`, a distinct loud ADVISORY line is
 printed at every dispatch-path site, regardless of the verdict's own `decision`.
 
 **Tasks**:
 
-- [ ] `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5: add an advisory check that runs
+- [x] `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5: add an advisory check that runs
       independently of the `.decision == "defer"` filter — the field appears on `admit` verdicts
       too. Specify it as `jq -e '.idle_overlap_advisory'` on every verdict, printed as its own
-      line, never folded into an existing WARNING's text.
-- [ ] Use the advisory template shape (adapt to the file's existing warning voice):
+      line, never folded into an existing WARNING's text. *(completed)*
+- [x] Use the advisory template shape (adapt to the file's existing warning voice):
       `[orchestrate] ADVISORY: Task #{task_number} has file_scope overlapping IDLE (status:
       {colliding_task_status}) out-of-batch task #{colliding_task_number} at {overlapping_path};
       not blocking because no execution evidence exists. Add a dependencies[] edge between
-      #{task_number} and #{colliding_task_number} if ordering matters.`
-- [ ] State explicitly that the advisory is printed IN ADDITION to any `session_active` or
+      #{task_number} and #{colliding_task_number} if ordering matters.` *(completed)*
+- [x] State explicitly that the advisory is printed IN ADDITION to any `session_active` or
       `file_scope_collision` warning on the same verdict, because the advisory may name a
       *different* colliding task than the verdict's own subject — the two lines must never be
-      merged.
-- [ ] Mirror both additions in `skills/skill-orchestrate-hard/SKILL.md`.
-- [ ] Mirror in `commands/orchestrate.md` Step 3/4 (documentation-correctness only — this block is
-      explicitly illustrative, not executing).
-- [ ] Confirm the advisory is placed so it fires on `admit` verdicts, which the existing
+      merged. *(completed)*
+- [x] Mirror both additions in `skills/skill-orchestrate-hard/SKILL.md`. *(completed)*
+- [x] Mirror in `commands/orchestrate.md` Step 3/4 (documentation-correctness only — this block is
+      explicitly illustrative, not executing). *(completed)*
+- [x] Confirm the advisory is placed so it fires on `admit` verdicts, which the existing
       `.decision == "defer"` filter would otherwise skip entirely. This is the specific defect
-      being fixed; do not nest the new check inside the defer filter.
+      being fixed; do not nest the new check inside the defer filter. *(completed: verified the
+      new block is placed after the defer-branching in all three files, not nested inside it)*
 
 **Timing**: 1.0 hours
 
