@@ -1,9 +1,50 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/summaries/01_coarse-file-scope-advisory-summary.md",
+      "summary": "Implementation summary covering Checks 8/9, --fix, Step 6.5 advisory, and Phase 6's reasoned exclusions."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added WARN-only Check 8 (coarse blast-radius file_scope declarations) and Check 9 (duplicate entries, two classes) to validate-state.sh, an opt-in --fix routed through the deployed mutex-guarded state-write.sh, and a Create Task Mode Step 6.5 advisory in task.md that surfaces these warnings at task-creation time without blocking. All 6 plan phases complete; regression suite grew from 14 to 18 passing assertions."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Bash tool calls have a default 2-minute timeout that silently interrupts a multi-command script when a slow command is followed by more commands in the same invocation. Concretely: `git stash && <slow command> && git stash pop` can time out mid-slow-command, meaning `git stash pop` NEVER RUNS -- the stash sits orphaned and the working tree silently reverts to the pre-stash (committed) state for the rest of the session, dropping in-progress edits from view. Symptom: a subsequent Read/grep of a just-edited file shows the OLD content. Fix/verification: after any `git stash` whose companion `git stash pop` might not have executed (timeout, error, or any multi-step block), immediately run `git stash list` to confirm nothing is orphaned, and `git stash pop stash@{N}` explicitly by index rather than assuming a bare `git stash pop` ran. Prefer NOT combining `git stash` with a slow/uncertain-duration command in one invocation at all -- run the stash, verify, run the slow command separately, then pop.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/summaries/01_coarse-file-scope-advisory-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-stash", "bash-timeout", "background-command", "orphaned-stash", "silent-revert"]
+    },
+    {
+      "content": "When a regression fixture must exercise a component that resolves a DEPLOYED sibling script via `git rev-parse --show-toplevel` from the fixture's own directory (the state-write.sh D3 resolution pattern: candidate 3 is `<git toplevel of the fixture file's dir>/.claude/scripts/<script>`), a fixture created in a generic `mktemp -d` workdir (typically under /tmp, outside any git repo) will ALWAYS hit the 'no deployed tree resolves' refusal path, never the success path -- because /tmp has no git toplevel with a deployed .claude/ tree. To test the SUCCESS path for such a fixture, place the fixture's state file inside the real repo's own git working tree (e.g. a temp subdirectory under specs/, cleaned up immediately after) so git-toplevel resolution reaches the genuinely deployed writer. To test the REFUSAL path deliberately, use an isolated /tmp workdir (optionally git-init'd with no .claude/ tree) instead. Conflating the two locations produces a false negative: a fixture that always refuses, silently passing an 'exit 2 refusal' assertion when the intent was to test the repair itself.",
+      "category": "PATTERN",
+      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/summaries/01_coarse-file-scope-advisory-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["fixture-placement", "git-toplevel-resolution", "deployed-writer", "state-write", "regression-test"]
+    },
+    {
+      "content": "When adding new WARN-only checks to an existing validator script that already has pre-existing, unrelated FAIL-level findings against live production data, the new check's correctness must be verified independently of the script's overall exit code -- overall exit 0/1 is not a reliable pass/fail signal once any pre-existing defect exists in the target data. Verification technique that worked: (1) grep the new check's own code hunk for `log_fail` (expect 0 occurrences) to prove it structurally cannot fail the run; (2) `git stash` the new code and re-run against the same live data to capture the baseline FAIL set, then compare byte-for-byte against the post-change FAIL set -- identical text proves the new check contributed nothing to the failure count, regardless of overall exit code. This decouples 'is my new WARN-only check correct' from 'is this codebase's pre-existing data perfectly clean', which are genuinely separate questions a plan's literal 'exits 0' verification bullet can conflate.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/summaries/01_coarse-file-scope-advisory-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["warn-only-checks", "regression-isolation", "git-stash-baseline", "pre-existing-failures", "verify-deploy"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786999515_0afbe9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

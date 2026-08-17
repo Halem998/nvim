@@ -1,7 +1,7 @@
 # Implementation Plan: Task #61
 
 - **Task**: 61 - Surface coarse file_scope declarations at creation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: 59 (completed)
 - **Research Inputs**: specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md

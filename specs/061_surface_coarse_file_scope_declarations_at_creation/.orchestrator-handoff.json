@@ -1,32 +1,41 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "phase": "plan",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phase": "implement",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Created a 6-phase implementation plan for the WARN-only coarse/duplicate file_scope advisory: Check 8 (blast-radius-driven coarse declarations, default threshold N=3, calibrated to 6 live warnings), Check 9 (exact + normalization-equivalent duplicate classes), an opt-in --fix routed exclusively through the deployed mutex-guarded state-write.sh, a task.md Create Task Mode Step 6.5 advisory, and regression fixtures asserting exit 0 despite warnings. Resolved the open coarseness-trigger design question in favor of blast radius over path depth, with calibration data measured against live state.json.",
+  "summary": "Implemented all 6 plan phases: Check 8 (WARN-only, blast-radius-driven coarse file_scope declarations, default threshold N=3 via FILE_SCOPE_COARSE_MIN_OVERLAP) and Check 9 (WARN-only, duplicate entries in two labelled classes) added to validate-state.sh, spliced from the canonical file-scope-overlap.sh predicate; an opt-in --fix that repairs Class A duplicates order-preservingly through the deployed mutex-guarded state-write.sh or refuses with exit 2; a Create Task Mode Step 6.5 advisory in task.md that surfaces these WARN lines at task-creation time without ever blocking; and four new regression fixture blocks (14 -> 18 assertion pairs), all passing from both the source-store and deployed invocation sites. Phase 6 closed as COMPLETED WITH EXCLUSIONS on three confirmed pre-existing, unrelated verify-deploy.sh/validate-state.sh --deep failures (doc-lint index-entries.json drift, a test-lint-state-writer-boundary.sh --verbose sub-case, and task 53's undocumented priority field) -- none reference file_scope, Check 8, Check 9, or --fix, and all are byte-identical to the pre-Phase-1 git baseline.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md",
       "summary": "6-phase plan for WARN-only coarse and duplicate file_scope checks in validate-state.sh plus a task.md creation-time advisory."
+    },
+    {
+      "type": "summary",
+      "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/summaries/01_coarse-file-scope-advisory-summary.md",
+      "summary": "Implementation summary covering Checks 8/9, --fix, Step 6.5 advisory, and Phase 6's reasoned exclusions."
     }
   ],
   "blockers": [],
-  "next_action_hint": "Run /implement 61 to execute the plan",
+  "next_action_hint": "Implementation complete; proceed to postflight to mark task 61 [COMPLETED].",
   "decisions_made": [
-    "D1 coarseness trigger: blast-radius-driven (trailing-slash structural pre-filter AND >= N distinct non-terminal overlapping tasks), default N=3 via FILE_SCOPE_COARSE_MIN_OVERLAP; path-depth heuristic rejected as repo-shape-dependent. Calibrated against live state.json: N=3 yields 6 warnings (tasks 48/50 at 21 overlaps, 44 at 8, 31/42 at 4, 9 at 3), N=2 would yield 10.",
-    "D1 limitation accepted and documented: a directory declared without a trailing slash is not flagged; the alternative 'no file extension' signal false-positives on extensionless files.",
-    "D2 duplicate detection splits into Class A (exact-string duplicates, repairable by --fix) and Class B (normalization-equivalent, e.g. 'a/' vs 'a', WARN-only and never auto-repaired).",
-    "D3 --fix must write ONLY through a deployed state-write.sh (path matching */.claude/scripts/ or */.opencode/scripts/) or refuse with exit 2. Verified during planning that the source-store state-write.sh copy hard-refuses via its deploy-root guard while validate-state.sh is deliberately guard-free, and that the deployed copy writes an out-of-tree fixture correctly given an absolute --state-file. No --regen-todo (refused with non-default --state-file, and file_scope is not rendered in TODO.md).",
-    "D4 the --help implementation is a hardcoded 'sed -n 2,74p' range over the script's own header; every header-touching phase must move that range or --help breaks silently.",
-    "Phase 1 amends task 61's file_scope to add scripts/tests/test-validate-state.sh so Phase 6 fixtures are in-scope; the resulting new overlap is with task 20 (not_started), while tasks 48 and 50 already overlap task 61 and already depend on it."
+    "Check 8's jq invocation is one jq -c --argjson min ... \"$STATE_FILE\" call (matching Check 5/6/7's existing idiom) rather than literal jq -n --slurpfile, per the plan's own or --argfile-equivalent allowance.",
+    "Check 9 Class B reuses norm from the same spliced $FILE_SCOPE_OVERLAP_JQ_DEFS rather than a second local rtrimstr(\"/\").",
+    "--fix's regression fixture is placed inside this repo's own git tree (cleaned up immediately) rather than a generic /tmp workdir, so the D3 git-toplevel candidate can reach the real deployed state-write.sh; gracefully SKIPPED, not FAILED, when no deployed copy exists.",
+    "Phase 6 closed via COMPLETED WITH EXCLUSIONS (all 5 admission conditions met) rather than PARTIAL: 3 confirmed pre-existing, unrelated verify-deploy.sh/validate-state.sh --deep failures, evidenced via git stash byte-identical comparison against the pre-Phase-1 commit."
   ],
   "dead_ends": [],
   "files_modified": [
-    "specs/061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md"
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "specs/state.json"
   ],
   "continuation_path": null,
   "plan_markers_verified": true,
-  "sorry_inventory": []
+  "sorry_inventory": [],
+  "observations": [
+    "specs/state.json (and its TODO.md mirror) carried a foreign, uncommitted edit to task 65's description field from a concurrent session, discovered during Phase 4's --fix testing. Confirmed unrelated to file_scope (0 file_scope-touching diff lines) and left untouched, per the observation-duty obligation to report rather than act on work not done by this dispatch."
+  ]
 }
