@@ -1,16 +1,20 @@
 {
-  "dispatch_seq": 4,
-  "task_number": 34,
-  "session_id": "sess_1786989333_638258_34",
-  "stage": "plan",
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "implemented",
+  "dispatch_seq": 7,
+  "phases_completed": 6,
+  "phases_total": 6,
+  "summary": "guard-destructive-git.sh's message-text false positives fixed via a single upfront multi-line-safe quote+comment strip applied before all seven detectors; 43-case regression suite added and proven non-vacuous by a two-stage mutation check (32/11 full revert, 42/1 comment-strip-only revert, both matching predicted RED sets exactly); registered in manifest.json and verified passing in both source-store and deployed-directory-shape modes.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/034_anchor_git_guard_matching_to_argv/plans/01_anchor-guard-matching.md",
-      "summary": "6-phase implementation plan, 6 estimated hours, waves [1],[2],[3],[4,5],[6]."
+      "type": "summary",
+      "path": "specs/034_anchor_git_guard_matching_to_argv/summaries/01_anchor-guard-matching-summary.md"
     }
   ],
-  "next_steps": "Run /implement 34 to execute the plan"
+  "modified_files": [
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh",
+    "agent-system/extensions/core/manifest.json",
+    "specs/034_anchor_git_guard_matching_to_argv/plans/01_anchor-guard-matching.md",
+    "specs/034_anchor_git_guard_matching_to_argv/summaries/01_anchor-guard-matching-summary.md"
+  ]
 }

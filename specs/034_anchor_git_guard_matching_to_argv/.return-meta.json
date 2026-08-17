@@ -1,9 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/034_anchor_git_guard_matching_to_argv/summaries/01_anchor-guard-matching-summary.md",
+      "summary": "Fixed guard-destructive-git.sh's message-text false positives via an upfront multi-line-safe quote+comment strip applied once to the whole command before all seven detectors; added a 43-case regression suite proven non-vacuous by a two-stage mutation check; registered it in manifest.json."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Anchored guard-destructive-git.sh's destructive-pattern matching to argv by stripping quoted spans and bash comments from the whole (possibly multi-line) command once, upfront, via sed -z, then repointing all seven detectors at that single scan string. Added the repository's first regression suite for this hook (43 cases), proved it non-vacuous with a two-stage mutation check (full revert and comment-strip-only revert), and registered it in manifest.json, verified passing in both source-store and a deployed-directory-shape simulation."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh",
+    "agent-system/extensions/core/manifest.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "GNU sed's classic 'slurp whole file' idiom (`sed -e ':a' -e 'N' -e '$!ba' -e 's/PATTERN/REPL/'`) silently no-ops on single-line input: when N is invoked on a line that is already the last line (true for any single-line input, the common case for e.g. a shell command string), GNU sed auto-prints the pattern space unmodified and terminates the script before the substitution ever runs -- it never reaches the s/// commands. This is easy to miss because the idiom works fine once you test it against genuinely multi-line fixtures, and single-line inputs look like a degenerate case rather than the primary one. Prefer `sed -z` (NUL-delimited records) for a robust whole-input slurp: with no NUL byte in the input, the entire content -- single- or multi-line alike -- is treated as one record with no last-line special case, in a single pass, for both cases uniformly.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/034_anchor_git_guard_matching_to_argv/summaries/01_anchor-guard-matching-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sed", "gnu-sed", "slurp-mode", "N-command", "multi-line", "shell-scripting"]
+    },
+    {
+      "content": "When writing a message-text false-positive test case against a raw-text (unstripped) grep-based command detector anchored on `(^|[SEPARATOR_CHARS][[:space:]]*)`, ordinary prose preceding the target phrase (e.g. 'the git reset --hard fallout') will NOT reproduce the defect -- the anchor requires either absolute string start or a literal separator character (;, &, | in this codebase's git-guard detectors) immediately before the match, not arbitrary preceding text. A reproducible false positive needs the free-text message to itself contain one of those separator characters immediately before the dangerous-looking phrase (e.g. '...notes below; git reset --hard...'). Always verify a 'defect-exposing' test case is actually RED against the pre-fix code before trusting it as evidence -- an intuitively-plausible fixture can silently be GREEN for the wrong reason.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/034_anchor_git_guard_matching_to_argv/summaries/01_anchor-guard-matching-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["regex-anchoring", "test-fixture-validity", "grep", "false-positive-testing", "mutation-testing"]
+    },
+    {
+      "content": "In a shared multi-agent working tree, a concurrent agent's git-snapshot.sh-style stash+hard-reset (taken for ITS OWN task) reverts the entire working tree, silently discarding any OTHER agent's uncommitted work too -- git reset --hard is not scoped per-task. When this happens, the reverted content is still recoverable from the resulting WIP stash entry (`git stash show`/`git show \"stash@{0}:<path>\"`) as long as the revert used stash-before-reset (the default git-snapshot.sh mode) rather than a bare destructive reset. Recovery pattern: diff the recovered content against what you remember writing, restore via a plain file write (not git checkout, to avoid another race), re-verify, and commit immediately to shrink the exposure window. Untracked new files are unaffected by `git reset --hard` (only tracked-file state is reset), so progress-tracking JSON files written mid-phase tend to survive even when tracked source edits do not.",
+      "category": "PATTERN",
+      "source_artifact": "specs/034_anchor_git_guard_matching_to_argv/summaries/01_anchor-guard-matching-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shared-worktree", "concurrent-agents", "git-snapshot", "git-stash-recovery", "multi-agent-git-hazard"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786989333_638258",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
