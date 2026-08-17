@@ -600,7 +600,7 @@
     {
       "project_number": 59,
       "project_name": "narrow_cross_batch_collision_to_execution_evidence",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "essential-refactor",
       "title": "Gate cross-batch file_scope collisions on execution evidence, not non-terminal status",
@@ -624,10 +624,16 @@
           "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md",
           "type": "plan",
           "summary": "7-phase implementation plan, 4.5h, validated clean against plan-format.md."
+        },
+        {
+          "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/summaries/01_narrow-cross-batch-collision-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 7 phases, verification results, and follow-ups."
         }
       ],
-      "last_updated": "2026-08-17T19:53:50Z",
-      "session_id": "sess_1786995676_03939f"
+      "last_updated": "2026-08-17T20:14:19Z",
+      "session_id": "sess_1786995676_03939f",
+      "completion_summary": "Narrowed orchestrate-batch-admit.sh's cross_batch file_scope_collision dimension to require execution evidence (researching/planning/implementing) instead of deferring unconditionally against any non-terminal task, converting a provably-idle overlap into an admit verdict carrying a loud idle_overlap_advisory field. Bumped the verdict schema to orchestrate-batch-admit-v5 across the script, schema doc, and test pin; corrected the self-refuting blocking rationale in both the script header and schema doc; added the missing cross_batch row to the guardrails Classification Table; added 5 new regression cases across both admission test suites (35/0 and 13/0, up from baseline 32/0 and 11/0) with a confirmed negative control proving the new tests fail against the pre-fix predicate; deployed via deploy-headless.sh and confirmed the deployed script emits v5; and removed the four workaround dependencies[] edges (tasks 53, 14, 17, 44) that existed solely to work around this defect, leaving tasks 48 and 50's legitimate repo-wide edges untouched."
     },
     {
       "project_number": 60,

@@ -26,22 +26,42 @@
       "category": "PATTERN",
       "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/summaries/01_narrow-cross-batch-collision-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["evidence-gated predicate", "advisory field", "jq comprehension", "first-match determinism", "orchestrate-batch-admit", "bit-for-bit preservation"]
+      "suggested_keywords": [
+        "evidence-gated predicate",
+        "advisory field",
+        "jq comprehension",
+        "first-match determinism",
+        "orchestrate-batch-admit",
+        "bit-for-bit preservation"
+      ]
     },
     {
       "content": "A test suite's own negative control for a new regression case is not optional theater: when adding a positive test for a bug fix, temporarily swap the working file for its pre-fix git blob (e.g. `git show <pre-fix-sha>:path > path`, run the suite, then restore from a scratch backup copy -- never git reset --hard on a dirty tree), confirm the NEW case specifically fails, then restore and re-verify green. A new test that would have passed against the old, buggy code is not testing the fix at all -- it is only testing that the fixture parses. This caught nothing wrong in this task's case, but the negative-control run is what actually proves the two new admission-predicate test cases (predicate 2.5, four-tier 12) exercise the v5 narrowing rather than merely re-asserting pre-existing behavior.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/summaries/01_narrow-cross-batch-collision-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["negative control", "regression test", "test-driven verification", "scratch-backed swap", "pre-fix baseline"]
+      "suggested_keywords": [
+        "negative control",
+        "regression test",
+        "test-driven verification",
+        "scratch-backed swap",
+        "pre-fix baseline"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1786995676_03939f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

@@ -11,8 +11,8 @@ next_project_number: 65
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,59,62 | -- | agent-system, extensions, literature, ... |
-| 2 | 13,42,44,60,61 | 17,18,28,31,59 | agent-system, essential-refactor |
+| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,60,61,62 | -- | agent-system, extensions, literature, ... |
+| 2 | 13,42,44 | 17,18,28,31 | agent-system, essential-refactor |
 | 3 | 9,29,53,64 | 18,22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,60,61,64 | agent-system, essential-refactor |
 | 5 | 32,50 | 30,31,48 | agent-system, essential-refactor |
@@ -61,11 +61,10 @@ next_project_number: 65
       └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-59 [IMPLEMENTING] — The /orchestrate batch-admission gate's specs/state.json collisio
-  └─ 60 [NOT STARTED] — Consumer-side half of the batch-admission gate redesign. The pred
-    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-  └─ 61 [NOT STARTED] — Treat whole-directory-root file_scope declarations as a declarati
-    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
+60 [NOT STARTED] — Consumer-side half of the batch-admission gate redesign. The pred
+  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
+61 [NOT STARTED] — Treat whole-directory-root file_scope declarations as a declarati
+  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 
 ## Tasks
 
@@ -199,12 +198,13 @@ WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the
 ---
 
 ### 59. Gate cross-batch file_scope collisions on execution evidence, not non-terminal status
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md]
 - **Plan**: [059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md]
+- **Summary**: [059_narrow_cross_batch_collision_to_execution_evidence/summaries/01_narrow-cross-batch-collision-summary.md]
 
 **Description**: The /orchestrate batch-admission gate's specs/state.json collision dimension defers a candidate against ANY non-terminal task whose file_scope overlaps it with no dependencies[] edge. Because a cross_batch defer can never self-clear (an idle task's status cannot change without a dispatch), any broad-scoped not_started task becomes a permanent blanket blocker. Observed in the BimodalLogic repo: an /orchestrate invocation permanently excluded a candidate on every cycle because an idle documentation task declaring the whole FormalSystem/ directory overlapped it. That colliding task held no lock, had no live session-registry entry, and could not have been editing anything; corroborated_by named non_terminal_status as the sole basis for the defer.
 
