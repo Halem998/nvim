@@ -1,0 +1,23 @@
+{
+  "dispatch_seq": 4,
+  "task_number": 60,
+  "stage": "research",
+  "status": "researched",
+  "session_id": "sess_1786999515_0afbe9_60",
+  "summary": "Research complete. Verified task 59's predicate half is fully live (orchestrate-batch-admit.sh emits schema v5 with idle_overlap_advisory already implemented, docs/architecture/batch-admit-schema.md already fully rewritten for v5) -- confirms the task's own NOTE. Mapped all 5 WORK items to precise file/line locations across the 9 declared consumer files. Located the false self-clearing claim in skills/skill-orchestrate/SKILL.md (~line 1538-1542, 'Both branches ... become eligible again on a later cycle') and confirmed the three-way corpus disagreement against docs/architecture/batch-admit-schema.md and commands/orchestrate.md's cross_batch WARNING template. Located Class D's exact existing dependencies[]-edge suggestion string in orchestrate-predispatch-review.sh (lines 386-394, 478-491) to fold into the dispatch-path warning rather than rebuild. Confirmed the --allow-self-modifying mirror pattern in parse-command-args.sh (5 touch points) for --allow-scope-collision. Confirmed stale schema-v3 prose at skill-orchestrate/SKILL.md:1500 and commands/orchestrate.md:270, plus a related stale schema-v4 mention in skill-orchestrate-hard/SKILL.md:1566 not explicitly named by WORK 5 but flagged for the planner.",
+  "key_findings": [
+    "Predicate half (task 59) verified complete and live at orchestrate-batch-admit-v5; no edits needed to orchestrate-batch-admit.sh or batch-admit-schema.md in this task",
+    "orchestrate-dry-run-report.sh has the same idle_overlap_advisory rendering gap as the dispatch-path warning and batch results surface, but is not explicitly named in WORK 1's prose -- flagged as likely in-scope-by-file_scope-inclusion, needs explicit planner confirmation",
+    "Open design fork: --allow-scope-collision bypass scope (both collision_scope values vs. cross_batch only) -- recommend both-scopes for symmetry with the unqualified flag name and --allow-self-modifying precedent, but must be an explicit stated plan decision",
+    "skill-orchestrate and skill-orchestrate-hard are explicit co-maintenance twins; every WORK 1-4 edit needs a paired edit in both files",
+    "commands/orchestrate.md's Step 3/4 admission block is explicitly illustrative/non-executing -- edits there are documentation-correctness only, actual behavior is determined by the SKILL.md files"
+  ],
+  "next_action": "Run /plan 60 to create implementation plan from this research report",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/reports/01_thread-evidence-gated-verdict.md"
+    }
+  ]
+}
