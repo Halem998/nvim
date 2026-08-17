@@ -763,6 +763,64 @@ REGRESSION LOCK: add a test that stages nothing, moves a tracked *.sh or *.json 
 
 SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+=== ADDENDUM: SECOND LIVE REPRODUCTION, STRONGER THAN THE ORIGINAL (recorded during a real /todo run) ===
+
+A /todo run archiving 25 tasks and moving 25 directories reproduced the defect with a cleaner
+signal than the original measurement. Step 5.6, run at its documented position (after the
+directory moves, before the Step 6 commit), reported:
+    {"todo_count":44,"fixme_count":2,"build_errors":184,"status":"critical"}
+The identical probe re-run immediately after the commit reported:
+    {"todo_count":44,"fixme_count":2,"build_errors":0,"status":"healthy"}
+
+ALL 184 WERE PHANTOM. The original measurement had 88 phantom of 89, leaving 1 real error that
+slightly muddied the signal. This run has a true count of exactly 0, so the inflation is total
+and the derived status is wrong in both fields with no residue to explain away. Use this as the
+regression fixture: it is a cleaner before/after pair than the original.
+
+The run also confirms the ordering half of the root cause independently of the existence-check
+half. Nothing about the tree changed between the two probes except `git add specs/` plus a
+commit, which converted 298 rename entries from index-vs-worktree divergence into recorded
+state. No file content was edited between the two measurements.
+
+WORKAROUND APPLIED DURING THAT RUN (not a fix, and it must not be mistaken for one): the operator
+inverted Steps 5.6 and 6 by hand, committing first and then probing, so state.json recorded the
+true value rather than the phantom one. That inversion is item 2 of this task's WORK list. It was
+applied ad hoc to avoid persisting a known-false "critical" into repository_health; the durable
+fix, including the existence-safety of item 1 and the regression lock, is still outstanding.
+
+=== SECOND, INDEPENDENT DEFECT IN THE SAME FILE -- STEP 5A EXCEEDS MAX_ARG_STRLEN AT SCALE ===
+
+Found in the same run, and in scope here because it is the same file and the same command. Step
+5A ("Update archive/state.json") passes the ENTIRE archivable task set as one shell argument:
+    --argjson tasks "$archivable_tasks_json"
+Linux caps a SINGLE argument at MAX_ARG_STRLEN (128 KB, 32 pages), independent of the much larger
+total ARG_MAX. Archiving 25 tasks produced a 175 KB value and the call died with:
+    bash: /run/current-system/sw/bin/bash: Argument list too long
+This is a hard failure of the archive insert, not a warning. It fired BEFORE any state was
+written, so nothing was lost; had it fired between the archive insert and the Step 5B deletion,
+the archivable set would have been removed from active_projects without ever landing in the
+archive. The blast radius is therefore data loss, not merely an aborted run.
+
+The trigger is total description bytes, not task count: these task descriptions routinely run
+5-10 KB each, so the ceiling arrives at roughly 15-25 tasks. Any repository that lets completed
+tasks accumulate will hit it, and it gets worse the longer /todo goes unrun -- the command
+becomes unrunnable exactly when it is most needed.
+
+state-write.sh offers no file-based input flag; it supports only --arg and --argjson, both
+command-line. So the fix belongs in one of:
+  (a) batch the Step 5A insert into chunks that stay under the per-argument ceiling (the ad hoc
+      workaround used during this run: five batches of five tasks, 28-50 KB each, all succeeded);
+  (b) add a file-based input flag to state-write.sh (jq --slurpfile / --rawfile) and have Step 5A
+      use it, which fixes the whole class rather than this one call site;
+  (c) have the Step 5A filter read the source tasks itself rather than receiving them as an
+      argument.
+Direction (b) is worth weighing beyond this call site: any other caller passing a large --argjson
+payload through state-write.sh has the same latent ceiling.
+
+ACCEPTANCE FOR THIS SECOND DEFECT: a /todo run archiving at least 30 tasks with realistic
+multi-kilobyte descriptions completes its archive insert without an argument-length failure, and
+the archive insert and the active_projects deletion cannot end up on opposite sides of a partial
+failure.
 
 ---
 
