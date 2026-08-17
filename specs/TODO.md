@@ -1,5 +1,5 @@
 ---
-next_project_number: 65
+next_project_number: 66
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 65
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,60,61,62 | -- | agent-system, extensions, literature, ... |
+| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,60,61,62,65 | -- | agent-system, extensions, literature, ... |
 | 2 | 13,42,44 | 17,18,28,31 | agent-system, essential-refactor |
 | 3 | 9,29,53,64 | 18,22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,60,61,64 | agent-system, essential-refactor |
@@ -47,6 +47,7 @@ next_project_number: 65
 
 ### Orchestration Concurrency
 
+65 [NOT STARTED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
 
 ### Essential Refactor
@@ -67,6 +68,16 @@ next_project_number: 65
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 
 ## Tasks
+
+### 65. Fix mint dispatch seq persisted counter
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: None
+
+**Description**: Fix skill_orchestrate_mint_dispatch_seq to increment from the persisted counter. The helper in scripts/skill-base.sh computes dispatch_seq_counter=$((dispatch_seq_counter + 1)) from an ambient shell variable rather than from the value it reads back out of the loop guard file, then persists that result. Any caller that does not hold a single long-lived shell across the whole orchestration loop therefore re-mints the same value on every dispatch: in a fresh shell the variable is unset, so it evaluates to 0 + 1 = 1 every time. Observed during an /orchestrate run where each Bash tool call ran in its own shell -- the second dispatch re-returned dispatch_seq=1 despite the loop guard already carrying dispatch_seq_counter=1. Impact: dispatch_seq is the content-based discriminator the Stage 5 identity gate relies on to tell a legitimate current-dispatch handoff apart from a still-live predecessor's late write (mtime alone is structurally insufficient -- see context/patterns/dispatch-report-not-termination.md). A repeated value defeats that gate in both directions: a stale predecessor handoff carrying seq=1 would pass as the current dispatch's own report, and the mismatch branch could fire against a legitimate handoff. Likely fix: read the counter from the loop guard file inside the function (jq -r '(.dispatch_seq_counter // 0) + 1') rather than from the ambient variable, matching the read-modify-write idiom the multi-task engine already uses at Stage MT-4. Check whether skill-orchestrate-hard/SKILL.md's Stage 2 shares the same helper and is affected identically, and whether test-handoff-dispatch-identity.sh covers the fresh-shell case.
+
+---
 
 ### 64. Decide and implement how --hard behavioral contracts reach agents system-wide
 - **Status**: [NOT STARTED]
