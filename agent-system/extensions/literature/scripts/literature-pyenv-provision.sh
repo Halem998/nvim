@@ -13,6 +13,15 @@
 #   - The venv is gitignored and auto-provisioned; never assume it is committed.
 #   - Provisioning is idempotent: repeated calls are cheap no-ops once the venv
 #     and shim are already known-good.
+#   - Provisioning is SELF-REPAIRING: a venv directory that exists but has no
+#     usable bin/python (interrupted install, GC'd nix store path) is recreated
+#     with `uv venv --clear` rather than left in place. Plain `uv venv` hard-fails
+#     against such a directory ("A virtual environment already exists at: ..."),
+#     which previously deadlocked provisioning permanently -- and because the
+#     failure is non-fatal by design (see graceful-detection below), the only
+#     visible symptom was that every conversion silently used the weaker fallback
+#     engine tier. Any future edit here must keep the repair path: a broken venv
+#     must never be a terminal state.
 #   - Graceful detection only: if `uv` is unavailable, provisioning fails, or the
 #     nix-ld shim cannot be resolved, functions report unavailability cleanly
 #     (return non-zero, print nothing to stdout) so callers can fall back to the
@@ -94,10 +103,32 @@ literature_pyenv_ensure() {
     return 1
   fi
 
+  # Reached only when there is no usable interpreter, so there is nothing worth
+  # preserving in the directory. If a venv directory nevertheless exists, it is a
+  # half-built one (interrupted provisioning, or a GC'd nix store path leaving
+  # bin/python dangling) and MUST be recreated with --clear: plain `uv venv`
+  # hard-fails with "A virtual environment already exists at: ..." against such a
+  # directory, which previously deadlocked provisioning permanently -- every
+  # subsequent conversion then silently degraded to the fallback engine tier.
   if [ ! -x "$LITERATURE_PYENV_DIR/bin/python" ]; then
-    _lpp_log "Creating venv at $LITERATURE_PYENV_DIR"
-    if ! uv venv "$LITERATURE_PYENV_DIR" >/dev/null 2>&1; then
-      _lpp_log "uv venv creation failed"
+    local _lpp_venv_err _lpp_clear=()
+    if [ -e "$LITERATURE_PYENV_DIR" ]; then
+      _lpp_log "Recreating half-built venv at $LITERATURE_PYENV_DIR (bin/python missing; using --clear)"
+      _lpp_clear=(--clear)
+    else
+      _lpp_log "Creating venv at $LITERATURE_PYENV_DIR"
+    fi
+    # uv's stderr is captured and echoed rather than discarded: the previous
+    # `>/dev/null 2>&1` reduced every distinct cause (no interpreter, permissions,
+    # pre-existing venv) to one unactionable "uv venv creation failed" line.
+    if ! _lpp_venv_err="$(uv venv "${_lpp_clear[@]}" "$LITERATURE_PYENV_DIR" 2>&1 >/dev/null)"; then
+      _lpp_log "uv venv creation failed; uv reported:"
+      # Prefix every line, not just the first: uv's diagnosis ("error:", "Caused
+      # by:", "hint:") lands on continuation lines, which would otherwise appear
+      # as unattributed bare text in the middle of the pyenv log.
+      printf '%s\n' "${_lpp_venv_err:-(no stderr)}" | while IFS= read -r _lpp_line; do
+        _lpp_log "  $_lpp_line"
+      done
       return 1
     fi
   fi
