@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Check 8 -- coarse (blast-radius) file_scope declarations",
+  "started_at": "2026-08-17T21:20:00Z",
+  "last_updated": "2026-08-17T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source file-scope-overlap.sh with deploy-tree-first/source-store-fallback idiom", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 2, "description": "Add Check 8 as one jq program splicing FILE_SCOPE_OVERLAP_JQ_DEFS", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Emit log_warn per flagged pair, sorted descending, capped at 10 with tail line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "log_pass when nothing flagged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 5, "description": "FILE_SCOPE_COARSE_MIN_OVERLAP env var, default 3, exit 2 on non-integer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 6, "description": "Update header docs and --help sed range (D4)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "Implement the whole scan as ONE jq -n --slurpfile (or --argfile-equivalent) program",
+      "type": "altered",
+      "reason": "Used jq -c --argjson min ... \"$_check8_prog\" \"$STATE_FILE\" (STATE_FILE as normal jq input) instead of literal jq -n --slurpfile, matching this script's existing Check 5/6/7 idiom. Still exactly one jq process per run.",
+      "annotation": "*(deviation: altered — implemented as one jq -c --argjson invocation rather than literal jq -n --slurpfile, matching this script's own Check 5/6/7 idiom; still exactly ONE jq process per run)*"
+    }
+  ]
+}

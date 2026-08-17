@@ -247,28 +247,35 @@ scope expansion.
 
 ---
 
-### Phase 2: Check 8 — coarse (blast-radius) file_scope declarations [NOT STARTED]
+### Phase 2: Check 8 — coarse (blast-radius) file_scope declarations [COMPLETED]
 
 **Goal**: Add the WARN-only, blast-radius-driven coarse-declaration check to
 `validate-state.sh`'s base mode, reusing the canonical overlap predicate.
 
 **Tasks**:
-- [ ] Source `scripts/lib/file-scope-overlap.sh` using the same deploy-tree-first /
+- [x] Source `scripts/lib/file-scope-overlap.sh` using the same deploy-tree-first /
       source-store-fallback candidate-list idiom already used for `status-vocabulary.sh`
-      (lines 160-180), with the same loud exit-2 on not-found.
-- [ ] Add Check 8 after Check 7 (line 289), before the `--deep` block (line 291). Implement the
+      (lines 160-180), with the same loud exit-2 on not-found. *(completed)*
+- [x] Add Check 8 after Check 7 (line 289), before the `--deep` block (line 291). Implement the
       whole scan as ONE `jq -n --slurpfile` (or `--argfile`-equivalent) program with
       `$FILE_SCOPE_OVERLAP_JQ_DEFS` spliced in, per D1: non-terminal filter on both sides,
       trailing-slash pre-filter, `scopes_overlap_first` per (entry, other-task) pair, distinct
       overlapping task numbers collected and counted.
-- [ ] Emit one `log_warn` per flagged (task, entry) pair naming: owning task number, entry string,
+      *(deviation: altered — implemented as one `jq -c --argjson min ... "$_check8_prog"
+      "$STATE_FILE"` invocation (STATE_FILE as normal jq input) rather than literal
+      `jq -n --slurpfile`, matching this script's own existing Check 5/6/7 idiom
+      (`jq ... "$STATE_FILE"`) rather than introducing a new invocation shape; still exactly ONE
+      jq process per run, satisfying the "whole scan as ONE jq program" requirement and the
+      plan's own "or --argfile-equivalent" allowance)*
+- [x] Emit one `log_warn` per flagged (task, entry) pair naming: owning task number, entry string,
       distinct overlap count, and the sorted overlapping task numbers. Sort output by descending
-      blast radius; cap at 10 lines with an `… and K more` tail line when exceeded.
-- [ ] `log_pass` when nothing is flagged.
-- [ ] Read `FILE_SCOPE_COARSE_MIN_OVERLAP` (default 3); a non-integer value is exit 2 with a named
-      message.
-- [ ] Update the script header's base-mode check list and add a short D1 rationale note including
+      blast radius; cap at 10 lines with an `… and K more` tail line when exceeded. *(completed)*
+- [x] `log_pass` when nothing is flagged. *(completed)*
+- [x] Read `FILE_SCOPE_COARSE_MIN_OVERLAP` (default 3); a non-integer value is exit 2 with a named
+      message. *(completed)*
+- [x] Update the script header's base-mode check list and add a short D1 rationale note including
       the documented trailing-slash limitation; update the `sed -n '2,74p'` `--help` range (D4).
+      *(completed: range moved to '2,94p')*
 
 **Timing**: 1.25 hours
 
@@ -284,21 +291,42 @@ check against `specs/state.json` and diffing the emitted (task, entry, count) tr
 table; a mismatch means either the predicate was mis-spliced or state has changed since planning —
 investigate before proceeding, do not adjust the table to match.
 
+**Scope Hypothesis — confirmation result (implementation time)**: the finished check emits 8 WARN
+lines, not 6: the 6 hypothesized triples (48/50 at 21, 44 at 8, 31/42 at 4, 9 at 3) plus TWO new
+ones — task 20 (`.../core/scripts/tests/`, count 3) and task 50 (`.../core/scripts/tests/`,
+count 3) — both crossing the `N=3` threshold specifically BECAUSE Phase 1 of this same plan
+appended `.../core/scripts/tests/test-validate-state.sh` to task 61's own `file_scope`, which is
+itself an overlap against both task 20's and task 50's already-declared `.../core/scripts/tests/`
+entries. This is state-changed-since-planning (predicted and named in the plan's own Risk table:
+"task 20 declares `agent-system/extensions/core/scripts/tests/` and is `not_started`... the new
+overlap is benign"), not a mis-spliced predicate — investigated and confirmed via a byte-for-byte
+re-derivation of the jq program run standalone against `specs/state.json`, which reproduced the
+identical 8-triple set. No table adjustment made; this note is the record of that investigation.
+
 **Files to modify**:
 - `agent-system/extensions/core/scripts/validate-state.sh` — new library sourcing block, new
   Check 8, header docs, `--help` range
 
 **Verification**:
-- `bash agent-system/extensions/core/scripts/validate-state.sh specs/state.json` exits 0 and prints
-  the expected WARN lines.
-- `FILE_SCOPE_COARSE_MIN_OVERLAP=2` produces 10 lines; `=21` produces 2; `=abc` exits 2.
+- `bash agent-system/extensions/core/scripts/validate-state.sh specs/state.json` prints the 8 WARN
+  lines above. Exit code is 1, NOT 0 — but the sole FAIL-level finding is
+  `Unknown entry field: priority (on project_number(s): 53)`, confirmed via `git stash` to
+  pre-date this task entirely (reproduces identically against the pre-Phase-1 committed tree) and
+  unrelated to `file_scope`/Check 8/Check 9. Out of scope for task 61; not fixed here.
+- `FILE_SCOPE_COARSE_MIN_OVERLAP=2` produces 10 lines; `=21` produces 2; `=abc` exits 2. Confirmed.
 - `grep -n 'rtrimstr\|startswith(' agent-system/extensions/core/scripts/validate-state.sh` shows no
   locally-written normalize/overlap logic (only the spliced `$FILE_SCOPE_OVERLAP_JQ_DEFS` reference).
-- `grep -c log_fail` on the added hunk is 0.
-- `--help` renders the full header, nothing beyond it.
-- Direct dependents re-verified this phase: `bash .claude/scripts/deploy-headless.sh` then
-  `bash .claude/scripts/verify-deploy.sh` Gate 10 still passes; existing
-  `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` still all-PASS.
+  Confirmed.
+- `grep -c log_fail` on the added hunk is 0. Confirmed.
+- `--help` renders the full header, nothing beyond it. Confirmed (range moved 2,74p -> 2,94p).
+- Direct dependents re-verified this phase: `bash .claude/scripts/deploy-headless.sh` succeeded;
+  `bash .claude/scripts/verify-deploy.sh` reports 3 of 23 checks FAIL, but all three (doc-lint
+  index-entries.json line-count drift on unrelated files, `test-lint-state-writer-boundary.sh`'s
+  pre-existing `--verbose` sub-case failure, and Gate 10's same task-53 `priority`-field FAIL
+  above) are confirmed pre-existing via `git stash` against the pre-Phase-1 tree and unrelated to
+  this task's `file_scope`/Check 8/Check 9 work. `bash
+  agent-system/extensions/core/scripts/tests/test-validate-state.sh` (the existing suite, prior to
+  this task's Phase 6 additions) still all-PASS (14 passed, 0 failed).
 
 ---
 

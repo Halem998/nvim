@@ -32,11 +32,17 @@
 #   malformed value (non-integer project_number, or an empty type after ':') is a hard error,
 #   exit 2 -- never a silent ignore.
 #
+# FILE_SCOPE_COARSE_MIN_OVERLAP (environment variable, optional, default 3): the minimum distinct
+#   non-terminal-task blast radius (see Check 8 below) an entry must have, in addition to the
+#   trailing-slash structural pre-filter, before it is flagged coarse. A non-integer value is a
+#   hard error, exit 2 -- never a silent fallback to the default.
+#
 # Exit codes:
-#   0 - valid (no FAIL-level finding)
+#   0 - valid (no FAIL-level finding; Checks 8 and 9 below are WARN-only and never fail the run)
 #   1 - invalid (at least one FAIL-level finding)
-#   2 - environment error (file not found, jq unavailable, the status-vocabulary library could not
-#       be found at any candidate path, or a malformed --allow-artifact-removal value)
+#   2 - environment error (file not found, jq unavailable, a required shared library could not be
+#       found at any candidate path, a malformed --allow-artifact-removal value, or a non-integer
+#       FILE_SCOPE_COARSE_MIN_OVERLAP)
 #
 # Base-mode checks (always run):
 #   - JSON is parsable
@@ -47,6 +53,15 @@
 #     (scripts/lib/status-vocabulary.sh)
 #   - every active_projects[].project_number is a number
 #   - every active_projects[].task_type is a non-empty string
+#   - Check 8 (WARN-only): coarse, whole-directory-root file_scope declarations. An entry is
+#     flagged iff it is declared with a trailing slash (structural pre-filter) AND overlaps at
+#     least FILE_SCOPE_COARSE_MIN_OVERLAP distinct OTHER non-terminal tasks, using the canonical
+#     scopes_overlap_first predicate from scripts/lib/file-scope-overlap.sh. Non-terminal means
+#     status not in {completed, abandoned, expanded}. Known, accepted limitation: a directory
+#     declared WITHOUT a trailing slash is not flagged -- the alternative "no file extension"
+#     heuristic produces false positives on every extensionless file, and this repo declares its
+#     directories with trailing slashes in all observed live cases. Never blocking: this check
+#     exists to surface declaration-quality issues at review/creation time, not to gate deploy.
 #
 # --deep mode additionally checks:
 #   - active_projects[].project_number uniqueness
@@ -113,7 +128,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --help|-h)
-      sed -n '2,74p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,94p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -178,6 +193,42 @@ if [[ -z "$VOCAB_LIB" ]]; then
 fi
 # shellcheck disable=SC1090
 . "$VOCAB_LIB"
+
+# --- Shared file-scope-overlap library (deploy-tree-first / source-store-fallback) ---
+# Exports FILE_SCOPE_OVERLAP_JQ_DEFS -- the canonical, single-source-of-truth jq def text for the
+# overlap predicate (norm / scopes_overlap_first). Check 8 below splices this text into its own
+# jq -n program rather than re-deriving the algorithm locally -- see that library's own header.
+FSO_LIB_CANDIDATES=(
+  "$SCRIPT_DIR/lib/file-scope-overlap.sh"
+  "$SCRIPT_DIR/../../.claude/scripts/lib/file-scope-overlap.sh"
+)
+FSO_LIB=""
+for _candidate in "${FSO_LIB_CANDIDATES[@]}"; do
+  if [[ -f "$_candidate" ]]; then
+    FSO_LIB="$_candidate"
+    break
+  fi
+done
+if [[ -z "$FSO_LIB" ]]; then
+  echo "ERROR: shared library file-scope-overlap.sh not found at any of:" >&2
+  for _candidate in "${FSO_LIB_CANDIDATES[@]}"; do
+    echo "  $_candidate" >&2
+  done
+  exit 2
+fi
+# shellcheck disable=SC1090
+. "$FSO_LIB"
+
+# --- FILE_SCOPE_COARSE_MIN_OVERLAP: default 3, hard error (exit 2) on a non-integer override ---
+if [[ -n "${FILE_SCOPE_COARSE_MIN_OVERLAP:-}" ]]; then
+  if ! [[ "$FILE_SCOPE_COARSE_MIN_OVERLAP" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: FILE_SCOPE_COARSE_MIN_OVERLAP must be a non-negative integer, got '$FILE_SCOPE_COARSE_MIN_OVERLAP'" >&2
+    exit 2
+  fi
+  COARSE_MIN_OVERLAP="$FILE_SCOPE_COARSE_MIN_OVERLAP"
+else
+  COARSE_MIN_OVERLAP=3
+fi
 
 PASSED=0
 FAILED=0
@@ -286,6 +337,47 @@ if [[ -z "$bad_ttype" ]]; then
   log_pass "All active_projects[].task_type values are non-empty strings"
 else
   log_fail "Missing/empty task_type on project_number(s): $bad_ttype"
+fi
+
+# ─── Check 8: coarse (blast-radius) file_scope declarations (WARN-only, base mode) ─────────────
+# D1: flagged iff the entry, as declared (pre-normalization), ends with "/" AND overlaps at least
+# COARSE_MIN_OVERLAP distinct OTHER non-terminal tasks, via the canonical scopes_overlap_first
+# predicate spliced from file-scope-overlap.sh (never re-derived locally). Non-terminal means
+# status not in {completed, abandoned, expanded}; both sides of the comparison are filtered to
+# non-terminal. WARN-only, always -- see the header note on why log_fail here would turn today's
+# live declarations into deploy blockers.
+_check8_prog="${FILE_SCOPE_OVERLAP_JQ_DEFS}
+def is_terminal: . == \"completed\" or . == \"abandoned\" or . == \"expanded\";
+(.active_projects) as \$all |
+[ \$all[] | select(((.status // \"\") | is_terminal) | not) ] as \$nonterm |
+[
+  \$nonterm[] as \$task |
+  (\$task.file_scope // [])[] as \$entry |
+  select(\$entry | endswith(\"/\")) |
+  (
+    [
+      \$nonterm[] as \$other |
+      select(\$other.project_number != \$task.project_number) |
+      select( scopes_overlap_first([\$entry]; (\$other.file_scope // [])) ) |
+      \$other.project_number
+    ] | unique
+  ) as \$overlaps |
+  select((\$overlaps | length) >= \$min) |
+  {project_number: \$task.project_number, entry: \$entry, count: (\$overlaps | length), overlaps: \$overlaps}
+] | sort_by(-.count, .project_number, .entry)"
+coarse_findings=$(jq -c --argjson min "$COARSE_MIN_OVERLAP" "$_check8_prog" "$STATE_FILE" 2>/dev/null)
+coarse_count=$(jq 'length' <<< "${coarse_findings:-[]}" 2>/dev/null || echo 0)
+if [[ -z "$coarse_count" || "$coarse_count" -eq 0 ]]; then
+  log_pass "No coarse (blast radius >= $COARSE_MIN_OVERLAP) file_scope declarations found"
+else
+  while IFS=$'\t' read -r _c8_pnum _c8_entry _c8_count _c8_overlaps; do
+    [[ -z "$_c8_pnum" ]] && continue
+    log_warn "Coarse file_scope declaration: project_number $_c8_pnum, entry '$_c8_entry' overlaps $_c8_count distinct non-terminal task(s): $_c8_overlaps"
+  done < <(jq -r '.[:10][] | [(.project_number|tostring), .entry, (.count|tostring), (.overlaps | map(tostring) | join(","))] | @tsv' <<< "$coarse_findings")
+  if [[ "$coarse_count" -gt 10 ]]; then
+    _c8_remaining=$((coarse_count - 10))
+    log_warn "... and $_c8_remaining more coarse file_scope declaration(s) not shown (see FILE_SCOPE_COARSE_MIN_OVERLAP to narrow)"
+  fi
 fi
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════
