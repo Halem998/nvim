@@ -1591,7 +1591,12 @@ every defer verdict carries this REQUIRED discriminator):
     NOT self-clear within this invocation — the excluded candidate does NOT automatically become
     eligible again this run, since the colliding task is outside `task_numbers` and this loop has
     no mechanism to advance it. A human resolves batch composition, or a future invocation
-    re-evaluates once the colliding task's status independently changes.
+    re-evaluates once the colliding task's status independently changes. The warning names the
+    out-of-batch task, its `colliding_task_status`, and appends the suggestion clause "suggest
+    adding #{suggested_predecessor} as a dependencies[] entry on #{suggested_dependent} to
+    serialize them" (higher task number is the dependent, lower is the predecessor) — identical to
+    `orchestrate-predispatch-review.sh`'s Class D finding, the same mechanism printed both
+    upstream (Step 1.5 review) and here at the moment of exclusion.
   No behavioral change from the base skill here; this bullet is a full transcription, not a
   cross-reference.
 - **`session_active`** (NEW in v4, reached only when the collision scan above found no hit): a

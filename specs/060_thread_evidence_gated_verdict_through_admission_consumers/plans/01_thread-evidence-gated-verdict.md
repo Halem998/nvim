@@ -257,28 +257,29 @@ cross_batch-false before editing.
 
 ---
 
-### Phase 3: Fold the Class D `dependencies[]` suggestion into the `cross_batch` warnings (WORK 3) [NOT STARTED]
+### Phase 3: Fold the Class D `dependencies[COMPLETED]
 
 **Goal**: The `dependencies[]`-edge remedy is printed at the moment of exclusion, not only in the
 separate upstream Step 1.5 review surface.
 
 **Tasks**:
 
-- [ ] Read `scripts/orchestrate-predispatch-review.sh` L386-394 (the `suggested_dependent` /
+- [x] Read `scripts/orchestrate-predispatch-review.sh` L386-394 (the `suggested_dependent` /
       `suggested_predecessor` jq computation) and L478-491 (the rendered string) as the verbatim
-      source. This script is NOT edited.
-- [ ] Extract the ordering rule verbatim: the higher task number becomes the dependent, the lower
-      becomes the predecessor.
-- [ ] `skills/skill-orchestrate/SKILL.md` `cross_batch` WARNING template (~L1555-1560): append the
+      source. This script is NOT edited. *(completed)*
+- [x] Extract the ordering rule verbatim: the higher task number becomes the dependent, the lower
+      becomes the predecessor. *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md` `cross_batch` WARNING template (~L1555-1560): append the
       identical suggestion clause — "suggest adding #{suggested_predecessor} as a dependencies[]
       entry on #{suggested_dependent} to serialize them" — reusing the existing wording, not a
-      paraphrase.
-- [ ] `commands/orchestrate.md` `cross_batch` WARNING template (~L311-316): same append.
-- [ ] `skills/skill-orchestrate-hard/SKILL.md` `file_scope_collision` bullet: same append, now that
-      Phase 2 has turned it into a real transcription.
-- [ ] Add a one-line cross-reference in the base skill's `cross_batch` bullet naming
+      paraphrase. *(completed)*
+- [x] `commands/orchestrate.md` `cross_batch` WARNING template (~L311-316): same append. *(completed)*
+- [x] `skills/skill-orchestrate-hard/SKILL.md` `file_scope_collision` bullet: same append, now that
+      Phase 2 has turned it into a real transcription. *(completed: appended as prose, matching the
+      hard twin's existing template-free style for this bullet)*
+- [x] Add a one-line cross-reference in the base skill's `cross_batch` bullet naming
       `orchestrate-predispatch-review.sh`'s Class D as the shared origin of the suggestion, so the
-      two surfaces are visibly one mechanism rather than two.
+      two surfaces are visibly one mechanism rather than two. *(completed)*
 
 **Timing**: 0.75 hours
 

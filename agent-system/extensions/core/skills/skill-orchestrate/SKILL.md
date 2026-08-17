@@ -1565,8 +1565,14 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
        [orchestrate] WARNING: Task #{task_number} has overlapping file_scope with task
          #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE this
          invocation's task_numbers. Excluding #{task_number} from this cycle — batch
-         composition needs human review.
+         composition needs human review -- suggest adding #{suggested_predecessor} as a
+         dependencies[] entry on #{suggested_dependent} to serialize them.
        ```
+       Ordering rule for `suggested_predecessor`/`suggested_dependent` (the higher task number
+       becomes the dependent, the lower becomes the predecessor): identical to, and sourced from,
+       `orchestrate-predispatch-review.sh`'s Class D finding (jq computation and rendered string)
+       — the two surfaces are one mechanism, printed at two moments (upstream Step 1.5 review, and
+       here at the moment of exclusion).
        Additionally, append to `mt_state_file.defer_ledger`:
        `{"task": task_number, "defer_reason": "file_scope_collision", "collision_scope": "cross_batch", "cycle": cycle_count, "detail": "colliding out-of-batch task #{colliding_task_number} (status: {colliding_task_status})"}`.
    - **`session_active`** (NEW in v4, reached only when the state.json collision scan above found

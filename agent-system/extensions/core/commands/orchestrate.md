@@ -312,8 +312,13 @@ misread as an ordinary in-batch collision):
     [orchestrate] WARNING: Task #{task_number} has overlapping file_scope ({path}) with
       task #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE
       this invocation's batch. Excluding #{task_number} from this run — batch composition
-      needs human review.
+      needs human review -- suggest adding #{suggested_predecessor} as a dependencies[]
+      entry on #{suggested_dependent} to serialize them.
     ```
+    Ordering rule (the higher task number becomes the dependent, the lower becomes the
+    predecessor) and the suggestion clause itself are identical to
+    `orchestrate-predispatch-review.sh`'s Class D finding — one shared mechanism, printed both
+    upstream (Step 1.5 review) and here at the moment of exclusion.
 - **`session_active`** (NEW in v4, reached only when the state.json collision scan above found no
   hit): a live registered session's own unioned `file_scope` overlaps the candidate's. Defer the
   candidate to a later wave — same defer-not-fail semantics as the two dimensions above — and log
