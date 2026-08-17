@@ -232,6 +232,31 @@ When $ARGUMENTS contains a description (no flags).
      --regen-todo
     ```
 
+6.5. **file_scope declaration-quality advisory** (WARN-only, never blocking). Runs the DEPLOYED
+   `validate-state.sh` (base mode — no `--deep`, so no git-history round trip on this interactive
+   path) against the state just written in Step 6, and surfaces only the `[WARN]` lines that
+   mention `file_scope` — Check 8 (coarse, whole-directory-root declarations) and Check 9
+   (duplicate declarations). This is advisory only: it scans the WHOLE post-write
+   `active_projects[]` population, not just the task just created (Create Task Mode never sets
+   `file_scope` for the task it creates — Step 6's filter above omits the field entirely — so a
+   new-task-only scan would surface nothing). A nonzero exit code, a missing deployed script, or
+   any warning found MUST NOT stop Steps 7 and 8 — this is the only new invocation site, never a
+   second runtime gate. Advisory never means unlogged or silent, though: every warning found here
+   is still printed to the user, just without blocking anything.
+   ```bash
+   fs_advisory=""
+   if [[ -f .claude/scripts/validate-state.sh ]]; then
+     fs_advisory=$(bash .claude/scripts/validate-state.sh specs/state.json 2>&1 | grep -a 'file_scope' || true)
+   else
+     fs_advisory="(validate-state.sh not found in the deployed tree -- skipping file_scope advisory)"
+   fi
+   ```
+   If `$fs_advisory` is non-empty, print it under a short heading before proceeding to Step 7:
+   ```
+   file_scope declaration-quality advisory (informational only, does not block task creation):
+   {fs_advisory}
+   ```
+
 7. **Git commit**:
    ```
    git add specs/
@@ -246,6 +271,13 @@ When $ARGUMENTS contains a description (no flags).
    Artifacts path: specs/{NNN}_{SLUG}/  (created on first artifact)
    ```
    Note: `{NNN}` is the 3-digit padded task number (e.g., `015` for task {N}). Directories are created lazily when the first artifact is written.
+
+   If Step 6.5 surfaced any `file_scope` warnings, append one more line to the output:
+   ```
+   Note: pre-existing file_scope declarations were flagged above (coarse or duplicate) -- these
+   predate this task and are informational only. Narrow them by editing the owning task's
+   file_scope via state-write.sh, or tune the threshold with FILE_SCOPE_COARSE_MIN_OVERLAP.
+   ```
 
 ## Recover Mode (--recover)
 

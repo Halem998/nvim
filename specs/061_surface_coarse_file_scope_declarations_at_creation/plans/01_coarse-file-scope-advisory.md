@@ -405,23 +405,25 @@ through the deployed `state-write.sh`, then re-validates.
 
 ---
 
-### Phase 5: Create Task Mode Step 6.5 advisory [NOT STARTED]
+### Phase 5: Create Task Mode Step 6.5 advisory [COMPLETED]
 
 **Goal**: Surface the new warnings at task-creation time without ever blocking creation.
 
 **Tasks**:
-- [ ] Insert a new Step 6.5 in `commands/task.md` Create Task Mode, between Step 6 (the
-      `state-write.sh` call, ending line 233) and Step 7 (git commit, line 235).
-- [ ] The step runs the DEPLOYED `bash .claude/scripts/validate-state.sh specs/state.json` — base
+- [x] Insert a new Step 6.5 in `commands/task.md` Create Task Mode, between Step 6 (the
+      `state-write.sh` call, ending line 233) and Step 7 (git commit, line 235). *(completed)*
+- [x] The step runs the DEPLOYED `bash .claude/scripts/validate-state.sh specs/state.json` — base
       mode, no `--deep` (no git-history round trip on the interactive path) — captures output, and
-      surfaces only `[WARN]` lines mentioning `file_scope`, under a short heading.
-- [ ] State explicitly in the step text that it is advisory: a nonzero exit, a missing script, or
+      surfaces only `[WARN]` lines mentioning `file_scope`, under a short heading. *(completed)*
+- [x] State explicitly in the step text that it is advisory: a nonzero exit, a missing script, or
       any warning MUST NOT stop Steps 7 and 8. Guard the invocation so its exit code cannot
       propagate (`|| true`) and so a missing deployed script is a one-line note, not an error.
-- [ ] Use the repo's established phrasing that advisory never means unlogged or silent (see
-      `context/patterns/batch-orchestration-guardrails.md`).
-- [ ] Add a one-line pointer in Step 8's output block when warnings were surfaced, telling the user
-      the declarations are pre-existing and how to narrow them.
+      *(completed: `|| true` on the grep pipeline, and an `if [[ -f ... ]]` existence check that
+      falls through to a note string rather than invoking a missing script)*
+- [x] Use the repo's established phrasing that advisory never means unlogged or silent (see
+      `context/patterns/batch-orchestration-guardrails.md`). *(completed)*
+- [x] Add a one-line pointer in Step 8's output block when warnings were surfaced, telling the user
+      the declarations are pre-existing and how to narrow them. *(completed)*
 
 **Timing**: 0.75 hours
 
