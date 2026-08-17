@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Suite scaffold, dirty-repo fixture, and baseline green cases",
+  "started_at": "2026-08-17T18:12:41Z",
+  "last_updated": "2026-08-17T18:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-guard-destructive-git.sh scaffold with pass/fail/info helpers, mktemp workdir, trap cleanup", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 2, "description": "Resolve hook path relative to SCRIPT_DIR (works in both source-store and deployed modes)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 3, "description": "Implement dirty-repo fixture helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 4, "description": "Implement case runner asserting on exit code only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 5, "description": "Fixture self-check meta-case + clean-tree/empty-command exemption meta-cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 6, "description": "Baseline green cases: over-staging true positives, single-line exemption, one true positive per destructive detector", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 7, "description": "Safe-form allow cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 8, "description": "chmod +x, run against unmodified hook, confirm all green", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "description": "Constructed detector-3-7 message-text false-positive cases as ordinary prose (e.g. 'revert the git reset --hard fallout') without a preceding separator character",
+      "result": "failed",
+      "reason": "These detectors anchor extraction/match on (^|[;&|][[:space:]]*) -- start-of-string or a literal ;/&/| character -- so a destructive phrase preceded only by ordinary prose (e.g. \"the \") never reaches the match, even pre-fix. Reproduced empirically: all such cases were GREEN against the unmodified hook, so per plan Phase 2 instructions they were replaced with semicolon-punctuated message text before being counted as evidence."
+    }
+  ],
+  "handoff_count": 0
+}

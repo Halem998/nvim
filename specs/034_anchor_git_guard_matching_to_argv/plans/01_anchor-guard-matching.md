@@ -1,7 +1,7 @@
 # Implementation Plan: anchor_git_guard_matching_to_argv
 
 - **Task**: 34 - anchor_git_guard_matching_to_argv
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None (explicitly independent of the orchestrator run-state work)
 - **Research Inputs**: `specs/034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md`
@@ -115,44 +115,48 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Suite scaffold, dirty-repo fixture, and baseline green cases [NOT STARTED]
+### Phase 1: Suite scaffold, dirty-repo fixture, and baseline green cases [COMPLETED]
 
 **Goal**: Stand up `test-guard-destructive-git.sh` with a correct, self-checking dirty-git-repo
 fixture, and pin the hook's *current* correct behavior (the two over-staging detectors and the
 plainly-destructive true positives) as passing cases against the unmodified hook.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh`, modeled
+- [x] Create `agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh`, modeled
       on `test-validate-no-task-references.sh`: `pass()`/`fail()`/`info()` helpers, integer
       `PASSED`/`FAILED` counters, `SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"`,
       `mktemp -d` workdir with `trap '...' EXIT` cleanup, exit 0 iff `FAILED` is 0 else exit 1.
-- [ ] Resolve the hook under test as `$SCRIPT_DIR/../../hooks/guard-destructive-git.sh`. This
+      *(completed)*
+- [x] Resolve the hook under test as `$SCRIPT_DIR/../../hooks/guard-destructive-git.sh`. This
       single relative path is what makes acceptance criterion 5 work: it resolves to
       `agent-system/extensions/core/hooks/` in source-store mode and to `.claude/hooks/` in
       deployed mode with no branching. Fail loudly if the resolved path does not exist.
-- [ ] Implement the fixture helper: create a fresh `git init` repo under the workdir, configure
+      *(completed)*
+- [x] Implement the fixture helper: create a fresh `git init` repo under the workdir, configure
       `user.email`/`user.name` locally, create and commit one file, then modify it so the tree is
       genuinely dirty. Ensure no `.git-snapshot-marker` exists anywhere under a `specs/` path
-      reachable from the fixture cwd.
-- [ ] Implement the case runner: build the payload with `jq -n --arg c "$cmd"
+      reachable from the fixture cwd. *(completed: make_dirty_repo/make_clean_repo, each own mktemp -d under WORKDIR)*
+- [x] Implement the case runner: build the payload with `jq -n --arg c "$cmd"
       '{tool_input:{command:$c}}'`, pipe it on stdin to `bash "$HOOK"` executed with cwd inside
       the fixture repo, capture the exit code, and assert on the **exit code only**
-      (2 = blocked, 0 = allowed). Never assert on stdout.
-- [ ] Add the fixture self-check meta-case FIRST: assert `git status --porcelain` inside the
+      (2 = blocked, 0 = allowed). Never assert on stdout. *(completed: run_hook_in)*
+- [x] Add the fixture self-check meta-case FIRST: assert `git status --porcelain` inside the
       fixture is non-empty. A broken fixture must fail loudly rather than let every later case
-      pass via the clean-tree exemption.
-- [ ] Add the two complementary exemption meta-cases: the same destructive command run against a
-      *clean* fixture repo must exit 0, and an empty command must exit 0.
-- [ ] Add baseline green cases against the unmodified hook: over-staging true positives
+      pass via the clean-tree exemption. *(completed)*
+- [x] Add the two complementary exemption meta-cases: the same destructive command run against a
+      *clean* fixture repo must exit 0, and an empty command must exit 0. *(completed)*
+- [x] Add baseline green cases against the unmodified hook: over-staging true positives
       (`git add -A`, `git add --all`, `git add .`, `git commit -am "msg"`, `git commit -a`),
       the already-working single-line over-staging false-positive exemption
       (`git commit -m "fix -a bug"` must be allowed), and one true positive per destructive
       detector (`git reset --hard`, `git checkout -- foo.txt`, `git restore foo.txt`,
       `git clean -fd`, `git stash drop`, `git stash clear`, `git switch -f other`).
-- [ ] Add the safe-form allow cases: `git restore --staged foo.txt`, `git stash`, `git stash pop`,
-      `git checkout other-branch` (non-forced), plain `git commit -m "msg"`.
-- [ ] `chmod +x` the suite. Run it against the unmodified hook and confirm every case in this
-      phase is GREEN — this phase adds no failing cases.
+      *(completed)*
+- [x] Add the safe-form allow cases: `git restore --staged foo.txt`, `git stash`, `git stash pop`,
+      `git checkout other-branch` (non-forced), plain `git commit -m "msg"`. *(completed)*
+- [x] `chmod +x` the suite. Run it against the unmodified hook and confirm every case in this
+      phase is GREEN — this phase adds no failing cases. *(completed: 20/20 baseline + 3 meta
+      cases green against the unmodified hook)*
 
 **Timing**: 1 hour
 

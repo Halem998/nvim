@@ -1,27 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "session_id": "sess_1786989333_638258_34",
-  "task_number": 34,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/034_anchor_git_guard_matching_to_argv/plans/01_anchor-guard-matching.md",
-      "summary": "6-phase plan to anchor destructive-git guard matching to argv via an upfront multi-line quote-strip plus comment-strip, with the repository's first regression suite for the hook and a mandatory mutation check."
-    }
-  ],
-  "phase_count": 6,
-  "estimated_hours": 6,
-  "dependency_waves": [[1], [2], [3], [4, 5], [6]],
-  "next_steps": "Run /implement 34 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When a shell guard strips quoted spans from a command string before flag-scanning, the strip MUST run once over the whole (possibly multi-line) input in slurp mode (sed ':a;N;$!ba') BEFORE any line-based segment extraction. A per-segment strip applied after a `grep -oE` segment split silently fails on any quoted span containing a newline, because grep never matches across lines -- the opening quote never finds its close, nothing is stripped, and free-text argument content gets flag-scanned as if it were argv. Ordering (strip-then-split, not split-then-strip) is the load-bearing property, not the regex. Corollary: a `#`-to-end-of-line comment strip closes the sibling false-exemption bypass and must be ordered AFTER the quote strip so a quoted `#` is already neutralized. Verified against guard-destructive-git.sh.",
-      "category": "PATTERN",
-      "source_artifact": "specs/034_anchor_git_guard_matching_to_argv/plans/01_anchor-guard-matching.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["quote-strip", "slurp-mode sed", "PreToolUse hook", "segment extraction ordering", "multi-line command", "false positive"]
-    }
-  ]
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786989333_638258",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
