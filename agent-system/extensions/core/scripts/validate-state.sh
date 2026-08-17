@@ -21,7 +21,8 @@
 # deploy-tree-only restriction.
 #
 # Usage:
-#   validate-state.sh [--deep] [--allow-artifact-removal <project_number>[:<type>]]... [STATE_FILE]
+#   validate-state.sh [--deep] [--allow-artifact-removal <project_number>[:<type>]]...
+#                      [--fix] [--session-id SID] [STATE_FILE]
 #   validate-state.sh --help
 #
 # STATE_FILE defaults to specs/state.json relative to the current working directory when omitted.
@@ -32,6 +33,17 @@
 #   malformed value (non-integer project_number, or an empty type after ':') is a hard error,
 #   exit 2 -- never a silent ignore.
 #
+# --fix: opt-in only, never implicit. Repairs Check 9 Class A (exact-duplicate) file_scope
+#   entries, order-preservingly, then re-validates (repair-then-revalidate). Writes ONLY through a
+#   DEPLOYED state-write.sh (a path matching */.claude/scripts/ or */.opencode/scripts/) --
+#   candidates, in order: $SCRIPT_DIR/state-write.sh, $SCRIPT_DIR/../../.claude/scripts/, then the
+#   git toplevel of STATE_FILE's own directory + /.claude/scripts/. Refuses loudly (exit 2, naming
+#   every candidate checked) when none resolves; NEVER falls back to a hand-rolled write. Refuses
+#   (exit 1) on unparseable JSON before attempting any repair. Class B (normalization-equivalent)
+#   duplicates are never touched by --fix -- see Check 9 above. `--session-id SID` optionally
+#   supplies the session id state-write.sh attributes the write to; a session id is
+#   self-generated (the portable `sess_$(date +%s)_...` pattern) when omitted.
+#
 # FILE_SCOPE_COARSE_MIN_OVERLAP (environment variable, optional, default 3): the minimum distinct
 #   non-terminal-task blast radius (see Check 8 below) an entry must have, in addition to the
 #   trailing-slash structural pre-filter, before it is flagged coarse. A non-integer value is a
@@ -39,10 +51,11 @@
 #
 # Exit codes:
 #   0 - valid (no FAIL-level finding; Checks 8 and 9 below are WARN-only and never fail the run)
-#   1 - invalid (at least one FAIL-level finding)
+#   1 - invalid (at least one FAIL-level finding), OR --fix given unparseable JSON
 #   2 - environment error (file not found, jq unavailable, a required shared library could not be
-#       found at any candidate path, a malformed --allow-artifact-removal value, or a non-integer
-#       FILE_SCOPE_COARSE_MIN_OVERLAP)
+#       found at any candidate path, a malformed --allow-artifact-removal value, a non-integer
+#       FILE_SCOPE_COARSE_MIN_OVERLAP, a missing --session-id argument, or --fix unable to resolve
+#       a deployed state-write.sh)
 #
 # Base-mode checks (always run):
 #   - JSON is parsable
@@ -104,12 +117,26 @@ NC='\033[0m'
 DEEP=false
 STATE_FILE=""
 ALLOW_ARTIFACT_REMOVAL=()
+FIX_MODE=false
+FIX_SESSION_ID=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --deep)
       DEEP=true
       shift
+      ;;
+    --fix)
+      FIX_MODE=true
+      shift
+      ;;
+    --session-id)
+      if [[ $# -lt 2 ]]; then
+        echo "ERROR: --session-id requires an argument" >&2
+        exit 2
+      fi
+      FIX_SESSION_ID="$2"
+      shift 2
       ;;
     --allow-artifact-removal)
       if [[ $# -lt 2 ]]; then
@@ -133,7 +160,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --help|-h)
-      sed -n '2,99p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,112p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -175,6 +202,87 @@ fi
 if ! command -v jq >/dev/null 2>&1; then
   echo -e "${RED}[FAIL]${NC} jq not available" >&2
   exit 2
+fi
+
+# ─── --fix: opt-in-only repair of exact-duplicate (Check 9 Class A) file_scope entries ─────────
+# D3: writes ONLY through a DEPLOYED state-write.sh (matched against */.claude/scripts/ or
+# */.opencode/scripts/) -- never a hand-rolled `jq > tmp && mv` sequence, which would reopen the
+# two corruption channels state-write.sh's own header says it exists to close. Refuses loudly
+# (exit 2) when no deployed copy resolves; never falls back to an in-script write. Class B
+# (normalization-equivalent) entries are NEVER touched by --fix -- see D2. Repair-then-revalidate:
+# this block does not exit early on success: execution falls through into the normal Checks 1-9
+# (and --deep, if requested) below, re-reading $STATE_FILE fresh from disk.
+if [[ "$FIX_MODE" == "true" ]]; then
+  if ! jq empty "$STATE_FILE" 2>/dev/null; then
+    echo -e "${RED}[FAIL]${NC} --fix refuses: unparseable JSON in $STATE_FILE"
+    exit 1
+  fi
+
+  # Candidate order (D3): $SCRIPT_DIR/state-write.sh, then $SCRIPT_DIR/../../.claude/scripts/,
+  # then the git toplevel of STATE_FILE's own directory + /.claude/scripts/. A candidate is only
+  # accepted if it BOTH exists AND its own path matches a deployed-tree shape -- this is what
+  # correctly excludes the source-store copy of state-write.sh (which sits right next to this
+  # script and would otherwise satisfy the first candidate purely by existing).
+  _fix_state_dir="$(cd "$(dirname "$STATE_FILE")" && pwd)"
+  _fix_toplevel="$(git -C "$_fix_state_dir" rev-parse --show-toplevel 2>/dev/null || true)"
+  FIX_STATE_WRITE_CANDIDATES=(
+    "$SCRIPT_DIR/state-write.sh"
+    "$SCRIPT_DIR/../../.claude/scripts/state-write.sh"
+  )
+  if [[ -n "$_fix_toplevel" ]]; then
+    FIX_STATE_WRITE_CANDIDATES+=("$_fix_toplevel/.claude/scripts/state-write.sh")
+  fi
+  FIX_STATE_WRITE=""
+  for _candidate in "${FIX_STATE_WRITE_CANDIDATES[@]}"; do
+    if [[ -f "$_candidate" ]] && [[ "$_candidate" == *"/.claude/scripts/"* || "$_candidate" == *"/.opencode/scripts/"* ]]; then
+      FIX_STATE_WRITE="$_candidate"
+      break
+    fi
+  done
+  if [[ -z "$FIX_STATE_WRITE" ]]; then
+    echo "ERROR: --fix requires a DEPLOYED state-write.sh (path matching */.claude/scripts/ or */.opencode/scripts/); none found at any of:" >&2
+    for _candidate in "${FIX_STATE_WRITE_CANDIDATES[@]}"; do
+      echo "  $_candidate" >&2
+    done
+    echo "Deploy first (bash .claude/scripts/deploy-headless.sh), then re-run --fix." >&2
+    exit 2
+  fi
+
+  # Order-preserving dedup filter (D3): `unique` sorts and must not be used. Only entries that
+  # ALREADY have a file_scope field are touched (`if has("file_scope") then ... else . end`) --
+  # never introduces a file_scope: [] field on an entry that never had one, and an entry whose
+  # file_scope already has no duplicates is left byte-identical (the filter is idempotent there).
+  _fix_report=$(jq -c '
+    [ .active_projects[] | . as $t |
+      select(has("file_scope")) |
+      ($t.file_scope // []) as $fs |
+      ($fs | reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) as $dedup |
+      select(($fs | length) != ($dedup | length)) |
+      {project_number: $t.project_number, removed: (($fs | length) - ($dedup | length))}
+    ]' "$STATE_FILE")
+  _fix_count=$(jq 'length' <<< "${_fix_report:-[]}" 2>/dev/null || echo 0)
+  if [[ -z "$_fix_count" || "$_fix_count" -eq 0 ]]; then
+    echo "--fix: nothing to repair (no exact-duplicate file_scope entries found in $STATE_FILE)."
+  else
+    while IFS=$'\t' read -r _fp _fr; do
+      [[ -z "$_fp" ]] && continue
+      echo "--fix: project_number $_fp: removing $_fr exact-duplicate file_scope entry(ies)"
+    done < <(jq -r '.[] | [(.project_number|tostring), (.removed|tostring)] | @tsv' <<< "$_fix_report")
+    _fix_session="${FIX_SESSION_ID:-sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')}"
+    _fix_state_abs="$_fix_state_dir/$(basename "$STATE_FILE")"
+    bash "$FIX_STATE_WRITE" \
+      '.active_projects = [.active_projects[] | if has("file_scope") then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]' \
+      --state-file "$_fix_state_abs" \
+      --session-id "$_fix_session"
+    _fix_rc=$?
+    if [[ "$_fix_rc" -ne 0 ]]; then
+      echo -e "${RED}[FAIL]${NC} --fix: state-write.sh failed (exit $_fix_rc); re-validating current on-disk state" >&2
+    else
+      echo "--fix applied via $FIX_STATE_WRITE."
+    fi
+  fi
+  echo "Re-validating..."
+  echo ""
 fi
 
 # --- Shared status-vocabulary library (deploy-tree-first / source-store-fallback) ---

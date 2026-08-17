@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Opt-in --fix repair for exact-duplicate entries",
+  "started_at": "2026-08-17T22:20:00Z",
+  "last_updated": "2026-08-17T22:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --fix and --session-id to argument loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 2, "description": "D3 deployed state-write.sh resolution with named exit-2 refusal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Refuse with named message on unparseable JSON", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Order-preserving dedup filter applied via state-write.sh, report removal counts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 5, "description": "Repair-then-revalidate", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 6, "description": "Update header docs and --help range (D4)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "observations": [
+    {
+      "type": "foreign_uncommitted_modification",
+      "description": "specs/state.json carried a pre-existing, uncommitted modification (a different task's description field, from a concurrent session) discovered while testing --fix against live state.json. Confirmed unrelated to file_scope/Check 8/Check 9/--fix (0 file_scope-related diff lines). Not reverted, not committed by this task, per the observation-duty obligation to report rather than act on foreign work."
+    }
+  ]
+}

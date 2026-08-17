@@ -364,24 +364,27 @@ identical 8-triple set. No table adjustment made; this note is the record of tha
 
 ---
 
-### Phase 4: Opt-in `--fix` repair for exact-duplicate entries [NOT STARTED]
+### Phase 4: Opt-in `--fix` repair for exact-duplicate entries [COMPLETED]
 
 **Goal**: Add a `--fix` flag that removes Class A duplicates order-preservingly, writing only
 through the deployed `state-write.sh`, then re-validates.
 
 **Tasks**:
-- [ ] Add `--fix` (and an optional `--session-id SID` passthrough) to the argument loop
-      (lines 88-124), following the `validate-return-meta.sh` structure.
-- [ ] Implement the D3 deployed-`state-write.sh` resolution, with the
+- [x] Add `--fix` (and an optional `--session-id SID` passthrough) to the argument loop
+      (lines 88-124), following the `validate-return-meta.sh` structure. *(completed)*
+- [x] Implement the D3 deployed-`state-write.sh` resolution, with the
       `*/.claude/scripts/` or `*/.opencode/scripts/` path assertion and a named exit-2 refusal when
-      no deployed copy is found. Never fall back to an in-script write.
-- [ ] Refuse with a named message (not a silent no-op) when `--fix` is given an unparseable state
-      file, mirroring `validate-return-meta.sh` line 132.
-- [ ] Apply the order-preserving dedup filter from D3 via `state-write.sh` with
+      no deployed copy is found. Never fall back to an in-script write. *(completed)*
+- [x] Refuse with a named message (not a silent no-op) when `--fix` is given an unparseable state
+      file, mirroring `validate-return-meta.sh` line 132. *(completed)*
+- [x] Apply the order-preserving dedup filter from D3 via `state-write.sh` with
       `--state-file "$STATE_FILE"` (absolute), a session id, and NO `--regen-todo`. Report how many
       entries were removed from which task numbers; print "nothing to repair" when there are none.
-- [ ] Re-run the full validation after the repair (repair-then-revalidate, per the precedent).
-- [ ] Update header docs (usage line, exit codes, `--fix` semantics) and the `--help` range (D4).
+      *(completed)*
+- [x] Re-run the full validation after the repair (repair-then-revalidate, per the precedent).
+      *(completed: falls through into Checks 1-9/--deep, re-reading STATE_FILE from disk)*
+- [x] Update header docs (usage line, exit codes, `--fix` semantics) and the `--help` range (D4).
+      *(completed: range moved to '2,112p')*
 
 **Timing**: 1 hour
 
@@ -393,13 +396,23 @@ through the deployed `state-write.sh`, then re-validates.
 - `agent-system/extensions/core/scripts/validate-state.sh` — arg parsing, `--fix` block, header docs
 
 **Verification**:
-- `--fix` against a temp fixture with duplicates: duplicates removed, first-occurrence order
-  preserved, all other fields byte-identical (`jq -S 'del(...)'` diff), Class B pairs untouched.
-- `--fix` against live `specs/state.json`: reports "nothing to repair", file unchanged
-  (`git diff --exit-code specs/state.json`).
-- Running the source-store copy with `--fix` when no deployed tree resolves exits 2 with the named
-  message and writes nothing.
-- `grep -n 'mv .*state\|> *.*\.tmp' ` on the added hunk finds no hand-rolled write.
+- `--fix` against a temp fixture with duplicates (placed inside this repo's git tree so the D3
+  candidate-3 git-toplevel resolution can reach the real deployed `.claude/scripts/state-write.sh`):
+  duplicates removed, first-occurrence order preserved, all other fields byte-identical
+  (`jq -S 'del(.active_projects[].file_scope)'` diff), Class B pair (`src/foo/`/`src/foo`)
+  untouched, no `file_scope` field introduced on an entry that never had one. Confirmed.
+- `--fix` against live `specs/state.json`: reports "nothing to repair". Confirmed — no
+  `file_scope`-touching diff resulted (`git diff specs/state.json | grep -c file_scope` = 0). Note:
+  `specs/state.json` was ALREADY dirty before this `--fix` run (a foreign, uncommitted edit to a
+  different task's `description` field from a concurrent session, unrelated to `file_scope` or
+  this task) — reported per the observation-duty obligation, not caused by or touched by this
+  phase's work, and deliberately left alone (not reverted, not committed by this task).
+- Running the source-store copy with `--fix` against an isolated (non-git) fixture, where no
+  deployed tree can resolve, exits 2 with the named message (listing every candidate checked) and
+  writes nothing (`diff` against the pre-run copy confirms). Confirmed.
+- `grep -n 'mv .*state\|> *.*\.tmp' ` on the added hunk finds no hand-rolled write. Confirmed.
+- `state-write.sh` itself unmodified (`git diff --exit-code` on it) and the existing
+  `test-validate-state.sh` suite still all-PASS (14 passed, 0 failed). Confirmed.
 - Direct dependents re-verified this phase: existing `test-validate-state.sh` still all-PASS;
   `state-write.sh` itself unmodified (`git diff --exit-code` on it).
 
