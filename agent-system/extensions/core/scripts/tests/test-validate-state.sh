@@ -62,6 +62,23 @@ for candidate in "${D5_VALIDATOR_CANDIDATES[@]}"; do
   fi
 done
 
+# --- Check 8 / Check 9 (coarse + duplicate file_scope) validator resolution ---
+# Same source-store-first precedent as D5_VALIDATOR above, for the same reason: these fixtures
+# must exercise the new checks without depending on a prior deploy step. A candidate is trusted
+# only after grepping for BOTH check identifiers ("Check 8" and "Check 9"), so a stale deployed
+# copy that has one but not the other cannot produce a false green.
+FS_VALIDATOR_CANDIDATES=(
+  "$SCRIPT_DIR/../validate-state.sh"
+  "$REPO_ROOT/.claude/scripts/validate-state.sh"
+)
+FS_VALIDATOR=""
+for candidate in "${FS_VALIDATOR_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]] && grep -q "Check 8" "$candidate" 2>/dev/null && grep -q "Check 9" "$candidate" 2>/dev/null; then
+    FS_VALIDATOR="$candidate"
+    break
+  fi
+done
+
 PASSED=0
 FAILED=0
 
@@ -472,6 +489,139 @@ JSON
   else
     fail "D5 scoped-flag fixture: expected FAIL for summary loss even with --allow-artifact-removal 42:report (rc=$rc)"
     info "$out"
+  fi
+fi
+
+# =====================================================================
+# Check 8 (coarse blast-radius) / Check 9 (duplicate) / --fix fixtures
+# =====================================================================
+if [[ -z "$FS_VALIDATOR" ]]; then
+  info "SKIPPING Check 8/Check 9/--fix fixtures: no candidate validator (source-store or"
+  info "deployed) contains BOTH Check 8 and Check 9 (grepped for \"Check 8\" and \"Check 9\")."
+  info "Candidates checked:"
+  for candidate in "${FS_VALIDATOR_CANDIDATES[@]}"; do
+    info "  $candidate"
+  done
+  info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
+  info "deployed candidate, that a deploy has run) before re-running this suite."
+else
+  info "Check 8/Check 9/--fix fixtures running against: $FS_VALIDATOR (confirmed to contain Check 8 and Check 9)"
+
+  # --- Check 8 fixture: one directory-shaped entry overlapping >= 3 non-terminal tasks ---
+  # project_number 1 declares "shared/lib/" (trailing slash); 2, 3, 4 each declare a distinct
+  # file underneath it, so scopes_overlap_first fires for all three -> blast radius 3, meeting the
+  # N=3 default threshold.
+  cat > "$WORKDIR/coarse-fixture.json" <<'JSON'
+{
+  "next_project_number": 5,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z",
+     "file_scope": ["shared/lib/"]},
+    {"project_number": 2, "project_name": "b", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z",
+     "file_scope": ["shared/lib/foo.sh"]},
+    {"project_number": 3, "project_name": "c", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z",
+     "file_scope": ["shared/lib/bar.sh"]},
+    {"project_number": 4, "project_name": "d", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z",
+     "file_scope": ["shared/lib/baz.sh"]}
+  ]
+}
+JSON
+  out=$(bash "$FS_VALIDATOR" "$WORKDIR/coarse-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "Coarse file_scope declaration: project_number 1, entry 'shared/lib/' overlaps 3 distinct non-terminal task(s): 2,3,4" <<< "$out"; then
+    pass "Check 8 fixture: coarse directory-shaped entry overlapping 3 non-terminal tasks -> named WARN, exit 0"
+  else
+    fail "Check 8 fixture: expected exit 0 with the named Check 8 WARN line (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Threshold fixture: same coarse fixture, FILE_SCOPE_COARSE_MIN_OVERLAP above the measured
+  # radius (3) -> no Coarse WARN ---
+  out=$(FILE_SCOPE_COARSE_MIN_OVERLAP=4 bash "$FS_VALIDATOR" "$WORKDIR/coarse-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && ! grep -q "Coarse file_scope declaration" <<< "$out"; then
+    pass "Check 8 threshold fixture: FILE_SCOPE_COARSE_MIN_OVERLAP=4 (above the measured radius of 3) suppresses the WARN"
+  else
+    fail "Check 8 threshold fixture: expected exit 0 with no Coarse WARN under min-overlap=4 (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Check 9 fixture: one exact duplicate (Class A) and one normalization-equivalent pair
+  # (Class B) in the same file_scope array -> both classes fire with distinct labels, exit 0 ---
+  cat > "$WORKDIR/dup-fixture.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z",
+     "file_scope": ["docs/README.md", "docs/README.md", "src/foo/", "src/foo"]}
+  ]
+}
+JSON
+  out=$(bash "$FS_VALIDATOR" "$WORKDIR/dup-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && grep -q "Duplicate file_scope entry (Class A, exact -- repairable by --fix): project_number 1, entry 'docs/README.md' appears 2 times" <<< "$out" \
+      && grep -q "Duplicate file_scope entry (Class B, normalization-equivalent -- NOT auto-repaired): project_number 1, entries 'src/foo' and 'src/foo/' collide after normalization" <<< "$out"; then
+    pass "Check 9 fixture: exact duplicate (Class A) and normalization-equivalent (Class B) both fire with distinct labels, exit 0"
+  else
+    fail "Check 9 fixture: expected exit 0 with both Class A and Class B WARN lines (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- --fix fixture: exact duplicates removed order-preservingly, Class B untouched, other
+  # fields unchanged. D3 requires --fix to write ONLY through a DEPLOYED state-write.sh, so this
+  # fixture's state file is placed inside THIS repo's own git tree (under specs/) rather than the
+  # generic $WORKDIR (which sits outside the repo, under /tmp, where no deployed tree can
+  # resolve) -- letting the D3 git-toplevel candidate reach the real deployed
+  # .claude/scripts/state-write.sh, exactly as a real invocation would. Gracefully SKIPPED (not
+  # FAILED) when no deployed state-write.sh exists yet (e.g. before a first deploy).
+  if [[ -f "$REPO_ROOT/.claude/scripts/state-write.sh" ]]; then
+    FIX_FIXTURE_DIR="$REPO_ROOT/specs/_tmp_fso_fix_fixture_$$"
+    mkdir -p "$FIX_FIXTURE_DIR"
+    cat > "$FIX_FIXTURE_DIR/state.json" <<'JSON'
+{
+  "next_project_number": 3,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z",
+     "dependencies": [],
+     "file_scope": ["docs/README.md", "src/foo.lua", "docs/README.md", "src/bar.lua", "src/foo.lua"]},
+    {"project_number": 2, "project_name": "b", "status": "not_started", "task_type": "general",
+     "created": "2026-01-02T00:00:00Z", "last_updated": "2026-01-02T00:00:00Z",
+     "dependencies": [],
+     "file_scope": ["src/foo/", "src/foo"]}
+  ]
+}
+JSON
+    cp "$FIX_FIXTURE_DIR/state.json" "$FIX_FIXTURE_DIR/state.json.orig"
+
+    out=$(bash "$FS_VALIDATOR" --fix "$FIX_FIXTURE_DIR/state.json" 2>&1)
+    rc=$?
+    fix_fs1=$(jq -c '.active_projects[] | select(.project_number==1) | .file_scope' "$FIX_FIXTURE_DIR/state.json" 2>/dev/null)
+    fix_fs2=$(jq -c '.active_projects[] | select(.project_number==2) | .file_scope' "$FIX_FIXTURE_DIR/state.json" 2>/dev/null)
+    fix_other_diff=$(diff <(jq -S 'del(.active_projects[].file_scope)' "$FIX_FIXTURE_DIR/state.json.orig") \
+                           <(jq -S 'del(.active_projects[].file_scope)' "$FIX_FIXTURE_DIR/state.json"))
+    if [[ "$rc" -eq 0 ]] \
+        && [[ "$fix_fs1" == '["docs/README.md","src/foo.lua","src/bar.lua"]' ]] \
+        && [[ "$fix_fs2" == '["src/foo/","src/foo"]' ]] \
+        && [[ -z "$fix_other_diff" ]]; then
+      pass "--fix fixture: exact duplicates removed order-preservingly (project 1), Class B untouched (project 2), other fields unchanged"
+    else
+      fail "--fix fixture: expected order-preserving dedup on project 1, untouched Class B on project 2, unchanged other fields (rc=$rc)"
+      info "$out"
+      info "project 1 file_scope: $fix_fs1"
+      info "project 2 file_scope: $fix_fs2"
+      info "other-fields diff: $fix_other_diff"
+    fi
+    rm -rf "$FIX_FIXTURE_DIR"
+  else
+    info "SKIPPING --fix fixture: no deployed state-write.sh at $REPO_ROOT/.claude/scripts/state-write.sh"
+    info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
   fi
 fi
 

@@ -461,26 +461,56 @@ through the deployed `state-write.sh`, then re-validates.
 
 ---
 
-### Phase 6: Regression fixtures, full verification sweep, deploy [NOT STARTED]
+### Phase 6: Regression fixtures, full verification sweep, deploy [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Lock the new behavior in with fixtures, prove the exit-0 contract holds, and deploy.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` all-23-gates-pass (Gate 3, doc-lint) | `check-extension-docs.sh` reports Rule R `index-entries.json` line-count-mismatch FAILs on `architecture/context-layers.md`, `patterns/batch-orchestration-guardrails.md`, and `patterns/file-footprint-overlap.md`, plus a Rule S FAIL on `context/contracts/return-meta-artifacts-template.md` — none of these four files are in task 61's `file_scope` and none reference `file_scope`, Check 8, Check 9, or `--fix`. Fixing them would itself be an undeclared scope expansion. | `git stash` against the pre-Phase-1 commit (`18fcd2472`) reproduces byte-identical FAIL text before any of this task's edits existed; re-run after Phase 6 reproduces the same FAIL text unchanged. |
+| `verify-deploy.sh` all-23-gates-pass (Gate 8, shell test suite runner) | `run-all.sh` reports `test-lint-state-writer-boundary.sh` FAILing its `--verbose` sub-case ("--verbose did not report the exempt candidate line") — a pre-existing defect in a lint script this task never touches. | Same `git stash` comparison: identical FAIL text pre- and post-task. Gate 12 (`lint-state-writer-boundary.sh` itself, run non-verbose) passes cleanly both before and after, confirming `--fix`'s own writes are correctly recognized as routed through `state-write.sh`. |
+| `verify-deploy.sh` all-23-gates-pass / `validate-state.sh --deep specs/state.json` exits 0 (Gate 10) | `Unknown entry field: priority (on project_number(s): 53)` — task 53 carries an undocumented `priority` field, unrelated to `file_scope`, predating this task. | `git stash` reproduces the identical FAIL against the pre-Phase-1 commit; Checks 8 and 9 (this task's own additions) are WARN-only by construction (`grep -c log_fail` on both hunks is 0) and cannot themselves produce a FAIL-level finding. |
+
 **Tasks**:
-- [ ] Add to `scripts/tests/test-validate-state.sh`, in the existing `pass()`/`fail()`/`info()`
+- [x] Add to `scripts/tests/test-validate-state.sh`, in the existing `pass()`/`fail()`/`info()`
       fixture idiom: (a) coarse-declaration fixture — a synthetic state with one directory-shaped
       entry overlapping 3+ non-terminal tasks, asserting the named Check 8 WARN line AND **exit 0**;
       (b) duplicate fixture — asserting both D2 classes fire with their labels AND **exit 0**;
       (c) threshold fixture — same coarse fixture under `FILE_SCOPE_COARSE_MIN_OVERLAP` above the
       measured radius produces no WARN; (d) `--fix` fixture — exact duplicates removed
-      order-preservingly, Class B untouched, other fields unchanged.
-- [ ] Extend the suite's validator-resolution comment/grep guard so the new fixtures verify they are
+      order-preservingly, Class B untouched, other fields unchanged. *(completed: the `--fix`
+      fixture's state file is deliberately placed inside this repo's own git tree, under
+      `specs/_tmp_fso_fix_fixture_$$` — cleaned up immediately after — so the D3 git-toplevel
+      candidate can reach the real deployed `state-write.sh`; gracefully SKIPPED, not FAILED,
+      when no deployed copy exists yet)*
+- [x] Extend the suite's validator-resolution comment/grep guard so the new fixtures verify they are
       running a copy that actually contains the new checks (grep for "Check 8" / "Check 9"),
-      matching the existing D5 source-store-first precedent (lines 47-55).
-- [ ] Run the full suite from BOTH the source-store and deployed invocation sites.
-- [ ] Deploy: `bash .claude/scripts/deploy-headless.sh`.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` in full and confirm Gate 10 passes.
-- [ ] Confirm `bash .claude/scripts/validate-state.sh --deep specs/state.json` exits 0 against live
-      state despite the 6 expected coarse WARNs.
+      matching the existing D5 source-store-first precedent (lines 47-55). *(completed: new
+      `FS_VALIDATOR_CANDIDATES`/`FS_VALIDATOR` block, source-store-first, grepping for both
+      identifiers)*
+- [x] Run the full suite from BOTH the source-store and deployed invocation sites. *(completed:
+      18 passed, 0 failed from both `agent-system/extensions/core/scripts/tests/test-validate-state.sh`
+      and `.claude/scripts/tests/test-validate-state.sh`)*
+- [x] Deploy: `bash .claude/scripts/deploy-headless.sh`. *(completed)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` in full and confirm Gate 10 passes.
+      *(deviation: altered — Gate 10 does NOT pass: `verify-deploy.sh` reports 3 of 23 checks
+      FAIL (doc-lint index-entries.json line-count drift on three unrelated files;
+      `run-all.sh`'s `test-lint-state-writer-boundary.sh` `--verbose` sub-case; and Gate 10 itself,
+      `Unknown entry field: priority (on project_number(s): 53)`). All three are byte-identical to
+      the pre-Phase-1 baseline confirmed via `git stash` in Phase 2's Scope Hypothesis
+      confirmation note — none reference `file_scope`, Check 8, Check 9, or `--fix`. Task 61's own
+      `test-validate-state.sh` suite (18/18) and Gate 12 (state-writer boundary lint) both pass
+      cleanly. Not fixed here: these are pre-existing defects outside this task's declared
+      `file_scope`, and fixing them would itself be an undeclared scope expansion of the kind this
+      task exists to discourage.)*
+- [x] Confirm `bash .claude/scripts/validate-state.sh --deep specs/state.json` exits 0 against live
+      state despite the 6 expected coarse WARNs. *(deviation: altered — exits 1, not 0: the sole
+      FAIL is the same pre-existing `Unknown entry field: priority (on project_number(s): 53)`
+      finding, confirmed unrelated and pre-dating this task. The coarse-WARN count is 8, not 6,
+      per the Phase 2 Scope Hypothesis confirmation note (Phase 1's own scope amendment added 2
+      more). No FAIL-level finding originates from Check 8, Check 9, or `--fix`.)*
 
 **Timing**: 1 hour
 
@@ -493,16 +523,36 @@ from five fixtures (one positive + four defect) to nine. Confirm by counting `pa
 assertion pairs after the edit; if the real count differs because a fixture naturally splits or
 merges, record the actual count rather than forcing it to four.
 
+**Scope Hypothesis — confirmation result (implementation time)**: the real count, by
+`pass "`/`fail "` assertion-pair grep, is 18 total (was 14 before this phase, +4), not "nine" —
+the hypothesis's own framing counted coarser fixture *groups* (five: positive, four defect) rather
+than individual assertion pairs (14: 2 positive + 4 defect + 6 D5 + 2 bonus, already established
+by prior tasks before this one). The four NEW fixture blocks added by this phase are exactly as
+planned — (a) Check 8 coarse, (b) Check 8 threshold, (c) Check 9 duplicate, (d) `--fix` — bringing
+the assertion-pair total from 14 to 18. Recorded per the hypothesis's own instruction to record
+the actual count rather than forcing a match.
+
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/test-validate-state.sh` — four new fixture blocks
 
 **Verification**:
-- `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` exits 0, all PASS, from
-  both invocation sites.
-- `bash .claude/scripts/verify-deploy.sh` — all gates pass, Gate 10 included.
-- `bash .claude/scripts/validate-state.sh --deep specs/state.json` exits 0.
-- `git status --short` shows no unintended files; the deployed `.claude/` tree was regenerated by
-  the deploy script, not hand-edited.
+- `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` exits 0, all PASS
+  (18 passed, 0 failed), from both invocation sites (source-store and `.claude/scripts/tests/`).
+  Confirmed.
+- `bash .claude/scripts/verify-deploy.sh` — NOT all gates pass: 3 of 23 FAIL, all three confirmed
+  pre-existing and unrelated to this task (see the task-checklist deviation note above and Phase
+  2's Scope Hypothesis confirmation note for the `git stash`-verified baseline comparison). Gate
+  10 specifically fails on the pre-existing task-53 `priority` field, not on anything from Check
+  8, Check 9, or `--fix`. Gate 12 (state-writer boundary lint) passes cleanly, confirming `--fix`
+  introduced no hand-rolled write.
+- `bash .claude/scripts/validate-state.sh --deep specs/state.json` does NOT exit 0 — exits 1 on
+  the same pre-existing task-53 FAIL. Confirmed unrelated (see above).
+- `git status --short` shows only this task's own files plus pre-existing, foreign, uncommitted
+  entries confirmed unrelated to this task's work: `.claude-extensions.json`, `specs/state.json`,
+  `specs/TODO.md`, and `specs/events.jsonl` (all already dirty, or dirtied by another concurrent
+  session's edit to a different task's `description` field, before or independent of this task's
+  own commits — see Phase 4's handoff for the `specs/state.json` observation). The deployed
+  `.claude/` tree was regenerated by `deploy-headless.sh`, never hand-edited.
 
 ---
 

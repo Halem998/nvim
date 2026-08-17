@@ -1,0 +1,33 @@
+{
+  "phase": 6,
+  "phase_name": "Regression fixtures, full verification sweep, deploy",
+  "started_at": "2026-08-17T22:50:00Z",
+  "last_updated": "2026-08-17T23:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add four new fixture blocks: coarse, threshold, duplicate, --fix", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 2, "description": "Extend validator-resolution grep guard for Check 8/Check 9", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 3, "description": "Run full suite from both invocation sites", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Deploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run verify-deploy.sh in full, confirm results", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm validate-state.sh --deep against live state", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.5",
+      "description": "Run bash .claude/scripts/verify-deploy.sh in full and confirm Gate 10 passes",
+      "type": "altered",
+      "reason": "3 of 23 gates FAIL: doc-lint (Gate 3), shell test suite runner's test-lint-state-writer-boundary.sh --verbose sub-case (Gate 8), and Gate 10 itself (task 53's undocumented priority field). All three confirmed byte-identical to the pre-Phase-1 baseline via git stash; none reference file_scope, Check 8, Check 9, or --fix.",
+      "annotation": "*(deviation: altered -- Gate 10 does NOT pass: verify-deploy.sh reports 3 of 23 checks FAIL ... all three are byte-identical to the pre-Phase-1 baseline)*"
+    },
+    {
+      "task_id": "6.6",
+      "description": "Confirm bash .claude/scripts/validate-state.sh --deep specs/state.json exits 0 against live state despite the 6 expected coarse WARNs",
+      "type": "altered",
+      "reason": "Exits 1, not 0: sole FAIL is the same pre-existing task-53 priority field finding. Coarse-WARN count is 8, not 6 (Phase 1's own file_scope amendment added 2 more overlaps).",
+      "annotation": "*(deviation: altered -- exits 1, not 0: the sole FAIL is the same pre-existing Unknown entry field: priority finding, confirmed unrelated and pre-dating this task)*"
+    }
+  ]
+}
