@@ -470,27 +470,29 @@ dispatch path.
 
 ---
 
-### Phase 7: Add `--allow-scope-collision` to the argument parser (WORK 2a) [NOT STARTED]
+### Phase 7: Add `--allow-scope-collision` to the argument parser (WORK 2a) [COMPLETED]
 
 **Goal**: `ALLOW_SCOPE_COLLISION_FLAG` is parsed, defaulted off, stripped from the focus prompt,
 and exported.
 
 **Tasks**:
 
-- [ ] `scripts/parse-command-args.sh`, mirroring `ALLOW_SELF_MODIFYING_FLAG`'s exact 5 touch
-      points:
-  - [ ] Doc comment block (near L25-26): describe `ALLOW_SCOPE_COLLISION_FLAG` — "true"/"false",
+- [x] `scripts/parse-command-args.sh`, mirroring `ALLOW_SELF_MODIFYING_FLAG`'s exact 5 touch
+      points: *(completed)*
+  - [x] Doc comment block (near L25-26): describe `ALLOW_SCOPE_COLLISION_FLAG` — "true"/"false",
         default off, opt-in consumer-side bypass of the **cross-batch** `file_scope_collision`
         admission gate for this invocation only. State the cross-batch-only scope per D1 so the
-        unqualified flag name does not mislead.
-  - [ ] Default init (near L86): `ALLOW_SCOPE_COLLISION_FLAG="false"`.
-  - [ ] Detection (near L136-138): `if [[ "$remaining" =~ --allow-scope-collision ]]; then
-        ALLOW_SCOPE_COLLISION_FLAG="true"; fi`.
-  - [ ] FOCUS_PROMPT strip (near L160): add `| sed 's/--allow-scope-collision//g' \` in the
-        existing chain.
-  - [ ] Export list (L170): append `ALLOW_SCOPE_COLLISION_FLAG`.
-- [ ] Verify the detection regex cannot be matched as a prefix of some other flag and does not
-      itself shadow `--allow-self-modifying`.
+        unqualified flag name does not mislead. *(completed)*
+  - [x] Default init (near L86): `ALLOW_SCOPE_COLLISION_FLAG="false"`. *(completed)*
+  - [x] Detection (near L136-138): `if [[ "$remaining" =~ --allow-scope-collision ]]; then
+        ALLOW_SCOPE_COLLISION_FLAG="true"; fi`. *(completed)*
+  - [x] FOCUS_PROMPT strip (near L160): add `| sed 's/--allow-scope-collision//g' \` in the
+        existing chain. *(completed)*
+  - [x] Export list (L170): append `ALLOW_SCOPE_COLLISION_FLAG`. *(completed)*
+- [x] Verify the detection regex cannot be matched as a prefix of some other flag and does not
+      itself shadow `--allow-self-modifying`. *(completed: `--allow-scope-collision` and
+      `--allow-self-modifying` are distinct literal strings, neither a substring of the other;
+      smoke-tested both flags together and independently, no cross-shadowing observed)*
 
 **Timing**: 0.5 hours
 
@@ -509,11 +511,13 @@ or fewer sites, match whatever the grep actually reports.
 
 **Verification**:
 
-- `bash -n agent-system/extensions/core/scripts/parse-command-args.sh` passes.
+- `bash -n agent-system/extensions/core/scripts/parse-command-args.sh` passes. *(confirmed: SYNTAX
+  OK)*
 - Source the parser and confirm: with no flag, `ALLOW_SCOPE_COLLISION_FLAG` is `"false"`; with
   `--allow-scope-collision` present, it is `"true"`; and in both cases the flag text is absent from
-  `FOCUS_PROMPT`.
-- Confirm `--allow-self-modifying` parsing is unchanged by the same smoke test.
+  `FOCUS_PROMPT`. *(confirmed via direct sourcing smoke test)*
+- Confirm `--allow-self-modifying` parsing is unchanged by the same smoke test. *(confirmed: both
+  flags independently and together parse correctly with no interference)*
 
 ---
 

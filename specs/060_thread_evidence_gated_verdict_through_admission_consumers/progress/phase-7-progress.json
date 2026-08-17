@@ -1,0 +1,20 @@
+{
+  "phase": 7,
+  "phase_name": "Add --allow-scope-collision to the argument parser (WORK 2a)",
+  "started_at": "2026-08-17T01:42:00Z",
+  "last_updated": "2026-08-17T01:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Mirror ALLOW_SELF_MODIFYING_FLAG's 5 touch points in parse-command-args.sh for the new ALLOW_SCOPE_COLLISION_FLAG",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/parse-command-args.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -24,6 +24,10 @@
 #   LIT_FLAG       — "true" or "false" (--lit mode hint for literature-based tasks)
 #   ALLOW_SELF_MODIFYING_FLAG — "true" or "false" (default off; opt-in bypass of the
 #                    self-modification admission gate, per-invocation only)
+#   ALLOW_SCOPE_COLLISION_FLAG — "true" or "false" (default off; opt-in consumer-side bypass of
+#                    the CROSS-BATCH `file_scope_collision` admission gate, for this invocation
+#                    only. Never bypasses an `in_batch` collision — see D1 in the originating
+#                    plan; the unqualified flag name deliberately does not cover `in_batch`)
 #   CONTINUE_BUDGET_FLAG — "true" or "false" (default off; /orchestrate --continue-budget:
 #                    Defect B's explicit, operator-typed override authorizing a fresh
 #                    work-cycle budget after MAX_CYCLES exhaustion, per-invocation only --
@@ -84,6 +88,7 @@ parse_command_args() {
   EXPLORE_FLAG="false"
   LIT_FLAG="false"
   ALLOW_SELF_MODIFYING_FLAG="false"
+  ALLOW_SCOPE_COLLISION_FLAG="false"
   CONTINUE_BUDGET_FLAG="false"
 
   if [[ "$remaining" =~ --team ]]; then
@@ -136,6 +141,9 @@ parse_command_args() {
   if [[ "$remaining" =~ --allow-self-modifying ]]; then
     ALLOW_SELF_MODIFYING_FLAG="true"
   fi
+  if [[ "$remaining" =~ --allow-scope-collision ]]; then
+    ALLOW_SCOPE_COLLISION_FLAG="true"
+  fi
   if [[ "$remaining" =~ --continue-budget ]]; then
     CONTINUE_BUDGET_FLAG="true"
   fi
@@ -158,6 +166,7 @@ parse_command_args() {
     | sed 's/--explore//g' \
     | sed 's/--lit//g' \
     | sed 's/--allow-self-modifying//g' \
+    | sed 's/--allow-scope-collision//g' \
     | sed 's/--continue-budget//g' \
     | xargs)
 
@@ -167,7 +176,7 @@ parse_command_args() {
     return 1
   fi
 
-  export TASK_NUMBERS REMAINING_ARGS TEAM_MODE TEAM_SIZE EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG ALLOW_SELF_MODIFYING_FLAG CONTINUE_BUDGET_FLAG FOCUS_PROMPT
+  export TASK_NUMBERS REMAINING_ARGS TEAM_MODE TEAM_SIZE EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG ALLOW_SELF_MODIFYING_FLAG ALLOW_SCOPE_COLLISION_FLAG CONTINUE_BUDGET_FLAG FOCUS_PROMPT
 }
 
 parse_command_args "$1"
