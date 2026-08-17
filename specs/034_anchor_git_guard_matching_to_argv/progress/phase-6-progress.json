@@ -1,0 +1,23 @@
+{
+  "phase": 6,
+  "phase_name": "Mutation check and full regression sweep",
+  "started_at": "2026-08-17T19:55:00Z",
+  "last_updated": "2026-08-17T20:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Full mutation cycle: revert fix, confirm RED, restore, confirm GREEN", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record and cross-check mutation RED set against Phase 2 RED set", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Narrower mutation: comment-strip clause only, confirm exactly the #-comment case goes red", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Restore full fix, repo-wide run-all.sh sweep", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm file left in fixed state, no leftover stash/backup", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "notes": [
+    "Mutation 1 (full revert, via cp swap against a scratch copy read from the pre-fix git commit -- no git stash/checkout/reset touched the tracked file): 32 passed / 11 failed. The 11 FAIL labels are byte-for-byte identical to the Phase 2 recorded RED set. No drift.",
+    "Mutation 2 (comment-strip clause removed only, quote-strip kept): 42 passed / 1 failed. The single failure is 'defect: #-comment --staged does not exempt a real restore', confirming that clause is independently load-bearing.",
+    "Restored fix verified byte-identical to the committed Phase 3/4 version (diff against a pre-mutation scratch copy: no output; git status --short on the hook: no diff).",
+    "Repo-wide run-all.sh sweep after restoring the fix: 42 passed, 1 failed, 0 skipped, 43 total (suite-level). The one failing suite, test-validate-return-meta.sh, is pre-existing and unrelated to this task's file scope; it also failed (with a different internal case count, 41/2 vs this run's 42/1 at the run-all summary level) on the pre-Phase-6 baseline run in Phase 5, before any Phase 6 mutation testing began -- a pre-existing flake, not a regression introduced by this task.",
+    "git stash list unchanged across this phase (still only the two pre-existing entries from other concurrent agents' operations)."
+  ],
+  "handoff_count": 0
+}

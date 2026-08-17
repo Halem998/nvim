@@ -432,31 +432,49 @@ increase by exactly one with no edit to `run-all.sh`.
 
 ---
 
-### Phase 6: Mutation check and full regression sweep [NOT STARTED]
+### Phase 6: Mutation check and full regression sweep [COMPLETED]
 
 **Goal**: Prove the suite is capable of failing, then confirm the whole repository's test surface
 is green with the fix in place.
 
 **Tasks**:
-- [ ] Perform the formal mutation cycle required by the house standard: revert the Phase 3 fix in
+- [x] Perform the formal mutation cycle required by the house standard: revert the Phase 3 fix in
       `guard-destructive-git.sh` (restore the raw-`$COMMAND` detectors and the two per-segment
       `seg_scan` strips), run the suite, confirm it goes RED, then restore the fix and confirm it
       goes GREEN again. Use `git stash`/`git stash pop` or an explicit copy — never a destructive
-      git operation on uncommitted work.
-- [ ] Record the mutation result concretely: the exact set of case names that went red under the
+      git operation on uncommitted work. *(completed: used an explicit `cp` swap against a
+      scratch copy of the pre-fix content read via `git show <pre-fix-commit>:<path>` — no `git
+      stash`/`git checkout`/`git reset` invoked against the tracked file, avoiding any repeat of
+      the Phase 3 shared-worktree revert incident)*
+- [x] Record the mutation result concretely: the exact set of case names that went red under the
       reverted hook. Cross-check it against the RED set recorded in Phase 2; a case that was red
       pre-fix but green under the revert (or vice versa) indicates the revert was incomplete.
-- [ ] Run the second, narrower mutation: revert only the comment-strip `sed` clause (keeping the
+      *(completed: reverted-hook run produced 32 passed / 11 failed, and the 11 FAIL labels are
+      byte-for-byte the same 11 cases recorded as the Phase 2 RED set — no drift in either
+      direction)*
+- [x] Run the second, narrower mutation: revert only the comment-strip `sed` clause (keeping the
       quote-strip) and confirm the `#`-comment false-exemption case is the one that goes red. This
-      proves that clause is load-bearing rather than incidental.
-- [ ] Restore the full fix and confirm `bash agent-system/extensions/core/scripts/tests/run-all.sh`
+      proves that clause is load-bearing rather than incidental. *(completed: 42 passed / 1
+      failed, and the single failure is exactly `defect: #-comment --staged does not exempt a
+      real restore` — confirms the clause is independently load-bearing, not incidental)*
+- [x] Restore the full fix and confirm `bash agent-system/extensions/core/scripts/tests/run-all.sh`
       is green across every discovered suite — the fix touches a hook that gates every Bash call,
-      so a repo-wide sweep is the correct final gate, not just this one suite.
-- [ ] Confirm the file is left in the fixed state, with no leftover stash entry, backup copy, or
-      partially-reverted hunk.
-- [ ] In the implementation summary, record: the mutation-check evidence; the explicitly out-of-scope
+      so a repo-wide sweep is the correct final gate, not just this one suite. *(completed: fixed
+      hook restored byte-identical to the committed version — `git status --short` on the file
+      shows no diff; suite itself 43/43 green; repo-wide `run-all.sh`: 42/43 suites green, one
+      pre-existing unrelated failure in `test-validate-return-meta.sh` (its own fix-roundtrip
+      cases; present both before and after this task's changes, not in this task's file scope,
+      and observed to vary in count across separate runs — a pre-existing flake, not a
+      regression introduced here))*
+- [x] Confirm the file is left in the fixed state, with no leftover stash entry, backup copy, or
+      partially-reverted hunk. *(completed: `git status --short` on the hook shows no diff;
+      `git stash list` unchanged from before this phase (still only the two pre-existing entries
+      from other concurrent agents' snapshot operations, none from this task); scratch mutation
+      copies live only under the session scratchpad, outside the repository)*
+- [x] In the implementation summary, record: the mutation-check evidence; the explicitly out-of-scope
       `[^;&|]*` segment-splitting defect with a recommendation to file it as follow-up work; and the
-      out-of-scope decision on tightening the Cause-2 flag regex.
+      out-of-scope decision on tightening the Cause-2 flag regex. *(completed — see the
+      implementation summary artifact)*
 
 **Timing**: 1 hour
 
@@ -474,24 +492,29 @@ is green with the fix in place.
 
 ## Testing & Validation
 
-- [ ] The fixture self-check meta-case confirms a genuinely dirty git repo before any hook case
+- [x] The fixture self-check meta-case confirms a genuinely dirty git repo before any hook case
       runs; a clean-tree case and an empty-command case confirm the two exemptions still fire.
-- [ ] Every case asserts on exit code (2 = blocked, 0 = allowed), never on stdout.
-- [ ] The observed false positive (multi-line `-m` with `essential-refactor` in the subject) is
+- [x] Every case asserts on exit code (2 = blocked, 0 = allowed), never on stdout.
+- [x] The observed false positive (multi-line `-m` with `essential-refactor` in the subject) is
       allowed, and its single-line control is allowed.
-- [ ] `essential-refactor`, `auto-repair`, `multi-task` are never blocked, single- or multi-line;
+- [x] `essential-refactor`, `auto-repair`, `multi-task` are never blocked, single- or multi-line;
       `un-edged` and `repo-wide` controls remain allowed.
-- [ ] Each of the five vulnerable destructive detectors has a message-text false-positive case
-      (allowed) and a true-positive case (blocked).
-- [ ] The two over-staging detectors retain their true positives (`git add -A`, `git add --all`,
+- [x] Each of the five vulnerable destructive detectors has a message-text false-positive case
+      (allowed) and a true-positive case (blocked). *(the false-positive cases needed
+      semicolon-punctuated message text rather than the checklist's literal ordinary-prose
+      examples — see Phase 2's deviation note; the true-positive cases match the checklist
+      literally)*
+- [x] The two over-staging detectors retain their true positives (`git add -A`, `git add --all`,
       `git add .`, `git commit -a`, `git commit -am`), including multi-line message forms.
-- [ ] Both false-exemption forms are closed: a quoted `--staged` and a `#`-commented `--staged`
+- [x] Both false-exemption forms are closed: a quoted `--staged` and a `#`-commented `--staged`
       each fail to exempt a real `git restore`.
-- [ ] No bypass opened: a real destructive command adjacent to quoted text stays blocked.
-- [ ] Mutation check: the suite is RED against the reverted hook and GREEN against the fixed hook,
+- [x] No bypass opened: a real destructive command adjacent to quoted text stays blocked.
+- [x] Mutation check: the suite is RED against the reverted hook and GREEN against the fixed hook,
       with the comment-strip clause independently proven load-bearing.
-- [ ] The suite passes under `run-all.sh` in both source-store and deployed modes.
-- [ ] No task-number references introduced anywhere outside `specs/**`.
+- [x] The suite passes under `run-all.sh` in both source-store and deployed modes. *(deployed mode
+      verified via the plan's own documented flat-tree fallback rather than `deploy-headless.sh`
+      — see Phase 5)*
+- [x] No task-number references introduced anywhere outside `specs/**`.
 
 ## Artifacts & Outputs
 
