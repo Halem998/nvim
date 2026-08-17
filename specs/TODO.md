@@ -11,9 +11,9 @@ next_project_number: 65
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 18,22,27,28,31,39,41,43,45,46,51,59,62,63 | -- | agent-system, extensions, literature, ... |
-| 2 | 20,42,60,61 | 18,31,41,59,63 | agent-system, essential-refactor |
-| 3 | 14,17,64 | 42,60,61,63 | agent-system, essential-refactor |
+| 1 | 18,20,22,27,28,31,39,41,43,45,46,51,59,62 | -- | agent-system, extensions, literature, ... |
+| 2 | 42,60,61 | 18,31,41,59 | essential-refactor |
+| 3 | 14,17,64 | 42,60,61 | agent-system, essential-refactor |
 | 4 | 13,44 | 17,28,41 | agent-system, essential-refactor |
 | 5 | 9,29,48,53 | 18,22,39,43,44,64 | agent-system, orchestration-concurrency, essential-refactor |
 | 6 | 30,50 | 29,48 | agent-system, essential-refactor |
@@ -23,6 +23,7 @@ next_project_number: 65
 
 ### Agent System
 
+20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 28 [IMPLEMENTING] — Rewrite the canonical MCP ownership document, whose central premi
 31 [RESEARCHING] — Give the .opencode/extensions/ mirror a real generation path from
@@ -31,7 +32,6 @@ next_project_number: 65
 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
-20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -70,8 +70,6 @@ next_project_number: 65
       └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/ (see above)
   └─ 61 [NOT STARTED] — Treat whole-directory-root file_scope declarations as a declarati
     └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u (see above)
-63 [PLANNED] — Fix the agent-side hard-mode routing downgrade. command-route-age
-  └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents (see above)
 
 ## Tasks
 
@@ -108,12 +106,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 63. Fix the agent-side hard-mode routing downgrade that discards declared domain agents
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [063_fix_hard_mode_agent_routing_downgrade/reports/01_agent-routing-hard-mode-parity.md]
 - **Plan**: [063_fix_hard_mode_agent_routing_downgrade/plans/01_fix-hard-mode-agent-routing.md]
+- **Summary**: [063_fix_hard_mode_agent_routing_downgrade/summaries/01_fix-hard-mode-agent-routing-summary.md]
 
 **Description**: Fix the agent-side hard-mode routing downgrade. command-route-agent.sh, given effort_flag=hard and a task_type whose extension declares no routing_agents_hard, falls through to the caller-supplied default_agent and DISCARDS the extension's declared standard agent. So --hard routes strictly worse than no flag, losing the domain agent entirely.
 

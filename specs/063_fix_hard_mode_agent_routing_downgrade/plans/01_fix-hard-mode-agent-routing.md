@@ -1,7 +1,7 @@
 # Implementation Plan: Fix the agent-side hard-mode routing downgrade
 
 - **Task**: 63 - Fix the agent-side hard-mode routing downgrade that discards declared domain agents
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/063_fix_hard_mode_agent_routing_downgrade/reports/01_agent-routing-hard-mode-parity.md
