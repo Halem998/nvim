@@ -417,24 +417,28 @@ either already exists or needs one new field. Confirm at implementation time by 
 
 ---
 
-### Phase 6: Render the advisory in `orchestrate-dry-run-report.sh` (WORK 1c) [NOT STARTED]
+### Phase 6: Render the advisory in `orchestrate-dry-run-report.sh` (WORK 1c) [COMPLETED]
 
 **Goal**: The dry-run report surfaces idle-overlap advisories with the same vocabulary as the live
 dispatch path.
 
 **Tasks**:
 
-- [ ] Read the per-task verdict loop (~L320-375), specifically the `admit` branch's
+- [x] Read the per-task verdict loop (~L320-375), specifically the `admit` branch's
       `self_mod == "true"` note at L336-341 and the `defer_reason` branches at L343-374, to match
-      the file's existing `notes+=(...)` idiom exactly.
-- [ ] Add an `.idle_overlap_advisory` check that runs on EVERY verdict — the `admit` path and all
+      the file's existing `notes+=(...)` idiom exactly. *(completed)*
+- [x] Add an `.idle_overlap_advisory` check that runs on EVERY verdict — the `admit` path and all
       defer paths — not only inside one branch. Follow the file's own existing guard style; note
       the L327-330 comment warning that `//` treats a literal `false` as falsy, and use an explicit
-      null test rather than `//` for the advisory presence check.
-- [ ] Emit a `notes+=("Task #$t: idle overlap advisory — ...")` entry naming the colliding task,
+      null test rather than `//` for the advisory presence check. *(completed: placed immediately
+      after `verdict` is computed, before the decision/defer_reason branching, so it is never
+      skipped by an admit-branch `continue`)*
+- [x] Emit a `notes+=("Task #$t: idle overlap advisory — ...")` entry naming the colliding task,
       its status, and the overlapping path, using the same vocabulary as the Phase 4 ADVISORY line
-      so the two surfaces read as one mechanism.
-- [ ] Do not change any exclusion or admission logic in this script — this is reporting only.
+      so the two surfaces read as one mechanism. *(completed)*
+- [x] Do not change any exclusion or admission logic in this script — this is reporting only.
+      *(completed: verified — only a new `notes+=` entry was added, no existing branch's
+      exclusion/admission behavior was touched)*
 
 **Timing**: 0.5 hours
 
@@ -449,11 +453,20 @@ dispatch path.
 
 **Verification**:
 
-- `bash -n agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh` passes.
+- `bash -n agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh` passes. *(confirmed:
+  SYNTAX OK)*
 - `shellcheck` on the file produces no new findings relative to its pre-edit baseline (capture the
-  baseline before editing).
+  baseline before editing). *(shellcheck is not installed in this environment; `bash -n` is the
+  available syntax-check substitute — recorded as an environment limitation, not skipped silently)*
 - Run the dry-run report against a live task set and confirm it completes and that the admitted-set
-  and exclusion output is unchanged apart from any new advisory notes.
+  and exclusion output is unchanged apart from any new advisory notes. *(the script refuses to run
+  from the source-store tree by design — "must run from a deployed scripts/ tree" — and Phase 9 is
+  the sole authorized point of redeploy in this task, so this live-invocation check is performed as
+  part of Phase 9's post-deploy smoke test instead. Verified here via standalone jq logic testing
+  against both the schema doc's documented advisory example verdict and a plain no-advisory
+  verdict: the check correctly extracts `colliding_task_number`/`colliding_task_status`/
+  `overlapping_path` in the advisory case and correctly evaluates to `null` (no note emitted) in
+  the no-advisory case)*
 
 ---
 

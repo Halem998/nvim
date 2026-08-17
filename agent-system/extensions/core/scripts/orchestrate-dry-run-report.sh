@@ -324,6 +324,20 @@ if [ "$admit_checked" = true ]; then
   for t in "${validated_tasks[@]}"; do
     verdict=$(printf '%s\n' "$admit_output" | jq -c --argjson tn "$t" 'select(.task_number == $tn)' 2>/dev/null | head -1)
     [ -z "$verdict" ] && continue || true
+    # NEW in v5: idle_overlap_advisory can appear on ANY post-scan verdict -- admit,
+    # session_active defer, or file_scope_collision defer -- so this check runs here, on EVERY
+    # verdict before the decision/defer_reason branching below, rather than nested inside any one
+    # branch (an admit verdict would otherwise `continue` past it entirely). Use an explicit null
+    # test rather than `//` -- mirroring the `self_modifying` NOTE immediately below -- even
+    # though `idle_overlap_advisory` is only ever an object or absent (never a literal `false`),
+    # for consistency with this file's own established idiom.
+    idle_adv=$(echo "$verdict" | jq -c 'if (.idle_overlap_advisory != null) then .idle_overlap_advisory else null end')
+    if [ "$idle_adv" != "null" ]; then
+      adv_coll=$(echo "$idle_adv" | jq -r '.colliding_task_number // empty')
+      adv_status=$(echo "$idle_adv" | jq -r '.colliding_task_status // empty')
+      adv_path=$(echo "$idle_adv" | jq -r '.overlapping_path // empty')
+      notes+=("Task #$t: idle overlap advisory — file_scope overlapping IDLE (status: $adv_status) out-of-batch task #$adv_coll at \"$adv_path\"; not blocking because no execution evidence exists. Add a dependencies[] edge between #$t and #$adv_coll if ordering matters.")
+    fi
     # NOTE: `.self_modifying // "null"` would be WRONG here — jq's `//` treats a literal `false`
     # value as falsy too, so a perfectly valid (non-degraded) `self_modifying: false` verdict
     # would be misread as the degraded "null" case. Use `-c` (compact) with no `//` fallback so

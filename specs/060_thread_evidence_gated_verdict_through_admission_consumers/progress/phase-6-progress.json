@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "phase_name": "Render the advisory in orchestrate-dry-run-report.sh (WORK 1c)",
+  "started_at": "2026-08-17T01:27:00Z",
+  "last_updated": "2026-08-17T01:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the idle_overlap_advisory check to the per-task verdict loop, running on every verdict before the decision/defer_reason branching",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"
+      ],
+      "note": "shellcheck is unavailable in this environment; bash -n used as syntax check substitute. Live-invocation verification deferred to Phase 9's post-deploy smoke since the script refuses to run from the source-store tree by design; standalone jq-logic testing against the schema doc's documented example verdict confirmed correct extraction."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
