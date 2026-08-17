@@ -607,7 +607,7 @@
     {
       "project_number": 59,
       "project_name": "narrow_cross_batch_collision_to_execution_evidence",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "essential-refactor",
       "title": "Gate cross-batch file_scope collisions on execution evidence, not non-terminal status",
@@ -621,7 +621,15 @@
         "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
         "agent-system/extensions/core/scripts/test-four-tier-conflict.sh"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
+          "type": "report",
+          "summary": "Root-cause confirmation, exact fix location, schema-bump blast radius, test-coverage gap analysis, and doc-correction targets."
+        }
+      ],
+      "last_updated": "2026-08-17T19:46:29Z",
+      "session_id": "sess_1786995676_03939f"
     },
     {
       "project_number": 60,

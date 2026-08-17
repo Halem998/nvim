@@ -1,48 +1,39 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 3 tasks for the /orchestrate batch-admission gate redesign. Verified the reported root cause: the specs/state.json cross-batch file_scope collision dimension implements ORDERING as if it were CONCURRENCY. Added workaround dependencies[] edges on four colliding idle tasks so the new tasks are dispatchable before the predicate fix lands.",
+  "status": "researched",
+  "task_number": 59,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1786995676_03939f",
+  "findings_count": 9,
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task entries 59, 60, 61 added under topic orchestrate-admission-gate"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Three new active_projects entries plus workaround dependencies[] edges on the four colliding idle tasks"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/059_narrow_cross_batch_collision_to_execution_evidence/",
-      "summary": "Task directory for the admission-predicate fix"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/060_thread_evidence_gated_verdict_through_admission_consumers/",
-      "summary": "Task directory for the consumer-side threading and override flag"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/061_surface_coarse_file_scope_declarations_at_creation/",
-      "summary": "Task directory for creation-time declaration-quality checks"
+      "type": "report",
+      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
+      "summary": "Confirms the cross_batch defer-condition defect and root cause verbatim against the code, identifies the exact jq select() insertion point in orchestrate-batch-admit.sh's $hit computation, confirms in_batch is structurally unaffected, confirms exactly 3 files pin the v4 schema string, confirms zero regression risk but zero existing positive test coverage of the idle-cross-batch-overlap case, confirms the self-refuting rationale passage and the missing cross_batch Blocking-vs-Advisory row, and identifies the batch's sibling tasks (60, 61) and the four workaround-edge colliding tasks (53, 14, 17, 44) for the post-deploy CLOSING STEP."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1786598173_6ebdb6",
-    "agent_type": "meta-builder-agent",
-    "duration_seconds": 900,
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 3,
-    "topic": "orchestrate-admission-gate"
-  },
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/TODO.md",
-    "/home/benjamin/.config/nvim/specs/state.json"
+  "memory_candidates": [
+    {
+      "content": "In this repo's orchestrate-batch-admit.sh, the collision-scan comparison-set construction and the per-candidate $hit selection are two separate jq stages: terminal/dependency-edge exclusion happens once when building $comparison_set, while the in_batch vs cross_batch directional/evidence test happens in the select() that computes $hit. A narrowing fix that must preserve in_batch behavior bit-for-bit while changing cross_batch behavior should add its new condition only inside the cross_batch disjunct of that select(), never touch the in_batch disjunct's existing $other_num < $c clause, and never touch $comparison_set construction (which is correctly the terminal/edge filter, not the evidence filter).",
+      "category": "PATTERN",
+      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrate-batch-admit", "file_scope_collision", "cross_batch", "jq select", "comparison-set"]
+    },
+    {
+      "content": "When narrowing a defer condition in a versioned NDJSON verdict schema in this codebase (orchestrate-batch-admit-v*), grep -rl '\"<schema-string>\"' across the extension root before estimating blast radius -- it reliably enumerates every file that must bump in lockstep (script emitter, schema doc, and any test asserting the literal $schema string), and cheaply confirms which sibling test files consume defer_reason/collision_scope only (no schema-string update needed).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["schema version bump", "grep blast radius", "batch-admit-schema", "NDJSON verdict", "test coverage audit"]
+    },
+    {
+      "content": "This repo's batch-orchestration-guardrails.md Blocking-vs-Advisory criterion requires an advisory signal to still surface loudly, never silently -- when converting a formerly-blocking defer into an admit-with-advisory outcome, the established schema precedent to follow is self_modifying's shape (present on every verdict, never optional), not defer_reason's shape (present only on defer verdicts), because the new advisory condition fires precisely on the admit path where a defer_reason-shaped field would never be read.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
+      "confidence": 0.65,
+      "suggested_keywords": ["advisory field design", "blocking vs advisory", "verdict schema", "self_modifying", "loud never silent"]
+    }
   ],
-  "next_steps": "Run /research 59 to begin research on the foundational admission-predicate task. Tasks 60 and 61 depend on it and can proceed in parallel with each other once it completes. Tasks 59 and 60 are self_modifying and require solo dispatch."
+  "next_steps": "Run /plan 59 to create implementation plan"
 }

@@ -1,0 +1,24 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "summary": "Confirmed the cross_batch defer-condition defect verbatim against orchestrate-batch-admit.sh: the collision-scan $hit selection never consults colliding-task status for cross_batch, only for in_batch. Fix is a single select() clause scoped to the cross_batch disjunct only, gating on status in {researching, planning, implementing}. Exactly 3 files pin the v4 schema string; existing cross_batch test fixtures already use status=implementing so they need no changes, but no fixture currently covers the idle-overlap case this task fixes -- new tests are required. Identified the self-refuting rationale passage and the missing cross_batch Blocking-vs-Advisory row. Identified sibling tasks 60/61 and the four workaround-edge tasks (53, 14, 17, 44) for the post-deploy CLOSING STEP.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md",
+      "summary": "Root-cause confirmation, exact fix location, schema-bump blast radius, test-coverage gap analysis, and doc-correction targets for narrowing the cross_batch collision defer to execution evidence."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Fix touches only the cross_batch disjunct of the $hit select() in orchestrate-batch-admit.sh; in_batch's existing 'other_num < c' clause stays untouched",
+    "In-flight status set confirmed as {researching, planning, implementing}, case-insensitive, matching the script's existing is_terminal convention",
+    "Consumer files (dry-run-report.sh, predispatch-review.sh, SKILL.md Stage MT-3 step 4.5) are task 60's scope, not this task's -- none are in this task's declared file_scope",
+    "New advisory field shape/name left as an open planning decision; candidate shapes documented in the report (mirroring self_modifying's always-present-on-verdict precedent)"
+  ],
+  "dead_ends": []
+}
