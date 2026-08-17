@@ -181,40 +181,49 @@ that the self-check meta-case goes RED (restore immediately after).
 
 ---
 
-### Phase 2: Defect-exposing cases, run RED against the unmodified hook [NOT STARTED]
+### Phase 2: Defect-exposing cases, run RED against the unmodified hook [COMPLETED]
 
 **Goal**: Add every case the fix must turn green, run them against the still-unmodified hook, and
 record the observed RED set as the pre-fix half of the mutation evidence.
 
 **Tasks**:
-- [ ] Add the observed false positive verbatim: a multi-line `git commit -m "..."` whose subject
+- [x] Add the observed false positive verbatim: a multi-line `git commit -m "..."` whose subject
       line contains `essential-refactor`, followed by blank line and body paragraphs. Expect
-      ALLOWED (exit 0).
-- [ ] Add the single-line control for the same text (currently passes) so the multi-line/single-line
-      asymmetry is visible in the suite output.
-- [ ] Add hyphenated-prose cases, single-line AND multi-line, for `essential-refactor`,
+      ALLOWED (exit 0). *(completed)*
+- [x] Add the single-line control for the same text (currently passes) so the multi-line/single-line
+      asymmetry is visible in the suite output. *(completed)*
+- [x] Add hyphenated-prose cases, single-line AND multi-line, for `essential-refactor`,
       `auto-repair`, `multi-task`. Expect ALLOWED. Add `un-edged` and `repo-wide` as
-      already-passing controls.
-- [ ] Add one message-text false-positive case per vulnerable destructive detector, expecting
-      ALLOWED: `-m "revert the git reset --hard fallout"`, `-m "see git checkout -- notes"`,
-      `-m "document git restore behavior"`, `-m "remove -d dirs and -f files via git clean"`,
-      `-m "hotfix -f rollout"`. Include a multi-line variant of at least the `git clean` and
-      forced-switch cases, since those are the two the task body names as live examples.
-- [ ] Add the `--staged` quoted false-exemption case: `git restore foo.txt; echo "note: use
+      already-passing controls. *(completed)*
+- [x] Add one message-text false-positive case per vulnerable destructive detector, expecting
+      ALLOWED. *(completed: deviation — original literal phrasing from this checklist,
+      `-m "revert the git reset --hard fallout"` etc., reproduced GREEN pre-fix, not RED — these
+      five raw-`$COMMAND` detectors anchor on `(^|[;&|][[:space:]]*)`, start-of-string or a
+      literal `;`/`&`/`|` character, not arbitrary preceding prose. Replaced with
+      semicolon-punctuated message text, e.g. `-m "See the notes below; git reset --hard discards
+      local changes"`, which reproduces RED for all five detectors; see progress file
+      `approaches_tried`.)* Included a multi-line variant of the `git clean` and forced-switch
+      cases. *(completed)*
+- [x] Add the `--staged` quoted false-exemption case: `git restore foo.txt; echo "note: use
       --staged next time"`. Expect BLOCKED — the quoted `--staged` must not exempt the real
-      restore.
-- [ ] Add the `#`-comment false-exemption case: `git restore foo.txt # use --staged next time`.
-      Expect BLOCKED. This is the additional in-scope defect.
-- [ ] Add the comment-strip over-reach guard: a genuinely destructive command containing an
+      restore. *(completed — confirmed already GREEN/blocked pre-fix, a no-bypass regression
+      guard rather than a RED defect case)*
+- [x] Add the `#`-comment false-exemption case: `git restore foo.txt # use --staged next time`.
+      Expect BLOCKED. This is the additional in-scope defect. *(completed)*
+- [x] Add the comment-strip over-reach guard: a genuinely destructive command containing an
       unquoted `#` outside a comment position (e.g. a path or ref containing `#`) must still be
-      BLOCKED.
-- [ ] Add the no-bypass-opened direction explicitly: a real `git clean -fd` and a real
+      BLOCKED. *(completed)*
+- [x] Add the no-bypass-opened direction explicitly: a real `git clean -fd` and a real
       `git commit -am "msg"` must remain BLOCKED when the message spans multiple lines; a real
       destructive command must not become allowed by adding a quoted argument alongside it
-      (e.g. `git reset --hard HEAD~1 && echo "done"` stays BLOCKED).
-- [ ] Run the suite. Record, in the phase notes and later in the summary, the exact list of cases
+      (e.g. `git reset --hard HEAD~1 && echo "done"` stays BLOCKED). *(completed)*
+- [x] Run the suite. Record, in the phase notes and later in the summary, the exact list of cases
       that are RED against the unmodified hook. A case expected to expose the defect but observed
       GREEN pre-fix is a defective case, not evidence — fix the case before proceeding.
+      *(completed: RED set is exactly 11 cases — multi-line essential-refactor/auto-repair/
+      multi-task (3), the five semicolon-punctuated per-detector message cases plus their 2
+      multi-line variants (7), and the #-comment --staged false-exemption case (1). All 32
+      remaining cases (Phase 1 baseline + no-bypass guards) GREEN. No defective case found.)*
 
 **Timing**: 1.5 hours
 
