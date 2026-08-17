@@ -357,7 +357,7 @@
     {
       "project_number": 34,
       "project_name": "anchor_git_guard_matching_to_argv",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Anchor guard-destructive-git.sh destructive-pattern matching to argv, not commit-message prose",
       "topic": "essential-refactor",
@@ -374,10 +374,15 @@
           "path": "specs/034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md",
           "type": "report",
           "summary": "research report"
+        },
+        {
+          "path": "specs/034_anchor_git_guard_matching_to_argv/plans/01_anchor-guard-matching.md",
+          "type": "plan",
+          "summary": "implementation plan"
         }
       ],
       "created": "2026-08-11T14:50:22Z",
-      "last_updated": "2026-08-17T18:03:21Z",
+      "last_updated": "2026-08-17T18:11:09Z",
       "session_id": "sess_1786989333_638258_34"
     },
     {
@@ -418,7 +423,7 @@
     {
       "project_number": 41,
       "project_name": "eager_context_measurement_harness",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "title": "Build eager-context measurement harness (measure-eager-context.sh)",
       "topic": "essential-refactor",
@@ -437,7 +442,7 @@
         }
       ],
       "created": "2026-08-11T16:14:06Z",
-      "last_updated": "2026-08-17T18:03:34Z",
+      "last_updated": "2026-08-17T18:04:18Z",
       "session_id": "sess_1786989333_638258_41"
     },
     {
@@ -647,7 +652,7 @@
     {
       "project_number": 63,
       "project_name": "fix_hard_mode_agent_routing_downgrade",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "essential-refactor",
       "title": "Fix the agent-side hard-mode routing downgrade that discards declared domain agents",
@@ -665,7 +670,7 @@
           "summary": "research report"
         }
       ],
-      "last_updated": "2026-08-17T18:03:28Z",
+      "last_updated": "2026-08-17T18:04:16Z",
       "session_id": "sess_1786989333_638258_63"
     },
     {

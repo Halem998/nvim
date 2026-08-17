@@ -58,9 +58,9 @@ next_project_number: 65
     └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
       └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
         └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
-34 [RESEARCHED] — Fix a false-positive class in the destructive-git PreToolUse guar
+34 [PLANNED] — Fix a false-positive class in the destructive-git PreToolUse guar
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-41 [RESEARCHED] — Create `measure-eager-context.sh` in the core extension's scripts
+41 [PLANNING] — Create `measure-eager-context.sh` in the core extension's scripts
   └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br (see above)
   └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
@@ -72,7 +72,7 @@ next_project_number: 65
       └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/ (see above)
   └─ 61 [NOT STARTED] — Treat whole-directory-root file_scope declarations as a declarati
     └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u (see above)
-63 [RESEARCHED] — Fix the agent-side hard-mode routing downgrade. command-route-age
+63 [PLANNING] — Fix the agent-side hard-mode routing downgrade. command-route-age
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents (see above)
 
 ## Tasks
@@ -110,7 +110,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 63. Fix the agent-side hard-mode routing downgrade that discards declared domain agents
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
@@ -378,7 +378,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 41. Build eager-context measurement harness (measure-eager-context.sh)
 - **Effort**: 2-4 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
@@ -425,11 +425,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 34. Anchor guard-destructive-git.sh destructive-pattern matching to argv, not commit-message prose
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md]
+- **Plan**: [034_anchor_git_guard_matching_to_argv/plans/01_anchor-guard-matching.md]
 
 **Description**: Fix a false-positive class in the destructive-git PreToolUse guard, observed live during a real `/orchestrate --hard` run: a legitimate, entirely non-destructive `git commit` was BLOCKED purely because its message text contained wording resembling a destructive pattern. It succeeded only after the message was reworded. A guard that can be tripped by prose is both a false-positive source and, more importantly, evidence that the matching is not anchored where it should be.
 
