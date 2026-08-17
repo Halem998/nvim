@@ -330,19 +330,21 @@ identical 8-triple set. No table adjustment made; this note is the record of tha
 
 ---
 
-### Phase 3: Check 9 — duplicate file_scope entries [NOT STARTED]
+### Phase 3: Check 9 — duplicate file_scope entries [COMPLETED]
 
 **Goal**: Add the WARN-only duplicate-entry check with D2's two labelled classes.
 
 **Tasks**:
-- [ ] Add Check 9 immediately after Check 8. Class A (exact duplicates): per entry,
+- [x] Add Check 9 immediately after Check 8. Class A (exact duplicates): per entry,
       `(.file_scope|length) != (.file_scope|unique|length)`; report the repeated strings and their
       counts. Class B (normalization-equivalent): entries distinct as strings but equal after
-      `norm`; report the colliding pair.
-- [ ] Label each WARN line with its class, and state on the Class A line that `--fix` can repair it
-      and on the Class B line that it will not be auto-repaired.
-- [ ] `log_pass` when neither class fires.
-- [ ] Update header check list and the `--help` range (D4).
+      `norm`; report the colliding pair. *(completed: implemented via `group_by(.)` for Class A
+      and a pairwise `range`-indexed comparison over `unique` for Class B, reusing `norm` from
+      the spliced `$FILE_SCOPE_OVERLAP_JQ_DEFS`)*
+- [x] Label each WARN line with its class, and state on the Class A line that `--fix` can repair it
+      and on the Class B line that it will not be auto-repaired. *(completed)*
+- [x] `log_pass` when neither class fires. *(completed)*
+- [x] Update header check list and the `--help` range (D4). *(completed: range moved to '2,99p')*
 
 **Timing**: 0.75 hours
 

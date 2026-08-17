@@ -62,6 +62,11 @@
 #     heuristic produces false positives on every extensionless file, and this repo declares its
 #     directories with trailing slashes in all observed live cases. Never blocking: this check
 #     exists to surface declaration-quality issues at review/creation time, not to gate deploy.
+#   - Check 9 (WARN-only): duplicate file_scope entries within a single task's own array, in two
+#     labelled classes. Class A (exact duplicates -- the same string twice) is repairable via
+#     --fix (see below). Class B (normalization-equivalent -- distinct strings that collapse
+#     under the shared `norm` def, e.g. "a/" vs "a") is reported but never auto-repaired, since
+#     choosing which spelling survives is a judgment call. Never blocking.
 #
 # --deep mode additionally checks:
 #   - active_projects[].project_number uniqueness
@@ -128,7 +133,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --help|-h)
-      sed -n '2,94p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,99p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -378,6 +383,46 @@ else
     _c8_remaining=$((coarse_count - 10))
     log_warn "... and $_c8_remaining more coarse file_scope declaration(s) not shown (see FILE_SCOPE_COARSE_MIN_OVERLAP to narrow)"
   fi
+fi
+
+# ─── Check 9: duplicate file_scope entries (WARN-only, base mode) ──────────────────────────────
+# D2: two distinct, separately-labelled classes, computed per task's own file_scope array (no
+# cross-task comparison, unlike Check 8). Class A (exact duplicates -- the same string appears
+# twice) is repairable by --fix (Phase 4); Class B (normalization-equivalent -- distinct strings
+# that collapse to the same value under the canonical `norm` def, e.g. "a/" vs "a") is reported
+# but never auto-repaired, since choosing which spelling survives is a judgment call. `norm` is
+# reused from the spliced $FILE_SCOPE_OVERLAP_JQ_DEFS, never re-derived locally. WARN-only, always.
+_check9_prog="${FILE_SCOPE_OVERLAP_JQ_DEFS}
+[
+  .active_projects[] | . as \$task |
+  (\$task.file_scope // []) as \$fs |
+  (\$fs | group_by(.) | map(select(length > 1) | {value: .[0], count: length})) as \$classA |
+  (
+    (\$fs | unique) as \$uniq |
+    [
+      range(0; \$uniq | length) as \$i |
+      range(\$i + 1; \$uniq | length) as \$j |
+      (\$uniq[\$i]) as \$a | (\$uniq[\$j]) as \$b |
+      select((\$a | norm) == (\$b | norm)) |
+      {a: \$a, b: \$b}
+    ]
+  ) as \$classB |
+  select((\$classA | length) > 0 or (\$classB | length) > 0) |
+  {project_number: \$task.project_number, classA: \$classA, classB: \$classB}
+]"
+dup_findings=$(jq -c "$_check9_prog" "$STATE_FILE" 2>/dev/null)
+dup_count=$(jq 'length' <<< "${dup_findings:-[]}" 2>/dev/null || echo 0)
+if [[ -z "$dup_count" || "$dup_count" -eq 0 ]]; then
+  log_pass "No duplicate file_scope entries found (exact or normalization-equivalent)"
+else
+  while IFS=$'\t' read -r _c9_pnum _c9_value _c9_count; do
+    [[ -z "$_c9_pnum" ]] && continue
+    log_warn "Duplicate file_scope entry (Class A, exact -- repairable by --fix): project_number $_c9_pnum, entry '$_c9_value' appears $_c9_count times"
+  done < <(jq -r '.[] | .project_number as $p | .classA[] | [($p|tostring), .value, (.count|tostring)] | @tsv' <<< "$dup_findings")
+  while IFS=$'\t' read -r _c9_pnum _c9_a _c9_b; do
+    [[ -z "$_c9_pnum" ]] && continue
+    log_warn "Duplicate file_scope entry (Class B, normalization-equivalent -- NOT auto-repaired): project_number $_c9_pnum, entries '$_c9_a' and '$_c9_b' collide after normalization"
+  done < <(jq -r '.[] | .project_number as $p | .classB[] | [($p|tostring), .a, .b] | @tsv' <<< "$dup_findings")
 fi
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════
