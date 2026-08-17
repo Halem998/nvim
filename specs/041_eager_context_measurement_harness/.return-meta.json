@@ -1,27 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "task_number": 41,
-  "session_id": "sess_1786989333_638258_41",
-  "phase_count": 6,
-  "estimated_hours": 6.5,
-  "dependency_waves": [[1], [2], [3], [4], [5], [6]],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md",
-      "summary": "6-phase, 6.5-hour sequential plan for measure-eager-context.sh: bash-modeled CLAUDE.md assembly prediction, @-import + volatile-file guard, corrected paths: glob-match rule derivation, machine-parseable output with --check/--write, manifest/doc registration, and baseline reconciliation."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "Bash glob-matching hazard for `paths:`-style frontmatter globs: inside `[[ str == pattern ]]`, bash treats `**` as a plain `*` regardless of `shopt -s globstar`, and `*` never crosses `/`. So `specs/**/*` silently FAILS to match `specs/000_x/reports/01_y.md` (3 segments). Any tool classifying rules or files by a `**`-bearing glob must translate the glob to an anchored ERE instead (`**/` -> `(.*/)?`, `**` -> `.*`, `*` -> `[^/]*`, `?` -> `[^/]`, escape `.`) and match with `=~`. The failure mode is silent under-counting, not an error.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash-glob", "globstar", "glob-to-ere", "paths-frontmatter", "pattern-matching"]
-    }
-  ],
-  "next_steps": "Run /implement 41 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1786989333_638258",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

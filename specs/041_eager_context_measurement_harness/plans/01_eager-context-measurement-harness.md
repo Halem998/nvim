@@ -1,7 +1,7 @@
 # Implementation Plan: Task #41
 
 - **Task**: 41 - eager_context_measurement_harness
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md`
@@ -131,29 +131,29 @@ territory; Phases 5-6 depend on the script's behavior being final.
 
 ---
 
-### Phase 1: Scaffold, CLI Contract, and Predicted-CLAUDE.md Assembly [NOT STARTED]
+### Phase 1: Scaffold, CLI Contract, and Predicted-CLAUDE.md Assembly [COMPLETED]
 
 **Goal**: Create the script with its argument contract, root resolution, byte/token helpers, and
 a bash replication of `generate_claudemd()` that predicts the assembled CLAUDE.md size from
 source-store files alone.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/measure-eager-context.sh` with `#!/usr/bin/env bash`
+- [x] Create `agent-system/extensions/core/scripts/measure-eager-context.sh` with `#!/usr/bin/env bash`
       and `set -uo pipefail` (match `measure-eager-surface.sh`; avoid `-e` so a missing optional
       file reports rather than aborts).
-- [ ] Add the root-resolution preamble verbatim from `generate-context-line-counts.sh`:
+- [x] Add the root-resolution preamble verbatim from `generate-context-line-counts.sh`:
       `[[ -n "${REPO_ROOT:-}" ]] || . "$(dirname "${BASH_SOURCE[0]}")/deploy-root-guard.sh" || exit 1`
       then `REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"` and
       `EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"`.
-- [ ] Parse arguments: `MODE="check"` default; `--write` sets write mode; `--check` or no
+- [x] Parse arguments: `MODE="check"` default; `--write` sets write mode; `--check` or no
       argument is check mode; `--write` accepts an optional snapshot path argument (default a
       documented path under the repo); anything else prints `Usage:` to stderr and exits 2.
-- [ ] Add `bytes_of()` (prints 0 for a missing file, never errors) and `tokens_of()`
+- [x] Add `bytes_of()` (prints 0 for a missing file, never errors) and `tokens_of()`
       (integer `bytes / 4`).
-- [ ] Implement the parent CLAUDE.md chain channel: `$(dirname "$REPO_ROOT")/CLAUDE.md` and
+- [x] Implement the parent CLAUDE.md chain channel: `$(dirname "$REPO_ROOT")/CLAUDE.md` and
       `$REPO_ROOT/CLAUDE.md`, each reported by label, path, bytes, tokens; a missing file is
       reported as 0 B, not an error.
-- [ ] Implement `predict_claudemd_bytes()` replicating `generate_claudemd()`:
+- [x] Implement `predict_claudemd_bytes()` replicating `generate_claudemd()`:
       read active extensions via
       `jq -r '.extensions | to_entries[] | select(.value.status=="active") | .key' "$REPO_ROOT/.claude-extensions.json" | sort`,
       move `core` to the front, resolve each extension's fragment via
@@ -162,15 +162,19 @@ source-store files alone.
       `$EXT_DIR/core/templates/claudemd-header.md` when core is active, and compute the assembled
       size as: sum of each part's right-trimmed byte length, plus `2 * (parts - 1)` for the
       `\n\n` joins, plus 1 for the trailing newline.
-- [ ] Compute each part's trimmed length without materializing the whole document (e.g. per-file
+- [x] Compute each part's trimmed length without materializing the whole document (e.g. per-file
       `wc -c` minus trailing-whitespace length), or by building the predicted document in a
       `mktemp` file and measuring it — either is acceptable; the temp-file route is easier to get
       byte-exact and must clean up after itself.
-- [ ] Write the script header comment: what the script measures, why it predicts rather than
+- [x] Write the script header comment: what the script measures, why it predicts rather than
       measures the deployed tree, and an explicit "this script MUST NOT invoke `deploy-headless.sh`
       or `nvim`" line citing `context/patterns/regeneration-is-manual-only.md`'s
       single-sanctioned-caller rule.
-- [ ] Print a provisional table of the three sources measured so far plus a running subtotal.
+- [x] Print a provisional table of the three sources measured so far plus a running subtotal.
+
+*(completed: all Phase 1 tasks implemented in `measure-eager-context.sh`; predicted assembled
+CLAUDE.md verified at exactly 33,215 B via the mktemp-materialization route, matching
+`wc -c < .claude/CLAUDE.md` byte-for-byte)*
 
 **Timing**: 1.5 hours
 
@@ -201,34 +205,39 @@ measurement dependency: the script itself must never read `.claude/CLAUDE.md`.
 
 ---
 
-### Phase 2: `@`-Import Channel and Volatile-File Guard [NOT STARTED]
+### Phase 2: `@`-Import Channel and Volatile-File Guard [COMPLETED]
 
 **Goal**: Detect `@`-imports generally (directory-relative resolution, existence-tested), and add
 the volatile-file deny-list that flags rather than counts.
 
 **Tasks**:
-- [ ] Implement `scan_at_imports <file> <containing-dir>`: match `@`-prefixed path tokens in the
+- [x] Implement `scan_at_imports <file> <containing-dir>`: match `@`-prefixed path tokens in the
       file's lines, resolve each **relative to the containing file's own directory** (not the repo
       root, not `.claude/`), and test `[[ -f ... ]]`.
-- [ ] Run the scan over the parent CLAUDE.md, the repo CLAUDE.md, and the predicted generated
+- [x] Run the scan over the parent CLAUDE.md, the repo CLAUDE.md, and the predicted generated
       CLAUDE.md content. For the predicted content, the containing directory is the *target*
       directory (`$REPO_ROOT/.claude`), because that is where a regenerate would place the file —
       document this in a comment, since it is the non-obvious half of the directory-relative rule.
-- [ ] Report each resolving `@`-ref as its own line (label, resolved path, bytes, tokens) and add
+- [x] Report each resolving `@`-ref as its own line (label, resolved path, bytes, tokens) and add
       its bytes to the eager total.
-- [ ] Report each non-resolving (`dangling`) `@`-ref on a distinct line contributing 0 B, so a
+- [x] Report each non-resolving (`dangling`) `@`-ref on a distinct line contributing 0 B, so a
       future added-but-broken ref is visible rather than silently inert. A dangling ref is
       informational and must **not** by itself fail `--check`.
-- [ ] Add `VOLATILE_PATHS` deny-list — `specs/TODO.md`, `specs/state.json`, `specs/errors.json` —
+- [x] Add `VOLATILE_PATHS` deny-list — `specs/TODO.md`, `specs/state.json`, `specs/errors.json` —
       as a named array with a comment that it is extensible.
-- [ ] Check every candidate path considered by any channel (`@`-import targets, merge sources,
+- [x] Check every candidate path considered by any channel (`@`-import targets, merge sources,
       rule files) against the deny-list. On a hit: emit a loud `FLAG: volatile file ... would be
       eagerly loaded` line, exclude its bytes from the legitimate eager total, and set a
       `VOLATILE_HITS` counter that makes `--check` exit 1.
-- [ ] Add a header-comment note that this channel is expected to report **0 resolving `@`-imports
+- [x] Add a header-comment note that this channel is expected to report **0 resolving `@`-imports
       and 0 volatile hits** in the current tree, and that this is the correct result, citing
       `context/architecture/context-layers.md`'s "Eager vs. Lazy Loading Channels" (channel 2)
       for why merge sources deliberately use plain backticked paths instead of `@`-refs.
+
+*(completed: verified 0 resolving/0 dangling refs in the live tree; a scratch-copy test with an
+injected `@specs/state.json` ref produced `FLAG: volatile file 'specs/state.json' ...` and exit 1,
+and a separately injected dangling ref produced a `DANGLING:` line with exit 0 — both reverted,
+no scratch changes committed)*
 
 **Timing**: 1 hour
 
@@ -248,45 +257,50 @@ the volatile-file deny-list that flags rather than counts.
 
 ---
 
-### Phase 3: Rules `paths:` Glob-Match Channel (Corrected Model) [NOT STARTED]
+### Phase 3: Rules `paths:` Glob-Match Channel (Corrected Model) [COMPLETED]
 
 **Goal**: Derive the eager rule set dynamically by glob-matching each source-store rule's `paths:`
 frontmatter against a documented, overridable representative touched-path set.
 
 **Tasks**:
-- [ ] Implement `glob_to_ere <pattern>`: escape regex metacharacters (`.` in particular), then
+- [x] Implement `glob_to_ere <pattern>`: escape regex metacharacters (`.` in particular), then
       translate `**/` -> `(.*/)?`, remaining `**` -> `.*`, `*` -> `[^/]*`, `?` -> `[^/]`, and
       anchor with `^`/`$`. **Do not use bash `[[ str == pattern ]]`** — inside `[[ ]]`, `**` is
       treated as a plain `*` regardless of `shopt -s globstar`, and `*` does not cross `/`, so
       `specs/**/*` would silently fail to match a nested path. Match with `[[ "$path" =~ $ere ]]`.
-- [ ] Define the representative touched-path set as a named array with an env-var override
+- [x] Define the representative touched-path set as a named array with an env-var override
       (`EAGER_REP_PATHS`, comma-separated), following the `REPO_ROOT`/`EXT_DIR` override style
       already used in this scripts directory. Default: one probe under `specs/**` that is not a
       plan file (e.g. `specs/000_example/reports/01_example.md`) and one under `.claude/**`
       (e.g. `.claude/context/example.md`). These are probe strings only — nothing is read from
       them.
-- [ ] Echo the active representative path set in the script's output so a reader can audit the
+- [x] Echo the active representative path set in the script's output so a reader can audit the
       classification rather than trusting it.
-- [ ] Enumerate every source-store rule via `"$EXT_DIR"/*/rules/*.md`, extract its `paths:` value
+- [x] Enumerate every source-store rule via `"$EXT_DIR"/*/rules/*.md`, extract its `paths:` value
       from the YAML frontmatter, and normalize both scalar (`paths: specs/**/*`,
       `paths: "**/*"`) and JSON-array (`paths: ["specs/**/*", ".claude/**/*"]`) forms into a list
       of member globs.
-- [ ] Classify each rule: `paths:` absent -> always-eager; any member glob matching any
+- [x] Classify each rule: `paths:` absent -> always-eager; any member glob matching any
       representative path -> eager (record *which* glob and *which* probe matched); otherwise ->
       deferred, excluded from the total.
-- [ ] Restrict the eager set to rules belonging to **currently active** extensions (from
+- [x] Restrict the eager set to rules belonging to **currently active** extensions (from
       `.claude-extensions.json`). An inactive extension's rules are never deployed, so a
       `web`/`lean`/`latex` rule must not enter the total even if its glob somehow matched.
-- [ ] Report each eager rule on its own line with label, path, bytes, tokens, and the matched
+- [x] Report each eager rule on its own line with label, path, bytes, tokens, and the matched
       glob/probe (or `frontmatter absent`), and add its bytes to the total.
-- [ ] Add a header-comment section recording the deviation from the task description's literal
+- [x] Add a header-comment section recording the deviation from the task description's literal
       model: the "absent or `**/*`" rule under-counts by ~71%; the corrected glob-match model is
       implemented instead. Cite the correction by durable anchor —
       `specs/archive/054_split_eager_rules_budget/baseline-bytes.md`, section
       "Eager-Context Measurement-Harness Correction" — never as a bare task number.
-- [ ] Add a header-comment note that this script's rule total will **exceed**
+- [x] Add a header-comment note that this script's rule total will **exceed**
       `measure-eager-surface.sh`'s hardcoded six-rule figure by `error-handling.md` +
       `workflows.md`, and that this is a correct divergence by design, not a bug to reconcile.
+
+*(completed: verified exactly 8 eager core rules totalling 27,293 B against the default
+representative path set — matching the historical six [23,547 B] plus error-handling.md [2,987 B]
+and workflows.md [759 B]; `glob_to_ere` unit cases pass; narrowing `EAGER_REP_PATHS` to the
+`specs/**` probe alone reproduces the 23,547 B six-rule total)*
 
 **Timing**: 1.5 hours
 
@@ -320,32 +334,35 @@ differs, report which rule changed class and why before adjusting anything.
 
 ---
 
-### Phase 4: Stable Machine-Parseable Output, Totals, and `--write` Snapshot [NOT STARTED]
+### Phase 4: Stable Machine-Parseable Output, Totals, and `--write` Snapshot [COMPLETED]
 
 **Goal**: Finalize the output contract — per-source and total bytes/tokens in a stable
 machine-parseable form — and implement `--write`'s JSON baseline snapshot.
 
 **Tasks**:
-- [ ] Define and document the stable per-source record: `channel`, `label`, `path`, `bytes`,
+- [x] Define and document the stable per-source record: `channel`, `label`, `path`, `bytes`,
       `tokens_est`. Emit one line per source in a fixed field order with a fixed separator
       (tab-delimited or a `KEY=value` form), preceded by a header line naming the fields, so
       downstream parsing does not depend on column alignment.
-- [ ] Emit per-channel subtotals (parent chain, predicted CLAUDE.md, `@`-imports, rules) and a
+- [x] Emit per-channel subtotals (parent chain, predicted CLAUDE.md, `@`-imports, rules) and a
       grand `TOTAL` row with both bytes and `bytes/4` tokens.
-- [ ] Print a human-readable summary block modelled on `generate-context-line-counts.sh`'s
+- [x] Print a human-readable summary block modelled on `generate-context-line-counts.sh`'s
       `=== Summary (check mode) ===`, ending in `CHECK PASSED: ...` (exit 0) or
       `CHECK FAILED: ...` (exit 1). `--check` fails only on a volatile-file hit or an
       unreadable required source — never merely because the total changed.
-- [ ] Implement `--write`: perform the identical measurement, print the same report, and
+- [x] Implement `--write`: perform the identical measurement, print the same report, and
       additionally write a timestamped JSON snapshot. Model the snapshot's *content shape* on
       `measure-eager-surface.sh`'s `write_json()` — a `timestamp`, a `sources` array of
       `{channel, label, path, bytes, tokens_est}` objects, per-channel subtotals, and
       `total_bytes` / `total_tokens_est` — while keeping the `--check`/`--write` flag vocabulary
       required by this task. Build the JSON with `jq -n` rather than hand-assembled string
       concatenation.
-- [ ] Record the active representative path set inside the snapshot, so a later comparison can
+- [x] Record the active representative path set inside the snapshot, so a later comparison can
       tell whether a delta came from content drift or from a changed measurement policy.
-- [ ] Document the output contract and the snapshot schema in the script header.
+- [x] Document the output contract and the snapshot schema in the script header.
+
+*(completed: `--write` produces valid JSON per `jq empty`; `--bogus` exits 2 with a `Usage:` line;
+two consecutive `--check` runs produce byte-identical stdout)*
 
 **Timing**: 1 hour
 
