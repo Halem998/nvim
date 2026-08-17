@@ -423,7 +423,7 @@
     {
       "project_number": 41,
       "project_name": "eager_context_measurement_harness",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Build eager-context measurement harness (measure-eager-context.sh)",
       "topic": "essential-refactor",
@@ -439,10 +439,15 @@
           "path": "specs/041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md",
           "type": "report",
           "summary": "research report"
+        },
+        {
+          "path": "specs/041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md",
+          "type": "plan",
+          "summary": "implementation plan"
         }
       ],
       "created": "2026-08-11T16:14:06Z",
-      "last_updated": "2026-08-17T18:04:18Z",
+      "last_updated": "2026-08-17T18:11:22Z",
       "session_id": "sess_1786989333_638258_41"
     },
     {

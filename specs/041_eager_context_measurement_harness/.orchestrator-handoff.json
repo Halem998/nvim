@@ -1,18 +1,18 @@
 {
-  "status": "researched",
-  "dispatch_seq": 3,
-  "phase": "research",
-  "summary": "Grounded measure-eager-context.sh design against generate_claudemd() (merge.lua:768-879), the regeneration-is-manual-only.md single-sanctioned-caller policy (must model assembly, never call deploy-headless.sh), the paths:-frontmatter glob-match correction handed over from task 054's baseline-bytes.md, and traced the 70,160B/17,540-token baseline to that same file's Phase 7 measurement.",
+  "status": "planned",
+  "dispatch_seq": 6,
+  "phase": "plan",
+  "summary": "6-phase sequential plan (6.5h) for measure-eager-context.sh. Grounded in the research report plus two planner dry-run verifications: (1) the bash trim+join replication of generate_claudemd() predicts the deployed .claude/CLAUDE.md byte-exactly at 33,215 B (33209 raw - 7 trailing NLs + 6 separators x 2 + 1 final NL); (2) the corrected paths: glob-match model yields 8 eager core rules totalling 27,293 B (historical six at 23,547 B plus error-handling.md and workflows.md). Also identified a bash pitfall the plan mandates working around: [[ str == pattern ]] treats ** as * so specs/**/* silently fails to match nested paths -- glob-to-ERE translation required.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md",
-      "summary": "Full findings: assembly algorithm, @-import resolution rule (0 currently resolving), rules paths: census + glob-match correction, generate-context-line-counts.sh conventions to mirror, baseline provenance."
+      "type": "plan",
+      "path": "specs/041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md",
+      "summary": "Phases: 1 scaffold+CLI+assembly prediction, 2 @-import channel + volatile-file guard, 3 corrected paths: glob-match rule derivation, 4 machine-parseable output + --write snapshot, 5 manifest/inventory/context-layers registration, 6 verification + baseline reconciliation."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 6,
   "blockers": [],
-  "continuation_path": "specs/041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md",
-  "next_action_hint": "Run /plan 41: implement measure-eager-context.sh in agent-system/extensions/core/scripts/ modeling generate_claudemd() in bash (no nvim/deploy-headless.sh invocation), deriving eager rules via paths: glob-match against specs/**,.claude/** (not the hardcoded six-file list from measure-eager-surface.sh), with --check/--write matching generate-context-line-counts.sh's flag vocabulary and measure-eager-surface.sh's snapshot-JSON write shape."
+  "continuation_path": "specs/041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md",
+  "next_action_hint": "Run /implement 41. Phases are fully sequential (1-4 all edit the same new script file). Binding constraints carried into the plan: never invoke deploy-headless.sh or nvim; never read .claude/** for measurement; no hardcoded rule list; flag volatile files rather than counting them; all edits under agent-system/extensions/**; cite the archived correction by file path + section heading, never by task number. The '~9.5k tokens after' figure is an unsourced external target and is explicitly NOT to be validated."
 }

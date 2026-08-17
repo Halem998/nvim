@@ -60,7 +60,7 @@ next_project_number: 65
         └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 34 [PLANNED] — Fix a false-positive class in the destructive-git PreToolUse guar
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-41 [PLANNING] — Create `measure-eager-context.sh` in the core extension's scripts
+41 [PLANNED] — Create `measure-eager-context.sh` in the core extension's scripts
   └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br (see above)
   └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
@@ -379,11 +379,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 41. Build eager-context measurement harness (measure-eager-context.sh)
 - **Effort**: 2-4 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md]
+- **Plan**: [041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md]
 
 **Description**: Create `measure-eager-context.sh` in the core extension's scripts: a harness that PREDICTS the session-start eager context set from the source store plus a fresh regenerate — never by measuring the live `.claude/` tree (stale-deploy concern; the deployed tree routinely lags the source store). The eager set to model: (1) the parent CLAUDE.md chain (e.g. ~/.config/CLAUDE.md, repo CLAUDE.md, generated .claude/CLAUDE.md); (2) the generated CLAUDE.md content assembled from core + loaded extensions' merge sources; (3) any RESOLVING `@`-imports found in that chain (directory-relative resolution — see context/architecture/context-layers.md 'Eager vs. Lazy Loading Channels'); (4) rules lacking `paths:` frontmatter or carrying `paths: "**/*"`. Emit bytes and estimated tokens (bytes/4) per contributing source plus a total, in a stable machine-parseable format. Provide a `--check`/`--write` split following the precedent of `generate-context-line-counts.sh` (`--check` reports, `--write` records a baseline snapshot for later drift comparison). The audit baseline to compare against: ~69.9 KB / ~17.5k tokens before downward normalization; predicted ~9.5k tokens after. CONSTRAINTS: no volatile files (specs/TODO.md, state.json, errors.json) may ever be counted as legitimately eager — flag any found; all edits target agent-system/extensions/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**.
 
