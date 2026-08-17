@@ -1087,7 +1087,47 @@ This is a second, independent live firing (the first was during a `/orchestrate 
 
 Note the self-referential hazard this creates and treat it as an acceptance criterion: any commit message, task description, plan, or test fixture that DISCUSSES destructive git commands can trip a prose-matching guard. Work on this very task is therefore likely to trip it repeatedly. The fix must make it safe to write about `git reset --hard` without being unable to commit that writing.
 
-Reproduction hint for the implementer: the commit that eventually succeeded was `f2679860a` ("meta: create 3 tasks for hard-mode orchestrator defect remediation"). Compare against whatever earlier message was rejected — the delta identifies the trigger substring. Per the task body above, the `git add`/`git commit` over-staging detectors already quote-strip via `seg_scan`; it is the destructive chain (lines 116-184) that greps raw, and that is where both firings originate.
+Reproduction hint for the implementer: the commit that eventually succeeded was `f2679860a` ("meta: create 3 tasks for hard-mode orchestrator defect remediation"). Compare against whatever earlier message was rejected — the delta identifies the trigger substring. Per the task body above, the `git add`/`git commit` over-staging detectors already quote-strip via `seg_scan`; it is the destructive chain (lines 116-184) that greps raw, and that is where both firings originate.=== ADDENDUM: THIRD LIVE FIRING, WITH THE TRIGGER ISOLATED (recorded during batch scoping) ===
+
+The trigger the two earlier firings could not identify has now been isolated by bisection against
+the deployed hook. Both root causes are in the git commit over-staging detector (the one the task
+body above lists as ALREADY SAFE -- that assessment is WRONG for multi-line messages and must be
+corrected).
+
+CAUSE 1 -- THE QUOTE-STRIP IS LINE-BASED AND FAILS ON MULTI-LINE MESSAGES. The detector builds
+seg_scan via `echo "$seg" | sed -e 's/"[^"]*"/""/g'`. sed processes input line by line. A -m
+message spanning multiple lines leaves the opening quote unclosed on its own line, so no complete
+quoted span exists on any single line and NOTHING is stripped. Every line of the message is then
+flag-scanned as if it were argv. The identical command with a single-line message passes, because
+there the quoted span closes and is stripped correctly. Demonstrated: same header text, PASS as
+one line, BLOCK as the first line of a multi-line message.
+
+CAUSE 2 -- THE FLAG REGEX MATCHES ORDINARY HYPHENATED PROSE. The pattern is
+    (^|[^-])-[a-zA-Z]*a[a-zA-Z]*([[:space:]]|$)
+which matches ANY hyphenated word whose post-hyphen part contains an 'a' and is followed by
+whitespace. The concrete blocked token was the batch topic name itself: in `essential-refactor `,
+the `l` satisfies [^-], `-refactor` satisfies -[a-zA-Z]*a[a-zA-Z]*, and the trailing space closes
+the match. Neutral words like `un-edged` and `repo-wide` do NOT match (no 'a' after the hyphen),
+which is why the failure looked nondeterministic across earlier attempts.
+
+WHY BOTH MATTER. Cause 2 alone is harmless while the strip works; cause 1 alone is harmless while
+no line contains a matching token. The false positive requires both, which is why it presented as
+intermittent and message-dependent. A fix addressing only one leaves the other live.
+
+CORRECTION TO THE TASK BODY: the claim that the `git add` and `git commit` over-staging detectors
+"ALREADY strip quoted spans before flag-scanning" and are the correct pattern to extend is only
+true for single-line commands. Extending that pattern to the destructive chain without first
+making the strip multi-line-aware would propagate this defect rather than contain it. Fix the
+strip first, then extend.
+
+ADDITIONAL ACCEPTANCE CRITERIA:
+  - A multi-line -m message is quote-stripped as a single logical span, not per line.
+  - A commit whose message contains an ordinary hyphenated word with an 'a' after the hyphen
+    (essential-refactor, auto-repair, multi-task) is never blocked, single- or multi-line.
+  - A genuine `git commit -am "msg"` and a genuine `git commit -a` are still blocked, including
+    when the message spans multiple lines.
+  - The regression suite required by this task covers the multi-line case explicitly; a
+    single-line-only suite would have passed against this defect.
 
 ---
 
