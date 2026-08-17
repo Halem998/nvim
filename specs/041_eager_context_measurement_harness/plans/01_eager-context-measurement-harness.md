@@ -385,39 +385,44 @@ two consecutive `--check` runs produce byte-identical stdout)*
 
 ---
 
-### Phase 5: Registration, Inventory, and Context-Layers Reconciliation [NOT STARTED]
+### Phase 5: Registration, Inventory, and Context-Layers Reconciliation [COMPLETED]
 
 **Goal**: Wire the script into the extension manifest and operator docs, and state the
 relationship to the predecessor script.
 
 **Tasks**:
-- [ ] Add `measure-eager-context.sh` to `provides.scripts` in
+- [x] Add `measure-eager-context.sh` to `provides.scripts` in
       `agent-system/extensions/core/manifest.json`, placed to match the array's existing ordering
       convention. (Confirmed required: `measure-eager-surface.sh` and
       `generate-context-line-counts.sh` are both already declared there.)
-- [ ] Add an entry for `measure-eager-context.sh` to
+- [x] Add an entry for `measure-eager-context.sh` to
       `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`, matching the
       existing bullet style (`.claude/scripts/<name>` - description, noting `--check`/`--write`).
-- [ ] Add the missing entry for the predecessor `measure-eager-surface.sh` to the same inventory
+- [x] Add the missing entry for the predecessor `measure-eager-surface.sh` to the same inventory
       (the research report flagged this pre-existing gap), and in that entry state the
       coexistence decision explicitly.
-- [ ] **Coexistence decision to record**: the two scripts coexist. `measure-eager-surface.sh`
+- [x] **Coexistence decision to record**: the two scripts coexist. `measure-eager-surface.sh`
       remains as the deployed-tree before/after delta tool with a fixed composition (useful for
       apples-to-apples comparison across a single cut); `measure-eager-context.sh` is the
       source-store predictive harness with dynamic `paths:` derivation. Note in the inventory
       that the new script's rule total is intentionally wider. Do not delete or modify
       `measure-eager-surface.sh` in this task.
-- [ ] Fix the stale citation in
+- [x] Fix the stale citation in
       `agent-system/extensions/core/context/architecture/context-layers.md` (channel 3, "Eager
       budget ceiling" bullet): it points at `specs/054_split_eager_rules_budget/baseline-bytes.md`,
       but that file now lives at `specs/archive/054_split_eager_rules_budget/baseline-bytes.md`.
       Correct the path and add the section heading ("Eager-Context Measurement-Harness
       Correction") so the anchor is durable. Cite by file path plus section heading only — do not
       introduce any bare "task N" text into this deliverable.
-- [ ] Add a short pointer in that same `context-layers.md` bullet naming
+- [x] Add a short pointer in that same `context-layers.md` bullet naming
       `scripts/measure-eager-context.sh` as the tool that implements the corrected glob-match
       model described there. Keep it to one sentence — this file is itself lazily loaded but is
       referenced by the eager CLAUDE.md, so avoid growth beyond what the pointer needs.
+
+*(completed: exactly three files changed as hypothesized — `manifest.json`,
+`utility-scripts-inventory.md`, `context-layers.md`; `jq empty` passes, script appears exactly
+once in `provides.scripts`, the archive path resolves on disk, and `check-task-references.sh`
+reports 0 unexempted occurrences)*
 
 **Timing**: 0.75 hours
 

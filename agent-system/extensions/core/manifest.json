@@ -132,6 +132,7 @@
       "lint/lint-state-writer-boundary.sh",
       "literature-retrieve.sh",
       "manage-topics.sh",
+      "measure-eager-context.sh",
       "measure-eager-surface.sh",
       "memory-harvest.sh",
       "memory-retrieve.sh",

@@ -164,9 +164,11 @@ eager (in the session-start prompt prefix, paid on every invocation) or lazy (lo
    - **Eager budget ceiling**: the class being bounded is every `rules/*.md` file that eagerly
      loads in a representative session — no `paths:` frontmatter, or a `paths:` glob (`specs/**/*`,
      `.claude/**/*`, or `"**/*"`) that matches a representative touched-path set (at minimum
-     `specs/**` and `.claude/**` — see the eager-context measurement-harness correction in
-     `specs/054_split_eager_rules_budget/baseline-bytes.md` for why a narrower
-     "absent-or-universal-only" check under-counts this class). Measurement command:
+     `specs/**` and `.claude/**` — see the "Eager-Context Measurement-Harness Correction" section
+     of `specs/archive/054_split_eager_rules_budget/baseline-bytes.md` for why a narrower
+     "absent-or-universal-only" check under-counts this class; `scripts/measure-eager-context.sh`
+     implements the resulting glob-match model directly against the source store). Measurement
+     command:
      `cat ~/.config/CLAUDE.md ~/.config/nvim/CLAUDE.md .claude/CLAUDE.md .claude/rules/git-workflow.md .claude/rules/artifact-formats.md .claude/rules/state-management.md .claude/rules/pr-prohibition.md .claude/rules/source-store-deploy-boundary.md .claude/rules/no-task-references-in-deliverables.md | wc -c`
      for the whole-prefix figure, or sum `wc -c` over just the six named rules for the class total
      alone. Measured class total at the time of writing (after a split-and-relocate pass over the
