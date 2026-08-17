@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 41,
+  "session_id": "sess_1786989333_638258_41",
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md",
+      "summary": "Grounds measure-eager-context.sh design: generate_claudemd() assembly algorithm (merge.lua:768-879), why deploy-headless.sh must not be invoked (regeneration-is-manual-only.md single-sanctioned-caller policy), the paths:-frontmatter glob-match correction from the prior 054 task's handoff, provenance of the 70,160B/17,540-token baseline, and the existing (insufficient) measure-eager-surface.sh prior art."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Repo policy: agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md licenses exactly ONE automated caller of scripts/deploy-headless.sh (skill-orchestrate's Stage MT-3 step 7). Any new script that needs to know what a regenerate would produce must model/replicate the assembly logic (merge.lua's generate_claudemd: read .claude-extensions.json active+sorted extensions, core first, concatenate each extension's manifest.json .merge_targets.claudemd.source fragment with a core/templates/claudemd-header.md prefix, joined by blank lines) rather than shelling out to deploy-headless.sh, even against a scratch copy.",
+      "category": "PATTERN",
+      "source_artifact": "specs/041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless", "regeneration-is-manual-only", "generate_claudemd", "merge.lua", "source-store"]
+    },
+    {
+      "content": "A rule's paths: frontmatter gates when Claude Code's harness injects it eagerly, independent of the curated @-import list. Checking only 'absent or paths: \"**/*\"' undercounts the eager rule set by ~71%: rules gated on specs/**/* or .claude/**/* (e.g. git-workflow.md, artifact-formats.md, state-management.md in this repo) ALSO load eagerly for any session touching those paths, which is nearly every session. Any eager-context measurement tool must glob-match each rule's paths: value against a representative touched-path set (at minimum specs/** and .claude/**), not just check for absent/universal frontmatter.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["paths-frontmatter", "eager-context", "rules-glob-matching", "context-layers"]
+    }
+  ],
+  "next_steps": "Run /plan 41 to create implementation plan"
+}
