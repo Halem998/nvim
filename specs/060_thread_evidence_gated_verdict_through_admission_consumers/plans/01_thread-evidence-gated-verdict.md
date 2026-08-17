@@ -194,34 +194,40 @@ if the count differs, fix all of them and record the corrected count.
 
 ---
 
-### Phase 2: Correct the false self-clearing claim (WORK 4) [NOT STARTED]
+### Phase 2: Correct the false self-clearing claim (WORK 4) [COMPLETED]
 
 **Goal**: The corpus states one consistent thing about `cross_batch` self-clearing: it does not
 clear on its own within this invocation.
 
 **Tasks**:
 
-- [ ] `skills/skill-orchestrate/SKILL.md` L1538-1542: stop asserting "Both branches ... becomes
+- [x] `skills/skill-orchestrate/SKILL.md` L1538-1542: stop asserting "Both branches ... becomes
       eligible again on a later cycle" as a blanket claim. Split the claim by `collision_scope`:
       keep the `in_batch` claim (it is true and load-bearing for the convergence argument
       elsewhere in the file); state for `cross_batch` that the candidate is excluded from this
       invocation, does NOT automatically become eligible again within this run (the colliding task
       is outside `task_numbers` and this loop has no mechanism to advance it), and that a human
       resolves batch composition or a future invocation re-evaluates once the colliding task's
-      status independently changes.
-- [ ] `skills/skill-orchestrate/SKILL.md` ~L1841: inspect the second "it becomes eligible again
+      status independently changes. *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md` ~L1841: inspect the second "it becomes eligible again
       next cycle" instance. Determine whether it is scoped to `self_modifying`/`in_batch` (where
       the claim is TRUE — leave it) or is a generalized claim (fix it the same way). Record which.
-- [ ] `skills/skill-orchestrate-hard/SKILL.md` L1578-1584: replace the
+      *(completed: this instance (now ~L1850) is the task-lock acquire-refusal defer, a distinct
+      mechanism from file_scope_collision with no in_batch/cross_batch split of its own — the lock
+      is retried every cycle regardless of batch membership, so the claim is true; left unchanged)*
+- [x] `skills/skill-orchestrate-hard/SKILL.md` L1578-1584: replace the
       "unchanged from the base skill's handling" pointer with a real transcription that carries
       the same split-by-`collision_scope` claim. Keep the existing Tier 1 cross-reference to
       `task-lock.md`'s "Four-Tier Conflict Response", but attach it to the `in_batch` half only,
-      since the cycling-defer-is-Tier-1 claim is what is true of `in_batch`.
-- [ ] `commands/orchestrate.md` `cross_batch` WARNING bullet (~L307-316): verify it already agrees
+      since the cycling-defer-is-Tier-1 claim is what is true of `in_batch`. *(completed)*
+- [x] `commands/orchestrate.md` `cross_batch` WARNING bullet (~L307-316): verify it already agrees
       ("Excluding #{task_number} from this run — batch composition needs human review"). Edit only
       if the surrounding prose contradicts the corrected claim; otherwise record no-change.
-- [ ] Read `docs/architecture/batch-admit-schema.md`'s "Deferral-Direction Rule and Caller
-      Guidance" section (~L213-225) as the alignment target. Do NOT edit it.
+      *(completed: verified no "eligible again" claim exists on the cross_batch bullet in this
+      file at all — no change needed)*
+- [x] Read `docs/architecture/batch-admit-schema.md`'s "Deferral-Direction Rule and Caller
+      Guidance" section (~L213-225) as the alignment target. Do NOT edit it. *(completed: read;
+      corrected claim agrees — "a human resolves batch composition")*
 
 **Timing**: 0.75 hours
 

@@ -1536,12 +1536,17 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      a defer), append to `mt_state_file.defer_ledger`:
      `{"task": task_number, "defer_reason": "self_modifying", "collision_scope": null, "cycle": cycle_count, "detail": "matched critical path {critical_path} ({critical_label})"}`.
    - **`file_scope_collision`** — retains the exact pre-existing `collision_scope` branching
-     below, byte-for-byte. Both branches preserve the surrounding cycle semantics verbatim: a
-     deferred task is removed from **this cycle's** dispatch batch, is never added to
-     `failed_tasks`, and becomes eligible again on a later cycle (never added to
-     `deferred_self_modifying` — that set is exclusively for the `self_modifying` branch above).
+     below, byte-for-byte. Both branches share the same removal semantics: a deferred task is
+     removed from **this cycle's** dispatch batch and is never added to `failed_tasks` (never
+     added to `deferred_self_modifying` — that set is exclusively for the `self_modifying` branch
+     above). Self-clearing differs by scope, and the two must not be conflated — see each bullet
+     below for its own claim.
      - **`in_batch`** (the colliding task is itself in `eligible_tasks`): remove the deferred task
-       from this cycle's dispatch batch and log the existing warning:
+       from this cycle's dispatch batch and log the existing warning. This scope self-clears
+       within this invocation: the deferred task becomes eligible again on a later cycle, once the
+       colliding in-batch task leaves `eligible_tasks` (entering `researching`/`planning`,
+       terminating, or failing). This claim is TRUE and is load-bearing for the convergence
+       argument elsewhere in this file:
        ```
        [orchestrate] WARNING: Tasks #{X} and #{Y} have overlapping file_scope with no
          dependency_graph edge between them. Deferring #{Y} to a later cycle to avoid
@@ -1551,7 +1556,11 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
        `{"task": Y, "defer_reason": "file_scope_collision", "collision_scope": "in_batch", "cycle": cycle_count, "detail": "colliding in-batch task #{X}"}`.
      - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation):
        remove the candidate from this cycle's dispatch batch and log a **distinct** warning naming
-       the out-of-batch task and its `colliding_task_status`:
+       the out-of-batch task and its `colliding_task_status`. This scope does NOT self-clear
+       within this invocation: the excluded candidate does NOT automatically become eligible
+       again this run — the colliding task is outside `task_numbers` and this loop has no
+       mechanism to advance it. A human resolves batch composition, or a future invocation
+       re-evaluates once the colliding task's status independently changes:
        ```
        [orchestrate] WARNING: Task #{task_number} has overlapping file_scope with task
          #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE this

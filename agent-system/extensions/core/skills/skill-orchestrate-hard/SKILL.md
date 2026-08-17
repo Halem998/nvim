@@ -1575,13 +1575,25 @@ every defer verdict carries this REQUIRED discriminator):
   (no longer an eligibility-exclusion set — the defer clears on its own once the co-dispatched
   sibling leaves `eligible_tasks`); log a distinct warning naming the matched critical path,
   label, and the co-dispatched sibling situation.
-- **`file_scope_collision`** (`in_batch` / `cross_batch`): unchanged from the base skill's
-  handling — defer the named task to a later cycle, never added to `failed_tasks`, never added to
-  `deferred_self_modifying`. This cycling defer IS Tier 1 (auto-sequence) of the four-tier
-  conflict-response ladder — see `.claude/context/patterns/task-lock.md`'s "Four-Tier Conflict
-  Response" section for the full ladder and how this multi-cycle re-sequencing compares to plain
-  multi-task `/research`'s, `/plan`'s, and `/implement`'s bounded one-extra-pass equivalent. No
-  behavioral change here; this is a cross-reference only.
+- **`file_scope_collision`** — matches `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5's
+  `collision_scope` branching exactly; both branches remove the deferred task from this cycle's
+  dispatch batch and never add it to `failed_tasks` (never added to `deferred_self_modifying` —
+  that set is exclusive to the `self_modifying` branch above). Self-clearing differs by scope, and
+  the two must not be conflated:
+  - **`in_batch`** (the colliding task is itself in `eligible_tasks`): self-clears within this
+    invocation — the deferred task becomes eligible again on a later cycle, once the colliding
+    in-batch task leaves `eligible_tasks` (entering `researching`/`planning`, terminating, or
+    failing). This cycling defer IS Tier 1 (auto-sequence) of the four-tier conflict-response
+    ladder — see `.claude/context/patterns/task-lock.md`'s "Four-Tier Conflict Response" section
+    for the full ladder and how this multi-cycle re-sequencing compares to plain multi-task
+    `/research`'s, `/plan`'s, and `/implement`'s bounded one-extra-pass equivalent.
+  - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation): does
+    NOT self-clear within this invocation — the excluded candidate does NOT automatically become
+    eligible again this run, since the colliding task is outside `task_numbers` and this loop has
+    no mechanism to advance it. A human resolves batch composition, or a future invocation
+    re-evaluates once the colliding task's status independently changes.
+  No behavioral change from the base skill here; this bullet is a full transcription, not a
+  cross-reference.
 - **`session_active`** (NEW in v4, reached only when the collision scan above found no hit): a
   live registered session's own unioned `file_scope` overlaps the candidate's. Same defer-not-fail
   cycle semantics as the two branches above — remove the candidate from this cycle's dispatch

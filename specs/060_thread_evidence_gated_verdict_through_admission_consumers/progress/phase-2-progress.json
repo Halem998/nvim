@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Correct the false self-clearing claim (WORK 4)",
+  "started_at": "2026-08-17T00:15:00Z",
+  "last_updated": "2026-08-17T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Split the cross_batch/in_batch self-clearing claim in base skill and hard twin; verify command doc and schema doc alignment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ],
+      "note": "commands/orchestrate.md required no edit -- its cross_batch bullet carries no self-clearing claim at all. The ~L1850 task-lock instance in the base skill is a distinct mechanism (task-lock acquire refusal, no in_batch/cross_batch split) and its claim is true; left unchanged."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
