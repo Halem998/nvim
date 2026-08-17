@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Narrow the cross_batch disjunct and emit the advisory field",
+  "started_at": "2026-08-17T00:15:00Z",
+  "last_updated": "2026-08-17T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add is_in_flight def", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 2, "description": "Replace $hit comprehension with materialized $overlaps + $hit + $idle_overlap", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 3, "description": "Append idle_overlap_advisory to plain admit verdict", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "Append idle_overlap_advisory to session_active defer verdict", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 5, "description": "Append idle_overlap_advisory to file_scope_collision defer verdict", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "bash_n": "pass",
+    "predicate_suite": "32 passed, 0 failed (matches Phase 1 baseline)",
+    "four_tier_suite": "11 passed, 0 failed (matches Phase 1 baseline)",
+    "adhoc_positive": "candidate 900 vs idle not_started 901 sharing scratch/shared.sh -> admit + idle_overlap_advisory naming 901/not_started/scratch/shared.sh",
+    "adhoc_negative": "same fixture with 901 flipped to implementing -> defer + file_scope_collision + collision_scope=cross_batch",
+    "diff_scope": "git diff --stat confirms only agent-system/extensions/core/scripts/orchestrate-batch-admit.sh changed, jq program region only"
+  }
+}

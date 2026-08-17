@@ -401,6 +401,7 @@ if verdicts=$(jq -n -c \
   "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
 
   def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
+  def is_in_flight: ascii_downcase as $s | ($s == "researching" or $s == "planning" or $s == "implementing");
 
   ($state_arr[0].active_projects // []) as $all |
   $candidates as $cands |
@@ -471,17 +472,35 @@ if verdicts=$(jq -n -c \
             other_num: $other_num,
             other_status: ($other.status // ""),
             ov_path: $ov_path,
-            scope_kind: $scope_kind
+            scope_kind: $scope_kind,
+            in_flight: (($other.status // "") | is_in_flight)
           }
-        ] | first
-      ) as $hit |
+        ]
+      ) as $overlaps |
+      ($overlaps | map(select(.scope_kind == "in_batch" or .in_flight)) | first) as $hit |
+      ($overlaps | map(select(.scope_kind == "cross_batch" and (.in_flight | not))) | first) as $idle_overlap |
+      (
+        if $idle_overlap == null then {} else
+          {
+            idle_overlap_advisory: {
+              colliding_task_number: $idle_overlap.other_num,
+              colliding_task_status: $idle_overlap.other_status,
+              overlapping_path: $idle_overlap.ov_path,
+              collision_scope: $idle_overlap.scope_kind,
+              reason: ("file_scope overlap with IDLE (not in-flight) task #" + ($idle_overlap.other_num | tostring) +
+                       " (status \"" + $idle_overlap.other_status + "\", not in this batch) at " + $idle_overlap.ov_path +
+                       "; admitted because no execution evidence exists — add a dependencies[] edge if ordering between them matters")
+            }
+          }
+        end
+      ) as $idle_advisory_frag |
       if $hit == null then
         # No state.json collision found -- the session-registry input (D3 precedence: reached
         # only here) gets its turn. Every input that defers via the branch above is UNCHANGED by
         # this addition; this new flavor fires strictly where the predicate used to admit.
         session_contention($c_scope; $c; $own_sid; $all; $sess_list) as $sess_hit |
         if $sess_hit == null then
-          {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit", self_modifying: $sm_flag}
+          {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag
         else
           {
             "$schema": "orchestrate-batch-admit-v4",
@@ -496,7 +515,7 @@ if verdicts=$(jq -n -c \
             reason: ("session " + $sess_hit.session_id + " (liveness: " + $sess_hit.liveness_reason +
                      ") covers non-terminal task #" + ($sess_hit.covered_task_number | tostring) +
                      " whose registered file_scope overlaps this candidate at " + $sess_hit.overlapping_path)
-          }
+          } + $idle_advisory_frag
         end
       else
         # corroborated_by (D2/v4): always names the state.json signal that produced this verdict;
@@ -527,7 +546,7 @@ if verdicts=$(jq -n -c \
           reason: ("file_scope overlap with non-terminal task #" + ($hit.other_num | tostring) +
                    " (" + (if $hit.scope_kind == "in_batch" then "in this batch" else "not in this batch" end) +
                    ") at " + $hit.ov_path + "; no dependencies[] edge between them")
-        }
+        } + $idle_advisory_frag
       end
     end
   end

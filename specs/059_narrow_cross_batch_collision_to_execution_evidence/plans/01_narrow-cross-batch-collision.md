@@ -260,29 +260,34 @@ plan's later phases before proceeding rather than implementing against the stale
 
 ---
 
-### Phase 2: Narrow the cross_batch disjunct and emit the advisory field [NOT STARTED]
+### Phase 2: Narrow the cross_batch disjunct and emit the advisory field [COMPLETED]
 
 **Goal**: Change the behavior — and only the behavior — in `orchestrate-batch-admit.sh`'s jq
 program. The `$schema` string stays `v4` in this phase; the bump is Phase 3.
 
 **Tasks**:
-- [ ] Add `def is_in_flight: ascii_downcase as $s | ($s == "researching" or $s == "planning" or $s == "implementing");`
+- [x] Add `def is_in_flight: ascii_downcase as $s | ($s == "researching" or $s == "planning" or $s == "implementing");`
       immediately after the existing `def is_terminal:` line in the jq program, matching its
-      case-insensitivity convention.
-- [ ] Replace the single-pass `$hit` comprehension with the materialized `$overlaps` list plus the
+      case-insensitivity convention. *(completed)*
+- [x] Replace the single-pass `$hit` comprehension with the materialized `$overlaps` list plus the
       two derived selections exactly as specified in "Design Decision: the predicate restructuring"
-      above. Copy the comprehension body verbatim; add only the `in_flight` key.
-- [ ] Append `idle_overlap_advisory` to the plain `admit` verdict emitted when
+      above. Copy the comprehension body verbatim; add only the `in_flight` key. *(completed)*
+- [x] Append `idle_overlap_advisory` to the plain `admit` verdict emitted when
       `$hit == null` and `$sess_hit == null`, using
       `+ (if $idle_overlap == null then {} else {idle_overlap_advisory: {...}} end)` so existing
-      field order is unchanged and the new key is always last.
-- [ ] Append the same conditional `idle_overlap_advisory` to the `session_active` defer verdict.
-- [ ] Append the same conditional `idle_overlap_advisory` to the `file_scope_collision` defer
-      verdict.
-- [ ] Build the advisory's `reason` string to name the colliding task, its status, `cross_batch`,
-      the overlapping path, and the `dependencies[]`-edge remedy, per the shape above.
-- [ ] Do NOT touch `$comparison_set` construction, the `select($scope_kind == "cross_batch" or
-      $other_num < $c)` direction filter, `session_contention()`, or `corroborated_by`.
+      field order is unchanged and the new key is always last. *(completed: computed once as
+      `$idle_advisory_frag` and appended via `+` to all three verdicts, rather than duplicating the
+      if/else three times — identical output, same semantics)*
+- [x] Append the same conditional `idle_overlap_advisory` to the `session_active` defer verdict.
+      *(completed)*
+- [x] Append the same conditional `idle_overlap_advisory` to the `file_scope_collision` defer
+      verdict. *(completed)*
+- [x] Build the advisory's `reason` string to name the colliding task, its status, `cross_batch`,
+      the overlapping path, and the `dependencies[]`-edge remedy, per the shape above. *(completed)*
+- [x] Do NOT touch `$comparison_set` construction, the `select($scope_kind == "cross_batch" or
+      $other_num < $c)` direction filter, `session_contention()`, or `corroborated_by`. *(confirmed
+      untouched — diff is scoped exactly to the is_in_flight def, the $overlaps/$hit/$idle_overlap
+      block, and the three `+ $idle_advisory_frag` appends)*
 
 **Timing**: 60 minutes
 
