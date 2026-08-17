@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Update batch-admit-schema.md to v5",
+  "started_at": "2026-08-17T01:15:00Z",
+  "last_updated": "2026-08-17T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update Status line to Version 5", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 2, "description": "Update schema literals in examples + field table to v5", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"], "note": "also fixed colliding_task_status not_started -> implementing in the pre-existing cross_batch defer example, since that status no longer defers under v5"},
+    {"id": 3, "description": "Add idle_overlap_advisory field table row", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 4, "description": "Add idle-cross-batch admit example verdict", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 5, "description": "Rewrite/retitle blocking-rationale section", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 6, "description": "Update Deferral-Direction Rule cross_batch prose", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 7, "description": "Review Precedence and Accepted False-Positive Profile sections", "status": "done", "files_touched": [], "note": "no falsified statements found; no edit needed"},
+    {"id": 8, "description": "Add v5 Version History entry + discriminator-change note + consumer-by-file note", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "v4_literal_grep": "zero hits anywhere in the document (stronger than required; Version History uses bare 'v1'/'v2'/'v3'/'v4' labels, not the full pinned literal string, consistent with existing document style)",
+    "json_examples_valid": "all 5 example verdicts pass jq -e .",
+    "diff_type": "prose and fenced JSON examples only, markdown file"
+  }
+}

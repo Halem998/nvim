@@ -386,42 +386,46 @@ vice versa) and MUST NOT be committed. Do not widen the batch after the fact.
 
 ---
 
-### Phase 4: Update batch-admit-schema.md to v5 [NOT STARTED]
+### Phase 4: Update batch-admit-schema.md to v5 [COMPLETED]
 
 **Goal**: Bring the schema document into agreement with the v5 script: version string, new field
 definition, new example verdict, corrected blocking rationale, and a v4-to-v5 Version History entry
 following the document's own established convention.
 
 **Tasks**:
-- [ ] Update the `**Status**:` line to Version 5 (`orchestrate-batch-admit-v5`).
-- [ ] Update every `"$schema":"orchestrate-batch-admit-v4"` occurrence in the example verdicts and
-      the `$schema` row of the Field Definitions table to v5.
-- [ ] Add an `idle_overlap_advisory` row to the Field Definitions table: type `object`, presence
+- [x] Update the `**Status**:` line to Version 5 (`orchestrate-batch-admit-v5`). *(completed)*
+- [x] Update every `"$schema":"orchestrate-batch-admit-v4"` occurrence in the example verdicts and
+      the `$schema` row of the Field Definitions table to v5. *(completed; the pre-existing
+      file-scope-collision example's `colliding_task_status` was also changed from `not_started`
+      to `implementing` since a `not_started` cross_batch collider no longer defers under v5 — a
+      stale `not_started` defer example would have been factually wrong post-narrowing)*
+- [x] Add an `idle_overlap_advisory` row to the Field Definitions table: type `object`, presence
       "present on any post-scan verdict (admit, `session_active` defer, or `file_scope_collision`
       defer) when a suppressed idle cross-batch overlap exists; absent otherwise and on all
-      pre-scan branches", with the four nested keys and `reason` enumerated.
-- [ ] Add a new example verdict under `## Complete JSON Schema` for the idle-cross-batch admit case,
-      in the same compact one-line style as the existing examples.
-- [ ] Rewrite `## Why This Check Is Blocking, Not Advisory` to the evidence-gated argument (same
+      pre-scan branches", with the four nested keys and `reason` enumerated. *(completed)*
+- [x] Add a new example verdict under `## Complete JSON Schema` for the idle-cross-batch admit case,
+      in the same compact one-line style as the existing examples. *(completed)*
+- [x] Rewrite `## Why This Check Is Blocking, Not Advisory` to the evidence-gated argument (same
       substance as Phase 3's header rewrite, at document length). Retitle if the current title no
       longer describes the section's claim — e.g. to name the in-flight/idle split explicitly.
-- [ ] Update `## Deferral-Direction Rule and Caller Guidance`'s `cross_batch` prose to the narrowed
-      rule, leaving the `in_batch` prose untouched.
-- [ ] Review `## Precedence: Self-Modification, Then Collision, Then Session-Registry` and
+      *(completed: retitled "Why This Check Is Evidence-Gated Between Blocking and Advisory", with
+      an explicit note on the retitle and the prior self-contradiction)*
+- [x] Update `## Deferral-Direction Rule and Caller Guidance`'s `cross_batch` prose to the narrowed
+      rule, leaving the `in_batch` prose untouched. *(completed; in_batch prose byte-identical)*
+- [x] Review `## Precedence: Self-Modification, Then Collision, Then Session-Registry` and
       `## Accepted False-Positive Profile` for statements the narrowing falsifies (in particular any
       claim that an idle non-terminal overlap defers, or any false-positive accounting that assumed
-      it did) and correct them.
-- [ ] Add a `**v5**` Version History entry after v4, matching the existing entries' template: what
+      it did) and correct them. *(completed: reviewed both sections via targeted grep for
+      "unconditionally"/"not_started"/"non-terminal task whose" — no falsified statement found in
+      either section; both describe the comparison-set construction and the directory-prefix
+      matching cost generically, neither asserts cross_batch-specific unconditional deferral, so no
+      edit was needed there)*
+- [x] Add a `**v5**` Version History entry after v4, matching the existing entries' template: what
       changed, and — as every prior entry does — *why this was a version bump rather than an
-      additive field*. The reason: a v4-aware consumer branching on `decision` alone will read an
-      idle-overlap admit as an unqualified all-clear and will not surface the advisory, silently
-      losing the very signal the narrowing exists to make loud; and a v4 consumer's defer handling
-      no longer sees the cross-batch idle case at all. Also record the accepted discriminator change
-      documented under "Design Decision: the predicate restructuring" above (a candidate overlapping
-      both an idle lower-numbered cross-batch task and an in-batch task now reports `in_batch`
-      instead of `cross_batch`; the decision is `defer` either way).
-- [ ] Note in the Version History entry that `defer_reason` consumers are updated separately (task
-      60's scope) — describe them by file, not by task number.
+      additive field*. *(completed, including the accepted discriminator-change note)*
+- [x] Note in the Version History entry that `defer_reason` consumers are updated separately (task
+      60's scope) — describe them by file, not by task number. *(completed: "Consumers updated by
+      this bump — none" bullet names the four files by path with no task-number reference)*
 
 **Timing**: 50 minutes
 

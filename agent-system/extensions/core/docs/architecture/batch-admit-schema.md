@@ -1,8 +1,8 @@
 # Cross-Batch Admission Verdict Schema
 
-**Status**: Current architecture. Version 4 (`orchestrate-batch-admit-v4`) — see "Version History"
-at the bottom for what changed from v1 to v2, v2 to v3, and v3 to v4, and why each bump was a
-version, not an additive field.
+**Status**: Current architecture. Version 5 (`orchestrate-batch-admit-v5`) — see "Version History"
+at the bottom for what changed from v1 to v2, v2 to v3, v3 to v4, and v4 to v5, and why each bump
+was a version, not an additive field.
 
 **File location**: n/a — this is a stdout stream contract, not a file. The script emits NDJSON
 directly; nothing is written to disk.
@@ -75,35 +75,46 @@ never reordered per verdict. `self_modifying` is present on **every** verdict, i
 alongside another candidate):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v4","task_number":460,"decision":"defer","self_modifying":true,"defer_reason":"self_modifying","critical_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","critical_label":"admission predicate","reason":"candidate #460 file_scope names orchestrator-critical path \"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh\" (admission predicate); deferred out of this wave/cycle because it is co-dispatched alongside another candidate this cycle — it becomes eligible again once that co-dispatch clears, or pass --allow-self-modifying to override"}
+{"$schema":"orchestrate-batch-admit-v5","task_number":460,"decision":"defer","self_modifying":true,"defer_reason":"self_modifying","critical_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","critical_label":"admission predicate","reason":"candidate #460 file_scope names orchestrator-critical path \"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh\" (admission predicate); deferred out of this wave/cycle because it is co-dispatched alongside another candidate this cycle — it becomes eligible again once that co-dispatch clears, or pass --allow-self-modifying to override"}
 ```
 
-**File-scope collision defer** (unchanged algorithm from v1, plus `corroborated_by`, NEW in v4):
+**File-scope collision defer** (unchanged algorithm from v1, plus `corroborated_by` (NEW in v4);
+as of v5 a `cross_batch` collision only reaches this shape when the colliding task carries
+execution evidence — see "Deferral-Direction Rule and Caller Guidance" below):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v4","task_number":"{N}","decision":"defer","self_modifying":false,"defer_reason":"file_scope_collision","colliding_task_number":"{M}","colliding_task_status":"not_started","overlapping_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","collision_scope":"cross_batch","corroborated_by":["non_terminal_status"],"reason":"file_scope overlap with non-terminal task #{M} (not in this batch) at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh; no dependencies[] edge between them"}
+{"$schema":"orchestrate-batch-admit-v5","task_number":"{N}","decision":"defer","self_modifying":false,"defer_reason":"file_scope_collision","colliding_task_number":"{M}","colliding_task_status":"implementing","overlapping_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","collision_scope":"cross_batch","corroborated_by":["non_terminal_status"],"reason":"file_scope overlap with non-terminal task #{M} (not in this batch) at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh; no dependencies[] edge between them"}
 ```
 
 **Session-active defer** (NEW in v4 — reached only when the collision scan above found no hit; a
 live registered session's own unioned `file_scope` overlaps the candidate's):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v4","task_number":"{N}","decision":"defer","self_modifying":false,"defer_reason":"session_active","session_id":"sess_1736700000_a1b2c3","colliding_task_number":"{M}","overlapping_path":"agent-system/extensions/core/scripts/task-lock.sh","session_liveness_reason":"pid-alive","reason":"session sess_1736700000_a1b2c3 (liveness: pid-alive) covers non-terminal task #{M} whose registered file_scope overlaps this candidate at agent-system/extensions/core/scripts/task-lock.sh"}
+{"$schema":"orchestrate-batch-admit-v5","task_number":"{N}","decision":"defer","self_modifying":false,"defer_reason":"session_active","session_id":"sess_1736700000_a1b2c3","colliding_task_number":"{M}","overlapping_path":"agent-system/extensions/core/scripts/task-lock.sh","session_liveness_reason":"pid-alive","reason":"session sess_1736700000_a1b2c3 (liveness: pid-alive) covers non-terminal task #{M} whose registered file_scope overlaps this candidate at agent-system/extensions/core/scripts/task-lock.sh"}
 ```
 
 **Admit** (carries only `$schema`, `task_number`, `decision`, `self_modifying` — nothing else,
 whether `self_modifying` is `true` (a self-modifying candidate admitted solo, co-dispatch count
-== 1), `false` (an ordinary candidate), or `null` (degraded — see below)):
+== 1), `false` (an ordinary candidate), or `null` (degraded — see below); may additionally carry
+`idle_overlap_advisory`, NEW in v5 — see the dedicated example below):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v4","task_number":905,"decision":"admit","self_modifying":false}
+{"$schema":"orchestrate-batch-admit-v5","task_number":905,"decision":"admit","self_modifying":false}
+```
+
+**Admit with idle cross-batch advisory** (NEW in v5 — the collision scan found a `cross_batch`
+overlap against a task with NO execution evidence, so the candidate is admitted rather than
+deferred, and the suppressed overlap is surfaced loudly rather than silently):
+
+```json
+{"$schema":"orchestrate-batch-admit-v5","task_number":"{N}","decision":"admit","self_modifying":false,"idle_overlap_advisory":{"colliding_task_number":"{M}","colliding_task_status":"not_started","overlapping_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","collision_scope":"cross_batch","reason":"file_scope overlap with IDLE (not in-flight) task #{M} (status \"not_started\", not in this batch) at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh; admitted because no execution evidence exists — add a dependencies[] edge if ordering between them matters"}}
 ```
 
 ## Field Definitions
 
 | Field | Type | Presence | Meaning |
 |-------|------|----------|---------|
-| `$schema` | string | always | Literal `"orchestrate-batch-admit-v4"`. Pinned; never changes across an invocation. |
+| `$schema` | string | always | Literal `"orchestrate-batch-admit-v5"`. Pinned; never changes across an invocation. |
 | `task_number` | int | always | The candidate task number, echoed back from the corresponding CLI argument. |
 | `decision` | string | always | `"admit"` or `"defer"` — never `"fail"`. |
 | `self_modifying` | bool \| null | always | `true` when the candidate's own `file_scope` names a declared orchestrator-critical path; `false` when it does not; `null` when the critical-path data file is missing or unparseable (degraded — the check could not run, never silently reported as `false`). |
@@ -118,6 +129,7 @@ whether `self_modifying` is `true` (a self-modifying candidate admitted solo, co
 | `session_id` | string | `defer_reason == "session_active"` only (NEW in v4) | The contending session's own `session_id`. |
 | `session_liveness_reason` | string | `defer_reason == "session_active"` only (NEW in v4) | One of `session_liveness()`'s six reasons (`task-lock.sh`) — always one of `pid-alive` / `dead-pid-within-grace` / `corrupt` / `undeterminable` here, since `dead-pid`/`stale-heartbeat` sessions are excluded by D4 before this verdict can fire. |
 | `reason` | string | defer only | Machine-templated human-readable summary. Never the sole carrier of any fact already available as a structured field above. |
+| `idle_overlap_advisory` | object | present on any post-scan verdict (`admit`, `session_active` defer, or `file_scope_collision` defer) when a suppressed idle cross-batch overlap exists; absent otherwise, and absent on all pre-scan branches (the three early-exit admits and both `self_modifying` branches) (NEW in v5) | Nested object surfacing a `cross_batch` overlap the collision scan found against a task carrying NO execution evidence (status not in `{researching, planning, implementing}`) and therefore did not block on. Nested keys: `colliding_task_number` (int), `colliding_task_status` (string, verbatim from `specs/state.json`), `overlapping_path` (string, first overlapping path), `collision_scope` (string, always `"cross_batch"` — an idle `in_batch` overlap cannot occur, since every `in_batch` member blocks unconditionally), and `reason` (string, machine-templated, names the `dependencies[]`-edge remedy). First-match, ascending `project_number` — same determinism convention as the collision scan itself. |
 
 ## Precedence: Self-Modification, Then Collision, Then Session-Registry
 
@@ -198,13 +210,19 @@ precedent for its own sake.
   (e.g. adding a third `collision_scope` value, or changing what `in_batch` means) now has a
   WIDER blast radius than before: it must be re-verified against both consumers, not just
   `skill-orchestrate`'s.
-- **`defer_reason == "file_scope_collision"`, `collision_scope == "cross_batch"`**: the colliding
-  task is NOT one of this invocation's candidate arguments. This means the requested candidate is
-  excluded from this invocation's admitted set and the colliding task is surfaced for human
-  batch-composition judgment. This is explicitly **not** a correctness verdict on the candidate
-  task, and explicitly **not** an instruction to fold the out-of-batch task into the run. The
-  out-of-batch task is idle and in no batch, so it will not itself advance and resolve the
-  collision on its own; a human resolves batch composition.
+- **`defer_reason == "file_scope_collision"`, `collision_scope == "cross_batch"`** (NARROWED in
+  v5): the colliding task is NOT one of this invocation's candidate arguments, AND it carries
+  execution evidence — status in `{researching, planning, implementing}` (case-insensitive).
+  Through v4 this defer fired unconditionally for any non-terminal cross-batch collision,
+  regardless of the colliding task's status; as of v5 it fires only when the colliding task is
+  actually in flight. This means the requested candidate is excluded from this invocation's
+  admitted set and the colliding task is surfaced for human batch-composition judgment. This is
+  explicitly **not** a correctness verdict on the candidate task, and explicitly **not** an
+  instruction to fold the in-flight out-of-batch task into the run; a human resolves batch
+  composition. When the colliding cross-batch task instead carries NO execution evidence, this
+  script no longer defers at all — it admits the candidate with an `idle_overlap_advisory` (see
+  the Field Definitions table above and the dedicated example verdict) rather than blocking
+  permanently on a task that will never itself advance to resolve the collision.
 - **`defer_reason == "session_active"`** (NEW in v4, reached only when the collision scan above
   found no hit): a live registered session's own unioned `file_scope` overlaps the candidate's,
   and the session is not excluded by D4's three exclusions (self-session-id, liveness,
@@ -277,25 +295,49 @@ sibling every cycle), breaking the loop with `partial` status rather than silent
 equivalent mechanism because each wave is dispatched at most once per invocation; the
 recurring-cycle shape is unique to the SKILL.md multi-task loop.
 
-## Why This Check Is Blocking, Not Advisory
+## Why This Check Is Evidence-Gated Between Blocking and Advisory
+
+**Retitled in v5** (was "Why This Check Is Blocking, Not Advisory" — that title, and the
+paragraph beneath it, asserted blanket blocking for the `cross_batch` case while simultaneously
+conceding the colliding task "is not running", which is a self-contradiction. See the v5 Version
+History entry below for the correction).
 
 The imported criterion for the blocking-vs-advisory decision is: computable from on-disk state
-alone, and the harm of skipping it is silent and hard to detect later. Both dimensions this
-script implements satisfy that criterion:
+alone, and the harm of skipping it is silent and hard to detect later. Three cases this script
+implements satisfy that criterion and stay BLOCKING:
 
-- A cross-batch `file_scope` collision requires nothing but a read of `specs/state.json`, and if
-  skipped, two sessions can concurrently edit the same files with no lock contention (the
-  colliding task holds no lock; it simply is not running) and no visible symptom until a merge
-  conflict or a silently overwritten edit turns up much later.
+- An `in_batch` `file_scope` collision requires nothing but a read of `specs/state.json`, and if
+  skipped, two sessions can concurrently edit the same files with no lock contention and no
+  visible symptom until a merge conflict or a silently overwritten edit turns up much later.
+- A `cross_batch` `file_scope` collision against a task carrying execution evidence (status in
+  `{researching, planning, implementing}`) satisfies the same profile: that task IS actively
+  running, so the concurrent-write hazard is real, not hypothetical.
 - A self-modifying candidate's hazard requires nothing but a read of the candidate's own
   `file_scope` against a declared list, and if skipped, an unverifiable orchestrator-machinery
   fix can be bundled into a multi-task batch commit with no visible symptom until a later defect
-  is traced back to it.
+  is traced back to it. This dimension is unaffected by the v5 narrowing below and keeps its own
+  unconditional blocking profile regardless of any other task's status.
 
-A future maintainer who is tempted to relax either check to advisory after reading general
-literature on false positives from coarse directory-prefix scope declarations should re-derive
-the criterion above first: the false-positive cost here is a deferred task, not silent data
-loss, and the two are not comparable. Both checks stay blocking.
+One case does NOT satisfy the criterion and is ADVISORY (**NEW in v5**): a `cross_batch`
+`file_scope` collision against a task with NO execution evidence (`not_started`, `blocked`,
+`partial`, `pr_ready`, or any other idle non-terminal status). There is no second session to
+concurrently edit anything — the colliding task simply is not running — so nothing is lost by not
+blocking on it today. The only real residual concern is ORDERING (should the candidate wait until
+the idle task eventually runs?), and ordering is exactly what `dependencies[]` exists to express;
+it is not a concurrent-write hazard and does not belong behind a defer that can never self-clear
+until the idle task changes status on its own initiative. This case admits, and surfaces the
+suppressed overlap loudly via `idle_overlap_advisory` (see the Field Definitions table above)
+rather than silently dropping it.
+
+A future maintainer who is tempted to relax the `in_batch` check, the in-flight `cross_batch`
+check, or the self-modifying check to advisory after reading general literature on false
+positives from coarse directory-prefix scope declarations should re-derive the criterion above
+first: the false-positive cost for all three of those is a deferred task, not silent data loss,
+and the two are not comparable. Those three checks stay blocking. This narrowing is
+evidence-gating — does the colliding task carry proof of being in flight? — not batch-size-gating;
+the comparison set and its size are unchanged, and the check runs identically at any batch size.
+See `context/patterns/batch-orchestration-guardrails.md`'s "Batch-Size Scaling: Scope of
+Deferral, Not Existence of the Check" section for the batch-size argument this is distinct from.
 
 **The `--allow-self-modifying` override does not change this.** The check remains fully blocking;
 this script always computes and emits the honest `self_modifying`/`defer_reason` verdict
@@ -417,7 +459,7 @@ whole-invocation) now over-states the live consequence. This is a recorded follo
 silent gap — see `context/patterns/batch-orchestration-guardrails.md`'s "Scope Limitation and
 Residual Risk" section for the broader scope-boundary reasoning this residual sits alongside.
 
-**v3 to v4** (current): converges the twice-transcribed overlap predicate into ONE shared
+**v3 to v4**: converges the twice-transcribed overlap predicate into ONE shared
 implementation (`scripts/lib/file-scope-overlap.sh`), and adds the session registry as a THIRD
 bounded contention input, alongside held locks (unchanged — `task-lock.sh acquire` only) and
 non-terminal `state.json` tasks (this script's pre-existing collision scan). Two additive changes
@@ -454,3 +496,46 @@ Every in-repo consumer's status as of v4:
 No declared residual for v4: every listed consumer that consumes verdicts was either updated or
 confirmed already-safe in this convergence pass, including the hard-mode transcription (updated
 per its own co-maintenance requirement, not merely re-verified).
+
+**v4 to v5** (current): narrows the `cross_batch` disjunct of the collision scan's `$hit`
+selection to require execution evidence (status in `{researching, planning, implementing}`,
+case-insensitive) on the colliding task. Through v4, ANY non-terminal cross-batch collision
+deferred unconditionally, regardless of the colliding task's status — a broad-scope `not_started`
+task could become a permanent, never-self-clearing blocker on every candidate that overlapped it,
+since an idle task never advances on its own to resolve the collision. As of v5, a `cross_batch`
+collision against a provably idle task (no execution evidence) no longer defers: it admits, and
+the suppressed overlap is surfaced via a NEW `idle_overlap_advisory` field (present on any
+post-scan verdict — the plain `admit`, the `session_active` defer, or the `file_scope_collision`
+defer — wherever an idle cross_batch overlap was found and suppressed; see the Field Definitions
+table above). `in_batch` collision behavior is completely unaffected — it stays blocking and
+bit-for-bit identical, since every `in_batch` candidate is, by construction, imminently dispatched
+regardless of the colliding task's status.
+
+This was a VERSION BUMP, not an additive-field change, for a DIFFERENT class of reason than the
+v1-to-v2 or v3-to-v4 bumps (those were about a NEW defer flavor being mis-bucketed by a closed
+`if/else`; this one is about an EXISTING defer flavor silently disappearing for a subset of its
+former inputs): a v4-aware consumer branching on `decision` alone will read a `cross_batch`
+idle-overlap `admit` as an unqualified all-clear and will not know to look for
+`idle_overlap_advisory`, silently losing the very signal this narrowing exists to make loud; and a
+v4-aware consumer's `defer_reason == "file_scope_collision"` handling simply never sees the idle
+`cross_batch` case at all post-v5, where it previously always did. Both are silent behavior
+changes from a stale consumer's point of view, not merely an unrecognized new field to ignore
+safely — the same bar every prior bump in this history applied.
+
+**Accepted discriminator change beyond the headline narrowing**: when a candidate overlaps both a
+lower-numbered idle `cross_batch` task and a higher-scanned `in_batch` task, the pre-v5 predicate
+emitted the `cross_batch` defer (first in ascending `project_number` order); the v5 predicate
+emits the `in_batch` defer instead, because the idle `cross_batch` member is no longer eligible
+for `$hit` at all. The decision is `defer` either way — only which collision the verdict names
+changes. This is accepted as correct and intended, not a regression: the candidate must still wait
+either way, and `in_batch` is the discriminator that actually causes the wait, so naming it is
+more accurate, not less.
+
+**Consumers updated by this bump — none**: no `defer_reason`-branching consumer
+(`scripts/orchestrate-dry-run-report.sh`, `scripts/orchestrate-predispatch-review.sh`,
+`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, `skills/skill-orchestrate-hard/SKILL.md`
+`## Multi-Task Mode`) is updated by this change — that consumer-side work is a separate, later
+change with its own declared file scope. **Declared residual for v5**: every listed consumer above
+still reads `idle_overlap_advisory` as an unrecognized field it silently ignores (never an error),
+which is safe but incomplete — none of them yet surfaces the advisory to a human or a report. This
+is a recorded, intentional residual, not a silent gap.
