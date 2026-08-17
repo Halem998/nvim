@@ -1,7 +1,7 @@
 # Implementation Plan: anchor_git_guard_matching_to_argv
 
 - **Task**: 34 - anchor_git_guard_matching_to_argv
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None (explicitly independent of the orchestrator run-state work)
 - **Research Inputs**: `specs/034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md`

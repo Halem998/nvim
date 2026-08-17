@@ -11,11 +11,11 @@ next_project_number: 65
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 18,22,27,28,31,34,39,41,43,45,46,51,59,62,63 | -- | agent-system, extensions, literature, ... |
-| 2 | 20,42,60,61 | 18,31,34,41,59,63 | agent-system, essential-refactor |
+| 1 | 18,22,27,28,31,39,41,43,45,46,51,59,62,63 | -- | agent-system, extensions, literature, ... |
+| 2 | 20,42,60,61 | 18,31,41,59,63 | agent-system, essential-refactor |
 | 3 | 14,17,64 | 42,60,61,63 | agent-system, essential-refactor |
 | 4 | 13,44 | 17,28,41 | agent-system, essential-refactor |
-| 5 | 9,29,48,53 | 18,22,34,39,43,44,64 | agent-system, orchestration-concurrency, essential-refactor |
+| 5 | 9,29,48,53 | 18,22,39,43,44,64 | agent-system, orchestration-concurrency, essential-refactor |
 | 6 | 30,50 | 29,48 | agent-system, essential-refactor |
 | 7 | 32 | 30,31 | agent-system |
 
@@ -58,8 +58,6 @@ next_project_number: 65
     └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
       └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
         └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
-34 [PLANNED] — Fix a false-positive class in the destructive-git PreToolUse guar
-  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 41 [PLANNED] — Create `measure-eager-context.sh` in the core extension's scripts
   └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br (see above)
   └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
@@ -427,12 +425,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 34. Anchor guard-destructive-git.sh destructive-pattern matching to argv, not commit-message prose
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md]
 - **Plan**: [034_anchor_git_guard_matching_to_argv/plans/01_anchor-guard-matching.md]
+- **Summary**: [034_anchor_git_guard_matching_to_argv/summaries/01_anchor-guard-matching-summary.md]
 
 **Description**: Fix a false-positive class in the destructive-git PreToolUse guard, observed live during a real `/orchestrate --hard` run: a legitimate, entirely non-destructive `git commit` was BLOCKED purely because its message text contained wording resembling a destructive pattern. It succeeded only after the message was reworded. A guard that can be tripped by prose is both a false-positive source and, more importantly, evidence that the matching is not anchored where it should be.
 
