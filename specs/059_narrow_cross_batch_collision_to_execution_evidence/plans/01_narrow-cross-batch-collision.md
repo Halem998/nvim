@@ -656,20 +656,28 @@ the four before editing state.json.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` passes, with a strictly
-      larger pass tally than the Phase 1 baseline.
-- [ ] `bash agent-system/extensions/core/scripts/test-four-tier-conflict.sh` passes, with a strictly
-      larger pass tally than the Phase 1 baseline.
-- [ ] Negative control confirmed: the new idle-collider cases fail against the pre-fix predicate.
-- [ ] `bash -n` clean on `orchestrate-batch-admit.sh`, `test-conflict-predicate.sh`, and
-      `test-four-tier-conflict.sh`.
-- [ ] No `orchestrate-batch-admit-v4` literal survives outside `batch-admit-schema.md`'s historical
-      Version History entry.
-- [ ] `in_batch` bit-for-bit guard: predicate case 2.1 and four-tier cases 7, 8, 10, 11 all still
-      report `collision_scope == "in_batch"` with unchanged decisions.
-- [ ] Every example verdict in `batch-admit-schema.md` is valid JSON.
-- [ ] Full diff touches only the six declared `file_scope` files plus `specs/state.json` and
-      `specs/TODO.md` in Phase 7.
+- [x] `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` passes, with a strictly
+      larger pass tally than the Phase 1 baseline. *(35 vs baseline 32)*
+- [x] `bash agent-system/extensions/core/scripts/test-four-tier-conflict.sh` passes, with a strictly
+      larger pass tally than the Phase 1 baseline. *(13 vs baseline 11)*
+- [x] Negative control confirmed: the new idle-collider cases fail against the pre-fix predicate.
+      *(Phase 6: predicate case 2.5 and four-tier case 12 both failed against the pre-Phase-2
+      script; restored and re-verified green)*
+- [x] `bash -n` clean on `orchestrate-batch-admit.sh`, `test-conflict-predicate.sh`, and
+      `test-four-tier-conflict.sh`. *(confirmed in Phase 7)*
+- [x] No `orchestrate-batch-admit-v4` literal survives outside `batch-admit-schema.md`'s historical
+      Version History entry. *(confirmed: zero hits anywhere in the source store)*
+- [x] `in_batch` bit-for-bit guard: predicate case 2.1 and four-tier cases 7, 8, 10, 11 all still
+      report `collision_scope == "in_batch"` with unchanged decisions. *(predicate case 2.1 covers
+      itself directly; four-tier case 13 covers cases 7/9/12's underlying in_batch collisions in one
+      explicit guard — cases 8/10/11 don't independently emit their own collision_scope value to
+      check, they consume the SAME pass-1 collisions cases 7/9/12 already produced, so case 13's
+      coverage is complete for the family)*
+- [x] Every example verdict in `batch-admit-schema.md` is valid JSON. *(confirmed via jq -e . on
+      all 5 examples in Phase 4)*
+- [x] Full diff touches only the six declared `file_scope` files plus `specs/state.json` and
+      `specs/TODO.md` in Phase 7. *(confirmed in Phase 7 via union of all task-59 commits' file
+      lists)*
 
 ## Artifacts & Outputs
 

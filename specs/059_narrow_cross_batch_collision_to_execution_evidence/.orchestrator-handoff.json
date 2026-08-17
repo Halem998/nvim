@@ -1,28 +1,36 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "summary": "7-phase plan created. Settles the two open forks the research left: the advisory field is named idle_overlap_advisory and is a NESTED object (reusing the defer branch's colliding_task_number/colliding_task_status/overlapping_path/collision_scope vocabulary without overloading those top-level keys), present on all three post-scan verdicts whenever a suppressed idle cross-batch overlap exists; and the predicate is restructured into a materialized $overlaps list with $hit and $idle_overlap derived from it, so the advisory needs no second scopes_overlap_first scan and in_batch stays bit-for-bit identical. Phase order: baseline/hypothesis confirmation -> predicate narrowing -> atomic v4->v5 schema bump (script + the single test pin) -> three parallel doc/test phases -> final sweep, deploy, and workaround-edge removal. CORRECTION to the research report: the self-refuting 'concurrently edit the same files' passage is NOT in batch-orchestration-guardrails.md at lines 280-298; grep finds it only in orchestrate-batch-admit.sh's header and batch-admit-schema.md. The guardrails carrier is its Classification Table row, which is the same edit as the missing-cross_batch-row requirement.",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "summary": "All 7 phases completed. Narrowed orchestrate-batch-admit.sh's cross_batch collision disjunct to execution evidence, bumped the verdict schema to v5 across the script/schema-doc/test pin, corrected the self-refuting blocking rationale, added the missing cross_batch guardrails row, and closed the idle-collider test-coverage gap with a confirmed negative control (35/0 and 13/0 vs. baseline 32/0 and 11/0). Deployed via deploy-headless.sh, confirmed v5 in the deployed script, and removed the four workaround dependencies[] edges (tasks 53, 14, 17, 44); tasks 48/50 left untouched. A foreign, unrelated commit from a concurrent session (literature pyenv provisioning) landed in shared history mid-task; confirmed it does not affect this task's file scope.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md",
-      "summary": "7-phase implementation plan, 4.5h, validated clean against plan-format.md."
+      "type": "summary",
+      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/summaries/01_narrow-cross-batch-collision-summary.md",
+      "summary": "Full implementation summary covering all 7 phases, verification results, and follow-ups."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 7,
   "phases_total": 7,
   "blockers": [],
-  "next_action_hint": "implement",
-  "files_modified": [],
-  "decisions_made": [
-    "Advisory field settled: idle_overlap_advisory, a nested object, present on the plain admit, the session_active defer, and the file_scope_collision defer whenever a suppressed idle cross-batch overlap exists; structurally absent on the three early-exit admits and both self_modifying branches",
-    "Predicate restructured to a materialized $overlaps list plus two derived selections ($hit = in_batch OR in_flight; $idle_overlap = cross_batch AND NOT in_flight), preserving ascending-order first-match determinism and avoiding a duplicate overlap scan",
-    "New jq def is_in_flight added alongside is_terminal, case-insensitive, matching the script's existing convention",
-    "Accepted behavior change recorded: a candidate overlapping both an idle lower-numbered cross_batch task and an in_batch task now reports collision_scope in_batch rather than cross_batch; the decision is defer either way",
-    "Phase 3 is a declared atomic-batch across orchestrate-batch-admit.sh and test-conflict-predicate.sh because the v5 emit sites and the v5 test pin cannot be green independently",
-    "Phase 6 requires a negative control: the new idle-collider tests must be shown to FAIL against the pre-fix predicate",
-    "Phase 7 gates workaround-edge removal on a successful deploy-headless.sh run; tasks 48 and 50 are explicitly left untouched (repo-wide file_scope, legitimate dependency)",
-    "file-footprint-overlap.md is a confirm-or-no-op decision in Phase 5, with a reasoned-exclusion record if unchanged; its algorithm content is never touched"
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+    "specs/state.json",
+    "specs/TODO.md"
   ],
-  "dead_ends": []
+  "decisions_made": [
+    "Implemented exactly per the plan's pre-settled design forks: nested idle_overlap_advisory object, materialized $overlaps list with $hit/$idle_overlap both derived from it, guardrails Classification Table row carrying the corrected rationale",
+    "Factored the advisory-construction into one $idle_advisory_frag variable appended via + to all three verdicts, rather than repeating the if/else three times",
+    "Phase 1 baseline found 8 emit-site v4 literals in the script, not the 5 the plan's Scope Hypothesis guessed; no downstream phase-text change was needed since Phase 3's verification is dynamically grep-count-based",
+    "Chose the clarification path (not a Reasoned Exclusions record) for file-footprint-overlap.md: one consumer-prose bullet added, algorithm/pseudocode sections confirmed byte-identical",
+    "Phase 6 negative control: temporarily swapped the working script for its pre-Phase-2 git blob via a scratch-backed copy (never a destructive git reset), confirmed the new idle-collider cases (predicate 2.5, four-tier 12) FAIL against it, then restored and re-verified green",
+    "Phase 7 re-derived the workaround-edge list live from specs/state.json rather than trusting the plan's stated four tasks blindly; the re-derived set matched exactly {53, 14, 17, 44} with 48/50 correctly excluded"
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": true
 }

@@ -1,7 +1,47 @@
 {
-  "status": "in_progress",
-  "task_number": 59,
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "session_id": "sess_1786995676_03939f"
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/summaries/01_narrow-cross-batch-collision-summary.md",
+      "summary": "All 7 phases completed: narrowed the cross_batch collision disjunct to execution evidence, bumped the verdict schema to v5 across all pinning files, corrected the self-refuting blocking rationale, added the missing cross_batch guardrails row, closed the idle-collider test-coverage gap with a confirmed negative control, deployed, and removed the four workaround dependencies[] edges."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Narrowed orchestrate-batch-admit.sh's cross_batch file_scope_collision dimension to require execution evidence (researching/planning/implementing) instead of deferring unconditionally against any non-terminal task, converting a provably-idle overlap into an admit verdict carrying a loud idle_overlap_advisory field. Bumped the verdict schema to orchestrate-batch-admit-v5 across the script, schema doc, and test pin; corrected the self-refuting blocking rationale in both the script header and schema doc; added the missing cross_batch row to the guardrails Classification Table; added 5 new regression cases across both admission test suites (35/0 and 13/0, up from baseline 32/0 and 11/0) with a confirmed negative control proving the new tests fail against the pre-fix predicate; deployed via deploy-headless.sh and confirmed the deployed script emits v5; and removed the four workaround dependencies[] edges (tasks 53, 14, 17, 44) that existed solely to work around this defect, leaving tasks 48 and 50's legitimate repo-wide edges untouched."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+    "specs/state.json",
+    "specs/TODO.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When converting a formerly-unconditional blocking predicate into an evidence-gated one that must still surface the suppressed case loudly, materialize the candidate overlap list ONCE and derive both selections from it rather than re-scanning. In orchestrate-batch-admit.sh: build $overlaps (full annotated overlap list with an in_flight discriminator key on each element), then $hit = first blocking member (map(select(scope==in_batch or in_flight)) | first) and $idle_overlap = first suppressed member (map(select(scope==cross_batch and not in_flight)) | first). Both preserve the original first-match/ascending-project_number determinism, the comprehension body stays a verbatim copy so the untouched disjunct (in_batch) is bit-for-bit unaffected, and no second invocation of the overlap predicate is needed. Factor the always-optional appended field into one `$idle_advisory_frag` variable computed once, appended via `+` to every verdict branch that needs it, rather than repeating an if/else three times.",
+      "category": "PATTERN",
+      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/summaries/01_narrow-cross-batch-collision-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["evidence-gated predicate", "advisory field", "jq comprehension", "first-match determinism", "orchestrate-batch-admit", "bit-for-bit preservation"]
+    },
+    {
+      "content": "A test suite's own negative control for a new regression case is not optional theater: when adding a positive test for a bug fix, temporarily swap the working file for its pre-fix git blob (e.g. `git show <pre-fix-sha>:path > path`, run the suite, then restore from a scratch backup copy -- never git reset --hard on a dirty tree), confirm the NEW case specifically fails, then restore and re-verify green. A new test that would have passed against the old, buggy code is not testing the fix at all -- it is only testing that the fixture parses. This caught nothing wrong in this task's case, but the negative-control run is what actually proves the two new admission-predicate test cases (predicate 2.5, four-tier 12) exercise the v5 narrowing rather than merely re-asserting pre-existing behavior.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/summaries/01_narrow-cross-batch-collision-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["negative control", "regression test", "test-driven verification", "scratch-backed swap", "pre-fix baseline"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1786995676_03939f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
