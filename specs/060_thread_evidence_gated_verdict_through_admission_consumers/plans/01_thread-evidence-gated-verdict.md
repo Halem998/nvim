@@ -257,7 +257,7 @@ cross_batch-false before editing.
 
 ---
 
-### Phase 3: Fold the Class D `dependencies[COMPLETED]
+### Phase 3: Fold the Class D `dependencies[]` suggestion into the `cross_batch` warnings (WORK 3) [COMPLETED]
 
 **Goal**: The `dependencies[]`-edge remedy is printed at the moment of exclusion, not only in the
 separate upstream Step 1.5 review surface.
