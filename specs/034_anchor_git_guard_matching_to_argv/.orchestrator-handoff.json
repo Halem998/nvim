@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 1,
+  "summary": "Confirmed both root causes of the guard-destructive-git.sh false positive against the current source (line-based quote-strip fails on multi-line messages; the flag regex matches ordinary hyphenated prose), designed and reproduced a whole-command multi-line-aware quote-strip fix that protects all seven detectors and preserves the --staged inverse-hazard boundary, found an additional #-comment inverse-hazard bypass to close in the same change, and documented the exact test-suite conventions and manifest.json registration step for the new regression suite.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md",
+      "summary": "Full verification of both root causes, recommended fix architecture with live reproduction, an additional inverse-hazard finding, and test-suite conventions for the new regression suite."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "continuation_path": null,
+  "next_action_hint": "Run /plan 34: implement the whole-command multi-line-aware quote-strip fix (apply once, upstream, before all seven detectors; delete the now-redundant per-segment sed calls), add the #-comment strip to close the additional --staged inverse-hazard bypass found in the report, update the header comment (lines 41-47/67-72), and create scripts/tests/test-guard-destructive-git.sh modeled on test-validate-no-task-references.sh, registered in manifest.json's provides.scripts, run inside a fresh dirty git repo per case, and proven via the required mutation check."
+}

@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md",
+      "summary": "Verifies both root causes of the guard's message-text false positive, confirms a whole-command multi-line-aware quote-strip fix shape via live reproduction, finds an additional --staged/#-comment inverse-hazard bypass, and documents the test-suite house conventions and manifest.json registration step."
+    }
+  ],
+  "next_steps": "Run /plan 34 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1786989333_638258_34",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "PreToolUse guard hooks that quote-strip free-text argument content (e.g. commit messages) before flag-scanning must do so on the whole (potentially multi-line) input string in one pass, using a slurp-mode sed (:a;N;$!ba) or equivalent -- a per-segment strip applied after line-based grep -oE segment extraction silently fails on any quoted span containing a newline, because grep never matches across lines. Verified against guard-destructive-git.sh's git commit -a/-am over-staging detector.",
+      "category": "PATTERN",
+      "source_artifact": "specs/034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["quote-strip", "multi-line", "sed-slurp", "pretooluse-hook", "grep-line-based"]
+    },
+    {
+      "content": "guard-destructive-git.sh's early clean-tree exemption (git status --porcelain empty or erroring) means the hook silently allows everything when run outside a real git repo or against a clean tree -- any test suite for this hook must construct a fresh, genuinely dirty git repo as its execution cwd per case, or every case will falsely 'pass' via the exemption rather than via the detector logic under test.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["guard-destructive-git", "test-fixture", "dirty-git-repo", "false-pass", "cwd"]
+    }
+  ]
+}

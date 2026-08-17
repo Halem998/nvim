@@ -58,9 +58,9 @@ next_project_number: 65
     └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
       └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
         └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
-34 [NOT STARTED] — Fix a false-positive class in the destructive-git PreToolUse guar
+34 [RESEARCHED] — Fix a false-positive class in the destructive-git PreToolUse guar
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-41 [NOT STARTED] — Create `measure-eager-context.sh` in the core extension's scripts
+41 [RESEARCHED] — Create `measure-eager-context.sh` in the core extension's scripts
   └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br (see above)
   └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
@@ -72,7 +72,7 @@ next_project_number: 65
       └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/ (see above)
   └─ 61 [NOT STARTED] — Treat whole-directory-root file_scope declarations as a declarati
     └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u (see above)
-63 [NOT STARTED] — Fix the agent-side hard-mode routing downgrade. command-route-age
+63 [RESEARCHED] — Fix the agent-side hard-mode routing downgrade. command-route-age
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents (see above)
 
 ## Tasks
@@ -110,10 +110,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 63. Fix the agent-side hard-mode routing downgrade that discards declared domain agents
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
+- **Research**: [063_fix_hard_mode_agent_routing_downgrade/reports/01_agent-routing-hard-mode-parity.md]
 
 **Description**: Fix the agent-side hard-mode routing downgrade. command-route-agent.sh, given effort_flag=hard and a task_type whose extension declares no routing_agents_hard, falls through to the caller-supplied default_agent and DISCARDS the extension's declared standard agent. So --hard routes strictly worse than no flag, losing the domain agent entirely.
 
@@ -377,10 +378,11 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 41. Build eager-context measurement harness (measure-eager-context.sh)
 - **Effort**: 2-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
+- **Research**: [041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md]
 
 **Description**: Create `measure-eager-context.sh` in the core extension's scripts: a harness that PREDICTS the session-start eager context set from the source store plus a fresh regenerate — never by measuring the live `.claude/` tree (stale-deploy concern; the deployed tree routinely lags the source store). The eager set to model: (1) the parent CLAUDE.md chain (e.g. ~/.config/CLAUDE.md, repo CLAUDE.md, generated .claude/CLAUDE.md); (2) the generated CLAUDE.md content assembled from core + loaded extensions' merge sources; (3) any RESOLVING `@`-imports found in that chain (directory-relative resolution — see context/architecture/context-layers.md 'Eager vs. Lazy Loading Channels'); (4) rules lacking `paths:` frontmatter or carrying `paths: "**/*"`. Emit bytes and estimated tokens (bytes/4) per contributing source plus a total, in a stable machine-parseable format. Provide a `--check`/`--write` split following the precedent of `generate-context-line-counts.sh` (`--check` reports, `--write` records a baseline snapshot for later drift comparison). The audit baseline to compare against: ~69.9 KB / ~17.5k tokens before downward normalization; predicted ~9.5k tokens after. CONSTRAINTS: no volatile files (specs/TODO.md, state.json, errors.json) may ever be counted as legitimately eager — flag any found; all edits target agent-system/extensions/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**.
 
@@ -423,10 +425,11 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 34. Anchor guard-destructive-git.sh destructive-pattern matching to argv, not commit-message prose
 - **Effort**: 1-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
+- **Research**: [034_anchor_git_guard_matching_to_argv/reports/01_anchor-guard-matching.md]
 
 **Description**: Fix a false-positive class in the destructive-git PreToolUse guard, observed live during a real `/orchestrate --hard` run: a legitimate, entirely non-destructive `git commit` was BLOCKED purely because its message text contained wording resembling a destructive pattern. It succeeded only after the message was reworded. A guard that can be tripped by prose is both a false-positive source and, more importantly, evidence that the matching is not anchored where it should be.
 
