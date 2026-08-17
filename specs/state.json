@@ -648,7 +648,7 @@
     {
       "project_number": 60,
       "project_name": "thread_evidence_gated_verdict_through_admission_consumers",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "essential-refactor",
       "title": "Thread the evidence-gated verdict and --allow-scope-collision through admission consumers",
@@ -677,9 +677,14 @@
           "path": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md",
           "type": "plan",
           "summary": "9-phase plan threading the v5 idle_overlap_advisory through all admission consumers plus --allow-scope-collision"
+        },
+        {
+          "path": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/summaries/01_thread-evidence-gated-verdict-summary.md",
+          "type": "summary",
+          "summary": "Consumer-side threading of the v5 idle_overlap_advisory plus --allow-scope-collision across 8 source-store files"
         }
       ],
-      "last_updated": "2026-08-17T21:43:05Z",
+      "last_updated": "2026-08-17T22:17:35Z",
       "session_id": "sess_1786999515_0afbe9_60"
     },
     {

@@ -11,10 +11,10 @@ next_project_number: 67
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,60,62,65,66 | -- | agent-system, extensions, literature, ... |
+| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,62,65,66 | -- | agent-system, extensions, literature, ... |
 | 2 | 13,42,44 | 17,18,28,31 | agent-system, essential-refactor |
 | 3 | 9,29,53,64 | 18,22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
-| 4 | 30,48 | 22,29,39,43,44,60,64 | agent-system, essential-refactor |
+| 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
 | 5 | 32,50 | 30,31,48 | agent-system, essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -61,8 +61,6 @@ next_project_number: 67
     └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
       └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-60 [PLANNED] — Consumer-side half of the batch-admission gate redesign. The pred
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 65 [NOT STARTED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
 
@@ -240,12 +238,13 @@ WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the
 ---
 
 ### 60. Thread the evidence-gated verdict and --allow-scope-collision through admission consumers
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 59
 - **Research**: [060_thread_evidence_gated_verdict_through_admission_consumers/reports/01_thread-evidence-gated-verdict.md]
 - **Plan**: [060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md]
+- **Summary**: [060_thread_evidence_gated_verdict_through_admission_consumers/summaries/01_thread-evidence-gated-verdict-summary.md]
 
 **Description**: Consumer-side half of the batch-admission gate redesign. The predicate task in this batch changes the admission predicate and bumps the verdict schema to v5; this task updates every consumer that branches on it.
 

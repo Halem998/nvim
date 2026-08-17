@@ -1,7 +1,7 @@
 # Implementation Plan: Task #60
 
 - **Task**: 60 - Thread the evidence-gated verdict and --allow-scope-collision through admission consumers
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: 59 (predicate half — COMPLETED, verified live at schema v5)
 - **Research Inputs**: `specs/060_thread_evidence_gated_verdict_through_admission_consumers/reports/01_thread-evidence-gated-verdict.md`
