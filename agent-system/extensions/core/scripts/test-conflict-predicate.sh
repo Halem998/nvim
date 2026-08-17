@@ -122,7 +122,9 @@ cat > "$STATE_FILE" << 'EOF'
     {"project_number": 850, "project_name": "g23_predecessor", "status": "not_started", "task_type": "general", "file_scope": ["g23/x"], "dependencies": []},
     {"project_number": 851, "project_name": "g23_edge_connected", "status": "not_started", "task_type": "general", "file_scope": ["g23/x"], "dependencies": [850]},
     {"project_number": 820, "project_name": "g4_clean_candidate", "status": "not_started", "task_type": "general", "file_scope": ["g4/clean"], "dependencies": []},
-    {"project_number": 821, "project_name": "g4_edge_connected", "status": "not_started", "task_type": "general", "file_scope": ["g4/unrelated_scope"], "dependencies": [820]}
+    {"project_number": 821, "project_name": "g4_edge_connected", "status": "not_started", "task_type": "general", "file_scope": ["g4/unrelated_scope"], "dependencies": [820]},
+    {"project_number": 842, "project_name": "g25_idle_candidate", "status": "not_started", "task_type": "general", "file_scope": ["g25/x"], "dependencies": []},
+    {"project_number": 843, "project_name": "g25_idle_collider", "status": "not_started", "task_type": "general", "file_scope": ["g25/x"], "dependencies": []}
   ]
 }
 EOF
@@ -206,6 +208,45 @@ if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ];
 else
   info "2.4: SKIPPED -- orchestrator-critical-paths.json not found in fixture tree"
 fi
+
+# Case 2.5: cross_batch against a PROVABLY IDLE task (no execution evidence) admits with a loud
+# idle_overlap_advisory instead of deferring (orchestrate-batch-admit-v5 narrowing). #843 starts
+# the fixture as "not_started".
+v842=$("$BA" 842 2>/dev/null | jq -c '.')
+c25_ok=true
+[ "$(echo "$v842" | jq -r '.decision')" = "admit" ] || { c25_ok=false; info "#842 did not admit against idle cross_batch #843: $v842"; }
+[ "$(echo "$v842" | jq 'has("defer_reason")')" = "false" ] || { c25_ok=false; info "#842's admit verdict unexpectedly carries defer_reason: $v842"; }
+[ "$(echo "$v842" | jq 'has("idle_overlap_advisory")')" = "true" ] || { c25_ok=false; info "#842's admit verdict is missing idle_overlap_advisory: $v842"; }
+[ "$(echo "$v842" | jq -r '.idle_overlap_advisory.colliding_task_number')" = "843" ] || { c25_ok=false; info "idle_overlap_advisory.colliding_task_number was not 843: $v842"; }
+[ "$(echo "$v842" | jq -r '.idle_overlap_advisory.colliding_task_status')" = "not_started" ] || { c25_ok=false; info "idle_overlap_advisory.colliding_task_status was not not_started: $v842"; }
+[ "$(echo "$v842" | jq -r '.idle_overlap_advisory.collision_scope')" = "cross_batch" ] || { c25_ok=false; info "idle_overlap_advisory.collision_scope was not cross_batch: $v842"; }
+[ "$(echo "$v842" | jq -r '.idle_overlap_advisory.overlapping_path')" = "g25/x" ] || { c25_ok=false; info "idle_overlap_advisory.overlapping_path was not g25/x: $v842"; }
+if [ "$c25_ok" = true ]; then pass "2.5: cross_batch against a provably idle task admits with idle_overlap_advisory (v5 narrowing)"; else fail "2.5: idle cross_batch admit case failed (see INFO lines above)"; fi
+
+# Case 2.6: idle_overlap_advisory is ABSENT on a verdict with no idle cross-batch overlap at all
+# -- reuses case 2.1's #830 admit (its only collision-scan partner, #831, is a HIGHER in_batch
+# number so #830 never sees a hit, and neither #830 nor #831 has any idle cross-batch collider
+# in this fixture). This guards against "always present" being trivially satisfied by an
+# unconditional field.
+v830_advisory_check=$("$BA" 830 831 2>/dev/null | jq -c 'select(.task_number == 830)')
+c26_ok=true
+[ "$(echo "$v830_advisory_check" | jq 'has("idle_overlap_advisory")')" = "false" ] || { c26_ok=false; info "#830 unexpectedly carries idle_overlap_advisory with no idle cross-batch overlap present: $v830_advisory_check"; }
+if [ "$c26_ok" = true ]; then pass "2.6: idle_overlap_advisory is absent when no idle cross-batch overlap exists"; else fail "2.6: idle_overlap_advisory absence case failed (see INFO lines above)"; fi
+
+# Case 2.7: pinning the in-flight SET boundary, not just one member of it -- flip #843's status
+# to each of researching/planning/implementing in turn and confirm #842 defers with
+# file_scope_collision/cross_batch for every one, not just "implementing".
+c27_ok=true
+for evidence_status in researching planning implementing; do
+  jq --arg s "$evidence_status" '.active_projects |= map(if .project_number == 843 then .status = $s else . end)' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+  v842_evidence=$("$BA" 842 2>/dev/null | jq -c '.')
+  [ "$(echo "$v842_evidence" | jq -r '.decision')" = "defer" ] || { c27_ok=false; info "#842 did not defer against #843 with status $evidence_status: $v842_evidence"; }
+  [ "$(echo "$v842_evidence" | jq -r '.defer_reason // empty')" = "file_scope_collision" ] || { c27_ok=false; info "#842's defer_reason was not file_scope_collision with #843 status $evidence_status: $v842_evidence"; }
+  [ "$(echo "$v842_evidence" | jq -r '.collision_scope // empty')" = "cross_batch" ] || { c27_ok=false; info "#842's collision_scope was not cross_batch with #843 status $evidence_status: $v842_evidence"; }
+done
+# Restore #843 to not_started so it does not leak a stale status into any later group.
+jq '.active_projects |= map(if .project_number == 843 then .status = "not_started" else . end)' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+if [ "$c27_ok" = true ]; then pass "2.7: cross_batch defers for every in-flight status (researching/planning/implementing), pinning the boundary"; else fail "2.7: in-flight status boundary case failed (see INFO lines above)"; fi
 
 # =============================================================================
 # Group 3: Non-regression -- a file_scope_collision verdict matches the pre-v4 shape exactly,

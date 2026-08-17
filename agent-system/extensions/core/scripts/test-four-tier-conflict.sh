@@ -312,11 +312,14 @@ jq '.active_projects += [
   {"project_number": 601, "project_name": "case_g_low", "status": "not_started", "task_type": "general", "file_scope": ["case_g/shared.sh"], "dependencies": []},
   {"project_number": 602, "project_name": "case_g_high", "status": "not_started", "task_type": "general", "file_scope": ["case_g/shared.sh"], "dependencies": []},
   {"project_number": 603, "project_name": "case_h_low", "status": "implementing", "task_type": "general", "file_scope": ["case_h/shared.sh"], "dependencies": []},
-  {"project_number": 604, "project_name": "case_h_high", "status": "not_started", "task_type": "general", "file_scope": ["case_h/shared.sh"], "dependencies": []}
+  {"project_number": 604, "project_name": "case_h_high", "status": "not_started", "task_type": "general", "file_scope": ["case_h/shared.sh"], "dependencies": []},
+  {"project_number": 605, "project_name": "case_i_low", "status": "not_started", "task_type": "general", "file_scope": ["case_i/shared.sh"], "dependencies": []},
+  {"project_number": 606, "project_name": "case_i_high", "status": "not_started", "task_type": "general", "file_scope": ["case_i/shared.sh"], "dependencies": []}
 ]' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
 
 mkdir -p "$TMPROOT/specs/601_case_g_low" "$TMPROOT/specs/602_case_g_high" \
-         "$TMPROOT/specs/603_case_h_low" "$TMPROOT/specs/604_case_h_high"
+         "$TMPROOT/specs/603_case_h_low" "$TMPROOT/specs/604_case_h_high" \
+         "$TMPROOT/specs/605_case_i_low" "$TMPROOT/specs/606_case_i_high"
 
 second_pass_ledger=()
 
@@ -369,8 +372,10 @@ fi
 # foreign project (status stays "implementing", never reaches terminal) -- e.g. a live
 # out-of-batch session's work-in-progress. Pass 1 over {603,604} defers 604 in_batch exactly as
 # Case 7. Pass 2 over the deferred singleton {604} alone STILL returns defer (603 is now
-# cross_batch from 604's solo pass-2 perspective, and cross_batch defers unconditionally while
-# the collision persists) -- proving the bounded, non-converging path terminates as a "deferred
+# cross_batch from 604's solo pass-2 perspective, and cross_batch defers as long as 603 carries
+# execution evidence -- "implementing" is in the in-flight set, per orchestrate-batch-admit-v5's
+# narrowed rule; see Case 12 below for the CONTRASTING idle-collider case, where this same shape
+# converges instead) -- proving the bounded, non-converging path terminates as a "deferred
 # after second pass" skip rather than spinning into a third pass.
 # =============================================================================
 pass1_h_output=$("$BA" --invocation-count 2 --session-id sess_case_h 603 604 2>/dev/null)
@@ -435,6 +440,60 @@ if [ "$pass1_g_arg_count" -eq 2 ] && [ "$pass2_g_arg_count" -eq 1 ] \
   pass "11: bounded scan -- every admission call above passed only its own pass's candidate set as positional arguments (2, 1, 2, 1 respectively), never the full $total_fixture_projects-project fixture state.json"
 else
   fail "11: bounded scan -- unexpected argument counts or fixture size ($total_fixture_projects total projects)"
+fi
+
+# =============================================================================
+# Case 12 (idle-collider convergence, orchestrate-batch-admit-v5): mirrors Case 9's exact
+# two-pass shape, but the pass-1 winner (project 605) is PROVABLY IDLE (status stays
+# "not_started" throughout -- never a live foreign session's work-in-progress). Pass 1 over
+# {605,606} defers 606 in_batch exactly as Case 7/Case 9 (in_batch behavior is bit-for-bit
+# unaffected by the v5 narrowing). Pass 2 over the deferred singleton {606} alone now returns
+# ADMIT with idle_overlap_advisory -- 605 is cross_batch from 606's solo pass-2 perspective, and
+# a cross_batch collision against a task with NO execution evidence no longer defers -- proving
+# the non-convergence path Case 9 exercises CONVERGES once the collider is provably idle, rather
+# than deferring forever. Own fresh case_i/ file_scope namespace so it cannot interfere with the
+# case_g/case_h fixtures above.
+# =============================================================================
+pass1_i_output=$("$BA" --invocation-count 2 --session-id sess_case_i 605 606 2>/dev/null)
+pass1_i_606_decision=$(echo "$pass1_i_output" | jq -s -r '.[] | select(.task_number == 606) | .decision')
+pass1_i_606_collision_scope=$(echo "$pass1_i_output" | jq -s -r '.[] | select(.task_number == 606) | .collision_scope // ""')
+
+pass2_i_output=$("$BA" --invocation-count 1 --session-id sess_case_i 606 2>/dev/null)
+pass2_i_606_decision=$(echo "$pass2_i_output" | jq -s -r '.[] | select(.task_number == 606) | .decision')
+pass2_i_606_has_defer_reason=$(echo "$pass2_i_output" | jq -s -r '.[] | select(.task_number == 606) | has("defer_reason")')
+pass2_i_606_has_advisory=$(echo "$pass2_i_output" | jq -s -r '.[] | select(.task_number == 606) | has("idle_overlap_advisory")')
+pass2_i_606_advisory_num=$(echo "$pass2_i_output" | jq -s -r '.[] | select(.task_number == 606) | .idle_overlap_advisory.colliding_task_number // ""')
+pass2_i_606_advisory_status=$(echo "$pass2_i_output" | jq -s -r '.[] | select(.task_number == 606) | .idle_overlap_advisory.colliding_task_status // ""')
+
+third_pass_i_attempted="false"
+# By construction this suite calls $BA exactly twice for the case_i pair (pass1_i_output,
+# pass2_i_output above) -- mirrors Case 9's own structural bound, and since pass 2 already
+# admits, a real Step 3.5 caller would never attempt a third pass here either.
+
+if [ "$pass1_i_606_decision" = "defer" ] && [ "$pass1_i_606_collision_scope" = "in_batch" ] \
+   && [ "$pass2_i_606_decision" = "admit" ] && [ "$pass2_i_606_has_defer_reason" = "false" ] \
+   && [ "$pass2_i_606_has_advisory" = "true" ] && [ "$pass2_i_606_advisory_num" = "605" ] \
+   && [ "$pass2_i_606_advisory_status" = "not_started" ] && [ "$third_pass_i_attempted" = "false" ]; then
+  pass "12: idle-collider convergence -- pass-2 admission over the deferred singleton now returns admit with idle_overlap_advisory naming 605/not_started once the pass-1 winner is provably idle, converging where Case 9's in-flight collider does not"
+else
+  fail "12: idle-collider convergence -- pass1_606=$pass1_i_606_decision scope=$pass1_i_606_collision_scope pass2_606=$pass2_i_606_decision has_defer_reason=$pass2_i_606_has_defer_reason has_advisory=$pass2_i_606_has_advisory advisory_num=$pass2_i_606_advisory_num advisory_status=$pass2_i_606_advisory_status"
+fi
+
+# =============================================================================
+# Case 13 (in_batch bit-for-bit guard, orchestrate-batch-admit-v5): the untouched in_batch
+# disjunct still reports collision_scope == "in_batch" for every in-batch collision produced
+# across the Tier-1 family above (Cases 7-12), regardless of status -- an explicit regression
+# guard distinct from any single case's own incidental assertion, covering all three fixture
+# pairs (case_g, case_h, case_i) in one place.
+# =============================================================================
+c13_ok=true
+[ "$pass1_g_602_collision_scope" = "in_batch" ] || { c13_ok=false; info "case_g pass-1 602 collision_scope was not in_batch: $pass1_g_602_collision_scope"; }
+[ "$pass1_h_604_collision_scope" = "in_batch" ] || { c13_ok=false; info "case_h pass-1 604 collision_scope was not in_batch: $pass1_h_604_collision_scope"; }
+[ "$pass1_i_606_collision_scope" = "in_batch" ] || { c13_ok=false; info "case_i pass-1 606 collision_scope was not in_batch: $pass1_i_606_collision_scope"; }
+if [ "$c13_ok" = true ]; then
+  pass "13: in_batch bit-for-bit guard -- every in-batch collision across cases 7/9/12 still reports collision_scope == \"in_batch\", unaffected by the v5 cross_batch narrowing"
+else
+  fail "13: in_batch bit-for-bit guard failed (see INFO lines above)"
 fi
 
 echo ""

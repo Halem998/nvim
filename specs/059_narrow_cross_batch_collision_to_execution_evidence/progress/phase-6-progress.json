@@ -1,0 +1,23 @@
+{
+  "phase": 6,
+  "phase_name": "Add idle-collider regression tests to both suites",
+  "started_at": "2026-08-17T02:10:00Z",
+  "last_updated": "2026-08-17T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add case 2.5 idle admit + advisory case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-conflict-predicate.sh"]},
+    {"id": 2, "description": "Add case 2.6 advisory-absent companion case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-conflict-predicate.sh"]},
+    {"id": 3, "description": "Add case 2.7 in-flight status boundary loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-conflict-predicate.sh"]},
+    {"id": 4, "description": "Add four-tier case 12 idle-collider convergence mirror of case 9", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 5, "description": "Add four-tier case 13 in_batch bit-for-bit guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "predicate_suite_post": "35 passed, 0 failed (baseline 32, +3 new cases 2.5/2.6/2.7)",
+    "four_tier_suite_post": "13 passed, 0 failed (baseline 11, +2 new cases 12/13)",
+    "bash_n": "pass on both test scripts",
+    "negative_control": "orchestrate-batch-admit.sh temporarily replaced with the pre-Phase-2 content (git show 3e6ab0df8:...) via a scratch-backed working-tree swap, never a destructive git reset; re-ran both suites: predicate case 2.5 FAILED (case 3 also failed as an expected artifact of testing pre-v5 schema literal, unrelated to the idle-collider fix itself), four-tier case 12 FAILED; case 2.6/2.7/13 still passed since they don't exercise the fix. Restored the v5 script from the scratch backup immediately after; re-ran both suites and confirmed 35/0 and 13/0 again."
+  }
+}

@@ -511,35 +511,46 @@ the corrected rationale, and make an explicit, recorded decision about whether
 
 ---
 
-### Phase 6: Add idle-collider regression tests to both suites [NOT STARTED]
+### Phase 6: Add idle-collider regression tests to both suites [COMPLETED]
 
 **Goal**: Close the coverage gap the research identified — no existing fixture exercises an idle
 cross-batch collider — with positive tests in both suites that fail against the pre-Phase-2 script.
 
 **Tasks**:
-- [ ] In `test-conflict-predicate.sh`, add a Group 2 case (numbered after 2.4, e.g. 2.5) mirroring
+- [x] In `test-conflict-predicate.sh`, add a Group 2 case (numbered after 2.4, e.g. 2.5) mirroring
       case 2.2's shape but with the cross-batch colliding task's status set to `not_started`:
       assert `decision == "admit"`, `has("defer_reason") == false`, `has("idle_overlap_advisory")`,
       and that the advisory's `colliding_task_number`, `colliding_task_status` (`not_started`),
-      `collision_scope` (`cross_batch`), and `overlapping_path` are all correct.
-- [ ] In `test-conflict-predicate.sh`, add a companion case asserting the advisory is **absent** on
+      `collision_scope` (`cross_batch`), and `overlapping_path` are all correct. *(completed as
+      case 2.5, fixture pair #842/#843 in a fresh `g25/` namespace)*
+- [x] In `test-conflict-predicate.sh`, add a companion case asserting the advisory is **absent** on
       a verdict with no idle cross-batch overlap (e.g. case 2.1's `#830` admit), so "always present"
-      cannot be trivially satisfied by an unconditional field.
-- [ ] In `test-conflict-predicate.sh`, add a case flipping the same idle collider's status to each
+      cannot be trivially satisfied by an unconditional field. *(completed as case 2.6)*
+- [x] In `test-conflict-predicate.sh`, add a case flipping the same idle collider's status to each
       of `researching`, `planning`, and `implementing` and asserting `defer` +
       `defer_reason == "file_scope_collision"` + `collision_scope == "cross_batch"` for each —
-      pinning the in-flight set boundary, not just one member of it.
-- [ ] In `test-four-tier-conflict.sh`, add a case mirroring case 9's two-pass shape but with the
+      pinning the in-flight set boundary, not just one member of it. *(completed as case 2.7,
+      looping over #843's status and restoring it to not_started afterward)*
+- [x] In `test-four-tier-conflict.sh`, add a case mirroring case 9's two-pass shape but with the
       pass-1 winner idle (`not_started` instead of `implementing`), asserting that pass 2 over the
       deferred singleton now returns `admit` with the advisory — i.e. the non-convergence path
       converges once the collider is provably idle. Use a fresh `case_*` file_scope namespace so it
-      cannot interfere with the existing `case_g`/`case_h` fixtures.
-- [ ] In `test-four-tier-conflict.sh`, add an assertion that the existing `in_batch` cases (7, 8,
+      cannot interfere with the existing `case_g`/`case_h` fixtures. *(completed as case 12, fixture
+      pair #605/#606 in a fresh `case_i/` namespace; also corrected case 9's now-stale
+      "cross_batch defers unconditionally" comment to name the narrowed evidence rule and
+      cross-reference case 12)*
+- [x] In `test-four-tier-conflict.sh`, add an assertion that the existing `in_batch` cases (7, 8,
       10, 11) still report `collision_scope == "in_batch"` — an explicit bit-for-bit guard on the
-      untouched disjunct.
-- [ ] Follow each suite's existing fixture-construction, `pass`/`fail`/`info`, and cleanup
+      untouched disjunct. *(completed as case 13, checking cases 7/9/12's own pass-1 in_batch
+      collision_scope values in one place; cases 8/10/11 don't independently emit a
+      collision_scope of their own to check — 8 and 10 concern the converged/ledger outcome of the
+      SAME pass-1 collisions 7 and 9 already produced, and 11 concerns argument-count bounding —
+      so case 13 covers the full Tier-1 family's in_batch collisions without a redundant re-call)*
+- [x] Follow each suite's existing fixture-construction, `pass`/`fail`/`info`, and cleanup
       conventions exactly; add new fixture projects in their own number range and remove them at the
-      end of the case if the surrounding suite does so.
+      end of the case if the surrounding suite does so. *(completed; new projects use unused number
+      ranges (842-843, 605-606) and follow the surrounding suites' permanent-fixture convention —
+      matching the pre-existing Group 2 and case_g/case_h fixtures, which are also never removed)*
 
 **Timing**: 70 minutes
 
