@@ -1,18 +1,21 @@
 {
-  "status": "planned",
-  "dispatch_seq": 6,
-  "phase": "plan",
-  "summary": "6-phase sequential plan (6.5h) for measure-eager-context.sh. Grounded in the research report plus two planner dry-run verifications: (1) the bash trim+join replication of generate_claudemd() predicts the deployed .claude/CLAUDE.md byte-exactly at 33,215 B (33209 raw - 7 trailing NLs + 6 separators x 2 + 1 final NL); (2) the corrected paths: glob-match model yields 8 eager core rules totalling 27,293 B (historical six at 23,547 B plus error-handling.md and workflows.md). Also identified a bash pitfall the plan mandates working around: [[ str == pattern ]] treats ** as * so specs/**/* silently fails to match nested paths -- glob-to-ERE translation required.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 9,
+  "summary": "Built measure-eager-context.sh, a source-store-only predictive eager-context measurement harness; all 6 plan phases completed, verified total 64,323 B / 16,080 tokens reconciled against the 70,160 B baseline with the delta fully explained.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md",
-      "summary": "Phases: 1 scaffold+CLI+assembly prediction, 2 @-import channel + volatile-file guard, 3 corrected paths: glob-match rule derivation, 4 machine-parseable output + --write snapshot, 5 manifest/inventory/context-layers registration, 6 verification + baseline reconciliation."
+      "type": "summary",
+      "path": "specs/041_eager_context_measurement_harness/summaries/01_eager-context-measurement-harness-summary.md",
+      "summary": "Implementation summary with per-phase verification and full baseline reconciliation table"
+    },
+    {
+      "type": "script",
+      "path": "agent-system/extensions/core/scripts/measure-eager-context.sh",
+      "summary": "New predictive eager-context measurement harness (--check/--write)"
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
-  "blockers": [],
-  "continuation_path": "specs/041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md",
-  "next_action_hint": "Run /implement 41. Phases are fully sequential (1-4 all edit the same new script file). Binding constraints carried into the plan: never invoke deploy-headless.sh or nvim; never read .claude/** for measurement; no hardcoded rule list; flag volatile files rather than counting them; all edits under agent-system/extensions/**; cite the archived correction by file path + section heading, never by task number. The '~9.5k tokens after' figure is an unsourced external target and is explicitly NOT to be validated."
+  "blockers": []
 }

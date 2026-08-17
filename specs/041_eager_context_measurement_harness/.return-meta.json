@@ -1,9 +1,52 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/041_eager_context_measurement_harness/summaries/01_eager-context-measurement-harness-summary.md",
+      "summary": "Implementation summary with per-phase verification and full baseline reconciliation table"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built agent-system/extensions/core/scripts/measure-eager-context.sh, a source-store-only predictive harness for the session-start eager context set (parent CLAUDE.md chain, replicated generate_claudemd() assembly, directory-relative @-import resolution, and dynamic paths: glob-match rule classification), registered it in the core manifest and utility-scripts inventory, fixed a stale citation in context-layers.md, and reconciled its verified 64,323 B / 16,080 tokens total against the 70,160 B baseline with the delta fully decomposed and explained."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/measure-eager-context.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/context/architecture/context-layers.md",
+    "specs/041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md",
+    "specs/041_eager_context_measurement_harness/summaries/01_eager-context-measurement-harness-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's merge.lua generate_claudemd(), only the per-extension claudemd fragments are right-trimmed (fragment:gsub(\"%s+$\", \"\")) before joining with \"\\n\\n\" -- the prepended core header template is inserted UNTRIMMED. claudemd-header.md ends in two raw newlines, so a byte-exact bash replication of the assembly must either materialize the document in a scratch file and measure it with wc -c, or account for this header/fragment trim asymmetry explicitly in any hand-rolled arithmetic. The materialize-and-measure route is far less error-prone.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/041_eager_context_measurement_harness/summaries/01_eager-context-measurement-harness-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["generate_claudemd", "merge.lua", "trim", "byte-exact", "measure-eager-context"]
+    },
+    {
+      "content": "Bash gotcha: `local a=\"$1\" b=\"$a\"` (two assignments in one local statement, the second referencing the first) silently leaves b empty -- bash does not make a's newly-assigned value visible to a later assignment within the same local statement. Split into two separate `local` statements to fix. Easy to miss because the bug is silent (no error), and it manifested as an ERE regex collapsing to '^$' that matched nothing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/041_eager_context_measurement_harness/summaries/01_eager-context-measurement-harness-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "local", "gotcha", "shell-scripting", "glob_to_ere"]
+    },
+    {
+      "content": "Glob-to-ERE translation for paths: frontmatter matching (specs/**/*, .claude/**/*, **/*.lean style globs): bash's own [[ str == pattern ]] treats ** as a plain * (does not cross /) even with shopt -s globstar, so it silently fails to match nested paths. Correct approach: hand-translate the glob to a POSIX ERE (escape regex metachars except */?, then **/  -> (.*/)? , remaining ** -> .*, * -> [^/]*, ? -> [^/] , anchor ^...$) and match with [[ str =~ ere ]].",
+      "category": "PATTERN",
+      "source_artifact": "specs/041_eager_context_measurement_harness/summaries/01_eager-context-measurement-harness-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["glob", "ERE", "bash", "paths-frontmatter", "regex-translation"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786989333_638258",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

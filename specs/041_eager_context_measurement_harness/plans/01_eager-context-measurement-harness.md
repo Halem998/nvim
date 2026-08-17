@@ -455,19 +455,19 @@ list), include it and say so rather than skipping it.
 
 ---
 
-### Phase 6: Verification Run and Baseline Reconciliation [NOT STARTED]
+### Phase 6: Verification Run and Baseline Reconciliation [COMPLETED]
 
 **Goal**: Run the finished harness end to end and reconcile its total against the recorded
 70,160 B / 17,540-token baseline, explaining the delta rather than forcing a match.
 
 **Tasks**:
-- [ ] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh`
+- [x] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh`
       and capture the full output.
-- [ ] Run `--write` against a snapshot path and validate the JSON with `jq`.
-- [ ] Confirm the anti-pattern guards hold: the script never reads `.claude/CLAUDE.md` or
+- [x] Run `--write` against a snapshot path and validate the JSON with `jq`.
+- [x] Confirm the anti-pattern guards hold: the script never reads `.claude/CLAUDE.md` or
       `.claude/rules/*` for measurement, never invokes `deploy-headless.sh` or `nvim`, and
       contains no hardcoded rule or file list in its classification path.
-- [ ] Reconcile against the baseline. Expected accounting to confirm or correct:
+- [x] Reconcile against the baseline. Expected accounting to confirm or correct:
       the recorded 70,160 B is `parent + repo + assembled + six rules (23,547 B)`. Today's
       corrected-model total is `parent (769) + repo (3,046) + assembled (33,215) +
       eight rules (27,293) = 64,323 B / 16,080 tokens`. The delta of about -5,800 B decomposes
@@ -475,13 +475,20 @@ list), include it and say so rather than skipping it.
       `error-handling.md` and `workflows.md`, and roughly **-9,580 B** of genuine shrinkage in
       the parent/repo/assembled group since that post-redeploy measurement. Verify both halves
       against the script's own per-source output.
-- [ ] Write the reconciliation into the implementation summary as a short table (baseline
+- [x] Write the reconciliation into the implementation summary as a short table (baseline
       composition, current composition, per-cause delta). Do not adjust the model to hit 70,160 B.
-- [ ] State explicitly in the summary that the "~9.5k tokens after" figure was **not** validated,
+- [x] State explicitly in the summary that the "~9.5k tokens after" figure was **not** validated,
       because it has no citable source in the repo and is a target for a future normalization
       pass, not an assertion this harness reproduces.
-- [ ] Run the standard gate set for the repo (shell syntax check across changed scripts, `jq empty`
+- [x] Run the standard gate set for the repo (shell syntax check across changed scripts, `jq empty`
       across changed JSON, doc-lint, task-reference lint).
+
+*(completed: actual total is exactly 64,323 B / 16,080 tokens, matching the planner's dry-run
+figure precisely — see the summary's reconciliation table for the full decomposition. Doc-lint's
+two pre-existing FAILs (`command-route-agent.sh` / `test-routing-resolution.sh` deploy drift, and
+Rule S's `return-meta-artifacts-template.md` index gap) were confirmed pre-existing via a
+`git stash` comparison against pre-task HEAD and are unrelated to this task's files; `bash -n`,
+`jq empty`, and `check-task-references.sh` all pass clean)*
 
 **Timing**: 0.75 hours
 
