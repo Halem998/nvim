@@ -1,60 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md",
-      "summary": "6-phase plan for WARN-only coarse and duplicate file_scope checks in validate-state.sh plus a task.md creation-time advisory."
-    }
-  ],
-  "next_steps": "Run /implement 61 to execute the plan",
-  "summary": "Created a 6-phase plan adding WARN-only Check 8 (blast-radius-driven coarse file_scope declarations, default threshold 3) and Check 9 (exact + normalization-equivalent duplicates) to validate-state.sh, an opt-in --fix routed through the deployed mutex-guarded state-write.sh, a Create Task Mode Step 6.5 advisory in task.md, and regression fixtures asserting exit 0 despite warnings.",
-  "phase_count": 6,
-  "estimated_hours": 4.5,
-  "dependency_waves": [
-    [
-      1
-    ],
-    [
-      2
-    ],
-    [
-      3,
-      5
-    ],
-    [
-      4
-    ],
-    [
-      6
-    ]
-  ],
-  "blockers": [],
-  "memory_candidates": [
-    {
-      "content": "In this repo's script layer, deploy-root posture is per-script and asymmetric, and that asymmetry constrains cross-script calls. state-write.sh (the single mutex-guarded specs/state.json writer) carries a deploy-root guard and hard-refuses to run from the agent-system/extensions/core source store; validate-state.sh is deliberately guard-free and argument-relative so it runs from both the source store and the deployed tree, and so it can validate out-of-tree fixtures. Consequence: any guard-free script that needs to WRITE state.json must resolve a state-write.sh copy whose own path lies under */.claude/scripts/ or */.opencode/scripts/ and refuse loudly (exit 2) when none exists -- it must never fall back to a hand-rolled 'jq > tmp && mv' write, which reopens both corruption channels (unguarded mutex, shared temp path) that state-write.sh exists to close. Verified empirically: the deployed copy writes an out-of-tree fixture correctly when given an absolute --state-file, so fixture-based tests still work through it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "state-write",
-        "deploy-root-guard",
-        "source-store",
-        "mutex",
-        "validate-state",
-        "scope-lock"
-      ]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1786999515_0afbe9_61",
-    "agent_type": "planner-agent",
-    "task_number": 61,
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ]
+    "session_id": "sess_1786999515_0afbe9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

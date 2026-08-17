@@ -1,7 +1,7 @@
 # Implementation Plan: Task #61
 
 - **Task**: 61 - Surface coarse file_scope declarations at creation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: 59 (completed)
 - **Research Inputs**: specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md
@@ -213,22 +213,23 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Amend declared file_scope to cover the regression suite [NOT STARTED]
+### Phase 1: Amend declared file_scope to cover the regression suite [COMPLETED]
 
 **Goal**: Make `scripts/tests/test-validate-state.sh` an explicitly declared part of this task's
 scope before any code is written, so Phase 6's fixtures are in-scope rather than a silent
 scope expansion.
 
 **Tasks**:
-- [ ] Append `agent-system/extensions/core/scripts/tests/test-validate-state.sh` to task 61's
+- [x] Append `agent-system/extensions/core/scripts/tests/test-validate-state.sh` to task 61's
       `file_scope` array in `specs/state.json`, via `bash .claude/scripts/state-write.sh` with a
       self-generated `--session-id`. Append (`+=` / `.file_scope += [...]`) — never assign the
-      array wholesale, and never touch any other field of the entry.
-- [ ] Re-read the entry and confirm the other two declared paths are intact and no duplicate was
-      introduced.
-- [ ] Record in the commit message that this creates a new benign `file_scope` overlap with task
+      array wholesale, and never touch any other field of the entry. *(completed)*
+- [x] Re-read the entry and confirm the other two declared paths are intact and no duplicate was
+      introduced. *(completed: 3 entries, unique count also 3)*
+- [x] Record in the commit message that this creates a new benign `file_scope` overlap with task
       20 (`agent-system/extensions/core/scripts/tests/`, status `not_started`), and that tasks 48
       and 50 already overlap task 61 via `agent-system/extensions/` and already depend on 61.
+      *(completed)*
 
 **Timing**: 0.25 hours
 
