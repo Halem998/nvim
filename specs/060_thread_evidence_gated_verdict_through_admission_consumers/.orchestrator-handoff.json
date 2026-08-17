@@ -1,30 +1,44 @@
 {
-  "dispatch_seq": 6,
-  "task_number": 60,
-  "stage": "plan",
-  "status": "planned",
-  "session_id": "sess_1786999515_0afbe9_60",
-  "summary": "Created a 9-phase consumer-side implementation plan covering all 5 WORK items across 8 source-store files (orchestrate-predispatch-review.sh is read-only for this task). Phases are ordered so each ends at a verifiable, committable green state, with deploy deliberately confined to the final phase because redeploying rewrites the running orchestrator's own skill and command definitions. The plan makes two binding decisions the research left open: --allow-scope-collision bypasses cross_batch ONLY (never in_batch, because in_batch means two live co-dispatched agents editing the same files and already has a free bounded-retry remedy), and orchestrate-dry-run-report.sh plus the hard twin's stale schema-v4 mention are confirmed in scope.",
+  "status": "implemented",
+  "dispatch_seq": 7,
+  "phase": "implement",
+  "phases_completed": 9,
+  "phases_total": 9,
+  "summary": "Implemented all 9 plan phases: schema-version sweep to v5 across the three orchestrate consumer files; the false cross_batch self-clearing claim split from the true in_batch claim in both skill twins; the existing Class D dependencies[] suggestion clause folded verbatim into the cross_batch WARNING at three sites; a new idle_overlap_advisory ADVISORY-line check added outside the defer filter at all three dispatch-path sites (base skill, hard twin, command doc) so it fires on admit verdicts too; a new idle_overlap_ledger accumulator (Stage MT-1 schema, step 4.5 append, Stage MT-5 read/report/write, base skill only per the hard twin's own multi-task-mode delegation) backing a new Admitted (idle overlap advisory) subsection in the batch-results template; the identical advisory check added to orchestrate-dry-run-report.sh's per-task verdict loop; a new --allow-scope-collision flag added via the standard 5-touch-point parser mirror and threaded parser -> command -> both orchestrate skills as a consumer-side cross_batch-only override (never in_batch, per D1), with a loud BYPASS notice and no defer_ledger append on the bypass path; and a final deploy/verify sweep. Phase 9 closed as COMPLETED WITH EXCLUSIONS: verify-deploy.sh reports 3 of 23 gates FAIL, matching the documented pre-existing clean-baseline count exactly. Two doc-lint line_count findings were genuinely caused by this task's own edits growing two indexed files and were fixed in-phase (index-entries.json corrected, redeployed a second time, re-verified clean for those two files); the remaining 5 doc-lint findings, the 3 failing shell-test-suite sub-cases, and the specs/state.json undocumented priority field on tasks 53/66 all name files or task numbers this task never touched.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md",
-      "summary": "9-phase consumer-side threading plan for all 5 WORK items across 8 source-store files, with two binding design decisions and a final deploy/verify phase."
+      "summary": "9-phase consumer-side threading plan covering all 5 WORK items across 8 source-store files, with binding decisions D1-D4 and a final deploy/verify phase."
+    },
+    {
+      "type": "summary",
+      "path": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/summaries/01_thread-evidence-gated-verdict-summary.md",
+      "summary": "Implementation summary covering all 9 phases and Phase 9's reasoned exclusions."
     }
   ],
-  "sorry_inventory": [],
-  "phases_completed": 0,
-  "phases_total": 9,
   "blockers": [],
-  "next_action_hint": "implement",
-  "files_modified": [],
+  "next_action_hint": "Implementation complete; proceed to postflight to mark task 60 [COMPLETED].",
   "decisions_made": [
-    "D1: --allow-scope-collision bypasses cross_batch file_scope_collision ONLY, never in_batch. Rejected the research report's both-scopes recommendation: in_batch means the colliding task is a live co-dispatched agent in this same cycle (concurrent-write corruption hazard) and already has a zero-cost bounded remedy via multi-task-operations.md's Tier 1 auto-sequence second pass; only cross_batch's excluded-from-run outcome is legitimate override territory. Consequence: the flag's help text and every bypass notice must say 'cross-batch' explicitly so the unqualified name does not mislead.",
-    "D2: orchestrate-dry-run-report.sh IS in scope for WORK 1 (the research flagged this as inferred rather than asserted). It is in the declared file_scope, is one of the schema doc's four named defer_reason-branching consumers, and has the identical idle_overlap_advisory rendering gap. Phase 6 covers it as its own committable phase.",
-    "D3: skill-orchestrate-hard/SKILL.md's stale 'schema v4' mention is swept to v5 in the same pass as the two literal 'v3' files WORK 5 names, per the co-maintenance mandate requiring the twins to agree with each other and with the live predicate.",
-    "D4: task-lock.md and multi-task-operations.md are in the declared file_scope and get a bounded treatment rather than silence. D1's new cross_batch/in_batch asymmetry lands on multi-task-operations.md's Tier 1 auto-sequence discussion and must be cross-referenced there; task-lock.md is edited only if it contradicts D1, otherwise closed with a Reasoned Exclusions record.",
-    "Phase sequencing: phases 2, 3, and 4 all edit the same cross_batch warning bullet regions and are therefore strictly sequential (waves 2-4) rather than parallel, to prevent churn. Phases 1, 6, and 7 are mutually independent and form wave 1."
+    "D1 (already bound by the plan, executed not relitigated): --allow-scope-collision bypasses cross_batch only, never in_batch -- an in_batch collision is a live concurrent co-dispatch hazard with an existing bounded-retry remedy (Tier 1 auto-sequence), while cross_batch (post-task-59, evidence-gated) is the operator-judgment friction the override exists to relieve.",
+    "The ~L1841 (now ~L1850) 'eligible again next cycle' instance in skill-orchestrate/SKILL.md is task-lock acquire-refusal contention -- a distinct mechanism from file_scope_collision with no in_batch/cross_batch split of its own -- its claim is true and was left unchanged, per the plan's own instruction to record which classification applied.",
+    "task-lock.md needed no edit for D1's asymmetry (neither claims nor contradicts it); closed with a #### Reasoned Exclusions record in Phase 8 rather than left unexplained, per D4.",
+    "The hard twin's multi-task Stage MT-1/MT-5 machinery (the new idle_overlap_ledger accumulator) is entirely delegated to the base skill per the hard twin's own Stage 0 statement; the hard twin gained an 'Accumulator note' documenting this rather than a duplicate schema declaration, matching the existing defer_ledger/forward_progress_violated precedent.",
+    "Phase 9 closed via COMPLETED WITH EXCLUSIONS rather than a bare COMPLETED: verify-deploy.sh's non-zero exit is real, but every one of the 3 failing gates was confirmed, with evidence, to be pre-existing and unrelated to this task's edited files -- except for 2 doc-lint line_count findings that were genuinely this task's own drift, which were fixed in-phase rather than excluded."
   ],
   "dead_ends": [],
-  "continuation_path": null
+  "files_modified": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "continuation_path": null,
+  "plan_markers_verified": true,
+  "sorry_inventory": [],
+  "observations": []
 }

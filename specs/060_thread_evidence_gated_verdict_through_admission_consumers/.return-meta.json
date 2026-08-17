@@ -1,11 +1,54 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/summaries/01_thread-evidence-gated-verdict-summary.md",
+      "summary": "All 9 phases completed: consumer corpus brought into agreement with the live v5 admission predicate, --allow-scope-collision threaded parser -> command -> both orchestrate skill twins (cross-batch only, per D1), redeployed and verified against the documented pre-existing 3/23 verify-deploy.sh baseline."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Threaded idle_overlap_advisory rendering and the new --allow-scope-collision consumer-side override (cross-batch only, never in_batch) through all 9 declared admission-consumer files, keeping skill-orchestrate and skill-orchestrate-hard in exact contract lockstep, then redeployed and verified with all gate failures confirmed pre-existing and unrelated to this task's edits."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "update-phase-status.sh's phase-heading regex replacement can corrupt a heading whose title contains a literal `[` (e.g. a plan phase titled with a code-formatted `dependencies[]`) -- it truncated everything from the first `[` onward, eating the rest of the title and the trailing status marker. If a plan phase title must contain literal brackets, verify the heading text after every update-phase-status.sh call (grep '^### Phase' the plan file) rather than assuming the marker-only edit was clean.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/summaries/01_thread-evidence-gated-verdict-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["update-phase-status.sh", "plan-heading-corruption", "regex-pitfall", "phase-marker"]
+    },
+    {
+      "content": "In this orchestrator codebase, skill-orchestrate-hard's multi-task mode (Stage 0: 'if multi_task_mode true, use base multi-task stages') delegates its ENTIRE Stage MT-1 through MT-5 runtime -- schema field declarations, per-cycle accumulators, and postflight read/report/write -- to skill-orchestrate/SKILL.md. The hard twin's own '## Multi-Task Mode' section only re-transcribes specific admission-gate/redeploy-checkpoint BEHAVIORAL prose (for documentation-reinforcement reasons, since a bare 'same as base' pointer previously failed to carry a mechanism forward). When adding a new Stage MT-1 accumulator field (e.g. a new observation ledger) for a base-skill mechanism, do NOT duplicate the schema declaration in the hard twin -- add a short 'Accumulator note' there instead, pointing back to the base skill, matching how defer_ledger and forward_progress_violated are already documented.",
+      "category": "PATTERN",
+      "source_artifact": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/summaries/01_thread-evidence-gated-verdict-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["skill-orchestrate-hard", "multi-task-mode", "stage-mt", "accumulator", "co-maintenance", "twin-skills"]
+    },
+    {
+      "content": "check-extension-docs.sh's Rule R validates a maintained line_count field in agent-system/extensions/<ext>/index-entries.json against each indexed context/patterns doc's ACTUAL file line count. Growing an existing indexed doc file (adding a section, appending prose) without updating its index-entries.json line_count entry introduces a new doc-lint FAIL that looks like unrelated drift but is actually caused by that same edit. After any edit that changes an indexed doc file's line count, grep index-entries.json for that file's path and update line_count to match `wc -l` before considering the doc-lint gate clean.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/summaries/01_thread-evidence-gated-verdict-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs.sh", "index-entries.json", "line_count", "doc-lint", "rule-r"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1786999515_0afbe9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 9,
     "phases_total": 9
   }
 }
