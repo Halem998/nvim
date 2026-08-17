@@ -171,6 +171,7 @@
       "tests/test-corroborate-phase-counts.sh",
       "tests/test-errors-append.sh",
       "tests/test-git-commit-scoped.sh",
+      "tests/test-guard-destructive-git.sh",
       "tests/test-deploy-propagation.sh",
       "tests/test-double-loading-check.sh",
       "tests/test-handoff-dispatch-identity.sh",

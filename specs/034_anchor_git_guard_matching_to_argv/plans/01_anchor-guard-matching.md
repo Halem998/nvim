@@ -371,34 +371,44 @@ acceptance criterion 6.
 
 ---
 
-### Phase 5: Register the suite and verify it passes in both modes [NOT STARTED]
+### Phase 5: Register the suite and verify it passes in both modes [COMPLETED]
 
 **Goal**: Wire the suite into the manifest and demonstrate it runs and passes under both the
 source-store and deployed directory shapes, satisfying acceptance criterion 5.
 
 **Tasks**:
-- [ ] Add `"tests/test-guard-destructive-git.sh"` to `provides.scripts` in
+- [x] Add `"tests/test-guard-destructive-git.sh"` to `provides.scripts` in
       `agent-system/extensions/core/manifest.json`, matching the existing subdirectory-qualified
-      `"tests/test-..."` entries and preserving the surrounding ordering convention.
-- [ ] Validate the manifest still parses: `jq -e . agent-system/extensions/core/manifest.json`.
-- [ ] Confirm `run-all.sh` requires no edit — it glob-discovers `test-*.sh` in both modes. Verify
+      `"tests/test-..."` entries and preserving the surrounding ordering convention. *(completed:
+      inserted next to `tests/test-git-commit-scoped.sh`)*
+- [x] Validate the manifest still parses: `jq -e . agent-system/extensions/core/manifest.json`.
+      *(completed)*
+- [x] Confirm `run-all.sh` requires no edit — it glob-discovers `test-*.sh` in both modes. Verify
       by observation, not assumption: run
       `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm the new suite
-      appears in the per-suite narration and the summary count increases by one.
-- [ ] Confirm the suite file carries its exec bit — `run-all.sh` reports a non-executable suite as
-      a loud `[SKIP]`, which is a false green for this task's purposes.
-- [ ] Verify deployed mode. Primary path: regenerate the deploy via
-      `bash agent-system/extensions/core/scripts/deploy-headless.sh` (inspect its `--help`/usage
-      first for required arguments), then run `.claude/scripts/tests/run-all.sh` and confirm the
-      suite is discovered and passes against `.claude/hooks/guard-destructive-git.sh`. Fallback if
-      the deploy cannot be run non-interactively: construct a flat `scripts/tests/` + `hooks/`
-      tree under `mktemp -d`, copy the suite and the fixed hook into it, and run the suite there —
-      this exercises the same `$SCRIPT_DIR/../../hooks/` resolution the deployed tree uses.
-- [ ] Do not hand-author anything under `.claude/**`. Regenerating the tree via the sanctioned
-      deploy script is the only permitted way that tree changes.
-- [ ] Note that `file_scope` for this task does not currently list `manifest.json`; the field is
+      appears in the per-suite narration and the summary count increases by one. *(completed:
+      new suite appears as `[RUN]`/`[PASS]` in the source-store run-all.sh transcript; two
+      pre-existing, unrelated failures in test-validate-return-meta.sh's fix-roundtrip cases are
+      present in the same run and are not touched by this change)*
+- [x] Confirm the suite file carries its exec bit — `run-all.sh` reports a non-executable suite as
+      a loud `[SKIP]`, which is a false green for this task's purposes. *(completed: `git ls-files
+      -s` shows mode 100755; the run-all.sh transcript shows `[PASS]`, not `[SKIP]`)*
+- [x] Verify deployed mode. *(completed via the plan's own documented fallback rather than the
+      primary path: `deploy-headless.sh`'s own header explicitly names itself as sanctioned for
+      automated invocation from exactly one caller — skill-orchestrate's Stage MT-3 redeploy
+      checkpoint — and separately documents a self-overwrite hazard when invoked from within the
+      very repo it targets. This implementer dispatch is not that sanctioned caller, so used the
+      flat-tree fallback instead: built a `hooks/` + `scripts/tests/` tree under `mktemp -d`,
+      copied the fixed hook and the suite into it, and ran the suite there — 43/43 green,
+      confirming the `$SCRIPT_DIR/../../hooks/` resolution works identically in the deployed
+      directory shape.)*
+- [x] Do not hand-author anything under `.claude/**`. Regenerating the tree via the sanctioned
+      deploy script is the only permitted way that tree changes. *(completed: `.claude/**` was
+      not touched at all this phase)*
+- [x] Note that `file_scope` for this task does not currently list `manifest.json`; the field is
       descriptive and not filesystem-validated, so extend it rather than skipping the required
-      registration.
+      registration. *(completed: registration performed regardless, per the note's own
+      instruction)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Register the suite and verify it passes in both modes",
+  "started_at": "2026-08-17T19:35:00Z",
+  "last_updated": "2026-08-17T19:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add suite to manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "Validate manifest parses", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm run-all.sh discovers suite with no code change (source-store mode)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm exec bit on suite file", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify deployed-mode directory shape (flat-tree fallback)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm .claude/** untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "notes": [
+    "Deployed-mode verification used the plan's documented FALLBACK (flat mktemp -d tree with hooks/ + scripts/tests/), not the primary deploy-headless.sh path. deploy-headless.sh's own header restricts automated invocation to exactly one sanctioned caller (skill-orchestrate's Stage MT-3 redeploy checkpoint) and separately warns of a self-overwrite hazard when run from within the repo it targets. This implementer dispatch is not that caller, so the fallback was used deliberately, not because the deploy 'could not be run non-interactively'. Result: 43/43 green in the flat-tree simulation, confirming $SCRIPT_DIR/../../hooks/ resolution works in the deployed directory shape.",
+    "Source-store run-all.sh full sweep: 41 passed, 2 failed, 0 skipped, 43 total. The 2 failures are in test-validate-return-meta.sh's pre-existing fix-roundtrip cases, unrelated to this task's file scope (agent-system/extensions/core/hooks/guard-destructive-git.sh, its new test suite, and manifest.json only). Not investigated or touched -- out of scope."
+  ],
+  "handoff_count": 0
+}
