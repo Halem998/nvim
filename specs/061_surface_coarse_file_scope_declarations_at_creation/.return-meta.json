@@ -1,41 +1,60 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
-      "summary": "Research on adding a WARN-level, blast-radius-driven whole-directory-root and duplicate file_scope declaration check to validate-state.sh, surfaced advisory in commands/task.md Create Task Mode."
+      "type": "plan",
+      "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md",
+      "summary": "6-phase plan for WARN-only coarse and duplicate file_scope checks in validate-state.sh plus a task.md creation-time advisory."
     }
   ],
-  "next_steps": "Run /plan 61 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1786999515_0afbe9_61",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 14
-  },
+  "next_steps": "Run /implement 61 to execute the plan",
+  "summary": "Created a 6-phase plan adding WARN-only Check 8 (blast-radius-driven coarse file_scope declarations, default threshold 3) and Check 9 (exact + normalization-equivalent duplicates) to validate-state.sh, an opt-in --fix routed through the deployed mutex-guarded state-write.sh, a Create Task Mode Step 6.5 advisory in task.md, and regression fixtures asserting exit 0 despite warnings.",
+  "phase_count": 6,
+  "estimated_hours": 4.5,
+  "dependency_waves": [
+    [
+      1
+    ],
+    [
+      2
+    ],
+    [
+      3,
+      5
+    ],
+    [
+      4
+    ],
+    [
+      6
+    ]
+  ],
+  "blockers": [],
   "memory_candidates": [
     {
-      "content": "In this repo, file_scope is only populated by multi-task creators (/meta Component 4a, /fix-it, /spawn) -- the single-task /task Create Task Mode (commands/task.md) never sets file_scope for the new task. Any 'surface X at task creation' feature targeting /task therefore must scan the whole active_projects[] population post-write, not just the newly created entry's own (always-empty) file_scope.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "task.md", "task creation", "multi-task-creation-standard", "Component 4a"]
-    },
-    {
-      "content": "validate-state.sh base-mode checks (1-7) are all PASS/FAIL only -- zero WARN-level output today. --deep checks (D1-D5) require git history. verify-deploy.sh Gate 10 is validate-state.sh's ONLY existing caller (deploy-time, --deep, exit-code-based pass/fail: 0 passes even with WARNs, only exit 1 = FAIL-level fails the gate). Any new advisory check must use log_warn, never log_fail, or it silently turns pre-existing state.json issues into deploy blockers.",
+      "content": "In this repo's script layer, deploy-root posture is per-script and asymmetric, and that asymmetry constrains cross-script calls. state-write.sh (the single mutex-guarded specs/state.json writer) carries a deploy-root guard and hard-refuses to run from the agent-system/extensions/core source store; validate-state.sh is deliberately guard-free and argument-relative so it runs from both the source store and the deployed tree, and so it can validate out-of-tree fixtures. Consequence: any guard-free script that needs to WRITE state.json must resolve a state-write.sh copy whose own path lies under */.claude/scripts/ or */.opencode/scripts/ and refuse loudly (exit 2) when none exists -- it must never fall back to a hand-rolled 'jq > tmp && mv' write, which reopens both corruption channels (unguarded mutex, shared temp path) that state-write.sh exists to close. Verified empirically: the deployed copy writes an out-of-tree fixture correctly when given an absolute --state-file, so fixture-based tests still work through it.",
       "category": "PATTERN",
-      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
+      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md",
       "confidence": 0.85,
-      "suggested_keywords": ["validate-state.sh", "verify-deploy.sh", "Gate 10", "log_warn", "advisory checks"]
-    },
-    {
-      "content": "The canonical file_scope overlap predicate (normalize: strip trailing slash; overlap: exact match or directory-prefix ancestor either direction) lives exactly once in scripts/lib/file-scope-overlap.sh, exported as both a bash function scopes_overlap() and a splice-able jq def block FILE_SCOPE_OVERLAP_JQ_DEFS. Every consumer (task-lock.sh, orchestrate-batch-admit.sh) sources or splices this rather than re-deriving it. Any new blast-radius/overlap computation in this codebase must do the same.",
-      "category": "PATTERN",
-      "source_artifact": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["file-scope-overlap.sh", "overlap predicate", "shared library", "jq splice"]
+      "suggested_keywords": [
+        "state-write",
+        "deploy-root-guard",
+        "source-store",
+        "mutex",
+        "validate-state",
+        "scope-lock"
+      ]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1786999515_0afbe9_61",
+    "agent_type": "planner-agent",
+    "task_number": 61,
+    "delegation_depth": 1,
+    "delegation_path": [
+      "orchestrator",
+      "plan",
+      "planner-agent"
+    ]
+  }
 }

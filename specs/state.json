@@ -672,7 +672,7 @@
     {
       "project_number": 61,
       "project_name": "surface_coarse_file_scope_declarations_at_creation",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "essential-refactor",
       "title": "Surface coarse and duplicate file_scope declarations at task-creation time",
@@ -689,9 +689,14 @@
           "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
           "type": "report",
           "summary": "Research on adding a WARN-level, blast-radius-driven whole-directory-root and duplicate file_scope declaration check"
+        },
+        {
+          "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md",
+          "type": "plan",
+          "summary": "6-phase plan for WARN-only coarse and duplicate file_scope checks"
         }
       ],
-      "last_updated": "2026-08-17T20:53:38Z",
+      "last_updated": "2026-08-17T21:00:55Z",
       "session_id": "sess_1786999515_0afbe9_61"
     },
     {

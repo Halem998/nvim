@@ -1,25 +1,32 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
-  "phase": "research",
-  "summary": "Researched adding a WARN-level, blast-radius-driven whole-directory-root and duplicate file_scope declaration check to validate-state.sh (new base-mode checks, never log_fail, reusing scripts/lib/file-scope-overlap.sh's shared overlap predicate), surfaced as an advisory step in commands/task.md's Create Task Mode (Step 6.5, between state-write and git commit). Confirmed a live example (task 44) and no current duplicate-entry regressions.",
+  "status": "planned",
+  "dispatch_seq": 2,
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Created a 6-phase implementation plan for the WARN-only coarse/duplicate file_scope advisory: Check 8 (blast-radius-driven coarse declarations, default threshold N=3, calibrated to 6 live warnings), Check 9 (exact + normalization-equivalent duplicate classes), an opt-in --fix routed exclusively through the deployed mutex-guarded state-write.sh, a task.md Create Task Mode Step 6.5 advisory, and regression fixtures asserting exit 0 despite warnings. Resolved the open coarseness-trigger design question in favor of blast radius over path depth, with calibration data measured against live state.json.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md",
-      "summary": "Research on adding a WARN-level, blast-radius-driven whole-directory-root and duplicate file_scope declaration check to validate-state.sh, surfaced advisory in commands/task.md Create Task Mode."
+      "type": "plan",
+      "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md",
+      "summary": "6-phase plan for WARN-only coarse and duplicate file_scope checks in validate-state.sh plus a task.md creation-time advisory."
     }
   ],
   "blockers": [],
-  "next_action_hint": "Run /plan 61 to create implementation plan",
+  "next_action_hint": "Run /implement 61 to execute the plan",
   "decisions_made": [
-    "New checks belong in validate-state.sh base mode (no git dependency needed) and must use log_warn, never log_fail, to preserve verify-deploy.sh Gate 10's exit-code pass/fail contract and the task's advisory-not-blocking requirement.",
-    "Blast-radius computation must reuse scripts/lib/file-scope-overlap.sh's FILE_SCOPE_OVERLAP_JQ_DEFS/scopes_overlap(), never re-derive the normalize/overlap logic inline.",
-    "commands/task.md's new advisory step scans the whole active_projects[] population post-write (Step 6.5, before Step 7 git commit), not just the newly created task's own file_scope, because Create Task Mode never sets file_scope for the new task itself.",
-    "Coarseness trigger recommended as blast-radius-driven (directory-shaped entry AND overlaps >= N other non-terminal tasks), not a bare path-depth heuristic, and must not hardcode orchestrator-critical-paths.json's scope_roots (a different, self-modification-specific feature)."
+    "D1 coarseness trigger: blast-radius-driven (trailing-slash structural pre-filter AND >= N distinct non-terminal overlapping tasks), default N=3 via FILE_SCOPE_COARSE_MIN_OVERLAP; path-depth heuristic rejected as repo-shape-dependent. Calibrated against live state.json: N=3 yields 6 warnings (tasks 48/50 at 21 overlaps, 44 at 8, 31/42 at 4, 9 at 3), N=2 would yield 10.",
+    "D1 limitation accepted and documented: a directory declared without a trailing slash is not flagged; the alternative 'no file extension' signal false-positives on extensionless files.",
+    "D2 duplicate detection splits into Class A (exact-string duplicates, repairable by --fix) and Class B (normalization-equivalent, e.g. 'a/' vs 'a', WARN-only and never auto-repaired).",
+    "D3 --fix must write ONLY through a deployed state-write.sh (path matching */.claude/scripts/ or */.opencode/scripts/) or refuse with exit 2. Verified during planning that the source-store state-write.sh copy hard-refuses via its deploy-root guard while validate-state.sh is deliberately guard-free, and that the deployed copy writes an out-of-tree fixture correctly given an absolute --state-file. No --regen-todo (refused with non-default --state-file, and file_scope is not rendered in TODO.md).",
+    "D4 the --help implementation is a hardcoded 'sed -n 2,74p' range over the script's own header; every header-touching phase must move that range or --help breaks silently.",
+    "Phase 1 amends task 61's file_scope to add scripts/tests/test-validate-state.sh so Phase 6 fixtures are in-scope; the resulting new overlap is with task 20 (not_started), while tasks 48 and 50 already overlap task 61 and already depend on it."
   ],
   "dead_ends": [],
-  "files_modified": [],
+  "files_modified": [
+    "specs/061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md"
+  ],
   "continuation_path": null,
-  "plan_markers_verified": null
+  "plan_markers_verified": true,
+  "sorry_inventory": []
 }

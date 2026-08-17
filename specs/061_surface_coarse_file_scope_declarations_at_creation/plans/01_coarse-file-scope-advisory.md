@@ -1,0 +1,506 @@
+# Implementation Plan: Task #61
+
+- **Task**: 61 - Surface coarse file_scope declarations at creation
+- **Status**: [NOT STARTED]
+- **Effort**: 4.5 hours
+- **Dependencies**: 59 (completed)
+- **Research Inputs**: specs/061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md
+- **Artifacts**: plans/01_coarse-file-scope-advisory.md (this file)
+- **Standards**: plan-format.md, status-markers.md, artifact-management.md, tasks.md
+- **Type**: meta
+- **Lean Intent**: false
+
+## Overview
+
+Add two new WARN-only base-mode checks to `scripts/validate-state.sh` — Check 8 (coarse,
+whole-directory-root `file_scope` declarations, triggered by measured blast radius) and Check 9
+(duplicate `file_scope` entries) — plus an opt-in `--fix` flag that removes exact-duplicate
+entries through the mutex-guarded writer, and a new advisory Step 6.5 in `commands/task.md`'s
+Create Task Mode that surfaces those warnings at task-creation time. Every new check is
+`log_warn`-only and every new output path is advisory: task creation, the git commit, and
+`verify-deploy.sh` Gate 10 all proceed unchanged regardless of what is found. All edits target the
+SOURCE STORE under `agent-system/extensions/core/`, never the deployed `.claude/` copies.
+
+### Research Integration
+
+Findings carried directly into this plan:
+
+- **`log_warn`, never `log_fail`** — `verify-deploy.sh` Gate 10 (line 470) treats
+  `validate-state.sh`'s exit code as the deploy pass/fail signal, and `validate-state.sh` exits 0
+  on a WARN-only run (lines 526-535). A `log_fail` would turn task 44's existing declaration into
+  an immediate deploy blocker. This is the mechanical enforcement of "advisory, not blocking".
+- **Reuse, never re-derive, the overlap predicate** — blast radius is computed by splicing
+  `FILE_SCOPE_OVERLAP_JQ_DEFS` from `scripts/lib/file-scope-overlap.sh` into the check's own
+  `jq -n` program (the `orchestrate-batch-admit.sh` consumption shape). That library's own header
+  states it is the only place the algorithm is written down as code.
+- **Base mode, not `--deep`** — the new checks need only `active_projects[].file_scope` and
+  `.status`; no git history. Base mode keeps them fast enough for an interactive `/task` call.
+- **Whole-population scan, not new-task-only** — Create Task Mode never sets `file_scope` for the
+  task it creates (confirmed: Step 6's `state-write.sh` filter omits the field entirely), so the
+  advisory necessarily scans the whole post-write `active_projects[]` population. This is what
+  surfaces declarations already sitting in state.
+- **`--fix` precedent** — `validate-return-meta.sh --fix` (lines 129-160): opt-in only, never
+  implicit, repair-then-revalidate.
+
+### Prior Plan Reference
+
+No prior plan.
+
+### Roadmap Alignment
+
+No `roadmap_path` was provided in the delegation context; no roadmap consultation performed.
+
+## Resolved Design Decisions
+
+These were open questions at research time. They are decided here so the implementer does not
+re-litigate them.
+
+### D1 — Coarseness trigger: blast-radius-driven, with a trailing-slash structural pre-filter
+
+**Decision**: an entry is flagged coarse iff BOTH hold:
+1. **Structural pre-filter**: the entry string, as declared (pre-normalization), ends with `/`.
+2. **Blast radius**: the entry overlaps at least `N` *distinct other non-terminal* tasks, where
+   overlap is `scopes_overlap_first` from `scripts/lib/file-scope-overlap.sh` and non-terminal
+   means status not in `{completed, abandoned, expanded}`. Both sides of the comparison are
+   filtered to non-terminal.
+
+**Default `N` = 3**, overridable via the environment variable
+`FILE_SCOPE_COARSE_MIN_OVERLAP` (integer; a non-integer value is a hard error, exit 2 — never a
+silent fallback, matching the `--allow-artifact-removal` malformed-value posture at lines 96-111).
+
+**Calibration evidence** (measured against the live `specs/state.json` during planning, using the
+canonical predicate; 111 total `file_scope` entries, 12 of them directory-shaped, 23 non-terminal
+tasks carrying a non-empty `file_scope`):
+
+| Task | Entry | Distinct non-terminal overlaps |
+|------|-------|-------------------------------|
+| 48 | `agent-system/extensions/` | 21 |
+| 50 | `agent-system/extensions/` | 21 |
+| 44 | `agent-system/extensions/core/context/` | 8 |
+| 31 | `agent-system/extensions/core/scripts/lint/` | 4 |
+| 42 | `agent-system/extensions/core/scripts/lint/` | 4 |
+| 9 | `agent-system/extensions/core/context/orchestration/` | 3 |
+| 20 | `agent-system/extensions/core/scripts/tests/` | 2 |
+| 43 | `agent-system/extensions/email/agents/` | 2 |
+| 43 | `agent-system/extensions/email/skills/` | 2 |
+| 50 | `agent-system/extensions/core/scripts/tests/` | 2 |
+| 18 | `lua/neotex/plugins/ai/claude/extensions/` | 0 |
+| 31 | `.opencode/extensions/` | 0 |
+
+At `N=3` this yields 6 warnings covering exactly the genuinely broad declarations and excludes
+both the narrow 2-overlap cases and the two legitimately-scoped 0-overlap directories. At `N=2` it
+would yield 10. `N=3` is the default; the env var exists so the threshold can be tuned without a
+code edit.
+
+**Why not a path-depth heuristic**: rejected per the research. A depth threshold cannot be made
+repo-shape-agnostic (this monorepo nests everything under `agent-system/extensions/core/`, so
+task 44's 4-segment entry and a small repo's 1-segment `docs/` are the same defect at different
+depths), and it ties the warning to a proxy rather than to the task's own stated rationale — "a
+warning that names the concrete blast radius rather than a generic caution".
+
+**Accepted known limitation (documented, not fixed)**: a directory declared *without* a trailing
+slash (`agent-system/extensions/core/context`) is not flagged. The alternative structural signal —
+"last segment has no file extension" — produces false positives on every extensionless file, and
+this repo declares its directories with trailing slashes in all 12 live cases. Record this
+limitation in the script header; do not widen the pre-filter.
+
+**Must not**: do not hardcode or consult `context/reference/orchestrator-critical-paths.json`'s
+`scope_roots` / `critical_paths`. That is `orchestrate-predispatch-review.sh`'s Class C
+self-modification feature (any task vs. a fixed critical-path registry) — a different mechanism
+from this one (any task vs. any other non-terminal task). They stay independent.
+
+### D2 — Duplicate detection: two distinct classes, only one of them repairable
+
+- **Class A, exact duplicates**: the same string appears twice in one `file_scope` array. WARN, and
+  repairable by `--fix`.
+- **Class B, normalization-equivalent duplicates**: two entries differ only by a trailing slash
+  (`a/` vs `a`), i.e. they are distinct strings that `norm` collapses. WARN, reported as a
+  separate, explicitly-labelled class, and **never** auto-repaired — choosing which spelling
+  survives is a judgment call, and `--fix` must remain a mechanically unambiguous transform.
+
+Live baseline: zero hits of either class in the current `specs/state.json`, so adding these checks
+surfaces no pre-existing noise.
+
+### D3 — `--fix` writes only through the deployed `state-write.sh`, or refuses loudly
+
+`scripts/state-write.sh` is the single mutex-guarded writer for `specs/state.json`; hand-rolling a
+`jq > tmp && mv` sequence inside `validate-state.sh` would reopen exactly the two corruption
+channels that script's header says it exists to close. But `state-write.sh` carries a
+deploy-root guard: **it refuses to run from the source store** (verified during planning — the
+source-store copy exits with "must run from a deployed scripts/ tree"), while `validate-state.sh`
+is deliberately guard-free so it runs from both trees.
+
+**Decision**: `--fix` resolves a `state-write.sh` whose own path matches `*/.claude/scripts/` or
+`*/.opencode/scripts/` (candidates in order: `$SCRIPT_DIR/state-write.sh`,
+`$SCRIPT_DIR/../../.claude/scripts/state-write.sh`, then
+`<git toplevel of STATE_FILE's directory>/.claude/scripts/state-write.sh`). If no deployed copy is
+found, `--fix` exits 2 with a named message telling the caller to deploy first. It never falls back
+to an in-script write.
+
+Invocation shape: `--state-file "<absolute path to STATE_FILE>"`, `--session-id` (self-generated
+via the portable `sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')` pattern already
+used by Create Task Mode and Sync Mode; also accept an optional `--session-id` passthrough on
+`validate-state.sh` itself). **No `--regen-todo`** — `file_scope` is not rendered into TODO.md, and
+`--regen-todo` is refused outright when combined with a non-default `--state-file`.
+
+Verified during planning: the *deployed* `state-write.sh` writes an out-of-tree fixture correctly
+when given an absolute `--state-file`, so the Phase 6 `--fix` regression fixture works from a temp
+workdir.
+
+Order-preserving dedup filter (jq; `unique` sorts and must not be used):
+`reduce .[] as $x ([]; if index($x) then . else . + [$x] end)`.
+
+### D4 — `--help` range must move with the header
+
+`validate-state.sh`'s `--help` is `sed -n '2,74p' "$0"` (line 116) — a hardcoded line range over
+its own header comment. Every phase that adds header documentation MUST update that range in the
+same edit, and confirm `--help` still renders the whole header and nothing past it. This is a
+silent-breakage trap, not a nicety.
+
+## Goals & Non-Goals
+
+**Goals**:
+- A WARN-only base-mode Check 8 in `validate-state.sh` that names, per flagged entry, the owning
+  task number, the entry string, the distinct blast-radius count, and the overlapping task numbers.
+- A WARN-only base-mode Check 9 reporting exact and normalization-equivalent duplicate
+  `file_scope` entries as two labelled classes.
+- An opt-in `--fix` flag that removes exact-duplicate entries in place via the deployed
+  `state-write.sh`, then re-validates.
+- A Step 6.5 in `commands/task.md` Create Task Mode that runs the deployed `validate-state.sh`
+  (base mode) after the Step 6 state write and surfaces `[WARN]` lines inline.
+- Regression fixtures proving each new check fires AND that a seeded coarse/duplicate fixture still
+  exits 0.
+
+**Non-Goals**:
+- No `log_fail` anywhere in the new code, and no change to any existing check's severity.
+- No blocking of task creation, the Step 7 git commit, or `verify-deploy.sh` Gate 10.
+- No auto-repair of coarse declarations (narrowing a directory scope needs human judgment) and no
+  auto-repair of Class B normalization-equivalent duplicates.
+- No second runtime gate: `task.md` Step 6.5 is the only new invocation site.
+- No edits to `agents/meta-builder-agent.md` Component 4a (the site that actually populates
+  `file_scope` for most tasks) — a natural follow-up, explicitly out of scope.
+- No "Declaration Quality" subsection added to `context/patterns/file-footprint-overlap.md` — the
+  research recommends it; it is out of declared scope and belongs to a follow-up task.
+- No edits to `orchestrate-predispatch-review.sh` Class C or to
+  `context/reference/orchestrator-critical-paths.json`.
+- No hand-authored edits under `.claude/**` (deploy artifact; regenerate via
+  `.claude/scripts/deploy-headless.sh` instead).
+
+## Risks & Mitigations
+
+| Risk | Impact | Likelihood | Mitigation |
+|------|--------|------------|------------|
+| A new check implemented as `log_fail` breaks `verify-deploy.sh` Gate 10 against live state (task 44 would trip it today) | H | M | `log_warn` exclusively; Phase 6 fixture asserts exit 0 on a seeded coarse+duplicate fixture; Phase 6 runs Gate 10 for real |
+| Overlap/normalize logic re-derived inline, creating a second drifting copy of the predicate | H | M | Splice `FILE_SCOPE_OVERLAP_JQ_DEFS`; Phase 2 verification greps the diff for any locally-written `rtrimstr`/`startswith` normalize logic |
+| `--help` breaks silently because the `sed -n '2,74p'` range was not moved | M | H | D4; each header-touching phase re-runs `--help` and eyeballs first/last lines |
+| `--fix` hand-rolls a state.json write, bypassing the `specs/.scope-lock` mutex | H | L | D3: deployed-`state-write.sh`-or-refuse; Phase 4 verification greps the diff for `mv .* state` / `> *.tmp` patterns |
+| Threshold produces WARN noise on every `/task` invocation | M | M | D1 default `N=3` calibrated against live data (6 lines); display cap of 10 lines sorted by descending blast radius, with an "… and K more" tail |
+| Adding the test file to `file_scope` collides with sibling tasks | L | M | Phase 1 records the overlap explicitly: tasks 48 and 50 already declare `agent-system/extensions/` (already overlapping task 61 today) and both already list 61 in `dependencies`; task 20 declares `agent-system/extensions/core/scripts/tests/` and is `not_started`, so the new overlap is benign and serializes correctly if 20 is later dispatched |
+| Base-mode checks slow the interactive `/task` path | L | L | Single `jq -n` pass over `active_projects[]` only; no git, no `--deep`; Phase 5 verification times the invocation |
+
+## Implementation Phases
+
+**Dependency Analysis**:
+| Wave | Phases | Blocked by |
+|------|--------|------------|
+| 1 | 1 | -- |
+| 2 | 2 | 1 |
+| 3 | 3, 5 | 2 |
+| 4 | 4 | 3 |
+| 5 | 6 | 4, 5 |
+
+Phases within the same wave can execute in parallel.
+
+---
+
+### Phase 1: Amend declared file_scope to cover the regression suite [NOT STARTED]
+
+**Goal**: Make `scripts/tests/test-validate-state.sh` an explicitly declared part of this task's
+scope before any code is written, so Phase 6's fixtures are in-scope rather than a silent
+scope expansion.
+
+**Tasks**:
+- [ ] Append `agent-system/extensions/core/scripts/tests/test-validate-state.sh` to task 61's
+      `file_scope` array in `specs/state.json`, via `bash .claude/scripts/state-write.sh` with a
+      self-generated `--session-id`. Append (`+=` / `.file_scope += [...]`) — never assign the
+      array wholesale, and never touch any other field of the entry.
+- [ ] Re-read the entry and confirm the other two declared paths are intact and no duplicate was
+      introduced.
+- [ ] Record in the commit message that this creates a new benign `file_scope` overlap with task
+      20 (`agent-system/extensions/core/scripts/tests/`, status `not_started`), and that tasks 48
+      and 50 already overlap task 61 via `agent-system/extensions/` and already depend on 61.
+
+**Timing**: 0.25 hours
+
+**Depends on**: none
+
+**Verification Tier**: local
+
+**Files to modify**:
+- `specs/state.json` — task 61 `active_projects[]` entry, `file_scope` array only
+
+**Verification**:
+- `jq '.active_projects[] | select(.project_number==61) | .file_scope' specs/state.json` shows
+  exactly three entries, the original two unchanged.
+- `bash .claude/scripts/validate-state.sh --deep specs/state.json` exits 0.
+
+---
+
+### Phase 2: Check 8 — coarse (blast-radius) file_scope declarations [NOT STARTED]
+
+**Goal**: Add the WARN-only, blast-radius-driven coarse-declaration check to
+`validate-state.sh`'s base mode, reusing the canonical overlap predicate.
+
+**Tasks**:
+- [ ] Source `scripts/lib/file-scope-overlap.sh` using the same deploy-tree-first /
+      source-store-fallback candidate-list idiom already used for `status-vocabulary.sh`
+      (lines 160-180), with the same loud exit-2 on not-found.
+- [ ] Add Check 8 after Check 7 (line 289), before the `--deep` block (line 291). Implement the
+      whole scan as ONE `jq -n --slurpfile` (or `--argfile`-equivalent) program with
+      `$FILE_SCOPE_OVERLAP_JQ_DEFS` spliced in, per D1: non-terminal filter on both sides,
+      trailing-slash pre-filter, `scopes_overlap_first` per (entry, other-task) pair, distinct
+      overlapping task numbers collected and counted.
+- [ ] Emit one `log_warn` per flagged (task, entry) pair naming: owning task number, entry string,
+      distinct overlap count, and the sorted overlapping task numbers. Sort output by descending
+      blast radius; cap at 10 lines with an `… and K more` tail line when exceeded.
+- [ ] `log_pass` when nothing is flagged.
+- [ ] Read `FILE_SCOPE_COARSE_MIN_OVERLAP` (default 3); a non-integer value is exit 2 with a named
+      message.
+- [ ] Update the script header's base-mode check list and add a short D1 rationale note including
+      the documented trailing-slash limitation; update the `sed -n '2,74p'` `--help` range (D4).
+
+**Timing**: 1.25 hours
+
+**Depends on**: 1
+
+**Verification Tier**: interface
+
+**Scope Hypothesis**: Against the live `specs/state.json` at `N=3` this check is expected to emit
+exactly 6 WARN lines, for tasks 48 and 50 (`agent-system/extensions/`, 21 each), 44
+(`.../core/context/`, 8), 31 and 42 (`.../core/scripts/lint/`, 4 each), and 9
+(`.../core/context/orchestration/`, 3). Confirm at implementation time by running the finished
+check against `specs/state.json` and diffing the emitted (task, entry, count) triples against this
+table; a mismatch means either the predicate was mis-spliced or state has changed since planning —
+investigate before proceeding, do not adjust the table to match.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/validate-state.sh` — new library sourcing block, new
+  Check 8, header docs, `--help` range
+
+**Verification**:
+- `bash agent-system/extensions/core/scripts/validate-state.sh specs/state.json` exits 0 and prints
+  the expected WARN lines.
+- `FILE_SCOPE_COARSE_MIN_OVERLAP=2` produces 10 lines; `=21` produces 2; `=abc` exits 2.
+- `grep -n 'rtrimstr\|startswith(' agent-system/extensions/core/scripts/validate-state.sh` shows no
+  locally-written normalize/overlap logic (only the spliced `$FILE_SCOPE_OVERLAP_JQ_DEFS` reference).
+- `grep -c log_fail` on the added hunk is 0.
+- `--help` renders the full header, nothing beyond it.
+- Direct dependents re-verified this phase: `bash .claude/scripts/deploy-headless.sh` then
+  `bash .claude/scripts/verify-deploy.sh` Gate 10 still passes; existing
+  `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` still all-PASS.
+
+---
+
+### Phase 3: Check 9 — duplicate file_scope entries [NOT STARTED]
+
+**Goal**: Add the WARN-only duplicate-entry check with D2's two labelled classes.
+
+**Tasks**:
+- [ ] Add Check 9 immediately after Check 8. Class A (exact duplicates): per entry,
+      `(.file_scope|length) != (.file_scope|unique|length)`; report the repeated strings and their
+      counts. Class B (normalization-equivalent): entries distinct as strings but equal after
+      `norm`; report the colliding pair.
+- [ ] Label each WARN line with its class, and state on the Class A line that `--fix` can repair it
+      and on the Class B line that it will not be auto-repaired.
+- [ ] `log_pass` when neither class fires.
+- [ ] Update header check list and the `--help` range (D4).
+
+**Timing**: 0.75 hours
+
+**Depends on**: 2
+
+**Verification Tier**: local
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/validate-state.sh` — new Check 9, header docs, `--help` range
+
+**Verification**:
+- Against live `specs/state.json`: zero Class A and zero Class B hits, `log_pass` emitted, exit 0.
+- Against a hand-built temp fixture seeding one exact duplicate and one `a/`-vs-`a` pair: both
+  classes fire with distinct labels, exit still 0.
+- `grep -c log_fail` on the added hunk is 0.
+- Blind spot deferred to Phase 6 by this tier: full re-run of Gate 10 and the whole regression suite.
+
+---
+
+### Phase 4: Opt-in `--fix` repair for exact-duplicate entries [NOT STARTED]
+
+**Goal**: Add a `--fix` flag that removes Class A duplicates order-preservingly, writing only
+through the deployed `state-write.sh`, then re-validates.
+
+**Tasks**:
+- [ ] Add `--fix` (and an optional `--session-id SID` passthrough) to the argument loop
+      (lines 88-124), following the `validate-return-meta.sh` structure.
+- [ ] Implement the D3 deployed-`state-write.sh` resolution, with the
+      `*/.claude/scripts/` or `*/.opencode/scripts/` path assertion and a named exit-2 refusal when
+      no deployed copy is found. Never fall back to an in-script write.
+- [ ] Refuse with a named message (not a silent no-op) when `--fix` is given an unparseable state
+      file, mirroring `validate-return-meta.sh` line 132.
+- [ ] Apply the order-preserving dedup filter from D3 via `state-write.sh` with
+      `--state-file "$STATE_FILE"` (absolute), a session id, and NO `--regen-todo`. Report how many
+      entries were removed from which task numbers; print "nothing to repair" when there are none.
+- [ ] Re-run the full validation after the repair (repair-then-revalidate, per the precedent).
+- [ ] Update header docs (usage line, exit codes, `--fix` semantics) and the `--help` range (D4).
+
+**Timing**: 1 hour
+
+**Depends on**: 3
+
+**Verification Tier**: interface
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/validate-state.sh` — arg parsing, `--fix` block, header docs
+
+**Verification**:
+- `--fix` against a temp fixture with duplicates: duplicates removed, first-occurrence order
+  preserved, all other fields byte-identical (`jq -S 'del(...)'` diff), Class B pairs untouched.
+- `--fix` against live `specs/state.json`: reports "nothing to repair", file unchanged
+  (`git diff --exit-code specs/state.json`).
+- Running the source-store copy with `--fix` when no deployed tree resolves exits 2 with the named
+  message and writes nothing.
+- `grep -n 'mv .*state\|> *.*\.tmp' ` on the added hunk finds no hand-rolled write.
+- Direct dependents re-verified this phase: existing `test-validate-state.sh` still all-PASS;
+  `state-write.sh` itself unmodified (`git diff --exit-code` on it).
+
+---
+
+### Phase 5: Create Task Mode Step 6.5 advisory [NOT STARTED]
+
+**Goal**: Surface the new warnings at task-creation time without ever blocking creation.
+
+**Tasks**:
+- [ ] Insert a new Step 6.5 in `commands/task.md` Create Task Mode, between Step 6 (the
+      `state-write.sh` call, ending line 233) and Step 7 (git commit, line 235).
+- [ ] The step runs the DEPLOYED `bash .claude/scripts/validate-state.sh specs/state.json` — base
+      mode, no `--deep` (no git-history round trip on the interactive path) — captures output, and
+      surfaces only `[WARN]` lines mentioning `file_scope`, under a short heading.
+- [ ] State explicitly in the step text that it is advisory: a nonzero exit, a missing script, or
+      any warning MUST NOT stop Steps 7 and 8. Guard the invocation so its exit code cannot
+      propagate (`|| true`) and so a missing deployed script is a one-line note, not an error.
+- [ ] Use the repo's established phrasing that advisory never means unlogged or silent (see
+      `context/patterns/batch-orchestration-guardrails.md`).
+- [ ] Add a one-line pointer in Step 8's output block when warnings were surfaced, telling the user
+      the declarations are pre-existing and how to narrow them.
+
+**Timing**: 0.75 hours
+
+**Depends on**: 2
+
+**Verification Tier**: local
+
+**Files to modify**:
+- `agent-system/extensions/core/commands/task.md` — new Step 6.5 in Create Task Mode; one line in
+  Step 8's output block
+
+**Verification**:
+- Step numbering reads 6 -> 6.5 -> 7 -> 8 with no renumbering of existing steps; no other mode
+  (`--recover`, `--expand`, `--sync`, `--review`, `--abandon`) touched (`git diff` scoped to the
+  Create Task Mode range).
+- Executing the Step 6.5 snippet by hand against live `specs/state.json` prints the expected
+  filtered WARN lines and returns success, and completes fast enough for the interactive path
+  (time it; it must stay well under a second).
+- Simulating a missing `.claude/scripts/validate-state.sh` produces a note and a success return,
+  not an error.
+- No task-number references introduced into the command file (`no-task-references-in-deliverables`).
+
+---
+
+### Phase 6: Regression fixtures, full verification sweep, deploy [NOT STARTED]
+
+**Goal**: Lock the new behavior in with fixtures, prove the exit-0 contract holds, and deploy.
+
+**Tasks**:
+- [ ] Add to `scripts/tests/test-validate-state.sh`, in the existing `pass()`/`fail()`/`info()`
+      fixture idiom: (a) coarse-declaration fixture — a synthetic state with one directory-shaped
+      entry overlapping 3+ non-terminal tasks, asserting the named Check 8 WARN line AND **exit 0**;
+      (b) duplicate fixture — asserting both D2 classes fire with their labels AND **exit 0**;
+      (c) threshold fixture — same coarse fixture under `FILE_SCOPE_COARSE_MIN_OVERLAP` above the
+      measured radius produces no WARN; (d) `--fix` fixture — exact duplicates removed
+      order-preservingly, Class B untouched, other fields unchanged.
+- [ ] Extend the suite's validator-resolution comment/grep guard so the new fixtures verify they are
+      running a copy that actually contains the new checks (grep for "Check 8" / "Check 9"),
+      matching the existing D5 source-store-first precedent (lines 47-55).
+- [ ] Run the full suite from BOTH the source-store and deployed invocation sites.
+- [ ] Deploy: `bash .claude/scripts/deploy-headless.sh`.
+- [ ] Run `bash .claude/scripts/verify-deploy.sh` in full and confirm Gate 10 passes.
+- [ ] Confirm `bash .claude/scripts/validate-state.sh --deep specs/state.json` exits 0 against live
+      state despite the 6 expected coarse WARNs.
+
+**Timing**: 1 hour
+
+**Depends on**: 4, 5
+
+**Verification Tier**: full
+
+**Scope Hypothesis**: Four new fixture blocks are expected in `test-validate-state.sh`, bringing it
+from five fixtures (one positive + four defect) to nine. Confirm by counting `pass(`/`fail(`
+assertion pairs after the edit; if the real count differs because a fixture naturally splits or
+merges, record the actual count rather than forcing it to four.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/tests/test-validate-state.sh` — four new fixture blocks
+
+**Verification**:
+- `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` exits 0, all PASS, from
+  both invocation sites.
+- `bash .claude/scripts/verify-deploy.sh` — all gates pass, Gate 10 included.
+- `bash .claude/scripts/validate-state.sh --deep specs/state.json` exits 0.
+- `git status --short` shows no unintended files; the deployed `.claude/` tree was regenerated by
+  the deploy script, not hand-edited.
+
+---
+
+## Testing & Validation
+
+- [ ] `validate-state.sh` base mode exits 0 against live `specs/state.json` while emitting the 6
+      expected coarse WARN lines.
+- [ ] `validate-state.sh --deep` exits 0 against live `specs/state.json`.
+- [ ] No `log_fail` call exists anywhere in the newly added code.
+- [ ] No normalize/overlap logic is written locally; only `$FILE_SCOPE_OVERLAP_JQ_DEFS` is spliced.
+- [ ] `--help` renders the complete header and nothing past it after every header edit.
+- [ ] `--fix` is a no-op on live state, repairs exact duplicates on a fixture, and refuses (exit 2)
+      when no deployed `state-write.sh` resolves.
+- [ ] `test-validate-state.sh` all-PASS from both the source-store and deployed invocation sites.
+- [ ] `verify-deploy.sh` all gates pass after deploy, Gate 10 included.
+- [ ] Task creation via `/task` is never blocked by Step 6.5 (simulated missing-script and
+      warning-present cases both proceed to Steps 7-8).
+
+## Artifacts & Outputs
+
+- `agent-system/extensions/core/scripts/validate-state.sh` — Checks 8 and 9, `--fix`,
+  `--session-id`, `FILE_SCOPE_COARSE_MIN_OVERLAP`, updated header and `--help` range
+- `agent-system/extensions/core/commands/task.md` — Create Task Mode Step 6.5 and a Step 8 pointer
+  line
+- `agent-system/extensions/core/scripts/tests/test-validate-state.sh` — four new fixture blocks
+- `specs/state.json` — task 61 `file_scope` amended (Phase 1)
+- Regenerated `.claude/` deploy tree (produced by `deploy-headless.sh`, never hand-edited)
+- `specs/061_surface_coarse_file_scope_declarations_at_creation/summaries/01_*-summary.md`
+
+## Rollback/Contingency
+
+Every phase is a self-contained, separately-committed edit to a single file, so rollback is
+per-phase `git revert` of that phase's commit followed by `bash .claude/scripts/deploy-headless.sh`
+to regenerate the deploy tree. Specific contingencies:
+
+- If Check 8's blast-radius scan proves too slow for the interactive `/task` path, keep Check 8 in
+  base mode but gate Step 6.5's invocation behind a cheap precheck, or move Step 6.5 to a
+  background/best-effort invocation — never move Check 8 to `--deep` (that would reintroduce the
+  git-history round trip the design exists to avoid).
+- If `--fix` cannot be made safe against the mutex in the available time, drop Phase 4 entirely and
+  ship Checks 8 and 9 alone: the detection half is the task's core value, and `--fix` is explicitly
+  optional in the research recommendation.
+- If Phase 1's scope amendment proves contentious, drop Phase 6's permanent fixtures and verify the
+  new checks with throwaway temp fixtures instead; record the resulting test-coverage gap in the
+  summary rather than silently shipping untested checks.
+- Phase 1's `specs/state.json` edit is reverted by removing the appended `file_scope` entry through
+  `state-write.sh` — never by hand-editing `specs/state.json`.

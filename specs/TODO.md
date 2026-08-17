@@ -63,7 +63,7 @@ next_project_number: 66
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 60 [NOT STARTED] — Consumer-side half of the batch-admission gate redesign. The pred
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-61 [RESEARCHED] — Treat whole-directory-root file_scope declarations as a declarati
+61 [PLANNED] — Treat whole-directory-root file_scope declarations as a declarati
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 65 [NOT STARTED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
 
@@ -161,11 +161,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 61. Surface coarse and duplicate file_scope declarations at task-creation time
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 59
 - **Research**: [061_surface_coarse_file_scope_declarations_at_creation/reports/01_coarse-file-scope-detection.md]
+- **Plan**: [061_surface_coarse_file_scope_declarations_at_creation/plans/01_coarse-file-scope-advisory.md]
 
 **Description**: Treat whole-directory-root file_scope declarations as a declaration-quality problem caught at task creation, rather than as a runtime blocker discovered only when /orchestrate silently excludes a candidate.
 
