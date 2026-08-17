@@ -20,8 +20,8 @@
 #                         "general-implementation-agent" (standard mode), or
 #                         "general-research-hard-agent" etc. (hard mode)
 #   $4 = effort_flag    : (optional) "hard" | "fast" | "" | unset
-#                         When "hard", resolution runs against routing_agents_hard instead of
-#                         routing_agents.
+#                         When "hard", resolution runs against routing_agents_hard first, then
+#                         falls back to routing_agents, then to $default_agent.
 #
 # EXPORTS:
 #   AGENT_NAME          : resolved agent name (from extension declaration or default)
@@ -29,10 +29,14 @@
 # EDGE CASES:
 #   - No extensions declare a routing_agents entry for this (op, task_type): AGENT_NAME =
 #     $default_agent.
-#   - Hard mode with no routing_agents_hard entry: falls through to $default_agent directly —
-#     deliberately NOT to the standard (non-hard) routing_agents block, so a caller's own
-#     hard-mode default (e.g. "general-research-hard-agent") is preserved exactly, matching the
-#     behavior of the case tables this script replaces.
+#   - Hard mode resolves against a three-rung ladder: routing_agents_hard (hit) -> routing_agents
+#     (hit, via="hard-miss-standard-fallback") -> $default_agent (via="default"). A hard-mode
+#     miss on routing_agents_hard falls back to the extension's own declared standard agent
+#     rather than discarding it, so --hard is never LESS specific than standard mode for
+#     extensions that declare routing_agents without a routing_agents_hard block. The
+#     caller-supplied hard default (e.g. "general-research-hard-agent") is reached only on a
+#     genuine total miss of both blocks — mirroring command-route-skill.sh's own standard-then-
+#     hard composition shape.
 #
 # NOTE: This script uses source semantics. It must be sourced (not executed) to export
 #       AGENT_NAME to the calling shell environment. It must NEVER call exit — a faulty
@@ -48,24 +52,37 @@ _route_task_type="$2"
 _route_default_agent="$3"
 _route_effort_flag="${4:-}"
 
+# Standard-block lookup, computed unconditionally up front (mirrors command-route-skill.sh's own
+# standard-then-hard composition shape) so a hard-mode miss on routing_agents_hard has an
+# already-resolved standard value to fall back to instead of the caller's generic hard default.
+routing_lookup "routing_agents" "$_route_op" "$_route_task_type"
+_route_std_value="$_ROUTE_LAST_VALUE"
+_route_std_via="$_ROUTE_LAST_VIA"
+
 if [ "$_route_effort_flag" = "hard" ]; then
-  _route_block="routing_agents_hard"
+  routing_lookup "routing_agents_hard" "$_route_op" "$_route_task_type"
+  if [ -n "$_ROUTE_LAST_VALUE" ]; then
+    AGENT_NAME="$_ROUTE_LAST_VALUE"
+    _route_via="$_ROUTE_LAST_VIA"
+  elif [ -n "$_route_std_value" ]; then
+    AGENT_NAME="$_route_std_value"
+    _route_via="hard-miss-standard-fallback"
+  else
+    AGENT_NAME="$_route_default_agent"
+    _route_via="default"
+  fi
 else
-  _route_block="routing_agents"
-fi
-
-routing_lookup "$_route_block" "$_route_op" "$_route_task_type"
-_route_via="$_ROUTE_LAST_VIA"
-
-if [ -n "$_ROUTE_LAST_VALUE" ]; then
-  AGENT_NAME="$_ROUTE_LAST_VALUE"
-else
-  AGENT_NAME="$_route_default_agent"
-  _route_via="default"
+  if [ -n "$_route_std_value" ]; then
+    AGENT_NAME="$_route_std_value"
+    _route_via="$_route_std_via"
+  else
+    AGENT_NAME="$_route_default_agent"
+    _route_via="default"
+  fi
 fi
 
 routing_trace "$_route_op" "$_route_task_type" "$_route_effort_flag" "$AGENT_NAME" "$_route_via" "route-agent"
 
-unset _route_op _route_task_type _route_default_agent _route_effort_flag _route_block _route_via SCRIPT_DIR_ROUTE_AGENT
+unset _route_op _route_task_type _route_default_agent _route_effort_flag _route_std_value _route_std_via _route_via SCRIPT_DIR_ROUTE_AGENT
 
 export AGENT_NAME

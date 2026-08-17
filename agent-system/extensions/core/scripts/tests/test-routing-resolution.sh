@@ -14,9 +14,10 @@
 #     makes the epi-resolves-to-nothing defect class impossible.
 #   Assert 3 (engine parity): skill-orchestrate and skill-orchestrate-hard both invoke
 #     command-route-agent.sh (structural parity, grepped from the SKILL.md sources) and their
-#     hard-mode resolution never falls back to the standard (non-hard) routing_agents block on a
-#     miss -- it falls through to the caller's own hard default, exactly matching each engine's
-#     declared defaults.
+#     hard-mode resolution falls back to the extension's own standard (non-hard) routing_agents
+#     block on a routing_agents_hard miss -- via="hard-miss-standard-fallback" -- rather than
+#     discarding the declared domain agent, and only reaches the caller's generic hard default on
+#     a genuine total miss of both blocks.
 #   Assert 4 (precedence direction): a synthetic fixture where a non-core manifest and a
 #     core-named manifest both declare the same (op, task_type) confirms the non-core entry wins
 #     -- pinning first-match-wins against a regression to skill-orchestrate-hard's old
@@ -234,19 +235,48 @@ else
 fi
 
 # Semantic: for task types with NO routing_agents_hard entry anywhere, hard-mode resolution must
-# fall through to the caller's own hard default -- never silently reuse the standard
-# routing_agents value (which would be a precedence-direction / fallback-source regression).
+# fall back to the extension's own declared standard routing_agents agent (via
+# "hard-miss-standard-fallback") rather than discarding it in favor of the caller's generic hard
+# default -- this is the corrected contract this task's fix implements. `neovim` -> expects
+# neovim-research-agent; `nix` -> expects nix-research-agent.
+#
+# Fixture-coupling note: `nix` is currently one of the 14 extensions that declare routing_agents
+# without routing_agents_hard (see the research report), so today it exercises the
+# standard-fallback rung. If a future task declares a routing_agents_hard block for `nix`, this
+# fixture's expected value must move from `nix-research-agent` (standard-fallback rung, via
+# "hard-miss-standard-fallback") to that new hard-block value (hard-hit rung, via from
+# routing_lookup). The fixture is pinned to nix's CURRENT absence of a hard block, not to nix as
+# a permanent no-hard-block example.
+declare -A _assert3_semantic_expected=( [neovim]="neovim-research-agent" [nix]="nix-research-agent" )
 for tt in neovim nix; do
+  expected="${_assert3_semantic_expected[$tt]}"
   hard_actual=$(
     cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
       bash -c "source '$ROUTE_AGENT_SRC' 'research' '$tt' 'general-research-hard-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
   )
-  if [ "$hard_actual" = "general-research-hard-agent" ]; then
-    pass "Assert 3 (semantic): $tt has no routing_agents_hard entry, hard-mode falls through to the caller default (general-research-hard-agent), not the standard block"
+  hard_trace=$(
+    cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
+      bash -c "source '$ROUTE_AGENT_SRC' 'research' '$tt' 'general-research-hard-agent' 'hard' 2>&1 1>/dev/null"
+  )
+  hard_via=$(echo "$hard_trace" | grep -o 'via=[a-zA-Z-]*' | tail -n 1 | cut -d= -f2)
+  if [ "$hard_actual" = "$expected" ] && [ "$hard_via" = "hard-miss-standard-fallback" ]; then
+    pass "Assert 3 (semantic): $tt has no routing_agents_hard entry, hard-mode falls back to the standard block's own agent ($expected, via=hard-miss-standard-fallback), not the caller's generic hard default"
   else
-    fail "Assert 3 (semantic): $tt hard-mode resolved '$hard_actual', expected fall-through to caller default 'general-research-hard-agent'"
+    fail "Assert 3 (semantic): $tt hard-mode resolved '$hard_actual' (via=$hard_via), expected standard-fallback to '$expected' (via=hard-miss-standard-fallback)"
   fi
 done
+
+# Fourth semantic case: a never-declared task_type must still resolve to the caller-supplied
+# default under hard mode -- the genuine total-miss rung, which no existing fixture exercises.
+_total_miss_actual=$(
+  cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
+    bash -c "source '$ROUTE_AGENT_SRC' 'research' 'zzz-unrouted-test-type' 'general-research-hard-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
+)
+if [ "$_total_miss_actual" = "general-research-hard-agent" ]; then
+  pass "Assert 3 (semantic): a never-declared task_type under hard mode still resolves the caller's default (general-research-hard-agent) -- the true total-miss rung"
+else
+  fail "Assert 3 (semantic): never-declared task_type under hard mode resolved '$_total_miss_actual', expected caller default 'general-research-hard-agent'"
+fi
 
 # lean4 DOES have a routing_agents_hard entry, and it must differ from the standard entry
 # (proving hard mode reads a different block, not the same one twice under different names).

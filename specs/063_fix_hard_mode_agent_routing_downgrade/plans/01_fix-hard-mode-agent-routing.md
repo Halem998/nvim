@@ -1,7 +1,7 @@
 # Implementation Plan: Fix the agent-side hard-mode routing downgrade
 
 - **Task**: 63 - Fix the agent-side hard-mode routing downgrade that discards declared domain agents
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/063_fix_hard_mode_agent_routing_downgrade/reports/01_agent-routing-hard-mode-parity.md
@@ -116,30 +116,32 @@ No `specs/ROADMAP.md` in this repository; no roadmap phases required.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Capture the pre-fix routing baseline [NOT STARTED]
+### Phase 1: Capture the pre-fix routing baseline [COMPLETED]
 
 **Goal**: Record the exact pre-fix resolution matrix and suite result, so the corrected behavior in
 Phase 3 can be compared against a measured before-state rather than an assumed one, and so the
 current file shape is confirmed before any edit.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/command-route-agent.sh` in full and note the
+- [x] Read `agent-system/extensions/core/scripts/command-route-agent.sh` in full and note the
       current line span of the effort-flag branch, the `routing_lookup` call, the `unset` list, and
       the EDGE CASES header block. Do not rely on any line number cited in the research report or
-      task description.
-- [ ] Run the suite from the repo root and record the pass/fail tally:
+      task description. *(completed: confirmed 72-line file, branch at 51-55, lookup at 57, unset
+      at 69, EDGE CASES header at 29-35)*
+- [x] Run the suite from the repo root and record the pass/fail tally:
       `bash agent-system/extensions/core/scripts/tests/test-routing-resolution.sh`
-      (expected: 18/18 PASS on unmodified source).
-- [ ] With `ROUTE_MANIFEST_ROOT=agent-system`, record standard vs. hard resolution (both
+      (expected: 18/18 PASS on unmodified source). *(completed: 18/18 PASS)*
+- [x] With `ROUTE_MANIFEST_ROOT=agent-system`, record standard vs. hard resolution (both
       `AGENT_NAME` and the `via` in the trace) for op=research on at least: `typst`, `nvim`, `nix`,
       `python`, `latex`, `web`, `z3`, plus `formal:logic` (the compound-key reproduction), `lean4`
       (the hard-hit control), and one never-declared task_type such as `zzz-unrouted-test-type`
-      (the total-miss control).
-- [ ] Confirm the defect reproduces on both a simple and a compound task_type: hard resolves the
-      caller default while standard resolves the extension's declared domain agent.
-- [ ] Write the matrix as a working note under
+      (the total-miss control). *(completed: see phase1-baseline-matrix.md)*
+- [x] Confirm the defect reproduces on both a simple and a compound task_type: hard resolves the
+      caller default while standard resolves the extension's declared domain agent. *(completed:
+      confirmed on neovim/nix/etc. and formal:logic)*
+- [x] Write the matrix as a working note under
       `specs/063_fix_hard_mode_agent_routing_downgrade/` (markdown, task-scoped scratch — not a
-      declared artifact) for reuse in Phase 3.
+      declared artifact) for reuse in Phase 3. *(completed: phase1-baseline-matrix.md)*
 
 **Timing**: 0.5 hours
 
@@ -165,54 +167,57 @@ different baseline means the source store diverged from what research measured.
 
 ---
 
-### Phase 2: Correct the ladder and pin the corrected contract in the tests [NOT STARTED]
+### Phase 2: Correct the ladder and pin the corrected contract in the tests [COMPLETED]
 
 **Goal**: Replace the single-block hard-mode lookup with the three-rung ladder, rewrite the header
 comment that documents the defect as intentional, and amend the test assertions that pin the defect
 — as one atomic batch, since either file alone leaves the suite red.
 
 **Tasks**:
-- [ ] In `command-route-agent.sh`, compute the standard-block lookup unconditionally up front,
+- [x] In `command-route-agent.sh`, compute the standard-block lookup unconditionally up front,
       capturing both value and via into `_route_std_value` / `_route_std_via` (mirroring
-      `command-route-skill.sh`'s composition shape).
-- [ ] Under `effort_flag=hard`, run `routing_lookup "routing_agents_hard" ...`; on a hit take its
+      `command-route-skill.sh`'s composition shape). *(completed)*
+- [x] Under `effort_flag=hard`, run `routing_lookup "routing_agents_hard" ...`; on a hit take its
       value and via; on a miss with a non-empty `_route_std_value` take the standard value with
       `_route_via="hard-miss-standard-fallback"`; on a miss of both take `$_route_default_agent`
-      with `_route_via="default"`.
-- [ ] Under non-hard mode, take `_route_std_value` with `_route_std_via` when non-empty, else
+      with `_route_via="default"`. *(completed)*
+- [x] Under non-hard mode, take `_route_std_value` with `_route_std_via` when non-empty, else
       `$_route_default_agent` with `_route_via="default"` — behaviorally identical to today.
-- [ ] Remove `_route_block` from the body and from the trailing `unset` list (it becomes unused);
+      *(completed)*
+- [x] Remove `_route_block` from the body and from the trailing `unset` list (it becomes unused);
       add `_route_std_value` and `_route_std_via` to the `unset` list. The script's NOTE header
-      requires no state leak into the sourcing shell.
-- [ ] Preserve the script's existing invariants: it is sourced not executed, it never calls `exit`,
-      and it still exports `AGENT_NAME` and emits exactly one `routing_trace` call.
-- [ ] Rewrite the EDGE CASES header block so it documents the three-rung ladder. Delete the
+      requires no state leak into the sourcing shell. *(completed)*
+- [x] Preserve the script's existing invariants: it is sourced not executed, it never calls `exit`,
+      and it still exports `AGENT_NAME` and emits exactly one `routing_trace` call. *(completed)*
+- [x] Rewrite the EDGE CASES header block so it documents the three-rung ladder. Delete the
       sentence asserting the fall-through is "deliberately NOT to the standard (non-hard)
       routing_agents block ... matching the behavior of the case tables this script replaces" —
-      that framing is what misdirected the previous reader.
-- [ ] Update the `$4 = effort_flag` parameter comment: hard mode no longer resolves "against
+      that framing is what misdirected the previous reader. *(completed)*
+- [x] Update the `$4 = effort_flag` parameter comment: hard mode no longer resolves "against
       routing_agents_hard instead of routing_agents" but against `routing_agents_hard` first, then
-      `routing_agents`, then the default.
-- [ ] In `test-routing-resolution.sh`, rewrite the comment above the `for tt in neovim nix` loop:
+      `routing_agents`, then the default. *(completed)*
+- [x] In `test-routing-resolution.sh`, rewrite the comment above the `for tt in neovim nix` loop:
       reuse of the standard block on a hard miss is now the CORRECT contract, not a
       precedence-direction regression. State what the loop now proves — hard mode falls back to the
-      extension's own standard agent rather than the caller's generic hard default.
-- [ ] Change the loop's expectations to per-task_type values: `neovim` -> `neovim-research-agent`,
+      extension's own standard agent rather than the caller's generic hard default. *(completed)*
+- [x] Change the loop's expectations to per-task_type values: `neovim` -> `neovim-research-agent`,
       `nix` -> `nix-research-agent`. Assert on `via="hard-miss-standard-fallback"` as well as the
       agent name where the trace is observable, so the rung taken is pinned, not just the outcome.
-- [ ] Add a comment recording the fixture coupling: `nix` is itself one of the extensions currently
+      *(completed)*
+- [x] Add a comment recording the fixture coupling: `nix` is itself one of the extensions currently
       lacking a `routing_agents_hard` block, so if a future task declares one for `nix`, this
       fixture's expected value must move from `nix-research-agent` (standard-fallback rung) to that
       new hard-block value (hard-hit rung). The fixture is pinned to `nix`'s current absence of a
-      hard block, not to `nix` as a permanent no-hard-block example.
-- [ ] Add a fourth semantic case: a never-declared task_type (e.g. `zzz-unrouted-test-type`) with
+      hard block, not to `nix` as a permanent no-hard-block example. *(completed)*
+- [x] Add a fourth semantic case: a never-declared task_type (e.g. `zzz-unrouted-test-type`) with
       `effort_flag=hard` must still resolve to the passed-in `default_agent` — the true-total-miss
-      rung, which no existing fixture exercises.
-- [ ] Leave the lean4 sub-check (standard -> `lean-research-agent`, hard ->
+      rung, which no existing fixture exercises. *(completed)*
+- [x] Leave the lean4 sub-check (standard -> `lean-research-agent`, hard ->
       `lean-research-hard-agent`) unmodified. It remains the live proof that a
-      `routing_agents_hard` HIT is read from a genuinely distinct block.
-- [ ] Update the suite's expected-assertion count if it is asserted anywhere (the fourth semantic
-      case adds one).
+      `routing_agents_hard` HIT is read from a genuinely distinct block. *(completed: unmodified)*
+- [x] Update the suite's expected-assertion count if it is asserted anywhere (the fourth semantic
+      case adds one). *(completed: no hardcoded count found in the suite; PASSED/FAILED counters
+      are computed dynamically, so no update was needed — suite now reports 19/19)*
 
 **Timing**: 1.25 hours
 
