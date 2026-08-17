@@ -1,16 +1,28 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 63,
-  "session_id": "sess_1786989333_638258",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/063_fix_hard_mode_agent_routing_downgrade/summaries/01_fix-hard-mode-agent-routing-summary.md",
+      "summary": "Three-rung hard-mode agent routing ladder implemented in command-route-agent.sh; routing test amended and green; mutation check confirmed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed command-route-agent.sh so --hard falls back to the extension's declared routing_agents agent (via=hard-miss-standard-fallback) instead of discarding it for a generic hard default, across all 14 affected extensions; amended test-routing-resolution.sh's Assert 3 to pin the corrected contract and added a total-miss case. Suite is 19/19 PASS with a confirmed RED-then-GREEN mutation check."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/command-route-agent.sh",
+    "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+    "specs/063_fix_hard_mode_agent_routing_downgrade/plans/01_fix-hard-mode-agent-routing.md",
+    "specs/063_fix_hard_mode_agent_routing_downgrade/summaries/01_fix-hard-mode-agent-routing-summary.md"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1786989333_638258",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 3,
     "phases_total": 3
   }
 }

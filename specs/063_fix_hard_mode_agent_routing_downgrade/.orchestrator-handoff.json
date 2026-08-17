@@ -1,11 +1,19 @@
 {
-  "dispatch_seq": 5,
-  "task_number": 63,
-  "stage": "plan",
-  "status": "planned",
-  "session_id": "sess_1786989333_638258_63",
-  "plan_path": "specs/063_fix_hard_mode_agent_routing_downgrade/plans/01_fix-hard-mode-agent-routing.md",
-  "phase_count": 3,
-  "estimated_hours": 2.5,
-  "next_steps": "Run /implement 63 to execute the plan"
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "summary": "Three-rung hard-mode agent routing ladder implemented and verified; suite 19/19 PASS with confirmed mutation check.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/063_fix_hard_mode_agent_routing_downgrade/summaries/01_fix-hard-mode-agent-routing-summary.md"
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/command-route-agent.sh",
+    "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+    "specs/063_fix_hard_mode_agent_routing_downgrade/plans/01_fix-hard-mode-agent-routing.md",
+    "specs/063_fix_hard_mode_agent_routing_downgrade/summaries/01_fix-hard-mode-agent-routing-summary.md"
+  ]
 }

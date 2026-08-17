@@ -255,39 +255,45 @@ atomic batch is prohibited.
 
 ---
 
-### Phase 3: Acceptance verification across the affected extensions [NOT STARTED]
+### Phase 3: Acceptance verification across the affected extensions [COMPLETED]
 
 **Goal**: Prove the acceptance criteria hold in the aggregate, not just on the three test fixtures:
 `--hard` is never less specific than no flag anywhere, callers are not weakened, and the
 already-correct skill resolver is provably untouched.
 
 **Tasks**:
-- [ ] Re-run `bash agent-system/extensions/core/scripts/tests/test-routing-resolution.sh` and
-      record the full green tally.
-- [ ] Build the post-fix resolution matrix with `ROUTE_MANIFEST_ROOT=agent-system` over the same
+- [x] Re-run `bash agent-system/extensions/core/scripts/tests/test-routing-resolution.sh` and
+      record the full green tally. *(completed: 19/19 PASS)*
+- [x] Build the post-fix resolution matrix with `ROUTE_MANIFEST_ROOT=agent-system` over the same
       task types measured in Phase 1, and diff it against the Phase 1 working note. Every hard-mode
       row for the 14 hard-block-less extensions must now equal its standard-mode row (with
-      `via=hard-miss-standard-fallback`); no standard-mode row may have changed at all.
-- [ ] Spot-check op=plan and op=implement in addition to op=research for at least three of the 14
+      `via=hard-miss-standard-fallback`); no standard-mode row may have changed at all. *(completed:
+      every hard-mode downgrade eliminated; lean4 and the unrouted control unchanged from Phase 1)*
+- [x] Spot-check op=plan and op=implement in addition to op=research for at least three of the 14
       extensions — the defect is per-(op, task_type), and the fixtures only exercise research.
-- [ ] Confirm the compound-key case: `formal:logic` under hard now resolves the declared logic
-      research agent rather than `general-research-agent`.
-- [ ] Confirm the caller-default rung: with `default_agent=general-research-hard-agent` and a
+      *(completed: neovim/python/latex plan+implement all confirm hard == standard)*
+- [x] Confirm the compound-key case: `formal:logic` under hard now resolves the declared logic
+      research agent rather than `general-research-agent`. *(completed: resolves
+      logic-research-agent under both modes)*
+- [x] Confirm the caller-default rung: with `default_agent=general-research-hard-agent` and a
       never-declared task_type, hard mode still resolves `general-research-hard-agent`.
-- [ ] Re-derive the call-site inventory rather than trusting the research grep:
+      *(completed)*
+- [x] Re-derive the call-site inventory rather than trusting the research grep:
       `grep -rn 'command-route-agent\.sh' agent-system/extensions/*/skills/*/SKILL.md` should show
       only `skill-orchestrate` and `skill-orchestrate-hard`. Confirm both still pass their intended
-      defaults.
-- [ ] Verify no shell-state leak: after a sourced call, no `_route_*` variable remains set in the
+      defaults. *(completed: confirmed exactly those two SKILL.md files, hard defaults
+      general-research-hard-agent/planner-hard-agent/general-implementation-hard-agent preserved)*
+- [x] Verify no shell-state leak: after a sourced call, no `_route_*` variable remains set in the
       calling shell (including the removed `_route_block` and the new
-      `_route_std_value`/`_route_std_via`).
-- [ ] Run `agent-system/extensions/core/scripts/lint-routing-wiring.sh` if present, to confirm the
-      other routing validation caller is unaffected.
-- [ ] Confirm `git status --short` shows no modification under `.claude/**` and that
+      `_route_std_value`/`_route_std_via`). *(completed: clean)*
+- [x] Run `agent-system/extensions/core/scripts/lint-routing-wiring.sh` if present, to confirm the
+      other routing validation caller is unaffected. *(completed: not present in this deploy — no
+      action needed)*
+- [x] Confirm `git status --short` shows no modification under `.claude/**` and that
       `command-route-skill.sh` and `manifest-routing-lib.sh` are unmodified
-      (`git diff --stat` on those two paths is empty).
-- [ ] Delete or fold the Phase 1 working note into the implementation summary so no stray scratch
-      file is left behind in the task directory.
+      (`git diff --stat` on those two paths is empty). *(completed: confirmed on both counts)*
+- [x] Delete or fold the Phase 1 working note into the implementation summary so no stray scratch
+      file is left behind in the task directory. *(completed: folded into summary, note deleted)*
 
 **Timing**: 0.75 hours
 
