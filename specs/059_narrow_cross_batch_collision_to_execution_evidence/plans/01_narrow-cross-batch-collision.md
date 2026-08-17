@@ -449,35 +449,45 @@ following the document's own established convention.
 
 ---
 
-### Phase 5: Correct the guardrails table and rationale; resolve file-footprint-overlap.md [NOT STARTED]
+### Phase 5: Correct the guardrails table and rationale; resolve file-footprint-overlap.md [COMPLETED]
 
 **Goal**: Add the missing `cross_batch` row to the Blocking-vs-Advisory Classification Table with
 the corrected rationale, and make an explicit, recorded decision about whether
 `file-footprint-overlap.md` needs any edit at all.
 
 **Tasks**:
-- [ ] In `batch-orchestration-guardrails.md`, split the single `File-scope overlap (creation-time
+- [x] In `batch-orchestration-guardrails.md`, split the single `File-scope overlap (creation-time
       and runtime wave/cycle-split)` Classification Table row into two rows: keep the existing row
       scoped explicitly to `in_batch`/creation-time (still unconditionally BLOCKING, with its
-      existing "Why" text intact), and add a new `cross_batch` row.
-- [ ] Write the new `cross_batch` row's Classification as BLOCKING-when-in-flight / ADVISORY-when-
+      existing "Why" text intact), and add a new `cross_batch` row. *(completed)*
+- [x] Write the new `cross_batch` row's Classification as BLOCKING-when-in-flight / ADVISORY-when-
       idle, with a "Why" cell stating the evidence-gated reasoning: an overlap against a task in
       `{researching, planning, implementing}` satisfies both halves of the criterion; an overlap
       against a provably idle task satisfies neither, because there is no second session, so the
       residual concern is ordering (which `dependencies[]` expresses) and it is surfaced loudly via
-      `idle_overlap_advisory` rather than deferred.
-- [ ] Check `## Blocking vs. Advisory: The Criterion`'s prose and `## Batch-Size Scaling: Scope of
+      `idle_overlap_advisory` rather than deferred. *(completed)*
+- [x] Check `## Blocking vs. Advisory: The Criterion`'s prose and `## Batch-Size Scaling: Scope of
       Deferral, Not Existence of the Check` for any statement the narrowing falsifies; if the
       batch-size section is cited as forbidding this change, add one sentence distinguishing
-      evidence-gating from batch-size-gating.
-- [ ] Check `## Non-Negotiables` and `## The Three Existing Admission Layers` for language asserting
-      unconditional cross-batch deferral and correct it if present.
-- [ ] Read `file-footprint-overlap.md`'s Non-Goals and consumer prose and decide explicitly: either
+      evidence-gating from batch-size-gating. *(completed: "The Criterion" prose is generic and
+      unfalsified, no edit needed; the Batch-Size Scaling section could plausibly be misread as
+      forbidding this narrowing, so a clarifying paragraph was added distinguishing evidence-gating
+      from batch-size-gating)*
+- [x] Check `## Non-Negotiables` and `## The Three Existing Admission Layers` for language asserting
+      unconditional cross-batch deferral and correct it if present. *(completed: reviewed both;
+      Non-Negotiable #2 is about scan SCOPE — which is unchanged — not disposition, so it remains
+      accurate; "The Three Existing Admission Layers" describes the state.json scan as still
+      reaching every non-terminal out-of-batch task, which remains true post-narrowing; no edit
+      needed in either section)*
+- [x] Read `file-footprint-overlap.md`'s Non-Goals and consumer prose and decide explicitly: either
       add a one-line clarification that `orchestrate-batch-admit.sh`'s cross-batch consumer now
       applies the predicate over an evidence-filtered comparison set, or record a
       `#### Reasoned Exclusions` entry in this phase explaining why no edit is warranted (the
       document already disclaims any opinion on scan scope). Do NOT change the algorithm content or
-      the predicate definition under any circumstance.
+      the predicate definition under any circumstance. *(completed: chose the clarification path —
+      added a short note to the Batch-admission-level consumer bullet stating the comparison SET
+      and predicate are unchanged and pointing to the new disposition rule elsewhere; the Overlap
+      Rule, Path Normalization, and pseudocode sections are byte-identical, confirmed via diff)*
 
 **Timing**: 40 minutes
 

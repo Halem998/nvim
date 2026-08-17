@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Correct the guardrails table and rationale; resolve file-footprint-overlap.md",
+  "started_at": "2026-08-17T01:45:00Z",
+  "last_updated": "2026-08-17T02:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Split Classification Table row into in_batch/cross_batch", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 2, "description": "Write cross_batch row's evidence-gated Why cell", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "Review Criterion + Batch-Size Scaling sections", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"], "note": "Criterion prose unfalsified, no edit; added clarifying paragraph to Batch-Size Scaling distinguishing evidence-gating from batch-size-gating"},
+    {"id": 4, "description": "Review Non-Negotiables + Three Existing Admission Layers", "status": "done", "files_touched": [], "note": "both unfalsified (scan scope unchanged), no edit needed"},
+    {"id": 5, "description": "Resolve file-footprint-overlap.md decision", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/file-footprint-overlap.md"], "note": "chose clarification path; algorithm/pseudocode sections confirmed byte-identical via diff"}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "table_columns": "5 pipe-delimited fields on every Classification Table row (consistent)",
+    "guardrail_cells": "in_batch row and cross_batch row both explicitly name their scope in the Guardrail cell",
+    "file_footprint_algorithm_diff": "confirmed empty outside the one consumer-prose bullet touched"
+  }
+}

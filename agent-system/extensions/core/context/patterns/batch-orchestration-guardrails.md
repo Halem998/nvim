@@ -85,7 +85,8 @@ never demotes a check to advisory.
 
 | Guardrail | Classification | Why |
 |---|---|---|
-| File-scope overlap (creation-time and runtime wave/cycle-split) | BLOCKING | On-disk `file_scope` comparison, no agent invoked; an unserialized overlap risks silent concurrent-write corruption discovered only later |
+| File-scope overlap, `in_batch` (creation-time and runtime wave/cycle-split, colliding task is itself one of the invocation's candidates) | BLOCKING | On-disk `file_scope` comparison, no agent invoked; every `in_batch` candidate is imminently dispatched by construction, so an unserialized overlap risks silent concurrent-write corruption discovered only later |
+| File-scope overlap, `cross_batch` (colliding task is NOT one of the invocation's candidates) | BLOCKING when the colliding task carries execution evidence (status in `researching`/`planning`/`implementing`); ADVISORY when it does not (NARROWED in `orchestrate-batch-admit-v5`, see `docs/architecture/batch-admit-schema.md`'s Version History) | An overlap against an IN-FLIGHT cross-batch task satisfies both halves of the criterion above exactly as the `in_batch` row does — computable from on-disk state, and the harm of skipping is a silent concurrent write, because that task really is running. An overlap against a provably IDLE cross-batch task (no execution evidence) satisfies neither: there is no second session to write concurrently — the colliding task simply is not running — so the residual concern is ORDERING, not concurrent-write corruption, and ordering is exactly what `dependencies[]` exists to express. That case is surfaced loudly via `idle_overlap_advisory` on an `admit` verdict rather than blocked, so it is never silent even though it does not block. |
 | Held lock (lock-acquisition-time) | BLOCKING | On-disk lock state, no agent invoked; proceeding past a live lock risks the same silent corruption |
 | Unmet predecessor (dependency-graph eligibility) | BLOCKING | On-disk dependency edge and terminal-status check, no agent invoked; treating an unmet dependency as satisfied is silent and hard to detect after the fact |
 | Self-modification hazard (candidate `file_scope` names an orchestrator-critical path) | BLOCKING | Computable from the candidate's own on-disk `file_scope` against a fixed, declared critical-path list — no agent invoked; the harm (an unverifiable orchestrator-machinery fix committed automatically as part of a multi-task dispatch) is silent and hard to attribute later, satisfying both halves of the criterion |
@@ -491,6 +492,17 @@ this correctly: on conflict, only the one lower-priority colliding task is defer
 whole batch. The consequence is explicit: a batch of eight never pays more than one deferred task
 for any single conflict, so the existence of a check is orthogonal to how large the batch is
 allowed to grow.
+
+**Evidence-gating is not batch-size-gating, and does not conflict with this section**: the
+`cross_batch` narrowing in `orchestrate-batch-admit-v5` (see the Classification Table above and
+`docs/architecture/batch-admit-schema.md`'s Version History) changes disposition based on whether
+the COLLIDING TASK carries execution evidence, never based on how many candidates are in the
+current invocation. The check still runs, at full comparison-set scope, for a batch of one exactly
+as for a batch of fifty; what changed is which of its outcomes (block vs. advise) a given
+colliding task's status produces. This is the opposite of the rejected pattern below (indexing
+check strictness to batch size) — it indexes disposition to a per-collision structural fact
+(is the other side of this collision provably not running?), which is itself computable from
+on-disk state and does not vary with batch size at all.
 
 ## Rejected Approaches
 

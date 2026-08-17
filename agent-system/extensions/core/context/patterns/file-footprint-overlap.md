@@ -106,7 +106,15 @@ both source or splice the same file.
   `jq -n --slurpfile` program — the SAME shared defs `scopes_overlap()` wraps above, not an
   independent copy. Consumers: `commands/orchestrate.md` Step 3 (pre-computed wave schedule) and
   `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (per-cycle eligibility gate). See
-  `docs/architecture/batch-admit-schema.md` for the verdict schema this caller emits.
+  `docs/architecture/batch-admit-schema.md` for the verdict schema this caller emits. **As of
+  `orchestrate-batch-admit-v5`**: the comparison SET this caller scans against is unchanged (still
+  every non-terminal task in `specs/state.json`, and this document's `overlaps(pathA, pathB)`
+  predicate is applied identically to every pair); what changed is a downstream disposition filter
+  over an already-detected `cross_batch` overlap (block only when the colliding task carries
+  execution evidence, else admit with an advisory) — a comparison-set/disposition change entirely
+  outside this document's overlap-predicate and scan-scope scope. See
+  `context/patterns/batch-orchestration-guardrails.md`'s Classification Table for the disposition
+  rule and `docs/architecture/batch-admit-schema.md`'s Version History for the full rationale.
 - **Self-modification-hazard application** (same caller as above, a further application of this
   same predicate rather than a new matching rule): before the cross-batch comparison above runs,
   `orchestrate-batch-admit.sh` also tests a candidate's own `file_scope` against a fixed, declared
