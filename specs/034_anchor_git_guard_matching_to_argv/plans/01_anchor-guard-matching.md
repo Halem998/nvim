@@ -321,31 +321,37 @@ line-57 empty check, and `grep -c seg_scan` must return 0.
 
 ---
 
-### Phase 4: Update the header comments to the post-fix matching contract [NOT STARTED]
+### Phase 4: Update the header comments to the post-fix matching contract [COMPLETED]
 
 **Goal**: Make the file's own documentation describe what the code now actually does, per
 acceptance criterion 6.
 
 **Tasks**:
-- [ ] Update the "Over-staging patterns" comment block (currently lines 67-72). It presently
+- [x] Update the "Over-staging patterns" comment block (currently lines 67-72). It presently
       claims the quote-strip belongs to, and is scoped to, the two over-staging detectors, stated
       as an already-complete guarantee. Replace with a description of the real contract: the strip
       now happens once, upstream, against the whole possibly-multi-line command, before any
       segment extraction; it protects all seven detectors, not two; and `#`-comment text is
-      stripped for the same reason.
-- [ ] Add a short note at the `COMMAND_SCAN` construction site stating why slurp mode is required
+      stripped for the same reason. *(completed: written during Phase 3 when the strip landed —
+      the "Over-staging detectors" block now reads $COMMAND_SCAN and states the shared upstream
+      strip explicitly; confirmed still accurate, no rewrite needed)*
+- [x] Add a short note at the `COMMAND_SCAN` construction site stating why slurp mode is required
       (a line-based strip silently fails on any quoted span containing a newline, because `grep`
       and line-mode `sed` never match across a newline) and why the comment-strip must be ordered
-      after the quote-strip.
-- [ ] Review the top-of-file header block (currently lines 41-47). Its claim that the hook only
+      after the quote-strip. *(completed: written during Phase 3, also documents the `sed -z`
+      deviation from the plan's literal N-loop idiom and the reason for it)*
+- [x] Review the top-of-file header block (currently lines 41-47). Its claim that the hook only
       ever observes the literal top-level `tool_input.command` string remains true and unaffected;
       confirm and leave it, or adjust only if the wording now reads as contradicting the
-      `COMMAND_SCAN` indirection.
-- [ ] Record the out-of-scope decision in a brief comment: `[^;&|]*` segment splitting is not
+      `COMMAND_SCAN` indirection. *(completed: reviewed, left unchanged — COMMAND_SCAN is a
+      derived local variable, not a second input boundary, so the claim still holds verbatim)*
+- [x] Record the out-of-scope decision in a brief comment: `[^;&|]*` segment splitting is not
       quote-aware, is now confined to *unquoted* metacharacters by the upfront strip, and is
-      deliberately not addressed here.
-- [ ] Verify no task-number references were introduced. `agent-system/**` is outside `specs/**`,
+      deliberately not addressed here. *(completed: added at the end of the COMMAND_SCAN comment
+      block)*
+- [x] Verify no task-number references were introduced. `agent-system/**` is outside `specs/**`,
       so `task 34`-style citations are prohibited; cite the mechanism, not the task.
+      *(completed: `grep -niE 'task[ _-]?[0-9]' guard-destructive-git.sh` returns no matches)*
 
 **Timing**: 0.5 hours
 

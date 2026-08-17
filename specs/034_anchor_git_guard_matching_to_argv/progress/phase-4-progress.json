@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Update the header comments to the post-fix matching contract",
+  "started_at": "2026-08-17T19:25:00Z",
+  "last_updated": "2026-08-17T19:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update Over-staging patterns comment block", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 2, "description": "Note at COMMAND_SCAN site on why slurp mode required and comment-strip ordering", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 3, "description": "Review top-of-file header block", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record out-of-scope decision on [^;&|]* segment splitting", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 5, "description": "Verify no task-number references introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

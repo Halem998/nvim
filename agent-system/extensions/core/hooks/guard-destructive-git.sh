@@ -97,6 +97,14 @@ fi
 # marker by the second. This closes the `--staged` false-exemption inverse in its comment form (a
 # bash comment sharing a segment with a real `git restore <path>`, e.g. `git restore foo.txt #
 # use --staged next time`) -- the quote-strip alone closes only the quoted form of that bypass.
+#
+# Out of scope (deliberate, not an oversight): the `[^;&|]*` segment-splitting regexes used by
+# every detector below are not themselves quote-aware -- an unquoted `;`, `&`, or `|` character
+# still splits a segment early. This upfront strip confines that risk to genuinely *unquoted*
+# occurrences of those characters (any that were inside quotes are already gone by this point),
+# which is rare and not implicated in any known false positive. Making the splitting itself
+# quote-aware would need a real tokenizer applied consistently across all seven detectors -- a
+# materially larger, separately-reviewable change -- and is not addressed here.
 COMMAND_SCAN=$(printf '%s' "$COMMAND" \
   | sed -z -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g" \
   | sed -e 's/\(^\|[[:space:]]\)#.*$//')
