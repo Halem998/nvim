@@ -1127,7 +1127,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Multi-task command syntax and parallel processing patterns",
-      "line_count": 674,
+      "line_count": 683,
       "keywords": [
         "patterns",
         "multi-task",
@@ -3216,7 +3216,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 146,
+      "line_count": 163,
       "keywords": [
         "patterns",
         "orchestrate",

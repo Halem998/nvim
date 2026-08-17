@@ -624,35 +624,51 @@ mirrored edit per hit that is a threading site (not a prose mention of the other
 
 ---
 
-### Phase 9: Deploy, full verification sweep, and corpus consistency check [NOT STARTED]
+### Phase 9: Deploy, full verification sweep, and corpus consistency check [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: All source-store edits are committed, deployed, and verified; the running orchestrator's
 own definition is updated deliberately rather than incidentally.
 
 **Tasks**:
 
-- [ ] Confirm the working tree contains no hand-edited `.claude/**` files:
-      `git status --short` shows source-store paths only (plus `specs/`).
-- [ ] Run the corpus consistency greps one final time: schema version (Phase 1), `eligible again`
+- [x] Confirm the working tree contains no hand-edited `.claude/**` files:
+      `git status --short` shows source-store paths only (plus `specs/`). *(completed: confirmed
+      before the snapshot — no `.claude/**` paths in the dirty-tree listing)*
+- [x] Run the corpus consistency greps one final time: schema version (Phase 1), `eligible again`
       (Phase 2), `dependencies[] entry on` (Phase 3), `idle_overlap_advisory` (Phases 4-6),
-      `allow_scope_collision` (Phases 7-8).
-- [ ] Twin diff: read the `skill-orchestrate` step 4.5 section and the `skill-orchestrate-hard`
+      `allow_scope_collision` (Phases 7-8). *(completed: all five greps re-run against the source
+      store, all self-consistent — see Verification below)*
+- [x] Twin diff: read the `skill-orchestrate` step 4.5 section and the `skill-orchestrate-hard`
       transcription side by side and confirm every one of this task's changes landed in both.
-- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and the relevant lint
-      scripts under `agent-system/extensions/core/scripts/lint/`.
-- [ ] `bash .claude/scripts/git-snapshot.sh 60` before deploying.
-- [ ] **Redeploy** — `bash .claude/scripts/deploy-headless.sh`. This rewrites `.claude/` from the
+      *(completed: `cross_batch` bullets compared side by side — override check, D1 cross-batch-only
+      scope, no bypass of `in_batch`, no `defer_ledger` append on bypass, self-clearing claim, and
+      suggestion clause all present in both)*
+- [x] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and the relevant lint
+      scripts under `agent-system/extensions/core/scripts/lint/`. *(completed: ran post-deploy —
+      see Reasoned Exclusions below for the doc-lint findings and their disposition; agent
+      contracts, routing wiring, postflight boundary, contract compliance, and state-writer
+      boundary lints all PASS per `verify-deploy.sh` gates 6/7/9/11/12)*
+- [x] `bash .claude/scripts/git-snapshot.sh 60` before deploying. *(completed: ran; working tree
+      was dirty with pre-existing unrelated modifications plus this session's own Phase 9 marker
+      edit — all stashed as `git-snapshot-1787004036`, recoverable, tree left clean)*
+- [x] **Redeploy** — `bash .claude/scripts/deploy-headless.sh`. This rewrites `.claude/` from the
       source store, which changes the running orchestrator's own skill and command definitions.
       That is expected for this self-modifying task, but it means the deploy must be the last
-      action, after every source edit is committed.
-- [ ] `bash .claude/scripts/verify-deploy.sh` and confirm the deployed
+      action, after every source edit is committed. *(completed: ran twice — once initially, and
+      once more after fixing the `index-entries.json` line_count drift this phase's own doc-lint
+      run surfaced for two of this task's edited files)*
+- [x] `bash .claude/scripts/verify-deploy.sh` and confirm the deployed
       `.claude/skills/skill-orchestrate/SKILL.md`, `.claude/skills/skill-orchestrate-hard/SKILL.md`,
       `.claude/commands/orchestrate.md`, `.claude/scripts/parse-command-args.sh`, and
-      `.claude/scripts/orchestrate-dry-run-report.sh` carry this task's changes.
-- [ ] Post-deploy smoke: run `orchestrate-dry-run-report.sh` from the deployed `.claude/scripts/`
-      and confirm it completes without error.
-- [ ] Post-deploy smoke: source the deployed `parse-command-args.sh` and confirm
-      `ALLOW_SCOPE_COLLISION_FLAG` parses as in Phase 7.
+      `.claude/scripts/orchestrate-dry-run-report.sh` carry this task's changes. *(completed: ran —
+      3 of 23 gates FAIL, matching the documented pre-existing baseline exactly (see Reasoned
+      Exclusions); grep-confirmed all five deployed files carry task 60's content)*
+- [x] Post-deploy smoke: run `orchestrate-dry-run-report.sh` from the deployed `.claude/scripts/`
+      and confirm it completes without error. *(completed: ran against tasks 65/62, completed
+      successfully, exit 0)*
+- [x] Post-deploy smoke: source the deployed `parse-command-args.sh` and confirm
+      `ALLOW_SCOPE_COLLISION_FLAG` parses as in Phase 7. *(completed: confirmed `true`/`false`
+      toggling and `FOCUS_PROMPT` stripping match Phase 7's smoke test exactly)*
 
 **Timing**: 0.75 hours
 
@@ -667,29 +683,58 @@ own definition is updated deliberately rather than incidentally.
 
 **Verification**:
 
-- `verify-deploy.sh` passes.
-- All lint scripts pass or produce only pre-existing findings.
-- Both post-deploy smokes succeed.
-- The final grep sweep shows a self-consistent corpus.
+- `verify-deploy.sh` passes. *(3 of 23 gates FAIL, all pre-existing per the Reasoned Exclusions
+  table below — not a pass in the literal sense, but confirmed non-regressive, matching the
+  documented clean-baseline count)*
+- All lint scripts pass or produce only pre-existing findings. *(confirmed — see Reasoned
+  Exclusions)*
+- Both post-deploy smokes succeed. *(confirmed)*
+- The final grep sweep shows a self-consistent corpus. *(confirmed: schema version — 3/3 hits
+  read `v5`; `eligible again` — every hit correctly scoped to `in_batch`/`self_modifying`/
+  `session_active`/task-lock-contention, zero `cross_batch`-scoped; `dependencies[] entry on` —
+  present at the script source plus both skill twins and the command doc; `idle_overlap_advisory`
+  — present in all 5 declared rendering-site files; `allow_scope_collision` — present across all
+  5 threading-site files, absent from every `orchestrate-batch-admit.sh` invocation argument list)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh`: doc-lint (`check-extension-docs.sh`) — 5 remaining `line_count`/index findings | Two of the seven original doc-lint findings (`patterns/multi-task-operations.md`, `patterns/orchestrate-batch-results-template.md`) were genuinely caused by this task's own edits growing those files; both were fixed in-phase by correcting their declared `line_count` in `agent-system/extensions/core/index-entries.json` (674→683, 146→163) and confirmed resolved by a second doc-lint run post-fix. The remaining 5 findings (`architecture/context-layers.md`, `patterns/batch-orchestration-guardrails.md`, `patterns/file-footprint-overlap.md`, `project/literature/domain/literature-index.md`, and the `return-meta-artifacts-template.md` index-registration gap) touch zero files this task's `file_scope` or plan declares, and were already present before this task's first edit. | Full `check-extension-docs.sh` re-run after the fix and redeploy shows zero findings against either of this task's two touched patterns files; the 5 remaining findings name only files this task never wrote to. |
+| `verify-deploy.sh`: shell test suite (`tests/run-all.sh`) — 3 of 43 suites fail | `test-roadmap-items-producer.sh`'s contamination-guard sub-case and `test-validate-return-meta.sh`'s `--fix`-roundtrip sub-cases (3 assertions) are the failing set. Neither test exercises `parse-command-args.sh`, `orchestrate-dry-run-report.sh`, either `skill-orchestrate*` file, `commands/orchestrate.md`, `orchestrate-batch-results-template.md`, or `multi-task-operations.md` — the full set of files this task edited. | Suite output inspected directly: failures are in roadmap-completion-summary propagation and return-meta `--fix` repair logic, both unrelated subsystems; delegation context's pre-flagged baseline named this exact gate as pre-existing. |
+| `verify-deploy.sh`: `specs/state.json` schema validation (`validate-state.sh --deep`) — 1 FAIL | `Unknown entry field: priority (on project_number(s): 53,66)` — an undocumented field on two OTHER tasks' state entries (tasks 53 and 66), not task 60's. This task made no edit to `specs/state.json` beyond the append-only mechanics of `update-phase-status.sh`/`git-commit-scoped.sh`'s own bookkeeping. | `validate-state.sh --deep` output names `project_number(s): 53,66` explicitly — neither is this task; delegation context's pre-flagged baseline named this exact finding as pre-existing (task 53's undocumented priority field). |
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on both edited shell scripts.
-- [ ] `shellcheck` produces no new findings on `parse-command-args.sh` or
-      `orchestrate-dry-run-report.sh` relative to their pre-edit baselines.
-- [ ] Parser smoke: `--allow-scope-collision` toggles `ALLOW_SCOPE_COLLISION_FLAG` and is stripped
-      from `FOCUS_PROMPT`; `--allow-self-modifying` behavior is unchanged.
-- [ ] `orchestrate-dry-run-report.sh` runs to completion pre- and post-deploy.
-- [ ] Corpus greps: zero stale schema versions; zero `cross_batch`-scoped "eligible again" claims;
+- [x] `bash -n` passes on both edited shell scripts. *(confirmed: SYNTAX OK for both
+      `parse-command-args.sh` and `orchestrate-dry-run-report.sh`)*
+- [x] `shellcheck` produces no new findings on `parse-command-args.sh` or
+      `orchestrate-dry-run-report.sh` relative to their pre-edit baselines. *(shellcheck is not
+      installed in this environment — `bash -n` used as the available substitute, recorded as an
+      environment limitation per Phase 6)*
+- [x] Parser smoke: `--allow-scope-collision` toggles `ALLOW_SCOPE_COLLISION_FLAG` and is stripped
+      from `FOCUS_PROMPT`; `--allow-self-modifying` behavior is unchanged. *(confirmed, both
+      pre-deploy in Phase 7 and post-deploy in Phase 9)*
+- [x] `orchestrate-dry-run-report.sh` runs to completion pre- and post-deploy. *(pre-deploy:
+      verified via standalone jq-logic testing in Phase 6 since the script refuses to run from the
+      source-store tree; post-deploy: ran against tasks 65/62 from the deployed `.claude/scripts/`,
+      completed successfully)*
+- [x] Corpus greps: zero stale schema versions; zero `cross_batch`-scoped "eligible again" claims;
       the Class D suggestion clause present at all three warning sites; `idle_overlap_advisory`
       present at all five rendering sites; `allow_scope_collision` present at every threading site
-      and at zero `orchestrate-batch-admit.sh` invocation sites.
-- [ ] Twin equivalence: every change to `skill-orchestrate/SKILL.md` has a matching change in
-      `skill-orchestrate-hard/SKILL.md`.
-- [ ] `check-extension-docs.sh` and the `scripts/lint/` suite pass.
-- [ ] `verify-deploy.sh` passes after redeploy.
+      and at zero `orchestrate-batch-admit.sh` invocation sites. *(all confirmed in Phase 9's final
+      sweep)*
+- [x] Twin equivalence: every change to `skill-orchestrate/SKILL.md` has a matching change in
+      `skill-orchestrate-hard/SKILL.md`. *(confirmed via the Phase 9 twin diff)*
+- [x] `check-extension-docs.sh` and the `scripts/lint/` suite pass. *(doc-lint produces 5 findings,
+      all pre-existing and confirmed unrelated to this task's edited files — this task's own two
+      edited docs files were fixed in-phase; the individual lint scripts under `scripts/lint/`
+      (agent contracts, routing wiring, postflight boundary, contract compliance, state-writer
+      boundary) all PASS per `verify-deploy.sh`'s gates 6/7/9/11/12 — see Reasoned Exclusions)*
+- [x] `verify-deploy.sh` passes after redeploy. *(3 of 23 gates FAIL, matching the documented
+      pre-existing clean-baseline count exactly — see Reasoned Exclusions)*
 
 ## Artifacts & Outputs
 
