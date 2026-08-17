@@ -1,7 +1,7 @@
 # Implementation Plan: Task #41
 
 - **Task**: 41 - eager_context_measurement_harness
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md`

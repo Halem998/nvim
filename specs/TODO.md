@@ -11,10 +11,10 @@ next_project_number: 65
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 18,20,22,27,28,31,39,41,43,45,46,51,59,62 | -- | agent-system, extensions, literature, ... |
-| 2 | 42,60,61 | 18,31,41,59 | essential-refactor |
+| 1 | 18,20,22,27,28,31,39,43,45,46,51,59,62 | -- | agent-system, extensions, literature, ... |
+| 2 | 42,60,61 | 18,31,59 | essential-refactor |
 | 3 | 14,17,64 | 42,60,61 | agent-system, essential-refactor |
-| 4 | 13,44 | 17,28,41 | agent-system, essential-refactor |
+| 4 | 13,44 | 17,28 | agent-system, essential-refactor |
 | 5 | 9,29,48,53 | 18,22,39,43,44,64 | agent-system, orchestration-concurrency, essential-refactor |
 | 6 | 30,50 | 29,48 | agent-system, essential-refactor |
 | 7 | 32 | 30,31 | agent-system |
@@ -58,16 +58,13 @@ next_project_number: 65
     └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
       └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
         └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
-41 [PLANNED] — Create `measure-eager-context.sh` in the core extension's scripts
-  └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br (see above)
-  └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 59 [NOT STARTED] — The /orchestrate batch-admission gate's specs/state.json collisio
   └─ 60 [NOT STARTED] — Consumer-side half of the batch-admission gate redesign. The pred
     └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
-      └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/ (see above)
+      └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+        └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
   └─ 61 [NOT STARTED] — Treat whole-directory-root file_scope declarations as a declarati
     └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u (see above)
 
@@ -376,12 +373,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 41. Build eager-context measurement harness (measure-eager-context.sh)
 - **Effort**: 2-4 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [041_eager_context_measurement_harness/reports/01_eager-context-measurement-harness.md]
 - **Plan**: [041_eager_context_measurement_harness/plans/01_eager-context-measurement-harness.md]
+- **Summary**: [041_eager_context_measurement_harness/summaries/01_eager-context-measurement-harness-summary.md]
 
 **Description**: Create `measure-eager-context.sh` in the core extension's scripts: a harness that PREDICTS the session-start eager context set from the source store plus a fresh regenerate — never by measuring the live `.claude/` tree (stale-deploy concern; the deployed tree routinely lags the source store). The eager set to model: (1) the parent CLAUDE.md chain (e.g. ~/.config/CLAUDE.md, repo CLAUDE.md, generated .claude/CLAUDE.md); (2) the generated CLAUDE.md content assembled from core + loaded extensions' merge sources; (3) any RESOLVING `@`-imports found in that chain (directory-relative resolution — see context/architecture/context-layers.md 'Eager vs. Lazy Loading Channels'); (4) rules lacking `paths:` frontmatter or carrying `paths: "**/*"`. Emit bytes and estimated tokens (bytes/4) per contributing source plus a total, in a stable machine-parseable format. Provide a `--check`/`--write` split following the precedent of `generate-context-line-counts.sh` (`--check` reports, `--write` records a baseline snapshot for later drift comparison). The audit baseline to compare against: ~69.9 KB / ~17.5k tokens before downward normalization; predicted ~9.5k tokens after. CONSTRAINTS: no volatile files (specs/TODO.md, state.json, errors.json) may ever be counted as legitimately eager — flag any found; all edits target agent-system/extensions/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**.
 
