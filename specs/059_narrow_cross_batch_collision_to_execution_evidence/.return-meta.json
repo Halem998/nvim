@@ -1,27 +1,7 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "task_number": 59,
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "session_id": "sess_1786995676_03939f",
-  "phase_count": 7,
-  "estimated_hours": 4.5,
-  "dependency_waves": [[1], [2], [3], [4, 5, 6], [7]],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md",
-      "summary": "7-phase plan narrowing orchestrate-batch-admit.sh's cross_batch file_scope collision to execution evidence, bumping the verdict schema to v5, correcting the self-refuting blocking rationale, adding the missing cross_batch Blocking-vs-Advisory row, closing the idle-collider test gap, and removing the four workaround dependencies[] edges post-deploy."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When converting a formerly-unconditional blocking predicate into an evidence-gated one that must still surface the suppressed case loudly, materialize the candidate list once and derive BOTH selections from it rather than re-scanning. In this repo's orchestrate-batch-admit.sh the pattern is: build $overlaps (the full annotated overlap list, with the blocking/idle discriminator computed as a key on each element), then $hit = first blocking member and $idle_advisory = first suppressed member. This preserves the original first-match/ascending-order determinism for both, avoids a second invocation of the expensive overlap predicate, and keeps the untouched disjunct (in_batch) bit-for-bit identical because the comprehension body is copied verbatim with only the new discriminator key added.",
-      "category": "PATTERN",
-      "source_artifact": "specs/059_narrow_cross_batch_collision_to_execution_evidence/plans/01_narrow-cross-batch-collision.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["evidence-gated predicate", "advisory field", "jq comprehension", "first-match determinism", "orchestrate-batch-admit", "bit-for-bit preservation"]
-    }
-  ],
-  "next_steps": "Run /implement 59 to execute the plan"
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1786995676_03939f"
 }

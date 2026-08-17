@@ -607,7 +607,7 @@
     {
       "project_number": 59,
       "project_name": "narrow_cross_batch_collision_to_execution_evidence",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "essential-refactor",
       "title": "Gate cross-batch file_scope collisions on execution evidence, not non-terminal status",
@@ -633,7 +633,7 @@
           "summary": "7-phase implementation plan, 4.5h, validated clean against plan-format.md."
         }
       ],
-      "last_updated": "2026-08-17T19:53:36Z",
+      "last_updated": "2026-08-17T19:53:50Z",
       "session_id": "sess_1786995676_03939f"
     },
     {

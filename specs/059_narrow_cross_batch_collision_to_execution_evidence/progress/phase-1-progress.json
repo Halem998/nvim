@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline capture and hypothesis confirmation",
+  "started_at": "2026-08-17T00:00:00Z",
+  "last_updated": "2026-08-17T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run test-conflict-predicate.sh baseline", "status": "done", "files_touched": [], "note": "32 passed, 0 failed"},
+    {"id": 2, "description": "Run test-four-tier-conflict.sh baseline", "status": "done", "files_touched": [], "note": "11 passed, 0 failed"},
+    {"id": 3, "description": "grep orchestrate-batch-admit-v4 across core/", "status": "done", "files_touched": [], "note": "orchestrate-batch-admit.sh: 10 hits (2 header-prose at lines 75,77; 8 emit sites at lines 417,420,423,433,444,484,487,517 -- NOT 5 as plan's Scope Hypothesis guessed). test-conflict-predicate.sh: 1 hit (line 216). batch-admit-schema.md: 5 hits (lines 3,78,84,91,99,106 approx). Discrepancy recorded per plan instruction; Phase 3's verification is dynamically grep-count-based so no phase text change is needed."},
+    {"id": 4, "description": "Confirm fixture statuses for #841 and #603", "status": "done", "files_touched": [], "note": "Both confirmed status: implementing, as plan asserted."},
+    {"id": 5, "description": "grep self-refuting passage location", "status": "done", "files_touched": [], "note": "Literal single-line grep string 'concurrently edit the same files' only matched batch-admit-schema.md:287 because orchestrate-batch-admit.sh's copy wraps the phrase across two comment lines (~228-229: 'concurrently edit the' / 'same files'). Manually confirmed the passage exists in BOTH files as the plan predicted (script header ~lines 225-233; schema.md 'Why This Check Is Blocking, Not Advisory' section ~line 287). Guardrails.md does NOT carry this exact passage -- confirmed, matches plan's correction."},
+    {"id": 6, "description": "Locate Classification Table row in guardrails.md", "status": "done", "files_touched": [], "note": "Line 88: 'File-scope overlap (creation-time and runtime wave/cycle-split) | BLOCKING | ...'"}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

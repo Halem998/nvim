@@ -1,7 +1,7 @@
 # Implementation Plan: Task #59
 
 - **Task**: 59 - Gate cross-batch file_scope collisions on execution evidence, not non-terminal status
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md
@@ -209,25 +209,33 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Baseline capture and hypothesis confirmation [NOT STARTED]
+### Phase 1: Baseline capture and hypothesis confirmation [COMPLETED]
 
 **Goal**: Establish a green pre-change baseline and mechanically confirm every count and location
 this plan asserts, before any file is modified.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` and record the
-      pass/fail tally verbatim.
-- [ ] Run `bash agent-system/extensions/core/scripts/test-four-tier-conflict.sh` and record the
-      pass/fail tally verbatim.
-- [ ] Run `grep -rn "orchestrate-batch-admit-v4" agent-system/extensions/core/` and record every
-      hit with its file and line.
-- [ ] Confirm `test-conflict-predicate.sh` case 2.2's colliding task #841 and
+- [x] Run `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh` and record the
+      pass/fail tally verbatim. *(completed: 32 passed, 0 failed)*
+- [x] Run `bash agent-system/extensions/core/scripts/test-four-tier-conflict.sh` and record the
+      pass/fail tally verbatim. *(completed: 11 passed, 0 failed)*
+- [x] Run `grep -rn "orchestrate-batch-admit-v4" agent-system/extensions/core/` and record every
+      hit with its file and line. *(completed: orchestrate-batch-admit.sh has 10 hits — 2
+      header-prose (lines 75, 77) + 8 emit sites (lines 417, 420, 423, 433, 444, 484, 487, 517),
+      NOT the 5 emit sites the Scope Hypothesis guessed; test-conflict-predicate.sh has 1 hit
+      (line 216); batch-admit-schema.md has 5 hits (status line + 4 example verdicts +
+      field-table row))*
+- [x] Confirm `test-conflict-predicate.sh` case 2.2's colliding task #841 and
       `test-four-tier-conflict.sh` case 9's task #603 both carry `status: "implementing"` in their
-      fixtures (read the fixture-construction `jq` calls, not the assertions).
-- [ ] Run `grep -rn "concurrently edit the same files" agent-system/extensions/core/` and record
-      which files actually carry the self-refuting passage.
-- [ ] Locate the Classification Table row in `batch-orchestration-guardrails.md` by
-      `grep -n "File-scope overlap"` and record its line.
+      fixtures (read the fixture-construction `jq` calls, not the assertions). *(completed: both
+      confirmed "implementing")*
+- [x] Run `grep -rn "concurrently edit the same files" agent-system/extensions/core/` and record
+      which files actually carry the self-refuting passage. *(completed: literal grep matches only
+      batch-admit-schema.md:287 because orchestrate-batch-admit.sh's copy line-wraps the phrase
+      across two comment lines (~228-229); manual read confirms the passage exists in both files
+      as the plan predicted)*
+- [x] Locate the Classification Table row in `batch-orchestration-guardrails.md` by
+      `grep -n "File-scope overlap"` and record its line. *(completed: line 88)*
 
 **Timing**: 20 minutes
 

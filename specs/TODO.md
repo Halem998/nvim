@@ -60,7 +60,7 @@ next_project_number: 65
         └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-59 [PLANNED] — The /orchestrate batch-admission gate's specs/state.json collisio
+59 [IMPLEMENTING] — The /orchestrate batch-admission gate's specs/state.json collisio
   └─ 60 [NOT STARTED] — Consumer-side half of the batch-admission gate redesign. The pred
     └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
       └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
@@ -200,7 +200,7 @@ WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the
 ---
 
 ### 59. Gate cross-batch file_scope collisions on execution evidence, not non-terminal status
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
