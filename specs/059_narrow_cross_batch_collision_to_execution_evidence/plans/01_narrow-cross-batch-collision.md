@@ -1,7 +1,7 @@
 # Implementation Plan: Task #59
 
 - **Task**: 59 - Gate cross-batch file_scope collisions on execution evidence, not non-terminal status
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/059_narrow_cross_batch_collision_to_execution_evidence/reports/01_narrow-cross-batch-collision.md
@@ -573,37 +573,57 @@ cross-batch collider — with positive tests in both suites that fail against th
 
 ---
 
-### Phase 7: Full verification sweep, deploy, and workaround-edge removal [NOT STARTED]
+### Phase 7: Full verification sweep, deploy, and workaround-edge removal [COMPLETED]
 
 **Goal**: Confirm the whole change is coherent and in-scope, deploy the source store to `.claude/`,
 and only then remove the four workaround `dependencies[]` edges that exist solely to work around
 the defect this task fixes.
 
 **Tasks**:
-- [ ] Run both suites one final time; both green.
-- [ ] `grep -rn "orchestrate-batch-admit-v4" agent-system/extensions/core/` returns hits only inside
-      `batch-admit-schema.md`'s historical `**v4**` Version History entry.
-- [ ] `grep -rn "concurrently edit the same files" agent-system/extensions/core/` returns zero hits,
-      or only hits inside a corrected passage that no longer self-refutes.
-- [ ] Review the complete `git diff` for this task and confirm it touches exactly the six declared
+- [x] Run both suites one final time; both green. *(completed: predicate 35/0, four-tier 13/0)*
+- [x] `grep -rn "orchestrate-batch-admit-v4" agent-system/extensions/core/` returns hits only inside
+      `batch-admit-schema.md`'s historical `**v4**` Version History entry. *(completed: zero hits
+      anywhere, stronger than required — Version History uses bare "v4" labels, not the full pinned
+      literal, consistent with the document's own style)*
+- [x] `grep -rn "concurrently edit the same files" agent-system/extensions/core/` returns zero hits,
+      or only hits inside a corrected passage that no longer self-refutes. *(completed: one hit, in
+      batch-admit-schema.md's corrected `in_batch` bullet, which does not concede the colliding task
+      is not running — no self-contradiction)*
+- [x] Review the complete `git diff` for this task and confirm it touches exactly the six declared
       `file_scope` files and nothing else — in particular no `.claude/**` path, and none of
       `orchestrate-dry-run-report.sh`, `orchestrate-predispatch-review.sh`,
       `skill-orchestrate/SKILL.md`, `skill-orchestrate-hard/SKILL.md`, or
-      `scripts/lib/file-scope-overlap.sh`.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repo's equivalent
+      `scripts/lib/file-scope-overlap.sh`. *(completed: union of all six task-59 phase commits'
+      file lists is exactly the six declared files plus specs/059_.../ artifacts, specs/TODO.md,
+      and specs/state.json — no other path, no .claude/** path. Noted: a foreign, unrelated commit
+      `bafefeb83 literature: make pyenv provisioning self-repairing` landed in the shared repo
+      history between this task's Phase 5 and Phase 6 commits from a concurrent session; it is not
+      part of any task-59 commit and does not affect this task's diff scope, but is reported per
+      the observation-duty contract)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repo's equivalent
       deploy path) so `.claude/` reflects the updated source store, and confirm the deployed
-      `.claude/scripts/orchestrate-batch-admit.sh` emits `orchestrate-batch-admit-v5`.
-- [ ] Only after a successful deploy: re-run the deployed admission script against the real
+      `.claude/scripts/orchestrate-batch-admit.sh` emits `orchestrate-batch-admit-v5`. *(completed)*
+- [x] Only after a successful deploy: re-run the deployed admission script against the real
       `specs/state.json` for task 59 and confirm the verdict shape is v5, as a live smoke check.
-- [ ] Remove from `specs/state.json` the `dependencies[]` entries naming 59, 60, or 61 on tasks 53,
+      *(completed: `{"$schema":"orchestrate-batch-admit-v5","task_number":59,"decision":"admit","self_modifying":true}`
+      — self_modifying:true is correct since task 59's own file_scope names
+      orchestrate-batch-admit.sh itself, an orchestrator-critical path, and this was a solo run)*
+- [x] Remove from `specs/state.json` the `dependencies[]` entries naming 59, 60, or 61 on tasks 53,
       14, 17, and 44 — and only those entries. Re-verify each of the four tasks' remaining
-      `dependencies[]` array against its pre-edit value so no unrelated edge is dropped.
-- [ ] Leave tasks 48 and 50 untouched: their 59/60/61 edges accompany a repo-wide
+      `dependencies[]` array against its pre-edit value so no unrelated edge is dropped. *(completed:
+      53 [17,44,60]->[17,44], 14 [33,60]->[33], 17 [16,35,37,60,61]->[16,35,37],
+      44 [17,28,41,49,59,60,61]->[17,28,41,49] — each remaining array verified equal to its
+      pre-edit value minus exactly the removed 59/60/61 entries)*
+- [x] Leave tasks 48 and 50 untouched: their 59/60/61 edges accompany a repo-wide
       `agent-system/extensions/` file_scope and are a legitimate final-integration dependency, not a
-      workaround for this defect.
-- [ ] Run `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md from the edited state.json.
-- [ ] Validate `specs/state.json` parses (`jq -e . specs/state.json`) and, if present, run the
-      repo's state validator.
+      workaround for this defect. *(completed and verified: 48 and 50 still list 59/60/61)*
+- [x] Run `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md from the edited state.json.
+      *(completed)*
+- [x] Validate `specs/state.json` parses (`jq -e . specs/state.json`) and, if present, run the
+      repo's state validator. *(completed: parses cleanly; validate-state.sh reports one
+      pre-existing failure — an unrecognized `priority` field on task 53 — confirmed present in the
+      pre-Phase-7 state.json too via a backup diff, so it is unrelated to this task's edit and out
+      of this task's declared scope)*
 
 **Timing**: 50 minutes
 

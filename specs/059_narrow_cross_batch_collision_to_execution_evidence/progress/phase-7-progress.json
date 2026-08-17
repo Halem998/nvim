@@ -1,0 +1,29 @@
+{
+  "phase": 7,
+  "phase_name": "Full verification sweep, deploy, and workaround-edge removal",
+  "started_at": "2026-08-17T03:00:00Z",
+  "last_updated": "2026-08-17T03:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Final suite run", "status": "done", "files_touched": [], "note": "predicate 35/0, four-tier 13/0"},
+    {"id": 2, "description": "v4 literal sweep", "status": "done", "files_touched": [], "note": "zero hits anywhere"},
+    {"id": 3, "description": "self-refuting passage sweep", "status": "done", "files_touched": [], "note": "one hit, in corrected in_batch bullet, not self-refuting"},
+    {"id": 4, "description": "review complete task diff for scope", "status": "done", "files_touched": [], "note": "exactly the six declared files + specs/059_.../ + TODO.md + state.json; noted foreign commit bafefeb83 (literature pyenv) unrelated to task 59, reported per observation duty"},
+    {"id": 5, "description": "deploy-headless.sh + confirm deployed v5", "status": "done", "files_touched": []},
+    {"id": 6, "description": "live smoke check against real specs/state.json for task 59", "status": "done", "files_touched": [], "note": "verdict {\"$schema\":\"orchestrate-batch-admit-v5\",\"task_number\":59,\"decision\":\"admit\",\"self_modifying\":true}"},
+    {"id": 7, "description": "remove workaround dependencies[] edges on 53/14/17/44", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 8, "description": "verify 48/50 untouched", "status": "done", "files_touched": []},
+    {"id": 9, "description": "regenerate TODO.md", "status": "done", "files_touched": ["specs/TODO.md"]},
+    {"id": 10, "description": "validate state.json", "status": "done", "files_touched": [], "note": "parses cleanly; validate-state.sh's one failure (unrecognized priority field on task 53) confirmed pre-existing via backup diff, out of scope"}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "diff_scope_union": "exactly the 6 declared file_scope files across all 6 task-59 commits",
+    "deployed_schema": "v5 confirmed via grep -c on .claude/scripts/orchestrate-batch-admit.sh",
+    "dependency_edges_removed": "53: [17,44,60]->[17,44]; 14: [33,60]->[33]; 17: [16,35,37,60,61]->[16,35,37]; 44: [17,28,41,49,59,60,61]->[17,28,41,49]",
+    "dependency_edges_preserved": "48 and 50 both still list 59/60/61, unchanged",
+    "foreign_commit_observed": "bafefeb83 'literature: make pyenv provisioning self-repairing' landed between this task's phase-5 and phase-6 commits from a concurrent session; confirmed via git log it touches only agent-system/extensions/literature/scripts/literature-pyenv-provision.sh and is absent from every task-59 commit's own file list"
+  }
+}

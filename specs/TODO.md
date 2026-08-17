@@ -11,18 +11,17 @@ next_project_number: 65
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 18,20,22,27,28,31,39,43,45,46,51,59,62 | -- | agent-system, extensions, literature, ... |
-| 2 | 42,60,61 | 18,31,59 | essential-refactor |
-| 3 | 14,17,64 | 42,60,61 | agent-system, essential-refactor |
-| 4 | 13,44 | 17,28 | agent-system, essential-refactor |
-| 5 | 9,29,48,53 | 18,22,39,43,44,64 | agent-system, orchestration-concurrency, essential-refactor |
-| 6 | 30,50 | 29,48 | agent-system, essential-refactor |
-| 7 | 32 | 30,31 | agent-system |
+| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,59,62 | -- | agent-system, extensions, literature, ... |
+| 2 | 13,42,44,60,61 | 17,18,28,31,59 | agent-system, essential-refactor |
+| 3 | 9,29,53,64 | 18,22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
+| 4 | 30,48 | 22,29,39,43,44,60,61,64 | agent-system, essential-refactor |
+| 5 | 32,50 | 30,31,48 | agent-system, essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
+14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 28 [IMPLEMENTING] — Rewrite the canonical MCP ownership document, whose central premi
@@ -31,7 +30,6 @@ next_project_number: 65
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
-14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -53,20 +51,21 @@ next_project_number: 65
 
 ### Essential Refactor
 
+17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
+  └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+      └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 18 [NOT STARTED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
     └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
-      └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-        └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
+      └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 59 [IMPLEMENTING] — The /orchestrate batch-admission gate's specs/state.json collisio
   └─ 60 [NOT STARTED] — Consumer-side half of the batch-admission gate redesign. The pred
-    └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u
-      └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-        └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
+    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
   └─ 61 [NOT STARTED] — Treat whole-directory-root file_scope declarations as a declarati
-    └─ 17 [NOT STARTED] — command-gate-out.sh's entire post-metadata body is structurally u (see above)
+    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 
 ## Tasks
 
@@ -229,7 +228,7 @@ WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
-- **Dependencies**: Task 17, Task 44, Task 60
+- **Dependencies**: Task 17, Task 44
 
 **Description**: Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect when a contractual non-writer leaves no fresh handoff. Observed live on a clean, fully-successful base-mode /orchestrate run (recorded as evt_1786550950625_o2KoSv; the class already has 3 occurrences in specs/events.jsonl).
 
@@ -345,7 +344,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 17, Task 28, Task 41, Task 49, Task 59, Task 60, Task 61
+- **Dependencies**: Task 17, Task 28, Task 41, Task 49
 
 **Description**: LOWER PRIORITY (per-invocation cost, not per-session). `commands/task.md` measures 37,465 bytes (~9.4k tokens) loaded on every `/task` invocation, plus ~2.8k tokens of imports it pulls in — the largest single per-invocation context contributor found by the context-loading audit. Slim the command body by moving reference material (long option tables, worked examples, edge-case narratives) into lazily-loaded context files under the core extension's context tree, keeping the command body to the decision logic and dispatch instructions an invocation actually needs. Preserve behavior: every mode (--recover, --expand, --sync, --abandon, multi-task creation) must remain fully specified — either inline or via an explicit pointer the executing agent is instructed to follow. Measure before/after bytes and record them in the implementation summary. CONSTRAINTS: all edits target agent-system/extensions/core/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**; do not change command behavior, only where its prose lives.
 
@@ -859,7 +858,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 16, Task 35, Task 37, Task 60, Task 61
+- **Dependencies**: Task 16, Task 35, Task 37
 
 **Description**: command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.
 
@@ -884,7 +883,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 33, Task 60
+- **Dependencies**: Task 33
 
 **Description**: Two dispatches in a single batch fanned out to phase sub-agents and terminated before writing a terminal status, costing a recovery cycle each. Recorded as err_1786344051474_RcIhk6.
 
