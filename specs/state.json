@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 62,
+  "next_project_number": 63,
   "active_projects": [
+    {
+      "project_number": 62,
+      "project_name": "restrict_typst_latex_task_types_to_formatting_only",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Restrict typst and latex task types to formatting-only concerns. Identify what in the agent extension system needs revision so that the 'typst' and 'latex' task types are assigned ONLY when a task is concerned purely with formatting/typesetting issues, not with the intellectual content of what is being formatted. Investigation should cover: keyword_overrides and aliases in the typst/latex extension manifests, the hardcoded keyword table in /task step 4d ('latex', 'tex', 'document', 'typeset' -> latex; 'typst' -> typst), the interaction with the meta-keyword precedence rule in step 4a, alias remapping in step 4e, and any routing or documentation that assumes content-bearing work routes to these types. Produce the concrete revisions needed (manifest edits, keyword table changes, precedence adjustments, docs) so content-focused tasks route to a substantive task type instead.",
+      "topic": "extensions",
+      "created": "2026-08-17T16:24:45Z",
+      "last_updated": "2026-08-17T16:24:45Z"
+    },
     {
       "project_number": 57,
       "project_name": "cut_generated_claudemd_eager_surface",

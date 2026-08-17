@@ -1,17 +1,17 @@
 ---
-next_project_number: 62
+next_project_number: 63
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-08-13. Generated from state.json dependency graph.*
+*Updated 2026-08-17. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 18,20,22,27,28,31,34,39,41,43,45,46,48,51,59 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 1 | 18,20,22,27,28,31,34,39,41,43,45,46,48,51,59,62 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
 | 2 | 9,29,42,50,60,61 | 18,22,41,48,59 | agent-system, context-loading, orchestrate-admission-gate |
 | 3 | 14,17,30,44,53 | 29,60,61 | agent-system, orchestration-concurrency, context-loading |
 | 4 | 13,32 | 17,28,30,31 | agent-system |
@@ -49,6 +49,7 @@ next_project_number: 62
 22 [RESEARCHING] — Silence and correct opencode-agents.json fragment validation spam
 45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
+62 [NOT STARTED] — Restrict typst and latex task types to formatting-only concerns. 
 
 ### Literature
 
@@ -74,6 +75,16 @@ next_project_number: 62
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 
 ## Tasks
+
+### 62. Restrict typst latex task types to formatting only
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Restrict typst and latex task types to formatting-only concerns. Identify what in the agent extension system needs revision so that the 'typst' and 'latex' task types are assigned ONLY when a task is concerned purely with formatting/typesetting issues, not with the intellectual content of what is being formatted. Investigation should cover: keyword_overrides and aliases in the typst/latex extension manifests, the hardcoded keyword table in /task step 4d ('latex', 'tex', 'document', 'typeset' -> latex; 'typst' -> typst), the interaction with the meta-keyword precedence rule in step 4a, alias remapping in step 4e, and any routing or documentation that assumes content-bearing work routes to these types. Produce the concrete revisions needed (manifest edits, keyword table changes, precedence adjustments, docs) so content-focused tasks route to a substantive task type instead.
+
+---
 
 ### 61. Surface coarse and duplicate file_scope declarations at task-creation time
 - **Status**: [NOT STARTED]
