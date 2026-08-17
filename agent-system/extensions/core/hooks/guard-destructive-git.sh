@@ -64,25 +64,61 @@ if [ -z "$(git status --porcelain 2>/dev/null)" ]; then
   exit 0
 fi
 
+# --- Argv-anchoring scan string ---
+# Strip quoted spans, then bash comments, from the ENTIRE (possibly multi-line) $COMMAND ONCE,
+# up front, before any segment extraction or flag-scanning runs. Every detector below reads
+# $COMMAND_SCAN instead of raw $COMMAND, so free-text commit-message content (or a comment) can
+# never be mistaken for a real argv flag or subcommand.
+#
+# The quote-strip MUST run in slurp mode (all input treated as one unit) rather than line mode.
+# A line-based strip silently fails whenever a quoted span itself contains a newline (a
+# multi-paragraph -m message): `grep`/line-mode `sed` never match across a newline, so the
+# opening quote is never seen as closed and nothing is stripped -- the message's first line
+# (typically the commit subject) then reaches the flag-scanning regexes as if it were argv.
+#
+# Uses `sed -z` (NUL-delimited "lines") rather than the more commonly cited `:a;N;$!ba` N-loop
+# idiom: that idiom has a well-known GNU sed gotcha where `N` on an already-last line (i.e. ANY
+# genuinely single-line command, which is the common case here) finds no next line to append,
+# auto-prints the pattern space unmodified, and terminates the script WITHOUT ever reaching the
+# substitution -- verified by direct reproduction while implementing this fix: it left
+# single-line commands like `git commit -m "fix -a bug"` completely unstripped. `sed -z` has no
+# such gotcha: with no NUL byte in the input, the entire (possibly multi-line) command is one
+# NUL-terminated record regardless of how many embedded newlines it contains, so the
+# substitution runs exactly once over the whole thing in a single pass, for both single- and
+# multi-line commands alike.
+#
+# The comment-strip runs strictly AFTER the quote-strip, on a second, ordinary line-mode `sed`
+# pass (correct here, since a bash `#` comment runs only to end of its own line; `sed -z`'s
+# NUL-delimited "line" is intentionally NOT reused for this pass -- doing so would make `$` match
+# only the end of the entire command instead of the end of each real line, wrongly stripping
+# everything after the first `#` in the whole command instead of just to end of its own line).
+# Ordering matters: a `#` character that is itself inside a quoted string has already been
+# neutralized to `""`/`''` by the first pass, so it can never be mistaken for a real comment
+# marker by the second. This closes the `--staged` false-exemption inverse in its comment form (a
+# bash comment sharing a segment with a real `git restore <path>`, e.g. `git restore foo.txt #
+# use --staged next time`) -- the quote-strip alone closes only the quoted form of that bypass.
+COMMAND_SCAN=$(printf '%s' "$COMMAND" \
+  | sed -z -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g" \
+  | sed -e 's/\(^\|[[:space:]]\)#.*$//')
+
 # --- Over-staging detectors ---
 # Independent of the destructive-command MATCHED chain below: these block directly via their
 # own exit 2 and never set MATCHED/REASON, so a fresh snapshot marker can NEVER exempt
-# over-staging (see header comment for the data-loss vs. scope-pollution rationale). Quoted
-# spans are stripped before flag-scanning so free-text commit messages (e.g. -m "fix -a bug")
-# never false-positive.
+# over-staging (see header comment for the data-loss vs. scope-pollution rationale). Both read
+# $COMMAND_SCAN (quoted/commented spans already stripped above), so free-text commit messages
+# (e.g. -m "fix -a bug") never false-positive, including when the message spans multiple lines.
 OVERSTAGE_REASON=""
 
 # git add -A / --all / bare "." pathspec
-ADD_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+add[^;&|]*') || true
+ADD_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+add[^;&|]*') || true
 if [ -n "$ADD_SEGMENTS" ]; then
   while IFS= read -r seg; do
     [ -z "$seg" ] && continue || true
-    seg_scan=$(echo "$seg" | sed -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g")
-    if echo "$seg_scan" | grep -qE -- '(^|[^-])-[a-zA-Z]*A[a-zA-Z]*([[:space:]]|$)|--all([[:space:]]|$)'; then
+    if echo "$seg" | grep -qE -- '(^|[^-])-[a-zA-Z]*A[a-zA-Z]*([[:space:]]|$)|--all([[:space:]]|$)'; then
       OVERSTAGE_REASON="git add -A (or --all) stages the entire working tree; stage explicit task-scoped paths instead"
       break
     fi
-    if echo "$seg_scan" | grep -qE -- '(^|[[:space:]])\.([[:space:]]|$)'; then
+    if echo "$seg" | grep -qE -- '(^|[[:space:]])\.([[:space:]]|$)'; then
       OVERSTAGE_REASON="git add . stages the entire current directory tree; stage explicit task-scoped paths instead"
       break
     fi
@@ -92,12 +128,11 @@ fi
 # git commit -a / -am / --all (bare -a is as hazardous as -am: both implicitly stage all
 # tracked modifications, per git-staging-scope.md)
 if [ -z "$OVERSTAGE_REASON" ]; then
-  COMMIT_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+commit[^;&|]*') || true
+  COMMIT_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+commit[^;&|]*') || true
   if [ -n "$COMMIT_SEGMENTS" ]; then
     while IFS= read -r seg; do
       [ -z "$seg" ] && continue || true
-      seg_scan=$(echo "$seg" | sed -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g")
-      if echo "$seg_scan" | grep -qE -- '(^|[^-])-[a-zA-Z]*a[a-zA-Z]*([[:space:]]|$)|--all([[:space:]]|$)'; then
+      if echo "$seg" | grep -qE -- '(^|[^-])-[a-zA-Z]*a[a-zA-Z]*([[:space:]]|$)|--all([[:space:]]|$)'; then
         OVERSTAGE_REASON="git commit -a/-am (or --all) implicitly stages all tracked-file modifications; stage explicit paths and commit without -a"
         break
       fi
@@ -117,20 +152,20 @@ MATCHED=0
 REASON=""
 
 # git reset --hard
-if echo "$COMMAND" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+reset[^;&|]*--hard\b'; then
+if echo "$COMMAND_SCAN" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+reset[^;&|]*--hard\b'; then
   MATCHED=1
   REASON="git reset --hard discards uncommitted working-tree changes"
 fi
 
 # git checkout -- <path>  (pathspec discard form)
-if [ "$MATCHED" = "0" ] && echo "$COMMAND" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+checkout[^;&|]*[[:space:]]--([[:space:]]|$)'; then
+if [ "$MATCHED" = "0" ] && echo "$COMMAND_SCAN" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+checkout[^;&|]*[[:space:]]--([[:space:]]|$)'; then
   MATCHED=1
   REASON="git checkout -- <path> discards uncommitted changes to that path"
 fi
 
 # git restore <path>  (without --staged; --staged only unstages and is safe)
 if [ "$MATCHED" = "0" ]; then
-  RESTORE_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+restore[^;&|]*') || true
+  RESTORE_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+restore[^;&|]*') || true
   if [ -n "$RESTORE_SEGMENTS" ]; then
     while IFS= read -r seg; do
       [ -z "$seg" ] && continue || true
@@ -145,7 +180,7 @@ fi
 
 # git clean -f -d (any order/clustering, e.g. -fd, -df, -f -d, -xfd)
 if [ "$MATCHED" = "0" ]; then
-  CLEAN_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+clean[^;&|]*') || true
+  CLEAN_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+clean[^;&|]*') || true
   if [ -n "$CLEAN_SEGMENTS" ]; then
     while IFS= read -r seg; do
       [ -z "$seg" ] && continue || true
@@ -163,14 +198,14 @@ if [ "$MATCHED" = "0" ]; then
 fi
 
 # git stash drop / git stash clear
-if [ "$MATCHED" = "0" ] && echo "$COMMAND" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+stash[[:space:]]+(drop|clear)\b'; then
+if [ "$MATCHED" = "0" ] && echo "$COMMAND_SCAN" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+stash[[:space:]]+(drop|clear)\b'; then
   MATCHED=1
   REASON="git stash drop/clear permanently discards stashed changes"
 fi
 
 # forced git checkout / git switch (-f / --force) -- can silently overwrite local changes
 if [ "$MATCHED" = "0" ]; then
-  FORCED_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+(checkout|switch)[^;&|]*') || true
+  FORCED_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+(checkout|switch)[^;&|]*') || true
   if [ -n "$FORCED_SEGMENTS" ]; then
     while IFS= read -r seg; do
       [ -z "$seg" ] && continue || true

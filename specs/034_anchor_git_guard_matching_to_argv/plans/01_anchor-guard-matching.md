@@ -248,38 +248,54 @@ in fact reachable — do not silently drop it).
 
 ---
 
-### Phase 3: Upfront multi-line quote-strip plus comment-strip; repoint all seven detectors [NOT STARTED]
+### Phase 3: Upfront multi-line quote-strip plus comment-strip; repoint all seven detectors [COMPLETED]
 
 **Goal**: Land the verified fix architecture in `guard-destructive-git.sh` and turn the Phase 2
 RED set green without regressing any Phase 1 baseline case.
 
 **Tasks**:
-- [ ] Immediately after the clean-tree early exit (currently ending at line 65) and before the
-      over-staging detectors, construct the single stripped scan string:
+- [x] Immediately after the clean-tree early exit (currently ending at line 65) and before the
+      over-staging detectors, construct the single stripped scan string.
+      *(deviation: altered — the plan's literal `:a;N;$!ba` N-loop idiom was implemented first,
+      verbatim, and then disproved by direct reproduction: GNU sed's `N` command, invoked on a
+      line that is already the LAST line of input (true of any genuinely single-line command —
+      the common case), finds no next line to append, auto-prints the pattern space unmodified,
+      and terminates the script without ever reaching the substitution. This left ordinary
+      single-line commands like `git commit -m "fix -a bug"` completely unstripped, regressing a
+      Phase 1 baseline case. Replaced with `sed -z` (NUL-delimited "lines"): with no NUL byte in
+      the input, the whole command — single- or multi-line alike — is one record, and the
+      substitution runs exactly once over all of it in a single pass, with no last-line special
+      case. Re-verified against the full Phase 1 + Phase 2 case set after the substitution:
+      43/43 green, matching the architecture's intended behavior exactly.)*
       ```bash
       COMMAND_SCAN=$(printf '%s' "$COMMAND" \
-        | sed -e ':a' -e 'N' -e '$!ba' -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g" \
+        | sed -z -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g" \
         | sed -e 's/\(^\|[[:space:]]\)#.*$//')
       ```
-      The first `sed` is slurp-mode (`:a;N;$!ba`) so a quoted span containing newlines is treated
-      as one logical span. The second runs per-line — correct, because a bash comment runs to end
-      of line — and is ordered strictly AFTER the quote-strip so a `#` inside a quoted string has
-      already been neutralized and cannot be mistaken for a comment marker.
-- [ ] Repoint the two over-staging detectors: `ADD_SEGMENTS` and `COMMIT_SEGMENTS` extract from
-      `$COMMAND_SCAN` instead of `$COMMAND`.
-- [ ] Delete the now-redundant per-segment `seg_scan` `sed` calls (currently lines 80 and 99) and
+      The first `sed` (`-z`) treats the whole command as one record, so a quoted span containing
+      newlines is treated as one logical span regardless of line count. The second runs per-line
+      — correct, because a bash comment runs to end of line — and is ordered strictly AFTER the
+      quote-strip so a `#` inside a quoted string has already been neutralized and cannot be
+      mistaken for a comment marker.
+- [x] Repoint the two over-staging detectors: `ADD_SEGMENTS` and `COMMIT_SEGMENTS` extract from
+      `$COMMAND_SCAN` instead of `$COMMAND`. *(completed)*
+- [x] Delete the now-redundant per-segment `seg_scan` `sed` calls (currently lines 80 and 99) and
       have the flag regexes scan `$seg` directly. Do not leave a dead `seg_scan` variable.
-- [ ] Repoint all five destructive-chain detectors at `$COMMAND_SCAN`: `git reset --hard`,
+      *(completed: `grep -c seg_scan` returns 0)*
+- [x] Repoint all five destructive-chain detectors at `$COMMAND_SCAN`: `git reset --hard`,
       `git checkout -- <path>`, `RESTORE_SEGMENTS`, `CLEAN_SEGMENTS`, `git stash drop|clear`,
       `FORCED_SEGMENTS`. Every `echo "$COMMAND" | grep` in the matching chain becomes
-      `echo "$COMMAND_SCAN" | grep`.
-- [ ] Leave the raw `$COMMAND` in use only where it must stay raw: the empty-command early exit at
+      `echo "$COMMAND_SCAN" | grep`. *(completed)*
+- [x] Leave the raw `$COMMAND` in use only where it must stay raw: the empty-command early exit at
       line 57. Do not change the snapshot-marker logic, the freshness window, the exit codes, or
-      any stderr message text.
-- [ ] Leave the Cause-2 flag regexes textually unchanged. Tightening them is a declared non-goal.
-- [ ] Run the suite. Every Phase 2 case must be GREEN and every Phase 1 baseline case must remain
+      any stderr message text. *(completed: confirmed by `grep -n '\$COMMAND\b'` — only line 57
+      and the `COMMAND_SCAN` construction itself reference raw `$COMMAND`)*
+- [x] Leave the Cause-2 flag regexes textually unchanged. Tightening them is a declared non-goal.
+      *(completed)*
+- [x] Run the suite. Every Phase 2 case must be GREEN and every Phase 1 baseline case must remain
       GREEN. A Phase 1 case going red is a real behavioral regression from moving the strip
-      upstream — investigate rather than adjusting the case.
+      upstream — investigate rather than adjusting the case. *(completed: 43/43 green — see the
+      N-loop-to-`sed -z` deviation above for the one regression found and fixed mid-phase)*
 
 **Timing**: 1 hour
 
