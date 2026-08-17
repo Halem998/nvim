@@ -1,0 +1,47 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 meta tasks for hard-mode routing defects: an agent-side routing-downgrade fix (63) and a system-wide hard-contract delivery decision (64, depends on 63).",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/063_fix_hard_mode_agent_routing_downgrade/",
+      "summary": "Task 63 directory: fix command-route-agent.sh discarding declared domain agents under --hard"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/064_deliver_hard_mode_contracts_across_extensions/",
+      "summary": "Task 64 directory: decide and implement system-wide --hard contract delivery for the 14 extensions lacking hard blocks"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Tasks 63 and 64 added to TODO.md via generate-todo.sh regeneration"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Two not_started meta entries added, next_project_number advanced to 65"
+    }
+  ],
+  "next_steps": "Run /research 63 to begin the foundational routing-downgrade fix; 64 is gated on 63 and should re-inventory resolver behavior after 63 lands.",
+  "metadata": {
+    "session_id": "sess_1786983680_cd36da",
+    "agent_type": "meta-builder-agent",
+    "duration_seconds": 900,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2,
+    "confirmation_source": "relayed_by_team_lead_from_main_session_user_choice",
+    "confirmation_note": "AskUserQuestion is not available in this subagent's tool set (verified three ways); the team lead ran the confirmation gate with the user in the main session and relayed the choice of two-tasks-split.",
+    "corrections_applied": [
+      "Delegating description stated 16 extensions lack hard-mode routing and listed literature and slidev among them. Verified inventory of all 19 manifests shows 14: literature and slidev set routing_exempt true and declare no routing blocks at all. Corrected figure and exemption caveat written into task 64's description."
+    ]
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/state.json",
+    "/home/benjamin/.config/nvim/specs/TODO.md"
+  ]
+}

@@ -1,5 +1,5 @@
 ---
-next_project_number: 63
+next_project_number: 65
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 63
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 18,20,22,27,28,31,34,39,41,43,45,46,48,51,59,62 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
-| 2 | 9,29,42,50,60,61 | 18,22,41,48,59 | agent-system, context-loading, orchestrate-admission-gate |
+| 1 | 18,20,22,27,28,31,34,39,41,43,45,46,48,51,59,62,63 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 2 | 9,29,42,50,60,61,64 | 18,22,41,48,59,63 | agent-system, extensions, context-loading, ... |
 | 3 | 14,17,30,44,53 | 29,60,61 | agent-system, orchestration-concurrency, context-loading |
 | 4 | 13,32 | 17,28,30,31 | agent-system |
 
@@ -50,6 +50,8 @@ next_project_number: 63
 45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
 62 [NOT STARTED] — Restrict typst and latex task types to formatting-only concerns. 
+63 [NOT STARTED] — Fix the agent-side hard-mode routing downgrade. command-route-age
+  └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
 
 ### Literature
 
@@ -75,6 +77,74 @@ next_project_number: 63
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 
 ## Tasks
+
+### 64. Decide and implement how --hard behavioral contracts reach agents system-wide
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 63
+
+**Description**: Decide and implement how --hard behavioral contracts reach agents system-wide. Only core, cslib, and lean declare routing_hard/routing_agents_hard. For every other extension that declares routing, --hard resolves via=hard-miss-standard-fallback and the H2-H5 behavioral contracts never reach the agent, even though CLAUDE.md advertises --hard as composable with extension routing at a 3-5x cost multiplier. In the originating session the H2/H3/H4/H5 contracts had to be hand-injected into the delegation prompt by the orchestrator for --hard to mean anything at all, which is neither reproducible nor something a user should have to do.
+
+CORRECTED COUNT - VERIFIED INVENTORY, USE THIS NOT THE 16 FIGURE. The delegating description said 16 extensions and listed literature and slidev among them. A direct inventory of all 19 manifests under agent-system/extensions/*/manifest.json shows the real figure is 14. literature and slidev declare routing_exempt: true and declare NO routing blocks whatsoever - they are legitimately exempt, not gaps, and must not be counted, rolled out to, or failed by any lint.
+The 14 that declare routing (and routing_agents) but no routing_hard/routing_agents_hard are: email, epidemiology, filetypes, formal, founder, latex, memory, nix, nvim, present, python, typst, web, z3.
+For completeness: core declares routing_agents + routing_hard + routing_agents_hard but no plain routing block; cslib and lean declare all four.
+CONSEQUENCE FOR LINT DESIGN: any check must skip routing_exempt: true manifests, or it emits 2 false failures on literature and slidev.
+
+DECIDE, DO NOT PRESUPPOSE:
+  (a) Declare hard variants across the remaining 14 manifests.
+  (b) Make the fallback inherit standard extension routing while delivering hard contracts from a single shared contract block rather than per-skill '-hard' files.
+  (c) Both, plus a lint check flagging any extension that declares routing but no routing_hard.
+Weigh (b) seriously. The shared ladder lives in exactly one place - agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh, consumed by both command-route-skill.sh and command-route-agent.sh - so a resolver-side fix is a single change point covering all extensions, whereas (a) is 14 manifest edits that can drift. The fact that only 3 of 19 extensions have hard variants is itself evidence that the per-extension '-hard' file approach does not scale, and that evidence bears directly on the choice.
+
+DEPENDS ON THE AGENT-SIDE ROUTING-DOWNGRADE FIX IN THIS BATCH, AND THAT FIX MATERIALLY DE-SCOPES THIS ONE. Once the agent side inherits standard extension routing on a hard miss, most of the 14 resolve to their correct domain agent with ZERO manifest edits. What remains is then the narrower and different question of how the H2-H5 CONTRACTS reach the agent, which is the shared-contract-block idea in option (b). Do not price a 14-manifest rollout before that fix has landed - it would be costing work the fix largely obviates. Re-run the resolver inventory after the dependency completes and report what actually still misroutes.
+
+LINT COORDINATION (binding, read before proposing lint scope). The existing not_started task fix_present_extension_compound_skill_routing already proposes extending lint-routing-wiring.sh, which currently validates declared AGENT names but not SKILL names. Read that task's description in specs/state.json first. The checks are genuinely additive rather than duplicative, and the current coverage matters: lint-routing-wiring.sh already has Check A (routing.{op} keys have routing_agents.{op} counterparts), Check B (routing_agents/routing_agents_hard values name existing agent files), Check C (routing_hard.{op} keys have routing_agents_hard.{op} counterparts), and Check D (report-only general-* declarations). Check C therefore ALREADY covers the within-manifest hard counterpart requirement. What is missing is a new check for 'declares routing but no routing_hard at all' - additive to that task's Check B skill-name extension. Both edit the same file, so declare a dependency or otherwise serialize with it rather than duplicating its work or racing it.
+
+ACCEPTANCE: a single documented decision among (a)/(b)/(c) with its reasoning recorded; --hard delivers the H2-H5 contracts to agents for every non-exempt extension without requiring per-invocation hand-injection by the orchestrator; any lint check added skips routing_exempt manifests and does not duplicate the sibling task's skill-name validation; CLAUDE.md's claim that --hard is composable with extension routing is either made true or corrected to match reality.
+
+RELATED BUT DISTINCT - DO NOT ABSORB. The typst/latex task-type restriction task in this repo concerns which task type a task is ASSIGNED from keywords, not which agent or contracts a type resolves to. No file overlap with this task's resolver and lint scope, though note that if option (a) is chosen it would edit the typst and latex manifests, which that task also touches (different keys: keyword_overrides/aliases there, routing_hard/routing_agents_hard here) - coordinate if (a) is selected.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 63. Fix the agent-side hard-mode routing downgrade that discards declared domain agents
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Fix the agent-side hard-mode routing downgrade. command-route-agent.sh, given effort_flag=hard and a task_type whose extension declares no routing_agents_hard, falls through to the caller-supplied default_agent and DISCARDS the extension's declared standard agent. So --hard routes strictly worse than no flag, losing the domain agent entirely.
+
+VERIFIED EVIDENCE (reproduced independently against the source store with ROUTE_MANIFEST_ROOT=agent-system; do not re-derive). Originally observed in a live /research --fable --lit --hard invocation in the Logos/Theory repo:
+  op=research task_type=formal:logic effort=hard resolved=general-research-agent via=default
+  op=research task_type=formal:logic effort=     resolved=logic-research-agent   via=noncore-exact
+The defect is NOT compound-key-specific. The same downgrade reproduces on a simple task_type:
+  op=research task_type=typst        effort=hard resolved=general-research-agent via=default
+  op=research task_type=typst        effort=     resolved=typst-research-agent   via=noncore-exact
+It therefore affects every extension that declares routing_agents but no routing_agents_hard (14 extensions; see the companion contract-delivery task in this batch for the verified inventory).
+
+THE DECISIVE FINDING - THIS IS A PARITY DEFECT, NOT A DEBATABLE FALLBACK. The two resolvers that were consolidated onto the shared ladder kept DIVERGENT fallback policies, and the skill-side resolver already implements the correct never-worse-than-standard behavior:
+  - command-route-skill.sh (lines ~57-65) resolves the standard SKILL_NAME FIRST, then on hard mode only UPGRADES it: a routing_hard hit wins; else a '-hard'-appended candidate is used only if its SKILL.md exists on disk (via=hard-append-fallback); else it KEEPS the standard skill and emits via=hard-miss-standard-fallback. Standard resolution is never discarded.
+  - command-route-agent.sh (lines ~62-68) computes ONLY the hard block, then unconditionally overwrites with AGENT_NAME="$_route_default_agent"; _route_via="default". The extension's declared standard agent is never consulted at all.
+So the fix is to bring the agent side to parity with the already-correct skill side, not to invent new policy. Note also that the agent script's own header justifies the fall-through as "matching the behavior of the case tables this script replaces" - i.e. it was a conservative do-no-harm choice made during a consolidation refactor, NOT a considered design decision that domain agents should be discarded. That is the evidence bearing on whether the documented intent or its consequence is the thing that is wrong. Establish that explicitly, then fix accordingly.
+
+LIKELY CORRECT LADDER: routing_agents_hard -> the extension's routing_agents -> default_agent. This preserves the documented intent (a caller's own hard-mode default such as general-research-hard-agent is still honored on a genuine total miss where no extension declares anything) while no longer discarding a declared domain agent.
+
+BINDING CONSTRAINT - AN EXISTING TEST PINS THE CURRENT BEHAVIOR AS CORRECT AND MUST BE AMENDED. agent-system/extensions/core/scripts/tests/test-routing-resolution.sh Assert 3 (semantic) iterates `for tt in neovim nix` and asserts hard-mode research resolves to the caller default, failing with "expected fall-through to caller default"; its header frames standard-block reuse as "a precedence-direction / fallback-source regression". The fix necessarily amends that assertion. Keep Assert 3's lean4 half intact - it still validly proves hard mode reads a DISTINCT block (lean4 standard resolves lean-research-agent, hard resolves lean-research-hard-agent). Also note `nix` is itself one of the 14 extensions lacking hard blocks, so if the companion task later declares hard blocks for nix, that fixture's meaning shifts again; leave a comment in the test recording this coupling.
+
+SCOPE (source store only, never .claude/**): agent-system/extensions/core/scripts/command-route-agent.sh (the primary change), agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh (the shared ladder, only if the fix genuinely belongs there rather than in the consumer), and agent-system/extensions/core/scripts/tests/test-routing-resolution.sh. Consider adding the via=hard-miss-standard-fallback vocabulary to the agent-side trace so the agent and skill resolvers report the same diagnostic shape.
+
+ACCEPTANCE: --hard never resolves to a less specific agent than the same call without --hard, for all 19 extensions; the caller-supplied hard default is still honored where no extension declares anything for that (op, task_type); lean4 still resolves lean-research-hard-agent under --hard; the routing test suite is green with Assert 3 amended to pin the corrected contract rather than the defect.
+
+RELATED BUT DISTINCT - DO NOT ABSORB. The typst/latex task-type restriction task in this repo governs WHICH task type gets assigned from keywords (manifest keyword_overrides/aliases, /task's keyword table, meta-keyword precedence). This task governs WHICH AGENT a given task type resolves to under --hard. No file overlap. They compound, though, and that is worth knowing: a content-bearing task misfiled as typst AND run with --hard currently loses both the correct domain agent and the hard contracts.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 62. Restrict typst latex task types to formatting only
 - **Status**: [NOT STARTED]
