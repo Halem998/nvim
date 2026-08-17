@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "phase_name": "Stale schema-version sweep (WORK 5)",
+  "started_at": "2026-08-17T00:00:00Z",
+  "last_updated": "2026-08-17T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Sweep and correct all stale schema-version references across the 9 declared consumer files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

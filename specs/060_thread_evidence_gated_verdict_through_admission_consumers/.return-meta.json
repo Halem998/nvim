@@ -1,32 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md",
-      "summary": "9-phase consumer-side threading plan covering all 5 WORK items across 8 source-store files, with two binding design decisions and a final deploy/verify phase."
-    }
-  ],
-  "next_steps": "Run /implement 60 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1786999515_0afbe9_60",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 9,
-    "estimated_hours": 7,
-    "dependency_waves": [[1, 6, 7], [2], [3], [4], [5], [8], [9]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a codebase carries an explicit consumer-side override flag (e.g. --allow-self-modifying in orchestrate), adding a sibling override is a mechanical 5-touch-point mirror in parse-command-args.sh (doc comment, default init, regex detection, FOCUS_PROMPT sed strip, export list) plus a threading chain command -> skill delegation context -> skill branch. The load-bearing invariant is that the override is NEVER passed to the predicate script: the predicate always computes and emits the honest verdict, and the flag is purely a consumer decision not to ACT on it, with a bypass notice logged whether or not the gate would otherwise have fired. Critically, a hazard's scope must be decomposed before a symmetric-looking flag is granted symmetric reach: for file_scope_collision, in_batch means two live co-dispatched agents editing the same files (a concurrent-write corruption hazard with a free bounded-retry remedy) while cross_batch means an idle out-of-batch task (a composition-judgment friction). Only the latter is a legitimate override target, so the flag's unqualified name must be contradicted explicitly in its help text.",
-      "category": "PATTERN",
-      "source_artifact": "specs/060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["consumer-side-override", "admission-gate", "orchestrate", "parse-command-args", "file-scope-collision", "bypass-flag"]
-    }
-  ],
-  "modified_files": [
-    "specs/060_thread_evidence_gated_verdict_through_admission_consumers/plans/01_thread-evidence-gated-verdict.md"
-  ]
+    "session_id": "sess_1786999515_0afbe9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 9
+  }
 }

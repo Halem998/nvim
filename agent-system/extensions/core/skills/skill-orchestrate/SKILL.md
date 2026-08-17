@@ -1497,7 +1497,7 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    restated here); the verdict schema is published in
    `.claude/docs/architecture/batch-admit-schema.md` (also referenced by path, never restated).
 
-   `jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v3
+   `jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v5
    — every defer verdict carries this REQUIRED discriminator; checking `collision_scope` without
    checking `defer_reason` first would misread a self-modifying defer as an ordinary in-batch
    collision, since both verdicts carry a `reason` string):

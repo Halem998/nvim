@@ -1,7 +1,7 @@
 # Implementation Plan: Task #60
 
 - **Task**: 60 - Thread the evidence-gated verdict and --allow-scope-collision through admission consumers
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: 59 (predicate half — COMPLETED, verified live at schema v5)
 - **Research Inputs**: `specs/060_thread_evidence_gated_verdict_through_admission_consumers/reports/01_thread-evidence-gated-verdict.md`
@@ -149,22 +149,25 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Stale schema-version sweep (WORK 5) [NOT STARTED]
+### Phase 1: Stale schema-version sweep (WORK 5) [COMPLETED]
 
 **Goal**: Every schema-version reference in the consumer corpus reads v5, matching the live
 predicate.
 
 **Tasks**:
 
-- [ ] `skills/skill-orchestrate/SKILL.md` ~L1500: change `(schema v3 — every defer verdict carries
-      this REQUIRED discriminator...` to `v5`.
-- [ ] `commands/orchestrate.md` ~L270: change the identical `(schema v3 —` phrase to `v5`.
-- [ ] `skills/skill-orchestrate-hard/SKILL.md` ~L1566: change `(schema v4 —` to `v5` (per D3).
-- [ ] Sweep the remaining declared files for any other version reference:
-      `grep -rn 'schema v[0-9]\|batch-admit-v[0-9]' ` across all 9 `file_scope` paths.
-- [ ] Leave `(NEW in v4)` markers on the `session_active` branches alone — those are historical
+- [x] `skills/skill-orchestrate/SKILL.md` ~L1500: change `(schema v3 — every defer verdict carries
+      this REQUIRED discriminator...` to `v5`. *(completed)*
+- [x] `commands/orchestrate.md` ~L270: change the identical `(schema v3 —` phrase to `v5`. *(completed)*
+- [x] `skills/skill-orchestrate-hard/SKILL.md` ~L1566: change `(schema v4 —` to `v5` (per D3). *(completed)*
+- [x] Sweep the remaining declared files for any other version reference:
+      `grep -rn 'schema v[0-9]\|batch-admit-v[0-9]' ` across all 9 `file_scope` paths. *(completed:
+      confirmed exactly 3 stale current-version hits, matching the Scope Hypothesis)*
+- [x] Leave `(NEW in v4)` markers on the `session_active` branches alone — those are historical
       "introduced in" annotations, not claims about the current schema version. Confirm each
-      remaining `v4` occurrence is of that kind before leaving it.
+      remaining `v4` occurrence is of that kind before leaving it. *(completed: all remaining `v4`
+      hits in the 3 SKILL/command files plus `orchestrate-dry-run-report.sh` are historical "NEW
+      in v4"/"As of v4" annotations, left unchanged)*
 
 **Timing**: 0.4 hours
 

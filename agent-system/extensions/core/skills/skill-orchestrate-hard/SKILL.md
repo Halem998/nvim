@@ -1563,7 +1563,7 @@ against itself):
 bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" --session-id "$session_id" "${eligible_tasks[@]}"
 ```
 
-`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v4 —
+`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v5 —
 every defer verdict carries this REQUIRED discriminator):
 
 - **`self_modifying`**: consumer-side override check first — if `allow_self_modifying == true`

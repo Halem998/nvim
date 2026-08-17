@@ -267,7 +267,7 @@ overlap algorithm in `.claude/context/patterns/file-footprint-overlap.md` (refer
 the rule is not restated here); the verdict schema is published in
 `.claude/docs/architecture/batch-admit-schema.md` (also referenced by path, never restated).
 
-`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v3 —
+`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v5 —
 every defer verdict carries this REQUIRED discriminator; do not fall through to a
 `collision_scope`-only branch without checking it first, or a self-modifying defer is
 misread as an ordinary in-batch collision):
