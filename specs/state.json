@@ -28,6 +28,11 @@
           "path": "specs/065_fix_mint_dispatch_seq_persisted_counter/plans/01_mint-dispatch-seq-persisted-counter-fix.md",
           "type": "plan",
           "summary": "Three-phase plan: persisted-counter mint fix, fresh-shell regression suite, deploy and gate."
+        },
+        {
+          "path": "specs/065_fix_mint_dispatch_seq_persisted_counter/summaries/01_mint-dispatch-seq-fix-summary.md",
+          "type": "summary",
+          "summary": "Fixed persisted-counter mint, authored regression suite, registered in manifest; deploy deferred to operator."
         }
       ]
     },
