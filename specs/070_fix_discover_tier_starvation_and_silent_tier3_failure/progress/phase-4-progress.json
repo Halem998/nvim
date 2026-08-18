@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Caller-level Tier 3 notice in commands/literature.md",
+  "started_at": "2026-08-18T20:25:00Z",
+  "last_updated": "2026-08-18T20:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace 2>/dev/null with capture-to-file on the three DISCOVER_SCRIPT calls", "status": "done", "files_touched": ["agent-system/extensions/literature/commands/literature.md"]},
+    {"id": 2, "description": "Add tier3_failed branch parsing TIER3_STATUS: FAILED and http_code", "status": "done", "files_touched": ["agent-system/extensions/literature/commands/literature.md"]},
+    {"id": 3, "description": "Surface notice on no-results path (step 2)", "status": "done", "files_touched": ["agent-system/extensions/literature/commands/literature.md"]},
+    {"id": 4, "description": "Surface notice on results-found path (step 3 AskUserQuestion)", "status": "done", "files_touched": ["agent-system/extensions/literature/commands/literature.md"]},
+    {"id": 5, "description": "Rewrite step-0 deferred-scope paragraph", "status": "done", "files_touched": ["agent-system/extensions/literature/commands/literature.md"]},
+    {"id": 6, "description": "Add Tier 3 partial-failure row to error-handling section", "status": "done", "files_touched": ["agent-system/extensions/literature/commands/literature.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

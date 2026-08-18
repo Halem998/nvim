@@ -275,30 +275,31 @@ call site per tier. Confirm at implementation time by grepping for `FILTERED_TER
 
 ---
 
-### Phase 4: Caller-level Tier 3 notice in commands/literature.md [NOT STARTED]
+### Phase 4: Caller-level Tier 3 notice in commands/literature.md [COMPLETED]
 
 **Goal**: `/literature` discover mode captures the discover script's stderr instead of discarding
 it, and surfaces a visible incompleteness notice whenever `TIER3_STATUS: FAILED` is present.
 
 **Tasks**:
-- [ ] In step 1 of discover mode, replace the `2>/dev/null` on all three `"$DISCOVER_SCRIPT" ...`
+- [x] In step 1 of discover mode, replace the `2>/dev/null` on all three `"$DISCOVER_SCRIPT" ...`
       invocations with `2>/tmp/discover-rationale.txt`, then
       `discover_rationale=$(cat /tmp/discover-rationale.txt)` — the same capture pattern the file
-      already uses a few sections above for `zotero_directive`/`zotero_rationale`.
-- [ ] Add a branch after step 1: if `discover_rationale` contains `TIER3_STATUS: FAILED`, set a
-      `tier3_failed` flag and extract the `http_code=` value for the message.
-- [ ] Surface the notice on the no-results path (step 2): append
+      already uses a few sections above for `zotero_directive`/`zotero_rationale`. *(completed)*
+- [x] Add a branch after step 1: if `discover_rationale` contains `TIER3_STATUS: FAILED`, set a
+      `tier3_failed` flag and extract the `http_code=` value for the message. *(completed)*
+- [x] Surface the notice on the no-results path (step 2): append
       "Online search (Tier 3) failed: rate-limited or unreachable (http_code={code}) — this run is
       not evidence that nothing exists online. Retry later before concluding the search was
-      exhaustive." to the existing "No sources found" block.
-- [ ] Surface the notice on the results-found path (step 3): prepend/append the same warning to the
+      exhaustive." to the existing "No sources found" block. *(completed)*
+- [x] Surface the notice on the results-found path (step 3): prepend/append the same warning to the
       `AskUserQuestion` presentation so a partial result set is never read as complete.
-- [ ] Rewrite the step-0 closing paragraph that declares the main call's `2>/dev/null` an
+      *(completed: prepended to the question text)*
+- [x] Rewrite the step-0 closing paragraph that declares the main call's `2>/dev/null` an
       "intentionally out-of-scope follow-up" — that follow-up is now done; the paragraph must
-      describe the new capture instead of promising a deferred one.
-- [ ] Check the error-handling section near the end of the file (the `literature-discover.sh not
+      describe the new capture instead of promising a deferred one. *(completed)*
+- [x] Check the error-handling section near the end of the file (the `literature-discover.sh not
       found` / exit-1 / exit-2 entries) and add a Tier 3 partial-failure row so the behavior is
-      documented where callers look for it.
+      documented where callers look for it. *(completed)*
 
 **Timing**: 1 hour
 

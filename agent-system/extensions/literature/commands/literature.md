@@ -360,25 +360,39 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
            generator failure here is surfaced via its loud stderr error, never silent).
 
          This offer is a SEPARATE classifier invocation from the main discover call below; it
-         never touches `literature-discover.sh`'s pure-JSON-array stdout contract, and it does
-         NOT modify the existing `2>/dev/null` capture on the main call (that remains a
-         separate, intentionally out-of-scope follow-up).
+         never touches `literature-discover.sh`'s pure-JSON-array stdout contract. The main
+         call's own stderr is now captured too (never discarded) — see step 1 immediately below
+         — so a Tier 3 partial failure inside the main discovery pass is surfaced the same way
+         this Zotero offer's own rationale already is.
 
-      1. **Run `literature-discover.sh`**:
+      1. **Run `literature-discover.sh`**, capturing stderr instead of discarding it (the same
+         capture-to-file pattern used for `zotero_directive`/`zotero_rationale` above, so a Tier 3
+         `TIER3_STATUS: FAILED` notice — see `literature-discover.sh`'s `tier3_search()` header
+         comment for the stderr contract — reaches this command layer instead of being silently
+         thrown away):
          ```bash
          DISCOVER_SCRIPT=".claude/scripts/literature-discover.sh"
 
          if [ -n "$task_num" ] && [ -n "$extra_terms" ]; then
-           discover_results=$("$DISCOVER_SCRIPT" --task "$task_num" "$extra_terms" 2>/dev/null)
+           discover_results=$("$DISCOVER_SCRIPT" --task "$task_num" "$extra_terms" 2>/tmp/discover-rationale.txt)
            discover_exit=$?
          elif [ -n "$task_num" ]; then
-           discover_results=$("$DISCOVER_SCRIPT" --task "$task_num" 2>/dev/null)
+           discover_results=$("$DISCOVER_SCRIPT" --task "$task_num" 2>/tmp/discover-rationale.txt)
            discover_exit=$?
          else
-           discover_results=$("$DISCOVER_SCRIPT" "$query" 2>/dev/null)
+           discover_results=$("$DISCOVER_SCRIPT" "$query" 2>/tmp/discover-rationale.txt)
            discover_exit=$?
          fi
+         discover_rationale=$(cat /tmp/discover-rationale.txt)
          ```
+
+         Branch on `discover_rationale`: if it contains the line `TIER3_STATUS: FAILED`, set
+         `tier3_failed=true` and extract the `http_code=` value from that line for use in the
+         notice text below (e.g. via `grep -o 'http_code=[^ ]*' <<< "$discover_rationale"`).
+         Otherwise `tier3_failed=false` — Tier 3 either succeeded (possibly with zero matches) or
+         was skipped for having no rolled-forward quota (`literature-discover.sh` never emits
+         `TIER3_STATUS: FAILED` for a genuine quota-zero skip, so this branch cannot
+         false-positive on that case).
 
       2. **Handle no-results case** (exit code 1):
          ```
@@ -390,7 +404,20 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
            - Ensure network connectivity for online search (Tier 3)
          ```
 
-      3. **Present results via AskUserQuestion** (multi-select):
+         If `tier3_failed` is `true`, append:
+         ```
+         Online search (Tier 3) failed: rate-limited or unreachable (http_code={code}) — this run
+         is not evidence that nothing exists online. Retry later before concluding the search was
+         exhaustive.
+         ```
+
+      3. **Present results via AskUserQuestion** (multi-select). If `tier3_failed` is `true`
+         (set in step 1), prepend this notice to the question text so a partial result set is
+         never read as complete:
+         ```
+         Note: online search (Tier 3) failed: rate-limited or unreachable (http_code={code}) —
+         these results may be incomplete, not exhaustive.
+         ```
          ```json
          {
            "question": "Found {N} sources for '{query}'. Select sources to add to SOURCES.md:",
@@ -645,6 +672,11 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
     - literature-discover.sh not found -> "Error: literature-discover.sh not found at .claude/scripts/literature-discover.sh"
     - literature-discover.sh returns exit 1 (no results) -> Show "No sources found" message with suggestions (see Workflow step 2)
     - literature-discover.sh returns exit 2 (arg error) -> Pass through error message from script
+    - literature-discover.sh stderr contains `TIER3_STATUS: FAILED` (Tier 3 rate-limited or
+      unreachable; exit code is otherwise 0 or 1 depending on whether Tiers 1/2 found anything) ->
+      not a hard error; surface the partial-failure notice on both the no-results path (Workflow
+      step 2) and the results-found path (Workflow step 3) rather than treating the run as either
+      complete or fully failed
     - specs/literature/ missing -> "No specs/literature/ directory found. Create it and add PDF/DJVU files to convert."
     - pdftotext not available -> "pdftotext not found. Install with: nix-env -iA nixpkgs.poppler_utils"
     - djvutxt not available -> "djvutxt not found (DJVU files will be skipped). Install with: nix-env -iA nixpkgs.djvulibre"
