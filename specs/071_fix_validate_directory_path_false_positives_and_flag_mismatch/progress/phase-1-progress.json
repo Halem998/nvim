@@ -1,0 +1,33 @@
+{
+  "phase": 1,
+  "phase_name": "Fix directory-path branching in Validate Step 2",
+  "started_at": "2026-08-18T00:00:00Z",
+  "last_updated": "2026-08-18T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture pre-change baseline against live index", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace two-way branch with three-way directory/missing-file/file branch", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 3, "description": "Directory branch existence assertion pushes to stale_entries on failure", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 4, "description": "Hoist jq schema/authors-shape checks out of file-only branch", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 5, "description": "Update Step 2 prose preamble numbered list", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 6, "description": "Add comment documenting directory-path variant", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_results": {
+    "baseline_stale_entries": 80,
+    "baseline_drift_entries": 56,
+    "baseline_schema_warnings": 35,
+    "baseline_authors_shape_warnings": 53,
+    "fixed_stale_entries": 15,
+    "fixed_drift_entries": 56,
+    "fixed_schema_warnings": 35,
+    "fixed_authors_shape_warnings": 60,
+    "directory_path_entries_confirmed": 65,
+    "file_path_entries_confirmed": 289,
+    "null_path_legacy_entries_confirmed": 15,
+    "note": "The 15 remaining stale_entries are pre-existing null-path legacy chunks_dir-schema entries (no path field at all), a third, previously-undocumented schema variant distinct from both the file-path and directory-path variants this task fixes. They were already reported stale before this fix and remain so after it -- not a regression, and out of scope per the plan's Non-Goals on legacy chunks_dir schema co-mingling. Recorded as a new deferred finding in the implementation summary.",
+    "fabricated_nonexistent_directory_test": "confirmed still reported stale via the actual extracted SKILL.md Step 2 block",
+    "bash_-n_syntax_check": "passed"
+  }
+}

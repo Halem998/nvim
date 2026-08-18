@@ -1,7 +1,7 @@
 # Implementation Plan: Fix validate directory-path false positives and flag mismatch
 
 - **Task**: 71 - Fix validate-mode directory-path false positives and normalize-authors flag mismatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None (sequenced after the conversion quality-gate hardening in
   `specs/069_harden_conversion_quality_gate_against_mojibake/`, which research confirmed does
@@ -112,32 +112,32 @@ the same file.
 
 ---
 
-### Phase 1: Fix directory-path branching in Validate Step 2 [NOT STARTED]
+### Phase 1: Fix directory-path branching in Validate Step 2 [COMPLETED]
 
 **Goal**: Validate Step 2 handles both path schema variants correctly — directory entries are
 existence-checked and schema/authors-checked, file entries keep their existing behavior
 unchanged including the token-drift recount.
 
 **Tasks**:
-- [ ] Capture a pre-change baseline: extract the current Validate Step 2 bash block to a scratch
+- [x] Capture a pre-change baseline: extract the current Validate Step 2 bash block to a scratch
       script, run it against `~/Projects/Literature/index.json`, and record the counts of
-      `stale_entries`, `drift_entries`, `schema_warnings`, and `authors_shape_warnings`.
-- [ ] Replace the two-way `if [ ! -f ... ]; then ... else ... fi` with a three-way branch:
+      `stale_entries`, `drift_entries`, `schema_warnings`, and `authors_shape_warnings`. *(completed: baseline 369 entries -- stale=80, drift=56, schema_warnings=35, authors_shape_warnings=53)*
+- [x] Replace the two-way `if [ ! -f ... ]; then ... else ... fi` with a three-way branch:
       directory-path entries (`[[ "$entry_path" == */ ]] || [ -d "$full_path" ]`), missing
-      file-path entries, and existing file-path entries.
-- [ ] In the directory branch, assert existence with `[ -d "$full_path" ]` and push
+      file-path entries, and existing file-path entries. *(completed)*
+- [x] In the directory branch, assert existence with `[ -d "$full_path" ]` and push
       `"$entry_path (missing directory)"` into `stale_entries` when it fails. Do not attempt a
-      token recount for this variant.
-- [ ] Hoist the two `jq`-driven checks (required-schema-fields and authors-shape) out of the
+      token recount for this variant. *(completed: verified with a fabricated non-existent directory entry)*
+- [x] Hoist the two `jq`-driven checks (required-schema-fields and authors-shape) out of the
       file-only branch so they run for every entry that resolves on disk, directory entries
       included. Leave both `jq` programs byte-identical — this phase relocates them, it does not
-      rewrite them.
-- [ ] Update the Step 2 prose preamble's numbered list so item 1 reads as existence checking
+      rewrite them. *(completed: jq programs byte-identical, only relocated)*
+- [x] Update the Step 2 prose preamble's numbered list so item 1 reads as existence checking
       (`-f` for file paths, `-d` for directory paths) and item 2 states that token-drift
-      recounting applies to file-path entries only.
-- [ ] Add a short comment in the bash block naming the directory-path variant
+      recounting applies to file-path entries only. *(completed)*
+- [x] Add a short comment in the bash block naming the directory-path variant
       (`doc_type: "book"`, parent record for a chunked book, `token_count: 0` by design) so the
-      branch is not later "simplified" back into the bug.
+      branch is not later "simplified" back into the bug. *(completed)*
 
 **Timing**: 0.75 hours
 

@@ -364,8 +364,10 @@ entries=$(jq -r '.entries[] | .path' "$index_file" 2>/dev/null)
 
 For each indexed entry, check:
 
-1. File exists at `specs/literature/{entry.path}`
-2. Token count drift (recount vs stored, flag if >20% different)
+1. Existence at `specs/literature/{entry.path}`: `-f` for file-path entries, `-d` for
+   directory-path entries (book/parent-level records whose `path` ends in `/`)
+2. Token count drift (recount vs stored, flag if >20% different) — applies to file-path entries
+   only; directory-path entries have no single content file to recount against
 3. Required schema fields present: `id`, `path`, `token_count`, `keywords`, `summary`, `doc_type`, `source_format`
 4. `authors` field shape: present and an array, all elements are strings, and no element looks
    like an unsplit comma-joined multi-author string (see authors-shape check below). This catches
@@ -381,10 +383,21 @@ authors_shape_warnings=()
 
 while IFS= read -r entry_path; do
   full_path="$lit_dir/$entry_path"
-  if [ ! -f "$full_path" ]; then
+
+  # Directory-path entries (trailing slash, or resolves to a directory on disk) are a
+  # legitimate second schema variant: parent-level records for a book split into many
+  # semantic chunks (doc_type: "book", token_count: 0 by design). They have no single
+  # content file to recount tokens against, so existence is the sufficient check.
+  if [[ "$entry_path" == */ ]] || [ -d "$full_path" ]; then
+    if [ ! -d "$full_path" ]; then
+      stale_entries+=("$entry_path (missing directory)")
+      continue
+    fi
+  elif [ ! -f "$full_path" ]; then
     stale_entries+=("$entry_path (missing)")
+    continue
   else
-    # Recount tokens
+    # Recount tokens (file-path entries only)
     char_count=$(wc -c < "$full_path" 2>/dev/null || echo 0)
     current_tokens=$(( char_count / 4 + 20 ))
     stored_tokens=$(jq --arg p "$entry_path" '.entries[] | select(.path == $p) | .token_count' "$index_file" 2>/dev/null || echo 0)
@@ -398,49 +411,52 @@ while IFS= read -r entry_path; do
         drift_entries+=("$entry_path (stored: $stored_tokens, actual: $current_tokens, drift: ${drift_pct}%)")
       fi
     fi
+  fi
 
-    # Check for required schema fields (new in schema v2)
-    missing_fields=$(jq -r --arg p "$entry_path" '
-      .entries[] | select(.path == $p) |
-      [
-        (if .doc_type == null or .doc_type == "" then "doc_type" else empty end),
-        (if .source_format == null or .source_format == "" then "source_format" else empty end),
-        (if .authors == null then "authors" else empty end),
-        (if .title == null or .title == "" then "title" else empty end)
-      ] | join(", ")
-    ' "$index_file" 2>/dev/null || echo "")
-    if [ -n "$missing_fields" ]; then
-      schema_warnings+=("$entry_path (missing fields: $missing_fields)")
-    fi
+  # Check for required schema fields (new in schema v2). Reads index.json via jq, not the
+  # filesystem, so this runs for every entry that resolves on disk -- directory-path entries
+  # included.
+  missing_fields=$(jq -r --arg p "$entry_path" '
+    .entries[] | select(.path == $p) |
+    [
+      (if .doc_type == null or .doc_type == "" then "doc_type" else empty end),
+      (if .source_format == null or .source_format == "" then "source_format" else empty end),
+      (if .authors == null then "authors" else empty end),
+      (if .title == null or .title == "" then "title" else empty end)
+    ] | join(", ")
+  ' "$index_file" 2>/dev/null || echo "")
+  if [ -n "$missing_fields" ]; then
+    schema_warnings+=("$entry_path (missing fields: $missing_fields)")
+  fi
 
-    # Check authors field shape (catch non-array or comma-joined authors so any
-    # future writer that reintroduces the malformed schema is caught by routine validation).
-    # The "possibly-comma-joined" heuristic is conservative: it flags an array element only
-    # when it contains 2+ ", " occurrences, or exactly one ", " followed by a second
-    # non-initial capitalized name-like token (2+ letters). This avoids false positives on
-    # legitimate single-author "Last, First" or "Last, First M." formatting (the pattern the
-    # former zotero index-add script itself produced), while still catching packed multi-author strings
-    # like "Patrick Blackburn, Maarten de Rijke, Yde Venema" or two-author strings like
-    # "Patrick Blackburn, Maarten de Rijke". Mirror this same heuristic in
-    # .claude/scripts/literature-normalize-authors.sh so validate and normalize stay consistent.
-    authors_shape=$(jq -r --arg p "$entry_path" '
-      def is_comma_joined:
-        ( [scan(", ")] | length ) as $n
-        | if $n >= 2 then true
-          elif $n == 1 then
-            ( (split(", ")[1]) | ([scan("[A-Z][a-zA-Z]+")] | length) ) >= 2
-          else false
-          end;
-      .entries[] | select(.path == $p) |
-      [
-        (if .authors != null and (.authors | type) != "array" then "authors:not-array" else empty end),
-        (if (.authors | type) == "array" and (.authors | any(type != "string")) then "authors:non-string-element" else empty end),
-        (if (.authors | type) == "array" and (.authors | any(type == "string" and is_comma_joined)) then "authors:possibly-comma-joined" else empty end)
-      ] | join(", ")
-    ' "$index_file" 2>/dev/null || echo "")
-    if [ -n "$authors_shape" ]; then
-      authors_shape_warnings+=("$entry_path ($authors_shape)")
-    fi
+  # Check authors field shape (catch non-array or comma-joined authors so any
+  # future writer that reintroduces the malformed schema is caught by routine validation).
+  # The "possibly-comma-joined" heuristic is conservative: it flags an array element only
+  # when it contains 2+ ", " occurrences, or exactly one ", " followed by a second
+  # non-initial capitalized name-like token (2+ letters). This avoids false positives on
+  # legitimate single-author "Last, First" or "Last, First M." formatting (the pattern the
+  # former zotero index-add script itself produced), while still catching packed multi-author strings
+  # like "Patrick Blackburn, Maarten de Rijke, Yde Venema" or two-author strings like
+  # "Patrick Blackburn, Maarten de Rijke". Mirror this same heuristic in
+  # literature-normalize-authors.sh so validate and normalize stay consistent. Also reads
+  # index.json via jq, so this covers directory-path entries too.
+  authors_shape=$(jq -r --arg p "$entry_path" '
+    def is_comma_joined:
+      ( [scan(", ")] | length ) as $n
+      | if $n >= 2 then true
+        elif $n == 1 then
+          ( (split(", ")[1]) | ([scan("[A-Z][a-zA-Z]+")] | length) ) >= 2
+        else false
+        end;
+    .entries[] | select(.path == $p) |
+    [
+      (if .authors != null and (.authors | type) != "array" then "authors:not-array" else empty end),
+      (if (.authors | type) == "array" and (.authors | any(type != "string")) then "authors:non-string-element" else empty end),
+      (if (.authors | type) == "array" and (.authors | any(type == "string" and is_comma_joined)) then "authors:possibly-comma-joined" else empty end)
+    ] | join(", ")
+  ' "$index_file" 2>/dev/null || echo "")
+  if [ -n "$authors_shape" ]; then
+    authors_shape_warnings+=("$entry_path ($authors_shape)")
   fi
 done <<< "$entries"
 ```
