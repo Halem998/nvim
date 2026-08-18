@@ -988,7 +988,7 @@
     {
       "project_number": 69,
       "project_name": "harden_conversion_quality_gate_against_mojibake",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "literature",
       "title": "Harden literature conversion quality gate against mojibake and unextractable-PDF output",
@@ -1004,16 +1004,21 @@
           "path": "specs/069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md",
           "type": "report",
           "summary": "Research report: gate structure, root-cause analysis of why word_ratio-vs-pdftotext is a different metric than the internal page-coverage check, and prioritized recommendations (printable-ratio check, NUL/control-char zero-tolerance check, two-sided coverage band, shared-module testability pattern)."
+        },
+        {
+          "path": "specs/069_harden_conversion_quality_gate_against_mojibake/plans/01_harden-quality-gate-against-mojibake.md",
+          "type": "plan",
+          "summary": "7-phase plan hardening literature-convert.sh's run_quality_gate with a calibrated printable-character-ratio check, a zero-tolerance NUL/control-character check, and a two-sided page-coverage band, plus shared-module extraction for unit-testable checks and must-pass/must-fail regression verification."
         }
       ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:43:46Z",
+      "last_updated": "2026-08-18T18:52:47Z",
       "session_id": "sess_1787078236_69862e_69"
     },
     {
       "project_number": 70,
       "project_name": "fix_discover_tier_starvation_and_silent_tier3_failure",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "literature",
       "title": "Fix literature-discover.sh tier starvation and silent Tier 3 failure",
@@ -1029,10 +1034,15 @@
           "path": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/reports/01_fix-discover-tier-starvation.md",
           "type": "report",
           "summary": "Confirms both defects (silent Tier 3 failure requires fixes in BOTH literature-discover.sh and commands/literature.md's caller-level 2>/dev/null; Tier 2 hits are computed then discarded by the final head-of-array truncation) plus the query-noise issue, and gives concrete fix directions for each: split curl status from body + stderr directive for Tier 3, per-tier reserved quotas with rollover for tier fairness, and title/description separation with a term-count threshold for query noise."
+        },
+        {
+          "path": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/plans/01_fix-discover-tier-starvation.md",
+          "type": "plan",
+          "summary": "5-phase plan fixing silent Tier 3 failure (script + caller), per-tier quotas with rollover, and query-construction noise in literature-discover.sh."
         }
       ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:44:49Z",
+      "last_updated": "2026-08-18T18:52:50Z",
       "session_id": "sess_1787078236_69862e_70"
     },
     {

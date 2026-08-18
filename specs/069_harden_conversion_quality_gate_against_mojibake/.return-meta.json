@@ -1,39 +1,19 @@
 {
-  "status": "researched",
-  "summary": "Confirmed the empirical defect: run_quality_gate() in literature-convert.sh (lines 705-733) has exactly 4 checks (column-interleaving, sentence-boundary-glue, one-sided page-coverage floor, ligature/dehyphenation), none of which inspect raw content for control characters/NUL bytes/non-printable garbage. Recommended adding a printable-character-ratio check and a zero-tolerance NUL/control-char check (both operate on the content string alone, no PDF needed) as the primary fix, plus widening the existing internal page-coverage metric to a two-sided band as defense-in-depth (with a documented caveat about its likely lower sensitivity for this exact failure mode, since its numerator and denominator both derive from the same PyMuPDF extraction). literature-ingest.sh needs no logic changes - it already routes exit 3 correctly. literature-fidelity-audit.sh is a related but out-of-scope separate post-hoc batch tool with its own one-sided word_ratio floor (RATIO_THRESHOLD=0.75) against pdftotext.",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 69,
+  "session_id": "sess_1787078236_69862e_69",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md",
-      "summary": "Research report: gate structure, root-cause analysis of why word_ratio-vs-pdftotext is a different metric than the internal page-coverage check, and prioritized recommendations (printable-ratio check, NUL/control-char zero-tolerance check, two-sided coverage band, shared-module testability pattern)."
+      "type": "plan",
+      "path": "specs/069_harden_conversion_quality_gate_against_mojibake/plans/01_harden-quality-gate-against-mojibake.md",
+      "summary": "7-phase plan hardening literature-convert.sh's run_quality_gate with a calibrated printable-character-ratio check, a zero-tolerance NUL/control-character check, and a two-sided page-coverage band, plus shared-module extraction for unit-testable checks and must-pass/must-fail regression verification."
     }
   ],
-  "next_steps": "Run /plan 69 to create implementation plan",
-  "findings_count": 5,
-  "memory_candidates": [
-    {
-      "content": "In agent-system/extensions/literature/scripts/literature-convert.sh, the ingest-time run_quality_gate() Python heredoc (~line 705) and the separate post-hoc literature-fidelity-audit.sh word-ratio auditor (RATIO_THRESHOLD=0.75, pdftotext-based) are two independent tools with different ground truths: the gate's internal page-coverage metric compares content against doc.get_text() from the SAME PyMuPDF-opened document, so a font-encoding corruption that corrupts extraction can corrupt both numerator and denominator similarly, masking the defect in that specific ratio even though an independent extractor (pdftotext) would show a sharp divergence. When diagnosing PDF-extraction corruption, prefer content-only checks (printable-ratio, control-char/NUL presence) over ratio-against-self-extracted-source checks, since the latter can be blind to corruption that affects both sides of the ratio equally.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["literature-extension", "quality-gate", "mojibake", "pymupdf", "word-ratio", "printable-ratio"]
-    },
-    {
-      "content": "literature-convert.sh uses a reusable pattern for making Python-heredoc-embedded logic unit-testable: extract shared functions into a standalone importable module (see literature_combining_overlay.py) that both the live heredoc (via sys.path.insert + import) and a --self-test CLI branch import identically, so string-only fixture tests never need a real PDF. This is the recommended approach for any new content-only quality-gate check (e.g. printable-ratio, control-char checks) since they need only a plain string, not a fitz.Document.",
-      "category": "PATTERN",
-      "source_artifact": "specs/069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["literature-extension", "shared-module", "self-test", "testability", "pymupdf", "unit-test-pattern"]
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1787078236_69862e_69",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "task_number": 69,
-    "task_type": "meta",
-    "orchestrator_mode": true,
-    "dispatch_seq": 1
-  }
+  "phase_count": 7,
+  "estimated_hours": 6,
+  "dependency_waves": [[1, 2], [3], [4], [5], [6], [7]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 69 to execute the plan"
 }

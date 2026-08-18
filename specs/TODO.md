@@ -45,9 +45,9 @@ next_project_number: 72
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-69 [RESEARCHED] — HIGH severity -- corpus-corruption vector. The conversion quality
+69 [PLANNED] — HIGH severity -- corpus-corruption vector. The conversion quality
   └─ 71 [NOT STARTED] — LOW severity -- validate-mode false positives and a documentation
-70 [RESEARCHED] — MEDIUM severity -- discovery correctness. Two verified defects in
+70 [PLANNED] — MEDIUM severity -- discovery correctness. Two verified defects in
 
 ### Orchestration Concurrency
 
@@ -94,10 +94,12 @@ Primary files: agent-system/extensions/literature/skills/skill-literature/SKILL.
 
 ### 70. Fix literature-discover.sh tier starvation and silent Tier 3 failure
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [070_fix_discover_tier_starvation_and_silent_tier3_failure/reports/01_fix-discover-tier-starvation.md]
+- **Plan**: [070_fix_discover_tier_starvation_and_silent_tier3_failure/plans/01_fix-discover-tier-starvation.md]
 
 **Description**: MEDIUM severity -- discovery correctness. Two verified defects in scripts/literature-discover.sh, plus one query-construction issue.
 
@@ -113,11 +115,12 @@ Primary files: agent-system/extensions/literature/scripts/literature-discover.sh
 
 ### 69. Harden literature conversion quality gate against mojibake and unextractable-PDF output
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md]
+- **Plan**: [069_harden_conversion_quality_gate_against_mojibake/plans/01_harden-quality-gate-against-mojibake.md]
 
 **Description**: HIGH severity -- corpus-corruption vector. The conversion quality gate in scripts/literature-convert.sh does not detect control-character/mojibake output, allowing garbage to enter the global corpus and the FTS index.
 
