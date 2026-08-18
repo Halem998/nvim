@@ -56,7 +56,7 @@ next_project_number: 68
   └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
       └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
-18 [PLANNING] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
+18 [PLANNED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
     └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
       └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
@@ -991,11 +991,12 @@ failure.
 
 ### 18. Detect stale .claude/ deploy trees and root-cause the silent staleness
 - **Effort**: 5h
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md]
+- **Plan**: [018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md]
 
 **Description**: A repo can carry an arbitrarily stale .claude/ deploy with no signal, so a user hits a bug fixed upstream long ago with no indication that regeneration is the remedy. Discovered when /revise failed at GATE IN in a consuming repo on a task that had never produced an artifact.
 

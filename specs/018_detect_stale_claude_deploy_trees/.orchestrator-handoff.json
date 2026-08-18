@@ -1,18 +1,18 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 2,
-  "summary": "No loader/copy-engine defect: manager.resync_all/manager.load force-copy every declared file unconditionally, ignoring installed_files and manifest version. Staleness is structural -- regeneration is deliberately pull-only with no automated re-trigger outside skill-orchestrate's narrow inter-cycle checkpoint. Reproduced live on ~/.dotfiles (26 core scripts missing, deploy-headless.sh/verify-deploy.sh absent from both disk and installed_files, ~3 weeks since last resync). Recommend stamping a per-extension source_git_head (sibling to the already-recorded source_dir field) and a cheap non-blocking WARN in command-gate-in.sh naming deploy-headless.sh as the remedy on mismatch.",
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 8,
+  "summary": "6-phase, 5-hour plan implementing detection only (research falsified every loader-defect hypothesis; staleness is structural pull-only regeneration). Wave 1: stamp source_git_head in state.lua's mark_loaded (sibling to the existing source_dir field, silently omitted when unresolvable) and author a standalone always-exit-0 check-deploy-freshness.sh registered in core's manifest. Wave 2: isolated temp-root test suite pinning stale/fresh/missing-field/unverifiable/path-scoping cases. Wave 3: non-blocking, existence-guarded call at the end of command-gate-in.sh's gate_in, after lock acquisition, preserving all six exports and every return code. Wave 4: both-directions acceptance demonstration through the real gate-in path with measured added preflight cost. Wave 5: 'Detecting When You're Stale' section in regeneration-is-manual-only.md. Non-goals: no copy-engine change, no install-extension.sh change, no per-file hash manifest, no blocking behavior.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
-      "summary": "Root cause + detection design for silently stale .claude/ deploy trees."
+      "type": "plan",
+      "path": "specs/018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md",
+      "summary": "6-phase plan for source_git_head stamping plus a non-blocking gate-in freshness WARN."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 6,
   "blockers": [],
   "continuation_path": null,
-  "next_action_hint": "Run /plan 18: implement source_git_head stamping in state.lua/init.lua (Lua write side) and a check-deploy-freshness.sh + command-gate-in.sh preflight WARN (bash read side). No copy-engine fix is needed -- Part 1 concluded there is no loader defect."
+  "next_action_hint": "Run /implement 18. Phases 1 and 2 are independent and may run in parallel. Binding constraints: edit agent-system/extensions/** and lua/** only, never .claude/**; command-gate-in.sh is SOURCED, so the new call must be `bash ... || true`, never sourced, and must add no shell options."
 }

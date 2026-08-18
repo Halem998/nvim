@@ -1,38 +1,33 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
-      "summary": "Root-causes the silent staleness (no loader defect; regeneration is deliberately pull-only with no ambient signal, reproduced live on ~/.dotfiles) and recommends stamping a per-extension source-store git revision into .claude-extensions.json plus a cheap non-blocking WARN in command-gate-in.sh."
+      "type": "plan",
+      "path": "specs/018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md",
+      "summary": "6-phase, 5-hour plan: source_git_head stamping in state.lua plus a non-blocking check-deploy-freshness.sh WARN wired into command-gate-in.sh."
     }
   ],
-  "next_steps": "Run /plan 18 to create an implementation plan for the source-git-head stamping (state.lua/init.lua) plus the command-gate-in.sh / check-deploy-freshness.sh preflight WARN.",
+  "next_steps": "Run /implement 18 to execute the plan",
   "metadata": {
     "session_id": "sess_1787016315_a436d0_18",
-    "agent_type": "general-research-agent",
-    "duration_seconds": 480,
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 5,
+    "dependency_waves": [[1, 2], [3], [4], [5], [6]]
   },
   "memory_candidates": [
     {
-      "content": "In this repo's Lua-driven extension loader (lua/neotex/plugins/ai/shared/extensions/{loader,init,state}.lua), manager.resync_all/manager.load never diff against installed_files or manifest version -- every load force-copies every declared file unconditionally (loader.copy_category has only three skip conditions: .syncprotect, symlink guard, and root_files install-once). A consuming repo's .claude/ tree only ever drifts stale because the deploy mechanism was never re-invoked after the source store changed -- regeneration is deliberately pull-only (context/patterns/regeneration-is-manual-only.md) with one narrow automated exception (skill-orchestrate's inter-cycle checkpoint). Do not assume a stale-deploy report implies a copy-engine bug without first checking whether a resync ran at all.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["extension-loader", "deploy-headless", "stale-deploy", "resync_all", "regeneration-is-manual-only"]
-    },
-    {
-      "content": "state.lua's mark_loaded already stamps an absolute source_dir path into every consuming repo's .claude-extensions.json per extension (identical machine-local path across repos). This is the ready-made building block for a cheap staleness check: pair it with a sibling source_git_head field (git log -1 --format=%H -- <source_dir>, ~2ms per extension) and compare in a command-gate-in.sh-level preflight, rather than relying on verify-deploy.sh (563 lines, 11 content-diffing gates, only invoked from skill-orchestrate's inter-cycle checkpoint -- not preflight-cheap and has the same deploy-required-to-fix-deploy bootstrap gap as any other deployed detector).",
-      "category": "PATTERN",
-      "source_artifact": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["source_dir", "staleness-detection", "command-gate-in", "verify-deploy", "git-revision-stamp"]
-    }
-  ],
+      "content": "When adding a check to a script that is SOURCED rather than executed (e.g. command-gate-in.sh, CHECKPOINT 1 in the agent-system), the new work must be invoked as `bash <script> || true` in a subprocess, never sourced, and the callee must exit 0 on every path. Sourcing propagates stray `exit`, `set -e`, and non-zero returns into the caller's shell, turning an advisory check into an abort of every command. Pair this with an existence guard on the callee, because a stale deploy tree may not contain the newly added script at all -- the same chicken-and-egg gap any deployed-artifact self-diagnostic has.",
+    "category": "PATTERN",
+    "source_artifact": "specs/018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md",
+    "confidence": 0.85,
+    "suggested_keywords": ["sourced-script", "command-gate-in", "non-blocking-check", "preflight", "bootstrap-gap", "exit-code-propagation"]
+  }],
   "modified_files": [
-    "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md"
+    "specs/018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md",
+    "specs/018_detect_stale_claude_deploy_trees/.orchestrator-handoff.json"
   ],
   "errors": []
 }
