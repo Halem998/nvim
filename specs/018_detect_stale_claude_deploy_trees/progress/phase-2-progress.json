@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Standalone check-deploy-freshness.sh (bash read side)",
+  "started_at": "2026-08-17T00:15:00Z",
+  "last_updated": "2026-08-17T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create check-deploy-freshness.sh with documented header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-deploy-freshness.sh"]},
+    {"id": 2, "description": "Accept optional repo root arg, read .claude-extensions.json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-deploy-freshness.sh"]},
+    {"id": 3, "description": "Skip silently on missing/empty source_dir or source_git_head, non-git or absent source_dir", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-deploy-freshness.sh"]},
+    {"id": 4, "description": "Recompute path-scoped revision and compare; skip if empty", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-deploy-freshness.sh"]},
+    {"id": 5, "description": "WARN to stderr on mismatch with remedy pointer; no summary line when nothing stale", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-deploy-freshness.sh"]},
+    {"id": 6, "description": "Never write files/mutate state; explicit exit 0 on every path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-deploy-freshness.sh"]},
+    {"id": 7, "description": "Register script in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 8, "description": "No task-number references in script/manifest", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

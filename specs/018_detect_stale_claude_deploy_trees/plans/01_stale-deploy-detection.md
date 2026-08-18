@@ -156,34 +156,34 @@ rather than proceeding on the assumption.
 
 ---
 
-### Phase 2: Standalone check-deploy-freshness.sh (bash read side) [NOT STARTED]
+### Phase 2: Standalone check-deploy-freshness.sh (bash read side) [COMPLETED]
 
 **Goal**: A small, self-contained, always-exit-0 script that reads a repo's
 `.claude-extensions.json` and prints one WARN line per demonstrably stale extension, naming the
 regeneration remedy -- and prints nothing at all in every other case.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/check-deploy-freshness.sh` with a header
+- [x] Create `agent-system/extensions/core/scripts/check-deploy-freshness.sh` with a header
       documenting: its always-non-blocking contract, its always-exit-0 guarantee, that it must be
       run with `bash` (never sourced), and the silent-skip cases it deliberately treats as
       "cannot verify."
-- [ ] Accept an optional repo root argument, defaulting to the current directory; read
+- [x] Accept an optional repo root argument, defaulting to the current directory; read
       `<root>/.claude-extensions.json`. Missing or unparseable file: exit 0 silently.
-- [ ] For each entry under `.extensions`, skip silently unless BOTH `source_dir` and
+- [x] For each entry under `.extensions`, skip silently unless BOTH `source_dir` and
       `source_git_head` are present and non-empty. Skip silently when `source_dir` does not exist
       on disk, is not inside a git repository, or when `git` is unavailable.
-- [ ] For surviving entries, recompute the path-scoped revision exactly as the Lua write side does
+- [x] For surviving entries, recompute the path-scoped revision exactly as the Lua write side does
       (repo root resolution, then `git log -1 --format=%H -- <source_dir>`) and compare against the
       recorded value. Skip silently if the recomputed value is empty.
-- [ ] On mismatch, print one WARN line to stderr per stale extension naming the extension and the
+- [x] On mismatch, print one WARN line to stderr per stale extension naming the extension and the
       remedy (`bash .claude/scripts/deploy-headless.sh`, or the picker's `[Reload All]`), plus a
       pointer to `verify-deploy.sh` for per-file detail. Do not print a summary line when nothing
       is stale.
-- [ ] Ensure the script never writes files, never mutates state, and ends with an explicit
+- [x] Ensure the script never writes files, never mutates state, and ends with an explicit
       `exit 0` on every path.
-- [ ] Register the new script in `agent-system/extensions/core/manifest.json` under
+- [x] Register the new script in `agent-system/extensions/core/manifest.json` under
       `provides.scripts`, matching the existing entry format.
-- [ ] Add no task numbers to the script, its header, or the manifest (deliverable rule).
+- [x] Add no task numbers to the script, its header, or the manifest (deliverable rule).
 
 **Timing**: 1 hour
 
