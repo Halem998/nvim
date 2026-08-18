@@ -602,7 +602,7 @@ tree), asserting the exit-code gate exactly:
 
 ---
 
-### Phase 7: Normative guardrails record — gate catalogue, rejected direction, and the two-clause distinction [NOT STARTED]
+### Phase 7: Normative guardrails record — gate catalogue, rejected direction, and the two-clause distinction [COMPLETED]
 
 **Goal**: `batch-orchestration-guardrails.md` states the ordering-constraint-not-exclusion
 principle normatively, records Direction 3 as considered-and-already-satisfied so it is not
@@ -610,23 +610,32 @@ re-proposed, and distinguishes the eligibility rule's two independent clauses so
 does not re-derive it from scratch.
 
 **Tasks**:
-- [ ] Add a short subsection cataloguing the post-fix admission gates and, for each, whether it is
+- [x] Add a short subsection cataloguing the post-fix admission gates and, for each, whether it is
       an ORDERING CONSTRAINT or a genuine EXCLUSION, with the reason. `deploy_checkpoint` remains
       a deliberate, correct exclusion (a failed deploy genuinely requires human remediation);
       `self_modifying` is now an ordering constraint resolved by the designated-candidate
       tie-breaker; `session_active` and `file_scope_collision` retain their existing
-      defer-direction semantics.
-- [ ] Add a "considered and found already satisfied" note to the **Inter-Cycle Redeploy
+      defer-direction semantics. *(completed: new "Ordering Constraint vs. Exclusion" section
+      with a Gate Catalogue table, added right after the existing Blocking vs. Advisory
+      Classification Table)*
+- [x] Add a "considered and found already satisfied" note to the **Inter-Cycle Redeploy
       Checkpoint** subsection recording why redeploy-boundary serialization was rejected: dispatch
       is cycle-synchronous, every dispatched task's scoped commit lands at Stage MT-4 before the
       Stage MT-3 redeploy checkpoint evaluates, and there is no cross-cycle concurrency — so
       "hold the redeploy until in-flight siblings reach a cycle boundary" is already what happens
-      by construction. Explicitly state that no follow-up task is owed.
-- [ ] Add one sentence to **The Same-Cycle Narrowing and Its Hazard Accounting** distinguishing the
+      by construction. Explicitly state that no follow-up task is owed. *(completed)*
+- [x] Add one sentence to **The Same-Cycle Narrowing and Its Hazard Accounting** distinguishing the
       dependency-terminal-state clause (which no change here touches, and on which the surviving
       "structurally impossible" claims rest) from the former in-flight-status clause (removed).
-- [ ] Re-read the four dependency-terminal-state claim sites in this file and confirm each remains
-      accurate as written; correct any that turn out to conflate the two clauses.
+      *(completed: a fuller paragraph rather than one sentence, since the distinction needed to
+      name both clauses explicitly to be checkable by a future auditor)*
+- [x] Re-read the four dependency-terminal-state claim sites in this file and confirm each remains
+      accurate as written; correct any that turn out to conflate the two clauses. *(completed: all
+      4 sites re-read (Classification Table row, the "Structurally impossible, on a premise that
+      has since changed" bootstrapping-risk sub-point, the A1 resolution paragraph, and the
+      Admission-Time vs. Mid-Flight "Unmet predecessor" bullet) — none conflates the two clauses;
+      each correctly cites only the dependency-graph-terminal-state guarantee, unaffected by the
+      removed in-flight-status clause; no edit was owed)*
 
 **Timing**: 1 hour
 

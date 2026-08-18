@@ -93,6 +93,36 @@ never demotes a check to advisory.
 | Heuristic drift-percentage signal | ADVISORY | The signal is an estimate from a fork's plan inspection, not a hard fact — fails condition 1's structural-fact requirement in spirit even though it reads on-disk state, because the *derived* percentage is inherently approximate |
 | Absent completion-marker verification signal (`plan_markers_verified` missing or false) | ADVISORY | Per the handoff schema's own documented behavior, this warns but does not block the next lifecycle phase — the condition is logged, not gated, because it is deliberately designed as a non-blocking signal |
 
+## Ordering Constraint vs. Exclusion: The Normative Principle
+
+Orthogonal to the Blocking vs. Advisory axis above (which governs whether a guardrail refuses
+dispatch AT ALL) is a second axis: when a guardrail DOES refuse, does that refusal resolve on its
+own as the system keeps running (an ORDERING CONSTRAINT — defer to a later wave/cycle/invocation)
+or does it persist for the lifetime of the current run with no mechanism that clears it (a genuine
+EXCLUSION)? **The normative principle this repository holds every admission gate to: a guardrail
+should degrade to an ORDERING CONSTRAINT whenever possible, and fall back to a genuine EXCLUSION
+only when the exclusion itself is a deliberate, justified safety property — never as an
+accidental consequence of a gate's implementation shape.** An exclusion that exists only because
+nothing was built to clear it is a defect, not a safety margin; the eligibility-status-gating and
+self-modification-deadlock defects this repository has fixed were exactly this shape.
+
+### Gate Catalogue (post-fix)
+
+| Gate | `defer_reason` | Classification | Why |
+|---|---|---|---|
+| `self_modifying` | `self_modifying` | ORDERING CONSTRAINT | The designated-candidate tie-breaker inside `orchestrate-batch-admit.sh` admits exactly one self-modifying candidate — the lowest task number — every cycle; N co-dispatched self-modifying candidates converge to full dispatch in at most N cycles by construction (see "Self-Modification Hazard" below and `docs/architecture/batch-admit-schema.md`'s tie-breaker documentation). Formerly a de facto EXCLUSION for any 2+ self-modifying co-dispatch, since nothing broke the tie and the guard's only "remedy" was re-running affected tasks in isolation — this is the fixed defect the normative principle above names. |
+| `file_scope_collision`, `collision_scope: "in_batch"` | `file_scope_collision` | ORDERING CONSTRAINT | Self-clears once the colliding in-batch task leaves `eligible_tasks` by terminating or failing — see "The Same-Cycle Narrowing and Its Hazard Accounting" above for the two-clause distinction this claim rests on. |
+| `file_scope_collision`, `collision_scope: "cross_batch"`, colliding task carries execution evidence | `file_scope_collision` | ORDERING CONSTRAINT (does not self-clear WITHIN this invocation, but is not a permanent whole-invocation exclusion either — a later invocation re-evaluates once the colliding task's status independently changes) | A human resolves batch composition; the candidate is excluded from THIS run only, never permanently barred from ever running. |
+| `file_scope_collision`, `collision_scope: "cross_batch"`, colliding task provably idle | (admits, with `idle_overlap_advisory`) | Not a defer at all (NARROWED in v5) | No second session to concurrently edit anything, so nothing is lost by admitting; the suppressed overlap is surfaced loudly rather than silently — see `docs/architecture/batch-admit-schema.md`'s Version History. |
+| `session_active` | `session_active` | ORDERING CONSTRAINT | Clears once the contending session releases or its registry entry goes stale — the same convergence `file_scope_collision` already relies on. |
+| Held lock (lock-acquisition-time, `task-lock.sh acquire` exit 1) | n/a (not an `orchestrate-batch-admit.sh` verdict; a Stage MT-4 dispatch-time refusal) | ORDERING CONSTRAINT | A fresh foreign lock defers the task out of THIS cycle's dispatch batch only (never added to `failed_tasks`); a stale lock is reclaimed with a warning, not refused at all. |
+| `deploy_checkpoint` (inter-cycle redeploy checkpoint failure, branches (a)/(b)) | n/a (a whole-remaining-invocation defer, not a per-task `orchestrate-batch-admit.sh` verdict) | GENUINE, DELIBERATE EXCLUSION | The one gate this repository does NOT narrow to an ordering constraint, and this is correct: a failed or unverifiable redeploy of orchestrator machinery itself genuinely requires human remediation before ANY further dispatch in this invocation can be trusted. Unlike `self_modifying`'s former deadlock, there is no self-clearing condition to wait for — the system cannot safely make forward progress on unverified machinery, so continuing to defer-and-retry would just repeat the same failure every cycle at real cost. This exclusion is deliberate infra-safety, not an accidental byproduct of an under-built convergence mechanism. |
+
+`defer_reason` values are echoed verbatim from what `orchestrate-batch-admit.sh` actually emits
+(per that script's own header and `docs/architecture/batch-admit-schema.md`'s schema) — a
+catalogue naming a gate the script does not emit would be a new false premise of exactly the kind
+this file exists to prevent.
+
 ## Self-Modification Hazard: The Fourth Admission Dimension
 
 A candidate task whose declared `file_scope` names a file that is itself part of the orchestrator
@@ -231,6 +261,21 @@ changed and why; hazard 3 is now retained in the same style, split into its reti
 parts rather than being deleted either.
 
 ### The Same-Cycle Narrowing and Its Hazard Accounting
+
+**The two-clause distinction this section's "structurally impossible" claims rest on**: Stage
+MT-3 step 3's eligibility rule historically carried two INDEPENDENT clauses — (1) all
+predecessors in the dependency graph are terminal (the DEPENDENCY-TERMINAL-STATE clause), and (2)
+status is not `{researching, planning}` (the former IN-FLIGHT-STATUS clause). Every
+"structurally impossible" claim in this section — the edge-connected-pair-can-never-co-occupy
+argument the paragraph immediately below relies on, and the A1 resolution's dead-code argument
+further down — rests SOLELY on clause (1), which no change in this repository's eligibility-gate
+work has ever touched. Clause (2) has since been REMOVED entirely (eligibility is no longer
+status-gated on an in-flight string at all — see
+`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 3), and its removal falsifies none of the
+claims here, because none of them ever depended on it. A future reader auditing this section
+after any eligibility-rule change should re-derive which of the two clauses (if either survives
+under a new name) a given claim actually rests on, rather than assuming "the eligibility rule"
+is a single atomic fact.
 
 The self-modification defer originally excluded a candidate from the WHOLE invocation whenever
 `--invocation-count` exceeded 1 — never merely from the wave/cycle it was actually co-dispatched
@@ -377,6 +422,24 @@ scope at Stage MT-4 step 5.5 of `skill-orchestrate/SKILL.md`.
   confirmation-gates design (see Divergence from External Practice above): the operator cannot
   know in advance which cycle will touch a critical path, so an opt-in flag either fires on every
   invocation (equivalent to the first rejected alternative) or is never set when it matters.
+
+**Considered and found ALREADY SATISFIED — redeploy-boundary serialization ("Direction 3")**: a
+proposal to explicitly HOLD the redeploy checkpoint until every in-flight sibling task reaches a
+cycle boundary, so no dispatched sibling could ever run against a script mid-swap. This is
+distinct from "rejected" above — it is not a bad idea, it targets a hazard that provably cannot
+occur under this system's existing architecture, so building it would add complexity with no
+behavioral effect. Dispatch is CYCLE-SYNCHRONOUS by construction: the Stage MT-4 BATCHING RULE
+requires every cycle's Agent tool calls to be issued in a single orchestrator message and their
+handoffs read only after ALL of them return (Stage MT-3's "COMPLETION SEQUENCING" note), and
+every dispatched task's own scoped commit (Stage MT-4 step 5.5) lands, unconditionally, BEFORE
+the Stage MT-3 step 7 redeploy checkpoint for that same cycle ever evaluates (see "Sequencing"
+above). There is no cross-cycle concurrency for the checkpoint to race against: by the time a
+redeploy fires, every sibling dispatched in that cycle has already returned and committed, and no
+sibling from a FUTURE cycle has been dispatched yet. "Hold the redeploy until in-flight siblings
+reach a cycle boundary" is therefore already what happens, by construction, on every cycle — there
+is no window in which the redeploy could run while a sibling remains mid-dispatch. **No follow-up
+task is owed.** This finding is recorded here specifically so a later pass does not re-propose
+Direction 3 without first re-deriving this cycle-synchronicity argument.
 
 **Failure contract**: the two gates are asymmetric and are evaluated in three branches.
 
