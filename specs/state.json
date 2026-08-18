@@ -5,17 +5,25 @@
     {
       "project_number": 65,
       "project_name": "fix_mint_dispatch_seq_persisted_counter",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "essential-refactor",
       "description": "Fix skill_orchestrate_mint_dispatch_seq to increment from the persisted counter. The helper in scripts/skill-base.sh computes dispatch_seq_counter=$((dispatch_seq_counter + 1)) from an ambient shell variable rather than from the value it reads back out of the loop guard file, then persists that result. Any caller that does not hold a single long-lived shell across the whole orchestration loop therefore re-mints the same value on every dispatch: in a fresh shell the variable is unset, so it evaluates to 0 + 1 = 1 every time. Observed during an /orchestrate run where each Bash tool call ran in its own shell -- the second dispatch re-returned dispatch_seq=1 despite the loop guard already carrying dispatch_seq_counter=1. Impact: dispatch_seq is the content-based discriminator the Stage 5 identity gate relies on to tell a legitimate current-dispatch handoff apart from a still-live predecessor's late write (mtime alone is structurally insufficient -- see context/patterns/dispatch-report-not-termination.md). A repeated value defeats that gate in both directions: a stale predecessor handoff carrying seq=1 would pass as the current dispatch's own report, and the mismatch branch could fire against a legitimate handoff. Likely fix: read the counter from the loop guard file inside the function (jq -r '(.dispatch_seq_counter // 0) + 1') rather than from the ambient variable, matching the read-modify-write idiom the multi-task engine already uses at Stage MT-4. Check whether skill-orchestrate-hard/SKILL.md's Stage 2 shares the same helper and is affected identically, and whether test-handoff-dispatch-identity.sh covers the fresh-shell case. SECOND INDEPENDENT CONFIRMATION (Philosophy/Papers/PossibleWorlds repo, base-mode /orchestrate of a formal task, 3 cycles): reproduced exactly as described above, in a different repository and a different task type. Cycle 1 (research) minted dispatch_seq=1 correctly; cycle 2 (plan) re-minted dispatch_seq=1 from a fresh shell while the loop guard already carried dispatch_seq_counter=1. The orchestrator worked around it by seeding dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' \"$loop_guard_file\") immediately before each skill_orchestrate_mint_dispatch_seq call, which produced correct seqs 2 and 3 for the remaining cycles; both later handoffs then passed the Stage 5 identity gate cleanly. This confirms the defect is not environment-specific and that it fires for ANY orchestrator driving its cycles through separate Bash tool invocations rather than one long-lived shell -- which is the normal execution shape for the base-mode engine, not an edge case. The caller-side seeding above is a workaround only and was NOT committed anywhere; the durable fix remains the read-inside-the-function change described above.",
       "created": "2026-08-17T20:25:32Z",
-      "last_updated": "2026-08-17T20:25:32Z",
+      "last_updated": "2026-08-18T01:38:51Z",
       "file_scope": [
         "agent-system/extensions/core/scripts/skill-base.sh",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
         "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh"
+      ],
+      "session_id": "sess_1787016315_a436d0_65",
+      "artifacts": [
+        {
+          "path": "specs/065_fix_mint_dispatch_seq_persisted_counter/reports/01_mint-dispatch-seq-fresh-shell-fix.md",
+          "type": "report",
+          "summary": "Root-cause confirmation, recommended fix, and test-coverage gap analysis for the dispatch_seq minting defect."
+        }
       ]
     },
     {
@@ -159,7 +167,7 @@
       "project_number": 17,
       "project_name": "fix_return_meta_lifecycle_ordering",
       "title": "Fix .return-meta.json lifecycle ordering that makes the gate-out body unreachable",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "essential-refactor",
       "dependencies": [
@@ -190,15 +198,22 @@
       ],
       "description": "command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.\n\nVERIFIED MECHANISM (do not re-derive): skill-base.sh's skill_cleanup (lines 618-625) rm -f's .postflight-pending, .postflight-loop-guard, AND .return-meta.json. It is the single shared implementation invoked from Stage 9 of context/patterns/skill-postflight-flow.md, used by NINE skills: skill-implementer, skill-implementer-hard, skill-planner, skill-planner-hard, skill-reviser, skill-spawn, skill-team-implement, skill-team-plan, skill-team-research. command-gate-out.sh lines 69-73 then read \"${task_dir}/.return-meta.json\"; on absence it prints \"WARNING: .return-meta.json not found ... skill may have failed silently\" and exit 0. FIVE commands run it: implement.md, orchestrate.md, plan.md, research.md, revise.md.\n\nBLAST RADIUS IS LARGER THAN THE WARNING (measured, not inherited): the exit 0 at line 73 sits ABOVE everything else in the 134-line script. Code rendered unreachable in practice includes (a) the defensive status correction that repairs state.json when a skill reported completion but state is stale, and (b) the skill_validate_task_artifacts call at line 133, the last line, which is the artifact validation and --fix auto-repair path. One missing file disables both correctness mechanisms on all five commands. A real silent failure and an ordinary success emit the identical warning, so the signal carries no information.\n\nCONSEQUENCE FOR SIBLING TASK 13: 13's acceptance criterion (a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count) cannot be demonstrated until this ordering defect is fixed, because the path it instruments never executes. 13 is sequenced after this task; both also edit the same two files.\n\nWORK: decide ONE direction and implement it. (a) run the command-level gate-out before skill cleanup; (b) have skill_cleanup preserve .return-meta.json and make gate-out delete it after consuming it; (c) have skill_cleanup archive the metadata to a location gate-out knows about; (d) if the skill-internal postflight genuinely subsumes both defensive correction and artifact validation, delete the dead reads and replace the warning with a truthful statement. Required regardless of direction: explicitly decide whether defensive status correction is still needed given skill-internal postflight and record the reasoning; and fix the warning text so a genuine silent failure is distinguishable from ordinary success.\n\nUNIFORMITY REQUIREMENT: whatever is chosen must hold across all nine skills and all five commands. A fix that repairs skill-reviser and /revise alone is not acceptable.\n\nACCEPTANCE: a normal successful run of each of the five commands emits no false silent-failure warning; a genuinely failed skill run emits a distinguishable warning; and the defensive-correction path is demonstrated to execute, or is documented as deliberately removed with stated reasoning.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T16:02:07Z",
-      "last_updated": "2026-08-17T17:34:09Z",
-      "artifacts": [],
-      "effort": "4h"
+      "last_updated": "2026-08-18T01:38:40Z",
+      "artifacts": [
+        {
+          "path": "specs/017_fix_return_meta_lifecycle_ordering/reports/01_return-meta-lifecycle-ordering.md",
+          "type": "report",
+          "summary": "Confirms the cleanup-before-gate-out ordering defect, corrects the framing, and recommends direction (b) refined."
+        }
+      ],
+      "effort": "4h",
+      "session_id": "sess_1787016315_a436d0_17"
     },
     {
       "project_number": 18,
       "project_name": "detect_stale_claude_deploy_trees",
       "title": "Detect stale .claude/ deploy trees and root-cause the silent staleness",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "essential-refactor",
       "dependencies": [],
@@ -211,9 +226,16 @@
       ],
       "description": "A repo can carry an arbitrarily stale .claude/ deploy with no signal, so a user hits a bug fixed upstream long ago with no indication that regeneration is the remedy. Discovered when /revise failed at GATE IN in a consuming repo on a task that had never produced an artifact.\n\nWHAT IS NOT THE DEFECT (ruled out, do not re-litigate): resolve_task_dir is not broken in source. agent-system/extensions/core/scripts/task-lock.sh's resolve_task_dir (line 249) takes a create_mode parameter and mkdir -p's when it is \"create\"; cmd_acquire (line 607) passes \"create\". The failure exists only in the deployed copy.\n\nMEASURED STALENESS EVIDENCE (live, this investigation): the consuming repo's .claude/scripts/task-lock.sh is 676 lines against a 1660-line source, with a deployed resolve_task_dir at line 98 taking no create_mode. Its .claude/scripts/ holds 94 scripts against core's 72 in source. Neither verify-deploy.sh nor deploy-headless.sh is present in the deployed tree at all. This is despite a large sync commit landing recently.\n\nBOOTSTRAP HYPOTHESIS RULED OUT: deploy-headless.sh's header documents a failure mode where a repo deployed by the retired glob-based engine has no \"core\" entry in .claude-extensions.json, so manager.resync_all silently deploys nothing. That is NOT this case. The repo's .claude-extensions.json lists core with status \"active\" and 294 recorded installed_files, including .claude/scripts/task-lock.sh. The loader believes it owns and has installed the very file that is stale. Root cause is unknown and is a genuine investigation, not a known-issue application.\n\nWORK, in order. (1) Determine WHY the deploy is stale despite core being active and the file being listed in installed_files. Hypotheses to test, not assume: the copy step skips existing destination files instead of overwriting; installed_files is treated as authoritative and short-circuits re-copy; resync only re-copies files whose manifest entry changed; or a later partial operation reverted the tree. If the cause is a loader defect, report and fix it as such. (2) Then design and implement staleness DETECTION on a path users actually hit. Note that verify-deploy.sh already performs source-vs-deploy comparison but is not itself deployed and is invoked only from skill-orchestrate's inter-cycle redeploy checkpoint, so no ordinary command surfaces its result. Directions to evaluate, do NOT pre-commit: stamp a source revision or content hash into the deployed tree at load time and have command gate scripts compare against the source store, warning on drift; extend /refresh or a doctor check to diff deployed script versions against source; or have the loader record a per-file hash manifest a preflight can validate cheaply. Whatever is chosen must be cheap enough for a normal command preflight.\n\nINTERACTION WITH SIBLING TASK 9: 9's evidence (4 orphan files present in .claude/ but absent from a clean scratch regenerate) was measured against this same stale deploy tree, so it may be an artifact of the staleness rather than a genuine one-directional-parity gap. 9 is sequenced after this task and must re-measure against a freshly regenerated tree. Both tasks also edit verify-deploy.sh.\n\nACCEPTANCE: the root cause is identified and stated, with the loader defect fixed if that is the cause; a user running an ordinary command against a stale deploy receives an actionable warning naming regeneration as the remedy; demonstrated in both directions, where a stale tree warns and a fresh tree does not.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/** and lua/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T16:02:07Z",
-      "last_updated": "2026-08-10T16:02:07Z",
-      "artifacts": [],
-      "effort": "5h"
+      "last_updated": "2026-08-18T01:38:46Z",
+      "artifacts": [
+        {
+          "path": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
+          "type": "report",
+          "summary": "Root cause + detection design for silently stale .claude/ deploy trees."
+        }
+      ],
+      "effort": "5h",
+      "session_id": "sess_1787016315_a436d0_18"
     },
     {
       "project_number": 20,

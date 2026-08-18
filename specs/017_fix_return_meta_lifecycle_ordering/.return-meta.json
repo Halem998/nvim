@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/017_fix_return_meta_lifecycle_ordering/reports/01_return-meta-lifecycle-ordering.md",
+      "summary": "Confirms the skill_cleanup-deletes-before-gate-out-reads mechanism, corrects the task framing (orchestrate.md is not actually broken by it), discovers a larger blast radius (research.md/plan.md CHECKPOINT 3 commit stages also read the file, and git add fails atomically when it is missing), and recommends direction (b) refined: skill_cleanup stops deleting .return-meta.json, command-gate-out.sh keeps reading/correcting/validating but does not delete it, and each command deletes it as the true last step of its own postflight sequence."
+    }
+  ],
+  "next_steps": "Run /plan 17 to create an implementation plan from this report's per-file change list (skill-base.sh skill_cleanup, skill-spawn's extra rm -f, command-gate-out.sh's warning text, and the five per-command deletion sites).",
+  "metadata": {
+    "session_id": "sess_1787016315_a436d0_17",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "git add with multiple pathspecs fails atomically (exit 128, 'did not match any files') and stages NOTHING at all -- not even paths that do exist -- if any single pathspec doesn't match a file. Verified with: git add exists.txt nonexistent.txt. Relevant whenever a command-level git add lists a file that an earlier cleanup step may already have deleted: the failure silently drops every other path in the same call, not just the missing one.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/017_fix_return_meta_lifecycle_ordering/reports/01_return-meta-lifecycle-ordering.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git add", "atomic pathspec failure", "exit 128", "git-commit-scoped", "postflight ordering"]
+    },
+    {
+      "content": "When a shared skill-internal postflight cleanup function (e.g. skill_cleanup) deletes a marker/metadata file before returning control to a calling command, any command-level stage that reads the SAME file after DELEGATE returns is structurally unreachable -- not just the immediately-obvious next consumer (e.g. a defensive-correction script), but ALSO any later command-level git-commit stage that adds/reads that file. Auditing 'who deletes this file' in isolation misses this; the correct audit is 'trace every reader of this file across the WHOLE command sequence, not just the first one after the skill returns'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/017_fix_return_meta_lifecycle_ordering/reports/01_return-meta-lifecycle-ordering.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill-postflight-flow", "return-meta.json", "cleanup ordering", "command-gate-out", "blast radius"]
+    }
+  ]
+}
