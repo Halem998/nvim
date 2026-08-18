@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 3,
+  "summary": "Confirmed the defect: skill_orchestrate_mint_dispatch_seq (scripts/skill-base.sh) increments an ambient shell variable rather than reading dispatch_seq_counter from the loop guard file, so a fresh-shell call (the normal per-Bash-tool-call execution shape) always re-mints 1. Fix: adopt the jq -r '(.dispatch_seq_counter // 0) + 1' idiom already used correctly at Stage MT-4. Both engines share one function via an identical named-shim, so one fix covers both. No existing test exercises the mint function itself.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/065_fix_mint_dispatch_seq_persisted_counter/reports/01_mint-dispatch-seq-fresh-shell-fix.md",
+      "summary": "Root-cause confirmation, recommended fix, and test-coverage gap analysis for the dispatch_seq minting defect."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "continuation_path": null,
+  "next_action_hint": "Run /plan 65: fix skill_orchestrate_mint_dispatch_seq in agent-system/extensions/core/scripts/skill-base.sh to read-increment from the loop guard file (jq -r '(.dispatch_seq_counter // 0) + 1'), and add a regression test exercising the mint function under a fresh-shell/fresh-subprocess precondition since none exists today."
+}
