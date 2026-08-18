@@ -11,7 +11,7 @@ next_project_number: 68
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,62,65,66,67 | -- | agent-system, extensions, literature, ... |
+| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,62,65,66 | -- | agent-system, extensions, literature, ... |
 | 2 | 13,42,44 | 17,18,28,31 | agent-system, essential-refactor |
 | 3 | 9,29,53,64 | 18,22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
@@ -48,7 +48,6 @@ next_project_number: 68
 
 ### Orchestration Concurrency
 
-67 [IMPLEMENTING] — Repair two coupled defects in /orchestrate's multi-task admission
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
 
 ### Essential Refactor
@@ -68,12 +67,13 @@ next_project_number: 68
 ## Tasks
 
 ### 67. Make /orchestrate admission gates ordering constraints, not exclusions: unstrand in-flight tasks and end solo-only self-modifying dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
 - **Research**: [067_orchestrate_eligibility_not_status_gated/reports/01_admission-predicate-eligibility-and-self-mod-tiebreak.md]
 - **Plan**: [067_orchestrate_eligibility_not_status_gated/plans/01_admission-gates-as-ordering-constraints.md]
+- **Summary**: [067_orchestrate_eligibility_not_status_gated/summaries/01_admission-gates-as-ordering-constraints-summary.md]
 
 **Description**: Repair two coupled defects in /orchestrate's multi-task admission predicate so that every admission gate degrades to an ORDERING CONSTRAINT and never to a PERMANENT EXCLUSION. Work stream A: make eligibility depend on locks, dependencies[], and file_scope overlap rather than on an in-flight status string, so tasks stranded in researching/planning by a dead prior session are no longer silently skipped forever. Work stream B: give the self-modification gate a deterministic tie-breaker and make it phase-aware, so N self-modifying tasks in one batch run in sequence instead of deadlocking, and so the operator is never told to "run it solo". Both work streams edit the same predicate file (scripts/orchestrate-batch-admit.sh) and the same co-maintenance set, and B supplies the replacement convergence exit condition that A removes -- see COUPLING below for why splitting them is not viable.
 

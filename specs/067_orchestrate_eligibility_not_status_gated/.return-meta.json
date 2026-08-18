@@ -30,22 +30,41 @@
       "category": "PATTERN",
       "source_artifact": "specs/067_orchestrate_eligibility_not_status_gated/summaries/01_admission-gates-as-ordering-constraints-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["schema-versioning", "verdict-shape", "cli-flag", "backward-compatibility", "orchestrate-batch-admit"]
+      "suggested_keywords": [
+        "schema-versioning",
+        "verdict-shape",
+        "cli-flag",
+        "backward-compatibility",
+        "orchestrate-batch-admit"
+      ]
     },
     {
       "content": "In bash scripts under `set -euo pipefail`, a bare `var=$(cmd)` assignment where cmd's exit code is a ROUTINE, EXPECTED non-zero outcome (not an error) silently aborts the whole script before the exit code can ever be captured into a second variable. This bit reconcile-task-status.sh's new task-lock.sh check integration: the fix is `if var=$(cmd); then exit=0; else exit=$?; fi`, which is `-e`-exempt and preserves the real exit code. This exact pattern is already documented and used elsewhere in this codebase (orchestrate-batch-admit.sh, state-write.sh, task-lock.sh, git-commit-scoped.sh) for the same reason -- any new integration of a multi-exit-code CLI contract under set -e should default to this idiom rather than a bare assignment, and should grep for the sibling instances first to match the established style.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/067_orchestrate_eligibility_not_status_gated/summaries/01_admission-gates-as-ordering-constraints-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash", "set-euo-pipefail", "command-substitution", "exit-code-capture", "reconcile-task-status"]
+      "suggested_keywords": [
+        "bash",
+        "set-euo-pipefail",
+        "command-substitution",
+        "exit-code-capture",
+        "reconcile-task-status"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1787010912_c51526",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

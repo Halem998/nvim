@@ -813,7 +813,7 @@
     {
       "project_number": 67,
       "project_name": "orchestrate_eligibility_not_status_gated",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Make /orchestrate admission gates ordering constraints, not exclusions: unstrand in-flight tasks and end solo-only self-modifying dispatch",
@@ -844,10 +844,16 @@
           "path": "specs/067_orchestrate_eligibility_not_status_gated/plans/01_admission-gates-as-ordering-constraints.md",
           "type": "plan",
           "summary": "Seven-phase plan repairing /orchestrate's status-gated eligibility exclusion and the self-modification gate's missing tie-breaker, with every falsified safety argument re-derived in the same phase as its mechanism."
+        },
+        {
+          "path": "specs/067_orchestrate_eligibility_not_status_gated/summaries/01_admission-gates-as-ordering-constraints-summary.md",
+          "type": "summary",
+          "summary": "All 7 phases completed: self-modification tie-breaker and phase-aware gating, wired into both orchestration engines, classifier test-coverage baseline, classifier maps researching/planning to real phase groups, eligibility exclusion removed with all falsified arguments re-derived, lock-aware demotion guard in reconcile-task-status.sh, and the normative guardrails record."
         }
       ],
-      "last_updated": "2026-08-18T00:19:04Z",
-      "session_id": "sess_1787010912_c51526"
+      "last_updated": "2026-08-18T01:00:56Z",
+      "session_id": "sess_1787010912_c51526",
+      "completion_summary": "Repaired both coupled defects in /orchestrate's multi-task admission predicate: the self-modification gate now has a deterministic designated-candidate tie-breaker and phase-aware gating (ending N-self-modifying-task deadlock and the operator 'run it solo' instruction), and eligibility is no longer status-gated on {researching, planning} (tasks stranded by a dead prior session's stale lock are admitted, classified, and dispatched instead of silently skipped forever). Every co-maintained copy and falsified safety argument was re-derived in the same phase as its mechanism; the classifier suite gained fixtures demonstrated RED against the pre-fix classifier and GREEN post-fix; a genuine regression this change caused in an existing fixture (test-conflict-predicate.sh) was found and fixed in the same phase."
     }
   ],
   "completed_projects": [],
