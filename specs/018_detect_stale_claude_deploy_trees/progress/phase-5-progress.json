@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "End-to-end acceptance demonstration, both directions",
+  "started_at": "2026-08-18T03:40:00Z",
+  "last_updated": "2026-08-18T04:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Regenerate this repo's deployed tree from source", "status": "done", "files_touched": []},
+    {"id": 2, "description": "FRESH direction: gate-in against a real non-terminal task, no warning", "status": "done", "files_touched": []},
+    {"id": 3, "description": "STALE direction: scratch clone, rewritten source_git_head, gate-in shows WARN", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm warning is non-blocking end-to-end", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Measure and record added preflight wall time", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record both captured outputs verbatim in the summary with root cause", "status": "done", "files_touched": ["specs/018_detect_stale_claude_deploy_trees/summaries/01_stale-deploy-detection-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": [
+    "deploy-headless.sh (default, non-destructive mode) resynced 6 extensions in 1.834s real time; .claude-extensions.json afterward carries a distinct 40-hex source_git_head for every extension (email, core, memory, nvim, literature, nix).",
+    "FRESH: sourced gate_in against task 20 (not_started) in this repo post-deploy -- output was exactly '[IMPLEMENT] Task 20: fix_todo_metrics_sync_precommit_phantom_paths', no WARN line, return code 0.",
+    "STALE: built a scratch target repo via mktemp -d, deployed core into it (1 extension bootstrapped), then rewrote .claude-extensions.json's core.source_git_head to an older real commit (10 commits back from HEAD) via jq. Re-sourcing gate_in there (task 20, copied specs/state.json) produced the header line plus a 3-line WARN naming 'core' and both remedies (deploy-headless.sh, verify-deploy.sh --findings), return code still 0. Scratch dir removed afterward; this repo's own .claude-extensions.json/HEAD were never touched by the scratch test.",
+    "Non-blocking confirmed: both directions returned 0 from gate_in; the STALE run's WARN appeared on the same stream but did not alter control flow.",
+    "Timing: isolated check-deploy-freshness.sh invocation against this repo's 6-extension .claude-extensions.json averaged ~131ms across 3 runs (~22ms/extension) -- higher than the Phase 1 research's raw 0.002-0.004s-per-git-log estimate because each extension entry costs 3 jq subprocess forks plus 2 git subprocess forks, not git alone. Full gate_in-in-a-subshell timing (includes task-lock acquire/release overhead) averaged ~488ms with the checker present vs. ~433ms with it hidden, a ~55ms delta consistent with the isolated measurement once subshell/lock noise is accounted for."
+  ]
+}

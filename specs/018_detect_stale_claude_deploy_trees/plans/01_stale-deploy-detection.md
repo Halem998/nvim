@@ -310,29 +310,32 @@ without changing any admission decision, exit code, or exported variable.
 
 ---
 
-### Phase 5: End-to-end acceptance demonstration, both directions [NOT STARTED]
+### Phase 5: End-to-end acceptance demonstration, both directions [COMPLETED]
 
 **Goal**: Evidence, captured in the implementation summary, that an ordinary command against a
 stale deploy warns and against a fresh deploy does not -- through the real gate-in path, not a
 test fixture.
 
 **Tasks**:
-- [ ] Regenerate this repo's deployed tree from source
+- [x] Regenerate this repo's deployed tree from source
       (`bash agent-system/extensions/core/scripts/deploy-headless.sh`) so `.claude/` carries the
       new checker and `.claude-extensions.json` carries `source_git_head` for every extension.
-- [ ] FRESH direction: run an ordinary command's gate-in against a real non-terminal task and
-      capture the output -- no freshness warning appears. Release any lock acquired.
-- [ ] STALE direction: in a scratch clone or a temp copy of the consuming-repo layout, deploy,
+      *(completed: 6 extensions resynced in 1.8s, all 6 carry a 40-hex source_git_head)*
+- [x] FRESH direction: run an ordinary command's gate-in against a real non-terminal task and
+      capture the output -- no freshness warning appears. Release any lock acquired. *(completed)*
+- [x] STALE direction: in a scratch clone or a temp copy of the consuming-repo layout, deploy,
       then advance the source store's committed revision for one extension (or rewrite that
       entry's recorded `source_git_head` to an older real commit), re-run gate-in, and capture the
-      WARN naming that extension and the regeneration remedy.
-- [ ] Confirm the warning is non-blocking end-to-end: the command proceeds normally with the
-      warning present.
-- [ ] Measure and record the added preflight wall time across all active extensions (compare
-      gate-in timing with and without the check).
-- [ ] Record both captured outputs verbatim in the implementation summary as the acceptance
+      WARN naming that extension and the regeneration remedy. *(completed: scratch temp dir,
+      core's recorded source_git_head rewritten to an older real commit)*
+- [x] Confirm the warning is non-blocking end-to-end: the command proceeds normally with the
+      warning present. *(completed: gate_in still returned 0 with the WARN present)*
+- [x] Measure and record the added preflight wall time across all active extensions (compare
+      gate-in timing with and without the check). *(completed: ~131ms for 6 extensions run
+      standalone, i.e. ~22ms/extension; see summary for full numbers)*
+- [x] Record both captured outputs verbatim in the implementation summary as the acceptance
       evidence, together with the stated root cause (structural pull-only regeneration; no loader
-      defect).
+      defect). *(completed)*
 
 **Timing**: 0.75 hours
 
