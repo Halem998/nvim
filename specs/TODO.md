@@ -60,7 +60,7 @@ next_project_number: 68
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 65 [PLANNED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
-44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+44 [RESEARCHED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 
 ## Tasks
@@ -502,10 +502,11 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 44. Slim commands/task.md, the largest per-invocation context contributor
 - **Effort**: 2-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 17, Task 28, Task 41, Task 49
+- **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 
 **Description**: LOWER PRIORITY (per-invocation cost, not per-session). `commands/task.md` measures 37,465 bytes (~9.4k tokens) loaded on every `/task` invocation, plus ~2.8k tokens of imports it pulls in — the largest single per-invocation context contributor found by the context-loading audit. Slim the command body by moving reference material (long option tables, worked examples, edge-case narratives) into lazily-loaded context files under the core extension's context tree, keeping the command body to the decision logic and dispatch instructions an invocation actually needs. Preserve behavior: every mode (--recover, --expand, --sync, --abandon, multi-task creation) must remain fully specified — either inline or via an explicit pointer the executing agent is instructed to follow. Measure before/after bytes and record them in the implementation summary. CONSTRAINTS: all edits target agent-system/extensions/core/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**; do not change command behavior, only where its prose lives.
 

@@ -1,0 +1,9 @@
+{
+  "dispatch_seq": 10,
+  "task_number": 44,
+  "phase": "research",
+  "status": "researched",
+  "session_id": "sess_1787016315_a436d0_44",
+  "next_action": "Run /plan 44 to create implementation plan",
+  "summary": "Research complete. Recommends whole-mode extraction (Recover, Expand, Sync, Review, Abandon -> separate context/patterns files with imperative READ pointers at Mode Detection) plus extraction of Create Task Mode's worked-examples/edge-case sub-region, following the established todo.md/orchestrate.md pointer mechanism but applied at mode granularity given task.md's dispatcher shape. Estimated body reduction ~66% (39,403 B -> ~13,000-13,400 B), versus the sibling task's ~15% reference-region-only reductions. One planner decision point flagged: reconcile the Action Verb Categories table's extra keywords against Create Task Mode step 3.2 before extracting it, to avoid a silent behavior change."
+}

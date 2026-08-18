@@ -251,6 +251,26 @@
         "auto_recoverable": true
       },
       "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1787021593485_Bd0KIX",
+      "timestamp": "2026-08-18T02:53:13.491Z",
+      "type": "index_entries_line_count_stale",
+      "severity": "medium",
+      "message": "task 17 edited 3 core context files without updating index-entries.json line_count; verify-deploy gate3 Rule R fails on skill-postflight-flow.md (126 vs 177), file-metadata-exchange.md (305 vs 314), postflight-tool-restrictions.md (216 vs 219)",
+      "context": {
+        "session_id": "sess_1787016315_a436d0_17",
+        "command": "/orchestrate",
+        "task": 17,
+        "checkpoint": "MT-3 step 7 inter-cycle redeploy checkpoint",
+        "agent": "general-implementation-agent",
+        "file": "agent-system/extensions/core/index-entries.json"
+      },
+      "recovery": {
+        "suggested_action": "Update the three line_count values in agent-system/extensions/core/index-entries.json; note the same class of staleness exists from a prior commit on context-layers.md, batch-orchestration-guardrails.md, file-footprint-overlap.md, orchestrator-critical-paths.json — a recurring gap suggesting index line_count updates should be automated or lint-gated at implement time",
+        "auto_recoverable": false
+      },
+      "fix_status": "unfixed"
     }
   ]
 }

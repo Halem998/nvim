@@ -1,0 +1,25 @@
+{
+  "status": "researched",
+  "task_number": 44,
+  "session_id": "sess_1787016315_a436d0_44",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/044_slim_task_command_body/reports/01_command-body-extraction-approach.md",
+      "summary": "Measures task.md at 39,403 B and recommends whole-mode extraction (Recover/Expand/Sync/Review/Abandon into separate context/patterns files with imperative READ pointers, plus Create Task Mode's worked-examples sub-region), diverging from the sibling task's reference-region-only precedent because task.md's dispatcher shape makes mode-level extraction both legitimate and far more impactful (~66% vs ~15% reduction)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "This repo's established lazy-pointer command-slimming mechanism (task 56: todo.md/orchestrate.md) extracts a reference-appendix region within an always-executing linear flow into agent-system/extensions/core/context/patterns/{command}-{topic}.md, replacing it with an imperative 'READ <deployed-path>. <consequence>' pointer that passes a passive/imperative test (never 'see also'), registered in index-entries.json under load_when.commands. For a command that is instead a DISPATCHER over mutually exclusive modes (like task.md), the same mechanism can be applied at mode granularity -- extracting entire mode bodies, not just reference appendices -- which yields a much larger reduction (~66% vs ~15%) because every invocation loads all mode bodies but executes at most one. The risk profile differs: a skipped READ for a reference appendix degrades execution, but a skipped READ for a whole extracted mode leaves that mode entirely unspecified, so the imperative framing must be even stronger at both the pointer site and the destination file's own opening line.",
+      "category": "PATTERN",
+      "source_artifact": "specs/044_slim_task_command_body/reports/01_command-body-extraction-approach.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["command-slimming", "lazy-loading", "context-patterns", "index-entries", "mode-dispatch", "per-invocation-cost"]
+    }
+  ],
+  "next_steps": "Run /plan 44 to create implementation plan"
+}
