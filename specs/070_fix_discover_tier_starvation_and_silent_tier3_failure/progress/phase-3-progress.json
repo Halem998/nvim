@@ -1,0 +1,34 @@
+{
+  "phase": 3,
+  "phase_name": "Query-construction noise reduction",
+  "started_at": "2026-08-18T19:50:00Z",
+  "last_updated": "2026-08-18T20:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Keep task_title and task_description separate; title primary, description supplementary", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-discover.sh"]},
+    {"id": 2, "description": "Cap description terms via DISCOVER_DESC_WORD_CAP + cap_words()", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-discover.sh"]},
+    {"id": 3, "description": "Match-strength threshold in tier1_search() (>=2 hits when >5 filtered terms)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-discover.sh"]},
+    {"id": 4, "description": "Tier 3 query_string asymmetry comment", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-discover.sh"]},
+    {"id": 5, "description": "Usage/help text update (ENVIRONMENT block)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-discover.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "cap_words() using bare awk NF/loop-index cap", "result": "failed", "reason": "awk resets NF/loop index per input line, so a multi-paragraph (multi-line) task description was capped per-line instead of globally, producing far more terms than DISCOVER_DESC_WORD_CAP (observed 90 terms instead of ~15-20 for task 70's own description). Fixed by flattening newlines to spaces via `tr '\\n' ' '` before the awk cap."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Filter title and description independently through filter_terms()",
+      "type": "altered",
+      "reason": "filter_terms() has no cross-token state, so a single call over the reordered/capped combined string is provably equivalent to two separate calls concatenated; chosen for lower structural risk.",
+      "annotation": "*(deviation: altered — implemented as a single filter_terms() call ...)*"
+    },
+    {
+      "task_id": "3.4",
+      "description": "Add match-strength threshold in tier1_search() and the equivalent path in tier2_search()",
+      "type": "skipped",
+      "reason": "tier2_search() has no accept-on-first-hit call site of its own -- it delegates matching entirely to zotero-search.sh's own weighted multi-field jq scoring. Threshold added only where an actual call site exists (tier1_search()).",
+      "annotation": "*(deviation: skipped for tier2_search() ...)*"
+    }
+  ]
+}

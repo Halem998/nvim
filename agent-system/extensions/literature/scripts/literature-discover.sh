@@ -23,8 +23,15 @@
 #   2 — argument error
 #
 # ENVIRONMENT:
-#   LITERATURE_DIR   — Global library root (default: ~/Projects/Literature)
-#   DISCOVER_LIMIT   — Maximum results to return (default: 10)
+#   LITERATURE_DIR         — Global library root (default: ~/Projects/Literature)
+#   DISCOVER_LIMIT         — Maximum results to return (default: 10)
+#   DISCOVER_DESC_WORD_CAP — Max words taken from a --task description when building the search
+#                            query (default: 30). Task titles are short and curated, so they are
+#                            never capped and are always treated as primary terms; a task
+#                            description can run to several paragraphs, so only its first
+#                            DISCOVER_DESC_WORD_CAP words are used, as supplementary terms, to
+#                            keep Tiers 1/2's substring matcher from picking up incidental,
+#                            unrelated shared words buried later in a long description.
 #
 # SOURCES.md format (created at specs/literature/SOURCES.md):
 #   Markdown table: Title | Authors | Year | DOI | Status | Notes
@@ -35,6 +42,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LITERATURE_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"
 DISCOVER_LIMIT="${DISCOVER_LIMIT:-10}"
+DISCOVER_DESC_WORD_CAP="${DISCOVER_DESC_WORD_CAP:-30}"
 USER_EMAIL="${USER_EMAIL:-benbrastmckie@gmail.com}"
 
 # ---------------------------------------------------------------------------
@@ -102,6 +110,22 @@ while [ "$i" -le "$#" ]; do
   i=$(( i + 1 ))
 done
 
+# ---------------------------------------------------------------------------
+# Helper: cap a string to its first N whitespace-separated words. Used to
+# bound how much of a --task description feeds the query -- see
+# DISCOVER_DESC_WORD_CAP above.
+# ---------------------------------------------------------------------------
+cap_words() {
+  local text="$1"
+  local max_words="$2"
+  # Flatten embedded newlines (task descriptions are frequently
+  # multi-paragraph) to a single line first -- awk's NF/loop-index resets
+  # per input record, so applying the cap without this would truncate each
+  # line to max_words independently instead of the string as a whole.
+  echo "$text" | tr '\n' ' ' | awk -v n="$max_words" \
+    '{ for (i = 1; i <= NF && i <= n; i++) { printf "%s%s", (i > 1 ? " " : ""), $i } }'
+}
+
 # Resolve task description if --task given
 if [ -n "$TASK_NUM" ]; then
   # Try to get task description/title from state.json
@@ -121,9 +145,21 @@ if [ -n "$TASK_NUM" ]; then
         '.active_projects[] | select(.project_number == ($n|tonumber)) | .title // ""' \
         "$state_file" 2>/dev/null)
 
+      # Title terms are primary and always fully included -- titles are short
+      # and curated. Description terms are supplementary and capped to the
+      # first DISCOVER_DESC_WORD_CAP words: a task description can run to
+      # several paragraphs, and feeding the whole field to Tiers 1/2's
+      # substring matcher lets one incidental shared word buried later in the
+      # text surface an unrelated paper. Title is placed first so it is never
+      # at risk from any future truncation of this string.
+      task_desc_capped=""
+      if [ -n "$task_description" ] && [ "$task_description" != "null" ]; then
+        task_desc_capped=$(cap_words "$task_description" "$DISCOVER_DESC_WORD_CAP")
+      fi
+
       task_terms=""
-      [ -n "$task_description" ] && [ "$task_description" != "null" ] && task_terms="$task_description"
-      [ -n "$task_title" ] && [ "$task_title" != "null" ] && task_terms="$task_terms $task_title"
+      [ -n "$task_title" ] && [ "$task_title" != "null" ] && task_terms="$task_title"
+      [ -n "$task_desc_capped" ] && task_terms="$task_terms $task_desc_capped"
       task_terms=$(echo "$task_terms" | sed -E 's/^ +| +$//g')
 
       if [ -z "$task_terms" ]; then
@@ -208,12 +244,27 @@ filter_terms() {
   printf '%s\n' "${terms[@]:-}"
 }
 
+# SEARCH_TERMS already has title-primary/description-capped-supplementary
+# ordering applied above for --task invocations (a plain positional query has
+# no such split -- it is a deliberate, hand-typed string and is filtered as
+# a whole, unchanged from before). filter_terms() has no cross-token state
+# (each raw token is filtered independently), so filtering this single
+# combined string is equivalent to filtering the title and capped
+# description separately and concatenating the results.
 mapfile -t FILTERED_TERMS < <(filter_terms "$SEARCH_TERMS")
 
 if [ "${#FILTERED_TERMS[@]}" -eq 0 ]; then
   echo "Error: No meaningful search terms after filtering stop words" >&2
   exit 2
 fi
+
+# Match-strength threshold trigger: Tiers 1/2's substring matcher requires
+# >= 2 distinct filtered-term hits per candidate only when the filtered term
+# count is large (a long --task description, even capped, can still produce
+# more than a handful of terms); at or below this count, single-term-match
+# behavior is preserved exactly so short, deliberate queries are unaffected.
+FILTERED_TERM_COUNT="${#FILTERED_TERMS[@]}"
+MULTI_TERM_MATCH_THRESHOLD=5
 
 # ---------------------------------------------------------------------------
 # Result accumulation
@@ -292,14 +343,33 @@ tier1_search() {
       continue
     fi
 
-    # Match: title or keywords must contain at least one search term
+    # Match: title or keywords must contain at least one search term. When
+    # the filtered term list is long (> MULTI_TERM_MATCH_THRESHOLD, e.g. a
+    # capped task description contributing many supplementary terms), a
+    # single incidental shared word is not enough -- require >= 2 distinct
+    # term hits. At or below the threshold, preserve the original
+    # accept-on-first-hit behavior exactly (short, deliberate queries are
+    # unaffected).
     local matched=false
-    for term in "${FILTERED_TERMS[@]}"; do
-      if term_matches "$title" "$term" || term_matches "$keywords" "$term"; then
-        matched=true
-        break
-      fi
-    done
+    if [ "$FILTERED_TERM_COUNT" -gt "$MULTI_TERM_MATCH_THRESHOLD" ]; then
+      local hit_count=0
+      for term in "${FILTERED_TERMS[@]}"; do
+        if term_matches "$title" "$term" || term_matches "$keywords" "$term"; then
+          hit_count=$(( hit_count + 1 ))
+          if [ "$hit_count" -ge 2 ]; then
+            matched=true
+            break
+          fi
+        fi
+      done
+    else
+      for term in "${FILTERED_TERMS[@]}"; do
+        if term_matches "$title" "$term" || term_matches "$keywords" "$term"; then
+          matched=true
+          break
+        fi
+      done
+    fi
 
     if [ "$matched" = "true" ]; then
       # Resolve full path
@@ -342,6 +412,15 @@ tier1_search() {
 
 # ---------------------------------------------------------------------------
 # TIER 2: Search Zotero via zotero-search.sh (local, fast)
+#
+# NOTE on the query-noise fix: unlike tier1_search()'s inline term_matches()
+# loop, this tier has no accept-on-first-hit call site of its own to add a
+# multi-term threshold to -- it forwards FILTERED_TERMS as positional args
+# to zotero-search.sh, which already does its own weighted multi-field
+# scoring in a single jq pass (see that script's header). The noise
+# reduction that reaches this tier is the shared, capped FILTERED_TERMS
+# array built above (title-primary, description-supplementary-and-capped);
+# no separate threshold logic is needed or added here.
 # ---------------------------------------------------------------------------
 tier2_search() {
   local zotero_library="$LITERATURE_DIR/zotero-library.json"
@@ -485,7 +564,11 @@ tier3_search() {
 
   local remaining="$TIER3_QUOTA"
 
-  # Build query string (join filtered terms with spaces)
+  # Build query string (join filtered terms with spaces). Deliberately loose/
+  # wide, unlike tier1_search()'s multi-term match-strength threshold above:
+  # Semantic Scholar is a genuine full-text search API with its own
+  # relevance ranking and tolerates a longer free-text query, so all of
+  # FILTERED_TERMS is sent as-is with no extra threshold applied here.
   local query_string="${FILTERED_TERMS[*]}"
   local encoded_query
   encoded_query=$(urlencode "$query_string")

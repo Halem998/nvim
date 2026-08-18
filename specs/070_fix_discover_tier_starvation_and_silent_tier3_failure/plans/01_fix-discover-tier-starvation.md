@@ -209,26 +209,42 @@ deliberately left as the global cap, with the classification recorded in the pha
 
 ---
 
-### Phase 3: Query-construction noise reduction [NOT STARTED]
+### Phase 3: Query-construction noise reduction [COMPLETED]
 
 **Goal**: Stop feeding an entire multi-paragraph task description into Tiers 1/2's unranked
 substring matcher, so one incidental shared word can no longer surface an unrelated paper.
 
 **Tasks**:
-- [ ] In the `--task N` resolution block, keep `task_title` and `task_description` as separate
-      variables instead of concatenating them into one `task_terms` string.
-- [ ] Filter title and description independently through `filter_terms()`; treat title-derived
+- [x] In the `--task N` resolution block, keep `task_title` and `task_description` as separate
+      variables instead of concatenating them into one `task_terms` string. *(completed)*
+- [x] Filter title and description independently through `filter_terms()`; treat title-derived
       terms as primary (always included) and description-derived terms as supplementary.
-- [ ] Cap the supplementary set: take description terms from the first sentence (or first N words,
+      *(deviation: altered — implemented as a single `filter_terms()` call over the reordered
+      (title-first) and description-capped combined string, rather than two separate calls whose
+      outputs are concatenated. `filter_terms()` has no cross-token state — each raw token is
+      filtered independently — so the two approaches are provably equivalent; the single-call form
+      carries less structural risk to the already-verified downstream pipeline. See the code
+      comment directly above the `mapfile -t FILTERED_TERMS` call.)*
+- [x] Cap the supplementary set: take description terms from the first sentence (or first N words,
       N configurable via an env var with a documented default) rather than the whole field.
-- [ ] Add a match-strength threshold in `tier1_search()` (and the equivalent path in
+      *(completed: `DISCOVER_DESC_WORD_CAP`, default 30, via `cap_words()`)*
+- [x] Add a match-strength threshold in `tier1_search()` (and the equivalent path in
       `tier2_search()`): count how many distinct filtered terms hit rather than accepting on the
       first, and require >= 2 distinct hits — but ONLY when the filtered term count is large
       (> 5). At or below that count, preserve today's single-term-match behavior exactly.
-- [ ] Leave the string handed to Tier 3's `query_string` on the looser/wider side (Semantic Scholar
+      *(deviation: skipped for tier2_search() — grepping `term_matches` confirmed exactly one
+      call site total, inside `tier1_search()`'s match loop; `tier2_search()` has no
+      accept-on-first-hit loop of its own to add a threshold to. It forwards `FILTERED_TERMS` as
+      positional args to `zotero-search.sh`, which already does its own weighted multi-field
+      scoring in a single jq pass. Documented in a code comment at the top of `tier2_search()`;
+      the shared, capped `FILTERED_TERMS` array still reduces the noise reaching it.)*
+- [x] Leave the string handed to Tier 3's `query_string` on the looser/wider side (Semantic Scholar
       does its own relevance ranking and tolerates a longer free-text query), documenting that
-      asymmetry in a comment.
-- [ ] Update `--task` usage/help text if it describes query construction.
+      asymmetry in a comment. *(completed)*
+- [x] Update `--task` usage/help text if it describes query construction. *(completed: the
+      header's ENVIRONMENT block now documents `DISCOVER_DESC_WORD_CAP` and the title-primary/
+      description-supplementary split; `show_usage()` itself only names the tier pipeline, not
+      query-construction mechanics, and was already accurate)*
 
 **Timing**: 1.5 hours
 
