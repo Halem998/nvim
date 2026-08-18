@@ -66,9 +66,18 @@ padded_num=$(printf "%03d" "$task_number")
 task_dir="specs/${padded_num}_${project_name}"
 
 # Read skill return metadata (non-blocking if missing)
+#
+# Absence here is now a meaningful diagnostic signal, not a routine event: skill_cleanup()
+# (skill-base.sh) no longer deletes .return-meta.json at the skill's own Stage 9 -- deletion is
+# now owned by the calling command's own last step, which runs AFTER this script (each command's
+# CHECKPOINT 3 commit block, or for /revise, the step right after this gate-out call). So on
+# every normal successful run this file is still present when we get here, and this branch fires
+# ONLY on a genuine failure: the skill crashed before writing return metadata, or its Stage 0
+# contract was violated. Neither defensive status correction below nor
+# skill_validate_task_artifacts can run without this file, so both are skipped for this dispatch.
 meta_file="${task_dir}/.return-meta.json"
 if [ ! -f "$meta_file" ]; then
-  echo "WARNING: .return-meta.json not found at $meta_file — skill may have failed silently" >&2
+  echo "WARNING: .return-meta.json not found at $meta_file — the skill did not write return metadata (crashed before postflight, or violated its Stage 0 early-metadata contract). Defensive status correction and artifact validation cannot run for this dispatch." >&2
   # Non-blocking: continue anyway (defensive correction impossible without metadata)
   exit 0
 fi
@@ -132,3 +141,12 @@ fi
 if [ -d "$task_dir" ]; then
   skill_validate_task_artifacts "$task_dir"
 fi
+
+# NOTE: this script MUST NOT delete .return-meta.json. Two reasons: (1) skill-orchestrate never
+# calls skill_cleanup and its own postflight stage merges onto .return-meta.json rather than
+# deleting it, so deleting it here would regress /orchestrate's completion/resume behavior; (2)
+# for /research and /plan, the calling command's own CHECKPOINT 3 commit block runs AFTER this
+# script and still needs to read and stage the file -- deleting it here would reintroduce the
+# same class of bug this file's lifecycle-ordering fix was written to eliminate. Deletion is
+# owned exclusively by each calling command's own last step; see
+# context/patterns/skill-postflight-flow.md's reader table for the full per-command mapping.

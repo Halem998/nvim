@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Truthful gate-out warning; retain both mechanisms",
+  "started_at": "2026-08-18T02:36:00Z",
+  "last_updated": "2026-08-18T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite not-found message with real cause and consequence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 2, "description": "Keep branch non-blocking (exit 0)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 3, "description": "Leave defensive correction and artifact validation unchanged in substance", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Add comment above branch explaining why absence is now meaningful", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 5, "description": "Add end-of-script comment stating this script must not delete .return-meta.json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

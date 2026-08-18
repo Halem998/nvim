@@ -176,26 +176,28 @@ deletion.
 
 ---
 
-### Phase 2: Truthful gate-out warning; retain both mechanisms [NOT STARTED]
+### Phase 2: Truthful gate-out warning; retain both mechanisms [COMPLETED]
 
 **Goal**: Make `command-gate-out.sh`'s missing-metadata branch an accurate diagnostic now that
 absence is a real signal, without adding any deletion to this script.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/command-gate-out.sh`, rewrite the "not found"
+- [x] In `agent-system/extensions/core/scripts/command-gate-out.sh`, rewrite the "not found"
       message to name the real cause and the real consequence — that the skill completed without
       writing return metadata (crash before postflight, or a Stage 0 contract bug), and that
       defensive status correction and artifact validation cannot run for this dispatch.
-- [ ] Keep the branch non-blocking (`exit 0`), matching the script's existing non-fatal posture
-      toward its callers.
-- [ ] Leave the defensive correction block and the `skill_validate_task_artifacts` call unchanged
-      in substance.
-- [ ] Add a short comment above the branch recording *why* absence is now meaningful (the skill
+      *(completed)*
+- [x] Keep the branch non-blocking (`exit 0`), matching the script's existing non-fatal posture
+      toward its callers. *(completed)*
+- [x] Leave the defensive correction block and the `skill_validate_task_artifacts` call unchanged
+      in substance. *(completed)*
+- [x] Add a short comment above the branch recording *why* absence is now meaningful (the skill
       no longer deletes the file; the calling command deletes it after this script runs) so a
-      future reader does not restore the old assumption.
-- [ ] Add a comment at the end of the script explicitly stating that this script must NOT delete
+      future reader does not restore the old assumption. *(completed)*
+- [x] Add a comment at the end of the script explicitly stating that this script must NOT delete
       `.return-meta.json`, naming the two reasons: it would regress `/orchestrate`'s CHECKPOINT 3,
       and it would not help `research.md`/`plan.md`'s CHECKPOINT 3, which run afterward.
+      *(completed)*
 
 **Timing**: 0.5 hours
 
