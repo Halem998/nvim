@@ -1,0 +1,38 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
+      "summary": "Root-causes the silent staleness (no loader defect; regeneration is deliberately pull-only with no ambient signal, reproduced live on ~/.dotfiles) and recommends stamping a per-extension source-store git revision into .claude-extensions.json plus a cheap non-blocking WARN in command-gate-in.sh."
+    }
+  ],
+  "next_steps": "Run /plan 18 to create an implementation plan for the source-git-head stamping (state.lua/init.lua) plus the command-gate-in.sh / check-deploy-freshness.sh preflight WARN.",
+  "metadata": {
+    "session_id": "sess_1787016315_a436d0_18",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 480,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo's Lua-driven extension loader (lua/neotex/plugins/ai/shared/extensions/{loader,init,state}.lua), manager.resync_all/manager.load never diff against installed_files or manifest version -- every load force-copies every declared file unconditionally (loader.copy_category has only three skip conditions: .syncprotect, symlink guard, and root_files install-once). A consuming repo's .claude/ tree only ever drifts stale because the deploy mechanism was never re-invoked after the source store changed -- regeneration is deliberately pull-only (context/patterns/regeneration-is-manual-only.md) with one narrow automated exception (skill-orchestrate's inter-cycle checkpoint). Do not assume a stale-deploy report implies a copy-engine bug without first checking whether a resync ran at all.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["extension-loader", "deploy-headless", "stale-deploy", "resync_all", "regeneration-is-manual-only"]
+    },
+    {
+      "content": "state.lua's mark_loaded already stamps an absolute source_dir path into every consuming repo's .claude-extensions.json per extension (identical machine-local path across repos). This is the ready-made building block for a cheap staleness check: pair it with a sibling source_git_head field (git log -1 --format=%H -- <source_dir>, ~2ms per extension) and compare in a command-gate-in.sh-level preflight, rather than relying on verify-deploy.sh (563 lines, 11 content-diffing gates, only invoked from skill-orchestrate's inter-cycle checkpoint -- not preflight-cheap and has the same deploy-required-to-fix-deploy bootstrap gap as any other deployed detector).",
+      "category": "PATTERN",
+      "source_artifact": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["source_dir", "staleness-detection", "command-gate-in", "verify-deploy", "git-revision-stamp"]
+    }
+  ],
+  "modified_files": [
+    "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md"
+  ],
+  "errors": []
+}

@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 2,
+  "summary": "No loader/copy-engine defect: manager.resync_all/manager.load force-copy every declared file unconditionally, ignoring installed_files and manifest version. Staleness is structural -- regeneration is deliberately pull-only with no automated re-trigger outside skill-orchestrate's narrow inter-cycle checkpoint. Reproduced live on ~/.dotfiles (26 core scripts missing, deploy-headless.sh/verify-deploy.sh absent from both disk and installed_files, ~3 weeks since last resync). Recommend stamping a per-extension source_git_head (sibling to the already-recorded source_dir field) and a cheap non-blocking WARN in command-gate-in.sh naming deploy-headless.sh as the remedy on mismatch.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
+      "summary": "Root cause + detection design for silently stale .claude/ deploy trees."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "continuation_path": null,
+  "next_action_hint": "Run /plan 18: implement source_git_head stamping in state.lua/init.lua (Lua write side) and a check-deploy-freshness.sh + command-gate-in.sh preflight WARN (bash read side). No copy-engine fix is needed -- Part 1 concluded there is no loader defect."
+}
