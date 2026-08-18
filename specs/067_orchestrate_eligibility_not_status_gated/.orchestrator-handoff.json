@@ -1,15 +1,15 @@
 {
-  "dispatch_seq": 2,
+  "dispatch_seq": 3,
   "task_number": 67,
   "session_id": "sess_1787010912_c51526",
-  "operation": "plan",
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "artifact_path": "specs/067_orchestrate_eligibility_not_status_gated/plans/01_admission-gates-as-ordering-constraints.md",
-  "phases_completed": 0,
+  "operation": "implement",
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "artifact_path": "specs/067_orchestrate_eligibility_not_status_gated/summaries/01_admission-gates-as-ordering-constraints-summary.md",
+  "phases_completed": 7,
   "phases_total": 7,
-  "next_steps": "Run /implement 67 to execute the plan",
+  "next_steps": "Implementation complete. Task 67 is ready for completion postflight.",
   "blockers": [],
   "continuation_path": null,
-  "notes": "Plan built on research report decisions (Work Stream B Directions 1+2 adopted, Direction 3 rejected, 5 convergence sites). Phase ordering enforces that the classifier status-to-group mapping lands before the eligibility exclusion is removed. parse-command-args.sh left untouched; orchestrator-critical-paths.json DOES need one edit (Phase 6) contrary to the dispatch brief's summary."
+  "notes": "All 7 phases completed and verified: (1) self-modification tie-breaker + phase-aware gating in orchestrate-batch-admit.sh, (2) wired into both orchestration engines, (3) classifier test-coverage baseline, (4) classifier maps researching/planning to real phase groups with mutation-check RED/GREEN evidence, (5) status-gated eligibility exclusion removed with all 5 convergence-exit sites and 2 state-machine-doc restatements re-derived, (6) lock-aware demotion guard in reconcile-task-status.sh, (7) normative guardrails record. A genuine regression the tie-breaker caused in test-conflict-predicate.sh (outside original file_scope) was found and fixed in Phase 1, with file_scope widened via state-write.sh. verify-deploy.sh has 2 pre-existing unrelated failures (doc-lint line-count drift, a state.json priority-field warning on tasks #53/#66) neither caused by nor in scope for this task."
 }
