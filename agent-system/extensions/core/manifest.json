@@ -184,6 +184,7 @@
       "tests/test-lint-state-writer-boundary.sh",
       "tests/test-loop-guard-budget-override.sh",
       "tests/test-loop-guard-staleness.sh",
+      "tests/test-mint-dispatch-seq.sh",
       "tests/test-orchestrate-triage-classify.sh",
       "tests/test-phase-heading-patterns.sh",
       "tests/test-status-vocabulary.sh",

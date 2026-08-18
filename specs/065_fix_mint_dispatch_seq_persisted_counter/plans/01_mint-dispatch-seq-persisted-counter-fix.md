@@ -1,7 +1,7 @@
 # Implementation Plan: Task #65
 
 - **Task**: 65 - Fix skill_orchestrate_mint_dispatch_seq to increment from the persisted counter
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/065_fix_mint_dispatch_seq_persisted_counter/reports/01_mint-dispatch-seq-fresh-shell-fix.md`
@@ -253,35 +253,52 @@ count.
 
 ---
 
-### Phase 3: Register, deploy, and gate on the full shell suite [NOT STARTED]
+### Phase 3: Register, deploy, and gate on the full shell suite [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Make the new suite a first-class deployed artifact, propagate the fix into `.claude/`,
 and confirm nothing else regressed.
 
 **Tasks**:
-- [ ] Add `"tests/test-mint-dispatch-seq.sh"` to `provides.scripts` in
+- [x] Add `"tests/test-mint-dispatch-seq.sh"` to `provides.scripts` in
       `agent-system/extensions/core/manifest.json`, placed to match the existing ordering
-      convention of the surrounding `tests/test-*.sh` entries.
-- [ ] Validate the manifest still parses: `jq empty agent-system/extensions/core/manifest.json`.
+      convention of the surrounding `tests/test-*.sh` entries. *(completed)*
+- [x] Validate the manifest still parses: `jq empty agent-system/extensions/core/manifest.json`. *(completed)*
 - [ ] Run the non-destructive deploy (`bash .claude/scripts/deploy-headless.sh`, default mode —
       never `--wipe`) to propagate both the `skill-base.sh` fix and the new suite into `.claude/`.
+      *(deviation: deferred — a live /orchestrate run currently depends on the deployed
+      `.claude/scripts/skill-base.sh` mid-flight; the dispatching orchestrator's own delegation
+      context explicitly instructed this dispatch not to redeploy `.claude/**`. Left to the
+      operator.)*
 - [ ] Confirm propagation: diff the deployed `skill_orchestrate_mint_dispatch_seq` body against the
       source-store body and confirm they match, and confirm
       `.claude/scripts/tests/test-mint-dispatch-seq.sh` exists and is executable.
+      *(deviation: deferred to the operator — depends on the withheld deploy step above)*
 - [ ] Re-run the new suite post-deploy; its `[INFO]` line must now name the deployed path and all
-      cases must still pass.
-- [ ] Run the two suites the research report named as adjacent:
+      cases must still pass. *(deviation: deferred to the operator — depends on the withheld
+      deploy step above; logic pre-verified against the source-store fixed body via a scratch
+      resolution override: 14/14 cases pass, exit 0)*
+- [x] Run the two suites the research report named as adjacent:
       `test-handoff-dispatch-identity.sh` and `test-loop-guard-budget-override.sh`. Both must stay
       green — they extract sentinel regions from the SKILL.md files this plan deliberately does
-      not touch, so any red here means an unintended edit leaked in.
-- [ ] Run `test-skill-base-lifecycle.sh` and `test-deploy-propagation.sh` — the two suites most
+      not touch, so any red here means an unintended edit leaked in. *(completed: 22/22 and 36/36
+      pass respectively, exit 0 both)*
+- [x] Run `test-skill-base-lifecycle.sh` and `test-deploy-propagation.sh` — the two suites most
       likely to notice a bad edit to `skill-base.sh` or a bad manifest entry respectively.
+      *(completed: test-deploy-propagation.sh 4/4 pass (its own scratch-deploy Assertion C
+      exercises the new manifest entry); test-skill-base-lifecycle.sh 17/18 pass — one
+      pre-existing, unrelated failure, see next item)*
 - [ ] Run the full discovery harness: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
       Confirm exit 0, confirm zero `[SKIP]` lines naming the new suite, and confirm the new suite
       actually appears in the run (a suite that is never discovered is not covered).
-- [ ] If any pre-existing suite was already failing before this task's changes, record that
+      *(deviation: deferred to the operator — the deployed-mode `run-all.sh` cannot discover a
+      suite that has not yet been deployed; depends on the withheld deploy step above)*
+- [x] If any pre-existing suite was already failing before this task's changes, record that
       baseline explicitly rather than attributing it to this work — and do not close the phase on
-      an unexplained red.
+      an unexplained red. *(completed: `test-skill-base-lifecycle.sh`'s one failure —
+      "skill_cleanup left at least one lifecycle temp file behind" — was confirmed present at the
+      pre-task baseline commit via a throwaway worktree symlinked to the real deployed `.claude/`;
+      identical 17/18 result. Unrelated to this task's `skill_orchestrate_mint_dispatch_seq`
+      change.)*
 
 **Timing**: 0.5 hours
 
@@ -307,6 +324,22 @@ single-entry shape; if that suite appears in more than one place, mirror all of 
   both contain the `jq` read.
 - `.claude/scripts/tests/test-mint-dispatch-seq.sh` present and executable.
 - `run-all.sh` exits 0, discovers the new suite, and skips nothing.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Run `deploy-headless.sh` to propagate the fix and new suite into `.claude/` | This dispatch's own delegation context carried an explicit, orchestrator-issued safety constraint: a live `/orchestrate` run is currently executing and its cycle loop depends on the deployed `.claude/scripts/skill-base.sh` mid-flight. Redeploying now would swap that dependency out from under the running loop. The constraint reads verbatim: "Do NOT run deploy-headless.sh or otherwise redeploy `.claude/**` — that would swap out the code this running loop depends on mid-flight. Leave deployment to the operator." | Delegation context for this dispatch (task field `IMPORTANT` block); no deploy command was executed during this implementation (confirmable via this session's command history / lack of any `.claude/scripts/skill-base.sh` mtime change) |
+| Confirm deployed-vs-source-store byte-identity of the mint function | Depends directly on the withheld deploy step above — there is nothing to diff until a deploy runs | Same as above |
+| Re-run the new suite post-deploy naming the deployed path | Depends directly on the withheld deploy step above | Same as above; substitute verification performed instead: the suite's own logic was run against the source-store fixed body via a resolution override in a scratch copy (never committed), yielding 14/14 pass, exit 0 (see Phase 2's progress file) |
+| Run `run-all.sh` full discovery harness and confirm the new suite is discovered | The deployed-mode `run-all.sh` iterates `.claude/scripts/tests/`; a suite not yet deployed cannot be discovered there regardless of its source-store manifest registration | `agent-system/extensions/core/manifest.json` now lists `tests/test-mint-dispatch-seq.sh` in `provides.scripts` (jq-validated), and `test-deploy-propagation.sh`'s Assertion C (239 entries checked, 0 missing) confirms the entry is well-formed and deployable against an isolated scratch tree — the manifest side of this requirement is satisfied; only the live discovery run is deferred |
+
+All four exclusions share one root cause (the explicit no-deploy safety constraint) and one
+resolution path: the operator runs `bash .claude/scripts/deploy-headless.sh` (default,
+non-destructive mode) at a time of their choosing when no `/orchestrate` loop is depending on the
+deployed tree, then re-runs `bash .claude/scripts/tests/run-all.sh` to confirm the four deferred
+checks converge. No code-correctness question is open; every deferred item is a propagation/
+discovery mechanic downstream of a deploy this dispatch was explicitly told not to perform.
 - `test-handoff-dispatch-identity.sh`, `test-loop-guard-budget-override.sh`,
   `test-skill-base-lifecycle.sh`, `test-deploy-propagation.sh` all green.
 

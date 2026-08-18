@@ -1,0 +1,81 @@
+{
+  "phase": 3,
+  "phase_name": "Register, deploy, and gate on the full shell suite",
+  "started_at": "2026-08-17T00:35:00Z",
+  "last_updated": "2026-08-17T00:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add tests/test-mint-dispatch-seq.sh to provides.scripts in manifest.json, matching existing ordering",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 2,
+      "description": "Validate manifest still parses (jq empty)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Run non-destructive deploy to propagate fix + new suite into .claude/",
+      "status": "blocked",
+      "files_touched": [],
+      "note": "Deliberately withheld this cycle -- see deviation entry. Deferred to the operator."
+    },
+    {
+      "id": 4,
+      "description": "Confirm propagation: diff deployed vs source-store mint function body; confirm new suite deployed and executable",
+      "status": "blocked",
+      "files_touched": [],
+      "note": "Depends on objective 3 (deploy). Deferred to the operator."
+    },
+    {
+      "id": 5,
+      "description": "Re-run new suite post-deploy; INFO line must name deployed path; all cases pass",
+      "status": "blocked",
+      "files_touched": [],
+      "note": "Depends on objective 3 (deploy). Deferred to the operator. Logic already verified pre-deploy via scratch-copy resolution override (Phase 2, objective 6): 14/14 pass against the source-store fixed body."
+    },
+    {
+      "id": 6,
+      "description": "Run test-handoff-dispatch-identity.sh and test-loop-guard-budget-override.sh; both must stay green",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-handoff-dispatch-identity.sh: 22 passed, 0 failed, exit 0. test-loop-guard-budget-override.sh: 36 passed, 0 failed, exit 0 (includes its own embedded test-session-runtime-files.sh Case 3 check). Both resolved the currently-deployed tree, which this task's source-store-only changes do not touch, so this is a meaningful confirmation of no regression leak into either engine's SKILL.md-derived logic."
+    },
+    {
+      "id": 7,
+      "description": "Run test-skill-base-lifecycle.sh and test-deploy-propagation.sh",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-deploy-propagation.sh: 4 passed, 0 failed, exit 0 -- this suite deploys a SCRATCH copy of the tree (never the real .claude/) and its Assertion C (declared-vs-deployed parity, 239 entries checked, 0 missing) exercises the new manifest.json entry in that isolated scratch deploy, confirming the manifest edit is well-formed and deployable without touching the real running tree. test-skill-base-lifecycle.sh: 17 passed, 1 failed, exit 1 -- the one failure ('skill_cleanup left at least one lifecycle temp file behind') is a PRE-EXISTING baseline failure, confirmed by re-running the identical suite against the pre-task commit (e84358744, prior to any of this task's edits) via a throwaway git worktree symlinked to the real deployed .claude/: identical result, 17 passed / 1 failed. Unrelated to this task's change (skill_cleanup is a different function; the most recent change to it was an earlier, separate commit). Recorded here per the plan's own Rollback/Contingency instruction to record a pre-existing baseline explicitly rather than attribute it to this work, and not close the phase on an unexplained red -- it is now explained."
+    },
+    {
+      "id": 8,
+      "description": "Run full discovery harness run-all.sh; confirm exit 0, new suite discovered, zero SKIPs naming it",
+      "status": "blocked",
+      "files_touched": [],
+      "note": "Depends on objective 3 (deploy) -- the deployed-mode run-all.sh cannot discover a suite that has not yet been deployed. Deferred to the operator's own deploy."
+    },
+    {
+      "id": 9,
+      "description": "Record any pre-existing suite failure as an explicit baseline rather than attributing it to this work",
+      "status": "done",
+      "files_touched": [],
+      "note": "See objective 7 note above."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.3-3.5,3.8",
+      "description": "Run the non-destructive deploy (deploy-headless.sh), confirm propagation, re-run the new suite post-deploy naming the deployed path, and run the full run-all.sh discovery harness",
+      "type": "deferred",
+      "reason": "The delegation context for this dispatch carries an explicit, orchestrator-issued safety constraint: a live /orchestrate run is CURRENTLY EXECUTING and depends on the deployed copy at .claude/scripts/skill-base.sh mid-flight. Running deploy-headless.sh would swap out that running loop's own dependency out from under it. The delegation context explicitly instructs: 'Do NOT run deploy-headless.sh or otherwise redeploy .claude/** -- that would swap out the code this running loop depends on mid-flight. Leave deployment to the operator.' This postdates and overrides the plan's Phase 3 assumption (written before the live-run constraint was known) that a deploy could safely run within this same dispatch.",
+      "annotation": "*(deviation: deferred to the operator's own deploy)*"
+    }
+  ]
+}
