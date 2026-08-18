@@ -334,35 +334,43 @@ inspected and either given a site or explicitly recorded as out of scope with it
 
 ---
 
-### Phase 5: Documentation and lifecycle-record updates [NOT STARTED]
+### Phase 5: Documentation and lifecycle-record updates [COMPLETED]
 
 **Goal**: Update every doc that describes the old lifecycle, and add the per-command reader table
 the research identified as the missing artifact that let this defect's blast radius go
 undiscovered.
 
 **Tasks**:
-- [ ] `context/patterns/skill-postflight-flow.md` Stage 9: change the "Removes
+- [x] `context/patterns/skill-postflight-flow.md` Stage 9: change the "Removes
       `.postflight-pending`, `.postflight-loop-guard`, and `.return-meta.json`" sentence to the
       new two-file list, and state that `.return-meta.json` is now deleted by the calling command
-      after its own last consumer.
-- [ ] Same file, the "Ordering" section: update the rationale sentence about not deleting
+      after its own last consumer. *(completed)*
+- [x] Same file, the "Ordering" section: update the rationale sentence about not deleting
       `.return-meta.json` before every stage that reads it — the constraint now extends past the
-      skill boundary into the calling command.
-- [ ] Same file: add the recommended reader table listing, per command, every consumer of
+      skill boundary into the calling command. *(completed)*
+- [x] Same file: add the recommended reader table listing, per command, every consumer of
       `.return-meta.json` downstream of DELEGATE (gate-out's defensive correction and artifact
       sweep; each command's CHECKPOINT 3; each multi-task Step 4) and which step owns the
-      deletion. Reference sites by file and section name, never by line number.
-- [ ] `context/standards/orchestrator-runtime-files.md`: update the `.return-meta.json` row's
+      deletion. Reference sites by file and section name, never by line number. *(completed)*
+- [x] `context/standards/orchestrator-runtime-files.md`: update the `.return-meta.json` row's
       "Cleanup site" cell to name the calling command's own last step instead of `skill_cleanup()`,
       and keep the `orchestrator-postflight.sh` Stage 10 mention correctly scoped to that
-      (orphaned) script.
-- [ ] `context/patterns/skill-lifecycle.md`: check its Stage 9/Stage 10 cleanup descriptions and
-      update any that enumerate `.return-meta.json`.
-- [ ] `context/standards/postflight-tool-restrictions.md`: check and update its `skill_cleanup()`
-      one-line description if it enumerates the removed files.
-- [ ] Record the retention decisions (defensive correction kept; artifact validation kept) and
+      (orphaned) script. *(completed)*
+- [x] `context/patterns/skill-lifecycle.md`: check its Stage 9/Stage 10 cleanup descriptions and
+      update any that enumerate `.return-meta.json`. *(completed: no enumeration found — this
+      file describes skill_cleanup() generically without naming files, so no edit was needed)*
+- [x] `context/standards/postflight-tool-restrictions.md`: check and update its `skill_cleanup()`
+      one-line description if it enumerates the removed files. *(completed)*
+- [x] Record the retention decisions (defensive correction kept; artifact validation kept) and
       their reasoning in the gate-out-adjacent documentation, so a future reader encountering the
-      now-live code does not re-propose deleting it.
+      now-live code does not re-propose deleting it. *(completed: added a "Why command-gate-out.sh's
+      two mechanisms are retained, not removed" subsection to
+      context/patterns/skill-postflight-flow.md, immediately after the reader table)*
+- [x] **Extra finding beyond the enumerated list**: `context/patterns/file-metadata-exchange.md`'s
+      "Cleanup Patterns" section presented "remove metadata file after postflight completes" as
+      the sanctioned pattern — directly restating the pre-fix assumption. Updated with an
+      ownership note and retitled the first pattern to "After the Calling Command's Last
+      Consumer". *(completed)*
 
 **Timing**: 1 hour
 

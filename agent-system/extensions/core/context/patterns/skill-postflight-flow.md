@@ -110,7 +110,15 @@ an operation-specific rendering of it).
 skill_cleanup "$padded_num" "$project_name"
 ```
 
-Removes `.postflight-pending`, `.postflight-loop-guard`, and `.return-meta.json` for the task.
+Removes `.postflight-pending` and `.postflight-loop-guard` for the task. `.return-meta.json` is
+**NOT** removed here — `skill_cleanup` (Stage 9) always runs at the skill's OWN postflight, which
+completes before the calling command's `command-gate-out.sh` (CHECKPOINT 2) and, further
+downstream, that command's own CHECKPOINT 3 commit block ever read the file. Deleting it at Stage
+9 made that entire downstream body structurally unreachable — this was a real, fixed defect, not
+a hypothetical. `.return-meta.json`'s deletion is now owned by the calling command's own last
+step that consumes it (see the reader table below); the one exception is `skill-spawn`, which has
+no command-level consumer downstream and so deletes the file inline itself, immediately after
+this same `skill_cleanup` call.
 Note: `skill-implementer` also removes `.continuation-loop-guard` — that file is
 implementer-specific and is removed with a separate `rm -f` immediately after this call, not
 folded into `skill_cleanup` (which stays a 2-arg function shared by every importer).
@@ -118,9 +126,52 @@ folded into `skill_cleanup` (which stays a 2-arg function shared by every import
 ## Ordering
 
 Stages run in the numbered order above: 7, 7a, 8, 8a, 9. Do not run cleanup (Stage 9) before
-artifact linking (Stage 8) — the marker and metadata files Stage 9 removes are still needed as
-Stage 8's data source (`artifact_path`/`artifact_type`/`artifact_summary` were read from
+artifact linking (Stage 8) — the marker files Stage 9 removes are still needed as inputs to
+earlier stages (`artifact_path`/`artifact_type`/`artifact_summary` were read from
 `.return-meta.json` at Stage 6, but Stage 8's `skill_link_artifacts` call itself has no file
-dependency on the marker — the ordering constraint is about not deleting `.return-meta.json`
-before every stage that reads it has run, and Stage 8a's `$STATE_STATUS` is derived from the same
-already-read `status` value, not a fresh file read).
+dependency on the marker — the ordering constraint here is about not deleting
+`.postflight-pending`/`.postflight-loop-guard` before every stage that reads them has run, and
+Stage 8a's `$STATE_STATUS` is derived from the same already-read `status` value, not a fresh file
+read). This same "delete only after every consumer has read it" discipline now extends PAST the
+skill boundary: `.return-meta.json` must not be deleted until every consumer downstream of
+DELEGATE — inside this skill AND inside the calling command that invoked it — has finished
+reading it. See the reader table immediately below for the full per-command mapping.
+
+## `.return-meta.json` Reader Table
+
+Every consumer of `.return-meta.json` downstream of DELEGATE, and which step owns the file's
+deletion. Reference sites by file and section name, never by line number (line numbers drift).
+
+| Calling command | Consumers downstream of DELEGATE | Deletion owner |
+|---|---|---|
+| `/research` | `command-gate-out.sh` (defensive correction, `skill_validate_task_artifacts`); `commands/research.md` CHECKPOINT 3 `git add` (stages the file as durable provenance) | `commands/research.md` CHECKPOINT 3, final line of the commit block |
+| `/plan` | `command-gate-out.sh` (same two mechanisms); `commands/plan.md` CHECKPOINT 3 `git add` (recursive task-dir add) | `commands/plan.md` CHECKPOINT 3, final line of the commit block |
+| `/implement` | `command-gate-out.sh` (same two mechanisms); `commands/implement.md` CHECKPOINT 3 (`modified_files` read into `stage_paths`) | `commands/implement.md` CHECKPOINT 3, final line of both the completion and partial commit branches |
+| `/revise` | `command-gate-out.sh` (same two mechanisms, gated on `skill-reviser`'s reported status); the revise-specific plan-file existence check | `commands/revise.md`, immediately after that plan-file existence check (no CHECKPOINT 3 exists for `/revise`) |
+| `/orchestrate` (single-task) | `command-gate-out.sh` (same two mechanisms); `commands/orchestrate.md` CHECKPOINT 3 (`modified_files` read into `stage_paths`) | `commands/orchestrate.md` CHECKPOINT 3, completion branch only, after `git-commit-scoped.sh`. The partial/paused branch deliberately keeps the file so the next cycle's `orchestrate-stage5-gates.sh` outcome recovery still has its mtime-freshness-windowed fallback |
+| `/research`, `/plan`, `/implement` multi-task batch loops | None of the above — these loops deliberately bypass `command-gate-in.sh`/`command-gate-out.sh` and never reach the single-task CHECKPOINT 3 | Each command's own Step 4 batch-commit block, iterating the dispatched task list, after the batch commit |
+| `/orchestrate` (multi-task) | `skill-orchestrate`'s own Stage MT-4 per-task loop, which dispatches directly to agents (bypassing the skill layer and `skill_cleanup` entirely) and reads `.return-meta.json` repeatedly across however many cycles a task's dispatch spans, for outcome recovery via `orchestrate-recover-outcome.sh` | **No deletion site exists, deliberately.** The file is never deleted in this path — it functions as an ongoing, multi-cycle recovery record, the same role the single-task completion-only scoping protects, but more conservative because an MT task's dispatch can legitimately span several cycles |
+| `/spawn` | None (no `command-gate-out.sh`/CHECKPOINT 3 consumer) | `skill-spawn/SKILL.md` Stage 16, inline, immediately after `skill_cleanup` |
+
+### Why `command-gate-out.sh`'s two mechanisms are retained, not removed
+
+Before this table existed, `.return-meta.json` was deleted at Stage 9 (this skill's own
+`skill_cleanup`), which always ran before `command-gate-out.sh` ever opened the file — so its
+missing-metadata branch fired identically on every successful run and every genuine crash, and
+everything past that branch (defensive status correction, `skill_validate_task_artifacts`) was
+structurally unreachable dead code on every single invocation. Fixing the deletion's ordering (as
+the table above records) makes both mechanisms reachable again for the first time. Both were
+deliberately kept rather than deleted as dead code, because each does something the other layers
+of this system do not:
+
+- **Defensive status correction** is a genuinely independent second reader guarding a
+  non-`set -e` Stage 7 call (`skill_postflight_update`) inside the skill — if that call silently
+  no-ops or partially fails, this is the only check that later notices `state.json` disagrees
+  with what the skill actually reported and repairs it.
+- **`skill_validate_task_artifacts`** is a whole-task-directory sweep, strictly broader than each
+  skill's own single-artifact Stage 6a check (which validates only the one artifact that skill
+  itself just wrote) — it catches artifact-link drift Stage 6a has no way to see.
+
+A future reader who finds these two blocks now firing on ordinary runs, having previously known
+them only as silent no-ops, should read this as the fix working as intended — not as a new
+defect to re-investigate or a candidate for removal.

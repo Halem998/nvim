@@ -39,7 +39,7 @@ The postflight phase **MUST NOT** perform any work that belongs in the agent, in
 |-----------------|---------|
 | `bash .claude/scripts/state-write.sh` | Update task status, link artifacts — the single mutex-guarded `specs/state.json` writer; owns its own private `mktemp` staging and acquire/stage/transform/validate/mv/release sequence internally, so callers never hand-roll `jq ... > tmp && mv` themselves |
 | `git add`, `git commit` | Commit changes |
-| `rm -f specs/{NNN}_*/.return-meta.json` | Cleanup metadata file |
+| `rm -f specs/{NNN}_*/.return-meta.json` | **`skill-spawn` only**: inline cleanup of the metadata file, since `/spawn` has no `command-gate-out.sh`/CHECKPOINT 3 consumer downstream to own this deletion instead. Every other skill's postflight (`skill_cleanup()`) does NOT remove this file — deletion is owned by the calling command's own last consumer; see `context/patterns/skill-postflight-flow.md`'s reader table |
 | `rm -f specs/{NNN}_*/.postflight-pending` | Cleanup marker file |
 
 ### Edit Operations
@@ -110,7 +110,10 @@ Postflight Shapes" section explaining why this collapsed form has no inline git-
 - `skill_propagate_memory_candidates()` — append any memory candidates the agent emitted
 - `skill_link_artifacts()` — two-step `jq` add-artifact pattern, then `generate-todo.sh`
 - `skill_lifecycle_notify()` — background TTS/tab-color notification
-- `skill_cleanup()` — rm -f metadata and marker files
+- `skill_cleanup()` — rm -f marker files only (`.postflight-pending`, `.postflight-loop-guard`).
+  `.return-meta.json` is deliberately NOT removed here — its deletion is owned by the calling
+  command's own last consumer (`/research`'s CHECKPOINT 3 for this skill); see
+  `context/patterns/skill-postflight-flow.md`'s reader table
 
 ### Stage 10: Return Brief Summary
 - Return a 3-6 bullet text summary (not JSON)

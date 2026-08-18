@@ -166,10 +166,19 @@ fi
 
 ## Cleanup Patterns
 
-### After Successful Postflight
+**Ownership note**: a skill's own postflight (`skill_cleanup()` in `scripts/skill-base.sh`) does
+**NOT** remove `.return-meta.json` — that was a fixed defect (deleting it there ran before the
+calling command's `command-gate-out.sh` and CHECKPOINT 3 ever read the file, making both
+structurally unreachable). Deletion is owned by the calling command's own last consumer of the
+file; see `context/patterns/skill-postflight-flow.md`'s reader table for the full per-command
+mapping. The patterns below illustrate the general shape a command-level (not skill-level)
+deletion site follows.
+
+### After the Calling Command's Last Consumer
 
 ```bash
-# Remove metadata file after postflight completes
+# Remove metadata file after the calling command's own last consumer has read it
+# (its CHECKPOINT 3 commit block, or the equivalent last step for /revise)
 rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
 ```
 
