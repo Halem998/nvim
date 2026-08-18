@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Isolated test suite for the freshness checker",
+  "started_at": "2026-08-17T00:35:00Z",
+  "last_updated": "2026-08-18T03:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-deploy-freshness.sh following directory convention (set -uo pipefail, pass/fail/info helpers, PASSED/FAILED counters, mktemp -d root, trap cleanup EXIT, exit 0/1)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"], "note": "File existed as an untracked, interrupted-run artifact; inspected, found structurally sound, and completed by adding the missing info() helper for full convention compliance."},
+    {"id": 2, "description": "Build fixture: throwaway source-store git repo with committed extension subdirectory, plus throwaway consuming repo with fabricated .claude-extensions.json, real checker copied byte-for-byte", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 3, "description": "Case STALE: older recorded source_git_head -> exactly one WARN naming the extension and remedy, exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 4, "description": "Case FRESH: recorded head equals current revision -> no output, exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 5, "description": "Case MISSING FIELD: source_dir present, source_git_head absent -> no output, exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 6, "description": "Case UNVERIFIABLE: source_dir outside any git repo, and separately nonexistent path -> no output, exit 0 for each", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 7, "description": "Case SCOPING: commit outside the extension's own subdirectory -> no output (path-scoped, not whole-repo HEAD)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 8, "description": "Register suite in manifest.json under provides.scripts alongside existing tests/ entries; confirm run-all.sh discovers it", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"], "note": "run-all.sh discovers suites via test-*.sh glob, not an explicit list, so the manifest entry is deploy-registration only; discovery confirmed by direct invocation."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Inspected untracked test-deploy-freshness.sh left by the prior interrupted /orchestrate run rather than assuming it was junk", "result": "reused", "reason": "File was structurally complete and all 7 assertions passed on first run against the real checker; only the info() helper was missing for full directory-convention compliance."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

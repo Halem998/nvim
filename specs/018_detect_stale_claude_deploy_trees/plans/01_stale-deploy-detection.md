@@ -210,34 +210,38 @@ manifest, record that in the summary rather than silently widening the phase.
 
 ---
 
-### Phase 3: Isolated test suite for the freshness checker [NOT STARTED]
+### Phase 3: Isolated test suite for the freshness checker [COMPLETED]
 
 **Goal**: A repeatable, temp-root suite pinning both acceptance directions and every silent-skip
 branch, so the behavior cannot regress unobserved.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh` following the
+- [x] Create `agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh` following the
       established convention in that directory (`set -uo pipefail`, pass/fail/info helpers,
       PASSED/FAILED counters, `mktemp -d` root, `trap cleanup EXIT`, exit 0 on all-pass and 1 on
       any failure). Never touch the real `specs/` tree or the real `.claude-extensions.json`.
-- [ ] Build the fixture: a throwaway git repository standing in for the source store (with a
+      *(completed: file existed as an untracked artifact from an interrupted prior run; inspected
+      and completed rather than rewritten -- added the missing `info()` helper)*
+- [x] Build the fixture: a throwaway git repository standing in for the source store (with a
       committed extension subdirectory), plus a throwaway consuming repo holding a fabricated
       `.claude-extensions.json` pointing at it, copying the real `check-deploy-freshness.sh`
-      byte-for-byte into place.
-- [ ] Case STALE: recorded `source_git_head` is an older commit than the fixture source
+      byte-for-byte into place. *(completed)*
+- [x] Case STALE: recorded `source_git_head` is an older commit than the fixture source
       subdirectory's current revision -- assert exactly one WARN line naming the extension, that
-      the output names the regeneration remedy, and that exit code is 0.
-- [ ] Case FRESH: recorded `source_git_head` equals the current revision -- assert no output and
-      exit code 0.
-- [ ] Case MISSING FIELD: entry has `source_dir` but no `source_git_head` -- assert no output and
-      exit code 0.
-- [ ] Case UNVERIFIABLE: `source_dir` points outside any git repository (and, separately, at a
-      nonexistent path) -- assert no output and exit code 0 for each.
-- [ ] Case SCOPING: commit a change elsewhere in the fixture source repo, outside the extension's
+      the output names the regeneration remedy, and that exit code is 0. *(completed)*
+- [x] Case FRESH: recorded `source_git_head` equals the current revision -- assert no output and
+      exit code 0. *(completed)*
+- [x] Case MISSING FIELD: entry has `source_dir` but no `source_git_head` -- assert no output and
+      exit code 0. *(completed)*
+- [x] Case UNVERIFIABLE: `source_dir` points outside any git repository (and, separately, at a
+      nonexistent path) -- assert no output and exit code 0 for each. *(completed)*
+- [x] Case SCOPING: commit a change elsewhere in the fixture source repo, outside the extension's
       own subdirectory -- assert no output (path-scoped comparison, not whole-repo HEAD).
-- [ ] Register the suite in `agent-system/extensions/core/manifest.json` under `provides.scripts`
+      *(completed)*
+- [x] Register the suite in `agent-system/extensions/core/manifest.json` under `provides.scripts`
       alongside the existing `tests/` entries, and confirm it is picked up by
-      `scripts/tests/run-all.sh`.
+      `scripts/tests/run-all.sh`. *(completed: run-all.sh discovers suites via a test-*.sh glob,
+      so the manifest entry is deploy-registration only; confirmed by direct invocation)*
 
 **Timing**: 1.25 hours
 
