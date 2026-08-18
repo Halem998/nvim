@@ -194,6 +194,63 @@
       "fix_status": "fixed",
       "fixed_date": "2026-08-11T22:24:54Z",
       "fix_task": 47
+    },
+    {
+      "id": "err_1787019509935_soHgFv",
+      "timestamp": "2026-08-18T02:18:29.941Z",
+      "type": "delegation_interrupted",
+      "severity": "medium",
+      "message": "planner-agent dispatch for task 17 lost connection mid-response; .return-meta.json left at status=in_progress",
+      "context": {
+        "session_id": "sess_1787016315_a436d0_17",
+        "command": "/orchestrate",
+        "task": 17,
+        "checkpoint": "MT-4 plan dispatch",
+        "agent": "planner-agent"
+      },
+      "recovery": {
+        "suggested_action": "Re-dispatch plan phase on next orchestrator cycle; task status left unchanged per delegation_interrupted recovery strategy",
+        "auto_recoverable": true
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1787019509995_JTRNOp",
+      "timestamp": "2026-08-18T02:18:30.005Z",
+      "type": "delegation_interrupted",
+      "severity": "medium",
+      "message": "planner-agent dispatch for task 18 lost connection mid-response; .return-meta.json left at status=in_progress",
+      "context": {
+        "session_id": "sess_1787016315_a436d0_18",
+        "command": "/orchestrate",
+        "task": 18,
+        "checkpoint": "MT-4 plan dispatch",
+        "agent": "planner-agent"
+      },
+      "recovery": {
+        "suggested_action": "Re-dispatch plan phase on next orchestrator cycle; task status left unchanged per delegation_interrupted recovery strategy",
+        "auto_recoverable": true
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1787019510054_i344K4",
+      "timestamp": "2026-08-18T02:18:30.060Z",
+      "type": "delegation_interrupted",
+      "severity": "medium",
+      "message": "planner-agent dispatch for task 65 lost connection mid-response; .return-meta.json left at status=in_progress",
+      "context": {
+        "session_id": "sess_1787016315_a436d0_65",
+        "command": "/orchestrate",
+        "task": 65,
+        "checkpoint": "MT-4 plan dispatch",
+        "agent": "planner-agent"
+      },
+      "recovery": {
+        "suggested_action": "Re-dispatch plan phase on next orchestrator cycle; task status left unchanged per delegation_interrupted recovery strategy",
+        "auto_recoverable": true
+      },
+      "fix_status": "unfixed"
     }
   ]
 }

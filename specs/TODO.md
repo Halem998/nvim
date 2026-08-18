@@ -52,17 +52,17 @@ next_project_number: 68
 
 ### Essential Refactor
 
-17 [RESEARCHED] — command-gate-out.sh's entire post-metadata body is structurally u
+17 [PLANNING] — command-gate-out.sh's entire post-metadata body is structurally u
   └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
       └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
-18 [RESEARCHED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
+18 [PLANNING] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
     └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
       └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
-65 [RESEARCHED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
+65 [PLANNED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
 
 ## Tasks
 
@@ -213,11 +213,12 @@ ACCEPTANCE: long-builds.md exists at the stated path with the cap, the per-modul
 ---
 
 ### 65. Fix mint dispatch seq persisted counter
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [065_fix_mint_dispatch_seq_persisted_counter/reports/01_mint-dispatch-seq-fresh-shell-fix.md]
+- **Plan**: [065_fix_mint_dispatch_seq_persisted_counter/plans/01_mint-dispatch-seq-persisted-counter-fix.md]
 
 **Description**: Fix skill_orchestrate_mint_dispatch_seq to increment from the persisted counter. The helper in scripts/skill-base.sh computes dispatch_seq_counter=$((dispatch_seq_counter + 1)) from an ambient shell variable rather than from the value it reads back out of the loop guard file, then persists that result. Any caller that does not hold a single long-lived shell across the whole orchestration loop therefore re-mints the same value on every dispatch: in a fresh shell the variable is unset, so it evaluates to 0 + 1 = 1 every time. Observed during an /orchestrate run where each Bash tool call ran in its own shell -- the second dispatch re-returned dispatch_seq=1 despite the loop guard already carrying dispatch_seq_counter=1. Impact: dispatch_seq is the content-based discriminator the Stage 5 identity gate relies on to tell a legitimate current-dispatch handoff apart from a still-live predecessor's late write (mtime alone is structurally insufficient -- see context/patterns/dispatch-report-not-termination.md). A repeated value defeats that gate in both directions: a stale predecessor handoff carrying seq=1 would pass as the current dispatch's own report, and the mismatch branch could fire against a legitimate handoff. Likely fix: read the counter from the loop guard file inside the function (jq -r '(.dispatch_seq_counter // 0) + 1') rather than from the ambient variable, matching the read-modify-write idiom the multi-task engine already uses at Stage MT-4. Check whether skill-orchestrate-hard/SKILL.md's Stage 2 shares the same helper and is affected identically, and whether test-handoff-dispatch-identity.sh covers the fresh-shell case. SECOND INDEPENDENT CONFIRMATION (Philosophy/Papers/PossibleWorlds repo, base-mode /orchestrate of a formal task, 3 cycles): reproduced exactly as described above, in a different repository and a different task type. Cycle 1 (research) minted dispatch_seq=1 correctly; cycle 2 (plan) re-minted dispatch_seq=1 from a fresh shell while the loop guard already carried dispatch_seq_counter=1. The orchestrator worked around it by seeding dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' "$loop_guard_file") immediately before each skill_orchestrate_mint_dispatch_seq call, which produced correct seqs 2 and 3 for the remaining cycles; both later handoffs then passed the Stage 5 identity gate cleanly. This confirms the defect is not environment-specific and that it fires for ANY orchestrator driving its cycles through separate Bash tool invocations rather than one long-lived shell -- which is the normal execution shape for the base-mode engine, not an edge case. The caller-side seeding above is a workaround only and was NOT committed anywhere; the durable fix remains the read-inside-the-function change described above.
 
@@ -990,7 +991,7 @@ failure.
 
 ### 18. Detect stale .claude/ deploy trees and root-cause the silent staleness
 - **Effort**: 5h
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
@@ -1017,7 +1018,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 17. Fix .return-meta.json lifecycle ordering that makes the gate-out body unreachable
 - **Effort**: 4h
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 16, Task 35, Task 37
