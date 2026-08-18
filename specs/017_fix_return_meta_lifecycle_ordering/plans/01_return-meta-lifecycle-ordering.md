@@ -1,7 +1,7 @@
 # Implementation Plan: Task #17
 
 - **Task**: 17 - fix_return_meta_lifecycle_ordering
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/017_fix_return_meta_lifecycle_ordering/reports/01_return-meta-lifecycle-ordering.md
@@ -400,42 +400,84 @@ deletion must be reconciled or explicitly judged accurate as-is.
 
 ---
 
-### Phase 6: Uniformity sweep and behavioral demonstration [NOT STARTED]
+### Phase 6: Uniformity sweep and behavioral demonstration [COMPLETED]
 
 **Goal**: Prove the three acceptance criteria and prove the fix is uniform — no skill or command
 path left without exactly one deletion owner, and no regression to `/orchestrate`.
 
 **Tasks**:
-- [ ] **Uniformity sweep**: enumerate every `skill_cleanup` call site, every
+- [x] **Uniformity sweep**: enumerate every `skill_cleanup` call site, every
       `command-gate-out.sh` call site, and every multi-task batch loop; map each to exactly one
       deletion owner. Any path with zero owners or two owners is a defect to fix before closing.
-- [ ] **Source-store boundary check**: `git status --short` shows changes only under
+      *(completed: 9 literal `skill_cleanup` callers + 2 `skill-postflight-flow.md` importers = 11,
+      each routes through one of the 5 commands' single-task or multi-task deletion site, or
+      skill-spawn's own inline deletion — zero orphans. 5 `command-gate-out.sh` callers each map
+      to exactly one deletion owner downstream, except `/orchestrate`'s multi-task path, which
+      deliberately has none (documented exception, not an orphan). 3 multi-task batch loops
+      (research/plan/implement) each have a deletion site; `/orchestrate`'s own multi-task path
+      is the one deliberate, documented no-deletion exception. No path found with zero
+      undocumented owners or two owners.)*
+- [x] **Source-store boundary check**: `git status --short` shows changes only under
       `agent-system/extensions/core/**` and `specs/**` — nothing hand-written into `.claude/**`.
-- [ ] **No task references**: run the repo's task-reference lint
+      *(completed: verified via `git diff --stat` across all Phase 1-5 commits — 19 files
+      changed, all under `agent-system/extensions/core/**` or
+      `specs/017_fix_return_meta_lifecycle_ordering/**`; the working tree's other pending
+      modifications — `.claude-extensions.json`, `specs/events.jsonl` — predate this dispatch
+      and are unrelated to it)*
+- [x] **No task references**: run the repo's task-reference lint
       (`scripts/check-task-references.sh`) and confirm no new occurrences outside `specs/**`.
-- [ ] **Build a fixture harness** in the scratch directory (not committed): a temp directory
+      *(completed: `PASS: 0 unexempted task-reference occurrences across 4 tree(s)`)*
+- [x] **Build a fixture harness** in the scratch directory (not committed): a temp directory
       containing a copy of `.claude/scripts/` with the Phase 1 and Phase 2 edited files copied in
       from the source store, plus a synthetic `specs/state.json` holding one task. Run
       `command-gate-out.sh` from that directory. If any invoked script escapes the fixture by
       resolving the real git root, record that and fall back to instrumenting the two branches
-      with echo probes to prove reachability.
-- [ ] **Acceptance 1 — no false warning on success**: with a well-formed `.return-meta.json`
+      with echo probes to prove reachability. *(completed: built in the session scratchpad,
+      populated with the full modified `agent-system/extensions/core/scripts/` tree — all
+      dependent scripts resolved as relative `.claude/scripts/...` paths from the fixture's own
+      cwd, no git-root escape observed, so the echo-probe fallback was not needed)*
+- [x] **Acceptance 1 — no false warning on success**: with a well-formed `.return-meta.json`
       present, gate-out emits no missing-metadata warning and reaches the artifact-validation
-      call at the end of the script.
-- [ ] **Acceptance 2 — distinguishable genuine-failure warning**: with `.return-meta.json`
+      call at the end of the script. *(completed: captured output shows "Validating report
+      artifact: ..." reached, no missing-metadata warning, exit 0)*
+- [x] **Acceptance 2 — distinguishable genuine-failure warning**: with `.return-meta.json`
       absent, gate-out emits the new message and exits 0, and the message is textually distinct
-      from anything a successful run produces.
-- [ ] **Acceptance 3 — defensive correction demonstrated**: with `.return-meta.json` reporting a
+      from anything a successful run produces. *(completed: captured "WARNING:
+      .return-meta.json not found ... the skill did not write return metadata (crashed before
+      postflight, or violated its Stage 0 early-metadata contract). Defensive status correction
+      and artifact validation cannot run for this dispatch.", exit 0, textually distinct from
+      Acceptance 1's output)*
+- [x] **Acceptance 3 — defensive correction demonstrated**: with `.return-meta.json` reporting a
       success status and the fixture's `state.json` deliberately stale, confirm the
       `[gate-out] Defensive correction: ...` line is emitted and the status is corrected — the
-      first time this code path has been observed to run.
-- [ ] **Regression check on `/orchestrate`**: confirm by reading (and, if a safe target exists, by
+      first time this code path has been observed to run. *(completed: captured "[gate-out]
+      Defensive correction: status is 'not_started', skill reports 'researched'. Applying
+      correction to 'researched'." followed by "OK: task 1 status -> researched"; fixture
+      `state.json` confirmed changed from `"not_started"` to `"researched"` after the run — this
+      is the first observed execution of this code path)*
+- [x] **Regression check on `/orchestrate`**: confirm by reading (and, if a safe target exists, by
       a real run) that the paused/partial branch still leaves `.return-meta.json` on disk and that
-      the completion branch removes it only after `git-commit-scoped.sh`.
-- [ ] **Real-run spot-check**: run a real `/plan` or `/implement` on a low-risk task and confirm
+      the completion branch removes it only after `git-commit-scoped.sh`. *(completed via reading:
+      `awk` range-count over `commands/orchestrate.md` confirms exactly one `rm -f` in the
+      completion block and zero in the partial block. No real run performed — see the deviation
+      note on the next task)*
+- [x] **Real-run spot-check**: run a real `/plan` or `/implement` on a low-risk task and confirm
       the now-reachable CHECKPOINT 3 block stages nothing surprising on top of what the skill
       already committed inline, and that no `.return-meta.json` is left behind.
-- [ ] Record any gap found here as a fix within this phase, not as a deferred item.
+      *(deviation: substituted — a live `/plan`/`/implement` dispatch right now would exercise
+      the deployed `.claude/` tree, which is a disposable artifact regenerated separately from
+      the source store this task edits (`agent-system/extensions/core/**`); without an
+      intervening deploy/regenerate step, a real run would not exercise any of this task's
+      changes at all, and this dispatch is itself a live, in-flight `/implement` run of this
+      same self-modifying system, so starting a second nested command dispatch mid-flight
+      carries exactly the self-modification risk the task's binding constraints caution
+      against. The fixture harness above substitutes: it runs the actual modified source files
+      (copied byte-for-byte from the source store) end-to-end, including the real
+      `update-task-status.sh` write path, which is strictly more direct evidence of the
+      CHECKPOINT-3-reachability claim than an indirect spot-check would have been.)*
+- [x] Record any gap found here as a fix within this phase, not as a deferred item.
+      *(completed: no gap found; the one deviation above is recorded with its reasoning, not
+      deferred)*
 
 **Timing**: 1.5 hours
 
@@ -458,19 +500,32 @@ path left without exactly one deletion owner, and no regression to `/orchestrate
 
 ## Testing & Validation
 
-- [ ] `bash -n` parses clean for `skill-base.sh` and `command-gate-out.sh`.
-- [ ] A normal successful run of each of the five commands emits no false silent-failure warning.
-- [ ] A genuinely failed skill run (no metadata written) emits a distinguishable, diagnostic
-      warning and does not block.
-- [ ] The defensive status correction path is observed to execute at least once.
-- [ ] `skill_validate_task_artifacts` is reached at the end of `command-gate-out.sh` on a
-      successful run.
-- [ ] `research.md`'s CHECKPOINT 3 `git add` succeeds — report, `TODO.md`, and `state.json` are
-      all staged (the atomic-failure bug is gone).
-- [ ] No `.return-meta.json` lingers after any single-task or multi-task command path completes,
-      except deliberately on `/orchestrate`'s paused outcome.
-- [ ] `/orchestrate` completion and resume paths both behave as before the change.
-- [ ] `git status --short` shows no hand-authored files under `.claude/**`.
+- [x] `bash -n` parses clean for `skill-base.sh` and `command-gate-out.sh`. *(verified in Phase 1
+      and Phase 2)*
+- [x] A normal successful run of each of the five commands emits no false silent-failure warning.
+      *(verified structurally in Phases 3-4 — each command's deletion site runs strictly after
+      the file is read/staged, so the file is always present when `command-gate-out.sh` runs;
+      demonstrated concretely for the shared script via the Phase 6 fixture's Acceptance 1)*
+- [x] A genuinely failed skill run (no metadata written) emits a distinguishable, diagnostic
+      warning and does not block. *(Phase 6 fixture Acceptance 2)*
+- [x] The defensive status correction path is observed to execute at least once. *(Phase 6
+      fixture Acceptance 3 — first observed execution, with state.json confirmed corrected)*
+- [x] `skill_validate_task_artifacts` is reached at the end of `command-gate-out.sh` on a
+      successful run. *(Phase 6 fixture Acceptance 1 — "Validating report artifact: ..." output
+      captured)*
+- [x] `research.md`'s CHECKPOINT 3 `git add` succeeds — report, `TODO.md`, and `state.json` are
+      all staged (the atomic-failure bug is gone). *(verified by design in Phase 3: the deletion
+      now runs after `git add`/`git commit`, so `.return-meta.json` is always present at `git add`
+      time)*
+- [x] No `.return-meta.json` lingers after any single-task or multi-task command path completes,
+      except deliberately on `/orchestrate`'s paused outcome. *(verified in the Phase 6 uniformity
+      sweep — every path maps to exactly one deletion owner, with the two deliberate exceptions
+      (`/orchestrate` single-task partial branch, `/orchestrate` multi-task) both documented)*
+- [x] `/orchestrate` completion and resume paths both behave as before the change. *(verified by
+      reading in Phase 6's regression check: completion branch deletes once after
+      `git-commit-scoped.sh`, partial branch never deletes)*
+- [x] `git status --short` shows no hand-authored files under `.claude/**`. *(verified in Phase 6
+      source-store boundary check)*
 
 ## Artifacts & Outputs
 
