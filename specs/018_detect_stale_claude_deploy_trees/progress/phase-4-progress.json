@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the check into command-gate-in.sh",
+  "started_at": "2026-08-18T03:15:00Z",
+  "last_updated": "2026-08-18T03:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add freshness call at end of gate_in, after header echo and lock acquisition", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-in.sh"]},
+    {"id": 2, "description": "Guard call on deployed script existence, silent no-op when absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-in.sh"]},
+    {"id": 3, "description": "Invoke via bash (never source), discard exit status with || true", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-in.sh"]},
+    {"id": 4, "description": "Add no shell options to command-gate-in.sh; preserve sourced-into-caller invariant", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Update header comment to name the new non-blocking check", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-in.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": [
+    "bash -n command-gate-in.sh parses clean.",
+    "Sourced gate_in in a subshell against task 20 (not_started, non-terminal): SESSION_ID/TASK_TYPE/TASK_STATUS/PROJECT_NAME/DESCRIPTION/PADDED_NUM all exported, return code 0, lock released afterward. No freshness output printed because the deployed checker (.claude/scripts/check-deploy-freshness.sh) does not exist yet -- exercises the intended chicken-and-egg silent-no-op guard; Phase 5 deploys the checker and demonstrates the warning.",
+    "Terminal-status ABORT path (task 17, completed) still returns 1 with the ABORT message, no lock acquired, freshness call never reached.",
+    "Task-not-found path (task 999999) still returns 1 with the ERROR message, freshness call never reached.",
+    "Full core suite run-all.sh: 41 passed, 3 failed both with and without the Phase 4 edit (confirmed via git stash A/B comparison) -- the 3 failures (validate-state.sh single-source assertion, test-skill-base-lifecycle.sh, test-validate-return-meta.sh fix-roundtrip) are pre-existing and unrelated to this change, no regression introduced."
+  ]
+}

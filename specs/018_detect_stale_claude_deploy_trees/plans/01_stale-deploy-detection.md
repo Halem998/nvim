@@ -267,24 +267,26 @@ rather than silently dropping coverage.
 
 ---
 
-### Phase 4: Wire the check into command-gate-in.sh [NOT STARTED]
+### Phase 4: Wire the check into command-gate-in.sh [COMPLETED]
 
 **Goal**: Every ordinary command's CHECKPOINT 1 emits the warning when the deploy is stale,
 without changing any admission decision, exit code, or exported variable.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/command-gate-in.sh`, add the freshness call at the
+- [x] In `agent-system/extensions/core/scripts/command-gate-in.sh`, add the freshness call at the
       end of `gate_in`, after the operation header echo and after lock acquisition, so a lock
       refusal never pays the cost and the warning is the last thing printed before real work.
-- [ ] Guard the call on the deployed script's existence
+      *(completed)*
+- [x] Guard the call on the deployed script's existence
       (`[ -f .claude/scripts/check-deploy-freshness.sh ]`) so a tree too stale to have it is a
-      silent no-op rather than an error.
-- [ ] Invoke it as `bash ... 2>&1 || true` (or equivalent) -- never source it, never let its status
+      silent no-op rather than an error. *(completed)*
+- [x] Invoke it as `bash ... 2>&1 || true` (or equivalent) -- never source it, never let its status
       propagate. `gate_in`'s return value and all six exported variables must be unchanged.
-- [ ] Add no shell options to `command-gate-in.sh` -- its module docstring's sourced-into-caller
-      contract already forbids this; preserve that invariant.
-- [ ] Update the script's header comment to name the new non-blocking check among its
-      responsibilities, without task-number references.
+      *(completed)*
+- [x] Add no shell options to `command-gate-in.sh` -- its module docstring's sourced-into-caller
+      contract already forbids this; preserve that invariant. *(completed)*
+- [x] Update the script's header comment to name the new non-blocking check among its
+      responsibilities, without task-number references. *(completed)*
 
 **Timing**: 0.5 hours
 

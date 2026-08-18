@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# command-gate-in.sh — CHECKPOINT 1: Session generation, task lookup, and terminal status guard
+# command-gate-in.sh — CHECKPOINT 1: Session generation, task lookup, terminal status guard,
+# and a non-blocking deploy-freshness warning (see check-deploy-freshness.sh) printed just
+# before returning, once the deployed tree carries it.
 #
 # Usage: source .claude/scripts/command-gate-in.sh "$task_number" "$operation"
 #
@@ -107,6 +109,16 @@ gate_in() {
   local op_label
   op_label=$(echo "$operation" | tr '[:lower:]' '[:upper:]')
   echo "[$op_label] Task $task_number: $PROJECT_NAME"
+
+  # Non-blocking deploy-freshness check: guarded on the deployed checker's own existence so a
+  # tree too stale to carry it yet is a silent no-op (the gap closes on that repo's next
+  # resync). Invoked with `bash` (never sourced) and its exit status discarded via `|| true` so
+  # a stray failure here can never propagate into this sourced script's own return value or
+  # abort the calling shell -- see check-deploy-freshness.sh's header for its always-exit-0
+  # contract. Printed last, just before the exported variables become available to the caller.
+  if [ -f .claude/scripts/check-deploy-freshness.sh ]; then
+    bash .claude/scripts/check-deploy-freshness.sh 2>&1 || true
+  fi
 
   export SESSION_ID TASK_TYPE TASK_STATUS PROJECT_NAME DESCRIPTION PADDED_NUM
 }
