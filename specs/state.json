@@ -988,7 +988,7 @@
     {
       "project_number": 69,
       "project_name": "harden_conversion_quality_gate_against_mojibake",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "literature",
       "title": "Harden literature conversion quality gate against mojibake and unextractable-PDF output",
@@ -999,15 +999,21 @@
         "agent-system/extensions/literature/scripts/literature-convert.sh",
         "agent-system/extensions/literature/scripts/literature-ingest.sh"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md",
+          "type": "report",
+          "summary": "Research report: gate structure, root-cause analysis of why word_ratio-vs-pdftotext is a different metric than the internal page-coverage check, and prioritized recommendations (printable-ratio check, NUL/control-char zero-tolerance check, two-sided coverage band, shared-module testability pattern)."
+        }
+      ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:18:06Z",
-      "session_id": "sess_1787076968_4111bf"
+      "last_updated": "2026-08-18T18:43:46Z",
+      "session_id": "sess_1787078236_69862e_69"
     },
     {
       "project_number": 70,
       "project_name": "fix_discover_tier_starvation_and_silent_tier3_failure",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "literature",
       "title": "Fix literature-discover.sh tier starvation and silent Tier 3 failure",
@@ -1018,10 +1024,16 @@
         "agent-system/extensions/literature/scripts/literature-discover.sh",
         "agent-system/extensions/literature/commands/literature.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/reports/01_fix-discover-tier-starvation.md",
+          "type": "report",
+          "summary": "Confirms both defects (silent Tier 3 failure requires fixes in BOTH literature-discover.sh and commands/literature.md's caller-level 2>/dev/null; Tier 2 hits are computed then discarded by the final head-of-array truncation) plus the query-noise issue, and gives concrete fix directions for each: split curl status from body + stderr directive for Tier 3, per-tier reserved quotas with rollover for tier fairness, and title/description separation with a term-count threshold for query noise."
+        }
+      ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:18:06Z",
-      "session_id": "sess_1787076968_4111bf"
+      "last_updated": "2026-08-18T18:44:49Z",
+      "session_id": "sess_1787078236_69862e_70"
     },
     {
       "project_number": 71,
@@ -1030,16 +1042,18 @@
       "task_type": "meta",
       "topic": "literature",
       "title": "Fix validate-mode directory-path false positives and normalize-authors flag mismatch",
-      "description": "LOW severity -- validate-mode false positives and a documentation/CLI mismatch. Verified during a real /literature --validate run.\n\nDEFECT 1 -- DIRECTORY-PATH FALSE POSITIVES. skill-literature validate mode tests entry paths with `[ ! -f \"$full\" ]`, which fails for the directory-path schema variant used by book/parent-level entries (paths ending in '/', e.g. `sources/blackburn_2002/`). Result: 65 of 368 entries were reported stale when ALL 65 exist on disk as directories and ZERO files are genuinely missing -- the check is 100% false positive and therefore useless as a signal. FIX: branch on -d for directory paths.\n\nADJACENT FINDING A -- TOKEN-DRIFT BASELINE. The same validate run reported 56 token-drift warnings, of which roughly 52 are systematic: 55 of 56 drift the same direction (actual > stored) and 40+ cluster in a tight 1.21-1.35 ratio band, indicating a changed token formula or a bulk re-conversion rather than real per-document drift. Consider re-baselining stored token_count values so the drift check becomes a meaningful signal.\n\nADJACENT FINDING B -- FOUR GENUINELY REAL DRIFT ENTRIES, flag for separate follow-up. Most important: `sources/diamondsareforever/chunk_0001.md`, whose index entry claims token_count 95000 while `path` points at a single 903-byte chunk containing only the abstract; it also mixes the legacy absolute-path `chunks_dir` schema into the `path` schema and carries provenance_fidelity 'unverified_no_baseline'. Any --lit consumer budgeting on token_count would reserve 95k tokens for an abstract fragment, or read `path` and receive 1/56th of the paper while believing it had the whole thing. The other three: `sources/fine_2012_guide-to-ground` (521 stored vs 27134 actual), `sources/vardi_wolper_1986/...` (196 vs 11871), and `sources/fine_2012_counterfactuals-without-possible-worlds` (2222 vs 15982) -- all three look like counts recorded against stub extracts that were later properly converted.\n\nDEFECT 2 -- FLAG MISMATCH. skills/skill-literature/SKILL.md instructs users to run literature-normalize-authors.sh with '--dry-run (default) first', but the script rejects --dry-run as 'Unknown argument' -- dry-run is the bare no-flag default. FIX: correct the doc, or accept --dry-run as a no-op alias.\n\nINFORMATIONAL, NOT A DEFECT: literature-normalize-authors.sh correctly proposes normalizing 60 entries whose `authors` field is a comma-joined string rather than an array. Zero array-valued entries have comma-joined elements, so the malformed-array regression that the validate authors-shape check guards against has NOT reappeared.\n\nPrimary files: agent-system/extensions/literature/skills/skill-literature/SKILL.md, agent-system/extensions/literature/scripts/literature-normalize-authors.sh. Per .claude/rules/source-store-deploy-boundary.md all edits target agent-system/extensions/literature/**, never .claude/**.",
+      "description": "LOW severity -- validate-mode false positives and a documentation/CLI mismatch. Verified during a real /literature --validate run.\n\nDEFECT 1 -- DIRECTORY-PATH FALSE POSITIVES. skill-literature validate mode tests entry paths with `[ ! -f \"$full\" ]`, which fails for the directory-path schema variant used by book/parent-level entries (paths ending in '/', e.g. `sources/blackburn_2002/`). Result: 65 of 368 entries were reported stale when ALL 65 exist on disk as directories and ZERO files are genuinely missing -- the check is 100% false positive and therefore useless as a signal. FIX: branch on -d for directory paths.\n\nADJACENT FINDING A -- TOKEN-DRIFT BASELINE. The same validate run reported 56 token-drift warnings, of which roughly 52 are systematic: 55 of 56 drift the same direction (actual > stored) and 40+ cluster in a tight 1.21-1.35 ratio band, indicating a changed token formula or a bulk re-conversion rather than real per-document drift. Consider re-baselining stored token_count values so the drift check becomes a meaningful signal.\n\nADJACENT FINDING B -- FOUR GENUINELY REAL DRIFT ENTRIES, flag for separate follow-up. Most important: `sources/diamondsareforever/chunk_0001.md`, whose index entry claims token_count 95000 while `path` points at a single 903-byte chunk containing only the abstract; it also mixes the legacy absolute-path `chunks_dir` schema into the `path` schema and carries provenance_fidelity 'unverified_no_baseline'. Any --lit consumer budgeting on token_count would reserve 95k tokens for an abstract fragment, or read `path` and receive 1/56th of the paper while believing it had the whole thing. The other three: `sources/fine_2012_guide-to-ground` (521 stored vs 27134 actual), `sources/vardi_wolper_1986/...` (196 vs 11871), and `sources/fine_2012_counterfactuals-without-possible-worlds` (2222 vs 15982) -- all three look like counts recorded against stub extracts that were later properly converted.\n\nDEFECT 2 -- FLAG MISMATCH. skills/skill-literature/SKILL.md instructs users to run literature-normalize-authors.sh with '--dry-run (default) first', but the script rejects --dry-run as 'Unknown argument' -- dry-run is the bare no-flag default. FIX: correct the doc, or accept --dry-run as a no-op alias.\n\nINFORMATIONAL, NOT A DEFECT: literature-normalize-authors.sh correctly proposes normalizing 60 entries whose `authors` field is a comma-joined string rather than an array. Zero array-valued entries have comma-joined elements, so the malformed-array regression that the validate authors-shape check guards against has NOT reappeared.\n\nDEPENDENCY RATIONALE -- sequenced after task 69 (conversion quality gate hardening). Two couplings: (a) validate mode in skills/skill-literature/SKILL.md already special-cases `.md.rejected` quarantine artifacts, and task 69 changes which conversions produce them, so the validate branch should be fixed against the post-69 rejection behavior; (b) Adjacent Finding A (token-count re-baselining) and Finding B (stub-extract token counts) would be invalidated by any re-conversion pass that task 69 stricter gate forces, so re-baselining before 69 lands would have to be redone. Task 70 is independent of both and can run in parallel.\n\nPrimary files: agent-system/extensions/literature/skills/skill-literature/SKILL.md, agent-system/extensions/literature/scripts/literature-normalize-authors.sh. Per .claude/rules/source-store-deploy-boundary.md all edits target agent-system/extensions/literature/**, never .claude/**.",
       "effort": "1-3 hours",
-      "dependencies": [],
+      "dependencies": [
+        69
+      ],
       "file_scope": [
         "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
         "agent-system/extensions/literature/scripts/literature-normalize-authors.sh"
       ],
       "artifacts": [],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:18:06Z",
+      "last_updated": "2026-08-18T18:30:26Z",
       "session_id": "sess_1787076968_4111bf"
     }
   ],

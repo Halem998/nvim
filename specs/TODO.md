@@ -11,8 +11,8 @@ next_project_number: 72
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68,69,70,71 | -- | agent-system, extensions, literature, ... |
-| 2 | 42,44 | 28,31 | essential-refactor |
+| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68,69,70 | -- | agent-system, extensions, literature, ... |
+| 2 | 42,44,71 | 28,31,69 | literature, essential-refactor |
 | 3 | 9,29,53,64 | 22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
 | 5 | 32,50 | 30,31,48 | agent-system, essential-refactor |
@@ -45,9 +45,9 @@ next_project_number: 72
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-69 [NOT STARTED] — HIGH severity -- corpus-corruption vector. The conversion quality
-70 [NOT STARTED] — MEDIUM severity -- discovery correctness. Two verified defects in
-71 [NOT STARTED] — LOW severity -- validate-mode false positives and a documentation
+69 [RESEARCHED] — HIGH severity -- corpus-corruption vector. The conversion quality
+  └─ 71 [NOT STARTED] — LOW severity -- validate-mode false positives and a documentation
+70 [RESEARCHED] — MEDIUM severity -- discovery correctness. Two verified defects in
 
 ### Orchestration Concurrency
 
@@ -72,7 +72,7 @@ next_project_number: 72
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: literature
-- **Dependencies**: None
+- **Dependencies**: Task 69
 
 **Description**: LOW severity -- validate-mode false positives and a documentation/CLI mismatch. Verified during a real /literature --validate run.
 
@@ -86,13 +86,15 @@ DEFECT 2 -- FLAG MISMATCH. skills/skill-literature/SKILL.md instructs users to r
 
 INFORMATIONAL, NOT A DEFECT: literature-normalize-authors.sh correctly proposes normalizing 60 entries whose `authors` field is a comma-joined string rather than an array. Zero array-valued entries have comma-joined elements, so the malformed-array regression that the validate authors-shape check guards against has NOT reappeared.
 
+DEPENDENCY RATIONALE -- sequenced after task 69 (conversion quality gate hardening). Two couplings: (a) validate mode in skills/skill-literature/SKILL.md already special-cases `.md.rejected` quarantine artifacts, and task 69 changes which conversions produce them, so the validate branch should be fixed against the post-69 rejection behavior; (b) Adjacent Finding A (token-count re-baselining) and Finding B (stub-extract token counts) would be invalidated by any re-conversion pass that task 69 stricter gate forces, so re-baselining before 69 lands would have to be redone. Task 70 is independent of both and can run in parallel.
+
 Primary files: agent-system/extensions/literature/skills/skill-literature/SKILL.md, agent-system/extensions/literature/scripts/literature-normalize-authors.sh. Per .claude/rules/source-store-deploy-boundary.md all edits target agent-system/extensions/literature/**, never .claude/**.
 
 ---
 
 ### 70. Fix literature-discover.sh tier starvation and silent Tier 3 failure
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -111,10 +113,11 @@ Primary files: agent-system/extensions/literature/scripts/literature-discover.sh
 
 ### 69. Harden literature conversion quality gate against mojibake and unextractable-PDF output
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md]
 
 **Description**: HIGH severity -- corpus-corruption vector. The conversion quality gate in scripts/literature-convert.sh does not detect control-character/mojibake output, allowing garbage to enter the global corpus and the FTS index.
 

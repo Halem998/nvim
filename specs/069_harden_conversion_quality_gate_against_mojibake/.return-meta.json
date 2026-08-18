@@ -1,47 +1,39 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 3 meta tasks fixing empirically verified literature-extension defects: conversion quality gate mojibake blindness (HIGH), discover.sh tier starvation plus silent Tier 3 failure (MEDIUM), and validate-mode directory-path false positives plus normalize-authors flag mismatch (LOW).",
+  "status": "researched",
+  "summary": "Confirmed the empirical defect: run_quality_gate() in literature-convert.sh (lines 705-733) has exactly 4 checks (column-interleaving, sentence-boundary-glue, one-sided page-coverage floor, ligature/dehyphenation), none of which inspect raw content for control characters/NUL bytes/non-printable garbage. Recommended adding a printable-character-ratio check and a zero-tolerance NUL/control-char check (both operate on the content string alone, no PDF needed) as the primary fix, plus widening the existing internal page-coverage metric to a two-sided band as defense-in-depth (with a documented caveat about its likely lower sensitivity for this exact failure mode, since its numerator and denominator both derive from the same PyMuPDF extraction). literature-ingest.sh needs no logic changes - it already routes exit 3 correctly. literature-fidelity-audit.sh is a related but out-of-scope separate post-hoc batch tool with its own one-sided word_ratio floor (RATIO_THRESHOLD=0.75) against pdftotext.",
   "artifacts": [
     {
-      "type": "implementation",
-      "path": "/home/benjamin/.config/nvim/specs/069_harden_conversion_quality_gate_against_mojibake/",
-      "summary": "Task 69 directory: HIGH severity conversion quality gate hardening against mojibake and unextractable-PDF output"
-    },
-    {
-      "type": "implementation",
-      "path": "/home/benjamin/.config/nvim/specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/",
-      "summary": "Task 70 directory: MEDIUM severity literature-discover.sh tier starvation and silent Tier 3 failure"
-    },
-    {
-      "type": "implementation",
-      "path": "/home/benjamin/.config/nvim/specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/",
-      "summary": "Task 71 directory: LOW severity validate-mode directory-path false positives and normalize-authors flag mismatch"
-    },
-    {
-      "type": "implementation",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Regenerated global TODO.md containing tasks 69, 70, 71 under topic 'literature'"
-    },
-    {
-      "type": "implementation",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Global state.json updated with 3 new not_started entries; next_project_number advanced to 72"
+      "type": "report",
+      "path": "specs/069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md",
+      "summary": "Research report: gate structure, root-cause analysis of why word_ratio-vs-pdftotext is a different metric than the internal page-coverage check, and prioritized recommendations (printable-ratio check, NUL/control-char zero-tolerance check, two-sided coverage band, shared-module testability pattern)."
     }
   ],
-  "next_steps": "Run /research 69 first (HIGH severity corpus-corruption vector). Tasks 70 and 71 are independent of 69 and of each other and may be researched in parallel.",
-  "modified_files": [
-    "specs/state.json",
-    "specs/TODO.md"
+  "next_steps": "Run /plan 69 to create implementation plan",
+  "findings_count": 5,
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/literature/scripts/literature-convert.sh, the ingest-time run_quality_gate() Python heredoc (~line 705) and the separate post-hoc literature-fidelity-audit.sh word-ratio auditor (RATIO_THRESHOLD=0.75, pdftotext-based) are two independent tools with different ground truths: the gate's internal page-coverage metric compares content against doc.get_text() from the SAME PyMuPDF-opened document, so a font-encoding corruption that corrupts extraction can corrupt both numerator and denominator similarly, masking the defect in that specific ratio even though an independent extractor (pdftotext) would show a sharp divergence. When diagnosing PDF-extraction corruption, prefer content-only checks (printable-ratio, control-char/NUL presence) over ratio-against-self-extracted-source checks, since the latter can be blind to corruption that affects both sides of the ratio equally.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literature-extension", "quality-gate", "mojibake", "pymupdf", "word-ratio", "printable-ratio"]
+    },
+    {
+      "content": "literature-convert.sh uses a reusable pattern for making Python-heredoc-embedded logic unit-testable: extract shared functions into a standalone importable module (see literature_combining_overlay.py) that both the live heredoc (via sys.path.insert + import) and a --self-test CLI branch import identically, so string-only fixture tests never need a real PDF. This is the recommended approach for any new content-only quality-gate check (e.g. printable-ratio, control-char checks) since they need only a plain string, not a fitz.Document.",
+      "category": "PATTERN",
+      "source_artifact": "specs/069_harden_conversion_quality_gate_against_mojibake/reports/01_harden-quality-gate-against-mojibake.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["literature-extension", "shared-module", "self-test", "testability", "pymupdf", "unit-test-pattern"]
+    }
   ],
   "metadata": {
-    "session_id": "sess_1787076968_4111bf",
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 3,
-    "task_numbers": [69, 70, 71]
+    "session_id": "sess_1787078236_69862e_69",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "task_number": 69,
+    "task_type": "meta",
+    "orchestrator_mode": true,
+    "dispatch_seq": 1
   }
 }
