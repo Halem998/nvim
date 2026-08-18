@@ -1,17 +1,32 @@
 {
-  "status": "researched",
-  "task_number": 71,
-  "agent_type": "general-research-agent",
-  "session_id": "sess_1787078236_69862e_71",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "findings_count": 2,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/reports/01_validate-false-positives-flag-mismatch.md",
-      "summary": "Confirms two low-severity validate-mode defects: directory-path entries wrongly reported stale by a bare -f check, and SKILL.md's Validate Step 4 instructing users to pass a --dry-run flag that literature-normalize-authors.sh does not accept (dry-run is the flagless default). Both are doc/logic-only fixes in agent-system/extensions/literature/skills/skill-literature/SKILL.md; the normalize-authors script itself needs no change. Also verifies three adjacent findings (token-drift baseline, a mixed chunks_dir/path schema record for diamondsareforever, and a quarantine-artifact non-interaction with task 069's quality-gate hardening) as informational/follow-up only, out of this task's fix scope."
+      "type": "plan",
+      "path": "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/plans/01_validate-dirpath-flag-fix.md",
+      "summary": "Three-phase plan fixing the Validate Step 2 directory-path stale false positive and the normalize-authors --dry-run flag mismatch, with end-to-end live-index verification."
     }
   ],
-  "memory_candidates": [],
-  "next_steps": "Run /plan 71 to create implementation plan"
+  "next_steps": "Run /implement 71 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1787078236_69862e_71",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 2,
+    "dependency_waves": [[1], [2], [3]]
+  },
+  "memory_candidates": [
+    {
+      "content": "When a filesystem-existence check iterates index/manifest entries whose path field admits more than one shape (file path vs. directory path with trailing slash), a bare `[ ! -f \"$p\" ]` test silently misclassifies every directory-variant entry as missing. The compounding failure is structural, not just a wrong predicate: the real checks usually live in the `else` branch, so the misclassified entries also escape every other validation in the loop. The fix is a three-way branch (directory / missing file / existing file) plus hoisting any data-source-driven checks (jq over the index itself) out of the file-only branch so they cover both variants.",
+      "category": "PATTERN",
+      "source_artifact": "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/plans/01_validate-dirpath-flag-fix.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["validate", "directory-path", "schema-variant", "false-positive", "bash-test", "index-validation"]
+    }
+  ],
+  "modified_files": [
+    "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/plans/01_validate-dirpath-flag-fix.md"
+  ]
 }

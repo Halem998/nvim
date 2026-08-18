@@ -45,7 +45,7 @@ next_project_number: 72
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-71 [RESEARCHED] — LOW severity -- validate-mode false positives and a documentation
+71 [PLANNED] — LOW severity -- validate-mode false positives and a documentation
 
 ### Orchestration Concurrency
 
@@ -67,11 +67,12 @@ next_project_number: 72
 
 ### 71. Fix validate-mode directory-path false positives and normalize-authors flag mismatch
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 69
 - **Research**: [071_fix_validate_directory_path_false_positives_and_flag_mismatch/reports/01_validate-false-positives-flag-mismatch.md]
+- **Plan**: [071_fix_validate_directory_path_false_positives_and_flag_mismatch/plans/01_validate-dirpath-flag-fix.md]
 
 **Description**: LOW severity -- validate-mode false positives and a documentation/CLI mismatch. Verified during a real /literature --validate run.
 
