@@ -358,13 +358,47 @@ After Agent tool returns: read handoff (Stage 5). Increment cycle_count.
 
 #### State: `researching`
 
-In-flight state (another session is actively researching). Exit with warning.
+**Converged (was: exit with warning; see below for why this is now safe)**: dispatch to
+research, identically to the `not_started` handler above. `scripts/command-gate-in.sh`'s
+`task-lock.sh acquire-retry` already `return 1`s and aborts the entire single-task `/orchestrate`
+invocation, before Stage 1 is ever entered, whenever a FRESH foreign lock refuses after its
+bounded retry budget. This handler is only reachable once this session already holds the lock —
+so the former warning's claim ("another session is actively researching") is provably false in
+every reachable case: either no other session holds the lock (this session's own acquire
+succeeded outright), or a prior session's lock was stale and reclaimed. A task sitting in
+`researching` with a dead prior session's stale lock is exactly the stranded-task case this
+convergence exists to unstick; re-dispatching research is the correct, idempotent recovery
+action (a fresh research pass adds a new report, it does not corrupt or lose the old one).
 
+```bash
+skill_preflight_update "$task_number" "research" "$session_id"
 ```
-echo "[orchestrate] WARNING: Task $task_number is currently being researched in another session."
-echo "Wait for the research to complete, then run /orchestrate $task_number again."
-EXIT (partial)
+
+```bash
+# Dispatch window for infra-failure discrimination — see
+# context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch so a
+# stale `true` can never carry over from a previous cycle.
+dispatch_start_ts=$(date -u +%s)
+dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
 ```
+
+Invoke the Agent tool:
+
+| Field | Value |
+|-------|-------|
+| `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
+| `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty) |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
+
+**After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
+`context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
+ONLY if the call itself returned a transport/API-layer error with no subagent-authored text of
+any kind. Any subagent-authored output — including text in which the subagent describes an
+error it hit — means `false`. Then read handoff (Stage 5), which decides whether this cycle is
+charged.
+
+After Agent tool returns: read handoff (Stage 5). Increment cycle_count.
 
 #### State: `researched`
 
@@ -407,7 +441,46 @@ After Agent tool returns: read handoff. Increment cycle_count.
 
 #### State: `planning`
 
-In-flight state. Exit with warning (same pattern as `researching`).
+**Converged (was: exit with warning, same pattern as the former `researching` handler; see that
+handler above for the full "this session provably holds the lock" justification, which applies
+identically here)**: dispatch to plan, identically to the `researched` handler above.
+
+Read research artifact path from state.json:
+```bash
+research_artifact=$(jq -r --argjson num "$task_number" \
+  '[.active_projects[] | select(.project_number == $num) | .artifacts // [] | .[] | select(.type == "report")] | .[0].path // ""' \
+  specs/state.json)
+```
+
+```bash
+skill_preflight_update "$task_number" "plan" "$session_id"
+```
+
+```bash
+# Dispatch window for infra-failure discrimination — see
+# context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch so a
+# stale `true` can never carry over from a previous cycle.
+dispatch_start_ts=$(date -u +%s)
+dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
+```
+
+Invoke the Agent tool:
+
+| Field | Value |
+|-------|-------|
+| `subagent_type` | `$PLANNER_AGENT` (resolved by task type in Stage 1b) |
+| `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty) |
+| `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
+
+**After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
+`context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
+ONLY if the call itself returned a transport/API-layer error with no subagent-authored text of
+any kind. Any subagent-authored output — including text in which the subagent describes an
+error it hit — means `false`. Then read handoff (Stage 5), which decides whether this cycle is
+charged.
+
+After Agent tool returns: read handoff. Increment cycle_count.
 
 #### State: `planned` or `implementing`
 
@@ -1911,13 +1984,20 @@ never independently, and must always agree) — classify each eligible task by i
 
 | Task status | Group | Agent |
 |-------------|-------|-------|
-| `not_started` | research_tasks | `research_agents[task_num]` |
-| `researched` | plan_tasks | `planner-agent` |
+| `not_started`, `researching` | research_tasks | `research_agents[task_num]` |
+| `researched`, `planning` | plan_tasks | `planner-agent` |
 | `planned`, `implementing` | implement_tasks | `implement_agents[task_num]` |
 | `partial` with continuation | implement_tasks | `implement_agents[task_num]` |
 | `partial` with blockers | failed_tasks (mark blocked) | — |
 | `partial` with no handoff | implement_tasks | `implement_agents[task_num]` |
-| `blocked`, `researching`, `planning`, unknown | skip | — |
+| `blocked`, unknown | skip | — |
+
+`researching` folds into the SAME group as `not_started`, and `planning` folds into the SAME
+group as `researched` — this is the eligibility-not-status-gated convergence: a task stranded in
+`researching`/`planning` by a dead prior session's stale lock is no longer routed to `skip`
+merely for carrying an in-flight status string; it re-dispatches to the phase its status names.
+`unknown` (any status string that is none of the classifier's recognized rows) keeps the old
+`skip` behavior unchanged.
 
 `blocked` folding into `skip` here is the one row that still diverges from single-task Stage 4
 (which routes `blocked` to `needs_human`/escalation) — and it is intentional, documented, not an

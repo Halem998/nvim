@@ -351,7 +351,7 @@ bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify
 
 ---
 
-### Phase 4: Classifier maps researching/planning to real phase groups, with all three co-maintained copies [NOT STARTED]
+### Phase 4: Classifier maps researching/planning to real phase groups, with all three co-maintained copies [COMPLETED]
 
 **Goal**: `researching` routes to the research group and `planning` to the plan group on both
 engines, with the classifier's header table, Stage MT-4's phase-grouping table, and single-task
@@ -359,32 +359,41 @@ Stage 4's handlers all changed in this same phase — the script's own header de
 artifacts must never change independently.
 
 **Tasks**:
-- [ ] **Write the two mutation-check fixtures FIRST**: `researching` -> `research` and `planning`
+- [x] **Write the two mutation-check fixtures FIRST**: `researching` -> `research` and `planning`
       -> `plan`, both engines. Run them in the sandbox against
       `git show HEAD:agent-system/extensions/core/scripts/orchestrate-triage-classify.sh` and
       capture the RED output (pre-fix both emit `group: "skip"`). Record that output in the phase's
       commit body as the mutation-check evidence required by
-      `context/standards/shell-script-testing.md`.
-- [ ] Add `elif ($status == "researching")` -> `group: "research"` and
+      `context/standards/shell-script-testing.md`. *(completed: RED confirmed pre-fix — both
+      fixtures failed with `group=skip`, reason "transitional/unknown"; 22 other fixtures
+      unaffected — see commit body)*
+- [x] Add `elif ($status == "researching")` -> `group: "research"` and
       `elif ($status == "planning")` -> `group: "plan"` arms to the `jq` chain, placed before the
-      final `else`, with `reason` strings matching the chain's existing phrasing style.
-- [ ] Update the script's header engine table: split the
+      final `else`, with `reason` strings matching the chain's existing phrasing style. *(completed)*
+- [x] Update the script's header engine table: split the
       `| researching, planning, unknown | skip | skip |` row into `researching -> research`,
       `planning -> plan`, and a remaining `unknown -> skip` row, for both engine columns.
-- [ ] Update Stage MT-4's "Phase grouping" table in `skill-orchestrate/SKILL.md`: move
+      *(completed)*
+- [x] Update Stage MT-4's "Phase grouping" table in `skill-orchestrate/SKILL.md`: move
       `researching` into `research_tasks` and `planning` into `plan_tasks`, leaving only
       `blocked`/unknown in the `skip` row. Preserve the existing note that `blocked` is the one
-      intentional engine divergence.
-- [ ] Converge single-task Stage 4's `researching` and `planning` handlers in
+      intentional engine divergence. *(completed)*
+- [x] Converge single-task Stage 4's `researching` and `planning` handlers in
       `skill-orchestrate/SKILL.md`: replace the `EXIT (partial)` + "being researched in another
       session" warning with dispatch, mirroring the `not_started` / `researched` handlers. Record
       the justification inline: `command-gate-in.sh`'s `acquire-retry` already aborted the
       invocation if a fresh foreign lock refused, so this session provably holds the lock by the
-      time these handlers run.
-- [ ] Mirror the converged handlers in `skill-orchestrate-hard/SKILL.md` — its `researching` and
+      time these handlers run. *(completed; also corrected the same false "exit with warning"
+      claim in docs/architecture/orchestrate-state-machine.md's state table and added a
+      "Convergence: researching/planning No Longer Exit" subsection — found via the phase's
+      required census grep, corrected in-phase per the Scope Hypothesis)*
+- [x] Mirror the converged handlers in `skill-orchestrate-hard/SKILL.md` — its `researching` and
       `planning` handlers currently read "Same as base skill" over the old exit behavior and would
-      otherwise assert a now-false claim.
-- [ ] Re-run the two mutation-check fixtures post-fix; both must now be GREEN.
+      otherwise assert a now-false claim. *(completed; `planning` handler cross-references the
+      `researched` handler's H4-gated dispatch block immediately above rather than duplicating it,
+      since a stranded `planning` task needs identical treatment)*
+- [x] Re-run the two mutation-check fixtures post-fix; both must now be GREEN. *(completed: GREEN,
+      26 passed, 0 failed)*
 
 **Timing**: 2 hours
 

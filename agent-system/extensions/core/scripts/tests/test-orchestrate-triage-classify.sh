@@ -265,6 +265,33 @@ check_fixture "mt" 111 "not_applicable" "skip" \
   "blocked -> skip (mt engine; DOCUMENTED DIVERGENCE from single, not a bug)"
 
 # =====================================================================
+# Mutation-check fixtures (per context/standards/shell-script-testing.md): researching -> research
+# and planning -> plan, both engines. These are RUN AND CONFIRMED RED against the pre-fix
+# classifier (`git show HEAD:` copy) BEFORE the jq arms are added -- see the phase's commit body
+# for the captured RED output. Pre-fix, both statuses fall through to the classifier's final
+# `else` arm and are emitted as group "skip" (reason: "transitional/unknown"), matching the
+# now-removed header table row `| researching, planning, unknown | skip | skip |`.
+# =====================================================================
+
+cat > "$WORKDIR/specs/state.json" <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 112, "project_name": "fixture_researching", "status": "researching"},
+    {"project_number": 113, "project_name": "fixture_planning", "status": "planning"}
+  ]
+}
+EOF
+
+check_fixture "single" 112 "not_applicable" "research" \
+  "researching -> research (mutation-check fixture)"
+check_fixture "mt" 112 "not_applicable" "research" \
+  "researching -> research cross-engine agreement (mutation-check fixture)"
+check_fixture "single" 113 "not_applicable" "plan" \
+  "planning -> plan (mutation-check fixture)"
+check_fixture "mt" 113 "not_applicable" "plan" \
+  "planning -> plan cross-engine agreement (mutation-check fixture)"
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

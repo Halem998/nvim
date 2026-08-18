@@ -61,8 +61,18 @@
 #   | partial + blockers, no continuation         | needs_human | needs_human   |
 #   | partial, neither                            | implement   | implement     |
 #   | blocked                                     | skip        | needs_human   |
-#   | researching, planning, unknown              | skip        | skip          |
+#   | researching (NEW -- was skip, folded into the old "researching, planning, unknown" row) | research | research |
+#   | planning (NEW -- was skip, folded into the old "researching, planning, unknown" row)    | plan     | plan     |
+#   | unknown (unrecognized/garbage status)       | skip        | skip          |
 #   | terminal (completed/abandoned/expanded)      | terminal    | terminal      |
+#
+# `researching`/`planning` no longer route to `skip`: eligibility is no longer status-gated (a
+# task is admitted/deferred by locks, dependencies[], and file_scope overlap downstream, never by
+# an in-flight status string), so a task stranded in `researching`/`planning` by a dead prior
+# session's stale lock must actually classify to a real dispatch group, not fall into the same
+# bucket as a genuinely unrecognized status string. `unknown` (any status string that is none of
+# the above) keeps the old `skip` behavior unchanged — this row split is scoping-only, not a
+# widening of what "unknown" means.
 #
 # `blocked` is the one row that still diverges, and it is intentional: this is a DESIGN, not an
 # undocumented assertion, because both engines independently corroborate it in their own handlers
@@ -272,6 +282,14 @@ if verdicts=$(jq -n -c \
     {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"implement",
      handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
      reason:("task #" + ($c|tostring) + " is " + $status + "; routes to implement")}
+  elif $status == "researching" then
+    {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"research",
+     handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
+     reason:("task #" + ($c|tostring) + " is researching (in-flight, possibly stranded by a dead prior session); routes to research")}
+  elif $status == "planning" then
+    {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"plan",
+     handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
+     reason:("task #" + ($c|tostring) + " is planning (in-flight, possibly stranded by a dead prior session); routes to plan")}
   elif $status == "partial" then
     (($hinfo.state // "absent")) as $hstate |
     (($hinfo.blocker_count // 0)) as $bc |

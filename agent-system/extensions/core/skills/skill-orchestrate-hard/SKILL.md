@@ -598,7 +598,38 @@ Increment cycle_count.
 
 #### State: `researching`
 
-In-flight. Exit with warning (another session is researching). Same as base skill.
+**Converged (was: exit with warning; "same as base skill" pointer)**: dispatch research via
+hard-mode research agent, identically to the `not_started` handler above. See the base skill's
+`skill-orchestrate/SKILL.md` `#### State: researching` handler for the full justification —
+`scripts/command-gate-in.sh`'s `task-lock.sh acquire-retry` already aborts the whole invocation
+before Stage 1 if a FRESH foreign lock refuses, so this handler is only reachable once this
+session already holds the lock, making the former warning's premise provably false.
+
+```bash
+skill_preflight_update "$task_number" "research" "$session_id"
+```
+
+```
+# Dispatch window for infra-failure discrimination — see
+# context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch.
+dispatch_start_ts=$(date -u +%s)
+dispatch_was_transport_error=false
+dispatch_seq=$(mint_dispatch_seq)
+
+Agent tool:
+  subagent_type: $RESEARCH_AGENT
+  prompt: "Research task $task_number: $DESCRIPTION${focus_prompt:+. Focus: $focus_prompt}"
+  delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq}
+```
+
+**After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
+`context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
+ONLY if the call itself returned a transport/API-layer error with no subagent-authored text of
+any kind. Any subagent-authored output — including text describing an error it hit — means
+`false`. Then read handoff (Stage 5), which decides whether this cycle is charged.
+
+After Agent tool returns: read handoff (Stage 5). Set `adversarial_verified=false`.
+Increment cycle_count.
 
 #### State: `researched` — WITH Adversarial Verification Gate (H4)
 
@@ -688,7 +719,15 @@ fi
 
 #### State: `planning`
 
-In-flight. Exit with warning. Same as base skill.
+**Converged (was: exit with warning; "same as base skill" pointer)**: run the IDENTICAL,
+unchanged bash block from the `researched` handler immediately above — same H4 adversarial
+verification gate, same `skill_preflight_update "$task_number" "plan" "$session_id"` call, same
+`$PLANNER_AGENT` dispatch. A task stranded in `planning` has research already complete (that is
+how it reached this status), so it needs exactly the same re-dispatch-to-plan treatment as a
+fresh `researched` task, gated by the same verification requirement — there is no behavioral
+difference to encode separately. See the base skill's `skill-orchestrate/SKILL.md`
+`#### State: planning` handler for the full "this session provably holds the lock" justification
+for why converging (rather than exiting with a warning) is now safe.
 
 #### State: `planned` or `implementing` — Per-Phase Dispatch (H1)
 

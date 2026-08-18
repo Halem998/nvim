@@ -19,9 +19,9 @@ The state machine is implemented inside `skill-orchestrate` (Pattern C: Orchestr
 | State | Detected By | Action | Success Next | Failure Next |
 |-------|-------------|--------|--------------|--------------|
 | `not_started` | `state.json status = "not_started"` | `dispatch(research, task_n)` | `researched` | increment cycle, loop |
-| `researching` | `status = "researching"` | Wait / re-check (status update in flight) | — | exit with warning |
+| `researching` | `status = "researching"` | `dispatch(research, task_n)` — CONVERGED with `not_started` (was: wait/re-check, exit with warning; see "Convergence: `researching`/`planning` No Longer Exit" below) | `researched` | increment cycle, loop |
 | `researched` | `status = "researched"` | `dispatch(plan, task_n)` | `planned` | increment cycle, loop |
-| `planning` | `status = "planning"` | Wait / re-check | — | exit with warning |
+| `planning` | `status = "planning"` | `dispatch(plan, task_n)` — CONVERGED with `researched` (was: wait/re-check, exit with warning; see "Convergence: `researching`/`planning` No Longer Exit" below) | `planned` | increment cycle, loop |
 | `planned` | `status = "planned"` | `dispatch(implement, task_n, orchestrator_mode=true)` | `implemented` | check blockers |
 | `implementing` | `status = "implementing"` | `dispatch(implement, task_n, orchestrator_mode=true)` — resume | `implemented` | check blockers |
 | `partial` (with handoff) | `.orchestrator-handoff.json` has a continuation pointer in either accepted form — nested `continuation_context.handoff_path` or flat top-level `continuation_path` (see `docs/architecture/handoff-schema.md`'s "Two Accepted Forms") | `dispatch(implement, task_n, continuation_context, orchestrator_mode=true)` (normalized to `{ handoff_path, orchestrator_mode: true }`) | `implemented` | check blockers |
@@ -42,6 +42,23 @@ State Handlers" and "Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight" s
 equivalent handlers in `skill-orchestrate-hard/SKILL.md` — immediately before each handler's
 corresponding Agent dispatch, mirroring the `skill_postflight_update()` call these same handlers
 already make after the dispatch returns.
+
+### Convergence: `researching`/`planning` No Longer Exit
+
+The single-task engine's `researching` and `planning` state handlers used to exit the whole
+invocation with a warning ("another session is actively researching/planning — wait and re-run"),
+under the premise that a live sibling session owned the in-flight work. That premise is provably
+false whenever these handlers are reachable at all: `scripts/command-gate-in.sh`'s
+`task-lock.sh acquire-retry` already `return 1`s and aborts the ENTIRE single-task `/orchestrate`
+invocation, before Stage 1 is ever entered, whenever a FRESH foreign lock refuses after its
+bounded retry budget. By the time a `researching` or `planning` handler runs, this session
+already holds the lock — either no other session held it (this session's own acquire succeeded
+outright), or a prior session's lock was stale and reclaimed. A task sitting in `researching` or
+`planning` under a dead prior session's stale lock is a STRANDED task, not a genuinely in-flight
+one, so the correct action is to re-dispatch (research or plan, respectively) rather than exit —
+exactly the recovery this convergence provides. See `skills/skill-orchestrate/SKILL.md`'s
+`#### State: researching` and `#### State: planning` handlers for the converged dispatch logic,
+and `skills/skill-orchestrate-hard/SKILL.md`'s mirrored handlers.
 
 The `partial` no-handoff/no-blockers sub-state (a normal shape for a base-mode dispatch, which
 never writes a handoff) now dispatches `implement` on every cycle where budget remains, sourcing

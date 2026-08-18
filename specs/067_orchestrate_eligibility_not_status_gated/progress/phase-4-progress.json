@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "Classifier maps researching/planning to real phase groups, with all three co-maintained copies",
+  "started_at": "2026-08-18T02:15:00Z",
+  "last_updated": "2026-08-18T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Mutation-check fixtures written and confirmed RED against pre-fix classifier", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"]},
+    {"id": 2, "description": "Add researching/planning jq arms to classifier", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 3, "description": "Update classifier header engine table", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 4, "description": "Update Stage MT-4 phase-grouping table", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "Converge single-task Stage 4 researching/planning handlers", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 6, "description": "Mirror converged handlers in skill-orchestrate-hard/SKILL.md", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 7, "description": "Re-run mutation-check fixtures post-fix, confirm GREEN", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.extra",
+      "description": "docs/architecture/orchestrate-state-machine.md's Complete State Table (rows for researching/planning) and a new Convergence subsection were updated in this phase, though not explicitly named in this phase's Files-to-modify list (only Phase 5's ASCII eligibility box and Dependency Gating Model prose were named for this file)",
+      "type": "altered",
+      "reason": "The state table rows directly restated the OLD 'exit with warning' single-task handler behavior this phase converges -- required correction under the phase's own Scope Hypothesis census-grep instruction ('any additional site found must be corrected in this phase, not deferred'). This is distinct from Phase 5's scope (the ELIGIBILITY-rule ASCII box and Dependency Gating Model prose), which remains untouched and reserved for Phase 5.",
+      "annotation": "N/A - not a plan checklist item, recorded here for audit trail"
+    }
+  ]
+}
