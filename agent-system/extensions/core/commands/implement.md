@@ -366,11 +366,18 @@ git add "${stage_paths[@]}"
 **On completion:**
 ```bash
 git commit -m "task {N}: complete implementation\n\nSession: {SESSION_ID}"
+# .return-meta.json was staged and committed above (via the task-dir add) and its modified_files
+# were already read into stage_paths above; this is /implement's own last consumer of the file
+# on the completion branch. skill_cleanup no longer deletes it; deletion is owned here.
+rm -f "specs/${PADDED_NUM}_${PROJECT_NAME}/.return-meta.json"
 ```
 
 **On partial:**
 ```bash
 git commit -m "task {N}: partial implementation (phases 1-{M} of {total})\n\nSession: {SESSION_ID}"
+# Same deletion on the partial branch -- modified_files was already read above before this commit,
+# so nothing downstream still needs the file.
+rm -f "specs/${PADDED_NUM}_${PROJECT_NAME}/.return-meta.json"
 ```
 
 Commit failure is non-blocking (log and continue).

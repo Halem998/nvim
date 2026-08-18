@@ -693,6 +693,14 @@ bash .claude/scripts/git-commit-scoped.sh \
   --session "{SESSION_ID}" \
   --honest-index-rows "{N}" \
   -- "${stage_paths[@]}"
+# Deletion is scoped to the completion branch ONLY. .return-meta.json was staged and committed
+# above (its modified_files were already read into stage_paths above), and this is the completion
+# outcome's own last consumer of the file. Do NOT add this deletion to the partial branch below:
+# a still-running /orchestrate loop's next cycle recovers its outcome via
+# orchestrate-stage5-gates.sh, which reads .return-meta.json as a freshness-windowed fallback
+# (gated on mtime against dispatch_start_ts, so a stale leftover is never mistaken for a fresh
+# outcome) -- deleting it on the paused/partial branch would discard that recovery path.
+rm -f "${metadata_file}"
 ```
 
 **On partial:**
@@ -702,6 +710,8 @@ bash .claude/scripts/git-commit-scoped.sh \
   --session "{SESSION_ID}" \
   --honest-index-rows "{N}" \
   -- "${stage_paths[@]}"
+# NOTE: deliberately no .return-meta.json deletion here -- see the completion branch's comment
+# above. The paused/partial outcome keeps the file for the next cycle's outcome recovery.
 ```
 
 Commit failure is non-blocking (log and continue).

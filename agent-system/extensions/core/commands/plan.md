@@ -600,6 +600,10 @@ Session: {session_id}
 
 EOF
 )"
+# .return-meta.json is staged and committed above (included recursively via the task-dir add),
+# then removed as the final line of this block -- this is /plan's own last consumer of the file.
+# skill_cleanup no longer deletes it at the skill's own Stage 9; deletion is owned here.
+rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 ```
 
 Commit failure is non-blocking (log and continue).

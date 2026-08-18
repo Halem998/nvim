@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Per-command deletion sites (single-task paths)",
+  "started_at": "2026-08-18T02:41:00Z",
+  "last_updated": "2026-08-18T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "research.md CHECKPOINT 3 deletion", "status": "done", "files_touched": ["agent-system/extensions/core/commands/research.md"]},
+    {"id": 2, "description": "plan.md CHECKPOINT 3 deletion", "status": "done", "files_touched": ["agent-system/extensions/core/commands/plan.md"]},
+    {"id": 3, "description": "implement.md CHECKPOINT 3 deletion on both branches", "status": "done", "files_touched": ["agent-system/extensions/core/commands/implement.md"]},
+    {"id": 4, "description": "orchestrate.md CHECKPOINT 3 deletion on completion branch only", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 5, "description": "revise.md deletion after gate-out and plan-file check", "status": "done", "files_touched": ["agent-system/extensions/core/commands/revise.md"]},
+    {"id": 6, "description": "confirm non-blocking, unconditional-on-commit-success deletion in all sites", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

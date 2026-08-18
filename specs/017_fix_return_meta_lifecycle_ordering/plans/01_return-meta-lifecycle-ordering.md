@@ -218,30 +218,32 @@ absence is a real signal, without adding any deletion to this script.
 
 ---
 
-### Phase 3: Per-command deletion sites (single-task paths) [NOT STARTED]
+### Phase 3: Per-command deletion sites (single-task paths) [COMPLETED]
 
 **Goal**: Give each of the five commands exactly one deletion of `.return-meta.json`, positioned
 after the last of its own steps that consumes the file.
 
 **Tasks**:
-- [ ] `commands/research.md` CHECKPOINT 3: add `rm -f
+- [x] `commands/research.md` CHECKPOINT 3: add `rm -f
       "specs/${padded_num}_${project_name}/.return-meta.json"` as the final line of the commit
       block, after `git commit`. Note in a comment that the preceding `git add` lists this file
       explicitly and fails atomically if it is absent — which is precisely the bug being fixed.
-- [ ] `commands/plan.md` CHECKPOINT 3: add the same deletion as the final line, after
-      `git commit` (its `git add "${task_dir}/"` includes the file recursively).
-- [ ] `commands/implement.md` CHECKPOINT 3: add the same deletion after the `git commit` on both
+      *(completed)*
+- [x] `commands/plan.md` CHECKPOINT 3: add the same deletion as the final line, after
+      `git commit` (its `git add "${task_dir}/"` includes the file recursively). *(completed)*
+- [x] `commands/implement.md` CHECKPOINT 3: add the same deletion after the `git commit` on both
       the completion and partial branches — the `modified_files` read at the top of the block
-      still needs the file present.
-- [ ] `commands/orchestrate.md` CHECKPOINT 3: add the deletion **only** on the completion branch,
+      still needs the file present. *(completed)*
+- [x] `commands/orchestrate.md` CHECKPOINT 3: add the deletion **only** on the completion branch,
       after the `git-commit-scoped.sh` call. Add a comment stating that the partial/paused branch
       deliberately keeps the file so the next invocation's Stage 5 outcome recovery
       (`orchestrate-stage5-gates.sh`, freshness-windowed against `dispatch_start_ts`) still has
-      its fallback.
-- [ ] `commands/revise.md`: add the deletion immediately after the `command-gate-out.sh` call and
+      its fallback. *(completed)*
+- [x] `commands/revise.md`: add the deletion immediately after the `command-gate-out.sh` call and
       after the revise-specific plan-file existence check, since `/revise` has no CHECKPOINT 3.
-- [ ] In each site, make the deletion non-blocking and unconditional on commit success
-      (commit failure is already non-blocking in all five commands).
+      *(completed)*
+- [x] In each site, make the deletion non-blocking and unconditional on commit success
+      (commit failure is already non-blocking in all five commands). *(completed)*
 
 **Timing**: 1 hour
 

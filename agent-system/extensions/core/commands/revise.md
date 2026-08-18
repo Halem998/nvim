@@ -94,6 +94,13 @@ if [ -z "$revised_plan" ]; then
 fi
 ```
 
+**Cleanup**: `/revise` has no CHECKPOINT 3 commit block of its own (`skill-reviser` commits
+inline), so this is the command's own last step and owns `.return-meta.json`'s deletion --
+skill_cleanup no longer deletes it at the skill's own Stage 9:
+```bash
+rm -f "specs/${PADDED_NUM}_${PROJECT_NAME}/.return-meta.json"
+```
+
 **On GATE OUT success**: Revision verified.
 
 ---
