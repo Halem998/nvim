@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
 # test-orchestrate-triage-classify.sh - Fixture-driven regression suite for
-# orchestrate-triage-classify.sh's `partial`-status continuation-pointer predicate.
+# orchestrate-triage-classify.sh. ORIGINALLY scoped to only the `partial`-status
+# continuation-pointer predicate (see "THE DEFECT UNDER TEST" below); EXTENDED (see
+# "Full status-to-group coverage" further down) to be the full status-to-group regression suite
+# for both engines, covering every row of the classifier's header table except
+# `researching`/`planning` (those two rows' mutation-check fixtures belong to, and are written and
+# run against the pre-fix classifier by, the change that adds them — see that change's own commit
+# body for the required RED evidence).
 #
-# THE DEFECT UNDER TEST: the sole active .orchestrator-handoff.json writer (H9 hard-mode
-# wrap-up) emits a FLAT top-level `continuation_path` string. Before the fix, the classifier's
-# `continuation_ok` jq expression checks ONLY the NESTED `continuation_context.handoff_path` — a
-# key the active writer never produces. A real, actionable continuation therefore classifies as
-# handoff_state "empty" instead of "continuation", stranding the task. This suite locks in the
-# fix: accept EITHER form, per context/standards/shell-script-testing.md's mutation-check
-# discipline (a suite that passes unchanged pre- and post-fix proves nothing).
+# THE DEFECT UNDER TEST (original scope): the sole active .orchestrator-handoff.json writer (H9
+# hard-mode wrap-up) emits a FLAT top-level `continuation_path` string. Before the fix, the
+# classifier's `continuation_ok` jq expression checks ONLY the NESTED
+# `continuation_context.handoff_path` — a key the active writer never produces. A real, actionable
+# continuation therefore classifies as handoff_state "empty" instead of "continuation", stranding
+# the task. This suite locks in the fix: accept EITHER form, per
+# context/standards/shell-script-testing.md's mutation-check discipline (a suite that passes
+# unchanged pre- and post-fix proves nothing).
 #
 # Sandbox shape: the classifier sources deploy-root-guard.sh, which hard-requires the script's
 # parent directory to match `*/.claude` or `*/.opencode` and derives
@@ -190,6 +197,72 @@ check_fixture "single" 104 "continuation" "implement" \
   "Fixture D (continuation_path populated AND blockers non-empty; continuation must outrank blockers)"
 check_fixture "mt" 104 "continuation" "implement" \
   "Fixture D (continuation outranks blockers) cross-engine agreement"
+
+# =====================================================================
+# Full status-to-group coverage (EXTENSION to this suite's original `partial`-only scope): every
+# status-to-group row for both engines EXCEPT `researching`/`planning` (those two rows' fixtures
+# are added, and demonstrated RED against the pre-fix classifier, by the change that maps them —
+# not here). This gives a green baseline that would catch collateral damage from that later
+# change. None of these fixtures carry a status of `partial`, so none needs an
+# .orchestrator-handoff.json file — the classifier only reads a handoff for `partial` candidates.
+# =====================================================================
+
+cat > "$WORKDIR/specs/state.json" <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 105, "project_name": "fixture_not_started", "status": "not_started"},
+    {"project_number": 106, "project_name": "fixture_researched", "status": "researched"},
+    {"project_number": 107, "project_name": "fixture_planned", "status": "planned"},
+    {"project_number": 108, "project_name": "fixture_implementing", "status": "implementing"},
+    {"project_number": 109, "project_name": "fixture_terminal", "status": "completed"},
+    {"project_number": 110, "project_name": "fixture_garbage_status", "status": "not_a_real_status"},
+    {"project_number": 111, "project_name": "fixture_blocked", "status": "blocked"}
+  ]
+}
+EOF
+
+# --- not_started: mt engine (pairs with the single-engine sandbox probe above) ---
+check_fixture "mt" 105 "not_applicable" "research" \
+  "not_started (mt engine, pairs with the single-engine sandbox probe)"
+
+# --- researched -> plan, both engines ---
+check_fixture "single" 106 "not_applicable" "plan" \
+  "researched -> plan"
+check_fixture "mt" 106 "not_applicable" "plan" \
+  "researched -> plan cross-engine agreement"
+
+# --- planned -> implement, both engines ---
+check_fixture "single" 107 "not_applicable" "implement" \
+  "planned -> implement"
+check_fixture "mt" 107 "not_applicable" "implement" \
+  "planned -> implement cross-engine agreement"
+
+# --- implementing -> implement, both engines ---
+check_fixture "single" 108 "not_applicable" "implement" \
+  "implementing -> implement"
+check_fixture "mt" 108 "not_applicable" "implement" \
+  "implementing -> implement cross-engine agreement"
+
+# --- terminal status -> terminal, both engines ---
+check_fixture "single" 109 "not_applicable" "terminal" \
+  "terminal status (completed) -> terminal"
+check_fixture "mt" 109 "not_applicable" "terminal" \
+  "terminal status (completed) -> terminal cross-engine agreement"
+
+# --- unrecognized/garbage status -> skip, both engines ---
+check_fixture "single" 110 "not_applicable" "skip" \
+  "unrecognized status string -> skip"
+check_fixture "mt" 110 "not_applicable" "skip" \
+  "unrecognized status string -> skip cross-engine agreement"
+
+# --- blocked: the ONE documented, intentional engine-divergent row. Do NOT "fix" this to agree
+# across engines -- see this file's header comment and orchestrate-triage-classify.sh's own
+# header table for the full discriminator (a solo invocation has no sibling to make progress on
+# and escalates to a human; a batch invocation skips the blocked task so its siblings proceed). ---
+check_fixture "single" 111 "not_applicable" "needs_human" \
+  "blocked -> needs_human (single engine; DOCUMENTED DIVERGENCE from mt, not a bug)"
+check_fixture "mt" 111 "not_applicable" "skip" \
+  "blocked -> skip (mt engine; DOCUMENTED DIVERGENCE from single, not a bug)"
 
 # =====================================================================
 # Summary

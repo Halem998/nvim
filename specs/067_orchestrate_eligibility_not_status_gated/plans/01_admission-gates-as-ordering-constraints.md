@@ -303,25 +303,27 @@ bash .claude/scripts/check-task-references.sh
 
 ---
 
-### Phase 3: Classifier test-coverage baseline for the untested status rows [NOT STARTED]
+### Phase 3: Classifier test-coverage baseline for the untested status rows [COMPLETED]
 
 **Goal**: The classifier suite covers every status-to-group row for both engines *except* the two
 rows this task changes, giving a green baseline that would catch collateral damage from Phase 4.
 
 **Tasks**:
-- [ ] Add synthetic state.json fixtures and `check_fixture` assertions, reusing the suite's
+- [x] Add synthetic state.json fixtures and `check_fixture` assertions, reusing the suite's
       existing sandbox shape and `pass()`/`fail()`/counter conventions, for: `not_started` on the
       `mt` engine (pairing with the existing single-only sandbox probe); `researched` -> `plan`
       (both engines); `planned` -> `implement` (both engines); `implementing` -> `implement` (both
       engines); a terminal status -> `terminal` (both engines); an unrecognized/garbage status
-      string -> `skip` (both engines).
-- [ ] Add the one documented engine-divergent row: `blocked` -> `needs_human` on `single`,
+      string -> `skip` (both engines). *(completed: 12 new assertions across 6 status rows)*
+- [x] Add the one documented engine-divergent row: `blocked` -> `needs_human` on `single`,
       `blocked` -> `skip` on `mt`. Annotate it in-file as the intentional divergence it is, so a
-      future reader does not "fix" it.
-- [ ] Extend the suite's header comment: it currently describes itself as scoped to the `partial`
+      future reader does not "fix" it. *(completed: 2 more assertions, 13 new assertions total)*
+- [x] Extend the suite's header comment: it currently describes itself as scoped to the `partial`
       continuation-pointer predicate; it is now the full status-to-group regression suite.
-- [ ] Do **not** add `researching`/`planning` fixtures in this phase — those are Phase 4's
+      *(completed)*
+- [x] Do **not** add `researching`/`planning` fixtures in this phase — those are Phase 4's
       mutation-check fixtures and must be written and run against the pre-fix classifier there.
+      *(confirmed: none added)*
 
 **Timing**: 1 hour
 
