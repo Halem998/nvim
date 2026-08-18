@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1787078236_69862e_70",
+  "task_number": 70,
+  "findings_count": 3,
+  "next_steps": "Run /plan 70 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/reports/01_fix-discover-tier-starvation.md",
+      "summary": "Confirms both defects (silent Tier 3 failure requires fixes in BOTH literature-discover.sh and commands/literature.md's caller-level 2>/dev/null; Tier 2 hits are computed then discarded by the final head-of-array truncation) plus the query-noise issue, and gives concrete fix directions for each: split curl status from body + stderr directive for Tier 3, per-tier reserved quotas with rollover for tier fairness, and title/description separation with a term-count threshold for query noise."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/literature (and this repo generally), the established idiom for surfacing a non-fatal failure from a data-producing script without breaking its pure-stdout contract is: (1) a SEPARATE dedicated classifier script that prints exactly one directive token to stdout and human-readable rationale to stderr on every branch (see zotero-export-status.sh), never AskUserQuestion itself; (2) the caller captures BOTH stdout and stderr (e.g. `x=$(script ... 2>/tmp/rationale.txt); rationale=$(cat /tmp/rationale.txt)`), never `2>/dev/null`, then branches on the token to decide interactive prompt vs. logged autonomous default. A blanket `2>/dev/null` on a script invocation is a strong signal that any inline stderr diagnostics added to that script will be silently inert — check the caller-side redirect before assuming an inner-script stderr fix is sufficient.",
+      "category": "PATTERN",
+      "source_artifact": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/reports/01_fix-discover-tier-starvation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["directive-rationale-pattern", "stderr-capture", "zotero-export-status", "silent-failure", "shell-pipeline"]
+    },
+    {
+      "content": "Bug pattern: in a multi-stage shell pipeline that appends to a shared JSON array across independently-capped stages (each stage breaking its own loop at `count >= LIMIT` using a LOCAL counter with no awareness of prior stages' contributions) followed by a final head-of-array truncation (`jq '.[0:$limit]'`), an early, high-yield stage can silently starve later stages: later stages still run and append real results, but those results land past the truncation point and are discarded. The bug is not that later stages don't run, but that the final slice is order-dependent rather than fair. Fix direction: reserve a per-stage quota (summing to the overall limit) with rollover of unused quota to later stages, so total appended never meaningfully exceeds the limit and the final slice becomes a no-op safety net rather than the actual selection mechanism.",
+      "category": "PATTERN",
+      "source_artifact": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/reports/01_fix-discover-tier-starvation.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["tier-starvation", "quota-rollover", "jq-truncation", "aggregation-fairness", "literature-discover"]
+    }
+  ]
+}
