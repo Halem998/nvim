@@ -1,0 +1,53 @@
+{
+  "phase": 2,
+  "phase_name": "Author the fresh-shell / fresh-subprocess mint regression suite",
+  "started_at": "2026-08-17T00:15:00Z",
+  "last_updated": "2026-08-17T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-mint-dispatch-seq.sh modelled on test-skill-base-lifecycle.sh structure",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Emit [INFO] line naming the resolved skill-base.sh path",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Case A (fresh shell), Case B (repeat call), Case C (poisoned ambient), Case D (separate subprocess), Case E (budget-continuation continuity), Case F (missing-field tolerance)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Red-demonstration against scratch pre-fix function body before phase closes",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "bash -n clean, chmod +x executable",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Run new suite; confirm all cases pass, exit 0",
+      "status": "done",
+      "files_touched": [],
+      "note": "Verified via a scratch copy pointing directly at the source-store skill-base.sh (14/14 pass, exit 0). The real committed suite's deploy-tree-first resolution currently still resolves the STALE, unfixed .claude/scripts/skill-base.sh (deploy deliberately withheld this cycle per delegation-context safety constraint -- a live /orchestrate loop depends on the deployed copy mid-flight). Running the committed suite as-is right now would report expected failures against that stale copy, not a suite defect. Deferred to the operator's own deploy; see Phase 3 deviation."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "findings": {
+    "logic_verification": "Scratch copy of the suite, with resolve_candidate's deploy-tree candidate forced to a nonexistent path so it falls through to the source-store skill-base.sh directly, ran all 14 assertions across cases A-F: 14 passed, 0 failed, exit 0.",
+    "red_demonstration": "A scratch shim file (agent-system/extensions/core/scripts/tests/ NOT touched; scratch file lived only under the session scratchpad, never committed and never used to revert the repo) reconstructed the exact pre-fix skill_orchestrate_mint_dispatch_seq body verbatim from git show HEAD~1. Running the suite's case logic against it: 2 passed (contamination guard, and Case E's sibling-field check, which is independent of the defect), 12 FAILED, exit 1. Notably Case C (poisoned ambient=99, guard=5) returned 100 instead of 6, and Case D's two independent subprocess calls both returned 1 instead of 11/12 -- the precise multi-shell defect this task fixes. Several cases additionally hard-errored with 'unbound variable' under the suite's own `set -u`, an even stronger failure mode than the silently-wrong-value case the defect report described."
+  },
+  "deviations": []
+}

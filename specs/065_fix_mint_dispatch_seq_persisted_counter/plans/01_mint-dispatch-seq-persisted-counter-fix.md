@@ -182,49 +182,49 @@ number.
 
 ---
 
-### Phase 2: Author the fresh-shell / fresh-subprocess mint regression suite [NOT STARTED]
+### Phase 2: Author the fresh-shell / fresh-subprocess mint regression suite [COMPLETED]
 
 **Goal**: Create a new test suite that calls `skill_orchestrate_mint_dispatch_seq` directly and
 would fail against the pre-fix body — coverage neither existing dispatch-identity nor
 budget-override suite provides.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh`, modelled
+- [x] Create `agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh`, modelled
       structurally on `test-skill-base-lifecycle.sh`: `set -uo pipefail`, `SCRIPT_DIR` +
       git-root-first `REPO_ROOT` resolution with the fixed-depth fallback, `resolve_candidate`
       (deploy-tree-first, source-store fallback), a `mktemp -d` WORKDIR with an EXIT-trap cleanup,
       `pass()`/`fail()`/`info()` helpers with integer counters, and exit codes 0 all-pass /
-      1 any-fail / 2 environment error.
-- [ ] Emit an `[INFO]` line naming the resolved `skill-base.sh` path, so a run against a stale
-      deployed copy is visibly attributable rather than a mystery red.
-- [ ] Case A (fresh shell): `unset dispatch_seq_counter` before sourcing; seed a guard fixture with
+      1 any-fail / 2 environment error. *(completed)*
+- [x] Emit an `[INFO]` line naming the resolved `skill-base.sh` path, so a run against a stale
+      deployed copy is visibly attributable rather than a mystery red. *(completed)*
+- [x] Case A (fresh shell): `unset dispatch_seq_counter` before sourcing; seed a guard fixture with
       `dispatch_seq_counter: 1`; call the function once; assert stdout is `2` and the persisted
-      `.dispatch_seq_counter` is `2`.
-- [ ] Case B (repeat call, same shell): call again immediately; assert stdout is `3` and the
+      `.dispatch_seq_counter` is `2`. *(completed)*
+- [x] Case B (repeat call, same shell): call again immediately; assert stdout is `3` and the
       persisted value is `3` — proving no double-increment and no skipped increment when the
-      ambient variable is stale rather than unset.
-- [ ] Case C (poisoned ambient value): set `dispatch_seq_counter=99` in the calling shell, then
+      ambient variable is stale rather than unset. *(completed)*
+- [x] Case C (poisoned ambient value): set `dispatch_seq_counter=99` in the calling shell, then
       call against a guard holding `5`; assert the result is `6`, not `100` — this is the case
-      that pins the fix's actual intent (file wins, ambient is ignored).
-- [ ] Case D (genuinely separate subprocess): invoke the function twice via two independent
+      that pins the fix's actual intent (file wins, ambient is ignored). *(completed)*
+- [x] Case D (genuinely separate subprocess): invoke the function twice via two independent
       `bash -c '...'` calls that each source `skill-base.sh` afresh, against the same guard file;
       assert the two returned values are consecutive and strictly increasing. This is the faithful
-      reproduction of the reported multi-Bash-tool-call execution shape.
-- [ ] Case E (budget-continuation continuity): seed a guard shaped like a post-re-init guard that
+      reproduction of the reported multi-Bash-tool-call execution shape. *(completed)*
+- [x] Case E (budget-continuation continuity): seed a guard shaped like a post-re-init guard that
       preserved a nonzero `dispatch_seq_counter`; assert the next mint continues from it rather
       than restarting at 1, pinning the never-repeats-within-a-task invariant across the override
-      path.
-- [ ] Case F (missing-field tolerance): seed a guard with no `dispatch_seq_counter` key at all;
+      path. *(completed)*
+- [x] Case F (missing-field tolerance): seed a guard with no `dispatch_seq_counter` key at all;
       assert the mint returns `1` and writes `1` (the `// 0` default), so a guard written before
-      the field existed self-heals rather than erroring.
-- [ ] Red-demonstration (required before the phase may close): copy the pre-fix function body into
+      the field existed self-heals rather than erroring. *(completed)*
+- [x] Red-demonstration (required before the phase may close): copy the pre-fix function body into
       a scratch shim file under the scratchpad directory, run the new suite's Case A/C logic
       against that scratch body, and confirm it FAILS. Record the observed failure output in the
       progress file. Do not commit the scratch shim and do not revert the repo to the pre-fix
-      state to do this.
-- [ ] `bash -n` the new suite; make it executable (`chmod +x`) — `run-all.sh` reports a lost exec
-      bit as a loud `[SKIP]`, so the bit must be set at creation.
-- [ ] Run the new suite directly; confirm all cases pass and the exit code is 0.
+      state to do this. *(completed: 12/14 assertions failed against the reconstructed pre-fix body, including Case C returning 100 instead of 6 and Case D returning 1/1 instead of 11/12; see phase-2 progress file for full output)*
+- [x] `bash -n` the new suite; make it executable (`chmod +x`) — `run-all.sh` reports a lost exec
+      bit as a loud `[SKIP]`, so the bit must be set at creation. *(completed)*
+- [x] Run the new suite directly; confirm all cases pass and the exit code is 0. *(completed via a scratch copy pointing directly at the source-store skill-base.sh: 14/14 pass, exit 0 — see deviation note below on why the committed suite is not run as-is against the currently-stale deployed tree this cycle)*
 
 **Timing**: 0.75 hours
 
