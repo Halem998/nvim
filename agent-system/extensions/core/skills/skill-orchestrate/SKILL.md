@@ -1328,11 +1328,21 @@ an eligibility-exclusion set — a task appearing in this log is not thereby exc
 cycle's `eligible_tasks`. The convergence mechanism is now the SAME one `file_scope_collision`
 already uses: the defer is re-evaluated fresh every cycle from `${#eligible_tasks[@]}` and the
 candidate's own `file_scope`, and it clears on its own once the co-dispatched sibling that caused
-it leaves `eligible_tasks` (enters `researching`/`planning`, terminates, or fails) — no persistent
-exclusion is needed for that to happen, and the loop's existing per-cycle re-evaluation already
-guarantees it. See Stage MT-3 step 3 (no longer an exclusion), step 4.5 (append-only population),
-and the new consecutive-no-dispatch guard below for the bounded case where the natural clearing
-condition does not hold, and Stage MT-5 (postflight reporting) for where this log is read.
+it leaves `eligible_tasks` by terminating or failing (a task no longer leaves `eligible_tasks`
+merely by transitioning to an in-flight status (`researching`/`planning`), now that eligibility
+is no longer status-gated — see Stage MT-3 step 3) — no persistent exclusion is needed for that
+to happen, and the loop's existing
+per-cycle re-evaluation already guarantees it. **Second, independent, per-cycle exit condition
+(the one that actually bounds the self-modifying-specific case, and depends on no status
+transition at all)**: the designated-candidate tie-breaker inside `orchestrate-batch-admit.sh`
+(see that script's header) admits exactly one self-modifying candidate — the lowest task number —
+on EVERY cycle, regardless of how many self-modifying candidates are co-dispatched. N
+self-modifying candidates therefore converge to full dispatch in at most N cycles by
+construction, independent of whether any sibling ever leaves `eligible_tasks` at all. See Stage
+MT-3 step 3 (no longer a status-gated exclusion), step 4.5 (append-only population plus the
+tie-breaker's `--phase-map`-threaded admission call), and the new consecutive-no-dispatch guard
+below for the bounded case where NEITHER exit condition converges in time (e.g. a tie-breaker
+defect), and Stage MT-5 (postflight reporting) for where this log is read.
 
 **In-flight session registry** (adjacent to, not part of, `mt_state_file`): register the batch
 under the bare `session_id` this stage received, with the full `task_numbers` set as the CSV.
@@ -1526,7 +1536,19 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      `deferred_self_modifying`, which as of the narrowing is no longer an exclusion here at all
      — and is what makes the redeploy-checkpoint deferral converge rather than re-qualifying the
      task next cycle)
-   - Status is NOT `{researching, planning}` (in-flight from prior cycle)
+   - **Eligibility is NOT status-gated on an in-flight string (REMOVED the former `{researching,
+     planning}` exclusion here).** A task's own status among `{not_started, researched, planned,
+     implementing, partial, researching, planning}` never by itself removes it from
+     `eligible_tasks` — eligibility depends only on locks, `dependencies[]`, and file_scope
+     overlap, all of which are already enforced downstream: Stage MT-4's per-task
+     `task-lock.sh acquire` defers (never excludes) a task whose lock is held FRESH by a genuinely
+     different session (exit 1 -> removed from this cycle's batch, never added to `failed_tasks`);
+     a stale foreign lock is reclaimed with a warning. `task-lock.sh cmd_acquire` never reads
+     `.status` — the lock layer, not the status string, has always been the real concurrency
+     arbiter. A task stranded in `researching`/`planning` by a dead prior session's stale lock is
+     therefore no longer silently skipped forever: it becomes eligible, the classifier (Stage MT-3
+     step 4.5 below) routes it to the phase its status names, and Stage MT-4's lock acquire
+     reclaims the stale lock and dispatches it.
    - All predecessors from `dependency_graph[task_num]` are in terminal state or `failed_tasks`
    
    If a predecessor is in `failed_tasks`: mark this task in `failed_tasks` with status `blocked` and skip it.
@@ -1657,9 +1679,11 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      - **`in_batch`** (the colliding task is itself in `eligible_tasks`): remove the deferred task
        from this cycle's dispatch batch and log the existing warning. This scope self-clears
        within this invocation: the deferred task becomes eligible again on a later cycle, once the
-       colliding in-batch task leaves `eligible_tasks` (entering `researching`/`planning`,
-       terminating, or failing). This claim is TRUE and is load-bearing for the convergence
-       argument elsewhere in this file:
+       colliding in-batch task leaves `eligible_tasks` by terminating or failing (a task no longer
+       leaves `eligible_tasks` merely by transitioning to an in-flight status —
+       `researching`/`planning` — now that eligibility is no longer status-gated; see Stage MT-3
+       step 3). This claim is TRUE and is load-bearing for the convergence argument elsewhere in
+       this file:
        ```
        [orchestrate] WARNING: Tasks #{X} and #{Y} have overlapping file_scope with no
          dependency_graph edge between them. Deferring #{Y} to a later cycle to avoid
@@ -1752,13 +1776,26 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    Stage MT-1's schema definition) opens a narrow non-convergence mode the old permanent exclusion
    incidentally prevented: `eligible_tasks` can be non-empty every cycle while every member of it
    is deferred by this step's `self_modifying` branch, so the actual dispatch batch is empty and
-   nothing runs, cycle after cycle, until `MAX_CYCLES_MT`. The convergence ARGUMENT this guard
-   backs up (not replaces): a same-cycle self-mod defer clears on its own once its co-dispatched
-   sibling leaves `eligible_tasks` — entering `researching`/`planning`, terminating, or
-   failing — which the existing per-cycle loop already guarantees for any ordinary case, because
-   the sibling is itself being dispatched and processed each cycle. The guard exists only to BOUND
-   the case where that natural clearing does not happen (e.g. two self-modifying candidates that
-   keep mutually re-qualifying each other as the "colliding sibling" every cycle). Mechanism:
+   nothing runs, cycle after cycle, until `MAX_CYCLES_MT`. **Two independent convergence
+   arguments this guard backs up (not replaces)**:
+   1. A same-cycle self-mod defer clears on its own once its co-dispatched sibling leaves
+      `eligible_tasks` by terminating or failing (a task no longer leaves `eligible_tasks` merely
+      by transitioning to an in-flight status — `researching`/`planning` — now that eligibility is
+      no longer status-gated; see Stage MT-3 step 3) — which the existing per-cycle loop already
+      guarantees for any ordinary case, because the sibling is itself being dispatched and
+      processed each cycle.
+   2. **Second, independent, per-cycle exit condition that depends on no status transition at
+      all**: the designated-candidate tie-breaker inside `orchestrate-batch-admit.sh` admits
+      exactly one self-modifying candidate — the lowest task number — on EVERY cycle, regardless
+      of how many self-modifying candidates are co-dispatched. This is what actually BOUNDS the
+      multiple-self-modifying case: N self-modifying candidates converge to full dispatch in at
+      most N cycles by construction, materially stronger than argument 1, which depended on a
+      status transition that (pre-tie-breaker) was the only thing standing between this guard and
+      `MAX_CYCLES_MT`.
+
+   The guard exists only to BOUND the case where NEITHER natural-clearing mechanism converges in
+   time (e.g. a tie-breaker defect, or two self-modifying candidates that keep mutually
+   re-qualifying each other as the "colliding sibling" under argument 1 alone). Mechanism:
    maintain `mt_state_file.consecutive_no_dispatch_cycles` (integer, starts at 0). After this
    step's filtering, if the resulting dispatch batch is empty AND `eligible_tasks` (pre-filter) was
    non-empty, increment the counter; on ANY cycle where at least one task actually dispatches,

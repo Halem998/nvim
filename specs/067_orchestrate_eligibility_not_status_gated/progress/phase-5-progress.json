@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Remove the status-gated eligibility exclusion and re-derive every argument it falsifies",
+  "started_at": "2026-08-18T03:05:00Z",
+  "last_updated": "2026-08-18T03:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove eligibility exclusion bullet, state replacement contract", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Correct all 5 convergence-exit-condition sites", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md", "agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 3, "description": "Record tie-breaker as second exit condition at self-mod-specific sites", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", "agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 4, "description": "Update orchestrate-state-machine.md ASCII box and Dependency Gating Model prose", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 5, "description": "Confirm dependency-terminal-state claim sites untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -325,12 +325,20 @@ excluded from `eligible_tasks` on every subsequent cycle, or the same candidate 
 as eligible on the very next cycle and the check would re-fire forever. As of v3, the convergence
 mechanism is different: `deferred_self_modifying` is now an APPEND-ONLY OBSERVATION LOG, not an
 exclusion set, and the defer clears on its own once the co-dispatched sibling that caused it
-leaves `eligible_tasks` (enters `researching`/`planning`, terminates, or fails) — the loop's
+leaves `eligible_tasks` by terminating or failing (a task no longer leaves `eligible_tasks`
+merely by transitioning to an in-flight status — `researching`/`planning` — now that eligibility
+is no longer status-gated; see `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 3) — the loop's
 existing per-cycle re-evaluation of `eligible_tasks` from current state already guarantees this,
-the same convergence `file_scope_collision` already relies on. A bounded
-`consecutive_no_dispatch_cycles` counter backs the narrow non-convergence mode this change opens
-(two self-modifying candidates that keep mutually re-qualifying each other as the colliding
-sibling every cycle), breaking the loop with `partial` status rather than silently spinning to
+the same convergence `file_scope_collision` already relies on. **Second, independent, per-cycle
+exit condition, added by the designated-candidate tie-breaker and depending on no status
+transition at all** (see the "Self-modification tie-breaker and `--phase-map`" paragraph under
+"Invocation Contract" above): the tie-breaker admits exactly one self-modifying candidate — the
+lowest task number — on EVERY cycle regardless of co-dispatch count, so N self-modifying
+candidates converge to full dispatch in at most N cycles by construction; this is materially
+stronger than the status-transition argument above and is what actually bounds the
+multiple-self-modifying case. A bounded `consecutive_no_dispatch_cycles` counter backs the narrow
+non-convergence mode still possible when NEITHER exit condition converges in time (e.g. a
+tie-breaker defect), breaking the loop with `partial` status rather than silently spinning to
 `MAX_CYCLES_MT`. `commands/orchestrate.md`'s pre-computed wave-schedule caller does not need an
 equivalent mechanism because each wave is dispatched at most once per invocation; the
 recurring-cycle shape is unique to the SKILL.md multi-task loop.

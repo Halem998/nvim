@@ -349,9 +349,10 @@ MT mode drives multiple tasks through their full lifecycle (research -> plan -> 
 │  │ 3. Build eligible_tasks[]               │     │
 │  │    Filter each task:                    │     │
 │  │    (a) not terminal                     │     │
-│  │    (b) not in-flight (researching,      │     │
-│  │        planning)                        │     │
-│  │    (c) all predecessors terminal        │     │
+│  │    (b) all predecessors terminal        │     │
+│  │    (eligibility is not status-gated on  │     │
+│  │    an in-flight string -- see Dependency│     │
+│  │    Gating Model below)                  │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │  ┌──────────────────▼──────────────────────┐     │
@@ -395,8 +396,19 @@ MT mode drives multiple tasks through their full lifecycle (research -> plan -> 
 
 Tasks progress through lifecycle phases independently. A task becomes eligible when:
 1. Its current status is not terminal (`completed`, `abandoned`, `expanded`) and not in `failed_tasks`
-2. It is not in an in-flight state from a prior cycle (`researching`, `planning`)
-3. All of its predecessors in the dependency graph are in a terminal state
+2. All of its predecessors in the dependency graph are in a terminal state
+
+**Eligibility is NOT status-gated on an in-flight string.** A task's own status among
+`{not_started, researched, planned, implementing, partial, researching, planning}` never by
+itself removes it from eligibility — concurrency safety is enforced downstream, by locks and
+`file_scope` overlap, not by the status string. A task stranded in `researching`/`planning` by a
+dead prior session's stale lock is admitted to `eligible_tasks`, classified by
+`scripts/orchestrate-triage-classify.sh` to the phase its status names (`researching` ->
+research, `planning` -> plan), and dispatched — Stage MT-4's per-task `task-lock.sh acquire`
+reclaims the stale lock with a warning. A task genuinely in flight under a FRESH foreign lock is
+still never concurrently dispatched: `task-lock.sh acquire` refuses (exit 1) and the task is
+removed from that cycle's dispatch batch (never excluded, never added to `failed_tasks`) — this
+is the same defer-not-exclude gate `file_scope_collision` already uses.
 
 If a predecessor is `failed`, the dependent task is immediately moved to `failed_tasks` with status `blocked`.
 

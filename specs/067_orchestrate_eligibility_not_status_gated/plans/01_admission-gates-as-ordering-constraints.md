@@ -436,25 +436,27 @@ bash .claude/scripts/check-task-references.sh
 
 ---
 
-### Phase 5: Remove the status-gated eligibility exclusion and re-derive every argument it falsifies [NOT STARTED]
+### Phase 5: Remove the status-gated eligibility exclusion and re-derive every argument it falsifies [COMPLETED]
 
 **Goal**: The `{researching, planning}` eligibility exclusion is gone, and every one of the 5
 convergence-exit-condition sites plus both state-machine-doc restatements is corrected in the same
 change — no phase boundary leaves a now-false premise asserted.
 
 **Tasks**:
-- [ ] Remove the `Status is NOT {researching, planning} (in-flight from prior cycle)` bullet from
+- [x] Remove the `Status is NOT {researching, planning} (in-flight from prior cycle)` bullet from
       Stage MT-3 step 3 in `skill-orchestrate/SKILL.md`. Leave the `deferred_deploy_checkpoint`
       bullet and the dependency-terminal-state bullet (item 4) untouched — item 4 is what the
-      surviving "structurally impossible" claims rest on.
-- [ ] In its place, state the replacement contract: eligibility depends on locks,
+      surviving "structurally impossible" claims rest on. *(completed)*
+- [x] In its place, state the replacement contract: eligibility depends on locks,
       `dependencies[]`, and file_scope overlap; a task genuinely in flight under a fresh foreign
       lock is deferred by Stage MT-4's per-task `task-lock.sh acquire` (exit 1 -> removed from this
       cycle's batch, never added to `failed_tasks`), which is already a defer-not-exclude gate.
-- [ ] Correct all **5** convergence-exit-condition sites to the research report's recommended
+      *(completed)*
+- [x] Correct all **5** convergence-exit-condition sites to the research report's recommended
       replacement: "...once its co-dispatched sibling leaves `eligible_tasks` by terminating or
       failing (a task no longer leaves `eligible_tasks` merely by entering
-      `researching`/`planning` once eligibility is no longer status-gated)."
+      `researching`/`planning` once eligibility is no longer status-gated)." *(completed, all 5;
+      census grep confirmed exactly 5 pre-edit and 0 post-edit)*
       - `skills/skill-orchestrate/SKILL.md` — Stage MT-1 `deferred_self_modifying` field doc
       - `skills/skill-orchestrate/SKILL.md` — Stage MT-3 step 4.5 `in_batch` collision branch
         (flagged in-file as load-bearing for the convergence argument elsewhere)
@@ -462,19 +464,23 @@ change — no phase boundary leaves a now-false premise asserted.
         rationale
       - `skills/skill-orchestrate-hard/SKILL.md` — transcribed `in_batch` branch
       - `docs/architecture/batch-admit-schema.md` — the v3-onward convergence-mechanism paragraph
-- [ ] At the two self-modifying-specific sites (the `deferred_self_modifying` field doc and the
+- [x] At the two self-modifying-specific sites (the `deferred_self_modifying` field doc and the
       convergence-guard rationale, plus the hard-mode mirror), additionally record Phase 1's
       designated-candidate tie-breaker as a **second, independent, per-cycle exit condition that
       depends on no status transition at all** — this is what actually bounds the
       multiple-self-modifying case, and is materially stronger than the status-transition argument
-      ever was.
-- [ ] Update `docs/architecture/orchestrate-state-machine.md`: remove clause `(b) not in-flight
+      ever was. *(completed: also added to batch-admit-schema.md's v3-onward paragraph for
+      consistency, since that site documents the same self-mod convergence mechanism; no separate
+      convergence-guard rationale exists in the hard-mode file to mirror -- confirmed by grep --
+      so its `in_batch` branch received only the general template correction)*
+- [x] Update `docs/architecture/orchestrate-state-machine.md`: remove clause `(b) not in-flight
       (researching, planning)` from the ASCII eligibility box, and remove item 2 from the
-      Dependency Gating Model prose, renumbering the surviving items.
-- [ ] Do **not** edit the dependency-terminal-state claims at `orchestrate-batch-admit.sh`,
+      Dependency Gating Model prose, renumbering the surviving items. *(completed)*
+- [x] Do **not** edit the dependency-terminal-state claims at `orchestrate-batch-admit.sh`,
       `batch-orchestration-guardrails.md`, `commands/orchestrate.md`, or
       `batch-admit-schema.md`'s dependency section — they rest on item 4, which is unchanged.
-      Verify this by re-reading each before concluding no edit is owed.
+      Verify this by re-reading each before concluding no edit is owed. *(confirmed: git diff
+      --stat shows no change to these 3 files in this phase)*
 
 **Timing**: 1.5 hours
 

@@ -1629,8 +1629,10 @@ every defer verdict carries this REQUIRED discriminator):
   the two must not be conflated:
   - **`in_batch`** (the colliding task is itself in `eligible_tasks`): self-clears within this
     invocation — the deferred task becomes eligible again on a later cycle, once the colliding
-    in-batch task leaves `eligible_tasks` (entering `researching`/`planning`, terminating, or
-    failing). This cycling defer IS Tier 1 (auto-sequence) of the four-tier conflict-response
+    in-batch task leaves `eligible_tasks` by terminating or failing (a task no longer leaves
+    `eligible_tasks` merely by transitioning to an in-flight status — `researching`/`planning` —
+    now that eligibility is no longer status-gated; see the base skill's Stage MT-3 step 3). This
+    cycling defer IS Tier 1 (auto-sequence) of the four-tier conflict-response
     ladder — see `.claude/context/patterns/task-lock.md`'s "Four-Tier Conflict Response" section
     for the full ladder and how this multi-cycle re-sequencing compares to plain multi-task
     `/research`'s, `/plan`'s, and `/implement`'s bounded one-extra-pass equivalent.
