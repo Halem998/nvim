@@ -1060,7 +1060,7 @@
     {
       "project_number": 71,
       "project_name": "fix_validate_directory_path_false_positives_and_flag_mismatch",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "literature",
       "title": "Fix validate-mode directory-path false positives and normalize-authors flag mismatch",
@@ -1073,10 +1073,16 @@
         "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
         "agent-system/extensions/literature/scripts/literature-normalize-authors.sh"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/reports/01_validate-false-positives-flag-mismatch.md",
+          "type": "report",
+          "summary": "Confirms two low-severity validate-mode defects: directory-path entries wrongly reported stale by a bare -f check, and SKILL.md's Validate Step 4 instructing users to pass a --dry-run flag that literature-normalize-authors.sh does not accept (dry-run is the flagless default). Both are doc/logic-only fixes in agent-system/extensions/literature/skills/skill-literature/SKILL.md; the normalize-authors script itself needs no change. Also verifies three adjacent findings (token-drift baseline, a mixed chunks_dir/path schema record for diamondsareforever, and a quarantine-artifact non-interaction with task 069's quality-gate hardening) as informational/follow-up only, out of this task's fix scope."
+        }
+      ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:30:26Z",
-      "session_id": "sess_1787076968_4111bf"
+      "last_updated": "2026-08-18T19:26:28Z",
+      "session_id": "sess_1787078236_69862e_71"
     }
   ],
   "completed_projects": [],
