@@ -228,7 +228,7 @@
       "project_number": 18,
       "project_name": "detect_stale_claude_deploy_trees",
       "title": "Detect stale .claude/ deploy trees and root-cause the silent staleness",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "essential-refactor",
       "dependencies": [],
@@ -241,7 +241,7 @@
       ],
       "description": "A repo can carry an arbitrarily stale .claude/ deploy with no signal, so a user hits a bug fixed upstream long ago with no indication that regeneration is the remedy. Discovered when /revise failed at GATE IN in a consuming repo on a task that had never produced an artifact.\n\nWHAT IS NOT THE DEFECT (ruled out, do not re-litigate): resolve_task_dir is not broken in source. agent-system/extensions/core/scripts/task-lock.sh's resolve_task_dir (line 249) takes a create_mode parameter and mkdir -p's when it is \"create\"; cmd_acquire (line 607) passes \"create\". The failure exists only in the deployed copy.\n\nMEASURED STALENESS EVIDENCE (live, this investigation): the consuming repo's .claude/scripts/task-lock.sh is 676 lines against a 1660-line source, with a deployed resolve_task_dir at line 98 taking no create_mode. Its .claude/scripts/ holds 94 scripts against core's 72 in source. Neither verify-deploy.sh nor deploy-headless.sh is present in the deployed tree at all. This is despite a large sync commit landing recently.\n\nBOOTSTRAP HYPOTHESIS RULED OUT: deploy-headless.sh's header documents a failure mode where a repo deployed by the retired glob-based engine has no \"core\" entry in .claude-extensions.json, so manager.resync_all silently deploys nothing. That is NOT this case. The repo's .claude-extensions.json lists core with status \"active\" and 294 recorded installed_files, including .claude/scripts/task-lock.sh. The loader believes it owns and has installed the very file that is stale. Root cause is unknown and is a genuine investigation, not a known-issue application.\n\nWORK, in order. (1) Determine WHY the deploy is stale despite core being active and the file being listed in installed_files. Hypotheses to test, not assume: the copy step skips existing destination files instead of overwriting; installed_files is treated as authoritative and short-circuits re-copy; resync only re-copies files whose manifest entry changed; or a later partial operation reverted the tree. If the cause is a loader defect, report and fix it as such. (2) Then design and implement staleness DETECTION on a path users actually hit. Note that verify-deploy.sh already performs source-vs-deploy comparison but is not itself deployed and is invoked only from skill-orchestrate's inter-cycle redeploy checkpoint, so no ordinary command surfaces its result. Directions to evaluate, do NOT pre-commit: stamp a source revision or content hash into the deployed tree at load time and have command gate scripts compare against the source store, warning on drift; extend /refresh or a doctor check to diff deployed script versions against source; or have the loader record a per-file hash manifest a preflight can validate cheaply. Whatever is chosen must be cheap enough for a normal command preflight.\n\nINTERACTION WITH SIBLING TASK 9: 9's evidence (4 orphan files present in .claude/ but absent from a clean scratch regenerate) was measured against this same stale deploy tree, so it may be an artifact of the staleness rather than a genuine one-directional-parity gap. 9 is sequenced after this task and must re-measure against a freshly regenerated tree. Both tasks also edit verify-deploy.sh.\n\nACCEPTANCE: the root cause is identified and stated, with the loader defect fixed if that is the cause; a user running an ordinary command against a stale deploy receives an actionable warning naming regeneration as the remedy; demonstrated in both directions, where a stale tree warns and a fresh tree does not.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/** and lua/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T16:02:07Z",
-      "last_updated": "2026-08-18T03:00:50Z",
+      "last_updated": "2026-08-18T04:42:02Z",
       "artifacts": [
         {
           "path": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
@@ -252,10 +252,57 @@
           "path": "specs/018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md",
           "type": "plan",
           "summary": "6-phase plan for source_git_head stamping plus a non-blocking gate-in freshness WARN."
+        },
+        {
+          "path": "specs/018_detect_stale_claude_deploy_trees/summaries/01_stale-deploy-detection-summary.md",
+          "type": "summary",
+          "summary": "Root-cause statement (structural pull-only regeneration, no loader defect) plus both-directions acceptance evidence for the source_git_head stamp and check-deploy-freshness.sh gate-in warning."
         }
       ],
       "effort": "5h",
-      "session_id": "sess_1787016315_a436d0_18"
+      "session_id": "sess_1787027260_423c2c",
+      "completion_summary": "Completed the stale-deploy-tree detection feature (Phases 3-6): finished and verified the isolated test-deploy-freshness.sh suite (7 assertions, load-bearing per a deliberate-break check), wired the non-blocking freshness warning into command-gate-in.sh with no regression across the full core test suite, demonstrated the acceptance criterion in both directions through the real gate-in path (fresh silent, stale warns with the regeneration remedy named), and documented the detection half of the pull-only regeneration pattern.",
+      "memory_candidates": [
+        {
+          "content": "When measuring shell-script wall-clock cost on NixOS, /usr/bin/time is typically absent. Use bash's own `date +%s%N` before/after with millisecond delta computation ((end-start)/1000000), or the `time` builtin/keyword, instead of assuming GNU time is installed.",
+          "category": "TECHNIQUE",
+          "source_artifact": "specs/018_detect_stale_claude_deploy_trees/summaries/01_stale-deploy-detection-summary.md",
+          "confidence": 0.7,
+          "suggested_keywords": [
+            "nixos",
+            "timing",
+            "benchmark",
+            "bash",
+            "usr-bin-time"
+          ]
+        },
+        {
+          "content": "When resuming an interrupted implementation phase, an untracked file left behind by the prior run should be inspected and evaluated against the plan's task list before deciding whether to rewrite it. In this case a fixture-driven test suite left mid-session was structurally complete and passed all assertions against the real implementation on first run; only a minor directory-convention gap (a missing info() helper) needed fixing. Treating orphaned WIP as presumptively worthless risks discarding sound completed work.",
+          "category": "PATTERN",
+          "source_artifact": "specs/018_detect_stale_claude_deploy_trees/summaries/01_stale-deploy-detection-summary.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "resume",
+            "interrupted-run",
+            "untracked-file",
+            "test-suite",
+            "handoff"
+          ]
+        },
+        {
+          "content": "To demonstrate a preflight-cheap staleness/drift check end-to-end without touching the real repo's state, build a scratch target via mktemp -d, deploy only the extension(s) needed into it, then hand-rewrite the recorded comparison value (e.g. via jq) to an older real commit hash rather than needing a second real commit. This isolates the STALE-direction demonstration from any risk of corrupting the live repo's own tracked state.",
+          "category": "TECHNIQUE",
+          "source_artifact": "specs/018_detect_stale_claude_deploy_trees/summaries/01_stale-deploy-detection-summary.md",
+          "confidence": 0.7,
+          "suggested_keywords": [
+            "staleness-detection",
+            "scratch-repo",
+            "acceptance-demo",
+            "jq",
+            "fixture"
+          ]
+        }
+      ]
     },
     {
       "project_number": 20,

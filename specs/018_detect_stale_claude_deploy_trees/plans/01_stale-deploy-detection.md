@@ -1,7 +1,7 @@
 # Implementation Plan: Detect stale .claude/ deploy trees and root-cause the silent staleness
 
 - **Task**: 18 - Detect stale .claude/ deploy trees and root-cause the silent staleness
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md

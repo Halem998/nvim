@@ -11,9 +11,9 @@ next_project_number: 68
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,18,20,22,27,28,31,39,43,45,46,51,62,65,66 | -- | agent-system, extensions, literature, ... |
-| 2 | 42,44 | 18,28,31 | essential-refactor |
-| 3 | 9,29,53,64 | 18,22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
+| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,65,66 | -- | agent-system, extensions, literature, ... |
+| 2 | 42,44 | 28,31 | essential-refactor |
+| 3 | 9,29,53,64 | 22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
 | 5 | 32,50 | 30,31,48 | agent-system, essential-refactor |
 
@@ -52,14 +52,13 @@ next_project_number: 68
 
 ### Essential Refactor
 
-18 [IMPLEMENTING] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
-  └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
-    └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
-      └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-        └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
+  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+    └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 65 [PLANNED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
+42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
+  └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
+    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 
@@ -992,12 +991,13 @@ failure.
 
 ### 18. Detect stale .claude/ deploy trees and root-cause the silent staleness
 - **Effort**: 5h
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md]
 - **Plan**: [018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md]
+- **Summary**: [018_detect_stale_claude_deploy_trees/summaries/01_stale-deploy-detection-summary.md]
 
 **Description**: A repo can carry an arbitrarily stale .claude/ deploy with no signal, so a user hits a bug fixed upstream long ago with no indication that regeneration is the remedy. Discovered when /revise failed at GATE IN in a consuming repo on a task that had never produced an artifact.
 
