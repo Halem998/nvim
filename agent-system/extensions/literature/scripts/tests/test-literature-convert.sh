@@ -287,6 +287,72 @@ else
 fi
 
 # ============================================================
+# Test 4: literature_quality_gate.py self-test fixtures, run as part of
+# this suite via `literature-convert.sh --self-test` (the shared entry
+# point that also exercises literature_combining_overlay.py's fixtures).
+# ============================================================
+
+STDERR_SELFTEST="$WORKDIR/stderr_selftest.log"
+"$CONVERT_SH" --self-test >"$WORKDIR/stdout_selftest.log" 2>"$STDERR_SELFTEST"
+EXIT_SELFTEST=$?
+if [ "$EXIT_SELFTEST" -eq 0 ] && grep -q "All fixtures passed" "$WORKDIR/stdout_selftest.log"; then
+  t_pass "literature-convert.sh --self-test: all fixtures passed (combining-overlay + quality-gate)"
+else
+  t_fail "literature-convert.sh --self-test: expected exit 0 with 'All fixtures passed'; got exit $EXIT_SELFTEST — stderr:"
+  cat "$STDERR_SELFTEST" >&2
+fi
+
+# ============================================================
+# Test 5: broken-font-encoding fixture (positive — must-fail regression).
+# Simulates the glyph-index-as-codepoint corruption signature this task's
+# checks exist to catch. Strict assertion on the MANDATORY fallback tier
+# (LITERATURE_CONVERTER=pymupdf), where the fixture's literal NUL/control
+# characters are confirmed to survive PyMuPDF's own text extraction intact
+# (verified directly: page.get_text("dict") preserves them unchanged).
+#
+# The primary tier (pymupdf4llm) is NOT asserted against this specific
+# synthetic fixture: pymupdf4llm's to_markdown() was found during Phase 5/6
+# verification to apply its own heuristic character-substitution cleanup
+# beyond raw MuPDF extraction (observed to turn "0"->"O", "1"->"l", and
+# raw \x00-\x08 runs into stray printable substitute characters such as
+# "¢") that happens to sanitize THIS insert_text()-constructed fixture
+# before it reaches the gate — a limitation of this cheap synthetic
+# reproduction technique, not evidence that genuinely broken embedded PDF
+# fonts are safe on the primary tier. The "fails on every tier" guarantee
+# for real corruption is a structural property instead: run_quality_gate()
+# has exactly one call site in run_unified_engine(), applied unconditionally
+# to whichever tier's `content` was produced — see literature-convert.sh's
+# QUALITY GATE section comment. The already-ingested real corpus evidence
+# (pym_ohearn_yang_2004_possible-worlds-resources-bi, 1352 real NUL bytes
+# reaching final output — see calibration-notes.md) is the real-world proof
+# that genuine font corruption does reach gate time; this fixture proves
+# the new checks correctly reject it once there.
+# ============================================================
+
+FIXTURE_BROKEN="$WORKDIR/broken_font.pdf"
+python3 "$FIXTURE_GEN" broken-font "$FIXTURE_BROKEN" >/dev/null
+
+OUT_BROKEN="$WORKDIR/out_broken"
+mkdir -p "$OUT_BROKEN"
+STDERR_BROKEN="$WORKDIR/stderr_broken.log"
+LITERATURE_CONVERTER=pymupdf "$CONVERT_SH" "$FIXTURE_BROKEN" "$OUT_BROKEN" >/dev/null 2>"$STDERR_BROKEN"
+EXIT_BROKEN=$?
+
+if [ "$EXIT_BROKEN" -eq 3 ] && [ -f "$OUT_BROKEN/broken_font.md.rejected" ] && [ ! -f "$OUT_BROKEN/broken_font.md" ]; then
+  if grep -q "control-character" "$STDERR_BROKEN" && grep -q "printable-ratio" "$STDERR_BROKEN"; then
+    t_pass "broken-font-encoding (fallback tier): exit 3, .rejected written, both control-character and printable-ratio reasons present"
+  else
+    t_fail "broken-font-encoding (fallback tier): exit 3 with .rejected but expected reasons not both present — stderr:"
+    cat "$STDERR_BROKEN" >&2
+  fi
+else
+  t_fail "broken-font-encoding (fallback tier): expected exit 3 with .rejected and no final .md; got exit $EXIT_BROKEN — stderr:"
+  cat "$STDERR_BROKEN" >&2
+fi
+
+t_log "WARNING: broken-font-encoding fixture is NOT asserted against the primary (pymupdf4llm) tier — see this test's header comment for why (pymupdf4llm's own cleanup heuristics sanitize this specific synthetic construction). This is a documented limitation of the synthetic reproduction technique, never silently skipped without explanation."
+
+# ============================================================
 # Optional stronger check: real Alur SyGuS PDF, if available. Converts to a
 # scratch dir ONLY — never touches ~/Projects/Literature/. Skips with a
 # visible warning (never fails the suite) if LITERATURE_TEST_PDF is unset.

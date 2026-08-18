@@ -78,6 +78,12 @@ import unicodedata
 
 sys.path.insert(0, os.environ["LITERATURE_CONVERT_SCRIPT_DIR"])
 from literature_combining_overlay import compose_combining_overlays
+from literature_quality_gate import (
+    column_interleaving_flagged,
+    sentence_boundary_glue_count,
+    control_char_count,
+    printable_ratio,
+)
 
 MARK = "̸"  # COMBINING LONG SOLIDUS OVERLAY
 failures = []
@@ -149,6 +155,77 @@ for name, given in [
         )
     else:
         print(f"[self-test] PASS: idempotence[{name}]")
+
+# ------------------------------------------------------------------
+# literature_quality_gate fixtures (control_char_count / printable_ratio /
+# the two moved functions). Kept in this same --self-test entry point per
+# the shared-module extraction pattern: one entry point, one place a
+# threshold/regex change can be exercised without reconverting a PDF.
+# ------------------------------------------------------------------
+
+
+def gate_check(name, cond, detail=""):
+    if cond:
+        print(f"[self-test] PASS: gate/{name}")
+    else:
+        failures.append(f"gate/{name}: {detail}")
+
+
+# control_char_count: NUL must be flagged (count > 0); other Cc control
+# characters (e.g. \x01) are NOT counted by this function (see
+# literature_quality_gate.printable_ratio's docstring for why NUL is
+# zero-tolerance but the broader Cc range is a ratio check instead);
+# \t/\n/\r must never be flagged.
+gate_check("control-char-nul-flagged", control_char_count("a\x00b") == 1,
+           f"expected 1, got {control_char_count('a' + chr(0) + 'b')}")
+gate_check("control-char-other-cc-not-counted-here", control_char_count("a\x01b") == 0,
+           f"expected 0 (non-NUL Cc handled by printable_ratio, not this function), got {control_char_count('a' + chr(1) + 'b')}")
+gate_check("control-char-whitespace-exempt", control_char_count("a\tb\nc\rd") == 0,
+           f"expected 0, got {control_char_count('a' + chr(9) + 'b' + chr(10) + 'c' + chr(13) + 'd')}")
+
+# printable_ratio: PUA-heavy string scores below the calibrated 0.85 floor
+# (see calibration-notes.md); clean prose+math scores at/near 1.0; empty
+# string must not crash and must return (1.0, 0).
+pua_heavy = "a"
+pua_ratio, pua_count = printable_ratio(pua_heavy)
+gate_check("printable-ratio-pua-heavy-below-floor", pua_ratio < 0.85,
+           f"expected ratio < 0.85, got {pua_ratio!r} ({pua_count} non-printable)")
+
+clean_prose = "The completeness theorem holds for K via the canonical model ∀x.(x ⊢ φ) construction."
+clean_ratio, clean_count = printable_ratio(clean_prose)
+gate_check("printable-ratio-clean-prose-near-one", clean_ratio >= 0.99,
+           f"expected ratio >= 0.99, got {clean_ratio!r} ({clean_count} non-printable)")
+
+empty_ratio, empty_count = printable_ratio("")
+gate_check("printable-ratio-empty-string-no-crash", (empty_ratio, empty_count) == (1.0, 0),
+           f"expected (1.0, 0), got {(empty_ratio, empty_count)!r}")
+
+# Moved-function regression (Phase 2 refactor behavior-preservation): one
+# known-flagging and one known-clean input each, including the Ph.D./binder
+# exemptions sentence_boundary_glue_count depends on.
+glued_sample = (
+    "short line one here\n"
+    "col A text here    col B text glued onto the same physical line here too\n"
+    "short line two here\n"
+    "col A text here    col B text glued onto the same physical line here too\n"
+    "short line three here\n"
+    "col A text here    col B text glued onto the same physical line here too\n"
+)
+glue_flagged, glue_frac = column_interleaving_flagged(glued_sample)
+gate_check("column-interleaving-known-flagging", glue_flagged,
+           f"expected the interleaved sample to be flagged, got flagged={glue_flagged} frac={glue_frac}")
+gate_check("column-interleaving-known-clean", not column_interleaving_flagged("a short normal line\nanother normal line\n")[0],
+           "expected a normal single-column sample to NOT be flagged")
+
+gate_check("sentence-boundary-glue-known-flagging", sentence_boundary_glue_count(
+    "First.Second sentence fuses here.Third one too.Fourth fusion occurs here."
+) >= 3, "expected >= 3 fused transitions")
+gate_check("sentence-boundary-glue-phd-exempted", sentence_boundary_glue_count(
+    "A. Author. Ph.D. thesis, University of Nowhere, 2001."
+) == 0, "expected the sole Ph.D. transition to be exempted")
+gate_check("sentence-boundary-glue-binder-exempted", sentence_boundary_glue_count(
+    "Formally we require ∀x.P and ∃y.E to hold in the model."
+) == 0, "expected both binder-adjacent transitions to be exempted")
 
 if failures:
     print("\n[self-test] FAILURES:", file=sys.stderr)
@@ -262,6 +339,14 @@ from collections import Counter
 
 sys.path.insert(0, os.environ["LITERATURE_CONVERT_SCRIPT_DIR"])
 from literature_combining_overlay import compose_combining_overlays  # noqa: E402
+from literature_quality_gate import (  # noqa: E402
+    column_interleaving_flagged,
+    sentence_boundary_glue_count,
+    ligature_residue_count,
+    dehyphenation_residue_count,
+    control_char_count,
+    printable_ratio,
+)
 
 pdf_path = os.environ["LITERATURE_CONVERT_INPUT"]
 out_path = os.environ["LITERATURE_CONVERT_OUTPUT"]
@@ -621,85 +706,27 @@ def try_pymupdf_fallback():
 
 # ============================================================
 # QUALITY GATE (loud-failure contract, exit code 3)
+#
+# column_interleaving_flagged, sentence_boundary_glue_count,
+# ligature_residue_count, dehyphenation_residue_count, control_char_count,
+# and printable_ratio are all imported from literature_quality_gate.py (see
+# the sys.path.insert/import near the top of this heredoc) so the live
+# conversion pipeline and its fixture self-test (--self-test /
+# --gate-self-test) share exactly one definition of every string-only check
+# -- never hand-maintained copies that could drift. Only the page-coverage
+# check below stays inline: it is the one check that needs the source
+# fitz.Document, not just the extracted string.
 # ============================================================
 
-def column_interleaving_flagged(text):
-    lines = [l for l in text.split("\n") if l.strip()]
-    if not lines:
-        return False, 0.0
-    glue_re = re.compile(r"\S\s{4,}\S")
-    glued = [l for l in lines if glue_re.search(l)]
-    non_glued = [l for l in lines if not glue_re.search(l)]
-    frac = len(glued) / len(lines)
-    avg_glued_len = (sum(len(l) for l in glued) / len(glued)) if glued else 0
-
-    # Baseline for "conspicuously long": the median length of the NON-glued
-    # lines specifically, not all lines. Comparing against the whole
-    # document's median fails on the exact worst-case (and most important)
-    # scenario this check exists to catch: when column-gluing affects the
-    # MAJORITY of a document, glued lines themselves dominate the overall
-    # median, so "avg glued length > 1.5x overall median" can never fire —
-    # empirically verified against the real corrupted Alur SyGuS corpus
-    # document, which the document-wide-median formulation
-    # failed to flag (79% of lines glued, yet ratio stayed ~1.0x). Falling
-    # back to the whole-document median only when every line is glued (no
-    # non-glued baseline exists at all).
-    baseline_lengths = non_glued if non_glued else lines
-    baseline_sorted = sorted(len(l) for l in baseline_lengths)
-    baseline_len = baseline_sorted[len(baseline_sorted) // 2] if baseline_sorted else 0
-
-    long_enough = baseline_len > 0 and avg_glued_len > 1.5 * baseline_len
-    return (frac > 0.15 and long_enough), frac
-
-
-def sentence_boundary_glue_count(text):
-    """Secondary word-fusion signal, added during test-harness verification.
-    Deliberately period-ONLY (`[a-z]\\.[A-Z]`),
-    NOT comma/semicolon: an earlier comma/semicolon-inclusive version was
-    empirically found to false-positive heavily on legitimate math tuple/
-    list notation (`(x,Y)`, `a,B,c` are extremely common in this math-heavy
-    corpus and are not defects).
-
-    Found via a REAL corpus PDF, not a synthetic fixture (a synthetic
-    two-column fixture also seemed to trigger this during early Phase 6
-    testing, but that turned out to be an artifact of an unrealistic first
-    version of the fixture — see generate-test-fixtures.py's docstring —
-    and no longer reproduces once the fixture uses column-width-constrained
-    wrapped text like a real PDF): pymupdf4llm was observed to drop
-    inter-word spaces entirely around some `<sup>`/`<sub>` markdown spans on
-    Goldblatt/Hodkinson/Venema 2003 (a real corpus document, read via a
-    fresh in-process conversion, never by reading/reconverting the corpus
-    itself), producing fused runs like "Thesecondlinefollowsby" — a
-    genuine, previously-undetected correctness defect this check catches.
-    Verified at 0-1 occurrences across a random sample of 60 real corpus
-    markdown files (read-only, not reconverted) with the period-only
-    pattern; the threshold below (>=3) sits well above that baseline.
-
-    Two further benign patterns are exempted BEFORE counting, both found via
-    real corpus PDFs during Logos/Theory corpus building:
-      - `Ph.D.` / `Ph.D` in bibliography entries (the `h.D` transition) —
-        e.g. Pym-O'Hearn-Yang 2004 "Possible Worlds and Resources", rejected
-        at exactly 4 hits, all `Ph.D.` in the bibliography.
-      - Single-letter-variable quantifier/binder notation such as `∀x.P`,
-        `∃x.P`, `∃y.E` (the `{var}.{Upper}` transition immediately preceded
-        by a `∀`/`∃`/`λ` binder) — e.g. Ishtiaq-O'Hearn 2001 "BI as an
-        Assertion Language", rejected at 7 hits (5 quantifier notation, 2
-        Ph.D.). Both conversions were otherwise clean and were manually
-        promoted from rejected_path before this fix.
-
-    Exemption is applied by stripping the exempted substrings first, THEN
-    counting on what remains — not a negative lookbehind — since the
-    exemption spans (`Ph.D`, `{binder}{var}.{Upper}`) each fully contain the
-    raw 3-character match span they exempt, making a strip-first pass exact
-    and avoiding Python re's fixed-width-lookbehind constraint.
-
-    The binder class is deliberately narrow — the binder character must be
-    immediately adjacent to a single lowercase variable — so a bare
-    single-letter-then-period-then-capital transition with no binder prefix
-    is still counted."""
-    exempted = re.sub(r"Ph\.D\.?", "", text)
-    exempted = re.sub(r"[∀∃λ][a-z]\.[A-Z]", "", exempted)
-    return len(re.findall(r"[a-z]\.[A-Z]", exempted))
+# Calibrated thresholds (see this task's calibration-notes.md for the full
+# real-corpus measurement behind each number):
+#   - printable_ratio floor 0.85: ~8.1 points of headroom below the measured
+#     real-corpus minimum (0.931404, reynolds_2002_axioms_for_branching_time).
+#   - page-coverage ceiling 2.5: >6x further from 1.0 than either real
+#     measured data point (Goldblatt 2006 fallback-tier reconversion:
+#     0.99986; gabbay_2000 rejected-sibling: 1.00143).
+_PRINTABLE_RATIO_FLOOR = 0.85
+_PAGE_COVERAGE_CEILING = 2.5
 
 
 def run_quality_gate(content, doc):
@@ -728,14 +755,61 @@ def run_quality_gate(content, doc):
             f"page-coverage: extracted {out_words} words vs {src_words} words in "
             f"{len(doc)} source pages ({coverage:.1%}, threshold 40%)"
         )
+    # Two-sided band, defense-in-depth: the ceiling below is a SECONDARY
+    # safety net, not the primary defense against the mojibake/unextractable-
+    # PDF defect this task targets. `content` (numerator) and
+    # `doc.get_text()` (denominator, via src_words above) are both PyMuPDF
+    # extractions of the SAME document, so a font-encoding corruption that
+    # corrupts both extractions similarly may not move this ratio as sharply
+    # as an independent-tool (e.g. content-vs-pdftotext) comparison would —
+    # control_char_count/printable_ratio below are the primary defense for
+    # that failure shape. This ceiling instead catches a different shape:
+    # wildly over-extracted output (e.g. runaway repetition) relative to the
+    # source page text.
+    if src_words > 0 and coverage > _PAGE_COVERAGE_CEILING:
+        reasons.append(
+            f"page-coverage: extracted {out_words} words vs {src_words} words in "
+            f"{len(doc)} source pages ({coverage:.1%}, ceiling "
+            f"{_PAGE_COVERAGE_CEILING:.0%}) — output implausibly larger than the "
+            f"source text"
+        )
 
-    ligature_count = len(re.findall(r"[ﬀ-ﬆ]", content))
+    ligature_count = ligature_residue_count(content)
     if ligature_count > 0:
         reasons.append(f"ligature-scan: {ligature_count} unresolved U+FB00-FB06 ligature(s) remain")
 
-    dehyph_count = len(re.findall(r"[a-z]-\n[a-z]", content))
+    dehyph_count = dehyphenation_residue_count(content)
     if dehyph_count > 0:
         reasons.append(f"dehyphenation-check: {dehyph_count} unresolved hyphen-linebreak(s) remain")
+
+    # NUL bytes have no legitimate provenance anywhere in this pipeline —
+    # zero tolerance is safe (verified: 0 occurrences across 37 of 38
+    # measured real corpus documents; the sole real occurrence,
+    # pym_ohearn_yang_2004_possible-worlds-resources-bi, is a genuine
+    # already-ingested defect, not a false positive — see
+    # calibration-notes.md).
+    nul_count = control_char_count(content)
+    if nul_count > 0:
+        reasons.append(
+            f"control-character: {nul_count} NUL byte(s) (\\x00) found — no legitimate "
+            f"provenance in this pipeline (threshold: any occurrence)"
+        )
+
+    # Broader non-printable-category check (Cc-outside-tab/nl/cr, Cs, Co, Cn)
+    # is a RATIO, not zero-tolerance: real-corpus calibration found this
+    # corpus legitimately uses low-range Cc codepoints as a math-glyph
+    # substitute in roughly half of all documents (see calibration-notes.md
+    # and literature_quality_gate.printable_ratio's docstring for the full
+    # justification of this deliberate deviation from a blanket
+    # zero-tolerance control-character check).
+    ratio, nonprintable_count = printable_ratio(content)
+    if ratio < _PRINTABLE_RATIO_FLOOR:
+        reasons.append(
+            f"printable-ratio: {ratio:.1%} of characters are printable "
+            f"({nonprintable_count} non-printable char(s) found; floor "
+            f"{_PRINTABLE_RATIO_FLOOR:.0%}) — glyph-index-as-codepoint corruption "
+            f"signature (broken/custom PDF font encoding)"
+        )
 
     return reasons
 

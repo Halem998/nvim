@@ -1,19 +1,54 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 69,
-  "session_id": "sess_1787078236_69862e_69",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/069_harden_conversion_quality_gate_against_mojibake/plans/01_harden-quality-gate-against-mojibake.md",
-      "summary": "7-phase plan hardening literature-convert.sh's run_quality_gate with a calibrated printable-character-ratio check, a zero-tolerance NUL/control-character check, and a two-sided page-coverage band, plus shared-module extraction for unit-testable checks and must-pass/must-fail regression verification."
+      "type": "summary",
+      "path": "specs/069_harden_conversion_quality_gate_against_mojibake/summaries/01_harden-quality-gate-mojibake-summary.md",
+      "summary": "All 7 plan phases completed: added a zero-tolerance NUL check and a calibrated printable-ratio check plus a two-sided page-coverage band to the literature conversion quality gate, extracted string-only checks into literature_quality_gate.py with self-test fixtures, calibrated every threshold against a real 40-document corpus sweep, and verified Goldblatt 2006 still passes on the fallback tier while a real already-ingested NUL-corrupted document is correctly flagged."
+    },
+    {
+      "type": "report",
+      "path": "specs/069_harden_conversion_quality_gate_against_mojibake/calibration-notes.md",
+      "summary": "Real-corpus calibration measurements backing every new threshold, including the printable-ratio distribution, NUL/control-character findings, page-coverage data points, and the Gabbay/Kurucz location attempt and its substitution."
     }
   ],
-  "phase_count": 7,
-  "estimated_hours": 6,
-  "dependency_waves": [[1, 2], [3], [4], [5], [6], [7]],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 69 to execute the plan"
+  "completion_data": {
+    "completion_summary": "Hardened literature-convert.sh's quality gate with a zero-tolerance NUL-byte check and a calibrated printable-character-ratio floor (0.85) plus a two-sided page-coverage band (ceiling 2.5), extracted every string-only gate check into a new importable literature_quality_gate.py module with --self-test unit fixtures, and verified against real corpus data: Goldblatt 2006 still converts cleanly on the mandatory PyMuPDF fallback tier while the real already-ingested pym_ohearn_yang_2004_possible-worlds-resources-bi NUL-corrupted document is correctly flagged, with zero false positives across the other 33 real corpus documents."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature_quality_gate.py",
+    "agent-system/extensions/literature/scripts/literature-convert.sh",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py",
+    "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh",
+    "agent-system/extensions/literature/context/project/literature/patterns/shared-module-extraction-for-gate-checks.md",
+    "specs/069_harden_conversion_quality_gate_against_mojibake/calibration-notes.md",
+    "specs/069_harden_conversion_quality_gate_against_mojibake/plans/01_harden-quality-gate-against-mojibake.md",
+    "specs/069_harden_conversion_quality_gate_against_mojibake/summaries/01_harden-quality-gate-mojibake-summary.md",
+    "specs/069_harden_conversion_quality_gate_against_mojibake/progress/phase-7-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When calibrating a corpus-wide zero-tolerance threshold (e.g. a control-character/NUL check), measure the REAL target corpus first, not just the motivating bad example. In the literature extension's corpus, ~half of all documents legitimately carry low-range Unicode Cc control codepoints (0x01-0x1F) as a benign glyph-substitute convention for math symbols under a broken/partial ToUnicode CMap -- a blanket zero-tolerance Cc check would fail roughly half the corpus. NUL (\\x00) specifically remained safe as zero-tolerance (0 occurrences except one genuine already-ingested defect). The general lesson: split a proposed single check into 'genuinely always-zero-provenance' (zero-tolerance) vs. 'pervasive-but-usually-benign' (ratio/floor with calibrated headroom) based on an actual measurement sweep, not the first-draft wording of the check.",
+      "category": "PATTERN",
+      "source_artifact": "specs/069_harden_conversion_quality_gate_against_mojibake/summaries/01_harden-quality-gate-mojibake-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["calibration", "quality-gate", "unicode", "control-characters", "literature-extension"]
+    },
+    {
+      "content": "pymupdf4llm.to_markdown() applies its own heuristic character-substitution/cleanup pass beyond raw PyMuPDF (fitz) text extraction -- confirmed via page.get_text('dict'), which preserves literal control characters (e.g. embedded via page.insert_text()) intact, while to_markdown() on the same PDF silently alters them (digit swaps like '0'->'O', stray substitute glyphs). This means a synthetic PDF fixture built with insert_text() to simulate broken-font-encoding corruption may reproduce the defect on PyMuPDF's raw/fallback extraction path but NOT on pymupdf4llm's primary path, even though both ultimately read the same underlying PDF content stream. Useful to know before assuming a fixture that fails one extraction tier will fail both.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/069_harden_conversion_quality_gate_against_mojibake/summaries/01_harden-quality-gate-mojibake-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["pymupdf4llm", "pymupdf", "fitz", "pdf-extraction", "test-fixtures"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1787078236_69862e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

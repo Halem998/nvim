@@ -1,0 +1,111 @@
+{
+  "phase": 7,
+  "phase_name": "All phases (1-7)",
+  "started_at": "2026-08-18T00:00:00Z",
+  "last_updated": "2026-08-18T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Phase 1: Calibrate thresholds against real corpus data",
+      "status": "done",
+      "files_touched": [
+        "specs/069_harden_conversion_quality_gate_against_mojibake/calibration-notes.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Phase 2: Extract string-only gate checks into an importable module",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/literature_quality_gate.py",
+        "agent-system/extensions/literature/scripts/literature-convert.sh",
+        "agent-system/extensions/literature/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Phase 3: Add printable-ratio and NUL/control-character checks",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/literature_quality_gate.py",
+        "agent-system/extensions/literature/scripts/literature-convert.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Phase 4: Widen page-coverage into a two-sided band",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/literature-convert.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Phase 5: Unit-test fixtures for the new checks",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/literature-convert.sh",
+        "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh",
+        "agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Phase 6: Regression and end-to-end verification",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Phase 7: Document the shared-module check pattern",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/context/project/literature/patterns/shared-module-extraction-for-gate-checks.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "broken-font-encoding PDF fixture using literal PUA characters via insert_text() under a base-14 font",
+      "result": "failed",
+      "reason": "PyMuPDF silently substitutes U+00B7 (middle dot) for un-representable glyphs under helv/hebo, so PUA chars never survive to extracted text"
+    },
+    {
+      "approach": "broken-font-encoding PDF fixture using literal low-range control characters (0x00-0x08) via insert_text()",
+      "result": "partial",
+      "reason": "survives intact through raw fitz get_text() (both dict-mode and the fallback tier), but pymupdf4llm.to_markdown() applies its own heuristic cleanup that alters/removes the raw control bytes on this specific synthetic construction -- used as the final fixture, asserted only against the fallback tier, with the primary-tier limitation documented"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "control_char_count(text) to count NUL plus every other Cc character excluding tab/newline/carriage-return",
+      "type": "altered",
+      "reason": "Real-corpus calibration (Phase 1) found 19 of 38 measured documents legitimately use low-range Cc codepoints (up to 17299 occurrences) as a benign glyph-substitute convention for math symbols; blanket zero-tolerance would fail roughly half the existing corpus, violating the plan's own zero-false-positives goal.",
+      "annotation": "*(deviation: altered -- control_char_count() counts NUL only ... see calibration-notes.md)*"
+    },
+    {
+      "task_id": "1.4",
+      "description": "Measure page-coverage ratio distribution for a sample of at least 6 corpus documents with locatable source PDFs",
+      "type": "altered",
+      "reason": "Only 2 of ~40 corpus documents had locatable/reconvertible source PDFs within the task's time budget (most metadata.json source_path values point at nonexistent ingest-time temp paths).",
+      "annotation": "*(deviation: altered -- only 2 of the ~40 corpus documents' source PDFs were locatable ...)*"
+    },
+    {
+      "task_id": "1.5/1.6",
+      "description": "Locate the Gabbay/Kurucz 2003 source PDF and measure its must-FAIL data points",
+      "type": "skipped",
+      "reason": "Not locatable under ~/Projects/, ~/Downloads/, or Zotero storage by author-name search; substituted the already-ingested pym_ohearn_yang_2004_possible-worlds-resources-bi document as real must-flag evidence instead.",
+      "annotation": "*(deviation: skipped -- artifact not locatable; superseded by the pym_ohearn substitute evidence ...)*"
+    },
+    {
+      "task_id": "5.4/6.3",
+      "description": "broken-font-encoding fixture must fail the gate under pymupdf4llm, pymupdf, and auto converter modes (every tier)",
+      "type": "altered",
+      "reason": "pymupdf4llm.to_markdown() applies its own heuristic character-substitution cleanup that sanitizes this specific insert_text()-constructed synthetic fixture before it reaches the gate. The fixture fails reliably on the fallback tier; the every-tier guarantee for genuine corruption is structural (single run_quality_gate() call site) and anchored by real already-ingested NUL evidence instead of this synthetic fixture on the primary tier.",
+      "annotation": "*(deviation: altered -- the Phase 5 broken-font synthetic fixture FAILS under pymupdf/fallback ... PASSES under pymupdf4llm and auto ...)*"
+    }
+  ]
+}

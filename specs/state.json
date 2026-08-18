@@ -988,7 +988,7 @@
     {
       "project_number": 69,
       "project_name": "harden_conversion_quality_gate_against_mojibake",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "literature",
       "title": "Harden literature conversion quality gate against mojibake and unextractable-PDF output",
@@ -1009,16 +1009,22 @@
           "path": "specs/069_harden_conversion_quality_gate_against_mojibake/plans/01_harden-quality-gate-against-mojibake.md",
           "type": "plan",
           "summary": "7-phase plan hardening literature-convert.sh's run_quality_gate with a calibrated printable-character-ratio check, a zero-tolerance NUL/control-character check, and a two-sided page-coverage band, plus shared-module extraction for unit-testable checks and must-pass/must-fail regression verification."
+        },
+        {
+          "path": "specs/069_harden_conversion_quality_gate_against_mojibake/calibration-notes.md",
+          "type": "summary",
+          "summary": "Real-corpus calibration measurements backing every new threshold, including the printable-ratio distribution, NUL/control-character findings, page-coverage data points, and the Gabbay/Kurucz location attempt and its substitution."
         }
       ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:53:22Z",
-      "session_id": "sess_1787078236_69862e_69"
+      "last_updated": "2026-08-18T19:19:11Z",
+      "session_id": "sess_1787078236_69862e_69",
+      "completion_summary": "Hardened literature-convert.sh's quality gate with a zero-tolerance NUL-byte check and a calibrated printable-character-ratio floor (0.85) plus a two-sided page-coverage band (ceiling 2.5), extracted every string-only gate check into a new importable literature_quality_gate.py module with --self-test unit fixtures, and verified against real corpus data: Goldblatt 2006 still converts cleanly on the mandatory PyMuPDF fallback tier while the real already-ingested pym_ohearn_yang_2004_possible-worlds-resources-bi NUL-corrupted document is correctly flagged, with zero false positives across the other 33 real corpus documents."
     },
     {
       "project_number": 70,
       "project_name": "fix_discover_tier_starvation_and_silent_tier3_failure",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "literature",
       "title": "Fix literature-discover.sh tier starvation and silent Tier 3 failure",
@@ -1039,11 +1045,17 @@
           "path": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/plans/01_fix-discover-tier-starvation.md",
           "type": "plan",
           "summary": "5-phase plan fixing silent Tier 3 failure (script + caller), per-tier quotas with rollover, and query-construction noise in literature-discover.sh."
+        },
+        {
+          "path": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/summaries/01_fix-discover-tier-starvation-summary.md",
+          "type": "summary",
+          "summary": "Fixed silent Tier 3 failure (visible TIER3_STATUS notice, script + caller), Tier 1 starving Tiers 2/3 (reserved per-tier quotas with rollover), and query-construction noise (title-primary/description-capped terms, tier1 multi-term threshold) in literature-discover.sh and commands/literature.md."
         }
       ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:53:34Z",
-      "session_id": "sess_1787078236_69862e_70"
+      "last_updated": "2026-08-18T19:19:22Z",
+      "session_id": "sess_1787078236_69862e_70",
+      "completion_summary": "Fixed three discovery-correctness defects in the literature extension's discover pipeline: silent Tier 3 failure now emits a visible TIER3_STATUS notice surfaced at both the script and /literature command layers; Tier 1 no longer starves Tiers 2/3 via reserved per-tier quotas with rollover; and query-construction noise from multi-paragraph task descriptions is reduced via title-primary/description-capped term construction plus a multi-term match-strength threshold. All 5 plan phases completed; all edits confined to agent-system/extensions/literature/**."
     },
     {
       "project_number": 71,

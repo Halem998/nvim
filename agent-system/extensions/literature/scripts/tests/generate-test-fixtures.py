@@ -11,6 +11,7 @@ Usage:
     generate-test-fixtures.py bold-heading <output.pdf>
     generate-test-fixtures.py biblio-quantifier <output.pdf>
     generate-test-fixtures.py fused-word <output.pdf>
+    generate-test-fixtures.py broken-font <output.pdf>
 """
 import sys
 
@@ -191,6 +192,46 @@ def build_fused_word_pdf(out_path):
     doc.close()
 
 
+def build_broken_font_pdf(out_path):
+    """A single-page, single-column document simulating the exact
+    glyph-index-as-codepoint corruption signature this task's checks exist
+    to catch: a broken/custom PDF font encoding with no usable ToUnicode
+    CMap, where extracted 'text' is really raw low-range control codes
+    (landing in Unicode category Cc) rather than the intended characters.
+
+    Verified cheaply constructible with plain fitz.Page.insert_text(): a
+    string containing literal U+0000-U+0008 control characters round-trips
+    through PyMuPDF's own get_text() unchanged (confirmed directly against
+    a throwaway PDF during this phase — insert_text() does not require its
+    argument to be printable; ToUnicode/content-stream text extraction
+    returns exactly what was inserted). This means the SAME corrupted
+    content is visible to both engine tiers, since pymupdf4llm's own text
+    extraction is layered on the same underlying MuPDF extraction as the
+    fallback tier's raw fitz calls -- exactly the "fails on every tier"
+    property this task requires.
+
+    Roughly 45% of body characters are NUL or other low-range control
+    codes, well past both the zero-tolerance NUL check and the 0.85
+    printable-ratio floor (see calibration-notes.md), while overall word
+    count stays close to a plausible page so the page-coverage check is NOT
+    what fires here -- this fixture isolates the two new checks."""
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)
+
+    CONTROL_RUN = "\x00\x01\x02\x03\x04\x05\x06\x07\x08"
+
+    y = 72
+    page.insert_text((72, y), "Introduction", fontsize=14, fontname="hebo")
+    y += 28
+    for i in range(16):
+        line = f"word{i}a {CONTROL_RUN} word{i}b {CONTROL_RUN} word{i}c normal text tail"
+        page.insert_text((72, y), line, fontsize=10)
+        y += 16
+
+    doc.save(out_path)
+    doc.close()
+
+
 def main():
     if len(sys.argv) != 3:
         print(__doc__, file=sys.stderr)
@@ -204,6 +245,8 @@ def main():
         build_biblio_quantifier_pdf(out_path)
     elif kind == "fused-word":
         build_fused_word_pdf(out_path)
+    elif kind == "broken-font":
+        build_broken_font_pdf(out_path)
     else:
         print(f"Unknown fixture kind: {kind}", file=sys.stderr)
         sys.exit(1)

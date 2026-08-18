@@ -45,6 +45,7 @@
       "literature-build-index.sh",
       "literature-convert.sh",
       "literature_combining_overlay.py",
+      "literature_quality_gate.py",
       "literature_combining_detect.py",
       "literature-combining-audit.sh",
       "literature-repair-combining.sh",
