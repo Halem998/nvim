@@ -988,7 +988,7 @@
     {
       "project_number": 69,
       "project_name": "harden_conversion_quality_gate_against_mojibake",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "literature",
       "title": "Harden literature conversion quality gate against mojibake and unextractable-PDF output",
@@ -1012,13 +1012,13 @@
         }
       ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:52:47Z",
+      "last_updated": "2026-08-18T18:53:22Z",
       "session_id": "sess_1787078236_69862e_69"
     },
     {
       "project_number": 70,
       "project_name": "fix_discover_tier_starvation_and_silent_tier3_failure",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "literature",
       "title": "Fix literature-discover.sh tier starvation and silent Tier 3 failure",
@@ -1042,7 +1042,7 @@
         }
       ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T18:52:50Z",
+      "last_updated": "2026-08-18T18:53:34Z",
       "session_id": "sess_1787078236_69862e_70"
     },
     {

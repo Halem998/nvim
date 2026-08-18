@@ -1,7 +1,7 @@
 # Implementation Plan: Fix literature-discover.sh tier starvation and silent Tier 3 failure
 
 - **Task**: 70 - Fix literature-discover.sh tier starvation and silent Tier 3 failure
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/reports/01_fix-discover-tier-starvation.md
@@ -98,29 +98,29 @@ No `roadmap_path` was provided in the delegation context; no roadmap phases are 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Tier 3 failure visibility inside literature-discover.sh [NOT STARTED]
+### Phase 1: Tier 3 failure visibility inside literature-discover.sh [COMPLETED]
 
 **Goal**: A Tier 3 HTTP failure (429, 5xx), curl failure, or API error body emits one
 machine-parseable `TIER3_STATUS: FAILED ...` line on the script's own stderr instead of a silent
 `return 0`, with the JSON-array stdout contract untouched.
 
 **Tasks**:
-- [ ] In `tier3_search()`, change the Semantic Scholar call to capture the HTTP status alongside
+- [x] In `tier3_search()`, change the Semantic Scholar call to capture the HTTP status alongside
       the body (`curl -s -w '\n%{http_code}' --max-time 15 "$ss_url"`), splitting `http_code`
       (last line) from `body` (everything before it) so the body handed to downstream `jq` is
-      byte-identical to today's `ss_results`.
-- [ ] Replace the three silent `return 0` exits with an emitting helper: curl exit != 0 ->
+      byte-identical to today's `ss_results`. *(completed)*
+- [x] Replace the three silent `return 0` exits with an emitting helper: curl exit != 0 ->
       `TIER3_STATUS: FAILED reason=curl_exit http_code=n/a (Semantic Scholar unreachable or timed out)`;
       non-200 -> `TIER3_STATUS: FAILED reason=http http_code=429 (Semantic Scholar rate-limited or unreachable)`;
       non-empty `.error` body -> `TIER3_STATUS: FAILED reason=api_error http_code=200 (<error text>)`.
-      All go to stderr; each still returns 0 (Tier 3 remains non-fatal).
-- [ ] Emit nothing on the success path (a genuine 200 with zero results stays silent — absence of
-      the line means "Tier 3 ran and found nothing").
-- [ ] Change the tier-dispatch line from `tier3_search 2>/dev/null || true` to
-      `tier3_search || true` so the notice actually reaches the script's stderr.
-- [ ] Add a short header comment in `tier3_search()` documenting the `TIER3_STATUS:` stderr
+      All go to stderr; each still returns 0 (Tier 3 remains non-fatal). *(completed)*
+- [x] Emit nothing on the success path (a genuine 200 with zero results stays silent — absence of
+      the line means "Tier 3 ran and found nothing"). *(completed)*
+- [x] Change the tier-dispatch line from `tier3_search 2>/dev/null || true` to
+      `tier3_search || true` so the notice actually reaches the script's stderr. *(completed)*
+- [x] Add a short header comment in `tier3_search()` documenting the `TIER3_STATUS:` stderr
       contract and naming `commands/literature.md` as its consumer, mirroring how
-      `zotero-export-status.sh` documents its directive/rationale split.
+      `zotero-export-status.sh` documents its directive/rationale split. *(completed)*
 
 **Timing**: 1 hour
 

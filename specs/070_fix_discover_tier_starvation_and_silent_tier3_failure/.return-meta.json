@@ -1,27 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 70,
-  "session_id": "sess_1787078236_69862e_70",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/plans/01_fix-discover-tier-starvation.md",
-      "summary": "5-phase plan fixing silent Tier 3 failure (script + caller), per-tier quotas with rollover, and query-construction noise in literature-discover.sh."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 6,
-  "dependency_waves": [[1], [2, 4], [3], [5]],
-  "memory_candidates": [
-    {
-      "content": "Multi-tier aggregation in shell pipelines: when several independently-capped sources append into one shared results array that is later head-sliced to a global limit, an early tier can silently consume the entire budget and later tiers' real work is computed then discarded by the slice. The failure looks like 'later tiers found nothing' rather than 'later tiers were truncated'. Fix shape: split the global limit into reserved per-source quotas summing to the limit, cap each source against its own quota, and roll each source's unused shortfall forward into the next source's budget so no capacity is wasted when a source under-delivers. The final slice then becomes a safety net rather than the actual (unfair) selection mechanism. Related diagnostic insight from the same investigation: a silently-discarded failure often has TWO redirect layers -- the inner call site inside the script AND the caller's own 2>/dev/null -- so fixing only the inner layer leaves the fix inert. Grep for the redirect at both layers before declaring a silent-failure bug fixed.",
-      "category": "PATTERN",
-      "source_artifact": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/plans/01_fix-discover-tier-starvation.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["multi-tier-aggregation", "quota-rollover", "truncation-bug", "silent-failure", "stderr-discard", "shell-pipeline"]
-    }
-  ],
-  "next_steps": "Run /implement 70 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1787078236_69862e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

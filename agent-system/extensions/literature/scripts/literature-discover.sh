@@ -458,6 +458,20 @@ print(json.dumps(parts))
 
 # ---------------------------------------------------------------------------
 # TIER 3: Search Semantic Scholar + Unpaywall/arXiv (online, slower)
+#
+# TIER3_STATUS stderr contract: on any non-success outcome (curl failure,
+# non-200 HTTP response, or a JSON `.error` body), this function writes
+# exactly one line to its own stderr of the shape
+# `TIER3_STATUS: FAILED reason=<curl_exit|http|api_error> http_code=<code|n/a> (<human text>)`
+# before returning 0 (Tier 3 stays non-fatal). Nothing is written on a
+# genuine 200 with zero matches — absence of the line means "Tier 3 ran and
+# found nothing", not "Tier 3 could not run". This mirrors the
+# directive/rationale idiom `zotero-export-status.sh` uses for its own
+# stderr rationale, minus the stdout directive token (Tier 3 has no separate
+# classifier call site). The consumer is `commands/literature.md`'s discover
+# step 1, which captures this script's stderr (no longer `2>/dev/null`) and
+# greps it for `TIER3_STATUS: FAILED` to surface a visible incompleteness
+# notice. The JSON-array stdout contract is untouched by any of this.
 # ---------------------------------------------------------------------------
 tier3_search() {
   # Check if we already have enough results
@@ -476,12 +490,27 @@ tier3_search() {
 
   local ss_url="https://api.semanticscholar.org/graph/v1/paper/search?query=${encoded_query}&fields=title,authors,year,openAccessPdf,externalIds&limit=10"
 
-  local ss_results=""
+  # Capture the HTTP status alongside the body so a rate-limited/failed
+  # response is distinguishable from a genuine 200-with-zero-matches. The
+  # status code is appended as its own trailing line (-w '\n%{http_code}');
+  # splitting it back off leaves `ss_results` byte-identical to the raw JSON
+  # body the rest of this function (and downstream jq) already expects.
+  local ss_raw=""
   local curl_exit=0
 
-  ss_results=$(curl -s --max-time 15 "$ss_url" 2>/dev/null) || curl_exit=$?
+  ss_raw=$(curl -s -w '\n%{http_code}' --max-time 15 "$ss_url" 2>/dev/null) || curl_exit=$?
 
-  if [ "$curl_exit" -ne 0 ] || [ -z "$ss_results" ]; then
+  if [ "$curl_exit" -ne 0 ]; then
+    echo "TIER3_STATUS: FAILED reason=curl_exit http_code=n/a (Semantic Scholar unreachable or timed out)" >&2
+    return 0
+  fi
+
+  local http_code ss_results
+  http_code=$(echo "$ss_raw" | tail -n1)
+  ss_results=$(echo "$ss_raw" | sed '$d')
+
+  if [ "$http_code" != "200" ] || [ -z "$ss_results" ]; then
+    echo "TIER3_STATUS: FAILED reason=http http_code=${http_code:-n/a} (Semantic Scholar rate-limited or unreachable)" >&2
     return 0
   fi
 
@@ -489,6 +518,7 @@ tier3_search() {
   local error_msg
   error_msg=$(echo "$ss_results" | jq -r '.error // ""' 2>/dev/null)
   if [ -n "$error_msg" ] && [ "$error_msg" != "null" ]; then
+    echo "TIER3_STATUS: FAILED reason=api_error http_code=${http_code} (${error_msg})" >&2
     return 0
   fi
 
@@ -613,7 +643,7 @@ tier1_search 2>/dev/null || true
 tier2_search || true
 
 # Tier 3: Online APIs (only if we have fewer than limit results)
-tier3_search 2>/dev/null || true
+tier3_search || true
 
 # ---------------------------------------------------------------------------
 # Output results
