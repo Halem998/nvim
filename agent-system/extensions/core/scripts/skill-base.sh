@@ -692,15 +692,24 @@ skill_lifecycle_notify() {
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 9/10: Cleanup temporary files
 # Usage: skill_cleanup "$padded_num" "$project_name"
-# Removes .postflight-pending, .postflight-loop-guard, .return-meta.json
+# Removes .postflight-pending and .postflight-loop-guard only. .return-meta.json
+# is NOT removed here: this function runs at the skill's own Stage 9, which
+# always fires before the calling command's command-gate-out.sh (defensive
+# status correction, skill_validate_task_artifacts) and, further downstream,
+# the command's own CHECKPOINT 3 commit block (or, for /revise, the step right
+# after gate-out) ever read the file. Deleting it here made that entire body
+# structurally unreachable. Ownership of .return-meta.json's deletion belongs
+# to the calling command's own last step that consumes it -- see each of
+# commands/{research,plan,implement,revise,orchestrate}.md for its site, and
+# skill-spawn/SKILL.md Stage 16 for the one caller with no command-level
+# consumer, which deletes the file inline itself.
 # Note: Implementer also removes .continuation-loop-guard inline (after calling this)
 skill_cleanup() {
   local padded_num="$1"
   local project_name="$2"
   local task_dir="specs/${padded_num}_${project_name}"
   rm -f "${task_dir}/.postflight-pending" \
-        "${task_dir}/.postflight-loop-guard" \
-        "${task_dir}/.return-meta.json" 2>/dev/null || true
+        "${task_dir}/.postflight-loop-guard" 2>/dev/null || true
 }
 
 # ───────────────────────────────────────────────────────────────────────────

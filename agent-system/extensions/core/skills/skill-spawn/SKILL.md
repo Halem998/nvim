@@ -496,11 +496,15 @@ Commit failure is non-blocking (log and continue).
 ### Stage 16: Cleanup
 
 Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 9 (cleanup); this skill also
-removes `.spawn-return.json`, which is spawn-specific and not folded into `skill_cleanup`:
+removes `.spawn-return.json`, which is spawn-specific and not folded into `skill_cleanup`. `/spawn`
+has no `command-gate-out.sh`/CHECKPOINT 3 consumer of `.return-meta.json` downstream of this
+skill, so `skill-spawn` owns that deletion itself, inline, rather than relying on a calling
+command:
 
 ```bash
 skill_cleanup "$padded_num" "$project_name"
 rm -f "specs/${padded_num}_${project_name}/.spawn-return.json"
+rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 ```
 
 ---

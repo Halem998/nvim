@@ -1,33 +1,12 @@
 {
-  "status": "planned",
-  "summary": "Six-phase implementation plan for the .return-meta.json lifecycle-ordering defect, implementing the research report's direction (b) refined across all effective skill_cleanup callers and all command-level consumers.",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/017_fix_return_meta_lifecycle_ordering/plans/01_return-meta-lifecycle-ordering.md",
-      "summary": "Six-phase, 5-hour plan: skill_cleanup stops deleting .return-meta.json, per-command deletion sites (single-task and multi-task), truthful gate-out warning, doc updates, and a uniformity sweep with behavioral demonstration."
-    }
-  ],
-  "next_steps": "Run /implement 17 to execute the plan",
+  "status": "in_progress",
+  "summary": "Implementing six-phase plan for return-meta.json lifecycle ordering fix.",
   "metadata": {
-    "session_id": "sess_1787016315_a436d0_17",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5,
-    "dependency_waves": [[1, 2], [3], [4], [5], [6]],
-    "complexity": "complex",
-    "research_integrated": true,
-    "plan_version": 1
-  },
-  "memory_candidates": [
-    {
-      "content": "Shared-library cleanup functions that delete a file consumed by a LATER stage of the caller create structurally unreachable code downstream, and the unreachability is invisible because the consumer's not-found branch is written as a non-blocking warning. The diagnostic pattern: when a warning fires identically on every successful run and every genuine failure, the warning is not noisy — it is proof that the guarded code never runs. The general fix shape is ownership relocation, not deletion of the dead consumer: move the delete to the outermost caller's own last step, past every consumer, and verify uniformity by mapping every execution path to exactly one deletion owner (paths that bypass the shared gate — batch/multi-task loops — are the ones most often left with zero owners).",
-      "category": "PATTERN",
-      "source_artifact": "specs/017_fix_return_meta_lifecycle_ordering/plans/01_return-meta-lifecycle-ordering.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["cleanup-ordering", "unreachable-code", "lifecycle-ownership", "postflight", "shared-library-teardown", "bypass-paths"]
-    }
-  ]
+    "session_id": "sess_1787016315_a436d0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }

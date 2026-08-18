@@ -1,7 +1,7 @@
 # Implementation Plan: Task #17
 
 - **Task**: 17 - fix_return_meta_lifecycle_ordering
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/017_fix_return_meta_lifecycle_ordering/reports/01_return-meta-lifecycle-ordering.md
@@ -123,26 +123,28 @@ embed a task number in a deliverable file (see
 
 ---
 
-### Phase 1: Stop `skill_cleanup` deleting `.return-meta.json` [NOT STARTED]
+### Phase 1: Stop `skill_cleanup` deleting `.return-meta.json` [COMPLETED]
 
 **Goal**: Remove the single shared deletion that makes gate-out's body unreachable, and give
 `skill-spawn` — the one caller with no downstream consumer — its own inline deletion so the file
 does not accumulate for that path.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/skill-base.sh`, edit `skill_cleanup()` to `rm -f`
+- [x] In `agent-system/extensions/core/scripts/skill-base.sh`, edit `skill_cleanup()` to `rm -f`
       only `.postflight-pending` and `.postflight-loop-guard`; drop the `.return-meta.json`
-      pathspec.
-- [ ] Update the function's own header comment block (which currently enumerates all three files)
+      pathspec. *(completed)*
+- [x] Update the function's own header comment block (which currently enumerates all three files)
       to state the new two-file removal list and to name the calling command as the owner of
-      `.return-meta.json`'s deletion.
-- [ ] In `agent-system/extensions/core/skills/skill-spawn/SKILL.md` Stage 16, add
+      `.return-meta.json`'s deletion. *(completed)*
+- [x] In `agent-system/extensions/core/skills/skill-spawn/SKILL.md` Stage 16, add
       `rm -f "specs/${padded_num}_${project_name}/.return-meta.json"` immediately after the
       `skill_cleanup` call, alongside the existing `.spawn-return.json` removal, with a one-line
       comment explaining that `/spawn` has no `command-gate-out.sh` consumer so the skill owns
-      this deletion itself.
-- [ ] Confirm no other `skill_cleanup` caller needs a compensating inline `rm` (every other
+      this deletion itself. *(completed)*
+- [x] Confirm no other `skill_cleanup` caller needs a compensating inline `rm` (every other
       caller's command reaches either a CHECKPOINT 3 or a gate-out that Phase 3 gives a deleter).
+      *(completed: confirmed 9 literal callers + 2 skill-postflight-flow importers = 11, matching
+      research; only skill-spawn has no downstream command consumer)*
 
 **Timing**: 0.5 hours
 
