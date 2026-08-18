@@ -1,33 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md",
-      "summary": "6-phase, 5-hour plan: source_git_head stamping in state.lua plus a non-blocking check-deploy-freshness.sh WARN wired into command-gate-in.sh."
-    }
-  ],
-  "next_steps": "Run /implement 18 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1787016315_a436d0_18",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5,
-    "dependency_waves": [[1, 2], [3], [4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When adding a check to a script that is SOURCED rather than executed (e.g. command-gate-in.sh, CHECKPOINT 1 in the agent-system), the new work must be invoked as `bash <script> || true` in a subprocess, never sourced, and the callee must exit 0 on every path. Sourcing propagates stray `exit`, `set -e`, and non-zero returns into the caller's shell, turning an advisory check into an abort of every command. Pair this with an existence guard on the callee, because a stale deploy tree may not contain the newly added script at all -- the same chicken-and-egg gap any deployed-artifact self-diagnostic has.",
-    "category": "PATTERN",
-    "source_artifact": "specs/018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md",
-    "confidence": 0.85,
-    "suggested_keywords": ["sourced-script", "command-gate-in", "non-blocking-check", "preflight", "bootstrap-gap", "exit-code-propagation"]
-  }],
-  "modified_files": [
-    "specs/018_detect_stale_claude_deploy_trees/plans/01_stale-deploy-detection.md",
-    "specs/018_detect_stale_claude_deploy_trees/.orchestrator-handoff.json"
-  ],
-  "errors": []
+    "session_id": "sess_1787016315_a436d0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Stamp source_git_head at load time (Lua write side)",
+  "started_at": "2026-08-17T00:00:00Z",
+  "last_updated": "2026-08-17T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add git-revision resolver in state.lua", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/state.lua"]},
+    {"id": 2, "description": "Wrap git invocations to never error, return nil on any failure", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/state.lua"]},
+    {"id": 3, "description": "Expose resolver as public function (M.resolve_source_git_head)", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/state.lua"]},
+    {"id": 4, "description": "Set source_git_head in mark_loaded, omitting on nil", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/state.lua"]},
+    {"id": 5, "description": "Confirm mark_loaded is the single writer/call site", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

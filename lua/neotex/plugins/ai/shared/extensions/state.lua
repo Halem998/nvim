@@ -109,6 +109,46 @@ function M.write(project_dir, state, config)
   return write_json(state_path, state)
 end
 
+--- Resolve the path-scoped source-store git revision for an extension's source directory.
+--- Used to stamp `source_git_head` alongside `source_dir` in `mark_loaded` so a consuming repo
+--- can later detect that its deployed tree has drifted from the source store (see
+--- `check-deploy-freshness.sh`, the bash read side of this stamp).
+---
+--- Every failure mode (missing `git` binary, `source_dir` outside any git repository, an
+--- unreadable or nonexistent `source_dir`, or a non-zero exit from either git invocation) is
+--- swallowed and returns `nil` rather than raising -- loading an extension must never fail
+--- because this resolver could not compute a revision.
+--- @param source_dir string|nil Absolute path to the extension's source directory
+--- @return string|nil head 40-character git revision, or nil if it cannot be resolved
+function M.resolve_source_git_head(source_dir)
+  if not source_dir or source_dir == "" then
+    return nil
+  end
+
+  local root_cmd = "git -C " .. vim.fn.shellescape(source_dir) .. " rev-parse --show-toplevel 2>/dev/null"
+  local root = vim.fn.system(root_cmd)
+  if vim.v.shell_error ~= 0 then
+    return nil
+  end
+  root = root:gsub("%s+$", "")
+  if root == "" then
+    return nil
+  end
+
+  local head_cmd = "git -C " .. vim.fn.shellescape(root) .. " log -1 --format=%H -- "
+      .. vim.fn.shellescape(source_dir) .. " 2>/dev/null"
+  local head = vim.fn.system(head_cmd)
+  if vim.v.shell_error ~= 0 then
+    return nil
+  end
+  head = head:gsub("%s+$", "")
+  if head == "" then
+    return nil
+  end
+
+  return head
+end
+
 --- Mark an extension as loaded in state
 --- @param state table Current state
 --- @param extension_name string Extension name
@@ -123,12 +163,16 @@ function M.mark_loaded(state, extension_name, manifest, installed_files, install
     version = manifest.version,
     loaded_at = os.date("!%Y-%m-%dT%H:%M:%SZ"),
     source_dir = manifest._source_dir,
+    source_git_head = M.resolve_source_git_head(manifest._source_dir),
     installed_files = installed_files or {},
     installed_dirs = installed_dirs or {},
     merged_sections = merged_sections or {},
     data_skeleton_files = data_skeleton_files or {},
     status = "active",
   }
+  -- Lua's vim.json.encode omits a table key whose value is `nil` (unset/absent, not the
+  -- vim.NIL sentinel), so a resolver miss above already yields the "omit the field entirely"
+  -- behavior the write contract requires -- no separate strip step needed here.
   return state
 end
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Detect stale .claude/ deploy trees and root-cause the silent staleness
 
 - **Task**: 18 - Detect stale .claude/ deploy trees and root-cause the silent staleness
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md
@@ -104,28 +104,28 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Stamp source_git_head at load time (Lua write side) [NOT STARTED]
+### Phase 1: Stamp source_git_head at load time (Lua write side) [COMPLETED]
 
 **Goal**: Every `.claude-extensions.json` entry written from this point forward carries a
 `source_git_head` sibling to its existing `source_dir`, or omits the field entirely when the
 revision cannot be resolved.
 
 **Tasks**:
-- [ ] In `lua/neotex/plugins/ai/shared/extensions/state.lua`, add a resolver that takes an
+- [x] In `lua/neotex/plugins/ai/shared/extensions/state.lua`, add a resolver that takes an
       absolute `source_dir` and returns the path-scoped source-store revision, or `nil`:
       resolve the enclosing repo root (`git -C <source_dir> rev-parse --show-toplevel`), then
       `git -C <root> log -1 --format=%H -- <source_dir>`. Trim trailing newline; return `nil` on
       empty output.
-- [ ] Wrap every git invocation so that a missing `git` binary, a non-repo `source_dir`, an
+- [x] Wrap every git invocation so that a missing `git` binary, a non-repo `source_dir`, an
       unreadable or nonexistent `source_dir`, or a non-zero exit yields `nil` rather than an
       error. Loading an extension must never fail because of this field.
-- [ ] Expose the resolver as a public function on the module (additive only -- do not change
+- [x] Expose the resolver as a public function on the module (additive only -- do not change
       `M.mark_loaded`'s signature or any existing function's behavior) so it is reachable from a
       test without duplicating its logic.
-- [ ] In `M.mark_loaded`, set `source_git_head` on the written entry from that resolver, keyed off
+- [x] In `M.mark_loaded`, set `source_git_head` on the written entry from that resolver, keyed off
       the same `manifest._source_dir` value `source_dir` already uses. Omit the key when the
       resolver returns `nil` -- do not write `nil`, `""`, or a placeholder string.
-- [ ] Confirm no other writer of `.claude-extensions.json` entries exists that would need the same
+- [x] Confirm no other writer of `.claude-extensions.json` entries exists that would need the same
       treatment (`grep -rn "mark_loaded" lua/`).
 
 **Timing**: 1 hour
