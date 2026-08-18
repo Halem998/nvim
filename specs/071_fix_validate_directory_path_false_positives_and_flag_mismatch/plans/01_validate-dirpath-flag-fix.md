@@ -216,24 +216,24 @@ if additional sites exist, fix them in this phase or record them explicitly.
 
 ---
 
-### Phase 3: End-to-end validation and deferred-findings record [NOT STARTED]
+### Phase 3: End-to-end validation and deferred-findings record [COMPLETED]
 
 **Goal**: Confirm the full validate flow is correct against the live corpus, confirm the
 source-store boundary was respected, and record the two deferred adjacent findings for the team
 lead.
 
 **Tasks**:
-- [ ] Run the complete corrected Validate Step 1-4 flow against `~/Projects/Literature/index.json`
-      end to end (read-only; no index writes).
-- [ ] Confirm `git status --short` shows modifications only under
-      `agent-system/extensions/literature/**` and `specs/071_*/**` — zero `.claude/**` paths.
-- [ ] Confirm the quarantine-artifact conclusion still holds: `.md.rejected` and `.md.bak-*`
-      files remain invisible to both the stale check and the unindexed-file scan.
-- [ ] Write the implementation summary recording: the confirmed directory-entry count and
+- [x] Run the complete corrected Validate Step 1-4 flow against `~/Projects/Literature/index.json`
+      end to end (read-only; no index writes). *(completed: 369 entries, stale=15, drift=56, schema_warnings=35, authors_shape_warnings=60, unindexed=3)*
+- [x] Confirm `git status --short` shows modifications only under
+      `agent-system/extensions/literature/**` and `specs/071_*/**` — zero `.claude/**` paths. *(completed: confirmed zero `.claude/**` paths; other modified paths are shared system files (specs/TODO.md, specs/state.json, specs/events.jsonl) touched by concurrent session activity, not this task's edits)*
+- [x] Confirm the quarantine-artifact conclusion still holds: `.md.rejected` and `.md.bak-*`
+      files remain invisible to both the stale check and the unindexed-file scan. *(completed: confirmed -- stale check only iterates indexed paths and quarantine artifacts are never indexed; Step 3's unindexed scan uses `maxdepth 1` and never descends into `sources/` where quarantine artifacts live)*
+- [x] Write the implementation summary recording: the confirmed directory-entry count and
       genuinely-missing count, the before/after stale-entry counts, and the two deferred
       findings (token-drift re-baselining; the `sources/diamondsareforever/chunk_0001.md`
       legacy-`chunks_dir` / current-`path` schema co-mingling with `token_count: 95000` against
-      a 903-byte chunk) as explicit follow-up candidates for the team lead to schedule.
+      a 903-byte chunk) as explicit follow-up candidates for the team lead to schedule. *(completed: summary also records a third, newly-discovered deferred finding -- 15 null-path legacy chunks_dir-schema entries, out of this task's scope, see Deviations)*
 
 **Timing**: 0.5 hours
 

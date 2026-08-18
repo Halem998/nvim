@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "End-to-end validation and deferred-findings record",
+  "started_at": "2026-08-18T00:30:00Z",
+  "last_updated": "2026-08-18T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run complete corrected Validate Step 1-4 flow end to end, read-only", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm git status shows zero .claude/** modifications", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm quarantine-artifact conclusion still holds", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Write implementation summary with confirmed counts and deferred findings", "status": "done", "files_touched": ["specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/summaries/01_validate-dirpath-flag-fix-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "Discovered a third, previously-undocumented schema variant during end-to-end validation: 15 entries in the live global index have path == null (legacy chunks_dir-only records with no path field at all), distinct from both the file-path and directory-path variants this task's Defect 1 fix addresses.",
+      "type": "altered",
+      "reason": "Not a regression -- these entries were already reported stale before this fix (via the old [ ! -f $lit_dir/null ] test coincidentally also being true) and remain reported stale after it, via the fixed three-way branch's missing-file-path fallback. Recorded as a new deferred finding in the summary rather than fixed, since normalizing/migrating this legacy chunks_dir-only schema is a data-correctness question outside Defect 1's scope (directory-path false positives), matching the plan's existing Non-Goal on the related diamondsareforever chunks_dir/path co-mingling record.",
+      "annotation": "N/A -- no plan checklist item needed alteration; this is an additional finding layered onto the already-completed Phase 3 task 4."
+    }
+  ],
+  "verification_results": {
+    "end_to_end_flow": "369 entries, stale=15, drift=56, schema_warnings=35, authors_shape_warnings=60, unindexed=3 -- completed without error, read-only",
+    "git_status_claude_paths": "zero -- confirmed",
+    "quarantine_artifact_check": "confirmed still invisible to both stale check (only indexed paths iterated) and unindexed scan (maxdepth 1, never descends into sources/)"
+  }
+}
