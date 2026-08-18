@@ -1,9 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/summaries/01_validate-dirpath-flag-fix-summary.md",
+      "summary": "Records the confirmed directory/file/null-path entry counts, before/after validate report counts, and three deferred adjacent findings for the team lead."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed Validate Step 2's directory-path false-positive stale reports (65 directory entries, drops stale count from 80 to 15) and hoisted schema/authors-shape checks to cover directory entries too; corrected the Validate Step 4 --dry-run flag mismatch by rewording the doc and adding a no-op --dry-run alias to literature-normalize-authors.sh. All edits confined to agent-system/extensions/literature/**."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+    "agent-system/extensions/literature/scripts/literature-normalize-authors.sh",
+    "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/summaries/01_validate-dirpath-flag-fix-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When fixing a bash existence check that branches on -f/-d for entries read from an index/manifest, capture a pre-change baseline (counts of each downstream warning category) by extracting the exact current block to a scratch script and running it against the live data before editing. This lets you assert the fixed version's counts for unrelated categories (e.g. token-drift, schema warnings) are byte-identical to baseline, proving the restructure didn't silently drop coverage -- rather than just eyeballing the diff.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/summaries/01_validate-dirpath-flag-fix-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["bash validation", "baseline capture", "regression testing", "index consistency check", "literature extension"]
+    },
+    {
+      "content": "In the literature global index, entries can have three distinct path-field schema variants: file-path (path is a single markdown file), directory-path (path ends in '/', doc_type: book, token_count: 0, for chunked-book parent records), and a legacy null-path variant (no path field at all, only chunks_dir -- an older ingest-time schema never migrated forward). Any validate/stale-check logic over this index must branch on all three, not just file vs. directory, or the null-path entries will show up as spurious 'missing' results indistinguishable from real staleness.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/summaries/01_validate-dirpath-flag-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["literature index schema", "chunks_dir", "path variants", "validate mode", "schema migration"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1787078236_69862e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
