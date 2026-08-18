@@ -1,7 +1,7 @@
 # Implementation Plan: Fix literature-discover.sh tier starvation and silent Tier 3 failure
 
 - **Task**: 70 - Fix literature-discover.sh tier starvation and silent Tier 3 failure
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/reports/01_fix-discover-tier-starvation.md
@@ -329,28 +329,50 @@ phase notes.
 
 ---
 
-### Phase 5: Cross-file consistency, docs, and regression verification [NOT STARTED]
+### Phase 5: Cross-file consistency, docs, and regression verification [COMPLETED]
 
 **Goal**: The new quota and notice behavior is documented where it is described elsewhere, no
 sibling caller was left inconsistent, and the full regression scenario passes end to end.
 
 **Tasks**:
-- [ ] Grep the extension for other `literature-discover.sh` invocation sites and descriptions
+- [x] Grep the extension for other `literature-discover.sh` invocation sites and descriptions
       (`README.md` three-tier pipeline section, `context/project/literature/patterns/literature-command-modes.md`,
       `context/project/literature/patterns/adhoc-navigation-directive.md`'s "Search online to
       ingest" step) and update any that describe the old first-tier-wins budget or claim Tier 3
-      failures are silent/non-surfaced.
-- [ ] Confirm `literature-ingest-online.sh`'s documented input schema (one element of the discover
-      output array) is unaffected — the record shape must be unchanged by this task.
-- [ ] Run the full regression scenario end to end: `--task N` at default `DISCOVER_LIMIT`, with a
+      failures are silent/non-surfaced. *(completed: full-extension grep for `literature-discover`
+      across `--include=*.md` enumerated 8 files. Of the three named here, none actually claimed a
+      first-tier-wins budget or silent Tier 3 — both only list the three tiers descriptively, with
+      no budget/failure-mode language — so no edit was factually required for them. The two
+      additional sites the grep surfaced (`sparse-coverage.md`, `literature-dir-config.md`) also
+      make no such claim. `commands/literature.md` itself (already rewritten in Phase 4) is the
+      one site that DID describe the old silent behavior, and is now current.)*
+- [x] Confirm `literature-ingest-online.sh`'s documented input schema (one element of the discover
+      output array) is unaffected — the record shape must be unchanged by this task. *(completed:
+      confirmed by reading its field reads — title/doc_id/status/year/doi/arxiv_id/pdf_url/authors
+      — against every `jq -n` record-construction template in `literature-discover.sh`; none of
+      Phases 1-3's edits touched the emitted object shape, only matching/quota logic)*
+- [x] Run the full regression scenario end to end: `--task N` at default `DISCOVER_LIMIT`, with a
       populated Zotero export, verifying multi-tier representation, the Jonsson & Tarski titles,
-      and stdout still parsing as a JSON array.
-- [ ] Run the Tier 3 forced-failure scenario end to end and confirm the notice propagates from
-      script stderr through the command layer.
-- [ ] Confirm the boundary rule: `git diff --stat` shows changes only under
+      and stdout still parsing as a JSON array. *(completed: ran with a synthetic 12-entry Tier 1
+      index plus a Zotero export containing both Jonsson & Tarski titles and the query
+      `"algebras operators boolean"` at `DISCOVER_LIMIT=10` — result: 6 entries, tier 1 n=4 /
+      tier 2 n=2, both Jonsson & Tarski titles present, `jq type` -> `"array"`)*
+- [x] Run the Tier 3 forced-failure scenario end to end and confirm the notice propagates from
+      script stderr through the command layer. *(completed: script-level propagation verified by
+      forcing curl failure via an unroutable proxy — stderr contains exactly one
+      `TIER3_STATUS: FAILED reason=curl_exit ...` line, stdout stays a valid JSON array. Command-
+      layer propagation verified by code-reading walkthrough of the Phase 4 edits: the capture
+      pattern, `tier3_failed`/`http_code` branch, and both notice sites are correctly wired --
+      `commands/literature.md` is a command-definition document, not an executable script, so this
+      leg is verified by inspection rather than execution, matching Phase 4's own verification
+      wording)*
+- [x] Confirm the boundary rule: `git diff --stat` shows changes only under
       `agent-system/extensions/literature/**` and `specs/**` — zero `.claude/**` paths.
-- [ ] Run `bash -n` on every modified shell script and the extension's existing
-      `scripts/test-lit-pipeline.sh` smoke script if it covers discovery.
+      *(completed: confirmed across all phase commits)*
+- [x] Run `bash -n` on every modified shell script and the extension's existing
+      `scripts/test-lit-pipeline.sh` smoke script if it covers discovery. *(completed: `bash -n`
+      clean on `literature-discover.sh`; `test-lit-pipeline.sh` has no discover-mode coverage, so
+      it was not applicable to run)*
 
 **Timing**: 1 hour
 
@@ -382,17 +404,17 @@ update every site whose description is now false, not just these three.
 
 ## Testing & Validation
 
-- [ ] `bash -n agent-system/extensions/literature/scripts/literature-discover.sh` passes after every phase.
-- [ ] Script stdout remains a valid JSON array in all paths (`| jq type` -> `"array"`), including
+- [x] `bash -n agent-system/extensions/literature/scripts/literature-discover.sh` passes after every phase.
+- [x] Script stdout remains a valid JSON array in all paths (`| jq type` -> `"array"`), including
       the forced-Tier-3-failure path.
-- [ ] Discovery record schema (fields consumed by `literature-ingest-online.sh`) is unchanged.
-- [ ] `TIER3_STATUS: FAILED` appears on stderr exactly once per failed Tier 3 run, and never on a
+- [x] Discovery record schema (fields consumed by `literature-ingest-online.sh`) is unchanged.
+- [x] `TIER3_STATUS: FAILED` appears on stderr exactly once per failed Tier 3 run, and never on a
       successful or budget-skipped run.
-- [ ] Output length never exceeds `DISCOVER_LIMIT`; multiple tiers are represented whenever
+- [x] Output length never exceeds `DISCOVER_LIMIT`; multiple tiers are represented whenever
       multiple tiers have matches.
-- [ ] Rollover check: a tier finding fewer than its quota does not waste slots.
-- [ ] Short-query behavior (<= 5 filtered terms) is byte-identical to pre-change behavior.
-- [ ] No file under `.claude/**` was modified.
+- [x] Rollover check: a tier finding fewer than its quota does not waste slots.
+- [x] Short-query behavior (<= 5 filtered terms) is byte-identical to pre-change behavior.
+- [x] No file under `.claude/**` was modified.
 
 ## Artifacts & Outputs
 

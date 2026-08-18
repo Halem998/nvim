@@ -1,9 +1,41 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/summaries/01_fix-discover-tier-starvation-summary.md",
+      "summary": "Fixed silent Tier 3 failure (visible TIER3_STATUS notice, script + caller), Tier 1 starving Tiers 2/3 (reserved per-tier quotas with rollover), and query-construction noise (title-primary/description-capped terms, tier1 multi-term threshold) in literature-discover.sh and commands/literature.md."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed three discovery-correctness defects in the literature extension's discover pipeline: silent Tier 3 failure now emits a visible TIER3_STATUS notice surfaced at both the script and /literature command layers; Tier 1 no longer starves Tiers 2/3 via reserved per-tier quotas with rollover; and query-construction noise from multi-paragraph task descriptions is reduced via title-primary/description-capped term construction plus a multi-term match-strength threshold. All 5 plan phases completed; all edits confined to agent-system/extensions/literature/**."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-discover.sh",
+    "agent-system/extensions/literature/commands/literature.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Pattern for fixing 'first-tier-wins' truncation bugs when multiple independently-capped sources feed a shared array before a final head-of-array slice: compute an even-with-remainder per-source quota that sums to the total limit, derive each source's actual contribution from the SHARED accumulator's length (not a per-source local counter, which breaks under dedup), and roll the shortfall forward into the next source's quota before it runs. Makes the final slice a safety net instead of the real selection mechanism. Origin: literature-discover.sh's three-tier discovery pipeline (Tier 1 offline index / Tier 2 Zotero / Tier 3 Semantic Scholar).",
+      "category": "PATTERN",
+      "source_artifact": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/summaries/01_fix-discover-tier-starvation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["quota", "rollover", "tier-fairness", "truncation-bug", "shared-accumulator"]
+    },
+    {
+      "content": "awk word-count/field-cap idioms (`for (i=1; i<=NF && i<=n; i++)`) reset NF and the loop per INPUT LINE, not per whole input. Applying such a cap to text that may contain embedded newlines (e.g. a multi-paragraph task description) silently caps EACH line independently instead of the string as a whole, producing far more output than intended. Flatten newlines to spaces (`tr '\\n' ' '`) before piping into such an awk script.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/summaries/01_fix-discover-tier-starvation-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["awk", "NF", "word-cap", "multi-line-bug", "shell-scripting"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1787078236_69862e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
