@@ -242,6 +242,23 @@ bash .claude/scripts/task-lock.sh session-release "$batch_session_id" 2>/dev/nul
 
 Git commit remaining changes (non-blocking). Display results table with session ID, counts (requested/succeeded/failed/skipped), and per-task status. Include partial-success note in commit message. Suggest re-running failed tasks individually.
 
+**Per-task `.return-meta.json` deletion**: this multi-task loop deliberately bypasses
+`command-gate-in.sh`/`command-gate-out.sh` and never reaches the single-task CHECKPOINT 3 above,
+so this batch step — not gate-out, not the skill (`skill_cleanup` no longer deletes the file at
+its own Stage 9) — owns the deletion for every task in this batch. Run after the batch commit,
+so each file is still staged as durable provenance by that commit, iterating the same task list
+the batch dispatched:
+
+```bash
+for task_num in "${validated_tasks[@]}"; do
+  padded="$(printf "%03d" "$task_num")"
+  proj=$(jq -r --argjson num "$task_num" \
+    '.active_projects[] | select(.project_number == $num) | .project_name' \
+    specs/state.json)
+  rm -f "specs/${padded}_${proj}/.return-meta.json"
+done
+```
+
 **Non-convergence (Step 3.5)**: if `second_pass_ledger` contains any `"pass":2` entry whose task
 was NOT admitted (i.e. it landed in `skipped_tasks` with `"deferred after second pass"`), report
 this invocation's overall status as `partial` rather than treating it as ordinary success, and

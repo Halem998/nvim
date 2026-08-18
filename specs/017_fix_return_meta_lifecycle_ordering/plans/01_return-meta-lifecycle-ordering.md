@@ -273,22 +273,40 @@ one. If a sixth caller appears, it needs a site too.
 
 ---
 
-### Phase 4: Multi-task batch loop deletion sites [NOT STARTED]
+### Phase 4: Multi-task batch loop deletion sites [COMPLETED]
 
 **Goal**: Close the leak on the three multi-task batch loops, which bypass gate-out and
 CHECKPOINT 3 entirely and would otherwise have no deleter at all.
 
 **Tasks**:
-- [ ] `commands/research.md` Step 4 (Batch Git Commit): after the batch commit, delete
+- [x] `commands/research.md` Step 4 (Batch Git Commit): after the batch commit, delete
       `.return-meta.json` for each task in the batch, iterating the same task list the batch
-      dispatched. Non-blocking.
-- [ ] `commands/plan.md` Step 4 (Batch Git Commit): same addition.
-- [ ] `commands/implement.md` Step 4 (Batch Git Commit and Consolidated Output): same addition.
-- [ ] In each, add a one-line note that this loop deliberately bypasses
+      dispatched. Non-blocking. *(completed)*
+- [x] `commands/plan.md` Step 4 (Batch Git Commit): same addition. *(completed)*
+- [x] `commands/implement.md` Step 4 (Batch Git Commit and Consolidated Output): same addition.
+      *(completed)*
+- [x] In each, add a one-line note that this loop deliberately bypasses
       `command-gate-in.sh`/`command-gate-out.sh`, so the batch step — not gate-out and not the
-      skill — owns the deletion for these paths.
-- [ ] Ensure the deletion runs after the batch commit, so the file is still staged as durable
-      provenance by that commit.
+      skill — owns the deletion for these paths. *(completed)*
+- [x] Ensure the deletion runs after the batch commit, so the file is still staged as durable
+      provenance by that commit. *(completed)*
+- [x] **Investigation: `orchestrate.md`'s own multi-task batch.** Recorded as explicitly out of
+      scope, per the Scope Hypothesis instruction below. Reason: `commands/orchestrate.md`'s
+      multi-task path delegates its entire wave-by-wave dispatch to a single `skill-orchestrate`
+      invocation, which dispatches directly to `research_agents[task_num]`/`planner-agent`/
+      `implement_agents[task_num]` via the Agent tool (Stage MT-4) — bypassing the skill layer
+      (`skill-implementer`, etc.) entirely, so `skill_cleanup` was never called on this path
+      either before or after this plan's Phase 1 change; Phase 1 is a no-op here. Grepping
+      `skill-orchestrate/SKILL.md` for `rm -f`/`rm "` (3 hits, all `$loop_guard_file` or
+      `.drift-inspection.json`) confirms per-task `.return-meta.json` is never deleted anywhere
+      in the MT lifecycle-cycling loop — it is read repeatedly for outcome recovery
+      (`orchestrate-recover-outcome.sh`, gated on `window_start`/`dispatch_start_ts` freshness,
+      the same mtime-freshness mechanism Phase 3 relies on for the single-task completion-only
+      scoping) across however many cycles a task's dispatch spans. Adding a deletion site here
+      would risk exactly the regression the binding constraint prohibits: a task recovered via
+      return-meta fallback on cycle N+1 would lose that fallback if cycle N deleted the file.
+      This is pre-existing behavior, unrelated to the defect this plan fixes, and is left
+      unchanged.
 
 **Timing**: 0.5 hours
 

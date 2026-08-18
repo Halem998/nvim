@@ -329,6 +329,23 @@ Tasks failed: {num} ({reason})[, {num} ({reason})]
 Session: {batch_session_id}
 ```
 
+**Per-task `.return-meta.json` deletion**: this multi-task loop deliberately bypasses
+`command-gate-in.sh`/`command-gate-out.sh` and never reaches the single-task CHECKPOINT 3 above,
+so this batch step — not gate-out, not the skill (`skill_cleanup` no longer deletes the file at
+its own Stage 9) — owns the deletion for every task in this batch. Run after the batch commit,
+so each file is still staged as durable provenance by that commit, iterating the same task list
+the batch dispatched:
+
+```bash
+for task_num in "${validated_tasks[@]}"; do
+  padded="$(printf "%03d" "$task_num")"
+  proj=$(jq -r --argjson num "$task_num" \
+    '.active_projects[] | select(.project_number == $num) | .project_name' \
+    specs/state.json)
+  rm -f "specs/${padded}_${proj}/.return-meta.json"
+done
+```
+
 #### Step 5: Consolidated Output
 
 Display batch results and exit (do not enter single-task checkpoints):
