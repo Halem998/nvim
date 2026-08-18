@@ -112,6 +112,49 @@ authoritatively, in `context/patterns/batch-orchestration-guardrails.md`'s
   anything hook-driven. Inspecting source-store code alone never establishes either. Use
   `scripts/verify-deploy.sh` for the first gate; the second requires actual command invocations.
 
+## Detecting When You're Stale
+
+The staleness described throughout this document was never a loader defect. `loader.lua`'s
+`copy_category` force-overwrites every declared file on every load; `installed_files` is
+write-only bookkeeping that no code path ever consults as a copy gate; `manager.resync_all` calls
+`manager.load(force = true)` with zero diffing. Regeneration is deliberately pull-only by design
+-- a consuming repo's `.claude/` tree freezes at its last manual reload with no ambient signal
+when the source store moves on. What follows is the detection half that closes that silence,
+without touching the copy engine at all.
+
+**The write side.** `state.lua`'s `mark_loaded` (the single writer of every
+`.claude-extensions.json` entry, called from `init.lua`'s `manager.load`) stamps a
+`source_git_head` field alongside the pre-existing `source_dir` field on every load. The value is
+the path-scoped source-store revision -- `git -C <source_dir> rev-parse --show-toplevel`, then
+`git log -1 --format=%H -- <source_dir>` against that toplevel -- never the source-store repo's
+whole `HEAD`. Path-scoping is deliberate: it prevents unrelated churn elsewhere in the source
+store from firing a false warning for an extension whose own files haven't moved.
+
+**The read side.** `scripts/check-deploy-freshness.sh` is a small, standalone, always-`exit 0`
+script invoked non-blockingly from `command-gate-in.sh`'s `gate_in` (CHECKPOINT 1, the one path
+every ordinary command already crosses), guarded on the deployed checker's own existence so a
+tree too stale to carry it yet is a silent no-op. For each extension entry carrying both fields,
+it recomputes the same path-scoped revision and, on mismatch, prints one WARN line to stderr
+naming the stale extension and the regeneration remedy (`deploy-headless.sh`, or the picker's
+`[Reload All]`/`[Regenerate]`), plus a pointer to `verify-deploy.sh --findings` for per-file
+detail. It never blocks, aborts, retries, or auto-redeploys anything.
+
+**Why silence, not a "cannot verify" notice, is correct.** The checker prints nothing at all --
+not even a summary line -- in every case where staleness cannot be established: a missing
+`source_git_head` (every deploy from before this fix), a `source_dir` that no longer exists or
+sits outside any git repository, or a recomputed revision that comes back empty. "Unknown" must
+never read as either "confirmed fresh" or an alarm; a notice for the unverifiable case would
+train users to distinguish two silences by memory, which is worse than one silence.
+
+**Limitations, by design.** The signal is commit-granular, not per-file: a deploy taken from a
+dirty source-store working tree stays technically "fresh" by this check even after that dirty
+edit is later committed and its `HEAD` moves on, until the next reload restamps it. It is also
+single-machine: `source_dir` is an absolute, machine-local path, so a relocated checkout or a
+foreign machine's source store falls into the same "cannot verify, stay silent" branch as a
+missing field. Neither limitation is a defect to fix here -- `verify-deploy.sh`'s eleven
+content-diffing gates remain the deep-dive companion for per-file drift; this check is the
+preflight-cheap companion that tells a user regeneration is worth running at all.
+
 ## Merge Semantics That Regeneration Cannot Fix
 
 Two deploy behaviors are structural and survive any number of regenerations:
@@ -197,6 +240,12 @@ repo root, masking the invocation-context error this guard exists to surface.
 
 - `scripts/deploy-headless.sh` -- scripted regeneration for non-interactive contexts
 - `scripts/verify-deploy.sh` -- checks a deployed tree against its source store
+- `scripts/check-deploy-freshness.sh` -- the non-blocking staleness check documented in
+  `## Detecting When You're Stale` above
+- `lua/neotex/plugins/ai/shared/extensions/state.lua` -- `mark_loaded`'s `source_git_head` write
+  side backing the same section
+- `scripts/tests/test-deploy-freshness.sh` -- fixture suite pinning both directions and every
+  silent-skip branch of the freshness check
 - `specs/1015_recheck_settings_local_merge_content_loss/reports/01_recheck-settings-local-merge.md`
   -- the empirical `--wipe` round-trip-fidelity measurement backing the
   `### Round-Trip Fidelity of settings.local.json (measured)` subsection above

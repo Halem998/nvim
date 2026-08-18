@@ -354,24 +354,25 @@ test fixture.
 
 ---
 
-### Phase 6: Document the detection half of the pull-only pattern [NOT STARTED]
+### Phase 6: Document the detection half of the pull-only pattern [COMPLETED]
 
 **Goal**: A future reader of the manual-only regeneration pattern immediately sees both halves --
 that regeneration is pull-only, and how a stale repo now finds out.
 
 **Tasks**:
-- [ ] Add a "Detecting When You're Stale" section to
+- [x] Add a "Detecting When You're Stale" section to
       `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` covering: the
       `source_git_head` stamp and where it is written, the gate-in check and its non-blocking
       contract, the deliberate silent-skip cases (missing field, non-git or absent `source_dir`,
       git unavailable) and why silence rather than a "cannot verify" notice is correct, the
       commit-granular and single-machine limitations, and the pointer to `verify-deploy.sh` for
-      per-file detail.
-- [ ] State the root-cause finding plainly in that section: the staleness was never a loader
+      per-file detail. *(completed)*
+- [x] State the root-cause finding plainly in that section: the staleness was never a loader
       defect; the copy engine force-overwrites unconditionally and `installed_files` is never a
-      copy gate.
-- [ ] Cite durable anchors only -- filenames, function names, section headings. No task numbers
-      anywhere in this documentation (deliverable rule).
+      copy gate. *(completed)*
+- [x] Cite durable anchors only -- filenames, function names, section headings. No task numbers
+      anywhere in this documentation (deliverable rule). *(completed: check-task-references.sh
+      reports 0 unexempted occurrences; every named file/function verified to exist)*
 
 **Timing**: 0.5 hours
 

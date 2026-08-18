@@ -1,0 +1,20 @@
+{
+  "phase": 6,
+  "phase_name": "Document the detection half of the pull-only pattern",
+  "started_at": "2026-08-18T04:10:00Z",
+  "last_updated": "2026-08-18T04:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add 'Detecting When You're Stale' section covering stamp, gate-in check, silent-skip cases, limitations, verify-deploy.sh pointer", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 2, "description": "State the root-cause finding plainly (no loader defect)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 3, "description": "Cite durable anchors only, no task numbers", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": [
+    "Every changed hunk is prose only; no executable content touched.",
+    "check-task-references.sh over the containing directory reports 0 unexempted task-reference occurrences.",
+    "Every file/function named in the new section (state.lua's mark_loaded/resolve_source_git_head, check-deploy-freshness.sh, command-gate-in.sh, verify-deploy.sh, test-deploy-freshness.sh, loader.lua/init.lua under lua/neotex/plugins/ai/shared/extensions/) confirmed to exist at the path given."
+  ]
+}
