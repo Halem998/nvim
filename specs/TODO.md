@@ -52,7 +52,7 @@ next_project_number: 68
 
 ### Essential Refactor
 
-17 [PLANNING] — command-gate-out.sh's entire post-metadata body is structurally u
+17 [PLANNED] — command-gate-out.sh's entire post-metadata body is structurally u
   └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
       └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
@@ -1018,11 +1018,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 17. Fix .return-meta.json lifecycle ordering that makes the gate-out body unreachable
 - **Effort**: 4h
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 16, Task 35, Task 37
 - **Research**: [017_fix_return_meta_lifecycle_ordering/reports/01_return-meta-lifecycle-ordering.md]
+- **Plan**: [017_fix_return_meta_lifecycle_ordering/plans/01_return-meta-lifecycle-ordering.md]
 
 **Description**: command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.
 
