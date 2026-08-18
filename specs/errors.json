@@ -271,6 +271,24 @@
         "auto_recoverable": false
       },
       "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1787022038113_c3VPTR",
+      "timestamp": "2026-08-18T03:00:38.119Z",
+      "type": "verify_deploy_gate_unstable",
+      "severity": "high",
+      "message": "gate8 single-source assertion is environment-dependent: deployed tests/test-common-lib.sh resolves EXTENSIONS_ROOT via SCRIPT_DIR/../../.. to the repo root instead of agent-system/extensions, so it scans the whole repository and reports a different offender set on every run",
+      "context": {
+        "session_id": "sess_1787016315_a436d0",
+        "command": "/orchestrate",
+        "checkpoint": "MT-3 step 7 inter-cycle redeploy checkpoint",
+        "file": "agent-system/extensions/core/scripts/tests/test-common-lib.sh"
+      },
+      "recovery": {
+        "suggested_action": "Anchor EXTENSIONS_ROOT to the extension tree explicitly rather than by relative depth from SCRIPT_DIR, so source and deployed runs agree; the depth that is correct for the source layout is wrong for the deployed layout",
+        "auto_recoverable": false
+      },
+      "fix_status": "unfixed"
     }
   ]
 }

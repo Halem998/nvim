@@ -1,9 +1,12 @@
 {
-  "dispatch_seq": 10,
+  "dispatch_seq": 11,
   "task_number": 44,
-  "phase": "research",
-  "status": "researched",
+  "phase": "plan",
+  "status": "planned",
   "session_id": "sess_1787016315_a436d0_44",
-  "next_action": "Run /plan 44 to create implementation plan",
-  "summary": "Research complete. Recommends whole-mode extraction (Recover, Expand, Sync, Review, Abandon -> separate context/patterns files with imperative READ pointers at Mode Detection) plus extraction of Create Task Mode's worked-examples/edge-case sub-region, following the established todo.md/orchestrate.md pointer mechanism but applied at mode granularity given task.md's dispatcher shape. Estimated body reduction ~66% (39,403 B -> ~13,000-13,400 B), versus the sibling task's ~15% reference-region-only reductions. One planner decision point flagged: reconcile the Action Verb Categories table's extra keywords against Create Task Mode step 3.2 before extracting it, to avoid a silent behavior change."
+  "next_action": "Run /implement 44 to execute the plan",
+  "artifact_path": "specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md",
+  "phase_count": 8,
+  "estimated_hours": 6.0,
+  "summary": "8-phase plan for whole-mode extraction from commands/task.md into six context/patterns files with imperative READ pointers at the Mode Detection dispatch table. Action Verb Categories discrepancy resolved explicitly as MERGE-AND-DROP (union merged into step 3.2 inline, standalone table deleted) because today's effective keyword set is already the union and option (b) would make 7 of ~19 keywords conditional on a READ. Named a previously-unflagged hazard: grep '^## ' reports a fence-interior '## Task Review' decoy inside Review Mode, so naive boundary detection silently truncates 209 lines; Phase 1 produces a fence-validated anchor map and extraction runs bottom-up. Phase 7 is the mandated index-entries.json line_count phase (generate-context-line-counts.sh --write then --check). Phase 8 is a full-tier per-mode executability audit plus byte-ledger reconciliation and the required before/after measurement table. No parallelism: phases 2-6 all mutate one file, stated explicitly rather than manufacturing unsafe waves."
 }

@@ -1,25 +1,27 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 44,
   "session_id": "sess_1787016315_a436d0_44",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "findings_count": 6,
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "phase_count": 8,
+  "estimated_hours": 6.0,
+  "dependency_waves": 8,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/044_slim_task_command_body/reports/01_command-body-extraction-approach.md",
-      "summary": "Measures task.md at 39,403 B and recommends whole-mode extraction (Recover/Expand/Sync/Review/Abandon into separate context/patterns files with imperative READ pointers, plus Create Task Mode's worked-examples sub-region), diverging from the sibling task's reference-region-only precedent because task.md's dispatcher shape makes mode-level extraction both legitimate and far more impactful (~66% vs ~15% reduction)."
+      "type": "plan",
+      "path": "specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md",
+      "summary": "8-phase plan extracting task.md's five non-default modes plus the Create Task worked-examples sub-region into six context/patterns files with imperative READ pointers, targeting ~66-69% body reduction; includes explicit merge-and-drop resolution of the Action Verb Categories keyword discrepancy, a mandated index-entries.json line_count phase, and a full-tier mode-executability audit."
     }
   ],
   "memory_candidates": [
     {
-      "content": "This repo's established lazy-pointer command-slimming mechanism (task 56: todo.md/orchestrate.md) extracts a reference-appendix region within an always-executing linear flow into agent-system/extensions/core/context/patterns/{command}-{topic}.md, replacing it with an imperative 'READ <deployed-path>. <consequence>' pointer that passes a passive/imperative test (never 'see also'), registered in index-entries.json under load_when.commands. For a command that is instead a DISPATCHER over mutually exclusive modes (like task.md), the same mechanism can be applied at mode granularity -- extracting entire mode bodies, not just reference appendices -- which yields a much larger reduction (~66% vs ~15%) because every invocation loads all mode bodies but executes at most one. The risk profile differs: a skipped READ for a reference appendix degrades execution, but a skipped READ for a whole extracted mode leaves that mode entirely unspecified, so the imperative framing must be even stronger at both the pointer site and the destination file's own opening line.",
+      "content": "When extracting sections out of a markdown command/context file by heading boundary, a bare `grep -n '^## '` is unsafe: fenced code blocks and fenced output templates frequently contain lines that look like headings. In agent-system/extensions/core/commands/task.md, Review Mode's own fenced output template contains a '## Task Review: #{N}' line plus three '###' lines, so naive boundary detection truncates the mode at that decoy and silently drops ~209 lines. The safe procedure is: (1) derive a closed anchor set of the real headings by exact text rather than by pattern, (2) validate each candidate match is not inside a fence by computing ``` parity from line 1 to the match, and (3) perform multi-region extractions bottom-up (highest line number first) so untouched regions keep their line numbers, re-locating each boundary by heading text immediately before deletion. Pair this with a per-region verbatim diff check (capture region to a temp file before deleting, assert the destination file's post-preamble body is byte-identical) and a byte-ledger reconciliation, so content loss surfaces as an unexplained residual rather than passing silently.",
       "category": "PATTERN",
-      "source_artifact": "specs/044_slim_task_command_body/reports/01_command-body-extraction-approach.md",
+      "source_artifact": "specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md",
       "confidence": 0.85,
-      "suggested_keywords": ["command-slimming", "lazy-loading", "context-patterns", "index-entries", "mode-dispatch", "per-invocation-cost"]
+      "suggested_keywords": ["markdown-extraction", "heading-boundary", "fenced-code-trap", "verbatim-diff", "bottom-up-edit", "content-loss"]
     }
   ],
-  "next_steps": "Run /plan 44 to create implementation plan"
+  "next_steps": "Run /implement 44 to execute the plan"
 }

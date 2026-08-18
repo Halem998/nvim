@@ -228,7 +228,7 @@
       "project_number": 18,
       "project_name": "detect_stale_claude_deploy_trees",
       "title": "Detect stale .claude/ deploy trees and root-cause the silent staleness",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "essential-refactor",
       "dependencies": [],
@@ -241,7 +241,7 @@
       ],
       "description": "A repo can carry an arbitrarily stale .claude/ deploy with no signal, so a user hits a bug fixed upstream long ago with no indication that regeneration is the remedy. Discovered when /revise failed at GATE IN in a consuming repo on a task that had never produced an artifact.\n\nWHAT IS NOT THE DEFECT (ruled out, do not re-litigate): resolve_task_dir is not broken in source. agent-system/extensions/core/scripts/task-lock.sh's resolve_task_dir (line 249) takes a create_mode parameter and mkdir -p's when it is \"create\"; cmd_acquire (line 607) passes \"create\". The failure exists only in the deployed copy.\n\nMEASURED STALENESS EVIDENCE (live, this investigation): the consuming repo's .claude/scripts/task-lock.sh is 676 lines against a 1660-line source, with a deployed resolve_task_dir at line 98 taking no create_mode. Its .claude/scripts/ holds 94 scripts against core's 72 in source. Neither verify-deploy.sh nor deploy-headless.sh is present in the deployed tree at all. This is despite a large sync commit landing recently.\n\nBOOTSTRAP HYPOTHESIS RULED OUT: deploy-headless.sh's header documents a failure mode where a repo deployed by the retired glob-based engine has no \"core\" entry in .claude-extensions.json, so manager.resync_all silently deploys nothing. That is NOT this case. The repo's .claude-extensions.json lists core with status \"active\" and 294 recorded installed_files, including .claude/scripts/task-lock.sh. The loader believes it owns and has installed the very file that is stale. Root cause is unknown and is a genuine investigation, not a known-issue application.\n\nWORK, in order. (1) Determine WHY the deploy is stale despite core being active and the file being listed in installed_files. Hypotheses to test, not assume: the copy step skips existing destination files instead of overwriting; installed_files is treated as authoritative and short-circuits re-copy; resync only re-copies files whose manifest entry changed; or a later partial operation reverted the tree. If the cause is a loader defect, report and fix it as such. (2) Then design and implement staleness DETECTION on a path users actually hit. Note that verify-deploy.sh already performs source-vs-deploy comparison but is not itself deployed and is invoked only from skill-orchestrate's inter-cycle redeploy checkpoint, so no ordinary command surfaces its result. Directions to evaluate, do NOT pre-commit: stamp a source revision or content hash into the deployed tree at load time and have command gate scripts compare against the source store, warning on drift; extend /refresh or a doctor check to diff deployed script versions against source; or have the loader record a per-file hash manifest a preflight can validate cheaply. Whatever is chosen must be cheap enough for a normal command preflight.\n\nINTERACTION WITH SIBLING TASK 9: 9's evidence (4 orphan files present in .claude/ but absent from a clean scratch regenerate) was measured against this same stale deploy tree, so it may be an artifact of the staleness rather than a genuine one-directional-parity gap. 9 is sequenced after this task and must re-measure against a freshly regenerated tree. Both tasks also edit verify-deploy.sh.\n\nACCEPTANCE: the root cause is identified and stated, with the loader defect fixed if that is the cause; a user running an ordinary command against a stale deploy receives an actionable warning naming regeneration as the remedy; demonstrated in both directions, where a stale tree warns and a fresh tree does not.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/** and lua/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T16:02:07Z",
-      "last_updated": "2026-08-18T02:24:57Z",
+      "last_updated": "2026-08-18T03:00:50Z",
       "artifacts": [
         {
           "path": "specs/018_detect_stale_claude_deploy_trees/reports/01_stale-deploy-detection.md",
@@ -560,7 +560,7 @@
     {
       "project_number": 44,
       "project_name": "slim_task_command_body",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Slim commands/task.md, the largest per-invocation context contributor",
       "topic": "essential-refactor",
@@ -581,10 +581,15 @@
           "path": "specs/044_slim_task_command_body/reports/01_command-body-extraction-approach.md",
           "type": "report",
           "summary": "Reframes task.md as a 6-mode dispatcher; extracting the 5 non-default modes (65.7% of the body) yields ~66% reduction. Flags the Action Verb Categories reconciliation as a planner decision point."
+        },
+        {
+          "path": "specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md",
+          "type": "plan",
+          "summary": "8-phase mode-extraction plan; Action Verb Categories resolved as merge-and-drop with its own reconciliation phase."
         }
       ],
       "created": "2026-08-11T16:14:06Z",
-      "last_updated": "2026-08-18T02:54:11Z",
+      "last_updated": "2026-08-18T03:01:40Z",
       "session_id": "sess_1787016315_a436d0_44"
     },
     {
