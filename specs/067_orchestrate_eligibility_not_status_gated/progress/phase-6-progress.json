@@ -1,0 +1,27 @@
+{
+  "phase": 6,
+  "phase_name": "Lock-aware demotion guard in reconcile-task-status.sh",
+  "started_at": "2026-08-18T03:50:00Z",
+  "last_updated": "2026-08-18T04:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add demote_stranded_status helper and wire into researching branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 2, "description": "Mirror in planning branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 3, "description": "Loud logging on demotion and refusal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 4, "description": "Add reconcile-task-status.sh to orchestrator-critical-paths.json critical_paths", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/orchestrator-critical-paths.json"]},
+    {"id": 5, "description": "Update header comment block for demotion directions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Initial demote_stranded_status used a bare lock_check_output=$(cmd); lock_check_exit=$? assignment", "result": "failed", "reason": "under set -euo pipefail, a non-zero exit from the command substitution aborted the whole script before lock_check_exit could be captured -- fixed with the if/else exit-capture idiom"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.verification",
+      "description": "Phase's sandbox verification matrix was run as an ad hoc temp script rather than added to the permanent test-reconcile-handoff-status.sh suite",
+      "type": "altered",
+      "reason": "test-reconcile-handoff-status.sh is outside this task's declared file_scope and the plan's Phase 6 Files-to-modify list does not name it; the plan's own Verification section describes a sandbox matrix, not a requirement to extend a specific committed test file. All 8 matrix rows were verified green via an ad hoc sandbox (not committed) mirroring test-reconcile-handoff-status.sh's own sandbox pattern; the pre-existing suite was also re-run to confirm no regression (14 passed, 0 failed).",
+      "annotation": "N/A - not a plan checklist item, recorded here for audit trail"
+    }
+  ]
+}

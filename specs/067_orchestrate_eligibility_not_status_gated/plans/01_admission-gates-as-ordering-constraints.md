@@ -527,30 +527,34 @@ bash .claude/scripts/check-task-references.sh
 
 ---
 
-### Phase 6: Lock-aware demotion guard in reconcile-task-status.sh [NOT STARTED]
+### Phase 6: Lock-aware demotion guard in reconcile-task-status.sh [COMPLETED]
 
 **Goal**: Defense-in-depth — a task stranded in `researching`/`planning` with no artifact and no
 live lock is demoted to a re-dispatchable status, giving operator-visible repair independent of
 `/orchestrate`.
 
 **Tasks**:
-- [ ] In `reconcile-task-status.sh`'s `researching)` branch, add a demotion check reached **only
+- [x] In `reconcile-task-status.sh`'s `researching)` branch, add a demotion check reached **only
       after** the existing no-artifact no-op condition (the branch that currently logs "no report
       artifact found — no-op"). Call `task-lock.sh check "$task_number"` and demote
       `researching` -> `not_started` **only** on exit 0 (free) or exit 2 (held-stale). Never on
       exit 1 — a genuinely fresh lock must never be demoted. Never on exit 3 — fail closed on a
-      resolution error, no demotion.
-- [ ] Mirror the same guard in the `planning)` branch: demote `planning` -> `researched` under the
-      identical exit-code gate.
-- [ ] Log loudly on every demotion (and on every refusal, naming the exit code and reason) so the
+      resolution error, no demotion. *(completed via a new `demote_stranded_status()` helper;
+      also fixed a `set -e` command-substitution pitfall on the lock-check call, mirroring the
+      `if VAR=$(cmd); then ... else exit=$?; fi` pattern already used by
+      orchestrate-batch-admit.sh/state-write.sh/task-lock.sh/git-commit-scoped.sh)*
+- [x] Mirror the same guard in the `planning)` branch: demote `planning` -> `researched` under the
+      identical exit-code gate. *(completed)*
+- [x] Log loudly on every demotion (and on every refusal, naming the exit code and reason) so the
       new write class is never silent. Honor the script's existing dry-run / "Would promote"
-      convention symmetrically for demotions.
-- [ ] Add `scripts/reconcile-task-status.sh` to `orchestrator-critical-paths.json`'s
+      convention symmetrically for demotions. *(completed: "Would demote"/"DEMOTED"/refusal lines
+      naming the lock-check output)*
+- [x] Add `scripts/reconcile-task-status.sh` to `orchestrator-critical-paths.json`'s
       `critical_paths` array with a descriptive label. Do **not** add it to the `recursion_guard`
       subset — that subset is scoped to the discrimination/recording pipeline only, which
-      explicitly excludes this script.
-- [ ] Update the script's header comment block, which currently documents only the promotion
-      directions, to describe the demotion directions and their lock-check gate.
+      explicitly excludes this script. *(completed)*
+- [x] Update the script's header comment block, which currently documents only the promotion
+      directions, to describe the demotion directions and their lock-check gate. *(completed)*
 
 **Timing**: 1.5 hours
 

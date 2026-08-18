@@ -14,7 +14,7 @@
 #   session_id   - Session identifier string
 #   --dry-run    - Print what would be done without modifying state
 #
-# Artifact-to-phase mapping:
+# Artifact-to-phase mapping (PROMOTION -- artifact exists, replay the missed postflight):
 #   reports/*.md    -> research phase   (researching -> researched)
 #   plans/*.md      -> planning phase   (planning -> planned)
 #   summaries/*.md  -> implement phase  (implementing -> completed)
@@ -22,6 +22,18 @@
 #   plans/*.md      -> planning phase   (not_started -> planned)   [mtime-gated, see below]
 #   handoffs/*.md   -> partial state    (not_started -> partial)   [mtime-gated, see below]
 #
+# Lock-aware DEMOTION (Direction (b) defense-in-depth; see demote_stranded_status() below for the
+# full contract): when `researching` or `planning` has NO artifact on disk (the promotion table
+# above finds nothing to promote), this script additionally consults `task-lock.sh check` to tell
+# a genuinely in-progress task apart from one STRANDED by a dead prior session's stale lock --
+# never by re-deriving a second staleness heuristic:
+#   researching -> not_started   (demoted only when task-lock.sh check reports free (0) or
+#                                  held-stale (2); NEVER on held-fresh (1) or resolution error (3))
+#   planning    -> researched    (identical gate)
+# This demotes independently of /orchestrate: eligibility is no longer status-gated on
+# `researching`/`planning` (see skills/skill-orchestrate/SKILL.md Stage MT-3 step 3), so a
+# stranded task already re-dispatches through that mechanism on its own; this demotion is
+# operator-visible repair that works even when /orchestrate is never re-invoked on the task.
 # Why the not_started mappings are mtime-gated:
 #   A not_started task with artifacts on disk is ambiguous. It is either a crashed run whose
 #   postflight was lost (promote it) or a task deliberately reset with its old artifacts left in
@@ -187,6 +199,89 @@ link_artifact() {
       echo "[reconcile] WARNING: generate-todo.sh failed for $rel_path (non-fatal)" >&2
     }
   fi
+}
+
+# --- Helper: lock-aware demotion for a stranded in-flight task with no artifact ---
+#
+# Direction (b) defense-in-depth (research report Decision 1): a task sitting in `researching` or
+# `planning` with NO artifact on disk is genuinely ambiguous from an artifact-presence read alone
+# -- it is either honestly in-progress (a live session is working on it right now) or STRANDED (a
+# prior session died mid-phase and its lock is stale, or was never held at all). This helper
+# resolves that ambiguity the same way `/orchestrate`'s admission gate already does: by consulting
+# `task-lock.sh check`, never by re-deriving a second staleness heuristic of its own.
+#
+# This is reached ONLY after the caller's existing no-artifact no-op branch has already run and
+# decided there is nothing to promote -- demotion is additional, defense-in-depth behavior layered
+# on top of that branch, never a replacement for it. A task WITH an artifact never reaches this
+# helper at all; that case is the existing promotion path above, unchanged.
+#
+# Exit-code gate on `task-lock.sh check` (see that command's own contract for the full semantics):
+#   0 (free)        -> DEMOTE. No lock at all; nothing is protecting this status, so a task
+#                      genuinely in-progress under a live session would still hold a fresh lock.
+#   2 (held-stale)   -> DEMOTE. The lock exists but its holder's heartbeat is stale past
+#                      TASK_LOCK_STALE_MIN -- the classic stranded-task signature this defense
+#                      exists for (a dead prior session's lock left behind).
+#   1 (held-fresh)   -> NEVER demote. A genuinely fresh lock means a live session may actually be
+#                      working on this task right now; demoting out from under it would race a
+#                      real in-progress operation. Refuse loudly instead.
+#   3 (resolution error) -> NEVER demote. Fail CLOSED on ambiguity -- an error resolving the task's
+#                      own directory or lock state is not evidence of staleness, and this script's
+#                      own header already establishes it runs live and unattended (no human to
+#                      arbitrate a wrong guess).
+#
+# New class of write for this script: every other mutation reconcile-task-status.sh makes is a
+# PROMOTION (advancing status forward once an artifact proves the phase completed). This is the
+# first DEMOTION -- moving status backward with no artifact evidence at all, based solely on lock
+# staleness. Scoped as narrowly as possible: gated on the no-artifact branch already having run,
+# gated on the lock-check exit code exactly as above, and logged loudly on every demotion AND
+# every refusal so this new write class is never silent.
+demote_stranded_status() {
+  local from_status="$1" to_status="$2"
+
+  local lock_check_output lock_check_exit
+  # `if VAR=$(cmd); then ... ; else lock_check_exit=$?; fi` rather than a bare
+  # `lock_check_output=$(cmd); lock_check_exit=$?` -- under this script's `set -euo pipefail`, a
+  # bare assignment whose command substitution exits non-zero (1 held-fresh, 2 held-stale, 3
+  # resolution error -- ALL of them routine, expected outcomes of `task-lock.sh check`, per its
+  # own documented contract) would abort the whole script on this line, before
+  # `lock_check_exit=$?` could ever capture the status. Wrapping the assignment in the `if` test
+  # is `-e`-exempt and preserves the captured exit code exactly, mirroring the same fix already
+  # applied to orchestrate-batch-admit.sh, state-write.sh, task-lock.sh, and
+  # git-commit-scoped.sh for identical reasons.
+  if lock_check_output=$(bash "$SCRIPT_DIR/task-lock.sh" check "$task_number" 2>&1); then
+    lock_check_exit=0
+  else
+    lock_check_exit=$?
+  fi
+
+  case "$lock_check_exit" in
+    0|2)
+      if [[ "$DRY_RUN" == "true" ]]; then
+        echo "[reconcile] Would demote: $from_status -> $to_status (task-lock.sh check: $lock_check_output)"
+      else
+        if ! "$SCRIPT_DIR/state-write.sh" \
+          '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
+            status: $status,
+            last_updated: $ts
+          }' \
+          --session-id "$session_id" \
+          --arg num "$task_number" \
+          --arg status "$to_status" \
+          --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --regen-todo; then
+          echo "[reconcile] ERROR: state-write.sh failed demoting task $task_number ($from_status -> $to_status)" >&2
+          return 1
+        fi
+        echo "[reconcile] DEMOTED: Task $task_number: $from_status -> $to_status (task-lock.sh check: $lock_check_output; no artifact found -- stranded by a dead prior session)"
+      fi
+      ;;
+    1)
+      echo "[reconcile] Task $task_number: status=$from_status, no artifact, task-lock.sh check reports a FRESH lock ($lock_check_output) — refusing demotion (a live session may genuinely be in progress)"
+      ;;
+    *)
+      echo "[reconcile] Task $task_number: status=$from_status, no artifact, task-lock.sh check FAILED to resolve (exit $lock_check_exit: $lock_check_output) — refusing demotion, failing CLOSED on ambiguity"
+      ;;
+  esac
 }
 
 # --- Helper: does a handoff permit promotion to this phase's success status? ---
@@ -390,10 +485,13 @@ case "$current_status" in
     # Check for completed research artifact
     report_file=$(find_latest_artifact "reports")
     if [[ -z "$report_file" ]]; then
-      # No artifact — genuine in-progress, no-op
+      # No artifact — reached only after this no-op condition: check whether the task is
+      # actually stranded (lock-aware demotion, Direction (b) defense-in-depth) rather than
+      # genuinely in-progress.
       if [[ "$DRY_RUN" == "true" ]]; then
-        echo "[reconcile] Task $task_number: status=researching, no report artifact found — no-op"
+        echo "[reconcile] Task $task_number: status=researching, no report artifact found — no-op (checking for stranding)"
       fi
+      demote_stranded_status "researching" "not_started"
       exit 0
     fi
 
@@ -423,9 +521,13 @@ case "$current_status" in
     # Check for completed plan artifact
     plan_file=$(find_latest_artifact "plans")
     if [[ -z "$plan_file" ]]; then
+      # No artifact — reached only after this no-op condition: check whether the task is
+      # actually stranded (lock-aware demotion, Direction (b) defense-in-depth) rather than
+      # genuinely in-progress.
       if [[ "$DRY_RUN" == "true" ]]; then
-        echo "[reconcile] Task $task_number: status=planning, no plan artifact found — no-op"
+        echo "[reconcile] Task $task_number: status=planning, no plan artifact found — no-op (checking for stranding)"
       fi
+      demote_stranded_status "planning" "researched"
       exit 0
     fi
 

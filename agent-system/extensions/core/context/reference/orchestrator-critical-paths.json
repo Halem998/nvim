@@ -39,6 +39,10 @@
       "label": "phase-routing classifier"
     },
     {
+      "path": "scripts/reconcile-task-status.sh",
+      "label": "lock-aware stranded-task promotion/demotion reconciler"
+    },
+    {
       "path": "scripts/orchestrate-dry-run-report.sh",
       "label": "admission report surface"
     },
