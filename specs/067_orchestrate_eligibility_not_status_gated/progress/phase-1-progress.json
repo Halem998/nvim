@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "phase_name": "Self-modification tie-breaker and phase-aware gating in the admission script",
+  "started_at": "2026-08-18T00:30:00Z",
+  "last_updated": "2026-08-18T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Designated-candidate tie-breaker (lowest task number) computed in the inline jq", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 2, "description": "Self-mod branch changed to admit designated candidate, defer others", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 3, "description": "Reason string rewritten to name designated candidate as ordering constraint", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "--phase-map argument parsing added with malformed-value rejection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 5, "description": "Phase-aware exemption for research/plan self-modifying candidates", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 6, "description": "Header block updated with --phase-map contract and tie-breaker rationale", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 7, "description": "batch-admit-schema.md updated for new argument and verdict-shape non-bump rationale", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.extra",
+      "description": "test-conflict-predicate.sh case 2.4 encoded the pre-tie-breaker self-mod defer expectation and went RED once the tie-breaker landed (a solo self-modifying candidate now admits instead of deferring)",
+      "type": "altered",
+      "reason": "Genuine regression caused by the legitimate Phase 1 mechanism change; file was outside declared file_scope so file_scope was widened via state-write.sh before editing, per binding constraint 6. Case 2.4 updated to assert the new solo-admit behavior and a new case 2.4b added to pin the two-candidate tie-breaker defer path.",
+      "annotation": "N/A - not a plan checklist item, recorded here for audit trail"
+    }
+  ]
+}

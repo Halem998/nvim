@@ -2,7 +2,9 @@
 
 **Status**: Current architecture. Version 5 (`orchestrate-batch-admit-v5`) — see "Version History"
 at the bottom for what changed from v1 to v2, v2 to v3, v3 to v4, and v4 to v5, and why each bump
-was a version, not an additive field.
+was a version, not an additive field, and for the self-modification tie-breaker/`--phase-map`
+change (still v5) that follows the same history for the opposite reason — why it deliberately did
+NOT bump the version.
 
 **File location**: n/a — this is a stdout stream contract, not a file. The script emits NDJSON
 directly; nothing is written to disk.
@@ -31,7 +33,7 @@ sibling orchestrator-facing schema document this page is modelled on),
 ## Invocation Contract
 
 ```
-orchestrate-batch-admit.sh [--invocation-count <N>] [--session-id <id>] <task_number> [<task_number> ...]
+orchestrate-batch-admit.sh [--invocation-count <N>] [--session-id <id>] [--phase-map <task:group[,task:group...]>] <task_number> [<task_number> ...]
 ```
 
 Positional arguments are the candidate task numbers — the caller's already-computed
@@ -53,13 +55,51 @@ bounded input, alongside held locks — consumed only by `task-lock.sh acquire` 
 is SKIPPED entirely and one loud line goes to stderr — see "Degradation (D6)" below for the full
 contract and why omitting it is never a silent no-op.
 
+**`--phase-map <task:group[,task:group...]>` (NEW, tie-breaker/phase-aware convergence)**:
+OPTIONAL. Maps a subset of the candidate `<task_number>` arguments to the dispatch phase group
+each would run under this cycle (`research`, `plan`, `implement` — the same vocabulary
+`scripts/orchestrate-triage-classify.sh` already emits). A self-modifying candidate mapped to
+`research` or `plan` is admitted unconditionally — the self-modification defer branch never fires
+for it, regardless of `--invocation-count` and regardless of the tie-breaker below — because a
+research or plan dispatch touches only that task's own `reports/`/`plans/` subdirectory, never
+orchestrator machinery. `self_modifying: true` still appears on the verdict; only `decision`
+changes. A candidate absent from the map, or mapped to any other group (including `implement`),
+is unaffected. Omitting `--phase-map` entirely preserves the prior (pre-tie-breaker) shape exactly
+for every candidate that is not the cycle's designated self-modifying candidate — see the
+tie-breaker paragraph immediately below. A malformed value (not matching
+`task:group[,task:group...]` with integer tasks and alphabetic/underscore group names) is a usage
+error (exit 2), same posture as `--invocation-count`.
+
+**Self-modification tie-breaker (NEW)**: among the candidates in this cycle, the LOWEST task
+number whose own `file_scope` matches a declared critical path is the DESIGNATED self-modifying
+candidate for the cycle — the same ascending-`project_number`-first-match determinism convention
+the `in_batch` collision-deferral direction already uses. The designated candidate is never
+deferred by the self-modification branch, regardless of `--invocation-count`; every OTHER
+self-modifying candidate this cycle still defers when `--invocation-count` > 1, exactly as
+before. This converges N co-dispatched self-modifying candidates into a deterministic per-cycle
+sequence (lowest number first, then re-evaluated next cycle as the prior designated candidate
+leaves `eligible_tasks`) instead of every one of them deferring forever because none is ever
+alone — the deadlock this closes. This is a genuine behavior change from pre-tie-breaker verdicts
+(the previously-lowest-numbered candidate among 2+ co-dispatched self-modifying candidates now
+`admit`s instead of `defer`s), but it introduces **no new field and no new verdict shape** — the
+designated candidate's `admit` verdict is byte-for-byte the same shape as the pre-existing
+"solo admit" case (`self_modifying: true`, no collision fields), and a deferred candidate's
+verdict keeps the same `defer_reason: "self_modifying"` shape with only the `reason` string's
+wording updated to name the designated candidate and frame the defer as a one-cycle ordering
+constraint rather than an instruction to isolate the dispatch. Because no consumer branches on
+the CONTENTS of `reason` (see the Field Definitions table: "Never the sole carrier of any fact
+already available as a structured field above") and no field was added or removed, this is
+**not** a schema version bump — see the `v5 to v6` non-bump note at the end of "Version History"
+below for the full non-bump rationale, which is a different class of change than every prior
+bump in this document's history.
+
 **Exit codes**:
 - `0`: verdicts were emitted successfully, regardless of how many are `defer`. Verdicts are
   data, not errors — this script never exits non-zero merely because a candidate was deferred.
-- `2`: usage error (zero positional arguments, a non-integer positional argument, or a
-  non-integer `--invocation-count` value) or unavailable state (`jq` missing, or
-  `specs/state.json` missing/unparseable). Nothing is printed on stdout in either case; a single
-  loud line naming the reason goes to stderr.
+- `2`: usage error (zero positional arguments, a non-integer positional argument, a non-integer
+  `--invocation-count` value, or a malformed `--phase-map` value) or unavailable state (`jq`
+  missing, or `specs/state.json` missing/unparseable). Nothing is printed on stdout in either
+  case; a single loud line naming the reason goes to stderr.
 
 There is no `1` exit code and no `fail` decision value — a candidate this script cannot resolve
 (unknown task number, terminal status, empty/null `file_scope`) is admitted, not failed. Only a
@@ -75,7 +115,7 @@ never reordered per verdict. `self_modifying` is present on **every** verdict, i
 alongside another candidate):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v5","task_number":460,"decision":"defer","self_modifying":true,"defer_reason":"self_modifying","critical_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","critical_label":"admission predicate","reason":"candidate #460 file_scope names orchestrator-critical path \"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh\" (admission predicate); deferred out of this wave/cycle because it is co-dispatched alongside another candidate this cycle — it becomes eligible again once that co-dispatch clears, or pass --allow-self-modifying to override"}
+{"$schema":"orchestrate-batch-admit-v5","task_number":460,"decision":"defer","self_modifying":true,"defer_reason":"self_modifying","critical_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","critical_label":"admission predicate","reason":"candidate #460 file_scope names orchestrator-critical path \"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh\" (admission predicate); deferred this wave/cycle in favor of designated self-modifying candidate #205 (lowest task number among the self-modifying candidates in this cycle) -- this is an ORDERING CONSTRAINT, not an exclusion: candidate #460 resolves in a later cycle, in sequence, once #205 clears, or pass --allow-self-modifying to override"}
 ```
 
 **File-scope collision defer** (unchanged algorithm from v1, plus `corroborated_by` (NEW in v4);
@@ -539,3 +579,26 @@ change with its own declared file scope. **Declared residual for v5**: every lis
 still reads `idle_overlap_advisory` as an unrecognized field it silently ignores (never an error),
 which is safe but incomplete — none of them yet surfaces the advisory to a human or a report. This
 is a recorded, intentional residual, not a silent gap.
+
+**Self-modification tie-breaker and `--phase-map` — NOT a version bump (schema stays v5)**: adds
+the designated-candidate tie-breaker and the optional `--phase-map` argument (see "Invocation
+Contract" above for both). This is a DIFFERENT class of change from every prior bump in this
+history, and deliberately does not bump `$schema`: every prior bump (v1-v2, v3-v4, v4-v5) was
+about a stale consumer either mis-bucketing an unrecognized NEW verdict shape into an existing
+`if/else` branch, or silently losing a signal carried on a NEW field it does not know to look
+for. This change adds neither. It reassigns which of the two ALREADY-EXISTING self-modifying
+verdict shapes (the plain `admit` with `self_modifying: true`, or the `defer` with
+`defer_reason: "self_modifying"`) a given candidate lands in, using criteria a consumer never
+needs to inspect — the consumer already branches on `decision` and `defer_reason`, not on which
+candidate produced which shape or why. The only content-level change is the human-readable
+`reason` string's wording on a tie-breaker `defer`, and `reason` is documented above as "Never
+the sole carrier of any fact already available as a structured field" — no consumer parses it
+structurally. A consumer that omits `--phase-map` and never passes `--invocation-count` in a way
+that changes its own co-dispatch semantics sees a real behavior change (the previously-lowest
+self-modifying candidate among 2+ co-dispatched ones now admits instead of defers) but no
+verdict-shape surprise: every field it already reads is present with its already-documented
+type and meaning. Every in-repo consumer's status: unaffected by the tie-breaker itself (no
+consumer code needs to change to remain correct); the SKILL.md consumers additionally gain
+`--phase-map` wiring and updated warning/diagnostic text as a separate, later change with its
+own declared file scope (see `context/patterns/batch-orchestration-guardrails.md`'s gate
+catalogue for the resulting classification of `self_modifying` as an ordering constraint).

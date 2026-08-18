@@ -37,7 +37,7 @@
 # declared list rather than against another task's file_scope — not a new matching rule.
 #
 # Usage:
-#   orchestrate-batch-admit.sh [--invocation-count <N>] [--session-id <id>] <task_number> [<task_number> ...]
+#   orchestrate-batch-admit.sh [--invocation-count <N>] [--session-id <id>] [--phase-map <map>] <task_number> [<task_number> ...]
 #
 # `--session-id <id>` (D6): the CALLER's own session id (the same id registered via
 # `task-lock.sh session-register`). When supplied, this script's session-registry contention
@@ -70,6 +70,39 @@
 # validation, aborting with exit 2. A `--codispatch-count` alias was considered and rejected: it
 # would add a second flag name to orchestrator-critical machinery for a naming-clarity improvement
 # only, with no behavioral benefit over documenting the narrowed meaning under the existing name.
+#
+# `--phase-map <task:group[,task:group...]>` (D-phase, NEW): OPTIONAL. Maps a subset of the
+# positional <task_number> candidates to the dispatch phase group they would run under this
+# cycle (e.g. "research", "plan", "implement") -- the same group vocabulary
+# scripts/orchestrate-triage-classify.sh already emits. When a candidate named in the map is
+# self-modifying AND its mapped group is "research" or "plan", the self-modification defer branch
+# is skipped UNCONDITIONALLY for that candidate (regardless of --invocation-count and regardless
+# of the tie-breaker below) -- a research or plan dispatch touches only the task's own reports/ or
+# plans/ subdirectory plus its own .return-meta.json/.orchestrator-handoff.json, never
+# orchestrator machinery, so gating it on the task's IMPLEMENTATION footprint is a pure false
+# positive. `self_modifying: true` still appears on the verdict (the hazard stays visible even
+# when not deferred, same "solo admit" convention already used below). A candidate ABSENT from
+# the map, or mapped to any other group (including "implement"), is unaffected and falls through
+# to the ordinary self-mod branch. Omitting `--phase-map` entirely preserves today's behavior
+# exactly -- no candidate is phase-exempted, byte-for-byte identical to a pre-D-phase invocation.
+# Malformed values (anything not matching `task:group[,task:group...]` with integer tasks and
+# alphabetic-or-underscore group names) are a usage error (exit 2), same posture as
+# `--invocation-count`.
+#
+# Self-modification tie-breaker (D-tiebreak, NEW): among THIS cycle's candidates, the LOWEST
+# task number whose own file_scope matches a declared critical path is the DESIGNATED
+# self-modifying candidate -- the same ascending-project_number-first-match determinism
+# convention the `in_batch` deferral direction already uses (see "Determinism" below) and the
+# same first-match convention the self-modification check itself already used for selecting
+# WHICH critical-path entry matched. The designated candidate is never deferred by the
+# self-modification branch, regardless of `--invocation-count`; every OTHER self-modifying
+# candidate this cycle still defers when `--invocation-count` > 1, exactly as before. This
+# converges N co-dispatched self-modifying candidates into a deterministic per-cycle sequence
+# (lowest number first, then re-evaluated next cycle) instead of every one of them deferring
+# forever because none is ever alone -- the prior deadlock this fixes. The verdict's `reason`
+# string on a tie-breaker defer names the designated candidate and states this is a one-cycle
+# ordering constraint that resolves once the designated candidate clears -- never an operator
+# instruction to isolate the dispatch by itself.
 #
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order. Verdict
 # schema (pinned as "orchestrate-batch-admit-v5"; field order is stable):
@@ -322,6 +355,7 @@ CRITICAL_PATHS_FILE="$SCRIPT_DIR/../context/reference/orchestrator-critical-path
 # positional task_number validation ---
 invocation_count_arg=""
 session_id_arg=""
+phase_map_arg=""
 task_args=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -341,6 +375,14 @@ while [ "$#" -gt 0 ]; do
       session_id_arg="${1#--session-id=}"
       shift
       ;;
+    --phase-map)
+      phase_map_arg="${2:-}"
+      shift 2 2>/dev/null || shift
+      ;;
+    --phase-map=*)
+      phase_map_arg="${1#--phase-map=}"
+      shift
+      ;;
     *)
       task_args+=("$1")
       shift
@@ -355,6 +397,17 @@ if [ -n "$invocation_count_arg" ]; then
       exit 2
       ;;
   esac
+fi
+
+# --phase-map <task:group[,task:group...]> (D-phase): OPTIONAL. Absent -> today's behavior
+# exactly (no candidate is phase-exempted). Malformed-value rejection posture matches
+# --invocation-count above: a value that does not match the closed grammar is a usage error, not
+# a best-effort partial parse.
+if [ -n "$phase_map_arg" ]; then
+  if ! [[ "$phase_map_arg" =~ ^[0-9]+:[a-zA-Z_]+(,[0-9]+:[a-zA-Z_]+)*$ ]]; then
+    echo "ERROR: orchestrate-batch-admit.sh: '--phase-map $phase_map_arg' is not a valid task:group[,task:group...] list." >&2
+    exit 2
+  fi
 fi
 
 # --- usage validation: zero positional args, or any non-integer positional arg, is a usage error ---
@@ -443,6 +496,7 @@ if verdicts=$(jq -n -c \
   --argjson invocation_count "$invocation_count_arg" \
   --arg own_session_id "$session_id_arg" \
   --argjson sessions "$sessions_json" \
+  --arg phase_map_raw "$phase_map_arg" \
   "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
 
   def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
@@ -455,6 +509,33 @@ if verdicts=$(jq -n -c \
   $invocation_count as $inv_count |
   $own_session_id as $own_sid |
   $sessions as $sess_list |
+  ($phase_map_raw
+   | if . == "" then {}
+     else (split(",") | map(split(":")) | map({(.[0]): .[1]}) | add)
+     end
+  ) as $phase_map |
+  # Designated self-modifying candidate (D-tiebreak, NEW): the LOWEST task number, among the
+  # candidates in this cycle, whose own file_scope matches a critical path (non-degraded,
+  # non-terminal, non-empty file_scope) -- same ascending-project_number-first-match determinism
+  # convention already used by the in_batch deferral direction above. Computed once per
+  # invocation, over the full $cands set, independent of any one candidate branch below. null
+  # when no candidate in this cycle is self-modifying.
+  ($cands
+   | map(. as $n |
+       ([$all[] | select(.project_number == $n)] | first) as $e |
+       (
+         if ($e == null) then false
+         elif $is_degraded then false
+         elif (($e.status // "") | is_terminal) then false
+         elif (($e.file_scope // []) | length) == 0 then false
+         else (self_mod_match($e.file_scope; $crit) != null)
+         end
+       ) as $matches |
+       if $matches then $n else null end
+     )
+   | map(select(. != null))
+   | if length > 0 then min else null end
+  ) as $designated_sm_candidate |
 
   $cands[] as $c |
   ([$all[] | select(.project_number == $c)] | first) as $entry |
@@ -473,8 +554,22 @@ if verdicts=$(jq -n -c \
     ($entry.file_scope) as $c_scope |
     (if $is_degraded then null else self_mod_match($c_scope; $crit) end) as $sm_hit |
     (if $is_degraded then null else ($sm_hit != null) end) as $sm_flag |
+    ($phase_map[($c|tostring)] // null) as $phase_group |
     if ($sm_flag == true) then
-      if ($inv_count > 1) then
+      if ($phase_group == "research" or $phase_group == "plan") then
+        # Phase-aware gate (D-phase, NEW): a research or plan dispatch touches only the own
+        # reports/ or plans/ subdirectory of the task, plus its own
+        # .return-meta.json/.orchestrator-handoff.json -- never orchestrator machinery -- so
+        # deferring it merely because the IMPLEMENTATION footprint of the task names a critical
+        # path is a pure false positive. Exempt unconditionally from both
+        # the tie-breaker and the raw inv_count check; self_modifying stays true (hazard visible).
+        {
+          "$schema": "orchestrate-batch-admit-v5",
+          task_number: $c,
+          decision: "admit",
+          self_modifying: true
+        }
+      elif ($inv_count > 1 and $c != $designated_sm_candidate) then
         {
           "$schema": "orchestrate-batch-admit-v5",
           task_number: $c,
@@ -483,7 +578,7 @@ if verdicts=$(jq -n -c \
           defer_reason: "self_modifying",
           critical_path: $sm_hit.path,
           critical_label: $sm_hit.label,
-          reason: ("candidate #" + ($c|tostring) + " file_scope names orchestrator-critical path \"" + $sm_hit.path + "\" (" + $sm_hit.label + "); deferred out of this wave/cycle because it is co-dispatched alongside another candidate this cycle — it becomes eligible again once that co-dispatch clears, or pass --allow-self-modifying to override")
+          reason: ("candidate #" + ($c|tostring) + " file_scope names orchestrator-critical path \"" + $sm_hit.path + "\" (" + $sm_hit.label + "); deferred this wave/cycle in favor of designated self-modifying candidate #" + ($designated_sm_candidate|tostring) + " (lowest task number among the self-modifying candidates in this cycle) -- this is an ORDERING CONSTRAINT, not an exclusion: candidate #" + ($c|tostring) + " resolves in a later cycle, in sequence, once #" + ($designated_sm_candidate|tostring) + " clears, or pass --allow-self-modifying to override")
         }
       else
         {

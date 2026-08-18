@@ -1,0 +1,15 @@
+{
+  "dispatch_seq": 2,
+  "task_number": 67,
+  "session_id": "sess_1787010912_c51526",
+  "operation": "plan",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "artifact_path": "specs/067_orchestrate_eligibility_not_status_gated/plans/01_admission-gates-as-ordering-constraints.md",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "next_steps": "Run /implement 67 to execute the plan",
+  "blockers": [],
+  "continuation_path": null,
+  "notes": "Plan built on research report decisions (Work Stream B Directions 1+2 adopted, Direction 3 rejected, 5 convergence sites). Phase ordering enforces that the classifier status-to-group mapping lands before the eligibility exclusion is removed. parse-command-args.sh left untouched; orchestrator-critical-paths.json DOES need one edit (Phase 6) contrary to the dispatch brief's summary."
+}

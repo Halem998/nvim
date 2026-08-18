@@ -190,6 +190,12 @@ if [ "$c23_ok" = true ]; then pass "2.3: a dependencies[] edge in either directi
 
 # Case 2.4: self-modification runs first and short-circuits the collision scan (only meaningful
 # if orchestrator-critical-paths.json is present in the fixture tree; degrade gracefully if not).
+# UPDATED for the designated-candidate tie-breaker: a SOLO self-modifying candidate (the only one
+# in the co-dispatch set) is its own cycle's designated candidate and now ADMITS unconditionally
+# (previously it deferred whenever --invocation-count > 1); the short-circuit claim itself --
+# never carrying collision_scope, regardless of decision -- is unchanged and is what this case
+# still pins. A SECOND self-modifying candidate (case 2.4b) is added to pin the tie-breaker's
+# defer side, which the old single-candidate fixture never exercised.
 if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ]; then
   crit_path=$(jq -r '(.scope_roots[0] // "") as $r | (.critical_paths[0].path // "") as $p | if $r != "" and $p != "" then ($r + "/" + $p) else "" end' "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" 2>/dev/null)
   if [ -n "$crit_path" ]; then
@@ -198,15 +204,34 @@ if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ];
     echo "$smjson" > "$STATE_FILE"
     v_sm=$("$BA" --invocation-count 2 "$smcand" 830 2>/dev/null | jq -c "select(.task_number == $smcand)")
     c24_ok=true
-    [ "$(echo "$v_sm" | jq -r '.defer_reason // empty')" = "self_modifying" ] || { c24_ok=false; info "self-modifying candidate did not defer with defer_reason=self_modifying: $v_sm"; }
+    [ "$(echo "$v_sm" | jq -r '.decision')" = "admit" ] || { c24_ok=false; info "solo (designated) self-modifying candidate did not admit: $v_sm"; }
+    [ "$(echo "$v_sm" | jq -r '.self_modifying')" = "true" ] || { c24_ok=false; info "self-modifying candidate did not carry self_modifying: true: $v_sm"; }
     [ "$(echo "$v_sm" | jq 'has("collision_scope")')" = "false" ] || { c24_ok=false; info "self-modifying verdict unexpectedly carries collision_scope (collision scan was not short-circuited): $v_sm"; }
-    if [ "$c24_ok" = true ]; then pass "2.4: self-modification runs first and short-circuits the collision scan"; else fail "2.4: self-mod precedence case failed (see INFO lines above)"; fi
-    jq --argjson n "$smcand" '.active_projects |= map(select(.project_number != $n))' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+    if [ "$c24_ok" = true ]; then pass "2.4: self-modification runs first, short-circuits the collision scan, and a solo (designated) candidate admits"; else fail "2.4: self-mod precedence case failed (see INFO lines above)"; fi
+
+    # Case 2.4b: TWO self-modifying candidates in the same cycle -- the LOWER-numbered one is the
+    # designated candidate and admits; the higher-numbered one defers with defer_reason
+    # self_modifying, still carrying no collision_scope field (short-circuit preserved on the
+    # defer path too).
+    smcand2=902
+    smjson2=$(jq --argjson n "$smcand2" --arg cp "$crit_path" '.active_projects += [{"project_number": $n, "project_name": "selfmod_cand2", "status": "not_started", "task_type": "meta", "file_scope": [$cp], "dependencies": []}]' "$STATE_FILE")
+    echo "$smjson2" > "$STATE_FILE"
+    v_sm_pair=$("$BA" --invocation-count 2 "$smcand" "$smcand2" 2>/dev/null)
+    v_sm_lo=$(echo "$v_sm_pair" | jq -c "select(.task_number == $smcand)")
+    v_sm_hi=$(echo "$v_sm_pair" | jq -c "select(.task_number == $smcand2)")
+    c24b_ok=true
+    [ "$(echo "$v_sm_lo" | jq -r '.decision')" = "admit" ] || { c24b_ok=false; info "designated (lower-numbered) self-modifying candidate did not admit: $v_sm_lo"; }
+    [ "$(echo "$v_sm_hi" | jq -r '.decision')" = "defer" ] || { c24b_ok=false; info "non-designated (higher-numbered) self-modifying candidate did not defer: $v_sm_hi"; }
+    [ "$(echo "$v_sm_hi" | jq -r '.defer_reason // empty')" = "self_modifying" ] || { c24b_ok=false; info "non-designated candidate's defer_reason was not self_modifying: $v_sm_hi"; }
+    [ "$(echo "$v_sm_hi" | jq 'has("collision_scope")')" = "false" ] || { c24b_ok=false; info "non-designated candidate's defer verdict unexpectedly carries collision_scope: $v_sm_hi"; }
+    if [ "$c24b_ok" = true ]; then pass "2.4b: two co-dispatched self-modifying candidates converge via the designated-candidate tie-breaker (lower admits, higher defers)"; else fail "2.4b: self-mod tie-breaker case failed (see INFO lines above)"; fi
+
+    jq --argjson n "$smcand" --argjson n2 "$smcand2" '.active_projects |= map(select(.project_number != $n and .project_number != $n2))' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
   else
-    info "2.4: SKIPPED -- orchestrator-critical-paths.json present but empty scope_roots/critical_paths"
+    info "2.4/2.4b: SKIPPED -- orchestrator-critical-paths.json present but empty scope_roots/critical_paths"
   fi
 else
-  info "2.4: SKIPPED -- orchestrator-critical-paths.json not found in fixture tree"
+  info "2.4/2.4b: SKIPPED -- orchestrator-critical-paths.json not found in fixture tree"
 fi
 
 # Case 2.5: cross_batch against a PROVABLY IDLE task (no execution evidence) admits with a loud

@@ -813,7 +813,7 @@
     {
       "project_number": 67,
       "project_name": "orchestrate_eligibility_not_status_gated",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Make /orchestrate admission gates ordering constraints, not exclusions: unstrand in-flight tasks and end solo-only self-modifying dispatch",
@@ -831,10 +831,23 @@
         "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
         "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
-        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md"
+        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+        "agent-system/extensions/core/scripts/test-conflict-predicate.sh"
       ],
-      "artifacts": [],
-      "last_updated": "2026-08-17T22:40:53Z"
+      "artifacts": [
+        {
+          "path": "specs/067_orchestrate_eligibility_not_status_gated/reports/01_admission-predicate-eligibility-and-self-mod-tiebreak.md",
+          "type": "report",
+          "summary": "Re-measures the eligibility status-gate and self-modification tie-breaker defects against current source, finds much of the ordering-constraint philosophy already shipped (deferred_self_modifying is already an observation log, cross_batch already narrowed via v5 idle_overlap_advisory), narrows the convergence-argument re-derivation to exactly 5 sites (most co-maintenance claims rest on the unaffected dependency-terminal-state clause), finds command-gate-in.sh already proves the single-task engine's researching/planning EXIT message is always false when reachable, recommends adopting Work Stream B Directions 1+2 while rejecting Direction 3 outright (the hazard it targets cannot occur under the current cycle-synchronous architecture), and gives a file-by-file implementation basis."
+        },
+        {
+          "path": "specs/067_orchestrate_eligibility_not_status_gated/plans/01_admission-gates-as-ordering-constraints.md",
+          "type": "plan",
+          "summary": "Seven-phase plan repairing /orchestrate's status-gated eligibility exclusion and the self-modification gate's missing tie-breaker, with every falsified safety argument re-derived in the same phase as its mechanism."
+        }
+      ],
+      "last_updated": "2026-08-18T00:19:04Z",
+      "session_id": "sess_1787010912_c51526"
     }
   ],
   "completed_projects": [],
