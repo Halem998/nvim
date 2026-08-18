@@ -238,33 +238,37 @@ suite's `$WORKDIR/.claude/scripts/` layout:
 
 ---
 
-### Phase 2: Wire the phase map and tie-breaker into both orchestration engines [NOT STARTED]
+### Phase 2: Wire the phase map and tie-breaker into both orchestration engines [COMPLETED]
 
 **Goal**: Stage MT-3 step 4.5 computes the phase map once and threads it into the admission call
 and forward into Stage MT-4; the operator-facing self-mod defer warning and the convergence-guard
 diagnostic both stop describing a solo re-run as the remedy.
 
 **Tasks**:
-- [ ] In `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, relocate the
+- [x] In `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, relocate the
       `orchestrate-triage-classify.sh mt "${eligible_tasks[@]}"` call to immediately before the
       admission call, and add `--phase-map` (built from the classifier's NDJSON group mapping) to
       the `orchestrate-batch-admit.sh` invocation alongside the existing `--invocation-count` /
-      `--session-id`.
-- [ ] Thread the already-computed group mapping **forward** into Stage MT-4 rather than
+      `--session-id`. *(completed)*
+- [x] Thread the already-computed group mapping **forward** into Stage MT-4 rather than
       re-invoking the classifier there. State explicitly in the prose why reuse is safe: nothing
-      writes `state.json` between the two sites within one cycle.
-- [ ] Rewrite the self-mod defer operator warning so it names the designated candidate and frames
+      writes `state.json` between the two sites within one cycle. *(completed)*
+- [x] Rewrite the self-mod defer operator warning so it names the designated candidate and frames
       the defer as a one-cycle ordering constraint. Remove any implication that the operator must
-      intervene; keep `--allow-self-modifying` as a deliberate human-intent bypass.
-- [ ] Update the convergence-guard diagnostic (constraint 5): the mutually-colliding
+      intervene; keep `--allow-self-modifying` as a deliberate human-intent bypass. *(completed:
+      warning now logs the verdict's own `reason` string directly instead of a separately
+      maintained paraphrase)*
+- [x] Update the convergence-guard diagnostic (constraint 5): the mutually-colliding
       self-modifying set is no longer a reachable cause once the tie-breaker exists. Reframe the
       likely causes as a tie-breaker bug, a `deploy_checkpoint` exclusion interacting with the
       batch, or an unexpected `file_scope_collision`/`session_active` chain. **Keep the guard
       mechanism and its bound of 3 cycles intact** — only the diagnostic wording changes.
-- [ ] Mirror the step 4.5 admission-call and phase-map changes in
+      *(completed: mechanism, counter, reset-on-dispatch rule, and 3-cycle bound left untouched;
+      only the diagnostic string changed)*
+- [x] Mirror the step 4.5 admission-call and phase-map changes in
       `skill-orchestrate-hard/SKILL.md`'s Multi-Task Mode section, which transcribes this mechanism
       in full. Do not leave it as a bare pointer — that failure mode has already been caught once
-      in this file.
+      in this file. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1553,14 +1553,19 @@ matching this file's own stated design philosophy of being a full structural var
 **Transcribed: self-modification / cross-batch admission gate** (mirrors
 `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 — **CO-MAINTENANCE**: an edit to either copy
 REQUIRES the same edit to the other; the two MUST always agree). Before dispatching
-`eligible_tasks` on every cycle, call the admission script with the NARROWED co-dispatch count
-and `--session-id "$session_id"` (D6, session-registry contention input — the SAME bare
+`eligible_tasks` on every cycle, call the admission script with the NARROWED co-dispatch count,
+`--session-id "$session_id"` (D6, session-registry contention input — the SAME bare
 `session_id` Stage MT-1 registered via `session-register`, so this call's self-exclusion matches
 the batch's own registry entry rather than seeing it as foreign and deferring every candidate
-against itself):
+against itself), and `--phase-map "$phase_map_arg"` (the designated-candidate tie-breaker inside
+the admission script needs no argument of its own — it is computed unconditionally from the
+co-dispatch set every call). `$phase_map_arg` is the SAME variable the base skill's Stage MT-3
+step 4.5 builds from its (relocated) classifier call, over the SAME `eligible_tasks` this "Same
+as base" section already inherits for the loop itself — reused here exactly as
+`${#eligible_tasks[@]}` and `$session_id` already are, not re-derived:
 
 ```bash
-bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" --session-id "$session_id" "${eligible_tasks[@]}"
+bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" --session-id "$session_id" --phase-map "$phase_map_arg" "${eligible_tasks[@]}"
 ```
 
 `jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v5 —
@@ -1573,8 +1578,11 @@ every defer verdict carries this REQUIRED discriminator):
   passed the flag — the bypass is a consumer-side decision only. Otherwise, remove the candidate
   from this cycle's dispatch batch and append it to the `deferred_self_modifying` OBSERVATION LOG
   (no longer an eligibility-exclusion set — the defer clears on its own once the co-dispatched
-  sibling leaves `eligible_tasks`); log a distinct warning naming the matched critical path,
-  label, and the co-dispatched sibling situation.
+  sibling leaves `eligible_tasks`); **log the verdict's own `reason` string directly** (do not
+  reconstruct or paraphrase it) — as of the designated-candidate tie-breaker, `reason` already
+  names the designated candidate this task is deferring in favor of and states plainly that this
+  is a one-cycle ORDERING CONSTRAINT resolving in sequence, never an instruction to isolate the
+  dispatch.
 - **`file_scope_collision`** — matches `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5's
   `collision_scope` branching exactly; both branches remove the deferred task from this cycle's
   dispatch batch and never add it to `failed_tasks` (never added to `deferred_self_modifying` —

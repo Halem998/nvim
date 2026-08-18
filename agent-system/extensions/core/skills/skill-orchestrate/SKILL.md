@@ -1478,16 +1478,41 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    `.claude/context/patterns/task-lock.md`'s "Four-Tier Conflict Response" section for the full
    ladder and how this multi-cycle re-sequencing compares to plain multi-task `/research`'s,
    `/plan`'s, and `/implement`'s bounded one-extra-pass equivalent. No behavioral change here; this
-   is a cross-reference only. Before dispatching
+   is a cross-reference only.
+
+   **Classifier call — relocated here (was formerly invoked a second time, later, at Stage
+   MT-4)**: before the admission call below, call the shared handoff-triage classifier ONCE for
+   this cycle, over `eligible_tasks`, so the admission call can pass a `--phase-map` built from
+   the SAME rule the read-only dry-run report reads, rather than a second,
+   independently-maintained copy of it:
+   ```bash
+   mt_classify_ndjson=$(bash .claude/scripts/orchestrate-triage-classify.sh mt "${eligible_tasks[@]}")
+   ```
+   Capture `$mt_classify_ndjson` in this cycle's working state and carry it FORWARD into Stage
+   MT-4 below — it is safe to reuse without re-invoking: nothing writes `specs/state.json`
+   between this site and Stage MT-4's dispatch-bucket filtering within the same cycle, and no
+   other step in between reads classifier output that would need a fresher read. Stage MT-4 no
+   longer calls the classifier itself; see that stage's note.
+
+   Build `--phase-map` from `$mt_classify_ndjson` — one `task_number:group` pair per candidate,
+   comma-joined (the admission script only acts on the `research`/`plan` values; any other group
+   value present is harmless, since the admission script ignores an unrecognized group):
+   ```bash
+   phase_map_arg=$(echo "$mt_classify_ndjson" | jq -r '"\(.task_number):\(.group)"' | paste -sd, -)
+   ```
+
+   Before dispatching
    `eligible_tasks` on EVERY cycle — including a cycle where `eligible_tasks` contains only a
    single task, since a cross-batch collision exists at batch size 1 — call the admission
    script, passing `--invocation-count` set to THIS CYCLE'S actual co-dispatch count,
-   `${#eligible_tasks[@]}`, and `--session-id "$session_id"` (D6, session-registry contention
+   `${#eligible_tasks[@]}`, `--session-id "$session_id"` (D6, session-registry contention
    input) — the SAME bare `session_id` Stage MT-1 registered via `session-register` above, so
    this call's self-exclusion actually matches the batch's own registry entry rather than seeing
-   it as foreign and deferring every candidate against itself:
+   it as foreign and deferring every candidate against itself — and `--phase-map "$phase_map_arg"`
+   (the designated-candidate tie-breaker inside the admission script itself needs no argument; it
+   is computed unconditionally from the co-dispatch set every call):
    ```bash
-   bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" --session-id "$session_id" "${eligible_tasks[@]}"
+   bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" --session-id "$session_id" --phase-map "$phase_map_arg" "${eligible_tasks[@]}"
    ```
    This is the corrected contract (narrowed from an earlier version of this step that passed this
    invocation's full validated-candidate count): the self-modification defer trigger fires
@@ -1536,16 +1561,17 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      is no longer an eligibility-exclusion set, so recording an append here does NOT by itself
      keep the task out of a later cycle's `eligible_tasks` — see step 3's convergence rationale
      for what actually clears the defer). The task is never added to `failed_tasks` and never
-     status-mutated. Log a **distinct** warning naming the matched critical path, label, and the
-     co-dispatched sibling situation that caused the defer:
+     status-mutated. **Log the verdict's own `reason` string directly** (do not reconstruct or
+     paraphrase it) — as of the designated-candidate tie-breaker, `reason` already names the
+     designated candidate this task is deferring in favor of and states plainly that this is a
+     one-cycle ORDERING CONSTRAINT resolving in sequence, never an instruction to isolate the
+     dispatch:
      ```
      [orchestrate] WARNING: Task #{task_number} has file_scope naming orchestrator-critical
-       path {critical_path} ({critical_label}), co-dispatched this cycle alongside another
-       eligible candidate. Deferring #{task_number} to a later cycle — it becomes eligible again
-       once its co-dispatched sibling leaves eligible_tasks (dependencies[]-edge-connected
-       candidates never share a cycle, so this never fires for an edge-connected pair). Pass
-       --allow-self-modifying for deliberate human-intent bypass.
+       path {critical_path} ({critical_label}). {verdict.reason}
      ```
+     (`{verdict.reason}` already ends with the `--allow-self-modifying` override mention, so no
+     separate override line is appended here.)
      Additionally (no-override path only — a bypassed defer dispatches and must NOT be ledgered as
      a defer), append to `mt_state_file.defer_ledger`:
      `{"task": task_number, "defer_reason": "self_modifying", "collision_scope": null, "cycle": cycle_count, "detail": "matched critical path {critical_path} ({critical_label})"}`.
@@ -1664,9 +1690,17 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    step's filtering, if the resulting dispatch batch is empty AND `eligible_tasks` (pre-filter) was
    non-empty, increment the counter; on ANY cycle where at least one task actually dispatches,
    reset it to 0. If the counter reaches a small bound (3), break the loop with `partial` status
-   and a named diagnostic — e.g. "self-modification gate produced N consecutive cycles with zero
-   dispatched tasks; likely a mutually-colliding self-modifying set; re-run affected tasks solo or
-   pass --allow-self-modifying" — rather than silently spinning to `MAX_CYCLES_MT`.
+   and a named diagnostic — rather than silently spinning to `MAX_CYCLES_MT`. **Diagnostic wording
+   updated for the designated-candidate tie-breaker (mechanism and 3-cycle bound both unchanged
+   above)**: a mutually-colliding self-modifying set is no longer a reachable cause of this guard
+   tripping — the tie-breaker always admits exactly one self-modifying candidate per cycle, so N
+   self-modifying candidates converge in at most N cycles by construction. The diagnostic instead
+   names the causes that remain reachable — e.g. "self-modification gate produced N consecutive
+   cycles with zero dispatched tasks; likely a tie-breaker defect (verify
+   \$designated_sm_candidate is actually admitting each cycle), a deploy_checkpoint exclusion
+   interacting with the batch, or an unexpected file_scope_collision/session_active chain; pass
+   --allow-self-modifying only if the tie-breaker itself is confirmed broken" — never an
+   instruction to re-run anything solo.
 
    **Interaction with the task-lock acquire step (Stage MT-4)**: admission runs **before** lock
    acquisition and is a distinct gate — admission compares declared scopes of ALL non-terminal
@@ -1844,29 +1878,30 @@ append_detected_defect_mt() {  # task_num, class, attributed_path, site, detail,
 }
 ```
 
-**Classifier call** — before grouping, call the shared handoff-triage classifier so this stage's
-routing reads the SAME rule the read-only dry-run report reads, rather than a second,
-independently-maintained copy of it:
+**Classifier output — REUSED, not re-invoked**: Stage MT-3 step 4.5 already called the shared
+handoff-triage classifier once this cycle (to build `--phase-map` for the admission call) and
+captured its output as `$mt_classify_ndjson`. This stage reuses that SAME captured NDJSON for
+grouping rather than calling `orchestrate-triage-classify.sh` a second time — nothing writes
+`specs/state.json` between the two sites within one cycle, so a second read would return
+identical output at the cost of a second subprocess invocation. Do not re-invoke the classifier
+here.
 
-```bash
-bash .claude/scripts/orchestrate-triage-classify.sh mt "${eligible_tasks[@]}"
-```
-
-`jq`-filter the emitted NDJSON by `.group` into this stage's dispatch buckets: `.group ==
+`jq`-filter `$mt_classify_ndjson` by `.group` into this stage's dispatch buckets: `.group ==
 "research"` -> `research_tasks`, `.group == "plan"` -> `plan_tasks`, `.group == "implement"` ->
 `implement_tasks`, `.group == "needs_human"` -> `failed_tasks` (mark blocked), and `.group ==
-"skip"` or `.group == "terminal"` -> skip (no dispatch). This single call supplies the
+"skip"` or `.group == "terminal"` -> skip (no dispatch). This same captured NDJSON supplies the
 pre-dispatch `blockers`/`continuation_context` read for `partial` tasks that the table below
 previously only asserted without a spelled-out mechanism — its precedence is **continuation >
 blockers > neither** (a task with a valid continuation always dispatches to implement even if
 stale blockers are also present; only absence of continuation falls through to the blockers
 check).
 
-**Degradation path**: exit 2 from `orchestrate-triage-classify.sh` means state is unavailable
-(missing `jq`, or an unreadable `specs/state.json`). In that case, log a loud warning and fall
-back to the Phase grouping table below, applied inline per task, rather than silently skipping
-dispatch for the whole cycle — orchestration must still make forward progress when the classifier
-itself cannot run.
+**Degradation path**: exit 2 from `orchestrate-triage-classify.sh` at Stage MT-3 step 4.5's call
+site (this stage no longer calls it) means state is unavailable (missing `jq`, or an unreadable
+`specs/state.json`). `$mt_classify_ndjson` is empty in that case. When empty, log a loud warning
+here and fall back to the Phase grouping table below, applied inline per task, rather than
+silently skipping dispatch for the whole cycle — orchestration must still make forward progress
+when the classifier itself cannot run.
 
 **Phase grouping** (documentation of the rule the classifier script transcribes, retained here as
 a byte-identical reference table — `scripts/orchestrate-triage-classify.sh` is the executable
