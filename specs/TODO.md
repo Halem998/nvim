@@ -11,7 +11,7 @@ next_project_number: 68
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,65,66 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66 | -- | agent-system, extensions, literature, ... |
 | 2 | 42,44 | 28,31 | essential-refactor |
 | 3 | 9,29,53,64 | 22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
@@ -55,7 +55,6 @@ next_project_number: 68
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
     └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
-65 [IMPLEMENTING] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
@@ -211,7 +210,7 @@ ACCEPTANCE: long-builds.md exists at the stated path with the cap, the per-modul
 ---
 
 ### 65. Fix mint dispatch seq persisted counter
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
