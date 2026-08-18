@@ -1,5 +1,5 @@
 ---
-next_project_number: 69
+next_project_number: 72
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 69
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68,69,70,71 | -- | agent-system, extensions, literature, ... |
 | 2 | 42,44 | 28,31 | essential-refactor |
 | 3 | 9,29,53,64 | 22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
@@ -45,6 +45,9 @@ next_project_number: 69
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
+69 [NOT STARTED] — HIGH severity -- corpus-corruption vector. The conversion quality
+70 [NOT STARTED] — MEDIUM severity -- discovery correctness. Two verified defects in
+71 [NOT STARTED] — LOW severity -- validate-mode false positives and a documentation
 
 ### Orchestration Concurrency
 
@@ -63,6 +66,69 @@ next_project_number: 69
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 
 ## Tasks
+
+### 71. Fix validate-mode directory-path false positives and normalize-authors flag mismatch
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: LOW severity -- validate-mode false positives and a documentation/CLI mismatch. Verified during a real /literature --validate run.
+
+DEFECT 1 -- DIRECTORY-PATH FALSE POSITIVES. skill-literature validate mode tests entry paths with `[ ! -f "$full" ]`, which fails for the directory-path schema variant used by book/parent-level entries (paths ending in '/', e.g. `sources/blackburn_2002/`). Result: 65 of 368 entries were reported stale when ALL 65 exist on disk as directories and ZERO files are genuinely missing -- the check is 100% false positive and therefore useless as a signal. FIX: branch on -d for directory paths.
+
+ADJACENT FINDING A -- TOKEN-DRIFT BASELINE. The same validate run reported 56 token-drift warnings, of which roughly 52 are systematic: 55 of 56 drift the same direction (actual > stored) and 40+ cluster in a tight 1.21-1.35 ratio band, indicating a changed token formula or a bulk re-conversion rather than real per-document drift. Consider re-baselining stored token_count values so the drift check becomes a meaningful signal.
+
+ADJACENT FINDING B -- FOUR GENUINELY REAL DRIFT ENTRIES, flag for separate follow-up. Most important: `sources/diamondsareforever/chunk_0001.md`, whose index entry claims token_count 95000 while `path` points at a single 903-byte chunk containing only the abstract; it also mixes the legacy absolute-path `chunks_dir` schema into the `path` schema and carries provenance_fidelity 'unverified_no_baseline'. Any --lit consumer budgeting on token_count would reserve 95k tokens for an abstract fragment, or read `path` and receive 1/56th of the paper while believing it had the whole thing. The other three: `sources/fine_2012_guide-to-ground` (521 stored vs 27134 actual), `sources/vardi_wolper_1986/...` (196 vs 11871), and `sources/fine_2012_counterfactuals-without-possible-worlds` (2222 vs 15982) -- all three look like counts recorded against stub extracts that were later properly converted.
+
+DEFECT 2 -- FLAG MISMATCH. skills/skill-literature/SKILL.md instructs users to run literature-normalize-authors.sh with '--dry-run (default) first', but the script rejects --dry-run as 'Unknown argument' -- dry-run is the bare no-flag default. FIX: correct the doc, or accept --dry-run as a no-op alias.
+
+INFORMATIONAL, NOT A DEFECT: literature-normalize-authors.sh correctly proposes normalizing 60 entries whose `authors` field is a comma-joined string rather than an array. Zero array-valued entries have comma-joined elements, so the malformed-array regression that the validate authors-shape check guards against has NOT reappeared.
+
+Primary files: agent-system/extensions/literature/skills/skill-literature/SKILL.md, agent-system/extensions/literature/scripts/literature-normalize-authors.sh. Per .claude/rules/source-store-deploy-boundary.md all edits target agent-system/extensions/literature/**, never .claude/**.
+
+---
+
+### 70. Fix literature-discover.sh tier starvation and silent Tier 3 failure
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: MEDIUM severity -- discovery correctness. Two verified defects in scripts/literature-discover.sh, plus one query-construction issue.
+
+DEFECT 1 -- TIER 3 FAILS SILENTLY. Semantic Scholar returned HTTP 429 and the script discards Tier 3 stderr (invoked as `tier3_search 2>/dev/null || true`), so a rate-limited run is indistinguishable from 'nothing found online'. This is exactly the silent-zero-result failure mode that the Zotero branch of commands/literature.md has elaborate machinery to prevent (ZOTERO_EXPORT_STALE and friends); Tier 3 has no equivalent. FIX: emit a visible directive/rationale notice on non-200 responses, mirroring the existing zotero-export-status.sh directive-on-stdout + rationale-on-stderr pattern.
+
+DEFECT 2 -- TIER 1 STARVES TIERS 2 AND 3. With the default DISCOVER_LIMIT=10, a task-description query filled all 10 slots from the local corpus; tier3_search then early-returned on its `current_count >= DISCOVER_LIMIT` guard, and the final `jq '.[0:$limit]'` truncation discarded the Tier 2 hits that had been appended after Tier 1's. REAL CONSEQUENCE: Jonsson & Tarski 1951 and 1952 were sitting in the user's own Zotero library the entire time and never surfaced under the task-scoped discovery run; they appeared only when re-run as a focused query with DISCOVER_LIMIT=60. FIX DIRECTION: per-tier quotas or reserved slots so every tier contributes, instead of first-tier-wins.
+
+ALSO IN SCOPE -- NOISY QUERY CONSTRUCTION. Building the query from a full multi-paragraph task description produces very noisy terms: the same run surfaced Buchi complementation and CTL axiomatization papers as top hits merely because the description mentions temporal operators.
+
+Primary files: agent-system/extensions/literature/scripts/literature-discover.sh, agent-system/extensions/literature/commands/literature.md. Reference pattern: agent-system/extensions/literature/scripts/zotero-export-status.sh. Per .claude/rules/source-store-deploy-boundary.md all edits target agent-system/extensions/literature/**, never .claude/**.
+
+---
+
+### 69. Harden literature conversion quality gate against mojibake and unextractable-PDF output
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: HIGH severity -- corpus-corruption vector. The conversion quality gate in scripts/literature-convert.sh does not detect control-character/mojibake output, allowing garbage to enter the global corpus and the FTS index.
+
+EVIDENCE (verified empirically during a real /literature session, not speculation): Gabbay/Kurucz et al. 2003 'Many-Dimensional Modal Logics' (742pp) has a broken/custom font encoding with no usable ToUnicode CMap. The pymupdf4llm tier was CORRECTLY rejected by the gate (sentence-boundary-glue: 4 transitions vs threshold 3). But forcing LITERATURE_CONVERTER=pymupdf produced 2260 chunks of raw glyph indices and control characters -- 4824 NUL bytes, word_ratio 2.761 vs pdftotext (inflated precisely BECAUSE garbage tokens split on whitespace) -- and this output PASSED the gate, reporting 'Files quality-gate-failed: 0'. The garbage was ingested into the global corpus and FTS index and had to be manually removed with an index rebuild.
+
+INDEPENDENT CORROBORATION that the PDF, not the converter, is at fault: pdftotext on the same PDF yields only 69.5% printable characters with visibly scrambled letters.
+
+FIX DIRECTION: add to the gate (a) a printable-character-ratio check, (b) a control-character / NUL-byte check, and (c) a word_ratio sanity BAND rather than a one-sided floor -- flag ratios far ABOVE ~1.0 as well as far below, since the existing thinking only guards the low side and the observed corruption manifested as an inflated ratio of 2.761. Goal: an unextractable PDF must fail on EVERY tier rather than passing on the fallback tier.
+
+CRITICAL CONSTRAINT FOR THE IMPLEMENTER -- DO NOT DISABLE THE FALLBACK TIER. The pymupdf fallback is legitimately useful and must be preserved. In the same session it rescued Goldblatt 2006 'Mathematical modal logic: A view of its evolution', which pymupdf4llm rejected but which converted cleanly under LITERATURE_CONVERTER=pymupdf (verified: word_ratio 0.979 vs pdftotext across 98 pages, symbols and footnotes preserved, and every apparent fusion artifact traced to either the running head 'Robert Goldblatt' or a URL). The objective is to catch garbage, not to remove the fallback path.
+
+Primary files: agent-system/extensions/literature/scripts/literature-convert.sh, agent-system/extensions/literature/scripts/literature-ingest.sh. Per .claude/rules/source-store-deploy-boundary.md all edits target agent-system/extensions/literature/**, never .claude/**.
+
+---
 
 ### 68. Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever
 - **Status**: [NOT STARTED]

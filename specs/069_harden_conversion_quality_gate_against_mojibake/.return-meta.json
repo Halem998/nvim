@@ -1,0 +1,47 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 3 meta tasks fixing empirically verified literature-extension defects: conversion quality gate mojibake blindness (HIGH), discover.sh tier starvation plus silent Tier 3 failure (MEDIUM), and validate-mode directory-path false positives plus normalize-authors flag mismatch (LOW).",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "/home/benjamin/.config/nvim/specs/069_harden_conversion_quality_gate_against_mojibake/",
+      "summary": "Task 69 directory: HIGH severity conversion quality gate hardening against mojibake and unextractable-PDF output"
+    },
+    {
+      "type": "implementation",
+      "path": "/home/benjamin/.config/nvim/specs/070_fix_discover_tier_starvation_and_silent_tier3_failure/",
+      "summary": "Task 70 directory: MEDIUM severity literature-discover.sh tier starvation and silent Tier 3 failure"
+    },
+    {
+      "type": "implementation",
+      "path": "/home/benjamin/.config/nvim/specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/",
+      "summary": "Task 71 directory: LOW severity validate-mode directory-path false positives and normalize-authors flag mismatch"
+    },
+    {
+      "type": "implementation",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Regenerated global TODO.md containing tasks 69, 70, 71 under topic 'literature'"
+    },
+    {
+      "type": "implementation",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Global state.json updated with 3 new not_started entries; next_project_number advanced to 72"
+    }
+  ],
+  "next_steps": "Run /research 69 first (HIGH severity corpus-corruption vector). Tasks 70 and 71 are independent of 69 and of each other and may be researched in parallel.",
+  "modified_files": [
+    "specs/state.json",
+    "specs/TODO.md"
+  ],
+  "metadata": {
+    "session_id": "sess_1787076968_4111bf",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 3,
+    "task_numbers": [69, 70, 71]
+  }
+}
