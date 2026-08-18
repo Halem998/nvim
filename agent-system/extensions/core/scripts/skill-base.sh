@@ -950,17 +950,22 @@ skill_corroborate_phase_counts() {
 # stdout. Call immediately before every Agent dispatch that writes .orchestrator-handoff.json,
 # adjacent to the dispatch_start_ts capture (Defect A). Persisting on every mint (not only at
 # Stage 3b) guarantees the value survives a resume and is never repeated within this task, even
-# across separate /orchestrate invocations. See
+# across separate /orchestrate invocations. The new value is derived EXCLUSIVELY by reading
+# `.dispatch_seq_counter` back out of `$loop_guard_file` -- never from any ambient shell
+# variable -- so the result is correct even when each stage of the calling loop runs in its own
+# fresh shell/subprocess (the precondition an earlier ambient-variable-based body silently
+# assumed and did not hold, causing every mint to collapse to 1). See
 # context/patterns/dispatch-report-not-termination.md for why an orchestrator-minted value is
 # required rather than content the dispatched agent could echo unprompted.
 skill_orchestrate_mint_dispatch_seq() {
   local loop_guard_file="$1"
-  dispatch_seq_counter=$((dispatch_seq_counter + 1))
-  jq --argjson seq "$dispatch_seq_counter" \
+  local new_seq
+  new_seq=$(jq -r '(.dispatch_seq_counter // 0) + 1' "$loop_guard_file")
+  jq --argjson seq "$new_seq" \
      --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     '.dispatch_seq_counter = $seq | .last_updated = $updated' \
     "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
-  echo "$dispatch_seq_counter"
+  echo "$new_seq"
 }
 
 # skill_orchestrate_append_detected_defect <loop_guard_file> <notice_prefix> <class>

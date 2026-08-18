@@ -1,7 +1,7 @@
 # Implementation Plan: Task #65
 
 - **Task**: 65 - Fix skill_orchestrate_mint_dispatch_seq to increment from the persisted counter
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/065_fix_mint_dispatch_seq_persisted_counter/reports/01_mint-dispatch-seq-fresh-shell-fix.md`
@@ -118,38 +118,38 @@ needs the fix in place to go green, and the deploy/suite gate needs the test to 
 
 ---
 
-### Phase 1: Confirm single-point-of-fix and apply the persisted-counter mint [NOT STARTED]
+### Phase 1: Confirm single-point-of-fix and apply the persisted-counter mint [COMPLETED]
 
 **Goal**: Re-confirm that one function edit covers both engines and breaks no ambient consumer,
 then replace the ambient-variable increment with a read from the loop guard file.
 
 **Tasks**:
-- [ ] Re-confirm the shim claim: grep both `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
+- [x] Re-confirm the shim claim: grep both `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
       and `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` for the
       `mint_dispatch_seq() {` definition and verify each body is the single line
       `skill_orchestrate_mint_dispatch_seq "$loop_guard_file"`. If either differs, STOP and
-      re-scope — the no-SKILL.md-edit conclusion no longer holds.
-- [ ] Re-confirm no ambient consumer: grep both SKILL.md files and `skill-base.sh` for
+      re-scope — the no-SKILL.md-edit conclusion no longer holds. *(completed: both bodies confirmed byte-identical single-line shims)*
+- [x] Re-confirm no ambient consumer: grep both SKILL.md files and `skill-base.sh` for
       `dispatch_seq_counter` and verify every occurrence is either (a) a Stage 2 init/resume
       assignment, (b) a `jq -n` init payload literal, (c) inside the mint function itself, or
       (d) a comment. Any read of the bare variable *after* a `mint_dispatch_seq` call is a
-      blocker.
-- [ ] Enumerate the `mint_dispatch_seq` call sites in both engines and record the counts actually
-      observed (see Scope Hypothesis below).
-- [ ] Edit `skill_orchestrate_mint_dispatch_seq()` in
+      blocker. *(completed: no post-mint ambient reader found)*
+- [x] Enumerate the `mint_dispatch_seq` call sites in both engines and record the counts actually
+      observed (see Scope Hypothesis below). *(completed: 8 in skill-orchestrate, 5 in skill-orchestrate-hard, matches hypothesis)*
+- [x] Edit `skill_orchestrate_mint_dispatch_seq()` in
       `agent-system/extensions/core/scripts/skill-base.sh` to compute the new value with
       `new_seq=$(jq -r '(.dispatch_seq_counter // 0) + 1' "$loop_guard_file")` held in a `local`,
       persist `$new_seq` through the existing tmp-file + `mv` write, and echo `$new_seq`. Do not
-      assign to the ambient `dispatch_seq_counter` at all.
-- [ ] Update the function's docblock to state that the value is derived from the persisted counter
+      assign to the ambient `dispatch_seq_counter` at all. *(completed)*
+- [x] Update the function's docblock to state that the value is derived from the persisted counter
       and is therefore correct under a caller that runs each stage in its own shell — the exact
-      precondition the old body assumed and did not hold. Do not reference task numbers.
-- [ ] `bash -n agent-system/extensions/core/scripts/skill-base.sh` and, if available,
-      `shellcheck` the file to confirm no new findings on the edited region.
-- [ ] Manual smoke check against a scratch guard fixture under the scratchpad directory: source
+      precondition the old body assumed and did not hold. Do not reference task numbers. *(completed)*
+- [x] `bash -n agent-system/extensions/core/scripts/skill-base.sh` and, if available,
+      `shellcheck` the file to confirm no new findings on the edited region. *(completed: bash -n clean; shellcheck not installed in this environment)*
+- [x] Manual smoke check against a scratch guard fixture under the scratchpad directory: source
       the edited file in a shell with `dispatch_seq_counter` explicitly unset, seed a fixture with
       `{"dispatch_seq_counter": 4}`, call the function, and confirm stdout is `5` and the file now
-      reads `5`.
+      reads `5`. *(completed: stdout=5, persisted file=5)*
 
 **Timing**: 0.5 hours
 

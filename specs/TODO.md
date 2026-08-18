@@ -55,7 +55,7 @@ next_project_number: 68
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
     └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
-65 [PLANNED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
+65 [IMPLEMENTING] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
@@ -211,7 +211,7 @@ ACCEPTANCE: long-builds.md exists at the stated path with the cap, the per-modul
 ---
 
 ### 65. Fix mint dispatch seq persisted counter
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
