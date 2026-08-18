@@ -1060,7 +1060,7 @@
     {
       "project_number": 71,
       "project_name": "fix_validate_directory_path_false_positives_and_flag_mismatch",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "literature",
       "title": "Fix validate-mode directory-path false positives and normalize-authors flag mismatch",
@@ -1083,11 +1083,17 @@
           "path": "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/plans/01_validate-dirpath-flag-fix.md",
           "type": "plan",
           "summary": "Three-phase plan fixing the Validate Step 2 directory-path stale false positive and the normalize-authors --dry-run flag mismatch, with end-to-end live-index verification."
+        },
+        {
+          "path": "specs/071_fix_validate_directory_path_false_positives_and_flag_mismatch/summaries/01_validate-dirpath-flag-fix-summary.md",
+          "type": "summary",
+          "summary": "Records the confirmed directory/file/null-path entry counts, before/after validate report counts, and three deferred adjacent findings for the team lead."
         }
       ],
       "created": "2026-08-18T18:18:06Z",
-      "last_updated": "2026-08-18T19:32:41Z",
-      "session_id": "sess_1787078236_69862e_71"
+      "last_updated": "2026-08-18T19:41:24Z",
+      "session_id": "sess_1787078236_69862e_71",
+      "completion_summary": "Fixed Validate Step 2's directory-path false-positive stale reports (65 directory entries, drops stale count from 80 to 15) and hoisted schema/authors-shape checks to cover directory entries too; corrected the Validate Step 4 --dry-run flag mismatch by rewording the doc and adding a no-op --dry-run alias to literature-normalize-authors.sh. All edits confined to agent-system/extensions/literature/**."
     }
   ],
   "completed_projects": [],

@@ -11,7 +11,7 @@ next_project_number: 72
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68,71 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68 | -- | agent-system, extensions, literature, ... |
 | 2 | 42,44 | 28,31 | essential-refactor |
 | 3 | 9,29,53,64 | 22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
@@ -45,7 +45,6 @@ next_project_number: 72
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-71 [PLANNED] — LOW severity -- validate-mode false positives and a documentation
 
 ### Orchestration Concurrency
 
@@ -67,12 +66,13 @@ next_project_number: 72
 
 ### 71. Fix validate-mode directory-path false positives and normalize-authors flag mismatch
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 69
 - **Research**: [071_fix_validate_directory_path_false_positives_and_flag_mismatch/reports/01_validate-false-positives-flag-mismatch.md]
 - **Plan**: [071_fix_validate_directory_path_false_positives_and_flag_mismatch/plans/01_validate-dirpath-flag-fix.md]
+- **Summary**: [071_fix_validate_directory_path_false_positives_and_flag_mismatch/summaries/01_validate-dirpath-flag-fix-summary.md]
 
 **Description**: LOW severity -- validate-mode false positives and a documentation/CLI mismatch. Verified during a real /literature --validate run.
 

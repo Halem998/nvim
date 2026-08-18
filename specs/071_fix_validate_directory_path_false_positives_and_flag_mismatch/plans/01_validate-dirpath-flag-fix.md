@@ -1,7 +1,7 @@
 # Implementation Plan: Fix validate directory-path false positives and flag mismatch
 
 - **Task**: 71 - Fix validate-mode directory-path false positives and normalize-authors flag mismatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None (sequenced after the conversion quality-gate hardening in
   `specs/069_harden_conversion_quality_gate_against_mojibake/`, which research confirmed does
