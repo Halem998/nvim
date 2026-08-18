@@ -149,34 +149,34 @@ of them and record the actual count in the phase notes rather than matching this
 
 ---
 
-### Phase 2: Reserved per-tier quotas with rollover [NOT STARTED]
+### Phase 2: Reserved per-tier quotas with rollover [COMPLETED]
 
 **Goal**: Each tier gets a reserved share of `DISCOVER_LIMIT`; unused quota rolls forward to later
 tiers; the final `jq '.[0:$limit]'` becomes a safety net rather than the selection mechanism.
 
 **Tasks**:
-- [ ] Before the tier-dispatch block, compute an even-with-remainder three-way split of
+- [x] Before the tier-dispatch block, compute an even-with-remainder three-way split of
       `DISCOVER_LIMIT` into `TIER1_QUOTA`, `TIER2_QUOTA`, `TIER3_QUOTA` (e.g.
       `TIER1_QUOTA=$(( (DISCOVER_LIMIT + 2) / 3 ))`, `TIER2_QUOTA=$(( (DISCOVER_LIMIT + 1) / 3 ))`,
       `TIER3_QUOTA=$(( DISCOVER_LIMIT - TIER1_QUOTA - TIER2_QUOTA ))`), asserting the three sum to
-      `DISCOVER_LIMIT`.
-- [ ] Change `tier1_search()`'s break condition from `count >= DISCOVER_LIMIT` to
-      `count >= TIER1_QUOTA`; keep the local counter.
-- [ ] After Tier 1 runs, roll its shortfall forward: `TIER2_QUOTA=$(( TIER2_QUOTA + TIER1_QUOTA - <tier1 actual> ))`,
+      `DISCOVER_LIMIT`. *(completed)*
+- [x] Change `tier1_search()`'s break condition from `count >= DISCOVER_LIMIT` to
+      `count >= TIER1_QUOTA`; keep the local counter. *(completed)*
+- [x] After Tier 1 runs, roll its shortfall forward: `TIER2_QUOTA=$(( TIER2_QUOTA + TIER1_QUOTA - <tier1 actual> ))`,
       deriving `<tier1 actual>` from the shared `RESULTS` length (`jq 'length'`) rather than from a
-      function-local variable, so the rollover works regardless of dedup skips.
-- [ ] Change `tier2_search()`'s break condition to `count >= TIER2_QUOTA`, and pass
+      function-local variable, so the rollover works regardless of dedup skips. *(completed)*
+- [x] Change `tier2_search()`'s break condition to `count >= TIER2_QUOTA`, and pass
       `--limit="$TIER2_QUOTA"` (not `DISCOVER_LIMIT`) to `zotero-search.sh` so the upstream query
-      is not needlessly wide.
-- [ ] After Tier 2 runs, roll its shortfall into `TIER3_QUOTA` the same way.
-- [ ] In `tier3_search()`, replace the `current_count >= DISCOVER_LIMIT` early-return and the
+      is not needlessly wide. *(completed)*
+- [x] After Tier 2 runs, roll its shortfall into `TIER3_QUOTA` the same way. *(completed)*
+- [x] In `tier3_search()`, replace the `current_count >= DISCOVER_LIMIT` early-return and the
       `remaining = DISCOVER_LIMIT - current_count` computation with the rolled-forward
       `TIER3_QUOTA`, so Tier 3's budget is its own share plus any unused earlier share — not
       whatever Tier 1 happened to leave. Keep the early-return when `TIER3_QUOTA` is 0 (it is then
       a genuine "no budget" case, and it MUST NOT emit a `TIER3_STATUS: FAILED` line — a skipped
-      Tier 3 is not a failed Tier 3).
-- [ ] Leave the final `echo "$RESULTS" | jq --argjson limit "$DISCOVER_LIMIT" '.[0:$limit]'` in
-      place as a safety net, with a comment noting quotas make it non-binding by construction.
+      Tier 3 is not a failed Tier 3). *(completed)*
+- [x] Leave the final `echo "$RESULTS" | jq --argjson limit "$DISCOVER_LIMIT" '.[0:$limit]'` in
+      place as a safety net, with a comment noting quotas make it non-binding by construction. *(completed)*
 
 **Timing**: 1.5 hours
 

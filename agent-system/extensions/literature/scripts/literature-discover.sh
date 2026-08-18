@@ -333,7 +333,7 @@ tier1_search() {
       add_seen "$doc_id" "$title"
       count=$(( count + 1 ))
 
-      if [ "$count" -ge "$DISCOVER_LIMIT" ]; then
+      if [ "$count" -ge "$TIER1_QUOTA" ]; then
         break
       fi
     fi
@@ -375,7 +375,7 @@ tier2_search() {
   local zotero_results=""
   local exit_code=0
 
-  zotero_results=$("$zotero_script" --format=json --limit="$DISCOVER_LIMIT" \
+  zotero_results=$("$zotero_script" --format=json --limit="$TIER2_QUOTA" \
     "${FILTERED_TERMS[@]}" 2>/dev/null) || exit_code=$?
 
   # Exit code 1 = library not found, 2 = no results — both are non-fatal
@@ -450,7 +450,7 @@ print(json.dumps(parts))
     add_seen "$citation_key" "$title"
     count=$(( count + 1 ))
 
-    if [ "$count" -ge "$DISCOVER_LIMIT" ]; then
+    if [ "$count" -ge "$TIER2_QUOTA" ]; then
       break
     fi
   done < <(echo "$zotero_results" | jq -c '.[]' 2>/dev/null)
@@ -474,14 +474,16 @@ print(json.dumps(parts))
 # notice. The JSON-array stdout contract is untouched by any of this.
 # ---------------------------------------------------------------------------
 tier3_search() {
-  # Check if we already have enough results
-  local current_count
-  current_count=$(echo "$RESULTS" | jq 'length' 2>/dev/null || echo "0")
-  if [ "$current_count" -ge "$DISCOVER_LIMIT" ]; then
+  # Tier 3's budget is TIER3_QUOTA -- its own reserved share of DISCOVER_LIMIT
+  # plus any unused share rolled forward from Tiers 1/2 (see the tier-dispatch
+  # block below for the quota computation and rollover). A quota of 0 is a
+  # genuine "no budget left" skip, not a failure: it MUST NOT emit a
+  # TIER3_STATUS line -- a skipped Tier 3 is not a failed Tier 3.
+  if [ "$TIER3_QUOTA" -le 0 ]; then
     return 0
   fi
 
-  local remaining=$(( DISCOVER_LIMIT - current_count ))
+  local remaining="$TIER3_QUOTA"
 
   # Build query string (join filtered terms with spaces)
   local query_string="${FILTERED_TERMS[*]}"
@@ -633,16 +635,40 @@ tier3_search() {
 }
 
 # ---------------------------------------------------------------------------
+# Per-tier quotas with rollover
+#
+# Each tier gets a reserved, even-with-remainder share of DISCOVER_LIMIT so
+# an early tier (typically Tier 1, offline and fast) cannot single-handedly
+# consume the whole budget and starve later tiers, or have its own real hits
+# discarded by the final head-of-array truncation below. Unused quota rolls
+# forward: a tier that finds fewer results than its reserved share hands the
+# shortfall to the next tier, so a sparse corpus never wastes slots. Actual
+# counts are derived from the shared RESULTS array length (not a per-tier
+# local counter) so rollover is correct even when dedup skips entries.
+# ---------------------------------------------------------------------------
+TIER1_QUOTA=$(( (DISCOVER_LIMIT + 2) / 3 ))
+TIER2_QUOTA=$(( (DISCOVER_LIMIT + 1) / 3 ))
+TIER3_QUOTA=$(( DISCOVER_LIMIT - TIER1_QUOTA - TIER2_QUOTA ))
+
+# ---------------------------------------------------------------------------
 # Execute tiers (each fails independently)
 # ---------------------------------------------------------------------------
 
 # Tier 1: offline index
 tier1_search 2>/dev/null || true
 
+tier1_actual=$(echo "$RESULTS" | jq 'length' 2>/dev/null || echo "0")
+TIER2_QUOTA=$(( TIER2_QUOTA + TIER1_QUOTA - tier1_actual ))
+
 # Tier 2: Zotero
 tier2_search || true
 
-# Tier 3: Online APIs (only if we have fewer than limit results)
+tier1_and_2_actual=$(echo "$RESULTS" | jq 'length' 2>/dev/null || echo "0")
+tier2_actual=$(( tier1_and_2_actual - tier1_actual ))
+TIER3_QUOTA=$(( TIER3_QUOTA + TIER2_QUOTA - tier2_actual ))
+
+# Tier 3: Online APIs (only runs while TIER3_QUOTA, including any rolled-
+# forward shortfall from Tiers 1/2, is still positive)
 tier3_search || true
 
 # ---------------------------------------------------------------------------
@@ -655,6 +681,8 @@ if [ "$final_count" -eq 0 ]; then
   exit 1
 fi
 
-# Truncate to limit and output
+# Truncate to limit and output. With per-tier quotas above, RESULTS should
+# never meaningfully exceed DISCOVER_LIMIT by construction -- this slice is
+# now a safety net, not the selection mechanism.
 echo "$RESULTS" | jq --argjson limit "$DISCOVER_LIMIT" '.[0:$limit]'
 exit 0
