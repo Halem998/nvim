@@ -11,11 +11,14 @@
 # retirement rationale; lines 142-148 of its authors-array construction).
 #
 # Usage:
-#   literature-normalize-authors.sh <index.json> [--apply|--write]
+#   literature-normalize-authors.sh <index.json> [--apply|--write] [--dry-run]
 #
 # By default this script runs in DRY-RUN mode: it prints a per-entry before/after diff and a
 # summary count, and makes NO filesystem writes. Pass --apply (or --write) to persist changes
-# in place. Re-running against an already-normalized index reports zero changes (idempotent).
+# in place. --dry-run is accepted as an explicit no-op alias for the default (bare invocation
+# and `--dry-run` behave identically) -- for consistency with sibling scripts in this directory
+# (literature-repair-combining.sh, zotero-write.sh) that accept an explicit --dry-run flag.
+# Re-running against an already-normalized index reports zero changes (idempotent).
 #
 # Normalization rules:
 #   1. authors is a string                        -> normalize to an array (split on ", " only
@@ -39,10 +42,11 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: $0 <index.json> [--apply|--write]"
+  echo "Usage: $0 <index.json> [--apply|--write] [--dry-run]"
   echo ""
   echo "  <index.json>       Path to a Literature index.json (global or per-repo)."
   echo "  --apply, --write   Persist changes in place. Default: dry-run (no writes)."
+  echo "  --dry-run          Explicit no-op alias for the default (preview only, no writes)."
   exit 1
 }
 
@@ -57,6 +61,7 @@ apply=false
 for arg in "$@"; do
   case "$arg" in
     --apply|--write) apply=true ;;
+    --dry-run) apply=false ;;
     *) echo "Unknown argument: $arg" >&2; usage ;;
   esac
 done

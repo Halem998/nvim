@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Correct the normalize-authors invocation contract",
+  "started_at": "2026-08-18T00:15:00Z",
+  "last_updated": "2026-08-18T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Reword Validate Step 4 Authors Shape Warnings sentence", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 2, "description": "Add --dry-run no-op alias to argument-parsing case", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-normalize-authors.sh"]},
+    {"id": 3, "description": "Update usage() and header Usage:/mode-description comment block", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-normalize-authors.sh"]},
+    {"id": 4, "description": "Grep repository for other references, confirm no unsupported flag documented elsewhere", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_results": {
+    "bash_-n": "passed",
+    "bare_vs_dry_run_output": "byte-identical",
+    "apply_on_throwaway_copy": "exit 0, 60 entries normalized",
+    "bogus_flag": "exit 1, 'Unknown argument: --bogus'",
+    "grep_repo": "only agent-system/extensions/literature/skills/skill-literature/SKILL.md (fixed) documents an invocation; specs/** references are archived task artifacts / TODO.md description of the original defect, exempt under no-task-references-in-deliverables.md and not live documentation"
+  }
+}

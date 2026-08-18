@@ -499,7 +499,7 @@ done < <(find "$lit_dir" -maxdepth 1 -name "*.md" 2>/dev/null | sort)
 {for each authors_shape_warning entry:}
 - {entry_path}: {authors_shape}
   Run: bash .claude/scripts/literature-normalize-authors.sh {index_file} --apply to normalize,
-  or --dry-run (default) first to preview the change.
+  or run with no flag (dry-run is the default) first to preview the change.
 
 ### Unindexed Files ({count}) — markdown files not in index.json
 {for each unindexed file:}

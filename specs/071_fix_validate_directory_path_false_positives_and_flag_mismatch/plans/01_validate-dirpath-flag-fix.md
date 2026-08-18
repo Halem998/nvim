@@ -169,23 +169,23 @@ report's.
 
 ---
 
-### Phase 2: Correct the normalize-authors invocation contract [NOT STARTED]
+### Phase 2: Correct the normalize-authors invocation contract [COMPLETED]
 
 **Goal**: No invocation of `literature-normalize-authors.sh` named in documentation fails, and
 the script's accepted-flag surface is consistent with its sibling scripts.
 
 **Tasks**:
-- [ ] Reword the Validate Step 4 "Authors Shape Warnings" template sentence to stop naming a
+- [x] Reword the Validate Step 4 "Authors Shape Warnings" template sentence to stop naming a
       `--dry-run` flag as the preview mechanism; state that omitting the flag is the default and
-      previews the change (e.g. "run with no flag — dry-run is the default — to preview first").
-- [ ] Add `--dry-run` as an explicit no-op alias in the script's argument-parsing `case`
+      previews the change (e.g. "run with no flag — dry-run is the default — to preview first"). *(completed)*
+- [x] Add `--dry-run` as an explicit no-op alias in the script's argument-parsing `case`
       (alongside the existing `--apply|--write` branch), so the natural invocation exits 0 in
-      preview mode rather than hard-failing with `Unknown argument`.
-- [ ] Update the script's `usage()` output and its header `Usage:` / mode-description comment
+      preview mode rather than hard-failing with `Unknown argument`. *(completed)*
+- [x] Update the script's `usage()` output and its header `Usage:` / mode-description comment
       block so all three sites describe the same flag surface. Do not change the default
-      behavior: bare invocation remains dry-run.
-- [ ] Grep the repository for every other reference to `literature-normalize-authors.sh` and
-      confirm none documents a flag the script does not accept.
+      behavior: bare invocation remains dry-run. *(completed)*
+- [x] Grep the repository for every other reference to `literature-normalize-authors.sh` and
+      confirm none documents a flag the script does not accept. *(completed: grep of agent-system/ and specs/ found only the fixed SKILL.md site and archived/informational task artifacts in specs/**, none documenting an unsupported flag)*
 
 **Timing**: 0.5 hours
 
