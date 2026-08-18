@@ -172,7 +172,7 @@
       "project_number": 17,
       "project_name": "fix_return_meta_lifecycle_ordering",
       "title": "Fix .return-meta.json lifecycle ordering that makes the gate-out body unreachable",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "essential-refactor",
       "dependencies": [
@@ -203,7 +203,7 @@
       ],
       "description": "command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.\n\nVERIFIED MECHANISM (do not re-derive): skill-base.sh's skill_cleanup (lines 618-625) rm -f's .postflight-pending, .postflight-loop-guard, AND .return-meta.json. It is the single shared implementation invoked from Stage 9 of context/patterns/skill-postflight-flow.md, used by NINE skills: skill-implementer, skill-implementer-hard, skill-planner, skill-planner-hard, skill-reviser, skill-spawn, skill-team-implement, skill-team-plan, skill-team-research. command-gate-out.sh lines 69-73 then read \"${task_dir}/.return-meta.json\"; on absence it prints \"WARNING: .return-meta.json not found ... skill may have failed silently\" and exit 0. FIVE commands run it: implement.md, orchestrate.md, plan.md, research.md, revise.md.\n\nBLAST RADIUS IS LARGER THAN THE WARNING (measured, not inherited): the exit 0 at line 73 sits ABOVE everything else in the 134-line script. Code rendered unreachable in practice includes (a) the defensive status correction that repairs state.json when a skill reported completion but state is stale, and (b) the skill_validate_task_artifacts call at line 133, the last line, which is the artifact validation and --fix auto-repair path. One missing file disables both correctness mechanisms on all five commands. A real silent failure and an ordinary success emit the identical warning, so the signal carries no information.\n\nCONSEQUENCE FOR SIBLING TASK 13: 13's acceptance criterion (a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count) cannot be demonstrated until this ordering defect is fixed, because the path it instruments never executes. 13 is sequenced after this task; both also edit the same two files.\n\nWORK: decide ONE direction and implement it. (a) run the command-level gate-out before skill cleanup; (b) have skill_cleanup preserve .return-meta.json and make gate-out delete it after consuming it; (c) have skill_cleanup archive the metadata to a location gate-out knows about; (d) if the skill-internal postflight genuinely subsumes both defensive correction and artifact validation, delete the dead reads and replace the warning with a truthful statement. Required regardless of direction: explicitly decide whether defensive status correction is still needed given skill-internal postflight and record the reasoning; and fix the warning text so a genuine silent failure is distinguishable from ordinary success.\n\nUNIFORMITY REQUIREMENT: whatever is chosen must hold across all nine skills and all five commands. A fix that repairs skill-reviser and /revise alone is not acceptable.\n\nACCEPTANCE: a normal successful run of each of the five commands emits no false silent-failure warning; a genuinely failed skill run emits a distinguishable warning; and the defensive-correction path is demonstrated to execute, or is documented as deliberately removed with stated reasoning.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T16:02:07Z",
-      "last_updated": "2026-08-18T02:24:48Z",
+      "last_updated": "2026-08-18T02:45:15Z",
       "artifacts": [
         {
           "path": "specs/017_fix_return_meta_lifecycle_ordering/reports/01_return-meta-lifecycle-ordering.md",
@@ -214,6 +214,11 @@
           "path": "specs/017_fix_return_meta_lifecycle_ordering/plans/01_return-meta-lifecycle-ordering.md",
           "type": "plan",
           "summary": "Six-phase plan implementing direction (b) refined: skill_cleanup stops deleting .return-meta.json, deletion moves to each command's own last step, gate-out warning made truthful, both dead mechanisms retained."
+        },
+        {
+          "path": "specs/017_fix_return_meta_lifecycle_ordering/summaries/01_return-meta-lifecycle-ordering-summary.md",
+          "type": "summary",
+          "summary": "Six phases: skill_cleanup retains .return-meta.json, per-command deletion sites, truthful gate-out warning, both mechanisms retained, docs updated, uniformity sweep with all three acceptance criteria demonstrated."
         }
       ],
       "effort": "4h",

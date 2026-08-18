@@ -11,8 +11,8 @@ next_project_number: 68
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 14,17,18,20,22,27,28,31,39,43,45,46,51,62,65,66 | -- | agent-system, extensions, literature, ... |
-| 2 | 13,42,44 | 17,18,28,31 | agent-system, essential-refactor |
+| 1 | 13,14,18,20,22,27,28,31,39,43,45,46,51,62,65,66 | -- | agent-system, extensions, literature, ... |
+| 2 | 42,44 | 18,28,31 | essential-refactor |
 | 3 | 9,29,53,64 | 18,22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
 | 5 | 32,50 | 30,31,48 | agent-system, essential-refactor |
@@ -21,6 +21,7 @@ next_project_number: 68
 
 ### Agent System
 
+13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
@@ -29,7 +30,6 @@ next_project_number: 68
   └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
-13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
@@ -52,17 +52,16 @@ next_project_number: 68
 
 ### Essential Refactor
 
-17 [PLANNED] — command-gate-out.sh's entire post-metadata body is structurally u
-  └─ 44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-      └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 18 [PLANNED] — A repo can carry an arbitrarily stale .claude/ deploy with no sig
   └─ 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
     └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
-      └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
+      └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+        └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 65 [PLANNED] — Fix skill_orchestrate_mint_dispatch_seq to increment from the per
+44 [NOT STARTED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 
 ## Tasks
 
@@ -1019,12 +1018,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 17. Fix .return-meta.json lifecycle ordering that makes the gate-out body unreachable
 - **Effort**: 4h
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 16, Task 35, Task 37
 - **Research**: [017_fix_return_meta_lifecycle_ordering/reports/01_return-meta-lifecycle-ordering.md]
 - **Plan**: [017_fix_return_meta_lifecycle_ordering/plans/01_return-meta-lifecycle-ordering.md]
+- **Summary**: [017_fix_return_meta_lifecycle_ordering/summaries/01_return-meta-lifecycle-ordering-summary.md]
 
 **Description**: command-gate-out.sh's entire post-metadata body is structurally unreachable on all five commands that call it, because the skill-internal postflight always deletes the metadata first. The misleading warning is the visible symptom; the dead defensive status correction and the dead artifact validation are the actual damage.
 

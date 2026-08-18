@@ -1,12 +1,51 @@
 {
-  "status": "in_progress",
-  "summary": "Implementing six-phase plan for return-meta.json lifecycle ordering fix.",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/017_fix_return_meta_lifecycle_ordering/summaries/01_return-meta-lifecycle-ordering-summary.md",
+      "summary": "Six-phase fix moving .return-meta.json's deletion from skill_cleanup() to each calling command's own last consumer, making command-gate-out.sh's defensive correction and artifact validation reachable, with a truthful missing-metadata warning and no regression to /orchestrate."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the .return-meta.json lifecycle-ordering defect: skill_cleanup() no longer deletes the file at the skill's own Stage 9, ownership moved to each calling command's own last consumer (single-task CHECKPOINT 3 sites, multi-task batch loops, and skill-spawn's inline deletion), command-gate-out.sh's missing-metadata warning is now a truthful diagnostic, both previously-dead gate-out mechanisms are retained and demonstrated reachable via a fixture harness, and /orchestrate's completion/resume behavior is unchanged."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/commands/revise.md",
+    "agent-system/extensions/core/context/patterns/file-metadata-exchange.md",
+    "agent-system/extensions/core/context/patterns/skill-postflight-flow.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/skills/skill-spawn/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A shared cleanup function that deletes a file consumed by a LATER stage of its own caller creates structurally unreachable downstream code, invisible because the consumer's not-found branch is written as a non-blocking warning that fires identically on success and failure. Diagnostic: if a warning fires identically on every run, it is proof the guarded code never runs, not evidence of noise. The general fix is ownership relocation (move the delete to the outermost caller's own last step, past every consumer), verified by mapping every execution path to exactly one deletion owner. Paths that bypass the shared gate (batch/multi-task loops, direct-agent-dispatch loops that skip the skill layer entirely) are the ones most often left with zero owners and need explicit per-path auditing, not just per-caller auditing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/017_fix_return_meta_lifecycle_ordering/summaries/01_return-meta-lifecycle-ordering-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["cleanup-ordering", "unreachable-code", "lifecycle-ownership", "postflight", "shared-library-teardown", "bypass-paths"]
+    },
+    {
+      "content": "A minimal fixture harness for testing a shell script's behavior (copy the modified script tree into a scratch directory with synthetic state.json/metadata fixtures, run from that directory) is far more direct evidence of a fix's reachability than reasoning from source alone, and safer than a live command dispatch when the change under test is orchestrator-critical machinery the current session is itself running under (self-modification risk). Relative-path script resolution (scripts sourcing/invoking siblings via relative '.claude/scripts/...' paths rather than resolving an absolute git root) makes such fixtures work without needing to fake the whole repo.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/017_fix_return_meta_lifecycle_ordering/summaries/01_return-meta-lifecycle-ordering-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["fixture-harness", "self-modification-risk", "behavioral-verification", "scratchpad-testing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1787016315_a436d0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }
