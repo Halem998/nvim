@@ -1,5 +1,5 @@
 ---
-next_project_number: 68
+next_project_number: 69
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 68
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68 | -- | agent-system, extensions, literature, ... |
 | 2 | 42,44 | 28,31 | essential-refactor |
 | 3 | 9,29,53,64 | 22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
@@ -48,6 +48,7 @@ next_project_number: 68
 
 ### Orchestration Concurrency
 
+68 [NOT STARTED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
 
 ### Essential Refactor
@@ -62,6 +63,82 @@ next_project_number: 68
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 
 ## Tasks
+
+### 68. Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: None
+
+**Description**: Make the multi-task /orchestrate classifier's `blocked` row DISCRIMINATING rather than unconditional, so a task blocked on a predecessor the same batch is going to complete becomes dispatchable instead of being skipped on every cycle until MAX_CYCLES_MT is exhausted.
+
+=== OBSERVED DEFECT ===
+
+In multi-task mode a task with status `blocked` routes to the `skip` group unconditionally, with no consideration of WHAT it is blocked on. When the blocker is an in-batch predecessor, skipping defeats the entire purpose of submitting the chain as one batch: the predecessor completes, the successor is still `blocked`, NOTHING REWRITES THAT STATUS, and the successor is skipped again every subsequent cycle. The missing status rewrite is the core gap -- a status no component ever rewrites is why the skip repeats forever rather than resolving.
+
+=== LIVE REPRODUCTION (measured in a deploy repo, `/orchestrate 437,436,434,433`) ===
+
+- The chain was 437 -> 436 -> 434 -> 433, strictly serial by `dependencies[]`, correctly computed into four waves by Kahn's algorithm.
+- The second task was `blocked` on the first; the third was `blocked` on the second. Both markers were set by `/spawn` at the moment each task spawned its own unblocker -- i.e. blocked ON AN IN-BATCH PREDECESSOR, the exact case this defect concerns.
+- Both tasks' `.orchestrator-handoff.json` recorded `blockers: []` -- ZERO recorded blockers. The `blocked` status was pure dependency-ordering information, fully duplicated by the `dependencies[]` edge the wave scheduler had already consumed.
+- Result: even after unrelated admission problems cleared, the batch would have dispatched the first task and then idled, skipping the rest every cycle. The operator had to hand-edit both statuses to `partial` via `state-write.sh` to make the chain runnable.
+
+=== MEASURED SOURCE-STORE STATE (re-measure before relying on line numbers) ===
+
+`scripts/orchestrate-triage-classify.sh` is the executable source of truth.
+- Its `elif $status == "blocked"` arm (around line 311) emits group `skip` for engine `mt`, `needs_human` for engine `single`, with reason string "task #N is blocked; mt skips / single needs human".
+- Its header verdict table (around line 63) carries the row `| blocked | skip | needs_human |`, and lines ~77-85 carry an explicit justification calling this divergence "a DESIGN, not an oversight", with a stated discriminator for future audits: "does the OTHER engine's own handler implement the divergence in its own code, or does only this shared table assert it? Independent implementation by both sides = design (keep it, documented); bare assertion by one shared table = defect (converge it)." That discriminator must be applied honestly to this change rather than quoted as a reason not to touch the row -- the defect here is not the ENGINE DIVERGENCE, it is the UNCONDITIONALITY of the mt side.
+
+TWO FACTS THAT MAKE THE FIX TRACTABLE, BOTH VERIFIED BY DIRECT READ:
+1. The classifier's CLI is `orchestrate-triage-classify.sh <engine> <task_number> [<task_number> ...]` -- it ALREADY RECEIVES THE FULL CANDIDATE LIST. Batch membership is therefore computable inside the classifier without a new argument or a call-site change.
+2. The classifier already reads `specs/state.json` (hence `dependencies[]`) and, for `partial`-status candidates only, that candidate's own `.orchestrator-handoff.json`. Both discriminator signals are already within its declared read set; extending the handoff read to `blocked` candidates is a scope widening of an existing read, not a new I/O class. Respect the Context Flatness Constraint in its header: never read a plan, report, or summary.
+
+HARD CONSTRAINT ON WHERE THE REWRITE CAN LIVE: the classifier header declares the script READ-ONLY and enumerates forbidden calls (`task-lock.sh acquire`, `update-task-status.sh`, `generate-todo.sh`, `skill-base.sh` write functions, `reconcile-task-status.sh` without `--dry-run`, and any dispatch of the Agent or Skill tool). So the classifier MAY decide the verdict but MUST NOT perform any status rewrite. Either the verdict alone suffices (route the discriminated row to its real phase group and let the normal dispatch path proceed, leaving the stale `blocked` string to be corrected by the dispatch's own preflight), or a separate component performs the rewrite. Research must pick one and name the component.
+
+=== CO-MAINTENANCE SET (all must agree; verify by grep, do not trust this list) ===
+
+- `scripts/orchestrate-triage-classify.sh` -- the jq arm AND the header verdict table AND the adjacent justification prose. All three, or the file self-contradicts.
+- `skills/skill-orchestrate/SKILL.md` -- Stage MT-4's phase-grouping table (around line 2030) folds `blocked` into `skip`, with a divergence justification at ~2039-2043 and a related note at ~528. Stage MT-3 step 3's eligibility rule does NOT exclude `blocked`, so these tasks are ELIGIBLE-BUT-SKIPPED -- that combination is precisely what makes them spin rather than terminate, and it is the mechanism to keep in view when reasoning about convergence. The single-task engine's `#### State: blocked` handler (around line 658) reads blockers from state.json (not the handoff) and escalates to a human via Stage 6.
+- `skills/skill-orchestrate-hard/SKILL.md` -- has its OWN compressed `#### State: blocked` handler (around line 1037: "Read blockers from state.json. Invoke blocker escalation (Stage 6)"), but its Multi-Task Mode section (from ~line 1539) is a bare "Same as base" pointer that transcribed only two mechanisms (the admission gate and the redeploy checkpoint) and has NO phase-grouping table. So determine, and record, whether it needs its own edit or genuinely inherits -- note its own stated rationale (~1544-1551) that bare pointers demonstrably fail to carry mechanisms forward.
+- `scripts/tests/test-orchestrate-triage-classify.sh` -- already carries `fixture_blocked` (around line 219) and two assertions (~263-265) that name the current rows as "DOCUMENTED DIVERGENCE ... not a bug" and instruct the reader NOT to "fix" them. These fixtures WILL need rewriting, and the instruction comment must be rewritten with them so the suite does not preserve a claim the code no longer makes.
+- `scripts/orchestrate-dry-run-report.sh` -- the read-only consumer of classifier verdicts; a dry-run's entire value is being a prediction of the live path, so any new verdict field or reason string must surface there.
+- `context/patterns/batch-orchestration-guardrails.md` -- carries the NORMATIVE principle (around lines 100-119) that every gate "should degrade to an ORDERING CONSTRAINT ... and fall back to a genuine EXCLUSION" only when justified, with a per-gate table classifying each. The `blocked` status verdict is not currently a row in that table because it is a triage verdict rather than an admission gate; decide explicitly whether it becomes one, and whether the principle as stated already implies this fix.
+- `docs/architecture/orchestrate-state-machine.md` -- line ~31's state table row for `blocked`, and line ~434's "No eligible tasks | partial | Deadlock or all blocked" outcome row.
+
+=== PRIOR ART: THIS ROW WAS DELIBERATELY SCOPED OUT BY EARLIER WORK ===
+
+The completed task `orchestrate_eligibility_not_status_gated` is the closest prior art and deliberately did NOT cover this. Its plan states: "The `blocked` and `unknown` classifier rows -- left unchanged per research Decision 3", and it explicitly preserved the blocked row as "the one documented engine-divergent row". That work fixed the ADJACENT `researching`/`planning` strandedness under the principle that "every admission gate degrades to an ORDERING CONSTRAINT and never to a PERMANENT EXCLUSION". This defect is the SAME PRINCIPLE applied to a row that earlier work scoped out. Research MUST locate that Decision 3 in `specs/067_orchestrate_eligibility_not_status_gated/reports/` and either OVERTURN IT WITH REASONS or NARROW IT -- silently contradicting it is not acceptable, and neither is citing it as a reason to do nothing.
+
+=== DESIGN DIRECTION TO EVALUATE (decide; do not presuppose) ===
+
+The plausible fix is to make the blocked row discriminating: distinguish a task blocked on a predecessor IN THE CURRENT BATCH (an ordering constraint the batch itself will discharge -- should become dispatchable once the predecessor terminates) from a task blocked on something the batch CANNOT resolve (a genuine external blocker -- skip or escalate as today). Points research must settle rather than assume:
+
+1. WHICH DISCRIMINATOR. `dependencies[]` membership in the candidate list, the handoff's `blockers[]` being empty, or both (conjunction or disjunction)? Note the live reproduction had BOTH signals available AND AGREEING, so it does not by itself discriminate between the options -- construct the disagreement cases deliberately (dependency edge present but blockers non-empty; blockers empty but blocker is out-of-batch) and decide what each should do. Also settle whether a predecessor that FAILED counts as "discharged" (today a failed predecessor already moves its dependents to `failed_tasks` with status `blocked` -- see the state-machine doc around line 413 and skill-orchestrate around line 1554; that path must not be broken).
+
+2. WHAT STATUS THE SUCCESSOR SHOULD BECOME once its in-batch predecessor terminates, and WHICH COMPONENT performs the rewrite. Nothing does today -- that is the core gap. Candidate homes, all in file_scope: `scripts/orchestrator-postflight.sh` (natural: a terminating predecessor clears its successors), `scripts/reconcile-task-status.sh` (which already gained a lock-aware demotion guard in the prior work and is the system's designated status-repair component), or skill-orchestrate's own Stage MT-3 cycle loop. It CANNOT be the classifier (read-only, see above). If the answer is "no rewrite is needed because the verdict alone routes it", say so explicitly and show what then corrects the stale `blocked` string, and when.
+
+3. WHETHER THE SINGLE-TASK ENGINE'S `needs_human` ESCALATION STAYS DIVERGENT OR CONVERGES, applying the classifier header's own stated audit discriminator honestly. Note the asymmetry: a solo invocation has no sibling batch, so "in-batch predecessor" is vacuous there and the row may legitimately remain unchanged for `single` -- but that is a conclusion to argue, not to assume. Both engines' handlers implement the current divergence independently, which by the header's own rule makes it DESIGN; the question is whether the mt side's new discrimination changes that verdict.
+
+4. WHETHER `/spawn` SHOULD STOP WRITING `blocked` AT ALL when it has just recorded the same ordering in `dependencies[]`. `skills/skill-spawn/SKILL.md` sets `status = "blocked"` directly via `state-write.sh` (around lines 114, 161, 178) and its own note at line 98 states "`[BLOCKED]` means 'has unmet dependencies', not 'encountered an error'" -- i.e. the file already documents the status as PURE ORDERING INFORMATION, corroborating the live reproduction's `blockers: []`. Decide whether that redundancy is deliberate (and only the consumer should change) or whether the producer should stop writing it. If `/spawn` keeps writing it, say what the status is FOR, given `dependencies[]` already carries the same fact.
+
+=== ACCEPTANCE ===
+
+- A batch submitted as a dependency chain where each successor is `blocked` on its in-batch predecessor runs END-TO-END IN A SINGLE `/orchestrate` INVOCATION, with no hand-editing of statuses and no operator instruction to run the tasks one at a time.
+- A task blocked on something OUTSIDE the batch still does not silently spin: it is either skipped WITH A LOUD, NAMED WARNING or escalated, and which one is a RECORDED DECISION.
+- A task whose predecessor FAILED still lands in `failed_tasks` and is not spuriously dispatched.
+- All co-maintained copies of the verdict table agree, VERIFIED BY GREP, and every justification paragraph that asserts the now-changed premise is re-derived or corrected in the SAME change -- landing the mechanism while leaving prose asserting a false premise is not acceptable.
+- New classifier fixtures cover the DISCRIMINATED blocked rows for BOTH engines and FAIL AGAINST THE PRE-FIX CLASSIFIER (observe the mutation-check discipline in `context/standards/shell-script-testing.md`: a suite that passes unchanged both before and after proves nothing). The existing `fixture_blocked` assertions and their "do not fix this" comment are rewritten, not left contradicting the new behaviour.
+- The dry-run report predicts the new behaviour, since a dry-run that disagrees with the live path is worse than no dry-run.
+
+=== SCOPE RULES (binding) ===
+
+Edit ONLY `agent-system/extensions/core/**`, NEVER the deployed `.claude/**` tree, per `.claude/rules/source-store-deploy-boundary.md`; verify via a deploy after the change rather than editing the deploy tree. No task-number references in any deliverable outside `specs/**`, per `.claude/rules/no-task-references-in-deliverables.md` -- cite filenames and section headings instead. If implementation finds another file genuinely needs editing, widen `file_scope` deliberately via `state-write.sh`, naming each file exactly -- no bare directory roots, no duplicate entries.
+
+=== SELF-MODIFYING TASK ===
+
+`scripts/orchestrate-triage-classify.sh`, `skills/skill-orchestrate/SKILL.md`, `skills/skill-orchestrate-hard/SKILL.md`, `commands/orchestrate.md`, `scripts/orchestrate-batch-admit.sh` and `scripts/orchestrate-dry-run-report.sh` are all registered in `context/reference/orchestrator-critical-paths.json`, so `orchestrate-batch-admit.sh` will classify this task as `self_modifying`. Under the designated-candidate tie-breaker shipped by the prior admission-gate work, one self-modifying candidate is admitted per cycle, so this task self-sequences rather than deadlocking. Do NOT run it solo -- solo dispatch is the workaround that line of work exists to eliminate.
+
+---
 
 ### 67. Make /orchestrate admission gates ordering constraints, not exclusions: unstrand in-flight tasks and end solo-only self-modifying dispatch
 - **Status**: [COMPLETED]

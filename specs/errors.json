@@ -289,6 +289,26 @@
         "auto_recoverable": false
       },
       "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1787026891137_U2A3A4",
+      "timestamp": "2026-08-18T04:21:31.148Z",
+      "type": "delegation_interrupted",
+      "severity": "medium",
+      "message": "task 18 implement dispatch lost connection (ESERVFAIL) mid-Phase-3; phases 1-2 committed, phase 3 partially written and uncommitted",
+      "context": {
+        "session_id": "sess_1787016315_a436d0_18",
+        "command": "/orchestrate",
+        "task": 18,
+        "phase": 3,
+        "checkpoint": "MT-4 implement dispatch",
+        "agent": "general-implementation-agent"
+      },
+      "recovery": {
+        "suggested_action": "Re-dispatch implement; resume from Phase 3. Untracked test-deploy-freshness.sh is partial work deliberately left uncommitted for the resuming agent",
+        "auto_recoverable": true
+      },
+      "fix_status": "unfixed"
     }
   ]
 }
