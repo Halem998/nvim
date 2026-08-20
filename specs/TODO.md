@@ -1,5 +1,5 @@
 ---
-next_project_number: 79
+next_project_number: 81
 ---
 
 # TODO
@@ -12,8 +12,8 @@ next_project_number: 79
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68,72,74,77 | -- | agent-system, extensions, literature, ... |
-| 2 | 42,44,73,75,76,78 | 28,31,72,74,77 | extensions, literature, essential-refactor, ... |
-| 3 | 9,29,53,64 | 22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
+| 2 | 42,44,73,75,76,78,80 | 28,31,72,74,77 | extensions, literature, essential-refactor, ... |
+| 3 | 9,29,53,64,79 | 22,42,44,73 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
 | 5 | 32,50 | 30,31,48 | agent-system, essential-refactor |
 
@@ -33,6 +33,7 @@ next_project_number: 79
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
     └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
+79 [NOT STARTED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
 
 ### Extensions
 
@@ -50,6 +51,7 @@ next_project_number: 79
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
 77 [NOT STARTED] — The literature global index at ~/Projects/Literature/index.json c
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
+  └─ 80 [NOT STARTED] — literature-build-index.sh traverses the corpus with an unguarded 
 
 ### Orchestration Concurrency
 
@@ -73,6 +75,131 @@ next_project_number: 79
   └─ 73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
 
 ## Tasks
+
+### 80. Stop the literature index rebuild from indexing backed-up chunk manifests
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 77
+
+**Description**: literature-build-index.sh traverses the corpus with an unguarded recursive `find` and indexes chunk manifests inside ~/Projects/Literature/.backups/ as if they were live, silently inflating chunk counts and admitting STALE CHUNK CONTENT into the searchable FTS5 index. The safe re-ingestion practice — move the old chunk set aside rather than delete it — is exactly what triggers the bug.
+
+=== VERIFIED MECHANISM (re-verify line numbers, they drift) ===
+
+File: agent-system/extensions/literature/scripts/literature-build-index.sh
+
+Line 91:  mapfile -t manifests < <(find "$target_dir" -name "chunks.json" | sort)
+
+No -prune, no -path exclusion, no maxdepth. $target_dir is the Literature root, so the traversal descends into .backups/ and every other dotfile-prefixed directory.
+
+OBSERVED LIVE: during a re-ingestion of Schultz, Spivak & Vasilakopoulou, "Dynamical Systems and Sheaves", the rebuild reported 144 chunks for a doc_id that has 99, because the backed-up 45-chunk manifest was summed alongside the new one. The operator worked around it by renaming the backup's manifest to chunks.json.bak. That workaround is undocumented and unenforced, so the next re-ingestion hits the same trap.
+
+CONFIRMED CURRENT STATE of ~/Projects/Literature/.backups/ (four directories, any of which may carry manifests):
+  chunk-regen-2026-07-27/
+  combining-repair-2026-07-27/
+  quarantined-orphaned-chunks-2026-07-27/
+  schultz-spivak-vasilakopoulou-dynamical-systems-sheaves_old_20260820/
+A find for chunks.json under .backups/ currently returns nothing, but a find for chunks.json.bak returns many (e.g. quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section*/chunks.json.bak). The corpus is clean ONLY because of manual .bak renames. The next backup written without that rename reintroduces the defect immediately.
+
+=== THE MISCOUNT IS THE COSMETIC HALF; STALE SEARCHABLE CONTENT IS THE SUBSTANTIVE HALF ===
+
+Do not scope this as a counting bug. Chunks are written with INSERT OR REPLACE INTO chunks_data keyed on chunk_id (line ~192), and `find | sort` places ".backups/..." FIRST lexicographically, so for chunk_ids present in BOTH manifests the live version wins the replace and the count is merely wrong. But a re-chunking that changes section boundaries produces chunk_ids that exist ONLY in the old manifest. Those have no live counterpart to replace them, so they persist in the rebuilt database permanently and are returned by search. Worse, their content_preview was read from the BACKUP directory's chunk files (the loop resolves chunk_file relative to os.path.dirname(manifest_path), line ~168), so the FTS5 index carries superseded text and source_path values that point into .backups/. Determine empirically whether stale-only chunk_ids are actually present in the current database before deciding the migration/rebuild story.
+
+=== SCOPE — DIRECTIONS, NOT DECISIONS ===
+
+1. Exclude backups from the traversal. Decide whether the exclusion belongs in the `find` itself (-path '*/.backups/*' -prune) or, more durably, in a shared "what counts as a live corpus directory" predicate. A bare .backups exclusion is a spot-fix: any dot-prefixed or quarantine directory has the same property, and the current .backups/ contents show at least three distinct non-corpus directory conventions in use.
+
+2. TREAT DUPLICATE doc_id AS AN ERROR, NOT A SILENT SUM. This is the more durable fix and should be evaluated on its merits, not as an add-on. A rebuild that encounters two manifests claiming the same doc_id has encountered an ambiguity it cannot resolve correctly, wherever those manifests live. Erroring (or at minimum warning loudly with both paths named) catches this entire class regardless of path, including cases no exclusion list anticipates. Decide whether it should be fatal or a loud warning, and whether an explicit override is warranted.
+
+3. Traversal survey. A grep of the extension's scripts for `find ... -name` found the build-index line to be the only unguarded recursive traversal; literature-audit.sh (lines ~104, ~163, ~311) and literature-ingest.sh (line ~142) all use -maxdepth 2 or narrower, and literature-ingest-online.sh uses -maxdepth 1. literature-search.sh performs NO traversal of its own — it queries the database that build-index.sh produces, which is precisely why a corrupted build propagates straight into search results with no independent check. Confirm this survey rather than assuming it; if any other script gains a recursive traversal it must inherit the same predicate.
+
+4. Decide whether a rebuild should report what it indexed in a way that would have made this visible — e.g. per-doc_id chunk counts, or a diff against the prior index — so a 99-chunk document reporting 144 is caught at rebuild time rather than noticed by an operator reading log output.
+
+=== RELATIONSHIP TO THE SCHEMA-UNIFICATION TASK (sequencing) ===
+
+Sequenced after the literature global-index schema-unification task, for two reasons. Mechanically, that task lists literature-build-index.sh in its file scope, so the two must serialize. Substantively, the duplicate-doc_id question in scope item 2 interacts directly with that task's decision about canonical entry shape and about how entries are keyed — settling the schema first means the duplicate-detection rule is written against a single known entry shape rather than against two incompatible ones.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. A rebuild run with an intact chunks.json present under ~/Projects/Literature/.backups/ produces the same index as a rebuild with that directory absent. Verified by a regression test that plants a backup manifest and asserts the resulting per-doc_id chunk count matches the live manifest exactly.
+2. A rebuild that encounters two manifests claiming the same doc_id fails, or warns with both manifest paths named — not silently sums. The chosen behavior is documented.
+3. The current database is audited for stale chunk_ids and stale source_path values pointing into .backups/, and any found are removed by a clean rebuild.
+4. The traversal survey above is completed and any exclusion logic is shared rather than duplicated per script.
+5. The manual chunks.json.bak rename workaround is no longer necessary, and nothing in the ingestion or re-ingestion path depends on an operator remembering it.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target agent-system/extensions/**, never the deployed .claude/** tree — it is a disposable deploy artifact regenerated from the source store, and hand-authored files there are silently wiped.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 79. Make subagent-postflight hook diagnosable when its marker is malformed
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 73
+
+**Description**: subagent-postflight.sh blocks a SubagentStop with an EMPTY reason string whenever the postflight marker is not valid JSON, so the blocked agent receives "Blocked by hook" with no explanation of any kind and no way to learn what happened. The hook's own default reason never fires in exactly the case where a reason is most needed.
+
+=== VERIFIED MECHANISM (do not re-derive; re-verify line numbers, they drift) ===
+
+File: agent-system/extensions/core/hooks/subagent-postflight.sh
+
+Line 90:  local reason=$(jq -r '.reason // "Postflight operations pending"' "$MARKER_FILE" 2>/dev/null)
+Line 95:  echo "{\"decision\": \"block\", \"reason\": \"$reason\"}"
+
+jq's `//` alternative operator fires only when the left side evaluates to null or false. It does NOT fire on a PARSE ERROR. When $MARKER_FILE is not valid JSON, jq exits nonzero, writes its diagnostic to stderr — which `2>/dev/null` discards — and emits nothing on stdout. $reason is therefore the empty string, the "Postflight operations pending" default is never reached, and the hook emits {"decision": "block", "reason": ""}.
+
+OBSERVED LIVE: a planner subagent's SubagentStop was blocked and the only feedback it received was "Blocked by hook", with no reason text whatsoever. It had to reverse-engineer the cause from first principles. The marker in that instance was key=value shaped rather than JSON. NOTE: the reason THAT particular marker was malformed was a separate caller bug, already understood, and is explicitly NOT part of this task. skill_create_postflight_marker() at agent-system/extensions/core/scripts/skill-base.sh:247 writes correct JSON; that marker did not come from it. The defect here is that the hook's failure mode is undiagnosable no matter WHY the marker is malformed.
+
+=== THE FIX PATTERN ALREADY EXISTS IN A SIBLING HOOK ===
+
+agent-system/extensions/core/hooks/events-log-lifecycle.sh line 127 reads the SAME marker file and guards it correctly:
+
+    jq empty "$MARKER_FILE" 2>/dev/null || exit_success
+
+That is precisely the validation step subagent-postflight.sh lacks. There is no need to invent a mechanism; there is in-repo precedent five lines from an identical `find specs -maxdepth 3 -name ".postflight-pending" -type f | head -1` call. Use it, and reconcile the two hooks' handling of the same file rather than fixing one in isolation.
+
+=== SECOND VICTIM: THE TELEMETRY THAT WOULD DIAGNOSE THIS IS BLINDED BY THE SAME MALFORMATION ===
+
+events-log-lifecycle.sh's guard is correct as a guard but its consequence is `exit_success` — it silently logs NOTHING. So when a marker is malformed, the postflight lifecycle event is simply absent from the events log. The agent gets an empty block reason AND the telemetry that would let an operator reconstruct what happened after the fact records nothing at all. Both channels fail silently on the same input. Whatever is decided for the hook, decide also whether a malformed marker should itself be a logged event rather than a silent no-op.
+
+=== ADJACENT DEFECT IN THE SAME FIVE LINES (in scope) ===
+
+Line 95 interpolates $reason unescaped into hand-built JSON. A marker whose .reason contains a double quote, a backslash, or a newline produces malformed JSON on the hook's stdout — a second, distinct silent failure with the same blast radius. The inline comment at line 94 ("Using simple JSON output - no jq dependency for robustness") justifies the hand-built JSON on robustness grounds, but line 90 already invokes jq unconditionally, so the stated justification does not hold. Either drop the jq dependency genuinely or use `jq -n --arg` to build the output safely.
+
+=== SURVEY REQUIREMENT (do not spot-fix one call site) ===
+
+A grep of agent-system/extensions/core/hooks/*.sh for the `jq -r '... // default' 2>/dev/null` idiom returns roughly 38 call sites across claude-stop-notify.sh, events-log-artifact.sh, events-log-lifecycle.sh, guard-destructive-git.sh, memory-nudge.sh, validate-handoff-location.sh, validate-meta-write.sh, and validate-no-task-references.sh. Nearly all use `// empty`, where an empty result on parse error is indistinguishable from an empty result on a missing field — usually benign, because those sites treat empty as "skip". subagent-postflight.sh is distinguished by using a NON-EMPTY default that the parse-error path silently discards, which is what makes it user-visible. Classify the sites rather than rewriting all of them: identify every site where a non-empty default is expected to fire, and every site where "field absent" and "file unparseable" must be handled differently. Fix those; document the rest as deliberately tolerant.
+
+=== DESIGN QUESTIONS TO SETTLE IN RESEARCH (directions, not decisions) ===
+
+1. Distinguish "marker parses but has no .reason field" (where the existing default IS the right answer) from "marker does not parse at all" (which needs its own explicit reason naming the malformed marker's path, so the blocked agent can inspect it).
+2. Decide whether an unparseable marker should block the stop AT ALL, or fail open with a loud diagnostic. Blocking on a marker that cannot be read traps an agent in a stop it cannot satisfy and cannot diagnose; failing open loses the premature-termination guard. Argue the tradeoff explicitly rather than defaulting.
+3. If it blocks, the reason MUST name the marker path and the parse failure. A reason string is the only channel the blocked agent has.
+
+=== FILE-SCOPE OVERLAP — SEQUENCING IS REQUIRED, NOT OPTIONAL ===
+
+This task and the subagent-postflight marker-ownership/correlation task (which addresses `head -1` arbitrary marker selection and teammate stops burning the orchestrator's loop-guard budget) both edit subagent-postflight.sh, in adjacent regions of the same function. They MUST be serialized. This task is sequenced second, for a substantive reason as well as a mechanical one: the ownership task decides WHICH marker the hook is responsible for, and it is not worth deciding how to report a marker's reason before deciding whose marker it is. The two tasks do not otherwise overlap — ownership/correlation does not touch .reason parsing, and this task does not touch marker selection or the loop guard.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. A SubagentStop blocked because of an unparseable postflight marker produces a non-empty reason that names the marker path and states that it could not be parsed. Verified by a test that writes a deliberately malformed marker and asserts on the emitted reason.
+2. A marker that parses but lacks .reason still yields the existing "Postflight operations pending" default — the two cases are distinguishable in the emitted reason.
+3. The hook's stdout is valid JSON for any marker content, including a .reason containing double quotes, backslashes, and newlines. Verified by test.
+4. The malformed-marker case is observable after the fact through the events log or an equivalent recorded signal, rather than leaving no trace in either channel.
+5. The hook survey above is completed: every core hook site where a non-empty jq default is expected to fire is either fixed or documented as tolerant-by-design.
+6. subagent-postflight.sh and events-log-lifecycle.sh handle the same malformed marker file consistently, and the divergence between them is either eliminated or documented as intentional.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target agent-system/extensions/**, never the deployed .claude/** tree — it is a disposable deploy artifact regenerated from the source store, and hand-authored files there are silently wiped.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 78. Make the briefing coverage marker report resolution-failure rate
 - **Effort**: 1-3 hours
