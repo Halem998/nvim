@@ -1,5 +1,5 @@
 ---
-next_project_number: 81
+next_project_number: 82
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 81
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68,72,74,77 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68,72,74,77,81 | -- | agent-system, extensions, literature, ... |
 | 2 | 42,44,73,75,76,78,80 | 28,31,72,74,77 | extensions, literature, essential-refactor, ... |
 | 3 | 9,29,53,64,79 | 22,42,44,73 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
@@ -56,6 +56,7 @@ next_project_number: 81
 ### Orchestration Concurrency
 
 68 [NOT STARTED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
+81 [NOT STARTED] — Task-lock and session-registry heartbeats never fire during a rea
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
 
 ### Essential Refactor
@@ -75,6 +76,129 @@ next_project_number: 81
   └─ 73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
 
 ## Tasks
+
+### 81. Mechanize task-lock and session-registry heartbeat refresh: liveness timestamps never advance during a multi-phase /implement run
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: None
+
+**Description**: Task-lock and session-registry heartbeats never fire during a real single-task /implement run. Both liveness timestamps stay frozen at their acquire-time value for the entire run, so every staleness-based consumer sees a healthy, actively-working session as long-dead.
+
+=== OBSERVED LIVE (do not re-derive the observation; DO re-derive the cause) ===
+
+Run: /implement 111 in the PossibleWorlds repo, session sess_1787265639_358e17, PID 263643. The run SUCCEEDED — all 8 plan phases reached [COMPLETED] over ~18 minutes wall clock. Throughout:
+
+- specs/111_verify_interval_twisted_arrow_lemma/.lock/holder.json read acquired_at=2026-08-20T22:40:39Z and heartbeat_at=2026-08-20T22:40:39Z — byte-identical.
+- specs/.sessions/sess_1787265639_358e17.json read started_at and heartbeat_at at that same value — byte-identical.
+- Both stayed frozen when sampled at 171s and again past the 5-, 7-, and 18-minute marks, while `ps -p 263643` confirmed the process alive and progress/phase-1-progress.json plus successive plan-heading transitions confirmed forward progress.
+
+Eight phase transitions occurred. heartbeat_at never moved once.
+
+=== THE CRUX: THE MECHANISM IS WIRED IN AND STILL DID NOT FIRE ===
+
+This is NOT an absent-caller bug and must not be researched as one. Verified in the source store:
+
+1. agent-system/extensions/core/agents/general-implementation-agent.md, Stage 4D ("Mark Phase Complete"), lines ~279-297, carries BOTH calls adjacently at the phase-transition point:
+     bash .claude/scripts/task-lock.sh heartbeat "{task_number}" "{session_id}" 2>/dev/null || true
+     bash .claude/scripts/task-lock.sh session-heartbeat "{session_id}" 2>/dev/null || true
+   with prose asserting this is "the actual per-phase-transition site for single-task /implement".
+
+2. agent-system/extensions/core/skills/skill-implementer/SKILL.md:217-219 documents that it is a thin wrapper with no phase-transition point of its own, and that the refresh lives in the agent's Stage 4D.
+
+3. agent-system/extensions/core/commands/implement.md:169-183 documents the batch-loop side and states the single-task heartbeat "lives one layer down, inside each dispatched general-implementation-agent.md".
+
+4. agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:2115 goes further and threads the BARE session_id into the dispatch context specifically "because general-implementation-agent's per-phase task-lock.sh heartbeat call presents this exact field's value against holder.json, and a suffixed value would desync the heartbeat from the lock".
+
+5. Routing verified: task_type=formal resolves via command-route-agent.sh to general-implementation-agent (noncore-exact) — the very agent carrying the calls. Not a routing miss to some other implementation agent lacking the hook.
+
+So: the calls exist, routing reaches them, the whole design depends on them, eight transitions occurred, and nothing moved.
+
+=== HYPOTHESES TO INVESTIGATE — DO NOT PRE-COMMIT TO ANY ===
+
+(a) STRUCTURAL. The calls are prose instructions inside a markdown agent definition, not enforced code. An agent may simply not run them and nothing detects the omission. If so the fix is structural: move the refresh into a script the lifecycle mechanically invokes rather than trusting an agent to execute a documented bash snippet. A concrete candidate exists — the SAME Stage 4D block already calls `bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" COMPLETED`, which is the one script guaranteed to run at every phase transition. It currently takes no session_id (verified: agent-system/extensions/core/scripts/update-phase-status.sh accepts exactly 4 positional args and contains no session/SESSION reference), so mechanizing there requires threading session_id in. Weigh that against alternatives (skill-base.sh, a lifecycle hook) rather than assuming it.
+
+(b) SILENT FAILURE. The calls ran but failed. Both use `2>/dev/null || true` — the same silence-on-failure idiom filed in the empty-block-reason task. Any of these would be indistinguishable from success:
+    - Unsubstituted `{task_number}` / `{session_id}` placeholders. Note that the agent file uses BRACE-placeholder form while skill-orchestrate/SKILL.md:313,318 uses shell-variable form `"$task_number"` / `"$session_id"` for the identical calls. Determine whether substitution actually happens in the agent's rendered prompt.
+    - The RELATIVE path `.claude/scripts/task-lock.sh`. Agent threads reset cwd between bash calls; a non-repo-root cwd makes every invocation a silent no-op.
+    - Argument-order or subcommand mismatch.
+   Check placeholder substitution and cwd empirically before anything else.
+
+(c) FALLBACK PATH. Stage 4D offers an Edit-tool fallback for the phase heading "if the script is unavailable". Determine whether that path was taken and whether it bypasses the heartbeat site.
+
+(d) CONDITIONAL NO-OP IN cmd_heartbeat ITSELF. Verified: cmd_heartbeat (agent-system/extensions/core/scripts/task-lock.sh:831) returns 0 WITHOUT writing in two cases — no lock directory/holder.json, and holder session_id mismatching the passed session_id — emitting only a WARN to stderr, which `2>/dev/null` discards. A session_id desync (exactly what skill-orchestrate:2115 warns about) produces a silent successful-looking no-op. cmd_session_heartbeat (line 1283) has the same never-blocks contract.
+
+=== WHY THIS OUTRANKS A COSMETIC METADATA BUG ===
+
+Verified consumer behavior in agent-system/extensions/core/scripts/task-lock.sh:
+
+- TASK_LOCK_STALE_MIN defaults to 30 (line 206). cmd_acquire's stale-override path (~lines 730-740) compares heartbeat age against it and, when exceeded, prints "WARN: ... lock is stale ... overriding and acquiring" and TAKES THE LOCK. A frozen heartbeat means any /implement run exceeding 30 minutes has its lock broken out from under a live implementer mid-edit.
+- TASK_LOCK_REAP_MIN defaults to TASK_LOCK_STALE_MIN * 4 = 120 (line 214). cmd_reap (line ~950) `rm -rf`s any lock whose heartbeat age exceeds it.
+- cmd_check returns exit 2 for "held, stale (heartbeat older than the threshold)" (documented contract, line 117), so every downstream staleness consumer reads a live session as dead.
+- The overlap-scan path at ~lines 656-666 also decides on heartbeat age, printing "proceeding without modifying it" for a lock it deems stale.
+
+The observed 18-minute run stayed under the 30-minute threshold, so nothing actually broke THIS time. That is the honest severity: this is a live latent hazard whose blast radius scales with run length, not an already-fired incident. Establish empirically whether any long-running command has crossed 30 minutes in practice — that sets true severity.
+
+It also misleads operators. The human running this session twice nearly concluded the implementer had died from these fields, and was corrected only by `ps` and the progress directory. A liveness field that is wrong in the "looks dead" direction is worse than no field at all.
+
+=== DEFENSE IN DEPTH: THE TASK LOCK CANNOT CHECK LIVENESS AT ALL ===
+
+Independent of the root cause, there is a verified asymmetry between the two registries:
+
+- The SESSION registry records a pid. write_session_entry (task-lock.sh:471-484) persists pid and pid_source, resolve_session_pid (line ~424) does a bounded ancestor walk for the nearest "claude" process, and session-reap's dead-pid shortcut is additionally floored by a dead-pid-minutes constant (lines 225-231) so it can never fire against a recently-heartbeated entry. That reaper is already defensive.
+- The TASK lock records NO pid. write_holder (task-lock.sh:298, 319-321) persists exactly seven fields — session_id, task_number, operation, acquired_at, heartbeat_at, command — and pid is not among them. cmd_reap and cmd_acquire's stale-override therefore have NOTHING but the timestamp to go on, and cannot refuse to act against a live process even in principle.
+
+Consider adding a pid (and pid_source) to holder.json and making both the task-lock reaper and the stale-override path fail safe: refuse to reap or override a lock whose recorded pid is alive, mirroring the floor already applied on the session side. This is worth doing whatever the heartbeat root cause turns out to be, because the reaper acting on a bad timestamp is where the real damage occurs.
+
+=== DETECTABLE FINGERPRINT ===
+
+`acquired_at == heartbeat_at` after N minutes is a reliable fingerprint of "never heartbeated once", distinct from "heartbeated then went quiet". Consider surfacing it as its own diagnostic signal (in `check`, in the reap dry-run output, or in a health probe) rather than letting the two failure modes look identical.
+
+=== SURVEY REQUIREMENT — DO NOT SPOT-FIX ONE CALL SITE ===
+
+Audit every heartbeat call site for the same problem and determine which, if any, demonstrably fire:
+- agent-system/extensions/core/agents/general-implementation-agent.md Stage 4D (lines ~283, 296) — the site observed failing.
+- agent-system/extensions/core/skills/skill-orchestrate/SKILL.md lines ~313, ~318, ~1518 — same snippets, same `2>/dev/null || true` silence idiom, shell-variable placeholder form.
+- agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md — check for the same pattern.
+- agent-system/extensions/core/commands/implement.md lines ~169-183 — documents the multi-task expectation and an intentional omission of an intra-batch session heartbeat; verify that reasoning still holds once the root cause is known.
+Also check the hard-mode implementation agent for the same block.
+
+=== DESIGN QUESTIONS TO SETTLE IN RESEARCH (directions, not decisions) ===
+
+1. Does heartbeat refresh belong in agent prose AT ALL? Argue it explicitly. If a documented bash snippet in a markdown agent definition cannot be relied on to execute, every other best-effort snippet in that file is equally suspect and this is a systemic finding, not a local one.
+2. If mechanized at a lifecycle call site, WHICH one, and how does session_id reach it? Name the threading path concretely.
+3. Should these calls stay silent? `2>/dev/null || true` is correct for "never block phase progression" but it is exactly what made this undiagnosable for eight consecutive transitions. Separate "never block" from "never report" — a heartbeat that no-ops because of a session mismatch is a real defect signal being thrown away.
+
+=== SECOND FINDING, SAME TELEMETRY-INTEGRITY THEME (decide placement in research) ===
+
+specs/events.jsonl recorded three subagent_stop events attributed to session_id sess_1787265639_358e17 (the implementer) that carry cc_session_id 08ebe7c9-f020-45bc-bce1-0eea931247e6 — a DIFFERENT Claude session's agents. Foreign stops are logged under the marker owner's session_id because of the `head -1` arbitrary-marker mis-selection in subagent-postflight.sh, so the event record is falsified and post-hoc telemetry misattributes work between sessions. Verified in the live events.jsonl.
+
+Decide during research whether this belongs here or as an amendment to the existing subagent-postflight marker-ownership/correlation task, which already owns the `head -1` selection defect. Default expectation: it is a CONSEQUENCE of that defect and should amend that task's acceptance criteria (the fix must be shown to correct event attribution, not merely marker selection). Do not fix it here without recording that decision.
+
+=== RELATIONSHIP TO ADJACENT TASKS ===
+
+Cross-reference only; no file_scope overlap was found and no hard dependency is declared:
+- The subagent-postflight marker-ownership/correlation task and the empty-block-reason task both live in agent-system/extensions/core/hooks/, which this task does not touch. The empty-block-reason task shares only the `2>/dev/null` silence-idiom THEME with hypothesis (b) — cross-reference, do not merge.
+If research finds this task must edit a file in either of those tasks' file_scope, declare the dependency then rather than assuming it now.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. The root cause is established EMPIRICALLY, not argued from the source. A reproduction is recorded: run a multi-phase /implement, sample holder.json and the session registry entry across at least two phase transitions, and show heartbeat_at advancing. A fix that cannot be demonstrated against a real multi-phase run does not satisfy this criterion.
+2. After the fix, both specs/{NNN}_{slug}/.lock/holder.json and specs/.sessions/{session_id}.json show heartbeat_at strictly greater than acquired_at / started_at, and advancing, within a single multi-phase /implement run.
+3. The refresh survives the failure mode identified in research — if the cause is that agent prose is not executed, the fix is NOT more prose. State in the plan which mechanism guarantees execution and why it cannot be skipped.
+4. A heartbeat call that no-ops (missing lock, session mismatch, unresolvable task dir) leaves a recorded trace an operator can find after the fact, without making the call blocking.
+5. The call-site survey above is complete: every listed site is either demonstrated to fire, fixed, or documented as deliberately absent with the reason.
+6. Either holder.json carries pid liveness information and both cmd_reap and cmd_acquire's stale-override refuse to act against a live process, or the decision not to add it is recorded with an argument for why timestamp-only reaping is acceptable for task locks when it was explicitly judged unacceptable for session entries.
+7. The `acquired_at == heartbeat_at` never-heartbeated fingerprint is either surfaced as a distinct diagnostic or explicitly rejected with a reason.
+8. The events.jsonl cross-session attribution finding is resolved to a definite home: fixed here, or filed as a recorded amendment to the marker-ownership task.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: edits target agent-system/extensions/**, never the deployed .claude/** tree, a disposable deploy artifact regenerated from the source store.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 80. Stop the literature index rebuild from indexing backed-up chunk manifests
 - **Effort**: 1-3 hours
