@@ -1,18 +1,18 @@
 ---
-next_project_number: 72
+next_project_number: 74
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-08-18. Generated from state.json dependency graph.*
+*Updated 2026-08-20. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68 | -- | agent-system, extensions, literature, ... |
-| 2 | 42,44 | 28,31 | essential-refactor |
+| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68,72 | -- | agent-system, extensions, literature, ... |
+| 2 | 42,44,73 | 28,31,72 | essential-refactor, team-mode-lifecycle |
 | 3 | 9,29,53,64 | 22,42,44 | agent-system, orchestration-concurrency, essential-refactor |
 | 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
 | 5 | 32,50 | 30,31,48 | agent-system, essential-refactor |
@@ -62,7 +62,92 @@ next_project_number: 72
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
 
+### Team Mode Lifecycle
+
+72 [NOT STARTED] — Teammate agents spawned by team-mode skills write the skill-level
+  └─ 73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
+
 ## Tasks
+
+### 73. Correlate subagent postflight hook to marker owning session
+- **Effort**: 3h
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: team-mode-lifecycle
+- **Dependencies**: Task 72
+
+**Description**: The SubagentStop postflight hook picks an arbitrary .postflight-pending marker with no correlation to the session that owns it. In a team run, teammate stops burn the orchestrator's continuation budget and can delete the orchestrator's marker mid-run, silently removing the premature-termination guard.
+
+VERIFIED MECHANISM (do not re-derive), file agent-system/extensions/core/hooks/subagent-postflight.sh:
+- find_marker() runs `find specs -maxdepth 3 -name ".postflight-pending" -type f 2>/dev/null | head -1`. It takes the FIRST marker found anywhere under specs/, with no correlation to which session or agent is stopping. The marker's own JSON carries a session_id field (written by skill_create_postflight_marker in agent-system/extensions/core/scripts/skill-base.sh) which the hook never reads.
+- The hook is registered as a SubagentStop hook (agent-system/extensions/core/root-files/settings.json), so it fires when ANY subagent stops, including a teammate spawned by a team skill, which has no postflight obligation of its own.
+- check_loop_guard() increments $TASK_DIR/.postflight-loop-guard on every such firing. MAX_CONTINUATIONS=3. On reaching the cap it executes `rm -f "$LOOP_GUARD_FILE"; rm -f "$MARKER_FILE"` and allows the stop.
+
+CONSEQUENCE: in a team run, each teammate stop burns one continuation from the ORCHESTRATOR's budget for a marker the teammate does not own. With team_size=4 the cap is reached by teammate stops alone, and the hook then DELETES the orchestrator's .postflight-pending marker. The premature-termination guard is removed without postflight having run.
+
+OBSERVED (live team run, skill-team-research, 4 teammates): a teammate reported the loop guard had reached 3 (MAX_CONTINUATIONS) purely from its own stop attempts, and warned the orchestrator its marker was about to be deleted. In that instance the orchestrator's postflight had already completed so nothing was lost, but that was timing luck, not design. Had synthesis taken longer, the marker would have been deleted mid-run.
+
+THE FAILURE IS SILENT AND LEAVES NO DISTINGUISHING TRACE: skill_cleanup's normal path also removes the marker, so after the fact there is no way to tell a hook-deleted marker from a properly-completed one.
+
+WORK: correlate the hook to the marker it is actually responsible for. Directions to evaluate, do not pre-commit:
+(a) read session_id out of the marker JSON and compare against the stopping subagent's session before counting or deleting anything;
+(b) have team skills suppress or scope this hook for teammate subagents;
+(c) make the loop guard per-session rather than per-task-directory so a teammate's stops cannot consume the orchestrator's budget;
+(d) distinguish "cap reached" from "postflight done" so the silent-deletion path is at minimum observable. log_debug already writes .agent-logs/subagent-postflight.log; decide whether that is sufficient or whether the deletion should record a system defect.
+
+ALSO REQUIRED: reconsider whether `head -1` over a repo-wide glob is ever correct. With concurrent tasks in flight there can be several markers and the hook currently picks an arbitrary one, so the defect is not confined to team mode.
+
+RELATED BUT DISTINCT: task 17 fix_return_meta_lifecycle_ordering (COMPLETED) touched skill_cleanup's deletion of .postflight-pending / .postflight-loop-guard / .return-meta.json, but addressed the ordering of the return-metadata read, not marker ownership or hook correlation.
+
+FILE-SCOPE OVERLAP: this task and the teammate return-meta write-conflict task both touch the three skill-team-* SKILL.md files. Sequence them rather than running them concurrently.
+
+ACCEPTANCE: a teammate subagent stopping during a team run does not increment the orchestrator's loop-guard counter and cannot delete a marker it does not own; a genuine cap-reached deletion is distinguishable in the log (or by whatever mechanism is chosen) from a normal skill_cleanup removal; marker selection is correlated rather than `head -1` arbitrary when multiple markers exist.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 72. Fix teammate return-meta write conflict in team mode
+- **Effort**: 4h
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: team-mode-lifecycle
+- **Dependencies**: None
+
+**Description**: Teammate agents spawned by team-mode skills write the skill-level .return-meta.json, clobbering the record the team skill is supposed to own. The surviving record is an arbitrary teammate's, is the wrong shape for a skill-level return, and can publish a terminal status while the operation is still running.
+
+VERIFIED MECHANISM (do not re-derive):
+skill-team-research/SKILL.md Stage 11 specifies that THE SKILL writes a single specs/{NNN}_{SLUG}/.return-meta.json for the whole team run, carrying the team_execution block (teammates_spawned/completed/failed), teammate_results, and synthesis conflict counts. A teammate's only deliverable is reports/{RR}_teammate-{letter}-findings.md, which the skill collects by glob. Teammates have no postflight step and are not supposed to write .return-meta.json at all.
+
+But 63 agent definition files under agent-system/extensions/*/agents/*.md instruct writing specs/{NNN}_{SLUG}/.return-meta.json unconditionally. Confirmed example: agent-system/extensions/formal/agents/math-research-agent.md line 131 ("Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`") and line 326 ("Always write final metadata to ..."). Only 8 of those 63 agent files mention team mode at all (grep for team_mode|teammate_letter|skill-team), and math-research-agent is not among them. There is no team-mode carve-out anywhere in the agent definitions.
+
+OBSERVED (live team run, skill-team-research, 4 teammates): a teammate spawned as math-research-agent wrote .return-meta.json TWICE. Mid-run the file read {"status":"researching","metadata":{"teammate":"b"}}; its second write replaced it with {"status":"researched", artifacts:[its own findings .md], next_steps:"Synthesis with teammate A findings", metadata:{agent_type:"math-research-agent","teammate":"b","findings_count":13}}. That is a single teammate's record occupying the slot reserved for the whole operation's return.
+
+IMPACT:
+(a) With N teammates racing, last-writer-wins and the surviving record is an arbitrary teammate's, not the team's.
+(b) The shape is wrong for a skill-level return (no team_execution block), so the command-gate-out.sh consumer reads a well-formed but semantically false record.
+(c) A teammate finishing before its siblings publishes status "researched" while the operation is still running. If the orchestrator or gate-out read it at that moment it would report the operation complete early. In the observed run the orchestrator overwrote it wholesale at postflight so no damage persisted, but that depended on the orchestrator noticing.
+
+SECOND SYMPTOM, SAME ROOT CAUSE: a teammate spawned as formal-research-agent avoided the collision by inventing its own path .return-meta-teammate-d.json and committing it. That is a non-schema file no consumer reads. Two teammates given the same instruction chose two different wrong behaviors, which indicates the instruction is genuinely ambiguous under team mode rather than simply ignored.
+
+WORK: decide ONE direction and apply it uniformly. Candidate directions to evaluate, do not pre-commit:
+(a) add an explicit team-mode carve-out to the shared agent-definition boilerplate so a teammate writes only its findings file;
+(b) give teammates a per-teammate metadata path the skill actually reads and merges (this would also make .return-meta-teammate-{letter}.json legitimate rather than stray, and must then be reconciled with the placement question owned by task 51 move_session_state_files_out_of_specs_root);
+(c) have skill-team-* pass an explicit "you are a teammate, do not write .return-meta.json" instruction in every teammate prompt, and treat the agent-definition instruction as conditional on its absence.
+
+UNIFORMITY REQUIREMENT: whatever is chosen must hold for all three team skills (skill-team-research, skill-team-plan, skill-team-implement) and for ANY agent type that can be spawned as a teammate. Team skills spawn arbitrary domain agents, so a fix touching only the core research agents is not acceptable. Also decide explicitly whether the .return-meta-teammate-{letter}.json convention is adopted or prohibited.
+
+RELATED BUT DISTINCT:
+- Task 17 fix_return_meta_lifecycle_ordering (COMPLETED) covers a different mechanism: skill_cleanup deleting .return-meta.json before command-gate-out.sh reads it. That is an ordering defect in the single-agent lifecycle; this is a write-conflict defect among concurrent teammates. Fixing 17 does not address this.
+- Task 51 move_session_state_files_out_of_specs_root (NOT STARTED) covers .return-meta-*.json file PLACEMENT clutter in the specs/ root, not the write conflict. If direction (b) is chosen, coordinate with 51 on where per-teammate files live.
+
+ACCEPTANCE: in a team run of each of the three team skills, the task directory ends with exactly one skill-owned .return-meta.json carrying the team_execution block; no teammate has overwritten it; no stray per-teammate metadata file exists unless the chosen direction deliberately defines one and a consumer reads it.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 71. Fix validate-mode directory-path false positives and normalize-authors flag mismatch
 - **Effort**: 1-3 hours
