@@ -1,0 +1,45 @@
+{
+  "phase": 2,
+  "phase_name": "Whole-Tree Orphan Detection in verify.lua",
+  "started_at": "2026-08-24T00:30:00Z",
+  "last_updated": "2026-08-24T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add M.find_orphans(target_dir, extensions, protected_paths, opts)",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/verify.lua"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Build declared rel-path set via walk_category_leaves across all extensions plus manifest special case",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/verify.lua"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Walk deployed tree, subtract declared set, apply exclusion predicates",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/verify.lua"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Ghost index-row check",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/verify.lua"
+      ]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "Headless smoke test against live .claude tree: 4 orphans (matching Phase 1 baseline exactly), 2 ghost index rows (matching), excluded={merged_generated=2, runtime_artifact=4792, syncprotect_protected=0}. data category explicitly excluded from declared-set walk (target_is_project_root special case, would error in walk_category_leaves due to nil target_subdir)."
+}

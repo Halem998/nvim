@@ -192,30 +192,30 @@ to the report.
 
 ---
 
-### Phase 2: Whole-Tree Orphan Detection in verify.lua [NOT STARTED]
+### Phase 2: Whole-Tree Orphan Detection in verify.lua [COMPLETED]
 
 **Goal**: Add a whole-tree, all-extensions orphan pass to `verify.lua` that computes the declared
 set from the existing `CATEGORY_DESCRIPTORS`-driven enumeration, subtracts it from the deployed
 tree, applies Phase 1's exclusion classes, and reports orphan files and ghost index rows.
 
 **Tasks**:
-- [ ] Add `M.find_orphans(target_dir, extensions, protected_paths, opts)` where `extensions` is an
+- [x] Add `M.find_orphans(target_dir, extensions, protected_paths, opts)` where `extensions` is an
       array of `{ name, source_dir, manifest }` for **all** loaded extensions -- the declared set is
       their union, computed once. Per-extension orphan detection is incorrect by construction: one
       extension's undeclared file is routinely another's declared file.
-- [ ] Build the declared rel-path set by iterating every `CATEGORY_DESCRIPTORS` key with a
+- [x] Build the declared rel-path set by iterating every `CATEGORY_DESCRIPTORS` key with a
       `list_key` through the existing `walk_category_leaves`, for every extension. Do not re-derive
       the category-to-target-path mapping.
-- [ ] Add the `manifest` category's special case explicitly (`extensions/{name}/manifest.json`),
+- [x] Add the `manifest` category's special case explicitly (`extensions/{name}/manifest.json`),
       which `walk_category_leaves` skips because it has no `list_key`.
-- [ ] Walk the deployed tree with the existing `scan_directory_recursive`, subtract the declared
+- [x] Walk the deployed tree with the existing `scan_directory_recursive`, subtract the declared
       set, and apply the exclusion predicates for each class named in Phase 1's doc.
-- [ ] Add the ghost index-row check: live `context/index.json` entry paths minus the union of active
+- [x] Add the ghost index-row check: live `context/index.json` entry paths minus the union of active
       extensions' `index-entries.json` paths, both normalized through `normalize_index_path`.
-- [ ] Return `{ orphans = {rel,...}, ghost_index_entries = {path,...}, checked = n,
+- [x] Return `{ orphans = {rel,...}, ghost_index_entries = {path,...}, checked = n,
       excluded = { [class] = count } }`; keep `M.verify_extension`'s existing result shape
       untouched.
-- [ ] Add a header comment stating the detect-never-delete contract and pointing at the Phase 1
+- [x] Add a header comment stating the detect-never-delete contract and pointing at the Phase 1
       context doc.
 
 **Timing**: 2 hours

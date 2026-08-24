@@ -766,6 +766,159 @@ function M.verify_extension(extension_name, extension_dir, target_dir, config, p
   return verification
 end
 
+-- ─────────────────────────────────────────────────────────────────────────────────────────────
+-- Whole-tree orphan detection (reverse direction from verify_extension above).
+--
+-- verify_extension (and the manifest-category checks it drives) only ever verify declared ->
+-- deployed: for each entry a manifest declares, is it present and hash-identical? A file that
+-- loses its source-store owner (deleted from agent-system/extensions/** without a corresponding
+-- deploy-tree cleanup) is invisible to that direction forever, because the copy engine
+-- (loader.copy_category) is additive-only by design and never deletes on its own.
+-- M.find_orphans below answers the reverse question: what is present in the deployed tree that
+-- NO active extension declares? DETECTION ONLY -- this function never deletes anything, and the
+-- additive-only copy/merge semantics are deliberately preserved regardless of what it finds. See
+-- context/patterns/deploy-orphan-detection.md for the full exclusion contract (the classes
+-- checked below), the measurement recipe used to derive it, and the direction decision.
+-- ─────────────────────────────────────────────────────────────────────────────────────────────
+
+--- Runtime artifacts: created or populated at execution time (hooks, scripts, provisioning),
+--- never by the copy engine, so they cannot be part of any declared set by construction.
+--- @param rel string Deploy-tree-relative path
+--- @return boolean
+local function is_runtime_artifact(rel)
+  if rel:match("^tmp/workflow%-active%-") then
+    return true
+  end
+  if rel == "RESUME.md" then
+    return true
+  end
+  if rel:match("__pycache__/") or rel:match("%.pyc$") then
+    return true
+  end
+  -- literature extension's Python virtualenv, provisioned on first use by the declared script
+  -- literature-pyenv-provision.sh itself -- the venv's own contents are never declared.
+  if rel:match("^scripts/literature%-pyenv/venv/") then
+    return true
+  end
+  return false
+end
+
+-- Merged/generated artifacts: assembled by the merge/index pipeline from every active
+-- extension's fragments rather than copied file-for-file from a single source, so comparing
+-- against any one extension's declared set is a category error, not a drift.
+local MERGED_GENERATED_PATHS = {
+  ["context/index.json"] = true,
+  ["CLAUDE.md"] = true,
+  ["settings.json"] = true,
+  ["settings.local.json"] = true,
+}
+
+--- @param rel string Deploy-tree-relative path
+--- @return boolean
+local function is_merged_generated(rel)
+  if MERGED_GENERATED_PATHS[rel] then
+    return true
+  end
+  -- opencode targets only: extensions/{name}/opencode-agents.json is assembled from the
+  -- manifest's agents list, not copied from a source file of the same name.
+  if rel:match("^extensions/[^/]+/opencode%-agents%.json$") then
+    return true
+  end
+  return false
+end
+
+--- Whole-tree, all-extensions orphan detection. The declared set is the UNION across every
+--- extension in `extensions` -- computed once, not per-extension -- because one extension's
+--- undeclared file is routinely another extension's declared file; per-extension detection would
+--- be incorrect by construction. Reuses `walk_category_leaves` (Phase 2's single source of
+--- truth for how each `provides.*` category maps declared entries to deployed paths) for every
+--- `list_key`-bearing category, and adds the `manifest` category's special case explicitly since
+--- `walk_category_leaves` skips it (no `list_key`). The `data` category is deliberately excluded:
+--- its entries deploy under the project root, not `target_dir` (see
+--- `loader.CATEGORY_DESCRIPTORS.data.target_is_project_root`), so it is out of scope for a
+--- detector walking `target_dir` and calling `walk_category_leaves` on it would error (no
+--- `target_subdir` to build a target path from).
+--- @param target_dir string Target base directory (.claude or .opencode)
+--- @param extensions table Array of { name, source_dir, manifest } for ALL loaded extensions
+--- @param protected_paths table|nil Set of `.syncprotect`-protected relative paths {[path]=true}
+--- @param opts table|nil { agents_subdir } -- agents' target subdir varies by config (OpenCode)
+--- @return table result { orphans = {rel,...}, ghost_index_entries = {path,...}, checked = n,
+---   excluded = { runtime_artifact = n, merged_generated = n, syncprotect_protected = n } }
+function M.find_orphans(target_dir, extensions, protected_paths, opts)
+  protected_paths = protected_paths or {}
+  opts = opts or {}
+
+  -- 1. Declared set: union across all extensions of every list_key category's leaves, plus the
+  --    manifest special case.
+  local declared = {}
+  for _, ext in ipairs(extensions) do
+    if ext.manifest then
+      for category, descriptor in pairs(loader_mod.CATEGORY_DESCRIPTORS) do
+        if descriptor.list_key and category ~= "data" then
+          for _, leaf in ipairs(walk_category_leaves(category, ext.manifest, ext.source_dir, target_dir, opts)) do
+            declared[leaf.rel_path] = true
+          end
+        end
+      end
+      declared["extensions/" .. ext.name .. "/manifest.json"] = true
+    end
+  end
+
+  -- 2. Walk the deployed tree and subtract the declared set, classifying every remainder into
+  --    an exclusion class or, failing that, an orphan.
+  local deployed = scan_directory_recursive(target_dir)
+  local orphans = {}
+  local excluded = { runtime_artifact = 0, merged_generated = 0, syncprotect_protected = 0 }
+  for _, rel in ipairs(deployed) do
+    if not declared[rel] then
+      if protected_paths[rel] then
+        excluded.syncprotect_protected = excluded.syncprotect_protected + 1
+      elseif is_runtime_artifact(rel) then
+        excluded.runtime_artifact = excluded.runtime_artifact + 1
+      elseif is_merged_generated(rel) then
+        excluded.merged_generated = excluded.merged_generated + 1
+      else
+        table.insert(orphans, rel)
+      end
+    end
+  end
+  table.sort(orphans)
+
+  -- 3. Ghost context/index.json rows: live entries whose normalized path is declared by no
+  --    active extension's index-entries.json, normalized the same way merge.lua and the checks
+  --    above already normalize (normalize_index_path).
+  local ghost_index_entries = {}
+  local live_index = read_json(target_dir .. "/context/index.json")
+  if live_index then
+    local live_entries = live_index.entries or live_index
+    local declared_index_paths = {}
+    for _, ext in ipairs(extensions) do
+      local ext_index = read_json(ext.source_dir .. "/index-entries.json")
+      if ext_index then
+        local entries = ext_index.entries or ext_index
+        for _, e in ipairs(entries) do
+          if e.path then
+            declared_index_paths[normalize_index_path(e.path)] = true
+          end
+        end
+      end
+    end
+    for _, e in ipairs(live_entries) do
+      if e.path and not declared_index_paths[normalize_index_path(e.path)] then
+        table.insert(ghost_index_entries, e.path)
+      end
+    end
+  end
+  table.sort(ghost_index_entries)
+
+  return {
+    orphans = orphans,
+    ghost_index_entries = ghost_index_entries,
+    checked = #deployed,
+    excluded = excluded,
+  }
+end
+
 --- Format verification report for display
 --- @param verification table Verification report
 --- @return string formatted Formatted report string
