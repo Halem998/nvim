@@ -1,0 +1,26 @@
+{
+  "phase": 7,
+  "phase_name": "Eliminate the .bak Workaround and Verify the Live Corpus",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "revert 14 .bak renames, backup db, global rebuild, verify zero stale/dup, idempotence, search usability", "status": "done",
+     "files_touched": [
+       "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_bak-rename-mapping.txt",
+       "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_post-fix-audit.txt"
+     ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.shellcheck",
+      "description": "bash -n and shellcheck clean on literature-build-index.sh",
+      "type": "skipped",
+      "reason": "shellcheck not installed in this environment, same as Phase 2; bash -n confirmed clean",
+      "annotation": "*(deviation: skipped — shellcheck unavailable, same as Phase 2)*"
+    }
+  ],
+  "corpus_mutation_note": "This phase mutated the live ~/Projects/Literature corpus outside the repository: renamed 14 chunks.json.bak -> chunks.json (mapping recorded first), backed up .literature.db to a timestamped sibling, and ran two global rebuilds. Fully reversible per the mapping file and the database backup."
+}

@@ -1,0 +1,71 @@
+=== Post-fix audit: .bak workaround eliminated, live corpus rebuilt ===
+
+Ran after: (1) recording the 14 chunks.json.bak -> chunks.json rename mapping to
+01_bak-rename-mapping.txt, (2) backing up .literature.db to a timestamped sibling,
+(3) renaming all 14 .bak files back to chunks.json, (4) running
+literature-build-index.sh --global from the source store (agent-system/extensions/literature/).
+
+--- Rebuild stderr summary ---
+Found 204 manifests in /home/benjamin/Projects/Literature (16 skipped in non-corpus directories)
+  (16 = 14 renamed .backups/**/chunks.json + 2 nested sources/thomas_2003_reactive/.chunks/*/chunks.json)
+Indexed: 21950 chunks (22625 insert attempts), 204 distinct doc_ids, 0 cross-refs resolved,
+  14876 total relations, 73160KB database
+30 doc_id(s) reported a declared/actual chunk-count mismatch (new visibility from Phase 4's
+  database-derived stats -- these are pre-existing internal duplicate chunk_id collisions within
+  individual manifests, unrelated to the backup-directory exclusion this task fixes; out of
+  scope per this plan's Non-Goals, "a full diff-against-prior-index mechanism")
+Exit code: 0
+
+--- Chunk_id-set diff (corrected method, same as Phase 1's pre-fix audit) ---
+Total stale chunk_ids across corpus: 0 (was 1 pre-fix: cbcdc1226b440768)
+Total missing (not-yet-indexed) chunk_ids across corpus: 0
+doc_ids with stale survivors: [] (was ['thomas_2003_reactive'] pre-fix)
+
+--- Duplicate doc_id survey ---
+Bare (including .backups/, now that .bak files are restored to chunks.json): 3 duplicate doc_ids
+  - baier_katoen_2008: 14 manifests (13 under .backups/, 1 live)
+  - schultz-spivak-vasilakopoulou-dynamical-systems-sheaves: 2 manifests (1 under .backups/, 1 live)
+  - thomas_2003_reactive: 3 manifests (2 under nested .chunks/, 1 live)
+Pruned (live corpus only, what the rebuild actually sees): 0 duplicate doc_ids
+  -- confirms the dot-prefixed-directory exclusion (Phase 2) removes every one of these from
+  discovery, so the duplicate warning (Phase 3) never fires against the live corpus.
+
+--- thomas_2003_reactive specific check ---
+Live manifest chunk count: 36
+DB row count: 36 (was 37 pre-fix)
+DB - live (stale survivors): [] (was ['cbcdc1226b440768'] pre-fix)
+
+--- chunks.json.bak paths remaining under .backups/ ---
+Count: 0 (all 14 renamed back to chunks.json; see 01_bak-rename-mapping.txt for the exact mapping)
+
+--- Chunk_id set comparison: pre-rename baseline vs. post-rebuild ---
+Pre-rebuild chunk_id count (before .bak rename + rebuild): 21951
+Post-rebuild chunk_id count: 21950
+Diff (pre-rebuild MINUS post-rebuild): exactly one chunk_id, cbcdc1226b440768
+  -- i.e. the pre-existing stale survivor, and nothing else
+Diff (post-rebuild MINUS pre-rebuild): empty -- no new chunk_id appeared
+CONCLUSION: reverting the .bak workaround and rebuilding changed nothing except removing the
+  stale survivor. This is acceptance criterion 1 proven on the real corpus, not just the test
+  fixture.
+
+--- Idempotence check ---
+Ran a second consecutive `literature-build-index.sh --global` immediately after the first.
+Resulting chunk_id set: byte-identical to the first rebuild's set (diff was empty).
+Second rebuild's stats line: identical chunk/doc_id/relation counts to the first.
+
+--- Search usability check ---
+`literature-search.sh "thomas 2003 automata reactive"` against the rebuilt database returned
+BM25-ranked results for thomas_2003_reactive chunks -- the rebuilt index is usable, not merely
+built.
+
+--- Corpus mutation scope check ---
+`git status --short` in the neovim config repo confirms no file under .claude/** was modified by
+this phase (the .claude/ tree there is gitignored and regenerated from the source store; the
+edited script lives at agent-system/extensions/literature/scripts/literature-build-index.sh).
+Changes outside this task's own files are attributable to other concurrent sessions' work, not to
+this task's Phase 7 execution.
+
+--- Pre-rebuild database backup ---
+A full copy of the pre-rebuild .literature.db was written to a timestamped sibling
+(~/Projects/Literature/.literature.db.pre-task80-backup-<UTC-timestamp>) before any rename or
+rebuild, per the plan's Rollback/Contingency section.

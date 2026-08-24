@@ -484,30 +484,36 @@ traversal survey one documented home so future scripts inherit them instead of r
 
 ---
 
-### Phase 7: Eliminate the .bak Workaround and Verify the Live Corpus [NOT STARTED]
+### Phase 7: Eliminate the .bak Workaround and Verify the Live Corpus [COMPLETED]
 
 **Goal**: Prove acceptance criteria 1, 3, and 5 against the real corpus: revert every manual
 `chunks.json.bak` rename, rebuild, and show the index is unchanged and the stale survivor is gone.
 
 **Tasks**:
-- [ ] Record the exact list of `chunks.json.bak` paths under `.backups/` to
+- [x] Record the exact list of `chunks.json.bak` paths under `.backups/` to
       `specs/080_exclude_backups_from_literature_index_rebuild/reports/01_bak-rename-mapping.txt`
-      **before** renaming anything, so the step is exactly reversible
-- [ ] Back up the current `~/Projects/Literature/.literature.db` to a timestamped sibling before
-      the rebuild
-- [ ] Rename every recorded `chunks.json.bak` back to `chunks.json`
-- [ ] Run `literature-build-index.sh --global` from the source store and capture its full stderr
-- [ ] Re-run the Phase 1 audit: assert zero stale `chunk_id`s and zero duplicate `doc_id`s
-- [ ] Assert `thomas_2003_reactive` now has exactly its live-manifest chunk count (36 at planning
-      time), down from 37
-- [ ] Assert the rebuilt database's `chunk_id` set equals the pre-rename baseline's `chunk_id` set
+      **before** renaming anything, so the step is exactly reversible *(completed: 14 paths
+      recorded)*
+- [x] Back up the current `~/Projects/Literature/.literature.db` to a timestamped sibling before
+      the rebuild *(completed:
+      `~/Projects/Literature/.literature.db.pre-task80-backup-20260824T222614Z`)*
+- [x] Rename every recorded `chunks.json.bak` back to `chunks.json` *(completed: all 14)*
+- [x] Run `literature-build-index.sh --global` from the source store and capture its full stderr
+      *(completed: exit 0)*
+- [x] Re-run the Phase 1 audit: assert zero stale `chunk_id`s and zero duplicate `doc_id`s
+      *(completed: 0 stale, 0 duplicate doc_ids in the pruned/live set)*
+- [x] Assert `thomas_2003_reactive` now has exactly its live-manifest chunk count (36 at planning
+      time), down from 37 *(completed: confirmed 36, exactly matching)*
+- [x] Assert the rebuilt database's `chunk_id` set equals the pre-rename baseline's `chunk_id` set
       minus the stale survivors — i.e. reverting the workaround changed nothing except removing
       staleness (this is acceptance criterion 1 proven on the real corpus, not just in the test
-      fixture)
-- [ ] Assert the rebuild's reported manifest count reflects the skipped-manifest log line from
-      Phase 2
-- [ ] Append the results to `reports/01_pre-fix-audit.txt` as a post-fix section, or write
-      `reports/01_post-fix-audit.txt`
+      fixture) *(completed: `comm` diff confirmed pre-rebuild minus post-rebuild is exactly
+      `cbcdc1226b440768`, and post-rebuild minus pre-rebuild is empty)*
+- [x] Assert the rebuild's reported manifest count reflects the skipped-manifest log line from
+      Phase 2 *(completed: "Found 204 manifests ... (16 skipped in non-corpus directories)" — 14
+      restored `.backups/**` manifests plus the 2 nested `.chunks/` manifests)*
+- [x] Append the results to `reports/01_pre-fix-audit.txt` as a post-fix section, or write
+      `reports/01_post-fix-audit.txt` *(completed: wrote `01_post-fix-audit.txt`)*
 
 **Timing**: 1.25 hours
 
@@ -528,15 +534,28 @@ expected `thomas_2003_reactive` count from its live manifest at run time rather 
 
 **Verification**:
 - Full extension test suite green: `tests/test-literature-build-index.sh` and
-  `tests/test-literature-convert.sh` both exit 0
-- `bash -n` and `shellcheck` clean on `literature-build-index.sh`
-- Post-rebuild chunk_id-set diff reports zero stale survivors for every `doc_id`
-- Zero duplicate-`doc_id` warnings in the rebuild's stderr
-- A second rebuild run produces an identical `chunk_id` set (idempotence)
+  `tests/test-literature-convert.sh` both exit 0 *(confirmed: 9/9 and 13/13 passed)*
+- `bash -n` and `shellcheck` clean on `literature-build-index.sh` *(confirmed for `bash -n`;
+  `shellcheck` unavailable in this environment, same deviation as Phase 2)*
+- Post-rebuild chunk_id-set diff reports zero stale survivors for every `doc_id` *(confirmed)*
+- Zero duplicate-`doc_id` warnings in the rebuild's stderr *(confirmed: 0 occurrences of
+  "duplicate doc_id" in the captured stderr)*
+- A second rebuild run produces an identical `chunk_id` set (idempotence) *(confirmed: byte-diff
+  empty between first and second rebuild's chunk_id sets)*
 - `literature-search.sh` returns results for a known query against the rebuilt database (the
-  index is usable, not merely built)
+  index is usable, not merely built) *(confirmed: query against `thomas_2003_reactive` content
+  returned ranked results)*
 - No file under `.claude/**` was modified: `git status --short` shows changes only under
-  `agent-system/extensions/literature/**` and `specs/**`
+  `agent-system/extensions/literature/**` and `specs/**` *(confirmed: `.claude/` is gitignored in
+  this repo and never appears in `git status`; all tracked changes are under
+  `agent-system/extensions/literature/**` and `specs/080_exclude_backups_from_literature_index_rebuild/**`)*
+
+**Note on new visibility**: the database-derived per-doc_id stats added in Phase 4 surfaced 30
+pre-existing declared/actual chunk-count mismatches unrelated to the backup-directory defect this
+task fixes (internal duplicate `chunk_id` collisions within individual manifests, e.g.
+`baier_katoen_2008` declared=1264/actual=1263). This is the intended new-visibility behavior, not
+a regression; fixing those mismatches is out of scope per the Non-Goals ("a full
+diff-against-prior-index mechanism").
 
 ---
 

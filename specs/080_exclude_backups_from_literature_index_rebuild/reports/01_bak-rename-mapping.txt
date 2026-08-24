@@ -1,0 +1,14 @@
+/home/benjamin/Projects/Literature/.backups/chunk-regen-2026-07-27/sources/baier_katoen_2008/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section01/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section02/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section03/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section04/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section05/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section06/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section07/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section08/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section09/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section10/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section11/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section12/chunks.json.bak
+/home/benjamin/Projects/Literature/.backups/schultz-spivak-vasilakopoulou-dynamical-systems-sheaves_old_20260820/schultz-spivak-vasilakopoulou-dynamical-systems-sheaves/chunks.json.bak
