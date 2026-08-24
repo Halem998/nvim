@@ -1,30 +1,29 @@
 {
-  "dispatch_seq": 2,
+  "dispatch_seq": 3,
   "task_number": 32,
   "session_id": "sess_1787605165_f00a53",
-  "stage": "plan",
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "stage": "implement",
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/032_redeploy_and_remediate_install_once_settings/plans/01_deploy-remediate-stale-grant.md",
-      "summary": "Six-phase plan: pre-deploy snapshot and baseline materialization, deploy-headless.sh, targeted post-deploy acceptance checks, sanctioned install-once settings.json hand-edit, baseline-relative verify-deploy comparison, change-log and deferred-decision record."
+      "type": "summary",
+      "path": "specs/032_redeploy_and_remediate_install_once_settings/summaries/01_deploy-remediate-stale-grant-summary.md",
+      "summary": "Deploy ran clean (16/16 files reconciled byte-identical); mint-dispatch-seq fix confirmed live (14/14 tests pass, was 4 failing pre-deploy); stale mcp__lean-lsp__* grant removed from the deployed install-once settings.json (source copy untouched); baseline-relative verify-deploy.sh comparison found 0 net functional regressions after per-line classification of a 3-line raw comm -13 delta (2 false-deltas from a non-deterministic tmp path, 1 genuinely-new-but-pre-existing-source-store-class finding); CHANGE_LOG.md updated with a durable-anchor-only 2026-08-24 entry."
     }
   ],
-  "phase_count": 6,
-  "estimated_hours": 3,
-  "dependency_waves": [[1], [2], [3, 4], [5], [6]],
+  "phases_completed": 6,
+  "phases_total": 6,
   "blockers": [],
   "notes": [
-    "Pre-deploy verify-deploy baseline is NOT re-captured; Phase 1 transcribes research report Section 4 verbatim to disk before Phase 2 deploys.",
-    "Acceptance criterion is mechanical and baseline-relative: comm -13 pre-deploy post-deploy must be empty. A non-empty post-deploy findings set is explicitly not a failure.",
-    "Phase 4 is the single sanctioned source-store-boundary exception (install-once settings.json); it forbids editing the already-correct source copy and requires the hook reasoning be recorded in writing.",
-    "MEASURED CORRECTION to the dispatch brief: CHANGE_LOG.md is at specs/CHANGE_LOG.md, i.e. INSIDE specs/**, where task numbers are exempt, and its existing entries use 'Task N:' headings. The no-task-numbers constraint is still honored in the strictest direction (durable anchors only), and the plan records this reasoning so the implementer does not reverse it mid-phase.",
-    "Phase 3 carries the concrete mint-dispatch-seq acceptance check: deployed skill-base.sh must contain jq -r '(.dispatch_seq_counter // 0) + 1' and no ambient-increment form, plus a run of the newly-deployed test-mint-dispatch-seq.sh.",
-    "Phase 3 also covers the research-flagged gate5 blind spot by hand-diffing both manifest.json files and one literature context doc that gate5 never compares.",
-    "Both deferred decisions (lean-lsp user-scope BimodalLogic mis-registration; nine duplicated playwright grants) are recorded with reasons in Phase 6; no settings fragment is edited.",
-    "Fresh-session MCP registration verification is recorded as a manual out-of-session follow-up, not an in-task gate."
+    "All 6 phases [COMPLETED], executed in dependency-wave order [[1],[2],[3,4],[5],[6]].",
+    "Phase 1: baseline extraction line range corrected to report lines 195-246 (not the plan's stated 195-247, which includes the closing markdown fence). settings.json.bak backup taken before any Phase 4 edit.",
+    "Phase 4: the hand-edit was performed via the Edit tool (not raw Bash) specifically to give the validate-meta-write.sh advisory hook a chance to fire. FINDING: it did NOT fire -- its is_meta_path case list covers only commands/skills/agents/rules/context/extensions/scripts/hooks subdirectories and */CLAUDE.md, not root-level files like settings.json. This is a real coverage gap in the advisory layer, reported but not fixed (out of scope). The install-once boundary-exception reasoning is recorded in the summary and CHANGE_LOG.md regardless of the hook not firing.",
+    "Phase 5: raw comm -13 regression set was 3 lines, not empty. Classified each: 2 are confirmed false-deltas (same pre-existing gate8 fix-roundtrip failure, differing only by a fresh /tmp/tmp.XXXXXXXXXX path embedded on every verify-deploy.sh run). 1 is genuinely new to the findings set but traced to a pre-existing SOURCE-STORE gap (agent-system/extensions/literature/index-entries.json also lacks an entry for context/project/literature/patterns/shared-module-extraction-for-gate-checks.md, predating task 32 per git log --follow) -- the identical defect class as the plan's own Non-Goals-excluded return-meta-artifacts-template.md Rule S finding. Net functional regressions caused by task 32's own work: 0. Full evidence in findings-delta.txt.",
+    "Both deferred decisions recorded in the summary with reasons: (a) lean-lsp registered at user scope pointing at a different repository (BimodalLogic) -- DEFER, real bug class, fixing requires operator action or a project-scoped registration mechanism, out of scope; (b) nine duplicated playwright grants across web/present settings fragments -- DEFER, harmless duplication, neither fragment edited.",
+    "A fresh Claude Code session is required to observe MCP server registration changes; this session cannot self-verify, recorded as a manual follow-up for the user.",
+    "OBSERVATION (not task-32 work, reported per observation duty): specs/events.jsonl and .claude-extensions.json carry uncommitted changes at task completion. events.jsonl's new lines are session_stop events tagged with this session's own session_id and cc_session_id (plausibly hook-generated telemetry from this session's own lifecycle, e.g. subagent stops), not obviously foreign. agent-system/extensions/literature/scripts/literature-pyenv/ is an untracked directory (a Python venv + .cclib_path) that was ALREADY present, untracked, before this dispatch began (visible in the session's initial git-status snapshot) -- pre-existing, not created by this task, left untouched.",
+    "Plan-level '- **Status**:' field was found stuck at [NOT STARTED] despite all phase headings showing progress; corrected to [COMPLETED] to match the six [COMPLETED] phase headings."
   ],
-  "next_steps": "Run /implement 32 to execute the plan"
+  "next_steps": "Task 32 implementation complete. Postflight may proceed to mark the task COMPLETED. Recommend a fresh Claude Code session confirm no lean-lsp MCP grant is in effect for this project (out-of-session verification noted above)."
 }

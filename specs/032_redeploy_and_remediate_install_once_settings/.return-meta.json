@@ -1,28 +1,61 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "session_id": "sess_1787605165_f00a53",
-  "task_number": 32,
-  "task_type": "meta",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/032_redeploy_and_remediate_install_once_settings/plans/01_deploy-remediate-stale-grant.md",
-      "summary": "Six-phase plan to deploy the source store, hand-remove the stale install-once mcp__lean-lsp__* grant, and verify baseline-relatively against the pre-deploy findings set."
+      "type": "summary",
+      "path": "specs/032_redeploy_and_remediate_install_once_settings/summaries/01_deploy-remediate-stale-grant-summary.md",
+      "summary": "Deploy ran clean (16/16 files reconciled), mint-dispatch-seq fix confirmed live (14/14 tests pass), stale lean-lsp grant removed from deployed settings.json, and a baseline-relative verify-deploy.sh comparison found 0 net functional regressions after per-line classification of a 3-line raw comm -13 delta."
     }
   ],
-  "phase_count": 6,
-  "estimated_hours": 3,
-  "dependency_waves": [[1], [2], [3, 4], [5], [6]],
+  "completion_data": {
+    "completion_summary": "Deployed the agent-system source store to .claude/ (16 files, making the mint-dispatch-seq persisted-counter fix and three literature hardening fixes live), removed the stale mcp__lean-lsp__* grant from the deployed install-once settings.json, and proved baseline-relatively via verify-deploy.sh that the deploy introduced zero net functional regressions."
+  },
+  "modified_files": [
+    "specs/032_redeploy_and_remediate_install_once_settings/changed-source-files.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/deploy-output.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/findings-delta.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/phase4-checks.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/plans/01_deploy-remediate-stale-grant.md",
+    "specs/032_redeploy_and_remediate_install_once_settings/post-deploy-checks.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/post-deploy-findings.normalized.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/post-deploy-findings.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/pre-deploy-findings.normalized.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/pre-deploy-findings.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/regression-set.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/resolved-set.txt",
+    "specs/032_redeploy_and_remediate_install_once_settings/settings.json.bak",
+    "specs/032_redeploy_and_remediate_install_once_settings/summaries/01_deploy-remediate-stale-grant-summary.md",
+    "specs/CHANGE_LOG.md"
+  ],
   "memory_candidates": [
     {
-      "content": "Install-once deploy artifacts invert the source-store-deploy boundary rule. In this repo, .claude/ is normally a disposable regenerable deploy artifact, so hand-edits there are wiped by the next deploy and the source-store-boundary rule forbids them. But files listed in loader.lua's INSTALL_ONCE_ROOT_FILES (settings.json, settings.local.json) are copied only when absent and are excluded from unload deletion, which makes them effectively user state: a redeploy will NEVER overwrite them. Consequence: a stale entry in an install-once file is structurally unfixable by redeploying and MUST be hand-edited in the deployed tree, even though the advisory source-store-boundary hook will fire. The correct response is to record the install-once reasoning in writing (summary and change log), not to silence the hook by editing the already-correct source copy. Corollary for rollback planning: install-once files are the one part of .claude/ that a re-deploy cannot restore, so they need an explicit backup before any hand-edit.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/032_redeploy_and_remediate_install_once_settings/plans/01_deploy-remediate-stale-grant.md",
+      "content": "When diffing verify-deploy.sh (or similar) FINDING sets before/after a change with grep '^FINDING ' | sort -u plus comm -13/-23, watch for non-deterministic embedded content (e.g. a fresh mktemp -d path baked into a fix-roundtrip test's own output line) producing false deltas. Confirm by stripping the volatile token and comparing substance before concluding a comm -13 line is a genuine new regression.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/032_redeploy_and_remediate_install_once_settings/summaries/01_deploy-remediate-stale-grant-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["install-once", "source-store-boundary", "deploy-artifact", "settings.json", "loader.lua", "hand-edit-exception"]
+      "suggested_keywords": ["verify-deploy", "baseline-diff", "non-deterministic-findings", "comm", "regression-detection"]
+    },
+    {
+      "content": "A gate3 Rule S 'missing index-entries.json entry' finding that appears only after a file is deployed for the first time is not necessarily a deploy-caused regression -- it can be a pre-existing source-store gap (the file's own index-entries.json registration was never added) that was simply invisible because Rule S only evaluates already-deployed files. Check the SOURCE's own index-entries.json for the same file before classifying a newly-visible Rule S finding as a new defect.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/032_redeploy_and_remediate_install_once_settings/summaries/01_deploy-remediate-stale-grant-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["gate3", "rule-s", "index-entries", "verify-deploy", "source-store-gap"]
+    },
+    {
+      "content": "validate-meta-write.sh's is_meta_path case list (commands/*, skills/*, agents/*, rules/*, context/*, extensions/*, scripts/*, hooks/*, */CLAUDE.md) does not cover root-level .claude/ files such as settings.json or settings.local.json. A hand-edit to a root-level install-once file will NOT trigger the source-store-boundary advisory hook, even though such an edit is exactly the kind of .claude/** write the hook exists to flag. This is a known coverage gap, not yet fixed.",
+      "category": "CONFIG",
+      "source_artifact": "specs/032_redeploy_and_remediate_install_once_settings/summaries/01_deploy-remediate-stale-grant-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["validate-meta-write", "advisory-hook", "settings.json", "install-once", "coverage-gap"]
     }
   ],
-  "next_steps": "Run /implement 32 to execute the plan"
+  "metadata": {
+    "session_id": "sess_1787605165_f00a53",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }
