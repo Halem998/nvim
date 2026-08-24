@@ -692,6 +692,66 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 Acceptance criterion 6 above is the FIRST of a two-assertion regression requirement spanning this task and its companion coverage-marker task. This task owns assertion one: an ingested document appears in the briefing with correct title/authors/year/chunk count. The companion task owns assertion two: a deliberately-unresolvable doc_id drives the coverage marker to report the failure rather than reporting sparse=false. Both must exist for the defect class to be closed — assertion one alone leaves the silent-degradation half free to regress. Do not consider this task's test complete without confirming the companion assertion is scheduled.
 
+
+=== UPDATED EVIDENCE (2026-08-24, second independent observation) ===
+
+Re-observed from a different consumer repo (Logos/Theory) during a /research --lit run, after a
+batch ingest of 25 verification sources through literature-ingest.sh --local. The defect
+reproduces exactly as described above; three facts have CHANGED and one is NEW.
+
+CHANGED -- the invisible population has more than doubled, 16 -> 38.
+
+  jq '[.entries[] | select(.id == null)] | length'  ~/Projects/Literature/index.json  =>  38
+
+The 22 added entries came from that single batch ingest, confirming the stub population grows
+with ordinary use rather than being a fixed legacy residue. Migration scope in acceptance
+criterion 2 should be read as "all currently-invisible entries", not the literal 16.
+
+NEW -- the index holds THREE shapes, not two. This was not visible at 16 entries and it bears
+directly on the rich/thin writer-provenance question above:
+
+  | Shape                        | Count | Resolves in briefing? |
+  |------------------------------|-------|-----------------------|
+  | canonical, .id present       |  359  | yes                   |
+  | BOTH .id and .doc_id present |   35  | yes (matches on .id)  |
+  | .doc_id only, .id absent     |   38  | NO                    |
+
+  Totals: 397 entries; 73 carry .doc_id, of which 35 also carry .id.
+
+The 35 dual-keyed entries are the interesting ones: they resolve correctly today purely because
+they happen to carry .id, so they are invisible as a problem while still carrying the stub key.
+They look like the "RICH variant" the section above flags as unexplained -- a candidate answer to
+the open provenance question is that the rich variant is a canonical entry that later acquired a
+.doc_id (or a stub that was later enriched with .id), rather than a distinct writer. Research
+should test that hypothesis directly before assuming two separate producers. Sample invisible
+doc_ids skew to older philosophy/logic material (j_nsson_and_tarski_-_1951_...,
+goldblatt_-_mathematical_modal_logic..., awodey_2016_univalence..., bacon_2019_substitution_structures),
+while the 22 newly-added ones are the 2026-08-24 verification batch -- so the two cohorts have
+different provenance and may migrate differently.
+
+CONFIRMED -- writer/reader key mismatch, line numbers re-verified against the source store at
+agent-system/extensions/literature/scripts/ (not the deployed tree):
+
+  literature-ingest.sh:315   writes  "doc_id": "$DOC_ID"   (Step 4 python3 heredoc)
+  literature-briefing.sh:175 reads   select(.id == $id and (.parent_doc == null or .parent_doc == ""))
+  literature-briefing.sh:181 reads   select(.id == $id)                       (fallback path)
+  literature-briefing.sh:114 reads   select(.id == $id) | .provenance_fidelity  (get_doc_fidelity)
+
+CONSUMER-SIDE IMPACT (new, argues for priority)
+
+In the observed run the briefing resolved SUBINDEX_PRESENT against a 37-entry sub-index and
+emitted 24 consecutive "not found in global index -- skipping" warnings, returning only the 13
+pre-existing entries -- i.e. exactly the sources the task did NOT need, while every source it did
+need was skipped. The consuming research proceeded only because the operator noticed the warnings
+and hand-routed agents to read specs/literature/<doc_id>/chunk_NNNN.md directly.
+
+Measured cost of that workaround: of 25 relevant ingested sources, 7 went entirely uncited in the
+resulting research round, including the corpus's single largest practical reference (658 chunks)
+and both of the repo owner's own manuscripts, which bore directly on the round's central technical
+claim. Silent corpus invisibility therefore does not merely degrade a briefing -- it measurably
+changes which sources a research round draws on, and the failure is only caught if a human reads
+stderr. This strengthens the case for the companion coverage-marker task's assertion two.
+
 ---
 
 ### 76. Close task-type-keyed hook gap for non-latex agents that compile .tex
