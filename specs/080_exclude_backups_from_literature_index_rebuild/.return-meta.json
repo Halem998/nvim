@@ -1,29 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/080_exclude_backups_from_literature_index_rebuild/plans/01_exclude-backups-index-rebuild.md",
-      "summary": "7-phase plan (5.5h) to prune dot-prefixed directories from literature-build-index.sh manifest discovery, add warn-by-default duplicate-doc_id detection with a --strict-duplicates fatal mode, report database-derived per-doc_id counts, lock it in with a scratch-dir regression test, document the shared corpus-directory predicate, and eliminate the manual chunks.json.bak workaround with a verified live rebuild."
-    }
-  ],
-  "next_steps": "Run /implement 80 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1787608215_ce9f8e_80",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 5.5,
-    "dependency_waves": [[1, 2], [3], [4], [5, 6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In ~/Projects/Literature/, dot-prefixed directories appear at BOTH the corpus root (.backups, .sources-recovered, .online-ingest-staging, .memory, .git, .claude) and nested inside a document directory (sources/thomas_2003_reactive/.chunks/ holds two superseded per-chapter chunks.json manifests). A traversal-safety prune for the corpus must therefore exclude dot-prefixed directories at ANY depth, not just at the root, and must use `find \"$dir\" -mindepth 1 \\( -name '.*' -type d -prune \\) -o \\( -name 'chunks.json' -print \\)` so that explicitly targeting a dot-named directory (--dir .../.backups) does not self-prune. Verified: 206 manifests bare, 204 pruned, zero doc_ids lost.",
-      "category": "PATTERN",
-      "source_artifact": "specs/080_exclude_backups_from_literature_index_rebuild/plans/01_exclude-backups-index-rebuild.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["literature", "corpus-traversal", "find-prune", "dot-directory", "build-index", "mindepth"]
-    }
-  ]
+    "session_id": "sess_1787608215_ce9f8e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

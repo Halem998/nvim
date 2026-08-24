@@ -1,0 +1,49 @@
+=== Manifest discovery: bare vs. dot-pruned find ===
+Bare find count:   206
+Pruned find count: 204
+Skipped by prune (bare - pruned): 2
+Lost by pruning that pruned adds and bare lacks (should be 0): 0
+Skipped paths NOT containing a dot-prefixed component (should be 0): 0
+
+Skipped manifest paths (dot-prefixed components):
+  /home/benjamin/Projects/Literature/sources/thomas_2003_reactive/.chunks/Thomas_2003_ch01_omega_automata/chunks.json
+  /home/benjamin/Projects/Literature/sources/thomas_2003_reactive/.chunks/Thomas_2003_ch03_deterministic_omega/chunks.json
+
+=== Per-doc_id chunk_id-set diff: DB vs. live (pruned) manifests ===
+  doc_id=thomas_2003_reactive: DB has 37 rows, live manifest has 36 chunks, STALE (in DB but not live)=1: ['cbcdc1226b440768']
+
+Total stale chunk_ids across corpus: 1
+Total missing (not-yet-indexed) chunk_ids across corpus: 0
+doc_ids with stale survivors: ['thomas_2003_reactive']
+
+=== doc_ids claimed by more than one manifest (bare, i.e. including backup/legacy dirs) ===
+  doc_id=thomas_2003_reactive claimed by 3 manifests:
+    /home/benjamin/Projects/Literature/sources/thomas_2003_reactive/.chunks/Thomas_2003_ch01_omega_automata/chunks.json
+    /home/benjamin/Projects/Literature/sources/thomas_2003_reactive/.chunks/Thomas_2003_ch03_deterministic_omega/chunks.json
+    /home/benjamin/Projects/Literature/sources/thomas_2003_reactive/chunks.json
+Total duplicate doc_ids (bare): 1
+
+=== doc_ids claimed by more than one manifest (pruned, i.e. live-only) ===
+Total duplicate doc_ids (pruned/live): 0
+
+=== thomas_2003_reactive specific check ===
+Live manifest chunk count: 36
+DB row count: 37
+DB - live (stale survivors): ['cbcdc1226b440768']
+
+=== chunks.json.bak paths under .backups/ ===
+Count: 14
+  /home/benjamin/Projects/Literature/.backups/chunk-regen-2026-07-27/sources/baier_katoen_2008/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section01/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section02/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section03/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section04/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section05/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section06/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section07/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section08/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section09/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section10/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section11/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section12/chunks.json.bak
+  /home/benjamin/Projects/Literature/.backups/schultz-spivak-vasilakopoulou-dynamical-systems-sheaves_old_20260820/schultz-spivak-vasilakopoulou-dynamical-systems-sheaves/chunks.json.bak

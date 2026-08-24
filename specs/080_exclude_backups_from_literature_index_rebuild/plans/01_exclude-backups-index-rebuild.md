@@ -1,7 +1,7 @@
 # Implementation Plan: Stop the literature index rebuild from indexing backed-up chunk manifests
 
 - **Task**: 80 - Stop the literature index rebuild from indexing backed-up chunk manifests
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None blocking. Sequenced-after advisory on the literature global-index schema-unification task (see Risks) — that task shares `literature-build-index.sh` in its file scope but none of this plan's four scope items touch `index.json` entry shape.
 - **Research Inputs**: `specs/080_exclude_backups_from_literature_index_rebuild/reports/01_exclude-backups-from-index-rebuild.md`
@@ -185,20 +185,20 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Baseline Audit of the Live Database [NOT STARTED]
+### Phase 1: Baseline Audit of the Live Database [COMPLETED]
 
 **Goal**: Record the pre-fix state of `~/Projects/Literature/.literature.db` using the corrected
 chunk_id-set diff method, so Phase 7 has a concrete before/after to assert against.
 
 **Tasks**:
-- [ ] Enumerate live manifests with the *bare* (current, unguarded) `find` and with the proposed
-      dot-pruned `find`; record both counts and the set difference
-- [ ] For each `doc_id`, build the live-manifest `chunk_id` set and diff it against
+- [x] Enumerate live manifests with the *bare* (current, unguarded) `find` and with the proposed
+      dot-pruned `find`; record both counts and the set difference *(completed)*
+- [x] For each `doc_id`, build the live-manifest `chunk_id` set and diff it against
       `SELECT chunk_id FROM chunks_data WHERE doc_id = ?`; record every `chunk_id` present in the
-      database but absent from the live manifest (stale survivors) and vice versa
-- [ ] Record every `doc_id` claimed by more than one manifest, with all claiming paths
-- [ ] Record the 14 `chunks.json.bak` paths under `.backups/` verbatim
-- [ ] Write all of the above to `specs/080_exclude_backups_from_literature_index_rebuild/reports/01_pre-fix-audit.txt`
+      database but absent from the live manifest (stale survivors) and vice versa *(completed)*
+- [x] Record every `doc_id` claimed by more than one manifest, with all claiming paths *(completed)*
+- [x] Record the 14 `chunks.json.bak` paths under `.backups/` verbatim *(completed)*
+- [x] Write all of the above to `specs/080_exclude_backups_from_literature_index_rebuild/reports/01_pre-fix-audit.txt` *(completed)*
 
 **Timing**: 0.75 hours
 
