@@ -1,5 +1,5 @@
 ---
-next_project_number: 99
+next_project_number: 100
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 99
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,68,72,73,74,77,81,83,85,86,87,90,91,94,97 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,68,72,73,74,77,81,83,85,86,87,90,91,94,97,99 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,44,50,64,66,75,76,78,88,89,93,96,98 | 29,42,48,62,74,77,83,87,97 | agent-system, extensions, literature, ... |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -81,7 +81,37 @@ next_project_number: 99
 72 [NOT STARTED] — Teammate agents spawned by team-mode skills write the skill-level
 73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
 
+### Uncategorized
+
+99 [NOT STARTED] — Make the .orchestrator-handoff.json artifacts[] element shape una
+
 ## Tasks
+
+### 99. Pin handoff artifacts element shape
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Make the .orchestrator-handoff.json artifacts[] element shape unambiguous in the agent contracts, and stop research dispatches from emitting bare strings where the consumers require objects.
+
+OBSERVED MECHANISM (verified live, do not re-derive). In a seven-task lean4 batch in a separate consumer repo, THREE of seven research dispatches running extensions/lean/agents/lean-research-agent.md wrote .orchestrator-handoff.json with artifacts as an array of BARE PATH STRINGS rather than objects. Recorded as ARTIFACTS_SHAPE_MISMATCH, evt_1787609609484_JsLV9N, evt_1787609609589_NoKGP8 and evt_1787609609694_0qUk6t. The remaining four wrote the object form. Same agent, same batch, same phase -- so this is contract ambiguity, not a per-task accident.
+
+THE CONSUMER-SIDE SYMPTOM. Orchestrator artifact linking reads artifacts[0].path / .type / .summary. Against a bare string that indexing raises "Cannot index string with string \"path\"", so the read yields nothing and the artifact silently fails to link -- the report exists on disk and is committed, but never lands in state.json's artifacts[]. The orchestrator recovered by resolving BOTH shapes tolerantly at the call site, which is a workaround at the wrong layer: every future consumer of a handoff would have to repeat it.
+
+WHY THE EXISTING DEFECT CLASS DOES NOT ALREADY COVER THIS. ARTIFACTS_SHAPE_MISMATCH is already defined and already has consumer-side detection arms wired into both orchestrate engines (skill-orchestrate Stage 5's handoff-present probe and its Stage MT-4 recovered-path sibling). Those arms DETECT and record the mismatch; nothing prevents a writer from producing it. This task is the writer-side half, and it is currently unowned -- no active task names ARTIFACTS_SHAPE_MISMATCH or the artifacts element shape.
+
+DECIDE EXPLICITLY, THEN STATE IT ONCE. context/formats/return-metadata-file.md is normative for .return-meta.json and declares itself normative for the handoff's status field too, but the artifacts ELEMENT shape is not pinned with the same force, and docs/architecture/handoff-schema.md is the natural home for it. Settle: (1) is the element an object {path, type, summary} with path required, or is a bare string an accepted shorthand that consumers must normalize; (2) whichever is chosen, state it in ONE normative place and have the agent contracts reference it rather than each restating it. Do not answer (1) with "accept both" merely because the orchestrator currently tolerates both -- that tolerance was added under incident conditions and should be reconsidered on its merits, not ratified by default.
+
+EVIDENCE THE CONTRACT WORDING IS THE LEVER. When the dispatch prompt stated the object requirement explicitly, all seven plan dispatches and all seven implement dispatches in the same batch emitted the object form, with zero recurrences. Per-dispatch prompt text is the workaround this task exists to retire.
+
+SCOPE NOTE. The reproducing agent is the LEAN research agent, but the ambiguity is in the shared schema, so the fix belongs in the schema doc plus whichever agent contracts restate the shape. Check the core research agent and the hard variants for the same wording gap rather than patching only the file that happened to reproduce it. If a shared normative statement referenced by all writers is the better mechanism, prefer it over copying a paragraph into several files.
+
+ACCEPTANCE: the handoff artifacts element shape is stated normatively in exactly one place; every research/plan/implement agent contract that mentions artifacts conforms to it or references it; a dispatch that emits the non-conforming shape is either impossible by contract or is caught with a clear message naming the offending element; and the orchestrator's dual-shape tolerance is either removed as no longer needed or deliberately retained with a recorded reason.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 98. Route lean extension builds through the guard and rewrite the multi-instance operations anchor
 - **Effort**: 3 hours
@@ -1937,6 +1967,39 @@ ACCEPTANCE: a clean base-mode /orchestrate run that transitions plan to implemen
 SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+=== EVIDENCE ADDED 2026-08-24 (the live-predecessor case, observed for real) ===
+CONFIRMING, NOT CONTRADICTING. This task's candidate direction (b) carries the caveat that
+clearing or rotating a stale handoff at dispatch start "must not blind the gates to the
+live-predecessor late-write case, which is the hazard they exist to catch". That hazard has now
+been OBSERVED LIVE rather than merely anticipated, and the observation should be treated as a
+binding test case for whichever direction is adopted.
+
+OBSERVED MECHANISM (verified, do not re-derive). In a seven-task lean4 batch in a separate
+consumer repo, an implementation dispatch (minted dispatch_seq=19) went quiet for ~25 minutes
+after writing a wrap-up summary. It was judged terminated and the task was re-dispatched as a
+resume (minted dispatch_seq=22). The ORIGINAL dispatch was in fact still alive: it then completed
+and wrote .orchestrator-handoff.json claiming status=implemented, 5/5 phases. Its mtime was NEWER
+than the resume dispatch's own window start, so THE MTIME FRESHNESS GATE PASSED IT. Only the
+dispatch_seq comparison (19 against the minted 22) exposed it as a predecessor's late write.
+Recorded as evt_1787614360544_SgKpRP. The resume subsequently wrote its own seq-22 handoff and
+that report was taken as authoritative.
+
+WHY THIS IS DECISIVE FOR THE DESIGN CHOICE. It is a direct, non-hypothetical demonstration that
+mtime alone is insufficient and that dispatch_seq is load-bearing, exactly as
+context/patterns/dispatch-report-not-termination.md argues. Any resolution of this task that
+suppresses or reorders the recording MUST still surface this case. Specifically: direction (a)
+(consult the writer contract before recording) is safe here only if "contractual non-writer"
+is evaluated per dispatch identity and not per phase alone -- an implement dispatch that IS a
+contractual non-writer in base mode still produced a real seq-mismatched clobber in this
+incident, so a contract-only check keyed on phase would have silently swallowed it.
+
+SECONDARY OBSERVATION, RELEVANT TO THE ACCEPTANCE BAR. This task notes the open question of
+whether "zero defect events on a clean run" is a sound acceptance bar and asks that this
+observation be folded in as evidence. Add this one too, pulling in the opposite direction: the
+run above was NOT clean, and the single recorded defect event was the only signal distinguishing
+a predecessor clobber from a normal report. A bar of "zero defect events" is sound only if the
+genuine-incident channel stays as loud as it is today.
+
 ---
 
 ### 51. Move session state files out of specs root
@@ -2645,6 +2708,47 @@ ACCEPTANCE: an interrupted fan-out dispatch is either impossible by contract, or
 
 SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+=== REVISED 2026-08-24 (second live occurrence, extension-agent gap) ===
+RECURRED, AND THE CONTRACT GAP IS WIDER THAN THIS TASK'S CURRENT SCOPE. A seven-task lean4 batch
+orchestrated in a separate consumer repo reproduced this exact failure mode TWICE in one
+implementation cycle: two of seven dispatches performed real work, committed it, and then
+terminated WITHOUT writing a terminal handoff, leaving .return-meta.json at status=in_progress.
+orchestrate-recover-outcome.sh correctly declined both (STATUS_IN_PROGRESS); both needed a
+re-dispatch cycle to resolve, exactly as the original incident did.
+
+SCOPE CORRECTION (the actionable part). Both offending dispatches ran
+extensions/lean/agents/lean-implementation-agent.md, NOT
+extensions/core/agents/general-implementation-agent.md -- the only agent contract this task's
+file_scope currently names. The terminal-status requirement is therefore missing from the
+EXTENSION implementation agents as well as the core one, and fixing only the core file would
+leave the reproducing path untouched. file_scope is extended accordingly to the lean pair. Treat
+the core agent as the normative contract and the extension agents as required conformers; if a
+shared include or a single normative statement referenced by all implementation agents is the
+better mechanism, prefer that over copying the same paragraph into four files.
+
+MARKER DIVERGENCE RECURRED IN THE OPPOSITE DIRECTION -- fold into question 2, do not treat as a
+separate concern. The original incident recorded markers UNDER-claiming (phases committed, markers
+still [NOT STARTED]). This batch recorded the inverse: one task's plan carried five of seven
+phases marked [COMPLETED] while its sole declared file_scope target was UNMODIFIED against HEAD --
+markers OVER-claiming against work that had not landed. A resume driven by those markers would
+have skipped real work rather than redone it. Both signs share one root cause, which question 2
+already names: markers and committed reality are allowed to diverge silently. Any fix must be
+bidirectional -- a marker must not be promotable without the corresponding work being verifiable,
+and committed work must not leave its marker unpromoted. The over-claim direction was only caught
+because the orchestrator cross-checked the marker count against the working tree; a fix that
+merely tightens promotion-on-commit would not have caught it.
+
+WHAT IS ALREADY GOOD AND MUST NOT BE UNDONE. The re-dispatch path worked: both tasks resumed from
+their real state and completed, and the resumed dispatches -- when explicitly instructed to write
+the handoff FIRST and to re-verify prior phase markers with a real build rather than trust them --
+both reported correctly and downgraded nothing falsely. That per-dispatch prompt text is the
+workaround this task exists to retire; it is evidence the contract wording works, not a substitute
+for putting it in the contract.
+
+ACCEPTANCE (extends, does not replace, the original): the terminal-status requirement and the
+fan-out resolution apply to extension implementation agents as well as the core one, demonstrated
+against a lean4 dispatch; and marker/reality divergence is caught in BOTH directions.
 
 ---
 
