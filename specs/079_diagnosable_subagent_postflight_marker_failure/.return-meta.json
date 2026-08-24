@@ -1,21 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/079_diagnosable_subagent_postflight_marker_failure/plans/01_diagnosable-postflight-marker-failure.md",
-      "summary": "5-phase plan fixing the malformed-marker block-reason defect, adding deviation-event telemetry, a registered regression suite, and the hook-idiom survey documentation."
-    }
-  ],
-  "next_steps": "Run /implement 79 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1787608215_ce9f8e_79",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3,
-    "dependency_waves": [[1, 2], [3, 4], [5]]
-  },
-  "memory_candidates": []
+    "session_id": "sess_1787608215_ce9f8e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

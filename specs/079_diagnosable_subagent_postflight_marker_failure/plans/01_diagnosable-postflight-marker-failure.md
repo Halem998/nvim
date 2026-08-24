@@ -1,7 +1,7 @@
 # Implementation Plan: Task #79
 
 - **Task**: 79 - Make subagent-postflight hook diagnosable when its marker is malformed
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: Sequenced after the subagent-postflight marker-ownership/correlation task
   (same file, adjacent region of `find_marker()`/`main()`). No state.json dependency edge is
@@ -118,34 +118,34 @@ No `roadmap_path` was provided in the delegation context; no roadmap consultatio
 Phases within the same wave can execute in parallel. Phases 1 and 2 edit different files
 (`subagent-postflight.sh` vs. `events-log-lifecycle.sh`) with no shared region.
 
-### Phase 1: Guard the Marker Parse and Build Output With jq [NOT STARTED]
+### Phase 1: Guard the Marker Parse and Build Output With jq [COMPLETED]
 
 **Goal**: `subagent-postflight.sh` distinguishes "marker does not parse" from "marker parses but
 has no `.reason`", and emits valid JSON in both cases. Closes AC 1, 2, 3.
 
 **Tasks**:
-- [ ] Re-read `find_marker()` and `main()` in
+- [x] Re-read `find_marker()` and `main()` in *(completed)*
       `agent-system/extensions/core/hooks/subagent-postflight.sh` fresh; locate the `.reason`
       extraction and the hand-built `echo "{\"decision\": ...}"` line by content, not by the
       line numbers quoted in the research report or task description
-- [ ] Insert a `jq empty "$MARKER_FILE" 2>/dev/null` validity check before the `.reason`
+- [x] Insert a `jq empty "$MARKER_FILE" 2>/dev/null` validity check before the `.reason` *(completed)*
       extraction, mirroring the identical call in `events-log-lifecycle.sh`'s SubagentStop
       branch
-- [ ] Parse-success branch: keep today's `jq -r '.reason // "Postflight operations pending"'`
+- [x] Parse-success branch: keep today's `jq -r '.reason // "Postflight operations pending"'` *(completed)*
       behavior byte-for-byte unchanged (AC 2)
-- [ ] Parse-failure branch: capture `parse_err=$(jq empty "$MARKER_FILE" 2>&1 >/dev/null | head -1)`
+- [x] Parse-failure branch: capture `parse_err=$(jq empty "$MARKER_FILE" 2>&1 >/dev/null | head -1)` *(completed)*
       and set a reason naming the marker path, stating it could not be parsed as JSON, and
       embedding `$parse_err` (AC 1)
-- [ ] Replace the hand-built JSON echo with `echo "{\"decision\": \"block\", \"reason\": $(jq -n --arg r "$reason" '$r')}"`
+- [x] Replace the hand-built JSON echo with `echo "{\"decision\": \"block\", \"reason\": $(jq -n --arg r "$reason" '$r')}"` *(completed)*
       so both branches converge on one safe construction (AC 3)
-- [ ] Remove the stale `# Note: Using simple JSON output - no jq dependency for robustness`
+- [x] Remove the stale `# Note: Using simple JSON output - no jq dependency for robustness` *(completed)*
       comment; the `.reason` extraction already makes jq a hard dependency, so the stated
       justification is false
-- [ ] Add a brief comment recording *why* the `jq empty` pre-check exists (the `//` operator
+- [x] Add a brief comment recording *why* the `jq empty` pre-check exists (the `//` operator *(completed)*
       does not fire on parse errors), so the guard is not "simplified" away later
-- [ ] Leave `find_marker()`, `check_loop_guard()`, `MAX_CONTINUATIONS`, the `stop_hook_active`
+- [x] Leave `find_marker()`, `check_loop_guard()`, `MAX_CONTINUATIONS`, the `stop_hook_active` *(completed)*
       short-circuit, and the no-marker path untouched
-- [ ] Manually drive the hook against a scratch fixture (well-formed marker, marker without
+- [x] Manually drive the hook against a scratch fixture (well-formed marker, marker without *(completed)*
       `.reason`, non-JSON marker) and confirm each stdout is valid JSON via `jq empty`
 
 **Timing**: 0.5 hours

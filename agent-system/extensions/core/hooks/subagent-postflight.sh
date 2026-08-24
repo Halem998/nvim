@@ -87,12 +87,25 @@ main() {
         fi
 
         # Block the stop to allow postflight to complete
-        local reason=$(jq -r '.reason // "Postflight operations pending"' "$MARKER_FILE" 2>/dev/null)
+        # jq's `//` alternative operator only fires when the RHS field is absent/null -- it
+        # never fires on a parse error, so an unguarded `.reason // default` extraction
+        # collapses "marker does not parse" into the same default as "marker parses but has no
+        # .reason", with the `2>/dev/null` swallowing jq's own diagnostic. Guard with `jq empty`
+        # first (mirrors the identical check in events-log-lifecycle.sh's SubagentStop branch)
+        # so a parse failure gets its own diagnostic reason instead.
+        local reason
+        if jq empty "$MARKER_FILE" 2>/dev/null; then
+            reason=$(jq -r '.reason // "Postflight operations pending"' "$MARKER_FILE" 2>/dev/null)
+        else
+            local parse_err
+            parse_err=$(jq empty "$MARKER_FILE" 2>&1 >/dev/null | head -1)
+            reason="Postflight marker at $MARKER_FILE could not be parsed as JSON: $parse_err"
+        fi
         log_debug "Blocking stop: $reason"
 
-        # Return block decision
-        # Note: Using simple JSON output - no jq dependency for robustness
-        echo "{\"decision\": \"block\", \"reason\": \"$reason\"}"
+        # Return block decision. jq -n --arg safely escapes quotes, backslashes, and newlines in
+        # $reason, so both branches above converge on one JSON-safe construction.
+        echo "{\"decision\": \"block\", \"reason\": $(jq -n --arg r "$reason" '$r')}"
         exit 0
     fi
 

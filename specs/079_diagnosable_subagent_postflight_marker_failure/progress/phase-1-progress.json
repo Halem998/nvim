@@ -1,0 +1,13 @@
+{
+  "phase": 1,
+  "phase_name": "Guard the Marker Parse and Build Output With jq",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert jq empty guard, parse-failure reason branch, jq -n --arg output, remove stale comment", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 2, "description": "Manually drive hook against scratch fixtures and confirm valid JSON output", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
