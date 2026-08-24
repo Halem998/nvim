@@ -227,6 +227,56 @@ gate_check("sentence-boundary-glue-binder-exempted", sentence_boundary_glue_coun
     "Formally we require ∀x.P and ∃y.E to hold in the model."
 ) == 0, "expected both binder-adjacent transitions to be exempted")
 
+# Extended binder/hat-abstraction notation fixtures (widened exemption).
+# Each of the three "exemption expected" cases below was manually verified
+# to be REJECTED (nonzero) against the pre-fix narrow exemption
+# (`[∀∃λ][a-z]\.[A-Z]`) before this widening -- these are not tautologies
+# that would have passed all along:
+#   prefix-hat-notation-exempted:        old count 1, new count 0
+#   postfix-hat-notation-exempted:       old count 1, new count 0
+#   fragmented-multivar-binder-exempted: old count 1, new count 0
+gate_check("sentence-boundary-glue-prefix-hat-exempted", sentence_boundary_glue_count(
+    "Consider ˆx.Fx as a property term."
+) == 0, "expected the U+02C6 prefix-hat transition to be exempted")
+gate_check("sentence-boundary-glue-postfix-hat-exempted", sentence_boundary_glue_count(
+    "when a property term, _x.Fx_ ˆ , appears here it is fine."
+) == 0, "expected the postfix hat-abstraction (real bacon_a_case excerpt shape) to be exempted")
+gate_check("sentence-boundary-glue-fragmented-multivar-exempted", sentence_boundary_glue_count(
+    "( _λx_ 1 _. . . xn.Rx_ 1 _. . . xn_ ) is the relation."
+) == 0, "expected the markdown-emphasis/subscript-fragmented multi-variable run (real "
+         "goodman_2024 excerpt shape) to be exempted")
+
+# Negative / over-exemption guard: genuine word-fusion corruption unrelated
+# to binder notation must still be counted and still flag at >= 3, proving
+# the widened exemption did not become a blanket pass.
+gate_check("sentence-boundary-glue-genuine-fusion-still-counted", sentence_boundary_glue_count(
+    "The proposition isalsomodal.Thus we conclude the theorem.Since "
+    "iscontractible.Since the result holds."
+) >= 3, "expected genuine fusion corruption (isalsomodal.Thus / iscontractible.Since "
+        "style) to remain counted and still flag at >= 3")
+
+# Self-interference guard: a period-terminated fragment immediately
+# preceding an exempted binder span, whose deletion glues that fragment
+# onto the text following the span. Asserts the resulting count matches
+# the SAME text with the binder notation removed by hand (i.e. the
+# exemption behaves exactly as if the notation were deleted, introducing
+# no match beyond what a hand-deletion would already produce) -- guards
+# against the blanket-global-strip self-interference regression recorded
+# in this function's docstring (11 -> 26 hits on a real MIXED document).
+_self_interference_text = "The proof isc.∀x.Ergonomic and complete."
+_self_interference_hand_removed = "The proof isc.Ergonomic and complete."
+gate_check(
+    "sentence-boundary-glue-self-interference-guard",
+    sentence_boundary_glue_count(_self_interference_text)
+    == sentence_boundary_glue_count(_self_interference_hand_removed),
+    "expected the exemption's count on a text with an adjacent binder span "
+    f"({sentence_boundary_glue_count(_self_interference_text)}) to match the same text "
+    f"with the notation removed by hand "
+    f"({sentence_boundary_glue_count(_self_interference_hand_removed)}) -- an exemption "
+    "must never introduce a match beyond what hand-deletion of the notation would "
+    "already produce",
+)
+
 if failures:
     print("\n[self-test] FAILURES:", file=sys.stderr)
     for f in failures:

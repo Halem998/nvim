@@ -216,28 +216,32 @@ variant rather than assuming the report's claim transfers.
 
 ---
 
-### Phase 3: Extend In-Script Self-Test Fixtures [NOT STARTED]
+### Phase 3: Extend In-Script Self-Test Fixtures [COMPLETED]
 
 **Goal**: `literature-convert.sh --self-test` covers the notation shapes the old exemption missed
 and guards against over-exemption and substitution self-interference.
 
 **Tasks**:
-- [ ] Add `gate_check` fixtures alongside the existing three (near
-      `literature-convert.sh:220-227`):
-  - [ ] Prefix hat with U+02C6: exemption expected.
-  - [ ] Postfix hat (`_x.Fx_ ˆ` shape, drawn from the real `bacon_a_case` excerpt): exemption
-        expected.
-  - [ ] Markdown-emphasis + subscript-digit fragmented multi-variable run
+- [x] Add `gate_check` fixtures alongside the existing three (near
+      `literature-convert.sh:220-227`): *(completed)*
+  - [x] Prefix hat with U+02C6: exemption expected. *(completed)*
+  - [x] Postfix hat (`_x.Fx_ ˆ` shape, drawn from the real `bacon_a_case` excerpt): exemption
+        expected. *(completed)*
+  - [x] Markdown-emphasis + subscript-digit fragmented multi-variable run
         (`( _λx_ 1 _. . . xn.Rx_ 1 _. . . xn_ )`, the real `goodman_2024` excerpt): exemption
-        expected.
-  - [ ] **Negative / over-exemption guard**: genuine fusion shapes (`isalsomodal.Thus`,
-        `iscontractible.Since`) still counted, >= 3 still flags.
-  - [ ] **Self-interference guard**: text where an exemption span sits between two fragments that
+        expected. *(completed)*
+  - [x] **Negative / over-exemption guard**: genuine fusion shapes (`isalsomodal.Thus`,
+        `iscontractible.Since`) still counted, >= 3 still flags. *(completed)*
+  - [x] **Self-interference guard**: text where an exemption span sits between two fragments that
         would form a spurious `[a-z]\.[A-Z]` if the span were naively deleted — assert the count
         does not *increase* relative to the same text with the notation removed by hand.
-- [ ] Keep the three existing fixtures byte-identical; do not renumber or reword them.
-- [ ] Verify each new fixture fails against the *pre-fix* gate (temporarily, via git stash or a
-      local copy) so none is a tautology that would have passed all along.
+        *(completed: fixture asserts equality against the hand-removed baseline, both = 1)*
+- [x] Keep the three existing fixtures byte-identical; do not renumber or reword them. *(completed:
+      confirmed via `git diff` — pure addition after the existing block, no lines touched)*
+- [x] Verify each new fixture fails against the *pre-fix* gate (temporarily, via git stash or a
+      local copy) so none is a tautology that would have passed all along. *(completed: manually
+      re-ran each new positive fixture against the narrow pre-fix pattern
+      `[∀∃λ][a-z]\.[A-Z]` — all three read count=1 (rejected) before the widening)*
 
 **Timing**: 1 hour
 
