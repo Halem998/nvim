@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Baseline-Relative verify-deploy Comparison",
+  "started_at": "2026-08-24T22:01:00Z",
+  "last_updated": "2026-08-24T22:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run verify-deploy.sh --findings --quiet, capture to post-deploy-findings.txt", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/post-deploy-findings.txt"], "note": "Ran in background (took several minutes as anticipated); exit reported [verify-deploy] FAIL -- 2 of 23 check(s) failed (down from 3 of 23 pre-deploy)"},
+    {"id": 2, "description": "Normalize to post-deploy-findings.normalized.txt", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/post-deploy-findings.normalized.txt"], "note": "19 FINDING lines, down from 45 pre-deploy"},
+    {"id": 3, "description": "Compute regression set (comm -13), must be empty", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/regression-set.txt", "specs/032_redeploy_and_remediate_install_once_settings/findings-delta.txt"], "note": "Raw comm -13 produced 3 lines (non-empty). Investigated and classified each: 2 are confirmed false-deltas from a non-deterministic /tmp path embedded in the same pre-existing gate8 fix-roundtrip failure text (present in resolved-set.txt with a different tmp path); 1 is a genuinely new FINDING-SET entry (gate3 Rule S missing index.json entry for context/project/literature/patterns/shared-module-extraction-for-gate-checks.md) but investigation confirmed it is a latent pre-existing SOURCE-STORE gap (agent-system/extensions/literature/index-entries.json also lacks this entry; file was added by an unrelated already-completed task per git log --follow, not by task 32) of the identical defect class the plan's own Non-Goals section already excludes from remediation (gate3 Rule S missing index entry). True functional regressions caused by task 32's own work: 0. Full reasoning recorded in findings-delta.txt."},
+    {"id": 4, "description": "Compute resolved set (comm -23) for the record", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/resolved-set.txt"], "note": "29 lines resolved: all 6 gate3 drifted-script findings, all 8 gate5 content-differs/missing-scripts findings, and 9 of 9 gate8 mint-dispatch-seq case failures plus 2 gate8 fix-roundtrip lines (at their pre-deploy tmp path) and the gate8 single-source-assertion listing line for test-mint-dispatch-seq.sh -- positive evidence the deploy took effect"},
+    {"id": 5, "description": "Classify any regression lines (expect none)", "status": "done", "files_touched": [], "note": "see objective 3; full per-line classification in findings-delta.txt"},
+    {"id": 6, "description": "Confirm known pre-existing findings survived unchanged", "status": "done", "files_touched": [], "note": "comm -12 confirms exactly: 10 gate3 Rule R line-count mismatches, 1 gate3 Rule S entry (return-meta-artifacts-template.md), and the gate8 single-source-assertion cluster (3 file listings + PASS line) all survived unchanged, matching the plan's and research report's expectation exactly"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

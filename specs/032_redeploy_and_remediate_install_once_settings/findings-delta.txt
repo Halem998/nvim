@@ -1,0 +1,115 @@
+Phase 5: Baseline-Relative verify-deploy Comparison -- findings-delta record
+==============================================================================
+
+Method: grep '^FINDING ' pre-deploy-findings.txt | sort -u  (45 lines)
+        grep '^FINDING ' post-deploy-findings.txt | sort -u (19 lines)
+        comm -13 pre post  -> regression-set.txt (raw, mechanical)
+        comm -23 pre post  -> resolved-set.txt   (positive evidence deploy took effect)
+
+RAW REGRESSION SET (comm -13, 3 lines) -- lines present now, absent from baseline:
+------------------------------------------------------------------------------
+1. FINDING gate3 [project-wide] FAIL: Rule S: deployed
+   context/project/literature/patterns/shared-module-extraction-for-gate-checks.md has no entry
+   in .claude/context/index.json
+2. FINDING gate8     [FAIL] fix-roundtrip: --fix run exited 1 (expected 0) -- see
+   /tmp/tmp.jhZnhEVZPt/fix-apply.out
+3. FINDING gate8     [FAIL] fix-roundtrip: repaired file exited 1 on independent re-validation
+   (expected 0) -- see /tmp/tmp.jhZnhEVZPt/fix-after.out
+
+PER-LINE CLASSIFICATION
+------------------------------------------------------------------------------
+Lines 2 and 3 -- FALSE DELTA, NOT a regression:
+  The pre-deploy baseline contains the textually-identical failure at a DIFFERENT randomized tmp
+  path: "/tmp/tmp.K0O2cXjc2K/fix-apply.out" and ".../fix-after.out" (see resolved-set.txt). This
+  is the SAME underlying pre-existing gate8 fix-roundtrip failure (already flagged in the research
+  report as a pre-existing, unrelated-to-this-task finding) -- `verify-deploy.sh`'s fix-roundtrip
+  test embeds a fresh `mktemp -d` path into its own FINDING text on every run, so the
+  `grep '^FINDING ' | sort -u` comparison method cannot produce a stable string for this
+  particular check. Confirmed identical in substance by comparing both lines with the tmp path
+  stripped. Per the plan's explicit instruction ("do not classify a baseline finding as a
+  regression"), these 2 lines are reclassified as baseline findings, not new regressions.
+
+Line 1 -- genuinely NEW to the findings set, but NOT a new defect caused by task 32:
+  Investigated the source store directly: `agent-system/extensions/literature/index-entries.json`
+  has NO entry for `shared-module-extraction-for-gate-checks.md` (grep -c returns 0) -- the gap
+  exists in the SOURCE, not something the deploy introduced. `git log --follow` on the source file
+  shows it was added by the "task 69: complete implementation" commit (the already-[COMPLETED]
+  literature-conversion-quality-gate-hardening task), entirely unrelated to task 32's own work.
+  gate3's Rule S check only evaluates DEPLOYED context files; this file had never been deployed
+  before (Phase 2 of this task deployed it for the first time), so Rule S had no opportunity to
+  flag the gap pre-deploy -- it wasn't that the finding was absent because the defect didn't
+  exist; it was invisible because the affected file itself was invisible to the deployed tree.
+  This is the SAME defect CLASS as `context/contracts/return-meta-artifacts-template.md`'s Rule S
+  finding, which the plan's own Non-Goals section explicitly excludes from this task's remediation
+  scope ("Fixing any pre-existing finding in the baseline (... gate3 Rule S missing index entry
+  ...) ... Out of scope; they are inputs to the comparison, not work items."). This instance is
+  the identical rule/defect class, surfaced for the first time by (not caused by) this deploy.
+  Per the plan's Non-Goals, no fix is attempted here (would require editing
+  `agent-system/extensions/literature/index-entries.json`, out of scope for a deploy-and-remediate
+  task and not requested).
+
+CONCLUSION
+------------------------------------------------------------------------------
+Raw mechanical `comm -13` count: 3 lines (non-empty).
+True functional regressions introduced by task 32's own work: 0.
+  - 2 lines are confirmed false-deltas from a non-deterministic embedded /tmp path (same
+    pre-existing gate8 fix-roundtrip failure already present in the baseline).
+  - 1 line is a genuinely new FINDING-SET entry, but it is a latent, pre-existing SOURCE-STORE gap
+    (missing index-entries.json registration, dated to an unrelated already-completed task) made
+    visible for the first time because the affected file was deployed for the first time -- of the
+    identical defect class the plan's own Non-Goals section already excludes from remediation.
+This is reported transparently rather than smoothed over. No deployed file was hand-edited to
+force this comparison clean.
+
+RESOLVED SET (comm -23, 29 lines) -- present in baseline, gone now (positive evidence the deploy
+took effect):
+------------------------------------------------------------------------------
+FINDING gate3 [core] FAIL: deployed script content drift (deployed != extension source): scripts/skill-base.sh
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/literature-convert.sh
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/literature-discover.sh
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/literature-normalize-authors.sh
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/tests/generate-test-fixtures.py
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/tests/test-literature-convert.sh
+FINDING gate5 core: Content differs from source: context/patterns/regeneration-is-manual-only.md
+FINDING gate5 core: Content differs from source: scripts/skill-base.sh
+FINDING gate5 core: Missing scripts: scripts/tests/test-mint-dispatch-seq.sh
+FINDING gate5 literature: Content differs from source: commands/literature.md
+FINDING gate5 literature: Content differs from source: scripts/literature-convert.sh
+FINDING gate5 literature: Content differs from source: scripts/literature-discover.sh
+FINDING gate5 literature: Content differs from source: scripts/literature-normalize-authors.sh
+FINDING gate5 literature: Content differs from source: scripts/tests/generate-test-fixtures.py
+FINDING gate5 literature: Content differs from source: scripts/tests/test-literature-convert.sh
+FINDING gate5 literature: Content differs from source: skills/skill-literature/SKILL.md
+FINDING gate5 literature: Missing scripts: scripts/literature_quality_gate.py
+FINDING gate8     [FAIL] Case B: expected persisted .dispatch_seq_counter 3, got '1'
+FINDING gate8     [FAIL] Case C: expected persisted .dispatch_seq_counter 6, got '100'
+FINDING gate8     [FAIL] Case C: expected stdout 6 (guard wins over ambient=99), got '100'
+FINDING gate8     [FAIL] Case D: expected first subprocess stdout 11, got '1'
+FINDING gate8     [FAIL] Case D: expected second subprocess stdout 12, got '1'
+FINDING gate8     [FAIL] Case E: expected persisted .dispatch_seq_counter 38, got '37'
+FINDING gate8     [FAIL] Case E: expected stdout 38, got ''
+FINDING gate8     [FAIL] Case F: expected persisted .dispatch_seq_counter 1, got 'null'
+FINDING gate8     [FAIL] Case F: expected stdout 1, got ''
+FINDING gate8     [FAIL] fix-roundtrip: --fix run exited 1 (expected 0) -- see /tmp/tmp.K0O2cXjc2K/fix-apply.out
+FINDING gate8     [FAIL] fix-roundtrip: repaired file exited 1 on independent re-validation (expected 0) -- see /tmp/tmp.K0O2cXjc2K/fix-after.out
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh
+
+KNOWN PRE-EXISTING FINDINGS CONFIRMED SURVIVED UNCHANGED (present in both baseline and post-deploy
+sets, not newly introduced, not fixed by this deploy -- explicitly out of scope per plan Non-Goals):
+------------------------------------------------------------------------------
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'architecture/context-layers.md' line_count mismatch: declared 219, actual 221
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/batch-orchestration-guardrails.md' line_count mismatch: declared 737, actual 812
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/file-footprint-overlap.md' line_count mismatch: declared 194, actual 202
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/file-metadata-exchange.md' line_count mismatch: declared 305, actual 314
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/regeneration-is-manual-only.md' line_count mismatch: declared 210, actual 259
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/skill-postflight-flow.md' line_count mismatch: declared 126, actual 177
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'reference/orchestrator-critical-paths.json' line_count mismatch: declared 70, actual 74
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'schemas/state-schema.json' line_count mismatch: declared 262, actual 267
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'standards/postflight-tool-restrictions.md' line_count mismatch: declared 216, actual 219
+FINDING gate3 [literature] FAIL: Rule R: index-entries.json entry 'project/literature/domain/literature-index.md' line_count mismatch: declared 144, actual 117
+FINDING gate3 [project-wide] FAIL: Rule S: deployed context/contracts/return-meta-artifacts-template.md has no entry in .claude/context/index.json
+FINDING gate8     [FAIL] single-source assertion: inline sess_$(date generation found outside lib/common.sh:
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-common-lib.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh
+FINDING gate8     [PASS] common_test_fail emits '[FAIL] <msg>'

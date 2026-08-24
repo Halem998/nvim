@@ -1,0 +1,24 @@
+  [FAIL] doc-lint reported failures
+         re-run without --quiet for detail: bash .claude/scripts/check-extension-docs.sh
+  [FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)
+         re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh
+[verify-deploy] FAIL -- 2 of 23 check(s) failed
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'architecture/context-layers.md' line_count mismatch: declared 219, actual 221
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/batch-orchestration-guardrails.md' line_count mismatch: declared 737, actual 812
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/file-footprint-overlap.md' line_count mismatch: declared 194, actual 202
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/file-metadata-exchange.md' line_count mismatch: declared 305, actual 314
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/regeneration-is-manual-only.md' line_count mismatch: declared 210, actual 259
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/skill-postflight-flow.md' line_count mismatch: declared 126, actual 177
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'reference/orchestrator-critical-paths.json' line_count mismatch: declared 70, actual 74
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'schemas/state-schema.json' line_count mismatch: declared 262, actual 267
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'standards/postflight-tool-restrictions.md' line_count mismatch: declared 216, actual 219
+FINDING gate3 [literature] FAIL: Rule R: index-entries.json entry 'project/literature/domain/literature-index.md' line_count mismatch: declared 144, actual 117
+FINDING gate3 [project-wide] FAIL: Rule S: deployed context/contracts/return-meta-artifacts-template.md has no entry in .claude/context/index.json
+FINDING gate3 [project-wide] FAIL: Rule S: deployed context/project/literature/patterns/shared-module-extraction-for-gate-checks.md has no entry in .claude/context/index.json
+FINDING gate8     [FAIL] fix-roundtrip: --fix run exited 1 (expected 0) -- see /tmp/tmp.jhZnhEVZPt/fix-apply.out
+FINDING gate8     [FAIL] fix-roundtrip: repaired file exited 1 on independent re-validation (expected 0) -- see /tmp/tmp.jhZnhEVZPt/fix-after.out
+FINDING gate8     [FAIL] single-source assertion: inline sess_$(date generation found outside lib/common.sh:
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-common-lib.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh
+FINDING gate8     [PASS] common_test_fail emits '[FAIL] <msg>'

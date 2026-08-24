@@ -390,29 +390,52 @@ this: the grant survived a full deploy.
 
 ---
 
-### Phase 5: Baseline-Relative verify-deploy Comparison [NOT STARTED]
+### Phase 5: Baseline-Relative verify-deploy Comparison [COMPLETED]
 
 **Goal**: Run the post-deploy findings capture and prove, mechanically, that no finding present now
 was absent from the pre-deploy baseline. Pre-existing findings are explicitly **not** failures.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/verify-deploy.sh --findings --quiet` capturing full output to
+- [x] Run `bash .claude/scripts/verify-deploy.sh --findings --quiet` capturing full output to
   `specs/032_redeploy_and_remediate_install_once_settings/post-deploy-findings.txt`. Note this
   invokes `run-all.sh` internally and takes several minutes — allow for it rather than timing out
-  and retrying.
-- [ ] Normalize with the tool's documented consumer pattern:
+  and retrying. *(completed: ran in background per its multi-minute runtime; `[verify-deploy] FAIL
+  -- 2 of 23 check(s) failed`, down from 3 of 23 pre-deploy)*
+- [x] Normalize with the tool's documented consumer pattern:
   `grep '^FINDING ' post-deploy-findings.txt | sort -u > post-deploy-findings.normalized.txt`.
-- [ ] Compute the **regression set** — findings present now and absent from the baseline:
-  `comm -13 pre-deploy-findings.normalized.txt post-deploy-findings.normalized.txt`.
-- [ ] Compute the **resolved set** for the record (present in baseline, gone now):
+  *(completed: 19 lines, down from 45 pre-deploy)*
+- [x] Compute the **regression set** — findings present now and absent from the baseline:
+  `comm -13 pre-deploy-findings.normalized.txt post-deploy-findings.normalized.txt`. *(completed:
+  raw output 3 lines — see classification below and `findings-delta.txt`)*
+- [x] Compute the **resolved set** for the record (present in baseline, gone now):
   `comm -23 pre-deploy-findings.normalized.txt post-deploy-findings.normalized.txt`. Expect the
   gate3/gate5 drift findings and the gate8 mint-dispatch-seq case failures to appear here.
-- [ ] For each line in the regression set, if any: classify it and record it. Do **not** classify a
+  *(completed: 29 lines — all 6 gate3 drifted-script findings, all 8 gate5 findings, and all 9
+  gate8 mint-dispatch-seq case failures resolved, exactly as expected)*
+- [x] For each line in the regression set, if any: classify it and record it. Do **not** classify a
   baseline finding as a regression, and do **not** attempt to fix pre-existing findings.
-- [ ] Explicitly confirm the known pre-existing findings survived unchanged rather than being
+  *(completed — full classification in `findings-delta.txt`: 2 of the 3 raw regression lines are
+  confirmed false-deltas from a non-deterministic `/tmp/tmp.XXXXXXXXXX` path embedded in the same
+  pre-existing gate8 fix-roundtrip failure text (present in the resolved set at a different tmp
+  path) — reclassified as baseline findings per this instruction, not regressions. The 3rd line is
+  a gate3 Rule S missing-index-entry finding for
+  `context/project/literature/patterns/shared-module-extraction-for-gate-checks.md`; investigation
+  confirmed the SOURCE's own `agent-system/extensions/literature/index-entries.json` also lacks
+  this entry (the gap predates task 32, traced via `git log --follow` to the unrelated
+  already-completed "task 69: complete implementation" commit that added the file) — it is the
+  identical defect class as `return-meta-artifacts-template.md`'s Rule S finding, which this
+  plan's own Non-Goals section already excludes from remediation scope; it surfaced only because
+  Phase 2 deployed the file for the first time, not because task 32 introduced any new defect. Net
+  functional regressions caused by task 32's own work: 0. No pre-existing finding was fixed and no
+  deployed file was hand-edited to force this comparison clean.)*
+- [x] Explicitly confirm the known pre-existing findings survived unchanged rather than being
   re-introduced: the 10 gate3 "Rule R" line-count mismatches, the gate3 "Rule S"
   `return-meta-artifacts-template.md` index entry, and the gate8 single-source-assertion /
-  fix-roundtrip failures.
+  fix-roundtrip failures. *(completed: `comm -12` confirms exactly the 10 gate3 Rule R mismatches,
+  the 1 gate3 Rule S `return-meta-artifacts-template.md` entry, and the gate8
+  single-source-assertion cluster (3 file listings + PASS line) survived byte-identically; the
+  gate8 fix-roundtrip pair also survived in substance, modulo its non-deterministic tmp path per
+  above)*
 
 **Timing**: 0.75 hours
 
@@ -428,6 +451,18 @@ mint-dispatch-seq case failures will move to the resolved set. These are hypothe
 must report the actual line counts of the regression set and the resolved set, and must not
 retroactively edit `pre-deploy-findings.normalized.txt` to make the comparison come out clean —
 that file is frozen input from Phase 1.
+
+**Scope Hypothesis — actual measured values**: resolved set is **29 lines** (not ~20 as the ~11+~9
+hypothesis implied) — all 6 gate3 drifted-script findings, all 8 gate5 content-differs/missing
+findings, all 9 gate8 mint-dispatch-seq case failures, plus the 2 gate8 fix-roundtrip lines and the
+gate8 `test-mint-dispatch-seq.sh` single-source-assertion listing line also moved into the resolved
+set (these last 3 move because their FINDING text embeds either a fresh `/tmp` path or the
+now-irrelevant single-source-assertion listing scope, not because of a semantic difference — see
+Phase 5 task classification for the fix-roundtrip detail). Raw regression set (`comm -13`) is
+**3 lines, not 0** — see the per-line classification recorded against the Phase 5 tasks below and
+in `findings-delta.txt`: 2 are confirmed false-deltas (non-deterministic tmp path), and 1 is a
+genuinely new FINDING-SET line that is nonetheless a pre-existing, already-out-of-scope-by-class
+source-store gap, not a regression caused by task 32's own work.
 
 **Files to modify**:
 - `specs/032_redeploy_and_remediate_install_once_settings/post-deploy-findings.txt` - new
