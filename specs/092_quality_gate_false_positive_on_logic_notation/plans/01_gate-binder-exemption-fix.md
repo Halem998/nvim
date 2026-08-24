@@ -370,27 +370,38 @@ implementer looks, so neither is rediscovered or accidentally reversed.
 
 ---
 
-### Phase 6: Deploy, Full Gate, and Regression Sweep [NOT STARTED]
+### Phase 6: Deploy, Full Gate, and Regression Sweep [COMPLETED]
 
 **Goal**: Source and deploy copies are in sync, every suite passes, and the outcome — including any
 open gap from Phase 4 — is recorded.
 
 **Tasks**:
-- [ ] Deploy the source store to `.claude/` via the project's deploy path
-      (`.claude/scripts/deploy-headless.sh` or the extension picker's reload).
-- [ ] `diff` the deployed `.claude/scripts/literature_quality_gate.py` against the source-store copy
+- [x] Deploy the source store to `.claude/` via the project's deploy path
+      (`.claude/scripts/deploy-headless.sh` or the extension picker's reload). *(completed:
+      non-destructive `deploy-headless.sh` default mode, run twice — a first pass revealed
+      `tests/test-quality-gate-notation.sh` was missing from `manifest.json`'s `provides.scripts`
+      list (Phase 1's new harness was never registered), fixed, then redeployed)*
+- [x] `diff` the deployed `.claude/scripts/literature_quality_gate.py` against the source-store copy
       and confirm byte-identical parity (this parity was clean before the change and must remain so).
-- [ ] Run the full suite set:
-  - [ ] `literature-convert.sh --self-test`
-  - [ ] `tests/test-quality-gate-notation.sh` (Phase 1 harness, post-fix expectations)
-  - [ ] `tests/test-literature-convert.sh` (pre-existing fallback/two-column regression suite)
-- [ ] Re-run the five-fixture count table one final time against the **deployed** copy and confirm
-      it matches the source-store results.
-- [ ] Record in the implementation summary: the before/after count table, the Phase 4 reconversion
+      *(completed: byte-identical; also confirmed for `literature-convert.sh`,
+      `tests/test-quality-gate-notation.sh`, and the new domain context note)*
+- [x] Run the full suite set:
+  - [x] `literature-convert.sh --self-test` *(completed: 26/26 fixtures pass, source and deployed
+        output byte-identical)*
+  - [x] `tests/test-quality-gate-notation.sh` (Phase 1 harness, post-fix expectations) *(completed:
+        5/5 fixtures pass, source and deployed output byte-identical)*
+  - [x] `tests/test-literature-convert.sh` (pre-existing fallback/two-column regression suite)
+        *(completed: 13 passed, 0 failed)*
+- [x] Re-run the five-fixture count table one final time against the **deployed** copy and confirm
+      it matches the source-store results. *(completed: identical — see harness run above)*
+- [x] Record in the implementation summary: the before/after count table, the Phase 4 reconversion
       result (or the captured provisioning failure if it blocked), the runtime measurement, and the
-      MIXED-document decision.
-- [ ] Commit with `task 92: complete implementation` conventions; stage only the files this task
-      touched (never `git add -A`).
+      MIXED-document decision. *(completed, see summary)*
+- [x] Commit with `task 92: complete implementation` conventions; stage only the files this task
+      touched (never `git add -A`). *(completed — deliberately excludes specs/TODO.md,
+      specs/state.json, specs/events.jsonl from every phase commit in this task, since other
+      agents were concurrently modifying those same shared files for unrelated tasks throughout
+      this dispatch; task-level status transition is left to the orchestrator's own postflight)*
 
 **Timing**: 0.75 hours
 
@@ -411,19 +422,28 @@ open gap from Phase 4 — is recorded.
 
 ## Testing & Validation
 
-- [ ] `goodman_2024_higher_order_logic_as_metaphysics` count = 0.
-- [ ] `bacon_a_case_for_higher_order_metaphysics` count = 0.
-- [ ] `bacon_dorr_2024_classicism` still trips the gate on a **freshly reconverted primary-tier**
-      output (or the failure is recorded as an open, evidenced gap).
-- [ ] `hott_book_2013_...` count unchanged (no decrease, **no increase**).
-- [ ] `ahrens_north_...` count unchanged (no decrease, **no increase**).
-- [ ] Three pre-existing `--self-test` sentence-boundary fixtures still pass, byte-identical.
-- [ ] New self-test fixtures (prefix hat, postfix hat, fragmented multi-variable run,
+- [x] `goodman_2024_higher_order_logic_as_metaphysics` count = 0. *(verified: 0)*
+- [x] `bacon_a_case_for_higher_order_metaphysics` count = 0. *(verified: 0)*
+- [x] `bacon_dorr_2024_classicism` still trips the gate on a **freshly reconverted primary-tier**
+      output (or the failure is recorded as an open, evidenced gap). *(verified: fresh
+      `LITERATURE_CONVERTER=pymupdf4llm` conversion rejected with sentence-boundary-glue=9,
+      identical to the pre-fix count on the same reconverted text — no gap, no suppression)*
+- [x] `hott_book_2013_...` count unchanged (no decrease, **no increase**). *(verified: 11 -> 11)*
+- [x] `ahrens_north_...` count unchanged (no decrease, **no increase**). *(verified: 21 -> 21)*
+- [x] Three pre-existing `--self-test` sentence-boundary fixtures still pass, byte-identical.
+      *(verified via `git diff` — pure addition, no existing lines touched)*
+- [x] New self-test fixtures (prefix hat, postfix hat, fragmented multi-variable run,
       over-exemption guard, self-interference guard) all pass, and each was shown to fail pre-fix.
-- [ ] `tests/test-literature-convert.sh` still passes.
-- [ ] Gate runtime on the largest fixture is not materially worse than before.
-- [ ] `~/Projects/Literature/` corpus unmodified throughout.
-- [ ] No task-number references introduced outside `specs/**`.
+      *(verified: all 5 pass; the 3 positive fixtures individually confirmed to read count=1 under
+      the pre-fix narrow pattern)*
+- [x] `tests/test-literature-convert.sh` still passes. *(verified: 13 passed, 0 failed)*
+- [x] Gate runtime on the largest fixture is not materially worse than before. *(verified: 0.030s
+      refined vs 0.027s original, ~1.1x — required an algorithmic restructuring of the postfix-hat
+      match after a first working version measured ~19x slower; see Phase 2's deviation note)*
+- [x] `~/Projects/Literature/` corpus unmodified throughout. *(verified: mtime spot-checks on the
+      PDF and its indexed chunks predate this session throughout)*
+- [x] No task-number references introduced outside `specs/**`. *(verified:
+      `check-task-references.sh agent-system/extensions/literature` reports 0 occurrences)*
 
 ## Artifacts & Outputs
 

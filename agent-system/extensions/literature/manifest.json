@@ -60,7 +60,8 @@
       ".zotero-title-sim.py",
       "tests/generate-test-fixtures.py",
       "tests/test-literature-convert.sh",
-      "tests/test-literature-build-index.sh"
+      "tests/test-literature-build-index.sh",
+      "tests/test-quality-gate-notation.sh"
     ]
   },
   "merge_targets": {
