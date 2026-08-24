@@ -84,6 +84,14 @@ target already exists it is **skipped** (user data preserved). Only new skeleton
 copied. These files are tracked separately in `data_skeleton_files` so that unload can remove
 extension-provided starters without touching user-created files.
 
+**Additive-only, by design**: none of the semantics above ever delete a deployed file because its
+source-store entry disappeared -- `copy_category` only ever adds or overwrites. Reverse-direction
+detection (deployed files/index rows no active extension declares) is a separate mechanism,
+`verify.lua`'s `M.find_orphans` (`verify-deploy.sh` gate 13); see
+[Deploy Orphan Detection](../patterns/deploy-orphan-detection.md) for the exclusion contract and
+[Extension System Architecture](../../../docs/architecture/extension-system.md)'s "Additive-Only
+Copy/Index Merge and Orphan Detection" section for the full decision.
+
 ---
 
 ## Function Signature
@@ -180,3 +188,4 @@ loop above for every surviving active extension, then clears the snapshot stagin
 
 - [Extension Development Guide](extension-development.md) - How to create a new extension
 - [Extension System Architecture](../../../docs/architecture/extension-system.md) - Full architecture overview
+- [Deploy Orphan Detection](../patterns/deploy-orphan-detection.md) - Reverse-direction (deployed-but-undeclared) detection, exclusion contract

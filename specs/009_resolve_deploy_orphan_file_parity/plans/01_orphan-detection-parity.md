@@ -372,23 +372,23 @@ correct about. No source file is edited to achieve it.
 
 ---
 
-### Phase 6: Record the Decision and Close the Error Records [NOT STARTED]
+### Phase 6: Record the Decision and Close the Error Records [COMPLETED]
 
 **Goal**: Make the additive-only-plus-detection decision discoverable from the deploy documentation,
 and close both `errors.json` records this task was chartered to cover.
 
 **Tasks**:
-- [ ] Add a short subsection to `agent-system/extensions/core/docs/architecture/extension-system.md`
+- [x] Add a short subsection to `agent-system/extensions/core/docs/architecture/extension-system.md`
       stating that copy and index merge are additive-only by design, that removal is a deliberate
       manual action (targeted deletion or `deploy-headless.sh --wipe`), and that drift is caught by
       `verify-deploy.sh` gate 13 -- pointing at the Phase 1 context doc rather than restating it.
-- [ ] Add the same pointer to `agent-system/extensions/core/context/guides/loader-reference.md` where
+- [x] Add the same pointer to `agent-system/extensions/core/context/guides/loader-reference.md` where
       it describes the copy engine, if that file has a natural anchor; skip it if it does not rather
       than forcing a section.
-- [ ] Close both error records:
+- [x] Close both error records:
       `bash .claude/scripts/errors-append.sh update --id err_1786349061556_LuKGif --fix-status fixed --fix-task 9`
       and the same for `err_1786350581273_TAWj0I`.
-- [ ] Write the implementation summary, recording the direction (a) decision, the confirmed orphan
+- [x] Write the implementation summary, recording the direction (a) decision, the confirmed orphan
       count, and any discrepancy between the plan's hypotheses and what was measured.
 
 **Timing**: 0.75 hours
@@ -413,17 +413,17 @@ and close both `errors.json` records this task was chartered to cover.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh` exits 0 (all five
-      assertions).
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh` -- gate 13 green, gates 0-12
-      findings set unchanged versus the pre-work capture.
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh --findings --quiet` produces a
-      clean, diffable findings set.
-- [ ] `bash .claude/scripts/check-task-references.sh` (or the repo's equivalent lint) reports no new
-      task-number references outside `specs/**`.
-- [ ] `jq -e .` parses `agent-system/extensions/core/manifest.json`,
-      `agent-system/extensions/core/index-entries.json`, and `.claude/context/index.json`.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh` exits 0 (all five
+      assertions). *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0. *(deviation: altered — pre-existing unrelated test-validate-return-meta.sh failure; new suite passes, see summary)*
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh` -- gate 13 green, gates 0-12
+      findings set unchanged versus the pre-work capture. *(deviation: altered — gate 13 confirmed green post-Phase-5; exact before/after diff not captured in this concurrent multi-agent session, verified by direct isolation instead, see summary)*
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh --findings --quiet` produces a
+      clean, diffable findings set. *(verified by construction; see summary's Plan Deviations for the full-run timing note)*
+- [x] `bash .claude/scripts/check-task-references.sh` (or the repo's equivalent lint) reports no new
+      task-number references outside `specs/**`. *(completed: 0 occurrences)*
+- [x] `jq -e .` parses `agent-system/extensions/core/manifest.json`,
+      `agent-system/extensions/core/index-entries.json`, and `.claude/context/index.json`. *(completed)*
 
 ## Artifacts & Outputs
 

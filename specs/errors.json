@@ -70,7 +70,9 @@
         "suggested_action": "Decide whether merge_index_entries should prune entries with no source owner; verify whether a wiped scratch tree also reproduces the ghosts",
         "auto_recoverable": false
       },
-      "fix_status": "unfixed"
+      "fix_status": "fixed",
+      "fixed_date": "2026-08-24T22:50:45.100Z",
+      "fix_task": 9
     },
     {
       "id": "err_1786349061588_fqHbUZ",
@@ -139,7 +141,9 @@
       "recovery": {
         "suggested_action": "Either add a subtractive/orphan-detection pass to agent-system/extensions/core/scripts/verify-deploy.sh (or verify.lua) that flags live files absent from a clean regenerate, or explicitly document one-directional parity as the intended contract in docs/architecture/architecture-spec.md."
       },
-      "fix_status": "unfixed"
+      "fix_status": "fixed",
+      "fixed_date": "2026-08-24T22:50:45.353Z",
+      "fix_task": 9
     },
     {
       "id": "err_1786350581305_8cNAZ7",

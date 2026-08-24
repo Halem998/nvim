@@ -589,6 +589,31 @@ overwritten by a later restore).
 
 ---
 
+## Additive-Only Copy/Index Merge and Orphan Detection
+
+`loader.copy_category` and `install-extension.sh`'s `merge_index_entries()` are both
+**additive-only by design**: neither ever deletes a deployed file or a merged `context/index.json`
+row just because the corresponding source-store entry disappeared. This is a deliberate safety
+property, not an oversight -- a deploy must never remove content from a target repo on its own,
+so a file that a target repo has customized, or an entry another extension still relies on, is
+never silently dropped by a routine load/reload/resync.
+
+The tradeoff is that this makes the system blind, on its own, to the reverse direction: a file
+whose source-store owner is later deleted (e.g. by a commit that removes it from
+`agent-system/extensions/**`) simply stays in the deploy tree forever, since nothing ever asks
+"is this deployed file still declared by anyone?" `verify.lua`'s `M.find_orphans` (exposed as
+`manager.find_orphans` and as `verify-deploy.sh` gate 13) closes that blind spot by computing the
+declared set across every active extension and reporting deployed files or `context/index.json`
+rows that no manifest declares. It is **detection only** -- gate 13 never deletes anything;
+resolving a reported orphan (targeted deletion, or a full `deploy-headless.sh --wipe` regenerate
+for broad drift) remains a deliberate human or task-scoped action. See
+[Deploy Orphan Detection](../../context/patterns/deploy-orphan-detection.md) for the full
+exclusion contract (which live-only paths are legitimate noise, not orphans), the measurement
+recipe, and the direction decision behind keeping copy/merge additive-only while adding detection
+on top rather than making either subtractive.
+
+---
+
 ## Related Documentation
 
 - [Adding Domains](../guides/adding-domains.md) - When to use extensions vs core
@@ -596,6 +621,7 @@ overwritten by a later restore).
 - [Context Loading](../guides/context-loading-best-practices.md) - How agents load context
 - [Loader Reference](../../context/guides/loader-reference.md) - Detailed loader function signatures
 - [Context Index Schema](../../context/index.schema.json) - JSON Schema for index.json validation
+- [Deploy Orphan Detection](../../context/patterns/deploy-orphan-detection.md) - Exclusion contract and measurement recipe for gate 13
 
 ---
 
