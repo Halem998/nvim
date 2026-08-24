@@ -321,24 +321,24 @@ paths, so the exclusion contract is enforced by a test rather than by reviewer m
 
 ---
 
-### Phase 5: Resolve the 4 Live Orphans and 2 Ghost Index Rows [NOT STARTED]
+### Phase 5: Resolve the 4 Live Orphans and 2 Ghost Index Rows [COMPLETED]
 
 **Goal**: Clear the measured debris from the live deploy tree so gate 13 is green, using the
 detector's own output as the deletion authority.
 
 **Tasks**:
-- [ ] Re-run gate 13 and take **its** output as the authoritative deletion list. Do not delete
+- [x] Re-run gate 13 and take **its** output as the authoritative deletion list. Do not delete
       anything named only in prose -- specifically, do not act on the task description's REVISED
       11-file list.
-- [ ] For each candidate, grep the repository for inbound references before deleting; if a live file
+- [x] For each candidate, grep the repository for inbound references before deleting; if a live file
       still links to it, record that and stop rather than deleting.
-- [ ] Delete the 4 orphan files from `.claude/`:
+- [x] Delete the 4 orphan files from `.claude/`:
       `context/orchestration/orchestration-validation.md`,
       `context/orchestration/subagent-validation.md`, `docs/architecture/architecture-spec.md`,
       `docs/README.md`.
-- [ ] Remove the 2 ghost rows from `.claude/context/index.json` with `jq`, writing via a temp file
+- [x] Remove the 2 ghost rows from `.claude/context/index.json` with `jq`, writing via a temp file
       and re-validating before replacing.
-- [ ] Confirm the deletion is durable: nothing in the source store re-creates these paths, so a
+- [x] Confirm the deletion is durable: nothing in the source store re-creates these paths, so a
       later default (non-destructive) resync cannot resurrect them. Do **not** run a redeploy as
       part of this phase.
 

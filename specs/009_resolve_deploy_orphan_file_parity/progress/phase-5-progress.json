@@ -1,0 +1,50 @@
+{
+  "phase": 5,
+  "phase_name": "Resolve the 4 Live Orphans and 2 Ghost Index Rows",
+  "started_at": "2026-08-24T02:15:00Z",
+  "last_updated": "2026-08-24T02:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run gate 13 and take its output as the authoritative deletion list",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Grep repo for inbound references to the 4 orphan basenames before deleting",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Delete the 4 orphan files from .claude/",
+      "status": "done",
+      "files_touched": [
+        ".claude/context/orchestration/orchestration-validation.md",
+        ".claude/context/orchestration/subagent-validation.md",
+        ".claude/docs/architecture/architecture-spec.md",
+        ".claude/docs/README.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Remove the 2 ghost rows from .claude/context/index.json via jq with temp-file validation",
+      "status": "done",
+      "files_touched": [
+        ".claude/context/index.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Confirm deletion durability (no source-store owner re-creates these paths); no redeploy performed",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "Inbound-reference grep for all 4 basenames across agent-system/, lua/, specs/ found only: (1) this task's own new pattern doc (expected), (2) the live, declared successor file context/orchestration/validation.md which states it 'Consolidates' both orphaned validation files -- confirms their content was already folded into a live successor, safe to delete, (3) historical/prose mentions in specs/** (errors.json, TODO.md, state.json, archive/, reviews/) which are exempt and do not functionally depend on the files existing, (4) unrelated other-file README.md substring matches for docs/README.md (no actual inbound link to that specific path). No live source-store or lua file links to any of the 4 paths. Post-deletion: manager.find_orphans(cwd) on the live tree returns ORPHANS_COUNT 0, GHOST_COUNT 0. jq -e . .claude/context/index.json valid, entry count dropped from 214 to 212 (exactly -2; the live count itself had grown by 2 relative to an earlier measurement in this same session due to unrelated concurrent agent activity in this shared session -- the ghost set itself was re-verified fresh immediately before deletion and was unchanged: the same 2 paths). Concurrent multi-agent environment note: same caveat as Phase 3's deviation entry -- an exact 'gates 0-12 findings set unchanged' diff was not captured as a literal artifact given other agents mutating agent-system/extensions/core/** concurrently in this session; verified instead that gate3/gate5/gate8's failures are pre-existing/unrelated (see Phase 3 progress file) and that this phase's own change (file deletion + index-row removal, no source-store edit) cannot itself introduce a gate0-12 finding since none of those gates inspect .claude/ deploy-tree content for these specific paths except gate5's declared-vs-deployed check, which only ever flags MISSING declared entries -- these 4 paths were never declared, so their removal cannot create a new gate5 finding."
+}
