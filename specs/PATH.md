@@ -25,13 +25,39 @@ of call sites, the staleness detector always exits 0, and `deploy-headless.sh:23
 
 ## Stage 0 — Get every repo onto one version
 
-Nothing measured against `.claude/` is trustworthy until this is done. The deploy here is 7 days
-and 133 commits stale, and **four tasks marked COMPLETED are not live**.
+**0.1 is DONE** (2026-08-24, commits `a1cddc5d5`..`a064b8b5c`). Measurements taken against
+`.claude/` are trustworthy again, for this repo. `0.2` remains open, so the two consuming repos
+are still on the old tree.
 
-| # | Step | Task |
-|---|------|------|
-| 0.1 | Run the deploy. Rescoped: its original premise (that `mcp-server-ownership.md` was never deployed) is **false** — that file is present and byte-identical. Its purpose is revalidated by measured script drift instead. Capture `verify-deploy --findings` **before and after**. | **32** |
-| 0.2 | Reload the two consuming repos: `<leader>al` in `~/Projects/Logos/Theory` and `~/Projects/BimodalLogic`. | *manual* |
+| # | Step | Task | State |
+|---|------|------|-------|
+| 0.1 | Run the deploy. Rescoped: its original premise (that `mcp-server-ownership.md` was never deployed) is **false** — that file is present and byte-identical. Its purpose is revalidated by measured script drift instead. Capture `verify-deploy --findings` **before and after**. | **32** | ☑ done |
+| 0.2 | Reload the two consuming repos: `<leader>al` in `~/Projects/Logos/Theory` and `~/Projects/BimodalLogic`. | *manual* | ☐ **open — your action** |
+
+**Measured at execution, correcting this file's own earlier figures**: the drift was **44 commits
+and 16 files** under `agent-system/`, not "133 commits / 15 files". The deploy resolved **29 of 45**
+baseline findings, including every script-drift finding and all nine persisted-counter test
+failures. Post-deploy `comm -13` against the baseline returned 3 lines, **0 of them functional
+regressions**: 2 were the same pre-existing gate8 failure re-emitted under a fresh randomized
+`mktemp -d` path (that check embeds its tmp path in its own finding text, so it can never produce
+a stable string for set comparison), and 1 was a latent **source-store** gap — `literature/
+index-entries.json` has no entry for `shared-module-extraction-for-gate-checks.md` — made visible
+for the first time because the file itself had never been deployed before. Same defect class as the
+`return-meta-artifacts-template.md` Rule S finding this file's Stage 5 already treats as
+out-of-scope input.
+
+**The install-once remediation landed**: the deployed `.claude/settings.json` now carries no
+`mcp__lean-lsp__*` grant (permission array 24 → 23 elements, valid JSON), and the source copy was
+never touched.
+
+> **A premise in 0.1 was falsified by execution.** Both the task and its plan predicted the
+> hand-edit would trip the source-store-boundary advisory hook, and required that the reasoning be
+> recorded rather than ignored. **The hook never fired.** `validate-meta-write.sh`'s `is_meta_path`
+> list covers `commands/*`, `skills/*`, `agents/*`, `rules/*`, `context/*`, `extensions/*`,
+> `scripts/*`, `hooks/*`, `*/CLAUDE.md` — a **root-level** file such as `settings.json` matches
+> none of them. This is a coverage gap in the advisory layer aimed precisely at the file class that
+> needs it most: install-once files are the one part of `.claude/` a redeploy cannot restore. Not
+> yet filed as a task.
 
 **Verified safe**: every deployed script in both consuming repos either matches current source or
 matches a *historical* source revision exactly (Theory's `archive-task.sh` matches the 2026-07-16
@@ -47,14 +73,23 @@ previously-completed tasks became live here, so a future reader does not misdate
 | Repo | `skill-base.sh` |
 |---|---|
 | BimodalLogic | current source |
-| `.config/nvim` (here) | stale since 08-17 |
-| Logos/Theory | stale, identical to nvim's copy |
+| `.config/nvim` (here) | **current** (deployed 2026-08-24) |
+| Logos/Theory | stale, was identical to nvim's *former* copy — now the sole laggard |
+
+Verified live after the deploy: `skill_orchestrate_mint_dispatch_seq` returns a correct
+incrementing value in a fresh shell. Before the deploy it returned empty and aborted under
+`set -u` — a failure this very orchestration run hit at its first dispatch and had to work around
+inline. The fix is now in effect here, and **not** in Theory until 0.2 runs.
 
 ---
 
 ## Stage 1 — Restore consequence
 
 Without this stage the rest regresses, exactly as it did since 2026-08-11.
+
+**Now unblocked** by Stage 0: 82, 85 (and, outside this stage, 9, 28, 77, 92). **82 is the head of
+the critical path** — 83, 86 and 93 all sit behind it, making it the single highest-leverage task
+in the backlog.
 
 | # | Step | Task |
 |---|------|------|
@@ -160,6 +195,29 @@ here is **cleared** — the working tree is clean as of 2026-08-24.
 
 ---
 
+## Co-dispatch batching
+
+Two admission rules govern what can be orchestrated *together*, and both are cheap to get wrong.
+Verified against `orchestrate-batch-admit.sh` on 2026-08-24, not assumed:
+
+1. **One self-modifying task per cycle.** A task whose `file_scope` names an orchestrator-critical
+   path is admitted only as the *designated candidate* (lowest task number among the
+   self-modifying candidates that cycle); the rest defer, in sequence, one per cycle. Currently
+   self-modifying: **82** (`verify-deploy.sh`), **85** (`task-lock.sh`), **87**
+   (`context/patterns/`, via `system-defect-discrimination.md`), **91**
+   (`update-task-status.sh`), and — once unblocked — **83**, **86**, **88**. Batching four of them
+   costs four cycles to accomplish one cycle of work.
+2. **`file_scope` overlap defers the higher-numbered task.** Confirmed live: **77 + 80** collide on
+   `literature-build-index.sh`, so 80 defers behind 77.
+
+> **A masking case worth knowing.** The scan emits the *first* overlapping task it finds, not an
+> exhaustive list — so a `cross_batch` **idle** overlap (which admits) can hide an `in_batch`
+> overlap (which would defer). Live example: **20, 84 and 85 all declare
+> `agent-system/extensions/core/scripts/tests/`** with no `dependencies[]` edges between them.
+> Asked to admit 84 + 85, the predicate reports 84's overlap against idle out-of-batch **#20** and
+> admits both — the real in-batch 84/85 collision never surfaces. Keep 84 and 85 in separate
+> batches by hand, or add a `dependencies[]` edge, until this is filed and fixed.
+
 ## Standing rules
 
 1. **Agent-system defects get filed here**, wherever they surface. A fix written into a consuming
@@ -178,7 +236,7 @@ here is **cleared** — the working tree is clean as of 2026-08-24.
 
 | Stage | Tasks | Done |
 |-------|-------|------|
-| 0 — one version | 32 + manual reload | ☐ |
+| 0 — one version | 32 + manual reload | **32 ☑** · reload ☐ |
 | 1 — consequence | 82, 83, 84, 85, 86, 93 | ☐ |
 | 2 — literature | 77, 78, 80, 92 | ☐ |
 | 3 — token | 87, 88, 44, 89 (+62) | ☐ |
