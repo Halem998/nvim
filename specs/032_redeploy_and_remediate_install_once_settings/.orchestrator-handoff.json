@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 1,
+  "summary": "Measured deploy-drift (44 commits/16 files since deploy, 11 gate5 findings), confirmed all three description premises, identified the 4 completed tasks that go live at this deploy, captured a verbatim PRE-deploy verify-deploy.sh baseline, and recommended DEFER on both deferred decisions.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md",
+      "summary": "Deploy-drift baseline, premise confirmation, live-task identification, verbatim PRE-deploy verify-deploy.sh findings, and deferred-decision assessment."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "continuation_path": null,
+  "next_action_hint": "Run /plan 32 to create an implementation plan covering: run deploy-headless.sh; hand-remove the stale mcp__lean-lsp__* entry from deployed .claude/settings.json; run verify-deploy.sh --findings and diff against the verbatim PRE-deploy baseline in the research report (Section 4) to confirm no new findings were introduced; record which tasks became live in a CHANGE_LOG entry without task numbers."
+}

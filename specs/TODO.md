@@ -27,7 +27,7 @@ next_project_number: 94
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
-32 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+32 [RESEARCHED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 9 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 28 [IMPLEMENTING] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
@@ -1817,10 +1817,11 @@ ADDITIONAL ACCEPTANCE CRITERIA:
 ---
 
 ### 32. Redeploy and remediate install once settings
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md]
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 PREMISE CORRECTION, AND A LARGE PRIORITY INCREASE. This task is now the single most important item in the backlog.
