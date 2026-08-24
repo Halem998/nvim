@@ -63,10 +63,16 @@
 #   deploy-headless.sh --dry-run [...]       # report what would run; deploy nothing
 #
 # Exit codes:
-#   0  deploy completed (artifact count reported)
+#   0  deploy completed (artifact count reported) and verification (fast gates) passed
 #   1  usage error, target is not a git repository, or nvim unavailable
 #   2  the headless Neovim invocation failed, reported no result, or (--wipe only) the pre-wipe
 #      snapshot was refused
+#   3  the deploy itself landed, but the inline `verify-deploy.sh --skip-slow` run reported one
+#      or more failures -- unlike 1 and 2, exit 3 means the tree WAS modified. See
+#      context/patterns/regeneration-is-manual-only.md's
+#      `### deploy-headless.sh's Inline Verification and Exit Code 3` subsection for the
+#      fast-vs-full gate split and the current orchestrator-consumer interaction with this code.
+#      Not emitted under --dry-run, which returns 0 before verification ever runs.
 set -euo pipefail
 
 EXT_CONFIG_MODULE="neotex.plugins.ai.shared.extensions.config"
@@ -88,7 +94,7 @@ main() {
       --dry-run) DRY_RUN=true; shift ;;
       --wipe) WIPE=true; shift ;;
       -h|--help)
-        sed -n '2,55p' "$0" | sed 's/^# \{0,1\}//'
+        sed -n '2,75p' "$0" | sed 's/^# \{0,1\}//'
         exit 0
         ;;
       -*)
@@ -230,8 +236,16 @@ main() {
   else
     echo "[deploy-headless] Resynced $count extension(s) into $TARGET/.claude"
   fi
-  echo "[deploy-headless] Verify with: bash $TARGET/.claude/scripts/verify-deploy.sh"
-  exit 0
+
+  echo "[deploy-headless] Verifying deploy (fast gates; shell test suite deferred) ..."
+  if bash "$TARGET/.claude/scripts/verify-deploy.sh" --skip-slow "$TARGET"; then
+    echo "[deploy-headless] Verification passed."
+    exit 0
+  else
+    echo "[deploy-headless] ERROR: the deploy itself landed, but the tree fails verification (fast gates)." >&2
+    echo "[deploy-headless] Re-run the full gate set for detail: bash $TARGET/.claude/scripts/verify-deploy.sh" >&2
+    exit 3
+  fi
 }
 
 main "$@"

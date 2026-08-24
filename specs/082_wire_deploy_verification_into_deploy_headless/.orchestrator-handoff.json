@@ -1,0 +1,27 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 1,
+  "summary": "Wired verify-deploy.sh --skip-slow into deploy-headless.sh's inline post-deploy verification with a new exit code 3 for 'deploy landed, verification failed'. Added a fixture-driven regression suite, registered it in manifest.json, and documented the exit-3 contract and the skill-orchestrate Stage MT-3 collision in regeneration-is-manual-only.md. Verified end-to-end with a deliberately injected index-entries.json line_count mismatch: deploy landed, exit 3, gate 3 named as failing, no human verify-deploy invocation, clean revert confirmed by git status and a matching post-revert findings set. Final full (no --skip-slow) verify-deploy.sh run: 2 of 24 checks failed (gate 3 doc-lint + gate 8 run-all.sh, both pre-existing, no new failures). Two disclosed deviations from the plan's stricter verification wording: (1) the injected finding's specific file/line_count text does not print inline without a follow-up check-extension-docs.sh re-run (deploy-headless.sh's inline call does not pass --findings, by design, to avoid dumping all 14 pre-existing findings on every red deploy); (2) absolute --skip-slow-vs-full timing could not be cleanly re-measured because the implementation host was under heavy externally-caused load for the session (up to ~15 load average) -- the structural mechanism (exactly gate 8 skipped) is confirmed regardless.",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "plan_markers_verified": true,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/082_wire_deploy_verification_into_deploy_headless/summaries/01_wire-verify-into-deploy-headless-summary.md"
+    },
+    {
+      "type": "plan",
+      "path": "specs/082_wire_deploy_verification_into_deploy_headless/plans/01_wire-verify-into-deploy-headless.md"
+    }
+  ],
+  "blockers": [],
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh"
+  ]
+}

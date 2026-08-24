@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Fixture-driven regression test",
+  "started_at": "2026-08-24T23:19:36Z",
+  "last_updated": "2026-08-24T23:21:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-deploy-verify-wiring.sh with 5 fixture-driven cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh"]},
+    {"id": 2, "description": "Register the new test file in manifest.json provides.scripts so it deploys and passes gate 5/13 parity", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Create test-deploy-verify-wiring.sh (plan Phase 3 task 1)",
+      "type": "altered",
+      "reason": "Plan's Phase 3 task list did not explicitly call out manifest.json registration; a real end-to-end deploy run surfaced that the new file was undeclared, which verify-deploy.sh's gate 5 (declared-vs-deployed parity) would eventually need. Added the manifest.json entry as a disclosed, minimal expansion so the new suite actually deploys and is discoverable, consistent with the plan's own disclosed-expansion precedent for this file.",
+      "annotation": "*(deviation: altered — added manifest.json registration for the new test file, not explicitly listed in the plan's Phase 3 tasks)*"
+    }
+  ]
+}

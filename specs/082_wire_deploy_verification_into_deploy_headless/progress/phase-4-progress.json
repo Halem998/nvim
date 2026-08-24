@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "Document the contract and the orchestrator collision",
+  "started_at": "2026-08-24T23:19:36Z",
+  "last_updated": "2026-08-24T23:19:36Z",
+  "objectives": [
+    {"id": 1, "description": "Add subsection to regeneration-is-manual-only.md documenting exit-3 contract, gate split, collision, follow-up, live consequence", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 2, "description": "Add cross-reference comments to both scripts' headers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh", "agent-system/extensions/core/scripts/verify-deploy.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

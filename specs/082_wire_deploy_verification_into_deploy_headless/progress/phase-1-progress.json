@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Add --skip-slow to verify-deploy.sh",
+  "started_at": "2026-08-24T23:19:36Z",
+  "last_updated": "2026-08-24T23:19:36Z",
+  "objectives": [
+    {"id": 1, "description": "Add SKIP_SLOW flag declaration, arg-parse arm, gate 8 skip branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "Update header Usage/Slow-gate-selection docs and --help sed range", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -21,7 +21,7 @@
 # it stands for, so a reader can re-run any single line by hand rather than trusting this script.
 #
 # Usage:
-#   verify-deploy.sh [--quiet] [--findings] [TARGET_REPO]
+#   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [TARGET_REPO]
 #
 # Exit codes:
 #   0  all checks passed
@@ -29,6 +29,17 @@
 #   2  cannot run (target missing, or no deploy tree to inspect) -- an automated gate MUST treat
 #      this the same as exit 1 (failure), never as a pass: a checkpoint that cannot establish the
 #      redeploy landed is in the same position as one that established it did not.
+#
+# Slow-gate selection (--skip-slow):
+#   Skips gate 8 (the shell test suite runner, tests/run-all.sh) ONLY. Gate 8 was measured at
+#   117.9s of the ~2.8min total run, so --skip-slow drops the inline cost to roughly 50-70s while
+#   every other gate still runs. This is purely additive: with --skip-slow absent, default-mode
+#   behavior, findings, and exit codes are byte-for-byte unchanged. A skipped gate 8 never
+#   increments CHECKS or FAILURES and never contributes a finding line. This is the flag
+#   scripts/deploy-headless.sh now passes on its own inline, non-optional invocation of this
+#   script -- see context/patterns/regeneration-is-manual-only.md's
+#   `### deploy-headless.sh's Inline Verification and Exit Code 3` subsection for the full
+#   fast/full split and exit-code contract.
 #
 # Findings mode (--findings, additive-only):
 #   Emits a normalized, one-per-line, machine-diffable findings set across all fourteen gates
@@ -46,6 +57,7 @@ set -uo pipefail
 
 QUIET=false
 FINDINGS=false
+SKIP_SLOW=false
 TARGET=""
 FINDINGS_LIST=()
 
@@ -53,8 +65,9 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
     --findings) FINDINGS=true; shift ;;
+    --skip-slow) SKIP_SLOW=true; shift ;;
     -h|--help)
-      sed -n '2,43p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,54p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     -*)
@@ -391,7 +404,9 @@ fi
 # skips there.
 say "8. Shell test suite runner (tests/run-all.sh)"
 CURRENT_GATE="gate8"
-if [ ! -d "$TARGET/agent-system/extensions" ]; then
+if [ "$SKIP_SLOW" = "true" ]; then
+  say "  [SKIP] --skip-slow: shell test suite deferred (run without --skip-slow for the full gate)"
+elif [ ! -d "$TARGET/agent-system/extensions" ]; then
   say "  [SKIP] $TARGET is a deploy consumer, not the source store -- run-all.sh does not apply"
 elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" ]; then
   fail "tests/run-all.sh not found in source store"

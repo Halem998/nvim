@@ -100,6 +100,54 @@ The full trigger, failure contract, sequencing, and idempotence-guard contract i
 authoritatively, in `context/patterns/batch-orchestration-guardrails.md`'s
 `### The Inter-Cycle Redeploy Checkpoint` subsection. It is cross-referenced here, not restated.
 
+### `deploy-headless.sh`'s Inline Verification and Exit Code 3
+
+Narrow, don't silently rewrite: the correction below is additive to this subsection's own
+contract above, the same way this subsection was additive to the deliberate-invocation sentence
+it narrows. Prior to this correction, `deploy-headless.sh` ended every non-dry-run invocation by
+*echoing* `verify-deploy.sh`'s invocation command rather than running it -- reachable only by a
+human typing the command by hand. `deploy-headless.sh` now runs
+`verify-deploy.sh --skip-slow "$TARGET"` inline, in `main()`'s shared trailing block, on every
+non-dry-run deploy (both the default resync branch and `--wipe`), with its output streamed
+directly to the caller.
+
+**The exit-code contract.** A non-dry-run `deploy-headless.sh` now exits `3` -- distinct from `1`
+(usage error) and `2` (the headless nvim invocation failed, or `--wipe`'s pre-wipe snapshot was
+refused) -- when the deploy itself landed but the inline verification run reported one or more
+failures. Exit 3 means the tree WAS modified, unlike 1 and 2. `--dry-run` never reaches
+verification at all: it returns 0 at its own earlier branch, before the trailing block that calls
+`verify-deploy.sh` runs.
+
+**The fast/full gate split.** The inline call passes `--skip-slow`, a `verify-deploy.sh` flag
+that skips gate 8 (the shell test suite runner, `tests/run-all.sh`) only -- every other gate still
+runs. Gate 8 alone was measured at 117.9s of the script's ~2.8min total run, so `--skip-slow`
+drops the inline cost to roughly 50-70s. The full gate set, including gate 8, remains available on
+demand by running `verify-deploy.sh` with no flag -- `deploy-headless.sh`'s exit-3 failure message
+names that exact command.
+
+**The Stage MT-3 step 7 collision.** `skill-orchestrate/SKILL.md`'s deploy-failure branch is
+written as "Non-zero exit (1 or 2) -> defer unconditionally ... with NO baseline consultation
+whatsoever". Exit 3 sits outside that parenthetical enumeration but inside the leading "Non-zero
+exit" phrase, so the step's behavior on exit 3 is currently ambiguous, and the most likely reading
+routes it through the unconditional-defer branch -- bypassing the pre/post `--findings` baseline
+comparison the checkpoint's other branches exist to consult. The consequence: a pre-existing
+failure that baseline comparison is designed to tolerate would instead defer every remaining task,
+every cycle. A distinct exit code was chosen specifically so a follow-up task can route exit 3
+through the existing baseline-comparison branches with a small, targeted edit rather than a
+redesign; that follow-up is not done by this correction. It would touch
+`skills/skill-orchestrate/SKILL.md` and `context/patterns/batch-orchestration-guardrails.md`,
+neither of which this correction modifies.
+
+**The live consequence, disclosed rather than discovered in production.** As of this correction,
+doc-lint (gate 3, a *fast* gate -- `--skip-slow` does not hide it) reports pre-existing issues in
+this repo's own source store, and gate 8 (deferred inline, but not by a full `verify-deploy.sh`
+run) has pre-existing failing suites. Both predate this correction and are unrelated to it. The
+practical effect: every `deploy-headless.sh` invocation exits 3 until those pre-existing failures
+are fixed. That is the intended behavior -- surfacing a previously-invisible condition is the
+whole point of wiring verification in -- not a regression introduced here. The sanctioned interim
+response, until the pre-existing failures are fixed, is to inspect the named failure and fix it;
+reverting the inline call is not the sanctioned response merely because it now reports truthfully.
+
 ## What This Means for Automation
 
 - **Source-store edits still do not deploy themselves.** Edits under

@@ -176,6 +176,7 @@
       "tests/test-deploy-freshness.sh",
       "tests/test-deploy-orphans.sh",
       "tests/test-deploy-propagation.sh",
+      "tests/test-deploy-verify-wiring.sh",
       "tests/test-double-loading-check.sh",
       "tests/test-handoff-dispatch-identity.sh",
       "tests/test-handoff-reader-parity.sh",

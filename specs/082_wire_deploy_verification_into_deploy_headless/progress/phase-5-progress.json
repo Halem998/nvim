@@ -1,0 +1,39 @@
+{
+  "phase": 5,
+  "phase_name": "Acceptance verification and timing measurement",
+  "started_at": "2026-08-24T23:42:46Z",
+  "last_updated": "2026-08-25T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record pre-change baseline findings", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Introduce deliberate line_count mismatch, deploy, confirm exit 3 and failure surfaced", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 3, "description": "Revert mismatch, re-deploy, confirm finding gone and findings match baseline", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Final full (no --skip-slow) verify-deploy.sh confirmation run", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm git status clean of injection residue", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "description": "Confirm: exit code is 3; the deploy count line printed; the injected mismatch appears by name in the output",
+      "type": "altered",
+      "reason": "check-extension-docs.sh's Rule R is always invoked with --quiet internally by verify-deploy.sh's gate 3 block, and deploy-headless.sh's inline call passes only --skip-slow (not --findings). With --findings absent, gate 3's --quiet output only ever surfaces the generic 'doc-lint reported failures' line plus a pointer to re-run 'bash .claude/scripts/check-extension-docs.sh' for per-file detail -- it never prints the specific broken file/line_count text inline, deliberately vs. by omission (this matches --findings mode's own documented additive-only contract in verify-deploy.sh's header). The exit-3 failure surface IS demonstrated (deploy landed, gate 3 named as failing, non-zero exit, re-run command given) satisfying the task-level ACCEPTANCE criterion, but the plan's stricter 'appears by name' wording is not met without a follow-up command. Not fixed in this task: passing --findings on every inline call would print all pre-existing findings (currently 14) on every failing deploy, a design change beyond Phase 2's authorized scope.",
+      "annotation": "*(deviation: altered — the injected mismatch is confirmed to cause exit 3 and gate-3 failure, but its specific file/line_count text is not printed inline without a follow-up 'check-extension-docs.sh' re-run; recorded as a disclosed limitation rather than silently claimed as met)*"
+    },
+    {
+      "task_id": "5.6",
+      "description": "Measure and record --skip-slow vs full timing, confirming the ~115-120s delta",
+      "type": "deferred",
+      "reason": "The implementation session's host was under heavy, externally-caused load (load average measured up to ~15) for the entire session, inflating every gate's absolute wall-clock time well past the plan's ~50-70s/~2.8min estimates (one clean --skip-slow run alone took ~4 minutes). A clean, uncontended back-to-back timing pair could not be captured in this session. The structural mechanism (gate 8 skipped, only gate 8, verified by its own [SKIP] line in every --skip-slow run and its absence -- 117.9s of measured cost -- from the inline call) is confirmed; the absolute-seconds re-measurement is deferred to a future run on an unloaded host rather than reported as false precision.",
+      "annotation": "*(deviation: deferred — absolute timing re-measurement on an unloaded host)*"
+    },
+    {
+      "task_id": "5-testing-run-all-count",
+      "description": "run-all.sh failure count stays at the pre-existing 3, not 4",
+      "type": "altered",
+      "reason": "Measured 2 pre-existing failing suites in this session (both before and after this task's changes), not the 3 named in the task description (test-common-lib.sh, test-skill-base-lifecycle.sh, test-validate-return-meta.sh). One of the three is passing in this session's environment -- unrelated to this task. The load-bearing property (adding the new suite did not increase the failure count) holds: 48 passed + 2 failed = 50 total, with the new suite counted among the 48 passing.",
+      "annotation": "*(deviation: altered — pre-existing count measured at 2, not 3; count did not increase with the new suite added)*"
+    }
+  ]
+}
