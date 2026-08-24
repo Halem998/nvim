@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Targeted Post-Deploy Acceptance Checks",
+  "started_at": "2026-08-24T21:41:00Z",
+  "last_updated": "2026-08-24T21:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Mint-dispatch-seq acceptance check: grep for jq -r form, no ambient form", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/post-deploy-checks.txt"], "note": "jq -r '(.dispatch_seq_counter // 0) + 1' present at line 963; ambient form dispatch_seq_counter=$((dispatch_seq_counter + 1)) absent -- confirmed fixed"},
+    {"id": 2, "description": "Confirm deployed and source function bodies match textually", "status": "done", "files_touched": [], "note": "diff of skill_orchestrate_mint_dispatch_seq function body (line 960 both copies) is empty -- byte-identical"},
+    {"id": 3, "description": "Run test-mint-dispatch-seq.sh, record case statuses", "status": "done", "files_touched": [], "note": "14 passed, 0 failed, exit 0. All previously-failing cases B, C, D, E, F now PASS."},
+    {"id": 4, "description": "gate5 blind-spot manual diffs: 2 manifest.json + 1 literature pattern doc", "status": "done", "files_touched": [], "note": "all 3 byte-identical (diff -q exit 0 each): .claude/extensions/core/manifest.json, .claude/extensions/literature/manifest.json, .claude/context/project/literature/patterns/shared-module-extraction-for-gate-checks.md"},
+    {"id": 5, "description": "Full reconciliation of all 16 changed-source-files.txt entries", "status": "done", "files_touched": [], "note": "all 16 files classified IDENTICAL (deployed byte-matches source); none missing, none differing, none source-only in this set"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

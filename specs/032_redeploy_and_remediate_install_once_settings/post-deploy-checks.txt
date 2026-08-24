@@ -1,0 +1,70 @@
+=== Mint-dispatch-seq acceptance check ===
+--- grep dispatch_seq_counter in deployed skill-base.sh ---
+949:# Increments the dispatch_seq_counter persisted in the loop guard and returns the new value on
+954:# `.dispatch_seq_counter` back out of `$loop_guard_file` -- never from any ambient shell
+963:  new_seq=$(jq -r '(.dispatch_seq_counter // 0) + 1' "$loop_guard_file")
+966:    '.dispatch_seq_counter = $seq | .last_updated = $updated' \
+
+--- checking for jq -r persisted-counter form ---
+963:  new_seq=$(jq -r '(.dispatch_seq_counter // 0) + 1' "$loop_guard_file")
+PRESENT: persisted-counter form found
+
+--- checking ambient-increment form is ABSENT ---
+ABSENT (GOOD): ambient form removed
+
+=== Extract skill_orchestrate_mint_dispatch_seq function body from both copies ===
+deployed start line: 960, source start line: 960
+function-body diff exit=0
+
+=== test-mint-dispatch-seq.sh run ===
+[INFO] resolved skill-base.sh: /home/benjamin/.config/nvim/.claude/scripts/skill-base.sh
+[INFO] === Case A: fresh shell ===
+[PASS] Case A: fresh-shell mint against guard counter=1 returns 2 on stdout
+[PASS] Case A: fresh-shell mint persists 2 to the guard file
+[INFO] === Case B: repeat call, same shell ===
+[PASS] Case B: repeat call in the same shell returns 3 on stdout
+[PASS] Case B: repeat call persists 3 to the guard file
+[INFO] === Case C: poisoned ambient value ===
+[PASS] Case C: poisoned ambient value (99) ignored; guard counter=5 -> stdout 6
+[PASS] Case C: poisoned-ambient-value call persists 6 to the guard file
+[INFO] === Case D: genuinely separate subprocess ===
+[PASS] Case D: first independent subprocess mint returns 11
+[PASS] Case D: second independent subprocess mint returns 12 (consecutive, not repeated)
+[INFO] === Case E: budget-continuation continuity ===
+[PASS] Case E: post-re-init guard (counter=37) continues at 38, not restarted at 1
+[PASS] Case E: post-re-init guard persists 38
+[PASS] Case E: sibling field .cycle_count is untouched by the mint
+[INFO] === Case F: missing-field tolerance ===
+[PASS] Case F: guard with no dispatch_seq_counter key mints 1
+[PASS] Case F: guard with no dispatch_seq_counter key persists 1
+[INFO] === contamination guard ===
+[PASS] real specs/ tree status is unchanged relative to this suite's pre-run baseline
+
+Results: 14 passed, 0 failed
+test suite exit=0
+
+=== gate5 blind-spot manual diffs ===
+--- core manifest.json ---
+core manifest diff exit=0
+--- literature manifest.json ---
+literature manifest diff exit=0
+--- literature pattern doc: shared-module-extraction-for-gate-checks.md ---
+pattern doc diff exit=0
+
+=== Full 16-file reconciliation ===
+IDENTICAL: agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md -> .claude/context/patterns/regeneration-is-manual-only.md
+IDENTICAL: agent-system/extensions/core/context/schemas/state-schema.json -> .claude/context/schemas/state-schema.json
+IDENTICAL: agent-system/extensions/core/manifest.json -> .claude/extensions/core/manifest.json
+IDENTICAL: agent-system/extensions/core/scripts/skill-base.sh -> .claude/scripts/skill-base.sh
+IDENTICAL: agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh -> .claude/scripts/tests/test-mint-dispatch-seq.sh
+IDENTICAL: agent-system/extensions/core/scripts/validate-state.sh -> .claude/scripts/validate-state.sh
+IDENTICAL: agent-system/extensions/literature/commands/literature.md -> .claude/commands/literature.md
+IDENTICAL: agent-system/extensions/literature/context/project/literature/patterns/shared-module-extraction-for-gate-checks.md -> .claude/context/project/literature/patterns/shared-module-extraction-for-gate-checks.md
+IDENTICAL: agent-system/extensions/literature/manifest.json -> .claude/extensions/literature/manifest.json
+IDENTICAL: agent-system/extensions/literature/scripts/literature-convert.sh -> .claude/scripts/literature-convert.sh
+IDENTICAL: agent-system/extensions/literature/scripts/literature-discover.sh -> .claude/scripts/literature-discover.sh
+IDENTICAL: agent-system/extensions/literature/scripts/literature-normalize-authors.sh -> .claude/scripts/literature-normalize-authors.sh
+IDENTICAL: agent-system/extensions/literature/scripts/literature_quality_gate.py -> .claude/scripts/literature_quality_gate.py
+IDENTICAL: agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py -> .claude/scripts/tests/generate-test-fixtures.py
+IDENTICAL: agent-system/extensions/literature/scripts/tests/test-literature-convert.sh -> .claude/scripts/tests/test-literature-convert.sh
+IDENTICAL: agent-system/extensions/literature/skills/skill-literature/SKILL.md -> .claude/skills/skill-literature/SKILL.md

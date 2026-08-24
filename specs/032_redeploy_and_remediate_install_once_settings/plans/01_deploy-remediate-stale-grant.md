@@ -251,34 +251,39 @@ mint-dispatch-seq fix and the three literature fixes live.
 
 ---
 
-### Phase 3: Targeted Post-Deploy Acceptance Checks [NOT STARTED]
+### Phase 3: Targeted Post-Deploy Acceptance Checks [COMPLETED]
 
 **Goal**: Prove the two things `verify-deploy.sh` alone cannot prove — that the live-observed
 mint-dispatch-seq defect is actually fixed in the deployed tree, and that the 3 files gate5 never
 compares deployed correctly.
 
 **Tasks**:
-- [ ] **Mint-dispatch-seq acceptance check** (the concrete defect this deploy fixes):
+- [x] **Mint-dispatch-seq acceptance check** (the concrete defect this deploy fixes):
   - Confirm the deployed `skill_orchestrate_mint_dispatch_seq` now derives the sequence from the
     loop-guard file: `grep -n "dispatch_seq_counter" .claude/scripts/skill-base.sh` must show
     `new_seq=$(jq -r '(.dispatch_seq_counter // 0) + 1' "$loop_guard_file")` and must **no longer**
-    show `dispatch_seq_counter=$((dispatch_seq_counter + 1))`.
+    show `dispatch_seq_counter=$((dispatch_seq_counter + 1))`. *(completed: form present at line
+    963, ambient form absent)*
   - Extract the function body from both deployed and source copies and confirm they match
-    textually.
+    textually. *(completed: byte-identical)*
   - Run the now-deployed regression suite:
     `bash .claude/scripts/tests/test-mint-dispatch-seq.sh`. Baseline Cases C/D/E/F (and Case B) were
-    FAILing pre-deploy; record which cases pass now.
-- [ ] **gate5 blind-spot manual diffs** — `diff -q` each of the 3 files gate5 does not compare,
+    FAILing pre-deploy; record which cases pass now. *(completed: 14 passed, 0 failed, exit 0 —
+    Cases B, C, D, E, F all now PASS)*
+- [x] **gate5 blind-spot manual diffs** — `diff -q` each of the 3 files gate5 does not compare,
   deployed vs source:
   - `.claude/manifest.json` (or the core manifest at its deployed path) vs
-    `agent-system/extensions/core/manifest.json`
-  - the deployed literature manifest vs `agent-system/extensions/literature/manifest.json`
+    `agent-system/extensions/core/manifest.json`. *(completed: deployed path resolved to
+    `.claude/extensions/core/manifest.json`; byte-identical)*
+  - the deployed literature manifest vs `agent-system/extensions/literature/manifest.json`.
+    *(completed: deployed path `.claude/extensions/literature/manifest.json`; byte-identical)*
   - `.claude/context/project/literature/patterns/shared-module-extraction-for-gate-checks.md` vs its
-    source counterpart
-- [ ] **Full reconciliation**: for every path in `changed-source-files.txt` from Phase 1, `diff -q`
+    source counterpart. *(completed: byte-identical)*
+- [x] **Full reconciliation**: for every path in `changed-source-files.txt` from Phase 1, `diff -q`
   the source file against its deployed counterpart and record any that still differ or are missing.
   Record any file that legitimately has no deployed counterpart (source-only files such as
-  `merge-sources/**`) as such rather than as a failure.
+  `merge-sources/**`) as such rather than as a failure. *(completed: all 16 files classified
+  IDENTICAL; none missing, none differing, none source-only in this set)*
 
 **Timing**: 0.5 hours
 
