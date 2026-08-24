@@ -129,7 +129,8 @@ Standards to check:
 Generate a session ID for this operation:
 
 ```bash
-session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+source .claude/scripts/lib/common.sh
+session_id="$(common_session_id)"
 ```
 
 Invoke the skill by calling the Skill tool with `skill-cslib-vet` and passing:

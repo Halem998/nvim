@@ -48,7 +48,8 @@ fi
 ### Step 2: Generate Session ID
 
 ```bash
-session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+source .claude/scripts/lib/common.sh
+session_id="$(common_session_id)"
 # Two-tier fallback: use LITERATURE_DIR if set and exists, otherwise use per-project specs/literature/
 if [ -n "${LITERATURE_DIR:-}" ] && [ -d "$LITERATURE_DIR" ]; then
   lit_dir="$LITERATURE_DIR"

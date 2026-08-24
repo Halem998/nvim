@@ -41,7 +41,8 @@ Create, edit, or analyze XLSX spreadsheets by delegating to the sheet skill/agen
 
 1. **Generate Session ID**
    ```bash
-   session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+   source .claude/scripts/lib/common.sh
+   session_id="$(common_session_id)"
    ```
 
 2. **Parse Arguments**

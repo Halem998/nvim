@@ -419,7 +419,8 @@ CSLIB_STATE="$CSLIB_DIR/specs/state.json"
 input_value="$input_arg"
 
 # Generate session ID for status transition
-session_id="sess_$(date +%s)_$(head -c8 /dev/urandom | xxd -p 2>/dev/null || date +%N)"
+source .claude/scripts/lib/common.sh
+session_id="$(common_session_id)"
 
 # Read task metadata
 task_name=$(jq -r --argjson num "$input_value" \
@@ -1016,7 +1017,8 @@ CSLIB_DIR="/home/benjamin/Projects/cslib"
 CSLIB_STATE="$CSLIB_DIR/specs/state.json"
 
 # Generate a session ID for status transitions later
-session_id="sess_$(date +%s)_$(head -c8 /dev/urandom | xxd -p 2>/dev/null || date +%N)"
+source .claude/scripts/lib/common.sh
+session_id="$(common_session_id)"
 
 # Read task metadata from state.json
 task_name=$(jq -r --argjson num "$input_value" \

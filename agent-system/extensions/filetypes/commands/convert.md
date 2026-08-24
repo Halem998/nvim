@@ -92,7 +92,8 @@ Convert documents between formats by delegating to the filetypes skill/agent cha
 
 1. **Generate Session ID**
    ```bash
-   session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+   source .claude/scripts/lib/common.sh
+   session_id="$(common_session_id)"
    ```
 
 2. **Parse Arguments**
