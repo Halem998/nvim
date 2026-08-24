@@ -1,0 +1,13 @@
+{
+  "phase": 5,
+  "phase_name": "Full Gate Run and Acceptance-Criteria Walkthrough",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run new suite and 5 adjacent regression suites", "status": "done", "files_touched": []},
+    {"id": 2, "description": "bash -n, jq empty manifest, no .claude/** edits, no task-refs, AC walkthrough, write summary", "status": "done", "files_touched": ["specs/079_diagnosable_subagent_postflight_marker_failure/summaries/01_diagnosable-postflight-marker-failure-summary.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

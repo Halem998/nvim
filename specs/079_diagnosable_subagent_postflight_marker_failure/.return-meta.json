@@ -1,9 +1,45 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/079_diagnosable_subagent_postflight_marker_failure/summaries/01_diagnosable-postflight-marker-failure-summary.md",
+      "summary": "Guarded subagent-postflight.sh's block-reason extraction and events-log-lifecycle.sh's SubagentStop telemetry with jq empty parse-validity checks, added deviation-event logging for the malformed-marker case, a registered 9-case regression suite, and documented the hook-idiom survey plus the two hooks' intentional divergence."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the malformed-postflight-marker defect: subagent-postflight.sh now emits a diagnostic block reason naming the marker path and jq's parse error instead of an empty string, events-log-lifecycle.sh now logs exactly one deviation event for the same malformed marker instead of silently exiting, both changes covered by a new 9-case registered regression suite, and the 51 other jq // idiom sites documented as tolerant-by-design in postflight-control.md."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/hooks/subagent-postflight.sh",
+    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+    "agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/context/patterns/postflight-control.md",
+    "specs/079_diagnosable_subagent_postflight_marker_failure/summaries/01_diagnosable-postflight-marker-failure-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "jq's `//` alternative operator only fires on an absent/null field, never on a JSON parse error. An unguarded `jq -r '.field // \"non-empty default\"' \"$FILE\" 2>/dev/null` silently collapses 'file has no .field' and 'file does not parse as JSON at all' into the same default, with 2>/dev/null also swallowing jq's own diagnostic. Fix: precede with `jq empty \"$FILE\"` and branch the parse-failure case separately. `// empty` (or `// \"\"` where the caller treats empty as a no-op) is safe unguarded since both cases collapse to identical caller behavior anyway -- only a non-empty, semantically load-bearing default needs the guard.",
+      "category": "PATTERN",
+      "source_artifact": "specs/079_diagnosable_subagent_postflight_marker_failure/summaries/01_diagnosable-postflight-marker-failure-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["jq", "parse-error", "alternative-operator", "hook-idiom", "set-e"]
+    },
+    {
+      "content": "In this repo, scripts/events-append.sh (and other core scripts sourcing lib/common.sh's common_repo_root) resolve their write root via a fixed script-path depth from their OWN location, not from the caller's cwd -- and deploy-root-guard.sh additionally refuses to run at all when the immediate parent directory isn't literally named .claude or .opencode (rejects source-store invocation outright). A test that needs to drive such a script in isolation must copy the script (and its sibling scripts/lib deps) into a fresh <tmp>/.claude/{hooks,scripts,scripts/lib}/ tree with <tmp>/specs/ as a sibling, rather than invoking the real hooks/scripts in place -- otherwise it either hard-fails (source-store) or silently writes test rows into the real repo's specs/events.jsonl (deployed).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/079_diagnosable_subagent_postflight_marker_failure/summaries/01_diagnosable-postflight-marker-failure-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["events-append", "deploy-root-guard", "test-isolation", "fixture", "common_repo_root"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

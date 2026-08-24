@@ -344,22 +344,22 @@ report's figure.
 
 ---
 
-### Phase 5: Full Gate Run and Acceptance-Criteria Walkthrough [NOT STARTED]
+### Phase 5: Full Gate Run and Acceptance-Criteria Walkthrough [COMPLETED]
 
 **Goal**: Confirm every acceptance criterion is met and nothing adjacent regressed.
 
 **Tasks**:
-- [ ] Run the new `test-subagent-postflight-marker.sh` suite
-- [ ] Run the adjacent existing suites: `test-postflight-marker-schema.sh`,
+- [x] Run the new `test-subagent-postflight-marker.sh` suite *(completed)*
+- [x] Run the adjacent existing suites: `test-postflight-marker-schema.sh`, *(completed)*
       `test-lint-postflight-boundary.sh`, `test-loop-guard-budget-override.sh`,
       `test-loop-guard-staleness.sh`, `test-skill-base-lifecycle.sh`
-- [ ] `bash -n` (and `shellcheck` if available) on both modified hooks and the new test
-- [ ] `jq empty agent-system/extensions/core/manifest.json`
-- [ ] Walk the six acceptance criteria explicitly, recording for each the command output or test
+- [x] `bash -n` (and `shellcheck` if available) on both modified hooks and the new test *(completed)*
+- [x] `jq empty agent-system/extensions/core/manifest.json` *(completed)*
+- [x] Walk the six acceptance criteria explicitly, recording for each the command output or test *(completed)*
       case name that demonstrates it
-- [ ] Confirm no file under `.claude/**` was modified (`git status --short | grep '^.M \.claude/'`
+- [x] Confirm no file under `.claude/**` was modified (`git status --short | grep '^.M \.claude/'` *(completed)*
       returns nothing)
-- [ ] Confirm no task-number references outside `specs/**`
+- [x] Confirm no task-number references outside `specs/**` *(completed)*
 
 **Timing**: 0.25 hours
 
@@ -383,17 +383,17 @@ substitution rather than silently skipping it.
 
 ## Testing & Validation
 
-- [ ] AC 1: case (c) asserts a non-empty reason naming the marker path and stating parse failure
-- [ ] AC 2: case (b) asserts the `Postflight operations pending` default still fires, and case
+- [x] AC 1: case (c) asserts a non-empty reason naming the marker path and stating parse failure *(completed)*
+- [x] AC 2: case (b) asserts the `Postflight operations pending` default still fires, and case *(completed)*
       (c) asserts the two cases are textually distinguishable
-- [ ] AC 3: case (d) asserts valid JSON stdout for a `.reason` with quote, backslash, and newline
-- [ ] AC 4: events companion case asserts one `deviation` event with a valid `session_id`, and a
+- [x] AC 3: case (d) asserts valid JSON stdout for a `.reason` with quote, backslash, and newline *(completed)*
+- [x] AC 4: events companion case asserts one `deviation` event with a valid `session_id`, and a *(completed)*
       clean no-event exit when the lookup fails
-- [ ] AC 5: survey re-run and classification recorded in `postflight-control.md`
-- [ ] AC 6: both hooks detect the malformed marker with `jq empty`; the intentional divergence
+- [x] AC 5: survey re-run and classification recorded in `postflight-control.md` *(completed)*
+- [x] AC 6: both hooks detect the malformed marker with `jq empty`; the intentional divergence *(completed)*
       and the residual silent case are documented
-- [ ] Non-vacuity: reverting the Phase 1 guard makes cases (c) and (d) fail
-- [ ] No `.claude/**` edits; no task-number references outside `specs/**`
+- [x] Non-vacuity: reverting the Phase 1 guard makes cases (c) and (d) fail *(completed: also confirmed the events companion case fails, per the manual pre-fix-hook re-run in Phase 3)*
+- [x] No `.claude/**` edits; no task-number references outside `specs/**` *(completed)*
 
 ## Artifacts & Outputs
 
