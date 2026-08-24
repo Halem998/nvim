@@ -28,6 +28,98 @@ calibration-notes.md artifact rather than only here.
 import re
 import unicodedata
 
+# --- sentence_boundary_glue_count() binder-notation exemption patterns ---
+#
+# Hoisted to module level (compiled once) rather than left inline in
+# sentence_boundary_glue_count(): this function runs over whole-document
+# content on every conversion, so per-call recompilation is avoidable cost.
+#
+# NOISE tolerates the markdown-emphasis (`_..._`) and bare-digit-subscript
+# noise pymupdf4llm's extraction routinely interposes between a binder and
+# its bound variable (see VAR's docstring note below and the real excerpts
+# in the sentence_boundary_glue_count docstring).
+_NOISE = r"[_\s]*"
+
+# Bound-variable run. The `{0,12}?` bound is deliberate and load-bearing for
+# performance, not correctness: an earlier unbounded `[a-z0-9_\s]*?` variant
+# reached the same exemption counts on all five regression fixtures but ran
+# ~19x slower on the largest fixture (hott_book_2013, 691 chunks) than the
+# narrow single-character pattern it replaces -- almost entirely from
+# _POSTFIX_HAT_TAIL below (see that pattern's docstring), not from this
+# quantifier. The bound is kept here too as defense in depth: real
+# bound-variable identifiers in this corpus (single letters, optionally
+# subscripted, e.g. `x`, `x1`, `xn`) never approach 12 characters.
+_VAR = rf"[a-z][a-z0-9_\s]{{0,12}}?{_NOISE}"
+
+# Ellipsis-separated second variable, for multi-variable binder runs
+# (`λx1 . . . xn.Rx1 . . . xn`) -- the triggering `[a-z]\.[A-Z]` match sits at
+# the LAST variable of the list, not adjacent to the binder itself, so the
+# exemption has to span the whole run.
+_ELLIPSIS = rf"\.{_NOISE}\.{_NOISE}\.{_NOISE}"
+
+# Prefix binder: `∀x.`, `∃y.`, `λx1 . . . xn.` -- optionally with the
+# ellipsis-separated second variable above.
+_PREFIX_BINDER_RE = re.compile(rf"[∀∃λ]{_NOISE}{_VAR}(?:{_ELLIPSIS}{_VAR})?\.")
+
+# Prefix hat-abstraction: `ˆx.`. NOTE the glyph below is U+02C6 MODIFIER
+# LETTER CIRCUMFLEX ACCENT (`ˆ`), NOT the ASCII caret U+005E (`^`) -- the
+# corpus's hat-abstraction notation is typeset with the Unicode modifier
+# letter, and an ASCII `^` in this position matches nothing in real
+# converted text. Verify with `ord("ˆ")` == 0x2C6 if this file is ever
+# round-tripped through an editor/encoding that could silently normalize it.
+_PREFIX_HAT_RE = re.compile(rf"ˆ{_NOISE}{_VAR}\.")
+
+# Postfix hat-abstraction tail: `x.Fx ˆ`. pymupdf4llm's circumflex-diacritic
+# extraction order is inconsistent between prefix and postfix position, so
+# this is a genuinely distinct shape from _PREFIX_HAT_RE above, not a
+# reformulation of it -- a pure prefix pattern cannot catch it.
+#
+# This is matched via a hat-anchored scan (see _strip_postfix_hat below)
+# rather than a single unanchored `{_VAR}\.[A-Za-z]+{_NOISE}ˆ` substitution.
+# That more obvious formulation was tried first and reached the same
+# exemption counts, but starts with `[a-z]` -- a character that occurs at
+# nearly every position in real prose -- and only fails once it has scanned
+# forward looking for the (rare) `ˆ` glyph, so an unanchored `re.sub` tries
+# and fails this expensive path at almost every character offset in the
+# document. That was the dominant cost behind the ~19x slowdown noted on
+# _VAR above (isolated profiling: this one substitution alone accounted for
+# ~0.25s of a ~0.52s total on the largest fixture, vs. ~0.001-0.007s for
+# every other substitution in this module combined). Scanning outward from
+# each (rare) `ˆ` occurrence instead reduces the search to a small bounded
+# window per hat, restoring runtime to within ~10% of the original narrow
+# pattern's.
+_POSTFIX_HAT_TAIL_RE = re.compile(rf"{_VAR}\.[A-Za-z]{{1,20}}{_NOISE}\Z")
+_POSTFIX_HAT_WINDOW = 100  # chars scanned backward from each 'ˆ'; generous
+                            # relative to _VAR's 12-char bound plus a
+                            # 20-char matrix-predicate name.
+
+
+def _strip_postfix_hat(text):
+    """Remove postfix hat-abstraction spans (`x.Fx ˆ`) from `text`.
+
+    Scans forward from each 'ˆ' occurrence (rare) rather than running an
+    unanchored regex substitution starting with `[a-z]` (extremely common)
+    over the whole document -- see _POSTFIX_HAT_TAIL_RE's docstring for why
+    that distinction is a ~19x-vs-~1.1x runtime difference, not a
+    micro-optimization. Semantically equivalent to
+    `_POSTFIX_HAT_TAIL_RE`-anchored substitution applied at every 'ˆ'."""
+    pieces = []
+    pos = 0
+    for m in re.finditer("ˆ", text):
+        hat_start = m.start()
+        window_start = max(pos, hat_start - _POSTFIX_HAT_WINDOW)
+        window = text[window_start:hat_start]
+        tail_match = _POSTFIX_HAT_TAIL_RE.search(window)
+        if tail_match:
+            span_start = window_start + tail_match.start()
+            pieces.append(text[pos:span_start])
+            pos = m.end()
+        # else: no postfix-hat tail immediately precedes this 'ˆ' -- leave
+        # it and the preceding text untouched, keep scanning.
+    pieces.append(text[pos:])
+    return "".join(pieces)
+
+
 # Categories folded into `printable_ratio()`'s non-printable count: Cc
 # (control, excluding the three exempted whitespace characters), Cs
 # (surrogate -- never valid in well-formed text), Co (private-use area --
@@ -97,25 +189,66 @@ def sentence_boundary_glue_count(text):
       - `Ph.D.` / `Ph.D` in bibliography entries (the `h.D` transition) —
         e.g. Pym-O'Hearn-Yang 2004 "Possible Worlds and Resources", rejected
         at exactly 4 hits, all `Ph.D.` in the bibliography.
-      - Single-letter-variable quantifier/binder notation such as `∀x.P`,
-        `∃x.P`, `∃y.E` (the `{var}.{Upper}` transition immediately preceded
-        by a `∀`/`∃`/`λ` binder) — e.g. Ishtiaq-O'Hearn 2001 "BI as an
-        Assertion Language", rejected at 7 hits (5 quantifier notation, 2
-        Ph.D.). Both conversions were otherwise clean and were manually
-        promoted from rejected_path before this fix.
+      - Binder/quantifier and hat-abstraction notation, noise-tolerant of
+        pymupdf4llm's markdown-emphasis (`_..._`) and bare-digit-subscript
+        extraction artifacts (see the module-level `_VAR`/`_PREFIX_BINDER_RE`
+        etc. docstrings above for the full three-pattern shape and the
+        two real corpus excerpts that motivated it). Originally a much
+        narrower single-character-adjacent form (`∀x.P`, `∃y.E`) — e.g.
+        Ishtiaq-O'Hearn 2001 "BI as an Assertion Language", rejected at 7
+        hits (5 quantifier notation, 2 Ph.D.) — later found to reject real
+        higher-order-logic and lambda-notation papers wholesale (Goodman
+        2024 "Higher-Order Logic as Metaphysics", Bacon "A Case for
+        Higher-Order Metaphysics") because the notation's bound-variable
+        runs are frequently multi-character, ellipsis-separated, and
+        fragmented by extraction noise rather than a single bare lowercase
+        letter immediately adjacent to the binder. Widened to the current
+        three-pattern form once those two false positives were confirmed
+        to reach zero hits without moving the true-positive fixture
+        (Dorr-Bacon-style genuine `<sup>`-span fusion corruption) or either
+        MIXED document's hit count (see "MIXED documents" note below).
+
+    IMPORTANT — substitution self-interference: an earlier attempt at
+    widening this exemption used a blanket global markdown-underscore strip
+    as a preprocessing pass, ahead of a widened regex. That approach
+    INCREASED false positives on one real MIXED-classification document
+    from 11 to 26 hits — deleting matched spans glued previously
+    non-adjacent characters into brand-new spurious `[a-z]\\.[A-Z]` matches.
+    The three patterns below avoid this by matching noise-tolerant runs
+    directly WITHIN the exemption regex itself; there is deliberately no
+    separate global-strip pass anywhere in this function. Any future
+    widening of this exemption should re-verify the two MIXED-document
+    fixtures' hit counts are EXACTLY unchanged, not merely "not reduced" —
+    an increase is the specific regression this note exists to prevent.
+
+    MIXED documents: hott_book_2013 (HoTT book) and ahrens_north
+    (Ahrens-North-Shulman-Tsementzis "The Univalence Principle") remain
+    correctly rejected by this check (11 and 21 hits respectively,
+    unaffected by the widening above) and are DELIBERATELY not targeted by
+    it. Their residual hits are dominated by genuine `<sup>`-span fusion
+    corruption (`isalsomodal.Thus`, `iscontractible.Since`, ...) plus a
+    distinct parenthesized dependent-type binder shape (`∀(x : A).Px`,
+    `Σ(a:A)B(a)`) this exemption does not cover — covering that shape would
+    not change either document's pass/fail outcome, since the genuine
+    corruption alone exceeds the threshold. Both documents' bibliographies
+    also carry a handful of arXiv subject-class citation codes (`math.CT`,
+    `math.AT`) that incidentally match the raw pattern; these are a known,
+    deliberately unexempted secondary class, not corruption, and not
+    blocking either document's correct rejection. The correct operator
+    remedy for a document like this is reconversion with
+    `LITERATURE_CONVERTER=fallback` (the path already proven for
+    bacon_dorr_2024_classicism) — never widening this exemption further,
+    tuning the threshold-3 cutoff, or a manual override.
 
     Exemption is applied by stripping the exempted substrings first, THEN
     counting on what remains — not a negative lookbehind — since the
-    exemption spans (`Ph.D`, `{binder}{var}.{Upper}`) each fully contain the
-    raw 3-character match span they exempt, making a strip-first pass exact
-    and avoiding Python re's fixed-width-lookbehind constraint.
-
-    The binder class is deliberately narrow — the binder character must be
-    immediately adjacent to a single lowercase variable — so a bare
-    single-letter-then-period-then-capital transition with no binder prefix
-    is still counted."""
+    exemption spans each fully contain the raw match span they exempt,
+    making a strip-first pass exact and avoiding Python re's
+    fixed-width-lookbehind constraint."""
     exempted = re.sub(r"Ph\.D\.?", "", text)
-    exempted = re.sub(r"[∀∃λ][a-z]\.[A-Z]", "", exempted)
+    exempted = _PREFIX_BINDER_RE.sub("", exempted)
+    exempted = _PREFIX_HAT_RE.sub("", exempted)
+    exempted = _strip_postfix_hat(exempted)
     return len(re.findall(r"[a-z]\.[A-Z]", exempted))
 
 

@@ -158,31 +158,36 @@ not the report, is the baseline every later phase is measured against.
 
 ---
 
-### Phase 2: Refined Exemption in `literature_quality_gate.py` [NOT STARTED]
+### Phase 2: Refined Exemption in `literature_quality_gate.py` [COMPLETED]
 
 **Goal**: `sentence_boundary_glue_count()` implements the noise-tolerant three-pattern exemption
 and hits the target counts on all five fixtures.
 
 **Tasks**:
-- [ ] Replace the single `re.sub(r"[∀∃λ][a-z]\.[A-Z]", "", exempted)` with the refined sequence,
+- [x] Replace the single `re.sub(r"[∀∃λ][a-z]\.[A-Z]", "", exempted)` with the refined sequence,
       using the report's shape as the validated starting point:
-      `NOISE = r"[_\s]*"`, `VAR`, `ELLIPSIS`, then `PREFIX`, `PREFIX_HAT`, `POSTFIX_HAT`.
-- [ ] Use the literal U+02C6 `ˆ` glyph (MODIFIER LETTER CIRCUMFLEX ACCENT), not ASCII `^`. Add an
-      inline comment naming the codepoint so it survives a future editor round-trip.
-- [ ] Hoist the patterns to module-level `re.compile` constants (the gate runs over whole-document
-      content; recompilation per call is avoidable cost).
-- [ ] Keep the `Ph.D.` strip and the final `findall` unchanged.
-- [ ] **Constraint**: no global preprocessing strip of markdown/whitespace. All noise tolerance
-      lives inside the exemption patterns themselves.
-- [ ] Update the function docstring: what each of the three patterns covers, why the hat is
+      `NOISE = r"[_\s]*"`, `VAR`, `ELLIPSIS`, then `PREFIX`, `PREFIX_HAT`, `POSTFIX_HAT`. *(completed:
+      `_PREFIX_BINDER_RE`/`_PREFIX_HAT_RE` applied via `re.sub`; `POSTFIX_HAT` applied via a
+      hat-anchored scan, `_strip_postfix_hat()` — see the deviation note below)*
+- [x] Use the literal U+02C6 `ˆ` glyph (MODIFIER LETTER CIRCUMFLEX ACCENT), not ASCII `^`. Add an
+      inline comment naming the codepoint so it survives a future editor round-trip. *(completed)*
+- [x] Hoist the patterns to module-level `re.compile` constants (the gate runs over whole-document
+      content; recompilation per call is avoidable cost). *(completed)*
+- [x] Keep the `Ph.D.` strip and the final `findall` unchanged. *(completed)*
+- [x] **Constraint**: no global preprocessing strip of markdown/whitespace. All noise tolerance
+      lives inside the exemption patterns themselves. *(completed)*
+- [x] Update the function docstring: what each of the three patterns covers, why the hat is
       U+02C6, why prefix and postfix hats are separate patterns, and the substitution-hazard
-      warning. Cite the fixture document names, never a task number.
-- [ ] Run the Phase 1 harness. Required outcome: goodman_2024 = 0, bacon_a_case = 0,
-      bacon_dorr_2024 unchanged, hott_book_2013 unchanged, ahrens_north unchanged.
-- [ ] Measure wall-clock runtime of `sentence_boundary_glue_count()` on the largest fixture before
+      warning. Cite the fixture document names, never a task number. *(completed)*
+- [x] Run the Phase 1 harness. Required outcome: goodman_2024 = 0, bacon_a_case = 0,
+      bacon_dorr_2024 unchanged, hott_book_2013 unchanged, ahrens_north unchanged. *(completed:
+      0/0/0/11/21)*
+- [x] Measure wall-clock runtime of `sentence_boundary_glue_count()` on the largest fixture before
       and after. If the new pattern is materially slower (order-of-magnitude), simplify — e.g.
-      bound the lazy quantifier — and re-verify all five counts before closing the phase.
-- [ ] Update the Phase 1 harness expectations to the post-fix values.
+      bound the lazy quantifier — and re-verify all five counts before closing the phase. *(completed:
+      see deviation note below — the first working version WAS ~19x slower and required
+      simplification beyond bounding the lazy quantifier alone)*
+- [x] Update the Phase 1 harness expectations to the post-fix values. *(completed)*
 
 **Timing**: 1.75 hours
 

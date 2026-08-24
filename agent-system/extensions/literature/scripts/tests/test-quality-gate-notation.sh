@@ -72,22 +72,29 @@ from literature_quality_gate import sentence_boundary_glue_count
 
 sources_dir = os.environ["LITERATURE_QG_SOURCES_DIR"]
 
-# Pre-fix baseline (Phase 1 of the implementation plan, against the
-# UNMODIFIED gate) -- reproduced here exactly matching the research report's
-# figures once chunks are joined with "\n\n" rather than concatenated raw
-# (see the module docstring above). Phase 2 updates these two false-positive
-# expectations to 0 once the refined exemption lands; the other three stay
-# fixed for the life of this harness as over-exemption tripwires.
+# Post-fix expected counts (Phase 2 of the implementation plan, against the
+# REFINED exemption). Both false positives now reach 0; the true-positive
+# fixture (fallback-tier copy on disk) and both MIXED fixtures are
+# unaffected by the exemption change -- their counts are pinned as
+# over-exemption tripwires and must never fall (or, for the MIXED pair,
+# rise -- see the module docstring above for the substitution-self-
+# interference hazard this pins against).
+#
+# Pre-fix baseline (against the unmodified narrow exemption, recorded for
+# history): goodman_2024=7, bacon_a_case=10, bacon_dorr_2024=0,
+# hott_book_2013=11, ahrens_north=21 -- reproduced exactly matching the
+# research report's figures once chunks are joined with "\n\n" rather than
+# concatenated raw (see the module docstring above).
 FIXTURES = {
     "goodman_2024": (
         "goodman_2024_higher_order_logic_as_metaphysics",
         "FALSE POSITIVE",
-        7,
+        0,
     ),
     "bacon_a_case": (
         "bacon_a_case_for_higher_order_metaphysics",
         "FALSE POSITIVE",
-        10,
+        0,
     ),
     "bacon_dorr_2024": (
         "bacon_dorr_2024_classicism",

@@ -1,0 +1,61 @@
+{
+  "phase": 2,
+  "phase_name": "Refined Exemption in literature_quality_gate.py",
+  "started_at": "2026-08-24T22:50:00Z",
+  "last_updated": "2026-08-24T23:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace narrow binder exemption with the refined three-pattern sequence (prefix binder, prefix hat, postfix hat), U+02C6 hat glyph, module-level compiled constants, no global strip",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/literature_quality_gate.py"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Update function docstring with pattern rationale, U+02C6 note, substitution-hazard warning, MIXED-document decision",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/literature_quality_gate.py"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Run Phase 1 harness against refined exemption; measure and address runtime regression",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Research report's exact three-pattern shape applied as three straightforward re.compile + re.sub calls (PREFIX, PREFIX_HAT, POSTFIX_HAT all unanchored substitutions)",
+      "result": "failed",
+      "reason": "Reached the correct target counts (0/0/0/11/21) but ran ~19x slower on the largest fixture (hott_book_2013: 0.521s vs 0.027s baseline) -- crosses the plan's order-of-magnitude threshold. Isolated per-pattern profiling identified POSTFIX_HAT specifically (0.250s of the 0.521s total): it starts with [a-z], a character occurring at nearly every text position, and only fails after scanning forward looking for the rare 'ˆ' glyph, so an unanchored re.sub tries and fails this expensive path at almost every offset in the document."
+    },
+    {
+      "approach": "Bounding only the inner VAR lazy quantifier to {0,12}? (plan's suggested mitigation) while keeping POSTFIX_HAT as an unanchored substitution",
+      "result": "failed",
+      "reason": "Reduced runtime from 0.521s to ~0.28-0.42s depending on bound tightness -- still 10-15x the 0.027s baseline, still order-of-magnitude. The bound alone does not address the root cause (POSTFIX_HAT's generic [a-z] start with a rare 'ˆ' anchor)."
+    },
+    {
+      "approach": "Bounding the postfix matrix-predicate name ([A-Za-z]+ -> [A-Za-z]{1,20}) in addition to the VAR bound",
+      "result": "failed",
+      "reason": "No meaningful improvement (0.246s, still ~9x baseline) -- confirms the cost is the unanchored generic-start scan itself, not backtracking depth within a single match attempt."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.1",
+      "description": "Replace the single re.sub(...) with the refined sequence ... Hoist the patterns to module-level re.compile constants",
+      "type": "altered",
+      "reason": "POSTFIX_HAT is applied via a dedicated helper (_strip_postfix_hat()) that scans forward from each rare 'ˆ' occurrence and checks a small bounded window (100 chars) with a compiled, end-anchored regex (_POSTFIX_HAT_TAIL_RE), rather than a single unanchored re.compile(...).sub() call. This was required to meet the plan's own runtime mandate (Phase 2's task list: 'if materially slower, simplify') -- bounding the lazy quantifier alone (the plan's suggested first mitigation) was insufficient, see approaches_tried. The restructured version measures 0.030s on the largest fixture, within ~10% of the original 0.027s baseline, and produces the identical 0/0/0/11/21 counts as the straightforward three-re.sub version.",
+      "annotation": "*(completed: `_PREFIX_BINDER_RE`/`_PREFIX_HAT_RE` applied via `re.sub`; `POSTFIX_HAT` applied via a hat-anchored scan, `_strip_postfix_hat()` — see the deviation note below)*"
+    }
+  ],
+  "notes": "Final measured counts on all five fixtures: goodman_2024=0, bacon_a_case=0, bacon_dorr_2024=0 (unchanged), hott_book_2013=11 (unchanged), ahrens_north=21 (unchanged) -- exactly matching the plan's required outcome. Runtime on largest fixture (hott_book_2013, 1,277,751 chars): 0.030s refined vs 0.027s original narrow pattern (~1.1x, well within tolerance). literature-convert.sh --self-test (26 fixtures, including the three pre-existing sentence-boundary-glue fixtures) passes unchanged. Module imports cleanly with -W error::SyntaxWarning after fixing one docstring escape-sequence warning introduced during the edit (\\. needed doubling to \\\\. in a non-raw docstring)."
+}
