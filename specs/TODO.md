@@ -29,7 +29,7 @@ next_project_number: 97
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
-79 [PLANNING] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
+79 [PLANNED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
 
 ### Extensions
 
@@ -700,11 +700,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 79. Make subagent-postflight hook diagnosable when its marker is malformed
 - **Effort**: 1-3 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [079_diagnosable_subagent_postflight_marker_failure/reports/01_diagnosable-postflight-marker-failure.md]
+- **Plan**: [079_diagnosable_subagent_postflight_marker_failure/plans/01_diagnosable-postflight-marker-failure.md]
 
 **Description**: subagent-postflight.sh blocks a SubagentStop with an EMPTY reason string whenever the postflight marker is not valid JSON, so the blocked agent receives "Blocked by hook" with no explanation of any kind and no way to learn what happened. The hook's own default reason never fires in exactly the case where a reason is most needed.
 

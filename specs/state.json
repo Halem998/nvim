@@ -1284,7 +1284,7 @@
     {
       "project_number": 79,
       "project_name": "diagnosable_subagent_postflight_marker_failure",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Make subagent-postflight hook diagnosable when its marker is malformed",
@@ -1301,10 +1301,15 @@
           "path": "specs/079_diagnosable_subagent_postflight_marker_failure/reports/01_diagnosable-postflight-marker-failure.md",
           "type": "report",
           "summary": "Root-cause confirmation, sibling-hook fix pattern, full hook-idiom survey (52 sites, 1 defect), and resolved design questions for the malformed-marker diagnosability defect."
+        },
+        {
+          "path": "specs/079_diagnosable_subagent_postflight_marker_failure/plans/01_diagnosable-postflight-marker-failure.md",
+          "type": "plan",
+          "summary": ""
         }
       ],
       "created": "2026-08-20T22:40:33Z",
-      "last_updated": "2026-08-24T22:03:31Z",
+      "last_updated": "2026-08-24T22:12:16Z",
       "session_id": "sess_1787608215_ce9f8e_79"
     },
     {

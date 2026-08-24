@@ -367,6 +367,11 @@ report's figure.
 
 **Verification Tier**: full
 
+**Scope Hypothesis**: This phase enumerates five adjacent existing suites as the regression set.
+Confirm each exists under `agent-system/extensions/core/scripts/tests/` before running; if a
+named suite is absent or has been renamed, substitute the current equivalent and record the
+substitution rather than silently skipping it.
+
 **Files to modify**: none (verification only)
 
 **Verification**:
