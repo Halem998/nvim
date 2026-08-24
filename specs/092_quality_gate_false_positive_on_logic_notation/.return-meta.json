@@ -1,29 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/092_quality_gate_false_positive_on_logic_notation/plans/01_gate-binder-exemption-fix.md",
-      "summary": "Six-phase plan fixing the sentence-boundary-glue binder exemption: baseline fixture harness, refined three-pattern exemption, extended self-tests, real-pipeline true-positive verification, decision record, deploy sweep."
-    }
-  ],
-  "next_steps": "Run /implement 92 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1787608215_ce9f8e_92",
-    "agent_type": "planner-agent",
+    "session_id": "sess_1787608215_ce9f8e",
+    "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "When a fix changes a regex that works by DELETING matched spans before a final count (re.sub-then-findall exemption pattern), phase the work so a fixture-baseline harness is built and committed BEFORE the regex edit, and make the acceptance criterion two-sided: target fixtures must reach zero AND control fixtures must be EXACTLY unchanged, never merely 'not reduced'. Span deletion can glue previously non-adjacent characters into new spurious matches, so a fix can lower the target count while silently raising others. A baseline captured after the edit cannot distinguish the two outcomes.",
-      "category": "PATTERN",
-      "source_artifact": "specs/092_quality_gate_false_positive_on_logic_notation/plans/01_gate-binder-exemption-fix.md",
-      "confidence": 0.65,
-      "suggested_keywords": ["regex", "regression-baseline", "phase-ordering", "quality-gate", "substitution-hazard", "two-sided-assertion"]
-    }
-  ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,0 +1,57 @@
+{
+  "phase": 1,
+  "phase_name": "Fixture Baseline Harness",
+  "started_at": "2026-08-24T22:30:00Z",
+  "last_updated": "2026-08-24T22:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-quality-gate-notation.sh importing sentence_boundary_glue_count from source-store gate module",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Concatenate five fixtures' chunk_*.md and report counts, with expectations as live assertions",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Corpus-absent skip path with visible warning, exit 0",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Run harness against unmodified gate, record baseline, reconcile against research figures",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "approach": "Raw string concatenation of chunk_*.md files (no separator)",
+      "result": "failed",
+      "reason": "Glues the last char of one chunk directly onto the first char of the next, manufacturing spurious [a-z].[A-Z] boundary matches: bacon_a_case read 25 instead of 10, bacon_dorr_2024 read 7 instead of 0. Switched to \"\\n\\n\".join() which reproduces the research report's baseline figures exactly (7/10/0/11/21)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.2",
+      "description": "Concatenate ~/Projects/Literature/sources/{doc}/chunk_*.md in lexicographic order and report the count.",
+      "type": "altered",
+      "reason": "The plan's literal phrasing (\"concatenate ... in lexicographic order\") reads as raw concatenation, but raw concatenation glues adjacent chunk boundaries and manufactures spurious [a-z].[A-Z] matches (measured: bacon_a_case 25 vs 10, bacon_dorr_2024 7 vs 0). Switched to \"\\n\\n\".join() of the chunk texts, which reproduces the research report's baseline figures exactly on all five fixtures.",
+      "annotation": "*(completed: uses \"\\n\\n\".join, not raw concatenation — see deviation note below)*"
+    }
+  ],
+  "notes": "Baseline reproduced exactly matches research report: goodman_2024=7, bacon_a_case=10, bacon_dorr_2024=0, hott_book_2013=11, ahrens_north=21. Deliberate-corruption test confirmed the harness fails loudly (exit 1) and clean-restore confirmed exit 0. Corpus-absent skip path verified via LITERATURE_CORPUS_ROOT override, exit 0 with visible warning. No corpus files modified (mtime spot-check predates this session)."
+}

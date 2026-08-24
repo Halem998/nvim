@@ -1,7 +1,7 @@
 # Implementation Plan: Task #92
 
 - **Task**: 92 - quality_gate_false_positive_on_logic_notation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: 32 (completed)
 - **Research Inputs**: `specs/092_quality_gate_false_positive_on_logic_notation/reports/01_quality-gate-binder-exemption.md`
@@ -107,25 +107,27 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Fixture Baseline Harness [NOT STARTED]
+### Phase 1: Fixture Baseline Harness [COMPLETED]
 
 **Goal**: A runnable harness that reports `sentence_boundary_glue_count()` for all five regression
 fixtures, and a recorded pre-change baseline to diff every later change against.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh`
+- [x] Create `agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh`
       (plus a small Python helper if cleaner) that imports `sentence_boundary_glue_count` from the
-      **source-store** `literature_quality_gate.py`, not the deploy copy.
-- [ ] For each of the five fixtures, concatenate `~/Projects/Literature/sources/{doc}/chunk_*.md`
-      in lexicographic order and report the count.
-- [ ] Encode expected counts as assertions with an explicit `BEFORE`/`AFTER` mode (or a single
+      **source-store** `literature_quality_gate.py`, not the deploy copy. *(completed)*
+- [x] For each of the five fixtures, concatenate `~/Projects/Literature/sources/{doc}/chunk_*.md`
+      in lexicographic order and report the count. *(completed: uses "\n\n".join, not raw
+      concatenation — see deviation note below)*
+- [x] Encode expected counts as assertions with an explicit `BEFORE`/`AFTER` mode (or a single
       expectations table updated in Phase 2) so the suite fails loudly on any drift, in either
-      direction, on any fixture.
-- [ ] If `~/Projects/Literature/sources/` is missing, skip with a visible warning and exit 0 —
+      direction, on any fixture. *(completed: single expectations table, updated in Phase 2)*
+- [x] If `~/Projects/Literature/sources/` is missing, skip with a visible warning and exit 0 —
       mirror the `LITERATURE_TEST_PDF` skip convention already used in
-      `tests/test-literature-convert.sh`. Never silently do nothing.
-- [ ] Run the harness against the **unmodified** gate and record the observed baseline.
-- [ ] Reconcile the observed baseline against the research's figures (7 / 10 / 0 / 11 / 21). If any
+      `tests/test-literature-convert.sh`. Never silently do nothing. *(completed)*
+- [x] Run the harness against the **unmodified** gate and record the observed baseline. *(completed:
+      7/10/0/11/21)*
+- [x] Reconcile the observed baseline against the research's figures (7 / 10 / 0 / 11 / 21). If any
       number differs, record the actual number as the authoritative baseline and note the delta —
       do not edit the harness to match the report.
 
