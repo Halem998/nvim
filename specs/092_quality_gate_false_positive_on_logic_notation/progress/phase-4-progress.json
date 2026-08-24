@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Close the True-Positive Verification Gap",
+  "started_at": "2026-08-24T23:45:00Z",
+  "last_updated": "2026-08-25T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run the real literature-convert.sh pipeline with LITERATURE_CONVERTER=pymupdf4llm against bacon_dorr_2024_classicism.pdf in a scratch output dir, confirm primary-tier engine and gate rejection",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Measure sentence_boundary_glue_count() directly on the reconverted content under both the fixed and pre-fix exemption, confirm no material drop",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "This phase closes the research report's explicitly stated verification gap: the on-disk bacon_dorr_2024_classicism markdown is already-remediated LITERATURE_CONVERTER=fallback output (0 hits by design), so research-agent tooling could not confirm the true positive still trips the FIXED gate on a fresh primary-tier conversion. Ran the real pipeline: `LITERATURE_CONVERTER=pymupdf4llm bash agent-system/extensions/literature/scripts/literature-convert.sh ~/Projects/Literature/_staging_hoi/bacon_dorr_2024_classicism.pdf <scratch>`. Output: '[convert] Engine used: pymupdf4llm' (primary tier confirmed, not a silent fallback substitution -- the pyenv auto-provisioned successfully through literature-pyenv-provision.sh, no manual venv invocation). Gate outcome: 'QUALITY GATE FAILED (pymupdf4llm): sentence-boundary-glue: 9 zero-space word/sentence-fusion transition(s) found (threshold 3)' -- rejected as required, N=9 >= 3. Rejected output written to <scratch>/bacon_dorr_2024_classicism.md.rejected (268258 bytes). Ran sentence_boundary_glue_count() directly on that reconverted text under both the fixed (post-Phase-2) exemption and the pre-fix narrow exemption ([\\u2200\\u2203\\u03bb][a-z]\\.[A-Z]): BOTH read 9 -- an exact match, zero drop, proving the widened exemption did not partially suppress this document's genuine corruption at all. Spot-checked 9/9 residual match contexts: all are genuine <sup>-span fusion corruption (e.g. 'isasetofvariables.These', 'isalwaysaBBK-model.Byconstruction', 'showthatthesameformulaeholdinit.Firstwetruncate', 'isinjective.The'), matching the known defect class this check exists to catch -- not binder notation. Corpus integrity verified: mtime spot-check on both the source PDF and the indexed chunk_0001.md shows both predate this session by hours; nothing under ~/Projects/Literature/ was modified. Scratch output written only under the session scratchpad (/tmp/claude-1000/.../scratchpad/task92-phase4/), never into the corpus. This phase's acceptance criterion is fully satisfied -- the primary tier provisioned and ran successfully, so the [BLOCKED] contingency task in the plan does not apply and was left unchecked as an inapplicable else-branch, not a deviation."
+}

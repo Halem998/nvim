@@ -261,30 +261,33 @@ and guards against over-exemption and substitution self-interference.
 
 ---
 
-### Phase 4: Close the True-Positive Verification Gap [NOT STARTED]
+### Phase 4: Close the True-Positive Verification Gap [COMPLETED]
 
 **Goal**: Prove the fixed gate still rejects genuine corruption, using a freshly reconverted
 primary-tier output rather than the already-remediated on-disk fallback copy.
 
 **Tasks**:
-- [ ] Create a scratch output directory outside `~/Projects/Literature/` (never write into the
-      corpus).
-- [ ] Run `LITERATURE_CONVERTER=pymupdf4llm bash
+- [x] Create a scratch output directory outside `~/Projects/Literature/` (never write into the
+      corpus). *(completed: session scratchpad, `.../scratchpad/task92-phase4/`)*
+- [x] Run `LITERATURE_CONVERTER=pymupdf4llm bash
       agent-system/extensions/literature/scripts/literature-convert.sh
       ~/Projects/Literature/_staging_hoi/bacon_dorr_2024_classicism.pdf <scratch-dir>`. Forcing
       `pymupdf4llm` is deliberate: that mode refuses to silently substitute the fallback engine, so
-      an unavailable primary tier surfaces as a loud failure instead of a false green.
-- [ ] Let the script's own `literature-pyenv-provision.sh` path provision the venv. Do not
+      an unavailable primary tier surfaces as a loud failure instead of a false green. *(completed)*
+- [x] Let the script's own `literature-pyenv-provision.sh` path provision the venv. Do not
       hand-invoke the untracked `literature-pyenv/` venv directly — the research showed it fails to
-      import outside its intended wrapper (`libstdc++.so.6` ImportError).
-- [ ] Capture the gate outcome: expect rejection with a `sentence-boundary-glue: N ... (threshold
-      3)` reason, `N >= 3`, under the **fixed** exemption.
-- [ ] Also run `sentence_boundary_glue_count()` on the reconverted content directly and record the
-      number, so the result is a measured count rather than only a pass/fail.
-- [ ] Re-run the same conversion with the exemption temporarily reverted, and confirm the count
+      import outside its intended wrapper (`libstdc++.so.6` ImportError). *(completed: the venv
+      auto-provisioned and imported cleanly through the script's own path, no direct invocation)*
+- [x] Capture the gate outcome: expect rejection with a `sentence-boundary-glue: N ... (threshold
+      3)` reason, `N >= 3`, under the **fixed** exemption. *(completed: rejected, N=9)*
+- [x] Also run `sentence_boundary_glue_count()` on the reconverted content directly and record the
+      number, so the result is a measured count rather than only a pass/fail. *(completed: 9)*
+- [x] Re-run the same conversion with the exemption temporarily reverted, and confirm the count
       does not drop materially — establishing that the fix did not partially suppress this
-      document's genuine corruption.
-- [ ] Record the reconverted output's path and the counts in the phase notes.
+      document's genuine corruption. *(completed: pre-fix narrow-exemption count on the identical
+      reconverted text is also 9 — no drop at all)*
+- [x] Record the reconverted output's path and the counts in the phase notes. *(completed, see
+      progress file)*
 - [ ] **If the primary tier cannot be provisioned**: capture the exact error, mark this phase
       `[BLOCKED]` with that evidence, and do not mark the acceptance criterion satisfied. All other
       phases proceed; Phase 6 records the gap as open.
