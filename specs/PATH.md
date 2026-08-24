@@ -1,6 +1,7 @@
 # Implementation Path
 
 *Generated 2026-08-24 from `specs/reviews/review-2026-08-24-refactor-survey.md`.*
+*Status refreshed 2026-08-24 after 82, 84, 80, 92, 9 and 79 completed.*
 
 **Goal**: finish the agent-system refactor — token efficiency, performance, and uniformity in
 implementation and documentation — and close the cross-repo drift that is currently making
@@ -87,18 +88,28 @@ inline. The fix is now in effect here, and **not** in Theory until 0.2 runs.
 
 Without this stage the rest regresses, exactly as it did since 2026-08-11.
 
-**Now unblocked** by Stage 0: 82, 85 (and, outside this stage, 9, 28, 77, 92). **82 is the head of
-the critical path** — 83, 86 and 93 all sit behind it, making it the single highest-leverage task
-in the backlog.
+**82 is done** (2026-08-24, commits `02ed59dda`, `55955bb65`), so its three dependents are now
+live: **83** and **86** are unblocked, and **93** sits behind 83. **84 is also done**
+(`58bf87d23`). The head of the critical path is now **83** — it is the only remaining task
+between here and 93, and it is the gate that stops this stage from regressing again.
 
-| # | Step | Task |
-|---|------|------|
-| 1.1 | `deploy-headless.sh:233` — change the `echo` to a real call. One line; connects five working lints to the pipeline. | **82** |
-| 1.2 | Postflight deploy gate: a meta task touching the source store cannot reach `[COMPLETED]` until a deploy has run. **Requires** a recorded carve-out in `regeneration-is-manual-only.md` — that doc sanctions exactly one automated deploy caller and states it is not precedent. | **83** |
-| 1.3 | Fix the duplication gate's scope: `test-common-lib.sh` greps `--include="*.sh"` while **46 of 48** duplicates are `.md`, and its `EXTENSIONS_ROOT` is environment-dependent. Closes `err_1787022038113_c3VPTR` (severity high). | **84** |
-| 1.4 | De-flake the shell test suite. Two runs today failed in **different** suites. Until deterministic, no gate result is trustworthy — including this review's own 19/23. | **85** |
-| 1.5 | Expand CI from 1 of 9 checks to the full suite, and fix the 16 doc-lint failures so it goes green. | **86** |
-| 1.6 | Close cross-repo skew: make it **visible**, not automatic. Regeneration is pull-only by design — do **not** push into consuming repos. | **93** |
+**Open in this stage**: 83, 85, 86, 93.
+
+| # | Step | Task | State |
+|---|------|------|-------|
+| 1.1 | `deploy-headless.sh:233` — change the `echo` to a real call. Delivered as more than one line: `verify-deploy.sh` gained `--skip-slow` (skips only gate 8, the ~118s suite) and the deploy now exits **3** for "deploy landed, verification failed", distinct from `1`/`2`. Acceptance was executed, not asserted — an injected `line_count` mismatch produced exit 3 naming the failing gate with no human invocation. | **82** | ☑ done |
+| 1.2 | Postflight deploy gate: a meta task touching the source store cannot reach `[COMPLETED]` until a deploy has run. **Requires** a recorded carve-out in `regeneration-is-manual-only.md` — that doc sanctions exactly one automated deploy caller and states it is not precedent. | **83** | ☐ **next — head of path** |
+| 1.3 | Fix the duplication gate's scope: `test-common-lib.sh` greps `--include="*.sh"` while **46 of 48** duplicates are `.md`, and its `EXTENSIONS_ROOT` is environment-dependent. Closes `err_1787022038113_c3VPTR` (severity high). | **84** | ☑ done |
+| 1.4 | De-flake the shell test suite. Two runs today failed in **different** suites. Until deterministic, no gate result is trustworthy — including this review's own 19/23. | **85** | ☐ solo run |
+| 1.5 | Expand CI from 1 of 9 checks to the full suite, and fix the doc-lint failures so it goes green. | **86** | ☐ solo run |
+| 1.6 | Close cross-repo skew: make it **visible**, not automatic. Regeneration is pull-only by design — do **not** push into consuming repos. | **93** | ☐ blocked on 83 |
+
+> **1.5 now has a measured baseline, courtesy of 1.1.** A full `verify-deploy.sh` run at 82's
+> completion reported **2 of 24 checks failing** — gate 3 (doc-lint) and gate 8 (`run-all.sh`) —
+> both pre-existing, neither introduced by 82. Those two are exactly 86's and 85's targets. Note
+> the consequence: because 1.1 landed, **every deploy from now on exits 3** until those two are
+> fixed. That is the mechanism working as designed, but it means deploys are red starting now, and
+> 85 + 86 are what turn them green again.
 
 > **1.4 caveat**: some gate-8 failures are *not* flake — they are the stale deploy. Re-measure
 > after Stage 0 so real staleness is not excused as flake, and flake is not misattributed to
@@ -114,8 +125,10 @@ Your literature workflow is live and currently degraded in a way that produces *
 |---|------|------|
 | 2.1 | Fix the **writer**: ingest writes `doc_id`, briefing reads `.id`. The invisible population is now **0** (was 16 → 38) — repaired out-of-band from the Literature repo — so the backfill half is done and only the writer defect is live. Task 77 gained a **fourth namespace**: `.literature.db`'s `chunks_data.doc_id` disagrees with the index on **49 documents** (32 searchable-but-unbriefed, 17 briefed-but-unsearchable). Normalizing ids without reconciling FTS trades one invisibility for another. | **77** |
 | 2.2 | Coverage marker counts only documents that resolved; it is structurally blind to the ones that did not. | **78** |
-| 2.3 | Index rebuild traverses with an unguarded recursive `find` — `.backups/` exists on disk today. | **80** |
-| 2.4 | Quality gate rejects formal notation: the binder exemption matches only single-character bound variables, so `λxy.Ryx` and `^x.Fx` score as corruption. Must **not** blind the gate to genuine `<sup>`-span collapse. | **92** |
+| 2.3 | Index rebuild traverses with an unguarded recursive `find` — `.backups/` exists on disk today. | **80** ☑ done (`7f04ede80`) |
+| 2.4 | Quality gate rejects formal notation: the binder exemption matches only single-character bound variables, so `λxy.Ryx` and `^x.Fx` score as corruption. Must **not** blind the gate to genuine `<sup>`-span collapse. | **92** ☑ done (`b629bc3a9`) |
+
+**Open in this stage**: 77, then 78 behind it.
 
 > **Why 2.1 mattered concretely** (historical, 2026-08-24): a `--lit` round in Theory silently
 > missed 7 of 25 ingested sources, **including both of your own manuscripts**, despite the work
@@ -171,8 +184,8 @@ Each item prevents one class from regrowing. Build the lint **before** migrating
 | # | Step | Task |
 |---|------|------|
 | 5.1 | Finish the MCP-ownership task. **It is not done** — its plan has *eight* phases, not seven, and Phase 8 (verification sweep) is IN PROGRESS with nine unchecked boxes. Re-baseline its doc-lint assertion after Stage 0. | **28** |
-| 5.2 | Re-measure the orphan set (**11 files**, not the 4 originally named) against the post-deploy tree. | **9** |
-| 5.3 | One-line `jq` empty guard in `subagent-postflight.sh`. Cheapest real fix in the backlog. | **79** |
+| 5.2 | Re-measure the orphan set (**11 files**, not the 4 originally named) against the post-deploy tree. | **9** ☑ done (`662d67b95`) |
+| 5.3 | One-line `jq` empty guard in `subagent-postflight.sh`. Cheapest real fix in the backlog. | **79** ☑ done (`5c8de5857`) |
 | 5.4 | Diagnose non-conforming plan Status lines. The `$` anchor at line 69 means `[IMPLEMENTING] (resumed; …)` can never be stamped — confirmed `rc=1`. The original silent-success framing was **false** and has been struck. | **91** |
 
 ---
@@ -202,21 +215,71 @@ Verified against `orchestrate-batch-admit.sh` on 2026-08-24, not assumed:
 
 1. **One self-modifying task per cycle.** A task whose `file_scope` names an orchestrator-critical
    path is admitted only as the *designated candidate* (lowest task number among the
-   self-modifying candidates that cycle); the rest defer, in sequence, one per cycle. Currently
-   self-modifying: **82** (`verify-deploy.sh`), **85** (`task-lock.sh`), **87**
-   (`context/patterns/`, via `system-defect-discrimination.md`), **91**
-   (`update-task-status.sh`), and — once unblocked — **83**, **86**, **88**. Batching four of them
-   costs four cycles to accomplish one cycle of work.
-2. **`file_scope` overlap defers the higher-numbered task.** Confirmed live: **77 + 80** collide on
-   `literature-build-index.sh`, so 80 defers behind 77.
+   self-modifying candidates that cycle); the rest defer, in sequence, one per cycle. Re-verified
+   2026-08-24 against `orchestrate-batch-admit.sh:581` — the verdict is explicitly *"an ORDERING
+   CONSTRAINT, not an exclusion"*; deferred candidates resolve in later cycles of the **same**
+   invocation. Currently self-modifying, measured today: **83** (`skill-base.sh`), **85**
+   (`task-lock.sh`), **86** (`verify-deploy.sh`), **87** (`context/patterns/`, via
+   `system-defect-discrimination.md`), **90** (`skill-base.sh`), **91** (`update-task-status.sh`),
+   **48** (its `agent-system/extensions/` catch-all scope covers every critical path). Batching
+   four of them still costs four cycles to accomplish one cycle of work — so pair **at most one**
+   with non-self-modifying siblings.
+
+   > **`--dry-run` misreports this, and the misreport is the more alarming of the two.**
+   > `orchestrate-dry-run-report.sh:361` **hardcodes its own reason string** — "deferred out of
+   > this invocation — re-run it alone (orchestrator-critical work runs solo only)" — discarding
+   > the admission script's actual verdict text and asserting the opposite of it. It then omits
+   > those tasks from its own `Recommended split`. `commands/orchestrate.md` claims the report
+   > "uses the SAME read-only admission analysis the live path uses", so the two are supposed to
+   > agree and do not. Read the report's `Excluded` block as *"will be sequenced into a later
+   > cycle"*, not *"will not run"*. **Not yet filed as a task.**
+2. **`file_scope` overlap defers the higher-numbered task.** Confirmed live: **77 + 80** collided on
+   `literature-build-index.sh` (moot now — 80 is done). Still live: **20 + 85** on
+   `scripts/tests/`, and **48/50**, whose bare `agent-system/extensions/` scope overlaps
+   essentially every other task in the backlog. Treat **48 and 50 as solo-only**.
 
 > **A masking case worth knowing.** The scan emits the *first* overlapping task it finds, not an
 > exhaustive list — so a `cross_batch` **idle** overlap (which admits) can hide an `in_batch`
-> overlap (which would defer). Live example: **20, 84 and 85 all declare
-> `agent-system/extensions/core/scripts/tests/`** with no `dependencies[]` edges between them.
-> Asked to admit 84 + 85, the predicate reports 84's overlap against idle out-of-batch **#20** and
-> admits both — the real in-batch 84/85 collision never surfaces. Keep 84 and 85 in separate
-> batches by hand, or add a `dependencies[]` edge, until this is filed and fixed.
+> overlap (which would defer). The original example (84 masking 20/85) is retired — 84 is done —
+> but the defect is not: **20 and 85 still both declare
+> `agent-system/extensions/core/scripts/tests/`** with no `dependencies[]` edge, and today's
+> dry-runs show both **20** and **77** reporting idle overlaps against out-of-batch **#48** while
+> their own in-batch relationships go unmentioned. Keep 20 and 85 in separate batches by hand, or
+> add a `dependencies[]` edge, until this is filed and fixed.
+
+## Next batch (recommended 2026-08-24)
+
+Verified by execution, not assumed — `orchestrate-dry-run-report.sh 28 62 77 83` admits **all
+four, zero exclusions, one wave**:
+
+```
+/orchestrate 28, 62, 77, 83
+```
+
+| Task | Why it is in this batch | Unblocks |
+|------|-------------------------|----------|
+| **83** | Head of the critical path now that 82 is done. The only self-modifying task in the batch, so it takes the designated slot uncontested. | 93 |
+| **77** | Stage 2.1, the literature writer defect. Wholly disjoint file scope (literature scripts). | 78 |
+| **62** | Two lines, empty `file_scope`, so it can never collide with anything. | 44 → Stage 3.3 |
+| **28** | Already `[IMPLEMENTING]` with Phase 8 open — resuming in-flight work is cheaper than starting new. | — |
+
+Every one of the four unblocks something downstream, and the four touch four disjoint areas
+(deploy gate / literature / task-type routing / MCP ownership).
+
+**Then, solo, in this order** — each names an orchestrator-critical path, so each takes the
+designated-candidate slot and batching them together only buys cycles:
+
+1. **85** — de-flake the suite. Before 86, not after: a green CI built on a flaky suite certifies
+   nothing, and 82's exit-3 wiring means gate 8's flake now fails deploys.
+2. **86** — expand CI and fix doc-lint. Together with 85 this is what makes deploys exit 0 again.
+3. **87** — the mode-gating convention **plus its lint**; unblocks 88 (~26k tok/invocation) and 89
+   (~24.8k), the largest measured payoff in the file.
+4. **91**, then **90**, then **48** → **50**.
+
+**Still your action, unchanged**: step 0.2, the `<leader>al` reload in `~/Projects/Logos/Theory`
+and `~/Projects/BimodalLogic`. Theory remains the sole laggard on `skill-base.sh`.
+
+---
 
 ## Standing rules
 
@@ -237,9 +300,9 @@ Verified against `orchestrate-batch-admit.sh` on 2026-08-24, not assumed:
 | Stage | Tasks | Done |
 |-------|-------|------|
 | 0 — one version | 32 + manual reload | **32 ☑** · reload ☐ |
-| 1 — consequence | 82, 83, 84, 85, 86, 93 | ☐ |
-| 2 — literature | 77, 78, 80, 92 | ☐ |
+| 1 — consequence | 82, 83, 84, 85, 86, 93 | **82 ☑ 84 ☑** · 83, 85, 86, 93 ☐ |
+| 2 — literature | 77, 78, 80, 92 | **80 ☑ 92 ☑** · 77, 78 ☐ |
 | 3 — token | 87, 88, 44, 89 (+62) | ☐ |
 | 4 — adoption | 90, 48, 50 | ☐ |
-| 5 — in flight | 28, 9, 79, 91 | ☐ |
+| 5 — in flight | 28, 9, 79, 91 | **9 ☑ 79 ☑** · 28 in flight · 91 ☐ |
 | 6 — Literature repo | *external* | partial — backlog, `.bak` prune and null-id repair done; `metadata.json` and `.backups/` open |
