@@ -1,5 +1,5 @@
 ---
-next_project_number: 82
+next_project_number: 92
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 82
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,29,31,32,39,42,43,44,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81 | -- | agent-system, extensions, literature, ... |
-| 2 | 9,30,50,64,75,76,78 | 29,32,42,48,74,77 | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,29,31,32,39,42,43,44,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81,82,84,85,87,91 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,30,50,64,75,76,78,83,86,88,89,90 | 29,32,42,48,74,77,82,84,87 | agent-system, extensions, literature, ... |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -55,6 +55,10 @@ next_project_number: 82
 68 [NOT STARTED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
 81 [NOT STARTED] — Task-lock and session-registry heartbeats never fire during a rea
 
+### Status Marker Lifecycle
+
+91 [NOT STARTED] — update-plan-status.sh silently no-ops on a non-conforming plan St
+
 ### Essential Refactor
 
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
@@ -63,6 +67,15 @@ next_project_number: 82
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
+82 [NOT STARTED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
+  └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
+  └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
+84 [NOT STARTED] — The one duplication gate that exists has the wrong scope and has 
+  └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
+87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
+  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+  └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 
 ### Team Mode Lifecycle
 
@@ -70,6 +83,207 @@ next_project_number: 82
 73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
 
 ## Tasks
+
+### 91. Fail loudly on nonconforming plan status line
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: status-marker-lifecycle
+- **Dependencies**: None
+
+**Description**: update-plan-status.sh silently no-ops on a non-conforming plan Status line, and one of its two failure shapes is a SILENT SUCCESS rather than a silent failure. Reported by a peer session reviewing another consuming repo and independently confirmed here against the source store on 2026-08-24.
+
+THE WRITE PATH. Line 69 is:
+  sed -i "0,/^- \*\*Status\*\*: \[.*\]/{s/^- \*\*Status\*\*: \[.*\]$/- **Status**: [${new_status}]/}"
+The trailing `$` on the replacement pattern requires the line to END at the closing bracket, so any deviation makes the sed a no-op. Two shapes observed live in a single four-task /orchestrate batch:
+  1. `- **Status**: [IMPLEMENTING] (resumed; Phases 1R-10R closed)` -- trailing text after the bracket
+  2. `- **Status**: PARTIAL` -- no brackets at all
+
+THE VERIFICATION PATH IS WORSE, and this is the part to lead with. Lines 62 and 72 read the status with an UNANCHORED grep piped through `sed 's/.*\[\([^]]*\)\].*/\1/'`, falling through to `|| echo ""`. On shape 2 that extraction matches nothing, so current_status and updated_status are BOTH empty and compare EQUAL. The check cannot distinguish 'updated successfully' from 'matched nothing'. It is a silent-success path, not merely a silent-failure path.
+
+CONSEQUENCE. On PREFLIGHT the failure is deliberately non-fatal and prints only 'Warning: plan file update failed (non-fatal)', so a malformed Status line survives an entire task undetected and only bites at POSTFLIGHT where the same failure IS fatal. By then state.json says completed while the plan file still reads [IMPLEMENTING], and generate-todo.sh reads only state.json, so no other surface reveals the divergence.
+
+SCOPE: fail loudly, naming the offending line and why it did not match, rather than emitting the generic 'Failed to update status in <file>'. Make the verification distinguish no-match from successful-update instead of comparing two empty strings. PRESERVE the deliberate preflight/postflight asymmetry -- update-task-status.sh's own error text acknowledges it on purpose; the fix is diagnosability, not making preflight fatal. Decide whether to accept the two observed shapes or reject them with a clear message; accepting trailing annotations after the bracket looks worth doing given shape 1 arose from a legitimate resume workflow.
+
+ACCEPTANCE: each of the two observed shapes produces a specific, actionable error naming the line; no input produces an empty-equals-empty pass.
+
+---
+
+### 90. Adoption lint for shared task lookup helper
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: Task 84
+
+**Description**: The largest duplication class in the repo, and it has never been named in any review: the inline task-lookup jq block. 111 files carry a hand-rolled `jq --argjson num ... '.active_projects[] | select(.project_number == $num)'` lookup against specs/state.json, totalling roughly 62,000 duplicated bytes. The canonical helper skill_validate_input() already exists at skill-base.sh:185 and has SIX callers, with ZERO overlap against the 111.
+
+For scale: this single class exceeds the three classes named in the 2026-08-11 review COMBINED (raw git commit -m, session-ID one-liner, jq #1132 block, ~58 KB together).
+
+This is an ADOPTION gap, not a missing-abstraction gap -- the same shape as every other class here. Someone built the helper; nothing held the line. Six classes in this repo have a canonical home and near-zero adoption.
+
+SCOPE: build the adoption lint FIRST, modelled on the corrected single-source gate (correct file-type scope, source-store-deterministic root, restricted to executable surfaces so illustrative prose in docs/ and context/ is not flagged); land it as failing-with-a-known-baseline or fix-then-enforce, whichever convention the gate fix establishes; then migrate the call sites. Migration can be incremental as long as the lint prevents NEW occurrences from day one -- preventing growth matters more than the backlog, since this class grew while unwatched.
+
+ACCEPTANCE: lint rejects a newly introduced inline task-lookup on an executable surface; adopter count rises and duplicate count falls; both numbers recorded so the next review can measure direction rather than re-derive it.
+
+---
+
+### 89. Mode gate literature and distill skills
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: Task 87
+
+**Description**: Apply the mode-gated section convention to the two remaining large instances, after the pilot proves it.
+
+skill-literature/SKILL.md, 84,265 B total, 64.5% fenced bash. Seven mutually exclusive mode sections of which exactly ONE fires per invocation: Mode: Rebuild 20,170 | Mode: Convert 17,534 | Mode: Search 10,043 | Mode: Validate 5,989 | Mode: Import Pipeline 5,785 | Mode: Index 5,234 | Mode: Ingest 1,917 = ~65,772 B, 78% of the file. Cleanly '## Mode:'-delimited, so the split is mechanical. Estimated ~14,000 tokens per /literature invocation, taking it from ~46.2k toward ~32k.
+
+skill-distill/SKILL.md, 93,044 B total, only 1.9% bash -- essentially pure prose. `## Auto Distill Complete` is 43,254 B, 46% of the file, and is an OUTPUT TEMPLATE used by --auto alone. It belongs in context/formats/, not in a skill body loaded on every /distill invocation. Estimated ~10,800 tokens per non---auto /distill, taking it from ~42.4k toward ~32k.
+
+Combined estimated saving ~24,800 tokens across the two commands' invocations.
+
+Both carry the same fence-interior heading hazard as the orchestrate application -- '## Mode:' and '## Auto' strings can appear inside fenced examples. Split bottom-up and verify each extracted section round-trips.
+
+ACCEPTANCE: each mode section loads only when its mode is selected; all seven literature modes and both distill paths verified working; measured reductions reported against the 46.2k and 42.4k baselines.
+
+---
+
+### 88. Mode gate skill orchestrate multi task section
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: Task 87
+
+**Description**: Apply the mode-gated section convention to the largest single instance in the system. skill-orchestrate/SKILL.md is 188,284 B; its `## Multi-Task Mode` section measures 103,462 B -- 55% of the file -- and is entered ONLY when multi_task_mode=true. Stage 0 states it explicitly: 'If multi_task_mode is true: skip Stages 1-8 entirely and proceed to Stage MT-1.' Every single-task /orchestrate N therefore loads ~26k tokens of text it will never execute, on the command intended for the longest, most context-hungry runs.
+
+Section breakdown of the file: ## Multi-Task Mode 103,462 (only ~11% bash) | ## Execution Flow 71,570 | ## MUST NOT (Context Flatness) 8,932 | remainder ~2,500.
+
+ESTIMATED SAVING: ~26,000 tokens per single-task /orchestrate invocation, taking its budget from ~83.5k toward ~57k. This is the single largest measured token item in the system and it is a pure move -- the section is self-contained and the branch is already explicit, so no prose rewriting is required.
+
+Secondary, separable lever recorded here so it is not lost: this file carries 5 bash blocks of >=20 lines totalling 39,275 B, and skill-orchestrate-hard carries 9 such blocks totalling 63,892 B. Bash moved into a standalone script costs ZERO context because the script source is never loaded. That is a bigger per-token win than prose extraction and is already the established pattern here (~20 orchestrate-*.sh scripts exist). Do it in a follow-up rather than widening this work.
+
+BEWARE the fence-interior heading trap: naive '^## ' section splitting can match headings inside fenced code blocks and silently truncate. The slim-task-command plan documents this exact hazard and mandates bottom-up extraction so earlier line numbers do not drift. Reuse that approach.
+
+ACCEPTANCE: single-task /orchestrate no longer loads the multi-task section; multi-task /orchestrate still works end to end; measured budget reduction reported against the 83.5k baseline.
+
+---
+
+### 87. Mode gated section loading convention
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: None
+
+**Description**: Establish the convention that fixes the single largest token lever in the system: MUTUALLY-EXCLUSIVE BRANCH SECTIONS LOADED UNCONDITIONALLY. A skill's SKILL.md body is loaded IN FULL on every invocation -- there is no include, partial, fragment or compose mechanism in install-extension.sh, and deploy is a byte-for-byte copy. Four files carry large sections entered on exactly one branch and skipped on every other invocation:
+
+| File | Dead-branch section | Bytes | Share | Fires when |
+| skill-orchestrate/SKILL.md | ## Multi-Task Mode | 103,462 | 55% | multi_task_mode=true only |
+| skill-distill/SKILL.md | ## Auto Distill Complete | 43,254 | 46% | --auto only |
+| skill-literature/SKILL.md | 7x ## Mode: sections | ~65,772 | 78% | exactly one fires |
+| commands/task.md | 5 non-default modes | 25,883 | 66% | one mode per invocation |
+
+Verified in skill-orchestrate Stage 0: 'If multi_task_mode is true: skip Stages 1-8 entirely and proceed to Stage MT-1.' The branches are explicitly exclusive, so every single-task /orchestrate N loads ~26k tokens it will never execute. Measured /orchestrate budget today is ~83.5k tokens before any work begins.
+
+This is ONE architectural defect, not four. This work defines the convention ONLY; the per-file applications are separate tasks so each stays bounded to one agent run. The commands/task.md instance is already owned by the slim-task-command work.
+
+SCOPE: decide the mechanism (a referenced context/ file read on demand when the branch is taken is the established pattern -- moving procedural bash to scripts/ removes it from context entirely, while moving prose to context/ saves only on invocations that do not need it); define the section-marker convention; document it in context/patterns/; and add a lint that flags a runtime-loaded .md carrying a mutually-exclusive branch section above a byte threshold. Without the lint this regresses, exactly as every other extracted-then-readopted class in this repo has.
+
+DO NOT pursue twin-dedup between skill-orchestrate and skill-orchestrate-hard as part of this: the 2026-08-11 review's '>=28,421 B byte-identical' figure did not reproduce. Contiguous identical runs of >=8 lines total only 8,168 B. It is a weak lever and a distraction.
+
+ACCEPTANCE: convention documented, lint in place and green, and one pilot application landed demonstrating the measured saving.
+
+---
+
+### 86. Expand ci to full gate suite and go green
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: Task 82
+
+**Description**: .github/workflows/check-extension-docs.yml is the repository's ONLY CI workflow. It runs exactly one of the nine check/lint scripts, and it exits 1 today. The single automated enforcement point in the repo is red and has been ignored -- which makes it functionally advisory, the same shape as the non-blocking hooks.
+
+THE 16 CURRENT FAILURES (from a live run):
+- core, 1x deployed script content drift: scripts/skill-base.sh
+- core, 7x index-entries.json line_count mismatch: architecture/context-layers.md 219->221; patterns/file-metadata-exchange.md 305->314; standards/postflight-tool-restrictions.md 216->219; patterns/regeneration-is-manual-only.md 210->259; patterns/batch-orchestration-guardrails.md 737->812; patterns/file-footprint-overlap.md 194->202; reference/orchestrator-critical-paths.json 70->74; patterns/skill-postflight-flow.md 126->177
+- literature, 5x deployed script content drift: literature-discover.sh, literature-convert.sh, literature-normalize-authors.sh, tests/generate-test-fixtures.py, tests/test-literature-convert.sh
+- literature, 1x line_count mismatch: project/literature/domain/literature-index.md 144->117
+- project-wide, 1x Rule S: deployed context/contracts/return-meta-artifacts-template.md has no entry in .claude/context/index.json
+
+Most of these clear as a side effect of the pending deploy plus generate-context-line-counts.sh --write; the return-meta index entry needs a real fix. Do not paper over any of them by relaxing the lint.
+
+SCOPE: expand the workflow to run all nine gates (or verify-deploy.sh as the aggregator, once it is callable); fix the 16 issues; keep it green. Sequence after the deploy-verification wiring so CI and local deploy share one entry point rather than drifting into two definitions of 'verified'.
+
+ACCEPTANCE: CI runs the full suite on every push and is green; a deliberately reintroduced line_count mismatch fails the build.
+
+---
+
+### 85. Deflake shell test suite under concurrency
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: None
+
+**Description**: THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed no acceptance gate in this repo is trustworthy in either direction -- including the 19/23 verify-deploy figure the 2026-08-24 survey reports. Split out of a former six-item bundle where its value was diluted by hygiene items.
+
+MEASURED 2026-08-24: two runs in the same session failed in DIFFERENT suites. The verify-deploy gate-8 run reported failures in test-mint-dispatch-seq.sh (Cases B-F), fix-roundtrip, and the single-source assertion; an independent standalone run minutes later reported 41 passed / 4 failed with the failures in test-validate-return-meta.sh instead. Wall clock 100s. The 2026-08-11 review measured the same class across five consecutive runs: exit 1, 0, 1, 0, 0 -- roughly a 2-in-5 failure rate with passing runs reporting a clean 36/36.
+
+Note the confounder that must be separated during diagnosis: SOME of the gate-8 failures are NOT flake. test-mint-dispatch-seq.sh's failures are real and caused by deploy staleness -- the deployed skill-base.sh carries the pre-fix ambient-variable code while the test asserts the fixed persisted-counter behavior. Re-measure after the deploy lands so genuine staleness failures are not misattributed to flake, and flake is not excused as staleness. That exact misattribution already happened once: the 2026-08-10 capstone dismissed a real failure as 'a flaky lock-contention test attributable to concurrent sibling sessions, not a deploy defect' WITHOUT being able to confirm it, precisely because the suite cannot distinguish the two.
+
+Suspected cause: the suite runs concurrently with other live sessions holding the same locks and touching shared global state. Diagnose it; then either isolate the affected tests from shared state or make them wait deterministically. A test that is merely retried is not fixed.
+
+ACCEPTANCE: 10 consecutive runs, executed while at least one other session is active, all report the same result.
+
+---
+
+### 84. Fix duplication gate scope and extensions root
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: None
+
+**Description**: The one duplication gate that exists has the wrong scope and has reported PASS while its class grew. test-common-lib.sh:230-234 asserts single-source for the session-ID generator with `grep -rl 'sess_\$(date' --include="*.sh" "$EXTENSIONS_ROOT"`. It greps ONLY *.sh. 46 of the 48 duplicate sites are *.md. The class grew 43 -> 48 files between 2026-08-11 and 2026-08-24 with the gate green throughout.
+
+Second, independent defect in the same block: EXTENSIONS_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)" resolves to the repo root when the test runs from the deployed tree rather than the source store, making the assertion environment-dependent even for the two .sh files it can see. This is tracked as errors.json err_1787022038113_c3VPTR, severity HIGH, fix_status unfixed, and verified still present in BOTH source and deploy today.
+
+A gate with the wrong scope is worse than no gate: it reports safety. This is the template every other duplication class needs, so fix it before cloning the pattern.
+
+SCOPE: add *.md to the include set; scope the search to executable surfaces (commands/, skills/, agents/) to avoid flagging illustrative prose in docs/ and context/; fix EXTENSIONS_ROOT to resolve the source store deterministically in both modes; then migrate the 46 newly-visible .md sites to common_session_id() (10 adopters today). Mark err_1787022038113_c3VPTR fixed with closing evidence.
+
+ACCEPTANCE: the gate fails on a deliberately reintroduced inline sess_$(date in a .md under commands/, passes from both the source store and a deployed tree, and the live count reaches 0 outside lib/common.sh.
+
+---
+
+### 83. Postflight deploy gate for source store tasks
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: Task 82
+
+**Description**: Make 'completed' mean 'in effect' for tasks that edit the source store. TODAY IT DOES NOT: the deploy is 7 days and 133 commits stale, and four completed tasks (the mint-dispatch-seq fix and the three literature fixes) are marked COMPLETED with honest summaries while their fixes are absent from the running system. Deployed .claude/scripts/skill-base.sh:958 still reads `dispatch_seq_counter=$((dispatch_seq_counter + 1))` -- the exact pre-fix ambient-variable code that was replaced; source line 963 reads the corrected `jq -r '(.dispatch_seq_counter // 0) + 1'`. The accompanying test-mint-dispatch-seq.sh was never deployed. The HIGH-severity literature corpus-corruption gate is likewise not live.
+
+The detection half already exists and works: check-deploy-freshness.sh correctly reports both core and literature stale right now. It cannot act -- it has ZERO exit-1 paths anywhere in the file, and its one caller at command-gate-in.sh:120 wraps it in `|| true` regardless. Two independent layers of non-blocking. It has warned correctly on every command for seven days.
+
+DECISION TAKEN (user, 2026-08-24): gate at POSTFLIGHT, not preflight. A meta task that touched agent-system/** cannot reach [COMPLETED] until a deploy has run. Preflight blocking was rejected: 47 of 48 tasks are task_type meta, so nearly every /implement dirties the tree and would block the NEXT command, and a hard preflight block dead-ends autonomous /orchestrate.
+
+MANDATORY PREREQUISITE: context/patterns/regeneration-is-manual-only.md states deploy-headless.sh 'must be invoked explicitly and never as a silent side effect of an unrelated operation', narrowed by exactly ONE sanctioned automated call site (skill-orchestrate Stage MT-3 step 7, the inter-cycle redeploy checkpoint). That section explicitly states it is NOT precedent and that any further automated caller needs its own exception recorded in the same section. This work MUST add that recorded carve-out, following the document's correction-as-addition convention -- additive, labeled, never rewriting the existing constraint in place. Model the justification on the existing one: not a side effect of an unrelated operation (the deploy makes live precisely the fix that triggered it), not silent (log on fire/success/failure), and bounded (evidence-gated on modified_files actually touching agent-system/**).
+
+ACCEPTANCE: a meta task whose implementation edits the source store cannot reach [COMPLETED] without the deploy having run; the carve-out is recorded; and check-deploy-freshness.sh's read-side role is explicitly documented as advisory-only so its always-exit-0 contract is no longer mistaken for a gate.
+
+---
+
+### 82. Wire deploy verification into deploy headless
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: None
+
+**Description**: deploy-headless.sh:233 PRINTS the verification step instead of running it. The line reads `echo "[deploy-headless] Verify with: bash $TARGET/.claude/scripts/verify-deploy.sh"` followed immediately by `exit 0`. verify-deploy.sh aggregates five working contract lints (lint-agent-contracts, lint-contract-compliance, lint-postflight-boundary, lint-routing-wiring, lint-state-writer-boundary) plus doc-lint, task-reference lint, verify.lua parity, the shell test suite and validate-state --deep, and exits 1 on failure. Because its only caller echoes instead of invoking, all of that is reachable only by a human typing the command. command-gate-out.sh invokes ZERO checks (grep for 'check-|lint-' returns nothing). check-runtime-file-tracking.sh has no caller anywhere in the repo -- only a manifest declaration and prose references.
+
+This single echo is the proximate cause of the 2026-08-11 -> 2026-08-24 regression: verify-deploy went 21/23 -> 19/23, doc-lint failures 4 -> 16, and index-entries line_count drift 3 -> 8 stale entries, all while five green lints sat disconnected.
+
+SCOPE: change the echo to an actual invocation; decide and document the failure contract (does a failing verify fail the deploy, or warn loudly and exit non-zero?); ensure --dry-run does not invoke it. Consider running only the fast gates inline and deferring the 100s test suite, since gate wall-clock is ~2.8 min and a slow deploy is a deploy that gets skipped.
+
+ACCEPTANCE: a deploy that leaves the tree failing any verify-deploy gate reports that fact in its own output, non-zero. Verified by deliberately introducing a line_count mismatch, deploying, and observing the failure surface without a human running verify-deploy by hand.
+
+---
 
 ### 81. Mechanize task-lock and session-registry heartbeat refresh: liveness timestamps never advance during a multi-phase /implement run
 - **Effort**: 3-6 hours

@@ -200,6 +200,11 @@
           "type": "string",
           "description": "Documented-optional. Estimated effort. Zero occurrences in the current active snapshot (lifecycle-timing artifact -- 276 occurrences in specs/archive/state.json, so this is naturally sparse pre-completion, not dead."
         },
+        "priority": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "description": "Documented-optional. Relative urgency, independent of dependency order: a wave-1 task may be low and a wave-3 task high. Written by /review's severity mapping and by task-creation paths that carry an explicit urgency signal; absent means unranked, NOT low. Admitted to the schema after five live entries (53, 66, 74, 75, 76) failed validate-state.sh --deep against additionalProperties: false -- the field carried real signal, so it was admitted rather than stripped."
+        },
         "created": {
           "type": "string",
           "description": "ISO8601 creation timestamp."

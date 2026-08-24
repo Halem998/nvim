@@ -399,9 +399,13 @@ else
 fi
 
 # ─── Check 4: No unknown per-entry fields ──────────────────────────────────────────────────────
+# NOTE: this list duplicates context/schemas/state-schema.json's project-object properties and
+# is kept in sync by hand -- there is no drift test for the pair (unlike the status enum, which
+# scripts/tests/test-status-vocabulary.sh guards). Adding a field here without adding it to the
+# schema, or vice versa, produces a validator that disagrees with the schema it enforces.
 KNOWN_ENTRY_FIELDS=(
   project_number project_name status task_type title topic description session_id effort
-  created last_updated dependencies file_scope artifacts next_artifact_number
+  priority created last_updated dependencies file_scope artifacts next_artifact_number
   completion_summary roadmap_items memory_candidates reflection
 )
 unknown_entry=$(jq -r '.active_projects[] | keys[]' "$STATE_FILE" 2>/dev/null | sort -u | while IFS= read -r k; do
