@@ -1,13 +1,32 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
-  "next_steps": "Planning in progress",
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/084_fix_duplication_gate_scope_and_extensions_root/plans/01_duplication-gate-scope-fix.md",
+      "summary": "9-phase plan repairing the duplication gate (dual-mode root resolution via the run-all.sh manifest probe, a new commands/skills/agents-scoped .md scan, deployed-mode and prose-exclusion regression fixtures), migrating all 38 real offenders (1 .sh + 37 .md across 7 extensions) to common_session_id(), and closing errors.json err_1787022038113_c3VPTR with evidence."
+    }
+  ],
+  "next_steps": "Run /implement 84 to execute the plan",
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e_84",
     "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 9,
+    "estimated_hours": 7.5,
+    "dependency_waves": [[1, 2], [3], [4, 5], [6, 7, 8], [9]]
   },
-  "memory_candidates": [],
-  "modified_files": []
+  "memory_candidates": [
+    {
+      "content": "A repository-hygiene gate whose scan scope is narrower than its defect class is worse than no gate: it reports safety while the class grows. The nvim agent-system's single-source session-ID gate scanned only *.sh while 37 of 38 real offenders were .md, and reported PASS as the class grew 43 -> 48 -> 52 sites over two weeks. The general design rule extracted: scope a duplication gate by POSITIVE inclusion of executable surfaces (commands/, skills/, agents/) rather than by a deny-list of documentation directories (context/, docs/, rules/) - a deny-list must grow with every new prose directory and fails open, while positive scoping fails closed. Pair this with probe-based root resolution (test for a known marker file at the candidate root) instead of a fixed-depth ../.. walk, which silently resolves to the wrong root when the same script is run from a deployed copy at a different directory depth.",
+      "category": "PATTERN",
+      "source_artifact": "specs/084_fix_duplication_gate_scope_and_extensions_root/plans/01_duplication-gate-scope-fix.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["duplication-gate", "scan-scope", "positive-scoping", "root-resolution", "fail-closed", "single-source-assertion"]
+    }
+  ],
+  "modified_files": [
+    "specs/084_fix_duplication_gate_scope_and_extensions_root/plans/01_duplication-gate-scope-fix.md"
+  ]
 }

@@ -1420,7 +1420,7 @@
     {
       "project_number": 84,
       "project_name": "fix_duplication_gate_scope_and_extensions_root",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "high",
@@ -1432,13 +1432,18 @@
         "specs/errors.json"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-08-24T22:03:56Z",
+      "last_updated": "2026-08-24T22:13:03Z",
       "session_id": "sess_1787608215_ce9f8e_84",
       "artifacts": [
         {
           "path": "specs/084_fix_duplication_gate_scope_and_extensions_root/reports/01_duplication-gate-scope-and-extensions-root.md",
           "type": "report",
           "summary": "Confirms both defects live (scope + EXTENSIONS_ROOT resolution), inventories 52 current sess_$(date sites (38 real offenders: 1 .sh + 37 .md under commands/skills/agents, 12 correctly-excluded illustrative-prose .md), and recommends reusing run-all.sh's core/manifest.json-probe pattern for dual-mode root resolution plus an added .md-scoped scan alongside the unchanged whole-tree .sh scan."
+        },
+        {
+          "path": "specs/084_fix_duplication_gate_scope_and_extensions_root/plans/01_duplication-gate-scope-fix.md",
+          "type": "plan",
+          "summary": ""
         }
       ]
     },

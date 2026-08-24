@@ -73,7 +73,7 @@ next_project_number: 97
   └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
     └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
   └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
-84 [PLANNING] — The one duplication gate that exists has the wrong scope and has 
+84 [PLANNED] — The one duplication gate that exists has the wrong scope and has 
   └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
@@ -462,11 +462,12 @@ ACCEPTANCE: 10 consecutive runs, executed while at least one other session is ac
 ---
 
 ### 84. Fix duplication gate scope and extensions root
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
 - **Research**: [084_fix_duplication_gate_scope_and_extensions_root/reports/01_duplication-gate-scope-and-extensions-root.md]
+- **Plan**: [084_fix_duplication_gate_scope_and_extensions_root/plans/01_duplication-gate-scope-fix.md]
 
 **Description**: The one duplication gate that exists has the wrong scope and has reported PASS while its class grew. test-common-lib.sh:230-234 asserts single-source for the session-ID generator with `grep -rl 'sess_\$(date' --include="*.sh" "$EXTENSIONS_ROOT"`. It greps ONLY *.sh. 46 of the 48 duplicate sites are *.md. The class grew 43 -> 48 files between 2026-08-11 and 2026-08-24 with the gate green throughout.
 
