@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/082_wire_deploy_verification_into_deploy_headless/reports/01_wire-verify-into-deploy-headless.md",
+      "summary": "Research on wiring verify-deploy.sh into deploy-headless.sh: recommends a distinct new exit code and a --skip-slow verify-deploy.sh flag, and documents a real collision with skill-orchestrate's existing pre/post baseline redeploy checkpoint that this task's file_scope cannot itself fix."
+    }
+  ],
+  "next_steps": "Run /plan 82 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1787608215_ce9f8e_82",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh's shell test suite gate (gate 8, tests/run-all.sh) dominates its wall-clock cost: measured 117.9s of a ~2.8min 12-gate total (~65-70%). When wiring verify-deploy.sh into a hot path (e.g. deploy-headless.sh), consider a gate-skip flag for the slow suite rather than always paying the full cost inline, especially if another caller (skill-orchestrate's inter-cycle redeploy checkpoint) already invokes the full script separately.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/082_wire_deploy_verification_into_deploy_headless/reports/01_wire-verify-into-deploy-headless.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy", "deploy-headless", "gate timing", "test suite", "performance"]
+    },
+    {
+      "content": "skill-orchestrate's Stage MT-3 step 7 inter-cycle redeploy checkpoint calls deploy-headless.sh and verify-deploy.sh --findings --quiet as two SEPARATE calls (pre- and post-redeploy) specifically to baseline-diff findings and distinguish newly-introduced failures (defer) from pre-existing ones (proceed, branch c). Any future change that makes deploy-headless.sh itself hard-fail on verify-deploy findings must use a distinct exit code from deploy-headless.sh's existing exit 2 (nvim failure), so the orchestrator's checkpoint can eventually be taught to route that new failure mode through its existing baseline logic instead of its unconditional 'deploy-headless failed' branch (a), which would otherwise silently swallow branch (c)'s pre-existing-failure tolerance.",
+      "category": "PATTERN",
+      "source_artifact": "specs/082_wire_deploy_verification_into_deploy_headless/reports/01_wire-verify-into-deploy-headless.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["skill-orchestrate", "redeploy checkpoint", "baseline", "verify-deploy", "exit code", "failure contract"]
+    }
+  ]
+}
