@@ -24,22 +24,41 @@
       "category": "PATTERN",
       "source_artifact": "specs/082_wire_deploy_verification_into_deploy_headless/summaries/01_wire-verify-into-deploy-headless-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verify-deploy", "quiet-mode", "findings-mode", "doc-lint", "gate-detail-surfacing"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "quiet-mode",
+        "findings-mode",
+        "doc-lint",
+        "gate-detail-surfacing"
+      ]
     },
     {
       "content": "Adding a new test file under agent-system/extensions/<ext>/scripts/tests/ is NOT sufficient by itself for it to deploy or pass verify-deploy.sh's gate 5 (manifest-driven declared-vs-deployed parity). It must also be registered in that extension's manifest.json under provides.scripts (e.g. 'tests/new-test.sh') -- the copy engine (loader.lua's copy_category) only copies files the manifest declares. Forgetting this registration produces a gate-5 'Missing scripts: scripts/tests/X.sh' finding on the very next full deploy, even though the file exists on disk and bash -n/standalone-run both pass.",
       "category": "PATTERN",
       "source_artifact": "specs/082_wire_deploy_verification_into_deploy_headless/summaries/01_wire-verify-into-deploy-headless-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["manifest.json", "provides.scripts", "new-test-file", "deploy-registration", "gate5-parity"]
+      "suggested_keywords": [
+        "manifest.json",
+        "provides.scripts",
+        "new-test-file",
+        "deploy-registration",
+        "gate5-parity"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1787612820_ea554a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
-    "phases_total": 5
+    "phases_total": 5,
+    "cycles_used": 1,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

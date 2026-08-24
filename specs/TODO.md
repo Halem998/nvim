@@ -11,9 +11,8 @@ next_project_number: 99
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,68,72,73,74,77,81,82,85,87,90,91,94,97 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,44,50,64,66,75,76,78,83,86,88,89,96,98 | 29,42,48,62,74,77,82,87,97 | agent-system, extensions, literature, ... |
-| 3 | 93 | 83 | essential-refactor |
+| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,68,72,73,74,77,81,83,85,86,87,90,91,94,97 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,44,50,64,66,75,76,78,88,89,93,96,98 | 29,42,48,62,74,77,83,87,97 | agent-system, extensions, literature, ... |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -67,11 +66,10 @@ next_project_number: 99
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-82 [IMPLEMENTING] — deploy-headless.sh:233 PRINTS the verification step instead of ru
-  └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
-    └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
-  └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
+83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
+  └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
+86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
@@ -593,12 +591,13 @@ ACCEPTANCE: a meta task whose implementation edits the source store cannot reach
 ---
 
 ### 82. Wire deploy verification into deploy headless
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 32
 - **Research**: [082_wire_deploy_verification_into_deploy_headless/reports/01_wire-verify-into-deploy-headless.md]
 - **Plan**: [082_wire_deploy_verification_into_deploy_headless/plans/01_wire-verify-into-deploy-headless.md]
+- **Summary**: [082_wire_deploy_verification_into_deploy_headless/summaries/01_wire-verify-into-deploy-headless-summary.md]
 
 **Description**: deploy-headless.sh:233 PRINTS the verification step instead of running it. The line reads `echo "[deploy-headless] Verify with: bash $TARGET/.claude/scripts/verify-deploy.sh"` followed immediately by `exit 0`. verify-deploy.sh aggregates five working contract lints (lint-agent-contracts, lint-contract-compliance, lint-postflight-boundary, lint-routing-wiring, lint-state-writer-boundary) plus doc-lint, task-reference lint, verify.lua parity, the shell test suite and validate-state --deep, and exits 1 on failure. Because its only caller echoes instead of invoking, all of that is reachable only by a human typing the command. command-gate-out.sh invokes ZERO checks (grep for 'check-|lint-' returns nothing). check-runtime-file-tracking.sh has no caller anywhere in the repo -- only a manifest declaration and prose references.
 

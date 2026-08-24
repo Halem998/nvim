@@ -1,7 +1,7 @@
 # Implementation Plan: Wire Deploy Verification Into deploy-headless.sh
 
 - **Task**: 82 - wire_deploy_verification_into_deploy_headless
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.75 hours
 - **Dependencies**: 32 (completed; not a live blocker)
 - **Research Inputs**: specs/082_wire_deploy_verification_into_deploy_headless/reports/01_wire-verify-into-deploy-headless.md

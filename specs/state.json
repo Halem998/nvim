@@ -1382,7 +1382,7 @@
     {
       "project_number": 82,
       "project_name": "wire_deploy_verification_into_deploy_headless",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "critical",
@@ -1396,7 +1396,7 @@
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-08-24T23:07:38Z",
+      "last_updated": "2026-08-24T23:51:03Z",
       "session_id": "sess_1787612820_ea554a",
       "artifacts": [
         {
@@ -1408,8 +1408,14 @@
           "path": "specs/082_wire_deploy_verification_into_deploy_headless/plans/01_wire-verify-into-deploy-headless.md",
           "type": "plan",
           "summary": ""
+        },
+        {
+          "path": "specs/082_wire_deploy_verification_into_deploy_headless/summaries/01_wire-verify-into-deploy-headless-summary.md",
+          "type": "summary",
+          "summary": ""
         }
-      ]
+      ],
+      "completion_summary": "Replaced deploy-headless.sh's echoed verify-deploy command with a real inline invocation (verify-deploy.sh --skip-slow) that exits 3 on failure, added the --skip-slow flag to verify-deploy.sh, a fixture-driven regression suite, and documented the exit-3 contract and the skill-orchestrate Stage MT-3 collision. Verified end-to-end with a deliberately injected line_count mismatch: deploy landed, verification failed, exit 3, no human verify-deploy invocation, and a clean revert."
     },
     {
       "project_number": 83,
