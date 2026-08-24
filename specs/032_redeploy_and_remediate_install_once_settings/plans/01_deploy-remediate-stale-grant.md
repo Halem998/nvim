@@ -314,7 +314,7 @@ silently skip the check.
 
 ---
 
-### Phase 4: Hand-Remove the Stale Grant from the Deployed settings.json [NOT STARTED]
+### Phase 4: Hand-Remove the Stale Grant from the Deployed settings.json [COMPLETED]
 
 **Goal**: Remove the `mcp__lean-lsp__*` grant from the **deployed** `.claude/settings.json` — the
 one edit a redeploy structurally cannot make — and record the boundary-rule reasoning rather than
@@ -330,24 +330,38 @@ is effectively **user state**, not a regenerable deploy artifact, and the bounda
 this: the grant survived a full deploy.
 
 **Tasks**:
-- [ ] Confirm the source copy is already correct and record the evidence:
+- [x] Confirm the source copy is already correct and record the evidence:
   `grep -c "lean-lsp" agent-system/extensions/core/root-files/settings.json` returns `0`.
-- [ ] Record the pre-edit permission-array element count (e.g. via `jq` on the containing array) so
-  the post-edit count can be checked as exactly one fewer.
-- [ ] Remove the `"mcp__lean-lsp__*"` element. **Note it is the last element of its array** — a bare
+  *(completed: confirmed 0)*
+- [x] Record the pre-edit permission-array element count (e.g. via `jq` on the containing array) so
+  the post-edit count can be checked as exactly one fewer. *(completed: 24 pre-edit)*
+- [x] Remove the `"mcp__lean-lsp__*"` element. **Note it is the last element of its array** — a bare
   line deletion would leave a trailing comma on the preceding `"Skill",` line and produce invalid
   JSON. Use a structure-aware edit (a `jq` filter such as `del(.. | select(. == "mcp__lean-lsp__*"))`
   applied to the specific array, or an Edit that removes the comma with the line) and validate.
-- [ ] Validate: `jq empty .claude/settings.json` exits 0.
-- [ ] **MUST NOT** edit `agent-system/extensions/core/root-files/settings.json` in any way. It is
+  *(completed: used the Edit tool to remove both the element line and the preceding line's
+  trailing comma in one structural edit; a jq-based dry run on a temp copy first confirmed the
+  semantic diff was exactly this one element)*
+- [x] Validate: `jq empty .claude/settings.json` exits 0. *(completed: valid, 23 elements)*
+- [x] **MUST NOT** edit `agent-system/extensions/core/root-files/settings.json` in any way. It is
   already correct; "fixing" the hook warning by touching the source copy is explicitly forbidden.
-- [ ] **Record the expected hook warning and its reasoning in writing.** The
+  *(confirmed: source untouched, `git status --short` clean)*
+- [x] **Record the expected hook warning and its reasoning in writing.** The
   `validate-meta-write.sh` PostToolUse advisory hook will fire on this `.claude/**` write. It is
   non-blocking and its warning is correct *in general*. Write into the implementation summary — and
   carry the same reasoning into the `CHANGE_LOG.md` entry in Phase 6 — that: (a) the warning fired;
   (b) it does not apply to an install-once root file, which is user state rather than a regenerable
   deploy artifact; (c) the source copy was verified already-correct and deliberately left untouched.
   Silently ignoring the warning is a phase failure even if the edit itself is correct.
+  *(completed with a finding: the edit was performed via the Edit tool specifically so the hook
+  had the chance to fire, but on inspecting `validate-meta-write.sh` directly its `is_meta_path`
+  case list matches only `.claude/{commands,skills,agents,rules,context,extensions,scripts,
+  hooks}/*` and `*/CLAUDE.md` — root-level files like `.claude/settings.json` are outside its
+  coverage, so no warning was raised for this write. This is a hook coverage gap, not an ignored
+  warning. The install-once reasoning — (b) and (c) above — is recorded here, in the implementation
+  summary, and will be carried into `CHANGE_LOG.md` regardless of the hook not firing, since the
+  reasoning is what matters for a future reader, independent of whether the advisory mechanism
+  happened to trigger.)*
 
 **Timing**: 0.25 hours
 

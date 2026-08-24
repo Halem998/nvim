@@ -1,0 +1,55 @@
+=== Confirm source copy already correct ===
+0
+
+=== Pre-edit permission array element count ===
+24
+[
+  "Bash(git:*)",
+  "Bash(lake *)",
+  "Bash(pdflatex *)",
+  "Bash(latexmk *)",
+  "Bash(bibtex *)",
+  "Bash(biber *)",
+  "Bash(cd *)",
+  "Bash(ls *)",
+  "Bash(mkdir *)",
+  "Bash(cp *)",
+  "Bash(mv *)",
+  "Bash(chmod +x *)",
+  "Read",
+  "Write",
+  "Edit",
+  "Glob",
+  "Grep",
+  "WebSearch",
+  "WebFetch",
+  "Task",
+  "TaskCreate",
+  "TaskUpdate",
+  "Skill",
+  "mcp__lean-lsp__*"
+]
+
+=== Post-edit verification ===
+--- lean-lsp in deployed settings.json (expect 0) ---
+0
+--- jq empty on deployed settings.json ---
+valid JSON
+--- element count (expect 23, was 24) ---
+23
+--- source copy still correct (expect 0) ---
+0
+--- source copy git status (expect no modification) ---
+(empty above = clean)
+
+=== Final Phase 4 verification (post proper Edit-tool hand-edit) ===
+0
+valid JSON
+23
+(expect 23)
+0
+(empty above = source untouched)
+
+=== Hook-fire observation ===
+validate-meta-write.sh is_meta_path case list: commands/*, skills/*, agents/*, rules/*, context/*, extensions/*, scripts/*, hooks/*, */CLAUDE.md
+settings.json is a root-level file matching NONE of these path patterns -- hook did not fire for this edit.

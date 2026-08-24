@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Hand-Remove the Stale Grant from the Deployed settings.json",
+  "started_at": "2026-08-24T21:52:00Z",
+  "last_updated": "2026-08-24T22:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm source copy already correct (grep -c returns 0)", "status": "done", "files_touched": [], "note": "grep -c lean-lsp agent-system/extensions/core/root-files/settings.json returns 0"},
+    {"id": 2, "description": "Record pre-edit permission-array element count", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/phase4-checks.txt"], "note": "24 elements pre-edit, mcp__lean-lsp__* confirmed as last element"},
+    {"id": 3, "description": "Structure-aware removal of mcp__lean-lsp__* element (last array element -- avoid trailing comma)", "status": "done", "files_touched": [], "note": "Performed via Edit tool on .claude/settings.json (NOT bash cp, to allow the source-store-boundary advisory hook a chance to fire and be observed/documented as the plan requires): removed both the 'mcp__lean-lsp__*' line AND the trailing comma on the preceding 'Skill' line in one structural edit, avoiding invalid JSON. A jq-based dry run against a temp copy first confirmed the semantic diff was exactly the one element (jq -S canonicalized diff showed only the two removed lines)."},
+    {"id": 4, "description": "Validate jq empty exits 0", "status": "done", "files_touched": [], "note": "jq empty .claude/settings.json succeeds; array length is now 23 (was 24)"},
+    {"id": 5, "description": "Confirm source copy untouched", "status": "done", "files_touched": [], "note": "grep -c lean-lsp on source still 0; git status --short on source file is empty (no modification)"},
+    {"id": 6, "description": "Record hook-warning reasoning in writing (this is the sanctioned boundary exception)", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/phase4-checks.txt"], "note": "IMPORTANT FINDING: the validate-meta-write.sh advisory hook's is_meta_path case list only matches .claude/{commands,skills,agents,rules,context,extensions,scripts,hooks}/* and */CLAUDE.md -- it does NOT include root-level files such as .claude/settings.json. The hook therefore did not fire for this edit (confirmed by reading the hook script directly and by no additionalContext appearing in the Edit tool result). This is not a case of silently ignoring a warning -- no warning was raised to ignore, because the hook's own path-pattern coverage has a gap for install-once root files. The install-once sanctioned-exception reasoning (settings.json deploys under install_once semantics per loader.lua/init.lua, is user state rather than a regenerable deploy artifact, and the source copy was independently verified correct and left untouched) is recorded here and will be carried into the implementation summary and CHANGE_LOG.md per the plan's requirement, regardless of whether the hook actually fired."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Apply the jq del() removal via raw Bash cp of a temp file", "result": "worked but abandoned", "reason": "Correct content-wise, but would never trigger the PostToolUse hook (which only fires on Write/Edit tool calls), so the plan's hook-observation requirement could not be verified this way. Reverted to the pre-edit state from settings.json.bak and redid the edit via the Edit tool instead."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
