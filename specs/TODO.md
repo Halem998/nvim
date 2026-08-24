@@ -1,5 +1,5 @@
 ---
-next_project_number: 97
+next_project_number: 99
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 97
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,66,68,72,73,74,77,81,82,85,87,90,91,94 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,44,50,64,75,76,78,83,86,88,89,96 | 29,42,48,62,74,77,82,87 | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,68,72,73,74,77,81,82,85,87,90,91,94,97 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,44,50,64,66,75,76,78,83,86,88,89,96,98 | 29,42,48,62,74,77,82,87,97 | agent-system, extensions, literature, ... |
 | 3 | 93 | 83 | essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -35,10 +35,12 @@ next_project_number: 97
 45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
 62 [NOT STARTED] — Restrict typst and latex task types to formatting-only concerns. 
-66 [NOT STARTED] — Mandate detached (run_in_background) invocation for Lean full bui
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
+97 [NOT STARTED] — Ship a shared, portable build-concurrency and memory guard for Le
+  └─ 66 [NOT STARTED] — Mandate detached (run_in_background) invocation for Lean full bui
+  └─ 98 [NOT STARTED] — Integrate the shared Lean build guard into the lean extension: ro
 
 ### Literature
 
@@ -65,7 +67,7 @@ next_project_number: 97
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-82 [PLANNED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
+82 [IMPLEMENTING] — deploy-headless.sh:233 PRINTS the verification step instead of ru
   └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
     └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
   └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
@@ -82,6 +84,101 @@ next_project_number: 97
 73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
 
 ## Tasks
+
+### 98. Route lean extension builds through the guard and rewrite the multi-instance operations anchor
+- **Effort**: 3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 97
+
+**Description**: Integrate the shared Lean build guard into the lean extension: route the extension's own build-invoking script through it, decide and implement the lifecycle-hook wiring, and rewrite the multi-instance operations anchor from human-advisory prose into mechanism documentation with corrected figures.
+
+DEPENDS ON the core guard script task. This task consumes the script and its chosen subcommand shape and must not re-litigate the mechanism decisions made there.
+
+SCOPE BOUNDARY (important -- read before planning). The agent and skill CONTRACT text that instructs an agent to run `lake build` is NOT in this task's scope. Those sites (both implementation agent twins, both implementation skills, both research agents, skill-lake-repair, and rules/lean4.md) are edited by the background-builds task, whose description was revised to absorb the guard obligation so that detached invocation and guard usage are mandated together in a SINGLE coherent pass over those files. Splitting that pass across two tasks would edit the same eight files twice and invite exactly the twin-file drift this extension treats as a known recurring defect class. This task covers the script, the manifest, and the documentation anchor -- and nothing that the background-builds task already owns.
+
+DELIVERABLE 1 -- ROUTE THE CENSUS SCRIPT THROUGH THE GUARD.
+`agent-system/extensions/lean/scripts/lean-sorry-census.sh` runs its own unguarded full build under `--cross-check`. The site is line ~181 (verified at task-creation time; locate by content, line numbers drift):
+    BUILD_OUTPUT="$(lake build 2>&1)"
+    BUILD_STATUS=$?
+This is a second, independent source of unguarded full builds, and it is invoked by the hard implementation agent's verification step -- so a single hard dispatch can trigger two full builds.
+NOTE THE COMMAND-SUBSTITUTION SHAPE, and note that it is exactly why the guard rather than detached invocation is the right instrument here: `run_in_background` cannot return stdout to a shell variable, but the flock-based guard can. Route this call through the guard while preserving the existing capture of both output and exit status. Preserve the existing graceful degradation when `lake` is absent from PATH (`cross_check: unavailable`), and add the equivalent for the guard being absent -- the census script must not hard-fail in a repo where the guard has not been deployed.
+Update `agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh` to cover the new path.
+
+DELIVERABLE 2 -- LIFECYCLE-HOOK DECISION AND WIRING.
+`agent-system/extensions/lean/manifest.json` currently declares NO top-level `hooks` object (verified: `.hooks` is null) and its `provides.scripts` holds only the census script and its test. Decide whether the lean extension should declare a preflight hook that consults the guard, and record the reasoning either way.
+Inputs to that decision, all verified:
+  - `skill_run_extension_hook()` in `agent-system/extensions/core/scripts/skill-base.sh` dispatches preflight, context_injection, verification, and postflight to a script named in the extension's TOP-LEVEL `hooks` object. This is DISTINCT from `provides.hooks`, which is a file-copy target list; do not confuse the two. The new object is a SIBLING of `provides`, not a replacement for any field inside it.
+  - Hooks are NON-BLOCKING BY DESIGN: a non-zero exit is caught, downgraded to a `[skill-base] WARNING`, and execution continues. A preflight hook therefore CANNOT enforce a refusal on its own. If the intended behaviour is "refuse to build under memory pressure", that refusal must be carried in contract text (owned by the background-builds task) with the hook serving only as detector and reporter. Resolve this explicitly rather than assuming a non-zero exit stops anything.
+  - `agent-system/extensions/nix/scripts/nix-preflight.sh` is the reference implementation and shows the exact contract: five positional args (task_number, task_type, task_dir, session_id, operation), `set -euo pipefail`, warnings to stderr, `exit 0` even when warnings fired. Only two extensions (nix, nvim) declare top-level hooks today, so this is a lightly-trodden path -- read both before writing.
+  - Hooks fire for ALL operations of the matching task type, research included, since `operation` is passed as an argument rather than filtered on. Decide whether the hook self-filters on `operation`.
+  - COVERAGE CAVEAT that may argue against relying on a hook at all: `skill_get_extension_dir` keys hook resolution on task_type, so a lean-extension hook fires if and only if `task_type == "lean4"`. A `general`- or `meta`-typed task working in a Lean repository would get nothing. This is the same structural gap a companion task documents for LaTeX. A defensible outcome is to declare no lean hook and rely on the contract mandate plus the guard's own internal safety, PROVIDED that choice is recorded with its reasoning rather than reached by omission.
+If a hook is added, register it in the top-level `hooks` object AND add the script to `provides.scripts`.
+
+DELIVERABLE 3 -- REWRITE THE OPERATIONS ANCHOR.
+`agent-system/extensions/lean/context/project/lean4/operations/multi-instance-optimization.md` is today ~120 lines of human-advisory prose. It instructs a PERSON to "pause work in 3-4 other sessions", to "run `lake build` before starting Claude sessions", and to watch `htop`. It contains no mechanism an agent can execute, and its stated expectation -- "Memory usage stays under 8GB (vs 16GB+ spikes)" -- is contradicted by a measured 29.9 GB across 16 concurrent `lean` processes. Its diagnosis section is sound and should be preserved; its remedies are the stale part.
+Rewrite it as mechanism documentation: what the guard does, how a caller invokes it, what the waiter/result-sharing semantics are, what the memory bounding does and when it degrades, and what the operator can still do by hand. Correct the figures, or state the measured range as illustrative rather than predictive. Keep the extension's single-anchor convention: prose lives here once and is referenced by path from the call sites, never restated at them.
+COORDINATE WITH THE SIBLING ANCHOR: the background-builds task creates `operations/long-builds.md` covering the foreground-cap livelock and passive progress checks. These two anchors are siblings in the same directory and must be coherent, cross-referenced, and non-duplicating. In particular they must jointly and explicitly resolve the interaction described next.
+
+THE INTERACTION THAT MUST BE RESOLVED IN WRITING (the reason these tasks are coupled). The background-builds task mandates `run_in_background` so builds escape the 10-minute foreground Bash cap -- a correct fix for a real livelock, since a cap-killed build caches no .olean and retries restart at the identical module. But that cap is currently the ONLY thing bounding how long a redundant concurrent build survives. Removing it means that instead of ten duplicate builds each dying at ten minutes, ten duplicate builds run to completion, each holding multi-gigabyte `lean` processes for the full duration. Detached invocation and serialization must therefore land together: detaching WITHOUT the guard makes the measured memory situation strictly worse. Say this plainly in the anchors so a future reader does not adopt one half of the pair.
+
+SOURCE-STORE RULE (binding): all edits target `agent-system/extensions/lean/**`. Never edit a deployed `.claude/**` tree -- those are disposable artifacts regenerated on reload, so such an edit silently vanishes.
+DELIVERABLE RULE (binding): no task-number references in any file outside specs/. Cite the anchor filename and the mechanism, never a task number.
+
+ACCEPTANCE: `lean-sorry-census.sh --cross-check` routes its build through the guard while still capturing both output and exit status, degrades gracefully when either `lake` or the guard is absent, and its test covers the new path; the hook decision is recorded WITH REASONS, and if a hook was added it is declared in the manifest's top-level `hooks` object, listed in `provides.scripts`, follows the five-argument nix-preflight contract, and its operation-filtering behaviour is recorded; `multi-instance-optimization.md` no longer instructs a human to pause sessions as its primary remedy, documents the guard's actual mechanism, and carries no figure contradicted by measurement; the two operations anchors cross-reference each other without duplicating prose; the detached-invocation-amplifies-concurrency interaction is stated explicitly in writing; no contract file owned by the background-builds task is modified here; no `.claude/**` file is modified.
+
+---
+
+### 97. Add shared Lean build concurrency and memory guard script (flock serialization, result sharing, cgroup bounding)
+- **Effort**: 4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Ship a shared, portable build-concurrency and memory guard for Lean projects as a core script, so that many concurrent agent sessions working in the same Lean repository serialize their `lake build` invocations, share a single build's result instead of duplicating it, and cannot exhaust machine memory. This task delivers the MECHANISM only; wiring it into the lean extension's contracts and scripts is handled by the dependent task and by the revised background-builds task.
+
+PROBLEM (observed live on this machine, not hypothetical). Multiple Claude Code sessions running long Lean tasks in one repository each independently launch a full `lake build`. Nothing serializes them, so they do not divide the work -- they duplicate it. Each redundant build re-elaborates the SAME modules concurrently, multiplying peak memory by the number of sessions while making every copy slower than a single build would have been.
+
+MEASURED EVIDENCE (illustrative, from one large Lean repo -- MUST NOT be hardcoded as an assumption in the script or its docs):
+- 16 concurrent `lean` processes held 29.9 GB RSS on a 30 GB machine; 29 GB of swap in use; 3.1 GB RAM available. The machine was thrash-bound, not crash-bound: earlyoom was running and there were ZERO OOM kills in the preceding 6 hours. The failure presents as "everything is slow", which is why it went undiagnosed.
+- Roughly ten simultaneous `lake build` runs, launched by separate sessions, were rebuilding identical modules: 6 concurrent copies of one module, 3 of another, 3 each of two more.
+- Single-module peaks: 6.36 GB RSS in ONE `lean` process for the heaviest module; 3.2 GB and 2.6 GB for the next two. A single process cannot be split across cores, so this is a hard floor that no scheduling change lowers.
+- The problem reproduces continuously: after killing the duplicates, a new session started another full build within five minutes and immediately re-duplicated the heaviest module (6.36 GB + 4.76 GB simultaneously).
+The NORMATIVE statement in the script and its docs must be the generic one: "concurrent unguarded builds in one project duplicate work and multiply peak memory." The figures above belong in the docs only as an illustrative note. The source store deploys to roughly ten repositories and must not assume this one repo's profile.
+
+VERIFIED ENVIRONMENT FACTS (re-verify during research; do not trust these blindly):
+- Lake 5.0.0 (Lean 4.33.0-rc1) has NO `-j`/`--jobs` flag. Both `lake -j 2` and `lake build -j 2` return `error: unknown short option '-j'`. Any design that assumes a job-count flag is wrong.
+- `flock` and `systemd-run` are both present at /run/current-system/sw/bin/. Neither may be ASSUMED present on every deployment target -- the script must degrade gracefully and audibly when either is missing.
+- One `lake build` was observed spawning 6 concurrent `lean` child processes with LEAN_NUM_THREADS=8 in the environment.
+
+MECHANISM 1 -- FLOCK SERIALIZATION WITH RESULT SHARING (the core fix; without this the others only soften the symptom). Serialize builds on a lock derived from the project's resolved `.lake` directory, so a second session queues rather than duplicating. Deriving the lock path from the project root (via `lake` itself, or by walking up to the lakefile) is REQUIRED for portability -- the script is deployed to many Lean repos and must never hardcode a project path.
+  Result sharing is the part that distinguishes this from plain serialization and deserves explicit design attention: a session that finds a build already in flight should consume THAT build's log and exit status rather than waiting for the lock and then launching a second, now-redundant build. Naive `flock` alone produces a convoy -- ten sessions each waiting their turn and then each running a full build in sequence, which is slower in wall-clock than the duplication it replaces even though it is safe on memory. Design the waiter path deliberately; do not treat `flock <lock> lake build` as a finished answer.
+  Decide and record the staleness policy: how a waiter distinguishes an in-flight build from an abandoned lock left by a killed session, and what happens when the in-flight build's result predates the waiter's own edits (a shared result is only valid if the tree has not changed under it).
+
+MECHANISM 2 -- CGROUP MEMORY BOUNDING (optional, opt-in). Wrap the build in `systemd-run --scope -p MemoryHigh=... -p MemoryMax=...` so a runaway build is throttled and then killed rather than driving the whole machine into swap. Prefer cgroups over `ulimit -v`, which interacts badly with Lean's allocator. Limits must be derived from available memory or configurable, never hardcoded. Must degrade to an unbounded build with a visible notice where systemd-run is unavailable or the user session has no cgroup delegation.
+
+MECHANISM 3 -- AVAILABLE-RAM PREFLIGHT. Before launching a full build, check available memory and defer or warn when the machine is already under pressure. Note the subtlety that makes a naive check wrong: on this machine `free` reported 3.1 GB available while 29 GB of swap was in use, so "available" alone does not capture pressure. Consider swap-in-use and/or PSI (/proc/pressure/memory) as better signals, and record what was chosen and why.
+
+MECHANISM 4 -- LEAN_NUM_THREADS. Because Lake 5.0.0 exposes no `-j`, this is the only apparent parallelism lever. IT IS UNVERIFIED. The belief that LEAN_NUM_THREADS governs Lake's build job count (and not merely the thread count WITHIN each `lean` process) is an INFERENCE drawn from observing 6 concurrent `lean` children under one build with LEAN_NUM_THREADS=8 -- consistent with, but not proof of, that reading. RESEARCH MUST RUN A CONTROLLED EXPERIMENT (vary the value, count concurrent `lean` children) AND RECORD THE RESULT before the script or any documentation states this as fact. If the inference is false, say so plainly and drop the lever rather than shipping folklore.
+
+REUSABLE PATTERN -- `agent-system/extensions/core/scripts/claude-refresh.sh`. Read it before writing anything new; it already solves the hard parts of safe process handling. It takes a single atomic `ps -eo` snapshot per invocation rather than re-querying live; it applies exclusion regexes so the script can never target itself or its own ancestry; it gates destructive action behind an explicit `--force`; and it escalates SIGTERM -> `kill -0` liveness recheck -> SIGKILL rather than killing outright.
+
+SELF-MATCH HAZARD. Any detection of running builds must match on the actual executable and resolved target, and must exclude self and own ancestry. This is not theoretical: a companion task recorded that a plain `pgrep -af latexmk` matched only the task-creating agent's OWN bash wrapper, whose argv merely contained the string. The same trap applies to `pgrep -f 'lake build'`.
+
+COHERENCE WITH THE LATEX BUILD GUARD (design constraint, NOT a blocking dependency). A sibling task adds `latex-build-guard.sh` to the same core scripts directory, guarding a different situation: one agent build racing a USER-OWNED continuous watcher, remedied by detect/stop/restore. This task guards N AGENT builds racing EACH OTHER, remedied by serialization and result sharing. Detection and remedy genuinely differ, so a shared implementation was considered and deliberately rejected in favor of a sibling script. Neither script exists yet, so there is no ordering requirement -- but the two should share subcommand shape, exit-code conventions, and the silent-when-no-conflict rule so they read as one family. If the sibling lands first, follow its conventions rather than inventing new ones.
+
+COMMAND-SUBSTITUTION COMPATIBILITY (load-bearing advantage, record it). A companion task mandates `run_in_background` for Lean builds to escape the 10-minute foreground Bash cap, and flags as its highest-risk edit that `skill-lake-repair`'s loop captures build output synchronously via `build_output=$(lake build 2>&1)` -- fundamentally incompatible with detached invocation. A flock-based guard has no such incompatibility: it serializes and still returns stdout and exit status to the caller. The same applies to `lean-sorry-census.sh --cross-check`, which uses the identical `BUILD_OUTPUT="$(lake build 2>&1)"` shape. Design the guard so it is usable from a command-substitution call site, and record this explicitly -- it converts that task's architectural carve-out into a solved case.
+
+DELIVERABLE. A new executable script `agent-system/extensions/core/scripts/lake-build-guard.sh`, registered in `agent-system/extensions/core/manifest.json` under `provides.scripts` (which currently holds 126 entries) so it is deployed. Placement in CORE rather than the lean extension is DELIBERATE and load-bearing: extension hooks are keyed on task_type, so a guard living behind the lean extension's `lean4` gate would never fire for a `general`- or `meta`-typed task that happens to build a Lean project. Suggested subcommand shape (refine during planning): a wrapping/exec mode that runs a guarded build, plus a status/detect mode that reports in-flight builds without launching one. Modes should be separable so callers can adopt detection first. Ship the accompanying test under `agent-system/extensions/core/scripts/tests/` following the existing test convention.
+
+SOURCE-STORE RULE (binding): all edits target `agent-system/extensions/core/**`. Never edit a deployed `.claude/**` tree -- those are disposable artifacts regenerated on reload, so such an edit silently vanishes.
+DELIVERABLE RULE (binding): no task-number references in any file outside specs/.
+
+ACCEPTANCE: the script exists, is executable, and is registered in core's `provides.scripts`; the lock path is derived from the project root and no project path is hardcoded anywhere; a second concurrent invocation demonstrably does NOT launch a duplicate build, and the waiter's behaviour (share result vs. queue) is implemented and documented along with its staleness policy; cgroup bounding and the RAM preflight are present, opt-in, and degrade gracefully with a visible notice where `systemd-run` or the needed signals are unavailable; the LEAN_NUM_THREADS experiment has been run and its ACTUAL result recorded, with the lever shipped only if verified; the script is safe and silent (exit 0, no output) when no conflict exists, since it will run on every build; the script works correctly when invoked from a command substitution; detection never matches itself or its own ancestry; a test exists under core/scripts/tests/; no `.claude/**` file is modified.
+
+---
 
 ### 96. Surface literature coverage delta under lit
 - **Status**: [NOT STARTED]
@@ -496,7 +593,7 @@ ACCEPTANCE: a meta task whose implementation edits the source store cannot reach
 ---
 
 ### 82. Wire deploy verification into deploy headless
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 32
@@ -1537,7 +1634,7 @@ SELF-MODIFYING TASK. skills/skill-orchestrate/SKILL.md, skills/skill-orchestrate
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 97
 
 **Description**: Mandate detached (run_in_background) invocation for Lean full builds across the lean extension's agent and skill contracts, and add a canonical anchor file documenting the foreground-cap livelock and the passive progress checks that do not disturb a running build.
 
@@ -1583,6 +1680,61 @@ DELIVERABLE RULE (binding): no task-number references in the contract text. Thes
 ADJACENT TASK, NO FILE OVERLAP: an in-progress task holds agent-system/extensions/lean/opencode-agents.json in its file_scope. That file is not in this task's scope and carries none of this contract prose, so no serialization is required.
 
 ACCEPTANCE: long-builds.md exists at the stated path with the cap, the per-module-caching livelock explanation, the run_in_background mandate, and the four passive progress checks with the liveness-not-termination caveat; every instruction site above points at the anchor rather than restating its prose; lean-implementation-agent.md carries the new MUST NOT item verbatim in intent; the -hard twin carries equivalent changes located by content; the skill-lake-repair command-substitution incompatibility is resolved or explicitly carved out with a recorded reason; the scoped-build decision is recorded either way; the normative text says "any single module may exceed the foreground cap" with the ~11-minute figure present only as an illustrative note; no .claude/** file is modified; no task numbers appear in any edited file.
+
+
+=== SCOPE ADDENDUM: ABSORB THE BUILD-GUARD OBLIGATION INTO THIS CONTRACT PASS ===
+
+This task's scope is EXTENDED. The contract pass described above must now mandate TWO things
+together at every instruction site it already covers: detached invocation via
+`Bash(run_in_background: true)`, AND invocation through the shared Lean build guard delivered by
+the core guard task. The two obligations are edited in ONE pass over the eight contract files
+rather than two, because a second independent pass over the same twins is exactly the twin-file
+drift this extension treats as a known recurring defect class.
+
+WHY THE TWO MUST LAND TOGETHER (do not adopt one half of this pair). The diagnosis above is
+correct: the 10-minute foreground Bash cap kills builds mid-module, a cap-killed build caches no
+.olean, and retries restart at the identical module, so the agent livelocks. But that cap is
+currently the ONLY thing bounding how long a REDUNDANT CONCURRENT build survives. Measured on one
+large Lean repo: roughly ten simultaneous `lake build` runs launched by separate sessions, all
+re-elaborating the SAME modules -- 6 concurrent copies of the heaviest module alone -- with 16
+`lean` processes holding 29.9 GB RSS on a 30 GB machine, 29 GB of swap in use, and 3.1 GB
+available. Uncapping those builds does not reduce that load; it removes the ten-minute ceiling on
+it, so ten duplicates run to completion instead of dying partway. MANDATING run_in_background
+WITHOUT THE GUARD MAKES THE MEMORY SITUATION STRICTLY WORSE. Treat the guard obligation as a
+precondition of the detachment mandate, not as an optional companion.
+
+THE ARCHITECTURAL EXCEPTION IS NOW A SOLVED CASE. The section above flags
+`skills/skill-lake-repair/SKILL.md` as the highest-risk edit because its repair loop captures build
+output synchronously -- `build_output=$(lake build "$module" 2>&1)` and
+`build_output=$(lake build 2>&1)` at lines ~69 and ~71 -- and command substitution is
+fundamentally incompatible with run_in_background, which returns no stdout to a shell variable.
+That reasoning stands for detachment. It does NOT apply to the guard: a flock-based guard
+serializes the build and still returns stdout and exit status to the caller, so a
+command-substitution call site can adopt the guard unchanged in shape.
+This materially changes the recorded decision. The choice is no longer "(a) restructure to
+file-and-poll, or (b) carve the repair loop out of the mandate with its cap-vulnerability
+documented". A THIRD option now exists and should be evaluated first: leave the repair loop
+synchronous, route it through the guard, and carve it out of the DETACHMENT mandate only -- so it
+gains serialization and memory bounding while keeping its cap exposure explicitly documented.
+Record which of the three is chosen and why. The same command-substitution shape appears in
+`scripts/lean-sorry-census.sh --cross-check`, but that site is owned by the lean-integration task,
+not this one -- do not edit it here.
+
+ANCHOR COORDINATION. The new anchor this task creates, `operations/long-builds.md`, is a sibling of
+`operations/multi-instance-optimization.md`, which the lean-integration task rewrites from
+human-advisory prose into mechanism documentation. The two must be coherent, cross-referenced, and
+non-duplicating, and the detachment-amplifies-concurrency interaction stated above must appear in
+writing in at least one of them. Coordinate rather than duplicating.
+
+SCOPE UNCHANGED IN ALL OTHER RESPECTS. The instruction-site list, the twin-file discipline, the
+verified non-surface finding for opencode-agents.json, the scoped-build decision left open for
+research to validate, the source-store rule, and the deliverable rule all stand exactly as written
+above. This addendum adds an obligation to the same pass; it does not widen the file scope beyond
+the contract files already listed, and it does not authorize editing the census script or either
+operations anchor owned by the lean-integration task.
+
+DEPENDENCY ADDED: the core guard task must deliver the guard script before this contract pass can
+name it. This task is now blocked on that task.
 
 ---
 
