@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/079_diagnosable_subagent_postflight_marker_failure/reports/01_diagnosable-postflight-marker-failure.md",
+      "summary": "Root-cause confirmation, sibling-hook fix pattern, full hook-idiom survey (52 sites, 1 defect), and resolved design questions for the malformed-marker diagnosability defect."
+    }
+  ],
+  "next_steps": "Run /plan 79 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1787608215_ce9f8e_79",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "In bash+jq hooks, `jq -r '.field // \"non-empty default\"' FILE 2>/dev/null` silently drops the default and yields empty string when FILE fails to parse as JSON at all -- the `//` alternative operator only fires on `null`/`false` results, never on a parse error, and `2>/dev/null` hides jq's own diagnostic. Guard with `jq empty FILE 2>/dev/null || <handle-parse-failure>` before the extraction whenever the fallback is a meaningful non-empty value. When the fallback is `// empty` (or another effectively-empty value the caller already treats as no-op), the distinction is usually safe to leave unguarded since parse-error and missing-field collapse to the same caller behavior.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/079_diagnosable_subagent_postflight_marker_failure/reports/01_diagnosable-postflight-marker-failure.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["jq", "parse-error", "default-value", "hook", "bash", "postflight-marker"]
+    },
+    {
+      "content": "When a hook needs to correlate an event to a session_id but its primary content source (e.g. a marker file) fails to parse, a task/session identifier can often still be recovered from the file's PATH (e.g. a `specs/{N}_{slug}/` directory segment) even when its CONTENT is unusable, then resolved to session_id via a specs/state.json `.active_projects[] | select(.project_number == $num) | .session_id` lookup. This is the same fallback events-log-lifecycle.sh's Stop path already uses when its own primary source lacks session_id directly -- reusable whenever a correlation ID needs a path-based escape hatch around a content-parsing failure.",
+      "category": "PATTERN",
+      "source_artifact": "specs/079_diagnosable_subagent_postflight_marker_failure/reports/01_diagnosable-postflight-marker-failure.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["events-log", "session-id", "correlation", "state.json", "fallback"]
+    }
+  ]
+}
