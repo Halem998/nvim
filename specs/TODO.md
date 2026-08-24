@@ -19,21 +19,21 @@ next_project_number: 92
 ### Agent System
 
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
-14 [NOT STARTED] — Two dispatches in a single batch fanned out to phase sub-agents a
+14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
-28 [IMPLEMENTING] — Rewrite the canonical MCP ownership document, whose central premi
+28 [IMPLEMENTING] — === REVISED 2026-08-24 (refactor survey) ===
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
-31 [RESEARCHING] — Give the .opencode/extensions/ mirror a real generation path from
-32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta
-  └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
+31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
+32 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+  └─ 9 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
 79 [NOT STARTED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
 
 ### Extensions
 
-22 [RESEARCHING] — Silence and correct opencode-agents.json fragment validation spam
+22 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
 62 [NOT STARTED] — Restrict typst and latex task types to formatting-only concerns. 
@@ -57,16 +57,16 @@ next_project_number: 92
 
 ### Status Marker Lifecycle
 
-91 [NOT STARTED] — update-plan-status.sh silently no-ops on a non-conforming plan St
+91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 
 ### Essential Refactor
 
-42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
+42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-  └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
+  └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 82 [NOT STARTED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
   └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
   └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
@@ -84,27 +84,46 @@ next_project_number: 92
 
 ## Tasks
 
-### 91. Fail loudly on nonconforming plan status line
+### 91. Make update-plan-status.sh diagnose non-conforming Status lines, and settle the trailing-text tolerance policy
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
 - **Dependencies**: None
 
-**Description**: update-plan-status.sh silently no-ops on a non-conforming plan Status line, and one of its two failure shapes is a SILENT SUCCESS rather than a silent failure. Reported by a peer session reviewing another consuming repo and independently confirmed here against the source store on 2026-08-24.
+**Description**: update-plan-status.sh reports every non-conforming plan Status line with one generic, undiagnosable message, and hard-fails /orchestrate postflight on a plan shape that a legitimate resume workflow produces. Reported independently by a peer session reviewing a consuming repo (BimodalLogic) and re-derived by execution against the source store on 2026-08-24.
 
-THE WRITE PATH. Line 69 is:
-  sed -i "0,/^- \*\*Status\*\*: \[.*\]/{s/^- \*\*Status\*\*: \[.*\]$/- **Status**: [${new_status}]/}"
-The trailing `$` on the replacement pattern requires the line to END at the closing bracket, so any deviation makes the sed a no-op. Two shapes observed live in a single four-task /orchestrate batch:
-  1. `- **Status**: [IMPLEMENTING] (resumed; Phases 1R-10R closed)` -- trailing text after the bracket
-  2. `- **Status**: PARTIAL` -- no brackets at all
+CORRECTION TO THE ORIGINAL FILING. This task previously led with a claim that lines 62/72 compare two EMPTY strings and yield a silent SUCCESS. That is false, and it was verified false by running the script against fixtures for all three malformed shapes. Do not go looking for that path.
+  - Line 62's `grep -m1 "^- \*\*Status\*\*:" | sed 's/.*\[\([^]]*\)\].*/\1/'` does NOT return empty on a bracket-less line. grep matches (the `- **Status**:` prefix is present), so `|| echo ""` never fires, and sed's substitution simply does not apply -- so the whole line comes back verbatim as `current_status`. It is non-empty, and it never equals a bare status token, so the equality check cannot pass.
+  - Measured outcomes: trailing-text shape -> rc=1; no-brackets shape (target PARTIAL and target COMPLETED alike) -> rc=1; missing-`- `-prefix shape -> rc=1; well-formed change -> rc=0 and correctly stamped. There is no false-success input.
+  - Consequently the old acceptance criterion "no input produces an empty-equals-empty pass" was already vacuously satisfied and has been dropped.
 
-THE VERIFICATION PATH IS WORSE, and this is the part to lead with. Lines 62 and 72 read the status with an UNANCHORED grep piped through `sed 's/.*\[\([^]]*\)\].*/\1/'`, falling through to `|| echo ""`. On shape 2 that extraction matches nothing, so current_status and updated_status are BOTH empty and compare EQUAL. The check cannot distinguish 'updated successfully' from 'matched nothing'. It is a silent-success path, not merely a silent-failure path.
+WHAT IS ACTUALLY WRONG. Four distinct defects, all confirmed:
 
-CONSEQUENCE. On PREFLIGHT the failure is deliberately non-fatal and prints only 'Warning: plan file update failed (non-fatal)', so a malformed Status line survives an entire task undetected and only bites at POSTFLIGHT where the same failure IS fatal. By then state.json says completed while the plan file still reads [IMPLEMENTING], and generate-todo.sh reads only state.json, so no other surface reveals the divergence.
+1. DIAGNOSTIC OPACITY (the core defect). All three malformed shapes exit 1 with the byte-identical message `Failed to update status in <file>`. It names no line number, quotes no line content, and states no reason. The operator must reverse-engineer which of three different problems occurred.
 
-SCOPE: fail loudly, naming the offending line and why it did not match, rather than emitting the generic 'Failed to update status in <file>'. Make the verification distinguish no-match from successful-update instead of comparing two empty strings. PRESERVE the deliberate preflight/postflight asymmetry -- update-task-status.sh's own error text acknowledges it on purpose; the fix is diagnosability, not making preflight fatal. Decide whether to accept the two observed shapes or reject them with a clear message; accepting trailing annotations after the bracket looks worth doing given shape 1 arose from a legitimate resume workflow.
+2. `$`-ANCHOR INTOLERANCE OF TRAILING ANNOTATIONS. Line 69's replacement pattern `s/^- \*\*Status\*\*: \[.*\]$/.../` requires the line to END at the closing bracket. A plan carrying `- **Status**: [IMPLEMENTING] (resumed; Phases 1R-10R closed)` can therefore NEVER be stamped -- the sed is a permanent no-op and every transition on that plan fails. This shape arose from a legitimate resume workflow, which is the argument for tolerating it rather than rejecting it.
 
-ACCEPTANCE: each of the two observed shapes produces a specific, actionable error naming the line; no input produces an empty-equals-empty pass.
+3. PREFLIGHT MASKS THE LEADING INDICATOR. update-task-status.sh:515-525 branches fatal-vs-warn on operation. Preflight prints only `Warning: plan file update failed (non-fatal)`, so a malformed Status line survives an entire task and only bites at POSTFLIGHT, where the same failure is `exit 3`. Note carefully: postflight does NOT silently diverge. It fails loudly and calls itself retryable. The "state.json says completed while the plan still reads [IMPLEMENTING], and generate-todo.sh reads only state.json" sentence in the original filing is the code comment's RATIONALE for making postflight fatal, not a description of an undetected outcome. The real cost is a late, expensive failure that a preflight warning already knew about.
+
+4. stdout/rc CONTRACT AMBIGUITY. The script header promises "Outputs: Updated plan file path on success, empty on failure/no-op". The idempotency early-exit (lines 62-66, already-at-target) returns rc=0 with EMPTY stdout -- so stdout alone cannot distinguish success from failure. The sole current caller branches on rc and is unaffected, but commands/implement.md:353 documents a defensive call site, and any future stdout-consuming caller would be misled.
+
+REQUIRED FIX.
+(a) Diagnose loudly. On no-match, print the offending line VERBATIM with its line number and state WHICH condition failed: missing `- **Status**:` prefix, missing brackets, or trailing text after the closing bracket. Replace the single generic message with these three distinct ones.
+(b) Decide and implement a tolerance policy for trailing text after `]`. Either accept it -- rewriting only the bracketed token and preserving the remainder, which defect 2 argues for -- or reject it explicitly as malformed. Apply the choice consistently and document it in context/formats/plan-format.md, which is where plan format is specified (see its existing line 99 discussion of the three status-mutating scripts).
+(c) PRESERVE the deliberate preflight/postflight asymmetry. update-task-status.sh's error text acknowledges it on purpose. The fix is diagnosability, not flipping fatality.
+
+ALSO EVALUATE (evaluate, do not assume).
+  - Whether the preflight non-fatal path should emit a one-line operator-visible WARNING naming the malformed line, given that a preflight no-op is the leading indicator of the fatal postflight failure.
+  - Whether a plan-format lint should validate the Status line at plan-creation time, so a malformed line never reaches a dispatch.
+  - Whether the idempotent-no-op path (defect 4) should echo the plan path rather than empty, making stdout a reliable success signal.
+
+ACCEPTANCE.
+  - Each of the three malformed shapes (trailing text, no brackets, missing prefix) produces a DISTINCT, line-numbered diagnostic quoting the offending line.
+  - A well-formed plan still stamps correctly, and the already-at-target path stays a no-op.
+  - The chosen trailing-text policy is implemented and documented in plan-format.md.
+  - Redeploy and confirm the fix survives regeneration (.claude/ is a deploy artifact; the edit target is agent-system/extensions/core/).
+
+PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 2026-08-24 because its entire work product lands in this repo -- BimodalLogic's .claude/ is a gitignored deploy artifact wiped on every reload, so the fix was not executable from there. That repo's specs/archive/state.json retains the original description and its specs/PATH.md records the handoff. This entry closes that handoff and supersedes the peer session's request to file a second task.
 
 ---
 
@@ -1378,7 +1397,18 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Topic**: essential-refactor
 - **Dependencies**: Task 48
 
-**Description**: Make the verification surface trustworthy, and close the doc-truth and duplication residue. Grouped because each item individually is too small to dispatch, and all of them undermine confidence in the same gate suite.
+**Description**: === REVISED 2026-08-24 (refactor survey) ===
+SPLIT AND REDUCED. Item 1 -- the non-deterministic shell test suite -- has been extracted into its own task (deflake_shell_test_suite_under_concurrency) because it is the highest-value piece here by a wide margin: until the suite is deterministic, no acceptance gate in this repo is trustworthy in either direction, including this task's own. Do not work it here.
+WHAT REMAINS is hygiene residue, and the measurements below are updated -- most of it DEGRADED since filing, which is the point:
+- session-ID one-liner: 43 -> 48 files (46 of them .md). Note the gate for this exists but greps only *.sh, so it has been green throughout; the gate fix is owned by the duplication-gate task, so sequence after it rather than duplicating the migration here.
+- jq #1132 block: 34 -> 36 files.
+- @.claude/docs stylistic refs: 6 -> 15 occurrences.
+- literature-retrieve.sh: still declared in core/manifest.json:134 despite its own header reading DEPRECATED with zero automated callers, while a 9-script scripts/deprecated/ quarantine directory sits right there. Straight quarantine-convention miss.
+- topic taxonomy: PARTLY SELF-HEALED. The used-but-undeclared side is now 0. But declared-but-unused grew to TEN orphan topics: commit-scoping-concurrency, context-loading, cslib, mcp-integration, memory-improvement-loop, neovim, orchestrate-admission-gate, status-marker-lifecycle, wezterm-notifications, workflow-refactor. (Note status-marker-lifecycle is no longer an orphan -- the plan-status task now carries it.)
+- ROADMAP.md: unmodified since 2026-07-12. NONE of its 11 items maps to any active task, and its success metric says '14 extensions' against 19. Rewrite it to describe work actually in flight, or delete it -- a roadmap that describes nothing is worse than no roadmap, because /review's roadmap-integration step dutifully annotates it.
+Verification-surface items from the original scope are superseded by the CI-expansion and deploy-verification tasks; check for overlap before starting and drop anything they already cover.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Make the verification surface trustworthy, and close the doc-truth and duplication residue. Grouped because each item individually is too small to dispatch, and all of them undermine confidence in the same gate suite.
 
 (1) THE SHELL TEST SUITE IS NON-DETERMINISTIC (highest value item here). Measured across five consecutive runs of scripts/tests/run-all.sh: exit 1, 0, 1, 0, 0 -- roughly a 2-in-5 failure rate, with passing runs reporting a clean 36/36. During the same review, verify-deploy.sh gate 8 passed while a standalone run failed minutes later. A gate that passes 60% of the time is not evidence of health in either direction. It is also actively harmful to the refactor's own acceptance gate: the capstone attributed a real failure to "a flaky lock-contention test attributable to concurrent sibling sessions, not a deploy defect" WITHOUT being able to confirm that, precisely because the suite cannot distinguish the two. Diagnose the contention (the suite runs concurrently with other live sessions holding the same locks), then either isolate the affected tests from shared global state or make them wait deterministically. A test that is merely retried is not fixed. ACCEPTANCE: 10 consecutive runs, executed while at least one other session is active, all report the same result.
 
@@ -1481,7 +1511,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Topic**: essential-refactor
 - **Dependencies**: None
 
-**Description**: Add two context gates to the deploy verification pipeline. (a) Broken-@-ref lint: every `@path` token appearing in generated CLAUDE.md (and in the merge sources that produce it) must either RESOLVE relative to its containing file's directory or be explicitly marked citation-only; a ref that resolves to a nonexistent path is silently inert today (no error, no load) and must fail the gate loudly. The desired end-state for this repo is zero `@`-refs in merge sources (downward normalization to plain backticked paths is already applied), so the lint primarily guards against regression. (b) Warning-first context-budget gate: compute the predicted eager surface (reuse or invoke the measurement harness if it exists by then) and WARN when it exceeds a configured budget; escalate to a hard failure only after the warning tier has proven stable. Consider a per-extension `merge_targets.claudemd.max_bytes` manifest field — NOTE THE SEQUENCING DEPENDENCY: manifest-schema changes must coordinate with the in-flight manifest-schema work (correct-mcp-ownership / extension-manifest efforts); if that work is unsettled when this task starts, implement the budget with an external config and defer the manifest field. CONSTRAINTS: gates must read the source store and the freshly generated output, never trust the possibly-stale deployed .claude/** tree; volatile files (specs/TODO.md, state.json, errors.json) appearing in the eager set is always a FAILURE, not a warning; all edits target agent-system/extensions/**; no task-number references in deliverables outside specs/**.
+**Description**: === REVISED 2026-08-24 (refactor survey) ===
+ITEM (a) IS ALREADY ACHIEVED. grep for '@\.claude|@[a-zA-Z]' across every merge-sources/claudemd.md returns ZERO. The broken-@-ref lint therefore guards an end state that already holds -- it is a REGRESSION GUARD, not a fix for a live problem. Say so in the acceptance criteria rather than describing a defect that no longer exists; an implementer who reads the original wording will go looking for broken refs and find none, then either invent work or stall.
+ITEM (b) IS GENUINELY ABSENT AND IS THE REAL CONTENT OF THIS TASK. scripts/lint/ holds five linters, none budget- or @-related, and verify-deploy.sh has no budget hook. The measurement harness this depends on is BUILT AND READY: scripts/measure-eager-context.sh exists, runs clean, and currently reports 64,323 B / ~16.1k tokens of session-start eager context (improved from 74,136 B at the 2026-08-11 review). Wire it into the gate suite with a threshold so the eager-context win cannot silently regress -- it already nearly did, since the 13% rules-diet saving was entirely consumed by skill growth over the same period.
+Suggested threshold anchor: fail above the current 64,323 B, and record the number in the gate output so drift direction is visible per run rather than re-derived per review.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Add two context gates to the deploy verification pipeline. (a) Broken-@-ref lint: every `@path` token appearing in generated CLAUDE.md (and in the merge sources that produce it) must either RESOLVE relative to its containing file's directory or be explicitly marked citation-only; a ref that resolves to a nonexistent path is silently inert today (no error, no load) and must fail the gate loudly. The desired end-state for this repo is zero `@`-refs in merge sources (downward normalization to plain backticked paths is already applied), so the lint primarily guards against regression. (b) Warning-first context-budget gate: compute the predicted eager surface (reuse or invoke the measurement harness if it exists by then) and WARN when it exceeds a configured budget; escalate to a hard failure only after the warning tier has proven stable. Consider a per-extension `merge_targets.claudemd.max_bytes` manifest field — NOTE THE SEQUENCING DEPENDENCY: manifest-schema changes must coordinate with the in-flight manifest-schema work (correct-mcp-ownership / extension-manifest efforts); if that work is unsettled when this task starts, implement the budget with an external config and defer the manifest field. CONSTRAINTS: gates must read the source store and the freshly generated output, never trust the possibly-stale deployed .claude/** tree; volatile files (specs/TODO.md, state.json, errors.json) appearing in the eager set is always a FAILURE, not a warning; all edits target agent-system/extensions/**; no task-number references in deliverables outside specs/**.
 
 ---
 
@@ -1641,7 +1676,14 @@ ADDITIONAL ACCEPTANCE CRITERIA:
 - **Topic**: agent-system
 - **Dependencies**: None
 
-**Description**: Deploy the accumulated source-store changes and remediate the stale grant that the install-once mechanism structurally cannot fix.
+**Description**: === REVISED 2026-08-24 (refactor survey) ===
+PREMISE CORRECTION, AND A LARGE PRIORITY INCREASE. This task is now the single most important item in the backlog.
+WHAT IS FALSE: the claim that context/patterns/mcp-server-ownership.md 'does not exist in the deployed tree at all'. It is present at .claude/context/patterns/mcp-server-ownership.md, 18,827 B, byte-identical to source. Do not act on that premise.
+WHY IT IS NOW URGENT ANYWAY: the deploy is 7 days and 133 commits stale. Exactly 15 source files have changed since the last deploy and four scripts are measurably drifted, including skill-base.sh -- the orchestration core. Deployed skill-base.sh:958 still carries the pre-fix ambient-variable dispatch_seq code while source line 963 has the corrected persisted-counter jq form. FOUR TASKS ARE MARKED COMPLETED WITH HONEST SUMMARIES AND ARE NOT LIVE: the mint-dispatch-seq fix and the three literature fixes, one of which is a HIGH-severity corpus-corruption gate. Until this deploy runs, 'completed' does not mean 'in effect', and every measurement taken against .claude/ is measuring last week.
+RESCOPE TO: (1) run the deploy -- justified now by measured script drift, not by the false 'never deployed' premise; (2) capture a verify-deploy --findings baseline BEFORE and AFTER, since deploy-headless.sh deploys the entire source store regardless of this task's MCP framing (the 2026-08-11 caution was right); (3) hand-remove the stale mcp__lean-lsp__* grant at .claude/settings.json:188, absent from the source root-files/settings.json -- the install-once trap; (4) record the two deferred decisions.
+Dependencies cleared: nothing about generating .mcp.json or the opencode mirror gates a redeploy. Note in CHANGE_LOG which previously-completed tasks became live at this deploy, so a future reader does not misdate them.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Deploy the accumulated source-store changes and remediate the stale grant that the install-once mechanism structurally cannot fix.
 
 WHY THIS IS LAST: a substantial body of MCP work now exists in the source store and has NEVER been deployed -- context/patterns/mcp-server-ownership.md does not exist in the deployed tree at all, and every correction from the preceding tasks is likewise source-only. Deploying once at the end, after the source store is settled, avoids redeploying a document that is about to be rewritten.
 
@@ -1663,7 +1705,12 @@ VERIFICATION: mcp-server-ownership.md exists in the deployed tree; the deployed 
 - **Topic**: agent-system
 - **Dependencies**: None
 
-**Description**: Give the .opencode/extensions/ mirror a real generation path from the source store, so it stops silently drifting, and fix the live defect that drift has already produced.
+**Description**: === REVISED 2026-08-24 (refactor survey) ===
+NARROWED -- the original scope is a poor trade against all three refactor goals. Confirmed today: 804 git-tracked files under .opencode/extensions/ with no generation mechanism, and the live defect is real (.opencode/extensions/web/agents/web-implementation-agent.md:57 still teaches browser_verify_text_visible as a real tool, while the source at agent-system/extensions/web/agents/web-implementation-agent.md:72 explicitly RETRACTS it). But this task's sibling records that .opencode/ is not currently used, and building a full 804-file generator for an unused mirror buys no token efficiency, no performance, and no uniformity.
+NARROW TO THREE THINGS: (1) fix the one fake-tool line so the mirror cannot teach a retracted tool as real; (2) add a drift-detection gate so the divergence is visible rather than silent -- this is the durable part; (3) document the divergence policy, i.e. whether .opencode/ is maintained, frozen, or slated for removal.
+If the answer to (3) is 'frozen or removal', say so explicitly and this task shrinks further. Deciding that is worth more than generating the mirror.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Give the .opencode/extensions/ mirror a real generation path from the source store, so it stops silently drifting, and fix the live defect that drift has already produced.
 
 SCALE -- MEASURE BEFORE PLANNING: .opencode/extensions/ is 804 git-tracked files mirroring 17 extensions (core, epidemiology, filetypes, formal, founder, latex, lean, memory, nix, nvim, present, python, slidev, typst, web, z3). An earlier estimate of '34 files' was wrong by more than an order of magnitude, so size the work against a fresh count, not against that figure. There is currently NO deploy or sync mechanism for this tree at all -- it is maintained by periodic manual 'mirror' commits, which is why the drift is structural rather than incidental.
 
@@ -1723,7 +1770,12 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 - **Research**: [028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md]
 - **Plan**: [028_correct_mcp_ownership_model_and_purge_dead_declarations/plans/01_mcp-ownership-hybrid-rewrite.md]
 
-**Description**: Rewrite the canonical MCP ownership document, whose central premise has been empirically DISPROVEN, and purge the dead server declarations it catalogues.
+**Description**: === REVISED 2026-08-24 (refactor survey) ===
+NOT COMPLETE -- CORRECTION TO AN EARLIER READ. A survey pass reported this task as finished-but-unclosed, on the basis that all its plan phases read [COMPLETED]. That was wrong: the plan has EIGHT phases, not seven. Phases 1-7 are [COMPLETED] with progress files through phase-7-progress.json, but Phase 8 (Full verification sweep) is [IN PROGRESS] with all nine of its checkboxes unchecked and no phase-8-progress.json. This task keeps status implementing and needs its verification sweep run -- it was NOT closed out.
+CAVEAT ON RESUMING PHASE 8: its doc-lint assertion has been overtaken by events and cannot be run as written. It requires diffing check-extension-docs.sh output against specs/tmp/doclint-baseline.txt (still present, dated 2026-08-11) and expects core's SOLE issue to be the pre-existing setup-lean-mcp.sh deployed-vs-source drift. Core now has EIGHT issues: one skill-base.sh deploy drift plus seven index-entries.json line_count mismatches, and literature has six. Most of that is unrelated deploy staleness, not a defect of this task. Re-baseline AFTER the deploy task lands, then re-run the sweep, so this task is not blamed for drift it did not cause and does not silently absorb it either.
+The other eight Phase 8 checks (jq assertions on the four edited fragments, the single-mcpServers-path grep, bash -n on setup-lean-mcp.sh, check-task-references, the contradiction greps, and the git status scope confirmation) are unaffected and can run now.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Rewrite the canonical MCP ownership document, whose central premise has been empirically DISPROVEN, and purge the dead server declarations it catalogues.
 
 ITEM 1 -- THE REFUTED PREMISE. context/patterns/mcp-server-ownership.md states that MCP server REGISTRATION belongs exclusively to user scope (~/.claude.json) BECAUSE custom subagents cannot access project-scoped .mcp.json servers. That justification is false. Direct experiment: a .mcp.json-registered stdio server exposing a sentinel tool WAS reached by a filesystem-based subagent, confirmed twice, including via the general-research-agent class this system actually dispatches, with the permission pre-granted so permission was not a confound. The original belief came from a confounded observation -- an ALREADY-RUNNING session cannot see a server added to .mcp.json after that session started, and this affects the MAIN session identically. It is a session-start tool-registry snapshot effect, unrelated to subagents or to scope. Anyone re-testing this MUST start a fresh session (or use `claude -p`) or they will reproduce the same false negative.
 
@@ -1792,7 +1844,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Topic**: extensions
 - **Dependencies**: None
 
-**Description**: Silence and correct opencode-agents.json fragment validation spam on extension reload.
+**Description**: === REVISED 2026-08-24 (refactor survey) ===
+SUBSTANTIALLY OVERTAKEN, and the remaining half got worse. Re-verified today:
+- Defect class (3) is FIXED. merge.lua:1002-1041 now degrades per-agent-key, reports every missing key rather than only the first, and no longer discards a whole fragment. Close it out; do not re-fix.
+- Defect class (2) MOVED rather than got fixed. The archived path-fix work changed the lean fragment to reference .claude/agents/lean-research-agent.md instead of .claude/extensions/lean/agents/... -- but that path does not exist either.
+- Defect class (1) is WORSE: 30 of 34 {file:} refs across all fragments now point at nonexistent files (was 16 of 18). Only nvim and nix resolve, because those are the extensions loaded in this repo -- which is itself the clue.
+REFRAME around the one live question rather than patching paths again: SHOULD opencode-agents.json fragments reference a per-project deploy tree at all? Every {file:} ref is per-repo-deploy-dependent by construction, so any path fix is correct only for the extension set of whichever repo it was fixed in. That is why class (1) keeps regrowing. Answer the design question first; the path corrections fall out of it.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Silence and correct opencode-agents.json fragment validation spam on extension reload.
 
 SYMPTOM (observed live): reloading .claude/ via <leader>al from a project with an
 opencode.json.managed marker emits ~60 WARN notifications of the form "Extension 'X'
@@ -2004,7 +2063,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Topic**: agent-system
 - **Dependencies**: None
 
-**Description**: Two dispatches in a single batch fanned out to phase sub-agents and terminated before writing a terminal status, costing a recovery cycle each. Recorded as err_1786344051474_RcIhk6.
+**Description**: === REVISED 2026-08-24 (refactor survey) ===
+NARROWED: roughly half of this task already landed with the handoff-identity work and must not be redone. skill-orchestrate/SKILL.md:2374,2384 now treats in_progress (and null/empty) as OFF-SCHEMA rather than routing it toward failed_tasks, and orchestrate-recover-outcome.sh:233 emits a clean STATUS_IN_PROGRESS verdict. Verified in the source store today.
+WHAT REMAINS is the AGENT-CONTRACT side only, and it is untouched: general-implementation-agent.md contains NO fan-out prohibition, and NO requirement that a sub-agent which commits a phase must update that phase's marker in the same commit. Both gaps are what produced the original symptom -- dispatches fanning out to phase sub-agents and terminating before writing a terminal status, leaving plan markers reading [NOT STARTED] against landed commits.
+Rescope to those two contract additions. Do not re-litigate the status-vocabulary half.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Two dispatches in a single batch fanned out to phase sub-agents and terminated before writing a terminal status, costing a recovery cycle each. Recorded as err_1786344051474_RcIhk6.
 
 OBSERVED FAILURE MODE: a dispatched implementation agent spawned per-phase sub-agents, returned while they were still running, and left .return-meta.json at status=in_progress. Per context/formats/return-metadata-file.md that value is early-metadata-only and never a legal terminal dispatch outcome, so orchestrate-recover-outcome.sh correctly declines it (reason STATUS_IN_PROGRESS). The orchestrator contract for an unresolvable dispatch is failed_tasks - which would have been WRONG here, since 6 of 10 phases had in fact been committed. Correct handling came from rules/error-handling.md Delegation Interrupted Recovery (keep status, resume), not from the orchestrator stage contract.
 
@@ -2055,7 +2119,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Topic**: agent-system
 - **Dependencies**: Task 32
 
-**Description**: Declared-vs-deployed parity for provides.* categories is one-directional by design, and the live .claude/ tree carries 4 orphan files absent from a clean scratch regenerate: context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md. Two of these (docs/architecture/architecture-spec.md, docs/README.md) were not covered by the pre-existing err_1786349061556_LuKGif (deploy_ghost_index_entries), which only named the other two -- confirmed and extended by err_1786350581273_TAWj0I (deploy_orphan_files_undercounted). This task covers BOTH error ids with one decision; do not split it.
+**Description**: === REVISED 2026-08-24 (refactor survey) ===
+SCOPE CORRECTION: the orphan set is ELEVEN files, not the four named below. A manifest cross-check finds the entire deployed .claude/context/orchestration/ directory (architecture.md, delegation.md, orchestration-core.md, orchestration-reference.md, orchestration-validation.md, orchestrator.md, postflight-pattern.md, preflight-pattern.md, sessions.md, subagent-validation.md) plus docs/architecture/architecture-spec.md, with no source-store owner. Conversely docs/README.md is NO LONGER an orphan -- drop it from the set.
+SEQUENCING: this task's own STALENESS CAVEAT says to re-measure against a fresh tree first. That caveat is now load-bearing: the deployed tree is 7 days and 133 commits stale, so ANY orphan measurement taken before the deploy lands is unreliable. Dependency set to the deploy task for exactly this reason -- do not start before it.
+Related evidence: errors.json err_1786349061556_LuKGif (deploy_ghost_index_entries) records orchestration-validation.md and subagent-validation.md as still present in .claude/context/index.json with no source owner; verified still true today.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Declared-vs-deployed parity for provides.* categories is one-directional by design, and the live .claude/ tree carries 4 orphan files absent from a clean scratch regenerate: context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md. Two of these (docs/architecture/architecture-spec.md, docs/README.md) were not covered by the pre-existing err_1786349061556_LuKGif (deploy_ghost_index_entries), which only named the other two -- confirmed and extended by err_1786350581273_TAWj0I (deploy_orphan_files_undercounted). This task covers BOTH error ids with one decision; do not split it.
 
 MECHANICAL REASON (already diagnosed, do not re-derive): verify.lua's result shape has no extra/orphan field and only ever iterates the declared side; install-extension.sh's merge_index_entries() is purely additive with no stale-removal step. Parity is therefore verified only in the declared-to-deployed direction, never the reverse.
 
