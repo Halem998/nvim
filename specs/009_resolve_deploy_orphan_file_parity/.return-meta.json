@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/009_resolve_deploy_orphan_file_parity/reports/01_orphan-file-parity-remeasurement.md",
+      "summary": "Fresh clean-scratch-regenerate re-measurement against the now-current deployed tree: confirms exactly 4 orphan files (not the task description's REVISED 11-file claim), with git-history root-cause confirmation and a decision recommendation."
+    }
+  ],
+  "next_steps": "Run /plan 9. Use this report's 4-file orphan set (context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md) as the authoritative scope -- it supersedes the task description's REVISED 11-file claim, which this research found to be incorrect. The staleness-caveat/dependency precondition (deploy + staleness-detection tasks) is satisfied; planning may proceed without further sequencing delay.",
+  "metadata": {
+    "session_id": "sess_1787608215_ce9f8e_9",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 4
+  },
+  "memory_candidates": [
+    {
+      "content": "To measure deploy-tree orphan files (deployed but no longer declared in the source store) reliably, do NOT diff the live tree against the source manifest by inspection. Instead: git clone the repo into a scratch directory (inherits the active-extension state file but starts with no deploy tree at all), run the project's headless deploy script against that scratch path to get a genuine clean regenerate, then diff live-vs-scratch file listings. Filter the raw diff for non-manifest runtime noise before trusting it: session-lock/tmp files, uncommitted working-tree artifacts (a scratch clone only pulls committed content), and any path explicitly listed in a syncprotect file (those are legitimately excluded from overwrite, not orphans).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/009_resolve_deploy_orphan_file_parity/reports/01_orphan-file-parity-remeasurement.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orphan-detection", "scratch-regenerate", "deploy-headless", "git-clone", "clean-tree-diff"]
+    },
+    {
+      "content": "A task description's own 'REVISED' scope-correction note is not self-verifying evidence -- it can itself be wrong, especially when a prior staleness caveat means the correction may have been produced under the same conditions (a stale tree, or an eyeballed directory listing instead of an actual declared-vs-deployed diff) that necessitated the caveat in the first place. Always independently re-run the measurement a revision claims to have taken before treating its corrected numbers as authoritative, rather than assuming a later-dated note supersedes an earlier one by recency alone.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/009_resolve_deploy_orphan_file_parity/reports/01_orphan-file-parity-remeasurement.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["task-description-revision", "re-verification", "staleness-caveat", "evidence-trust", "orphan-files"]
+    }
+  ]
+}

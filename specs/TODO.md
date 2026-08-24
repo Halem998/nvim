@@ -19,7 +19,7 @@ next_project_number: 94
 
 ### Agent System
 
-9 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+9 [RESEARCHED] — === REVISED 2026-08-24 (refactor survey) ===
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
@@ -29,7 +29,7 @@ next_project_number: 94
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
-79 [NOT STARTED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
+79 [RESEARCHED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
 
 ### Extensions
 
@@ -47,8 +47,8 @@ next_project_number: 94
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
 77 [NOT STARTED] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
-80 [NOT STARTED] — literature-build-index.sh traverses the corpus with an unguarded 
-92 [NOT STARTED] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
+80 [RESEARCHED] — literature-build-index.sh traverses the corpus with an unguarded 
+92 [RESEARCHED] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
 
 ### Orchestration Concurrency
 
@@ -67,11 +67,11 @@ next_project_number: 94
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-82 [NOT STARTED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
+82 [RESEARCHED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
   └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
     └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
   └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
-84 [NOT STARTED] — The one duplication gate that exists has the wrong scope and has 
+84 [RESEARCHED] — The one duplication gate that exists has the wrong scope and has 
   └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
@@ -111,10 +111,11 @@ ACCEPTANCE: from this repo, one command reports the deployed revision of every k
 ---
 
 ### 92. Quality gate false positive on logic notation
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 32
+- **Research**: [092_quality_gate_false_positive_on_logic_notation/reports/01_quality-gate-binder-exemption.md]
 
 **Description**: === ADDENDUM 2026-08-24: exact mechanism, verified by execution ===
 LOCATION: literature_quality_gate.py:118, in sentence_boundary_glue_count():
@@ -323,10 +324,11 @@ ACCEPTANCE: 10 consecutive runs, executed while at least one other session is ac
 ---
 
 ### 84. Fix duplication gate scope and extensions root
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
+- **Research**: [084_fix_duplication_gate_scope_and_extensions_root/reports/01_duplication-gate-scope-and-extensions-root.md]
 
 **Description**: The one duplication gate that exists has the wrong scope and has reported PASS while its class grew. test-common-lib.sh:230-234 asserts single-source for the session-ID generator with `grep -rl 'sess_\$(date' --include="*.sh" "$EXTENSIONS_ROOT"`. It greps ONLY *.sh. 46 of the 48 duplicate sites are *.md. The class grew 43 -> 48 files between 2026-08-11 and 2026-08-24 with the gate green throughout.
 
@@ -359,10 +361,11 @@ ACCEPTANCE: a meta task whose implementation edits the source store cannot reach
 ---
 
 ### 82. Wire deploy verification into deploy headless
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 32
+- **Research**: [082_wire_deploy_verification_into_deploy_headless/reports/01_wire-verify-into-deploy-headless.md]
 
 **Description**: deploy-headless.sh:233 PRINTS the verification step instead of running it. The line reads `echo "[deploy-headless] Verify with: bash $TARGET/.claude/scripts/verify-deploy.sh"` followed immediately by `exit 0`. verify-deploy.sh aggregates five working contract lints (lint-agent-contracts, lint-contract-compliance, lint-postflight-boundary, lint-routing-wiring, lint-state-writer-boundary) plus doc-lint, task-reference lint, verify.lua parity, the shell test suite and validate-state --deep, and exits 1 on failure. Because its only caller echoes instead of invoking, all of that is reachable only by a human typing the command. command-gate-out.sh invokes ZERO checks (grep for 'check-|lint-' returns nothing). check-runtime-file-tracking.sh has no caller anywhere in the repo -- only a manifest declaration and prose references.
 
@@ -499,10 +502,11 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 80. Stop the literature index rebuild from indexing backed-up chunk manifests
 - **Effort**: 1-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [080_exclude_backups_from_literature_index_rebuild/reports/01_exclude-backups-from-index-rebuild.md]
 
 **Description**: literature-build-index.sh traverses the corpus with an unguarded recursive `find` and indexes chunk manifests inside ~/Projects/Literature/.backups/ as if they were live, silently inflating chunk counts and admitting STALE CHUNK CONTENT into the searchable FTS5 index. The safe re-ingestion practice — move the old chunk set aside rather than delete it — is exactly what triggers the bug.
 
@@ -558,10 +562,11 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 79. Make subagent-postflight hook diagnosable when its marker is malformed
 - **Effort**: 1-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [079_diagnosable_subagent_postflight_marker_failure/reports/01_diagnosable-postflight-marker-failure.md]
 
 **Description**: subagent-postflight.sh blocks a SubagentStop with an EMPTY reason string whenever the postflight marker is not valid JSON, so the blocked agent receives "Blocked by hook" with no explanation of any kind and no way to learn what happened. The hook's own default reason never fires in exactly the case where a reason is most needed.
 
@@ -2337,10 +2342,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 9. Resolve deploy orphan file parity
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 32
+- **Research**: [009_resolve_deploy_orphan_file_parity/reports/01_orphan-file-parity-remeasurement.md]
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 SCOPE CORRECTION: the orphan set is ELEVEN files, not the four named below. A manifest cross-check finds the entire deployed .claude/context/orchestration/ directory (architecture.md, delegation.md, orchestration-core.md, orchestration-reference.md, orchestration-validation.md, orchestrator.md, postflight-pattern.md, preflight-pattern.md, sessions.md, subagent-validation.md) plus docs/architecture/architecture-spec.md, with no source-store owner. Conversely docs/README.md is NO LONGER an orphan -- drop it from the set.
