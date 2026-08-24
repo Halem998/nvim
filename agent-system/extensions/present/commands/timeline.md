@@ -176,7 +176,8 @@ Capture all responses in a forcing_data object:
 6. **Update state.json** (via jq):
    ```bash
    # Session ID for the mutex-guarded state write (generate if not already set)
-   session_id="${session_id:-sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')}"
+   source .claude/scripts/lib/common.sh
+   session_id="${session_id:-$(common_session_id)}"
 
    bash .claude/scripts/state-write.sh \
      '.next_project_number = ($num + 1) |
@@ -255,7 +256,8 @@ When $ARGUMENTS starts with a task number.
 
 1. **Generate Session ID**
    ```bash
-   session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+   source .claude/scripts/lib/common.sh
+   session_id="$(common_session_id)"
    ```
 
 2. **Lookup Task**
