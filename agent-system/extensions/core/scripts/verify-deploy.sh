@@ -31,11 +31,11 @@
 #      redeploy landed is in the same position as one that established it did not.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all eleven gates (gate0
-#   through gate10) plus a gate0 "could not run" sentinel, printed to stdout after the final
-#   narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
+#   Emits a normalized, one-per-line, machine-diffable findings set across all fourteen gates
+#   (gate0 through gate13) plus a gate0 "could not run" sentinel, printed to stdout after the
+#   final narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
 #   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
-#   gate label (`gate0`..`gate10`); the automated consumer is expected to invoke
+#   gate label (`gate0`..`gate13`); the automated consumer is expected to invoke
 #   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
 #   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
@@ -539,6 +539,59 @@ else
       while IFS= read -r state_writer_lint_line; do
         FINDINGS_LIST+=("FINDING gate12 ${state_writer_lint_line#*VIOLATION\] }")
       done < <(printf '%s\n' "$state_writer_lint_output" | grep -F '[VIOLATION]')
+    fi
+  fi
+fi
+
+say ""
+
+# Gate 13: whole-tree orphan detection (find_orphans).
+#
+# The reverse direction from gate 5: gate 5 verifies declared -> deployed (is every declared
+# entry present and hash-identical?); this gate verifies deployed -> declared (is every deployed
+# file still declared by SOME active extension?). A file that loses its source-store owner is
+# invisible to gate 5 forever, because the copy engine is additive-only by design and never
+# deletes on its own. Modeled line-for-line on gate 5: same CURRENT_GATE assignment, same [SKIP]
+# posture when the target is a deploy consumer rather than the source store, same headless-nvim
+# invocation shape, same unanchored grep for the emitted token (OSC7 robustness). Detection only
+# -- see context/patterns/deploy-orphan-detection.md for the full exclusion contract this gate
+# enforces and the detect-never-delete decision it implements.
+say "13. Whole-tree orphan detection (find_orphans: deployed-but-undeclared files, ghost index rows)"
+CURRENT_GATE="gate13"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- this gate compares against"
+  say "         the source store and does not apply here"
+elif ! command -v nvim >/dev/null 2>&1; then
+  fail "nvim not found on PATH; cannot run whole-tree orphan detection"
+else
+  orphan_output=$(cd "$TARGET" && nvim --headless \
+    -c "lua local ok1, ext_config = pcall(require, 'neotex.plugins.ai.shared.extensions.config'); local ok2, ext_init = pcall(require, 'neotex.plugins.ai.shared.extensions.init'); if not (ok1 and ok2) then print('ORPHAN_ERROR require: ' .. tostring(ok1 and ext_init or ext_config)) else local manager = ext_init.create(ext_config.claude()); local pok, result = pcall(manager.find_orphans, '${TARGET}'); if not pok then print('ORPHAN_ERROR call: ' .. tostring(result)) else for _, rel in ipairs(result.orphans) do print('ORPHAN_FINDING orphan file: ' .. rel) end for _, path in ipairs(result.ghost_index_entries) do print('ORPHAN_FINDING ghost index row: ' .. path) end print('ORPHAN_DONE checked=' .. tostring(result.checked)) end end" \
+    -c "qa!" 2>&1)
+
+  if echo "$orphan_output" | grep -q 'ORPHAN_ERROR'; then
+    orphan_error_line=$(echo "$orphan_output" | grep 'ORPHAN_ERROR' | head -1)
+    fail "whole-tree orphan detection could not run" "$orphan_error_line" \
+         "whole-tree orphan detection could not run: $orphan_error_line"
+  elif ! echo "$orphan_output" | grep -q 'ORPHAN_DONE'; then
+    fail "whole-tree orphan detection produced no result" \
+         "re-run: nvim --headless -c \"lua ...manager.find_orphans(...)\"" \
+         "whole-tree orphan detection produced no result"
+  else
+    # Unanchored, same OSC7 rationale as gate 5's verify_finding_count above.
+    orphan_finding_count=$(echo "$orphan_output" | grep -c 'ORPHAN_FINDING ')
+    if [ "$orphan_finding_count" -eq 0 ]; then
+      pass "no deployed-but-undeclared files or ghost context/index.json rows"
+    else
+      # Third arg "" suppresses the default aggregate finding -- the per-underlying-
+      # ORPHAN_FINDING lines extracted below are the findings-mode representation, mirroring
+      # gate 5's own suppress-and-extract pattern.
+      fail "whole-tree orphan detection reported $orphan_finding_count finding(s)" \
+           "re-run without --quiet for detail: bash agent-system/extensions/core/scripts/verify-deploy.sh; see context/patterns/deploy-orphan-detection.md" ""
+      if [ "$FINDINGS" = "true" ]; then
+        while IFS= read -r orphan_finding_line; do
+          FINDINGS_LIST+=("FINDING gate13 ${orphan_finding_line#*ORPHAN_FINDING }")
+        done < <(echo "$orphan_output" | grep -o 'ORPHAN_FINDING .*')
+      fi
     fi
   fi
 fi

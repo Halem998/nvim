@@ -1,0 +1,45 @@
+{
+  "phase": 4,
+  "phase_name": "Scratch-Tree Regression Test",
+  "started_at": "2026-08-24T01:45:00Z",
+  "last_updated": "2026-08-24T02:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write test-deploy-orphans.sh modeled on test-deploy-propagation.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Assertions A-E (orphan reported, runtime/merged excluded, ghost row reported, clean baseline)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add tests/test-deploy-orphans.sh to provides.scripts in manifest.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4-verification",
+      "description": "bash agent-system/extensions/core/scripts/tests/run-all.sh discovers the new suite and the full shell suite still exits 0",
+      "type": "altered",
+      "reason": "run-all.sh discovers and PASSES tests/test-deploy-orphans.sh (confirmed: '[run-all] [PASS] .../test-deploy-orphans.sh'), but the full suite exits 1 overall because tests/test-validate-return-meta.sh (pre-existing, last touched by an unrelated earlier task per git log, untouched and clean per git status in this session) has 3 failing sub-assertions unrelated to deploy-orphan detection. test-deploy-orphans.sh itself, run standalone, exits 0 with '5 passed, 0 failed'.",
+      "annotation": "*(deviation: altered — full suite exit code not 0 due to a pre-existing unrelated failure in test-validate-return-meta.sh; the new suite itself passes cleanly, verified standalone)*"
+    }
+  ],
+  "verification_notes": "bash agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh: 'Results: 5 passed, 0 failed', exit 0. jq -e . agent-system/extensions/core/manifest.json: valid."
+}

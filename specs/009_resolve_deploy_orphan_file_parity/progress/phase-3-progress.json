@@ -1,0 +1,37 @@
+{
+  "phase": 3,
+  "phase_name": "Expose via manager and Add the verify-deploy Gate",
+  "started_at": "2026-08-24T01:00:00Z",
+  "last_updated": "2026-08-24T01:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add manager.find_orphans(project_dir) in init.lua",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add gate 13 to verify-deploy.sh modeled on gate 5, plus header range correction",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3-verification",
+      "description": "Gates 0-12 produce the same findings set as before this phase (capture and diff --findings --quiet output before and after)",
+      "type": "altered",
+      "reason": "No true pre-Phase-1 --findings baseline was captured before starting (this is itself a gap in execution, not a plan defect). The repo is a live multi-agent shared session (other concurrent task agents visible: plan-79, plan-80, plan-82, plan-84, plan-92) actively mutating agent-system/extensions/core/** and specs/** without redeploying, so gate5's finding count fluctuated between two checks minutes apart (5 findings, then 0) independent of this task's edits. Verified instead, by direct isolation: (1) check-extension-docs.sh run directly -- its FAIL lines name context/contracts/return-meta-artifacts-template.md and two literature-extension paths, none touched by this task; (2) tests/run-all.sh run directly -- the only failing suite is test-validate-return-meta.sh (pre-existing, unrelated to deploy-orphan detection), and the new tests/test-deploy-orphans.sh suite itself PASSES cleanly. find_orphans/manager.find_orphans/gate13 are additive-only (no existing function's logic was changed), so by construction they cannot be the source of gate3/gate5/gate8's pre-existing or transient findings. The one attributable-to-this-task gate5 delta is expected and named in the plan's own Non-Goals/Risks: two newly source-declared-but-not-yet-deployed files (the Phase 1 pattern doc, the Phase 4 test script) and this phase's own edit to the declared script verify-deploy.sh itself necessarily show as gate5 'missing'/'content differs' findings until a redeploy happens, which this task deliberately does not perform.",
+      "annotation": "*(deviation: altered — exact before/after findings diff not captured; verified via direct isolation of gate3/gate5/gate8 instead, see summary)*"
+    }
+  ],
+  "verification_notes": "Full verify-deploy.sh (source-store copy) run: gate 13 reports '[FAIL] whole-tree orphan detection reported 6 finding(s)' = 4 orphans + 2 ghost rows, exactly matching the Phase 1 baseline. --findings mode run separately (long-running, ~5-6 min per full run) to confirm one FINDING gate13 line per finding."
+}

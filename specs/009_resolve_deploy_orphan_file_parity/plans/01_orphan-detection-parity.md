@@ -241,24 +241,24 @@ proceeding.
 
 ---
 
-### Phase 3: Expose via manager and Add the verify-deploy Gate [NOT STARTED]
+### Phase 3: Expose via manager and Add the verify-deploy Gate [COMPLETED]
 
 **Goal**: Make the detector reachable from the shell as a `verify-deploy.sh` gate, in both narrative
 and `--findings` modes, following gate 5's existing headless-nvim precedent.
 
 **Tasks**:
-- [ ] Add `manager.find_orphans(project_dir)` in
+- [x] Add `manager.find_orphans(project_dir)` in
       `lua/neotex/plugins/ai/shared/extensions/init.lua`: enumerate loaded extensions via
       `manager.list_loaded`, resolve each source dir and manifest, read `.syncprotect`, and call
       `verify.find_orphans` once for the whole tree.
-- [ ] Add gate 13 to `agent-system/extensions/core/scripts/verify-deploy.sh`, modeled line-for-line
+- [x] Add gate 13 to `agent-system/extensions/core/scripts/verify-deploy.sh`, modeled line-for-line
       on gate 5: same `CURRENT_GATE` assignment, same `[SKIP]` posture when the target is a deploy
       consumer rather than the source store, same headless-nvim invocation shape, same unanchored
       grep for the emitted token (OSC7 robustness).
-- [ ] Emit one `ORPHAN_FINDING` line per orphan file and per ghost index row; in `--findings` mode
+- [x] Emit one `ORPHAN_FINDING` line per orphan file and per ghost index row; in `--findings` mode
       push each as its own `FINDING gate13 ...` entry (pass `""` as `fail`'s third argument to
       suppress the aggregate, matching gates 5 and 11).
-- [ ] Update the script header: it currently documents "all eleven gates (gate0 through gate10)"
+- [x] Update the script header: it currently documents "all eleven gates (gate0 through gate10)"
       while gate11 and gate12 already exist. Correct the range to cover gate13 as part of this edit.
 
 **Timing**: 1.5 hours
@@ -281,24 +281,24 @@ and `--findings` modes, following gate 5's existing headless-nvim precedent.
 
 ---
 
-### Phase 4: Scratch-Tree Regression Test [NOT STARTED]
+### Phase 4: Scratch-Tree Regression Test [COMPLETED]
 
 **Goal**: Prove the gate fires on a planted orphan and stays silent on legitimately-undeclared
 paths, so the exclusion contract is enforced by a test rather than by reviewer memory.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh` modeled on the
+- [x] Write `agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh` modeled on the
       existing `test-deploy-propagation.sh` (scratch `mktemp` git repo, trap-based cleanup, real
       `deploy-headless.sh` subprocess, `pass()`/`fail()` counters, exit 0/1/2 convention).
-- [ ] Assertion A: a file planted in the scratch deploy tree under a declared category directory but
+- [x] Assertion A: a file planted in the scratch deploy tree under a declared category directory but
       absent from every manifest is reported as an orphan.
-- [ ] Assertion B: a runtime path (`tmp/workflow-active-test`) is **not** reported.
-- [ ] Assertion C: a merged/generated artifact (`context/index.json`) is **not** reported.
-- [ ] Assertion D: an index row injected into the scratch `context/index.json` with no
+- [x] Assertion B: a runtime path (`tmp/workflow-active-test`) is **not** reported.
+- [x] Assertion C: a merged/generated artifact (`context/index.json`) is **not** reported.
+- [x] Assertion D: an index row injected into the scratch `context/index.json` with no
       `index-entries.json` declaration is reported as a ghost row.
-- [ ] Assertion E: an unmodified scratch regenerate reports zero orphans -- the no-false-positive
+- [x] Assertion E: an unmodified scratch regenerate reports zero orphans -- the no-false-positive
       baseline.
-- [ ] Add `tests/test-deploy-orphans.sh` to `provides.scripts` in
+- [x] Add `tests/test-deploy-orphans.sh` to `provides.scripts` in
       `agent-system/extensions/core/manifest.json` (scripts are declared individually; the test
       runner discovers by glob, but the file must be declared to deploy).
 

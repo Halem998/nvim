@@ -1103,6 +1103,38 @@ function M.create(config)
     return results
   end
 
+  --- Whole-tree, all-active-extensions orphan detection: files present in the deploy tree that
+  --- no active extension declares, plus ghost `context/index.json` rows. Reverse direction from
+  --- verify_all above (which only checks declared -> deployed). Resolves every active
+  --- extension's source directory and manifest, loads `.syncprotect` once for the whole tree
+  --- (matching manager.verify's own resolution), and delegates the actual set-subtraction to
+  --- verify_mod.find_orphans. Detection only -- see
+  --- context/patterns/deploy-orphan-detection.md for the full exclusion contract.
+  --- @param project_dir string|nil Project directory
+  --- @return table result { orphans, ghost_index_entries, checked, excluded }
+  function manager.find_orphans(project_dir)
+    project_dir = project_dir or vim.fn.getcwd()
+    local target_dir = project_dir .. "/" .. config.base_dir
+    local loaded = manager.list_loaded(project_dir)
+
+    local extensions = {}
+    for _, ext_name in ipairs(loaded) do
+      local extension = manifest_mod.get_extension(ext_name, config)
+      if extension then
+        table.insert(extensions, {
+          name = extension.name,
+          source_dir = extension.path,
+          manifest = extension.manifest,
+        })
+      end
+    end
+
+    local protected_paths = loader_mod.load_syncprotect(project_dir, config.base_dir)
+    return verify_mod.find_orphans(target_dir, extensions, protected_paths, {
+      agents_subdir = config.agents_subdir,
+    })
+  end
+
   --- Regenerate `base_dir` (`.claude/`/`.opencode/`) from the surviving project-root
   --- extension manifest, without re-picking any extensions.
   ---
