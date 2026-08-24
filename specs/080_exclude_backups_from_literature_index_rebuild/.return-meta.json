@@ -1,40 +1,12 @@
 {
-  "status": "researched",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_exclude-backups-from-index-rebuild.md",
-      "summary": "Confirms the unguarded find at literature-build-index.sh:91, audits the live corpus/DB state, corrects the source_path-substring audit assumption, confirms the traversal survey, and grounds the four scope directions with codebase precedent for the planner."
-    }
-  ],
-  "next_steps": "Run /plan 80 to create implementation plan",
+  "status": "in_progress",
+  "artifacts": [],
+  "next_steps": "Planning in progress",
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e_80",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "In the literature extension's chunks_data schema, source_path is stored as a bare filename relative to the manifest's own directory (e.g. 'chunk_0001.md'), never an absolute or manifest-rooted path, and the DB has no column recording which manifest/directory a row came from. Any future audit for 'chunks from directory X' must diff chunk_id sets per doc_id against the live manifest, not substring-match source_path.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_exclude-backups-from-index-rebuild.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["literature", "chunks_data", "source_path", "audit", "fts5", "build-index"]
-    },
-    {
-      "content": "literature-schema.sql defines a document_metadata table (PK doc_id, chunk_count) that literature-build-index.sh never populates — zero rows in the live database. Any task that wants per-doc chunk-count visibility should not assume this table already works.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_exclude-backups-from-index-rebuild.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["literature", "document_metadata", "schema", "build-index", "dormant-table"]
-    },
-    {
-      "content": "~/Projects/Literature/ root has six dot-prefixed directories (.backups, .sources-recovered, .online-ingest-staging, .memory, .claude, .git); only .backups currently holds chunk manifests, but any traversal-safety predicate for the corpus should exclude dot-prefixed directories generally rather than naming .backups specifically, since the other two non-infra dirs (.sources-recovered, .online-ingest-staging) could plausibly gain chunks.json files later.",
-      "category": "PATTERN",
-      "source_artifact": "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_exclude-backups-from-index-rebuild.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["literature", "corpus-directory", "traversal", "backups", "exclusion-predicate"]
-    }
-  ]
+  "memory_candidates": []
 }

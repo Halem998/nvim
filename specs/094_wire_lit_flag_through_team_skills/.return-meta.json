@@ -1,0 +1,42 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 3 tasks for --lit team-mode and literature-index defects. Tasks start in NOT STARTED status.",
+  "artifacts": [
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/094_wire_lit_flag_through_team_skills/",
+      "summary": "Blocker: wire lit_flag through the three team skills, resolve Stage 4a collision, add reachability lint"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/095_audit_literature_index_resolver_keying/",
+      "summary": "Audit literature scripts for id-vs-path global-index resolver keying"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/096_surface_literature_coverage_delta_under_lit/",
+      "summary": "Surface sub-index vs global-index coverage delta when --lit is active"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Tasks 94, 95, 96 added to TODO.md under the literature topic"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1787608789_495106",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 3,
+    "tasks_status": "not_started"
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/state.json",
+    "/home/benjamin/.config/nvim/specs/TODO.md"
+  ],
+  "next_steps": "Run /research 94 to begin research on the blocking task"
+}

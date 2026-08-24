@@ -1,28 +1,13 @@
 {
-  "status": "researched",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/084_fix_duplication_gate_scope_and_extensions_root/reports/01_duplication-gate-scope-and-extensions-root.md",
-      "summary": "Confirms both defects live (scope + EXTENSIONS_ROOT resolution), inventories 52 current sess_$(date sites (38 real offenders: 1 .sh + 37 .md under commands/skills/agents, 12 correctly-excluded illustrative-prose .md), and recommends reusing run-all.sh's core/manifest.json-probe pattern for dual-mode root resolution plus an added .md-scoped scan alongside the unchanged whole-tree .sh scan."
-    }
-  ],
-  "next_steps": "Run /plan 84 to create implementation plan",
+  "status": "in_progress",
+  "artifacts": [],
+  "next_steps": "Planning in progress",
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e_84",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 5
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "agent-system/extensions/core/scripts/tests/run-all.sh solves source-store-vs-deployed root resolution by probing for core/manifest.json inside the candidate '../../..' ancestor (present = source-store, absent = deployed fallback one level up from SCRIPT_DIR). This probe-based pattern is more robust than a fixed-depth '../../..' walk (which silently resolves to the wrong root when run from a deployed tree with a different directory depth) and should be reused by any other script in this file family needing the same dual-mode root resolution.",
-      "category": "PATTERN",
-      "source_artifact": "specs/084_fix_duplication_gate_scope_and_extensions_root/reports/01_duplication-gate-scope-and-extensions-root.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["EXTENSIONS_ROOT", "source-store", "deployed", "manifest.json", "dual-mode-detection", "run-all.sh"]
-    }
-  ],
+  "memory_candidates": [],
   "modified_files": []
 }

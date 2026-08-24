@@ -1,34 +1,12 @@
 {
-  "status": "researched",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/092_quality_gate_false_positive_on_logic_notation/reports/01_quality-gate-binder-exemption.md",
-      "summary": "Confirms the addendum's mechanism, empirically evaluates the suggested regex shape (finds it insufficient), and reports a refined, fixture-validated exemption pattern with an explicit recommendation for the two MIXED documents."
-    }
-  ],
-  "next_steps": "Run /plan 92 to create an implementation plan. The plan should incorporate the report's refined regex pattern, its verification-gap note on bacon_dorr_2024_classicism (needs a real literature-convert.sh pipeline run to reproduce the true-positive case), and its explicit recommendation that the two MIXED documents should continue to be rejected by the gate.",
+  "status": "in_progress",
+  "artifacts": [],
+  "next_steps": "Planning in progress",
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e_92",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "pymupdf4llm markdown output fragments character-adjacency assumptions in regex-based quality checks: italicized PDF spans become markdown emphasis underscores (_..._), and subscripted variable indices (x1, xn) are extracted as bare digits with surrounding whitespace. A regex like [binder][a-z]\\. written against a 'clean' example of notation (e.g. lambda-x.Fx) will fail to match the same notation in real converted text (e.g. '_λx_ 1 _. . . xn.Rx_ 1 _. . .') because markdown/whitespace/digit noise breaks the assumed adjacency. Fix: build the exemption regex to explicitly tolerate [_\\s]* and interspersed digit runs between the binder and the bound-variable-period-matrix transition, rather than widening only the character class at the binder position.",
-      "category": "PATTERN",
-      "source_artifact": "specs/092_quality_gate_false_positive_on_logic_notation/reports/01_quality-gate-binder-exemption.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["pymupdf4llm", "regex", "quality-gate", "markdown-emphasis", "literature-extension"]
-    },
-    {
-      "content": "When an exemption regex is fixed by deleting matched spans via re.sub() before a final findall(), a blanket preprocessing strip (e.g. removing all markdown underscore characters globally first) can glue previously non-adjacent characters into new spurious matches, INCREASING false positives rather than only removing old ones. Observed directly: stripping all '_' characters before applying a widened binder-exemption regex raised a real-corpus document's hit count from 11 to 26. Prefer building whitespace/markdown tolerance directly into the exemption regex itself over a separate global-strip preprocessing pass.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/092_quality_gate_false_positive_on_logic_notation/reports/01_quality-gate-binder-exemption.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["regex", "re.sub", "false-positive", "quality-gate", "substitution-hazard"]
-    }
-  ]
+  "memory_candidates": []
 }

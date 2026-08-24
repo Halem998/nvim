@@ -11,8 +11,8 @@ next_project_number: 97
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 9,13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81,82,84,85,87,91,92,94,95 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,44,50,64,75,76,78,83,86,88,89,90,96 | 29,42,48,62,74,77,82,84,87,95 | agent-system, extensions, literature, ... |
+| 1 | 9,13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81,82,84,85,87,91,92,94 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,44,50,64,75,76,78,83,86,88,89,90,96 | 29,42,48,62,74,77,82,84,87 | agent-system, extensions, literature, ... |
 | 3 | 93 | 83 | essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -29,7 +29,7 @@ next_project_number: 97
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
-79 [RESEARCHED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
+79 [PLANNING] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
 
 ### Extensions
 
@@ -47,11 +47,10 @@ next_project_number: 97
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
 77 [NOT STARTED] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
-80 [RESEARCHED] — literature-build-index.sh traverses the corpus with an unguarded 
-92 [RESEARCHED] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
-94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
-95 [NOT STARTED] — Audit the literature global-index resolvers for id-vs-path keying
   └─ 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
+80 [PLANNING] — literature-build-index.sh traverses the corpus with an unguarded 
+92 [PLANNING] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
+94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
 
 ### Orchestration Concurrency
 
@@ -70,11 +69,11 @@ next_project_number: 97
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-82 [RESEARCHED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
+82 [PLANNING] — deploy-headless.sh:233 PRINTS the verification step instead of ru
   └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
     └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
   └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
-84 [RESEARCHED] — The one duplication gate that exists has the wrong scope and has 
+84 [PLANNING] — The one duplication gate that exists has the wrong scope and has 
   └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
@@ -93,7 +92,7 @@ next_project_number: 97
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: literature
-- **Dependencies**: Task 95
+- **Dependencies**: Task 77
 
 **Description**: Surface the sub-index vs global-index coverage delta when --lit is active, so decision-relevant sources sitting in the global corpus are not silently invisible to research. REPORTED EVIDENCE: in the Logos/Theory repo, specs/literature-index.json holds 37 entries against 399 in ~/Projects/Literature/index.json. Sources that turned out to be decision-relevant were present in the global repo, already chunked and readable, and were never surfaced to the research agents: the canonical branching-time cluster (thomason-1970-indeterminist-time, 78 chunks; reynolds-2003-ockhamist, 30; rumberg-zanardo-2019-transition-structures, 42) and the hyperproperty-monitoring cluster (finkbeiner_etal_2017_monitoring_hyperproperties; finkbeiner_etal_2018_rvhyper; bonakdarpour_sheinvald_2023_finite_word_hyperlanguages, 53; sousa_dillig_2016_cartesian_hoare_logic_k_safety, 69; agrawal_bonakdarpour_2016_runtime_verification_k_safety_hyperltl).
 
@@ -105,10 +104,58 @@ CONSIDER (do not assume) a lightweight guard: when --lit is active and the sub-i
 
 Depends on the global-index resolver keying audit: a delta computation that resolves entries by id would itself under-report by more than half the corpus, so the resolver field question must be settled first. The two also share edit territory under extensions/literature/scripts/.
 
+=== REVISED 2026-08-24: DEPENDENCY RETARGETED, AND THE BOUNDARY AGAINST THE COVERAGE-MARKER TASK MADE EXPLICIT ===
+
+DEPENDENCY CHANGE. This task originally depended on a resolver-keying audit task that has since
+been abandoned as a duplicate and absorbed into the literature global-index schema-unification
+task. The dependency is retargeted to that schema task. The original sequencing reason still
+holds and is unchanged: a delta computation keyed on id would itself under-report by more than
+half the corpus (sources/<id>/ resolves for 173 of 399 entries; path resolves for all 399), so
+the keying question must be settled before a delta is computed.
+
+DO NOT MERGE THIS WITH THE BRIEFING COVERAGE-MARKER TASK. They address two different failure
+modes and a fix for either one leaves the other completely open:
+
+  Coverage-marker task  -- REQUESTED BUT NOT RESOLVED. A doc_id IS in the sub-index, the briefing
+                           tries to resolve it, resolution fails, and the skip is invisible
+                           because only successful resolutions are counted. Detectable from
+                           inside the briefing, because the request exists.
+
+  THIS task            -- NEVER REQUESTED BECAUSE NEVER INDEXED. The source is in the global
+                           corpus, is relevant, and is absent from the sub-index entirely. No
+                           request is ever made, so nothing is ever skipped, so the coverage
+                           marker reports healthy and IS CORRECT to do so. Structurally invisible
+                           to the other task's mechanism no matter how well that mechanism works.
+
+MOTIVATING EVIDENCE (measured, Logos/Theory, 2026-08-24). A --team --lit research round ran
+against a 37-entry sub-index while the global index held 399 entries. The briefing resolved 37 of
+37 with zero skip warnings -- a clean bill of health under the coverage marker, and an accurate
+one. Meanwhile the sources that decided the round's two headline conclusions were sitting
+unindexed in the global corpus, chunked and readable, and were never surfaced:
+
+  branching-time:  thomason-1970-indeterminist-time (78 chunks), reynolds-2003-ockhamist (30),
+                   rumberg-zanardo-2019-transition-structures (42)
+  hyperproperties: finkbeiner_etal_2017_monitoring_hyperproperties,
+                   finkbeiner_etal_2018_rvhyper, bonakdarpour_sheinvald_2023_finite_word_hyperlanguages (53),
+                   sousa_dillig_2016_cartesian_hoare_logic_k_safety (69),
+                   agrawal_bonakdarpour_2016_runtime_verification_k_safety_hyperltl
+
+CONSEQUENCE, and the reason this is a correctness issue rather than a convenience one: two
+independent research rounds reached substantive conclusions of the form "the framework has no
+counterpart for X" without consulting available global sources that define X. Both claims
+survived later checking -- a framing gap, not a false claim shipped -- but that outcome was luck,
+not a property of the process. The claim shape is the tell: an assertion that something is ABSENT
+is exactly the claim that unindexed literature is least able to refute.
+
+ROOT CAUSE TO DESIGN AGAINST: nothing in the pipeline checks the global index against a draft's
+specific "no counterpart exists" claims before they are finalized. A topic-scoped delta surfaced
+at briefing time is the cheap approximation; a claim-shaped check is the expensive one. Decide
+which is in scope rather than silently building the cheap one and calling the class closed.
+
 ---
 
 ### 95. Audit literature index resolver keying
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -120,6 +167,18 @@ PARTIAL VERIFICATION ALREADY DONE, DO NOT REDO BLINDLY: extensions/literature/sc
 EXPLICITLY NOT A DEFECT -- DO NOT "FIX" IT: only 73 of 399 global-index entries carry a doc_id key at all; the other 326 simply lack the key. That is a legacy partially-migrated field, not missing data or corruption. An earlier analysis wrongly flagged it as corruption. Leave it alone.
 
 This is expected to be small and mechanical, but the scope must be verified rather than assumed -- confirm which field each script actually keys on before changing anything. Add a regression check that a resolver returns content for a chapter-level entry (path pointing at a .md file) as well as a whole-work entry (path pointing at a directory).
+
+=== ABANDONED 2026-08-24: ABSORBED AS A DUPLICATE ===
+This task's scope is already owned by the literature global-index schema-unification task, whose
+acceptance criterion 4 requires a complete reader survey with each reader either fixed or its
+exclusion documented as deliberate. That task additionally covers a namespace this one did not
+find at all (the .literature.db FTS chunks_data.doc_id namespace, which disagrees with the global
+index on 49 documents) and carries the id-vs-FTS agreement requirement as its own criterion 7.
+The five readers this task named that the survey did not (literature-discover.sh,
+literature-normalize-authors.sh, zotero-resolve-pdf.sh, zotero-generate-export.sh,
+test-lit-pipeline.sh), the 173/399-vs-399/399 path measurement, and the doc_id do-not-fix note
+have all been folded into that task as an addendum. Nothing is lost by abandoning this one.
+Working both would collide: both declare file_scope agent-system/extensions/literature/scripts/**.
 
 ---
 
@@ -142,6 +201,26 @@ STAGE-NUMBER COLLISION TO RESOLVE AS PART OF THIS WORK: skill-team-research/SKIL
 VERIFICATION STEP TO INCLUDE (regression guard): add a lint asserting that every skill reachable from a command that accepts --lit either consumes lit_flag or carries an explicit documented statement of why it does not. Register it wherever the repo's other doc/contract lints are registered (see docs/reference/utility-scripts-inventory.md). This lint is what would have caught the defect.
 
 ACCEPTANCE CRITERION: after implementing in this repo and reloading the agent system into a project repo (via <leader>al), /research N --team --lit must produce a real literature briefing for every teammate rather than silently proceeding as if --lit were absent. This task is independently implementable and independently satisfies that criterion; it is the blocker.
+
+=== ADDENDUM 2026-08-24: DUPLICATE CHECK RESULT, AND THE RELOAD DEPENDENCY ===
+
+DUPLICATE CHECK: a sweep of all 60 active tasks found NOTHING covering the team-skill lit_flag
+defect. This task is genuinely new. Its two sibling tasks from the same /meta dispatch did overlap
+existing work and were handled: the resolver-keying task was abandoned and absorbed into the
+literature global-index schema-unification task, and the coverage-delta task was retargeted to
+depend on that same schema task. This task has no such overlap and no dependency on either -- it
+is independently implementable and independently satisfies the acceptance criterion, which is the
+point of keeping it separate.
+
+RELOAD DEPENDENCY, worth stating because the acceptance criterion runs through it: the criterion
+is that /research N --team --lit produces a real briefing for every teammate in a CONSUMING repo,
+which requires the fix to be deployed there, not merely committed here. The task covering
+postflight deploy gating for source-store tasks documents that completed source-store work can sit
+undeployed indefinitely -- and this was observed live during the run that found this defect: the
+consuming repo's gate-in emitted "deployed extension 'core' is stale" and "deployed extension
+'literature' is stale" warnings in the same session. Verifying this task means regenerating the
+consuming repo's .claude/ tree and re-running the command there, not just reading the diff in the
+source store. Do not mark it verified on a source-store-only check.
 
 ---
 
@@ -170,7 +249,7 @@ ACCEPTANCE: from this repo, one command reports the deployed revision of every k
 ---
 
 ### 92. Quality gate false positive on logic notation
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 32
@@ -383,7 +462,7 @@ ACCEPTANCE: 10 consecutive runs, executed while at least one other session is ac
 ---
 
 ### 84. Fix duplication gate scope and extensions root
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
@@ -420,7 +499,7 @@ ACCEPTANCE: a meta task whose implementation edits the source store cannot reach
 ---
 
 ### 82. Wire deploy verification into deploy headless
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 32
@@ -561,7 +640,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 80. Stop the literature index rebuild from indexing backed-up chunk manifests
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -621,7 +700,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 79. Make subagent-postflight hook diagnosable when its marker is malformed
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -975,6 +1054,49 @@ repo owner's manuscripts" measurement is now HISTORICAL. Both manuscripts
 resolve today, and a Logos/Theory briefing run on 2026-08-24 resolved 37 of 37 sub-index entries
 with zero skip warnings, after the two id repairs described in (1). The SHAPE of the defect is
 unchanged and the writer is unfixed; only the data population was repaired.
+
+
+=== ADDENDUM 2026-08-24 (fourth observation, Logos/Theory --team --lit run): READER SURVEY LIST EXTENDED, AND A DUPLICATE ABSORBED ===
+
+A separate /research --team --lit round in Logos/Theory re-measured this defect and filed a
+narrow companion task for the resolver-keying half. That companion is ABSORBED HERE and abandoned
+rather than worked separately, since acceptance criterion 4 above ("the reader survey is completed
+and each reader is either fixed or its exclusion documented as deliberate") already owns the work.
+This is the second consuming-repo duplicate this task has absorbed; the first is the one named in
+the "DUPLICATE FILED ELSEWHERE" note above.
+
+WHAT THE ABSORBED TASK ADDS -- five readers NOT named in the "ADDITIONAL AFFECTED READERS" survey
+above. That survey names literature-search.sh, literature-fidelity-audit.sh, and
+zotero-attach-chunks.sh. Add these to the same survey and hold them to the same criterion:
+
+    literature-discover.sh
+    literature-normalize-authors.sh
+    zotero-resolve-pdf.sh
+    zotero-generate-export.sh
+    test-lit-pipeline.sh
+
+All five reference id / "id" and none has been inspected for the id-vs-path keying question.
+
+CORRECTION TO A LIKELY ASSUMPTION -- literature-briefing.sh is NOT one of the offenders on this
+axis. It already prefers path over an id-derived path at ~227-246:
+
+    parent_path=$(jq -r --arg id "$doc_id" '.entries[] | select(.id == $id) | .path // ""' ...)
+
+falling back to $LIT_DIR/sources/$doc_id only when path is empty or dirname resolves to ".". Do
+not "fix" it there; the keying defect, where it exists, is in the other readers.
+
+SUPPORTING MEASUREMENT (consistent with point (3) above on parent/child granularity, and worth
+keeping as the concrete number): of 399 global-index entries, all 399 carry a populated id, but
+sources/<id>/ resolves as a directory for only 173. The path field resolves for all 399 -- it
+points to a directory for whole-work entries and to a specific .md file for chapter-level entries
+(e.g. blackburn_2002_ch00 -> sources/blackburn_2002/ch00_preface.md). Any resolver that
+reconstructs a path as sources/<id>/ rather than reading path fails on 226 of 399 entries. This is
+the same granularity ambiguity point (3) requires a decision on, observed from the reader side.
+
+EXPLICIT DO-NOT-FIX, carried over from the absorbed task: only 73/399 entries carry a doc_id key
+at all; the other 326 simply lack the key. That is the legacy partially-migrated field this task
+already documents -- it is NOT missing data and NOT corruption. An earlier analysis in the
+consuming repo wrongly flagged it as such and was corrected; do not re-open it as a defect.
 
 ---
 
