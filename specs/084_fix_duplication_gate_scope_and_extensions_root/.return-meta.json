@@ -1,9 +1,83 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/084_fix_duplication_gate_scope_and_extensions_root/summaries/01_duplication-gate-scope-fix-summary.md",
+      "summary": "Repaired the duplication gate's dual-mode root resolution and .md scan scope, added regression fixtures, migrated 1 .sh + 37 .md offenders onto common_session_id(), and closed err_1787022038113_c3VPTR."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed test-common-lib.sh's dual-mode root resolution and extended it to scan .md executable surfaces (commands/skills/agents), added 6 regression fixtures, migrated the 1 real .sh offender and all 37 real .md offenders across 7 extensions onto common_session_id(), verified the gate green and identical from both source-store and deployed locations, passed a reintroduction acceptance test, and closed errors.json entry err_1787022038113_c3VPTR."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/commands/review.md",
+    "agent-system/extensions/core/commands/spawn.md",
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/skills/skill-fix-it/SKILL.md",
+    "agent-system/extensions/core/skills/skill-project-overview/SKILL.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "agent-system/extensions/cslib/commands/pr.md",
+    "agent-system/extensions/cslib/commands/vet.md",
+    "agent-system/extensions/cslib/skills/skill-cslib-vet/SKILL.md",
+    "agent-system/extensions/epidemiology/commands/epi.md",
+    "agent-system/extensions/filetypes/commands/convert.md",
+    "agent-system/extensions/filetypes/commands/edit.md",
+    "agent-system/extensions/filetypes/commands/scrape.md",
+    "agent-system/extensions/filetypes/commands/sheet.md",
+    "agent-system/extensions/filetypes/commands/table.md",
+    "agent-system/extensions/founder/commands/analyze.md",
+    "agent-system/extensions/founder/commands/consult.md",
+    "agent-system/extensions/founder/commands/deck.md",
+    "agent-system/extensions/founder/commands/finance.md",
+    "agent-system/extensions/founder/commands/legal.md",
+    "agent-system/extensions/founder/commands/market.md",
+    "agent-system/extensions/founder/commands/meeting.md",
+    "agent-system/extensions/founder/commands/project.md",
+    "agent-system/extensions/founder/commands/sheet.md",
+    "agent-system/extensions/founder/commands/strategy.md",
+    "agent-system/extensions/literature/skills/skill-cite/SKILL.md",
+    "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+    "agent-system/extensions/present/commands/budget.md",
+    "agent-system/extensions/present/commands/funds.md",
+    "agent-system/extensions/present/commands/grant.md",
+    "agent-system/extensions/present/commands/slides.md",
+    "agent-system/extensions/present/commands/timeline.md",
+    "specs/errors.json",
+    "specs/084_fix_duplication_gate_scope_and_extensions_root/plans/01_duplication-gate-scope-fix.md",
+    "specs/084_fix_duplication_gate_scope_and_extensions_root/summaries/01_duplication-gate-scope-fix-summary.md",
+    "specs/084_fix_duplication_gate_scope_and_extensions_root/progress/phase-9-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When repairing a source-store vs. deployed dual-mode script, reuse an existing sibling script's layout-detection probe verbatim (e.g. run-all.sh's core/manifest.json probe) rather than reinventing the heuristic -- and check the exact depth offset needed, since a deployed root correct for one purpose (scripts/) can be one level below what a different scan (e.g. commands/skills/agents) actually needs.",
+      "category": "PATTERN",
+      "source_artifact": "specs/084_fix_duplication_gate_scope_and_extensions_root/summaries/01_duplication-gate-scope-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dual-mode", "root-resolution", "deploy-boundary", "manifest-probe", "test-common-lib"]
+    },
+    {
+      "content": "For a bulk textual migration across dozens of files with minor shape variance (plain assignment vs. ${var:-...} fallback vs. differing entropy source), write a small regex-based script, dry-run it against copies first, verify zero NO-MATCH files, then apply for real and spot-check a sample. This scales far better than per-file manual edits for a 30+ file mechanical migration.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/084_fix_duplication_gate_scope_and_extensions_root/summaries/01_duplication-gate-scope-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bulk-migration", "regex-script", "dry-run", "markdown-bash-blocks", "session-id"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 9,
+    "phases_total": 9
   }
 }
