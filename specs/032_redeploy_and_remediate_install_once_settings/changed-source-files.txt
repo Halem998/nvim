@@ -1,0 +1,16 @@
+agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md
+agent-system/extensions/core/context/schemas/state-schema.json
+agent-system/extensions/core/manifest.json
+agent-system/extensions/core/scripts/skill-base.sh
+agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh
+agent-system/extensions/core/scripts/validate-state.sh
+agent-system/extensions/literature/commands/literature.md
+agent-system/extensions/literature/context/project/literature/patterns/shared-module-extraction-for-gate-checks.md
+agent-system/extensions/literature/manifest.json
+agent-system/extensions/literature/scripts/literature-convert.sh
+agent-system/extensions/literature/scripts/literature-discover.sh
+agent-system/extensions/literature/scripts/literature-normalize-authors.sh
+agent-system/extensions/literature/scripts/literature_quality_gate.py
+agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py
+agent-system/extensions/literature/scripts/tests/test-literature-convert.sh
+agent-system/extensions/literature/skills/skill-literature/SKILL.md

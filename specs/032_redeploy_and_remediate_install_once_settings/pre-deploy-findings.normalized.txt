@@ -1,0 +1,45 @@
+FINDING gate3 [core] FAIL: deployed script content drift (deployed != extension source): scripts/skill-base.sh
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'architecture/context-layers.md' line_count mismatch: declared 219, actual 221
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/batch-orchestration-guardrails.md' line_count mismatch: declared 737, actual 812
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/file-footprint-overlap.md' line_count mismatch: declared 194, actual 202
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/file-metadata-exchange.md' line_count mismatch: declared 305, actual 314
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/regeneration-is-manual-only.md' line_count mismatch: declared 210, actual 259
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/skill-postflight-flow.md' line_count mismatch: declared 126, actual 177
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'reference/orchestrator-critical-paths.json' line_count mismatch: declared 70, actual 74
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'schemas/state-schema.json' line_count mismatch: declared 262, actual 267
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'standards/postflight-tool-restrictions.md' line_count mismatch: declared 216, actual 219
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/literature-convert.sh
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/literature-discover.sh
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/literature-normalize-authors.sh
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/tests/generate-test-fixtures.py
+FINDING gate3 [literature] FAIL: deployed script content drift (deployed != extension source): scripts/tests/test-literature-convert.sh
+FINDING gate3 [literature] FAIL: Rule R: index-entries.json entry 'project/literature/domain/literature-index.md' line_count mismatch: declared 144, actual 117
+FINDING gate3 [project-wide] FAIL: Rule S: deployed context/contracts/return-meta-artifacts-template.md has no entry in .claude/context/index.json
+FINDING gate5 core: Content differs from source: context/patterns/regeneration-is-manual-only.md
+FINDING gate5 core: Content differs from source: scripts/skill-base.sh
+FINDING gate5 core: Missing scripts: scripts/tests/test-mint-dispatch-seq.sh
+FINDING gate5 literature: Content differs from source: commands/literature.md
+FINDING gate5 literature: Content differs from source: scripts/literature-convert.sh
+FINDING gate5 literature: Content differs from source: scripts/literature-discover.sh
+FINDING gate5 literature: Content differs from source: scripts/literature-normalize-authors.sh
+FINDING gate5 literature: Content differs from source: scripts/tests/generate-test-fixtures.py
+FINDING gate5 literature: Content differs from source: scripts/tests/test-literature-convert.sh
+FINDING gate5 literature: Content differs from source: skills/skill-literature/SKILL.md
+FINDING gate5 literature: Missing scripts: scripts/literature_quality_gate.py
+FINDING gate8     [FAIL] Case B: expected persisted .dispatch_seq_counter 3, got '1'
+FINDING gate8     [FAIL] Case C: expected persisted .dispatch_seq_counter 6, got '100'
+FINDING gate8     [FAIL] Case C: expected stdout 6 (guard wins over ambient=99), got '100'
+FINDING gate8     [FAIL] Case D: expected first subprocess stdout 11, got '1'
+FINDING gate8     [FAIL] Case D: expected second subprocess stdout 12, got '1'
+FINDING gate8     [FAIL] Case E: expected persisted .dispatch_seq_counter 38, got '37'
+FINDING gate8     [FAIL] Case E: expected stdout 38, got ''
+FINDING gate8     [FAIL] Case F: expected persisted .dispatch_seq_counter 1, got 'null'
+FINDING gate8     [FAIL] Case F: expected stdout 1, got ''
+FINDING gate8     [FAIL] fix-roundtrip: --fix run exited 1 (expected 0) -- see /tmp/tmp.K0O2cXjc2K/fix-apply.out
+FINDING gate8     [FAIL] fix-roundtrip: repaired file exited 1 on independent re-validation (expected 0) -- see /tmp/tmp.K0O2cXjc2K/fix-after.out
+FINDING gate8     [FAIL] single-source assertion: inline sess_$(date generation found outside lib/common.sh:
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-common-lib.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh
+FINDING gate8     [PASS] common_test_fail emits '[FAIL] <msg>'

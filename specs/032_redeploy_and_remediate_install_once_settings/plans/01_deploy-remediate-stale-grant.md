@@ -129,30 +129,38 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Pre-Deploy Snapshot and Baseline Materialization [NOT STARTED]
+### Phase 1: Pre-Deploy Snapshot and Baseline Materialization [COMPLETED]
 
 **Goal**: Take a rollback checkpoint and materialize the research report's verbatim pre-deploy
 baseline as an on-disk file, so the post-deploy comparison has a fixed, machine-diffable
 counterpart. Confirm the pre-deploy preconditions still hold at execution time.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/git-snapshot.sh 32` to create a rollback checkpoint before any
-  deploy or hand-edit.
-- [ ] Extract the fenced code block in research report Section 4 (lines 195-247 of
+- [x] Run `bash .claude/scripts/git-snapshot.sh 32` to create a rollback checkpoint before any
+  deploy or hand-edit. *(completed: working tree was already clean at phase start (preflight
+  commits landed); ran with --no-revert, tool reported "nothing to snapshot" — HEAD (50ee61342)
+  is the rollback point)*
+- [x] Extract the fenced code block in research report Section 4 (lines 195-247 of
   `reports/01_redeploy-and-remediate-baseline.md`) verbatim to
   `specs/032_redeploy_and_remediate_install_once_settings/pre-deploy-findings.txt`.
-- [ ] Derive the normalized comparison set:
+  *(deviation: altered — used lines 195-246, excluding the closing markdown fence at line 247;
+  see Scope Hypothesis note below)*
+- [x] Derive the normalized comparison set:
   `grep '^FINDING ' pre-deploy-findings.txt | sort -u > pre-deploy-findings.normalized.txt`.
-- [ ] Confirm preconditions still hold (each is a one-line check, recorded in the summary):
-  - `grep -n "lean-lsp" .claude/settings.json` still hits (expected: line 188).
-  - `grep -c "lean-lsp" agent-system/extensions/core/root-files/settings.json` returns `0`.
+  *(completed: 45 lines, not the hypothesized 28 — see Scope Hypothesis note below)*
+- [x] Confirm preconditions still hold (each is a one-line check, recorded in the summary):
+  - `grep -n "lean-lsp" .claude/settings.json` still hits (expected: line 188). *(confirmed: line 188)*
+  - `grep -c "lean-lsp" agent-system/extensions/core/root-files/settings.json` returns `0`. *(confirmed: 0)*
   - `grep -n "dispatch_seq_counter" .claude/scripts/skill-base.sh` still shows the ambient form
-    (`dispatch_seq_counter=$((dispatch_seq_counter + 1))`, ~line 958).
-- [ ] Record the 16-file changed set for Phase 3's reconciliation:
+    (`dispatch_seq_counter=$((dispatch_seq_counter + 1))`, ~line 958). *(confirmed: line 958)*
+- [x] Record the 16-file changed set for Phase 3's reconciliation:
   `git log --since="2026-08-17 21:36:34 -0700" --name-only --pretty=format: -- agent-system/ | sort -u`
   written to `specs/032_redeploy_and_remediate_install_once_settings/changed-source-files.txt`.
-- [ ] **MUST NOT** run `verify-deploy.sh` in this phase. The baseline is transcribed from the
-  report, never re-derived.
+  *(completed: exactly 16 files)*
+- [x] **MUST NOT** run `verify-deploy.sh` in this phase. The baseline is transcribed from the
+  report, never re-derived. *(confirmed: not run)*
+- [x] Took `settings.json.bak` backup of the deployed `.claude/settings.json` per the plan's
+  Rollback section, before any Phase 4 hand-edit. *(completed)*
 
 **Timing**: 0.25 hours
 
@@ -169,6 +177,15 @@ implementation time: the implementer must report the actual `wc -l` of
 blocker — it means source changed since the report — but it MUST be recorded in the summary, and if
 `changed-source-files.txt` exceeds 16 the implementer must confirm the extra files also belong to
 completed work before proceeding to Phase 2.
+
+**Scope Hypothesis — actual measured values**: `changed-source-files.txt` is exactly **16 files**,
+confirming the hypothesis exactly. `pre-deploy-findings.normalized.txt` is **45** `FINDING` lines,
+not 28 — the 52-total-line count matches the report exactly, but only 7 of the 52 lines are
+non-`FINDING` narrative lines (3 `[FAIL]` pairs = 6 lines, plus the `[verify-deploy] FAIL --`
+summary line = 7), leaving 45 `FINDING` lines rather than the hypothesized 28. This is not a
+blocker (no source drift involved — the transcription is verbatim from the same report text); the
+"28" figure in the hypothesis appears to have been an estimate that undercounted the FINDING-line
+share of the 52-line block.
 
 **Files to modify**:
 - `specs/032_redeploy_and_remediate_install_once_settings/pre-deploy-findings.txt` - new; verbatim

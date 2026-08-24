@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Pre-Deploy Snapshot and Baseline Materialization",
+  "started_at": "2026-08-24T21:20:00Z",
+  "last_updated": "2026-08-24T21:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run git-snapshot.sh 32 for rollback checkpoint", "status": "done", "files_touched": [], "note": "Working tree was already clean (preflight commits landed); git-snapshot.sh --no-revert reported 'nothing to snapshot' -- HEAD (50ee61342) is the rollback point"},
+    {"id": 2, "description": "Transcribe research report Section 4 verbatim to pre-deploy-findings.txt", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/pre-deploy-findings.txt"], "note": "Correct content range is lines 195-246 (52 lines), not 195-247 as plan text states -- line 247 is the closing markdown fence, not content. Confirmed 52 lines matches report's own stated line count."},
+    {"id": 3, "description": "Derive normalized comparison set pre-deploy-findings.normalized.txt", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/pre-deploy-findings.normalized.txt"], "note": "45 FINDING lines, not the plan's 28-line Scope Hypothesis estimate; recorded as scope deviation, not a blocker"},
+    {"id": 4, "description": "Confirm preconditions still hold (lean-lsp grant, source clean, ambient-increment form)", "status": "done", "files_touched": [], "note": "All 3 preconditions confirmed exactly as expected: lean-lsp at settings.json:188, source grep -c returns 0, ambient form at skill-base.sh:958"},
+    {"id": 5, "description": "Record 16-file changed set to changed-source-files.txt", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/changed-source-files.txt"], "note": "Exactly 16 files, matches report hypothesis"},
+    {"id": 6, "description": "Take settings.json.bak backup per Rollback section", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/settings.json.bak"], "note": "Copied .claude/settings.json (gitignored, install-once) to task dir before any hand-edit"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.2",
+      "description": "Extract the fenced code block in research report Section 4 (lines 195-247)",
+      "type": "altered",
+      "reason": "Plan's stated line range 195-247 includes the closing markdown fence at line 247; correct content-only range is 195-246 (52 lines), matching the report's own stated line count and avoiding a stray ``` in the baseline artifact.",
+      "annotation": "*(deviation: altered -- used lines 195-246, excluding the closing fence at 247)*"
+    }
+  ]
+}
