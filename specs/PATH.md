@@ -77,17 +77,23 @@ Your literature workflow is live and currently degraded in a way that produces *
 
 | # | Step | Task |
 |---|------|------|
-| 2.1 | Fix the writer/reader key mismatch: ingest writes `doc_id`, briefing reads `.id`, so ingested documents are invisible to the briefing. **Counts are in motion** (16 / 38 / 73 recorded at three moments while the index is repaired from another repo) — re-measure at implementation time; the shape is what is stable. | **77** |
+| 2.1 | Fix the **writer**: ingest writes `doc_id`, briefing reads `.id`. The invisible population is now **0** (was 16 → 38) — repaired out-of-band from the Literature repo — so the backfill half is done and only the writer defect is live. Task 77 gained a **fourth namespace**: `.literature.db`'s `chunks_data.doc_id` disagrees with the index on **49 documents** (32 searchable-but-unbriefed, 17 briefed-but-unsearchable). Normalizing ids without reconciling FTS trades one invisibility for another. | **77** |
 | 2.2 | Coverage marker counts only documents that resolved; it is structurally blind to the ones that did not. | **78** |
 | 2.3 | Index rebuild traverses with an unguarded recursive `find` — `.backups/` exists on disk today. | **80** |
 | 2.4 | Quality gate rejects formal notation: the binder exemption matches only single-character bound variables, so `λxy.Ryx` and `^x.Fx` score as corruption. Must **not** blind the gate to genuine `<sup>`-span collapse. | **92** |
 
-> **Why 2.1 matters concretely**: a `--lit` round in Theory silently missed 7 of 25 ingested
-> sources, **including both of your own manuscripts**, despite the work resting on the semantics
-> they develop. Not a research failure — a plumbing failure. Re-run that research after 2.1 lands.
+> **Why 2.1 mattered concretely** (historical, 2026-08-24): a `--lit` round in Theory silently
+> missed 7 of 25 ingested sources, **including both of your own manuscripts**, despite the work
+> resting on the semantics they develop. Both now resolve; a Theory briefing run resolves **37 of
+> 37** sub-index entries with zero skip warnings. The data was repaired, the writer was not.
 
-> **Duplicate to close**: Theory's tracker holds its own task for 2.1. It belongs here; close it
-> there rather than working it in a repo whose `.claude/` tree gets wiped on reload.
+> **The trap 2.1 must avoid**: the obvious fix — rename ingest-written ids to the curated long
+> form — was tried by hand and **broke search**. `--toc` returned `[]` for a document whose
+> briefing entry had just started resolving, because FTS keys on the bare id. Code reading did not
+> show this; running the command did. Keep the id FTS holds and add the parent entry under it.
+
+> **Duplicate closed**: Theory's tracker held its own task for 2.1; abandoned 2026-08-24
+> (`d18782f1`) as filed in the wrong repo.
 
 ---
 
@@ -138,17 +144,19 @@ Each item prevents one class from regrowing. Build the lint **before** migrating
 
 ## Stage 6 — Outside this repo
 
-Not tasks here. `~/Projects/Literature/` is tracked separately and had **123 uncommitted changes**
-against 3 commits since August 1.
+Not tasks here. `~/Projects/Literature/` is tracked separately. The commit backlog described
+here is **cleared** — the working tree is clean as of 2026-08-24.
 
-- Commit the good work — the re-converted `schultz-spivak-vasilakopoulou` directory (a genuine
-  upgrade: 45 chunks/103 KB → 99 chunks/1.05 MB with source PDF and clean prose, **not** data loss),
-  `FIND_SOURCES.md`, and the index additions. **Restore the missing `metadata.json` first.**
-- Already done from BimodalLogic: 69 dirs consolidated under `sources/`, 38 null-id entries
-  repaired (including both Jónsson & Tarski volumes, needed by that repo's open work),
-  `.literature.db` gitignored, FTS 22502 → 22661 chunks with no drop.
-- Remaining: prune 26 `index.json.bak*` files (9.3 MB), finish the `sources/` migration whose own
-  task is marked complete but is not.
+- **Done**: the re-converted `schultz-spivak-vasilakopoulou` directory (a genuine upgrade: 45
+  chunks/103 KB → 99 chunks/1.05 MB with source PDF and clean prose, **not** data loss),
+  `FIND_SOURCES.md`, and the index additions are committed. The 123-change backlog is gone.
+- **Done** from BimodalLogic: 69 dirs consolidated under `sources/`, 38 null-id entries repaired
+  (including both Jónsson & Tarski volumes, needed by that repo's open work), `.literature.db`
+  gitignored, FTS 22502 → 22661 chunks with no drop. All 399 index entries now carry `.id`.
+- **Done**: the 26 `index.json.bak*` files are pruned — none remain.
+- **Still open**: `metadata.json` is missing far more widely than one directory — only **90 of
+  206** `sources/` directories have one. `.backups/` is **95 MB** across four directories and holds
+  14 `chunks.json.bak` files; the corpus is clean only because of manual `.bak` renames (2.3).
 
 ---
 
@@ -158,10 +166,11 @@ against 3 commits since August 1.
    repo's `.claude/` tree is wiped on its next reload. Two were mis-filed elsewhere this week.
 2. **Propose, then apply, across repos.** A cross-repo agent committed directly into this tracker
    on 2026-08-24; the content was correct, the authorization was not its to give.
-3. **Verify by execution, not by reading.** Three confident claims were falsified today — a
+3. **Verify by execution, not by reading.** Four confident claims were falsified today — a
    phase count taken from `grep -c` that never asked how many phases existed, a silent-success
-   path disproved by running the script, and a JSON-on-stdout defect that was a merged `2>&1`.
-   Each was one command from being caught.
+   path disproved by running the script, a JSON-on-stdout defect that was a merged `2>&1`, and an
+   id repair that read as correct in both scripts yet broke `--toc` because a third store keyed the
+   same document differently. Each was one command from being caught.
 
 ---
 
@@ -175,4 +184,4 @@ against 3 commits since August 1.
 | 3 — token | 87, 88, 44, 89 (+62) | ☐ |
 | 4 — adoption | 90, 48, 50 | ☐ |
 | 5 — in flight | 28, 9, 79, 91 | ☐ |
-| 6 — Literature repo | *external* | ☐ |
+| 6 — Literature repo | *external* | partial — backlog, `.bak` prune and null-id repair done; `metadata.json` and `.backups/` open |
