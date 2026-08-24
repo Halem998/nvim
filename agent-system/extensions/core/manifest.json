@@ -190,6 +190,7 @@
       "tests/test-status-vocabulary.sh",
       "tests/test-validate-state.sh",
       "tests/test-postflight-marker-schema.sh",
+      "tests/test-subagent-postflight-marker.sh",
       "tests/test-reconcile-handoff-status.sh",
       "tests/test-resume-scan-nonconformance.sh",
       "tests/test-roadmap-items-producer.sh",

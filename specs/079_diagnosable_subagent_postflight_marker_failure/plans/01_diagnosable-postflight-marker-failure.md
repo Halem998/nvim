@@ -233,37 +233,37 @@ the schema in this phase or select an existing value, and record which was done.
 
 ---
 
-### Phase 3: Regression Suite for the Malformed-Marker Path [NOT STARTED]
+### Phase 3: Regression Suite for the Malformed-Marker Path [COMPLETED]
 
 **Goal**: Registered, subprocess-driven test coverage for every acceptance criterion that is
 mechanically checkable.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh`
+- [x] Create `agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh` *(completed)*
       following `test-guard-destructive-git.sh`'s structure: `SCRIPT_DIR`-relative hook path
       that resolves in both source-store and deployed layouts, `pass()`/`fail()`/`info()`
       helpers, `PASSED`/`FAILED` counters, `mktemp -d` fixtures with `trap cleanup EXIT`,
       exit 0 all-pass / exit 1 any-fail
-- [ ] Fixture helper that builds a scratch dir containing `specs/{NNN}_{slug}/.postflight-pending`
+- [x] Fixture helper that builds a scratch dir containing `specs/{NNN}_{slug}/.postflight-pending` *(completed)*
       with caller-supplied content, and runs the hook as a real subprocess with cwd set there
-- [ ] First case is a fixture self-check: assert the hook actually reaches the block branch for a
+- [x] First case is a fixture self-check: assert the hook actually reaches the block branch for a *(completed)*
       well-formed marker, so later cases cannot pass vacuously via the no-marker path
-- [ ] Case (a): well-formed marker with `.reason` present -> that reason passes through unchanged
-- [ ] Case (b): well-formed marker missing `.reason` -> `Postflight operations pending` (AC 2)
-- [ ] Case (c): non-JSON marker (key=value shaped, matching the live observation) -> stdout is
+- [x] Case (a): well-formed marker with `.reason` present -> that reason passes through unchanged *(completed)*
+- [x] Case (b): well-formed marker missing `.reason` -> `Postflight operations pending` (AC 2) *(completed)*
+- [x] Case (c): non-JSON marker (key=value shaped, matching the live observation) -> stdout is *(completed)*
       valid JSON, `.reason` is non-empty, contains the marker path, and states parse failure
       (AC 1)
-- [ ] Case (d): `.reason` containing a double quote, a backslash, and a literal newline ->
+- [x] Case (d): `.reason` containing a double quote, a backslash, and a literal newline -> *(completed)*
       stdout passes `jq empty` and `.reason` round-trips to the original string (AC 3)
-- [ ] Case (e): loop-guard interaction unchanged — with the guard file already at
+- [x] Case (e): loop-guard interaction unchanged — with the guard file already at *(completed)*
       `MAX_CONTINUATIONS`, a malformed marker still allows the stop (`{}`), confirming the
       fail-closed decision stays bounded
-- [ ] Companion case for `events-log-lifecycle.sh`: malformed marker plus a matching
+- [x] Companion case for `events-log-lifecycle.sh`: malformed marker plus a matching *(completed)*
       `specs/state.json` entry produces exactly one `deviation` event with a valid
       `session_id`; with no matching entry, no event and a clean `{}` exit (AC 4)
-- [ ] Register the suite in `agent-system/extensions/core/manifest.json` alongside the other
+- [x] Register the suite in `agent-system/extensions/core/manifest.json` alongside the other *(completed)*
       `tests/test-*.sh` entries, preserving the existing ordering convention
-- [ ] Ensure no task-number references appear anywhere in the test file or its comments
+- [x] Ensure no task-number references appear anywhere in the test file or its comments *(completed)*
 
 **Timing**: 1.0 hours
 

@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Regression Suite for the Malformed-Marker Path",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-subagent-postflight-marker.sh with 9 cases covering AC1-4 plus loop-guard and events companion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh"]},
+    {"id": 2, "description": "Register suite in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Confirm non-vacuity: cases c, d, and events companion fail against pre-fix hooks", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
