@@ -1315,7 +1315,7 @@
     {
       "project_number": 80,
       "project_name": "exclude_backups_from_literature_index_rebuild",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "literature",
       "title": "Stop the literature index rebuild from indexing backed-up chunk manifests",
@@ -1330,10 +1330,15 @@
           "path": "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_exclude-backups-from-index-rebuild.md",
           "type": "report",
           "summary": "Confirms the unguarded find at literature-build-index.sh:91, audits the live corpus/DB state, corrects the source_path-substring audit assumption, confirms the traversal survey, and grounds the four scope directions with codebase precedent for the planner."
+        },
+        {
+          "path": "specs/080_exclude_backups_from_literature_index_rebuild/plans/01_exclude-backups-index-rebuild.md",
+          "type": "plan",
+          "summary": ""
         }
       ],
       "created": "2026-08-20T22:40:33Z",
-      "last_updated": "2026-08-24T22:03:39Z",
+      "last_updated": "2026-08-24T22:12:31Z",
       "session_id": "sess_1787608215_ce9f8e_80"
     },
     {

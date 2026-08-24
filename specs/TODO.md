@@ -48,7 +48,7 @@ next_project_number: 97
 77 [NOT STARTED] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
   └─ 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
-80 [PLANNING] — literature-build-index.sh traverses the corpus with an unguarded 
+80 [PLANNED] — literature-build-index.sh traverses the corpus with an unguarded 
 92 [PLANNING] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
 
@@ -640,11 +640,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 80. Stop the literature index rebuild from indexing backed-up chunk manifests
 - **Effort**: 1-3 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [080_exclude_backups_from_literature_index_rebuild/reports/01_exclude-backups-from-index-rebuild.md]
+- **Plan**: [080_exclude_backups_from_literature_index_rebuild/plans/01_exclude-backups-index-rebuild.md]
 
 **Description**: literature-build-index.sh traverses the corpus with an unguarded recursive `find` and indexes chunk manifests inside ~/Projects/Literature/.backups/ as if they were live, silently inflating chunk counts and admitting STALE CHUNK CONTENT into the searchable FTS5 index. The safe re-ingestion practice — move the old chunk set aside rather than delete it — is exactly what triggers the bug.
 
