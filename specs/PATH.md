@@ -77,7 +77,7 @@ Your literature workflow is live and currently degraded in a way that produces *
 
 | # | Step | Task |
 |---|------|------|
-| 2.1 | Fix the writer/reader key mismatch: ingest writes `doc_id`, briefing reads `.id`. **73 vs 324 entries** — every ingested document is invisible to the briefing. | **77** |
+| 2.1 | Fix the writer/reader key mismatch: ingest writes `doc_id`, briefing reads `.id`, so ingested documents are invisible to the briefing. **Counts are in motion** (16 / 38 / 73 recorded at three moments while the index is repaired from another repo) — re-measure at implementation time; the shape is what is stable. | **77** |
 | 2.2 | Coverage marker counts only documents that resolved; it is structurally blind to the ones that did not. | **78** |
 | 2.3 | Index rebuild traverses with an unguarded recursive `find` — `.backups/` exists on disk today. | **80** |
 | 2.4 | Quality gate rejects formal notation: the binder exemption matches only single-character bound variables, so `λxy.Ryx` and `^x.Fx` score as corruption. Must **not** blind the gate to genuine `<sup>`-span collapse. | **92** |
