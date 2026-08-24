@@ -225,24 +225,24 @@ assertions must be re-derived from them.
 
 ---
 
-### Phase 2: Exclude Dot-Prefixed Directories from Manifest Discovery [NOT STARTED]
+### Phase 2: Exclude Dot-Prefixed Directories from Manifest Discovery [COMPLETED]
 
 **Goal**: Replace the unguarded traversal with a prune that skips dot-prefixed directories at any
 depth, without self-pruning a dot-named `--dir` target.
 
 **Tasks**:
-- [ ] Re-verify the traversal's current line number before editing (line numbers drift)
-- [ ] Replace the `mapfile -t manifests < <(find "$target_dir" -name "chunks.json" | sort)` line
+- [x] Re-verify the traversal's current line number before editing (line numbers drift) *(completed)*
+- [x] Replace the `mapfile -t manifests < <(find "$target_dir" -name "chunks.json" | sort)` line
       with the pruned form:
-      `find "$target_dir" -mindepth 1 \( -name '.*' -type d -prune \) -o \( -name 'chunks.json' -print \) | sort`
-- [ ] Add a comment above the traversal naming what the prune excludes and why (backups,
+      `find "$target_dir" -mindepth 1 \( -name '.*' -type d -prune \) -o \( -name 'chunks.json' -print \) | sort` *(completed)*
+- [x] Add a comment above the traversal naming what the prune excludes and why (backups,
       quarantine, staging, and VCS/tooling directories are not live corpus), and pointing at the
-      context file Phase 6 creates
-- [ ] Update the script's header comment block to state that dot-prefixed directories are excluded
-      from discovery and that a dot-named `--dir` target is still indexed when named explicitly
-- [ ] Log the excluded-manifest count when it is non-zero
+      context file Phase 6 creates *(completed)*
+- [x] Update the script's header comment block to state that dot-prefixed directories are excluded
+      from discovery and that a dot-named `--dir` target is still indexed when named explicitly *(completed)*
+- [x] Log the excluded-manifest count when it is non-zero
       (e.g. `Found N manifests (M skipped in non-corpus directories)`) so the exclusion is visible
-      rather than silent
+      rather than silent *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -261,12 +261,16 @@ pruned result equals the `doc_id` set of the bare result.
 
 **Verification**:
 - `bash -n` passes on the edited script
-- `shellcheck` reports no new findings relative to the pre-edit baseline
+- `shellcheck` reports no new findings relative to the pre-edit baseline *(deviation: skipped —
+  shellcheck is not installed in this environment; substituted `bash -n` plus the scratch
+  functional tests below)*
 - Bare `find` and pruned `find` outputs diff only by dot-component paths; `doc_id` sets are equal
+  *(confirmed: live-corpus diff is exactly the two `.chunks/` manifests under
+  `sources/thomas_2003_reactive/`, matching the Phase 1 audit)*
 - A scratch-directory run (`--dir <tmp>` with a planted `.backups/<label>/chunks.json`) indexes
-  only the live manifest
+  only the live manifest *(confirmed)*
 - Explicitly targeting a dot-named directory (`--dir ~/Projects/Literature/.backups` against a
-  scratch copy) still discovers its manifests — the `-mindepth 1` guard works
+  scratch copy) still discovers its manifests — the `-mindepth 1` guard works *(confirmed)*
 
 ---
 

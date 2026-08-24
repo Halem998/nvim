@@ -10,6 +10,12 @@
 # The database is ephemeral — rebuilt from chunk files on disk.
 # Uses atomic rename: builds .literature.db.tmp then renames to .literature.db
 #
+# Manifest discovery excludes dot-prefixed directories at any depth (backups, quarantine,
+# staging, and VCS/tooling directories are not live corpus) — see
+# context/project/literature/domain/corpus-directory-conventions.md for the full predicate.
+# A dot-named directory passed explicitly via --dir is still indexed: the prune only skips
+# dot-prefixed directories found *below* a target, never the target itself.
+#
 # Environment:
 #   LITERATURE_DIR  — Override global library path (default: ~/Projects/Literature)
 #
@@ -17,6 +23,7 @@
 #   0 — success
 #   1 — no chunk manifests found
 #   2 — sqlite3 not available
+#   3 — duplicate doc_id detected under --strict-duplicates
 
 set -euo pipefail
 
@@ -87,8 +94,16 @@ build_index_for_dir() {
     return 0
   fi
 
-  # Find all chunks.json manifests
-  mapfile -t manifests < <(find "$target_dir" -name "chunks.json" | sort)
+  # Find all chunks.json manifests, excluding dot-prefixed directories at any depth (backups,
+  # quarantine, staging — not live corpus; see
+  # context/project/literature/domain/corpus-directory-conventions.md). -mindepth 1 keeps the
+  # prune from testing the starting point itself, so an explicit --dir pointed directly at a
+  # dot-named directory (e.g. --dir ~/Projects/Literature/.backups) is still indexed.
+  mapfile -t manifests < <(
+    find "$target_dir" -mindepth 1 \( -name '.*' -type d -prune \) -o \( -name 'chunks.json' -print \) | sort
+  )
+  # Bare count (unguarded), for the skipped-count log line below
+  bare_manifest_count=$(find "$target_dir" -name "chunks.json" | wc -l)
 
   if [ ${#manifests[@]} -eq 0 ]; then
     log "No chunk manifests found in: $target_dir"
@@ -96,7 +111,12 @@ build_index_for_dir() {
     return 0
   fi
 
-  log "Found ${#manifests[@]} manifests in $target_dir"
+  skipped_count=$((bare_manifest_count - ${#manifests[@]}))
+  if [ "$skipped_count" -gt 0 ]; then
+    log "Found ${#manifests[@]} manifests in $target_dir ($skipped_count skipped in non-corpus directories)"
+  else
+    log "Found ${#manifests[@]} manifests in $target_dir"
+  fi
   log "Building index at $db_tmp..."
 
   # Remove old tmp file if exists

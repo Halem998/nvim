@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Exclude Dot-Prefixed Directories from Manifest Discovery",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Pruned traversal, header, comment, skipped-count log", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-build-index.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.verification",
+      "description": "shellcheck reports no new findings relative to the pre-edit baseline",
+      "type": "skipped",
+      "reason": "shellcheck is not installed in this environment; substituted bash -n plus live scratch-directory functional tests (dot-prefix prune, nested .chunks/ prune, explicit dot-named --dir target) which all passed",
+      "annotation": "*(deviation: skipped — shellcheck unavailable; substituted bash -n + scratch functional tests)*"
+    }
+  ]
+}
