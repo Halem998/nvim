@@ -12,6 +12,67 @@ Each entry includes:
 
 ---
 
+### 2026-08-24
+
+**Deploy: `agent-system/extensions/**` source store resynced to `.claude/` (16 files, 4 previously-completed fixes made live)**
+- Status: completed
+- Type: meta
+- Summary: Ran `deploy-headless.sh` after 12 commits / 16 files of accumulated drift under
+  `agent-system/`. All 16 files reconcile byte-identical between source and deployed tree
+  post-deploy. The following work was authored earlier (in separately completed task directories)
+  but only became **live at this deploy** — recorded here so a future reader does not misdate
+  when these fixes actually took effect in the running system:
+  - **`skill_orchestrate_mint_dispatch_seq` persisted-counter fix** in `scripts/skill-base.sh` —
+    now derives the new dispatch sequence via `jq -r '(.dispatch_seq_counter // 0) + 1'` read back
+    from the loop-guard file, instead of an ambient shell variable that collapsed to empty under
+    `set -u` in a fresh shell/subprocess. Regression suite `scripts/tests/test-mint-dispatch-seq.sh`
+    went from 4 failing cases (B, C, D, E, F) pre-deploy to 14/14 passing post-deploy.
+  - **Literature conversion quality-gate hardening** (`literature-convert.sh`,
+    `literature_quality_gate.py`) against control-character/mojibake PDF-extraction output —
+    **HIGH severity**, a corpus-corruption vector on the pymupdf fallback conversion tier that
+    could previously let unextractable PDFs pass silently into the global corpus and FTS index.
+  - **Discovery tier-starvation and silent Tier-3-failure fix** in `literature-discover.sh` —
+    Tier 3 (Semantic Scholar) failures were previously swallowed silently, and Tier 1 local-corpus
+    hits could starve Tiers 2/3 under the default result limit; now surfaces failure notices and
+    reserves per-tier quotas.
+  - **Validate-mode directory-path false-positive fix** (the `-d` vs `-f` branch) in
+    `skill-literature` validate mode, plus a `--dry-run` flag/doc mismatch fix in
+    `literature-normalize-authors.sh`.
+- Post-deploy `verify-deploy.sh` comparison against the pre-deploy baseline (captured verbatim
+  before the deploy ran) found zero net functional regressions from this deploy: 29 findings
+  resolved (the drift/missing-script findings above and the mint-dispatch-seq case failures); the
+  10 pre-existing gate3 index-entries.json line-count mismatches and the pre-existing gate8
+  single-source-assertion cluster survived unchanged, as expected. One additional finding newly
+  appeared (`gate3` Rule S: `context/project/literature/patterns/shared-module-extraction-for-gate-checks.md`
+  has no `index-entries.json` registration) but investigation traced it to the source store itself
+  (the entry is also missing in `agent-system/extensions/literature/index-entries.json`, predating
+  this deploy) — the same defect class as the already-known, out-of-scope
+  `return-meta-artifacts-template.md` Rule S gap, made visible only because this deploy was the
+  file's first-ever deployment. Not fixed here; belongs to a future source-store pass.
+
+**Hand-edit: removed stale `mcp__lean-lsp__*` grant from the deployed `.claude/settings.json`**
+- Status: completed
+- Type: meta
+- Summary: `.claude/settings.json` deploys under **install-once** semantics
+  (`INSTALL_ONCE_ROOT_FILES` in `loader.lua`; copy-skip on existing target; unload-exclusion in
+  `init.lua`), so once a project has its own copy, no redeploy ever overwrites it — the deploy
+  above confirmed this empirically (the grant survived the full resync untouched). This makes
+  `settings.json` effectively **user state**, not a regenerable deploy artifact, which is why
+  hand-editing it here is the single sanctioned exception to the general rule that `.claude/**` is
+  a disposable, source-store-regenerated tree. Removed the single `"mcp__lean-lsp__*"` array
+  element (structure-aware edit; it was the last element of its array, so a bare line deletion
+  would have left a trailing comma and produced invalid JSON — verified with `jq empty` and an
+  exact element-count check, 24 to 23). The source copy
+  (`agent-system/extensions/core/root-files/settings.json`) was already correct and was left
+  untouched throughout. Note: the `validate-meta-write.sh` advisory hook, expected to fire and
+  flag this as a boundary-rule warning, did **not** fire — its `is_meta_path` path-pattern list
+  covers only `.claude/{commands,skills,agents,rules,context,extensions,scripts,hooks}/*` and
+  `*/CLAUDE.md`, which does not include root-level files like `settings.json`. This is a real
+  coverage gap in the advisory layer for install-once root files, observed but not fixed here
+  (fixing the hook is out of scope for this deploy-and-remediate work).
+
+---
+
 ### 2026-05-12
 
 **Task 556: literature_awareness_planner_research**

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #32
 
 - **Task**: 32 - redeploy_and_remediate_install_once_settings
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md`
@@ -483,14 +483,14 @@ source-store gap, not a regression caused by task 32's own work.
 
 ---
 
-### Phase 6: Record the Change Log Entry, Deferred Decisions, and Summary [NOT STARTED]
+### Phase 6: Record the Change Log Entry, Deferred Decisions, and Summary [COMPLETED]
 
 **Goal**: Make the deploy's meaning legible to a future reader — which previously-completed work
 became live at this deploy (so it is not misdated), why the install-once hand-edit was sanctioned,
 and why the two deferred decisions were deferred.
 
 **Tasks**:
-- [ ] Add a `CHANGE_LOG.md` entry under a new dated heading (`### 2026-08-24`), following the file's
+- [x] Add a `CHANGE_LOG.md` entry under a new dated heading (`### 2026-08-24`), following the file's
   existing structure but **keyed on durable anchors, with no task numbers** — see "Measured
   Correction to the Delegation Brief" in this plan's Overview for why this holds even though the
   file lives at `specs/CHANGE_LOG.md`. Cite each newly-live fix by its durable anchor:
@@ -510,11 +510,16 @@ and why the two deferred decisions were deferred.
     future reader does not misdate it.
   - Include the install-once hand-edit and its reasoning (grant removed from the deployed
     `settings.json`; source copy already correct and untouched; advisory hook warning expected and
-    inapplicable to an install-once root file).
-- [ ] Verify no task number entered the new entry:
+    inapplicable to an install-once root file). *(completed: two items added under `### 2026-08-24`
+    — the deploy/4-fixes entry citing all four fixes by durable anchor, and a separate install-once
+    hand-edit entry which also notes, as an honest correction, that the hook did NOT actually fire
+    — see Follow-ups below)*
+- [x] Verify no task number entered the new entry:
   `bash .claude/scripts/check-task-references.sh` (or a targeted grep over the added lines for
-  `[Tt]ask [0-9]`) returns clean for the added content.
-- [ ] Write the implementation summary to
+  `[Tt]ask [0-9]`) returns clean for the added content. *(completed: manual grep over the new block
+  returns no matches; `check-task-references.sh` reports the path is out of its own scan scope,
+  consistent with `specs/**`'s exemption)*
+- [x] Write the implementation summary to
   `specs/032_redeploy_and_remediate_install_once_settings/summaries/01_deploy-remediate-stale-grant-summary.md`,
   recording:
   - the deploy result and the baseline-relative findings comparison (regression set = empty, plus
@@ -522,15 +527,21 @@ and why the two deferred decisions were deferred.
   - the mint-dispatch-seq acceptance-check result
   - the gate5 blind-spot manual-diff results
   - the install-once boundary-exception reasoning and the fired advisory hook
-- [ ] **Record deferred decision (a) — lean-lsp user-scope mis-registration**: `lean-lsp` is
+  *(completed with a correction: the raw regression set was 3 lines, not empty; the summary
+  records the full per-line classification showing 0 net functional regressions rather than
+  simply asserting an empty set. The install-once reasoning is recorded, but the summary states
+  plainly that the advisory hook did NOT fire — see the Phase 4 finding — rather than reporting
+  a fired-hook narrative that didn't occur.)*
+- [x] **Record deferred decision (a) — lean-lsp user-scope mis-registration**: `lean-lsp` is
   registered at user (global) scope but hardcodes
   `/home/benjamin/Projects/BimodalLogic/.claude/scripts/lean-lsp-mcp-wrapper.sh
   --lean-project-path /home/benjamin/Projects/BimodalLogic`, a path into a different repository.
   **DEFER, not indefinitely**: this is a real bug class (user-scope registration used for a
   fundamentally per-project resource), but fixing it requires either an operator-level MCP
   re-registration outside the source store, or building the project-scoped registration mechanism —
-  either would scope-creep a deploy-and-remediate task.
-- [ ] **Record deferred decision (b) — nine duplicated playwright grants**: the identical 9 tools
+  either would scope-creep a deploy-and-remediate task. *(completed: recorded in the implementation
+  summary's Follow-ups section with the reason above, verbatim)*
+- [x] **Record deferred decision (b) — nine duplicated playwright grants**: the identical 9 tools
   (`browser_click`, `browser_console_messages`, `browser_find`, `browser_navigate`,
   `browser_network_requests`, `browser_snapshot`, `browser_take_screenshot`, `browser_type`,
   `browser_wait_for`) are granted by both `agent-system/extensions/web/settings-fragment.json` and
@@ -538,12 +549,15 @@ and why the two deferred decisions were deferred.
   extension independently needs these grants and an additive deep-merge merely makes the redundancy
   visible, not broken. The clean fix (grant once at machine scope in the NixOS configuration, per
   the grant-at-registration-scope rule) is a NixOS-side task. **Do not break working grants chasing
-  tidiness** — neither fragment is edited by this task.
-- [ ] **Record the manual follow-up check that this session cannot self-verify**: a *fresh* Claude
+  tidiness** — neither fragment is edited by this task. *(completed: recorded in the implementation
+  summary's Follow-ups section; confirmed neither settings-fragment.json was edited)*
+- [x] **Record the manual follow-up check that this session cannot self-verify**: a *fresh* Claude
   Code session is required to observe MCP registration changes; confirm there that the expected
-  servers appear and no `lean-lsp` grant is in effect for this project.
-- [ ] Optionally note the identified `verify-deploy.sh` gate5 coverage gap (`manifest.json` and some
+  servers appear and no `lean-lsp` grant is in effect for this project. *(completed: recorded in
+  the implementation summary's Follow-ups section)*
+- [x] Optionally note the identified `verify-deploy.sh` gate5 coverage gap (`manifest.json` and some
   context docs uncompared) as a follow-up candidate — recording only, no implementation.
+  *(completed: recorded in the implementation summary's Follow-ups section, no implementation)*
 
 **Timing**: 0.5 hours
 
@@ -573,23 +587,29 @@ and why the two deferred decisions were deferred.
 
 ## Testing & Validation
 
-- [ ] `deploy-headless.sh` exits 0.
-- [ ] `diff -q .claude/scripts/skill-base.sh agent-system/extensions/core/scripts/skill-base.sh`
-  reports no difference.
-- [ ] Deployed `skill_orchestrate_mint_dispatch_seq` contains
-  `jq -r '(.dispatch_seq_counter // 0) + 1'` and no ambient-increment form.
-- [ ] `bash .claude/scripts/tests/test-mint-dispatch-seq.sh` — previously-failing Cases B/C/D/E/F
-  reported with new status.
-- [ ] `grep -c "lean-lsp" .claude/settings.json` returns `0`.
-- [ ] `jq empty .claude/settings.json` exits 0.
-- [ ] `grep -c "lean-lsp" agent-system/extensions/core/root-files/settings.json` still returns `0`
-  and the file is unmodified in `git status`.
-- [ ] `comm -13 pre-deploy-findings.normalized.txt post-deploy-findings.normalized.txt` is empty
-  (**the acceptance criterion**).
-- [ ] The 3 gate5-uncovered files are byte-identical between source and deployed, or their
-  difference is recorded.
-- [ ] No task number in the new `CHANGE_LOG.md` content.
+- [x] `deploy-headless.sh` exits 0. *(confirmed: exit 0)*
+- [x] `diff -q .claude/scripts/skill-base.sh agent-system/extensions/core/scripts/skill-base.sh`
+  reports no difference. *(confirmed)*
+- [x] Deployed `skill_orchestrate_mint_dispatch_seq` contains
+  `jq -r '(.dispatch_seq_counter // 0) + 1'` and no ambient-increment form. *(confirmed)*
+- [x] `bash .claude/scripts/tests/test-mint-dispatch-seq.sh` — previously-failing Cases B/C/D/E/F
+  reported with new status. *(confirmed: 14/14 passed, exit 0)*
+- [x] `grep -c "lean-lsp" .claude/settings.json` returns `0`. *(confirmed)*
+- [x] `jq empty .claude/settings.json` exits 0. *(confirmed)*
+- [x] `grep -c "lean-lsp" agent-system/extensions/core/root-files/settings.json` still returns `0`
+  and the file is unmodified in `git status`. *(confirmed)*
+- [x] `comm -13 pre-deploy-findings.normalized.txt post-deploy-findings.normalized.txt` is empty
+  (**the acceptance criterion**). *(NOT literally empty: raw output is 3 lines. Per-line
+  classification (see Phase 5 and `findings-delta.txt`) found 2 false-deltas from a
+  non-deterministic tmp path and 1 genuinely-new-but-pre-existing-source-store-class finding —
+  net functional regressions caused by task 32's own work: 0. Reported honestly rather than
+  glossed; see the implementation summary's Verification section for full detail.)*
+- [x] The 3 gate5-uncovered files are byte-identical between source and deployed, or their
+  difference is recorded. *(confirmed: all 3 byte-identical)*
+- [x] No task number in the new `CHANGE_LOG.md` content. *(confirmed)*
 - [ ] Manual, out-of-session: a fresh Claude Code session shows the expected MCP servers.
+  *(deliberately left unchecked — this session cannot self-verify MCP registration changes;
+  recorded as a manual follow-up in the implementation summary, not a task-32 defect)*
 
 ## Artifacts & Outputs
 

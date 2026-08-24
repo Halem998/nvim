@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Record the Change Log Entry, Deferred Decisions, and Summary",
+  "started_at": "2026-08-24T22:26:00Z",
+  "last_updated": "2026-08-24T22:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add CHANGE_LOG.md entry under 2026-08-24 heading, durable anchors, no task numbers", "status": "done", "files_touched": ["specs/CHANGE_LOG.md"], "note": "Two items added: the deploy/4-fixes entry and the install-once hand-edit entry, both keyed on durable anchors (filenames, function names, gate names)"},
+    {"id": 2, "description": "Verify no task number entered the new entry", "status": "done", "files_touched": [], "note": "Manual grep -inE '\\btask[[:space:]]+[0-9]' over the new block: no matches. check-task-references.sh reports the path is out of its own scope (specs/CHANGE_LOG.md is inside specs/**, consistent with the rule's exemption)."},
+    {"id": 3, "description": "Write implementation summary", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/summaries/01_deploy-remediate-stale-grant-summary.md"], "note": "Records deploy result, baseline-relative findings comparison (0 net functional regressions, full classification), mint-dispatch-seq check, gate5 blind-spot diffs, install-once boundary reasoning and the hook-did-not-fire finding, both deferred decisions, and the fresh-session manual follow-up"},
+    {"id": 4, "description": "Record deferred decision (a) -- lean-lsp user-scope mis-registration", "status": "done", "files_touched": [], "note": "recorded in CHANGE_LOG.md is NOT applicable (deferred decisions are recorded in the summary per plan instruction, not CHANGE_LOG) -- recorded in summary Follow-ups with full reasoning"},
+    {"id": 5, "description": "Record deferred decision (b) -- nine duplicated playwright grants", "status": "done", "files_touched": [], "note": "recorded in summary Follow-ups with full reasoning; neither settings-fragment.json edited"},
+    {"id": 6, "description": "Record fresh-session manual follow-up check", "status": "done", "files_touched": [], "note": "recorded in summary Follow-ups"},
+    {"id": 7, "description": "Optionally note verify-deploy.sh gate5 coverage gap as follow-up candidate", "status": "done", "files_touched": [], "note": "recorded in summary Follow-ups, no implementation"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
