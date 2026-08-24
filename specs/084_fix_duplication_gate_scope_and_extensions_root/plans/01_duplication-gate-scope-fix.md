@@ -1,7 +1,7 @@
 # Implementation Plan: Fix Duplication Gate Scope and EXTENSIONS_ROOT
 
 - **Task**: 84 - fix_duplication_gate_scope_and_extensions_root
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/084_fix_duplication_gate_scope_and_extensions_root/reports/01_duplication-gate-scope-and-extensions-root.md`
@@ -448,32 +448,46 @@ before starting; migrate what that returns.
 
 ---
 
-### Phase 9: Green-Gate Verification, Acceptance Test, and Error Closure [NOT STARTED]
+### Phase 9: Green-Gate Verification, Acceptance Test, and Error Closure [COMPLETED]
 
 **Goal**: The gate passes identically from both run locations, provably fails on a reintroduced
 offender, and `err_1787022038113_c3VPTR` is closed with evidence.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-common-lib.sh` — expect
-      `Failed: 0`.
-- [ ] Redeploy from source (`bash .claude/scripts/deploy-headless.sh` or the project's standard
-      deploy path) so `.claude/` reflects the migrated source store.
-- [ ] Run `bash .claude/scripts/tests/test-common-lib.sh` — expect `Failed: 0` and an offender set
-      identical (empty) to the source-store run.
-- [ ] Acceptance test: temporarily plant an inline
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-common-lib.sh` — expect
+      `Failed: 0`. *(completed: 30 passed, 0 failed)*
+- [x] Redeploy from source (`bash .claude/scripts/deploy-headless.sh` or the project's standard
+      deploy path) so `.claude/` reflects the migrated source store. *(completed: non-destructive
+      resync, 6 extensions resynced)*
+- [x] Run `bash .claude/scripts/tests/test-common-lib.sh` — expect `Failed: 0` and an offender set
+      identical (empty) to the source-store run. *(completed: 30 passed, 0 failed, mode deployed,
+      scan root .claude)*
+- [x] Acceptance test: temporarily plant an inline
       `sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')` into a real
       `agent-system/extensions/core/commands/*.md`, confirm the gate FAILS and names that file,
       then revert the plant and confirm the gate returns to green. Record the failing output as
-      closing evidence. Do not commit the planted state.
-- [ ] Run the full suite runner `bash agent-system/extensions/core/scripts/tests/run-all.sh` to
-      confirm no sibling suite regressed.
-- [ ] Confirm the 12 illustrative-prose sites are still present and untouched
+      closing evidence. Do not commit the planted state. *(completed: planted in review.md, gate
+      reported `[FAIL] single-source assertion ... agent-system/extensions/core/commands/review.md`,
+      reverted via backup restore, git diff --stat showed no change, gate returned to 30
+      passed / 0 failed)*
+- [x] Run the full suite runner `bash agent-system/extensions/core/scripts/tests/run-all.sh` to
+      confirm no sibling suite regressed. *(completed: test-common-lib.sh passes; the run's only
+      2 failures are test-skill-base-lifecycle.sh and test-validate-return-meta.sh, both
+      pre-existing and unrelated to this task's scope)*
+- [x] Confirm the 12 illustrative-prose sites are still present and untouched
       (`grep -rl 'sess_\$(date' agent-system/extensions/core/{context,rules}` returns 12 files).
-- [ ] Update `specs/errors.json` entry `err_1787022038113_c3VPTR`: set `fix_status` to `"fixed"`,
+      *(completed: confirmed, exactly 12)*
+- [x] Update `specs/errors.json` entry `err_1787022038113_c3VPTR`: set `fix_status` to `"fixed"`,
       add `fixed_date` (ISO8601 UTC) and `fix_task` (84), matching the schema used by the five
       already-closed entries. Append a short closing-evidence note recording that both run
       locations now resolve to their intended roots and report an identical empty offender set.
-- [ ] Verify `specs/errors.json` remains valid JSON (`jq . specs/errors.json > /dev/null`).
+      *(deviation: altered — closed via the sanctioned `errors-append.sh update` CLI, which sets
+      only `fix_status`/`fixed_date`/`fix_task` per the item schema's documented fields; no
+      already-closed entry carries a freeform evidence field and the CLI has no such flag, so the
+      closing-evidence narrative is recorded here in the plan and in the implementation summary
+      instead of as a new JSON field)*
+- [x] Verify `specs/errors.json` remains valid JSON (`jq . specs/errors.json > /dev/null`).
+      *(completed)*
 
 **Timing**: 1.25 hours
 

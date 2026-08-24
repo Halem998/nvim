@@ -288,7 +288,9 @@
         "suggested_action": "Anchor EXTENSIONS_ROOT to the extension tree explicitly rather than by relative depth from SCRIPT_DIR, so source and deployed runs agree; the depth that is correct for the source layout is wrong for the deployed layout",
         "auto_recoverable": false
       },
-      "fix_status": "unfixed"
+      "fix_status": "fixed",
+      "fixed_date": "2026-08-24T22:27:10.172Z",
+      "fix_task": 84
     },
     {
       "id": "err_1787026891137_U2A3A4",
