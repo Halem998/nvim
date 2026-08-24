@@ -27,7 +27,7 @@ next_project_number: 94
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
-32 [RESEARCHED] — === REVISED 2026-08-24 (refactor survey) ===
+32 [PLANNED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 9 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 28 [IMPLEMENTING] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
@@ -837,6 +837,82 @@ and both of the repo owner's own manuscripts, which bore directly on the round's
 claim. Silent corpus invisibility therefore does not merely degrade a briefing -- it measurably
 changes which sources a research round draws on, and the failure is only caught if a human reads
 stderr. This strengthens the case for the companion coverage-marker task's assertion two.
+
+=== ADDENDUM 2026-08-24 (third observation, Logos/Theory): A FOURTH NAMESPACE, AND THE MIGRATION HALF IS ALREADY DONE ===
+
+Three facts change the shape of this task. All were measured by execution against the live
+system, not read from source.
+
+(1) NEW BREAKAGE -- THE FTS DATABASE IS A FOURTH ID NAMESPACE, AND IT DISAGREES WITH THE INDEX.
+
+This task enumerates .id, .doc_id and .zotero_key, plus three index FILES. It does not account for
+~/Projects/Literature/.literature.db, table chunks_data, column doc_id -- the namespace that
+literature-search.sh and its --toc and --read modes all key on. Measured:
+
+    FTS distinct doc_id                                                204
+    global-index parent .id (parent_doc null or empty)                 189
+    present in both                                                    172
+    FTS-only  (searchable; no parent entry -> invisible to briefing)     32
+    index-only (in briefing; --toc and --read return nothing)            17
+
+The divergences are systematic, not incidental. Sample pairs naming the same work:
+    blackburn_2002                        (FTS)  vs  blackburn_2002_book                (index)
+    courcoubetis_1992                     (FTS)  vs  courcoubetis_1992_memory_efficient (index)
+    vardi_1996                            (FTS)  vs  vardi_1996_automata_ltl            (index)
+    kupferman_vardi_2001_weak_alternating  -- index-only, no FTS chunks under that id
+
+WHY THIS BEARS DIRECTLY ON SCOPE (b) AND ACCEPTANCE CRITERION 1: normalizing the writer to the
+curated schema is safe ONLY IF the id it writes AGREES with chunks_data.doc_id. If normalization
+renames ids to the curated long form, every renamed document keeps its briefing entry and LOSES
+its search path. This was demonstrated by hand on 2026-08-24 while repairing two Logos/Theory
+sub-index entries: renaming a sub-index doc_id from vardi_wolper_1986 to the curated
+vardi_wolper_1986_automata_verification made the briefing resolve it AND made
+`literature-search.sh --toc` return []. The defect was invisible to code reading and was caught
+only by running the command. The repair that works is the opposite direction -- keep the bare id
+that FTS already holds, and ADD a parent entry to the global index under that same id.
+
+Note that the existing "ADDITIONAL AFFECTED READERS" bullet on literature-search.sh concerns the
+hardcoded "sources/" PATH PREFIX, and asks only to "confirm FTS5 index coverage of stub docs" --
+a coverage question. The namespace-AGREEMENT question is a different one and was never asked.
+Its answer is 49 disagreeing documents.
+
+NEW ACCEPTANCE CRITERION 7: the id under which a document is registered in the global index MUST
+equal its chunks_data.doc_id in .literature.db. Add a check that compares the two sets and fails
+on divergence -- the natural home is the /literature --validate schema-conformance check already
+required by acceptance criterion 5. Migrating the search path in lockstep is an acceptable
+alternative, but the choice must be made explicitly; do not leave the two namespaces to drift.
+
+(2) THE MIGRATION HALF -- SCOPE (c) AND ACCEPTANCE CRITERION 2 -- IS ALREADY DONE, OUT OF BAND.
+
+    jq '[.entries[] | select(.id == null)] | length'   =>   0        (was 16, then 38)
+    total entries 399; 73 still carry .doc_id, and ALL of those also carry .id
+
+Repaired by Literature repo commits 782ca166 ("migrate 17 ingest-schema records to the curated
+schema") and a1e74586 ("consolidate all sources under sources/, repair 38 broken index entries").
+The invisible population is now ZERO, and that repo's working tree is clean.
+
+Consequence for scope: do NOT build a backfill for the existing population -- there is nothing
+left to backfill. Re-measure at implementation time; if the count is still 0, acceptance
+criterion 2 is satisfied by inspection and this task reduces to the WRITER defect plus the new
+criterion 7. The writer is untouched and remains live -- literature-ingest.sh:315 still emits
+"doc_id" -- so the next ingest recreates the class. That is now the whole of the live problem.
+
+(3) PARENT/CHILD GRANULARITY IS AMBIGUOUS AND MUST BE DECIDED, NOT INHERITED.
+
+The canonical shape described above says "separate child entries per chunk linked by parent_doc".
+The corpus does not honour a single granularity. baier_katoen_2008 registers 12 PART children
+(Baier_Katoen_2008_partNN.md, roughly 229 KB each) while FTS holds 1263 CHUNK rows for the same
+document. The briefing therefore reports "12 chunk(s), ~590624 tokens" for a document that --toc
+reports as 1263 chunks. Both reading paths function, but the count is meaningless and an agent
+trusting "12 chunks" will attempt to Read a 229 KB file. Normalization must pick a granularity,
+or carry both explicitly in distinct fields, rather than inheriting whichever the writer produced.
+
+CORRECTION TO THE SECOND-OBSERVATION EVIDENCE ABOVE: the "7 of 25 uncited, including both of the
+repo owner's manuscripts" measurement is now HISTORICAL. Both manuscripts
+(brast-mckie_2026_construction-possible-worlds and brast-mckie_2026_counterfactual-worlds)
+resolve today, and a Logos/Theory briefing run on 2026-08-24 resolved 37 of 37 sub-index entries
+with zero skip warnings, after the two id repairs described in (1). The SHAPE of the defect is
+unchanged and the writer is unfixed; only the data population was repaired.
 
 ---
 
@@ -1817,11 +1893,12 @@ ADDITIONAL ACCEPTANCE CRITERIA:
 ---
 
 ### 32. Redeploy and remediate install once settings
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md]
+- **Plan**: [032_redeploy_and_remediate_install_once_settings/plans/01_deploy-remediate-stale-grant.md]
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 PREMISE CORRECTION, AND A LARGE PRIORITY INCREASE. This task is now the single most important item in the backlog.

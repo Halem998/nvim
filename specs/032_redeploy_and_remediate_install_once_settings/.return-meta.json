@@ -1,39 +1,28 @@
 {
-  "status": "researched",
-  "task_number": 32,
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "session_id": "sess_1787605165_f00a53",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 32,
+  "task_type": "meta",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md",
-      "summary": "Measured deploy-drift state (44 commits / 16 files since deploy, 11 gate5 findings across 8 script-level + 3 doc-level items), confirmed all three description premises, identified the four completed tasks that become live at this deploy (mint-dispatch-seq fix, three literature fixes incl. HIGH-severity corpus-corruption gate), captured a verbatim PRE-deploy verify-deploy.sh --findings baseline, assessed both deferred decisions as DEFER with reasons, and found deploy risk low since only agent-system/ changes matter and all trace to completed tasks."
+      "type": "plan",
+      "path": "specs/032_redeploy_and_remediate_install_once_settings/plans/01_deploy-remediate-stale-grant.md",
+      "summary": "Six-phase plan to deploy the source store, hand-remove the stale install-once mcp__lean-lsp__* grant, and verify baseline-relatively against the pre-deploy findings set."
     }
   ],
-  "findings_count": 6,
+  "phase_count": 6,
+  "estimated_hours": 3,
+  "dependency_waves": [[1], [2], [3, 4], [5], [6]],
   "memory_candidates": [
     {
-      "content": "verify-deploy.sh --findings --quiet is the authoritative pre/post deploy drift baseline; its gate5 'deployed vs source' check does NOT cover manifest.json files or all context-pattern docs, so a clean gate5 pass does not prove those files deployed correctly -- confirm with a direct diff -q by hand for manifest.json and pattern docs specifically.",
-      "category": "PATTERN",
-      "source_artifact": "specs/032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy", "gate5", "deploy-drift", "manifest.json", "source-store"]
-    },
-    {
-      "content": "When measuring 'commits/files since last deploy', use the batch mtime cluster of deployed .claude/ files (find .claude -type f -printf '%T@ %p\\n' | sort -rn, excluding tmp/) as the true deploy timestamp, not a rounded '7 days ago'. Individually-resynced files (e.g. via picker Ctrl-l) carry a distinct newer mtime and are byte-identical to source -- exclude them from the drift set even though git shows them as recently changed.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["deploy-timestamp", "mtime", "drift-measurement", "install-once", "resync"]
-    },
-    {
-      "content": "deploy-headless.sh deploys only from agent-system/extensions/** (the source store), never from specs/ (task-management). When assessing deploy risk from 'N commits since last deploy', filter to commits touching agent-system/ only -- repo-wide commit counts vastly overstate deploy-relevant risk since specs/ churn (TODO.md, state.json, task dirs) dominates commit volume but is deploy-irrelevant.",
+      "content": "Install-once deploy artifacts invert the source-store-deploy boundary rule. In this repo, .claude/ is normally a disposable regenerable deploy artifact, so hand-edits there are wiped by the next deploy and the source-store-boundary rule forbids them. But files listed in loader.lua's INSTALL_ONCE_ROOT_FILES (settings.json, settings.local.json) are copied only when absent and are excluded from unload deletion, which makes them effectively user state: a redeploy will NEVER overwrite them. Consequence: a stale entry in an install-once file is structurally unfixable by redeploying and MUST be hand-edited in the deployed tree, even though the advisory source-store-boundary hook will fire. The correct response is to record the install-once reasoning in writing (summary and change log), not to silence the hook by editing the already-correct source copy. Corollary for rollback planning: install-once files are the one part of .claude/ that a re-deploy cannot restore, so they need an explicit backup before any hand-edit.",
       "category": "INSIGHT",
-      "source_artifact": "specs/032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["deploy-headless", "source-store", "commit-scoping", "deploy-risk"]
+      "source_artifact": "specs/032_redeploy_and_remediate_install_once_settings/plans/01_deploy-remediate-stale-grant.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["install-once", "source-store-boundary", "deploy-artifact", "settings.json", "loader.lua", "hand-edit-exception"]
     }
   ],
-  "next_steps": "Run /plan 32 to create implementation plan"
+  "next_steps": "Run /implement 32 to execute the plan"
 }

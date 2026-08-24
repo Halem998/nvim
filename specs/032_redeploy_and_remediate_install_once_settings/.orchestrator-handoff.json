@@ -1,18 +1,30 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 1,
-  "summary": "Measured deploy-drift (44 commits/16 files since deploy, 11 gate5 findings), confirmed all three description premises, identified the 4 completed tasks that go live at this deploy, captured a verbatim PRE-deploy verify-deploy.sh baseline, and recommended DEFER on both deferred decisions.",
+  "dispatch_seq": 2,
+  "task_number": 32,
+  "session_id": "sess_1787605165_f00a53",
+  "stage": "plan",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md",
-      "summary": "Deploy-drift baseline, premise confirmation, live-task identification, verbatim PRE-deploy verify-deploy.sh findings, and deferred-decision assessment."
+      "type": "plan",
+      "path": "specs/032_redeploy_and_remediate_install_once_settings/plans/01_deploy-remediate-stale-grant.md",
+      "summary": "Six-phase plan: pre-deploy snapshot and baseline materialization, deploy-headless.sh, targeted post-deploy acceptance checks, sanctioned install-once settings.json hand-edit, baseline-relative verify-deploy comparison, change-log and deferred-decision record."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 0,
+  "phase_count": 6,
+  "estimated_hours": 3,
+  "dependency_waves": [[1], [2], [3, 4], [5], [6]],
   "blockers": [],
-  "continuation_path": null,
-  "next_action_hint": "Run /plan 32 to create an implementation plan covering: run deploy-headless.sh; hand-remove the stale mcp__lean-lsp__* entry from deployed .claude/settings.json; run verify-deploy.sh --findings and diff against the verbatim PRE-deploy baseline in the research report (Section 4) to confirm no new findings were introduced; record which tasks became live in a CHANGE_LOG entry without task numbers."
+  "notes": [
+    "Pre-deploy verify-deploy baseline is NOT re-captured; Phase 1 transcribes research report Section 4 verbatim to disk before Phase 2 deploys.",
+    "Acceptance criterion is mechanical and baseline-relative: comm -13 pre-deploy post-deploy must be empty. A non-empty post-deploy findings set is explicitly not a failure.",
+    "Phase 4 is the single sanctioned source-store-boundary exception (install-once settings.json); it forbids editing the already-correct source copy and requires the hook reasoning be recorded in writing.",
+    "MEASURED CORRECTION to the dispatch brief: CHANGE_LOG.md is at specs/CHANGE_LOG.md, i.e. INSIDE specs/**, where task numbers are exempt, and its existing entries use 'Task N:' headings. The no-task-numbers constraint is still honored in the strictest direction (durable anchors only), and the plan records this reasoning so the implementer does not reverse it mid-phase.",
+    "Phase 3 carries the concrete mint-dispatch-seq acceptance check: deployed skill-base.sh must contain jq -r '(.dispatch_seq_counter // 0) + 1' and no ambient-increment form, plus a run of the newly-deployed test-mint-dispatch-seq.sh.",
+    "Phase 3 also covers the research-flagged gate5 blind spot by hand-diffing both manifest.json files and one literature context doc that gate5 never compares.",
+    "Both deferred decisions (lean-lsp user-scope BimodalLogic mis-registration; nine duplicated playwright grants) are recorded with reasons in Phase 6; no settings fragment is edited.",
+    "Fresh-session MCP registration verification is recorded as a manual out-of-session follow-up, not an in-task gate."
+  ],
+  "next_steps": "Run /implement 32 to execute the plan"
 }
