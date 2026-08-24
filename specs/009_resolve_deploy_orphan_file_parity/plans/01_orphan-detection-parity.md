@@ -1,7 +1,7 @@
 # Implementation Plan: Task #9
 
 - **Task**: 9 - resolve_deploy_orphan_file_parity
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: 32 (deploy, completed), 18 (staleness detection, completed) -- both preconditions satisfied
 - **Research Inputs**: specs/009_resolve_deploy_orphan_file_parity/reports/01_orphan-file-parity-remeasurement.md
@@ -138,32 +138,35 @@ Phases within the same wave can execute in parallel. Wave 4's two phases have di
 Phase 4 owns `scripts/tests/` plus a throwaway scratch repo; Phase 5 owns the live `.claude/` tree.
 Neither writes a file the other reads.
 
-### Phase 1: Measure the Orphan Set and Write the Detection Contract [NOT STARTED]
+### Phase 1: Measure the Orphan Set and Write the Detection Contract [COMPLETED]
 
 **Goal**: Re-confirm the orphan set against a fresh tree, classify every live-only path into named
 categories, and record the measurement recipe and exclusion contract in a durable context file --
 so the detector built in Phase 2 is written against a documented contract rather than a guess.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/check-deploy-freshness.sh` and confirm exit 0 before trusting any
-      measurement. If it warns, stop and report -- the measurement is not usable.
-- [ ] Reproduce the clean scratch regenerate: `git clone --no-local` this repo to a scratch dir,
+- [x] Run `bash .claude/scripts/check-deploy-freshness.sh` and confirm exit 0 before trusting any
+      measurement. If it warns, stop and report -- the measurement is not usable. *(completed:
+      exit 0)*
+- [x] Reproduce the clean scratch regenerate: `git clone --no-local` this repo to a scratch dir,
       `bash .claude/scripts/deploy-headless.sh <scratch>`, then
-      `diff <(find .claude -type f | sort) <(find <scratch>/.claude -type f | sort)`.
-- [ ] Enumerate **every** live-only line and classify each into exactly one class: real orphan;
+      `diff <(find .claude -type f | sort) <(find <scratch>/.claude -type f | sort)`. *(completed)*
+- [x] Enumerate **every** live-only line and classify each into exactly one class: real orphan;
       runtime artifact (`tmp/workflow-active-*`, `RESUME.md`, `__pycache__`/`*.pyc`);
       merged-or-generated artifact (`context/index.json`, `CLAUDE.md`, `settings.json`,
       `extensions/*/manifest.json`); `.syncprotect`-protected path; uncommitted source-store
-      working-tree artifact (a scratch clone carries only committed content).
-- [ ] Independently list the live `context/index.json` paths that appear in no active extension's
+      working-tree artifact (a scratch clone carries only committed content). *(completed: also
+      found a `scripts/literature-pyenv/venv/**` runtime-provisioned-tool instance, folded into
+      the runtime-artifact class rather than a new class)*
+- [x] Independently list the live `context/index.json` paths that appear in no active extension's
       `index-entries.json`, normalizing with the same rules as `normalize_index_path` in
-      `verify.lua`.
-- [ ] Write `agent-system/extensions/core/context/patterns/deploy-orphan-detection.md`: the
+      `verify.lua`. *(completed: exactly 2, matching research)*
+- [x] Write `agent-system/extensions/core/context/patterns/deploy-orphan-detection.md`: the
       measurement recipe, the classified exclusion table with a justification per class, the ghost
       index-row check, and the direction decision (detect, never auto-delete; additive copy
-      semantics retained deliberately).
-- [ ] Add an `index-entries.json` row for the new pattern file in
-      `agent-system/extensions/core/index-entries.json`.
+      semantics retained deliberately). *(completed)*
+- [x] Add an `index-entries.json` row for the new pattern file in
+      `agent-system/extensions/core/index-entries.json`. *(completed)*
 
 **Timing**: 1.5 hours
 

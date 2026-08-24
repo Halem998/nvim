@@ -3235,6 +3235,33 @@
           "/orchestrate"
         ]
       }
+    },
+    {
+      "path": "patterns/deploy-orphan-detection.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Exclusion contract and measurement recipe for reverse-direction (deployed-but-undeclared) orphan detection, gate 13",
+      "line_count": 115,
+      "keywords": [
+        "orphan",
+        "deploy",
+        "verify-deploy",
+        "syncprotect",
+        "additive-only"
+      ],
+      "topics": [
+        "deploy-parity"
+      ],
+      "load_when": {
+        "agents": [
+          "meta-builder-agent",
+          "general-implementation-agent"
+        ],
+        "task_types": [
+          "meta"
+        ],
+        "commands": []
+      }
     }
   ]
 }
