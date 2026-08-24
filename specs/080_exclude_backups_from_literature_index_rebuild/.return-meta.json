@@ -1,9 +1,73 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/080_exclude_backups_from_literature_index_rebuild/summaries/01_exclude-backups-index-rebuild-summary.md",
+      "summary": "Excluded dot-prefixed directories (backups, quarantine, staging) from literature-build-index.sh's manifest discovery at any depth, added duplicate-doc_id detection with --strict-duplicates, database-derived per-doc_id stats, a 9-test regression suite, a new corpus-directory-conventions.md context doc, and reverted all 14 chunks.json.bak workaround renames after verifying the live corpus rebuilds clean (zero stale chunk_ids, zero duplicate doc_ids, idempotent, searchable)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed literature-build-index.sh's unguarded recursive manifest discovery to exclude dot-prefixed directories at any depth, added duplicate-doc_id detection (--strict-duplicates), database-derived per-doc_id rebuild stats, a 9-test regression suite, and documentation of the exclusion predicate. Reverted all 14 manual .bak workaround renames and verified the live ~/Projects/Literature corpus rebuilds clean with zero stale survivors and zero duplicate doc_ids."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-build-index.sh",
+    "agent-system/extensions/literature/scripts/tests/test-literature-build-index.sh",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/context/project/literature/domain/corpus-directory-conventions.md",
+    "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_pre-fix-audit.txt",
+    "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_bak-rename-mapping.txt",
+    "specs/080_exclude_backups_from_literature_index_rebuild/reports/01_post-fix-audit.txt",
+    "specs/080_exclude_backups_from_literature_index_rebuild/summaries/01_exclude-backups-index-rebuild-summary.md",
+    "specs/080_exclude_backups_from_literature_index_rebuild/plans/01_exclude-backups-index-rebuild.md",
+    "specs/080_exclude_backups_from_literature_index_rebuild/progress/phase-2-progress.json",
+    "specs/080_exclude_backups_from_literature_index_rebuild/progress/phase-3-progress.json",
+    "specs/080_exclude_backups_from_literature_index_rebuild/progress/phase-4-progress.json",
+    "specs/080_exclude_backups_from_literature_index_rebuild/progress/phase-5-progress.json",
+    "specs/080_exclude_backups_from_literature_index_rebuild/progress/phase-6-progress.json",
+    "specs/080_exclude_backups_from_literature_index_rebuild/progress/phase-7-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In a bash script under 'set -euo pipefail', a bare 'python3 << PYEOF ... PYEOF' heredoc invocation followed by 'local exit_code=$?' on the next statement does NOT safely capture the Python process's exit code when it is nonzero -- set -e aborts the script immediately at the heredoc statement itself (it is not part of any conditional context), skipping the capture and any cleanup that follows. Fix: wrap the heredoc in set +e / set -e around the call, and if the result is checked further up an outer loop via a plain statement (fn target; status=$?), convert that to an if/then/else form too -- set -e triggers at every level a bare statement's exit code is inspected after the fact, not just the innermost one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/080_exclude_backups_from_literature_index_rebuild/summaries/01_exclude-backups-index-rebuild-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "bash",
+        "set -e",
+        "errexit",
+        "heredoc",
+        "exit code",
+        "python3",
+        "pipefail"
+      ]
+    },
+    {
+      "content": "When excluding non-corpus directories from a recursive find traversal, prefer 'find $target_dir -mindepth 1 ( -name .* -type d -prune ) -o ( -name PATTERN -print )' over a -maxdepth N bound. The -mindepth 1 guard means the prune never tests the traversal's own starting point, so an operator can still explicitly target a dot-named directory (e.g. --dir /path/.backups) and have it indexed, while any dot-prefixed directory found below that starting point -- at any depth, not just the root -- is excluded. A root-only or depth-bounded exclusion misses nested cases (e.g. a stray .chunks/ three levels below a live document's own directory) that a purely at-any-depth predicate catches.",
+      "category": "PATTERN",
+      "source_artifact": "specs/080_exclude_backups_from_literature_index_rebuild/summaries/01_exclude-backups-index-rebuild-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "find",
+        "prune",
+        "dot-directory",
+        "traversal",
+        "backup exclusion",
+        "mindepth"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }

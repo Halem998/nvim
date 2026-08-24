@@ -1,7 +1,7 @@
 # Implementation Plan: Stop the literature index rebuild from indexing backed-up chunk manifests
 
 - **Task**: 80 - Stop the literature index rebuild from indexing backed-up chunk manifests
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None blocking. Sequenced-after advisory on the literature global-index schema-unification task (see Risks) — that task shares `literature-build-index.sh` in its file scope but none of this plan's four scope items touch `index.json` entry shape.
 - **Research Inputs**: `specs/080_exclude_backups_from_literature_index_rebuild/reports/01_exclude-backups-from-index-rebuild.md`
