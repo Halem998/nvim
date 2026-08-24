@@ -1571,7 +1571,7 @@
     {
       "project_number": 92,
       "project_name": "quality_gate_false_positive_on_logic_notation",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "literature",
       "priority": "medium",
@@ -1585,13 +1585,18 @@
         "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"
       ],
       "created": "2026-08-24T20:51:23Z",
-      "last_updated": "2026-08-24T22:04:04Z",
+      "last_updated": "2026-08-24T22:13:19Z",
       "session_id": "sess_1787608215_ce9f8e_92",
       "artifacts": [
         {
           "path": "specs/092_quality_gate_false_positive_on_logic_notation/reports/01_quality-gate-binder-exemption.md",
           "type": "report",
           "summary": "Confirms the addendum's mechanism, empirically evaluates the suggested regex shape (finds it insufficient), and reports a refined, fixture-validated exemption pattern with an explicit recommendation for the two MIXED documents."
+        },
+        {
+          "path": "specs/092_quality_gate_false_positive_on_logic_notation/plans/01_gate-binder-exemption-fix.md",
+          "type": "plan",
+          "summary": ""
         }
       ]
     },

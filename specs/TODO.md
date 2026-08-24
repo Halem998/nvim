@@ -49,7 +49,7 @@ next_project_number: 97
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
   └─ 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
 80 [PLANNED] — literature-build-index.sh traverses the corpus with an unguarded 
-92 [PLANNING] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
+92 [PLANNED] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
 
 ### Orchestration Concurrency
@@ -249,11 +249,12 @@ ACCEPTANCE: from this repo, one command reports the deployed revision of every k
 ---
 
 ### 92. Quality gate false positive on logic notation
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 32
 - **Research**: [092_quality_gate_false_positive_on_logic_notation/reports/01_quality-gate-binder-exemption.md]
+- **Plan**: [092_quality_gate_false_positive_on_logic_notation/plans/01_gate-binder-exemption-fix.md]
 
 **Description**: === ADDENDUM 2026-08-24: exact mechanism, verified by execution ===
 LOCATION: literature_quality_gate.py:118, in sentence_boundary_glue_count():
