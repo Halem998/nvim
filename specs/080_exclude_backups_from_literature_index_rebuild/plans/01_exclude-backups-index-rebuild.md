@@ -561,16 +561,22 @@ diff-against-prior-index mechanism").
 
 ## Testing & Validation
 
-- [ ] `tests/test-literature-build-index.sh` exits 0 (all six tests A-F pass)
-- [ ] The same suite fails when the Phase 2 prune is temporarily reverted (anti-vacuity check)
-- [ ] `tests/test-literature-convert.sh` still exits 0 (no collateral regression)
-- [ ] `bash -n` and `shellcheck` clean on `literature-build-index.sh`
-- [ ] `jq . manifest.json` parses and the new test is registered
-- [ ] Live global rebuild with all 14 `.bak` files restored to `chunks.json` produces zero stale
-      `chunk_id`s and zero duplicate-`doc_id` warnings
-- [ ] Two consecutive global rebuilds produce identical `chunk_id` sets
-- [ ] No test run reads from or writes to `~/Projects/Literature/` (only Phase 7's explicit,
-      recorded live verification touches the corpus)
+- [x] `tests/test-literature-build-index.sh` exits 0 (all six tests A-F pass) *(confirmed: 9/9,
+      including three sanity tests beyond A-F)*
+- [x] The same suite fails when the Phase 2 prune is temporarily reverted (anti-vacuity check)
+      *(confirmed: reverted run showed exactly Tests A, B, C failing)*
+- [x] `tests/test-literature-convert.sh` still exits 0 (no collateral regression) *(confirmed:
+      13/13)*
+- [x] `bash -n` and `shellcheck` clean on `literature-build-index.sh` *(confirmed for `bash -n`;
+      `shellcheck` not installed in this environment — substituted extensive scratch-directory
+      functional testing, see Phase 2/7 deviation notes)*
+- [x] `jq . manifest.json` parses and the new test is registered *(confirmed)*
+- [x] Live global rebuild with all 14 `.bak` files restored to `chunks.json` produces zero stale
+      `chunk_id`s and zero duplicate-`doc_id` warnings *(confirmed)*
+- [x] Two consecutive global rebuilds produce identical `chunk_id` sets *(confirmed: idempotent)*
+- [x] No test run reads from or writes to `~/Projects/Literature/` (only Phase 7's explicit,
+      recorded live verification touches the corpus) *(confirmed: all test fixtures use
+      `mktemp -d`)*
 
 ## Artifacts & Outputs
 
