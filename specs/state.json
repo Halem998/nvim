@@ -55,10 +55,7 @@
       "topic": "orchestration-concurrency",
       "priority": "medium",
       "description": "Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect when a contractual non-writer leaves no fresh handoff. Observed live on a clean, fully-successful base-mode /orchestrate run (recorded as evt_1786550950625_o2KoSv; the class already has 3 occurrences in specs/events.jsonl).\n\nOBSERVED MECHANISM (verified, do not re-derive). In a base-mode /orchestrate run of a task that entered at [RESEARCHED], the plan dispatch wrote .orchestrator-handoff.json carrying dispatch_seq=1. The implement dispatch that followed wrote no handoff, correctly: docs/architecture/handoff-schema.md's \"Handoff Writers\" table settles that .orchestrator-handoff.json is hard-mode-implement-only, and general-implementation-agent.md states \"base-mode implement is a non-writer by design\". Nothing clears the prior cycle's handoff, so the planner's file was still sitting at the path when Stage 5 ran. Both freshness gates fired on it exactly as designed -- mtime predated the dispatch window, and dispatch_seq=1 did not match the minted dispatch_seq=2 -- and the dispatch_seq gate recorded a HANDOFF_STALE_OR_ABSENT system defect. The run then proceeded correctly: orchestrate-recover-outcome.sh recovered status=implemented, 7/7 phases, from .return-meta.json, and the task completed.\n\nTHE DEFECT IS ORDERING, NOT DETECTION. The gates are right and must not be weakened -- they are the identity mechanism delivered by the handoff-identity work, and they are the reason a genuine late-writer clobber would be caught. The bug is that the recording happens BEFORE the system consults whether the absence was expected. skill-orchestrate/SKILL.md's own recovery branch prints \"no handoff written for this dispatch -- expected outcome for this phase's writer (base-mode research/plan/implement never write one)\". The knowledge that this is expected already exists in the file; it just arrives one step too late to suppress the defect record. The recorder therefore fires on a run in which nothing went wrong.\n\nWHY THIS MATTERS BEYOND NOISE. A defect class that fires on ordinary success carries no information, and a real stale-handoff incident becomes indistinguishable from routine base-mode operation. This is the same failure shape as the gate-out warning that cannot separate silent failure from ordinary success, tracked separately. It also directly bears on the open question of whether \"zero defect events on a clean run\" is a sound acceptance bar, tracked in the verification-trust bundle: that item assumes the recorder only fires on genuine agent-compliance slips. This observation falsifies that assumption and should be folded in as evidence when that decision is made.\n\nSECOND, INDEPENDENT QUESTION -- DECIDE EXPLICITLY. Base-mode dispatch contexts pass handoff_path to every dispatch (research, plan, and implement alike), which invites a contractual non-writer to write a handoff at all. That is how the planner came to write one in the observed run. Decide whether base mode should stop passing handoff_path except where a writer is contractually expected, or whether passing it uniformly is deliberate and the leftover file should instead be cleared or rotated at dispatch start. Either resolution is acceptable; the current arrangement, where a non-writer is handed a write target and its output then trips the successor's freshness gates, is not.\n\nCANDIDATE DIRECTIONS (evaluate, do not blindly adopt): (a) consult the writer contract before recording -- if the dispatched writer is contractually a non-writer for this mode and phase, treat a stale-or-absent handoff as the expected outcome and log it without recording a defect; (b) clear or rotate any pre-existing handoff at dispatch start so the gates only ever fire on a genuine late write from a live predecessor; (c) narrow handoff_path propagation to contractual writers. Note that (b) alone must not blind the gates to the live-predecessor late-write case, which is the hazard they exist to catch.\n\nCO-MAINTENANCE (binding). skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md carry an explicit co-maintenance contract, and the Stage 5 staleness/dispatch_seq gate is a verbatim twin across the two. A one-sided fix here reproduces a named recurring defect class. Both copies must be changed together, or the asymmetry recorded in both.\n\nACCEPTANCE: a clean base-mode /orchestrate run that transitions plan to implement records no system defect; a genuine stale or late-written handoff still trips the gates and still records one; and both engines agree. Demonstrate both directions -- a detector that can only ever stay silent is not a fix.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
-      "dependencies": [
-        17,
-        44
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
@@ -112,9 +109,7 @@
       ],
       "created": "2026-08-11T01:16:30Z",
       "last_updated": "2026-08-11T15:21:32Z",
-      "dependencies": [
-        19
-      ],
+      "dependencies": [],
       "session_id": "sess_1786459614_0c9ada_22"
     },
     {
@@ -131,8 +126,7 @@
         "agent-system/extensions/core/context/orchestration/"
       ],
       "dependencies": [
-        18,
-        44
+        32
       ],
       "artifacts": []
     },
@@ -143,9 +137,7 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [
-        17
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/command-gate-out.sh",
         "agent-system/extensions/core/scripts/skill-base.sh"
@@ -162,9 +154,7 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [
-        33
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/agents/general-implementation-agent.md",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
@@ -317,10 +307,7 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [
-        34,
-        63
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/assess-repo-health.sh",
         "agent-system/extensions/core/commands/todo.md",
@@ -391,11 +378,7 @@
       "project_name": "generate_mcp_json_from_extension_manifests",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [
-        19,
-        22,
-        44
-      ],
+      "dependencies": [],
       "file_scope": [
         "lua/neotex/plugins/ai/shared/extensions/merge.lua",
         "lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua",
@@ -429,9 +412,7 @@
       "project_name": "opencode_extensions_sync_mechanism",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [
-        19
-      ],
+      "dependencies": [],
       "file_scope": [
         ".opencode/extensions/",
         "agent-system/extensions/core/scripts/lint/"
@@ -447,12 +428,7 @@
       "project_name": "redeploy_and_remediate_install_once_settings",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [
-        28,
-        29,
-        30,
-        31
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/root-files/settings.json"
       ],
@@ -505,9 +481,7 @@
       "title": "Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap",
       "topic": "literature",
       "effort": "3-6 hours",
-      "dependencies": [
-        38
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/literature/scripts/literature-ingest-online.sh",
         "agent-system/extensions/literature/scripts/literature-discover.sh",
@@ -575,11 +549,7 @@
       "title": "Add verify-deploy gates: broken-@-ref lint and warning-first context-budget gate",
       "topic": "essential-refactor",
       "effort": "2-4 hours",
-      "dependencies": [
-        18,
-        31,
-        41
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/verify-deploy.sh",
         "agent-system/extensions/core/scripts/lint/"
@@ -618,12 +588,7 @@
       "title": "Slim commands/task.md, the largest per-invocation context contributor",
       "topic": "essential-refactor",
       "effort": "2-4 hours",
-      "dependencies": [
-        17,
-        28,
-        41,
-        49
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/commands/task.md",
         "agent-system/extensions/core/context/"
@@ -653,26 +618,7 @@
       "topic": "essential-refactor",
       "description": "Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.\n\nTHE MECHANISM ALREADY EXISTS AND IS CORRECT. scripts/git-commit-scoped.sh describes itself as \"the single sanctioned implementation of the scoped-commit contract\". It was built to close a documented concurrency defect: a bare `git commit` sweeping in a file that another concurrently-running agent had staged but not yet committed. The fix is sound. Adoption simply stopped.\n\nMEASURED STATE: 85 occurrences of raw `git commit -m` across 70 command/skill files in the source store. Only 5 files call git-commit-scoped.sh -- skill-implementer, skill-planner, skill-team-implement, skill-orchestrate, and commands/orchestrate.md. The remaining 65 files still hand-roll the vulnerable raw form, including the highest-traffic core commands: research.md, plan.md, implement.md, todo.md, task.md, errors.md, review.md.\n\nWHY THIS IS NOT THEORETICAL: the review that produced this task ran with eight concurrent Claude sessions active on the same machine, several in this same repository. Under that load every /research, /plan, /task, /todo, /errors and /review commit is currently capable of capturing another session's staged work. Concurrent multi-session operation is the normal working mode here, not an edge case.\n\nTHIS IS ALSO THE SHARPEST LIVE INSTANCE of the \"duplicated mechanism instead of shared mechanism\" root cause named in the opening refactor review. Unlike most instances of that pattern, the shared mechanism here is already written, already tested, and already proven at 5 sites -- so the work is propagation and verification, not design.\n\nWORK: migrate call sites to git-commit-scoped.sh, highest-traffic first. Suggested ordering: (a) core commands research.md, plan.md, implement.md, todo.md, task.md, errors.md, review.md; (b) remaining core skills; (c) non-core extension commands and skills (founder, present, filetypes, lean, web, epidemiology, literature, memory, cslib).\n\nDO NOT MECHANICALLY REWRITE ALL 85 SITES. Some call sites may legitimately differ -- a commit whose staging scope is genuinely not task-scoped, or a test fixture that must exercise the raw form. Inspect each; where a site should NOT be migrated, record why in the summary rather than silently skipping it. A migration that converts 85 of 85 without noting a single exception is more likely to be careless than thorough.\n\nALSO SETTLE: whether the raw form should be blocked mechanically once migration lands (a lint in the verify-deploy gate list, in the same family as lint-state-writer-boundary.sh, which already polices the analogous state.json write boundary). Without such a gate the pattern regrows on the next new command. If a lint is added, it must exempt git-commit-scoped.sh itself and its tests.\n\nACCEPTANCE: `grep -rl 'git commit -m' agent-system/extensions/` returns only git-commit-scoped.sh and its test files, or returns additional files each of which is named in the summary with a stated reason for exemption. Existing test suites still pass. At least one migrated command is exercised end-to-end (a real commit through the converted path) rather than only inspected statically.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.",
       "created": "2026-08-11T21:03:41Z",
-      "dependencies": [
-        16,
-        17,
-        18,
-        22,
-        28,
-        31,
-        34,
-        39,
-        41,
-        42,
-        43,
-        44,
-        47,
-        59,
-        60,
-        61,
-        63,
-        64
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/"
       ],
@@ -687,24 +633,7 @@
       "description": "Make the verification surface trustworthy, and close the doc-truth and duplication residue. Grouped because each item individually is too small to dispatch, and all of them undermine confidence in the same gate suite.\n\n(1) THE SHELL TEST SUITE IS NON-DETERMINISTIC (highest value item here). Measured across five consecutive runs of scripts/tests/run-all.sh: exit 1, 0, 1, 0, 0 -- roughly a 2-in-5 failure rate, with passing runs reporting a clean 36/36. During the same review, verify-deploy.sh gate 8 passed while a standalone run failed minutes later. A gate that passes 60% of the time is not evidence of health in either direction. It is also actively harmful to the refactor's own acceptance gate: the capstone attributed a real failure to \"a flaky lock-contention test attributable to concurrent sibling sessions, not a deploy defect\" WITHOUT being able to confirm that, precisely because the suite cannot distinguish the two. Diagnose the contention (the suite runs concurrently with other live sessions holding the same locks), then either isolate the affected tests from shared global state or make them wait deterministically. A test that is merely retried is not fixed. ACCEPTANCE: 10 consecutive runs, executed while at least one other session is active, all report the same result.\n\n(2) THE DEPLOY NON-DETERMINISM FINDING HAS NO OWNER. The capstone's defect ledger dispositions err_1786350581240_JyztWt (deploy_nondeterministic_merge) as \"folds into\" the orphan-file parity task, and leaves err_1786350581208_23mAsn (deploy_merge_content_loss, observed once, then 0-of-3 on re-check) as entry-only. The parity task's actual text discusses only the four orphan files -- it never mentions ordering or content loss. The fold was recorded but never performed, so capstone DEPLOY sub-item ii (\"running the deploy twice is byte-identical\") is failing with nobody assigned. A fold recorded but not performed is exactly the failure mode a defect ledger exists to prevent; note that as a process finding, not only a technical one. WORK: run the scratch wipe-pair procedure, establish whether context/index.json and settings.json still differ by object-key/array-element ordering beyond the expected generated timestamp, re-check the settings.local.json content-loss observation, and either fix the ordering non-determinism or record an explicit decision that semantic equality under `jq -S` is the standard and byte-identity is not required. Either resolution is acceptable; the current silent ambiguity is not.\n\n(3) RE-SCOPE OR SATISFY THE LIVE-CYCLE DEFECT CRITERION. The capstone requires that a clean orchestration cycle emit no system_defect event and that the deferred-defect surface render empty. specs/events.jsonl now holds 5 such events (3 from 2026-08-08 plus 2 newer: OFF_SCHEMA_STATUS and META_MISSING_AFTER_NARRATION). Both new events are correctly-firing detectors catching real agent-compliance slips -- the recorder working as designed, not noise. DO NOT FIX THOSE TWO DEFECTS HERE: the OFF_SCHEMA_STATUS handoff-key problem belongs to the in-flight handoff identity-contract task, and META_MISSING_AFTER_NARRATION belongs to the in-flight nonterminal-fanout task. Both should have the observation appended to them. What is unowned, and what belongs HERE, is the criterion itself: decide whether \"zero defect events on a clean run\" is the right acceptance bar given a recorder that will legitimately fire whenever any agent slips, or whether it should be re-scoped to \"no NEW defect classes\" -- the same precedent the capstone already set for its unverifiable gate-out criterion. Record the decision where the acceptance criteria live.\n\n(4) DUPLICATION WITH AN AVAILABLE SHARED MECHANISM. (a) The literal one-liner `sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')` appears 43 times across 35 command and skill files, while common_session_id() exists in scripts/lib/common.sh and is already wired into command-gate-in.sh. (b) The jq Issue #1132 safety block appears in 34 source files against a canonical home in context/patterns/jq-escaping-workarounds.md and a CLAUDE.md section -- roughly 8 KB of duplication, and 8 of those copies sit inside present/ skills where they are per-invocation cost. Replace both with calls/pointers. Note that some sites may not be convertible where sourcing common.sh a second time is genuinely awkward; name any residual rather than forcing it.\n\n(5) DEAD AND UNDOCUMENTED MACHINERY. (a) scripts/literature-retrieve.sh (7.9 KB) is deprecated by its own header (\"superseded by literature-briefing.sh ... Do not add new usages\"), has zero automated callers, yet is still declared in the core manifest's provides.scripts and therefore deploys every time. This repository already runs a rigorous quarantine-never-delete convention -- scripts/deprecated/ holds 11 such scripts, removed from provides so they never deploy -- and this one file simply missed the process. Put it through the same process. (b) /zulip and skill-zulip are live and deployed but have zero mentions in the generated CLAUDE.md: no Command Reference row, no extension section. (c) scripts/check-runtime-file-tracking.sh is legitimately operator-invoked-only, like its five documented siblings, but is missing from CLAUDE.md's Utility Scripts table, so a future dead-code sweep will flag it as an orphan. (d) Six `@.claude/docs/...` references remain in meta-builder-agent.md, context/architecture/system-overview.md, context/architecture/component-checklist.md and context/patterns/thin-wrapper-skill.md; they carry no runtime cost, but they model the exact syntax the context-loading audit spent a phase normalizing away.\n\n(6) TAXONOMY AND ROADMAP DRIFT. specs/state.json's active_topics omits `context-loading` and `email`, both live topics on existing tasks, so generate-task-order.sh renders them through its append-extras path with a stderr warning instead of in curated order; meanwhile seven declared topics now have zero tasks. Separately, specs/ROADMAP.md no longer describes the work in flight -- its Phase 1 is documentation-infrastructure items that appear nowhere in the active task set, and its Success Metrics cite a task number and an extension count from a previous era. Because /review's roadmap-integration step annotates against this file, a stale roadmap makes that step a guaranteed no-op. Reconcile the topics and rewrite the roadmap to describe the actual workstreams.\n\nNEGATIVE FINDINGS -- DO NOT RE-INVESTIGATE THESE. A caller analysis across all 138 scripts and hooks found only literature-retrieve.sh dead; the rest have live callers, including ones reachable only through skill-base.sh's dynamic hooks[$hook_name] manifest lookup and run-all.sh's glob discovery. All 193 files under context/ have live references and are enrolled in context/index.json, a real dynamic-discovery layer -- there are no orphans there and no bytes to recover. docs/ (455 KB) costs zero runtime tokens: CLAUDE.md references it only by backticked path, never @-import. Recording these so they are not re-derived.\n\nTHIS TASK IS A BUNDLE AND IS A REASONABLE CANDIDATE FOR EXPANSION -- items 1-3 are verification trustworthiness, items 4-6 are hygiene. If driven as one unit, commit them as separate phases.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.",
       "created": "2026-08-11T21:03:42Z",
       "dependencies": [
-        17,
-        18,
-        22,
-        28,
-        31,
-        34,
-        39,
-        41,
-        42,
-        43,
-        44,
-        47,
-        48,
-        59,
-        60,
-        61,
-        63,
-        64
+        48
       ],
       "file_scope": [
         "agent-system/extensions/",
@@ -878,9 +807,7 @@
       "title": "Decide and implement how --hard behavioral contracts reach agents system-wide",
       "description": "Decide and implement how --hard behavioral contracts reach agents system-wide. Only core, cslib, and lean declare routing_hard/routing_agents_hard. For every other extension that declares routing, --hard resolves via=hard-miss-standard-fallback and the H2-H5 behavioral contracts never reach the agent, even though CLAUDE.md advertises --hard as composable with extension routing at a 3-5x cost multiplier. In the originating session the H2/H3/H4/H5 contracts had to be hand-injected into the delegation prompt by the orchestrator for --hard to mean anything at all, which is neither reproducible nor something a user should have to do.\n\nCORRECTED COUNT - VERIFIED INVENTORY, USE THIS NOT THE 16 FIGURE. The delegating description said 16 extensions and listed literature and slidev among them. A direct inventory of all 19 manifests under agent-system/extensions/*/manifest.json shows the real figure is 14. literature and slidev declare routing_exempt: true and declare NO routing blocks whatsoever - they are legitimately exempt, not gaps, and must not be counted, rolled out to, or failed by any lint.\nThe 14 that declare routing (and routing_agents) but no routing_hard/routing_agents_hard are: email, epidemiology, filetypes, formal, founder, latex, memory, nix, nvim, present, python, typst, web, z3.\nFor completeness: core declares routing_agents + routing_hard + routing_agents_hard but no plain routing block; cslib and lean declare all four.\nCONSEQUENCE FOR LINT DESIGN: any check must skip routing_exempt: true manifests, or it emits 2 false failures on literature and slidev.\n\nDECIDE, DO NOT PRESUPPOSE:\n  (a) Declare hard variants across the remaining 14 manifests.\n  (b) Make the fallback inherit standard extension routing while delivering hard contracts from a single shared contract block rather than per-skill '-hard' files.\n  (c) Both, plus a lint check flagging any extension that declares routing but no routing_hard.\nWeigh (b) seriously. The shared ladder lives in exactly one place - agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh, consumed by both command-route-skill.sh and command-route-agent.sh - so a resolver-side fix is a single change point covering all extensions, whereas (a) is 14 manifest edits that can drift. The fact that only 3 of 19 extensions have hard variants is itself evidence that the per-extension '-hard' file approach does not scale, and that evidence bears directly on the choice.\n\nDEPENDS ON THE AGENT-SIDE ROUTING-DOWNGRADE FIX IN THIS BATCH, AND THAT FIX MATERIALLY DE-SCOPES THIS ONE. Once the agent side inherits standard extension routing on a hard miss, most of the 14 resolve to their correct domain agent with ZERO manifest edits. What remains is then the narrower and different question of how the H2-H5 CONTRACTS reach the agent, which is the shared-contract-block idea in option (b). Do not price a 14-manifest rollout before that fix has landed - it would be costing work the fix largely obviates. Re-run the resolver inventory after the dependency completes and report what actually still misroutes.\n\nLINT COORDINATION (binding, read before proposing lint scope). The existing not_started task fix_present_extension_compound_skill_routing already proposes extending lint-routing-wiring.sh, which currently validates declared AGENT names but not SKILL names. Read that task's description in specs/state.json first. The checks are genuinely additive rather than duplicative, and the current coverage matters: lint-routing-wiring.sh already has Check A (routing.{op} keys have routing_agents.{op} counterparts), Check B (routing_agents/routing_agents_hard values name existing agent files), Check C (routing_hard.{op} keys have routing_agents_hard.{op} counterparts), and Check D (report-only general-* declarations). Check C therefore ALREADY covers the within-manifest hard counterpart requirement. What is missing is a new check for 'declares routing but no routing_hard at all' - additive to that task's Check B skill-name extension. Both edit the same file, so declare a dependency or otherwise serialize with it rather than duplicating its work or racing it.\n\nACCEPTANCE: a single documented decision among (a)/(b)/(c) with its reasoning recorded; --hard delivers the H2-H5 contracts to agents for every non-exempt extension without requiring per-invocation hand-injection by the orchestrator; any lint check added skips routing_exempt manifests and does not duplicate the sibling task's skill-name validation; CLAUDE.md's claim that --hard is composable with extension routing is either made true or corrected to match reality.\n\nRELATED BUT DISTINCT - DO NOT ABSORB. The typst/latex task-type restriction task in this repo concerns which task type a task is ASSIGNED from keywords, not which agent or contracts a type resolves to. No file overlap with this task's resolver and lint scope, though note that if option (a) is chosen it would edit the typst and latex manifests, which that task also touches (different keys: keyword_overrides/aliases there, routing_hard/routing_agents_hard here) - coordinate if (a) is selected.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "dependencies": [
-        31,
-        42,
-        63
+        42
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh",
@@ -1125,9 +1052,7 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "team-mode-lifecycle",
-      "dependencies": [
-        72
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/hooks/subagent-postflight.sh",
         "agent-system/extensions/core/scripts/skill-base.sh",
@@ -1264,9 +1189,7 @@
       "title": "Make subagent-postflight hook diagnosable when its marker is malformed",
       "description": "subagent-postflight.sh blocks a SubagentStop with an EMPTY reason string whenever the postflight marker is not valid JSON, so the blocked agent receives \"Blocked by hook\" with no explanation of any kind and no way to learn what happened. The hook's own default reason never fires in exactly the case where a reason is most needed.\n\n=== VERIFIED MECHANISM (do not re-derive; re-verify line numbers, they drift) ===\n\nFile: agent-system/extensions/core/hooks/subagent-postflight.sh\n\nLine 90:  local reason=$(jq -r '.reason // \"Postflight operations pending\"' \"$MARKER_FILE\" 2>/dev/null)\nLine 95:  echo \"{\\\"decision\\\": \\\"block\\\", \\\"reason\\\": \\\"$reason\\\"}\"\n\njq's `//` alternative operator fires only when the left side evaluates to null or false. It does NOT fire on a PARSE ERROR. When $MARKER_FILE is not valid JSON, jq exits nonzero, writes its diagnostic to stderr — which `2>/dev/null` discards — and emits nothing on stdout. $reason is therefore the empty string, the \"Postflight operations pending\" default is never reached, and the hook emits {\"decision\": \"block\", \"reason\": \"\"}.\n\nOBSERVED LIVE: a planner subagent's SubagentStop was blocked and the only feedback it received was \"Blocked by hook\", with no reason text whatsoever. It had to reverse-engineer the cause from first principles. The marker in that instance was key=value shaped rather than JSON. NOTE: the reason THAT particular marker was malformed was a separate caller bug, already understood, and is explicitly NOT part of this task. skill_create_postflight_marker() at agent-system/extensions/core/scripts/skill-base.sh:247 writes correct JSON; that marker did not come from it. The defect here is that the hook's failure mode is undiagnosable no matter WHY the marker is malformed.\n\n=== THE FIX PATTERN ALREADY EXISTS IN A SIBLING HOOK ===\n\nagent-system/extensions/core/hooks/events-log-lifecycle.sh line 127 reads the SAME marker file and guards it correctly:\n\n    jq empty \"$MARKER_FILE\" 2>/dev/null || exit_success\n\nThat is precisely the validation step subagent-postflight.sh lacks. There is no need to invent a mechanism; there is in-repo precedent five lines from an identical `find specs -maxdepth 3 -name \".postflight-pending\" -type f | head -1` call. Use it, and reconcile the two hooks' handling of the same file rather than fixing one in isolation.\n\n=== SECOND VICTIM: THE TELEMETRY THAT WOULD DIAGNOSE THIS IS BLINDED BY THE SAME MALFORMATION ===\n\nevents-log-lifecycle.sh's guard is correct as a guard but its consequence is `exit_success` — it silently logs NOTHING. So when a marker is malformed, the postflight lifecycle event is simply absent from the events log. The agent gets an empty block reason AND the telemetry that would let an operator reconstruct what happened after the fact records nothing at all. Both channels fail silently on the same input. Whatever is decided for the hook, decide also whether a malformed marker should itself be a logged event rather than a silent no-op.\n\n=== ADJACENT DEFECT IN THE SAME FIVE LINES (in scope) ===\n\nLine 95 interpolates $reason unescaped into hand-built JSON. A marker whose .reason contains a double quote, a backslash, or a newline produces malformed JSON on the hook's stdout — a second, distinct silent failure with the same blast radius. The inline comment at line 94 (\"Using simple JSON output - no jq dependency for robustness\") justifies the hand-built JSON on robustness grounds, but line 90 already invokes jq unconditionally, so the stated justification does not hold. Either drop the jq dependency genuinely or use `jq -n --arg` to build the output safely.\n\n=== SURVEY REQUIREMENT (do not spot-fix one call site) ===\n\nA grep of agent-system/extensions/core/hooks/*.sh for the `jq -r '... // default' 2>/dev/null` idiom returns roughly 38 call sites across claude-stop-notify.sh, events-log-artifact.sh, events-log-lifecycle.sh, guard-destructive-git.sh, memory-nudge.sh, validate-handoff-location.sh, validate-meta-write.sh, and validate-no-task-references.sh. Nearly all use `// empty`, where an empty result on parse error is indistinguishable from an empty result on a missing field — usually benign, because those sites treat empty as \"skip\". subagent-postflight.sh is distinguished by using a NON-EMPTY default that the parse-error path silently discards, which is what makes it user-visible. Classify the sites rather than rewriting all of them: identify every site where a non-empty default is expected to fire, and every site where \"field absent\" and \"file unparseable\" must be handled differently. Fix those; document the rest as deliberately tolerant.\n\n=== DESIGN QUESTIONS TO SETTLE IN RESEARCH (directions, not decisions) ===\n\n1. Distinguish \"marker parses but has no .reason field\" (where the existing default IS the right answer) from \"marker does not parse at all\" (which needs its own explicit reason naming the malformed marker's path, so the blocked agent can inspect it).\n2. Decide whether an unparseable marker should block the stop AT ALL, or fail open with a loud diagnostic. Blocking on a marker that cannot be read traps an agent in a stop it cannot satisfy and cannot diagnose; failing open loses the premature-termination guard. Argue the tradeoff explicitly rather than defaulting.\n3. If it blocks, the reason MUST name the marker path and the parse failure. A reason string is the only channel the blocked agent has.\n\n=== FILE-SCOPE OVERLAP — SEQUENCING IS REQUIRED, NOT OPTIONAL ===\n\nThis task and the subagent-postflight marker-ownership/correlation task (which addresses `head -1` arbitrary marker selection and teammate stops burning the orchestrator's loop-guard budget) both edit subagent-postflight.sh, in adjacent regions of the same function. They MUST be serialized. This task is sequenced second, for a substantive reason as well as a mechanical one: the ownership task decides WHICH marker the hook is responsible for, and it is not worth deciding how to report a marker's reason before deciding whose marker it is. The two tasks do not otherwise overlap — ownership/correlation does not touch .reason parsing, and this task does not touch marker selection or the loop guard.\n\n=== ACCEPTANCE CRITERIA ===\n\n1. A SubagentStop blocked because of an unparseable postflight marker produces a non-empty reason that names the marker path and states that it could not be parsed. Verified by a test that writes a deliberately malformed marker and asserts on the emitted reason.\n2. A marker that parses but lacks .reason still yields the existing \"Postflight operations pending\" default — the two cases are distinguishable in the emitted reason.\n3. The hook's stdout is valid JSON for any marker content, including a .reason containing double quotes, backslashes, and newlines. Verified by test.\n4. The malformed-marker case is observable after the fact through the events log or an equivalent recorded signal, rather than leaving no trace in either channel.\n5. The hook survey above is completed: every core hook site where a non-empty jq default is expected to fire is either fixed or documented as tolerant-by-design.\n6. subagent-postflight.sh and events-log-lifecycle.sh handle the same malformed marker file consistently, and the divergence between them is either eliminated or documented as intentional.\n\n=== BINDING RULES ===\n\nSOURCE-STORE RULE: all edits target agent-system/extensions/**, never the deployed .claude/** tree — it is a disposable deploy artifact regenerated from the source store, and hand-authored files there are silently wiped.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.\n",
       "effort": "1-3 hours",
-      "dependencies": [
-        73
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/hooks/subagent-postflight.sh",
         "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
@@ -1285,9 +1208,7 @@
       "title": "Stop the literature index rebuild from indexing backed-up chunk manifests",
       "description": "literature-build-index.sh traverses the corpus with an unguarded recursive `find` and indexes chunk manifests inside ~/Projects/Literature/.backups/ as if they were live, silently inflating chunk counts and admitting STALE CHUNK CONTENT into the searchable FTS5 index. The safe re-ingestion practice — move the old chunk set aside rather than delete it — is exactly what triggers the bug.\n\n=== VERIFIED MECHANISM (re-verify line numbers, they drift) ===\n\nFile: agent-system/extensions/literature/scripts/literature-build-index.sh\n\nLine 91:  mapfile -t manifests < <(find \"$target_dir\" -name \"chunks.json\" | sort)\n\nNo -prune, no -path exclusion, no maxdepth. $target_dir is the Literature root, so the traversal descends into .backups/ and every other dotfile-prefixed directory.\n\nOBSERVED LIVE: during a re-ingestion of Schultz, Spivak & Vasilakopoulou, \"Dynamical Systems and Sheaves\", the rebuild reported 144 chunks for a doc_id that has 99, because the backed-up 45-chunk manifest was summed alongside the new one. The operator worked around it by renaming the backup's manifest to chunks.json.bak. That workaround is undocumented and unenforced, so the next re-ingestion hits the same trap.\n\nCONFIRMED CURRENT STATE of ~/Projects/Literature/.backups/ (four directories, any of which may carry manifests):\n  chunk-regen-2026-07-27/\n  combining-repair-2026-07-27/\n  quarantined-orphaned-chunks-2026-07-27/\n  schultz-spivak-vasilakopoulou-dynamical-systems-sheaves_old_20260820/\nA find for chunks.json under .backups/ currently returns nothing, but a find for chunks.json.bak returns many (e.g. quarantined-orphaned-chunks-2026-07-27/baier_katoen_2008_dot_chunks/section*/chunks.json.bak). The corpus is clean ONLY because of manual .bak renames. The next backup written without that rename reintroduces the defect immediately.\n\n=== THE MISCOUNT IS THE COSMETIC HALF; STALE SEARCHABLE CONTENT IS THE SUBSTANTIVE HALF ===\n\nDo not scope this as a counting bug. Chunks are written with INSERT OR REPLACE INTO chunks_data keyed on chunk_id (line ~192), and `find | sort` places \".backups/...\" FIRST lexicographically, so for chunk_ids present in BOTH manifests the live version wins the replace and the count is merely wrong. But a re-chunking that changes section boundaries produces chunk_ids that exist ONLY in the old manifest. Those have no live counterpart to replace them, so they persist in the rebuilt database permanently and are returned by search. Worse, their content_preview was read from the BACKUP directory's chunk files (the loop resolves chunk_file relative to os.path.dirname(manifest_path), line ~168), so the FTS5 index carries superseded text and source_path values that point into .backups/. Determine empirically whether stale-only chunk_ids are actually present in the current database before deciding the migration/rebuild story.\n\n=== SCOPE — DIRECTIONS, NOT DECISIONS ===\n\n1. Exclude backups from the traversal. Decide whether the exclusion belongs in the `find` itself (-path '*/.backups/*' -prune) or, more durably, in a shared \"what counts as a live corpus directory\" predicate. A bare .backups exclusion is a spot-fix: any dot-prefixed or quarantine directory has the same property, and the current .backups/ contents show at least three distinct non-corpus directory conventions in use.\n\n2. TREAT DUPLICATE doc_id AS AN ERROR, NOT A SILENT SUM. This is the more durable fix and should be evaluated on its merits, not as an add-on. A rebuild that encounters two manifests claiming the same doc_id has encountered an ambiguity it cannot resolve correctly, wherever those manifests live. Erroring (or at minimum warning loudly with both paths named) catches this entire class regardless of path, including cases no exclusion list anticipates. Decide whether it should be fatal or a loud warning, and whether an explicit override is warranted.\n\n3. Traversal survey. A grep of the extension's scripts for `find ... -name` found the build-index line to be the only unguarded recursive traversal; literature-audit.sh (lines ~104, ~163, ~311) and literature-ingest.sh (line ~142) all use -maxdepth 2 or narrower, and literature-ingest-online.sh uses -maxdepth 1. literature-search.sh performs NO traversal of its own — it queries the database that build-index.sh produces, which is precisely why a corrupted build propagates straight into search results with no independent check. Confirm this survey rather than assuming it; if any other script gains a recursive traversal it must inherit the same predicate.\n\n4. Decide whether a rebuild should report what it indexed in a way that would have made this visible — e.g. per-doc_id chunk counts, or a diff against the prior index — so a 99-chunk document reporting 144 is caught at rebuild time rather than noticed by an operator reading log output.\n\n=== RELATIONSHIP TO THE SCHEMA-UNIFICATION TASK (sequencing) ===\n\nSequenced after the literature global-index schema-unification task, for two reasons. Mechanically, that task lists literature-build-index.sh in its file scope, so the two must serialize. Substantively, the duplicate-doc_id question in scope item 2 interacts directly with that task's decision about canonical entry shape and about how entries are keyed — settling the schema first means the duplicate-detection rule is written against a single known entry shape rather than against two incompatible ones.\n\n=== ACCEPTANCE CRITERIA ===\n\n1. A rebuild run with an intact chunks.json present under ~/Projects/Literature/.backups/ produces the same index as a rebuild with that directory absent. Verified by a regression test that plants a backup manifest and asserts the resulting per-doc_id chunk count matches the live manifest exactly.\n2. A rebuild that encounters two manifests claiming the same doc_id fails, or warns with both manifest paths named — not silently sums. The chosen behavior is documented.\n3. The current database is audited for stale chunk_ids and stale source_path values pointing into .backups/, and any found are removed by a clean rebuild.\n4. The traversal survey above is completed and any exclusion logic is shared rather than duplicated per script.\n5. The manual chunks.json.bak rename workaround is no longer necessary, and nothing in the ingestion or re-ingestion path depends on an operator remembering it.\n\n=== BINDING RULES ===\n\nSOURCE-STORE RULE: all edits target agent-system/extensions/**, never the deployed .claude/** tree — it is a disposable deploy artifact regenerated from the source store, and hand-authored files there are silently wiped.\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.\n",
       "effort": "1-3 hours",
-      "dependencies": [
-        77
-      ],
+      "dependencies": [],
       "file_scope": [
         "agent-system/extensions/literature/scripts/literature-build-index.sh"
       ],

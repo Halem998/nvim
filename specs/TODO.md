@@ -6,16 +6,13 @@ next_project_number: 82
 
 ## Task Order
 
-*Updated 2026-08-20. Generated from state.json dependency graph.*
+*Updated 2026-08-24. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,31,39,43,45,46,51,62,66,68,72,74,77,81 | -- | agent-system, extensions, literature, ... |
-| 2 | 42,44,73,75,76,78,80 | 28,31,72,74,77 | extensions, literature, essential-refactor, ... |
-| 3 | 9,29,53,64,79 | 22,42,44,73 | agent-system, orchestration-concurrency, essential-refactor |
-| 4 | 30,48 | 22,29,39,43,44,64 | agent-system, essential-refactor |
-| 5 | 32,50 | 30,31,48 | agent-system, essential-refactor |
+| 1 | 13,14,20,22,27,28,29,31,32,39,42,43,44,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,30,50,64,75,76,78 | 29,32,42,48,74,77 | agent-system, extensions, literature, ... |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -26,13 +23,12 @@ next_project_number: 82
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 28 [IMPLEMENTING] — Rewrite the canonical MCP ownership document, whose central premi
-31 [RESEARCHING] — Give the .opencode/extensions/ mirror a real generation path from
-  └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta
-51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
-9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
-    └─ 32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta (see above)
+31 [RESEARCHING] — Give the .opencode/extensions/ mirror a real generation path from
+32 [NOT STARTED] — Deploy the accumulated source-store changes and remediate the sta
+  └─ 9 [NOT STARTED] — Declared-vs-deployed parity for provides.* categories is one-dire
+51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
 79 [NOT STARTED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
 
 ### Extensions
@@ -51,29 +47,27 @@ next_project_number: 82
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
 77 [NOT STARTED] — The literature global index at ~/Projects/Literature/index.json c
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
-  └─ 80 [NOT STARTED] — literature-build-index.sh traverses the corpus with an unguarded 
+80 [NOT STARTED] — literature-build-index.sh traverses the corpus with an unguarded 
 
 ### Orchestration Concurrency
 
+53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
 68 [NOT STARTED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
 81 [NOT STARTED] — Task-lock and session-registry heartbeats never fire during a rea
-53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
 
 ### Essential Refactor
 
-43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-    └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 42 [NOT STARTED] — Add two context gates to the deploy verification pipeline. (a) Br
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
-    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
+43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea (see above)
+48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+  └─ 50 [NOT STARTED] — Make the verification surface trustworthy, and close the doc-trut
 
 ### Team Mode Lifecycle
 
 72 [NOT STARTED] — Teammate agents spawned by team-mode skills write the skill-level
-  └─ 73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
+73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
 
 ## Tasks
 
@@ -205,7 +199,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: literature
-- **Dependencies**: Task 77
+- **Dependencies**: None
 
 **Description**: literature-build-index.sh traverses the corpus with an unguarded recursive `find` and indexes chunk manifests inside ~/Projects/Literature/.backups/ as if they were live, silently inflating chunk counts and admitting STALE CHUNK CONTENT into the searchable FTS5 index. The safe re-ingestion practice — move the old chunk set aside rather than delete it — is exactly what triggers the bug.
 
@@ -264,7 +258,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 73
+- **Dependencies**: None
 
 **Description**: subagent-postflight.sh blocks a SubagentStop with an EMPTY reason string whenever the postflight marker is not valid JSON, so the blocked agent receives "Blocked by hook" with no explanation of any kind and no way to learn what happened. The hook's own default reason never fires in exactly the case where a reason is most needed.
 
@@ -581,7 +575,7 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: team-mode-lifecycle
-- **Dependencies**: Task 72
+- **Dependencies**: None
 
 **Description**: The SubagentStop postflight hook picks an arbitrary .postflight-pending marker with no correlation to the session that owns it. In a team run, teammate stops burn the orchestrator's continuation budget and can delete the orchestrator's marker mid-run, silently removing the premature-termination guard.
 
@@ -969,7 +963,7 @@ ACCEPTANCE: long-builds.md exists at the stated path with the cap, the per-modul
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 31, Task 42, Task 63
+- **Dependencies**: Task 42
 
 **Description**: Decide and implement how --hard behavioral contracts reach agents system-wide. Only core, cslib, and lean declare routing_hard/routing_agents_hard. For every other extension that declares routing, --hard resolves via=hard-miss-standard-fallback and the H2-H5 behavioral contracts never reach the agent, even though CLAUDE.md advertises --hard as composable with extension routing at a 3-5x cost multiplier. In the originating session the H2/H3/H4/H5 contracts had to be hand-injected into the delegation prompt by the orchestrator for --hard to mean anything at all, which is neither reproducible nor something a user should have to do.
 
@@ -1131,7 +1125,7 @@ WORKAROUND EDGES (remove once the admission-gate predicate fix is deployed): the
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
-- **Dependencies**: Task 17, Task 44
+- **Dependencies**: None
 
 **Description**: Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect when a contractual non-writer leaves no fresh handoff. Observed live on a clean, fully-successful base-mode /orchestrate run (recorded as evt_1786550950625_o2KoSv; the class already has 3 occurrences in specs/events.jsonl).
 
@@ -1168,7 +1162,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 17, Task 18, Task 22, Task 28, Task 31, Task 34, Task 39, Task 41, Task 42, Task 43, Task 44, Task 47, Task 48, Task 59, Task 60, Task 61, Task 63, Task 64
+- **Dependencies**: Task 48
 
 **Description**: Make the verification surface trustworthy, and close the doc-truth and duplication residue. Grouped because each item individually is too small to dispatch, and all of them undermine confidence in the same gate suite.
 
@@ -1197,7 +1191,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 16, Task 17, Task 18, Task 22, Task 28, Task 31, Task 34, Task 39, Task 41, Task 42, Task 43, Task 44, Task 47, Task 59, Task 60, Task 61, Task 63, Task 64
+- **Dependencies**: None
 
 **Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
 
@@ -1247,7 +1241,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 17, Task 28, Task 41, Task 49
+- **Dependencies**: None
 - **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 - **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
 
@@ -1271,7 +1265,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 18, Task 31, Task 41
+- **Dependencies**: None
 
 **Description**: Add two context gates to the deploy verification pipeline. (a) Broken-@-ref lint: every `@path` token appearing in generated CLAUDE.md (and in the merge sources that produce it) must either RESOLVE relative to its containing file's directory or be explicitly marked citation-only; a ref that resolves to a nonexistent path is silently inert today (no error, no load) and must fail the gate loudly. The desired end-state for this repo is zero `@`-refs in merge sources (downward normalization to plain backticked paths is already applied), so the lint primarily guards against regression. (b) Warning-first context-budget gate: compute the predicted eager surface (reuse or invoke the measurement harness if it exists by then) and WARN when it exceeds a configured budget; escalate to a hard failure only after the warning tier has proven stable. Consider a per-extension `merge_targets.claudemd.max_bytes` manifest field — NOTE THE SEQUENCING DEPENDENCY: manifest-schema changes must coordinate with the in-flight manifest-schema work (correct-mcp-ownership / extension-manifest efforts); if that work is unsettled when this task starts, implement the budget with an external config and defer the manifest field. CONSTRAINTS: gates must read the source store and the freshly generated output, never trust the possibly-stale deployed .claude/** tree; volatile files (specs/TODO.md, state.json, errors.json) appearing in the eager set is always a FAILURE, not a warning; all edits target agent-system/extensions/**; no task-number references in deliverables outside specs/**.
 
@@ -1296,7 +1290,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
-- **Dependencies**: Task 38
+- **Dependencies**: None
 - **Research**: [039_zotero_metadata_resolution_upgrade/reports/02_zotero-metadata-resolution-design.md]
 - **Plan**: [039_zotero_metadata_resolution_upgrade/plans/02_zotero-metadata-resolution.md]
 
@@ -1431,7 +1425,7 @@ ADDITIONAL ACCEPTANCE CRITERIA:
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 28, Task 29, Task 30, Task 31
+- **Dependencies**: None
 
 **Description**: Deploy the accumulated source-store changes and remediate the stale grant that the install-once mechanism structurally cannot fix.
 
@@ -1453,7 +1447,7 @@ VERIFICATION: mcp-server-ownership.md exists in the deployed tree; the deployed 
 - **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 19
+- **Dependencies**: None
 
 **Description**: Give the .opencode/extensions/ mirror a real generation path from the source store, so it stops silently drifting, and fix the live defect that drift has already produced.
 
@@ -1491,7 +1485,7 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 19, Task 22, Task 44
+- **Dependencies**: None
 
 **Description**: Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
 
@@ -1582,7 +1576,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 19
+- **Dependencies**: None
 
 **Description**: Silence and correct opencode-agents.json fragment validation spam on extension reload.
 
@@ -1642,7 +1636,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 34, Task 63
+- **Dependencies**: None
 
 **Description**: /todo's repository-metrics sync runs before its git commit, so the health probe measures a tree whose git index still points at pre-move paths. Every archived-away file is counted as a structural failure, inflating build_errors and flipping status to "critical" on a healthy tree.
 
@@ -1794,7 +1788,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 33
+- **Dependencies**: None
 
 **Description**: Two dispatches in a single batch fanned out to phase sub-agents and terminated before writing a terminal status, costing a recovery cycle each. Recorded as err_1786344051474_RcIhk6.
 
@@ -1819,7 +1813,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 17
+- **Dependencies**: None
 
 **Description**: The acceptance criterion "gate-out reports zero format errors and zero auto-repaired fields" is unverifiable as written, because no reporting surface exists. Recorded as err_1786350581339_Q4VnFy.
 
@@ -1845,7 +1839,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 18, Task 44
+- **Dependencies**: Task 32
 
 **Description**: Declared-vs-deployed parity for provides.* categories is one-directional by design, and the live .claude/ tree carries 4 orphan files absent from a clean scratch regenerate: context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md. Two of these (docs/architecture/architecture-spec.md, docs/README.md) were not covered by the pre-existing err_1786349061556_LuKGif (deploy_ghost_index_entries), which only named the other two -- confirmed and extended by err_1786350581273_TAWj0I (deploy_orphan_files_undercounted). This task covers BOTH error ids with one decision; do not split it.
 
