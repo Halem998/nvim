@@ -11,25 +11,23 @@ next_project_number: 94
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,32,39,42,43,45,46,48,51,53,62,66,68,72,73,74,79,80,81,84,87,91 | -- | agent-system, extensions, literature, ... |
-| 2 | 9,28,30,44,50,64,75,76,77,82,85,88,89,90,92 | 29,32,42,48,62,74,84,87 | agent-system, extensions, literature, ... |
-| 3 | 78,83,86 | 77,82 | literature, essential-refactor |
-| 4 | 93 | 83 | essential-refactor |
+| 1 | 9,13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81,82,84,85,87,91,92 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,44,50,64,75,76,78,83,86,88,89,90 | 29,42,48,62,74,77,82,84,87 | agent-system, extensions, literature, ... |
+| 3 | 93 | 83 | essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
+9 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
+28 [IMPLEMENTING] — === REVISED 2026-08-24 (refactor survey) ===
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
-32 [PLANNED] — === REVISED 2026-08-24 (refactor survey) ===
-  └─ 9 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-  └─ 28 [IMPLEMENTING] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
 79 [NOT STARTED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
 
@@ -47,9 +45,9 @@ next_project_number: 94
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-80 [NOT STARTED] — literature-build-index.sh traverses the corpus with an unguarded 
 77 [NOT STARTED] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
+80 [NOT STARTED] — literature-build-index.sh traverses the corpus with an unguarded 
 92 [NOT STARTED] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
 
 ### Orchestration Concurrency
@@ -69,17 +67,17 @@ next_project_number: 94
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-84 [NOT STARTED] — The one duplication gate that exists has the wrong scope and has 
-  └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
-  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
-  └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 82 [NOT STARTED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
   └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
     └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
   └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
+84 [NOT STARTED] — The one duplication gate that exists has the wrong scope and has 
+  └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
+87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
+  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+  └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 
 ### Team Mode Lifecycle
 
@@ -1893,12 +1891,13 @@ ADDITIONAL ACCEPTANCE CRITERIA:
 ---
 
 ### 32. Redeploy and remediate install once settings
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [032_redeploy_and_remediate_install_once_settings/reports/01_redeploy-and-remediate-baseline.md]
 - **Plan**: [032_redeploy_and_remediate_install_once_settings/plans/01_deploy-remediate-stale-grant.md]
+- **Summary**: [032_redeploy_and_remediate_install_once_settings/summaries/01_deploy-remediate-stale-grant-summary.md]
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 PREMISE CORRECTION, AND A LARGE PRIORITY INCREASE. This task is now the single most important item in the backlog.
