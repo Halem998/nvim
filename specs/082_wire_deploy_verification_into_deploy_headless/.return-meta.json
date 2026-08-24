@@ -1,13 +1,32 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
-  "next_steps": "Planning in progress",
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/082_wire_deploy_verification_into_deploy_headless/plans/01_wire-verify-into-deploy-headless.md",
+      "summary": "Five-phase plan adding --skip-slow to verify-deploy.sh, wiring a real inline invocation into deploy-headless.sh with a new exit code 3, a fixture-driven regression suite, and documentation of the skill-orchestrate redeploy-checkpoint collision."
+    }
+  ],
+  "next_steps": "Run /implement 82 to execute the plan",
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e_82",
     "agent_type": "planner-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 3.75,
+    "dependency_waves": [[1], [2], [3, 4], [5]]
   },
-  "memory_candidates": [],
-  "modified_files": []
+  "memory_candidates": [
+    {
+      "content": "When a producer script gains a gate that can fail on pre-existing conditions, pushing the downstream consumer's pre/post baseline-diff tolerance INTO the producer is structurally unsound whenever the acceptance scenario introduces its drift upstream of the producer's own pre-capture point: the injected drift is already present in the producer's baseline, so it classifies as pre-existing and the gate never fires on the exact case it must catch. The correct decomposition is a distinct new exit code in the producer (never overloading an existing one) plus a documented follow-up teaching the consumer to route that code through its existing baseline branches. The distinct exit code is the cheap discriminator that makes the follow-up a small edit rather than a redesign.",
+      "category": "PATTERN",
+      "source_artifact": "specs/082_wire_deploy_verification_into_deploy_headless/plans/01_wire-verify-into-deploy-headless.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["exit-code-contract", "baseline-diff", "gate-wiring", "producer-consumer", "deploy-verification"]
+    }
+  ],
+  "modified_files": [
+    "specs/082_wire_deploy_verification_into_deploy_headless/plans/01_wire-verify-into-deploy-headless.md"
+  ]
 }

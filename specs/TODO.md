@@ -69,7 +69,7 @@ next_project_number: 97
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-82 [PLANNING] — deploy-headless.sh:233 PRINTS the verification step instead of ru
+82 [PLANNED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
   └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
     └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
   └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
@@ -499,11 +499,12 @@ ACCEPTANCE: a meta task whose implementation edits the source store cannot reach
 ---
 
 ### 82. Wire deploy verification into deploy headless
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 32
 - **Research**: [082_wire_deploy_verification_into_deploy_headless/reports/01_wire-verify-into-deploy-headless.md]
+- **Plan**: [082_wire_deploy_verification_into_deploy_headless/plans/01_wire-verify-into-deploy-headless.md]
 
 **Description**: deploy-headless.sh:233 PRINTS the verification step instead of running it. The line reads `echo "[deploy-headless] Verify with: bash $TARGET/.claude/scripts/verify-deploy.sh"` followed immediately by `exit 0`. verify-deploy.sh aggregates five working contract lints (lint-agent-contracts, lint-contract-compliance, lint-postflight-boundary, lint-routing-wiring, lint-state-writer-boundary) plus doc-lint, task-reference lint, verify.lua parity, the shell test suite and validate-state --deep, and exits 1 on failure. Because its only caller echoes instead of invoking, all of that is reachable only by a human typing the command. command-gate-out.sh invokes ZERO checks (grep for 'check-|lint-' returns nothing). check-runtime-file-tracking.sh has no caller anywhere in the repo -- only a manifest declaration and prose references.
 
