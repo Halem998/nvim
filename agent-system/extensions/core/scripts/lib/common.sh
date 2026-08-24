@@ -50,14 +50,29 @@
 #   ts="$(common_timestamp_iso)"
 #   common_log_info "starting up"
 #   common_test_pass "case description"                    # increments caller's PASSED
+#
+# .md consumers (commands/*.md, skills/*/SKILL.md): a bash block that needs a session ID uses
+# the CWD-relative deployed-path idiom already used by 138+ .md files in this codebase --
+#     source .claude/scripts/lib/common.sh
+#     session_id="$(common_session_id)"
+# executed from the repo root, never a source-store-relative path (a .md bash block has no
+# SCRIPT_DIR of its own to bootstrap from). Preserve each site's existing variable name
+# (session_id, batch_session_id, todo_session_id, ...) when migrating an inline generator to this
+# idiom -- do not rename in passing. This is the single source-of-truth fix for the class of
+# inline `sess_$(date +%s)_$(...)` generators formerly duplicated across command/skill Markdown.
+# Illustrative-prose sites under context/, docs/, and rules/ are deliberately NOT migrated and
+# are expected to keep showing the literal generator as documentation, not a live call site --
+# see tests/test-common-lib.sh's collect_session_id_offenders, which scopes its .md scan to
+# commands/skills/agents by construction rather than excluding prose paths by a growing deny-list.
 
 # Consumers (updated as each migration phase lands):
 #   Session-ID generation (common_session_id), migrated in Phase 3:
 #     scripts/command-gate-in.sh, scripts/manage-topics.sh,
 #     scripts/orchestrate-predispatch-review.sh, scripts/reconcile-artifacts.sh,
-#     scripts/skill-base.sh (two call sites), plus two now-quarantined scripts under
-#     scripts/deprecated/ (archive-task, vault-operation) whose source still calls this
-#     function even though neither has a live caller of its own.
+#     scripts/skill-base.sh (two call sites), scripts/validate-state.sh (the --fix session-id
+#     assignment), plus two now-quarantined scripts under scripts/deprecated/ (archive-task,
+#     vault-operation) whose source still calls this function even though neither has a live
+#     caller of its own.
 #   command-gate-in.sh and skill-base.sh set no shell options at all (they are sourced into a
 #   caller's shell); sourcing common.sh is confirmed not to change that (see
 #   tests/test-common-lib.sh's $-/`set -o` assertions, exercised directly against both files).

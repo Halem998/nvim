@@ -42,7 +42,7 @@
 #   (exit 1) on unparseable JSON before attempting any repair. Class B (normalization-equivalent)
 #   duplicates are never touched by --fix -- see Check 9 above. `--session-id SID` optionally
 #   supplies the session id state-write.sh attributes the write to; a session id is
-#   self-generated (the portable `sess_$(date +%s)_...` pattern) when omitted.
+#   self-generated via lib/common.sh's common_session_id() when omitted.
 #
 # FILE_SCOPE_COARSE_MIN_OVERLAP (environment variable, optional, default 3): the minimum distinct
 #   non-terminal-task blast radius (see Check 8 below) an entry must have, in addition to the
@@ -108,6 +108,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/common.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -268,7 +269,7 @@ if [[ "$FIX_MODE" == "true" ]]; then
       [[ -z "$_fp" ]] && continue
       echo "--fix: project_number $_fp: removing $_fr exact-duplicate file_scope entry(ies)"
     done < <(jq -r '.[] | [(.project_number|tostring), (.removed|tostring)] | @tsv' <<< "$_fix_report")
-    _fix_session="${FIX_SESSION_ID:-sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')}"
+    _fix_session="${FIX_SESSION_ID:-$(common_session_id)}"
     _fix_state_abs="$_fix_state_dir/$(basename "$STATE_FILE")"
     bash "$FIX_STATE_WRITE" \
       '.active_projects = [.active_projects[] | if has("file_scope") then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]' \
