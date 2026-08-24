@@ -431,30 +431,33 @@ that key must be updated too.
 
 ---
 
-### Phase 6: Document the Predicate, the Policy, and the Traversal Survey [NOT STARTED]
+### Phase 6: Document the Predicate, the Policy, and the Traversal Survey [COMPLETED]
 
 **Goal**: Give the "live corpus directory" predicate, the duplicate-`doc_id` policy, and the
 traversal survey one documented home so future scripts inherit them instead of rediscovering them.
 
 **Tasks**:
-- [ ] Create `context/project/literature/domain/corpus-directory-conventions.md` covering:
+- [x] Create `context/project/literature/domain/corpus-directory-conventions.md` covering:
       which directories under the corpus root are live vs. backup/quarantine/staging; the exact
       prune expression and why it uses `-mindepth 1`; the `.chunks/` legacy case as the worked
       example of a *nested* non-corpus directory; and the instruction that any future recursive
-      traversal over the corpus must use the same predicate
-- [ ] Document the duplicate-`doc_id` policy in the same file: warn-by-default with all claiming
+      traversal over the corpus must use the same predicate *(completed)*
+- [x] Document the duplicate-`doc_id` policy in the same file: warn-by-default with all claiming
       paths named, `--strict-duplicates` for exit 3, the reconciliation with
       `literature-ingest.sh`'s warn-then-overwrite precedent, and why fatal is not the default
       (a non-fatal caller wrapper turns a hard failure into a silently un-rebuilt index)
-- [ ] Re-run the traversal survey (`grep -n 'find ' scripts/*.sh` plus a `glob`/`os.walk` grep over
+      *(completed)*
+- [x] Re-run the traversal survey (`grep -n 'find ' scripts/*.sh` plus a `glob`/`os.walk` grep over
       `*.py`) and record the resulting table in the same file, with the explicit finding that no
-      other script needs the predicate today
-- [ ] Record that `literature-search.sh` performs no traversal and inherits corruption only
-      through the database, so it needs no change
-- [ ] Update `context/project/literature/domain/format-decision.md`'s description of manifest
-      discovery if it states the traversal is unguarded
-- [ ] Reference durable anchors (filenames, section headings) only — no task-number references in
-      any file outside `specs/**`
+      other script needs the predicate today *(completed)*
+- [x] Record that `literature-search.sh` performs no traversal and inherits corruption only
+      through the database, so it needs no change *(completed)*
+- [x] Update `context/project/literature/domain/format-decision.md`'s description of manifest
+      discovery if it states the traversal is unguarded *(completed: inspected — its description
+      says only "discovers chunks via find -name chunks.json", never claims the traversal is
+      unguarded, so it was not stale and was left unmodified)*
+- [x] Reference durable anchors (filenames, section headings) only — no task-number references in
+      any file outside `specs/**` *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -468,11 +471,16 @@ traversal survey one documented home so future scripts inherit them instead of r
   if its manifest-discovery description is now stale
 
 **Verification**:
-- Every changed hunk lies in markdown prose; no script behavior changes in this phase
+- Every changed hunk lies in markdown prose; no script behavior changes in this phase *(confirmed)*
 - `bash .claude/scripts/check-task-references.sh` (or equivalent repo lint) reports no
-  task-number references introduced outside `specs/**`
+  task-number references introduced outside `specs/**` *(confirmed: PASS, 0 unexempted
+  occurrences)*
 - The recorded survey table matches a freshly-run grep, not the research report's copy
+  *(confirmed: survey re-run via `grep -n 'find '` over `scripts/*.sh` and a `glob`/`os.walk`
+  sweep over `scripts/*.py` at documentation time)*
 - The prune expression quoted in the doc is character-identical to the one in the script
+  *(confirmed for the find invocation itself; the doc notes the script additionally pipes to
+  `| sort`, which is not part of the prune logic)*
 
 ---
 

@@ -1,0 +1,24 @@
+{
+  "phase": 6,
+  "phase_name": "Document the Predicate, the Policy, and the Traversal Survey",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "corpus-directory-conventions.md: predicate, policy, traversal survey", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/literature/context/project/literature/domain/corpus-directory-conventions.md"
+     ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.format-decision-update",
+      "description": "Update format-decision.md's description of manifest discovery if it states the traversal is unguarded",
+      "type": "skipped",
+      "reason": "Inspected the file; its description ('discovers chunks via find -name chunks.json') never claims the traversal is unguarded, so the conditional in the plan's task text does not trigger and the file was left unmodified",
+      "annotation": "*(deviation: skipped — description was not stale, condition for the edit did not hold)*"
+    }
+  ]
+}
