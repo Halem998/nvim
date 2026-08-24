@@ -19,7 +19,7 @@ next_project_number: 97
 
 ### Agent System
 
-9 [PLANNING] — === REVISED 2026-08-24 (refactor survey) ===
+9 [PLANNED] — === REVISED 2026-08-24 (refactor survey) ===
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
@@ -2523,11 +2523,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 9. Resolve deploy orphan file parity
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 32
 - **Research**: [009_resolve_deploy_orphan_file_parity/reports/01_orphan-file-parity-remeasurement.md]
+- **Plan**: [009_resolve_deploy_orphan_file_parity/plans/01_orphan-detection-parity.md]
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 SCOPE CORRECTION: the orphan set is ELEVEN files, not the four named below. A manifest cross-check finds the entire deployed .claude/context/orchestration/ directory (architecture.md, delegation.md, orchestration-core.md, orchestration-reference.md, orchestration-validation.md, orchestrator.md, postflight-pattern.md, preflight-pattern.md, sessions.md, subagent-validation.md) plus docs/architecture/architecture-spec.md, with no source-store owner. Conversely docs/README.md is NO LONGER an orphan -- drop it from the set.

@@ -1,13 +1,18 @@
 {
-  "status": "in_progress",
+  "status": "planned",
   "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/009_resolve_deploy_orphan_file_parity/plans/01_orphan-detection-parity.md",
+      "summary": "Six-phase plan implementing direction (a) -- whole-tree deploy-orphan and ghost-index-row detection wired into verify-deploy.sh -- plus cleanup of the 4 measured orphan files and 2 ghost index rows."
+    },
     {
       "type": "report",
       "path": "specs/009_resolve_deploy_orphan_file_parity/reports/01_orphan-file-parity-remeasurement.md",
       "summary": "Fresh clean-scratch-regenerate re-measurement against the now-current deployed tree: confirms exactly 4 orphan files (not the task description's REVISED 11-file claim), with git-history root-cause confirmation and a decision recommendation."
     }
   ],
-  "next_steps": "Run /plan 9. Use this report's 4-file orphan set (context/orchestration/orchestration-validation.md, context/orchestration/subagent-validation.md, docs/architecture/architecture-spec.md, docs/README.md) as the authoritative scope -- it supersedes the task description's REVISED 11-file claim, which this research found to be incorrect. The staleness-caveat/dependency precondition (deploy + staleness-detection tasks) is satisfied; planning may proceed without further sequencing delay.",
+  "next_steps": "Run /implement 9 to execute the plan. Direction decision is made in the plan (direction (a): build mechanical orphan detection, detect-never-delete). Scope is the research report's 4-file orphan set plus 2 ghost context/index.json rows -- the task description's REVISED 11-file block is superseded and must not be acted on.",
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e_9",
     "agent_type": "planner-agent",
@@ -16,6 +21,26 @@
       "orchestrator",
       "plan",
       "planner-agent"
+    ],
+    "phase_count": 6,
+    "estimated_hours": 8,
+    "dependency_waves": [
+      [
+        1
+      ],
+      [
+        2
+      ],
+      [
+        3
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        6
+      ]
     ]
   },
   "memory_candidates": [
@@ -44,6 +69,22 @@
         "evidence-trust",
         "orphan-files"
       ]
+    },
+    {
+      "content": "When verifying parity between a source-of-truth store and a generated/deployed tree that is fanned in from MANY owners (multiple extensions, packages, or plugins all copying into one target directory), the reverse direction -- finding deployed files no longer declared by anything -- must be computed as a WHOLE-TREE operation over the union of all owners' declared sets, never per-owner. A per-owner subtractive check is wrong by construction: owner A's undeclared file is routinely owner B's declared file, so every per-owner pass reports the other owners' legitimate content as orphans. The forward direction (declared-but-missing, hash mismatch) is safely per-owner, which is why codebases naturally grow the forward check per-owner and then find the reverse check does not fit the same loop. Build the reverse check as a separate whole-tree entry point that reuses the same declared-side enumeration primitive, and pair it with an explicit, named exclusion contract for legitimately-undeclared content (runtime artifacts, merged/generated files, protected paths) -- without that contract the check produces constant false positives and is ignored.",
+      "category": "PATTERN",
+      "source_artifact": "specs/009_resolve_deploy_orphan_file_parity/plans/01_orphan-detection-parity.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "parity-verification",
+        "orphan-detection",
+        "deploy-tree",
+        "whole-tree-union",
+        "exclusion-contract"
+      ]
     }
+  ],
+  "modified_files": [
+    "specs/009_resolve_deploy_orphan_file_parity/plans/01_orphan-detection-parity.md"
   ]
 }
