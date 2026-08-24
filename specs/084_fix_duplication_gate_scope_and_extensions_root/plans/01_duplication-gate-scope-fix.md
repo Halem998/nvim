@@ -1,7 +1,7 @@
 # Implementation Plan: Fix Duplication Gate Scope and EXTENSIONS_ROOT
 
 - **Task**: 84 - fix_duplication_gate_scope_and_extensions_root
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/084_fix_duplication_gate_scope_and_extensions_root/reports/01_duplication-gate-scope-and-extensions-root.md`
@@ -108,26 +108,26 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Repair Dual-Mode Root Resolution [NOT STARTED]
+### Phase 1: Repair Dual-Mode Root Resolution [COMPLETED]
 
 **Goal**: `test-common-lib.sh` resolves its scan root correctly and identically whether run from
 `agent-system/extensions/core/scripts/tests/` or from the deployed `.claude/scripts/tests/`.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/tests/run-all.sh`'s layout-detection block (the
+- [x] Read `agent-system/extensions/core/scripts/tests/run-all.sh`'s layout-detection block (the *(completed)*
       `CANDIDATE_EXT_ROOT` / `core/manifest.json` probe) and reuse its shape verbatim.
-- [ ] In `test-common-lib.sh`, replace `EXTENSIONS_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"` with
+- [x] In `test-common-lib.sh`, replace `EXTENSIONS_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"` with *(completed)*
       probe-based detection setting a `SCAN_MODE` variable:
       - source-store (probe hits `$CANDIDATE/core/manifest.json`): `SCAN_ROOT="$CANDIDATE"`
         (`agent-system/extensions/`)
       - deployed (probe misses): `SCAN_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"` (`.claude/`) — note
         this is one level ABOVE `run-all.sh`'s `DEPLOY_SCRIPTS_ROOT`, because `commands/`,
         `skills/`, and `agents/` live at the `.claude/` top level, not under `.claude/scripts/`.
-- [ ] Keep the existing `*.sh` scan unchanged in reach — whole-tree over `SCAN_ROOT`, same
+- [x] Keep the existing `*.sh` scan unchanged in reach — whole-tree over `SCAN_ROOT`, same *(completed)*
       `--include="*.sh"`, same two exclusion filters.
-- [ ] Update the block's leading comment, which currently asserts the source-store-only depth
+- [x] Update the block's leading comment, which currently asserts the source-store-only depth *(completed)*
       assumption, to describe the two modes.
-- [ ] Echo the detected mode and resolved root (matching `run-all.sh`'s `say` convention) so a
+- [x] Echo the detected mode and resolved root (matching `run-all.sh`'s `say` convention) so a *(completed)*
       failing run is diagnosable.
 
 **Timing**: 0.75 hours
@@ -153,19 +153,19 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Migrate the `.sh` Offender [NOT STARTED]
+### Phase 2: Migrate the `.sh` Offender [COMPLETED]
 
 **Goal**: `core/scripts/validate-state.sh` uses `common_session_id()` instead of an inline
 generator, removing the last `.sh` offender.
 
 **Tasks**:
-- [ ] Confirm whether `validate-state.sh` already sources `lib/common.sh`; if not, add the standard
+- [x] Confirm whether `validate-state.sh` already sources `lib/common.sh`; if not, add the standard *(completed)*
       `SCRIPT_DIR` bootstrap + `source "${SCRIPT_DIR}/lib/common.sh"` following the idiom used by
       `errors-append.sh`, `generate-todo.sh`, and the other listed adopters.
-- [ ] Replace the inline `sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')` in the
+- [x] Replace the inline `sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')` in the *(completed)*
       `_fix_session` assignment with `"${FIX_SESSION_ID:-$(common_session_id)}"`, preserving the
       existing `FIX_SESSION_ID` env override semantics exactly.
-- [ ] Add `scripts/validate-state.sh` to `lib/common.sh`'s "Session-ID generation
+- [x] Add `scripts/validate-state.sh` to `lib/common.sh`'s "Session-ID generation *(completed)*
       (common_session_id)" consumer list comment.
 
 **Timing**: 0.5 hours
@@ -197,26 +197,26 @@ phase.
 
 ---
 
-### Phase 3: Add the `.md`-Scoped Scan [NOT STARTED]
+### Phase 3: Add the `.md`-Scoped Scan [COMPLETED]
 
 **Goal**: The gate additionally scans `.md` executable surfaces — `commands/`, `skills/`, `agents/`
 — in both modes, while leaving `context/`, `docs/`, and `rules/` out of scope by construction
 rather than by exclusion list.
 
 **Tasks**:
-- [ ] Extract the offender collection into a helper function in `test-common-lib.sh` (e.g.
+- [x] Extract the offender collection into a helper function in `test-common-lib.sh` (e.g. *(completed)*
       `collect_session_id_offenders <mode> <root>`) that emits a newline-separated path list on
       stdout, so both the live assertion and Phase 4's fixtures can call it. Keep the helper
       side-effect-free and never `exit`.
-- [ ] Inside the helper: run the existing whole-tree `--include="*.sh"` scan over `<root>`
+- [x] Inside the helper: run the existing whole-tree `--include="*.sh"` scan over `<root>` *(completed)*
       unchanged.
-- [ ] Add a second `--include="*.md"` scan, scoped per mode:
+- [x] Add a second `--include="*.md"` scan, scoped per mode: *(completed)*
       - source-store: iterate `<root>/*/{commands,skills,agents}`, skipping directories that do not
         exist (confirmed necessary — `formal` has no `commands/`, `slidev` has none of the three).
       - deployed: scan `<root>/{commands,skills,agents}` directly, no per-extension loop.
-- [ ] Merge both scans' results, then apply the existing exclusion filters (`/lib/common.sh`,
+- [x] Merge both scans' results, then apply the existing exclusion filters (`/lib/common.sh`, *(completed)*
       `/tests/test-common-lib.sh`) once, to the merged list, before the pass/fail decision.
-- [ ] Record in the block comment that `context/`, `docs/`, and `rules/` are deliberately excluded
+- [x] Record in the block comment that `context/`, `docs/`, and `rules/` are deliberately excluded *(completed)*
       as illustrative prose, and that this exclusion is achieved by positive scoping rather than by
       a growing deny-list.
 
@@ -254,25 +254,25 @@ rather than treating the numbers here as fixed.
 
 ---
 
-### Phase 4: Add Dual-Mode and Exclusion Regression Fixtures [NOT STARTED]
+### Phase 4: Add Dual-Mode and Exclusion Regression Fixtures [COMPLETED]
 
 **Goal**: Fixture-driven cases pin the two behaviors that were invisible before this task —
 deployed-mode `.md` detection, and the prose-exclusion boundary — so neither can silently regress.
 
 **Tasks**:
-- [ ] In the suite's existing `mktemp -d` workdir, build a synthetic deployed-layout tree:
+- [x] In the suite's existing `mktemp -d` workdir, build a synthetic deployed-layout tree: *(completed)*
       `$WORKDIR/deployed/{commands,skills,agents,context,scripts/lib}`.
-- [ ] Plant a positive fixture: `$WORKDIR/deployed/commands/planted.md` containing an inline
+- [x] Plant a positive fixture: `$WORKDIR/deployed/commands/planted.md` containing an inline *(completed)*
       `sess_$(date +%s)_...` generator. Assert `collect_session_id_offenders deployed
       "$WORKDIR/deployed"` returns it.
-- [ ] Plant a negative fixture: `$WORKDIR/deployed/context/illustrative.md` containing the same
+- [x] Plant a negative fixture: `$WORKDIR/deployed/context/illustrative.md` containing the same *(completed)*
       string. Assert it is NOT returned — this is the prose-exclusion boundary case.
-- [ ] Build a matching synthetic source-store tree (`$WORKDIR/source/core/manifest.json` present,
+- [x] Build a matching synthetic source-store tree (`$WORKDIR/source/core/manifest.json` present, *(completed)*
       plus `$WORKDIR/source/someext/commands/planted.md`) and assert the source-store branch finds
       the planted file and skips extensions lacking `commands/`/`skills/`/`agents/`.
-- [ ] Assert the mode probe itself: the source tree resolves `source-store`, the deployed tree
+- [x] Assert the mode probe itself: the source tree resolves `source-store`, the deployed tree *(completed)*
       resolves `deployed`.
-- [ ] Use the suite's existing `pass`/`fail`/`info` helpers and PASSED/FAILED counters; do not
+- [x] Use the suite's existing `pass`/`fail`/`info` helpers and PASSED/FAILED counters; do not *(completed)*
       introduce a parallel reporting convention.
 
 **Timing**: 0.75 hours
@@ -296,13 +296,13 @@ deployed-mode `.md` detection, and the prose-exclusion boundary — so neither c
 
 ---
 
-### Phase 5: Establish and Pilot the `.md` Replacement Idiom [NOT STARTED]
+### Phase 5: Establish and Pilot the `.md` Replacement Idiom [COMPLETED]
 
 **Goal**: One documented, verified replacement idiom for inline session-ID generation inside `.md`
 bash blocks, proven on a single pilot file before any bulk migration.
 
 **Tasks**:
-- [ ] Adopt the CWD-relative deployed-path idiom, consistent with the `bash .claude/scripts/...`
+- [x] Adopt the CWD-relative deployed-path idiom, consistent with the `bash .claude/scripts/...` *(completed)*
       convention already used by 138 `.md` files in this codebase:
       ```bash
       source .claude/scripts/lib/common.sh
@@ -310,14 +310,14 @@ bash blocks, proven on a single pilot file before any bulk migration.
       ```
       Preserve each site's existing variable name (`session_id`, `batch_session_id`,
       `todo_session_id`, ...) — do not rename variables while migrating.
-- [ ] Pilot on `agent-system/extensions/core/commands/research.md` (the `Generate Batch Session ID`
+- [x] Pilot on `agent-system/extensions/core/commands/research.md` (the `Generate Batch Session ID` *(completed)*
       step), preserving the surrounding prose and the bare-`batch_session_id` guidance that follows
       it.
-- [ ] Verify the pilot by executing the replacement snippet from the repo root and confirming it
+- [x] Verify the pilot by executing the replacement snippet from the repo root and confirming it *(completed)*
       emits a well-formed `sess_<epoch>_<6hex>` id.
-- [ ] Record the idiom in `lib/common.sh`'s header (a short `.md` consumers note alongside the
+- [x] Record the idiom in `lib/common.sh`'s header (a short `.md` consumers note alongside the *(completed)*
       existing usage block), so future `.md` authors reach for it instead of re-inlining.
-- [ ] Note explicitly, in that same header note, that `context/`, `docs/`, and `rules/` prose sites
+- [x] Note explicitly, in that same header note, that `context/`, `docs/`, and `rules/` prose sites *(completed)*
       are out of scope and should keep showing the literal generator as documentation.
 
 **Timing**: 0.75 hours
@@ -339,19 +339,19 @@ bash blocks, proven on a single pilot file before any bulk migration.
 
 ---
 
-### Phase 6: Migrate Core's Remaining `.md` Sites [NOT STARTED]
+### Phase 6: Migrate Core's Remaining `.md` Sites [COMPLETED]
 
 **Goal**: Every remaining core `commands/` and `skills/` offender uses the Phase 5 idiom.
 
 **Tasks**:
-- [ ] Migrate the 7 remaining core commands: `implement.md`, `orchestrate.md`, `plan.md`,
+- [x] Migrate the 7 remaining core commands: `implement.md`, `orchestrate.md`, `plan.md`, *(completed)*
       `review.md`, `spawn.md`, `task.md`, `todo.md`.
-- [ ] Migrate the 3 core skills: `skill-fix-it/SKILL.md`, `skill-project-overview/SKILL.md`,
+- [x] Migrate the 3 core skills: `skill-fix-it/SKILL.md`, `skill-project-overview/SKILL.md`, *(completed)*
       `skill-todo/SKILL.md`. Note `skill-todo/SKILL.md` documents in prose that it "does not source
       `command-gate-in.sh` and has none of its own" — update that prose to reflect the new
       `lib/common.sh` sourcing rather than leaving a now-false statement.
-- [ ] Preserve each site's existing variable name and surrounding prose exactly.
-- [ ] Commit per file (each file is independently green).
+- [x] Preserve each site's existing variable name and surrounding prose exactly. *(completed)*
+- [x] Commit per file (each file is independently green). *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -375,17 +375,17 @@ whatever that returns rather than the enumerated list if they differ.
 
 ---
 
-### Phase 7: Migrate Founder and Present Extensions [NOT STARTED]
+### Phase 7: Migrate Founder and Present Extensions [COMPLETED]
 
 **Goal**: The 15 `.md` offenders in the `founder` and `present` extensions use the Phase 5 idiom.
 
 **Tasks**:
-- [ ] Migrate founder's 10 commands: `analyze.md`, `consult.md`, `deck.md`, `finance.md`,
+- [x] Migrate founder's 10 commands: `analyze.md`, `consult.md`, `deck.md`, `finance.md`, *(completed)*
       `legal.md`, `market.md`, `meeting.md`, `project.md`, `sheet.md`, `strategy.md`.
-- [ ] Migrate present's 5 commands: `budget.md`, `funds.md`, `grant.md`, `slides.md`,
+- [x] Migrate present's 5 commands: `budget.md`, `funds.md`, `grant.md`, `slides.md`, *(completed)*
       `timeline.md`.
-- [ ] Preserve each site's existing variable name and surrounding prose exactly.
-- [ ] Commit per file.
+- [x] Preserve each site's existing variable name and surrounding prose exactly. *(completed)*
+- [x] Commit per file. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -410,18 +410,18 @@ individually and note the deviation rather than applying a blind substitution.
 
 ---
 
-### Phase 8: Migrate Filetypes, CSLib, Literature, and Epidemiology [NOT STARTED]
+### Phase 8: Migrate Filetypes, CSLib, Literature, and Epidemiology [COMPLETED]
 
 **Goal**: The remaining 11 `.md` offenders across the four smaller extensions use the Phase 5 idiom.
 
 **Tasks**:
-- [ ] Migrate filetypes' 5 commands: `convert.md`, `edit.md`, `scrape.md`, `sheet.md`, `table.md`.
-- [ ] Migrate cslib's 3 sites: `commands/pr.md`, `commands/vet.md`,
+- [x] Migrate filetypes' 5 commands: `convert.md`, `edit.md`, `scrape.md`, `sheet.md`, `table.md`. *(completed)*
+- [x] Migrate cslib's 3 sites: `commands/pr.md`, `commands/vet.md`, *(completed)*
       `skills/skill-cslib-vet/SKILL.md`.
-- [ ] Migrate literature's 2 skills: `skill-cite/SKILL.md`, `skill-literature/SKILL.md`.
-- [ ] Migrate epidemiology's 1 command: `epi.md`.
-- [ ] Preserve each site's existing variable name and surrounding prose exactly.
-- [ ] Commit per file.
+- [x] Migrate literature's 2 skills: `skill-cite/SKILL.md`, `skill-literature/SKILL.md`. *(completed)*
+- [x] Migrate epidemiology's 1 command: `epi.md`. *(completed)*
+- [x] Preserve each site's existing variable name and surrounding prose exactly. *(completed)*
+- [x] Commit per file. *(completed)*
 
 **Timing**: 0.75 hours
 

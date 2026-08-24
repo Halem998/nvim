@@ -217,21 +217,85 @@ fi
 
 # ── Single-source assertion: no inline sess_$(date generation outside lib/common.sh ──
 # This is the mechanical form of the task's verification bar: session-ID generation must exist
-# in exactly one place. Scans the whole extensions tree (source-store shape: this suite lives at
-# agent-system/extensions/core/scripts/tests/, so three levels up is agent-system/extensions/)
-# for the inline generation pattern, and fails if anything other than lib/common.sh itself (or a
-# comment referencing it, e.g. in this suite's own source) still carries it.
+# in exactly one place. Two independent, previously-uncorrected defects in this scan: (1) the
+# root was resolved by a fixed ../../.. walk from SCRIPT_DIR, correct only in the source-store
+# layout and silently landing on the repo root (over-scanning) when this suite runs from the
+# deployed .claude/scripts/tests/ copy; (2) the scan only ever looked at *.sh files, so it was
+# structurally blind to the same duplicated generator inside .md executable surfaces
+# (commands/, skills/, agents/). Both are fixed below: dual-mode root resolution (reusing
+# run-all.sh's core/manifest.json probe verbatim, not a new heuristic) plus a second .md scan
+# scoped to commands/skills/agents, which leaves illustrative prose under context/, docs/, and
+# rules/ out of scope by construction rather than by a growing exclusion list.
 if grep -q 'sess_\$(date' "$LIB" 2>/dev/null; then
   pass "common.sh itself defines the canonical sess_\$(date generator"
 else
   fail "common.sh does not appear to define the canonical session-ID generator"
 fi
 
-EXTENSIONS_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-offending=$(grep -rl 'sess_\$(date' --include="*.sh" "$EXTENSIONS_ROOT" 2>/dev/null \
-  | grep -v -F "/lib/common.sh" \
-  | grep -v -F "/tests/test-common-lib.sh" \
-  || true)
+# ── Detect source-store vs. deployed layout ───────────────────────────────────
+# Source-store mode: three levels up from scripts/tests/ is agent-system/extensions/, containing
+# per-extension directories each with their own manifest.json (core/manifest.json in particular).
+# This is the exact probe run-all.sh uses one directory over; reused verbatim rather than
+# reinvented.
+# Deployed mode: two levels up from scripts/tests/ is .claude/ itself. This is one level ABOVE
+# run-all.sh's own DEPLOY_SCRIPTS_ROOT ($SCRIPT_DIR/..), because commands/, skills/, and agents/
+# live at the .claude/ top level, not under .claude/scripts/ -- the .md scan below needs .claude/
+# itself, not .claude/scripts/.
+CANDIDATE_EXT_ROOT="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd || true)"
+if [ -n "$CANDIDATE_EXT_ROOT" ] && [ -f "$CANDIDATE_EXT_ROOT/core/manifest.json" ]; then
+  SCAN_MODE="source-store"
+  SCAN_ROOT="$CANDIDATE_EXT_ROOT"
+else
+  SCAN_MODE="deployed"
+  SCAN_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+fi
+echo "[test-common-lib] Mode: $SCAN_MODE (scan root: $SCAN_ROOT)"
+
+# collect_session_id_offenders <mode> <root> -- echoes a newline-separated, deduplicated list of
+# files (outside lib/common.sh and this suite's own self-referential comment) that still carry
+# an inline sess_$(date ...) generator. Runs the *.sh scan whole-tree over <root> (reach
+# unchanged from before this task -- narrowing it would regress detection of a real .sh
+# offender), plus a *.md scan scoped to commands/, skills/, and agents/ under <root> (source-store
+# mode: those three subdirectories under each per-extension directory directly under <root>;
+# deployed mode: those three subdirectories directly under <root>). A missing subdirectory is
+# silently skipped, never an error. Side-effect-free and never exits, so both the live assertion
+# below and the regression fixtures further down can call it.
+collect_session_id_offenders() {
+  local _mode="$1"
+  local _root="$2"
+  local _sh_hits _md_hits _ext_dir _sub
+
+  _sh_hits="$(grep -rl 'sess_\$(date' --include="*.sh" "$_root" 2>/dev/null || true)"
+
+  _md_hits=""
+  if [ "$_mode" = "source-store" ]; then
+    for _ext_dir in "$_root"/*/; do
+      [ -d "$_ext_dir" ] || continue
+      for _sub in commands skills agents; do
+        [ -d "${_ext_dir}${_sub}" ] || continue
+        _md_hits="${_md_hits}$(grep -rl 'sess_\$(date' --include="*.md" "${_ext_dir}${_sub}" 2>/dev/null || true)
+"
+      done
+    done
+  else
+    for _sub in commands skills agents; do
+      [ -d "$_root/$_sub" ] || continue
+      _md_hits="${_md_hits}$(grep -rl 'sess_\$(date' --include="*.md" "$_root/$_sub" 2>/dev/null || true)
+"
+    done
+  fi
+
+  printf '%s\n%s\n' "$_sh_hits" "$_md_hits" \
+    | grep -v -F "/lib/common.sh" \
+    | grep -v -F "/tests/test-common-lib.sh" \
+    | sed '/^$/d' \
+    | sort -u
+
+  unset _mode _root _sh_hits _md_hits _ext_dir _sub
+  return 0
+}
+
+offending=$(collect_session_id_offenders "$SCAN_MODE" "$SCAN_ROOT")
 if [ -z "$offending" ]; then
   pass "single-source assertion: no inline sess_\$(date generation outside lib/common.sh"
 else
@@ -239,6 +303,60 @@ else
   while IFS= read -r off_line; do
     [ -n "$off_line" ] && info "  $off_line"
   done <<< "$offending"
+fi
+
+# ── Dual-mode and exclusion regression fixtures ───────────────────────────────
+# Pins the two behaviors that were invisible before this task: deployed-mode .md detection (a
+# source-store-only test run can never exercise the deployed branch), and the prose-exclusion
+# boundary (context/ must never be flagged even though it can carry the literal generator as
+# documentation). Uses the suite's existing mktemp workdir/trap; no parallel reporting convention.
+FIXTURE_GENERATOR='sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d '"'"' '"'"')'
+
+# -- Deployed-layout fixture --
+mkdir -p "$WORKDIR/deployed/commands" "$WORKDIR/deployed/skills" "$WORKDIR/deployed/agents" \
+  "$WORKDIR/deployed/context" "$WORKDIR/deployed/scripts/lib"
+printf '```bash\nsession_id="%s"\n```\n' "$FIXTURE_GENERATOR" > "$WORKDIR/deployed/commands/planted.md"
+printf '```bash\nsession_id="%s"\n```\n' "$FIXTURE_GENERATOR" > "$WORKDIR/deployed/context/illustrative.md"
+
+deployed_offenders="$(collect_session_id_offenders deployed "$WORKDIR/deployed")"
+if echo "$deployed_offenders" | grep -q "commands/planted.md"; then
+  pass "collect_session_id_offenders (deployed): detects planted commands/ offender"
+else
+  fail "collect_session_id_offenders (deployed): did not detect planted commands/ offender"
+fi
+if echo "$deployed_offenders" | grep -q "context/illustrative.md"; then
+  fail "collect_session_id_offenders (deployed): incorrectly flagged illustrative-prose context/ site"
+else
+  pass "collect_session_id_offenders (deployed): correctly excludes illustrative-prose context/ site"
+fi
+
+# -- Source-store-layout fixture (including an extension lacking commands/skills/agents) --
+mkdir -p "$WORKDIR/source/core" "$WORKDIR/source/someext/commands" "$WORKDIR/source/bareext"
+echo '{}' > "$WORKDIR/source/core/manifest.json"
+printf '```bash\nsession_id="%s"\n```\n' "$FIXTURE_GENERATOR" > "$WORKDIR/source/someext/commands/planted.md"
+
+source_offenders="$(collect_session_id_offenders source-store "$WORKDIR/source")"
+if echo "$source_offenders" | grep -q "someext/commands/planted.md"; then
+  pass "collect_session_id_offenders (source-store): detects planted extension offender"
+else
+  fail "collect_session_id_offenders (source-store): did not detect planted extension offender"
+fi
+if [ -n "$source_offenders" ] && ! echo "$source_offenders" | grep -q "someext/commands/planted.md" 2>/dev/null; then
+  fail "collect_session_id_offenders (source-store): unexpected offender set: $source_offenders"
+else
+  pass "collect_session_id_offenders (source-store): skips bareext/ (no commands/skills/agents) without error"
+fi
+
+# -- Mode-probe correctness --
+if [ -f "$WORKDIR/deployed/core/manifest.json" ]; then
+  fail "mode probe: deployed fixture unexpectedly carries core/manifest.json"
+else
+  pass "mode probe: deployed fixture correctly lacks core/manifest.json (resolves deployed)"
+fi
+if [ -f "$WORKDIR/source/core/manifest.json" ]; then
+  pass "mode probe: source-store fixture correctly has core/manifest.json (resolves source-store)"
+else
+  fail "mode probe: source-store fixture missing core/manifest.json"
 fi
 
 echo ""
