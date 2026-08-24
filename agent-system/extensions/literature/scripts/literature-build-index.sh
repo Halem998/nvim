@@ -342,9 +342,38 @@ for chunk_id, doc_id, cross_refs_json, parent_chunk_id in rows:
 conn.commit()
 total_relations += total_crossrefs
 
+# --- Database-derived stats (replaces counter-derived totals) ---
+# total_chunks above is the insert-*attempt* count (every successful INSERT OR REPLACE, whether
+# it created a new row or replaced an existing one); row_count is what actually landed. The gap
+# between them is exactly the "replaces happened" signal the original counter-derived stats
+# could not show.
+row_count = conn.execute("SELECT COUNT(*) FROM chunks_data").fetchone()[0]
+
+doc_id_row_counts = {}
+for did, cnt in conn.execute("SELECT doc_id, COUNT(*) FROM chunks_data GROUP BY doc_id"):
+    doc_id_row_counts[did] = cnt
+
+distinct_doc_id_count = len(doc_id_row_counts)
+
+# Compare each doc_id's database row count against the chunk count declared by its manifest(s).
+# Mismatches only are printed (not the full per-doc_id enumeration) so the summary stays readable
+# across the whole corpus.
+mismatch_count = 0
+for did, manifest_entries in doc_id_manifests.items():
+    declared = sum(count for _mp, count in manifest_entries)
+    actual = doc_id_row_counts.get(did, 0)
+    if declared != actual:
+        mismatch_count += 1
+        print(f"[build-index] WARNING: doc_id '{did}' chunk-count mismatch: declared={declared}, actual={actual}", file=sys.stderr)
+
 # Report stats
 db_size = os.path.getsize(db_path) // 1024
-print(f"[build-index] Indexed: {total_chunks} chunks, {total_crossrefs} cross-refs resolved, {total_relations} total relations, {db_size}KB database", file=sys.stderr)
+print(f"[build-index] Indexed: {row_count} chunks ({total_chunks} insert attempts), "
+      f"{distinct_doc_id_count} distinct doc_ids, {total_crossrefs} cross-refs resolved, "
+      f"{total_relations} total relations, {db_size}KB database", file=sys.stderr)
+
+if mismatch_count > 0:
+    print(f"[build-index] WARNING: {mismatch_count} doc_id(s) with declared/actual chunk-count mismatch", file=sys.stderr)
 
 if errors > 0:
     print(f"[build-index] WARNING: {errors} errors during indexing", file=sys.stderr)

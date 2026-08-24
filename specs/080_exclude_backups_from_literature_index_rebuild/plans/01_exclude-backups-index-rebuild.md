@@ -325,23 +325,27 @@ file survives an aborted `--strict-duplicates` run.
 
 ---
 
-### Phase 4: Report Database-Derived Per-doc_id Counts [NOT STARTED]
+### Phase 4: Report Database-Derived Per-doc_id Counts [COMPLETED]
 
 **Goal**: Replace counter-derived rebuild stats with counts read back from the database, and warn
 when a manifest's declared chunk count does not match what landed, so an inflated count is visible
 at rebuild time.
 
 **Tasks**:
-- [ ] Replace the `total_chunks` counter in the summary line with
+- [x] Replace the `total_chunks` counter in the summary line with
       `SELECT COUNT(*) FROM chunks_data`, and additionally report the insert-attempt count so
       replaces are visible as the difference (an attempt count exceeding the row count is the
-      exact signal the original 144-vs-99 report should have carried)
-- [ ] Add a `SELECT doc_id, COUNT(*) FROM chunks_data GROUP BY doc_id` pass after commit
-- [ ] Compare each `doc_id`'s database row count against the chunk count declared by its live
+      exact signal the original 144-vs-99 report should have carried) *(completed)*
+- [x] Add a `SELECT doc_id, COUNT(*) FROM chunks_data GROUP BY doc_id` pass after commit
+      *(completed)*
+- [x] Compare each `doc_id`'s database row count against the chunk count declared by its live
       manifest; emit a per-`doc_id` warning line for every mismatch, naming both numbers
-- [ ] Report distinct-`doc_id` count alongside the total in the existing stderr summary line
-- [ ] Keep full per-`doc_id` enumeration off by default (mismatches only) so the summary stays
-      readable across 204 documents
+      *(completed: compares against the sum of declared counts across all manifests claiming that
+      doc_id, which equals the single-manifest count in the non-duplicate case)*
+- [x] Report distinct-`doc_id` count alongside the total in the existing stderr summary line
+      *(completed)*
+- [x] Keep full per-`doc_id` enumeration off by default (mismatches only) so the summary stays
+      readable across 204 documents *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -354,12 +358,16 @@ at rebuild time.
   insert/commit pass
 
 **Verification**:
-- `bash -n` passes
+- `bash -n` passes *(confirmed)*
 - Scratch run with a planted stale manifest (pre-exclusion behavior simulated by targeting the
   backup directory directly) prints a mismatch line naming the declared and actual counts
+  *(confirmed: two-manifest overlapping-chunk_id scratch case printed
+  "chunk-count mismatch: declared=4, actual=3")*
 - Clean scratch run prints no mismatch lines and a total equal to the sum of live manifest lengths
+  *(confirmed)*
 - Live global rebuild's reported total equals `SELECT COUNT(*) FROM chunks_data` on the resulting
-  database
+  database *(deferred to Phase 7, which performs the live rebuild; the stats line is read directly
+  from `SELECT COUNT(*)` by construction, so this holds by the query's own definition once run)*
 
 ---
 

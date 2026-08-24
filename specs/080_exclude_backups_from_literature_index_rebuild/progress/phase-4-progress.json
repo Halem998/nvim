@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "Report Database-Derived Per-doc_id Counts",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "database-derived stats block, per-doc_id mismatch warnings", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-build-index.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
