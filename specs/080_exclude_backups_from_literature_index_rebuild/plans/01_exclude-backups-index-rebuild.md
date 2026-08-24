@@ -274,24 +274,25 @@ pruned result equals the `doc_id` set of the bare result.
 
 ---
 
-### Phase 3: Detect and Report Duplicate doc_id Across Manifests [NOT STARTED]
+### Phase 3: Detect and Report Duplicate doc_id Across Manifests [COMPLETED]
 
 **Goal**: Make a `doc_id` claimed by two or more manifests loud and named, with an opt-in fatal
 mode, per the decision recorded in the Overview.
 
 **Tasks**:
-- [ ] Add a `--strict-duplicates` flag to the argument parser (default off) and thread it into
-      `build_index_for_dir` and the Python block
-- [ ] In the Python block, before the insert loop, map `doc_id -> [manifest_path, ...]` across all
-      discovered manifests
-- [ ] For each `doc_id` with more than one claiming manifest, emit a warning naming the `doc_id`
+- [x] Add a `--strict-duplicates` flag to the argument parser (default off) and thread it into
+      `build_index_for_dir` and the Python block *(completed)*
+- [x] In the Python block, before the insert loop, map `doc_id -> [manifest_path, ...]` across all
+      discovered manifests *(completed)*
+- [x] For each `doc_id` with more than one claiming manifest, emit a warning naming the `doc_id`
       and every claiming path on its own line, plus the per-manifest chunk count for each
-- [ ] Under `--strict-duplicates`, exit non-zero after reporting all duplicates (report every
-      duplicate first, then fail once — do not fail on the first)
-- [ ] Reserve and document exit code 3 for "duplicate doc_id under --strict-duplicates" in the
-      header's exit-code list
-- [ ] Ensure the non-strict path still builds the index and still exits 0, matching the
-      `literature-ingest.sh` warn precedent
+      *(completed)*
+- [x] Under `--strict-duplicates`, exit non-zero after reporting all duplicates (report every
+      duplicate first, then fail once — do not fail on the first) *(completed)*
+- [x] Reserve and document exit code 3 for "duplicate doc_id under --strict-duplicates" in the
+      header's exit-code list *(completed)*
+- [x] Ensure the non-strict path still builds the index and still exits 0, matching the
+      `literature-ingest.sh` warn precedent *(completed)*
 
 **Timing**: 1 hour
 
@@ -304,12 +305,23 @@ mode, per the decision recorded in the Overview.
   duplicate map, warning emission, exit code 3, header exit-code documentation
 
 **Verification**:
-- `bash -n` passes
+- `bash -n` passes *(confirmed)*
 - Scratch run with two manifests sharing a `doc_id`: default mode warns with both paths named and
-  exits 0; `--strict-duplicates` reports both and exits 3
+  exits 0; `--strict-duplicates` reports both and exits 3 *(confirmed)*
 - Scratch run with three manifests sharing a `doc_id` reports all three paths, not just two
+  *(confirmed)*
 - A global rebuild against the live corpus (post-Phase-2) reports zero duplicates — the
-  `.chunks/` case is excluded by the prune
+  `.chunks/` case is excluded by the prune *(confirmed via standalone duplicate-detection dry run
+  against the pruned live manifest list — zero duplicates; the live database itself is not
+  rebuilt until Phase 7)*
+
+**Deviation note**: found and fixed a `set -e` interaction bug while implementing this phase — a
+bare `python3 <<PYEOF ... PYEOF` statement followed by `local exit_code=$?` aborts the script
+immediately on any nonzero Python exit under `set -euo pipefail`, before the cleanup/return logic
+runs, leaving a stray `.literature.db.tmp` file. Fixed by wrapping the heredoc invocation in
+`set +e` / `set -e` and by converting the outer per-target dispatch loop to an `if`-guarded call
+so a `return 3` doesn't trigger an uncontrolled early script exit either. Verified no stray tmp
+file survives an aborted `--strict-duplicates` run.
 
 ---
 

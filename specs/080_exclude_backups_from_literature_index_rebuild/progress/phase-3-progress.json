@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Detect and Report Duplicate doc_id Across Manifests",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "strict-duplicates flag, duplicate map, warning, exit code 3", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-build-index.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.set-e-fix",
+      "description": "set -euo pipefail interaction with bare python3 heredoc nonzero exit",
+      "type": "altered",
+      "reason": "Not in the plan's task list but required for --strict-duplicates exit 3 to propagate correctly without leaving a stray .literature.db.tmp file; wrapped the heredoc in set +e/-e and fixed the outer dispatch loop's set -e exposure",
+      "annotation": "*(deviation: altered — added set -e/+e guard around python3 heredoc and outer loop to make exit 3 propagate cleanly)*"
+    }
+  ]
+}

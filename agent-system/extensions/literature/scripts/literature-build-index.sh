@@ -47,12 +47,14 @@ fi
 BUILD_GLOBAL=0
 BUILD_LOCAL=0
 CUSTOM_DIRS=()
+STRICT_DUPLICATES=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --global) BUILD_GLOBAL=1; shift ;;
-    --local)  BUILD_LOCAL=1;  shift ;;
-    --dir)    CUSTOM_DIRS+=("$2"); shift 2 ;;
+    --global)            BUILD_GLOBAL=1; shift ;;
+    --local)              BUILD_LOCAL=1;  shift ;;
+    --dir)                CUSTOM_DIRS+=("$2"); shift 2 ;;
+    --strict-duplicates)  STRICT_DUPLICATES=1; shift ;;
     *) shift ;;
   esac
 done
@@ -126,6 +128,10 @@ build_index_for_dir() {
   sqlite3 "$db_tmp" < "$SCHEMA_FILE"
 
   # Build index via Python (handles JSON parsing and content reading)
+  # set +e/-e around the heredoc: a deliberate nonzero exit (e.g. sys.exit(3) for
+  # --strict-duplicates) must be captured below and cleaned up, not abort the script
+  # immediately under set -e and leave a stray "$db_tmp" behind.
+  set +e
   python3 << PYEOF
 import sqlite3
 import json
@@ -135,6 +141,7 @@ import re
 
 db_path = "$db_tmp"
 target_dir = "$target_dir"
+strict_duplicates = $STRICT_DUPLICATES
 
 conn = sqlite3.connect(db_path)
 conn.execute("PRAGMA journal_mode=WAL")
@@ -149,6 +156,38 @@ errors = 0
 
 # We'll insert into chunks_data, then rebuild FTS at the end
 all_chunk_ids = {}  # chunk_id -> doc_id (for cross-ref resolution)
+
+# --- Duplicate doc_id detection across manifests ---
+# Map doc_id -> [(manifest_path, chunk_count), ...]. A doc_id claimed by more than one
+# manifest is loud by default (warning naming every claiming path) and fatal under
+# --strict-duplicates (exit 3), matching literature-ingest.sh's warn-then-overwrite
+# precedent at the index.json layer. See
+# context/project/literature/domain/corpus-directory-conventions.md.
+doc_id_manifests = {}
+for manifest_path in manifest_paths:
+    if not manifest_path.strip():
+        continue
+    try:
+        with open(manifest_path) as f:
+            probe_chunks = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        continue
+    probe_doc_ids = {}
+    for c in probe_chunks:
+        did = c.get('doc_id', '')
+        probe_doc_ids[did] = probe_doc_ids.get(did, 0) + 1
+    for did, count in probe_doc_ids.items():
+        doc_id_manifests.setdefault(did, []).append((manifest_path, count))
+
+duplicate_doc_ids = {did: paths for did, paths in doc_id_manifests.items() if len(paths) > 1}
+if duplicate_doc_ids:
+    for did, paths in sorted(duplicate_doc_ids.items()):
+        print(f"[build-index] WARNING: duplicate doc_id '{did}' claimed by {len(paths)} manifests:", file=sys.stderr)
+        for mp, count in paths:
+            print(f"[build-index]   {mp} ({count} chunks)", file=sys.stderr)
+    if strict_duplicates:
+        print(f"[build-index] FATAL: {len(duplicate_doc_ids)} duplicate doc_id(s) found under --strict-duplicates", file=sys.stderr)
+        sys.exit(3)
 
 for manifest_path in manifest_paths:
     if not manifest_path.strip():
@@ -314,6 +353,13 @@ conn.close()
 PYEOF
 
   local exit_code=$?
+  set -e
+  if [ $exit_code -eq 3 ]; then
+    # Duplicate doc_id under --strict-duplicates: already reported in full above; propagate 3
+    # rather than folding it into the generic build-failure exit 1.
+    rm -f "$db_tmp"
+    return 3
+  fi
   if [ $exit_code -ne 0 ]; then
     log "Index build failed (exit $exit_code)"
     rm -f "$db_tmp"
@@ -328,8 +374,17 @@ PYEOF
 
 # --- Run builds ---
 ALL_OK=1
+SAW_DUPLICATE_FATAL=0
 for target in "${TARGET_DIRS[@]}"; do
-  if ! build_index_for_dir "$target"; then
+  if build_index_for_dir "$target"; then
+    target_status=0
+  else
+    target_status=$?
+  fi
+  if [ "$target_status" -eq 3 ]; then
+    SAW_DUPLICATE_FATAL=1
+    ALL_OK=0
+  elif [ "$target_status" -ne 0 ]; then
     ALL_OK=0
   fi
 done
@@ -337,6 +392,9 @@ done
 if [ "$ALL_OK" -eq 1 ]; then
   log "All indexes built successfully"
   exit 0
+elif [ "$SAW_DUPLICATE_FATAL" -eq 1 ]; then
+  log "Duplicate doc_id detected under --strict-duplicates"
+  exit 3
 else
   log "Some indexes failed to build"
   exit 1
