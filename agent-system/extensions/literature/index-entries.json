@@ -505,6 +505,40 @@
         ]
       },
       "on_demand": true
+    },
+    {
+      "path": "project/literature/domain/pymupdf4llm-fragmentation.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "pymupdf4llm",
+        "regex",
+        "quality-gate",
+        "extraction-fragmentation"
+      ],
+      "keywords": [
+        "pymupdf4llm",
+        "markdown-emphasis",
+        "subscript",
+        "self-interference",
+        "sentence-boundary-glue",
+        "hat-abstraction"
+      ],
+      "summary": "pymupdf4llm's markdown-emphasis and bare-digit-subscript extraction fragments character-adjacent regex assumptions; the self-interference hazard of exemption-span deletion (measured 11->26 regression) and why noise tolerance belongs inside the pattern, never a global-strip pass",
+      "line_count": 84,
+      "load_when": {
+        "agents": [
+          "literature-agent",
+          "general-implementation-agent",
+          "planner-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/plan",
+          "/implement"
+        ]
+      }
     }
   ]
 }

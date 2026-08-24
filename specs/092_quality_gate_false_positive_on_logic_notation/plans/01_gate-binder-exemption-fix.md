@@ -315,31 +315,37 @@ on fresh primary-tier output is a real finding to record, not a phase failure to
 
 ---
 
-### Phase 5: Record the MIXED-Document Decision and the Fragmentation Lesson [NOT STARTED]
+### Phase 5: Record the MIXED-Document Decision and the Fragmentation Lesson [COMPLETED]
 
 **Goal**: The deliberate decisions and the hard-won pymupdf4llm lesson are written where the next
 implementer looks, so neither is rediscovered or accidentally reversed.
 
 **Tasks**:
-- [ ] In `literature_quality_gate.py`'s docstring (or an adjacent comment block), record that
+- [x] In `literature_quality_gate.py`'s docstring (or an adjacent comment block), record that
       `hott_book_2013_homotopy_type_theory_univalent_foundations` and
       `ahrens_north_shulman_tsementzis_the_univalence_principle` remain **correctly rejected**: their
       residual counts are dominated by genuine `<sup>`-span fusion corruption plus a distinct
       parenthesized dependent-type binder shape (`∀(x : A).Px`) this exemption deliberately does not
       cover. State the remedy: reconvert with `LITERATURE_CONVERTER=fallback` — not exemption
-      widening, threshold tuning, or a manual override.
-- [ ] Note the arXiv subject-class residual (`math.CT`, `math.AT`, `LIPIcs.TYPES`) as a known,
-      deliberately unexempted secondary class.
-- [ ] Add a short domain-context note under
+      widening, threshold tuning, or a manual override. *(completed in Phase 2's docstring edit —
+      see the "MIXED documents" paragraph of `sentence_boundary_glue_count()`'s docstring)*
+- [x] Note the arXiv subject-class residual (`math.CT`, `math.AT`, `LIPIcs.TYPES`) as a known,
+      deliberately unexempted secondary class. *(completed, same docstring paragraph)*
+- [x] Add a short domain-context note under
       `agent-system/extensions/literature/context/project/literature/domain/` (path to confirm
       against the extension's actual context layout) documenting pymupdf4llm's markdown-emphasis
       (`_..._`) and bare-digit subscript extraction, with the two real excerpts from the research
       report, and the rule: build noise tolerance into the pattern, never via a global strip pass —
       including the measured 11 -> 26 regression as the concrete cost of getting it wrong.
-- [ ] Register the new context file wherever the extension indexes its context
-      (`index-entries.json` / `manifest.json`) if that layout requires it.
-- [ ] **No task-number references** in any of this content (it lives outside `specs/**`). Cite
-      document names, filenames, and section headings.
+      *(completed: `pymupdf4llm-fragmentation.md`, also records the performance lesson from
+      Phase 2)*
+- [x] Register the new context file wherever the extension indexes its context
+      (`index-entries.json` / `manifest.json`) if that layout requires it. *(completed:
+      `index-entries.json` entry added; `manifest.json`'s `context` provides list already covers
+      the whole `project/literature` tree, no manifest edit needed)*
+- [x] **No task-number references** in any of this content (it lives outside `specs/**`). Cite
+      document names, filenames, and section headings. *(completed: verified with
+      `check-task-references.sh agent-system/extensions/literature` — 0 occurrences)*
 
 **Timing**: 0.75 hours
 
