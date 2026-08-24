@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Log the Malformed-Marker Case as a Deviation Event",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Branch on jq empty; derive task, resolve session_id via state.json, emit deviation event", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 2, "description": "Fix set -euo pipefail trip on parse_err assignment; verify via isolated deployed-layout fixture (3 cases)", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "parse_err=$(jq empty ... | head -1) without || true", "result": "failed", "reason": "set -euo pipefail in this file (unlike subagent-postflight.sh) aborted the script on jq's non-zero parse-error exit inside the pipeline"}
+  ],
+  "handoff_count": 0
+}

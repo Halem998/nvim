@@ -174,32 +174,32 @@ moved this region, adapt to the current code rather than restoring the shape des
 
 ---
 
-### Phase 2: Log the Malformed-Marker Case as a Deviation Event [NOT STARTED]
+### Phase 2: Log the Malformed-Marker Case as a Deviation Event [COMPLETED]
 
 **Goal**: A malformed marker leaves a durable trace in `specs/events.jsonl` instead of a silent
 `exit_success`. Closes AC 4 and the events side of AC 6.
 
 **Tasks**:
-- [ ] Re-read the SubagentStop branch of
+- [x] Re-read the SubagentStop branch of *(completed)*
       `agent-system/extensions/core/hooks/events-log-lifecycle.sh`
-- [ ] Replace the bare `jq empty "$MARKER_FILE" 2>/dev/null || exit_success` with a branch that,
+- [x] Replace the bare `jq empty "$MARKER_FILE" 2>/dev/null || exit_success` with a branch that, *(completed)*
       on parse failure: derives `task_dir=$(dirname "$MARKER_FILE")`, extracts the task number
       via the `specs/([0-9]+)_` regex already used further down the same branch, and resolves
       `session_id` from `specs/state.json` using the same
       `.active_projects[]? | select(.project_number == $num) | .session_id // empty` lookup the
       file's Stop path already performs
-- [ ] Guard the state.json read with the existing `[ -f specs/state.json ] || exit_success` and
+- [x] Guard the state.json read with the existing `[ -f specs/state.json ] || exit_success` and *(completed)*
       `jq empty specs/state.json 2>/dev/null || exit_success` idioms already used in this file
-- [ ] Emit exactly one event via `_events_append_observable` with
+- [x] Emit exactly one event via `_events_append_observable` with *(completed)*
       `--event-type malformed_postflight_marker --category deviation --checkpoint postflight`,
       `--session "$session_id"`, `--task "$task"`, a message naming the marker path, and
       `--detail-json` carrying the marker path and the `head -1`-bounded jq error text
-- [ ] Thread `--cwd "$CWD"` and `--cc-session-id "$CC_SESSION_ID"` using the same
+- [x] Thread `--cwd "$CWD"` and `--cc-session-id "$CC_SESSION_ID"` using the same *(completed)*
       `[ -n ... ] && event_args+=(...)` idiom as the sibling event construction
-- [ ] Keep `[ -z "$session_id" ] && exit_success` as the residual fallback when the lookup fails
+- [x] Keep `[ -z "$session_id" ] && exit_success` as the residual fallback when the lookup fails *(completed)*
       (archived/vaulted task) — do not invent a placeholder session id
-- [ ] `exit_success` after emitting; the hook must still never block and must still echo `{}`
-- [ ] Confirm `--detail-json` usage matches `events-append.sh`'s own usage block, and that
+- [x] `exit_success` after emitting; the hook must still never block and must still echo `{}` *(completed)*
+- [x] Confirm `--detail-json` usage matches `events-append.sh`'s own usage block, and that *(completed)*
       `malformed_postflight_marker` is accepted by `events-schema.json` (the `category` enum is
       closed; verify whether `event_type` is likewise constrained before assuming a free-form
       value is valid)

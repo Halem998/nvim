@@ -124,7 +124,45 @@ if [ -n "$AGENT_ID" ]; then
   # ─────────────────────────────────────────────────────────────────────────
   MARKER_FILE=$(find specs -maxdepth 3 -name ".postflight-pending" -type f 2>/dev/null | head -1) || true
   [ -z "$MARKER_FILE" ] && exit_success || true
-  jq empty "$MARKER_FILE" 2>/dev/null || exit_success
+
+  if ! jq empty "$MARKER_FILE" 2>/dev/null; then
+    # Malformed marker: the well-formed path below reads session_id straight out of the
+    # marker itself, which is unavailable here. Recover the task number from the marker's
+    # parent task directory name (available pre-parse, same `specs/([0-9]+)_` regex used
+    # further down in this file's own Stop path) and resolve session_id via
+    # specs/state.json's active_projects entry -- the identical lookup the Stop path already
+    # performs -- so the malformed-marker case leaves a durable `deviation` event instead of
+    # silently collapsing into exit_success with zero trace.
+    # `|| true` guards against `set -euo pipefail` (this file's shell options, unlike
+    # subagent-postflight.sh's) tripping on jq's non-zero parse-error exit inside the pipeline.
+    parse_err=$(jq empty "$MARKER_FILE" 2>&1 >/dev/null | head -1) || true
+    task_dir=$(dirname "$MARKER_FILE")
+    task=""
+    if [[ "$task_dir" =~ specs/([0-9]+)_ ]]; then
+      task="${BASH_REMATCH[1]}"
+    fi
+    [ -z "$task" ] && exit_success || true
+
+    [ -f specs/state.json ] || exit_success
+    jq empty specs/state.json 2>/dev/null || exit_success
+
+    session_id=$(jq -r --argjson num "$task" \
+      '.active_projects[]? | select(.project_number == $num) | .session_id // empty' \
+      specs/state.json 2>/dev/null)
+    [ -z "$session_id" ] && exit_success || true
+
+    detail_json=$(jq -n --arg path "$MARKER_FILE" --arg err "$parse_err" \
+      '{marker_path: $path, parse_error: $err}')
+    event_args=(--event-type malformed_postflight_marker --category deviation \
+      --checkpoint postflight --session "$session_id" --task "$task" \
+      --message "Postflight marker at ${MARKER_FILE} could not be parsed as JSON" \
+      --detail-json "$detail_json")
+    [ -n "$CWD" ] && event_args+=(--cwd "$CWD") || true
+    [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID") || true
+
+    _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
+    exit_success
+  fi
 
   session_id=$(jq -r '.session_id // empty' "$MARKER_FILE" 2>/dev/null)
   [ -z "$session_id" ] && exit_success || true
