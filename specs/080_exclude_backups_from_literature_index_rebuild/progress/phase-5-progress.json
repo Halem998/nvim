@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Regression Test",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "test-literature-build-index.sh with Tests A-F, manifest.json registration", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/literature/scripts/tests/test-literature-build-index.sh",
+       "agent-system/extensions/literature/manifest.json"
+     ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -371,31 +371,35 @@ at rebuild time.
 
 ---
 
-### Phase 5: Regression Test [NOT STARTED]
+### Phase 5: Regression Test [COMPLETED]
 
 **Goal**: Lock acceptance criterion 1 in a test that plants a backup manifest and asserts the
 index is identical to one built without it, so the defect cannot silently return.
 
 **Tasks**:
-- [ ] Create `tests/test-literature-build-index.sh` following the `tests/test-literature-convert.sh`
+- [x] Create `tests/test-literature-build-index.sh` following the `tests/test-literature-convert.sh`
       pattern: `mktemp -d` scratch directory, `trap ... EXIT` cleanup, PASS/FAIL counters, exit 1
       on any required failure. The suite MUST NOT read from or write to `~/Projects/Literature/`
-- [ ] Fixture: a live `<doc>/chunks.json` plus `.backups/<label>/chunks.json` for the same
+      *(completed)*
+- [x] Fixture: a live `<doc>/chunks.json` plus `.backups/<label>/chunks.json` for the same
       `doc_id`, with one overlapping `chunk_id` and one `chunk_id` present only in the backup
-      (the stale-survivor case that no `INSERT OR REPLACE` can clean up)
-- [ ] Test A (criterion 1): run `--dir <scratch>` with the backup present, then with it removed;
+      (the stale-survivor case that no `INSERT OR REPLACE` can clean up) *(completed)*
+- [x] Test A (criterion 1): run `--dir <scratch>` with the backup present, then with it removed;
       assert both runs yield an identical `chunk_id` set and identical per-`doc_id` counts
-- [ ] Test B: assert the stale-only `chunk_id` from the backup is absent from the built database
-- [ ] Test C: assert a dot-prefixed directory nested below the top level (the `.chunks/` shape) is
-      also excluded, not just a root-level one
-- [ ] Test D: assert `--dir` pointed *directly* at a dot-named directory still indexes it
-      (`-mindepth 1` guard)
-- [ ] Test E (criterion 2): two live manifests sharing a `doc_id` — default run warns with both
-      paths named and exits 0; `--strict-duplicates` exits 3
-- [ ] Test F (scope direction 4): a mismatch between declared and actual chunk count produces the
-      per-`doc_id` warning line
-- [ ] Register both the test in `manifest.json` `provides.scripts` as `tests/test-literature-build-index.sh`
-- [ ] Make the test executable
+      *(completed)*
+- [x] Test B: assert the stale-only `chunk_id` from the backup is absent from the built database
+      *(completed)*
+- [x] Test C: assert a dot-prefixed directory nested below the top level (the `.chunks/` shape) is
+      also excluded, not just a root-level one *(completed)*
+- [x] Test D: assert `--dir` pointed *directly* at a dot-named directory still indexes it
+      (`-mindepth 1` guard) *(completed)*
+- [x] Test E (criterion 2): two live manifests sharing a `doc_id` — default run warns with both
+      paths named and exits 0; `--strict-duplicates` exits 3 *(completed)*
+- [x] Test F (scope direction 4): a mismatch between declared and actual chunk count produces the
+      per-`doc_id` warning line *(completed)*
+- [x] Register both the test in `manifest.json` `provides.scripts` as `tests/test-literature-build-index.sh`
+      *(completed)*
+- [x] Make the test executable *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -414,12 +418,16 @@ that key must be updated too.
 - `agent-system/extensions/literature/manifest.json` - add the test to `provides.scripts`
 
 **Verification**:
-- The suite runs green from a clean checkout and exits 0
+- The suite runs green from a clean checkout and exits 0 *(confirmed: 9 passed, 0 failed)*
 - Reverting the Phase 2 prune (temporarily, in the working tree) makes Test A, B, and C fail —
   proving the test actually exercises the fix rather than passing vacuously. Restore the prune
-  afterward
+  afterward *(confirmed: reverted run showed exactly Test A, B, C failing (6 passed, 3 failed);
+  prune restored and suite re-confirmed green afterward)*
 - `jq . manifest.json` parses; the new entry matches the existing `tests/` entry's shape
+  *(confirmed)*
 - `git status` confirms nothing under `~/Projects/Literature/` was touched by the test run
+  *(confirmed: all fixtures use `mktemp -d`; the suite never references
+  `$HOME/Projects/Literature` except in a log-only guard message)*
 
 ---
 

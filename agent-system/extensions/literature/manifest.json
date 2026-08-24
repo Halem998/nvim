@@ -59,7 +59,8 @@
       "zotero-resolve-pdf.sh",
       ".zotero-title-sim.py",
       "tests/generate-test-fixtures.py",
-      "tests/test-literature-convert.sh"
+      "tests/test-literature-convert.sh",
+      "tests/test-literature-build-index.sh"
     ]
   },
   "merge_targets": {
