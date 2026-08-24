@@ -1,7 +1,7 @@
 # Implementation Plan: Task #79
 
 - **Task**: 79 - Make subagent-postflight hook diagnosable when its marker is malformed
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: Sequenced after the subagent-postflight marker-ownership/correlation task
   (same file, adjacent region of `find_marker()`/`main()`). No state.json dependency edge is

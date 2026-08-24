@@ -11,15 +11,14 @@ next_project_number: 97
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 9,13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81,82,84,85,87,91,92,94 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,44,50,64,75,76,78,83,86,88,89,90,96 | 29,42,48,62,74,77,82,84,87 | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,66,68,72,73,74,77,81,82,85,87,90,91,94 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,44,50,64,75,76,78,83,86,88,89,96 | 29,42,48,62,74,77,82,87 | agent-system, extensions, literature, ... |
 | 3 | 93 | 83 | essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-9 [PLANNED] — === REVISED 2026-08-24 (refactor survey) ===
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
@@ -29,7 +28,6 @@ next_project_number: 97
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
-79 [PLANNED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
 
 ### Extensions
 
@@ -48,8 +46,6 @@ next_project_number: 97
 77 [NOT STARTED] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
   └─ 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
-80 [PLANNED] — literature-build-index.sh traverses the corpus with an unguarded 
-92 [PLANNED] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
 
 ### Orchestration Concurrency
@@ -73,12 +69,11 @@ next_project_number: 97
   └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
     └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
   └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
-84 [PLANNED] — The one duplication gate that exists has the wrong scope and has 
-  └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 
 ### Team Mode Lifecycle
@@ -249,7 +244,7 @@ ACCEPTANCE: from this repo, one command reports the deployed revision of every k
 ---
 
 ### 92. Quality gate false positive on logic notation
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 32
@@ -463,7 +458,7 @@ ACCEPTANCE: 10 consecutive runs, executed while at least one other session is ac
 ---
 
 ### 84. Fix duplication gate scope and extensions root
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: None
@@ -643,7 +638,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 80. Stop the literature index rebuild from indexing backed-up chunk manifests
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -704,12 +699,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 79. Make subagent-postflight hook diagnosable when its marker is malformed
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [079_diagnosable_subagent_postflight_marker_failure/reports/01_diagnosable-postflight-marker-failure.md]
 - **Plan**: [079_diagnosable_subagent_postflight_marker_failure/plans/01_diagnosable-postflight-marker-failure.md]
+- **Summary**: [079_diagnosable_subagent_postflight_marker_failure/summaries/01_diagnosable-postflight-marker-failure-summary.md]
 
 **Description**: subagent-postflight.sh blocks a SubagentStop with an EMPTY reason string whenever the postflight marker is not valid JSON, so the blocked agent receives "Blocked by hook" with no explanation of any kind and no way to learn what happened. The hook's own default reason never fires in exactly the case where a reason is most needed.
 
@@ -2528,12 +2524,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 9. Resolve deploy orphan file parity
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 32
 - **Research**: [009_resolve_deploy_orphan_file_parity/reports/01_orphan-file-parity-remeasurement.md]
 - **Plan**: [009_resolve_deploy_orphan_file_parity/plans/01_orphan-detection-parity.md]
+- **Summary**: [009_resolve_deploy_orphan_file_parity/summaries/01_orphan-detection-summary.md]
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 SCOPE CORRECTION: the orphan set is ELEVEN files, not the four named below. A manifest cross-check finds the entire deployed .claude/context/orchestration/ directory (architecture.md, delegation.md, orchestration-core.md, orchestration-reference.md, orchestration-validation.md, orchestrator.md, postflight-pattern.md, preflight-pattern.md, sessions.md, subagent-validation.md) plus docs/architecture/architecture-spec.md, with no source-store owner. Conversely docs/README.md is NO LONGER an orphan -- drop it from the set.
