@@ -1,5 +1,5 @@
 ---
-next_project_number: 94
+next_project_number: 97
 ---
 
 # TODO
@@ -11,15 +11,15 @@ next_project_number: 94
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 9,13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81,82,84,85,87,91,92 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,44,50,64,75,76,78,83,86,88,89,90 | 29,42,48,62,74,77,82,84,87 | agent-system, extensions, literature, ... |
+| 1 | 9,13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81,82,84,85,87,91,92,94,95 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,44,50,64,75,76,78,83,86,88,89,90,96 | 29,42,48,62,74,77,82,84,87,95 | agent-system, extensions, literature, ... |
 | 3 | 93 | 83 | essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-9 [RESEARCHED] — === REVISED 2026-08-24 (refactor survey) ===
+9 [PLANNING] — === REVISED 2026-08-24 (refactor survey) ===
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
@@ -49,6 +49,9 @@ next_project_number: 94
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
 80 [RESEARCHED] — literature-build-index.sh traverses the corpus with an unguarded 
 92 [RESEARCHED] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
+94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
+95 [NOT STARTED] — Audit the literature global-index resolvers for id-vs-path keying
+  └─ 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
 
 ### Orchestration Concurrency
 
@@ -85,6 +88,62 @@ next_project_number: 94
 73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
 
 ## Tasks
+
+### 96. Surface literature coverage delta under lit
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 95
+
+**Description**: Surface the sub-index vs global-index coverage delta when --lit is active, so decision-relevant sources sitting in the global corpus are not silently invisible to research. REPORTED EVIDENCE: in the Logos/Theory repo, specs/literature-index.json holds 37 entries against 399 in ~/Projects/Literature/index.json. Sources that turned out to be decision-relevant were present in the global repo, already chunked and readable, and were never surfaced to the research agents: the canonical branching-time cluster (thomason-1970-indeterminist-time, 78 chunks; reynolds-2003-ockhamist, 30; rumberg-zanardo-2019-transition-structures, 42) and the hyperproperty-monitoring cluster (finkbeiner_etal_2017_monitoring_hyperproperties; finkbeiner_etal_2018_rvhyper; bonakdarpour_sheinvald_2023_finite_word_hyperlanguages, 53; sousa_dillig_2016_cartesian_hoare_logic_k_safety, 69; agrawal_bonakdarpour_2016_runtime_verification_k_safety_hyperltl).
+
+CONSEQUENCE OBSERVED: two independent research rounds reached substantive conclusions of the form 'the framework has no counterpart for X' without consulting available global sources that define X. Both claims happened to survive later checking -- a framing gap rather than a false claim shipped -- but that outcome was luck, not a property of the pipeline.
+
+ROOT CAUSE: nothing in the pipeline checks the global index against a draft's specific 'no counterpart exists' claims before they are finalized, and nothing flags that the active sub-index covers a small fraction of what is available.
+
+CONSIDER (do not assume) a lightweight guard: when --lit is active and the sub-index covers materially less than the global index, surface the topic-scoped delta rather than silently proceeding. Design decisions the plan must settle: what counts as 'materially less' (absolute gap, ratio, or topic-scoped miss count); whether the delta is computed against the whole global index or only against entries matching the task's keywords; where the guard fires (the Stage 4a shared block in context/patterns/lit-stage4a-flow.md already has a SPARSE_PROMPT_NEEDED directive and a two-checkpoint sparse re-prompt -- check whether this is an extension of that existing mechanism rather than a new one, which is the preferred outcome); and whether the surfacing is interactive, advisory-in-prompt, or both, given that orchestrator_mode forbids AskUserQuestion. Prefer extending the existing sparse-coverage machinery over adding a parallel mechanism.
+
+Depends on the global-index resolver keying audit: a delta computation that resolves entries by id would itself under-report by more than half the corpus, so the resolver field question must be settled first. The two also share edit territory under extensions/literature/scripts/.
+
+---
+
+### 95. Audit literature index resolver keying
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Audit the literature global-index resolvers for id-vs-path keying and fix any that key on id. REPORTED EVIDENCE: in ~/Projects/Literature/index.json all 399 entries have a populated id field, but sources/<id>/ resolves for only 173 of 399. The path field resolves 399/399 -- it points to a directory for whole-work entries and to a specific .md file for chapter-level entries. Any resolver keyed on id therefore fails on 226 entries, silently yielding no content for more than half the corpus.
+
+PARTIAL VERIFICATION ALREADY DONE, DO NOT REDO BLINDLY: extensions/literature/scripts/literature-briefing.sh at lines 227-246 already prefers the parent entry's path field and falls back to $LIT_DIR/sources/$doc_id only when path is empty or dirname resolves to '.'. That specific script may therefore already be correct or near-correct; the fallback branch is still reachable and should be assessed. The audit's real job is the OTHER scripts. Candidates that reference id or "id" and were not inspected: literature-discover.sh, literature-search.sh, literature-normalize-authors.sh, literature-fidelity-audit.sh, zotero-resolve-pdf.sh, zotero-generate-export.sh, test-lit-pipeline.sh (all under extensions/literature/scripts/). Determine for each whether it resolves on-disk content by id or by path, and fix the ones that key on id to prefer path with the same directory-vs-file handling literature-briefing.sh already implements.
+
+EXPLICITLY NOT A DEFECT -- DO NOT "FIX" IT: only 73 of 399 global-index entries carry a doc_id key at all; the other 326 simply lack the key. That is a legacy partially-migrated field, not missing data or corruption. An earlier analysis wrongly flagged it as corruption. Leave it alone.
+
+This is expected to be small and mechanical, but the scope must be verified rather than assumed -- confirm which field each script actually keys on before changing anything. Add a regression check that a resolver returns content for a chapter-level entry (path pointing at a .md file) as well as a whole-work entry (path pointing at a directory).
+
+---
+
+### 94. Wire lit flag through team skills
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Wire the --lit flag through the three team skills so literature mode is not silently dropped in team mode. VERIFIED DEFECT (checked directly against the source store at agent-system/, not a deploy artifact): skill-team-research/SKILL.md, skill-team-plan/SKILL.md, and skill-team-implement/SKILL.md contain ZERO references to lit_flag or literature (grep -ci 'lit_flag|literature' returns 0 for all three). Their single-agent counterparts skill-researcher, skill-planner, and skill-implementer return 8 each; the -hard variants return 6 each. None of the three team skills even declares lit_flag in its Input Parameters table (they declare task_number, session_id, team_size, model_flag, effort_flag, and skill-specific fields only).
+
+THIS IS NOT A COMMAND-LAYER BUG. All three commands already pass the flag into team mode: commands/research.md:539 passes lit_flag={lit_flag} in the team-mode args string (line 543 does the same for single-agent), and lines 465-467 parse --lit correctly; commands/plan.md:537 and commands/implement.md:319 do the same for their team-mode dispatches. The command hands the flag over and the skill drops it on the floor. Observed live during a /research N --team --lit run: the flag was accepted, passed to the skill, and did nothing.
+
+REQUIRED FIX: each team skill must execute the canonical literature flow at context/patterns/lit-stage4a-flow.md -- the same shared block skill-researcher imports. See skill-researcher/SKILL.md around lines 153-165 for the exact import prose to mirror: call literature-lit-flag-resolve.sh, branch on all six directives (LIT_DISABLED, SUBINDEX_PRESENT, GLOBAL_MISSING, PROMPT_NEEDED, AUTONOMOUS_GLOBAL, SPARSE_PROMPT_NEEDED), issue the real four-option AskUserQuestion for the two interactive directives (including the 'Search online to ingest' option wired to the STABLE-CONTRACT literature-ingest-online.sh bridge), apply the two-checkpoint sparse re-prompt after 'Use global corpus now', and take the deterministic [lit:auto] autonomous fallback when orchestrator_mode == 'true'. Each team skill must supply the shared block's preconditions: lit_flag, description, and orchestrator_mode.
+
+DESIGN QUESTION THE PLAN MUST DECIDE AND DOCUMENT EXPLICITLY (this is the real work, not the import). Single-agent skills resolve lit_context once and inject it into one agent prompt. Team skills spawn 2-4 teammates via the Agent tool, each with its own prompt and fresh context. Choose among: (a) the lead resolves the briefing ONCE and injects the same lit_context into every teammate prompt; (b) each teammate resolves its own; (c) the lead resolves once and teammates navigate the corpus on demand per context/project/literature/patterns/agent-exploration.md. Option (a) is the likely answer because the interactive AskUserQuestion directives cannot sensibly fire 4x in parallel, but the orchestrator_mode dual-consumer contract in lit-stage4a-flow.md MUST be checked against parallel spawn before committing to it. Whatever is chosen must be stated in prose in each skill file, because the next person will hit the same question. Consider also whether the lead should resolve BEFORE the wave spawns (Stage 5 in skill-team-research) so no teammate starts without the briefing.
+
+STAGE-NUMBER COLLISION TO RESOLVE AS PART OF THIS WORK: skill-team-research/SKILL.md:123 has a stage literally titled 'Stage 4a: Fallback to Single Agent' -- an unrelated stage colliding with the number used by the canonical literature stage (Stage 4a) everywhere else in the system. This is a live source of confusion for anyone implementing this fix. Renumber or retitle the fallback stage; do not introduce a second Stage 4a.
+
+VERIFICATION STEP TO INCLUDE (regression guard): add a lint asserting that every skill reachable from a command that accepts --lit either consumes lit_flag or carries an explicit documented statement of why it does not. Register it wherever the repo's other doc/contract lints are registered (see docs/reference/utility-scripts-inventory.md). This lint is what would have caught the defect.
+
+ACCEPTANCE CRITERION: after implementing in this repo and reloading the agent system into a project repo (via <leader>al), /research N --team --lit must produce a real literature briefing for every teammate rather than silently proceeding as if --lit were absent. This task is independently implementable and independently satisfies that criterion; it is the blocker.
+
+---
 
 ### 93. Close cross repo deploy skew
 - **Status**: [NOT STARTED]
@@ -2342,7 +2401,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 9. Resolve deploy orphan file parity
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 32
