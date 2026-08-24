@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Run the Deploy",
+  "started_at": "2026-08-24T21:36:00Z",
+  "last_updated": "2026-08-24T21:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh, capture stdout+stderr to deploy-output.txt", "status": "done", "files_touched": ["specs/032_redeploy_and_remediate_install_once_settings/deploy-output.txt"]},
+    {"id": 2, "description": "Record deploy exit code", "status": "done", "files_touched": [], "note": "Exit code 0"},
+    {"id": 3, "description": "Read output for skip/error/preserved-count lines", "status": "done", "files_touched": [], "note": "Deploy output is 4 lines: acquired lock, 'Resynced 6 extension(s)', verify pointer. No explicit 'preserved (settings install-once)' narrative line appeared in deploy-headless.sh's own output (that phrasing belongs to init.lua's unload/reload path, not the deploy script) -- install-once preservation was instead confirmed directly by checking settings.json content post-deploy (objective 4)."},
+    {"id": 4, "description": "Confirm settings.json not overwritten (lean-lsp still present)", "status": "done", "files_touched": [], "note": "grep -n lean-lsp .claude/settings.json hits at line 33 (byte-position shifted from pre-deploy's 188). Investigated: jq -S canonicalization of current .claude/settings.json vs settings.json.bak (the pre-deploy copy) is byte-identical (diff exit 0) -- the file is semantically unchanged, only raw key ordering differs (top-level 'permissions' block moved position; hooks array entries reordered). This is NOT deploy-headless.sh rewriting the install-once file (its copy-skip logic was independently confirmed by presence of the still-live grant); most likely the Claude Code harness itself rewrote settings.json (e.g. on session start/stop) between the Phase 1 backup and now, independent of the deploy. Confirms install-once mechanism behaved as documented: content, not byte-layout, is preserved."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

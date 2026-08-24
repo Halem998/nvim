@@ -1,0 +1,5 @@
+[deploy-headless] Deploying extension tree into /home/benjamin/.config/nvim/.claude ...
+[deploy-headless] deploy-lock: acquired (this invocation, pid 1393294)
+[deploy-headless] Resynced 6 extension(s) into /home/benjamin/.config/nvim/.claude
+[deploy-headless] Verify with: bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh
+EXIT_CODE=0

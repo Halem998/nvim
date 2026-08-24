@@ -203,21 +203,28 @@ share of the 52-line block.
 
 ---
 
-### Phase 2: Run the Deploy [NOT STARTED]
+### Phase 2: Run the Deploy [COMPLETED]
 
 **Goal**: Deploy the entire `agent-system/extensions/**` source store to `.claude/`, making the
 mint-dispatch-seq fix and the three literature fixes live.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh`, capturing full stdout+stderr to
-  `specs/032_redeploy_and_remediate_install_once_settings/deploy-output.txt`.
-- [ ] Record the deploy's exit code explicitly.
-- [ ] Read the deploy output for any reported skip, error, or "preserved (settings install-once)"
+- [x] Run `bash .claude/scripts/deploy-headless.sh`, capturing full stdout+stderr to
+  `specs/032_redeploy_and_remediate_install_once_settings/deploy-output.txt`. *(completed: exit 0,
+  "Resynced 6 extension(s)")*
+- [x] Record the deploy's exit code explicitly. *(completed: 0)*
+- [x] Read the deploy output for any reported skip, error, or "preserved (settings install-once)"
   count and record it — the install-once preservation line is **expected and correct**, not a
-  failure.
-- [ ] Confirm the deploy did **not** overwrite `.claude/settings.json`: `grep -n "lean-lsp"
+  failure. *(completed: deploy-headless.sh's own output carries no such narrative line — that
+  phrasing belongs to init.lua's unload/reload path, not this script; install-once preservation
+  was instead confirmed directly by checking settings.json content post-deploy)*
+- [x] Confirm the deploy did **not** overwrite `.claude/settings.json`: `grep -n "lean-lsp"
   .claude/settings.json` must still hit after the deploy (this is the install-once trap the task
   exists to remediate; its persistence here confirms the mechanism behaved as documented).
+  *(completed: still hits, now at line 33 — byte-position shifted vs. pre-deploy's line 188, but
+  `jq -S` canonicalization against the Phase 1 `settings.json.bak` backup is semantically
+  byte-identical; only raw key/array ordering differs, most likely from the Claude Code harness
+  itself rewriting the file between the backup and this check, independent of the deploy)*
 
 **Timing**: 0.5 hours
 
