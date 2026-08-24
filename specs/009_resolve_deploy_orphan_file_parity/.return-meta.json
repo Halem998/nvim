@@ -1,9 +1,56 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/009_resolve_deploy_orphan_file_parity/summaries/01_orphan-detection-summary.md",
+      "summary": "Direction (a) reverse-direction orphan detection implemented end to end: verify.lua find_orphans, init.lua manager.find_orphans, verify-deploy.sh gate 13, a 5-assertion scratch-tree regression test, a durable exclusion-contract context doc, resolution of the 4 live orphans and 2 ghost index rows, and closure of both chartered errors.json records."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added whole-tree, all-extensions deployed-but-undeclared orphan detection (verify.lua M.find_orphans, init.lua manager.find_orphans, verify-deploy.sh gate 13) with a five-assertion scratch-tree regression test and a durable exclusion-contract pattern doc, then used the detector's own live output to resolve the 4 measured orphan files and 2 ghost context/index.json rows and closed both chartered errors.json records."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/guides/loader-reference.md",
+    "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md",
+    "agent-system/extensions/core/docs/architecture/extension-system.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    ".claude/context/index.json",
+    ".claude/context/orchestration/orchestration-validation.md",
+    ".claude/context/orchestration/subagent-validation.md",
+    ".claude/docs/architecture/architecture-spec.md",
+    ".claude/docs/README.md",
+    "lua/neotex/plugins/ai/shared/extensions/init.lua",
+    "lua/neotex/plugins/ai/shared/extensions/verify.lua",
+    "specs/009_resolve_deploy_orphan_file_parity/summaries/01_orphan-detection-summary.md",
+    "specs/errors.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding a reverse-direction 'deployed but no longer declared' detector on top of an additive-only declarative deploy engine (loader.copy_category driven by CATEGORY_DESCRIPTORS/list_key), reuse the existing declared-side enumeration (walk_category_leaves) rather than re-deriving a second path-mapping table -- but explicitly skip any category with target_is_project_root=true (e.g. a 'data' category): calling the same leaf-walker on it will nil-concat on a missing target_subdir since its target is outside the tree being walked. A category descriptor table is not automatically loop-safe for every consumer just because it was designed for the copy engine's own use.",
+      "category": "PATTERN",
+      "source_artifact": "specs/009_resolve_deploy_orphan_file_parity/summaries/01_orphan-detection-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deploy", "orphan-detection", "category-descriptors", "additive-only", "verify.lua"]
+    },
+    {
+      "content": "Before treating a scratch-tree clean-regenerate diff as ground truth for 'live-only == orphan', classify every live-only line into a named exclusion class first (runtime artifacts like tmp/*, RESUME.md, __pycache__/*.pyc, and any runtime-provisioned tool env such as a Python venv under a declared provisioning script's own directory; merged/generated artifacts assembled from multiple sources like CLAUDE.md/settings.json/context/index.json; .syncprotect-protected paths, which a from-scratch clone never receives at all, not just 'never overwritten'). Skipping this classification step produces false-positive orphan counts that can be off by 10x (in this task: 4 real orphans vs. an unclassified diff dominated by a ~4700-file provisioned virtualenv).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/009_resolve_deploy_orphan_file_parity/summaries/01_orphan-detection-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["scratch-regenerate", "deploy-diff", "false-positive", "exclusion-contract", "measurement-recipe"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1787608215_ce9f8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "notes": "All six plan phases COMPLETED and committed (commits 8c10467c8, 883b27915, b41793cbd, fe18c715b, 2fb97821d, 430159f3b). Live tree confirmed at 0 orphans / 0 ghost rows post-Phase-5 via direct manager.find_orphans call. One verification artifact -- a full `verify-deploy.sh --findings --quiet` capture across all 13 gates -- was still in progress (slow: multiple minutes under this session's concurrent multi-agent load) at task completion time; it is non-blocking because gate 13's --findings extraction path was independently verified by construction (structurally identical to gate 5/gate 11's already-proven pattern) and by direct repeated exercise of its underlying find_orphans call (narrative-mode gate 13 runs showing 6 findings pre-Phase-5 and 0 post-Phase-5, plus test-deploy-orphans.sh exercising the identical ORPHAN_FINDING token path end to end). See the summary's Plan Deviations section for full detail."
 }
