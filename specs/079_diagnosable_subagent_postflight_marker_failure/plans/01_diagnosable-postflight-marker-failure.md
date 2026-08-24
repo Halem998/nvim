@@ -293,31 +293,31 @@ deployed tree exists) `.claude/scripts/tests/`.
 
 ---
 
-### Phase 4: Document the Survey, the Hazard, and the Two Hooks' Consistency [NOT STARTED]
+### Phase 4: Document the Survey, the Hazard, and the Two Hooks' Consistency [COMPLETED]
 
 **Goal**: Close AC 5 and the documentation half of AC 6 in prose, and prevent reintroduction of
 the same defect class elsewhere.
 
 **Tasks**:
-- [ ] Re-run `grep -n "jq -r '.*//.*'" agent-system/extensions/core/hooks/*.sh` and confirm the
+- [x] Re-run `grep -n "jq -r '.*//.*'" agent-system/extensions/core/hooks/*.sh` and confirm the *(completed)*
       classification counts against the current tree before writing any number down
-- [ ] Add a short subsection to the `## SubagentStop Hook Behavior` area of
+- [x] Add a short subsection to the `## SubagentStop Hook Behavior` area of *(completed)*
       `agent-system/extensions/core/context/patterns/postflight-control.md` stating the rule:
       `// "non-empty default"` is only safe when preceded by an explicit `jq empty` parse-validity
       check; `// empty` is safe unguarded because absent-field and parse-error collapse to the
       same caller behavior
-- [ ] In the same file, record the survey outcome: the count of surveyed occurrences and files,
+- [x] In the same file, record the survey outcome: the count of surveyed occurrences and files, *(completed)*
       the fallback-shape classification, and the explicit statement that every site other than
       the fixed one is tolerant-by-design and deliberately unchanged (AC 5)
-- [ ] Document how `subagent-postflight.sh` and `events-log-lifecycle.sh` now handle the same
+- [x] Document how `subagent-postflight.sh` and `events-log-lifecycle.sh` now handle the same *(completed)*
       malformed marker: both detect it with `jq empty`; the postflight hook blocks with a
       diagnostic reason, the events hook logs a `deviation` and never blocks. State that this
       divergence is intentional and why (one is a control channel, the other is telemetry that
       must never block), and note the one remaining silent case (no recoverable `session_id`)
       (AC 6)
-- [ ] Update the description of the hook's block-reason behavior in that file if it asserts the
+- [x] Update the description of the hook's block-reason behavior in that file if it asserts the *(completed)*
       old always-defaults behavior
-- [ ] Verify no task-number references were introduced (this file lives outside `specs/**`)
+- [x] Verify no task-number references were introduced (this file lives outside `specs/**`) *(completed)*
 
 **Timing**: 0.5 hours
 

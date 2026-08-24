@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "Document the Survey, the Hazard, and the Two Hooks' Consistency",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run survey grep, confirm 52 occurrences across 13 files, classify by fallback shape", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add jq // parse-error hazard rule, survey record, and two-hook consistency subsections to postflight-control.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/postflight-control.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

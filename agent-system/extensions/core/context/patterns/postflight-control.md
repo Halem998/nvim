@@ -122,7 +122,11 @@ The hook at `.claude/hooks/subagent-postflight.sh`:
 3. **If marker exists**:
    - Checks `stop_hook_active` flag (bypass if true)
    - Checks loop guard counter (max 3 continuations)
-   - Returns `{"decision": "block", "reason": "..."}` to continue execution
+   - Returns `{"decision": "block", "reason": "..."}` to continue execution. The reason is the
+     marker's own `.reason` field when present, `"Postflight operations pending"` when the
+     marker parses but has no `.reason`, or a diagnostic naming the marker path and jq's parse
+     error when the marker fails to parse as JSON at all (see "The `jq //` Parse-Error Hazard"
+     below) -- the three cases are textually distinguishable from each other.
 4. **If no marker**: Returns `{}` to allow normal stop
 
 ### Loop Guard
@@ -132,6 +136,45 @@ To prevent infinite loops, the hook maintains a counter in the task directory:
 - Incremented on each blocked stop
 - After 3 continuations, cleanup and allow stop
 - Reset when marker is removed normally
+
+### The `jq //` Parse-Error Hazard
+
+jq's `//` alternative operator (`.field // default`) only fires when the left-hand field is
+**absent or `null`** -- it never fires on a JSON *parse* error. A pipeline such as
+`jq -r '.reason // "some default"' "$FILE" 2>/dev/null` therefore collapses two different
+situations into the same default string: "the file parsed but had no `.reason`" and "the file
+did not parse as JSON at all" (with `2>/dev/null` additionally swallowing jq's own diagnostic in
+the latter case). The rule this codebase follows: **`// "non-empty default"` is only safe when
+preceded by an explicit `jq empty "$FILE"` parse-validity check** that branches the parse-failure
+case separately; `// empty` (or `// ""` in a caller that already treats empty as a no-op) is safe
+**unguarded**, because the absent-field and parse-error cases collapse to the identical caller
+behavior (empty string) either way, so there is nothing to distinguish.
+
+**Survey outcome** (core hook files, `agent-system/extensions/core/hooks/*.sh`, re-counted at
+implementation time): 52 occurrences of the `jq -r '... // ...'` idiom across 13 files. Of these,
+49 use `// empty` (including 2 field-name fallback chains that terminate in `// empty`, in
+`validate-no-task-references.sh`), and 2 use `// ""` in callers (`wezterm-preflight-status.sh`,
+`wezterm-task-number.sh`) that already treat an empty prompt as a no-op. All 51 are
+tolerant-by-design under the rule above and were deliberately left unchanged. Exactly **one**
+site had a non-empty, semantically load-bearing default with no preceding parse-validity guard:
+`subagent-postflight.sh`'s block-reason extraction -- the fixed site, now guarded by `jq empty`
+per the pattern above.
+
+### Consistency Between the Two Hooks on a Malformed Marker
+
+Both `subagent-postflight.sh` and `events-log-lifecycle.sh`'s SubagentStop branch detect a
+malformed (non-parsing) `.postflight-pending` marker the same way, via `jq empty "$MARKER_FILE"`.
+They diverge in what they do with the detection, intentionally: `subagent-postflight.sh` is a
+**control channel** and blocks the stop with a diagnostic reason naming the marker path and jq's
+parse error, so the subagent sees why it was blocked. `events-log-lifecycle.sh` is a
+**telemetry** channel that must never block, so it instead logs exactly one
+`malformed_postflight_marker` / `deviation` event to `specs/events.jsonl` (recovering the task
+number from the marker's parent directory name and the session_id from that task's
+`specs/state.json` entry) and always echoes `{}`. One remaining silent case is shared by both:
+if no `session_id` can be resolved for the task (e.g. the task has since been archived or
+vaulted), `events-log-lifecycle.sh` exits cleanly with no event -- `session_id` is
+schema-required and pattern-constrained, so there is no placeholder value to substitute. This is
+a narrowing of the previously-silent window, not its elimination.
 
 ## Complete Skill Example
 
