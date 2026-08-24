@@ -39,10 +39,11 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
       Every call this stage makes is `--dry-run`; only a user-approved selection in Stage 9 ever
       calls the script live.
 
-      1. Generate a session ID inline (skill-todo does not source `command-gate-in.sh` and has
-         none of its own):
+      1. Generate a session ID via `common_session_id` (skill-todo does not source
+         `command-gate-in.sh` and has no session ID of its own):
          ```bash
-         todo_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+         source .claude/scripts/lib/common.sh
+         todo_session_id="$(common_session_id)"
          ```
       2. Select the same four reconcilable statuses used by the `/task --sync` and `/orchestrate`
          triggers (positive-match against the four statuses `reconcile-task-status.sh` knows how

@@ -41,7 +41,8 @@ fi
 Generate session ID for tracking:
 
 ```bash
-session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+source .claude/scripts/lib/common.sh
+session_id="$(common_session_id)"
 ```
 
 ### Step 3: Execute Tag Extraction

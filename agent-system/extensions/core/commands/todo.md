@@ -26,7 +26,8 @@ near the top of this run, following the same self-generating fallback used elsew
 (`manage-topics.sh`; also formerly used by the now-quarantined `archive-task` script under
 `scripts/deprecated/`), and thread that single value through every `state-write.sh` call below:
 ```bash
-session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+source .claude/scripts/lib/common.sh
+session_id="$(common_session_id)"
 ```
 
 ### 2. Scan for Archivable Tasks

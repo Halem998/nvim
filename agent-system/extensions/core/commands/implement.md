@@ -76,7 +76,8 @@ done
 #### Step 2: Generate Batch Session ID
 
 ```bash
-batch_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+source .claude/scripts/lib/common.sh
+batch_session_id="$(common_session_id)"
 ```
 
 Register the in-flight session registry entry for this batch. **Use the bare `batch_session_id`

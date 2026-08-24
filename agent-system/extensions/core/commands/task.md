@@ -205,7 +205,8 @@ When $ARGUMENTS contains a description (no flags).
    own (no `command-gate-in.sh` call — the task does not exist yet), so generate one once,
    following the same self-generating fallback used by Sync Mode below:
    ```bash
-   session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+   source .claude/scripts/lib/common.sh
+   session_id="$(common_session_id)"
    ```
    Fold `--regen-todo` in — this write is immediately followed by nothing but the TODO.md regen:
    ```bash
@@ -291,7 +292,8 @@ Recover Mode does not source `command-gate-in.sh` either (the task is being rest
 looked up in `active_projects`), so it has no `session_id` of its own — generate one once for
 the whole recover run, following the same self-generating fallback used by Sync Mode below:
 ```bash
-session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+source .claude/scripts/lib/common.sh
+session_id="$(common_session_id)"
 ```
 
 1. For each task number in range:
@@ -483,7 +485,8 @@ state.json is the authoritative source of truth. Sync validates integrity and re
    generate one inline using the standard portable pattern, shared by this step and step 2.6
    below:
    ```bash
-   sync_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+   source .claude/scripts/lib/common.sh
+   sync_session_id="$(common_session_id)"
    bash .claude/scripts/reconcile-artifacts.sh --session-id "$sync_session_id"
    ```
 
@@ -594,7 +597,8 @@ fi
 # Review Mode does not source command-gate-in.sh, so it has no session_id of its own --
 # generate one once for the whole review run, following the same self-generating fallback
 # used by Sync Mode above.
-session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+source .claude/scripts/lib/common.sh
+session_id="$(common_session_id)"
 
 # Extract task metadata
 slug=$(echo "$task_data" | jq -r '.project_name')
