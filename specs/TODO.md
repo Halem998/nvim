@@ -1,5 +1,5 @@
 ---
-next_project_number: 92
+next_project_number: 94
 ---
 
 # TODO
@@ -11,8 +11,10 @@ next_project_number: 92
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,29,31,32,39,42,43,44,45,46,48,51,53,62,66,68,72,73,74,77,79,80,81,82,84,85,87,91 | -- | agent-system, extensions, literature, ... |
-| 2 | 9,30,50,64,75,76,78,83,86,88,89,90 | 29,32,42,48,74,77,82,84,87 | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,32,39,42,43,45,46,48,51,53,62,66,68,72,73,74,79,80,81,84,87,91 | -- | agent-system, extensions, literature, ... |
+| 2 | 9,28,30,44,50,64,75,76,77,82,85,88,89,90,92 | 29,32,42,48,62,74,84,87 | agent-system, extensions, literature, ... |
+| 3 | 78,83,86 | 77,82 | literature, essential-refactor |
+| 4 | 93 | 83 | essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -22,12 +24,12 @@ next_project_number: 92
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
-28 [IMPLEMENTING] — === REVISED 2026-08-24 (refactor survey) ===
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 32 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 9 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+  └─ 28 [IMPLEMENTING] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Move per-session state files cluttering the specs/ root (.orchest
 79 [NOT STARTED] — subagent-postflight.sh blocks a SubagentStop with an EMPTY reason
 
@@ -45,9 +47,10 @@ next_project_number: 92
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-77 [NOT STARTED] — The literature global index at ~/Projects/Literature/index.json c
-  └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
 80 [NOT STARTED] — literature-build-index.sh traverses the corpus with an unguarded 
+77 [NOT STARTED] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
+  └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
+92 [NOT STARTED] — === ADDENDUM 2026-08-24: exact mechanism, verified by execution =
 
 ### Orchestration Concurrency
 
@@ -64,18 +67,19 @@ next_project_number: 92
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-82 [NOT STARTED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
-  └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
-  └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
 84 [NOT STARTED] — The one duplication gate that exists has the wrong scope and has 
   └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+82 [NOT STARTED] — deploy-headless.sh:233 PRINTS the verification step instead of ru
+  └─ 83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
+    └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
+  └─ 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
+85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 
 ### Team Mode Lifecycle
 
@@ -83,6 +87,74 @@ next_project_number: 92
 73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
 
 ## Tasks
+
+### 93. Close cross repo deploy skew
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: essential-refactor
+- **Dependencies**: Task 83
+
+**Description**: The postflight deploy gate makes 'completed' mean 'in effect' IN THIS REPO ONLY. It does nothing for consuming repos, which pull independently -- so a fix verified here stays broken everywhere else until each repo is reloaded by hand. That is not hypothetical drift; it is the measured state today.
+
+MEASURED 2026-08-24, three repos at THREE DIFFERENT REVISIONS of the same source store:
+- BimodalLogic/.claude/scripts/skill-base.sh -- matches CURRENT SOURCE (carries the persisted-counter fix)
+- .config/nvim/.claude/scripts/skill-base.sh -- STALE since 2026-08-17 (pre-fix ambient-variable code)
+- Logos/Theory/.claude/scripts/skill-base.sh -- STALE, byte-identical to the nvim copy
+The source-of-truth repo is running OLDER code than one of its own consumers. Separately confirmed that this is pure staleness and not local editing: every deployed script in both consuming repos either matches current source or matches a historical source revision exactly (Theory's archive-task.sh matches the 2026-07-16 revision byte-for-byte). No hand-edits, so nothing is lost by reloading -- only context/repo/project-overview.md is syncprotected in each, and it survives.
+
+DETECTION IS NOT THE GAP. check-deploy-freshness.sh is deployed in all three repos and correctly reports 'stale' in all three, on every command. It is always-exit-0 and wrapped in `|| true` at its call site, so all three have been warning correctly and being ignored for a week.
+
+WHAT MAKES THIS DIFFERENT FROM THE SINGLE-REPO GATE: regeneration is pull-only BY DESIGN, documented in context/patterns/regeneration-is-manual-only.md -- a consuming repo's tree deliberately freezes until its owner reloads. Do NOT 'fix' this by having this repo push into consuming repos; that inverts a deliberate architectural decision and would deploy into a repo whose session is mid-command.
+
+SCOPE, framed as making skew VISIBLE AND ACTIONABLE rather than eliminating it: (a) enumerate known consuming repos and report, from here, which are behind and by how much -- the source_git_head stamping work already provides the per-extension revision needed; (b) after a deploy here, name the consuming repos that now need a reload rather than leaving the operator to remember; (c) decide whether a consuming repo's own freshness warning should escalate on its Nth consecutive ignored run, since a warning ignored seven days running is not functioning as a warning.
+
+ACCEPTANCE: from this repo, one command reports the deployed revision of every known consuming repo and flags those behind source. A deploy here ends by naming which consuming repos are now stale.
+
+---
+
+### 92. Quality gate false positive on logic notation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 32
+
+**Description**: === ADDENDUM 2026-08-24: exact mechanism, verified by execution ===
+LOCATION: literature_quality_gate.py:118, in sentence_boundary_glue_count():
+    exempted = re.sub(r"[∀∃λ][a-z]\.[A-Z]", "", exempted)
+    return len(re.findall(r"[a-z]\.[A-Z]", exempted))
+The binder exemption matches a quantifier or lambda followed by EXACTLY ONE lowercase letter. Executed against the real pattern:
+    λx.Fx    -> exempted, 0 counted   (correct)
+    λxy.Ryx  -> NOT exempted, 1 counted   (DEFECT: multi-character bound variable)
+    ^x.Fx    -> NOT exempted, 1 counted   (DEFECT: `^` hat abstraction absent from the character class)
+    ∀x.Px    -> exempted, 0 counted   (correct)
+    λx1.Rx1  -> not exempted but 0 counted anyway -- the digit breaks [a-z]\.[A-Z]. Subscripted/numbered variables are NOT part of this defect; do not widen for them.
+The docstring at :114-116 states the narrow class is deliberate, so that a bare letter-period-capital with no binder prefix is still counted. That intent is correct; the bug is that a MULTI-CHARACTER binder reads as 'no binder prefix'. The gate threshold is 3, so a higher-order-logic paper trips on notation alone.
+
+THE FIX IS NOT A THRESHOLD BUMP, and this is the crux. Five PDFs rejected during a higher-order-identity ingest batch were inspected match-by-match, and the outcomes SPLIT:
+    goodman_2024_higher_order_logic_as_metaphysics   11/11 hits lambda notation      -> FALSE POSITIVE
+    bacon_a_case_for_higher_order_metaphysics        11/11 hits hat/lambda           -> FALSE POSITIVE
+    bacon_dorr_2024_classicism                       genuine <sup>-span space collapse under pymupdf4llm -> TRUE POSITIVE
+    hott_book_2013                                   8 genuine + 3 bibliography in 229k words -> MIXED
+    ahrens_north_shulman_tsementzis_univalence       ~17 genuine + ~7 bib in 69k words        -> MIXED
+The gate DOES catch real corruption. Widening the exemption must not blind it to the <sup>-span collapse, which is the failure it exists for.
+
+SUGGESTED SHAPE (evaluate, do not assume): extend to roughly [∀∃λ^][a-z][A-Za-z0-9]*\. -- adding hat abstraction and allowing a multi-character bound-variable run.
+REGRESSION FIXTURES: all five documents above, on disk under ~/Projects/Literature/sources/. Acceptance is that the two false positives drop to zero hits WHILE bacon_dorr_2024 still trips. The two MIXED documents are the honest hard cases -- state explicitly what the gate should do with a document carrying both genuine corruption and legitimate notation, rather than tuning until they happen to pass.
+PROVENANCE: analysis recorded in ~/Projects/Literature/FIND_SOURCES.md under 'Quality-gate overrides (2026-08-20, higher-order identity batch)'.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+The literature conversion quality gate rejects correctly-converted documents whose content is formal-logic notation. Surfaced during a real conversion session in a consuming repo and recorded there in FIND_SOURCES.md as a manual override log for five PDFs; it was never filed as a task in any tracker, and the consuming repo's own note correctly observes that the durable fix belongs in agent-system/extensions/literature/ rather than that repo's deployed .claude/ tree.
+
+MECHANISM: the gate's mojibake/corruption heuristic includes an `[a-z]\.[A-Z]` pattern -- a lowercase letter, a literal period, an uppercase letter -- intended to catch run-together words from a bad PDF extraction. Lambda-binder notation trips it directly: `λxy.Ryx` matches, as does any `λx.Fx` form. So a CLEAN conversion of a logic or semantics paper is scored as corrupt.
+
+WHY THIS MATTERS BEYOND THE FALSE POSITIVE: the operator response is to override the gate by hand, five times in one session in the observed case. A gate that must be routinely overridden stops being read, and the next genuine pymupdf4llm corruption gets waved through with the same reflex. The failure mode is the override habit, not the rejected file.
+
+SCOPE: distinguish genuine extraction corruption from formal notation. Candidate approaches, to be evaluated rather than assumed: exclude matches whose preceding character is a binder glyph (λ, ∀, ∃, ι, μ); require the pattern to recur above a density threshold rather than firing on any single occurrence; or exempt documents whose detected subject matter is logic/mathematics. Preserve the mojibake detection that the completed conversion-quality-gate work added -- this narrows that gate, it does not revert it. Carry the five FIND_SOURCES.md cases in as regression fixtures, and add at least one genuine-corruption fixture so the narrowing is proven non-vacuous.
+
+DEPENDENCY NOTE: literature-convert.sh is one of the scripts currently drifted between source and deploy, so any before/after measurement taken before the deploy lands is measuring the wrong file.
+
+ACCEPTANCE: all five recorded false-positive documents pass the gate unmodified; a known-corrupt fixture still fails it; no hand override required for either.
+
+---
 
 ### 91. Make update-plan-status.sh diagnose non-conforming Status lines, and settle the trailing-text tolerance policy
 - **Status**: [NOT STARTED]
@@ -238,7 +310,7 @@ ACCEPTANCE: CI runs the full suite on every push and is green; a deliberately re
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: None
+- **Dependencies**: Task 32
 
 **Description**: THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed no acceptance gate in this repo is trustworthy in either direction -- including the 19/23 verify-deploy figure the 2026-08-24 survey reports. Split out of a former six-item bundle where its value was diluted by hygiene items.
 
@@ -292,7 +364,7 @@ ACCEPTANCE: a meta task whose implementation edits the source store cannot reach
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: None
+- **Dependencies**: Task 32
 
 **Description**: deploy-headless.sh:233 PRINTS the verification step instead of running it. The line reads `echo "[deploy-headless] Verify with: bash $TARGET/.claude/scripts/verify-deploy.sh"` followed immediately by `exit 0`. verify-deploy.sh aggregates five working contract lints (lint-agent-contracts, lint-contract-compliance, lint-postflight-boundary, lint-routing-wiring, lint-state-writer-boundary) plus doc-lint, task-reference lint, verify.lua parity, the shell test suite and validate-state --deep, and exits 1 on failure. Because its only caller echoes instead of invoking, all of that is reachable only by a human typing the command. command-gate-out.sh invokes ZERO checks (grep for 'check-|lint-' returns nothing). check-runtime-file-tracking.sh has no caller anywhere in the repo -- only a manifest declaration and prose references.
 
@@ -615,9 +687,23 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: literature
-- **Dependencies**: None
+- **Dependencies**: Task 32
 
-**Description**: The literature global index at ~/Projects/Literature/index.json contains two mutually incompatible entry shapes, and literature-briefing.sh understands only one of them, so an entire class of ingested documents is silently invisible to --lit. Verified empirically during a real /research --lit run, not speculation. SEVERITY: HIGH — silent corpus invisibility.
+**Description**: === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a duplicate filed elsewhere ===
+THE MECHANISM IS A WRITER/READER KEY MISMATCH, not a missing write. The ingest DOES write to the global index; it writes the wrong key.
+    Writer -- literature-ingest.sh emits {"doc_id": ..., "title": <slug>, "authors": [], "year": null, "chunk_count": N}
+    Reader -- literature-briefing.sh:114,175 resolves `select(.id == $id)` and counts chunks via child entries with parent_doc == id
+Since doc_id != id, EVERY ingest-written entry is invisible to the briefing. Measured in ~/Projects/Literature/index.json today: 73 entries keyed doc_id, 324 keyed id. Even on a key match the ingest entries are metadata-poor -- title is the bare slug, authors empty, year null -- and they have no parent_doc chunk children for the reader to count.
+
+OBSERVED CONSEQUENCE, not inference: a --lit research round in a consuming repo silently missed 7 of 25 ingested verification sources, INCLUDING both of the user's own manuscripts (brast-mckie_2026_counterfactual-worlds and construction-possible-worlds), despite the work resting on the semantics they develop. The agent hand-routed to selected doc_ids because the briefing surfaced nothing, so corpus coverage became one agent's topical guess. There is no error in that path -- the sources are simply absent from the briefing, so the gap is invisible at the point of use.
+
+SCOPE (supersedes the vaguer framing below): (a) reader tolerates BOTH key shapes -- the immediate unblock; (b) writer normalized to the curated schema with real title/authors/year plus parent_doc chunk children; (c) one-shot backfill of the existing doc_id-keyed entries; (d) regression check that ingest-then-brief actually surfaces the document.
+CONCRETE VERIFICATION: the briefing resolves every sub-index entry with ZERO skip warnings.
+
+DUPLICATE FILED ELSEWHERE: a consuming repo opened its own task for this defect in its own tracker, because the defect surfaced there. It belongs here -- literature-ingest.sh and literature-briefing.sh live in this source store, and a fix written into that repo's .claude/ tree would be wiped on its next reload. Close that one as a duplicate of this task rather than working it there.
+COUNT CAVEAT: the global index is being actively repaired from another repo (null-id repair, sources/ consolidation), so entry counts move. Re-measure at implementation time rather than trusting the numbers above; the SHAPE of the defect is what is stable.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+The literature global index at ~/Projects/Literature/index.json contains two mutually incompatible entry shapes, and literature-briefing.sh understands only one of them, so an entire class of ingested documents is silently invisible to --lit. Verified empirically during a real /research --lit run, not speculation. SEVERITY: HIGH — silent corpus invisibility.
 
 === VERIFIED EVIDENCE (re-verify line numbers, they drift) ===
 
@@ -1545,7 +1631,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: None
+- **Dependencies**: Task 62
 - **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 - **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
 
@@ -1826,7 +1912,7 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 - **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 32
 - **Research**: [028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md]
 - **Plan**: [028_correct_mcp_ownership_model_and_purge_dead_declarations/plans/01_mcp-ownership-hybrid-rewrite.md]
 
