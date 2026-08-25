@@ -85,9 +85,12 @@ mv vosk-model-small-en-us-0.15 vosk-model-small-en-us
 
 TTS fires in two categories:
 
-1. **Lifecycle transitions**: After a task status transition, `update-task-status.sh` postflight
-   calls `tts-notify.sh --lifecycle STATUS`, which speaks "Tab N STATUS" (e.g., "Tab 3 researched").
-   This is the only source of lifecycle TTS.
+1. **Lifecycle transitions**: After a task status transition, a lifecycle skill's own postflight
+   Stage 8a calls `skill_lifecycle_notify "$status"` (a shared function in `skill-base.sh`), which
+   invokes `lifecycle-notify.sh STATUS`, which in turn calls `tts-notify.sh --lifecycle STATUS`,
+   speaking "Tab N STATUS" (e.g., "Tab 3 researched"). `/orchestrate` calls `lifecycle-notify.sh`
+   directly from `orchestrator-postflight.sh` instead of going through a skill's Stage 8a.
+   `update-task-status.sh` itself does not invoke any TTS script; it only writes task status.
 
 2. **Interactive prompts**: `permission_prompt` and `elicitation_dialog` Notification hook events
    trigger `tts-notify.sh` with no args, which speaks "Tab N" to alert the user that input is needed.
@@ -128,15 +131,20 @@ The hooks are configured in `.claude/settings.json`:
 }
 ```
 
-Lifecycle TTS is fired directly by `update-task-status.sh` postflight:
+Lifecycle TTS is fired by each lifecycle skill's own postflight Stage 8a, via the shared
+`skill_lifecycle_notify` function in `skill-base.sh`:
 
 ```bash
-# In PHASE 5 of update-task-status.sh (postflight only)
-tts_script="$SCRIPT_DIR/../hooks/tts-notify.sh"
-if [[ -x "$tts_script" ]] || [[ -f "$tts_script" ]]; then
-    bash "$tts_script" --lifecycle "$STATE_STATUS" &
-fi
+# Stage 8a of a lifecycle skill's Postflight section (e.g. skill-implementer/SKILL.md),
+# following @.claude/context/patterns/skill-postflight-flow.md's Stage 8a:
+skill_lifecycle_notify "$status"
 ```
+
+`skill_lifecycle_notify` (in `skill-base.sh`) backgrounds a call to `lifecycle-notify.sh STATUS`,
+which updates the WezTerm tab color and then calls `tts-notify.sh --lifecycle STATUS`. `$status`
+is the operation's success-variant string read from `.return-meta.json` at that skill's own
+Stage 6 — not `update-task-status.sh`'s internal `$STATE_STATUS`, which is a separate,
+correctly-scoped variable local to that one script's own status-vocabulary mapping.
 
 ### Environment Variables
 
@@ -155,7 +163,7 @@ export TTS_ENABLED=0
 
 | Event | Trigger | Message |
 |-------|---------|---------|
-| Lifecycle (update-task-status.sh postflight) | Task status transition completes | "Tab N researched/planned/completed" |
+| Lifecycle (skill postflight Stage 8a / orchestrator-postflight.sh) | Task status transition completes | "Tab N researched/planned/completed" |
 | permission_prompt | Claude needs tool permission | "Tab N" |
 | elicitation_dialog | Claude asks a clarifying question | "Tab N" |
 
@@ -173,7 +181,9 @@ When called with no args (Notification hook):
 ### Troubleshooting
 
 **No lifecycle TTS fires**:
-- Verify `update-task-status.sh` PHASE 5 is active (check it has lifecycle notification block)
+- Verify the lifecycle skill's own postflight Stage 8a calls `skill_lifecycle_notify "$status"`
+  (not a stale or misnamed variable — passing an empty argument logs a skipped no-op instead of
+  speaking, both to stderr and to the log below)
 - Check log: `cat specs/tmp/claude-tts-notify.log`
 
 **No sound plays**:

@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Resolve adjacent defects found during scope confirmation",
+  "started_at": "2026-08-25T21:07:00Z",
+  "last_updated": "2026-08-25T21:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm skill-team-implement/SKILL.md missing Stage 8a and add it",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-team-implement/SKILL.md"],
+      "note": "Confirmed via grep: no skill_lifecycle_notify/lifecycle-notify call existed anywhere in the file prior to this edit; Stage 12 (the shared Stage-7 equivalent) had no Stage 8a follow-on. Added a new Stage 12a passing the literal 'implemented' value Stage 12 already passes (not $status, which here holds the pre-run task status, not the lifecycle-terminal value -- confirmed no Stage-6-style re-read exists in this file)."
+    },
+    {
+      "id": 2,
+      "description": "Confirm update-task-status.sh no longer fires tts-notify.sh/lifecycle-notify.sh directly, and correct the stale nvim guide",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md"],
+      "note": "grep confirmed update-task-status.sh has zero tts-notify/lifecycle-notify references. Rewrote three sections of the guide (How It Works, Hook Configuration code block, Notification Event Types table row, Troubleshooting) to describe the real path: skill Stage 8a -> skill_lifecycle_notify -> lifecycle-notify.sh -> tts-notify.sh --lifecycle, with the correct $status variable name."
+    },
+    {"id": 3, "description": "Verify no task numbers introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

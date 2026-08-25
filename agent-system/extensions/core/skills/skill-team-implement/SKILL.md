@@ -522,6 +522,24 @@ If the script exits non-zero, log a warning but continue (regeneration errors ar
 
 ---
 
+### Stage 12a: Lifecycle TTS Notification
+
+Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8a (TTS notify). This skill
+had no lifecycle notification call at all prior to this addition — a distinct defect with the
+same user-visible symptom as an unannounced lifecycle transition. Unlike the other lifecycle
+skills, this stage does not read `$status` from a Stage-6-style metadata re-read (this skill's
+own `status` variable above is the pre-run task status, not a lifecycle-terminal value), so the
+literal success value Stage 12 already passes is used directly, matching that call site:
+
+```bash
+skill_lifecycle_notify "implemented"
+```
+
+Non-blocking: called in background after artifacts are linked. Speaks "Tab N implemented" to
+announce the lifecycle transition.
+
+---
+
 ### Stage 13: Write Metadata File
 
 Write team execution metadata. Note that `phases_completed`/`phases_total` nest **inside the

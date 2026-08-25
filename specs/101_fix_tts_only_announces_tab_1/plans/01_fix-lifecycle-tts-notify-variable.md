@@ -427,29 +427,32 @@ respectively) and may be dispatched together.
 
 ---
 
-### Phase 5: Resolve adjacent defects found during scope confirmation [NOT STARTED]
+### Phase 5: Resolve adjacent defects found during scope confirmation [COMPLETED]
 
 - **Goal:** Address the two non-rename issues Phase 1's inventory surfaces, or close them as
   reasoned exclusions with evidence.
 
 - **Tasks:**
-  - [ ] **Missing Stage 8a in `skill-team-implement`**: confirm whether
+  - [x] **Missing Stage 8a in `skill-team-implement`**: confirm whether
     `agent-system/extensions/core/skills/skill-team-implement/SKILL.md` invokes the lifecycle
     notifier at all. If it does not, it never announces a lifecycle transition — a distinct defect
     with the same user-visible symptom this task exists to fix. Add a Stage 8a call passing the
     literal success value that file's Stage 7 already passes, matching the shape used by its
     sibling skills. If evidence is found that the omission is deliberate, record a
     `#### Reasoned Exclusions` subsection under this phase instead of adding the call, citing that
-    evidence.
-  - [ ] **Stale TTS documentation**: `agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md`
+    evidence. *(completed: confirmed no lifecycle-notify call existed; added a new Stage 12a
+    passing the literal `"implemented"` value)*
+  - [x] **Stale TTS documentation**: `agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md`
     documents lifecycle TTS as being fired directly by `update-task-status.sh` PHASE 5, using
     `$STATE_STATUS`. Confirm whether `update-task-status.sh` still contains any
     `tts-notify.sh`/`lifecycle-notify.sh` invocation. If it does not, the guide describes a
     mechanism that no longer exists and is itself a vector for re-propagating the wrong variable
     name; rewrite that section to describe the actual path (a skill's Stage 8a ->
     `skill_lifecycle_notify` -> `lifecycle-notify.sh` -> `tts-notify.sh --lifecycle`) with the
-    correct variable name.
-  - [ ] Verify no task numbers were introduced into any edited file.
+    correct variable name. *(completed: confirmed update-task-status.sh has zero tts-notify/
+    lifecycle-notify references; rewrote How It Works, Hook Configuration, the event-types table
+    row, and Troubleshooting)*
+  - [x] Verify no task numbers were introduced into any edited file. *(completed)*
 
 - **Timing:** 0.5 hours
 
