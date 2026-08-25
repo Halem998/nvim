@@ -1,7 +1,52 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 62,
-  "session_id": "sess_1787617685_88b825",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/summaries/01_restrict-latex-typst-formatting-only-summary.md",
+      "summary": "6-phase implementation restricting latex/typst task types to formatting-only concerns across /task step 4 routing, /fix-it QUESTION keyword table, additive manifest keyword_overrides, extension scope reframing, extension-development.md documentation gap, and typst content-standards scope notes."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Narrowed /task step 4d, /fix-it Step 8.5, and added additive keyword_overrides to the latex and typst manifests so content vocabulary (theorem/proof/lemma/etc.) routes to lean4/formal/general instead of latex/typst, while precise formatting phrases still resolve to latex/typst. Reframed both extensions' self-description as formatting-only, closed the keyword_overrides documentation gap, and added scope-boundary notes to the typst content-standards library. All 13 planned source-store files touched; no .claude/** path modified."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/skills/skill-fix-it/SKILL.md",
+    "agent-system/extensions/core/commands/fix-it.md",
+    "agent-system/extensions/core/docs/examples/fix-it-flow-example.md",
+    "agent-system/extensions/latex/manifest.json",
+    "agent-system/extensions/typst/manifest.json",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/latex/EXTENSION.md",
+    "agent-system/extensions/typst/EXTENSION.md",
+    "agent-system/extensions/core/context/guides/extension-development.md",
+    "agent-system/extensions/typst/context/project/typst/standards/textbook-standards.md",
+    "agent-system/extensions/typst/context/project/typst/standards/type-theory-foundations.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When narrowing a task-type routing table to fix content/tool conflation, a purely textual regression grep (e.g. matching a retired 'theorem...latex' co-occurrence anywhere in a line) can produce false positives on legitimate replacement prose that still mentions both terms for clarification. Fix by reordering the sentence so the retired substring pattern no longer spans left-to-right in the same line, rather than weakening the grep or skipping the check.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/062_restrict_typst_latex_task_types_to_formatting_only/summaries/01_restrict-latex-typst-formatting-only-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["regression-grep", "routing-table", "false-positive", "prose-ordering", "verification"]
+    },
+    {
+      "content": "For manifest keyword_overrides field placement, cslib.manifest.json places the block immediately after routing_agents/routing_agents_hard and before merge_targets; email.manifest.json places it right after dependencies, before provides. When a manifest has no _hard routing variants (like latex/typst), the cslib placement (after routing_agents, before merge_targets) is the closer structural analog to follow for visual consistency across worked examples.",
+      "category": "PATTERN",
+      "source_artifact": "specs/062_restrict_typst_latex_task_types_to_formatting_only/summaries/01_restrict-latex-typst-formatting-only-summary.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["manifest-schema", "keyword_overrides", "field-placement", "extension-development"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1787617685_88b825",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

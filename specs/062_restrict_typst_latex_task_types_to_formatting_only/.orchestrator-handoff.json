@@ -1,14 +1,22 @@
 {
-  "dispatch_seq": 5,
-  "status": "planned",
-  "summary": "Created 6-phase implementation plan (3.5h, 3 dependency waves) restricting latex/typst task types to formatting-only routing. Covers /task step 4b/4d/4e revisions, the /fix-it QUESTION keyword table plus its two doc mirrors, additive keyword_overrides on both manifests, formatting-only reframing of both extensions, the undocumented keyword_overrides schema, and a re-scope-in-place decision for the typst content standards library. All edits target agent-system/extensions/**; no deploy is performed.",
+  "dispatch_seq": 8,
+  "status": "implemented",
+  "summary": "Implemented all 6 phases across 3 dependency waves: narrowed /task step 4d, corrected /fix-it Step 8.5 content-keyword routing (and its two doc mirrors), added additive keyword_overrides to the latex and typst manifests, reframed both extensions as formatting-only, documented the keyword_overrides schema in extension-development.md, and added scope-boundary notes to the typst content-standards library with a re-scope-in-place decision. All 13 planned source-store files under agent-system/extensions/** were modified; no .claude/** path was touched; no deploy was run.",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "plan_markers_verified": true,
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/plans/01_restrict-latex-typst-formatting-only.md",
-      "summary": "6-phase, 3-wave plan (3.5h) narrowing latex/typst routing to formatting-only across 13 source-store files."
+      "summary": "6-phase, 3-wave plan, all phases marked [COMPLETED]."
+    },
+    {
+      "type": "summary",
+      "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/summaries/01_restrict-latex-typst-formatting-only-summary.md",
+      "summary": "Implementation summary covering all 13 modified source-store files, decisions, verification, and follow-up recommendation."
     }
   ],
   "blockers": [],
-  "next_steps": "Run /implement 62 to execute the plan"
+  "next_steps": "Task ready for postflight/completion. A deliberate, separately invoked deploy is required before the new routing takes effect in the deployed .claude/** tree."
 }

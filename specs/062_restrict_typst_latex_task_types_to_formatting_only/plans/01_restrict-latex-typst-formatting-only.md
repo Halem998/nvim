@@ -1,7 +1,7 @@
 # Implementation Plan: Task #62
 
 - **Task**: 62 - Restrict typst and latex task types to formatting-only concerns
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md`
@@ -408,22 +408,22 @@ summary or reverted.
 
 ## Testing & Validation
 
-- [ ] `jq empty` passes on `latex/manifest.json` and `typst/manifest.json`.
-- [ ] Trace check — content + tool description ("prove a theorem, typeset in latex"): 4a no match;
+- [x] `jq empty` passes on `latex/manifest.json` and `typst/manifest.json`.
+- [x] Trace check — content + tool description ("prove a theorem, typeset in latex"): 4a no match;
       4b no match (no narrow formatting phrase present); 4d matches the `lean4` content row before
       reaching the latex row. Resolves to a content type.
-- [ ] Trace check — pure formatting description ("fix the bibtex style in my latex preamble"): 4b
+- [x] Trace check — pure formatting description ("fix the bibtex style in my latex preamble"): 4b
       matches `bibtex`/`latex style` and short-circuits to `latex`.
-- [ ] Trace check — bare tool mention ("fix my typst file"): no 4b phrase match, falls through to
+- [x] Trace check — bare tool mention ("fix my typst file"): no 4b phrase match, falls through to
       4d's `typst` row. Resolves to `typst`, the desired behavior for genuinely
       ambiguous-but-likely-formatting requests.
-- [ ] Trace check — false-positive regression ("document this function"): the `"document"` keyword
+- [x] Trace check — false-positive regression ("document this function"): the `"document"` keyword
       no longer exists in the 4d latex row, so this no longer resolves to `latex`.
-- [ ] Trace check — `/fix-it` QUESTION "why does this lemma need the axiom of choice?": resolves to
+- [x] Trace check — `/fix-it` QUESTION "why does this lemma need the axiom of choice?": resolves to
       `lean4`, not `latex`.
-- [ ] `grep -rn 'theorem' agent-system/extensions/core/skills/skill-fix-it/SKILL.md` shows `theorem`
+- [x] `grep -rn 'theorem' agent-system/extensions/core/skills/skill-fix-it/SKILL.md` shows `theorem`
       only on the `lean4` row.
-- [ ] No file under any `.claude/**` tree was created or modified.
+- [x] No file under any `.claude/**` tree was created or modified.
 
 ## Artifacts & Outputs
 
