@@ -1,7 +1,7 @@
 # Implementation Plan: Task #62
 
 - **Task**: 62 - Restrict typst and latex task types to formatting-only concerns
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md`
@@ -100,35 +100,36 @@ so they carry no write conflicts.
 
 ---
 
-### Phase 1: Narrow and document `/task` step 4 routing [NOT STARTED]
+### Phase 1: Narrow and document `/task` step 4 routing [COMPLETED]
 
 **Goal**: Make content vocabulary win over tool-name vocabulary in the step 4d hardcoded keyword
 table, and document the two ordering contracts (row order in 4d, glob order in 4b) plus the 4e
 non-lever, so the fix cannot be accidentally reverted or re-attempted in the wrong place.
 
 **Tasks**:
-- [ ] In the step 4d table, drop `"document"` from the latex row entirely, leaving
+- [x] In the step 4d table, drop `"document"` from the latex row entirely, leaving
       `- "latex", "tex", "typeset" → latex`. (`"typeset"` stays: it is inherently formatting
-      vocabulary with low false-positive risk.)
-- [ ] Extend the lean4 row to `"lean", "lean4", "mathlib", "theorem", "proof", "lemma", "axiom",
+      vocabulary with low false-positive risk.) *(completed)*
+- [x] Extend the lean4 row to `"lean", "lean4", "mathlib", "theorem", "proof", "lemma", "axiom",
       "proposition", "corollary", "derivation"`, matching the vocabulary Phase 2 assigns to `lean4`
-      in the `/fix-it` table.
-- [ ] Add a new content row `- "textbook", "chapter", "thesis", "dissertation" → general` directly
-      after the lean4 row.
-- [ ] Move the existing `- "formal", "logic", "math", "physics", "modal", "kripke" → formal` row up
+      in the `/fix-it` table. *(completed)*
+- [x] Add a new content row `- "textbook", "chapter", "thesis", "dissertation" → general` directly
+      after the lean4 row. *(completed)*
+- [x] Move the existing `- "formal", "logic", "math", "physics", "modal", "kripke" → formal` row up
       so it sits with the other content rows, ahead of the latex/tex and typst rows. Do not change
-      its keyword list.
-- [ ] Amend the `**4d. Hardcoded keyword table**` heading line to state the scan-order contract
+      its keyword list. *(completed)*
+- [x] Amend the `**4d. Hardcoded keyword table**` heading line to state the scan-order contract
       explicitly: evaluated top-to-bottom, first matching row wins, and content-signal rows are
       listed before the latex/tex and typst rows precisely so a description naming a formatting tool
-      alongside mathematical or narrative content routes by content, not by tool name.
-- [ ] Add one sentence to step 4b's prose recording that the cross-manifest scan
+      alongside mathematical or narrative content routes by content, not by tool name. *(completed)*
+- [x] Add one sentence to step 4b's prose recording that the cross-manifest scan
       (`for manifest in .claude/extensions/*/manifest.json`) iterates in **alphabetical
       directory-name order** and breaks on first match, so a future extension author scoping new
-      `keyword_overrides` knows first-match-wins is alphabetical, not intent-based.
-- [ ] Add one sentence to step 4e recording that alias remapping matches on an already-resolved
+      `keyword_overrides` knows first-match-wins is alphabetical, not intent-based. *(completed)*
+- [x] Add one sentence to step 4e recording that alias remapping matches on an already-resolved
       task_type string, has no visibility into which keyword produced it, and is therefore
-      intentionally not the place to solve content-vs-formatting discrimination.
+      intentionally not the place to solve content-vs-formatting discrimination. *(completed)*
+
 
 **Timing**: 0.75 hours
 

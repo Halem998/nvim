@@ -141,18 +141,27 @@ When $ARGUMENTS contains a description (no flags).
    ```
    If `matched` is non-empty → task_type = `matched`, skip to step 4e.
 
+   Note: the cross-manifest scan (`for manifest in .claude/extensions/*/manifest.json`) iterates
+   in **alphabetical directory-name order** and breaks on first match, so a future extension
+   author scoping new `keyword_overrides` should know first-match-wins is alphabetical, not
+   intent-based.
+
    **4c. Project default** (if `default_type` is non-empty): task_type = `default_type`, skip to step 4e.
 
-   **4d. Hardcoded keyword table** (fallback):
-   - "lean", "lean4", "mathlib", "theorem", "proof" → lean4
-   - "latex", "tex", "document", "typeset" → latex
+   **4d. Hardcoded keyword table** (fallback): evaluated top-to-bottom, first matching row wins.
+   Content-signal rows are listed before the latex/tex and typst rows precisely so a description
+   naming a formatting tool alongside mathematical or narrative content routes by content, not by
+   tool name.
+   - "lean", "lean4", "mathlib", "theorem", "proof", "lemma", "axiom", "proposition", "corollary", "derivation" → lean4
+   - "textbook", "chapter", "thesis", "dissertation" → general
+   - "formal", "logic", "math", "physics", "modal", "kripke" → formal
+   - "latex", "tex", "typeset" → latex
    - "typst" → typst
    - "python", "pytest", "pip" → python
    - "z3", "smt", "solver", "constraint" → z3
    - "nix", "nixos", "home-manager", "flake" → nix
    - "web", "astro", "tailwind", "cloudflare" → web
    - "epidemiology", "epi", "cohort", "case-control", "strobe" → epi:study
-   - "formal", "logic", "math", "physics", "modal", "kripke" → formal
    - "deck", "slide", "presentation", "pitch deck" → founder:deck
    - "spreadsheet", "sheet", "excel" → founder:sheet
    - "finance", "financial", "revenue", "burn rate" → founder:finance
@@ -185,6 +194,10 @@ When $ARGUMENTS contains a description (no flags).
    Note: Alias remapping applies only to results from 4c/4d (project default
    and hardcoded table). Extension keyword matches from 4b are final and
    not subject to alias remapping by other extensions.
+
+   Note: alias remapping matches on an already-resolved task_type string and has no visibility
+   into which keyword produced it, so it cannot discriminate content from formatting — it is
+   intentionally not the place to solve content-vs-formatting discrimination.
 
 4.5. **Assign topic** to this task:
 

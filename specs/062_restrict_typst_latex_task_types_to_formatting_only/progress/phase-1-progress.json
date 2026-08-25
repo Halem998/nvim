@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Narrow and document /task step 4 routing",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Drop \"document\" from 4d latex row", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 2, "description": "Extend 4d lean4 row with lemma/axiom/proposition/corollary/derivation", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 3, "description": "Add new content row (textbook/chapter/thesis/dissertation -> general)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 4, "description": "Move formal row up before latex/typst rows", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 5, "description": "Amend 4d heading with scan-order contract sentence", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 6, "description": "Add 4b prose sentence on alphabetical glob-scan order", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 7, "description": "Add 4e prose sentence on non-lever discrimination", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
