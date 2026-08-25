@@ -1,0 +1,15 @@
+{
+  "dispatch_seq": 2,
+  "task_number": 96,
+  "session_id": "sess_1787634022_3ba5fb_96",
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/096_surface_literature_coverage_delta_under_lit/reports/01_lit-coverage-delta-guard.md",
+      "summary": "Confirms the code-level blind spot (literature-lit-flag-resolve.sh's SUBINDEX_PRESENT branch never reads the global index once the sub-index clears the absolute-count floor), recommends extending that resolver's existing SPARSE_PROMPT_NEEDED directive with a topic-scoped delta check (reusing literature-discover.sh's Tier 1 keyword matcher) rather than a bare ratio, flags the parent_doc==null chunk-inflation gotcha on the global index's .entries count, and scopes the claim-level 'no counterpart exists' verifier out as an explicit follow-up rather than silently closing that class."
+    }
+  ],
+  "next_steps": "Run /plan 96 to create implementation plan",
+  "summary": "Research complete. Root cause confirmed by code reading: literature-lit-flag-resolve.sh's SUBINDEX_PRESENT branch (sub-index clears LITERATURE_SPARSE_THRESHOLD) never consults the global index at all. Recommend extending that same resolver's SPARSE_PROMPT_NEEDED directive/marker family (no new directive token, no new AskUserQuestion option set) with a topic-scoped compound condition: global index materially larger (doc-level, parent_doc==null filtered -- raw .entries counts chunks and would overstate the gap ~2x) AND keyword-matched candidates (reusing literature-discover.sh's filter_terms/term_matches) absent from the sub-index. Surfacing must be advisory-in-prompt (banner inside lit_context, reaches orchestrator_mode=true runs where AskUserQuestion is forbidden) plus the existing four-option AskUserQuestion reused for interactive re-prompt. Claim-level 'no counterpart exists' verification against the global corpus is explicitly named out of scope -- a materially different, more expensive mechanism -- and should be a named follow-up task in the plan, not silently folded in or dropped. Dependency (global-index schema-unification) confirmed complete: literature-doc-key.sh's .id//.doc_id tolerance is already in place and sufficient for a doc_id-keyed delta computation."
+}
