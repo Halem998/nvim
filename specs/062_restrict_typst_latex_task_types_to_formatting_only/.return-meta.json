@@ -1,37 +1,33 @@
 {
-  "status": "researched",
-  "started_at": "2026-08-25T00:00:00Z",
-  "completed_at": "2026-08-25T01:10:00Z",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 62,
+  "session_id": "sess_1787617685_88b825_62",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "summary": "Created 6-phase implementation plan restricting latex/typst task types to formatting-only concerns, spanning /task step 4 routing, the /fix-it QUESTION keyword table and its doc mirrors, additive manifest keyword_overrides, extension scope reframing, and two adjacent doc gaps.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md",
-      "summary": "Identifies 8 findings and concrete before/after revisions across task.md step 4 (4b/4d), skill-fix-it's QUESTION-routing table (and its two doc mirrors), the latex/typst manifests (new keyword_overrides blocks), extension purpose framing, and two adjacent doc gaps (4b glob-order fragility, dangling keyword_overrides schema pointer)."
+      "type": "plan",
+      "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/plans/01_restrict-latex-typst-formatting-only.md",
+      "summary": "6-phase, 3-wave plan (3.5h) narrowing latex/typst routing to formatting-only across 13 source-store files."
     }
   ],
-  "next_steps": "Run /plan 62 to create implementation plan",
-  "modified_files": [],
+  "modified_files": [
+    "specs/062_restrict_typst_latex_task_types_to_formatting_only/plans/01_restrict-latex-typst-formatting-only.md",
+    "specs/062_restrict_typst_latex_task_types_to_formatting_only/.orchestrator-handoff.json",
+    "specs/062_restrict_typst_latex_task_types_to_formatting_only/.return-meta.json"
+  ],
+  "phase_count": 6,
+  "estimated_hours": 3.5,
+  "dependency_waves": 3,
   "memory_candidates": [
     {
-      "content": "task.md's step 4b cross-manifest keyword_overrides scan (`for manifest in .claude/extensions/*/manifest.json`) is alphabetical-directory-glob-ordered and breaks on first match, not intent-ordered. Directory names that sort earlier (e.g. \"latex\" < \"lean\") win races against later-sorting extensions if both declare keyword_overrides on overlapping vocabulary. Currently latent (only email/cslib/literature use keyword_overrides today) but worth checking whenever a new extension adds this field.",
-      "category": "PATTERN",
-      "source_artifact": "specs/062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["keyword_overrides", "task-routing", "glob-order", "task.md", "extension-manifest"]
-    },
-    {
-      "content": "The root CLAUDE.md (merge-sources/claudemd.md) points extension authors at context/guides/extension-development.md for the keyword_overrides schema, but that guide contains zero mentions of \"keyword\" -- the schema is undocumented there. The only worked examples live in the email/cslib/literature manifest.json files themselves.",
+      "content": "When a routing/keyword-table fix spans several surfaces, check whether the manifest fields the task description assumes exist actually do. For the latex/typst formatting-only scoping work, the description presumed both extension manifests already declared keyword_overrides; neither did, which flips that half of the work from a narrowing (remove over-broad keywords) into an addition (introduce narrow, high-precision multi-word phrases that short-circuit the hardcoded fallback table). The narrowing then belongs entirely to the hardcoded fallback table and the separate content-based keyword detector, not to the manifests.",
       "category": "INSIGHT",
-      "source_artifact": "specs/062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["keyword_overrides", "extension-development", "doc-gap", "CLAUDE.md"]
+      "source_artifact": "specs/062_restrict_typst_latex_task_types_to_formatting_only/plans/01_restrict-latex-typst-formatting-only.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["keyword_overrides", "task-routing", "manifest-schema", "planning-premise", "task-type-detection"]
     }
   ],
-  "metadata": {
-    "session_id": "sess_1787617685_88b825_62",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 8
-  }
+  "next_steps": "Run /implement 62 to execute the plan"
 }

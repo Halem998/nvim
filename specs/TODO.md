@@ -32,7 +32,7 @@ next_project_number: 101
 22 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
-62 [RESEARCHED] — Restrict typst and latex task types to formatting-only concerns. 
+62 [PLANNED] — Restrict typst and latex task types to formatting-only concerns. 
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
@@ -43,7 +43,7 @@ next_project_number: 101
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-77 [RESEARCHED] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
+77 [PLANNING] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
   └─ 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
@@ -65,7 +65,7 @@ next_project_number: 101
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-83 [RESEARCHED] — Make 'completed' mean 'in effect' for tasks that edit the source 
+83 [PLANNING] — Make 'completed' mean 'in effect' for tasks that edit the source 
   └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
@@ -636,7 +636,7 @@ ACCEPTANCE: the gate fails on a deliberately reintroduced inline sess_$(date in 
 ---
 
 ### 83. Postflight deploy gate for source store tasks
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 82
@@ -986,7 +986,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 77. Unify the literature global-index schema and end stub-entry invisibility
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 32
@@ -1887,11 +1887,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 62. Restrict typst latex task types to formatting only
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md]
+- **Plan**: [062_restrict_typst_latex_task_types_to_formatting_only/plans/01_restrict-latex-typst-formatting-only.md]
 
 **Description**: Restrict typst and latex task types to formatting-only concerns. Identify what in the agent extension system needs revision so that the 'typst' and 'latex' task types are assigned ONLY when a task is concerned purely with formatting/typesetting issues, not with the intellectual content of what is being formatted. Investigation should cover: keyword_overrides and aliases in the typst/latex extension manifests, the hardcoded keyword table in /task step 4d ('latex', 'tex', 'document', 'typeset' -> latex; 'typst' -> typst), the interaction with the meta-keyword precedence rule in step 4a, alias remapping in step 4e, and any routing or documentation that assumes content-bearing work routes to these types. Produce the concrete revisions needed (manifest edits, keyword table changes, precedence adjustments, docs) so content-focused tasks route to a substantive task type instead.
 

@@ -97,12 +97,12 @@
     {
       "project_number": 62,
       "project_name": "restrict_typst_latex_task_types_to_formatting_only",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "Restrict typst and latex task types to formatting-only concerns. Identify what in the agent extension system needs revision so that the 'typst' and 'latex' task types are assigned ONLY when a task is concerned purely with formatting/typesetting issues, not with the intellectual content of what is being formatted. Investigation should cover: keyword_overrides and aliases in the typst/latex extension manifests, the hardcoded keyword table in /task step 4d ('latex', 'tex', 'document', 'typeset' -> latex; 'typst' -> typst), the interaction with the meta-keyword precedence rule in step 4a, alias remapping in step 4e, and any routing or documentation that assumes content-bearing work routes to these types. Produce the concrete revisions needed (manifest edits, keyword table changes, precedence adjustments, docs) so content-focused tasks route to a substantive task type instead.",
       "topic": "extensions",
       "created": "2026-08-17T16:24:45Z",
-      "last_updated": "2026-08-25T00:36:42Z",
+      "last_updated": "2026-08-25T00:44:09Z",
       "dependencies": [],
       "session_id": "sess_1787617685_88b825_62",
       "artifacts": [
@@ -110,6 +110,11 @@
           "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md",
           "type": "report",
           "summary": "8-finding research report with concrete before/after revisions for task.md step 4, skill-fix-it's keyword table, the latex/typst manifests, extension purpose framing, and two adjacent doc gaps."
+        },
+        {
+          "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/plans/01_restrict-latex-typst-formatting-only.md",
+          "type": "plan",
+          "summary": "6-phase, 3-wave plan (3.5h) narrowing latex/typst routing to formatting-only across 13 source-store files."
         }
       ],
       "memory_candidates": [
@@ -136,6 +141,19 @@
             "extension-development",
             "doc-gap",
             "CLAUDE.md"
+          ]
+        },
+        {
+          "content": "When a routing/keyword-table fix spans several surfaces, check whether the manifest fields the task description assumes exist actually do. For the latex/typst formatting-only scoping work, the description presumed both extension manifests already declared keyword_overrides; neither did, which flips that half of the work from a narrowing (remove over-broad keywords) into an addition (introduce narrow, high-precision multi-word phrases that short-circuit the hardcoded fallback table). The narrowing then belongs entirely to the hardcoded fallback table and the separate content-based keyword detector, not to the manifests.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/062_restrict_typst_latex_task_types_to_formatting_only/plans/01_restrict-latex-typst-formatting-only.md",
+          "confidence": 0.7,
+          "suggested_keywords": [
+            "keyword_overrides",
+            "task-routing",
+            "manifest-schema",
+            "planning-premise",
+            "task-type-detection"
           ]
         }
       ]
@@ -1290,7 +1308,7 @@
     {
       "project_number": 77,
       "project_name": "unify_literature_global_index_schema",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "literature",
       "title": "Unify the literature global-index schema and end stub-entry invisibility",
@@ -1316,7 +1334,7 @@
         }
       ],
       "created": "2026-08-20T18:39:09Z",
-      "last_updated": "2026-08-25T00:35:56Z",
+      "last_updated": "2026-08-25T00:39:36Z",
       "session_id": "sess_1787617685_88b825_77"
     },
     {
@@ -1470,7 +1488,7 @@
     {
       "project_number": 83,
       "project_name": "postflight_deploy_gate_for_source_store_tasks",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "critical",
@@ -1485,7 +1503,7 @@
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-08-25T00:38:47Z",
+      "last_updated": "2026-08-25T00:39:44Z",
       "session_id": "sess_1787617685_88b825_83",
       "artifacts": [
         {
