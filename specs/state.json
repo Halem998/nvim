@@ -1013,7 +1013,7 @@
     {
       "project_number": 66,
       "project_name": "mandate_background_lake_builds",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Mandate run_in_background for Lean builds and add long-builds anchor",
@@ -1040,10 +1040,15 @@
           "path": "specs/066_mandate_background_lake_builds/reports/01_mandate-background-lake-builds.md",
           "type": "report",
           "summary": "Verifies all 8 contract sites, recommends explicit larger guard --timeout, extends the mandate to scoped builds, resolves the skill-lake-repair command-substitution exception, and flags an uncovered MCP build path."
+        },
+        {
+          "path": "specs/066_mandate_background_lake_builds/plans/01_background-lake-builds.md",
+          "type": "plan",
+          "summary": "Six-phase plan: long-builds.md anchor first, four disjoint contract clusters edited in parallel, explicit --timeout 1800 at every site, skill-lake-repair carved out of the detachment mandate only, cross-file acceptance audit last."
         }
       ],
       "created": "2026-08-17T00:00:00Z",
-      "last_updated": "2026-08-25T16:40:46Z"
+      "last_updated": "2026-08-25T16:45:08Z"
     },
     {
       "project_number": 67,
@@ -2013,7 +2018,7 @@
     {
       "project_number": 98,
       "project_name": "route_lean_builds_through_guard",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Route lean extension builds through the guard and rewrite the multi-instance operations anchor",
@@ -2043,7 +2048,7 @@
         }
       ],
       "created": "2026-08-24T23:21:51Z",
-      "last_updated": "2026-08-25T16:44:00Z"
+      "last_updated": "2026-08-25T16:44:21Z"
     },
     {
       "project_number": 99,
