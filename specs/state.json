@@ -1013,7 +1013,7 @@
     {
       "project_number": 66,
       "project_name": "mandate_background_lake_builds",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Mandate run_in_background for Lean builds and add long-builds anchor",
@@ -1034,10 +1034,10 @@
       ],
       "effort": "3 hours",
       "priority": "high",
-      "session_id": "sess_1787004311_f034bf",
+      "session_id": "sess_1787672746_2d5892_66",
       "artifacts": [],
       "created": "2026-08-17T00:00:00Z",
-      "last_updated": "2026-08-24T23:21:51Z"
+      "last_updated": "2026-08-25T16:34:23Z"
     },
     {
       "project_number": 67,
@@ -2007,7 +2007,7 @@
     {
       "project_number": 98,
       "project_name": "route_lean_builds_through_guard",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Route lean extension builds through the guard and rewrite the multi-instance operations anchor",
@@ -2023,10 +2023,16 @@
       ],
       "effort": "3 hours",
       "priority": "high",
-      "session_id": "sess_1787613711_3ff8d5de",
-      "artifacts": [],
+      "session_id": "sess_1787672746_2d5892_98",
+      "artifacts": [
+        {
+          "path": "specs/098_route_lean_builds_through_guard/reports/01_route-census-through-guard.md",
+          "type": "report",
+          "summary": "Confirms the guard CLI and the exact lean-sorry-census.sh edit site, recommends a dirname-relative guard lookup with a test-seam env var, records a no-hook decision, and flags the multi-instance-optimization.md 8GB claim as contradicted by measurement."
+        }
+      ],
       "created": "2026-08-24T23:21:51Z",
-      "last_updated": "2026-08-24T23:21:51Z"
+      "last_updated": "2026-08-25T16:39:02Z"
     },
     {
       "project_number": 99,
