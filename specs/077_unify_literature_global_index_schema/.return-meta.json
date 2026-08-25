@@ -1,9 +1,68 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "agent_type": "general-implementation-agent",
   "task_number": 77,
   "session_id": "sess_1787617685_88b825",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "artifacts": [],
-  "modified_files": []
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
+      "summary": "8 of 10 phases COMPLETED (code-side bridge, writer, briefing tolerance, --validate schema-shape/divergence check, Zotero metadata, regression tests, invariant documentation); Phase 8 (destructive corpus data reconciliation) BLOCKED as unsafe to perform autonomously; Phase 10's --validate WARN->FAIL escalation deferred pending Phase 8."
+    }
+  ],
+  "partial_progress": {
+    "stage": "phase_8_blocked_phase_10_partial",
+    "details": "Phases 1-7 and 9 fully COMPLETED with execution-based verification (byte-identical --toc, project-filtered search, red-then-green regression tests). Phase 8 marked BLOCKED: destructive/judgment-heavy data reconciliation in the user's real, separate ~/Projects/Literature/ corpus, whose own clean-tree precondition already fails due to a separate unrelated task's uncommitted leftover. Phase 10 marked PARTIAL: documentation tasks complete, but the --validate WARN-to-FAIL escalation was deferred since the live corpus does not yet conform (gabbay_2000 still lacks FTS chunks) pending Phase 8. See the plan's Phase 8 '#### Block Reason' subsection and Phase 10's deviation note for full reasoning.",
+    "phases_completed": 8,
+    "phases_total": 10
+  },
+  "completion_data": {
+    "completion_summary": "Implemented the code-side id/FTS namespace bridge for the literature extension: path-derived FTS key union in project-filtered search, .id//.doc_id reader tolerance, canonical 1:1 ingest writer with real Zotero metadata, a --validate schema-shape/divergence check, and 4 new red-then-green regression tests. Corpus data reconciliation (Phase 8) and the --validate hard-failure escalation (Phase 10) were deliberately deferred as unsafe/premature to perform autonomously; both are documented with full reasoning and a recommended human-reviewed follow-up."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/context/project/literature/domain/literature-index.md",
+    "agent-system/extensions/literature/scripts/literature-briefing.sh",
+    "agent-system/extensions/literature/scripts/literature-doc-key.sh",
+    "agent-system/extensions/literature/scripts/literature-fidelity-audit.sh",
+    "agent-system/extensions/literature/scripts/literature-ingest.sh",
+    "agent-system/extensions/literature/scripts/literature-search.sh",
+    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
+    "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+    "specs/077_unify_literature_global_index_schema/plans/01_unify-global-index-fts-namespace.md",
+    "specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md",
+    "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_search_bimodal.json",
+    "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_alpern_schneider_1985_defining-liveness.json",
+    "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_blackburn_2002_book.json",
+    "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_blackburn_2002.json",
+    "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_burgess_1982.json",
+    "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_gabbay_2000.json",
+    "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
+    "specs/077_unify_literature_global_index_schema/progress/phase-1-progress.json",
+    "specs/077_unify_literature_global_index_schema/progress/phase-2-progress.json",
+    "specs/077_unify_literature_global_index_schema/progress/phase-3-progress.json",
+    "specs/077_unify_literature_global_index_schema/progress/phase-4-progress.json",
+    "specs/077_unify_literature_global_index_schema/progress/phase-5-progress.json",
+    "specs/077_unify_literature_global_index_schema/progress/phase-6-progress.json",
+    "specs/077_unify_literature_global_index_schema/progress/phase-7-progress.json",
+    "specs/077_unify_literature_global_index_schema/progress/phase-8-progress.json",
+    "specs/077_unify_literature_global_index_schema/progress/phase-9-progress.json",
+    "specs/077_unify_literature_global_index_schema/progress/phase-10-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a downstream reader sums a parent record's field with its children's same-named field (e.g. total_tokens = sum(children.token_count) + parent.token_count), writing the parent's field to the true aggregate value double-counts. The correct convention -- confirmed by an independent, earlier fix to the same corpus -- is to write 0 (or the appropriate identity element) on the parent when children exist, leaving the children as the sole source of the aggregate. This is easy to get backwards because the field name ('token_count') and the task language ('document total') both suggest writing the real total; only executing the downstream reader against a real fixture (not just the writer's own output) surfaces the double-count.",
+      "category": "PATTERN",
+      "source_artifact": "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["double-counting", "parent-child-aggregation", "token-count", "execution-verification", "aggregate-field"]
+    },
+    {
+      "content": "A regression test that exercises a fallback/retry path (e.g. 'if filtered search returns zero results, retry unfiltered') can accidentally pass even when the primary fix under test is reverted, because the fallback masks the regression by finding the same result through an unrelated path. Guard against this by adding a decoy fixture that keeps the primary path's result count non-zero under BOTH the broken and fixed code, so the fallback never triggers and the test is forced to discriminate on the actual mechanism being tested. Discovered by literally reverting the fix and observing the test stay green -- a red-then-green demonstration is the only way to catch this class of false-positive test.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["fallback-masking", "red-then-green", "regression-test-design", "decoy-fixture", "test-discrimination"]
+    }
+  ]
 }

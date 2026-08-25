@@ -1,7 +1,7 @@
 # Implementation Plan: Unify the literature global-index schema and end stub-entry invisibility
 
 - **Task**: 77 - Unify the literature global-index schema and end stub-entry invisibility
-- **Status**: [IMPLEMENTING]
+- **Status**: [PARTIAL]
 - **Effort**: 12 hours
 - **Dependencies**: 32 (redeploy — already satisfied)
 - **Research Inputs**: specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md
@@ -816,21 +816,30 @@ bucket means Phase 8 is unfinished, not that the check should be softened.
 
 ## Testing & Validation
 
-- [ ] `test-lit-pipeline.sh` passes in full, including the four new cases.
-- [ ] Each new test case is demonstrated red-then-green against a reverted fix.
-- [ ] End-to-end scratch ingest: chunks under `sources/<id>/`, parent + 1:1 children in
-      `index.json`, FTS rows under the same bare id.
-- [ ] `literature-search.sh --toc <id>` chunk count equals the index child count for every
-      newly-ingested document.
-- [ ] `literature-briefing-invoke.sh` resolves every sub-index entry with **zero** skip warnings
-      (the task's stated concrete verification).
-- [ ] `literature-search.sh --project <name> "<query>"` returns a document whose curated `.id`
-      differs from its FTS `doc_id`.
+- [x] `test-lit-pipeline.sh` passes in full, including the four new cases. *(23/23 passed, run
+      from the source-store location)*
+- [x] Each new test case is demonstrated red-then-green against a reverted fix. *(all 4 cases;
+      see Phase 9 progress notes for the per-case revert/restore evidence)*
+- [x] End-to-end scratch ingest: chunks under `sources/<id>/`, parent + 1:1 children in
+      `index.json`, FTS rows under the same bare id. *(verified in Phase 4/5)*
+- [x] `literature-search.sh --toc <id>` chunk count equals the index child count for every
+      newly-ingested document. *(verified in Phase 5)*
+- [x] `literature-briefing-invoke.sh` resolves every sub-index entry with **zero** skip warnings
+      (the task's stated concrete verification). *(verified in Phase 3/5/6)*
+- [x] `literature-search.sh --project <name> "<query>"` returns a document whose curated `.id`
+      differs from its FTS `doc_id`. *(verified in Phase 2/9)*
 - [ ] Every Phase 1 probe-set `--toc` command returns output consistent with the baseline, except
-      where Phase 8 intentionally changed it.
+      where Phase 8 intentionally changed it. *(deviation: Phase 8's data-side change did not
+      happen — Phase 8 is [BLOCKED] — so this item is vacuously satisfied for what actually ran
+      (Phase 2 confirmed byte-identical `--toc` output for all 5 probes) but the "except where
+      Phase 8 intentionally changed it" half never occurred)*
 - [ ] `/literature --validate` exits clean against the live corpus and non-zero against the
-      mismatched fixture.
-- [ ] No file under a deployed `.claude/` tree was edited by any phase.
+      mismatched fixture. *(deviation: partially verified — WARN mode exits clean against the live
+      corpus (confirmed) and the extracted logic correctly classifies the Phase 9 Case 2 fixture
+      into the divergence bucket (confirmed), but the escalation to a hard, non-zero exit was
+      deferred in Phase 10 pending Phase 8; see Phase 10's Block/deviation notes)*
+- [x] No file under a deployed `.claude/` tree was edited by any phase. *(confirmed: all edits
+      target `agent-system/extensions/literature/**`; `.claude/` is gitignored and untouched)*
 
 ## Artifacts & Outputs
 
