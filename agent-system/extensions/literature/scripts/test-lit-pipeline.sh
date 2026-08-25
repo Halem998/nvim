@@ -23,6 +23,11 @@
 #       and SKILL.md it exercises relative to its OWN SCRIPT_DIR (never the hardcoded deployed
 #       .claude/ path Section E uses), so it always tests whichever copy -- source-store or
 #       deployed -- it is itself being run from.
+#   G - coverage-marker resolution-failure regression tests (opt-in via --runtime): a
+#       deliberately-unresolvable doc_id drives the lit-coverage marker's requested=/resolved=/
+#       skipped=/skip_rate= fields and the sparse=true skip-rate disjunct, instead of the marker
+#       falsely reporting sparse=false or (in the total-failure case) emitting no marker at all.
+#       A sibling to Section F, following its fixture idiom.
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -102,6 +107,7 @@ TEMP_SUB_INDEX=""
 ORIGINAL_SUB_INDEX_EXISTS=false
 SUB_INDEX_PATH="$PROJECT_ROOT/specs/literature-index.json"
 TEMP_LIT_DIR_F=""
+TEMP_LIT_DIR_G=""
 
 cleanup() {
   if [[ -n "$TEMP_LIT_DIR" ]] && [[ -d "$TEMP_LIT_DIR" ]]; then
@@ -118,6 +124,10 @@ cleanup() {
   # Section F's own scratch corpus (separate from Section E's TEMP_LIT_DIR)
   if [[ -n "$TEMP_LIT_DIR_F" ]] && [[ -d "$TEMP_LIT_DIR_F" ]]; then
     rm -rf "$TEMP_LIT_DIR_F"
+  fi
+  # Section G's own scratch corpus (separate from Sections E/F's TEMP_LIT_DIR/TEMP_LIT_DIR_F)
+  if [[ -n "$TEMP_LIT_DIR_G" ]] && [[ -d "$TEMP_LIT_DIR_G" ]]; then
+    rm -rf "$TEMP_LIT_DIR_G"
   fi
 }
 trap 'cleanup' EXIT
@@ -489,10 +499,9 @@ SUB_INDEX
 # chunks_data.doc_id divergence class this section guards. Case 4's fixture below is
 # deliberately id-less (doc_id only) so a future .id-only regression fails a test here.
 #
-# NOTE: a companion coverage-marker regression (asserting a deliberately-unresolvable doc_id
+# NOTE: the companion coverage-marker regression (asserting a deliberately-unresolvable doc_id
 # drives the lit-coverage marker to report the failure rather than falsely reporting
-# sparse=false) is a distinct, separately-tracked defect and is intentionally out of scope for
-# this section.
+# sparse=false) lives in Section G below, not here.
 section_f() {
   echo ""
   log_info "Section F: id/FTS namespace unification regression tests (--runtime)"
@@ -701,6 +710,127 @@ PYEOF
 }
 
 # ============================================================
+# SECTION G: coverage-marker resolution-failure regression (opt-in via --runtime)
+# ============================================================
+# Asserts that literature-briefing.sh's repo-mode skip path (a doc_id registered in the
+# sub-index but absent from the global index.json) is counted, not silently dropped: the
+# lit-coverage marker's requested=/resolved=/skipped=/skip_rate= fields report the failure,
+# a high skip rate flips the existing sparse boolean via the new skip-rate disjunct (isolated
+# from the pre-existing absolute-count rule in Case G2), the failure is surfaced in the body
+# under "## Unresolved Documents", the total-failure case still emits a marker instead of
+# exiting silently, and the genuinely-empty-sub-index silent-exit contract is unregressed.
+section_g() {
+  echo ""
+  log_info "Section G: coverage-marker resolution-failure regression tests (--runtime)"
+  echo "----------------------------------------"
+
+  local briefing_script_g="$SCRIPT_DIR/literature-briefing.sh"
+
+  if [[ ! -x "$briefing_script_g" ]]; then
+    log_fail "Section G: literature-briefing.sh not found relative to $SCRIPT_DIR"
+    return
+  fi
+
+  TEMP_LIT_DIR_G=$(mktemp -d)
+
+  # --- Shared global index: four resolvable documents (g1-g4). Following Section F's fixture
+  # idiom, the .literature.db is built from the real schema even though literature-briefing.sh's
+  # repo mode never queries it -- kept for idiom consistency and in case a future case needs it. ---
+  cat > "$TEMP_LIT_DIR_G/index.json" <<'GINDEX'
+{
+  "entries": [
+    {"id": "g1", "doc_id": "g1", "parent_doc": null, "path": "sources/g1/", "title": "Section G Doc One", "authors": ["Regression Tester"], "year": 2026, "token_count": 50, "provenance_fidelity": "verified_conversion"},
+    {"id": "g2", "doc_id": "g2", "parent_doc": null, "path": "sources/g2/", "title": "Section G Doc Two", "authors": ["Regression Tester"], "year": 2026, "token_count": 50, "provenance_fidelity": "verified_conversion"},
+    {"id": "g3", "doc_id": "g3", "parent_doc": null, "path": "sources/g3/", "title": "Section G Doc Three", "authors": ["Regression Tester"], "year": 2026, "token_count": 50, "provenance_fidelity": "verified_conversion"},
+    {"id": "g4", "doc_id": "g4", "parent_doc": null, "path": "sources/g4/", "title": "Section G Doc Four", "authors": ["Regression Tester"], "year": 2026, "token_count": 50, "provenance_fidelity": "verified_conversion"}
+  ]
+}
+GINDEX
+
+  if command -v sqlite3 >/dev/null 2>&1; then
+    sqlite3 "$TEMP_LIT_DIR_G/.literature.db" < "$SCRIPT_DIR/literature-schema.sql"
+  fi
+
+  mkdir -p "$TEMP_LIT_DIR_G/fakerepo/nested/scripts" "$TEMP_LIT_DIR_G/fakerepo/specs"
+  ln -sf "$briefing_script_g" "$TEMP_LIT_DIR_G/fakerepo/nested/scripts/literature-briefing.sh"
+  local sub_index_g="$TEMP_LIT_DIR_G/fakerepo/specs/literature-index.json"
+  local briefing_g="$TEMP_LIT_DIR_G/fakerepo/nested/scripts/literature-briefing.sh"
+
+  # --- Case G1: partial failure (2 requested, 1 resolvable, 1 unresolvable) ---
+  cat > "$sub_index_g" <<'G1_SUBINDEX'
+{"entries": [{"doc_id": "g1"}, {"doc_id": "ghost_g1"}]}
+G1_SUBINDEX
+  local g1_out g1_marker
+  g1_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_G" bash "$briefing_g" 2>/dev/null)
+  g1_marker=$(echo "$g1_out" | grep -- '<!-- lit-coverage')
+  if echo "$g1_marker" | grep -q 'requested=2 resolved=1 skipped=1 skip_rate=50' && echo "$g1_marker" | grep -q 'sparse=true'; then
+    log_pass "Case G1 (partial failure): marker reports requested=2 resolved=1 skipped=1 skip_rate=50 sparse=true"
+  else
+    log_fail "Case G1 (partial failure): unexpected marker fields. Got: $g1_marker"
+  fi
+  if echo "$g1_out" | grep -q '## Unresolved Documents' && echo "$g1_out" | grep -q '^- ghost_g1$'; then
+    log_pass "Case G1 (partial failure): body lists ghost_g1 under '## Unresolved Documents'"
+  else
+    log_fail "Case G1 (partial failure): '## Unresolved Documents' section or ghost_g1 entry missing"
+  fi
+  if echo "$g1_out" | grep -q '\[SKIPPED SOURCES'; then
+    log_pass "Case G1 (partial failure): [SKIPPED SOURCES ...] banner present"
+  else
+    log_fail "Case G1 (partial failure): [SKIPPED SOURCES ...] banner missing"
+  fi
+
+  # --- Case G2: isolate the new skip-rate disjunct from the pre-existing absolute-count rule
+  # (4 resolved is >= the default LITERATURE_SPARSE_THRESHOLD of 3, so sparse=true here can only
+  # be caused by the new skip_rate >= LITERATURE_SKIP_RATE_THRESHOLD rule) ---
+  cat > "$sub_index_g" <<'G2_SUBINDEX'
+{"entries": [{"doc_id": "g1"}, {"doc_id": "g2"}, {"doc_id": "g3"}, {"doc_id": "g4"}, {"doc_id": "ghost1"}, {"doc_id": "ghost2"}, {"doc_id": "ghost3"}, {"doc_id": "ghost4"}]}
+G2_SUBINDEX
+  local g2_out g2_marker
+  g2_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_G" bash "$briefing_g" 2>/dev/null)
+  g2_marker=$(echo "$g2_out" | grep -- '<!-- lit-coverage')
+  if echo "$g2_marker" | grep -q 'seg_count=4' && echo "$g2_marker" | grep -q 'requested=8 resolved=4 skipped=4 skip_rate=50' && echo "$g2_marker" | grep -q 'sparse=true'; then
+    log_pass "Case G2 (isolated skip-rate disjunct): resolved=4 (above sparse threshold) yet sparse=true via skip_rate=50"
+  else
+    log_fail "Case G2 (isolated skip-rate disjunct): unexpected marker fields. Got: $g2_marker"
+  fi
+
+  # --- Case G3: total failure (sole requested doc_id unresolvable) -- must still emit a
+  # marker/non-empty stdout, not exit 0 silently ---
+  cat > "$sub_index_g" <<'G3_SUBINDEX'
+{"entries": [{"doc_id": "ghost_total"}]}
+G3_SUBINDEX
+  local g3_out g3_marker
+  g3_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_G" bash "$briefing_g" 2>/dev/null)
+  if [[ -z "$g3_out" ]]; then
+    log_fail "Case G3 (total failure): stdout was empty -- silent exit not fixed"
+  else
+    log_pass "Case G3 (total failure): stdout is non-empty (marker emitted instead of silent exit)"
+    g3_marker=$(echo "$g3_out" | grep -- '<!-- lit-coverage')
+    if echo "$g3_marker" | grep -q 'seg_count=0' && echo "$g3_marker" | grep -q 'resolved=0' && echo "$g3_marker" | grep -q 'skipped=1' && echo "$g3_marker" | grep -q 'sparse=true'; then
+      log_pass "Case G3 (total failure): marker reports seg_count=0 resolved=0 skipped=1 sparse=true"
+    else
+      log_fail "Case G3 (total failure): unexpected marker fields. Got: $g3_marker"
+    fi
+  fi
+
+  # --- Negative control: a genuinely empty sub-index (entries: []) must still exit silently --
+  # confirms Phase 1's fallthrough-on-skip_count did not regress the pre-existing
+  # legitimately-empty silent-exit contract at lines ~150-168. ---
+  cat > "$sub_index_g" <<'G4_SUBINDEX'
+{"entries": []}
+G4_SUBINDEX
+  local g4_out
+  g4_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_G" bash "$briefing_g" 2>/dev/null)
+  if [[ -z "$g4_out" ]]; then
+    log_pass "Negative control (empty sub-index): stdout still empty -- silent-exit contract unregressed"
+  else
+    log_fail "Negative control (empty sub-index): stdout was non-empty -- silent-exit contract regressed"
+  fi
+
+  log_info "Section G complete. Temp corpus will be cleaned up."
+}
+
+# ============================================================
 # MAIN
 # ============================================================
 main() {
@@ -722,6 +852,7 @@ main() {
   if [[ "$RUN_RUNTIME" == "true" ]]; then
     section_e
     section_f
+    section_g
   fi
 
   # --- Summary ---

@@ -293,33 +293,33 @@ file rather than from this number.
 
 ---
 
-### Phase 4: Section G regression test [NOT STARTED]
+### Phase 4: Section G regression test [COMPLETED]
 
 **Goal**: A deliberately-unresolvable `doc_id` registered in a sub-index permanently drives the
 marker to report the failure rather than `sparse=false`. This assertion is the point of the task.
 
 **Tasks**:
 
-- [ ] Add `section_g()` to `test-lit-pipeline.sh` following Section F's fixture idiom exactly:
+- [x] Add `section_g()` to `test-lit-pipeline.sh` following Section F's fixture idiom exactly: *(completed)*
       own `TEMP_LIT_DIR_G` declared alongside `TEMP_LIT_DIR_F` and removed in the existing
       `cleanup()` trap; hand-authored `index.json`; `.literature.db` built from the real
       `literature-schema.sql` (never a hand-rolled `CREATE TABLE`); symlinked script resolution
       relative to its own `SCRIPT_DIR`; `log_pass`/`log_fail`/`log_info` per assertion.
-- [ ] **Partial-failure case**: sub-index with 2 `doc_id`s — one matching a real `index.json`
+- [x] **Partial-failure case**: sub-index with 2 `doc_id`s — one matching a real `index.json` *(completed)*
       entry, one absent from `index.json` entirely. Assert the marker reports `requested=2`,
       `resolved=1`, `skipped=1`, `skip_rate=50`, and `sparse=true`.
-- [ ] Assert the body contains the skipped `doc_id` under an `## Unresolved Documents` heading.
-- [ ] Assert the `[SKIPPED SOURCES ...]` banner is present.
-- [ ] **Total-failure case**: sub-index whose sole entry is unresolvable. Assert stdout is
+- [x] Assert the body contains the skipped `doc_id` under an `## Unresolved Documents` heading. *(completed)*
+- [x] Assert the `[SKIPPED SOURCES ...]` banner is present. *(completed)*
+- [x] **Total-failure case**: sub-index whose sole entry is unresolvable. Assert stdout is *(completed)*
       non-empty, a marker is emitted, and it reports `seg_count=0 resolved=0 skipped=1
       sparse=true` — closing the "no marker at all" variant.
-- [ ] **Negative control**: a sub-index with `entries: []` still produces empty stdout, confirming
+- [x] **Negative control**: a sub-index with `entries: []` still produces empty stdout, confirming *(completed)*
       the legitimately-empty silent-exit contract was not regressed by Phase 1.
-- [ ] Register `section_g` in `main()`'s `RUN_RUNTIME` block immediately after `section_f`, and add
+- [x] Register `section_g` in `main()`'s `RUN_RUNTIME` block immediately after `section_f`, and add *(completed)*
       a `G - ...` line to the header comment's `Sections:` list.
-- [ ] Update Section F's header comment, which currently defers "a companion coverage-marker
+- [x] Update Section F's header comment, which currently defers "a companion coverage-marker *(completed)*
       regression" as out of scope, to point at Section G instead of describing it as deferred.
-- [ ] Run `bash test-lit-pipeline.sh --runtime` and confirm a clean pass.
+- [x] Run `bash test-lit-pipeline.sh --runtime` and confirm a clean pass. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "Section G regression test",
+  "started_at": "2026-08-25T04:23:56Z",
+  "last_updated": "2026-08-25T04:23:56Z",
+  "objectives": [
+    {"id": 1, "description": "Add section_g() with partial-failure/isolated-disjunct/total-failure/negative-control cases; register in main(); update Section F header comment; confirm test detects reverted defect", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
