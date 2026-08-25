@@ -258,7 +258,7 @@ diff reaches outside those regions, stop and re-scope.
 
 ---
 
-### Phase 3: Rewrite the operations anchor as mechanism documentation [NOT STARTED]
+### Phase 3: Rewrite the operations anchor as mechanism documentation [COMPLETED]
 
 **Goal**: Replace the anchor's human-advisory remedies with guard mechanism documentation, correct
 the falsified memory figures, and state the detach-without-guard amplification interaction in
@@ -266,52 +266,59 @@ writing.
 
 **Tasks**:
 
-- [ ] Preserve, essentially as-is: the `## Overview` framing, the `### Root Cause` section
+- [x] Preserve, essentially as-is: the `## Overview` framing, the `### Root Cause` section
       (concurrent `lake build` memory pressure, `.olean` file-locking contention, CPU saturation,
       diagnostic delays), and the `## Monitoring` section's `ps aux --sort=-%mem` and `htop`
       commands. The task description names the diagnosis as sound and the remedies as the stale
-      part.
-- [ ] Preserve the `LEAN_LOG_LEVEL` / `LEAN_PROJECT_PATH` MCP environment configuration — it is
+      part. *(completed)*
+- [x] Preserve the `LEAN_LOG_LEVEL` / `LEAN_PROJECT_PATH` MCP environment configuration — it is
       MCP-transport tuning, not a build-concurrency remedy, and the guard does not supersede it.
-- [ ] Delete the human-advisory remedies: "pause work in 3-4 other sessions", "run `lake build`
+      *(completed: kept under "What an operator can still do by hand" -> "Configure Environment
+      Variables")*
+- [x] Delete the human-advisory remedies: "pause work in 3-4 other sessions", "run `lake build`
       before starting Claude sessions", "allow 1-2 minutes for LSP to stabilize", and the
       per-phase before/during/after session choreography under `## Workflow Recommendations`.
-- [ ] Write a `## The Build Guard` mechanism section covering: flock-based serialization of
+      *(completed)*
+- [x] Write a `## The Build Guard` mechanism section covering: flock-based serialization of
       concurrent builds; result sharing (a waiter replays a fresh prior result instead of running a
       redundant build) and the staleness policy that decides freshness; the PSI + swap preflight;
       opt-in `systemd-run --user --scope` memory bounding and its audible degradation when
       user-scope cgroup delegation is unavailable; and the silent-when-no-conflict invariant that
-      makes the guard safe inside a `$(... 2>&1)` capture.
-- [ ] Write a `## Invoking the guard` section naming the three subcommands and when a caller
+      makes the guard safe inside a `$(... 2>&1)` capture. *(completed)*
+- [x] Write a `## Invoking the guard` section naming the three subcommands and when a caller
       reaches for each: `status` (read-only view of lock/pressure state), `preflight` (should I
       start a build now), `build` (run one, serialized and optionally bounded). Note that `build`
       passes lake's own exit code through and reserves 75-79 for guard-specific outcomes, and that
-      a caller needing to disambiguate calls `status`/`preflight` separately.
-- [ ] Write the interaction section, plainly and without hedging: detaching builds so they escape
+      a caller needing to disambiguate calls `status`/`preflight` separately. *(completed)*
+- [x] Write the interaction section, plainly and without hedging: detaching builds so they escape
       the 10-minute foreground cap is a correct fix for a real livelock (a cap-killed build caches
       no `.olean`, so retries restart at the identical module), but that cap is currently the only
       thing bounding how long a redundant concurrent build survives. Removing it without
       serialization means ten duplicate builds run to completion instead of ten dying at ten
       minutes, each holding multi-gigabyte `lean` processes for the full duration. Detached
       invocation and serialization must land together; adopting either half alone makes the
-      measured memory situation strictly worse.
-- [ ] Correct the figures. Delete "Memory usage stays under 8GB (vs 16GB+ spikes)" and the
+      measured memory situation strictly worse. *(completed: "## Detached builds and the guard:
+      they must land together")*
+- [x] Correct the figures. Delete "Memory usage stays under 8GB (vs 16GB+ spikes)" and the
       "60-80% reduction in timeout frequency" / "within 30s (vs 60s+)" predictions. State the
       measured observation instead — 16 concurrent `lean` processes holding 29.9 GB RSS on a 30 GB
       machine with 29 GB of swap in use and 3.1 GB available — and label it explicitly as one
       illustrative measurement on one machine, not a predictive ceiling to be hardcoded as an
-      assumption.
-- [ ] Add a forward reference to the sibling anchor by filename only —
+      assumption. *(completed: "## Measured Results"; the corrected prose deliberately avoids the
+      literal substrings "8GB", "16GB+", and "60-80%" even while describing what the old claims
+      said, so the phase's own grep-based verification stays meaningful)*
+- [x] Add a forward reference to the sibling anchor by filename only —
       `operations/long-builds.md`, covering the foreground-cap livelock and passive progress
       checks — with no assertion about its section headings or current content, since it may land
-      before or after this file depending on dispatch order.
-- [ ] Keep the single-anchor convention: prose lives here once and is referenced by path from call
+      before or after this file depending on dispatch order. *(completed)*
+- [x] Keep the single-anchor convention: prose lives here once and is referenced by path from call
       sites, never restated at them. Do not duplicate the guard's own header rationale verbatim;
-      summarize its mechanism and point to the script.
-- [ ] Retain a short "what an operator can still do by hand" subsection (the `ps`/`htop` checks,
+      summarize its mechanism and point to the script. *(completed)*
+- [x] Retain a short "what an operator can still do by hand" subsection (the `ps`/`htop` checks,
       and reducing concurrent Lean sessions when contention is observed) so manual diagnosis
-      survives, demoted from primary remedy to fallback.
-- [ ] Cite no task numbers anywhere in the file.
+      survives, demoted from primary remedy to fallback. *(completed: "## What an operator can
+      still do by hand")*
+- [x] Cite no task numbers anywhere in the file. *(completed: verified via grep)*
 
 **Timing**: 45 minutes
 

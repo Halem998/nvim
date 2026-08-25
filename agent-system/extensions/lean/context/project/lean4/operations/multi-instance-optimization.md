@@ -18,23 +18,79 @@ Multiple concurrent lean-lsp-mcp instances via STDIO transport create:
 
 ---
 
-## Prevention Strategies
+## The Build Guard
 
-### 1. Pre-Build Project (Highest Impact)
+`lake-build-guard.sh` is the enforceable mechanism that supersedes the manual choreography this
+guide used to recommend. It sits in front of `lake build` and provides, mechanically, what the
+old advice to pause activity in several other concurrent sessions tried to achieve by human
+coordination:
 
-**Run `lake build` before starting Claude sessions**:
+- **flock-based serialization**: concurrent `build` invocations against the same Lean package
+  contend on a single lock file under that project's `.lake/` directory. Only one `lake build`
+  runs at a time per package; every other caller waits.
+- **Result sharing**: a waiter does not necessarily run a redundant build of its own. If a very
+  recent build result already exists for the same project, the guard replays that prior result
+  instead — a staleness policy decides whether the existing result is fresh enough to reuse or
+  whether a fresh build is required.
+- **PSI + swap preflight**: before starting a build, the guard reads the kernel's pressure-stall
+  information and current swap usage. Under real memory pressure it either proceeds with a
+  warning or, with `--defer-on-pressure`, refuses to start a new build until pressure subsides.
+- **Opt-in memory bounding**: `--memory-bound` runs the build inside a `systemd-run --user
+  --scope` cgroup with configurable `--memory-high` / `--memory-max` limits, so a runaway
+  elaboration cannot alone drive the machine into swap. When user-scope cgroup delegation is
+  unavailable on the host, the guard degrades audibly — it says so on stderr and still runs the
+  build unbounded — rather than either silently skipping the bound or hard-failing.
+- **Silent when there is no conflict**: on the common, uncontended path the guard emits zero
+  bytes of its own output. This is what makes it safe to drop into an existing `$(... 2>&1)`
+  command substitution at a call site (see `lean-sorry-census.sh`'s `--cross-check` branch) --
+  the guard does not corrupt output a caller is already parsing.
 
-```bash
-cd /path/to/lean-project
-lake build
-```
+## Invoking the guard
 
-**Why this works**:
-- Prevents concurrent `lake build` triggers when multiple agents start
-- Eliminates timeout on first diagnostic call in each session
-- Reduces memory pressure from parallel builds
+Three subcommands, and when a caller reaches for each:
 
-### 2. Configure Environment Variables
+- **`status`** — a read-only view of current lock/pressure state. Use this when a caller wants to
+  know whether a build is already in flight or the machine is under memory pressure, without
+  triggering anything.
+- **`preflight`** — "should I start a build now?" A resource check only; it does not itself run
+  `lake build`.
+- **`build`** — runs one build, serialized against other concurrent `build` invocations for the
+  same project and optionally memory-bounded. `build` passes `lake`'s own exit code through
+  untouched in the normal case, and reserves a small band (75-79) for guard-specific outcomes
+  (lock-wait timeout, deferred-on-pressure, usage error, no Lean project found, missing
+  capability). A caller that needs to disambiguate a guard-specific outcome from one of `lake`'s
+  own exit codes calls `status` / `preflight` separately rather than trying to decode `build`'s
+  exit status into a full taxonomy.
+
+## Detached builds and the guard: they must land together
+
+Detaching a `lake build` so it survives past the current 10-minute foreground timeout cap is a
+correct fix for a real problem: a build that is killed by the cap caches no `.olean` file for the
+module it was mid-way through, so a retry restarts elaboration from that identical module rather
+than resuming past it — a livelock under repeated retries. But today, that 10-minute cap is also
+the only thing bounding how long a *redundant* concurrent build survives. If detachment ships
+without serialization, removing the cap does not remove the redundant-build problem — it makes it
+worse: instead of ten duplicate builds each dying at the ten-minute mark, ten duplicate builds now
+run to full completion, each one holding a multi-gigabyte `lean` process for its entire duration.
+Detached invocation and the guard's serialization are not independent improvements that can be
+adopted one at a time; adopting either half alone makes the measured memory situation strictly
+worse than today's baseline. See `operations/long-builds.md` for the detached-build mechanism and
+passive progress-checking approach (that document covers the foreground-cap livelock in detail;
+no claim is made here about its specific section headings or content, since it may land before or
+after this guide depending on dispatch order).
+
+## What an operator can still do by hand
+
+The guard automates the coordination this guide used to ask operators to do manually, but manual
+diagnosis is still a useful fallback when contention is observed:
+
+- Check `ps`/`htop` (see Monitoring below) to see how many `lean`/`lake` processes are actually
+  running and how much memory they hold.
+- If contention is confirmed and no guard-mediated build is in flight, reducing the number of
+  concurrent Lean sessions remains a valid manual mitigation — demoted here from primary remedy
+  (as it was before the guard existed) to fallback.
+
+### Configure Environment Variables
 
 Add to `~/.claude.json`:
 
@@ -57,36 +113,8 @@ Add to `~/.claude.json`:
 - `LEAN_LOG_LEVEL: "WARNING"` reduces log I/O overhead
 - Explicit `LEAN_PROJECT_PATH` prevents detection overhead
 
-### 3. Session Management Strategy
-
-**Soft Throttling (Recommended)**:
-- When triggering Lean implementation agents, pause work in 3-4 other sessions
-- Resume non-Lean work after agent completes
-- Non-Lean work (general tasks, LaTeX, meta) unaffected
-
----
-
-## Workflow Recommendations
-
-### For Lean Implementation Tasks
-
-1. **Before starting `/implement` on Lean task**:
-   - Run `lake build` if project has been modified
-   - Pause Lean work in other sessions
-   - Allow 1-2 minutes for LSP to stabilize
-
-2. **During Lean agent execution**:
-   - Avoid starting new Lean tasks in other sessions
-   - General/meta/LaTeX tasks in other sessions are fine
-
-3. **After Lean agent completes**:
-   - Resume Lean work in other sessions
-   - Results are cached, subsequent operations faster
-
-### For Research Tasks
-
-Research agents using `lean_leansearch`, `lean_loogle`, etc. are less resource-intensive
-than implementation agents. Multiple concurrent research tasks are generally safe.
+This is MCP-transport tuning, not a build-concurrency remedy — the guard does not supersede it,
+and it remains recommended independently of guard adoption.
 
 ---
 
@@ -112,10 +140,15 @@ If you see these symptoms, reduce concurrent sessions:
 
 ---
 
-## Expected Results
+## Measured Results
 
-With optimization strategies applied:
-- 60-80% reduction in timeout frequency
-- Memory usage stays under 8GB (vs 16GB+ spikes)
-- Diagnostic calls complete within 30s (vs 60s+ timeouts)
-- Agents complete successfully without interruption
+The following is one illustrative measurement taken on one machine during a period of
+concurrent-build contention, not a predictive ceiling to be hardcoded as an assumption or
+generalized to other hardware: 16 concurrent `lean` processes were observed holding 29.9 GB RSS
+on a 30 GB machine, with 29 GB of swap in use and 3.1 GB available. This is the figure that
+motivated the guard's memory-pressure preflight and opt-in memory bounding; it replaces an
+earlier claim on this page that memory usage stayed under an eight-gigabyte ceiling (versus
+sixteen-plus gigabyte spikes) and predicted a timeout-frequency reduction in the sixty-to-eighty
+percent range with diagnostics completing within 30s (vs 60s+) — neither of those predictions was
+backed by a measurement, and the eight-gigabyte ceiling claim is directly contradicted by the
+29.9 GB figure above.
