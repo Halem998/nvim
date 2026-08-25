@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "skill-lake-repair guard routing and carve-out",
+  "started_at": "2026-08-25T00:50:00Z",
+  "last_updated": "2026-08-25T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite both command-substitution build sites to route through guard, synchronous", "status": "done", "files_touched": ["agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md"]},
+    {"id": 2, "description": "Add inline decision note recording detachment carve-out and residual exposure", "status": "done", "files_touched": ["agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md"]},
+    {"id": 3, "description": "Confirm no other unguarded lake build invocation remains", "status": "done", "files_touched": ["agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

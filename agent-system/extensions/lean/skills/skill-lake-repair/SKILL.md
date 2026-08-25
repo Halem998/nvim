@@ -62,13 +62,23 @@ Initialize tracking variables:
 
 ### Step 4: Run Build
 
+**Decision note**: this loop uses command substitution (`build_output=$(...)`) to capture build
+output into a shell variable, which is incompatible with `Bash(run_in_background: true)` — a
+detached call returns no stdout to the invoking shell. This carves the loop out of the
+*detachment* obligation in `context/project/lean4/operations/long-builds.md` only; it still
+routes through the build guard, gaining serialization against concurrent builds on the same
+project and the guard's memory bounding. Residual exposure: a heavy first-time build in this loop
+can still be killed at the foreground cap, but unlike a detached agent build the failure is not
+silent — it surfaces as a failed command substitution, which the loop's existing error handling
+(`build_exit_code`) already covers.
+
 Attempt to build the project:
 
 ```bash
 if [ -n "$module" ]; then
-  build_output=$(lake build "$module" 2>&1)
+  build_output=$(bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- "$module" 2>&1)
 else
-  build_output=$(lake build 2>&1)
+  build_output=$(bash .claude/scripts/lake-build-guard.sh build --timeout 1800 2>&1)
 fi
 build_exit_code=$?
 ```
@@ -130,7 +140,8 @@ All modules built successfully.
 ## Error Handling
 
 ### MCP Tool Failure
-Fall back to `lake build` via Bash.
+Fall back to `lake build` via Bash, through the build guard per Step 4 above (see
+`context/project/lean4/operations/long-builds.md`).
 
 ### File Read/Write Failure
 Skip that particular fix, continue with others.

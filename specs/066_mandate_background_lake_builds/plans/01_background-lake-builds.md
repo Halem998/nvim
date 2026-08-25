@@ -309,20 +309,20 @@ speed tradeoff, and point at the anchor.
 
 ---
 
-### Phase 4: `skill-lake-repair` guard routing and carve-out [NOT STARTED]
+### Phase 4: `skill-lake-repair` guard routing and carve-out [COMPLETED]
 
 **Goal**: Resolve the architectural exception — route both command-substitution sites through the
 guard while explicitly carving the loop out of the detachment mandate, with the reason recorded
 inline.
 
 **Tasks**:
-- [ ] Step 4 "Run Build" (near L68-72): rewrite both command-substitution sites to call through the
+- [x] Step 4 "Run Build" (near L68-72): rewrite both command-substitution sites to call through the
       guard, keeping them synchronous:
       `build_output=$(bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- "$module" 2>&1)`
       and the unscoped twin
       `build_output=$(bash .claude/scripts/lake-build-guard.sh build --timeout 1800 2>&1)`.
       Preserve the surrounding `if`/`build_exit_code=$?` structure.
-- [ ] Add a short inline note at the top of Step 4 recording the decision explicitly: command
+- [x] Add a short inline note at the top of Step 4 recording the decision explicitly: command
       substitution is incompatible with `run_in_background` (which returns no stdout to a shell
       variable), so this loop is carved out of the *detachment* mandate only; it still adopts the
       guard, gaining serialization and memory bounding. State the residual exposure: a heavy
@@ -330,7 +330,7 @@ inline.
       detached agent build the failure is not silent — it surfaces as a failed command substitution
       the loop's existing error handling already covers. Point at
       `context/project/lean4/operations/long-builds.md`.
-- [ ] Confirm no other `lake build` invocation remains unguarded in the file.
+- [x] Confirm no other `lake build` invocation remains unguarded in the file.
 
 **Timing**: 30 minutes
 
