@@ -168,8 +168,9 @@ import re
 import json
 
 # Read the file directly from disk (path is a short argv string; the file itself may be
-# large, so we never pass its content through argv -- see defect 1, line ~238 for the
-# analogous fix on the ALL_COMPLETED/ROADMAP_STATE payloads).
+# large, so we never pass its content through argv -- see the ALL_COMPLETED/ROADMAP_STATE
+# temp-file fix below (~line 367) and the final report-building jq -n's --slurpfile fix
+# (~line 795), both of which follow this exact file-not-argv pattern).
 with open(sys.argv[1], "r") as f:
     content = f.read()
 lines = content.split("\n")
@@ -360,17 +361,73 @@ fi
 
 ALL_COMPLETED=$(echo "$COMPLETED_TASKS $ARCHIVED_TASKS" | jq -s 'add // []')
 
+# ACTIVE_TASKS: every active_projects[] entry whose status is non-terminal, per the status model
+# documented in CLAUDE.md ("Terminal states: [COMPLETED], [ABANDONED], [EXPANDED]"; everything
+# else is non-terminal). Deliberately an explicit allowlist rather than `.status != "completed"`,
+# so an abandoned/expanded task reference (also terminal, just not completed) does NOT trip the
+# reject rule below -- only a genuinely still-in-flight task should. Numbers and statuses only,
+# not full records -- this feeds the explicit_task_ref reject rule (Step 2.5.2 python step,
+# below), which only needs to know WHETHER a referenced task number is still non-terminal.
+ACTIVE_TASKS=$(jq -r '
+  .active_projects[] | select(.status as $s | [
+    "not_started", "researching", "researched", "planning", "planned",
+    "implementing", "partial", "blocked", "pr_ready"
+  ] | index($s)) |
+  {
+    "number": .project_number,
+    "status": .status
+  }
+' "$STATE_PATH" 2>/dev/null | jq -s '.' 2>/dev/null || echo "[]")
+
 # ROADMAP_STATE and ALL_COMPLETED can each exceed Linux's MAX_ARG_STRLEN (131,072 bytes) once
 # the task history grows (observed ~252KB), which would make argv-passing exit 126 ("Argument
 # list too long"). Pass both via temp files instead and json.load() them in python -- stdin is
 # reserved for the heredoc program source and env vars hit the identical argv-size limit.
 TMP_ROADMAP_STATE=$(mktemp)
 TMP_ALL_COMPLETED=$(mktemp)
-trap 'rm -f "$TMP_ROADMAP_STATE" "$TMP_ALL_COMPLETED"' EXIT
+# TMP_ACTIVE_TASKS carries ACTIVE_TASKS (built above) into the same python matching step via a
+# third temp-file argument, matching this step's own established file-not-argv convention --
+# never argv, even though ACTIVE_TASKS itself is small; consistency with TMP_ROADMAP_STATE/
+# TMP_ALL_COMPLETED is the point, not a size concern for this particular payload.
+TMP_ACTIVE_TASKS=$(mktemp)
+# TMP_ROADMAP_STATE_SLURP/TMP_ROADMAP_MATCHES_SLURP are used later, by the final report-building
+# jq -n (~line 795) -- declared and trapped here, alongside this step's own temp files, so a
+# single EXIT trap covers every temp file this script creates. Do NOT add a second `trap ... EXIT`
+# below; it would silently replace this one and leak whichever pair it doesn't also list.
+TMP_ROADMAP_STATE_SLURP=$(mktemp)
+TMP_ROADMAP_MATCHES_SLURP=$(mktemp)
+# TMP_REPORT holds the final JSON report (built far below, at the very end of the script) before
+# it is ever printed -- pre-created here, alongside the other temp files, so the shared EXIT trap
+# can safely reference it even on an early exit before the report-building step is reached.
+TMP_REPORT=$(mktemp)
+
+# ANNOTATE_TARGET: in --annotate/--dry-run mode (DO_ANNOTATE=true), a private mktemp staging copy
+# that the annotate loop (Step 2.5.3, below) reads and writes exclusively -- the real
+# $ROADMAP_PATH is touched exactly once, at the very end, only after the JSON report has been
+# fully built (see the `mv "$ANNOTATE_TARGET" "$ROADMAP_PATH"` there). In parse-only mode
+# (DO_ANNOTATE=false) the annotate loop's body never executes, so ANNOTATE_TARGET is simply
+# $ROADMAP_PATH itself -- read-only there, no copy needed. This is what makes a mid-run failure
+# leave $ROADMAP_PATH byte-identical: every write during the run lands on the staging copy, never
+# on the real file, until the single end-of-script commit succeeds.
+if [[ "$DO_ANNOTATE" == "true" ]]; then
+  ANNOTATE_TARGET=$(mktemp)
+  cp "$ROADMAP_PATH" "$ANNOTATE_TARGET"
+else
+  ANNOTATE_TARGET="$ROADMAP_PATH"
+fi
+
+# The trap below conditionally removes ANNOTATE_TARGET only when it is a real staging temp file
+# (DO_ANNOTATE=true) -- when DO_ANNOTATE=false, ANNOTATE_TARGET IS $ROADMAP_PATH, and `rm -f`ing
+# it on exit would destroy the live roadmap file, which must never happen.
+trap '
+  rm -f "$TMP_ROADMAP_STATE" "$TMP_ALL_COMPLETED" "$TMP_ACTIVE_TASKS" "$TMP_ROADMAP_STATE_SLURP" "$TMP_ROADMAP_MATCHES_SLURP" "$TMP_REPORT"
+  [[ "$DO_ANNOTATE" == "true" ]] && rm -f "$ANNOTATE_TARGET"
+' EXIT
 printf '%s' "$ROADMAP_STATE" > "$TMP_ROADMAP_STATE"
 printf '%s' "$ALL_COMPLETED" > "$TMP_ALL_COMPLETED"
+printf '%s' "$ACTIVE_TASKS" > "$TMP_ACTIVE_TASKS"
 
-ROADMAP_MATCHES=$(python3 - "$TMP_ROADMAP_STATE" "$TMP_ALL_COMPLETED" << 'PYEOF'
+ROADMAP_MATCHES=$(python3 - "$TMP_ROADMAP_STATE" "$TMP_ALL_COMPLETED" "$TMP_ACTIVE_TASKS" << 'PYEOF'
 import sys
 import re
 import json
@@ -379,6 +436,8 @@ with open(sys.argv[1], "r") as f:
     roadmap_state = json.load(f)
 with open(sys.argv[2], "r") as f:
     all_completed = json.load(f)
+with open(sys.argv[3], "r") as f:
+    active_tasks = json.load(f)
 
 matches = []
 
@@ -386,6 +445,10 @@ matches = []
 task_by_number = {}
 for task in all_completed:
     task_by_number[task["number"]] = task
+
+# Lookup for a task number's non-terminal status, used by the explicit_task_ref reject rule
+# below (Check 1) -- see the comment there for the concrete failure case this guards against.
+active_by_number = {task["number"]: task["status"] for task in active_tasks}
 
 def normalize(text):
     """Lowercase and strip punctuation for fuzzy matching."""
@@ -411,11 +474,26 @@ def find_match(item_text, item_norm, item_kw):
     # Check 1: Does item contain an explicit (Task N) / (task N) reference? Case-insensitive
     # since the ROADMAP.md table format spells this in lowercase (e.g. "Complete (task <N>)"),
     # unlike the checkbox format's title-case convention.
-    task_ref = re.search(r'\(task (\d+)', item_text, re.IGNORECASE)
-    if task_ref:
-        task_num = int(task_ref.group(1))
-        if task_num in task_by_number:
-            return task_by_number[task_num], "high", "explicit_task_ref"
+    #
+    # Guards against a real false-positive: an item whose text names several in-flight/
+    # not-started sibling task numbers in prose was wrongly checked off on an earlier, unrelated
+    # completed-task context reference in the same item, because the original re.search only ever
+    # inspected the FIRST (task N) occurrence in the item text and had no visibility into
+    # non-terminal tasks at all. re.finditer collects EVERY reference, and the reject rule below
+    # refuses the high-confidence verdict whenever any collected reference is still non-terminal
+    # (per active_by_number, built above) -- even when an earlier reference in the same text
+    # resolves to a genuinely completed task.
+    task_refs = [int(m.group(1)) for m in re.finditer(r'\(task (\d+)', item_text, re.IGNORECASE)]
+    if task_refs:
+        # An unresolvable reference (neither completed nor active -- e.g. abandoned or
+        # renumbered) is non-blocking for this reject rule; it just can't alone produce a match.
+        has_non_terminal_ref = any(t in active_by_number for t in task_refs)
+        if not has_non_terminal_ref:
+            for t in task_refs:
+                if t in task_by_number:
+                    return task_by_number[t], "high", "explicit_task_ref"
+        # else: at least one referenced task is still non-terminal -- reject the high-confidence
+        # verdict and fall through to the remaining, lower-confidence checks below instead.
 
     # Check 2: Does a completed task have explicit roadmap_items matching this text?
     for task in all_completed:
@@ -583,10 +661,10 @@ if [[ "$DO_ANNOTATE" == "true" ]]; then
     if [[ "$SOURCE" != "status_table" ]]; then
       # ─── Checkbox branch: pre-existing OLD_LINE/NEW_LINE/awk logic, unmodified ────────────
       # Safety check: skip if already annotated
-      if grep -q "*(Completed:" "$ROADMAP_PATH" 2>/dev/null && \
-         grep -q "$ITEM_TEXT" "$ROADMAP_PATH" 2>/dev/null; then
+      if grep -q "*(Completed:" "$ANNOTATE_TARGET" 2>/dev/null && \
+         grep -q "$ITEM_TEXT" "$ANNOTATE_TARGET" 2>/dev/null; then
         # Check if this specific line is already annotated
-        MATCHING_LINE=$(grep -F "$ITEM_TEXT" "$ROADMAP_PATH" 2>/dev/null | head -1)
+        MATCHING_LINE=$(grep -F "$ITEM_TEXT" "$ANNOTATE_TARGET" 2>/dev/null | head -1)
         if echo "$MATCHING_LINE" | grep -q "*(Completed:"; then
           ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
           SKIPPED_REASONS+=("already_annotated")
@@ -601,7 +679,7 @@ if [[ "$DO_ANNOTATE" == "true" ]]; then
       # Existence check shared by dry-run and apply, so dry-run can never over-report an
       # annotation it could not actually apply: does the exact unchecked line exist at all?
       LINE_EXISTS=false
-      if grep -qxF "$OLD_LINE" "$ROADMAP_PATH" 2>/dev/null; then
+      if grep -qxF "$OLD_LINE" "$ANNOTATE_TARGET" 2>/dev/null; then
         LINE_EXISTS=true
       fi
 
@@ -627,15 +705,15 @@ if [[ "$DO_ANNOTATE" == "true" ]]; then
             next
           }
           { print }
-        ' "$ROADMAP_PATH" > "$TMPFILE"
+        ' "$ANNOTATE_TARGET" > "$TMPFILE"
 
-        if diff -q "$TMPFILE" "$ROADMAP_PATH" > /dev/null 2>&1; then
+        if diff -q "$TMPFILE" "$ANNOTATE_TARGET" > /dev/null 2>&1; then
           # No change was made (line not found as exact match)
           ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
           SKIPPED_REASONS+=("line_not_found_exact")
           rm -f "$TMPFILE"
         else
-          mv "$TMPFILE" "$ROADMAP_PATH"
+          mv "$TMPFILE" "$ANNOTATE_TARGET"
           ANNOTATIONS_MADE=$((ANNOTATIONS_MADE + 1))
           echo "Annotated (checkbox): Task $TASK_NUM -> $ITEM_TEXT" >&2
         fi
@@ -647,7 +725,7 @@ if [[ "$DO_ANNOTATE" == "true" ]]; then
       # (line_index, raw_line) pair.
       ON_DISK_LINE=""
       if [[ -n "$LINE_INDEX" ]]; then
-        ON_DISK_LINE=$(sed -n "$((LINE_INDEX + 1))p" "$ROADMAP_PATH")
+        ON_DISK_LINE=$(sed -n "$((LINE_INDEX + 1))p" "$ANNOTATE_TARGET")
       fi
 
       # Precise already-annotated check: read the on-disk line at the captured index instead of
@@ -716,16 +794,16 @@ PYEOF
             next
           }
           { print }
-        ' "$ROADMAP_PATH" > "$TMPFILE"
+        ' "$ANNOTATE_TARGET" > "$TMPFILE"
 
-        if diff -q "$TMPFILE" "$ROADMAP_PATH" > /dev/null 2>&1; then
+        if diff -q "$TMPFILE" "$ANNOTATE_TARGET" > /dev/null 2>&1; then
           # No change was made -- misleading to call this "line_not_found_exact" (that name
           # implies a checkbox-style text search); this is a line-index-targeted apply instead.
           ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
           SKIPPED_REASONS+=("table_row_not_found_at_line")
           rm -f "$TMPFILE"
         else
-          mv "$TMPFILE" "$ROADMAP_PATH"
+          mv "$TMPFILE" "$ANNOTATE_TARGET"
           ANNOTATIONS_MADE=$((ANNOTATIONS_MADE + 1))
           echo "Annotated (table row): Task $TASK_NUM -> $ITEM_TEXT" >&2
         fi
@@ -785,9 +863,26 @@ else
   WARNINGS_JSON=$(printf '%s\n' "${WARNINGS[@]}" | jq -R . | jq -s .)
 fi
 
+# ROADMAP_STATE and ROADMAP_MATCHES can each exceed Linux's MAX_ARG_STRLEN (131,072 bytes) --
+# ROADMAP_STATE embeds every parsed phase/checkbox/table row including raw_line text;
+# ROADMAP_MATCHES embeds one object per candidate match, several carrying line_index/raw_line/
+# status_index too. Pass both via --slurpfile (temp files, using the same TMP_ROADMAP_STATE_SLURP/
+# TMP_ROADMAP_MATCHES_SLURP mktemp paths declared and trapped above at the ALL_COMPLETED step),
+# exactly analogous to that step's own file-not-argv fix. `--slurpfile` always binds an array of
+# the file's JSON values, hence the `[0]` dereference in the filter body below. The remaining
+# --argjson bindings below are small/bounded (counts, booleans, short arrays) and unaffected.
+printf '%s' "$ROADMAP_STATE" > "$TMP_ROADMAP_STATE_SLURP"
+printf '%s' "$ROADMAP_MATCHES" > "$TMP_ROADMAP_MATCHES_SLURP"
+
+# Order is load-bearing here: build the report into TMP_REPORT FIRST; only once that succeeds
+# (jq's own exit code, backstopped by `set -e` -- a jq failure aborts the script right here, before
+# the commit below, leaving $ROADMAP_PATH untouched) does the real $ROADMAP_PATH get replaced by
+# the staging copy; only after that succeeds is the report actually printed. report -> commit ->
+# print, never any other order, so a crash at any point up through report-building leaves
+# $ROADMAP_PATH exactly as it was before this run started.
 jq -n \
-  --argjson roadmap_state "$ROADMAP_STATE" \
-  --argjson roadmap_matches "$ROADMAP_MATCHES" \
+  --slurpfile roadmap_state_arr "$TMP_ROADMAP_STATE_SLURP" \
+  --slurpfile roadmap_matches_arr "$TMP_ROADMAP_MATCHES_SLURP" \
   --argjson annotations_made "$ANNOTATIONS_MADE" \
   --argjson items_skipped "$ITEMS_SKIPPED" \
   --argjson skipped_reasons "$SKIPPED_REASONS_JSON" \
@@ -798,7 +893,9 @@ jq -n \
   --argjson table_rows "$TABLE_ROW_COUNT" \
   --argjson parseable "$ROADMAP_PARSEABLE" \
   --argjson warnings "$WARNINGS_JSON" \
-  '{
+  '($roadmap_state_arr[0]) as $roadmap_state |
+   ($roadmap_matches_arr[0]) as $roadmap_matches |
+   {
     "roadmap_state": $roadmap_state,
     "roadmap_matches": $roadmap_matches,
     "annotation_summary": {
@@ -815,4 +912,14 @@ jq -n \
       "parseable": $parseable
     },
     "warnings": $warnings
-  }'
+  }' > "$TMP_REPORT"
+
+# Commit: replace the real $ROADMAP_PATH with the fully-annotated staging copy exactly once, here
+# -- only reachable after the report above was built successfully. In parse-only mode
+# (DO_ANNOTATE=false), ANNOTATE_TARGET IS $ROADMAP_PATH already, so there is nothing to move.
+if [[ "$DO_ANNOTATE" == "true" ]]; then
+  mv "$ANNOTATE_TARGET" "$ROADMAP_PATH"
+fi
+
+# Print: only after the commit above has succeeded.
+cat "$TMP_REPORT"

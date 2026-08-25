@@ -125,6 +125,10 @@ PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
 TMP_DIR="$PROJECT_ROOT/specs/tmp"
+# Created early (not only at staging time below) so spill files written during argument parsing
+# -- which can happen before the --dry-run branch, before any mutex is acquired -- always have
+# somewhere to land.
+mkdir -p "$TMP_DIR"
 
 # Defense-in-depth staleness widening: an explicit stale_sec passed to `scope-acquire`, mirroring
 # orchestrator-postflight.sh's own widened-bracket posture, so a future slow operation added
@@ -143,8 +147,18 @@ INIT_MODE=false
 STATE_FILE_EXPLICIT=false
 JQ_ARGS=()
 
+# --- Oversized --argjson transparent spill (D1/D2: report Shape 2, threshold below MAX_ARG_STRLEN) ---
+# Any --argjson value at or under SPILL_THRESHOLD bytes is forwarded to jq exactly as before, byte
+# for byte. A value over the threshold is written to a private mktemp file and bound via
+# `jq --slurpfile` instead, with the caller's own $NAME reference resolved unchanged by an
+# EFFECTIVE_FILTER prefix built below -- no existing or future --argjson call site has to change.
+SPILL_THRESHOLD=100000
+SPILL_FILES=()          # mktemp paths this process created; removed by cleanup() below
+SPILL_PRIVATE_NAMES=()  # jq --slurpfile binding names, e.g. __spill_0
+SPILL_PUBLIC_NAMES=()   # the caller's original NAME for each spilled binding, e.g. NAME
+
 usage() {
-  echo "Usage: $0 <jq-filter> --session-id SID [--state-file PATH] [--init] [--arg NAME VALUE]... [--argjson NAME VALUE]... [--regen-todo] [--dry-run]" >&2
+  echo "Usage: $0 <jq-filter> --session-id SID [--state-file PATH] [--init] [--arg NAME VALUE]... [--argjson NAME VALUE]... [--argjson-file NAME PATH]... [--regen-todo] [--dry-run]" >&2
 }
 
 while [ "$#" -gt 0 ]; do
@@ -182,7 +196,37 @@ while [ "$#" -gt 0 ]; do
         usage
         exit 1
       fi
-      JQ_ARGS+=(--argjson "$2" "$3")
+      if [ "${#3}" -gt "$SPILL_THRESHOLD" ]; then
+        spill_file=$(mktemp "$TMP_DIR/state-write-spill.XXXXXX") || {
+          echo "Error: failed to create private spill file under $TMP_DIR" >&2
+          exit 1
+        }
+        printf '%s' "$3" > "$spill_file"
+        private_name="__spill_${#SPILL_FILES[@]}"
+        JQ_ARGS+=(--slurpfile "$private_name" "$spill_file")
+        SPILL_FILES+=("$spill_file")
+        SPILL_PRIVATE_NAMES+=("$private_name")
+        SPILL_PUBLIC_NAMES+=("$2")
+      else
+        JQ_ARGS+=(--argjson "$2" "$3")
+      fi
+      shift 3
+      ;;
+    --argjson-file)
+      if [ "$#" -lt 3 ]; then
+        echo "Error: --argjson-file requires NAME and PATH" >&2
+        usage
+        exit 1
+      fi
+      if [ ! -r "$3" ]; then
+        echo "Error: --argjson-file PATH '$3' does not exist or is not readable" >&2
+        usage
+        exit 1
+      fi
+      private_name="__spill_${#SPILL_FILES[@]}"
+      JQ_ARGS+=(--slurpfile "$private_name" "$3")
+      SPILL_PRIVATE_NAMES+=("$private_name")
+      SPILL_PUBLIC_NAMES+=("$2")
       shift 3
       ;;
     --regen-todo)
@@ -221,6 +265,65 @@ if [ -z "$SESSION_ID" ]; then
   usage
   exit 1
 fi
+
+# --- EFFECTIVE_FILTER: prefix the caller's filter with an `as` binding for every spilled
+# --argjson/--argjson-file, so the caller's own $NAME reference resolves exactly as a plain
+# --argjson would have. `--slurpfile` always binds an array of the file's JSON values, hence the
+# `[0]` dereference here. Unaffected (byte-identical to JQ_FILTER) when nothing was spilled. ---
+EFFECTIVE_FILTER="$JQ_FILTER"
+if [ "${#SPILL_PRIVATE_NAMES[@]}" -gt 0 ]; then
+  spill_prefix=""
+  for spill_idx in "${!SPILL_PRIVATE_NAMES[@]}"; do
+    spill_prefix="${spill_prefix}(\$${SPILL_PRIVATE_NAMES[$spill_idx]}[0]) as \$${SPILL_PUBLIC_NAMES[$spill_idx]} | "
+  done
+  EFFECTIVE_FILTER="${spill_prefix}${JQ_FILTER}"
+fi
+
+# --- Mutex/cleanup scaffolding: declared and trapped here, before the --dry-run branch below, so
+# a --dry-run exit still cleans up any spill files written during argument parsing above. Only the
+# declarations, function bodies, and trap installation move this early -- the actual acquire_mutex
+# call and staging mktemp stay gated behind the --dry-run check further down, unchanged. ---
+MUTEX_TOKEN=""
+MUTEX_OWNED_HERE=false
+STAGE_FILE=""
+
+acquire_mutex() {
+  if [ -n "${SCOPE_MUTEX_HELD:-}" ]; then
+    echo "Note: an outer holder already owns the specs/.scope-lock mutex (SCOPE_MUTEX_HELD=1 inherited); running as guest, no nested acquire." >&2
+    return 0
+  fi
+  local token
+  if ! token=$("$SCRIPT_DIR/task-lock.sh" scope-acquire "$SESSION_ID" "$STATE_WRITE_SCOPE_STALE_SEC"); then
+    echo "ABORT: timed out waiting for specs/.scope-lock mutex (session=$SESSION_ID); $STATE_FILE was NOT modified." >&2
+    return 1
+  fi
+  MUTEX_TOKEN="$token"
+  MUTEX_OWNED_HERE=true
+  export SCOPE_MUTEX_HELD=1
+  return 0
+}
+
+release_mutex() {
+  if [ "$MUTEX_OWNED_HERE" = true ]; then
+    "$SCRIPT_DIR/task-lock.sh" scope-release "$MUTEX_TOKEN" >&2 || true
+    MUTEX_OWNED_HERE=false
+    unset SCOPE_MUTEX_HELD
+  fi
+}
+
+# EXIT trap scoped to THIS process's own staging file, spill files, and mutex release. Idempotent:
+# safe to fire even if release_mutex/staging cleanup already ran on an earlier explicit path. A
+# --dry-run exit reaches this trap too (installed above the --dry-run branch), so spill files
+# created during argument parsing are never leaked even though dry-run never acquires the mutex or
+# stages a write.
+cleanup() {
+  [ -n "$STAGE_FILE" ] && rm -f "$STAGE_FILE" 2>/dev/null || true
+  if [ "${#SPILL_FILES[@]}" -gt 0 ]; then
+    rm -f "${SPILL_FILES[@]}" 2>/dev/null || true
+  fi
+  release_mutex
+}
+trap cleanup EXIT
 
 # --- D3/D4: normalized-path comparison and the two hard usage refusals ---
 # `realpath -m` does not require the path to exist -- required here since an `--init` target may
@@ -277,9 +380,9 @@ if [ "$DRY_RUN" = true ]; then
   # captured non-zero status and this script's documented exit-code contract.
   dryrun_status=0
   if [ "$INIT_MODE" = true ]; then
-    dryrun_err=$(jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" 2>&1 > /dev/null) || dryrun_status=$?
+    dryrun_err=$(jq -n "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" 2>&1 > /dev/null) || dryrun_status=$?
   else
-    dryrun_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > /dev/null) || dryrun_status=$?
+    dryrun_err=$(jq "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" "$STATE_FILE" 2>&1 > /dev/null) || dryrun_status=$?
   fi
   if [ "$dryrun_status" -ne 0 ]; then
     echo "Error: [dry-run] jq filter failed syntax/apply check:" >&2
@@ -291,42 +394,9 @@ if [ "$DRY_RUN" = true ]; then
 fi
 
 # --- Mutex acquire (fail-closed; guest mode honored) ---
-MUTEX_TOKEN=""
-MUTEX_OWNED_HERE=false
-STAGE_FILE=""
-
-acquire_mutex() {
-  if [ -n "${SCOPE_MUTEX_HELD:-}" ]; then
-    echo "Note: an outer holder already owns the specs/.scope-lock mutex (SCOPE_MUTEX_HELD=1 inherited); running as guest, no nested acquire." >&2
-    return 0
-  fi
-  local token
-  if ! token=$("$SCRIPT_DIR/task-lock.sh" scope-acquire "$SESSION_ID" "$STATE_WRITE_SCOPE_STALE_SEC"); then
-    echo "ABORT: timed out waiting for specs/.scope-lock mutex (session=$SESSION_ID); $STATE_FILE was NOT modified." >&2
-    return 1
-  fi
-  MUTEX_TOKEN="$token"
-  MUTEX_OWNED_HERE=true
-  export SCOPE_MUTEX_HELD=1
-  return 0
-}
-
-release_mutex() {
-  if [ "$MUTEX_OWNED_HERE" = true ]; then
-    "$SCRIPT_DIR/task-lock.sh" scope-release "$MUTEX_TOKEN" >&2 || true
-    MUTEX_OWNED_HERE=false
-    unset SCOPE_MUTEX_HELD
-  fi
-}
-
-# EXIT trap scoped to THIS process's own staging file plus mutex release. Idempotent: safe to
-# fire even if release_mutex/staging cleanup already ran on an earlier explicit path.
-cleanup() {
-  [ -n "$STAGE_FILE" ] && rm -f "$STAGE_FILE" 2>/dev/null || true
-  release_mutex
-}
-trap cleanup EXIT
-
+# Declarations, function bodies, and trap installation for acquire_mutex/release_mutex/cleanup
+# live earlier (before the --dry-run branch above) so a --dry-run exit still cleans up spill
+# files. Only the actual acquire call stays gated here, after --dry-run has already returned.
 if ! acquire_mutex; then
   exit 2
 fi
@@ -344,9 +414,9 @@ STAGE_FILE=$(mktemp "$TMP_DIR/state-write.XXXXXX") || {
 # abort the script before the status line or the custom error message ever ran).
 transform_status=0
 if [ "$INIT_MODE" = true ]; then
-  transform_err=$(jq -n "${JQ_ARGS[@]}" "$JQ_FILTER" 2>&1 > "$STAGE_FILE") || transform_status=$?
+  transform_err=$(jq -n "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" 2>&1 > "$STAGE_FILE") || transform_status=$?
 else
-  transform_err=$(jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$STATE_FILE" 2>&1 > "$STAGE_FILE") || transform_status=$?
+  transform_err=$(jq "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" "$STATE_FILE" 2>&1 > "$STAGE_FILE") || transform_status=$?
 fi
 if [ "$transform_status" -ne 0 ]; then
   echo "Error: jq transform failed; $STATE_FILE left untouched." >&2
