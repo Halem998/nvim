@@ -704,31 +704,31 @@ plan's list from memory.
 
 ---
 
-### Phase 9: Regression tests in `test-lit-pipeline.sh` (acceptance criterion 6) [NOT STARTED]
+### Phase 9: Regression tests in `test-lit-pipeline.sh` (acceptance criterion 6) [COMPLETED]
 
 **Goal**: Make all three fixed behaviours executable assertions, so the defect class cannot
 regress silently. The existing Section E fixture uses one id for both namespaces and has therefore
 never been able to catch this class.
 
 **Tasks**:
-- [ ] Case 1 (ingest-then-brief): fixture the **actual post-fix** `literature-ingest.sh` output
+- [x] Case 1 (ingest-then-brief): fixture the **actual post-fix** `literature-ingest.sh` output
       shape — parent + 1:1 children under `sources/<id>/` — register it in a per-repo sub-index,
       run `literature-briefing-invoke.sh`, and assert the document appears with correct
-      title/authors/year and a chunk count equal to `--toc`'s.
-- [ ] Case 2 (`--validate` divergence): fixture an index whose parent `.id` has no corresponding
+      title/authors/year and a chunk count equal to `--toc`'s. *(completed: parent deliberately id-less (doc_id only) so this case is also revert-sensitive to the Phase 3 fix -- see deviation note)*
+- [x] Case 2 (`--validate` divergence): fixture an index whose parent `.id` has no corresponding
       `chunks_data.doc_id` and whose `.path` does not bridge to one; assert the divergence check
-      reports it.
-- [ ] Case 3 (project-filtered-search bridge): fixture a document whose curated `.id` differs from
+      reports it. *(completed)*
+- [x] Case 3 (project-filtered-search bridge): fixture a document whose curated `.id` differs from
       its FTS `doc_id` but whose `.path` is `sources/<fts_id>/`; assert
       `literature-search.sh --project` returns it. This is the guard for Phase 2 — the breakage
-      that had no test at all.
-- [ ] Case 4 (schema-shape): fixture a stub entry lacking `.id`/`.path`; assert `--validate`
-      classifies it as a schema-shape defect and that `null (missing)` never appears.
-- [ ] Change the shared fixture so the global-index `.id` and the sub-index `doc_id` are **not**
-      trivially identical in at least one case, so a future `.id`-only regression fails a test.
-- [ ] Confirm the companion coverage-marker assertion (a deliberately-unresolvable `doc_id` drives
+      that had no test at all. *(completed: added a decoy document to prevent the search script's own zero-result unfiltered-retry fallback from masking the regression -- see deviation note)*
+- [x] Case 4 (schema-shape): fixture a stub entry lacking `.id`/`.path`; assert `--validate`
+      classifies it as a schema-shape defect and that `null (missing)` never appears. *(completed)*
+- [x] Change the shared fixture so the global-index `.id` and the sub-index `doc_id` are **not**
+      trivially identical in at least one case, so a future `.id`-only regression fails a test. *(completed: Case 1's parent has no .id at all, only .doc_id; Case 4's stub also has neither)*
+- [x] Confirm the companion coverage-marker assertion (a deliberately-unresolvable `doc_id` drives
       the coverage marker to report the failure rather than `sparse=false`) is scheduled in its own
-      task; record where. The task description binds this task's test to that one.
+      task; record where. The task description binds this task's test to that one. *(completed: noted as out-of-scope, separately-tracked, in Section F's own header comment in test-lit-pipeline.sh -- no task-number citation per the deliverable-file rule)*
 
 **Timing**: 2 hours
 

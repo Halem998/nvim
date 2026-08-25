@@ -16,6 +16,13 @@
 #   C - CSLib agent acknowledgment (4 agents: <literature-briefing> reference)
 #   D - General skill interactive detection (skill-researcher, skill-implementer)
 #   E - Runtime smoke test with mock fixtures (opt-in via --runtime)
+#   F - id/FTS namespace unification regression tests (opt-in via --runtime): ingest-then-brief
+#       shape, --validate schema-shape/divergence detection, project-filtered-search bridge.
+#       A sibling to Section E (not an extension of it) -- needs its own sqlite fixture and a
+#       SKILL.md bash-block extraction Section E's infra has no use for. Resolves the scripts
+#       and SKILL.md it exercises relative to its OWN SCRIPT_DIR (never the hardcoded deployed
+#       .claude/ path Section E uses), so it always tests whichever copy -- source-store or
+#       deployed -- it is itself being run from.
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -94,6 +101,7 @@ TEMP_LIT_DIR=""
 TEMP_SUB_INDEX=""
 ORIGINAL_SUB_INDEX_EXISTS=false
 SUB_INDEX_PATH="$PROJECT_ROOT/specs/literature-index.json"
+TEMP_LIT_DIR_F=""
 
 cleanup() {
   if [[ -n "$TEMP_LIT_DIR" ]] && [[ -d "$TEMP_LIT_DIR" ]]; then
@@ -106,6 +114,10 @@ cleanup() {
   # Restore original LITERATURE_DIR if we changed it
   if [[ -n "${SAVED_LITERATURE_DIR+x}" ]]; then
     export LITERATURE_DIR="$SAVED_LITERATURE_DIR"
+  fi
+  # Section F's own scratch corpus (separate from Section E's TEMP_LIT_DIR)
+  if [[ -n "$TEMP_LIT_DIR_F" ]] && [[ -d "$TEMP_LIT_DIR_F" ]]; then
+    rm -rf "$TEMP_LIT_DIR_F"
   fi
 }
 trap 'cleanup' EXIT
@@ -470,6 +482,225 @@ SUB_INDEX
 }
 
 # ============================================================
+# SECTION F: id/FTS namespace unification regression tests (opt-in via --runtime)
+# ============================================================
+# The Section E fixture above uses one id (TestPaper2024) for both the global-index .id and
+# the sub-index doc_id, always -- it could never catch a regression in the .id-vs-
+# chunks_data.doc_id divergence class this section guards. Case 4's fixture below is
+# deliberately id-less (doc_id only) so a future .id-only regression fails a test here.
+#
+# NOTE: a companion coverage-marker regression (asserting a deliberately-unresolvable doc_id
+# drives the lit-coverage marker to report the failure rather than falsely reporting
+# sparse=false) is a distinct, separately-tracked defect and is intentionally out of scope for
+# this section.
+section_f() {
+  echo ""
+  log_info "Section F: id/FTS namespace unification regression tests (--runtime)"
+  echo "----------------------------------------"
+
+  local search_script="$SCRIPT_DIR/literature-search.sh"
+  local briefing_script_f="$SCRIPT_DIR/literature-briefing.sh"
+  local skill_md_f="$SCRIPT_DIR/../skills/skill-literature/SKILL.md"
+
+  if [[ ! -x "$search_script" ]] || [[ ! -x "$briefing_script_f" ]] || [[ ! -f "$skill_md_f" ]]; then
+    log_fail "Section F: required script(s) or SKILL.md not found relative to $SCRIPT_DIR"
+    return
+  fi
+  if ! command -v sqlite3 >/dev/null 2>&1; then
+    log_warn "Section F: sqlite3 not available -- skipping (cannot build a chunks_data fixture)"
+    return
+  fi
+
+  # --- Extract the CURRENT Validate Step 1/2/2b bash blocks from SKILL.md into a runnable
+  # script, so Cases 2 and 4 exercise the same code that ships, not a second,
+  # drift-prone reimplementation of the divergence/schema-shape logic. ---
+  local validate_extract
+  validate_extract=$(mktemp)
+  python3 - "$skill_md_f" "$validate_extract" <<'PYEOF'
+import re, sys
+skill_path, out_path = sys.argv[1], sys.argv[2]
+with open(skill_path) as f:
+    text = f.read()
+m = re.search(r"### Validate Step 1.*?(?=### Validate Step 3)", text, re.S)
+if not m:
+    sys.exit(1)
+blocks = re.findall(r"```bash\n(.*?)```", m.group(0), re.S)
+with open(out_path, "w") as f:
+    f.write("#!/usr/bin/env bash\nset -uo pipefail\n\n")
+    f.write("\n\n".join(blocks))
+    f.write("""
+echo "___SCHEMA_SHAPE_DEFECTS_COUNT___${#schema_shape_defects[@]}"
+for x in "${schema_shape_defects[@]}"; do echo "___SCHEMA_SHAPE_DEFECT___$x"; done
+echo "___STALE_ENTRIES_COUNT___${#stale_entries[@]}"
+for x in "${stale_entries[@]}"; do echo "___STALE_ENTRY___$x"; done
+echo "___DIVERGENCE_FTS_ONLY_COUNT___${#divergence_fts_only[@]}"
+for x in "${divergence_fts_only[@]}"; do echo "___DIVERGENCE_FTS_ONLY___$x"; done
+echo "___DIVERGENCE_INDEX_ONLY_COUNT___${#divergence_index_only[@]}"
+for x in "${divergence_index_only[@]}"; do echo "___DIVERGENCE_INDEX_ONLY___$x"; done
+""")
+PYEOF
+  if [[ ! -s "$validate_extract" ]]; then
+    log_fail "Section F: could not extract Validate Step 1/2/2b logic from SKILL.md"
+    rm -f "$validate_extract"
+    return
+  fi
+
+  TEMP_LIT_DIR_F=$(mktemp -d)
+  mkdir -p "$TEMP_LIT_DIR_F/sources/case1_doc" "$TEMP_LIT_DIR_F/sources/case3_fts_id"
+
+  # --- Shared fixture index: Case 1 (realistic post-fix parent+children shape), Case 2
+  # (parent with zero FTS coverage under either lookup strategy -- genuine divergence), Case 3
+  # (curated .id differs from FTS doc_id, bridged via .path; project_tags set) ---
+  cat > "$TEMP_LIT_DIR_F/index.json" <<'CASE_INDEX'
+{
+  "entries": [
+    {
+      "doc_id": "case1_doc", "parent_doc": null,
+      "path": "sources/case1_doc/", "title": "Case One Regression Document",
+      "authors": ["Regression Tester"], "year": 2026, "metadata_status": "resolved",
+      "token_count": 0, "chunk_count": 3, "doc_type": "paper", "source_format": "pdf",
+      "keywords": ["regression"],
+      "summary": "Fixture matching the post-fix literature-ingest.sh output shape, deliberately without a .id key on the parent (doc_id only) so this case is revert-sensitive to the literature-briefing.sh .id-tolerance fix, not merely illustrative."
+    },
+    {
+      "id": "c1chunk1", "doc_id": "case1_doc", "parent_doc": "case1_doc",
+      "path": "sources/case1_doc/chunk_0001.md", "title": "Section 1",
+      "keywords": ["regression"], "summary": "Chunk 1 summary.", "token_count": 100
+    },
+    {
+      "id": "c1chunk2", "doc_id": "case1_doc", "parent_doc": "case1_doc",
+      "path": "sources/case1_doc/chunk_0002.md", "title": "Section 2",
+      "keywords": ["regression"], "summary": "Chunk 2 summary.", "token_count": 100
+    },
+    {
+      "id": "c1chunk3", "doc_id": "case1_doc", "parent_doc": "case1_doc",
+      "path": "sources/case1_doc/chunk_0003.md", "title": "Section 3",
+      "keywords": ["regression"], "summary": "Chunk 3 summary.", "token_count": 100
+    },
+    {
+      "id": "case2_orphan", "doc_id": "case2_orphan", "parent_doc": null,
+      "path": "sources/case2_orphan_dir/", "title": "Case Two Orphan Document",
+      "authors": [], "year": null, "token_count": 0, "chunk_count": 0,
+      "doc_type": "paper", "source_format": "pdf", "keywords": [],
+      "summary": "Neither .id nor its path-derived dir key has any FTS chunks -- genuine divergence."
+    },
+    {
+      "id": "case3_curated_id", "doc_id": "case3_curated_id", "parent_doc": null,
+      "path": "sources/case3_fts_id/", "title": "Case Three Bridged Document",
+      "authors": ["Bridge Tester"], "year": 2026, "token_count": 0, "chunk_count": 1,
+      "doc_type": "paper", "source_format": "pdf", "keywords": ["bridging"],
+      "summary": "Curated .id differs from the FTS doc_id; resolved only via the .path bridge.",
+      "project_tags": ["NamespaceBridgeRegressionProject"],
+      "provenance_fidelity": "verified_conversion"
+    },
+    {
+      "id": "case3_decoy_doc", "doc_id": "case3_decoy_doc", "parent_doc": null,
+      "path": "sources/case3_decoy_doc/", "title": "Case Three Decoy Document",
+      "authors": ["Bridge Tester"], "year": 2026, "token_count": 0, "chunk_count": 1,
+      "doc_type": "paper", "source_format": "pdf", "keywords": ["bridging"],
+      "summary": "Decoy whose .id matches its own FTS doc_id, so a project-filtered search for the shared query term returns a nonzero result set under BOTH the pre-fix and post-fix allow-list -- this prevents literature-search.sh's zero-result unfiltered-retry fallback from masking the bridge regression (an unfiltered retry would find case3_fts_id too, passing the test even with the bridge reverted).",
+      "project_tags": ["NamespaceBridgeRegressionProject"],
+      "provenance_fidelity": "verified_conversion"
+    }
+  ]
+}
+CASE_INDEX
+
+  # Build the fixture .literature.db from the REAL schema file (never a hand-rolled
+  # CREATE TABLE) so this fixture cannot silently drift from the columns
+  # literature-search.sh's queries actually select (e.g. `level`, which a prior draft
+  # of this fixture omitted and which made --toc fail silently, caught only by
+  # literature-search.sh's own `except Exception` and never surfaced under `2>/dev/null`).
+  sqlite3 "$TEMP_LIT_DIR_F/.literature.db" < "$SCRIPT_DIR/literature-schema.sql"
+  sqlite3 "$TEMP_LIT_DIR_F/.literature.db" <<'CASE_SQL'
+INSERT INTO chunks_data (chunk_id, doc_id, section_path, title, summary, token_count, source_path, content) VALUES ('c1chunk1', 'case1_doc', 'Section 1', 'Section 1', 'Chunk 1 summary.', 100, 'chunk_0001.md', 'content one for the ingest-then-brief regression case');
+INSERT INTO chunks_data (chunk_id, doc_id, section_path, title, summary, token_count, source_path, content) VALUES ('c1chunk2', 'case1_doc', 'Section 2', 'Section 2', 'Chunk 2 summary.', 100, 'chunk_0002.md', 'content two');
+INSERT INTO chunks_data (chunk_id, doc_id, section_path, title, summary, token_count, source_path, content) VALUES ('c1chunk3', 'case1_doc', 'Section 3', 'Section 3', 'Chunk 3 summary.', 100, 'chunk_0003.md', 'content three');
+INSERT INTO chunks_data (chunk_id, doc_id, section_path, title, summary, token_count, source_path, content) VALUES ('c3chunk1', 'case3_fts_id', 'Bridged Content', 'Bridged Content', 'Bridged chunk summary.', 50, 'chunk_0001.md', 'nsbridge9x7q unique marker for project-filtered search bridge regression');
+INSERT INTO chunks_data (chunk_id, doc_id, section_path, title, summary, token_count, source_path, content) VALUES ('c3decoychunk1', 'case3_decoy_doc', 'Decoy Content', 'Decoy Content', 'Decoy chunk summary.', 50, 'chunk_0001.md', 'nsbridge9x7q also present in the decoy so the filtered query is nonzero under both pre-fix and post-fix code');
+INSERT INTO chunks_fts(chunks_fts) VALUES('rebuild');
+CASE_SQL
+
+  # --- Case 1: ingest-then-brief (actual post-fix output shape) ---
+  mkdir -p "$TEMP_LIT_DIR_F/fakerepo/nested/scripts" "$TEMP_LIT_DIR_F/fakerepo/specs"
+  ln -sf "$briefing_script_f" "$TEMP_LIT_DIR_F/fakerepo/nested/scripts/literature-briefing.sh"
+  ln -sf "$search_script" "$TEMP_LIT_DIR_F/fakerepo/nested/scripts/literature-search.sh"
+  cat > "$TEMP_LIT_DIR_F/fakerepo/specs/literature-index.json" <<'CASE1_SUBINDEX'
+{"entries": [{"doc_id": "case1_doc", "relevance": "case 1 regression"}]}
+CASE1_SUBINDEX
+
+  local case1_stderr case1_briefing case1_toc_count case1_briefing_count
+  case1_stderr=$(mktemp)
+  case1_briefing=$(LITERATURE_DIR="$TEMP_LIT_DIR_F" bash "$TEMP_LIT_DIR_F/fakerepo/nested/scripts/literature-briefing.sh" 2>"$case1_stderr")
+  if grep -q "not found in global index" "$case1_stderr"; then
+    log_fail "Case 1 (ingest-then-brief): skip warning present on stderr (should be zero)"
+  elif echo "$case1_briefing" | grep -q "Case One Regression Document" && echo "$case1_briefing" | grep -q "Regression Tester"; then
+    log_pass "Case 1 (ingest-then-brief): resolves with real title/authors, zero skip warnings"
+  else
+    log_fail "Case 1 (ingest-then-brief): expected title/authors not found in briefing output"
+  fi
+  rm -f "$case1_stderr"
+
+  case1_toc_count=$(LITERATURE_DIR="$TEMP_LIT_DIR_F" bash "$search_script" --toc case1_doc 2>/dev/null | jq 'length' 2>/dev/null || echo -1)
+  case1_briefing_count=$(echo "$case1_briefing" | grep -oE '[0-9]+ chunk\(s\)' | head -1 | grep -oE '^[0-9]+')
+  if [[ "$case1_toc_count" == "3" ]] && [[ "$case1_briefing_count" == "3" ]]; then
+    log_pass "Case 1 (ingest-then-brief): --toc chunk count (3) equals briefing's reported chunk count"
+  else
+    log_fail "Case 1 (ingest-then-brief): chunk count mismatch (--toc=$case1_toc_count, briefing=$case1_briefing_count)"
+  fi
+
+  # --- Case 3: project-filtered-search bridge ---
+  local case3_search case3_docids
+  case3_search=$(LITERATURE_DIR="$TEMP_LIT_DIR_F" bash "$search_script" --project NamespaceBridgeRegressionProject "nsbridge9x7q" 2>/dev/null)
+  case3_docids=$(echo "$case3_search" | jq -r '[.results[]?.doc_id] | unique | .[]' 2>/dev/null)
+  if echo "$case3_docids" | grep -qx "case3_fts_id"; then
+    log_pass "Case 3 (project-filtered-search bridge): returns case3_fts_id (curated .id case3_curated_id differs from FTS doc_id)"
+  else
+    log_fail "Case 3 (project-filtered-search bridge): case3_fts_id NOT returned. Got doc_ids: $case3_docids"
+  fi
+
+  # --- Case 2 + Case 4: run the extracted --validate logic once against the shared index,
+  # plus a second id-less stub entry (Case 4) added to a COPY of the index so Case 1/2/3's
+  # fixtures are untouched by Case 4's deliberately malformed record. ---
+  cp "$TEMP_LIT_DIR_F/index.json" "$TEMP_LIT_DIR_F/index_case4.json"
+  python3 - "$TEMP_LIT_DIR_F/index_case4.json" <<'PYEOF'
+import json, sys
+p = sys.argv[1]
+with open(p) as f:
+    idx = json.load(f)
+# Case 4: a stub entry with NEITHER .id NOR .path -- the exact shape that used to be
+# misreported as the literal string "null (missing)".
+idx["entries"].append({"doc_id": "case4_stub", "title": "Case Four Schema-Shape Stub"})
+with open(p, "w") as f:
+    json.dump(idx, f, indent=2)
+PYEOF
+
+  local validate_out
+  validate_out=$(SCRIPT_DIR="$SCRIPT_DIR" lit_dir="$TEMP_LIT_DIR_F" index_file="$TEMP_LIT_DIR_F/index_case4.json" bash "$validate_extract" 2>&1)
+  rm -f "$validate_extract"
+
+  if echo "$validate_out" | grep -q "^___DIVERGENCE_INDEX_ONLY___case2_orphan"; then
+    log_pass "Case 2 (--validate divergence): case2_orphan reported in the index-only-no-FTS-chunks bucket"
+  else
+    log_fail "Case 2 (--validate divergence): case2_orphan NOT reported. Output: $(echo "$validate_out" | grep '___DIVERGENCE')"
+  fi
+
+  if echo "$validate_out" | grep -q "^___SCHEMA_SHAPE_DEFECT___case4_stub"; then
+    log_pass "Case 4 (schema-shape): case4_stub reported in the schema-shape-defects bucket"
+  else
+    log_fail "Case 4 (schema-shape): case4_stub NOT reported in schema-shape-defects"
+  fi
+
+  if echo "$validate_out" | grep -qi "null (missing)"; then
+    log_fail "Case 4 (schema-shape): the literal string 'null (missing)' appeared in --validate output -- the misreport this task fixes"
+  else
+    log_pass "Case 4 (schema-shape): the literal string 'null (missing)' never appears in --validate output"
+  fi
+
+  log_info "Section F complete. Temp corpus will be cleaned up."
+}
+
+# ============================================================
 # MAIN
 # ============================================================
 main() {
@@ -490,6 +721,7 @@ main() {
 
   if [[ "$RUN_RUNTIME" == "true" ]]; then
     section_e
+    section_f
   fi
 
   # --- Summary ---

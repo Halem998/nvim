@@ -1,0 +1,42 @@
+{
+  "phase": 9,
+  "phase_name": "Regression tests in test-lit-pipeline.sh",
+  "started_at": "2026-08-25T02:31:00Z",
+  "last_updated": "2026-08-25T03:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Case 1: ingest-then-brief fixture", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 2, "description": "Case 2: --validate divergence fixture", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 3, "description": "Case 3: project-filtered-search bridge fixture", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 4, "description": "Case 4: schema-shape stub fixture", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 5, "description": "Shared fixture id/doc_id non-trivial", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Note companion coverage-marker task out of scope", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Case 3 fixture without a decoy document", "result": "failed", "reason": "literature-search.sh's own zero-result unfiltered-retry fallback masked the regression: under the reverted (pre-Phase-2) get_project_doc_ids, the project-filtered query legitimately returned zero rows, which triggered the script's existing fallback-retry-without-filter, which then found case3_fts_id anyway via the unfiltered search -- passing the test even with the bridge fix reverted. Added a decoy document (case3_decoy_doc, .id == its own FTS doc_id, matching the same query term) so the filtered query returns a nonzero result set under BOTH pre-fix and post-fix code, preventing the fallback from ever triggering and making the test genuinely discriminating."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.0",
+      "description": "Phase 9 listed as depending on Phase 6 AND Phase 8",
+      "type": "altered",
+      "reason": "Phase 8 was marked [BLOCKED] (see its own progress/plan notes). Phase 9's four test cases are entirely self-contained synthetic fixtures (static JSON + a hand-built .literature.db) -- none of them read the live ~/Projects/Literature/ corpus or depend on its reconciliation. Proceeded with Phase 9 despite Phase 8's block, since nothing in this phase's actual task list requires the corpus residue to be reconciled first.",
+      "annotation": "N/A (dependency-wave note, not a plan checklist item)"
+    },
+    {
+      "task_id": "9.1/9.3",
+      "description": "Case 1's fixture parent field shape; Case 3's fixture composition",
+      "type": "altered",
+      "reason": "See approaches_tried above for Case 3. For Case 1: initially gave the parent both .id and .doc_id (the literal post-fix ingest shape), which made the case illustrative but not revert-sensitive to the Phase 3 fix (since .id alone already resolves under both old and new code). Dropped .id from the parent (doc_id only) so Case 1 is also a genuine regression guard, matching the shared-fixture non-triviality requirement in task 5.",
+      "annotation": "*(completed: see individual task annotations above)*"
+    }
+  ],
+  "verification_evidence": {
+    "full_suite_green": "bash agent-system/extensions/literature/scripts/test-lit-pipeline.sh --runtime: 23 passed, 0 warnings, 0 failed, exit 0, run from the source-store location (not the deployed .claude/ copy).",
+    "case1_red_then_green": "Reverted literature-briefing.sh's (.id // .doc_id) tolerance back to .id-only (both lookup sites): Case 1 failed with 'skip warning present' and 'chunk count mismatch (briefing=<empty>)'. Restored the fix (file diff-confirmed byte-identical to the committed version): Case 1 passed again.",
+    "case3_red_then_green": "Reverted literature-search.sh's get_project_doc_ids() union back to .id-only: Case 3 failed ('case3_fts_id NOT returned. Got doc_ids: case3_decoy_doc'). Restored the fix (diff-confirmed identical): Case 3 passed again.",
+    "case2_case4_red_then_green": "Swapped skill-literature/SKILL.md for its pre-Phase-7 (git HEAD~1 at the Phase 7 commit) version: Case 2 failed ('case2_orphan NOT reported'), Case 4 failed twice ('case4_stub NOT reported' and 'the literal string null (missing) appeared'). Restored the fixed SKILL.md (diff-confirmed identical): both cases passed again.",
+    "no_stray_diff": "git status --short agent-system/extensions/literature/ after all revert/restore cycles shows only test-lit-pipeline.sh modified (the Section F addition itself); literature-briefing.sh, literature-search.sh, and SKILL.md are byte-identical to their committed state."
+  }
+}
