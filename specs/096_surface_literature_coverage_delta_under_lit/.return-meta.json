@@ -1,39 +1,28 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 96,
   "session_id": "sess_1787634022_3ba5fb_96",
-  "findings_count": 7,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/096_surface_literature_coverage_delta_under_lit/reports/01_lit-coverage-delta-guard.md",
-      "summary": "Root-cause confirmation plus design recommendation for a topic-scoped literature coverage-delta guard extending the existing sparse-coverage machinery."
+      "type": "plan",
+      "path": "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
+      "summary": "7-phase plan for a topic-scoped literature coverage-delta guard: shared term-match helper extraction, a new literature-coverage-delta.sh, resolver + briefing wiring, Stage 4a flow update, Section H fixtures, and docs."
     }
   ],
-  "next_steps": "Run /plan 96 to create implementation plan",
+  "phase_count": 7,
+  "estimated_hours": 6.5,
+  "dependency_waves": [[1], [2], [3, 4], [5, 6], [7]],
   "memory_candidates": [
     {
-      "content": "In this repo's literature extension, the global Literature/ index.json's .entries array mixes top-level documents (parent_doc == null) with their chunk children in one flat list, so `.entries | length` on the global index over-counts documents by roughly 2x relative to a doc-level count (measured: 414 total entries vs 204 parent_doc==null documents). Any code comparing a per-repo sub-index's doc-level entry count against the global index must filter to `select(.parent_doc == null)` on the global side or the comparison is not apples-to-apples.",
+      "content": "When adding a new degradation signal to an existing marker/banner family, two design rules recur in this codebase: (1) fold the signal into an already-polled channel OR give it its own consumer on day one -- a new field nothing greps reproduces the silent-degradation failure it exists to close; overloading an existing boolean is only correct when the two conditions call for the SAME operator action, otherwise add distinct fields plus an always-emitted banner. (2) Never let 'not computed' render as a zero: carry an explicit checked=true|false companion field so an uncomputed value cannot be misread as a verified clean result. Both rules were applied when extending the literature --lit sparse-coverage family with a cross-index coverage delta.",
       "category": "PATTERN",
-      "source_artifact": "specs/096_surface_literature_coverage_delta_under_lit/reports/01_lit-coverage-delta-guard.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["literature", "index.json", "parent_doc", "chunk-inflation", "coverage-delta"]
-    },
-    {
-      "content": "literature-discover.sh's Tier 1 keyword matcher (filter_terms: stop-word/short-token filtering; term_matches: case-insensitive substring match; MULTI_TERM_MATCH_THRESHOLD for long queries) is the established, reusable pattern for matching a task description's terms against the global Literature index's title/keywords/summary fields. Prefer reusing this over writing a second keyword matcher for any new global-index-scanning feature (e.g. coverage-delta detection).",
-      "category": "PATTERN",
-      "source_artifact": "specs/096_surface_literature_coverage_delta_under_lit/reports/01_lit-coverage-delta-guard.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["literature", "literature-discover.sh", "keyword-matching", "term_matches", "filter_terms"]
-    },
-    {
-      "content": "The literature extension's sparse-coverage family (literature-lit-flag-resolve.sh, literature-briefing.sh's lit-coverage marker) deliberately folds new failure signals into the EXISTING sparse boolean/directive rather than adding new unconsumed fields -- sparse-coverage.md states this explicitly as a design principle (a new flag nothing polls reproduces the exact silent-degradation bug the mechanism exists to prevent). Any new coverage-related signal in this subsystem should extend SPARSE_PROMPT_NEEDED / the lit-coverage marker rather than mint a parallel directive.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/096_surface_literature_coverage_delta_under_lit/reports/01_lit-coverage-delta-guard.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["literature", "sparse-coverage", "design-principle", "signal-consolidation"]
+      "source_artifact": "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["silent-degradation", "marker-field", "signal-design", "coverage", "not-computed", "banner"]
     }
-  ]
+  ],
+  "summary": "Plan created: 7 phases, 6.5 hours, 5 dependency waves. Settles all four design decisions the task required (materially-less definition, keyword-scoped vs whole-index delta, firing sites, surfacing shape) plus two derived ones (no sparse=true overload, delta_checked convention). Claim-level verifier named as an explicit out-of-scope follow-up.",
+  "next_steps": "Run /implement 96 to execute the plan"
 }

@@ -43,7 +43,7 @@ next_project_number: 101
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
-96 [PLANNING] — Surface the sub-index vs global-index coverage delta when --lit i
+96 [PLANNED] — Surface the sub-index vs global-index coverage delta when --lit i
 
 ### Orchestration Concurrency
 
@@ -238,11 +238,12 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 ---
 
 ### 96. Surface literature coverage delta under lit
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 77
 - **Research**: [096_surface_literature_coverage_delta_under_lit/reports/01_lit-coverage-delta-guard.md]
+- **Plan**: [096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md]
 
 **Description**: Surface the sub-index vs global-index coverage delta when --lit is active, so decision-relevant sources sitting in the global corpus are not silently invisible to research. REPORTED EVIDENCE: in the Logos/Theory repo, specs/literature-index.json holds 37 entries against 399 in ~/Projects/Literature/index.json. Sources that turned out to be decision-relevant were present in the global repo, already chunked and readable, and were never surfaced to the research agents: the canonical branching-time cluster (thomason-1970-indeterminist-time, 78 chunks; reynolds-2003-ockhamist, 30; rumberg-zanardo-2019-transition-structures, 42) and the hyperproperty-monitoring cluster (finkbeiner_etal_2017_monitoring_hyperproperties; finkbeiner_etal_2018_rvhyper; bonakdarpour_sheinvald_2023_finite_word_hyperlanguages, 53; sousa_dillig_2016_cartesian_hoare_logic_k_safety, 69; agrawal_bonakdarpour_2016_runtime_verification_k_safety_hyperltl).
 
