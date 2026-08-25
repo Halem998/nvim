@@ -1756,6 +1756,11 @@
           "path": "specs/085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md",
           "summary": "Five-phase, 4-hour plan fixing two stale test fixtures, adding a preventive live-specs-path lint and standard, and executing the 10-run concurrency acceptance measurement.",
           "created": "2026-08-25T05:20:57Z"
+        },
+        {
+          "path": "specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md",
+          "type": "summary",
+          "summary": "Full measurement record: 10/10 byte-identical run-all.sh results"
         }
       ]
     },

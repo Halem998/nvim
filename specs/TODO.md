@@ -606,6 +606,7 @@ ACCEPTANCE: CI runs the full suite on every push and is green; a deliberately re
 - **Dependencies**: Task 32
 - **Research**: [085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md]
 - **Plan**: [085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md]
+- **Summary**: [085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md]
 
 **Description**: THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed no acceptance gate in this repo is trustworthy in either direction -- including the 19/23 verify-deploy figure the 2026-08-24 survey reports. Split out of a former six-item bundle where its value was diluted by hygiene items.
 

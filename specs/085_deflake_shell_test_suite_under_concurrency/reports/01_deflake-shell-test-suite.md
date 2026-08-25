@@ -15,6 +15,7 @@
   offending suites, one deliberately concurrent run (two simultaneous `run-all.sh`
   invocations), git history of the two offending fixtures
 **Artifacts**:
+- **Standards**: TBD
 - This report
 
 ## Executive Summary

@@ -32,22 +32,41 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["concurrency-evidence", "events.jsonl", "run-all.sh", "lock-contention", "acceptance-measurement"]
+      "suggested_keywords": [
+        "concurrency-evidence",
+        "events.jsonl",
+        "run-all.sh",
+        "lock-contention",
+        "acceptance-measurement"
+      ]
     },
     {
       "content": "A gitignored, locally-built Python venv (e.g. literature-pyenv/venv/...) will always show as source-vs-deployed 'diff' in a deploy-staleness check because its binaries/bytecode are independently compiled per-copy -- this is not a real staleness signal and should be excluded from deploy-staleness confounder checks by confirming the differing files are runtime-generated/gitignored rather than tracked source, and confirming (via grep) that no test suite has a runtime dependency on the differing content.",
       "category": "INSIGHT",
       "source_artifact": "specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["deploy-staleness", "gitignore", "venv", "false-positive", "literature-extension"]
+      "suggested_keywords": [
+        "deploy-staleness",
+        "gitignore",
+        "venv",
+        "false-positive",
+        "literature-extension"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1787655802_22f60c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
-    "phases_total": 5
+    "phases_total": 5,
+    "cycles_used": 1,
+    "final_state": "implementing",
+    "detected_defects": []
   }
 }
