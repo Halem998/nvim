@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 77,
+  "session_id": "sess_1787617685_88b825_77",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md",
+      "summary": "Confirms the writer/reader id mismatch is still live in literature-ingest.sh (stub shape) while the prior invisible-entry backlog is already at zero out-of-band; measures the fourth-namespace (chunks_data.doc_id vs index.json .id) disagreement at 49 documents (32 FTS-only, 17 index-only), unchanged since the task's last addendum; identifies a previously-undocumented second breakage in literature-search.sh's get_project_doc_ids()/do_search() project-filtered search caused by the same id mismatch; completes the reader survey across all named scripts (most are not offenders); confirms the parent/child chunk-granularity ambiguity live on baier_katoen_2008 (12 index children vs 1263 FTS rows); diagnoses why /literature --validate currently misreports stub entries as stale files rather than a schema-shape defect; and lays out concrete, scoped recommendations plus open decisions for the plan phase (new-ingest sources/ placement, chunk granularity, per-document reconciliation for the 17 index-only docs)."
+    }
+  ],
+  "modified_files": [],
+  "findings_count": 12,
+  "memory_candidates": [
+    {
+      "content": "In the literature extension, ~/Projects/Literature/.literature.db's chunks_data.doc_id is fixed permanently at chunk time by literature-chunk.sh's --doc-id argument (the bare id literature-convert.sh names its output .md file). index.json's curated .id field is a separate, later-editable namespace. Renaming an index.json entry's .id to a longer curated form WITHOUT a matching FTS rebuild breaks literature-search.sh --toc/--read (which query chunks_data.doc_id directly) AND silently drops the document from project-tag-filtered search (get_project_doc_ids() builds its allow-list from index .id, then filters chunks_data.doc_id). The safe repair direction is always: keep the FTS-registered bare id, add/repair the index.json parent entry under that same id. Never rename a live FTS id.",
+      "category": "PATTERN",
+      "source_artifact": "specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["literature", "chunks_data", "doc_id", "index.json", "FTS", "literature-search.sh", "id-namespace"]
+    },
+    {
+      "content": "literature-discover.sh's Tier-1 offline index.json search already reads doc_id via `.id // .doc_id // \"\"` (dual-key tolerance), unlike literature-briefing.sh's strict `.id`-only lookups. When adding defensive reader tolerance for the two literature global-index entry shapes (curated .id vs legacy .doc_id-only stub), mirror literature-discover.sh's existing pattern rather than inventing a new one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["literature", "literature-discover.sh", "literature-briefing.sh", "reader-tolerance", "doc_id", "id"]
+    },
+    {
+      "content": "/literature --validate (skill-literature/SKILL.md Validate Step 1) drives its entry loop from `jq -r '.entries[] | .path'`. A stub-shaped index.json entry with no .path key at all yields the literal string \"null\" for that iteration, which then fails the -f/-d existence check and gets misreported as a stale/missing-file entry (\"null (missing)\") rather than being recognized as a schema-shape defect. Any future schema-conformance check must walk .entries[] directly, not just the .path projection, to avoid this same misdiagnosis.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["literature", "validate", "skill-literature", "schema-conformance", "jq", "stub-entry"]
+    }
+  ],
+  "next_steps": "Run /plan 77 to create implementation plan"
+}

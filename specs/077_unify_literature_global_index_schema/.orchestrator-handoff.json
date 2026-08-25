@@ -1,0 +1,13 @@
+{
+  "dispatch_seq": 3,
+  "status": "researched",
+  "summary": "Research complete. The writer (literature-ingest.sh Step 4) still emits the invisible stub shape; the prior backlog of invisible entries is already at zero, repaired out-of-band in the Literature repo. Live-measured the fourth namespace (chunks_data.doc_id vs index.json .id): 49 documents disagree (32 FTS-only, 17 index-only), unchanged since the task's last addendum. Discovered a second, previously-undocumented breakage in literature-search.sh's project-filtered search (get_project_doc_ids() keys on index .id, filters chunks_data.doc_id) caused by the same mismatch. Completed the full reader survey (most named scripts are not offenders). Confirmed the parent/child chunk-granularity ambiguity live on baier_katoen_2008. Diagnosed why /literature --validate currently misreports stub entries as stale files. Report lays out scoped recommendations and explicit open decisions (sources/ placement for new ingests, chunk granularity, per-document reconciliation strategy for the 17 index-only docs) for the plan phase.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md",
+      "summary": "Full research report: mechanism confirmation, live corpus measurements, reader survey, validate-gap diagnosis, and scoped recommendations/decisions for planning."
+    }
+  ],
+  "blockers": []
+}

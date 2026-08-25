@@ -1256,7 +1256,7 @@
     {
       "project_number": 77,
       "project_name": "unify_literature_global_index_schema",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "literature",
       "title": "Unify the literature global-index schema and end stub-entry invisibility",
@@ -1274,9 +1274,15 @@
         "agent-system/extensions/literature/scripts/zotero-attach-chunks.sh",
         "agent-system/extensions/literature/skills/skill-literature/SKILL.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md",
+          "type": "report",
+          "summary": "Full research report: mechanism confirmation, live corpus measurements, reader survey, validate-gap diagnosis, and scoped recommendations/decisions for planning."
+        }
+      ],
       "created": "2026-08-20T18:39:09Z",
-      "last_updated": "2026-08-25T00:29:07Z",
+      "last_updated": "2026-08-25T00:35:56Z",
       "session_id": "sess_1787617685_88b825_77"
     },
     {
