@@ -1412,7 +1412,7 @@
     {
       "project_number": 78,
       "project_name": "briefing_coverage_resolution_failure_signal",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "literature",
       "title": "Make the briefing coverage marker report resolution-failure rate",
@@ -1430,10 +1430,15 @@
           "type": "report",
           "path": "specs/078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md",
           "summary": "Locates the skip site and the second silent-exit site in literature-briefing.sh, confirms literature-lit-flag-resolve.sh is out of scope, and recommends folding a new skip-rate signal into the existing sparse marker/banner machinery so both existing consumers respond with zero changes to either flow file."
+        },
+        {
+          "type": "plan",
+          "path": "specs/078_briefing_coverage_resolution_failure_signal/plans/01_coverage-resolution-failure-signal.md",
+          "summary": "5-phase plan closing literature-briefing.sh's silent resolution-failure gap: skip counters, non-silent total-failure path, extended lit-coverage marker folded into the existing sparse boolean, body surfacing, threshold policy doc, and a Section G regression test."
         }
       ],
       "created": "2026-08-20T18:39:09Z",
-      "last_updated": "2026-08-25T04:08:39Z",
+      "last_updated": "2026-08-25T04:17:16Z",
       "session_id": "sess_1787630527_96eca3_78"
     },
     {
@@ -1851,7 +1856,7 @@
     {
       "project_number": 93,
       "project_name": "close_cross_repo_deploy_skew",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "high",
@@ -1865,13 +1870,18 @@
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
       ],
       "created": "2026-08-24T20:51:23Z",
-      "last_updated": "2026-08-25T04:08:47Z",
+      "last_updated": "2026-08-25T04:17:23Z",
       "session_id": "sess_1787630527_96eca3_93",
       "artifacts": [
         {
           "type": "report",
           "path": "specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md",
           "summary": "Recommends reusing deploy-freshness-lib.sh's existing deploy_freshness_status unchanged, adding a new git-tracked known-consumer-repos registry, a new check-consumer-freshness.sh reporting script with a --discover reconciliation mode, a hook in deploy-headless.sh naming stale consumers after each deploy, and a bounded non-blocking consecutive-ignore escalation on the existing per-repo tier-1 warning. Measured 8 live consumer repos on this machine today (2 more than the task delegation named). Flags that the declared file_scope needs widening to include two new files."
+        },
+        {
+          "type": "plan",
+          "path": "specs/093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md",
+          "summary": "7-phase, ~6h plan adding a source-side tier-3 cross-repo fleet freshness report: git-tracked consumer registry, new check-consumer-freshness.sh (with --discover), a guarded post-deploy stale-consumer report in deploy-headless.sh, and a non-blocking consecutive-ignore escalation on tier 1."
         }
       ]
     },

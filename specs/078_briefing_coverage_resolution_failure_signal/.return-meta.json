@@ -1,32 +1,19 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1787630527_96eca3_78",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 78,
-  "findings_count": 8,
+  "session_id": "sess_1787630527_96eca3_78",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md",
-      "summary": "Locates the skip site and the second silent-exit site in literature-briefing.sh, confirms literature-lit-flag-resolve.sh is out of scope, and recommends folding a new skip-rate signal into the existing sparse marker/banner machinery so both existing consumers respond with zero changes to either flow file."
+      "type": "plan",
+      "path": "specs/078_briefing_coverage_resolution_failure_signal/plans/01_coverage-resolution-failure-signal.md",
+      "summary": "5-phase plan closing literature-briefing.sh's silent resolution-failure gap: skip counters, non-silent total-failure path, extended lit-coverage marker folded into the existing sparse boolean, body surfacing, threshold policy doc, and a Section G regression test."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In the literature extension's lit-coverage marker family (UNVERIFIED/DEGRADED RETRIEVAL/SPARSE COVERAGE banners), when adding a new failure signal, prefer folding it into an EXISTING boolean/marker that downstream code already greps for (e.g. `sparse=true`) rather than inventing a new marker field nothing consumes. A signal nobody reads is still silent, and reusing an existing consumed flag satisfies both 'must fire' and 'existing consumers must keep working unchanged' acceptance criteria simultaneously.",
-      "category": "PATTERN",
-      "source_artifact": "specs/078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lit-coverage", "sparse", "literature-briefing.sh", "non-silence-invariant", "marker-reuse"]
-    },
-    {
-      "content": "literature-lit-flag-resolve.sh (Stage 4a Checkpoint 1, pre-generation) deliberately does NOT cross-reference sub-index doc_ids against the global index, per its own header comment citing 'Risk 4: counting duplication'. Any task about doc_id resolution failure/coverage accuracy in the literature extension belongs entirely in literature-briefing.sh (Checkpoint 2, post-generation), not in the resolver script.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["literature-lit-flag-resolve.sh", "literature-briefing.sh", "checkpoint", "scope-boundary"]
-    }
-  ],
-  "next_steps": "Run /plan 78 to create implementation plan"
+  "phase_count": 5,
+  "estimated_hours": 5.5,
+  "dependency_waves": 4,
+  "memory_candidates": [],
+  "next_steps": "Run /implement 78 to execute the plan"
 }

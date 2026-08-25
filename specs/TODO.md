@@ -42,7 +42,7 @@ next_project_number: 101
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-78 [RESEARCHED] — literature-briefing.sh's coverage marker counts documents that RE
+78 [PLANNED] — literature-briefing.sh's coverage marker counts documents that RE
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
 
@@ -70,7 +70,7 @@ next_project_number: 101
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-93 [RESEARCHED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
+93 [PLANNED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
 
 ### Team Mode Lifecycle
 
@@ -375,11 +375,12 @@ source store. Do not mark it verified on a source-store-only check.
 ---
 
 ### 93. Close cross repo deploy skew
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 83
 - **Research**: [093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md]
+- **Plan**: [093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md]
 
 **Description**: The postflight deploy gate makes 'completed' mean 'in effect' IN THIS REPO ONLY. It does nothing for consuming repos, which pull independently -- so a fix verified here stays broken everywhere else until each repo is reloaded by hand. That is not hypothetical drift; it is the measured state today.
 
@@ -928,11 +929,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 78. Make the briefing coverage marker report resolution-failure rate
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 77
 - **Research**: [078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md]
+- **Plan**: [078_briefing_coverage_resolution_failure_signal/plans/01_coverage-resolution-failure-signal.md]
 
 **Description**: literature-briefing.sh's coverage marker counts documents that RESOLVED and is structurally blind to the resolution FAILURE RATE, so a briefing that dropped every primary source for a task self-reports as healthy. This is the silent-degradation half of the stub-entry defect and is arguably the more dangerous half: the schema bug loses documents, this bug hides that they were lost.
 
