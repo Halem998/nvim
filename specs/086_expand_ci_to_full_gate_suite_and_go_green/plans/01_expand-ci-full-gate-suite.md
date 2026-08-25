@@ -267,31 +267,35 @@ file rather than assumed to match this plan.
 
 ---
 
-### Phase 4: Add a minimal-init escape hatch for the headless nvim calls [NOT STARTED]
+### Phase 4: Add a minimal-init escape hatch for the headless nvim calls [COMPLETED]
 
 **Goal**: Let CI drive the deploy and the two nvim-backed gates without loading `init.lua` — no
 `lazy.nvim` bootstrap, no plugin clones, no network dependency beyond the checkout.
 
 **Tasks**:
-- [ ] **Probe first, edit second.** Clone the repo into the scratchpad, then run a full deploy
+- [x] **Probe first, edit second.** Clone the repo into the scratchpad, then run a full deploy
       into it using the `--clean`-style invocation directly (`nvim --headless --clean
       --cmd "set rtp+=<checkout>"` plus the existing `manager.load('core', {force=true,
       project_dir=...})` + `manager.resync_all` lua). Confirm `DEPLOY_COUNT=` is emitted and
       `.claude/` is populated. If this fails, STOP and take the Rollback/Contingency fallback
-      instead of proceeding with the escape hatch.
-- [ ] Add an opt-in escape hatch to `agent-system/extensions/core/scripts/deploy-headless.sh`
+      instead of proceeding with the escape hatch. *(completed: DEPLOY_COUNT=6, 548 files;
+      also probed verify_all and find_orphans, both clean)*
+- [x] Add an opt-in escape hatch to `agent-system/extensions/core/scripts/deploy-headless.sh`
       that injects `--clean --cmd "set rtp+=<rtp dir>"` into its nvim invocation. Default OFF —
       absent the opt-in, behavior must be byte-for-byte unchanged, matching the additive-flag
       convention `--findings` and `--skip-slow` already follow in `verify-deploy.sh`
-- [ ] The rtp directory is the **nvim config directory**, which is not always `$TARGET` (for a
+      *(completed: --minimal-init DIR flag)*
+- [x] The rtp directory is the **nvim config directory**, which is not always `$TARGET` (for a
       consumer repo they differ; in CI they coincide). Make it explicit and overridable rather
-      than derived from `$TARGET`
-- [ ] Apply the same escape hatch to `verify-deploy.sh`'s two nvim call sites (`verify_all` gate
-      and `find_orphans` gate), so the whole CI path is consistent
-- [ ] Document the hatch in both script headers, stating plainly that it is for CI/container
-      environments with no user nvim config and that it changes nothing when unset
-- [ ] Re-run the scratch-clone deploy through the real `deploy-headless.sh` with the hatch on, and
-      confirm the deploy lands and its inline `verify-deploy.sh --skip-slow` runs
+      than derived from `$TARGET` *(completed: DIR is a required explicit argument)*
+- [x] Apply the same escape hatch to `verify-deploy.sh`'s two nvim call sites (`verify_all` gate
+      and `find_orphans` gate), so the whole CI path is consistent *(completed)*
+- [x] Document the hatch in both script headers, stating plainly that it is for CI/container
+      environments with no user nvim config and that it changes nothing when unset *(completed)*
+- [x] Re-run the scratch-clone deploy through the real `deploy-headless.sh` with the hatch on, and
+      confirm the deploy lands and its inline `verify-deploy.sh --skip-slow` runs *(completed:
+      deploy landed, all 24 gates ran including gate5/gate13/gate14 PASS, only pre-existing
+      gate3 doc-lint failed matching working-repo state)*
 
 **Timing**: 1.5 hours
 

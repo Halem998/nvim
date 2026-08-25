@@ -15,6 +15,21 @@
 #                        project-root extension state yet -- see the "Bootstrap safety" note
 #                        below), then force-resyncs every other currently-active extension via
 #                        `manager.resync_all`. Never destructive; never removes anything.
+#   --minimal-init DIR   Opt-in escape hatch for CI/container environments with no user nvim
+#                        config: injects `--clean --cmd "set rtp+=DIR"` into the nvim invocation
+#                        instead of the default `nvim --headless` (which loads init.lua and pays
+#                        a full lazy.nvim plugin bootstrap). DIR is the nvim CONFIG directory
+#                        (the directory init.lua would normally live in) -- for a consumer repo
+#                        this is NOT the same as the deploy TARGET, so it is always explicit and
+#                        never derived from TARGET; in CI, where the checkout IS the nvim config
+#                        repo, the two coincide and DIR == TARGET. Default OFF: absent this flag,
+#                        behavior is byte-for-byte unchanged (plain `nvim --headless`, same as
+#                        before this flag existed). The extension manager has no plugin
+#                        dependency, so `manager.load`/`manager.resync_all` need nothing from
+#                        init.lua or lazy.nvim -- confirmed by a direct probe into a scratch
+#                        clone before this flag was added. This flag is threaded through to the
+#                        inline `verify-deploy.sh` call below (its own `--minimal-init DIR` --
+#                        see that script's header for its two nvim call sites).
 #   --wipe               Full destructive sequence via `manager.wipe`: snapshot
 #                        settings.json/settings.local.json/.syncprotect-listed paths -> `rm -rf
 #                        .claude` -> reload every formerly-active extension -> restore the
@@ -61,6 +76,7 @@
 #   deploy-headless.sh [TARGET_REPO]         # resync (default): bootstrap-safe, non-destructive
 #   deploy-headless.sh --wipe [TARGET_REPO]  # full destructive wipe+regenerate (see above)
 #   deploy-headless.sh --dry-run [...]       # report what would run; deploy nothing
+#   deploy-headless.sh --minimal-init DIR [TARGET_REPO]  # skip the lazy.nvim/init.lua bootstrap
 #
 # Exit codes:
 #   0  deploy completed (artifact count reported) and verification (fast gates) passed
@@ -88,18 +104,26 @@ main() {
   local DRY_RUN=false
   local WIPE=false
   local TARGET=""
+  local MINIMAL_INIT_DIR=""
 
   while [ $# -gt 0 ]; do
     case "$1" in
       --dry-run) DRY_RUN=true; shift ;;
       --wipe) WIPE=true; shift ;;
+      --minimal-init)
+        if [ $# -lt 2 ] || [ -z "$2" ]; then
+          echo "ERROR: --minimal-init requires a DIR argument (the nvim config directory)" >&2
+          exit 1
+        fi
+        MINIMAL_INIT_DIR="$2"; shift 2
+        ;;
       -h|--help)
-        sed -n '2,75p' "$0" | sed 's/^# \{0,1\}//'
+        sed -n '2,91p' "$0" | sed 's/^# \{0,1\}//'
         exit 0
         ;;
       -*)
         echo "ERROR: unknown flag: $1" >&2
-        echo "Usage: deploy-headless.sh [--dry-run] [--wipe] [TARGET_REPO]" >&2
+        echo "Usage: deploy-headless.sh [--dry-run] [--wipe] [--minimal-init DIR] [TARGET_REPO]" >&2
         exit 1
         ;;
       *)
@@ -111,6 +135,11 @@ main() {
         ;;
     esac
   done
+
+  if [ -n "$MINIMAL_INIT_DIR" ] && [ ! -d "$MINIMAL_INIT_DIR" ]; then
+    echo "ERROR: --minimal-init directory does not exist: $MINIMAL_INIT_DIR" >&2
+    exit 1
+  fi
 
   TARGET="${TARGET:-$(pwd)}"
 
@@ -204,13 +233,23 @@ main() {
   # vim.fn.getcwd() implicitly -- cwd is still set to TARGET for module resolution consistency
   # with the rest of the headless invocation. stderr is kept: a require failure or Lua error
   # must remain visible rather than be swallowed.
+  #
+  # NVIM_ARGS: the base nvim invocation, extended by --minimal-init to `--clean --cmd "set
+  # rtp+=DIR"` instead of the default plain `nvim --headless` (which loads init.lua and pays the
+  # full lazy.nvim plugin bootstrap). Absent --minimal-init this array is unchanged from before
+  # the flag existed, so default-mode behavior stays byte-for-byte identical.
+  local -a NVIM_ARGS=(nvim --headless)
+  if [ -n "$MINIMAL_INIT_DIR" ]; then
+    NVIM_ARGS+=(--clean --cmd "set rtp+=${MINIMAL_INIT_DIR}")
+  fi
+
   local output
   if [ "$WIPE" = "true" ]; then
-    output=$(cd "$TARGET" && nvim --headless \
+    output=$(cd "$TARGET" && "${NVIM_ARGS[@]}" \
       -c "lua local ok1, ext_config = pcall(require, '${EXT_CONFIG_MODULE}'); local ok2, ext_init = pcall(require, '${EXT_INIT_MODULE}'); if not (ok1 and ok2) then print('DEPLOY_ERROR require: ' .. tostring(ok1 and ext_init or ext_config)) else local manager = ext_init.create(ext_config.claude()); local pok, wok, result = pcall(manager.wipe, {project_dir = '${TARGET}'}); if not pok then print('DEPLOY_ERROR call: ' .. tostring(wok)) elseif not wok then print('DEPLOY_ERROR wipe-refused: ' .. tostring(result)) elseif #result.failed > 0 then local msgs = {}; for _, f in ipairs(result.failed) do table.insert(msgs, f.name .. ': ' .. tostring(f.error)) end; print('DEPLOY_ERROR wipe-partial: ' .. table.concat(msgs, '; ')) else print('DEPLOY_COUNT=' .. tostring(#result.loaded)) end end" \
       -c "qa!" 2>&1) || true
   else
-    output=$(cd "$TARGET" && nvim --headless \
+    output=$(cd "$TARGET" && "${NVIM_ARGS[@]}" \
       -c "lua local ok1, ext_config = pcall(require, '${EXT_CONFIG_MODULE}'); local ok2, ext_init = pcall(require, '${EXT_INIT_MODULE}'); if not (ok1 and ok2) then print('DEPLOY_ERROR require: ' .. tostring(ok1 and ext_init or ext_config)) else local manager = ext_init.create(ext_config.claude()); local bok, bsucc, berr = pcall(manager.load, 'core', {confirm = false, force = true, project_dir = '${TARGET}'}); if not bok then print('DEPLOY_ERROR bootstrap-call: ' .. tostring(bsucc)) elseif not bsucc then print('DEPLOY_ERROR bootstrap: ' .. tostring(berr)) else local rok, result = pcall(manager.resync_all, {project_dir = '${TARGET}'}); if not rok then print('DEPLOY_ERROR resync-call: ' .. tostring(result)) elseif #result.failed > 0 then local msgs = {}; for _, f in ipairs(result.failed) do table.insert(msgs, f.name .. ': ' .. tostring(f.error)) end; print('DEPLOY_ERROR resync-partial: ' .. table.concat(msgs, '; ')) else print('DEPLOY_COUNT=' .. tostring(#result.succeeded)) end end end" \
       -c "qa!" 2>&1) || true
   fi
@@ -245,7 +284,11 @@ main() {
   # 0 or 3 -- this restructuring changes nothing about deploy-headless.sh's documented exit-code
   # contract (see the header's `# Exit codes:` block).
   local verify_rc=0
-  if bash "$TARGET/.claude/scripts/verify-deploy.sh" --skip-slow "$TARGET"; then
+  local -a VERIFY_ARGS=(--skip-slow)
+  if [ -n "$MINIMAL_INIT_DIR" ]; then
+    VERIFY_ARGS+=(--minimal-init "$MINIMAL_INIT_DIR")
+  fi
+  if bash "$TARGET/.claude/scripts/verify-deploy.sh" "${VERIFY_ARGS[@]}" "$TARGET"; then
     echo "[deploy-headless] Verification passed."
     verify_rc=0
   else

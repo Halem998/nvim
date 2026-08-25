@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "Add a minimal-init escape hatch for the headless nvim calls",
+  "started_at": "2026-08-25T05:40:00Z",
+  "last_updated": "2026-08-25T05:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Probe first: clone repo, run full deploy via --clean invocation directly, confirm DEPLOY_COUNT and .claude/ populated", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add opt-in escape hatch to deploy-headless.sh, default OFF", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 3, "description": "rtp directory explicit and overridable, not derived from TARGET", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Apply same escape hatch to verify-deploy.sh's two nvim call sites", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 5, "description": "Document the hatch in both script headers", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-run scratch-clone deploy through real deploy-headless.sh with hatch on, confirm deploy lands and inline verify-deploy.sh --skip-slow runs", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "inline nvim -c \"lua ...\" via bash double-quoted string with embedded single quotes for the CLONE path", "result": "failed", "reason": "E5107 Lua parse error 'end expected near eof' -- likely bash/nvim arg quoting interaction with the hyphenated scratchpad path; switched to writing the lua to a temp file and using -c luafile instead, which worked cleanly"}
+  ],
+  "handoff_count": 0,
+  "verification": {
+    "probe_1_deploy": "manager.load('core',...)+manager.resync_all() under nvim --clean --cmd rtp+=... into scratch clone: DEPLOY_COUNT=6, 548 files under .claude/",
+    "probe_2_verify_all": "manager.verify_all() under same --clean invocation: VERIFY_DONE count=6, 0 VERIFY_FINDING lines",
+    "probe_3_find_orphans": "manager.find_orphans() under same --clean invocation: ORPHAN_DONE checked=546, 0 ORPHAN_FINDING lines",
+    "end_to_end_hatch_test": "bash agent-system/extensions/core/scripts/deploy-headless.sh --minimal-init <nvim-config-dir> <scratch-clone> -- deploy landed (Resynced 6 extension(s)), inline verify-deploy.sh --skip-slow ran all 24 checks including gate5 verify_all PASS, gate13 find_orphans PASS, gate14 PASS; only pre-existing gate3 doc-lint (Rule R, not yet fixed) failed, matching working-repo state exactly. Exit 3 as expected (verification found the pre-existing doc-lint failure).",
+    "unset_regression_check": "bash .claude/scripts/verify-deploy.sh --findings --quiet --skip-slow with NO --minimal-init: findings set identical (0-line diff) to Phase 3 baseline, 1 of 24 checks failed -- confirms byte-for-byte unchanged default-mode behavior",
+    "bash_n": "clean on both deploy-headless.sh and verify-deploy.sh"
+  }
+}

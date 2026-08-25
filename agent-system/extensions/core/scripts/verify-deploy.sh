@@ -21,7 +21,20 @@
 # it stands for, so a reader can re-run any single line by hand rather than trusting this script.
 #
 # Usage:
-#   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [TARGET_REPO]
+#   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [--minimal-init DIR] [TARGET_REPO]
+#
+# Minimal-init hatch (--minimal-init DIR, additive-only):
+#   Opt-in escape hatch for CI/container environments with no user nvim config: this script's two
+#   nvim-backed gates (gate5 verify_all, gate13 find_orphans) run under `nvim --headless --clean
+#   --cmd "set rtp+=DIR"` instead of the default plain `nvim --headless` (which loads init.lua and
+#   pays the full lazy.nvim plugin bootstrap). DIR is the nvim CONFIG directory, not necessarily
+#   $TARGET (they coincide in CI, where the checkout IS the nvim config repo, but differ for a
+#   consumer repo) -- always explicit, never derived. Default OFF: absent this flag, both gates'
+#   behavior is byte-for-byte unchanged (plain `nvim --headless`, same as before this flag
+#   existed). Confirmed safe by a direct probe (manager.load/resync_all/verify_all/find_orphans
+#   all succeed under --clean with only rtp set) before this flag was added -- the extension
+#   manager has no plugin dependency. See deploy-headless.sh's header for its own matching flag,
+#   which this script's flag is designed to be threaded through from.
 #
 # Exit codes:
 #   0  all checks passed
@@ -59,6 +72,7 @@ QUIET=false
 FINDINGS=false
 SKIP_SLOW=false
 TARGET=""
+MINIMAL_INIT_DIR=""
 FINDINGS_LIST=()
 
 while [ $# -gt 0 ]; do
@@ -66,8 +80,16 @@ while [ $# -gt 0 ]; do
     --quiet) QUIET=true; shift ;;
     --findings) FINDINGS=true; shift ;;
     --skip-slow) SKIP_SLOW=true; shift ;;
+    --minimal-init)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --minimal-init requires a DIR argument (the nvim config directory)" >&2
+        [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --minimal-init requires a DIR argument"
+        exit 2
+      fi
+      MINIMAL_INIT_DIR="$2"; shift 2
+      ;;
     -h|--help)
-      sed -n '2,54p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,68p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     -*)
@@ -79,6 +101,17 @@ while [ $# -gt 0 ]; do
       TARGET="$1"; shift ;;
   esac
 done
+
+# NVIM_ARGS: base nvim invocation for this script's two headless call sites (gate5 verify_all,
+# gate13 find_orphans). Extended by --minimal-init to `--clean --cmd "set rtp+=DIR"` instead of
+# the default plain `nvim --headless` (which loads init.lua and pays the full lazy.nvim plugin
+# bootstrap). Absent --minimal-init this array is unchanged from before the flag existed, so
+# default-mode behavior stays byte-for-byte identical. See deploy-headless.sh's header for the
+# fuller rationale (DIR is the nvim config directory, not always $TARGET, always explicit).
+declare -a NVIM_ARGS=(nvim --headless)
+if [ -n "$MINIMAL_INIT_DIR" ]; then
+  NVIM_ARGS+=(--clean --cmd "set rtp+=${MINIMAL_INIT_DIR}")
+fi
 
 TARGET="${TARGET:-$(pwd)}"
 
@@ -94,6 +127,12 @@ if [ ! -d "$CLAUDE_DIR" ]; then
   echo "ERROR: no deploy tree at $CLAUDE_DIR -- nothing to verify." >&2
   echo "Run: bash deploy-headless.sh $TARGET" >&2
   [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: no deploy tree at $CLAUDE_DIR"
+  exit 2
+fi
+
+if [ -n "$MINIMAL_INIT_DIR" ] && [ ! -d "$MINIMAL_INIT_DIR" ]; then
+  echo "ERROR: --minimal-init directory does not exist: $MINIMAL_INIT_DIR" >&2
+  [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --minimal-init directory does not exist: $MINIMAL_INIT_DIR"
   exit 2
 fi
 
@@ -305,7 +344,7 @@ if [ ! -d "$TARGET/agent-system/extensions" ]; then
 elif ! command -v nvim >/dev/null 2>&1; then
   fail "nvim not found on PATH; cannot run the manifest-driven verification"
 else
-  verify_output=$(cd "$TARGET" && nvim --headless \
+  verify_output=$(cd "$TARGET" && "${NVIM_ARGS[@]}" \
     -c "lua local ok1, ext_config = pcall(require, 'neotex.plugins.ai.shared.extensions.config'); local ok2, ext_init = pcall(require, 'neotex.plugins.ai.shared.extensions.init'); if not (ok1 and ok2) then print('VERIFY_ERROR require: ' .. tostring(ok1 and ext_init or ext_config)) else local manager = ext_init.create(ext_config.claude()); local pok, results = pcall(manager.verify_all, '${TARGET}'); if not pok then print('VERIFY_ERROR call: ' .. tostring(results)) else for _, v in ipairs(results) do if v.status ~= 'passed' then for _, err in ipairs(v.errors or {}) do print('VERIFY_FINDING ' .. v.extension .. ': ' .. err) end end end print('VERIFY_DONE count=' .. tostring(#results)) end end" \
     -c "qa!" 2>&1)
 
@@ -579,7 +618,7 @@ if [ ! -d "$TARGET/agent-system/extensions" ]; then
 elif ! command -v nvim >/dev/null 2>&1; then
   fail "nvim not found on PATH; cannot run whole-tree orphan detection"
 else
-  orphan_output=$(cd "$TARGET" && nvim --headless \
+  orphan_output=$(cd "$TARGET" && "${NVIM_ARGS[@]}" \
     -c "lua local ok1, ext_config = pcall(require, 'neotex.plugins.ai.shared.extensions.config'); local ok2, ext_init = pcall(require, 'neotex.plugins.ai.shared.extensions.init'); if not (ok1 and ok2) then print('ORPHAN_ERROR require: ' .. tostring(ok1 and ext_init or ext_config)) else local manager = ext_init.create(ext_config.claude()); local pok, result = pcall(manager.find_orphans, '${TARGET}'); if not pok then print('ORPHAN_ERROR call: ' .. tostring(result)) else for _, rel in ipairs(result.orphans) do print('ORPHAN_FINDING orphan file: ' .. rel) end for _, path in ipairs(result.ghost_index_entries) do print('ORPHAN_FINDING ghost index row: ' .. path) end print('ORPHAN_DONE checked=' .. tostring(result.checked)) end end" \
     -c "qa!" 2>&1)
 
