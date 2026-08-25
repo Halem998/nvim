@@ -324,30 +324,34 @@ the opening probe step exists specifically to confirm them before any script is 
 
 ---
 
-### Phase 5: Rewrite the CI workflow to deploy-then-verify [NOT STARTED]
+### Phase 5: Rewrite the CI workflow to deploy-then-verify [COMPLETED]
 
 **Goal**: Replace the single missing-file invocation with a deploy step followed by the full
 aggregator run, so CI and local deploy share one entry point.
 
 **Tasks**:
-- [ ] Rewrite `.github/workflows/check-extension-docs.yml`: rename the workflow and job to reflect
-      that it now runs the full gate suite, not just the doc-lint
-- [ ] Steps: checkout (`actions/checkout@v4`) -> install neovim on the runner (not preinstalled on
+- [x] Rewrite `.github/workflows/check-extension-docs.yml`: rename the workflow and job to reflect
+      that it now runs the full gate suite, not just the doc-lint *(completed: "Full Gate Suite" /
+      full-gate-suite)*
+- [x] Steps: checkout (`actions/checkout@v4`) -> install neovim on the runner (not preinstalled on
       `ubuntu-latest`) -> deploy `.claude/` via `deploy-headless.sh` with the Phase 4 minimal-init
       hatch enabled and the checkout as explicit `TARGET` -> run
-      `bash .claude/scripts/verify-deploy.sh "$GITHUB_WORKSPACE"`
-- [ ] Run the aggregator **without** `--skip-slow`: ACCEPTANCE says "CI runs the full suite", and
+      `bash .claude/scripts/verify-deploy.sh "$GITHUB_WORKSPACE"` *(completed)*
+- [x] Run the aggregator **without** `--skip-slow`: ACCEPTANCE says "CI runs the full suite", and
       the deferred gate 8 (`tests/run-all.sh`) is exactly the kind of coverage a push gate should
-      not silently drop. Record this as a deliberate choice in a workflow comment
-- [ ] Add `--findings` so a red build's log carries the machine-diffable `FINDING ` set, not just
-      a narrative failure
-- [ ] Treat `verify-deploy.sh` exit 2 ("cannot run") as failure, per that script's own header —
+      not silently drop. Record this as a deliberate choice in a workflow comment *(completed)*
+- [x] Add `--findings` so a red build's log carries the machine-diffable `FINDING ` set, not just
+      a narrative failure *(completed)*
+- [x] Treat `verify-deploy.sh` exit 2 ("cannot run") as failure, per that script's own header —
       never as a pass. Confirm no step swallows a non-zero exit (no `|| true`, no `continue-on-error`)
-- [ ] Comment in the YAML which gate scripts are deliberately NOT run and why:
+      *(completed: grep confirms neither pattern appears in any step)*
+- [x] Comment in the YAML which gate scripts are deliberately NOT run and why:
       `check-deploy-freshness.sh` (always exits 0, structurally cannot gate) and
       `check-consumer-freshness.sh` (opt-in whole-fleet audit of other repos, not a per-repo gate)
-- [ ] Keep the existing triggers (`push` to master, `pull_request`) — ACCEPTANCE requires every push
-- [ ] Lint the YAML for syntax before committing
+      *(completed)*
+- [x] Keep the existing triggers (`push` to master, `pull_request`) — ACCEPTANCE requires every push
+      *(completed)*
+- [x] Lint the YAML for syntax before committing *(completed: python3 yaml.safe_load parses cleanly)*
 
 **Timing**: 0.75 hours
 

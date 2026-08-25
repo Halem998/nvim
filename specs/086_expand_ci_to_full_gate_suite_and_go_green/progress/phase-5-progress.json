@@ -1,0 +1,26 @@
+{
+  "phase": 5,
+  "phase_name": "Rewrite the CI workflow to deploy-then-verify",
+  "started_at": "2026-08-25T06:00:00Z",
+  "last_updated": "2026-08-25T06:08:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite workflow: rename workflow/job to reflect full gate suite", "status": "done", "files_touched": [".github/workflows/check-extension-docs.yml"]},
+    {"id": 2, "description": "Steps: checkout -> install neovim -> deploy with hatch -> verify-deploy.sh", "status": "done", "files_touched": [".github/workflows/check-extension-docs.yml"]},
+    {"id": 3, "description": "Run aggregator without --skip-slow, document as deliberate", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Add --findings", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Treat exit 2 as failure, confirm no step swallows non-zero exit", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Comment which gate scripts deliberately not run and why", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Keep existing triggers (push to master, pull_request)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Lint YAML for syntax", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": {
+    "yaml_parses": "python3 yaml.safe_load succeeds; 'on' key normalizes to boolean True per YAML 1.1 (expected/harmless -- GitHub's own parser is YAML-1.1-aware and handles this correctly; the original file already used the same unquoted 'on:' convention)",
+    "no_swallowed_exit": "grep for '|| true' and 'continue-on-error' across the file matches only the explanatory prose comment, not any actual step",
+    "deliberate_exclusions_named": "check-deploy-freshness.sh and check-consumer-freshness.sh both named with rationale in header comment",
+    "triggers_unchanged": "push:[master] and pull_request kept from original file",
+    "note": "deploy-headless.sh's own inline verify (fast gates, --skip-slow) can already fail the 'Deploy .claude/ from the source store' step before the full-suite step runs -- this is correct: no need to run the slow full suite if fast gates are already red"
+  }
+}

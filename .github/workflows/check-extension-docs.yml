@@ -1,9 +1,49 @@
-name: Extension Docs Gate
+name: Full Gate Suite
 
-# Runs the deployed-vs-source drift/orphan gate (agent-system/extensions/core/scripts/
-# check-extension-docs.sh, dual-write deployed at .claude/scripts/check-extension-docs.sh).
-# Fails the build on any manifest drift, undeclared source, deployed-only orphan (no
-# provides.<category> declaration in any extension manifest), or broken deployed symlink.
+# Deploy-then-verify: materializes the .claude/ deploy tree from the source store
+# (agent-system/extensions/**), then runs the full gate suite via the single shared aggregator
+# scripts/verify-deploy.sh -- the SAME aggregator scripts/deploy-headless.sh already invokes
+# locally on every developer redeploy. There is exactly one definition of "verified", not two.
+#
+# Why a deploy step comes first: .claude/ is fully gitignored in this repo (`git ls-files
+# .claude` is empty), so a fresh checkout has no .claude/ tree at all. Any gate that inspects
+# deployed files (which is most of them) fails with "no such file or directory" without a deploy
+# step first. See agent-system/extensions/core/context/patterns/ci-deploy-tree-bootstrap.md for
+# the full recipe this workflow implements.
+#
+# Why --minimal-init: this checkout has no user nvim config, no lazy.nvim, and no network access
+# to plugin repositories. The extension manager (neotex.plugins.ai.shared.extensions) has no
+# plugin dependency -- confirmed by a direct probe (manager.load/resync_all/verify_all/
+# find_orphans all succeed under `nvim --clean` with only rtp set) -- so both nvim-invoking
+# scripts here (deploy-headless.sh and verify-deploy.sh) are told, via --minimal-init
+# "$GITHUB_WORKSPACE", to skip init.lua and the lazy.nvim plugin bootstrap entirely. In this repo
+# the checkout IS the nvim config directory, so the minimal-init DIR and the deploy TARGET
+# coincide (both $GITHUB_WORKSPACE); this is a repo-specific coincidence, not a general rule --
+# see deploy-headless.sh's header for the general DIR-vs-TARGET distinction.
+#
+# Full suite, no --skip-slow: ACCEPTANCE for this workflow is "CI runs the full gate suite", and
+# the one gate --skip-slow would defer (gate 8, the shell test suite runner tests/run-all.sh) is
+# exactly the kind of coverage a push gate should not silently drop. This is a deliberate choice,
+# not an oversight -- see the Risks table in the implementing plan for the "revisit if it becomes
+# a bottleneck" fallback (a schedule-triggered full run supplementing an on-push fast run).
+#
+# --findings: makes a red build's log carry the normalized, machine-diffable FINDING set (not
+# just a narrative failure), matching the same flag skill-orchestrate's inter-cycle redeploy
+# checkpoint uses to diff two verify-deploy.sh captures.
+#
+# Deliberately NOT run here (both by design, not oversight):
+#   - check-deploy-freshness.sh: its own header states it "ALWAYS EXITS 0 ... this is not a
+#     preflight gate" -- it is structurally incapable of failing a build, so running it here
+#     would add cost with zero gating value.
+#   - check-consumer-freshness.sh: an opt-in whole-fleet audit of OTHER repos on the operator's
+#     machine (BimodalLogic, ModelChecker, cslib, ...), not a per-repo gate. Running it in this
+#     repo's CI would assert on repositories the runner has never checked out and cannot see.
+#
+# Exit-code contract: verify-deploy.sh's own header documents exit 2 ("cannot run" -- target
+# missing, or no deploy tree to inspect) as a FAILURE, never a pass, on par with exit 1. No step
+# below swallows a non-zero exit (no `|| true`, no `continue-on-error`), so exit 2 fails this job
+# exactly like exit 1 does -- both surface as a non-zero `bash` step, which GitHub Actions marks
+# failed by default.
 
 on:
   push:
@@ -11,11 +51,25 @@ on:
   pull_request:
 
 jobs:
-  check-extension-docs:
+  full-gate-suite:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run check-extension-docs.sh
-        run: bash .claude/scripts/check-extension-docs.sh
+      - name: Install neovim
+        run: |
+          curl -fsSL -o /tmp/nvim-linux-x86_64.tar.gz \
+            https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+          tar -C /tmp -xzf /tmp/nvim-linux-x86_64.tar.gz
+          echo "/tmp/nvim-linux-x86_64/bin" >> "$GITHUB_PATH"
+
+      - name: Deploy .claude/ from the source store
+        run: |
+          bash agent-system/extensions/core/scripts/deploy-headless.sh \
+            --minimal-init "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE"
+
+      - name: Run the full gate suite (verify-deploy.sh, no --skip-slow)
+        run: |
+          bash .claude/scripts/verify-deploy.sh \
+            --findings --minimal-init "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE"
