@@ -71,6 +71,9 @@
       "general-implementation-agent"
     ],
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 4,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

@@ -1770,7 +1770,7 @@
     {
       "project_number": 86,
       "project_name": "expand_ci_to_full_gate_suite_and_go_green",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "high",
@@ -1785,7 +1785,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-08-25T12:21:36Z",
+      "last_updated": "2026-08-25T14:07:47Z",
       "session_id": "sess_1787659350_14cea9",
       "artifacts": [
         {
@@ -1797,8 +1797,14 @@
           "path": "specs/086_expand_ci_to_full_gate_suite_and_go_green/plans/01_expand-ci-full-gate-suite.md",
           "type": "plan",
           "summary": "7-phase plan to make CI deploy .claude/ then run the full verify-deploy.sh gate suite, fix the 19 live gate failures, and prove the reintroduced-mismatch acceptance test."
+        },
+        {
+          "path": "specs/086_expand_ci_to_full_gate_suite_and_go_green/summaries/01_expand-ci-full-gate-suite-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: CI deploy-then-verify rewrite, gate14 wiring, minimal-init hatch, Rule R/S fixes, clean-clone rehearsal, real-repo verify-deploy PASS 25/0."
         }
-      ]
+      ],
+      "completion_summary": "CI now materializes .claude/ from the source store then runs the full verify-deploy.sh gate suite (25 checks) instead of failing with exit 127 on every run. All 19 originally-live gate failures fixed at the source, check-runtime-file-tracking.sh wired in as gate14, a minimal-init nvim hatch removes the lazy.nvim bootstrap from CI, and the reintroduced-line_count-mismatch acceptance test is demonstrated in a clean-clone rehearsal (positive: 25 checks/0 failures/0 findings; negative: correctly red naming the edited file; revert: back to green). Confirmed with a real-repo redeploy + full verify-deploy.sh --findings run (not just the scratch clone): PASS -- 25 check(s), 0 failure(s), empty FINDING set."
     },
     {
       "project_number": 87,

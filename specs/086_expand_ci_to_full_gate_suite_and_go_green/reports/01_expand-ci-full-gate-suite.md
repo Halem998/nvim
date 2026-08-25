@@ -9,6 +9,7 @@
   workflow, specs/TODO.md task 82/85 history
 **Artifacts**: this report
 **Standards**: report-format.md, subagent-return.md
+- **Effort**: TBD
 
 ## Executive Summary
 

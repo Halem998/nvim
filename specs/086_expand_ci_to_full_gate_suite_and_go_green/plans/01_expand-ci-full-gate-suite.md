@@ -1,7 +1,7 @@
 # Implementation Plan: Task #86
 
 - **Task**: 86 - Expand ci to full gate suite and go green
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: 82 (Wire deploy verification into deploy headless) — COMPLETED, verified in code
 - **Research Inputs**: specs/086_expand_ci_to_full_gate_suite_and_go_green/reports/01_expand-ci-full-gate-suite.md

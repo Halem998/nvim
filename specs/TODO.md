@@ -11,15 +11,14 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,86,94,97,100 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,64,66,75,76,87,98 | 29,42,74,86,97 | agent-system, extensions, essential-refactor |
-| 3 | 88 | 87 | essential-refactor |
-| 4 | 44 | 88 | essential-refactor |
-| 5 | 89 | 44 | essential-refactor |
-| 6 | 90 | 89 | essential-refactor |
-| 7 | 48 | 90 | essential-refactor |
-| 8 | 50 | 48 | essential-refactor |
-| 9 | 91 | 50 | status-marker-lifecycle |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,97,100 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,64,66,75,76,88,98 | 29,42,74,87,97 | agent-system, extensions, essential-refactor |
+| 3 | 44 | 88 | essential-refactor |
+| 4 | 89 | 44 | essential-refactor |
+| 5 | 90 | 89 | essential-refactor |
+| 6 | 48 | 90 | essential-refactor |
+| 7 | 50 | 48 | essential-refactor |
+| 8 | 91 | 50 | status-marker-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -66,14 +65,13 @@ next_project_number: 101
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-86 [IMPLEMENTING] — .github/workflows/check-extension-docs.yml is the repository's ON
-  └─ 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
-    └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
-      └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-        └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-          └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-            └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-              └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
+  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+    └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+      └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+        └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+          └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+            └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 
 ### Team Mode Lifecycle
 
@@ -583,12 +581,13 @@ ACCEPTANCE: convention documented, lint in place and green, and one pilot applic
 ---
 
 ### 86. Expand ci to full gate suite and go green
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 82
 - **Research**: [086_expand_ci_to_full_gate_suite_and_go_green/reports/01_expand-ci-full-gate-suite.md]
 - **Plan**: [086_expand_ci_to_full_gate_suite_and_go_green/plans/01_expand-ci-full-gate-suite.md]
+- **Summary**: [086_expand_ci_to_full_gate_suite_and_go_green/summaries/01_expand-ci-full-gate-suite-summary.md]
 
 **Description**: .github/workflows/check-extension-docs.yml is the repository's ONLY CI workflow. It runs exactly one of the nine check/lint scripts, and it exits 1 today. The single automated enforcement point in the repo is red and has been ignored -- which makes it functionally advisory, the same shape as the non-blocking hooks.
 
