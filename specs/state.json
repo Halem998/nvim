@@ -1997,11 +1997,12 @@
         {
           "path": "specs/097_lake_build_concurrency_memory_guard/summaries/01_lake-build-guard-summary.md",
           "type": "summary",
-          "summary": "Shipped lake-build-guard.sh (flock serialization + result sharing with a documented staleness policy, PSI/swap preflight, opt-in systemd-run cgroup bounding) plus its 13-case toolchain-free test suite and two manifest registrations; all 7 plan phases closed, none under .claude/**."
+          "summary": "Shipped lake-build-guard.sh plus its 13-case toolchain-free test suite and two core manifest registrations; all 7 plan phases closed."
         }
       ],
       "created": "2026-08-24T23:21:51Z",
-      "last_updated": "2026-08-25T16:31:06Z"
+      "last_updated": "2026-08-25T16:31:06Z",
+      "completion_summary": "Shipped agent-system/extensions/core/scripts/lake-build-guard.sh (status/preflight/build subcommands, flock serialization with result sharing and a documented staleness policy, opt-in systemd-run --user --scope cgroup bounding, PSI+swap memory preflight, lock-holder-state detection with zero-query self-exclusion) plus its 13-case toolchain-free regression suite and two manifest.json registrations. All 10 task ACCEPTANCE items verified; all 7 plan phases closed (6 COMPLETED, Phase 7 COMPLETED WITH EXCLUSIONS for a deploy-gated check this agent had no authority to run directly, with equivalent manual verification substituted)."
     },
     {
       "project_number": 98,
