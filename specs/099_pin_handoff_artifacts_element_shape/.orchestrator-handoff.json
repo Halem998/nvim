@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 3,
+  "summary": "Root-caused the artifacts[] shape ambiguity to .orchestrator-handoff.json, not .return-meta.json (already correctly pinned in all three checked research-agent contracts). lean-research-agent.md and lean-research-hard-agent.md carry no Defensive-case guidance for this file at all, unlike general-research-agent.md which has one but omits the artifacts shape. Recommends prose additions to handoff-schema.md/return-metadata-file.md plus new/extended Defensive-case sections in the three agent contracts, with consumer-side validation and scope-expansion follow-ups flagged for planning.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md",
+      "summary": "Root-causes the artifacts[] shape ambiguity to .orchestrator-handoff.json and recommends one-normative-place fixes plus flagged follow-ups."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "plan",
+  "continuation_path": null
+}

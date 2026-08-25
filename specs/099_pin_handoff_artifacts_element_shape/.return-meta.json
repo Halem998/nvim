@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md",
+      "summary": "Root-causes the artifacts[] shape ambiguity to .orchestrator-handoff.json (not .return-meta.json, which is already correctly pinned), identifies the missing Defensive-case guidance in lean-research-agent.md/lean-research-hard-agent.md, and recommends one-normative-place fixes plus flagged consumer-side and scope follow-ups."
+    }
+  ],
+  "next_steps": "Run /plan 99 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1787634022_3ba5fb_99",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent system, .return-meta.json's artifacts[] shape is strictly pinned (object required, four-layer enforcement) but .orchestrator-handoff.json's artifacts[] shape is only shown by worked example (JSON schema, wrap-up.md, handoff-schema.md) with no explicit 'never a bare string' prose sentence, and no validator actually checks element-level type. When auditing a schema-adjacent pair of files for ambiguity, check whether a prohibition is stated as an explicit negative sentence versus merely implied by a required-fields list -- the latter is what actually drifts in practice even when a JSON Schema structurally forbids it, because no ad hoc jq validator re-derives full JSON-Schema semantics.",
+      "category": "PATTERN",
+      "source_artifact": "specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrator-handoff", "artifacts-shape", "schema-ambiguity", "validate-handoff", "bare-string"]
+    },
+    {
+      "content": "Three agent contracts (general-research-agent.md, general-research-hard-agent.md, general-implementation-agent.md) already carry a 'Defensive case, if a handoff is written anyway' paragraph for the documented-never-but-sometimes-happens scenario of a base-mode/research agent being instructed to write .orchestrator-handoff.json. This is the correct established pattern to extend (not invent) when a new agent needs the same defensive guidance -- e.g. lean-research-agent.md and lean-research-hard-agent.md were found to have no such paragraph at all despite reproducing the exact scenario it exists to cover.",
+      "category": "PATTERN",
+      "source_artifact": "specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["defensive-case", "orchestrator-handoff", "dispatch_seq", "agent-contract-pattern"]
+    }
+  ]
+}
