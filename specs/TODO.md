@@ -11,7 +11,7 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,98,100 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,64,75,76,88 | 29,42,74,87 | agent-system, extensions, essential-refactor |
 | 3 | 44 | 88 | essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
@@ -41,7 +41,6 @@ next_project_number: 101
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-98 [IMPLEMENTING] — Integrate the shared Lean build guard into the lean extension: ro
 
 ### Literature
 
@@ -146,12 +145,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 98. Route lean extension builds through the guard and rewrite the multi-instance operations anchor
 - **Effort**: 3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 97
 - **Research**: [098_route_lean_builds_through_guard/reports/01_route-census-through-guard.md]
 - **Plan**: [098_route_lean_builds_through_guard/plans/01_guard-integration-and-anchor.md]
+- **Summary**: [098_route_lean_builds_through_guard/summaries/01_guard-integration-and-anchor-summary.md]
 
 **Description**: Integrate the shared Lean build guard into the lean extension: route the extension's own build-invoking script through it, decide and implement the lifecycle-hook wiring, and rewrite the multi-instance operations anchor from human-advisory prose into mechanism documentation with corrected figures.
 

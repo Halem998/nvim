@@ -2024,7 +2024,7 @@
     {
       "project_number": 98,
       "project_name": "route_lean_builds_through_guard",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Route lean extension builds through the guard and rewrite the multi-instance operations anchor",
@@ -2051,10 +2051,16 @@
           "path": "specs/098_route_lean_builds_through_guard/plans/01_guard-integration-and-anchor.md",
           "type": "plan",
           "summary": "Five-phase plan: tests-first falsifiability gate, three-way guard/lake presence branch behind LEAN_SORRY_CENSUS_GUARD_BIN, anchor rewrite to mechanism prose with corrected memory figures, and no-hook decision recorded."
+        },
+        {
+          "path": "specs/098_route_lean_builds_through_guard/summaries/01_guard-integration-and-anchor-summary.md",
+          "type": "summary",
+          "summary": "Routed lean-sorry-census.sh through lake-build-guard.sh via a three-way presence branch behind LEAN_SORRY_CENSUS_GUARD_BIN, added Fixtures F-I (14/14 green), rewrote multi-instance-optimization.md with corrected measured figures, confirmed manifest.json needed no edits."
         }
       ],
       "created": "2026-08-24T23:21:51Z",
-      "last_updated": "2026-08-25T16:44:21Z"
+      "last_updated": "2026-08-25T17:00:56Z",
+      "completion_summary": "Wired lake-build-guard.sh into lean-sorry-census.sh's --cross-check build (three-way degrade behind LEAN_SORRY_CENSUS_GUARD_BIN, all 14 test assertions green), recorded the no-lean-lifecycle-hook decision with reasons, and rewrote multi-instance-optimization.md from human-advisory prose into guard mechanism documentation with the measured 29.9 GB figure replacing the falsified 8GB/16GB+/60-80% claims."
     },
     {
       "project_number": 99,
