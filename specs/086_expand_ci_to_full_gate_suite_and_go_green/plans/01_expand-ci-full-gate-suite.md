@@ -215,29 +215,31 @@ than duplicated.
 
 ---
 
-### Phase 3: Wire check-runtime-file-tracking.sh into verify-deploy.sh [NOT STARTED]
+### Phase 3: Wire check-runtime-file-tracking.sh into verify-deploy.sh [COMPLETED]
 
 **Goal**: Make the aggregator actually cover the nine gate scripts by adding the one genuine
 per-repo gate that has zero callers anywhere in the repo today.
 
 **Tasks**:
-- [ ] Add a new gate to `agent-system/extensions/core/scripts/verify-deploy.sh` invoking
+- [x] Add a new gate to `agent-system/extensions/core/scripts/verify-deploy.sh` invoking
       `check-runtime-file-tracking.sh` from the repo root of `$TARGET`, following the existing
       gate pattern exactly (prints the command it stands for, increments `CHECKS`/`FAILURES`,
-      emits a `FINDING gate14 ...` line under `--findings`)
-- [ ] Use the next free label `gate14` — append, never renumber existing gate labels; the
+      emits a `FINDING gate14 ...` line under `--findings`) *(completed)*
+- [x] Use the next free label `gate14` — append, never renumber existing gate labels; the
       documented consumer contract (`skill-orchestrate` Stage MT-3 step 7) diffs sorted
-      `FINDING ` lines and must not see spurious churn
-- [ ] Decide and document whether the new gate is fast (it is — three `git check-ignore` sweeps)
+      `FINDING ` lines and must not see spurious churn *(completed)*
+- [x] Decide and document whether the new gate is fast (it is — three `git check-ignore` sweeps)
       and therefore NOT deferred by `--skip-slow`; `--skip-slow` must continue to skip gate 8 only
-- [ ] Update the script header: "fourteen gates" -> fifteen, `gate0 through gate13` ->
-      `gate0 through gate14`, `gate0`..`gate13` -> `gate0`..`gate14`
-- [ ] Grep for every other reference to the gate count or label range and update each in this same
+      *(completed: gate14 always runs, not gated on --skip-slow)*
+- [x] Update the script header: "fourteen gates" -> fifteen, `gate0 through gate13` ->
+      `gate0 through gate14`, `gate0`..`gate13` -> `gate0`..`gate14` *(completed)*
+- [x] Grep for every other reference to the gate count or label range and update each in this same
       commit — start from `grep -rn "gate13\|fourteen gates\|gate0\.\.gate13" agent-system/extensions`
       and widen to `regeneration-is-manual-only.md` and `batch-orchestration-guardrails.md`, both
-      of which document this script's contract
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh --findings --skip-slow` and
+      of which document this script's contract *(completed: 0 hits in either file, no edit needed)*
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh --findings --skip-slow` and
       diff its `FINDING ` set against the Phase 1 baseline: the only delta may be gate-14 lines
+      *(completed: only delta is the 3 Rule S lines Phase 2 removed; gate14 passed with 0 findings)*
 
 **Timing**: 1 hour
 

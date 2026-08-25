@@ -42,11 +42,11 @@
 #   fast/full split and exit-code contract.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all fourteen gates
-#   (gate0 through gate13) plus a gate0 "could not run" sentinel, printed to stdout after the
+#   Emits a normalized, one-per-line, machine-diffable findings set across all fifteen gates
+#   (gate0 through gate14) plus a gate0 "could not run" sentinel, printed to stdout after the
 #   final narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
 #   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
-#   gate label (`gate0`..`gate13`); the automated consumer is expected to invoke
+#   gate label (`gate0`..`gate14`); the automated consumer is expected to invoke
 #   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
 #   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
@@ -607,6 +607,41 @@ else
           FINDINGS_LIST+=("FINDING gate13 ${orphan_finding_line#*ORPHAN_FINDING }")
         done < <(echo "$orphan_output" | grep -o 'ORPHAN_FINDING .*')
       fi
+    fi
+  fi
+fi
+
+say ""
+
+# Gate 14: orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh).
+#
+# Runs on ANY target, not just the source store -- unlike gates 3/4/6/7/8/9/10 (which SKIP on a
+# deploy consumer because they inspect agent-system/extensions), this gate's three checks
+# (ignore coverage, no tracked ephemeral file, provenance not over-ignored) apply equally to
+# every repo that has a .claude/ deploy tree, since check-runtime-file-tracking.sh itself is
+# deployed by the core extension's manifest.json (provides.scripts) into every consumer. Invokes
+# the DEPLOYED copy from $TARGET's own repo root, since the script's probes
+# (specs/000_probe/...) are relative paths that must resolve against the target's own specs/
+# tree, not the source-store repo running this aggregator.
+#
+# Fast, not deferred by --skip-slow: three `git check-ignore` sweeps over a handful of probe
+# paths, nowhere near gate 8's tests/run-all.sh cost. --skip-slow continues to defer gate 8 only.
+say "14. Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)"
+CURRENT_GATE="gate14"
+if [ ! -x "$CLAUDE_DIR/scripts/check-runtime-file-tracking.sh" ] && [ ! -f "$CLAUDE_DIR/scripts/check-runtime-file-tracking.sh" ]; then
+  fail "check-runtime-file-tracking.sh not deployed"
+else
+  runtime_tracking_output=$(cd "$TARGET" && bash "$CLAUDE_DIR/scripts/check-runtime-file-tracking.sh" 2>&1)
+  runtime_tracking_status=$?
+  if [ "$runtime_tracking_status" -eq 0 ]; then
+    pass "runtime-file tracking policy: all three checks passed"
+  else
+    fail "runtime-file tracking policy reported failures" \
+         "re-run for detail: bash .claude/scripts/check-runtime-file-tracking.sh" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r runtime_tracking_line; do
+        FINDINGS_LIST+=("FINDING gate14 ${runtime_tracking_line#*FAIL }")
+      done < <(printf '%s\n' "$runtime_tracking_output" | sed -E 's/\x1b\[[0-9;]*m//g' | grep -E '^  FAIL ')
     fi
   fi
 fi
