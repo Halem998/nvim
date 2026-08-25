@@ -398,39 +398,39 @@ consciously accepted or added, not silently skipped.
 
 ---
 
-### Phase 6: Acceptance audit and twin-symmetry verification [NOT STARTED]
+### Phase 6: Acceptance audit and twin-symmetry verification [COMPLETED]
 
 **Goal**: Verify the whole pass against the task's acceptance criteria as one artifact, catching
 the failure modes (twin drift, prose duplication, missing `--timeout`, scope violations) that only
 a cross-file view can see.
 
 **Tasks**:
-- [ ] Confirm all nine files were touched and no others:
+- [x] Confirm all nine files were touched and no others:
       `git status --porcelain agent-system/extensions/lean/` matches exactly the file_scope list.
-- [ ] Confirm zero writes under `.claude/**`: `git status --porcelain .claude/` is empty.
-- [ ] Confirm no out-of-scope file was edited: `scripts/**`, `manifest.json`,
+- [x] Confirm zero writes under `.claude/**`: `git status --porcelain .claude/` is empty.
+- [x] Confirm no out-of-scope file was edited: `scripts/**`, `manifest.json`,
       `multi-instance-optimization.md`, `index-entries.json`, and `opencode-agents.json` are all
       unmodified.
-- [ ] Twin-symmetry check by content: both implementation agents carry an equivalent foreground-
+- [x] Twin-symmetry check by content: both implementation agents carry an equivalent foreground-
       build MUST NOT item; both research agents carry an equivalent Build Tools pointer; both
       implementation skills carry equivalent pointers. Compare by meaning, not by diff shape.
-- [ ] Guard-invocation audit: every `lake-build-guard.sh` invocation across all touched files
+- [x] Guard-invocation audit: every `lake-build-guard.sh` invocation across all touched files
       passes an explicit `--timeout`; none relies on the 600s default.
-- [ ] Anchor-uniqueness audit: no contract file restates the cap value, the per-module caching
+- [x] Anchor-uniqueness audit: no contract file restates the cap value, the per-module caching
       explanation, or the four passive progress checks. Only `long-builds.md` may.
-- [ ] Residual-`lake build` audit: `grep -rn "lake build" agent-system/extensions/lean/` — every
+- [x] Residual-`lake build` audit: `grep -rn "lake build" agent-system/extensions/lean/` — every
       remaining bare occurrence is either inside the anchor's own prose, an explicitly noted
       out-of-scope path (the census script prose, the `lean_build` MCP tool lines), or a
       historical/illustrative mention. Enumerate each and record why it is acceptable.
-- [ ] Task-reference check over all nine files (per the no-task-references-in-deliverables rule);
+- [x] Task-reference check over all nine files (per the no-task-references-in-deliverables rule);
       expect zero hits.
-- [ ] Confirm `agent-system/extensions/core/scripts/lake-build-guard.sh` exists and that the deploy
+- [x] Confirm `agent-system/extensions/core/scripts/lake-build-guard.sh` exists and that the deploy
       path cited in the contracts (`.claude/scripts/lake-build-guard.sh`) matches the flat deploy
       directory convention already used by `lean-sorry-census.sh`.
-- [ ] Record, in the implementation summary, the two decisions that must survive as decisions: the
+- [x] Record, in the implementation summary, the two decisions that must survive as decisions: the
       scoped-build inclusion with its serialization cost, and the `skill-lake-repair` Option (c)
       carve-out.
-- [ ] Record as a recommended follow-up (do not implement): add an `index-entries.json` entry for
+- [x] Record as a recommended follow-up (do not implement): add an `index-entries.json` entry for
       `long-builds.md`, and add a reciprocal pointer from `multi-instance-optimization.md` back to
       the new anchor when the owning task next rewrites it.
 
