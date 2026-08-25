@@ -1,34 +1,27 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1787672746_2d5892_98",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 98,
-  "dispatch_seq": 4,
-  "findings_count": 4,
+  "session_id": "sess_1787672746_2d5892_98",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/098_route_lean_builds_through_guard/reports/01_route-census-through-guard.md",
-      "summary": "Confirms lake-build-guard.sh's status/preflight/build CLI, exit-code bands, and silent-when-no-conflict contract directly from source; locates the exact lean-sorry-census.sh call site (lines 181-182) and its command-substitution shape that makes the guard (not run_in_background) the right instrument; recommends a dirname-relative sibling lookup plus an overridable env-var test seam (mirroring LAKE_BUILD_GUARD_LAKE_BIN) for guard-path resolution since census and guard scripts are only siblings post-deploy, not in the source store; confirms the lean manifest has no top-level hooks object today and that hook resolution keys strictly on task_type==lean4 (a coverage gap this task itself, type=meta, falls into), recommending 'no hook added' with reasoning recorded in the anchor doc; and documents the multi-instance-optimization.md rewrite requirements including the false 8GB/16GB figures contradicted by the measured 29.9GB/16-process figure, and the forward-reference coordination needed with task 66's not-yet-created long-builds.md sibling anchor."
+      "type": "plan",
+      "path": "specs/098_route_lean_builds_through_guard/plans/01_guard-integration-and-anchor.md",
+      "summary": "Five-phase, 3-hour plan routing lean-sorry-census.sh --cross-check through the lake build guard with a test-seam env var and three-way graceful degradation, recording the no-hook decision, and rewriting multi-instance-optimization.md as mechanism documentation with corrected memory figures."
     }
   ],
+  "phase_count": 5,
+  "estimated_hours": 3,
+  "dependency_waves": [[1, 3], [2, 4], [5]],
   "memory_candidates": [
     {
-      "content": "In this repo, extension-provided scripts deploy FLAT into .claude/scripts/ regardless of which extension's source store they originate from (manifest.json provides.scripts arrays are flat basename lists). So two scripts from different source-store extensions (e.g. agent-system/extensions/core/scripts/lake-build-guard.sh and agent-system/extensions/lean/scripts/lean-sorry-census.sh) become siblings only post-deploy, not in the source tree. A script that wants to invoke a sibling deployed script robustly should use a dirname-relative lookup ($(dirname \"${BASH_SOURCE[0]}\")/other-script.sh) defaulted via an overridable env var (e.g. FOO_OTHER_SCRIPT_BIN), mirroring the LAKE_BUILD_GUARD_LAKE_BIN test-seam precedent in lake-build-guard.sh, so tests running directly against the source store (where the sibling lookup would fail) can inject a fixture.",
+      "content": "Cross-extension script dependency in this agent system: extension scripts from DIFFERENT source-store extensions (agent-system/extensions/<ext>/scripts/) deploy FLAT into a single .claude/scripts/ directory, so they are siblings only post-deploy. A script in extension A invoking a script from extension B must therefore resolve it via $(dirname \"${BASH_SOURCE[0]:-$0}\")/<name>.sh, which is correct and CWD-independent post-deploy but always fails when the script is exercised directly from the source store -- which is exactly how the test suites invoke it. The resolution is an overridable env-var test seam, `:-`-defaulted to the dirname-relative sibling (precedent: LAKE_BUILD_GUARD_LAKE_BIN in lake-build-guard.sh), letting tests inject a stub without a real toolchain. Related: extension lifecycle hooks are NOT a substitute for this wiring -- skill_get_extension_dir keys hook resolution strictly on task_type, so an extension's hook never fires for general/meta-typed tasks touching that extension's files, and hooks are non-blocking by design (non-zero exit downgraded to a WARNING), so they can detect but never enforce.",
       "category": "PATTERN",
-      "source_artifact": "specs/098_route_lean_builds_through_guard/reports/01_route-census-through-guard.md",
+      "source_artifact": "specs/098_route_lean_builds_through_guard/plans/01_guard-integration-and-anchor.md",
       "confidence": 0.85,
-      "suggested_keywords": ["extension-deploy", "flat-scripts", "test-seam", "sibling-script-resolution", "lake-build-guard"]
-    },
-    {
-      "content": "Extension lifecycle hooks (skill_run_extension_hook in skill-base.sh) resolve strictly on the CURRENT TASK's task_type via skill_get_extension_dir, not on which files the task touches. A meta- or general-typed task that edits files belonging to a domain extension (e.g. lean) will never trigger that extension's preflight/context_injection hook, even though the edited files are squarely in that extension's domain. This is a structural coverage gap worth checking before proposing a hook as an enforcement mechanism for cross-cutting concerns.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/098_route_lean_builds_through_guard/reports/01_route-census-through-guard.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["extension-hooks", "task_type-routing", "coverage-gap", "skill-base", "preflight-hook"]
+      "suggested_keywords": ["cross-extension", "script-resolution", "test-seam", "flat-deploy", "lifecycle-hooks", "bash-source"]
     }
   ],
-  "next_steps": "Run /plan 98 to create implementation plan",
-  "notes": "Predecessor guard (task 97) treated as ground truth per delegation instructions, read in full rather than re-derived. Task 66 (sibling contract-text task, same dependency on 97) is still status=researching with its own anchor long-builds.md not yet created -- flagged as a coordination risk for the plan, not a blocker for this task's own file_scope."
+  "next_steps": "Run /implement 98 to execute the plan"
 }

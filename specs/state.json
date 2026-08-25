@@ -1013,7 +1013,7 @@
     {
       "project_number": 66,
       "project_name": "mandate_background_lake_builds",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Mandate run_in_background for Lean builds and add long-builds anchor",
@@ -1043,7 +1043,7 @@
         }
       ],
       "created": "2026-08-17T00:00:00Z",
-      "last_updated": "2026-08-25T16:40:18Z"
+      "last_updated": "2026-08-25T16:40:46Z"
     },
     {
       "project_number": 67,
@@ -2013,7 +2013,7 @@
     {
       "project_number": 98,
       "project_name": "route_lean_builds_through_guard",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Route lean extension builds through the guard and rewrite the multi-instance operations anchor",
@@ -2035,10 +2035,15 @@
           "path": "specs/098_route_lean_builds_through_guard/reports/01_route-census-through-guard.md",
           "type": "report",
           "summary": "Confirms the guard CLI and the exact lean-sorry-census.sh edit site, recommends a dirname-relative guard lookup with a test-seam env var, records a no-hook decision, and flags the multi-instance-optimization.md 8GB claim as contradicted by measurement."
+        },
+        {
+          "path": "specs/098_route_lean_builds_through_guard/plans/01_guard-integration-and-anchor.md",
+          "type": "plan",
+          "summary": "Five-phase plan: tests-first falsifiability gate, three-way guard/lake presence branch behind LEAN_SORRY_CENSUS_GUARD_BIN, anchor rewrite to mechanism prose with corrected memory figures, and no-hook decision recorded."
         }
       ],
       "created": "2026-08-24T23:21:51Z",
-      "last_updated": "2026-08-25T16:39:30Z"
+      "last_updated": "2026-08-25T16:44:00Z"
     },
     {
       "project_number": 99,
