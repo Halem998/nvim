@@ -1,30 +1,8 @@
 {
-  "status": "planned",
-  "summary": "Five-phase plan built on the research finding that the suite's apparent flake is two deterministic test-fixture-staleness defects, not lock contention. Phases 1-2 fix the two offending suites (scratch fixture repo with REPO_ROOT override for test-validate-return-meta.sh; two-file skill_cleanup contract plus a positive control for test-skill-base-lifecycle.sh), Phase 3 adds a live-specs-path lint with its own both-polarity fixture suite, Phase 4 writes the isolation rule into shell-script-testing.md, and Phase 5 executes the task's 10-consecutive-runs-under-concurrency acceptance measurement with the deploy-staleness confounder explicitly separated. No changes to task-lock.sh or run-all.sh, both reviewed and found sound.",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md",
-      "summary": "Diagnosis of the two deterministic test-fixture-staleness defects behind the apparent suite flake."
-    },
-    {
-      "type": "plan",
-      "path": "specs/085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md",
-      "summary": "Five-phase, 4-hour plan fixing two stale test fixtures, adding a preventive live-specs-path lint and standard, and executing the 10-run concurrency acceptance measurement."
-    }
-  ],
-  "next_steps": "Run /implement 85 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1787634022_3ba5fb_85",
-    "agent_type": "planner-agent",
-    "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4,
-    "dependency_waves": [[1, 2], [3], [4], [5]]
-  },
-  "memory_candidates": [],
-  "modified_files": [
-    "specs/085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md"
-  ]
+    "session_id": "sess_1787634022_3ba5fb",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

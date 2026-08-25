@@ -1,7 +1,7 @@
 # Implementation Plan: Task #85
 
 - **Task**: 85 - deflake_shell_test_suite_under_concurrency
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: 32
 - **Research Inputs**: specs/085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md
@@ -104,31 +104,31 @@ No roadmap context was provided in the delegation; `specs/ROADMAP.md` was not co
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Isolate test-validate-return-meta.sh from the live specs/ tree [NOT STARTED]
+### Phase 1: Isolate test-validate-return-meta.sh from the live specs/ tree [COMPLETED]
 
 **Goal**: `test-validate-return-meta.sh` builds its own scratch fixture repo and invokes the
 validator with `REPO_ROOT` pointed at it, so no case resolves a path against the real `specs/`
 tree. Suite exits 0.
 
 **Tasks**:
-- [ ] Add a `build_fixture_repo()`-style helper to the suite that creates
+- [x] Add a `build_fixture_repo()`-style helper to the suite that creates *(completed)*
       `$WORKDIR/.claude/scripts/lib/`, copies in `validate-return-meta.sh` and the whole
       `lib/*.sh` set from the same resolved source directory the suite already uses for
       `VALIDATOR_CANDIDATES`, and `chmod +x` the validator copy.
-- [ ] Create a synthetic fixture artifact in the scratch tree at
+- [x] Create a synthetic fixture artifact in the scratch tree at *(completed)*
       `$WORKDIR/specs/999_fixture_task/plans/01_fixture-plan.md` (any non-empty content).
-- [ ] Replace `EXISTING_PATH` (currently the archived live path at line 57) with
+- [x] Replace `EXISTING_PATH` (currently the archived live path at line 57) with *(completed)*
       `specs/999_fixture_task/plans/01_fixture-plan.md`.
-- [ ] Invoke the validator with `REPO_ROOT="$WORKDIR"` at every call site: the `assert_exit`
+- [x] Invoke the validator with `REPO_ROOT="$WORKDIR"` at every call site: the `assert_exit` *(completed)*
       helper, the Case 3 missing-file call, and all Case 10 / Case 11 direct `bash "$VALIDATOR"`
       calls. Prefer setting it once inside `assert_exit` plus explicitly on each direct call, so
       no call site can be silently missed.
-- [ ] Point `VALIDATOR` at the scratch copy (`$WORKDIR/.claude/scripts/validate-return-meta.sh`)
+- [x] Point `VALIDATOR` at the scratch copy (`$WORKDIR/.claude/scripts/validate-return-meta.sh`) *(completed)*
       after the existing candidate resolution, keeping the existing exit-2 environment-error
       branch intact for the case where no source copy is found at all.
-- [ ] Update the suite's header comment to state that it resolves nothing against the live
+- [x] Update the suite's header comment to state that it resolves nothing against the live *(completed)*
       `specs/` tree, and why.
-- [ ] Confirm Case 5 (`specs/does_not_exist_9999/nope.md` -> exit 1) still fails for the right
+- [x] Confirm Case 5 (`specs/does_not_exist_9999/nope.md` -> exit 1) still fails for the right *(completed)*
       reason under the new `REPO_ROOT` — it must be a non-resolving path, not a missing scratch
       tree.
 

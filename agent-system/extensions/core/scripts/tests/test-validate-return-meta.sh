@@ -12,6 +12,13 @@
 # (exit 3), an object missing summary (exit 1), a non-resolving path (exit 1), and a --fix
 # round-trip that turns a failing file into a passing one.
 #
+# ISOLATION CONTRACT (never resolves a path against the live specs/ tree): every case that needs
+# an existing-on-disk artifact path builds its own scratch fixture repo (build_fixture_repo(),
+# modeled on test-skill-base-lifecycle.sh's helper of the same name) under a mktemp -d WORKDIR,
+# and invokes the validator with REPO_ROOT pointed at that scratch repo -- never the real repo
+# root. This suite has no dependency on any real numbered specs/ directory, so it is immune to a
+# /todo archive or a vault renumbering of any task, including its own former self-reference.
+#
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (the
 # validator script was not found at any candidate path).
 
@@ -53,8 +60,33 @@ WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-# A path guaranteed to resolve on disk relative to REPO_ROOT, for well-formed fixtures.
-EXISTING_PATH="specs/052_return_meta_artifacts_shape_contract/plans/01_return-meta-artifacts-contract.md"
+# ─── build_fixture_repo: a scratch repo root under $1, the validator + its lib copied in ───────
+# Modeled on test-skill-base-lifecycle.sh's build_fixture_repo() of the same name: a full,
+# isolated repo shape so REPO_ROOT can be pointed at it and no path resolves against the real
+# repo. lib/*.sh is copied wholesale (not a hand-picked file list) so a future transitive
+# dependency of validate-return-meta.sh is carried along automatically.
+build_fixture_repo() {
+  local root="$1"
+  local validator_src_dir
+  validator_src_dir="$(dirname "$VALIDATOR")"
+  mkdir -p "$root/.claude/scripts/lib" "$root/specs/999_fixture_task/plans"
+  cp "$VALIDATOR" "$root/.claude/scripts/validate-return-meta.sh"
+  chmod +x "$root/.claude/scripts/validate-return-meta.sh"
+  cp "$validator_src_dir"/lib/*.sh "$root/.claude/scripts/lib/" 2>/dev/null || true
+  printf '# fixture plan\n\nSynthetic scratch-repo fixture artifact; never resolved against the live specs/ tree.\n' \
+    > "$root/specs/999_fixture_task/plans/01_fixture-plan.md"
+}
+
+FIXTURE_REPO="$WORKDIR/fixture-repo"
+build_fixture_repo "$FIXTURE_REPO"
+# Repoint VALIDATOR at the scratch copy now that the fixture repo exists, keeping the exit-2
+# environment-error branch above intact for the case where no source copy was found at all.
+VALIDATOR="$FIXTURE_REPO/.claude/scripts/validate-return-meta.sh"
+
+# A path that resolves on disk relative to REPO_ROOT="$FIXTURE_REPO" ONLY -- a synthetic scratch
+# fixture, never a real numbered specs/ task directory. See the ISOLATION CONTRACT note at the
+# top of this file.
+EXISTING_PATH="specs/999_fixture_task/plans/01_fixture-plan.md"
 
 # ─── assert_exit <name> <expected-exit> <json-content> [extra-args...] ────────────────────────
 assert_exit() {
@@ -63,7 +95,7 @@ assert_exit() {
   local f="$WORKDIR/${name}.json"
   printf '%s' "$content" > "$f"
   local actual
-  bash "$VALIDATOR" "$f" "$@" >"$WORKDIR/${name}.out" 2>&1
+  REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$f" "$@" >"$WORKDIR/${name}.out" 2>&1
   actual=$?
   if [[ "$actual" -eq "$expected" ]]; then
     pass "$name: validator exits $expected as expected"
@@ -96,7 +128,7 @@ assert_exit "bare-string" 1 "{
 # Case 3: missing file -> exit 3
 # =====================================================================
 MISSING_FILE="$WORKDIR/does-not-exist.json"
-bash "$VALIDATOR" "$MISSING_FILE" >"$WORKDIR/missing-file.out" 2>&1
+REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$MISSING_FILE" >"$WORKDIR/missing-file.out" 2>&1
 missing_exit=$?
 if [[ "$missing_exit" -eq 3 ]]; then
   pass "missing-file: validator exits 3 as expected"
@@ -176,7 +208,7 @@ printf '%s' "{
   \"metadata\": {\"session_id\": \"sess_1\", \"agent_type\": \"test-agent\", \"delegation_depth\": 1, \"delegation_path\": [\"a\", \"b\"]}
 }" > "$FIX_FILE"
 
-bash "$VALIDATOR" "$FIX_FILE" >"$WORKDIR/fix-before.out" 2>&1
+REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$FIX_FILE" >"$WORKDIR/fix-before.out" 2>&1
 before_exit=$?
 if [[ "$before_exit" -eq 1 ]]; then
   pass "fix-roundtrip: pre-fix file correctly FAILS (exit 1)"
@@ -184,7 +216,7 @@ else
   fail "fix-roundtrip: pre-fix file exited $before_exit (expected 1) -- see $WORKDIR/fix-before.out"
 fi
 
-bash "$VALIDATOR" "$FIX_FILE" --fix >"$WORKDIR/fix-apply.out" 2>&1
+REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$FIX_FILE" --fix >"$WORKDIR/fix-apply.out" 2>&1
 fix_apply_exit=$?
 if [[ "$fix_apply_exit" -eq 0 ]]; then
   pass "fix-roundtrip: --fix run itself exits 0 (post-repair re-validation passes)"
@@ -194,7 +226,7 @@ fi
 
 # Independently re-validate the now-repaired file without --fix, to confirm the repair persisted
 # to disk (not just an in-memory re-check during the --fix invocation itself).
-bash "$VALIDATOR" "$FIX_FILE" >"$WORKDIR/fix-after.out" 2>&1
+REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$FIX_FILE" >"$WORKDIR/fix-after.out" 2>&1
 after_exit=$?
 if [[ "$after_exit" -eq 0 ]]; then
   pass "fix-roundtrip: repaired file independently re-validates as PASS (exit 0)"
@@ -218,7 +250,7 @@ printf '%s' "{
   \"metadata\": {\"session_id\": \"sess_1\", \"agent_type\": \"test-agent\", \"delegation_depth\": 1, \"delegation_path\": [\"a\", \"b\"]}
 }" > "$NOFIX_FILE"
 before_content="$(cat "$NOFIX_FILE")"
-bash "$VALIDATOR" "$NOFIX_FILE" >/dev/null 2>&1
+REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$NOFIX_FILE" >/dev/null 2>&1
 after_content="$(cat "$NOFIX_FILE")"
 if [[ "$before_content" == "$after_content" ]]; then
   pass "no-implicit-fix: file is byte-identical after a non---fix validation run"

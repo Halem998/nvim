@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Isolate test-validate-return-meta.sh from the live specs/ tree",
+  "started_at": "2026-08-25T05:20:00Z",
+  "last_updated": "2026-08-25T05:24:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add build_fixture_repo() helper, replace archived EXISTING_PATH, thread REPO_ROOT through every validator invocation, repoint VALIDATOR at scratch copy, update header comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
