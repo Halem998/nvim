@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Phases 1-5: registry, core report, discover, deploy-headless hook, escalation",
+  "started_at": "2026-08-25T04:00:00Z",
+  "last_updated": "2026-08-25T04:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Phase 1: consumer registry file", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/known-consumer-repos.json"]},
+    {"id": 2, "description": "Phase 2: check-consumer-freshness.sh core report + manifest registration", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-consumer-freshness.sh", "agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Phase 3: --discover reconciliation mode", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-consumer-freshness.sh"]},
+    {"id": 4, "description": "Phase 4: post-deploy stale-consumer report in deploy-headless.sh", "status": "in_progress", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"], "note": "code complete and bash -n clean; live real-resync verification running in background"},
+    {"id": 5, "description": "Phase 5: tier-1 consecutive-ignore escalation + runtime-file registration", "status": "in_progress", "files_touched": ["agent-system/extensions/core/scripts/check-deploy-freshness.sh", ".gitignore", "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md", "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh"], "note": "all sub-tasks done and verified via fixtures; check-runtime-file-tracking.sh passes"}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5",
+      "description": "Add **/.freshness-warn-streak.json to agent-system/extensions/core/root-files/.gitignore",
+      "type": "altered",
+      "reason": "root-files/.gitignore deploys only into a consumer's .claude/ directory (per orchestrator-runtime-files.md's own 'Consumer Repo Setup' section), so a specs/-rooted pattern placed there would resolve to .claude/specs/... and match nothing real. Verified by grepping every existing sibling ephemeral-file (.orchestrator-churn-state.json, .events.lock) registration site in agent-system/extensions/core/: none of them appear in root-files/.gitignore either. The correct targets are this repo's own top-level .gitignore (already carries the sibling pattern block) and the documented 'Consumer Repo Setup' gitignore block in orchestrator-runtime-files.md that consumer repos copy by hand.",
+      "annotation": "*(deviation: altered — root-files/.gitignore is the wrong target; edited this repo's own root .gitignore and the documented Consumer Repo Setup block instead)*"
+    }
+  ]
+}

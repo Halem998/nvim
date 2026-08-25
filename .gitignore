@@ -41,6 +41,7 @@
 **/.errors.lock
 **/.commit-lock/
 **/.sessions/
+**/.freshness-warn-streak.json
 # Note: specs/events.jsonl and specs/errors.json are deliberately NOT ignored — they are
 # durable stores (see .claude/context/formats/events-format.md and errors-format.md). Do not
 # add either here.

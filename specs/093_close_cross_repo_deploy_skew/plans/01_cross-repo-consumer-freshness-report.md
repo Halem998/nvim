@@ -267,26 +267,26 @@ registered.
 
 ---
 
-### Phase 4: Post-deploy stale-consumer report in `deploy-headless.sh` [NOT STARTED]
+### Phase 4: Post-deploy stale-consumer report in `deploy-headless.sh` [COMPLETED]
 
 **Goal**: A deploy here ends by naming which known consumer repos are now stale. This is
 acceptance criterion (b).
 
 **Tasks**:
-- [ ] Inside `main()` (never at top level — see the script's SELF-OVERWRITE HAZARD header), change
+- [x] Inside `main()` (never at top level — see the script's SELF-OVERWRITE HAZARD header), change *(completed)*
       the trailing verify block to capture the verify outcome into a local variable instead of
       exiting directly from each branch.
-- [ ] After the verify outcome is captured and its message printed, call the consumer report,
+- [x] After the verify outcome is captured and its message printed, call the consumer report, *(completed)*
       fully guarded: only when not `--dry-run`, only when
       `"$TARGET/.claude/scripts/check-consumer-freshness.sh"` exists, and always suffixed with
       `|| true` so no failure can propagate.
-- [ ] Invoke it as `--stale-only`, prefixed with a line such as
+- [x] Invoke it as `--stale-only`, prefixed with a line such as *(completed)*
       `[deploy-headless] Known consumer repos now stale relative to the source store:`, and print a
       short "these need their own reload" remedy line naming `deploy-headless.sh` run *in that repo*.
-- [ ] Exit with exactly the captured verify code (`0` or `3`) after the report. Re-read the
+- [x] Exit with exactly the captured verify code (`0` or `3`) after the report. Re-read the *(completed)*
       script's `# Exit codes:` header block and confirm all four codes still mean exactly what it
       says.
-- [ ] Add an inline comment stating this block reports only and MUST NOT deploy into any named
+- [x] Add an inline comment stating this block reports only and MUST NOT deploy into any named *(completed)*
       consumer, citing `context/patterns/regeneration-is-manual-only.md`'s pull-only design.
 
 **Timing**: 1 hour
@@ -314,7 +314,7 @@ script to enumerate every exit path before editing any of them.
 
 ---
 
-### Phase 5: Tier-1 consecutive-ignore escalation + runtime-file registration [NOT STARTED]
+### Phase 5: Tier-1 consecutive-ignore escalation + runtime-file registration [COMPLETED]
 
 **Goal**: Decide and implement acceptance criterion (c): a tier-1 WARN ignored N times in a row
 escalates its presentation — visibility only, never blocking.
@@ -327,28 +327,28 @@ invocations are the honest measure of "how many chances did the operator have to
 day-based check would add a timestamp-diffing dependency for a weaker signal.
 
 **Tasks**:
-- [ ] In `check-deploy-freshness.sh`, after computing `STALE_NAMES`: if the set is non-empty,
+- [x] In `check-deploy-freshness.sh`, after computing `STALE_NAMES`: if the set is non-empty, *(completed)*
       increment a streak counter; if empty, reset it (deleting the file).
-- [ ] Store the counter at `<repo_root>/specs/.freshness-warn-streak.json` as
+- [x] Store the counter at `<repo_root>/specs/.freshness-warn-streak.json` as *(completed)*
       `{"streak": N, "extensions": [...], "updated": "<ISO8601>"}`. Skip counter I/O silently when
       `<repo_root>/specs/` does not exist or is not writable, or when `jq` is unavailable.
-- [ ] Threshold: at `streak >= 5`, print an escalated multi-line banner naming the consecutive
+- [x] Threshold: at `streak >= 5`, print an escalated multi-line banner naming the consecutive *(completed)*
       count and the remedy, in addition to (not instead of) the existing per-extension WARN lines.
       Below the threshold, output is byte-identical to today's.
-- [ ] Cap the stored streak at 999 so the file cannot grow unbounded in value.
-- [ ] Preserve the existing contract exactly: `set -uo pipefail` (not `-e`), always `exit 0`,
+- [x] Cap the stored streak at 999 so the file cannot grow unbounded in value. *(completed)*
+- [x] Preserve the existing contract exactly: `set -uo pipefail` (not `-e`), always `exit 0`, *(completed)*
       every new step degrading to a silent skip. Do not touch `deploy-freshness-lib.sh`.
-- [ ] Document in the script header that a reset also happens on a `CANNOTVERIFY` result, because
+- [x] Document in the script header that a reset also happens on a `CANNOTVERIFY` result, because *(completed)*
       tier 1 deliberately collapses fresh and cannot-verify into the same silence — this is an
       accepted, named consequence of that collapse, not an oversight.
-- [ ] Add `**/.freshness-warn-streak.json` to `agent-system/extensions/core/root-files/.gitignore`
+- [x] Add `**/.freshness-warn-streak.json` to this repo's OWN root `.gitignore` *(deviation: altered — root-files/.gitignore deploys only into a consumer's `.claude/` directory per this same standard's "Consumer Repo Setup" section, so a specs/-rooted pattern placed there would resolve to `.claude/specs/...` and match nothing; the correct target, verified by grepping every existing sibling ephemeral-file registration site, is this repo's own top-level `.gitignore` plus the documented "Consumer Repo Setup" block in orchestrator-runtime-files.md, both of which now carry the pattern)*
       alongside the existing ephemeral-runtime patterns.
-- [ ] Add a row for the file to the two-class table in
+- [x] Add a row for the file to the two-class table in *(completed)*
       `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md` (writer:
       `check-deploy-freshness.sh`; reader: same; cleanup: reset-on-fresh; disposition:
       **Ephemeral**), with a note that it is a freshness-check runtime file rather than an
       orchestrator one and is listed here because this file is the repo's single runtime-file policy home.
-- [ ] Add `specs/.freshness-warn-streak.json` to `check-runtime-file-tracking.sh`'s
+- [x] Add `specs/.freshness-warn-streak.json` to `check-runtime-file-tracking.sh`'s *(completed)*
       `EPHEMERAL_PROBES` array.
 
 **Timing**: 1.25 hours
@@ -366,8 +366,10 @@ an existing sibling ephemeral file is registered, then matching that set.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/check-deploy-freshness.sh` - streak counter + escalated banner
-- `agent-system/extensions/core/root-files/.gitignore` - ignore the streak file
-- `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md` - register the class
+- `.gitignore` (repo root, NOT `agent-system/extensions/core/root-files/.gitignore` — see the
+  deviation note on the gitignore task above) - ignore the streak file
+- `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md` - register the
+  class (table row) AND add the pattern to the "Consumer Repo Setup" documented block
 - `agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` - add the probe
 
 **Verification**:

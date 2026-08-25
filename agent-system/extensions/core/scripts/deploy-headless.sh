@@ -238,14 +238,43 @@ main() {
   fi
 
   echo "[deploy-headless] Verifying deploy (fast gates; shell test suite deferred) ..."
+  # Verify outcome is captured into a variable rather than exiting directly from each branch, so
+  # the guarded post-deploy consumer report below (both branches: it must run after the tree WAS
+  # modified, whether verification passed or reported findings) can run before the script's
+  # single final exit. Each branch below still exits with EXACTLY the same code it always did --
+  # 0 or 3 -- this restructuring changes nothing about deploy-headless.sh's documented exit-code
+  # contract (see the header's `# Exit codes:` block).
+  local verify_rc=0
   if bash "$TARGET/.claude/scripts/verify-deploy.sh" --skip-slow "$TARGET"; then
     echo "[deploy-headless] Verification passed."
-    exit 0
+    verify_rc=0
   else
     echo "[deploy-headless] ERROR: the deploy itself landed, but the tree fails verification (fast gates)." >&2
     echo "[deploy-headless] Re-run the full gate set for detail: bash $TARGET/.claude/scripts/verify-deploy.sh" >&2
-    exit 3
+    verify_rc=3
   fi
+
+  # --- Post-deploy stale-consumer report (TIER 3, additive output only) -----------------------
+  # This block reports only and MUST NOT deploy into, write to, or otherwise mutate any named
+  # consumer repo -- see context/patterns/regeneration-is-manual-only.md's pull-only design,
+  # which this call preserves intact (every consumer interaction below is a read of that
+  # consumer's OWN .claude-extensions.json via check-consumer-freshness.sh). Fully guarded: only
+  # runs when the deployed checker exists (a tree too stale to carry it yet is a silent no-op,
+  # matching check-deploy-freshness.sh's own guard convention), and its own exit code can never
+  # propagate into this script's exit code -- `|| true` below.
+  local consumer_checker="$TARGET/.claude/scripts/check-consumer-freshness.sh"
+  if [ -f "$consumer_checker" ]; then
+    local consumer_report
+    consumer_report="$(bash "$consumer_checker" --stale-only 2>&1)" || true
+    if [ -n "$consumer_report" ]; then
+      echo ""
+      echo "[deploy-headless] Known consumer repos now stale relative to the source store:"
+      echo "$consumer_report"
+      echo "[deploy-headless] Remedy: run 'bash .claude/scripts/deploy-headless.sh' IN EACH stale repo (this script never redeploys into a consumer)."
+    fi
+  fi
+
+  exit "$verify_rc"
 }
 
 main "$@"

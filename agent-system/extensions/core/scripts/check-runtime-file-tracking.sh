@@ -43,6 +43,7 @@ declare -a EPHEMERAL_PROBES=(
   "${PROBE_DIR}/.return-meta-orchestrate.json"
   "specs/.events.lock"
   "specs/.sessions/sess_0000000000_probe.json"
+  "specs/.freshness-warn-streak.json"
 )
 
 # Durable-provenance paths (Check C) — MUST NOT be ignored.
@@ -89,6 +90,7 @@ b_patterns=(
   '\.return-meta-[^/]*\.json$'
   '\.events\.lock$'
   '/\.sessions/[^/]+\.json$'
+  '\.freshness-warn-streak\.json$'
 )
 tracked_files=$(git ls-files 2>/dev/null)
 for pattern in "${b_patterns[@]}"; do
