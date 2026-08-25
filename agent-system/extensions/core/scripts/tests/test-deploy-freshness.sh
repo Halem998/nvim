@@ -11,12 +11,20 @@
 # Fixture: a throwaway SOURCE git repo (standing in for the agent-system source store) holding a
 # committed "ext" subdirectory, and one throwaway CONSUMER directory per case holding a
 # fabricated .claude-extensions.json whose `source_dir` points at that subdirectory. The real
-# check-deploy-freshness.sh is copied byte-for-byte into the fixture and invoked only against
-# these throwaway consumers -- never against this repo's own .claude-extensions.json or specs/
-# tree.
+# check-deploy-freshness.sh AND its sibling scripts/lib/deploy-freshness-lib.sh are copied
+# byte-for-byte into the fixture (checker at $WORKDIR/bin/, library at $WORKDIR/bin/lib/,
+# preserving the sibling relationship the checker's own SCRIPT_DIR-relative resolution requires)
+# and invoked only against these throwaway consumers -- never against this repo's own
+# .claude-extensions.json or specs/ tree.
+#
+# Extended for the Phase 2 library extraction: this suite also sources
+# deploy-freshness-lib.sh directly (a second, independent invocation path from the subprocess
+# checker above) to pin its two exported functions' own contracts -- in particular the
+# STALE/FRESH/CANNOTVERIFY three-way distinction `deploy_freshness_status` provides and
+# check-deploy-freshness.sh's own WARN-or-silence output deliberately collapses.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error
-# (checker script or git not found).
+# (checker script, library, or git not found).
 
 set -uo pipefail
 
@@ -50,6 +58,25 @@ if [[ -z "$CHECKER" ]]; then
   exit 2
 fi
 
+LIB_CANDIDATES=(
+  "$REPO_ROOT/.claude/scripts/lib/deploy-freshness-lib.sh"
+  "$SCRIPT_DIR/../lib/deploy-freshness-lib.sh"
+)
+LIB=""
+for candidate in "${LIB_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]]; then
+    LIB="$candidate"
+    break
+  fi
+done
+if [[ -z "$LIB" ]]; then
+  echo "ERROR: deploy-freshness-lib.sh not found at any of:" >&2
+  for candidate in "${LIB_CANDIDATES[@]}"; do
+    echo "  $candidate" >&2
+  done
+  exit 2
+fi
+
 if ! command -v git >/dev/null 2>&1; then
   echo "ERROR: git not found on PATH" >&2
   exit 2
@@ -66,6 +93,7 @@ cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
 info "Using checker: $CHECKER"
+info "Using library: $LIB"
 
 # --- Fixture: throwaway source-store stand-in with a committed "ext" subdirectory ---
 SOURCE_REPO="$WORKDIR/source-repo"
@@ -79,10 +107,14 @@ git -C "$SOURCE_REPO" commit -q -m "initial ext"
 EXT_DIR="$SOURCE_REPO/ext"
 HEAD_V1="$(git -C "$SOURCE_REPO" log -1 --format=%H -- "$EXT_DIR")"
 
-# Real checker, copied byte-for-byte so the suite exercises exactly the deployed artifact.
-mkdir -p "$WORKDIR/bin"
+# Real checker + its sibling library, copied byte-for-byte so the suite exercises exactly the
+# deployed artifacts and so the checker's own SCRIPT_DIR-relative `lib/deploy-freshness-lib.sh`
+# sibling lookup resolves inside the fixture exactly as it does in either real deployment
+# location.
+mkdir -p "$WORKDIR/bin/lib"
 cp "$CHECKER" "$WORKDIR/bin/check-deploy-freshness.sh"
 chmod +x "$WORKDIR/bin/check-deploy-freshness.sh"
+cp "$LIB" "$WORKDIR/bin/lib/deploy-freshness-lib.sh"
 
 run_checker() {
   bash "$WORKDIR/bin/check-deploy-freshness.sh" "$1"
@@ -200,6 +232,81 @@ fi
 # Verified manually during implementation; not re-run on every invocation since it requires
 # mutating the checker script in place.
 # =====================================================================
+
+# =====================================================================
+# Library-direct cases: source deploy-freshness-lib.sh in a scratch shell and exercise its two
+# exported functions against the SAME fixture consumers created above, pinning the
+# STALE/FRESH/CANNOTVERIFY three-way distinction the blocking backstop (Phase 3) depends on --
+# a distinction check-deploy-freshness.sh's own WARN-or-silence output deliberately collapses.
+# =====================================================================
+(
+  # shellcheck disable=SC1090
+  . "$WORKDIR/bin/lib/deploy-freshness-lib.sh"
+
+  status_stale="$(deploy_freshness_status "$CONSUMER_STALE" ext)"
+  if [[ "$status_stale" == "STALE" ]]; then
+    echo "LIBPASS status(STALE)"
+  else
+    echo "LIBFAIL status(STALE) expected STALE got '$status_stale'"
+  fi
+
+  status_fresh="$(deploy_freshness_status "$CONSUMER_FRESH" ext)"
+  if [[ "$status_fresh" == "FRESH" ]]; then
+    echo "LIBPASS status(FRESH)"
+  else
+    echo "LIBFAIL status(FRESH) expected FRESH got '$status_fresh'"
+  fi
+
+  status_missing="$(deploy_freshness_status "$CONSUMER_MISSING" ext)"
+  if [[ "$status_missing" == "CANNOTVERIFY" ]]; then
+    echo "LIBPASS status(MISSING FIELD -> CANNOTVERIFY)"
+  else
+    echo "LIBFAIL status(MISSING FIELD) expected CANNOTVERIFY got '$status_missing'"
+  fi
+
+  status_nongit="$(deploy_freshness_status "$CONSUMER_NONGIT" ext)"
+  if [[ "$status_nongit" == "CANNOTVERIFY" ]]; then
+    echo "LIBPASS status(NON-GIT -> CANNOTVERIFY)"
+  else
+    echo "LIBFAIL status(NON-GIT) expected CANNOTVERIFY got '$status_nongit'"
+  fi
+
+  status_nopath="$(deploy_freshness_status "$CONSUMER_NOPATH" ext)"
+  if [[ "$status_nopath" == "CANNOTVERIFY" ]]; then
+    echo "LIBPASS status(NOPATH -> CANNOTVERIFY)"
+  else
+    echo "LIBFAIL status(NOPATH) expected CANNOTVERIFY got '$status_nopath'"
+  fi
+
+  status_unknown_ext="$(deploy_freshness_status "$CONSUMER_STALE" "no-such-extension")"
+  if [[ "$status_unknown_ext" == "CANNOTVERIFY" ]]; then
+    echo "LIBPASS status(UNKNOWN EXTENSION NAME -> CANNOTVERIFY)"
+  else
+    echo "LIBFAIL status(UNKNOWN EXTENSION NAME) expected CANNOTVERIFY got '$status_unknown_ext'"
+  fi
+
+  names_stale="$(deploy_freshness_stale_names "$CONSUMER_STALE")"
+  if [[ "$names_stale" == "ext" ]]; then
+    echo "LIBPASS stale_names(STALE consumer -> exactly 'ext')"
+  else
+    echo "LIBFAIL stale_names(STALE consumer) expected 'ext' got '<<<$names_stale>>>'"
+  fi
+
+  names_fresh="$(deploy_freshness_stale_names "$CONSUMER_FRESH")"
+  if [[ -z "$names_fresh" ]]; then
+    echo "LIBPASS stale_names(FRESH consumer -> empty)"
+  else
+    echo "LIBFAIL stale_names(FRESH consumer) expected empty got '<<<$names_fresh>>>'"
+  fi
+) > "$WORKDIR/lib-direct.out"
+
+while IFS= read -r line; do
+  case "$line" in
+    LIBPASS*) pass "${line#LIBPASS }" ;;
+    LIBFAIL*) fail "${line#LIBFAIL }" ;;
+    *) : ;;
+  esac
+done < "$WORKDIR/lib-direct.out"
 
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"
