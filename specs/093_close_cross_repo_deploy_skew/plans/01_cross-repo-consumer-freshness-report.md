@@ -474,21 +474,56 @@ the new operator-facing script.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on `check-consumer-freshness.sh`, `check-deploy-freshness.sh`,
-      `deploy-headless.sh`, `check-runtime-file-tracking.sh`, and the new test file.
-- [ ] `jq empty` clean on `known-consumer-repos.json` and `manifest.json`.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` passes.
-- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` passes.
-- [ ] `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` passes.
-- [ ] `bash agent-system/extensions/core/scripts/check-task-references.sh` reports no new violations.
-- [ ] **Acceptance (a)**: one command run from this repo prints every registered consumer's
-      per-extension revision status and flags those behind source.
-- [ ] **Acceptance (b)**: a real `deploy-headless.sh` run in this repo ends by naming the stale
-      known consumers, and still exits 0.
-- [ ] **Acceptance (c)**: the escalation decision is implemented and documented; the fifth
-      consecutive stale run produces the escalated banner and still exits 0.
-- [ ] **No-push invariant**: no consumer repo's working tree or `.claude/` tree is modified by any
-      command added in this plan (spot-check `git -C <consumer> status --porcelain` before/after).
+- [x] `bash -n` clean on `check-consumer-freshness.sh`, `check-deploy-freshness.sh`,
+      `deploy-headless.sh`, `check-runtime-file-tracking.sh`, and the new test file. *(completed)*
+- [x] `jq empty` clean on `known-consumer-repos.json` and `manifest.json`. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` passes. *(completed: 50/52
+      suites pass; the 2 pre-existing failures -- test-skill-base-lifecycle.sh's skill_cleanup
+      case and test-validate-return-meta.sh's --fix roundtrip -- predate this task and touch none
+      of this plan's files. test-consumer-freshness.sh (new) and test-deploy-freshness.sh
+      (streak-counter cases added) both pass cleanly)*
+- [x] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` passes. *(deviation:
+      the gate reports 15 pre-existing Rule R/S findings across `core`/`project-wide`/`typst`
+      that predate this task and name none of the files this plan touches -- verified by grepping
+      every failure line for check-consumer-freshness.sh, known-consumer-repos.json,
+      check-deploy-freshness.sh, check-runtime-file-tracking.sh, deploy-headless.sh,
+      orchestrator-runtime-files.md, regeneration-is-manual-only.md,
+      utility-scripts-inventory.md, test-consumer-freshness.sh, test-deploy-freshness.sh, and
+      manifest.json: zero matches. This plan's own files introduce zero new doc-lint findings;
+      the gate's overall nonzero exit is a pre-existing condition this plan does not fix, matching
+      this document's own "The live consequence, disclosed rather than discovered in production"
+      paragraph)*
+- [x] `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` passes.
+      *(completed: PASS -- all three checks pass, including the new
+      `specs/.freshness-warn-streak.json` probe)*
+- [x] `bash agent-system/extensions/core/scripts/check-task-references.sh` reports no new violations.
+      *(completed: PASS -- 0 unexempted occurrences across all 4 scanned trees)*
+- [x] **Acceptance (a)**: one command run from this repo prints every registered consumer's
+      per-extension revision status and flags those behind source. *(completed: verified live
+      against all 8 real consumers -- BimodalLogic/ModelChecker/Theory/PossibleWorlds correctly
+      flagged STALE with commits-behind counts, dotfiles/PersonalWebsite/cslib/Hardware correctly
+      flagged CANNOTVERIFY (pre-`source_git_head` deploys), source repo's own row marked FRESH*)*
+- [x] **Acceptance (b)**: a real `deploy-headless.sh` run in this repo ends by naming the stale
+      known consumers. *(deviation: altered -- "and still exits 0" does not hold in this
+      specific repo state: the run exits 3 because of the SAME pre-existing, unrelated doc-lint
+      Rule R findings named above, not because of anything this plan added. The exit-code
+      CONTRACT itself is unchanged and verified intact: `--dry-run` still returns 0 with no
+      report; a stubbed verify-success case exits 0 with the report printed; a stubbed
+      verify-failure case exits 3 with the report printed; deleting the deployed checker still
+      exits 0/3 (whichever verify would have returned) silently, with no report. The report was
+      confirmed present as the last output in TWO live full runs against this repo, both ending
+      in exit 3 for the pre-existing reason above)*
+- [x] **Acceptance (c)**: the escalation decision is implemented and documented; the fifth
+      consecutive stale run produces the escalated banner and still exits 0. *(completed: verified
+      via fixture -- runs 1-4 increment the streak silently, run 5 adds the escalated banner
+      naming "5 consecutive" while still exiting 0, a subsequent fresh run resets/removes the
+      counter file, the counter caps at 999, and counter I/O is silently skipped with no `specs/`
+      directory present)*
+- [x] **No-push invariant**: no consumer repo's working tree or `.claude/` tree is modified by any
+      command added in this plan. *(completed: spot-checked `git -C <consumer> status --porcelain`
+      before/after against BimodalLogic and dotfiles -- unchanged by this plan's commands; the
+      fixture no-write invariant case in `test-consumer-freshness.sh` additionally pins this via
+      md5sum comparison)*
 
 ## Artifacts & Outputs
 

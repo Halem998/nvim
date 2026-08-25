@@ -1,36 +1,17 @@
 {
-  "dispatch_seq": 4,
-  "task_number": 93,
-  "session_id": "sess_1787630527_96eca3_93",
-  "stage": "plan",
-  "status": "planned",
-  "plan_path": "specs/093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md",
-  "summary": "7-phase (~6h) plan for a source-side tier-3 cross-repo fleet freshness view. Phase 1: git-tracked consumer registry at agent-system/extensions/core/context/reference/known-consumer-repos.json (path + note per consumer, plus discover_roots). Phase 2: new scripts/check-consumer-freshness.sh reusing deploy_freshness_status unmodified, reporting repo x extension x status x commits-behind for every registered consumer, plus manifest.json provides.scripts registration. Phase 3: --discover reconciliation naming unregistered on-disk consumers (never auto-edits the registry). Phase 4: guarded post-deploy stale-consumer report inside deploy-headless.sh's main(), verify result captured to a variable so the 0/1/2/3 exit contract is byte-for-byte preserved. Phase 5: DECISION on acceptance criterion (c) -- escalate, visibility-only, never blocking, counting consecutive command invocations (not days), threshold 5, state at specs/.freshness-warn-streak.json, with its three mandatory registration surfaces. Phase 6: fixture suite tests/test-consumer-freshness.sh. Phase 7: tier-3 documentation in regeneration-is-manual-only.md plus the utility-scripts inventory entry. No push into any consumer anywhere in the design.",
-  "next_action": "Run /implement 93. Waves: [1,5] -> [2] -> [3,4] -> [6,7]. Phases 4 and 5 are the two full-verification-tier, highest-risk phases (deploy engine and the CHECKPOINT-1 preflight check respectively) and should not be batched with others.",
-  "file_scope_widened": true,
-  "file_scope": [
-    "agent-system/extensions/core/context/reference/known-consumer-repos.json",
-    "agent-system/extensions/core/scripts/check-consumer-freshness.sh",
-    "agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/scripts/check-deploy-freshness.sh",
-    "agent-system/extensions/core/scripts/deploy-headless.sh",
-    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
-    "agent-system/extensions/core/root-files/.gitignore",
-    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
-    "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
-    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
-  ],
-  "blockers": [],
-  "phases_completed": 0,
-  "phases_total": 7,
+  "status": "implemented",
+  "summary": "Added a source-side TIER 3 cross-repo fleet freshness report: a git-tracked known-consumer registry, check-consumer-freshness.sh (with --discover), a guarded post-deploy stale-consumer hook in deploy-headless.sh, and a non-blocking consecutive-ignore escalation on tier 1. All 7 plan phases completed and verified live against all 8 real consumer repos and a real deploy in this repo.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md",
-      "summary": "7-phase cross-repo consumer freshness reporting plan (registry + report script + deploy hook + tier-1 escalation + tests + docs)."
+      "type": "summary",
+      "path": "specs/093_close_cross_repo_deploy_skew/summaries/01_cross-repo-consumer-freshness-report-summary.md",
+      "summary": "Implementation summary for the tier-3 cross-repo consumer freshness report"
     }
   ],
-  "sorry_inventory": [],
-  "continuation_path": null
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "continuation_path": null,
+  "plan_markers_verified": true,
+  "dispatch_seq": 6
 }

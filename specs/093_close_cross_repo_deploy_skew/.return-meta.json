@@ -1,7 +1,63 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 93,
-  "session_id": "sess_1787630527_96eca3"
+  "session_id": "sess_1787630527_96eca3",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/093_close_cross_repo_deploy_skew/summaries/01_cross-repo-consumer-freshness-report-summary.md",
+      "summary": "Implementation summary: source-side tier-3 cross-repo consumer freshness report, all 7 plan phases completed"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a git-tracked known-consumer registry, a new check-consumer-freshness.sh fleet report (with --discover reconciliation), a guarded post-deploy stale-consumer hook in deploy-headless.sh, and a non-blocking consecutive-ignore escalation on the existing tier-1 WARN. Verified live against all 8 real consumer repos and two real deploy-headless.sh runs in this repo; the 0/1/2/3 exit-code contract is unchanged."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/reference/known-consumer-repos.json",
+    "agent-system/extensions/core/scripts/check-consumer-freshness.sh",
+    "agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-deploy-freshness.sh",
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/index-entries.json",
+    ".gitignore"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a script under agent-system/extensions/core/scripts/ writes an ephemeral runtime file rooted at <repo_root>/specs/ (not under .claude/), the gitignore coverage MUST go in the repo's own top-level .gitignore (or the documented 'Consumer Repo Setup' block in orchestrator-runtime-files.md for other consumer repos) -- NOT in agent-system/extensions/core/root-files/.gitignore. root-files/.gitignore only deploys into a consumer's .claude/ directory, so a specs/-rooted pattern placed there silently resolves to .claude/specs/... and matches nothing. Verify by grepping every existing sibling ephemeral-file pattern (e.g. .orchestrator-churn-state.json) across agent-system/extensions/core/ before trusting a plan's stated gitignore target.",
+      "category": "PATTERN",
+      "source_artifact": "specs/093_close_cross_repo_deploy_skew/summaries/01_cross-repo-consumer-freshness-report-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["gitignore", "root-files", "ephemeral-runtime-file", "specs-directory", "deploy-tree"]
+    },
+    {
+      "content": "manifest.json's provides.context can declare a whole DIRECTORY (e.g. 'reference'), meaning any new file dropped into that source-store directory (e.g. context/reference/known-consumer-repos.json) deploys automatically into every consumer's .claude/ tree without a separate manifest entry -- useful when a new reference file should ship everywhere, but a trap if the intent was 'source-repo-only metadata'. Confirm the intended deploy scope of a new context/ file against manifest.json's provides.context BEFORE writing it, not after.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/093_close_cross_repo_deploy_skew/summaries/01_cross-repo-consumer-freshness-report-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["manifest", "provides-context", "directory-deploy", "reference-directory"]
+    },
+    {
+      "content": "When testing --discover-style filesystem-scan reconciliation logic that matches on a real repo's directory layout (e.g. source_dir starting with '<repo>/agent-system/extensions/'), the test fixture MUST mirror that same layout, not a flattened stand-in -- a fixture that puts extension dirs directly under the fake source repo root (rather than under agent-system/extensions/) will make every path-prefix filter silently fail to match, producing a false negative that looks like a script bug rather than a fixture bug.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/093_close_cross_repo_deploy_skew/summaries/01_cross-repo-consumer-freshness-report-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["fixture-design", "path-prefix-matching", "discover-mode", "test-layout"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1787630527_96eca3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
