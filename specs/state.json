@@ -1470,7 +1470,7 @@
     {
       "project_number": 83,
       "project_name": "postflight_deploy_gate_for_source_store_tasks",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "critical",
@@ -1485,8 +1485,56 @@
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-08-25T00:29:15Z",
-      "session_id": "sess_1787617685_88b825_83"
+      "last_updated": "2026-08-25T00:38:47Z",
+      "session_id": "sess_1787617685_88b825_83",
+      "artifacts": [
+        {
+          "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md",
+          "type": "report",
+          "summary": "Full findings: completion-path topology (3 call sites), recommended unconditional backstop design in update-task-status.sh, concurrency/racing hazard on deploy-headless.sh, mandatory baseline-relative verification, exact carve-out wording/placement, and file_scope corrections needed before planning."
+        }
+      ],
+      "memory_candidates": [
+        {
+          "content": "In this agent system, a task's status flip to 'completed' can happen at three independent call sites: skill-implementer/SKILL.md's own inline update-task-status.sh call (primary for general/meta/markdown single-task /implement, runs BEFORE command-gate-out.sh), skill_postflight_update in skill-base.sh (used by skill-orchestrate, team skills, and several extension skills), and command-gate-out.sh's defensive correction (a no-op once status already matches, so it never fires for the common case). Any new postflight gate on the completion transition must live inside update-task-status.sh itself (the one true shared chokepoint, following the existing --phase-check=warn|refuse backstop precedent) rather than in command-gate-out.sh alone, or it will silently miss the primary meta-task path.",
+          "category": "PATTERN",
+          "source_artifact": "specs/083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md",
+          "confidence": 0.9,
+          "suggested_keywords": [
+            "postflight",
+            "update-task-status.sh",
+            "skill-implementer",
+            "completion-path",
+            "gate-out"
+          ]
+        },
+        {
+          "content": "Multi-task /implement and skill-orchestrate's per-cycle dispatch both invoke per-task implementation skills in PARALLEL (single Agent-tool message per batching rule). deploy-headless.sh's specs/.deploy-lock mutex is fail-open (acquire, warn-and-proceed, not blocking). Any new automated deploy-trigger added for a postflight completion gate must never fire from inside each task's own (potentially-parallel) postflight call -- it must be confined to already-serialized points (a single-task gate-out call, or a batch's existing serial post-dispatch step) to avoid racing concurrent deploy-headless.sh invocations.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "deploy-headless.sh",
+            "concurrency",
+            "parallel-dispatch",
+            "deploy-lock",
+            "race-condition"
+          ]
+        },
+        {
+          "content": "As of task 82's exit-code-3 change, deploy-headless.sh currently exits 3 on EVERY non-dry-run invocation in this repo, due to pre-existing doc-lint and gate-8 failures unrelated to any given change (documented in regeneration-is-manual-only.md). Any new automation that treats deploy-headless.sh's non-zero exit as a hard block must use baseline-relative comparison (new findings vs pre-redeploy findings, per verify-deploy.sh --findings --quiet) exactly like skill-orchestrate's existing Inter-Cycle Redeploy Checkpoint -- a raw exit-code check would block indefinitely given current repo state.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md",
+          "confidence": 0.9,
+          "suggested_keywords": [
+            "deploy-headless.sh",
+            "exit-code-3",
+            "verify-deploy.sh",
+            "baseline-comparison",
+            "pre-existing-failures"
+          ]
+        }
+      ]
     },
     {
       "project_number": 84,
