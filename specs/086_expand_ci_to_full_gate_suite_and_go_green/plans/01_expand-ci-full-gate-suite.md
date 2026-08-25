@@ -418,34 +418,42 @@ ACCEPTANCE criterion — without pushing anything.
 
 ---
 
-### Phase 7: Capture the CI bootstrap pattern, regenerate line counts, confirm green [NOT STARTED]
+### Phase 7: Capture the CI bootstrap pattern, regenerate line counts, confirm green [COMPLETED]
 
 **Goal**: Absorb all doc churn from every prior phase into a final `line_count` regeneration,
 capture the working CI recipe so it never has to be re-derived, and leave the suite green.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/context/patterns/ci-deploy-tree-bootstrap.md` capturing
+- [x] Write `agent-system/extensions/core/context/patterns/ci-deploy-tree-bootstrap.md` capturing
       the recipe: `.claude/` is gitignored and absent in any fresh checkout; CI must deploy before
       any gate touching deployed files can run; the extension manager needs no plugins so the
       minimal-init hatch avoids a `lazy.nvim` bootstrap; the aggregator is `verify-deploy.sh` and
       exit 2 counts as failure. This closes research recommendation 6, whose stated cost was
-      several tool calls of rediscovery per future CI task
-- [ ] Add a matching entry for the new doc to `agent-system/extensions/core/index-entries.json`
+      several tool calls of rediscovery per future CI task *(completed: also documents the
+      gate14 test-fixture caution discovered in Phase 6)*
+- [x] Add a matching entry for the new doc to `agent-system/extensions/core/index-entries.json`
       (same field set as Phase 2) — a new context file without an entry reintroduces Rule S
-- [ ] Redeploy, then run `bash .claude/scripts/generate-context-line-counts.sh --check` to see the
+      *(completed)*
+- [x] Redeploy, then run `bash .claude/scripts/generate-context-line-counts.sh --check` to see the
       full accumulated mismatch set (Phase 3's doc edits, this phase's new doc, and the 16
-      pre-existing mismatches)
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --write` **from the deployed copy**
+      pre-existing mismatches) *(completed: 0 mismatch -- the 16 pre-existing were already
+      regenerated in Phase 6, and this phase's new entry's line_count was set accurately at
+      authoring time)*
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --write` **from the deployed copy**
       — the source-store copy refuses to run with a guard error. It rewrites the source-store
       `index-entries.json` files in place via line-oriented substitution, so the diff must be
-      `line_count`-only; review `git diff` to confirm that
-- [ ] Redeploy and re-run `bash .claude/scripts/check-extension-docs.sh`: expect 0 issues
-- [ ] Run the full `bash .claude/scripts/verify-deploy.sh --findings` (no `--skip-slow`) and
-      confirm exit 0 with an empty findings set
-- [ ] Write the user handoff note: the live-CI confirmation (push to a branch, watch the Actions
+      `line_count`-only; review `git diff` to confirm that *(completed: 0 changed, confirming
+      idempotence; git diff shows only the one new entry addition)*
+- [x] Redeploy and re-run `bash .claude/scripts/check-extension-docs.sh`: expect 0 issues
+      *(completed: PASS, all extensions OK)*
+- [x] Run the full `bash .claude/scripts/verify-deploy.sh --findings` (no `--skip-slow`) and
+      confirm exit 0 with an empty findings set *(completed: PASS -- 25 check(s), 0 failure(s),
+      empty FINDING set)*
+- [x] Write the user handoff note: the live-CI confirmation (push to a branch, watch the Actions
       run go green, then reintroduce a mismatch and watch it go red) requires a push and is
       therefore the user's step after `/merge` — agents may not push or open PRs per
-      `.claude/rules/pr-prohibition.md`. Give the exact commands
+      `.claude/rules/pr-prohibition.md`. Give the exact commands *(completed:
+      progress/phase7-user-handoff-note.md)*
 
 **Timing**: 1 hour
 

@@ -3287,6 +3287,34 @@
         "task_types": []
       },
       "on_demand": true
+    },
+    {
+      "path": "patterns/ci-deploy-tree-bootstrap.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "CI recipe: .claude/ is gitignored so CI must deploy before any gate runs; the single shared aggregator is verify-deploy.sh; the minimal-init hatch avoids a lazy.nvim bootstrap",
+      "line_count": 92,
+      "keywords": [
+        "ci",
+        "github-actions",
+        "deploy-headless",
+        "verify-deploy",
+        "minimal-init",
+        "gate14",
+        "bootstrap"
+      ],
+      "topics": [
+        "ci",
+        "deploy",
+        "verification",
+        "gate-suite"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     }
   ]
 }

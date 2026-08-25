@@ -1,0 +1,31 @@
+{
+  "phase": 7,
+  "phase_name": "Capture the CI bootstrap pattern, regenerate line counts, confirm green",
+  "started_at": "2026-08-25T06:40:00Z",
+  "last_updated": "2026-08-25T06:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write ci-deploy-tree-bootstrap.md capturing the recipe", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/patterns/ci-deploy-tree-bootstrap.md"
+    ]},
+    {"id": 2, "description": "Add matching index entry for the new doc", "status": "done", "files_touched": [
+      "agent-system/extensions/core/index-entries.json"
+    ]},
+    {"id": 3, "description": "Redeploy, run generate-context-line-counts.sh --check for accumulated mismatch set", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run generate-context-line-counts.sh --write from deployed copy", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Redeploy and re-run check-extension-docs.sh: expect 0 issues", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run full verify-deploy.sh --findings (no --skip-slow), confirm exit 0 empty findings", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Write user handoff note for live-CI confirmation", "status": "done", "files_touched": [
+      "specs/086_expand_ci_to_full_gate_suite_and_go_green/progress/phase7-user-handoff-note.md"
+    ]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": {
+    "check_before_write": "0 mismatch, 0 null, 0 missing source (496 entries) -- because Phase 6 already regenerated the 16 pre-existing mismatches and this phase's new entry's line_count (92) was set from a live wc -l at authoring time",
+    "write_result": "0 changed -- confirms --write is idempotent given the above; git diff on index-entries.json shows only the one new entry addition (28 lines), no line_count value changes",
+    "check_extension_docs_after": "PASS: all extensions OK, 0 issues",
+    "full_verify_deploy_findings": "[verify-deploy] PASS -- 25 check(s), 0 failure(s), exit 0, empty FINDING set",
+    "bash_n": "n/a (no scripts modified this phase)"
+  }
+}
