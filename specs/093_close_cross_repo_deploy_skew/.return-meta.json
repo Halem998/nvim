@@ -1,32 +1,79 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": [
+    "orchestrator",
+    "plan",
+    "planner-agent"
+  ],
   "task_number": 93,
   "session_id": "sess_1787630527_96eca3_93",
-  "findings_count": 12,
-  "next_steps": "Run /plan 93 to create implementation plan",
+  "next_steps": "Run /implement 93 to execute the plan",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md",
-      "summary": "Recommends reusing deploy-freshness-lib.sh's existing deploy_freshness_status unchanged, adding a new git-tracked known-consumer-repos registry, a new check-consumer-freshness.sh reporting script with a --discover reconciliation mode, a hook in deploy-headless.sh naming stale consumers after each deploy, and a bounded non-blocking consecutive-ignore escalation on the existing per-repo tier-1 warning. Measured 8 live consumer repos on this machine today (2 more than the task delegation named). Flags that the declared file_scope needs widening to include two new files."
+      "type": "plan",
+      "path": "specs/093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md",
+      "summary": "7-phase, ~6h plan adding a source-side tier-3 cross-repo fleet freshness report: git-tracked consumer registry, new check-consumer-freshness.sh (with --discover), a guarded post-deploy stale-consumer report in deploy-headless.sh, and a non-blocking consecutive-ignore escalation on tier 1."
     }
   ],
+  "metadata": {
+    "phase_count": 7,
+    "estimated_hours": 6,
+    "dependency_waves": [
+      [
+        1,
+        5
+      ],
+      [
+        2
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        6,
+        7
+      ]
+    ],
+    "complexity": "medium",
+    "file_scope_widened": true,
+    "file_scope": [
+      "agent-system/extensions/core/context/reference/known-consumer-repos.json",
+      "agent-system/extensions/core/scripts/check-consumer-freshness.sh",
+      "agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh",
+      "agent-system/extensions/core/manifest.json",
+      "agent-system/extensions/core/scripts/check-deploy-freshness.sh",
+      "agent-system/extensions/core/scripts/deploy-headless.sh",
+      "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+      "agent-system/extensions/core/root-files/.gitignore",
+      "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+      "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
+      "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+    ],
+    "session_id": "sess_1787630527_96eca3_93",
+    "agent_type": "planner-agent",
+    "delegation_path": [
+      "orchestrator",
+      "plan",
+      "planner-agent"
+    ],
+    "delegation_depth": 3
+  },
   "memory_candidates": [
     {
-      "content": "deploy-freshness-lib.sh's deploy_freshness_status(repo_root, extension_name) is already repo-root-parametric: since the value it compares (source_dir) is an absolute path back into the source-store repo, the function works unmodified when called against ANY consumer repo's path, not just $(pwd)/$PROJECT_ROOT. A cross-repo fleet staleness report needs only a new enumeration+reporting layer on top of this existing primitive, never a new comparison algorithm.",
+      "content": "Adding a NEW script under agent-system/extensions/core/scripts/ is never a one-file change in this repo: check-extension-docs.sh rule Q (check_undeclared_scripts) hard-fails on any script on disk absent from manifest.json's provides.scripts, and an operator-facing standalone script also belongs in docs/reference/utility-scripts-inventory.md. Adding a NEW ephemeral runtime file has three parallel registration surfaces: a **/.name pattern in root-files/.gitignore, a row in context/standards/orchestrator-runtime-files.md's two-class table, and a probe in check-runtime-file-tracking.sh's EPHEMERAL_PROBES (checks A/B fail otherwise). Also: manifest provides.context declares whole DIRECTORIES (e.g. 'reference'), so anything placed under context/reference/ deploys to every consumer -- 'source-repo-only metadata' is not achievable there without manifest surgery.",
       "category": "PATTERN",
-      "source_artifact": "specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md",
+      "source_artifact": "specs/093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-freshness-lib", "cross-repo", "source_git_head", "deploy_freshness_status", "consumer-repos"]
-    },
-    {
-      "content": "This machine has 8 live consumer repos of ~/.config/nvim's agent-system source store, spread across three unrelated root directories (~/.dotfiles, ~/Projects/**, ~/Philosophy/Papers/**): .dotfiles, Projects/{BimodalLogic,ModelChecker,PersonalWebsite,cslib}, Projects/Logos/{Theory,Hardware}, Philosophy/Papers/PossibleWorlds. Discoverable via: find /home -maxdepth 6 -name .claude-extensions.json, filtered on core.source_dir matching this repo's agent-system/extensions/core path.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["consumer-repos", "deploy", "fleet", "machine-inventory"]
+      "suggested_keywords": [
+        "manifest",
+        "provides-scripts",
+        "check-extension-docs",
+        "runtime-files",
+        "gitignore",
+        "new-script-checklist"
+      ]
     }
   ]
 }

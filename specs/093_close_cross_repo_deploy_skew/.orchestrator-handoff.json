@@ -1,11 +1,36 @@
 {
-  "dispatch_seq": 2,
+  "dispatch_seq": 4,
   "task_number": 93,
   "session_id": "sess_1787630527_96eca3_93",
-  "stage": "research",
-  "status": "researched",
-  "report_path": "specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md",
-  "summary": "Research complete. Recommendation: reuse deploy-freshness-lib.sh's deploy_freshness_status unmodified; add a new git-tracked consumer registry (agent-system/extensions/core/context/reference/known-consumer-repos.json), a new check-consumer-freshness.sh reporting script (with a --discover reconciliation mode), a hook in deploy-headless.sh's existing trailing block naming stale consumers after each deploy, and a bounded non-blocking consecutive-ignore-warning escalation inside check-deploy-freshness.sh. No push into consumer repos anywhere in the design -- preserves regeneration-is-manual-only.md's pull-only architecture. Measured 8 live consumer repos on this machine (2 more than the task delegation named: Logos/Hardware and Philosophy/Papers/PossibleWorlds, beyond the delegation's BimodalLogic/Theory/nvim trio).",
-  "next_action": "Run /plan 93. Declared file_scope (check-deploy-freshness.sh, deploy-headless.sh, regeneration-is-manual-only.md) needs widening at plan time to include the two new files the design requires.",
-  "blockers": []
+  "stage": "plan",
+  "status": "planned",
+  "plan_path": "specs/093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md",
+  "summary": "7-phase (~6h) plan for a source-side tier-3 cross-repo fleet freshness view. Phase 1: git-tracked consumer registry at agent-system/extensions/core/context/reference/known-consumer-repos.json (path + note per consumer, plus discover_roots). Phase 2: new scripts/check-consumer-freshness.sh reusing deploy_freshness_status unmodified, reporting repo x extension x status x commits-behind for every registered consumer, plus manifest.json provides.scripts registration. Phase 3: --discover reconciliation naming unregistered on-disk consumers (never auto-edits the registry). Phase 4: guarded post-deploy stale-consumer report inside deploy-headless.sh's main(), verify result captured to a variable so the 0/1/2/3 exit contract is byte-for-byte preserved. Phase 5: DECISION on acceptance criterion (c) -- escalate, visibility-only, never blocking, counting consecutive command invocations (not days), threshold 5, state at specs/.freshness-warn-streak.json, with its three mandatory registration surfaces. Phase 6: fixture suite tests/test-consumer-freshness.sh. Phase 7: tier-3 documentation in regeneration-is-manual-only.md plus the utility-scripts inventory entry. No push into any consumer anywhere in the design.",
+  "next_action": "Run /implement 93. Waves: [1,5] -> [2] -> [3,4] -> [6,7]. Phases 4 and 5 are the two full-verification-tier, highest-risk phases (deploy engine and the CHECKPOINT-1 preflight check respectively) and should not be batched with others.",
+  "file_scope_widened": true,
+  "file_scope": [
+    "agent-system/extensions/core/context/reference/known-consumer-repos.json",
+    "agent-system/extensions/core/scripts/check-consumer-freshness.sh",
+    "agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-deploy-freshness.sh",
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/root-files/.gitignore",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+  ],
+  "blockers": [],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md",
+      "summary": "7-phase cross-repo consumer freshness reporting plan (registry + report script + deploy hook + tier-1 escalation + tests + docs)."
+    }
+  ],
+  "sorry_inventory": [],
+  "continuation_path": null
 }
