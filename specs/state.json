@@ -111,6 +111,33 @@
           "type": "report",
           "summary": "8-finding research report with concrete before/after revisions for task.md step 4, skill-fix-it's keyword table, the latex/typst manifests, extension purpose framing, and two adjacent doc gaps."
         }
+      ],
+      "memory_candidates": [
+        {
+          "content": "task.md's step 4b cross-manifest keyword_overrides scan (`for manifest in .claude/extensions/*/manifest.json`) is alphabetical-directory-glob-ordered and breaks on first match, not intent-ordered. Directory names that sort earlier (e.g. \"latex\" < \"lean\") win races against later-sorting extensions if both declare keyword_overrides on overlapping vocabulary. Currently latent (only email/cslib/literature use keyword_overrides today) but worth checking whenever a new extension adds this field.",
+          "category": "PATTERN",
+          "source_artifact": "specs/062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md",
+          "confidence": 0.7,
+          "suggested_keywords": [
+            "keyword_overrides",
+            "task-routing",
+            "glob-order",
+            "task.md",
+            "extension-manifest"
+          ]
+        },
+        {
+          "content": "The root CLAUDE.md (merge-sources/claudemd.md) points extension authors at context/guides/extension-development.md for the keyword_overrides schema, but that guide contains zero mentions of \"keyword\" -- the schema is undocumented there. The only worked examples live in the email/cslib/literature manifest.json files themselves.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "keyword_overrides",
+            "extension-development",
+            "doc-gap",
+            "CLAUDE.md"
+          ]
+        }
       ]
     },
     {
