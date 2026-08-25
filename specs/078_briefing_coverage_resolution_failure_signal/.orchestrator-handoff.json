@@ -1,0 +1,13 @@
+{
+  "dispatch_seq": 1,
+  "task_number": 78,
+  "stage": "research",
+  "status": "researched",
+  "session_id": "sess_1787630527_96eca3_78",
+  "artifacts": [
+    "specs/078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md"
+  ],
+  "summary": "Research complete. Defect confirmed and precisely located in literature-briefing.sh's repo-mode loop (skip site line 191-194, no counter) plus a second silent-exit site (line 294-297, full-failure case) that must also be fixed. Recommended design: fold a new skip-rate signal into the existing sparse marker/banner machinery (new LITERATURE_SKIP_RATE_THRESHOLD env var, sparse=true also fires on high skip rate) so both existing consumers (lit-stage4a-flow.md, adhoc-navigation-directive.md) respond correctly with zero edits to either file. literature-lit-flag-resolve.sh confirmed out of scope by its own header comment. Test scaffold: test-lit-pipeline.sh Section F already has a header comment earmarking this exact regression as deferred; a new Section G should extend its fixture idiom.",
+  "next_steps": "Run /plan 78 to create implementation plan from this research report.",
+  "blockers": []
+}
