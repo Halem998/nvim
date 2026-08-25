@@ -15,6 +15,17 @@
 #   5. Rebuild global .literature.db (literature-build-index.sh --global)
 #   6. Offer local loading (copy to specs/literature/, rebuild local index)
 #
+# Placement: every new document lands at $LITERATURE_DIR/sources/<doc_id>/, never at the
+# old top-level $LITERATURE_DIR/<doc_id>/. Two reasons this is load-bearing, not cosmetic:
+#   - literature-fidelity-audit.sh targets sources/<dir>/ exclusively; a top-level entry is
+#     never matched or stamped with provenance_fidelity.
+#   - The index-entry .path field's sources/<dir>/ component IS the bridge this extension
+#     uses to derive the FTS chunks_data.doc_id from index.json (see literature-doc-key.sh).
+#     A top-level entry breaks that derivation for itself.
+#   literature-build-index.sh discovers manifests via a recursive `find -name chunks.json`,
+#   so placement is FTS-neutral -- this is a fidelity/bridge-eligibility change, not an
+#   FTS-discovery one.
+#
 # Environment:
 #   LITERATURE_DIR  — Global library path (default: ~/Projects/Literature)
 #   ZOTERO_LIBRARY_PATH — Path to zotero-library.json (default: ~/Projects/Literature/zotero-library.json)
@@ -175,8 +186,11 @@ for source_file in "${SOURCE_FILES[@]}"; do
   BASE_DOC_ID=$(echo "$BASE_DOC_ID" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cs '[:alnum:]_.-' '_')
   BASE_DOC_ID="${BASE_DOC_ID%_}"
 
-  # Output directory for this document
-  DOC_DIR="$LITERATURE_DIR/$BASE_DOC_ID"
+  # Output directory for this document. Placed under sources/<id>/, matching the
+  # already-fully-consolidated corpus layout (0 of 399 index entries have a non-
+  # sources/-prefixed .path) -- see the pipeline comment block above for why this
+  # placement matters beyond mere convention.
+  DOC_DIR="$LITERATURE_DIR/sources/$BASE_DOC_ID"
 
   # Check for re-ingestion: warn if doc_id already exists
   GLOBAL_INDEX="$LITERATURE_DIR/index.json"
@@ -248,8 +262,8 @@ print('yes' if existing else 'no')
   MD_FILE=$(ls "$TMP_MD_DIR"/*.md | head -1)
   DOC_ID=$(basename "$MD_FILE" .md)
 
-  # Update DOC_DIR to use the actual doc_id
-  DOC_DIR="$LITERATURE_DIR/$DOC_ID"
+  # Update DOC_DIR to use the actual doc_id, still under sources/<id>/
+  DOC_DIR="$LITERATURE_DIR/sources/$DOC_ID"
   mkdir -p "$DOC_DIR"
 
   log "doc_id: $DOC_ID"
@@ -372,7 +386,7 @@ if [ "${do_local_loading:-0}" -eq 1 ]; then
   mkdir -p "$LOCAL_LIT_DIR"
 
   for doc_id in "${INGESTED_DOC_IDS[@]}"; do
-    DOC_SRC="$LITERATURE_DIR/$doc_id"
+    DOC_SRC="$LITERATURE_DIR/sources/$doc_id"
     DOC_DST="$LOCAL_LIT_DIR/$doc_id"
 
     if [ -d "$DOC_SRC" ]; then

@@ -1,0 +1,31 @@
+{
+  "phase": 4,
+  "phase_name": "Move new ingests under sources/<id>/ (Decision A)",
+  "started_at": "2026-08-25T01:16:00Z",
+  "last_updated": "2026-08-25T01:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Change DOC_DIR to sources/<id>/ at both assignment sites", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 2, "description": "metadata.json chunks_dir follows new location", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Audit and update --local copy step DOC_SRC", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 4, "description": "Update header pipeline comment", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 5, "description": "Confirm build-index discovers new manifest by execution", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Plan named one DOC_DIR assignment (`DOC_DIR=\"$LITERATURE_DIR/$DOC_ID\"`)",
+      "type": "altered",
+      "reason": "Grep for 'LITERATURE_DIR/$DOC_ID' and 'LITERATURE_DIR/$BASE_DOC_ID' per the Scope Hypothesis found TWO DOC_DIR assignment sites, not one: a provisional pre-conversion assignment keyed on BASE_DOC_ID (used only for the re-ingestion cleanup check) and the final post-conversion assignment keyed on the actual DOC_ID. Both moved to sources/ for consistency.",
+      "annotation": "*(completed: both sites moved)*"
+    }
+  ],
+  "verification_evidence": {
+    "end_to_end_fixture_ingest": "Synthesized a minimal 1-page PDF via PyMuPDF (fitz), ingested into a scratch LITERATURE_DIR via the source-store literature-ingest.sh. Chunks landed at <scratch>/sources/phase77_fixture_doc/{chunk_0001.md,chunks.json,metadata.json}; nothing written at <scratch>/phase77_fixture_doc/ (confirmed absent).",
+    "fts_rows": ".literature.db in the scratch dir contains a chunks_data row with doc_id='phase77_fixture_doc' after the ingest's own literature-build-index.sh --global step.",
+    "toc_confirmed": "literature-search.sh --toc phase77_fixture_doc against the scratch corpus returns the real chunk (not []).",
+    "local_step": "Re-ran the same fixture with --local into a scratch git repo: specs/literature/phase77_fixture_doc/ populated correctly (copy source is sources/<id>/ in the global lib; local destination convention unchanged, out of this phase's scope)."
+  }
+}

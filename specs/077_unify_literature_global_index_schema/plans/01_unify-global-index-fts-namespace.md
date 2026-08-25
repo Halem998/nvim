@@ -384,23 +384,23 @@ the corrected list in the phase notes.
 
 ---
 
-### Phase 4: Move new ingests under `sources/<id>/` (Decision A) [NOT STARTED]
+### Phase 4: Move new ingests under `sources/<id>/` (Decision A) [COMPLETED]
 
 **Goal**: Land the filesystem-placement half of the writer fix on its own, so that a placement
 regression is isolated from the index-schema change that follows.
 
 **Tasks**:
-- [ ] In `literature-ingest.sh`, change `DOC_DIR="$LITERATURE_DIR/$DOC_ID"` to
+- [x] In `literature-ingest.sh`, change `DOC_DIR="$LITERATURE_DIR/$DOC_ID"` to
       `DOC_DIR="$LITERATURE_DIR/sources/$DOC_ID"`, and ensure `mkdir -p` creates the intermediate
-      `sources/` level.
-- [ ] Update `metadata.json`'s `chunks_dir` to follow the new location.
-- [ ] Audit and update the `--local` copy step and any later `DOC_DIR`-derived path in the same
-      script (including the summary output) for the new layout.
-- [ ] Update the pipeline comment block in the script header to state the `sources/` placement and
-      the reason (fidelity-audit targeting + path-derived FTS bridge).
-- [ ] Confirm by execution that `literature-build-index.sh --global` still discovers the new
+      `sources/` level. *(completed: two DOC_DIR sites -- BASE_DOC_ID provisional assignment and the post-conversion actual-DOC_ID assignment -- both moved; mkdir -p already creates intermediates)*
+- [x] Update `metadata.json`'s `chunks_dir` to follow the new location. *(completed: chunks_dir is written from $DOC_DIR directly, follows automatically)*
+- [x] Audit and update the `--local` copy step and any later `DOC_DIR`-derived path in the same
+      script (including the summary output) for the new layout. *(completed: DOC_SRC in the --local loop updated to sources/<id>/; summary output prints doc_ids only, no path, no change needed)*
+- [x] Update the pipeline comment block in the script header to state the `sources/` placement and
+      the reason (fidelity-audit targeting + path-derived FTS bridge). *(completed)*
+- [x] Confirm by execution that `literature-build-index.sh --global` still discovers the new
       manifest — its recursive `find ... -name chunks.json` is placement-agnostic, but this must be
-      demonstrated on a real ingest, not assumed.
+      demonstrated on a real ingest, not assumed. *(completed: end-to-end fixture ingest, DB rebuilt with 1 chunk indexed under sources/phase77_fixture_doc/)*
 
 **Timing**: 1.5 hours
 
