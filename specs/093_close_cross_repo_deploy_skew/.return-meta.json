@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 93,
+  "session_id": "sess_1787630527_96eca3_93",
+  "findings_count": 12,
+  "next_steps": "Run /plan 93 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md",
+      "summary": "Recommends reusing deploy-freshness-lib.sh's existing deploy_freshness_status unchanged, adding a new git-tracked known-consumer-repos registry, a new check-consumer-freshness.sh reporting script with a --discover reconciliation mode, a hook in deploy-headless.sh naming stale consumers after each deploy, and a bounded non-blocking consecutive-ignore escalation on the existing per-repo tier-1 warning. Measured 8 live consumer repos on this machine today (2 more than the task delegation named). Flags that the declared file_scope needs widening to include two new files."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "deploy-freshness-lib.sh's deploy_freshness_status(repo_root, extension_name) is already repo-root-parametric: since the value it compares (source_dir) is an absolute path back into the source-store repo, the function works unmodified when called against ANY consumer repo's path, not just $(pwd)/$PROJECT_ROOT. A cross-repo fleet staleness report needs only a new enumeration+reporting layer on top of this existing primitive, never a new comparison algorithm.",
+      "category": "PATTERN",
+      "source_artifact": "specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-freshness-lib", "cross-repo", "source_git_head", "deploy_freshness_status", "consumer-repos"]
+    },
+    {
+      "content": "This machine has 8 live consumer repos of ~/.config/nvim's agent-system source store, spread across three unrelated root directories (~/.dotfiles, ~/Projects/**, ~/Philosophy/Papers/**): .dotfiles, Projects/{BimodalLogic,ModelChecker,PersonalWebsite,cslib}, Projects/Logos/{Theory,Hardware}, Philosophy/Papers/PossibleWorlds. Discoverable via: find /home -maxdepth 6 -name .claude-extensions.json, filtered on core.source_dir matching this repo's agent-system/extensions/core path.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["consumer-repos", "deploy", "fleet", "machine-inventory"]
+    }
+  ]
+}

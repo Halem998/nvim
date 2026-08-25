@@ -1,0 +1,11 @@
+{
+  "dispatch_seq": 2,
+  "task_number": 93,
+  "session_id": "sess_1787630527_96eca3_93",
+  "stage": "research",
+  "status": "researched",
+  "report_path": "specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md",
+  "summary": "Research complete. Recommendation: reuse deploy-freshness-lib.sh's deploy_freshness_status unmodified; add a new git-tracked consumer registry (agent-system/extensions/core/context/reference/known-consumer-repos.json), a new check-consumer-freshness.sh reporting script (with a --discover reconciliation mode), a hook in deploy-headless.sh's existing trailing block naming stale consumers after each deploy, and a bounded non-blocking consecutive-ignore-warning escalation inside check-deploy-freshness.sh. No push into consumer repos anywhere in the design -- preserves regeneration-is-manual-only.md's pull-only architecture. Measured 8 live consumer repos on this machine (2 more than the task delegation named: Logos/Hardware and Philosophy/Papers/PossibleWorlds, beyond the delegation's BimodalLogic/Theory/nvim trio).",
+  "next_action": "Run /plan 93. Declared file_scope (check-deploy-freshness.sh, deploy-headless.sh, regeneration-is-manual-only.md) needs widening at plan time to include the two new files the design requires.",
+  "blockers": []
+}
