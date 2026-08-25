@@ -1,9 +1,50 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/078_briefing_coverage_resolution_failure_signal/summaries/01_coverage-resolution-failure-signal-summary.md",
+      "summary": "Execution summary for the lit-coverage resolution-failure-signal fix: instrumented skip path, extended marker schema, documented threshold policy, added Section G regression test, verified both marker consumers unchanged."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Instrumented literature-briefing.sh's repo-mode skip site with a counter/array, ended the silent full-failure exit, extended the lit-coverage marker with requested=/resolved=/skipped=/skip_rate= folded into the existing sparse boolean via a new skip-rate threshold, surfaced skipped doc_ids in the briefing body, documented the policy in sparse-coverage.md, and added a Section G regression test (4 assertion groups, confirmed to fail on revert) to test-lit-pipeline.sh -- full runtime suite passes 30/30 and both existing marker consumers verified unmodified and functioning."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-briefing.sh",
+    "agent-system/extensions/literature/context/project/literature/domain/sparse-coverage.md",
+    "agent-system/extensions/literature/index-entries.json",
+    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding new fields to a greppable machine-readable marker line that existing consumers pattern-match with a `.*`-tolerant grep, append new fields strictly after all pre-existing fields (never interleave) and verify byte-for-byte prefix stability empirically by diffing marker output from the pre-change script against the post-change script on identical fixtures -- don't just reason about it, actually capture both and diff.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/078_briefing_coverage_resolution_failure_signal/summaries/01_coverage-resolution-failure-signal-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["marker-schema", "backward-compatibility", "grep-contract", "byte-for-byte-diff", "consumer-verification"]
+    },
+    {
+      "content": "When a regression test asserts a fix closes a defect, confirm the test actually detects the defect (not just that it passes) by temporarily reverting the fix, re-running the test, confirming it fails, then restoring the fix and re-verifying a clean run. A test that passes vacuously (never having failed against the pre-fix code) provides no real regression protection.",
+      "category": "PATTERN",
+      "source_artifact": "specs/078_briefing_coverage_resolution_failure_signal/summaries/01_coverage-resolution-failure-signal-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["regression-test", "revert-and-verify", "test-validity", "fixture-design"]
+    },
+    {
+      "content": "literature-search.sh's do_search() quarantines any doc_id whose provenance_fidelity (looked up from $LITERATURE_DIR/index.json) is missing or one of unverified_summary/unverified_no_baseline/unadjudicated -- fail-open means an absent index.json entry is treated as unverified and excluded from default search results. A hand-built global-mode test fixture for literature-briefing.sh --global must include an index.json entry with provenance_fidelity: verified_conversion for the doc_id backing its chunks_data rows, or the search silently returns zero results.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/078_briefing_coverage_resolution_failure_signal/summaries/01_coverage-resolution-failure-signal-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["literature-search", "provenance_fidelity", "quarantine", "test-fixture", "global-mode"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1787630527_96eca3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

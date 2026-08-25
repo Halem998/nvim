@@ -1,22 +1,30 @@
 {
-  "dispatch_seq": 3,
+  "dispatch_seq": 5,
+  "status": "implemented",
+  "phases_completed": 5,
+  "phases_total": 5,
   "task_number": 78,
-  "stage": "plan",
-  "status": "planned",
-  "session_id": "sess_1787630527_96eca3_78",
-  "plan_path": "specs/078_briefing_coverage_resolution_failure_signal/plans/01_coverage-resolution-failure-signal.md",
-  "phase_count": 5,
-  "estimated_hours": 5.5,
-  "dependency_waves": [[1], [2], [3, 4], [5]],
-  "file_scope_widening_required": true,
-  "file_scope_requested": [
+  "session_id": "sess_1787630527_96eca3",
+  "timestamp": "2026-08-25T04:27:51Z",
+  "immediate_next_action": "None -- all 5 plan phases completed, verified, and committed. Task ready for orchestrator postflight (task-status transition to completed, artifact linking, TODO.md/state.json regeneration).",
+  "current_state": "All 5 phases of specs/078_briefing_coverage_resolution_failure_signal/plans/01_coverage-resolution-failure-signal.md are [COMPLETED]. literature-briefing.sh instruments the repo-mode skip site, ends the silent full-failure exit, extends the lit-coverage marker with requested=/resolved=/skipped=/skip_rate=, folds a skip-rate rule into the existing sparse boolean, adds a [SKIPPED SOURCES ...] banner and an ## Unresolved Documents body section. sparse-coverage.md documents the threshold policy. index-entries.json is resynced. test-lit-pipeline.sh Section G (4 assertion groups: partial failure, isolated skip-rate disjunct, total failure, negative control) passes and was confirmed to fail when the fix is reverted. Full runtime suite: 30/30 passed. Both marker consumers (lit-stage4a-flow.md, adhoc-navigation-directive.md) verified unmodified and still functioning via the literal grep + byte-for-byte prefix diff against the pre-change script.",
+  "key_decisions": [
+    "Reused the existing sparse boolean/marker/banner machinery for the skip-rate signal rather than adding a second, unconsumed flag -- satisfies AC1 and AC3 simultaneously with zero edits to lit-stage4a-flow.md or adhoc-navigation-directive.md.",
+    "New marker fields appended strictly after the pre-existing threshold=T field, verified byte-for-byte identical prefix against the pre-change script on identical global-mode fixtures.",
+    "LITERATURE_SKIP_RATE_THRESHOLD default 50 (percent, >=), documented as a conservative, uncalibrated starting value in sparse-coverage.md.",
+    "Full-failure fallthrough gated strictly on skip_count -gt 0 so the pre-existing legitimately-empty-sub-index silent-exit guards are untouched (covered by a Section G negative control)."
+  ],
+  "deviations_from_plan": [],
+  "what_not_to_try": [],
+  "references": {
+    "plan_path": "specs/078_briefing_coverage_resolution_failure_signal/plans/01_coverage-resolution-failure-signal.md",
+    "summary_path": "specs/078_briefing_coverage_resolution_failure_signal/summaries/01_coverage-resolution-failure-signal-summary.md",
+    "report_path": "specs/078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md"
+  },
+  "modified_files": [
     "agent-system/extensions/literature/scripts/literature-briefing.sh",
     "agent-system/extensions/literature/context/project/literature/domain/sparse-coverage.md",
-    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
-    "agent-system/extensions/literature/index-entries.json"
-  ],
-  "file_scope_widening_rationale": "AC5 requires a regression test, whose established home is test-lit-pipeline.sh Section G (Section F's header comment names this defect as the deferred companion). AC4's edit to sparse-coverage.md invalidates its index-entries.json entry line_count (currently 33), which the extension's convention requires resyncing. Neither addition is discretionary.",
-  "scoping_note": "Making sparse=true fire on a high repo-mode skip rate changes what the marker says, but both existing consumers poll only mode=global, so nothing downstream currently re-prompts on a sparse repo-mode marker. The plan does not claim otherwise; wiring a repo-mode re-prompt into lit-stage4a-flow.md's SUBINDEX_PRESENT/SPARSE_PROMPT_NEEDED branches is an explicit non-goal, flagged here in case the user wants it as a follow-up.",
-  "key_design_decision": "Fold the skip-rate signal into the EXISTING sparse boolean via a disjunction (LITERATURE_SKIP_RATE_THRESHOLD, default 50%) rather than adding a parallel flag. This satisfies AC1 and AC3 simultaneously with zero edits to lit-stage4a-flow.md or adhoc-navigation-directive.md. New marker fields (requested/resolved/skipped/skip_rate) are appended strictly after threshold=T, leaving mode=/seg_count=/sparse= byte-for-byte adjacent.",
-  "next_steps": "Run /implement 78"
+    "agent-system/extensions/literature/index-entries.json",
+    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh"
+  ]
 }
