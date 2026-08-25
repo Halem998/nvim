@@ -522,30 +522,57 @@ the sweep finds additional contradicting statements, add them to the recorded fo
 
 ---
 
-### Phase 8: Full verification sweep [IN PROGRESS]
+### Phase 8: Full verification sweep [COMPLETED]
 
 **Goal**: Run the complete gate set and confirm the delta against the captured baseline is clean.
 
 **Tasks**:
-- [ ] `jq empty` on all four edited fragments
-- [ ] `jq -e 'has("mcpServers") | not'` on all four edited fragments
-- [ ] `jq -e '.permissions.allow == ["mcp__nixos__nix","mcp__nixos__nix_versions"]'` on the nix
-      fragment
-- [ ] `grep -l mcpServers agent-system/extensions/*/settings-fragment.json` returns EXACTLY ONE
+- [x] `jq empty` on all four edited fragments *(completed: all four parse clean)*
+- [x] `jq -e 'has("mcpServers") | not'` on all four edited fragments *(completed: all four report
+      true)*
+- [x] `jq -e '.permissions.allow == ["mcp__nixos__nix","mcp__nixos__nix_versions"]'` on the nix
+      fragment *(completed: true)*
+- [x] `grep -l mcpServers agent-system/extensions/*/settings-fragment.json` returns EXACTLY ONE
       path: `agent-system/extensions/memory/settings-fragment.json`. Zero is not the target and a
-      zero result means an out-of-scope file was edited.
-- [ ] `bash -n agent-system/extensions/core/scripts/setup-lean-mcp.sh` exits 0
-- [ ] `REPO_ROOT=$(pwd) bash .claude/scripts/check-extension-docs.sh` and diff the per-extension
+      zero result means an out-of-scope file was edited. *(completed: exactly one match, memory)*
+- [x] `bash -n agent-system/extensions/core/scripts/setup-lean-mcp.sh` exits 0 *(completed)*
+- [x] `REPO_ROOT=$(pwd) bash .claude/scripts/check-extension-docs.sh` and diff the per-extension
       status table against `specs/tmp/doclint-baseline.txt`: `epidemiology`, `filetypes`, `founder`,
       `nix` must all still be PASS; `core` and `literature` must still be the only FAILs, with
       core's sole issue still the pre-existing `setup-lean-mcp.sh` deployed-vs-source drift. Any
-      NEW failure is a defect of this task; the two carried-over failures are not.
-- [ ] `bash .claude/scripts/check-task-references.sh` passes -- every edited file lives under
+      NEW failure is a defect of this task; the two carried-over failures are not. *(completed:
+      epidemiology/filetypes/founder/nix all report OK; core and literature remain the only two
+      per-extension FAILs, but ~2 weeks of unrelated work landed on the baseline in the interim
+      (baseline captured 2026-08-11) -- core's original setup-lean-mcp.sh drift line is gone
+      (fixed by an intervening redeploy) and replaced by 10 line_count/index-entries.json
+      mismatches on files this task never touched (context-layers.md, loader-reference.md,
+      file-metadata-exchange.md, postflight-control.md, state-schema.json,
+      postflight-tool-restrictions.md, batch-orchestration-guardrails.md,
+      file-footprint-overlap.md, orchestrator-critical-paths.json, skill-postflight-flow.md);
+      literature's failure reason also changed (literature-index.md line_count) but is likewise
+      unrelated; 3 new project-wide Rule-S FAILs appeared for files unconnected to this task's
+      file_scope. Grepped the full current doc-lint output for this task's three edited files
+      (mcp-server-ownership.md, permission-configuration.md, setup-lean-mcp.sh) -- zero hits,
+      confirming none of the current FAILs are attributable to this task's edits. Byte-identical
+      diff against the baseline is therefore not achievable (the baseline itself is stale), but
+      the substantive gate -- no new failure caused by this task -- holds)*
+- [x] `bash .claude/scripts/check-task-references.sh` passes -- every edited file lives under
       `agent-system/extensions/**`, a deliverable tree where task-number citations are forbidden
-- [ ] Grep the two edited docs for surviving contradictions: no claim that subagents cannot reach
+      *(completed: PASS, 0 unexempted occurrences across all 4 scanned trees)*
+- [x] Grep the two edited docs for surviving contradictions: no claim that subagents cannot reach
       project scope; both the workspace-trust caveat and the session-snapshot trap present
-- [ ] Confirm `git status --short` shows modifications confined to the seven `file_scope` paths
-      plus `specs/028_*/`, and that no `.claude/**` file was hand-edited
+      *(completed: the one "subagents cannot reach project-scoped" hit is inside the session-start
+      snapshot trap's own explanation of the ORIGINAL refuted conclusion, not an assertion; the
+      workspace-trust and session-snapshot subsections are both present)*
+- [x] Confirm `git status --short` shows modifications confined to the seven `file_scope` paths
+      plus `specs/028_*/`, and that no `.claude/**` file was hand-edited *(completed: the seven
+      file_scope paths are already committed from Phases 1-7 (clean vs. HEAD) and specs/028_*/
+      shows no pending change either; git status --short instead shows pre-existing, unrelated
+      dirty state left by other concurrent task work -- .claude-extensions.json, a deleted
+      specs/082_*/.return-meta.json, specs/TODO.md, specs/events.jsonl, specs/state.json, and an
+      untracked agent-system/extensions/literature/scripts/literature-pyenv/ -- none of which is
+      under .claude/** or touches this task's file_scope; confirmed none of it was introduced by
+      this phase's verification-only work)*
 
 **Timing**: 0.4 hours
 
@@ -568,17 +595,19 @@ captured baseline file rather than by reading the exit code, which is non-zero e
 
 ## Testing & Validation
 
-- [ ] All four edited `settings-fragment.json` files pass `jq empty`
-- [ ] `epidemiology`, `filetypes`, `founder` fragments each equal `{}`
-- [ ] `nix` fragment has only a `permissions` key with exactly the two `mcp__nixos__*` grants
-- [ ] Exactly one `mcpServers` block survives across all extension settings fragments (`memory`)
-- [ ] `bash -n` passes on `setup-lean-mcp.sh`; `--help` output renders cleanly
-- [ ] `check-extension-docs.sh` introduces no failure absent from the captured baseline
-- [ ] `check-task-references.sh` passes
-- [ ] `mcp-server-ownership.md` states the hybrid model, the same-scope grant rule, the
+- [x] All four edited `settings-fragment.json` files pass `jq empty`
+- [x] `epidemiology`, `filetypes`, `founder` fragments each equal `{}`
+- [x] `nix` fragment has only a `permissions` key with exactly the two `mcp__nixos__*` grants
+- [x] Exactly one `mcpServers` block survives across all extension settings fragments (`memory`)
+- [x] `bash -n` passes on `setup-lean-mcp.sh`; `--help` output renders cleanly
+- [x] `check-extension-docs.sh` introduces no failure absent from the captured baseline
+      *(completed: no failure traced to this task's three edited files; unrelated drift
+      accumulated on the baseline over the intervening period -- see Phase 8 note)*
+- [x] `check-task-references.sh` passes
+- [x] `mcp-server-ownership.md` states the hybrid model, the same-scope grant rule, the
       workspace-trust caveat, and the session-snapshot trap
-- [ ] `permission-configuration.md`'s MCP section does not contradict the ownership doc
-- [ ] No `.claude/**` file was modified
+- [x] `permission-configuration.md`'s MCP section does not contradict the ownership doc
+- [x] No `.claude/**` file was modified
 
 ## Artifacts & Outputs
 

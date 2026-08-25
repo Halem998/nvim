@@ -1,0 +1,28 @@
+{
+  "phase": 8,
+  "phase_name": "Full verification sweep",
+  "started_at": "2026-08-24T00:00:00Z",
+  "last_updated": "2026-08-24T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "jq empty / has(mcpServers)|not / permissions.allow exact-match on the four edited fragments", "status": "done", "files_touched": []},
+    {"id": 2, "description": "grep -l mcpServers across all extension fragments returns exactly one path (memory)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "bash -n on setup-lean-mcp.sh exits 0", "status": "done", "files_touched": []},
+    {"id": 4, "description": "check-extension-docs.sh run and diffed against captured baseline; confirm epidemiology/filetypes/founder/nix still PASS and no new failure traces to this task's three edited files", "status": "done", "files_touched": []},
+    {"id": 5, "description": "check-task-references.sh passes", "status": "done", "files_touched": []},
+    {"id": 6, "description": "grep the two edited docs for surviving contradictions; confirm workspace-trust caveat and session-snapshot trap present", "status": "done", "files_touched": []},
+    {"id": 7, "description": "confirm git status --short shows no task file_scope drift and no .claude/** hand-edit", "status": "done", "files_touched": []},
+    {"id": 8, "description": "check off Phase 8 and Testing & Validation checklists in the plan; mark Phase 8 [COMPLETED]", "status": "done", "files_touched": ["specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/plans/01_mcp-ownership-hybrid-rewrite.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.4",
+      "description": "check-extension-docs.sh summary table byte-identical to captured baseline",
+      "type": "altered",
+      "reason": "Baseline was captured 2026-08-11; roughly two weeks of unrelated task work landed in the interim, producing ~10 new core index-entries.json line_count mismatches, a changed literature failure reason, and 3 new project-wide Rule-S failures -- none traceable to this task's three edited files (verified by grepping the current doc-lint output for mcp-server-ownership.md, permission-configuration.md, setup-lean-mcp.sh: zero hits). Verified the substantive gate (epidemiology/filetypes/founder/nix PASS; no new failure attributable to this task) instead of the literal byte-identical diff.",
+      "annotation": "*(deviation: altered — verified substantive no-new-failure gate instead of byte-identical baseline diff, since the baseline itself accumulated unrelated drift; see Phase 8 checklist note)*"
+    }
+  ]
+}

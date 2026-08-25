@@ -1,9 +1,35 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/summaries/01_mcp-ownership-hybrid-rewrite-summary.md",
+      "summary": "All eight plan phases complete; closed Phase 8's verification sweep and recorded the doc-lint baseline-drift deviation."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the final open phase (Phase 8, a report-only verification sweep) of the MCP ownership hybrid rewrite: ran and passed the full gate set (jq checks on four settings fragments, script syntax check, doc-lint no-new-failure check, task-reference lint, contradiction grep, git-status scope check), checked off all remaining plan checklists, and marked Phase 8 [COMPLETED]. Phases 1-7 were already committed by prior dispatches."
+  },
+  "modified_files": [
+    "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/plans/01_mcp-ownership-hybrid-rewrite.md",
+    "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/progress/phase-8-progress.json",
+    "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/summaries/01_mcp-ownership-hybrid-rewrite-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's Phase 8 verification step demands a byte-identical doc-lint diff against a captured baseline, treat the baseline as time-bound: if enough calendar time passes between capture and the verification dispatch, unrelated repo drift (other tasks' edits to index-entries.json-tracked files) will inflate the diff. The correct verification is not the literal byte-diff but grepping the current doc-lint output for the task's own edited files and confirming zero hits, plus confirming the specific extensions this task touched still PASS. Record this substitution explicitly as a deviation rather than silently declaring the phase failed or silently fudging the byte-diff check.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/summaries/01_mcp-ownership-hybrid-rewrite-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["doc-lint", "baseline-drift", "check-extension-docs", "verification-sweep", "stale-baseline"]
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1786459614_0c9ada",
+    "session_id": "sess_1787617685_88b825",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }

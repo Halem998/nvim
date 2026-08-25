@@ -1,0 +1,26 @@
+{
+  "dispatch_seq": 1,
+  "status": "implemented",
+  "summary": "All eight plan phases are now [COMPLETED]. This dispatch closed the final open phase (Phase 8, a report-only full verification sweep): ran and passed the complete gate set (jq empty/has-mcpServers/permissions.allow checks on the four edited settings fragments, exactly-one-mcpServers-survivor grep, setup-lean-mcp.sh syntax check, check-extension-docs.sh no-new-failure confirmation, check-task-references.sh PASS, contradiction grep on the two edited docs, git-status scope confirmation), checked off every remaining box in the Phase 8 task list and the Testing & Validation section, and marked Phase 8 [COMPLETED]. Phases 1-7 were already committed by prior dispatches; no source-store file besides the plan file itself was touched in this dispatch.",
+  "phases_completed": 8,
+  "phases_total": 8,
+  "plan_markers_verified": true,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/plans/01_mcp-ownership-hybrid-rewrite.md",
+      "summary": "All eight phase headings now [COMPLETED]; Phase 8 and Testing & Validation checklists fully checked off with completion annotations."
+    },
+    {
+      "type": "summary",
+      "path": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/summaries/01_mcp-ownership-hybrid-rewrite-summary.md",
+      "summary": "Implementation summary covering all eight phases and the Phase 7 follow-up list."
+    },
+    {
+      "type": "progress",
+      "path": "specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/progress/phase-8-progress.json",
+      "summary": "Phase 8 objectives and the baseline-drift deviation record."
+    }
+  ],
+  "blockers": []
+}
