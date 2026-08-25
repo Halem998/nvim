@@ -264,24 +264,24 @@ Confirm at implementation time by re-counting before and after
 
 ---
 
-### Phase 3: flock serialization, result record, and result sharing [NOT STARTED]
+### Phase 3: flock serialization, result record, and result sharing [COMPLETED]
 
 **Goal**: Implement the core fix — serialize builds on the derived lock, and give the waiter a
 share-the-result path instead of a convoy of redundant sequential builds. Implement and document
 the staleness policy.
 
 **Tasks**:
-- [ ] Implement the holder path in `build` mode: `exec {fd}<>"$LOCK"`, then non-blocking
+- [x] Implement the holder path in `build` mode: `exec {fd}<>"$LOCK"`, then non-blocking *(completed)*
       `flock -n "$fd"`. On success this session owns the build.
-- [ ] Before launching, write an **in-flight** result record to `<root>/.lake/build-guard.result`
+- [x] Before launching, write an **in-flight** result record to `<root>/.lake/build-guard.result` *(completed)*
       containing: holder PID, start epoch, the pre-build tree fingerprint, the resolved lake
       binary, and `state=in_flight` with no end timestamp.
-- [ ] Run `lake build "$@"` in the **foreground**, `tee`-ing combined output to the shared log
+- [x] Run `lake build "$@"` in the **foreground**, `tee`-ing combined output to the shared log *(completed)*
       while still writing stdout to stdout and stderr to stderr unchanged. There must be no `&`
       anywhere on the build invocation and the guard must not consume the caller's stdin.
-- [ ] On completion, rewrite the record with `state=complete`, end epoch, the build's exit status,
+- [x] On completion, rewrite the record with `state=complete`, end epoch, the build's exit status, *(completed)*
       the log path, and a **post-build** tree fingerprint (recomputed after the build finished).
-- [ ] Implement `compute_fingerprint()`: over the package's `*.lean` sources (excluding
+- [x] Implement `compute_fingerprint()`: over the package's `*.lean` sources (excluding *(completed)*
       `.lake/`), plus `lakefile.lean`/`lakefile.toml`, `lake-manifest.json`, and `lean-toolchain`.
       Default mode `stat` hashes a sorted `path size mtime` triple list; opt-in mode `hash` hashes
       file contents. Record the rationale inline: the check must be **conservative in one
@@ -291,10 +291,10 @@ the staleness policy.
       to a real `lake build` that Lake then no-ops. Document the residual `stat`-mode edge (a
       restore that reproduces an identical size *and* mtime) and point at `hash` mode for callers
       that cannot accept it.
-- [ ] Implement the waiter path: when `flock -n` fails, a build is in flight. Compute this
+- [x] Implement the waiter path: when `flock -n` fails, a build is in flight. Compute this *(completed)*
       session's own fingerprint, then block on `flock -w "$TIMEOUT" "$fd"`. On timeout, emit a
       visible stderr notice and exit `75`.
-- [ ] On acquiring the lock as a waiter, read the record and apply the **sharing decision**, which
+- [x] On acquiring the lock as a waiter, read the record and apply the **sharing decision**, which *(completed)*
       must pass every one of these or fall through to running a real build:
       1. `state == complete` (an `in_flight` record whose holder died is an **abandoned lock** —
          `flock` releases on process exit, so the lock became acquirable with no PID bookkeeping;
@@ -305,10 +305,10 @@ the staleness policy.
       4. `--no-share` was not passed.
       When all hold, replay the shared log to stdout/stderr and exit with the recorded status,
       launching no build. Otherwise run a real build as the holder would.
-- [ ] Document the full staleness policy — abandoned lock, stale result, max age, fingerprint
+- [x] Document the full staleness policy — abandoned lock, stale result, max age, fingerprint *(completed)*
       asymmetry — as a dedicated block in the script header, since the acceptance criteria require
       it to be documented, not merely implemented.
-- [ ] When `flock` is unavailable, skip serialization with a visible stderr notice and run the
+- [x] When `flock` is unavailable, skip serialization with a visible stderr notice and run the *(completed)*
       build directly (Phase 1's probe).
 
 **Timing**: 1.25 hours
