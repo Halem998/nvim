@@ -1,7 +1,7 @@
 # Implementation Plan: Task #78
 
 - **Task**: 78 - briefing_coverage_resolution_failure_signal
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (predecessor schema-unification task already [COMPLETED])
 - **Research Inputs**: specs/078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md
@@ -128,30 +128,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Instrument the skip path and end the silent full-failure exit [NOT STARTED]
+### Phase 1: Instrument the skip path and end the silent full-failure exit [COMPLETED]
 
 **Goal**: `literature-briefing.sh` counts and records every repo-mode resolution failure, and a
 run where *every* requested `doc_id` fails reaches the shared exit block instead of `exit 0`.
 
 **Tasks**:
 
-- [ ] Initialize `skip_count=0`, `requested_count=0`, and `skipped_doc_ids=()` before the
+- [x] Initialize `skip_count=0`, `requested_count=0`, and `skipped_doc_ids=()` before the *(completed)*
       `mode` branch (near the existing `query_error` default, ~line 74), so global mode does not
       trip `set -u` at the shared exit point.
-- [ ] In repo mode, set `requested_count="${#doc_ids[@]}"` immediately after the `mapfile` at
+- [x] In repo mode, set `requested_count="${#doc_ids[@]}"` immediately after the `mapfile` at *(completed)*
       line ~167, before the empty-`doc_ids` guard.
-- [ ] At the skip site (lines ~191-194), before the `continue`: increment `skip_count` and append
+- [x] At the skip site (lines ~191-194), before the `continue`: increment `skip_count` and append *(completed)*
       `"$doc_id"` to `skipped_doc_ids`. Keep the existing stderr warning unchanged — stderr stays,
       the body/marker surfacing is additive.
-- [ ] Replace the lines ~294-297 early `exit 0` with a guard that exits silently **only** when
+- [x] Replace the lines ~294-297 early `exit 0` with a guard that exits silently **only** when *(completed)*
       `${#briefing_lines[@]} -eq 0` *and* `skip_count -eq 0`; when `skip_count -gt 0`, fall through
       to the shared exit block.
-- [ ] Set `header`, `coverage_mode="repo"`, `coverage_count="${#briefing_lines[@]}"` on the
+- [x] Set `header`, `coverage_mode="repo"`, `coverage_count="${#briefing_lines[@]}"` on the *(completed)*
       fallthrough path too (the total-failure case must not reach the shared block with an unset
       `header`).
-- [ ] In global mode (~lines 379-380), set `requested_count="$seg_count"` so the marker's
+- [x] In global mode (~lines 379-380), set `requested_count="$seg_count"` so the marker's *(completed)*
       `requested=` field is meaningful there; `skip_count` stays 0.
-- [ ] `bash -n` the script.
+- [x] `bash -n` the script. *(completed)*
 
 **Timing**: 1 hour
 
@@ -179,31 +179,31 @@ second skip site exists, instrument it identically rather than assuming the coun
 
 ---
 
-### Phase 2: Extend the marker schema, the sparse rule, the banner, and the body section [NOT STARTED]
+### Phase 2: Extend the marker schema, the sparse rule, the banner, and the body section [COMPLETED]
 
 **Goal**: The marker carries the failure signal, a high skip rate flips the existing `sparse`
 boolean, and skipped `doc_id`s appear in the briefing body.
 
 **Tasks**:
 
-- [ ] Add `LITERATURE_SKIP_RATE_THRESHOLD="${LITERATURE_SKIP_RATE_THRESHOLD:-50}"` alongside
+- [x] Add `LITERATURE_SKIP_RATE_THRESHOLD="${LITERATURE_SKIP_RATE_THRESHOLD:-50}"` alongside *(completed)*
       `LITERATURE_SPARSE_THRESHOLD` (~line 68), matching that variable's env-var-with-default idiom
       exactly.
-- [ ] Compute `skip_rate` as an integer percentage in pure bash arithmetic
+- [x] Compute `skip_rate` as an integer percentage in pure bash arithmetic *(completed)*
       (`skip_rate=$(( skip_count * 100 / requested_count ))`), guarded so `requested_count -eq 0`
       yields `skip_rate=0`. Match the codebase style of avoiding `awk`/`bc` where bash `(( ))`
       suffices.
-- [ ] Extend the sparse rule to a disjunction: `sparse=true` when
+- [x] Extend the sparse rule to a disjunction: `sparse=true` when *(completed)*
       `coverage_count -lt LITERATURE_SPARSE_THRESHOLD` (existing rule, byte-for-byte unchanged)
       **OR** `skip_count -gt 0 && skip_rate -ge LITERATURE_SKIP_RATE_THRESHOLD` (new rule).
-- [ ] Extend the marker line, appending the four new fields strictly **after** `threshold=T`:
+- [x] Extend the marker line, appending the four new fields strictly **after** `threshold=T`: *(completed)*
       `<!-- lit-coverage mode=${coverage_mode} seg_count=${coverage_count} sparse=${sparse} threshold=${LITERATURE_SPARSE_THRESHOLD} requested=${requested_count} resolved=${coverage_count} skipped=${skip_count} skip_rate=${skip_rate} -->`
-- [ ] Emit a new banner in the existing `[UNVERIFIED ...]` / `[DEGRADED RETRIEVAL ...]` /
+- [x] Emit a new banner in the existing `[UNVERIFIED ...]` / `[DEGRADED RETRIEVAL ...]` / *(completed)*
       `[SPARSE COVERAGE ...]` family, immediately after the `[SPARSE COVERAGE ...]` block,
       fired whenever `skip_count -gt 0` — independent of whether the rate crossed the threshold,
       since a low-but-nonzero skip rate is still worth surfacing per AC1:
       `[SKIPPED SOURCES - N of M requested document(s) could not be resolved (P%); see "Unresolved Documents" below]`
-- [ ] Add an `## Unresolved Documents` body section listing each entry of `skipped_doc_ids[]`,
+- [x] Add an `## Unresolved Documents` body section listing each entry of `skipped_doc_ids[]`, *(completed)*
       placed after the new banner and before the per-document entries, guarded by
       `${#skipped_doc_ids[@]} -gt 0` (the same conditional-section idiom used elsewhere in the
       shared block). Naturally omitted in global mode, where the array is always empty.

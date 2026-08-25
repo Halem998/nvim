@@ -49,9 +49,16 @@
 #                                this script's marker/banner is the post-global-search checkpoint.
 #
 # Machine-readable coverage marker (both modes, emitted right after the header line):
-#   <!-- lit-coverage mode=repo|global seg_count=N sparse=true|false threshold=T -->
+#   <!-- lit-coverage mode=repo|global seg_count=N sparse=true|false threshold=T
+#        requested=R resolved=N skipped=S skip_rate=P -->
 # A caller (e.g. the shared Stage 4a block) can `grep` this line without scraping the
 # human-readable header to decide whether to offer a second, sparse-coverage prompt.
+# requested=/resolved=/skipped=/skip_rate= are appended strictly after the original four
+# fields, which stay byte-for-byte adjacent and in their original order for backward
+# compatibility with existing `.*`-tolerant greps. sparse=true fires on EITHER the
+# original absolute-count rule OR skip_rate >= LITERATURE_SKIP_RATE_THRESHOLD (repo mode
+# only; skipped=0/skip_rate=0 always in global mode). See
+# context/project/literature/domain/sparse-coverage.md for the full policy.
 
 set -euo pipefail
 
@@ -66,6 +73,13 @@ GLOBAL_INDEX="$LIT_DIR/index.json"
 SEARCH_SCRIPT="$SCRIPT_DIR/literature-search.sh"
 GLOBAL_TOP_N_DEFAULT=8
 LITERATURE_SPARSE_THRESHOLD="${LITERATURE_SPARSE_THRESHOLD:-3}"
+# Minimum resolved-document/segment count before coverage is sparse (absolute-count rule,
+# unchanged). LITERATURE_SKIP_RATE_THRESHOLD is a second, independent rule that also sets
+# sparse=true: a resolution-failure rate (skip_count / requested_count, as an integer
+# percentage) at or above this threshold (>=, unlike the absolute-count rule's strict <)
+# makes the briefing untrustworthy even when enough documents nominally resolved. See
+# context/project/literature/domain/sparse-coverage.md for the full policy rationale.
+LITERATURE_SKIP_RATE_THRESHOLD="${LITERATURE_SKIP_RATE_THRESHOLD:-50}"
 
 # --- Argument parsing ---
 mode="repo"
@@ -74,6 +88,13 @@ top_n="$GLOBAL_TOP_N_DEFAULT"
 # query_error is referenced at the shared exit point regardless of mode; default
 # it here so repo mode (which never sets it) doesn't trip `set -u` on an unbound variable.
 query_error="null"
+# skip_count/requested_count/skipped_doc_ids are referenced at the shared exit point
+# regardless of mode; default them here (same rationale as query_error above) so
+# global mode -- which never populates skipped_doc_ids and only sets requested_count
+# later -- doesn't trip `set -u` on an unbound variable.
+skip_count=0
+requested_count=0
+skipped_doc_ids=()
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -165,6 +186,7 @@ if [ "$mode" = "repo" ]; then
 
   # --- Read doc_ids from sub-index ---
   mapfile -t doc_ids < <(jq -r '.entries[].doc_id' "$SUB_INDEX" 2>/dev/null)
+  requested_count="${#doc_ids[@]}"
   if [ "${#doc_ids[@]}" -eq 0 ]; then
     exit 0
   fi
@@ -190,6 +212,8 @@ if [ "$mode" = "repo" ]; then
 
     if [ -z "$parent_entry" ]; then
       echo "Warning: doc_id '$doc_id' not found in global index — skipping" >&2
+      skip_count=$(( skip_count + 1 ))
+      skipped_doc_ids+=("$doc_id")
       continue
     fi
 
@@ -291,8 +315,13 @@ ${entry}"
     briefing_lines+=("$entry")
   done
 
-  # --- If no entries resolved, exit silently (regression-preserved) ---
-  if [ "${#briefing_lines[@]}" -eq 0 ]; then
+  # --- If no entries resolved, exit silently ONLY when this was a structurally
+  # empty/absent sub-index (skip_count -eq 0) -- the entry_count/doc_ids-empty/
+  # missing-file guards above already cover that case. When skip_count -gt 0, every
+  # requested doc_id failed to resolve: fall through to the shared marker/banner block
+  # instead of exiting silently, so the failure produces a coverage marker rather than
+  # empty stdout indistinguishable from a genuinely empty sub-index. ---
+  if [ "${#briefing_lines[@]}" -eq 0 ] && [ "$skip_count" -eq 0 ]; then
     exit 0
   fi
 
@@ -378,6 +407,7 @@ ${entry}"
   header="## Available Literature — Global Corpus Search Results for: \"${query}\" (${#briefing_lines[@]} segment(s))"
   coverage_mode="global"
   coverage_count="$seg_count"
+  requested_count="$seg_count"
 
   # --- Degraded-tier banner ---
   # When results exist but the primary bm25 tier did not answer, prefix the segment list
@@ -417,15 +447,33 @@ echo ""
 # coverage_mode/coverage_count are set in each mode's branch above (repo: resolved document
 # count; global: seg_count, the pre-top_n-slice total match count). sparse = count < threshold
 # (never <=; the boundary is exercised by the Testing & Validation fixtures).
+# skip_rate is an integer percentage of requested doc_ids that failed to resolve
+# (repo mode only; always 0 in global mode, where no per-item resolution can fail).
+# Guarded against division by zero -- reachable in global mode with zero results.
+if [ "$requested_count" -eq 0 ]; then
+  skip_rate=0
+else
+  skip_rate=$(( skip_count * 100 / requested_count ))
+fi
+
 sparse="false"
 if [ "$coverage_count" -lt "$LITERATURE_SPARSE_THRESHOLD" ]; then
   sparse="true"
+elif [ "$skip_count" -gt 0 ] && [ "$skip_rate" -ge "$LITERATURE_SKIP_RATE_THRESHOLD" ]; then
+  sparse="true"
 fi
-echo "<!-- lit-coverage mode=${coverage_mode} seg_count=${coverage_count} sparse=${sparse} threshold=${LITERATURE_SPARSE_THRESHOLD} -->"
+echo "<!-- lit-coverage mode=${coverage_mode} seg_count=${coverage_count} sparse=${sparse} threshold=${LITERATURE_SPARSE_THRESHOLD} requested=${requested_count} resolved=${coverage_count} skipped=${skip_count} skip_rate=${skip_rate} -->"
 echo ""
 
 if [ "$sparse" = "true" ]; then
   echo "[SPARSE COVERAGE - ${coverage_count} segment(s), threshold ${LITERATURE_SPARSE_THRESHOLD}] This briefing resolved fewer relevant segments than the configured sparsity threshold; consider searching online for additional sources (see the Stage 4a \"Search online to ingest\" option) or broadening the query."
+  echo ""
+fi
+
+# --- Skipped-sources banner (never silent; independent of whether the rate crossed
+# the sparse threshold -- a low but nonzero skip rate is still worth surfacing) ---
+if [ "$skip_count" -gt 0 ]; then
+  echo "[SKIPPED SOURCES - ${skip_count} of ${requested_count} requested document(s) could not be resolved (${skip_rate}%); see \"Unresolved Documents\" below]"
   echo ""
 fi
 
@@ -449,6 +497,15 @@ if [ "${#briefing_lines[@]}" -eq 0 ]; then
     echo "No matching literature segments found for this query."
     echo ""
   fi
+fi
+
+if [ "${#skipped_doc_ids[@]}" -gt 0 ]; then
+  echo "## Unresolved Documents"
+  echo ""
+  for skipped_id in "${skipped_doc_ids[@]}"; do
+    echo "- ${skipped_id}"
+  done
+  echo ""
 fi
 
 for line in "${briefing_lines[@]}"; do
