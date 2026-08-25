@@ -26,7 +26,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "Context layer architecture overview",
-      "line_count": 219,
+      "line_count": 221,
       "keywords": [
         "context",
         "layers",
@@ -383,7 +383,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 615,
+      "line_count": 622,
       "keywords": [
         "format",
         "metadata",
@@ -523,7 +523,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Guide for creating new extensions",
-      "line_count": 271,
+      "line_count": 308,
       "keywords": [
         "guide",
         "extension",
@@ -544,7 +544,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Loader function reference: all 12 public loader.lua functions with signatures, copy semantics, and source file descriptions",
-      "line_count": 182,
+      "line_count": 191,
       "keywords": [
         "guide",
         "loader",
@@ -943,7 +943,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "File-based metadata exchange between agents",
-      "line_count": 305,
+      "line_count": 314,
       "keywords": [
         "patterns",
         "metadata",
@@ -1152,7 +1152,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Postflight control flow patterns",
-      "line_count": 275,
+      "line_count": 318,
       "keywords": [
         "patterns",
         "postflight",
@@ -1593,7 +1593,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 12-value task-status enum",
-      "line_count": 262,
+      "line_count": 267,
       "keywords": [
         "state",
         "schema",
@@ -1872,7 +1872,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 216,
+      "line_count": 219,
       "keywords": [
         "standards",
         "postflight",
@@ -1894,7 +1894,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 101,
+      "line_count": 127,
       "keywords": [
         "standards",
         "shell",
@@ -2566,7 +2566,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 209,
+      "line_count": 212,
       "keywords": [
         "wrap-up",
         "handoff",
@@ -2669,7 +2669,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Directory-prefix overlap algorithm shared by file_scope collision admission and creation-time serializing edges",
-      "line_count": 194,
+      "line_count": 202,
       "keywords": [
         "patterns",
         "file-scope",
@@ -2694,7 +2694,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Declared orchestrator-critical paths and scope roots driving the self-modification defer verdict",
-      "line_count": 70,
+      "line_count": 74,
       "keywords": [
         "reference",
         "orchestrate",
@@ -2876,7 +2876,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Shared Stage 4a literature-mode sub-index detection flow imported by --lit-capable skills",
-      "line_count": 233,
+      "line_count": 274,
       "keywords": [
         "literature",
         "lit-flag",
@@ -2922,7 +2922,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Shared Stage 7/7a/8/8a/9 postflight status update, memory-candidate propagation, artifact linking, TTS notify, and cleanup block imported by lifecycle skills",
-      "line_count": 126,
+      "line_count": 177,
       "keywords": [
         "postflight",
         "memory_candidates",

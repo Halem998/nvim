@@ -223,7 +223,7 @@
     },
     {
       "path": "project/typst/standards/textbook-standards.md",
-      "line_count": 221,
+      "line_count": 226,
       "load_when": {
         "agents": [
           "typst-implementation-agent",
@@ -265,7 +265,7 @@
     },
     {
       "path": "project/typst/standards/type-theory-foundations.md",
-      "line_count": 198,
+      "line_count": 203,
       "load_when": {
         "agents": [
           "typst-implementation-agent"
