@@ -100,6 +100,63 @@ The full trigger, failure contract, sequencing, and idempotence-guard contract i
 authoritatively, in `context/patterns/batch-orchestration-guardrails.md`'s
 `### The Inter-Cycle Redeploy Checkpoint` subsection. It is cross-referenced here, not restated.
 
+## Automated Exception: The Postflight Completion-Deploy Gate
+
+Additive to the deliberate-invocation sentence above, in the same shape as the Inter-Cycle
+Self-Modification Checkpoint exception immediately above -- neither of those two constraints is
+edited, weakened, or reworded here. This is the second and, as of this writing, LAST exception
+this section records.
+
+**The exact and only sanctioned automated call sites**: `scripts/command-gate-out.sh`'s
+`rc == 6` branch (the single-task `/implement` completion path -- a point with no concurrency,
+since it runs once per task after that task's own dispatch has already returned), and
+`commands/implement.md` Step 4's batch-refusal trigger (the multi-task `/implement` completion
+path -- already serial, since it runs once, after all of Step 3's parallel dispatches have
+returned). No other automated caller is sanctioned by this subsection.
+
+An explicit non-exception, named so a later pass does not go looking for one:
+`skill-orchestrate`'s Stage MT-3 step 7 is UNTOUCHED by this mechanism and needs no new exception
+here -- it remains covered exclusively by the Inter-Cycle Self-Modification Checkpoint exception
+above. A task refused by the postflight completion-deploy gate under `/orchestrate` defers loudly
+(via the `deploy_pending` marker `skill_postflight_update` records into its `.return-meta.json`)
+rather than being redeployed by a THIRD trigger site; widening Stage MT-3 step 7's own predicate
+is the proper fix for that residual and is named as follow-up work in
+`context/patterns/batch-orchestration-guardrails.md`'s `### The Postflight Completion-Deploy
+Gate` subsection, not attempted here.
+
+**Why this is not a side effect of an unrelated operation**: exactly as the exception above
+argues for its own single call site, the fix that triggers each of these two redeploys is
+precisely the fix each redeploy exists to make live -- a task whose OWN commit touched
+`agent-system/extensions/**` is the operation these two sites correct, not an operation they run
+alongside.
+
+**Why this is not silent**: each call site logs on fire (naming the refusing task number and,
+for the single-task path, the specific matched `agent-system/extensions/**` path(s)), on success
+(naming the deployed extension count and the verify-deploy outcome), and on failure (naming the
+failing branch -- (a) deploy did not land, (b) a new finding, or (c) pre-existing findings only --
+and the relevant exit code). An operator reading either call site's output can always distinguish
+"the gate did not fire" from "it fired and the redeploy succeeded" from "it fired and the redeploy
+failed."
+
+**Why this is bounded**: both sites are evidence-gated on the SAME check-only backstop inside
+`scripts/update-task-status.sh` observing an actual `modified_files`-to-`agent-system/extensions/**`
+overlap AND provable staleness -- never an unconditional "always redeploy" trigger. Each site
+fires at most once per its own invocation (a gate-out call for the single-task path; a Step 4 run
+for the multi-task batch path) and re-attempts the refused transition(s) at most once after a
+successful redeploy; a second refusal after that redeploy is a real signal, surfaced loudly, never
+retried again within the same invocation.
+
+**What this carve-out explicitly does NOT license**: identical in force to the exception above --
+no other automated caller may invoke `scripts/deploy-headless.sh` without its own equivalent
+exception recorded in this same section. This subsection licenses exactly the two call sites named
+above, nothing broader, and is **not precedent**: a future automated caller, including any future
+widening of `skill-orchestrate`'s own trigger, still needs its own exception recorded here.
+
+The full trigger predicate, the check-only contract, the conclusiveness convention, exit 6's
+ordering-constraint semantics, and the shared (a)/(b)/(c) baseline contract are recorded once,
+authoritatively, in `context/patterns/batch-orchestration-guardrails.md`'s `### The Postflight
+Completion-Deploy Gate` subsection. It is cross-referenced here, not restated.
+
 ### `deploy-headless.sh`'s Inline Verification and Exit Code 3
 
 Narrow, don't silently rewrite: the correction below is additive to this subsection's own
@@ -203,6 +260,18 @@ missing field. Neither limitation is a defect to fix here -- `verify-deploy.sh`'
 content-diffing gates remain the deep-dive companion for per-file drift; this check is the
 preflight-cheap companion that tells a user regeneration is worth running at all.
 
+**A now-two-tier staleness model.** `check-deploy-freshness.sh` is TIER 1: silent, advisory,
+CHECKPOINT-1-only (its one sanctioned advisory caller, `command-gate-in.sh`), ALWAYS exits 0,
+and is never a gate -- everything described in this section above. TIER 2 is the postflight
+completion-deploy gate inside `scripts/update-task-status.sh` (the "## Automated Exception: The
+Postflight Completion-Deploy Gate" subsection above): BLOCKING, evidence-gated on a task's own
+`modified_files` actually overlapping `agent-system/extensions/**`, and reachable only at
+postflight/`implement` time. Both tiers share ONE comparison algorithm, factored into
+`scripts/lib/deploy-freshness-lib.sh` -- tier 1 sources its `deploy_freshness_stale_names`
+function, tier 2 sources its `deploy_freshness_status` function -- so "is the deploy stale" is
+computed exactly once, not reimplemented per tier. Tier 1's always-exit-0 contract must never be
+mistaken for a gate; tier 2 is the gate.
+
 ## Merge Semantics That Regeneration Cannot Fix
 
 Two deploy behaviors are structural and survive any number of regenerations:
@@ -304,4 +373,11 @@ repo root, masking the invocation-context error this guard exists to surface.
 - `context/patterns/batch-orchestration-guardrails.md` -- the authoritative inter-cycle redeploy
   checkpoint contract (trigger, failure contract, sequencing, idempotence guard) that this
   document's `## Automated Exception` subsection reconciles against the deliberate-invocation
-  constraint above
+  constraint above; also the authoritative home of `### The Postflight Completion-Deploy Gate`,
+  which this document's second `## Automated Exception` subsection reconciles the same way
+- `scripts/lib/deploy-freshness-lib.sh` -- the shared freshness-comparison algorithm both tiers
+  of the two-tier staleness model above source (`deploy_freshness_stale_names` for tier 1,
+  `deploy_freshness_status` for tier 2)
+- `scripts/tests/test-postflight-deploy-gate.sh` -- fixture suite pinning the postflight
+  completion-deploy gate's six conclusiveness branches, the check-only contract, and the
+  no-worse-than-baseline verification tier this task's own dogfooded completion demonstrates

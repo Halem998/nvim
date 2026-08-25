@@ -500,28 +500,28 @@ that would newly abort. Confirm by executing
 
 ---
 
-### Phase 7: Documentation — mechanism, carve-out, and the two-tier staleness model [NOT STARTED]
+### Phase 7: Documentation — mechanism, carve-out, and the two-tier staleness model [COMPLETED]
 
 **Goal**: Record the mechanism once authoritatively, add the mandatory additive carve-out, and
 document `check-deploy-freshness.sh`'s advisory-only role as tier 1 of a two-tier model.
 
 **Tasks**:
-- [ ] In `context/patterns/batch-orchestration-guardrails.md`, add a new subsection —
+- [x] In `context/patterns/batch-orchestration-guardrails.md`, add a new subsection — *(completed)*
       `### The Postflight Completion-Deploy Gate` — as the single authoritative statement of this
       mechanism: trigger predicate (D7), the check-only contract (research constraint 3), the
       conclusiveness convention and its six branches, exit 6's ordering-constraint semantics (D2),
       the two serialized trigger sites and their shared (a)/(b)/(c) baseline contract, and the
       commit-granularity residual. Cross-reference `### The Inter-Cycle Redeploy Checkpoint` for
       the baseline mechanism by path rather than restating it.
-- [ ] Add a Blocking-vs-Advisory classification entry for the new gate, satisfying both criteria:
+- [x] Add a Blocking-vs-Advisory classification entry for the new gate, satisfying both criteria: *(completed)*
       computable purely from on-disk structural state, and silent-and-hard-to-detect harm if
       skipped.
-- [ ] In `context/patterns/regeneration-is-manual-only.md`, add a new subsection
+- [x] In `context/patterns/regeneration-is-manual-only.md`, add a new subsection *(completed: byte-identical existing subsection verified)*
       `## Automated Exception: The Postflight Completion-Deploy Gate` **immediately after** the
       existing `## Automated Exception: The Inter-Cycle Self-Modification Checkpoint` subsection
       and **before** `### deploy-headless.sh's Inline Verification and Exit Code 3`. Do not edit a
       single byte of the existing subsection.
-- [ ] Write the carve-out in the existing subsection's exact three-part shape: **exact and only
+- [x] Write the carve-out in the existing subsection's exact three-part shape: **exact and only *(completed)*
       sanctioned call sites** (`command-gate-out.sh`'s post-refusal trigger for the single-task
       path; `commands/implement.md` Step 4's batch-refusal trigger for the multi-task path — and
       an explicit statement that `skill-orchestrate`'s Stage MT-3 step 7 is untouched and needs no
@@ -530,22 +530,22 @@ document `check-deploy-freshness.sh`'s advisory-only role as tier 1 of a two-tie
       log-on-fire / log-on-success / log-on-failure lines actually written); **why this is
       bounded** (evidence-gated on `modified_files` overlap, never unconditional; fires at most
       once per refusal, with a successful redeploy clearing the triggering condition).
-- [ ] Close with the scope-limiter sentence in the existing subsection's shape: this carve-out
+- [x] Close with the scope-limiter sentence in the existing subsection's shape: this carve-out *(completed)*
       licenses exactly the named call sites, nothing broader; it is **not precedent**; any future
       automated caller still needs its own exception recorded in this same section.
-- [ ] Cross-reference the mechanism's authoritative home in `batch-orchestration-guardrails.md` by
+- [x] Cross-reference the mechanism's authoritative home in `batch-orchestration-guardrails.md` by *(completed)*
       path rather than restating it, matching the existing exception's own cross-reference
       discipline.
-- [ ] In `regeneration-is-manual-only.md`'s `## Detecting When You're Stale` section, add the
+- [x] In `regeneration-is-manual-only.md`'s `## Detecting When You're Stale` section, add the *(completed)*
       two-tier statement: `check-deploy-freshness.sh` is tier 1 (silent, advisory, CHECKPOINT-1,
       always exit 0, never a gate); the postflight backstop is tier 2 (blocking, evidence-gated).
-- [ ] Add the same forward-pointer to `check-deploy-freshness.sh`'s own header, keeping its
+- [x] Add the same forward-pointer to `check-deploy-freshness.sh`'s own header, keeping its *(completed: already done in Phase 2's rewrite)*
       existing "ALWAYS EXITS 0. This is not a preflight gate." sentence intact and adding the
       second sanctioned consumer (the shared library, per Phase 2) alongside its existing
       `command-gate-in.sh` caller statement.
-- [ ] Add the new library and the new test suite to `regeneration-is-manual-only.md`'s
+- [x] Add the new library and the new test suite to `regeneration-is-manual-only.md`'s *(completed)*
       `## Related Documentation` list.
-- [ ] Record the D6 residual explicitly in the mechanism subsection: `/orchestrate` is covered by
+- [x] Record the D6 residual explicitly in the mechanism subsection: `/orchestrate` is covered by *(completed)*
       the backstop's refusal but has no serialized trigger of its own, so a refused task defers
       loudly rather than converging within that invocation; widening Stage MT-3 step 7's predicate
       is the proper fix and is named as follow-up work.

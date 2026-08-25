@@ -92,6 +92,7 @@ never demotes a check to advisory.
 | Self-modification hazard (candidate `file_scope` names an orchestrator-critical path) | BLOCKING | Computable from the candidate's own on-disk `file_scope` against a fixed, declared critical-path list — no agent invoked; the harm (an unverifiable orchestrator-machinery fix committed automatically as part of a multi-task dispatch) is silent and hard to attribute later, satisfying both halves of the criterion |
 | Heuristic drift-percentage signal | ADVISORY | The signal is an estimate from a fork's plan inspection, not a hard fact — fails condition 1's structural-fact requirement in spirit even though it reads on-disk state, because the *derived* percentage is inherently approximate |
 | Absent completion-marker verification signal (`plan_markers_verified` missing or false) | ADVISORY | Per the handoff schema's own documented behavior, this warns but does not block the next lifecycle phase — the condition is logged, not gated, because it is deliberately designed as a non-blocking signal |
+| Postflight completion-deploy gate (a source-store-touching task's own `modified_files` overlap `agent-system/extensions/**` AND the deploy is provably stale) | BLOCKING | Computable purely from on-disk state — the refusing task's own `.return-meta.json` `modified_files` plus a path-scoped `git log -1` freshness comparison, no agent invoked; the harm of proceeding (`[COMPLETED]` while the fix is absent from the running `.claude/` tree) is silent and discoverable only much later, as the research for this mechanism found for four already-completed tasks — satisfying both halves of the criterion exactly as the Self-Modification Hazard row above does |
 
 ## Ordering Constraint vs. Exclusion: The Normative Principle
 
@@ -519,6 +520,112 @@ implementation, not a permanent property of those files. If MT dispatch is ever 
 the Skill tool in a way that sources any of them, the reachability test flips for that file and
 it should be re-evaluated for inclusion using the same two tests above — not grandfathered out
 because it was excluded once.
+
+### The Postflight Completion-Deploy Gate
+
+A sibling mechanism to the Inter-Cycle Redeploy Checkpoint above, addressing a DIFFERENT gap: the
+checkpoint above is `/orchestrate`-only (Stage MT-3 step 7). Outside `/orchestrate`, a task whose
+implementation edits `agent-system/extensions/**` could reach `[COMPLETED]` while its changes
+remained absent from the running `.claude/` tree, because the only staleness signal
+(`check-deploy-freshness.sh`) is advisory by contract and always exits 0 (see
+`context/patterns/regeneration-is-manual-only.md`'s "Detecting When You're Stale" section). This
+subsection is the single authoritative statement of the fix: a check-only, unconditional backstop
+inside `scripts/update-task-status.sh` — the one chokepoint every completion path funnels
+through, single-task and multi-task alike — plus two serialized, baseline-relative deploy
+triggers that make the refusal self-resolving rather than a dead end.
+
+**Trigger predicate (path-based, not `task_type`-based)**: the refusing task's OWN
+`.return-meta.json` `modified_files` overlap `agent-system/extensions/**`, tested via
+`scopes_overlap()` from `scripts/lib/file-scope-overlap.sh` against the directory-prefix rule in
+`context/patterns/file-footprint-overlap.md` — the same overlap predicate the admission layers
+above already use, applied here to a completion-time backstop instead of a pre-dispatch gate. A
+`general`-typed task can touch the source store too; every other file-scope check in this system
+is path-based, and this one follows suit rather than gating on `task_type == "meta"`.
+
+**The check-only contract**: the backstop inside `update-task-status.sh` NEVER invokes the
+deploy/regeneration script or the deploy-verification script itself — mechanically enforced by a
+`grep -c` test asserting zero literal references to either script's name anywhere in the file
+(see `scripts/tests/test-postflight-deploy-gate.sh`'s contract assertion). It performs only a
+preflight-cheap, path-scoped `git log -1` comparison per touched extension, via
+`scripts/lib/deploy-freshness-lib.sh`'s `deploy_freshness_status` function — the same comparison
+algorithm `check-deploy-freshness.sh` uses, factored into one shared library so the two tiers
+below share one algorithm. Multi-task `/implement` and `skill-orchestrate` both dispatch per-task
+implementation skills in parallel; a deploy fired from inside per-task postflight would race the
+fail-open `specs/.deploy-lock` mutex exactly as the Concurrency note above describes for the
+Inter-Cycle checkpoint — so the actual redeploy trigger is placed ONLY at the two already-
+serialized call sites named below, never inside the check-only backstop itself.
+
+**The conclusiveness convention (six branches, mirroring this document's own Blocking vs.
+Advisory posture of defaulting permissive on ambiguity)**: only "overlap AND provably stale" is
+conclusive evidence the transition must wait — refuse, new exit code 6. Every other case passes
+through: no `.return-meta.json` resolved; empty or absent `modified_files`; no overlap (not
+applicable); a missing shared library (D4 — INCONCLUSIVE pass-through, never the loud exit-5 the
+two pre-existing shared libraries in `update-task-status.sh` use, since this backstop is
+UNCONDITIONAL and a hard environment exit would block completion system-wide on a deploy-ordering
+accident); freshness that cannot be verified; and overlap with verified freshness (proceed).
+
+**Exit 6's ordering-constraint semantics**: mirrors the existing `--phase-check=refuse` shape
+exactly — no `state.json` write, no plan-file stamp, exit non-zero, self-resuming on the next
+postflight retry. The task stays at its current status (typically `implementing`); it is never
+pushed to `blocked`, since the remedy is a deploy the serialized trigger sites perform
+automatically, not a human-only intervention.
+
+**The two serialized trigger sites and their shared (a)/(b)/(c) baseline contract**: identical in
+shape to this document's own Inter-Cycle Redeploy Checkpoint failure contract above — (a) the
+redeploy itself fails to land (exit 1 or 2): defer unconditionally, no baseline consultation; (b)
+the redeploy lands but introduces at least one NEW `verify-deploy.sh --findings` finding relative
+to a pre-redeploy baseline: defer, do not re-attempt; (c) the redeploy lands and every post
+finding was already present pre-redeploy (the expected case today, given `deploy-headless.sh`'s
+universal exit 3 — see `regeneration-is-manual-only.md`'s "Inline Verification and Exit Code 3"
+subsection): announce loudly (a `[PRE-EXISTING VERIFY-DEPLOY FAILURE]`-prefixed banner), then
+re-attempt the refused transition exactly once. `verify-deploy.sh` exit 2 is folded into the same
+findings vocabulary as one synthesized sentinel line, exactly as this document's own "Exit-2
+resolution" subsection above specifies — not special-cased.
+
+- **Single-task path**: `scripts/command-gate-out.sh`'s existing `gate_out_rc` handling, extended
+  with an `rc == 6` branch alongside the pre-existing `rc == 4` phase-check branch. This call site
+  has no concurrency — it is the true single-task `/implement` completion path — so it is safe to
+  fire the redeploy directly from here.
+- **Multi-task batch path**: `commands/implement.md` Step 4, already serial (it runs once, after
+  all of Step 3's parallel dispatches have returned), placed strictly BEFORE the existing per-task
+  `.return-meta.json` deletion loop so the deploy-pending evidence survives long enough to drive
+  the re-attempt. Detects deploy-pending tasks by reading the `deploy_pending: true` marker
+  `skill-base.sh`'s `skill_postflight_update` records into a refused task's own
+  `.return-meta.json` on exit 6, then fires ONE redeploy for the whole batch (never once per
+  refused task) and re-attempts each deploy-pending task's transition under the same (a)/(b)/(c)
+  contract.
+
+**Refusal propagation (the prerequisite for exit 6 to be visible at all)**: `skill_postflight_update`
+in `scripts/skill-base.sh` previously invoked `update-task-status.sh` and let its own return value
+be determined by whichever statement executed LAST in the function (the non-blocking events-append
+call) — silently swallowing `update-task-status.sh`'s own exit code, including the pre-existing
+`--phase-check=refuse` exit 4 and now exit 6. It now captures that rc into a local, keeps the
+extension-hook and events legs running UNCONDITIONALLY exactly as before, and returns the captured
+rc verbatim from the function. Every existing caller was checked (`grep -rn
+skill_postflight_update`) and none invokes it under `set -e` in the same shell scope, so this is
+not a newly-introduced abort hazard for any of them.
+
+**Classification**: this gate is BLOCKING, not advisory — see the Classification Table below.
+
+**Residual — the `/orchestrate` path (D6, not fixed by this mechanism)**: `/orchestrate` is
+covered by the backstop's refusal (a refused task simply stays non-completed) but has NO
+serialized trigger of its own analogous to the two above; it relies entirely on the pre-existing
+Inter-Cycle Redeploy Checkpoint mechanism documented earlier in this file. A refused task under
+`/orchestrate` therefore defers loudly (named via the `deploy_pending` reason surfaced in its
+`.return-meta.json`) rather than converging within that same invocation. Widening Stage MT-3 step
+7's trigger predicate from `orchestrator-critical-paths.json`'s critical-path keying to a broader
+`agent-system/extensions/**` predicate is the proper fix and is named here as explicit follow-up
+work, not attempted by this mechanism — it would change the meaning of a heavily cross-referenced
+mechanism and its `deployed_critical_paths` idempotence backing store, which is its own task.
+
+**Commit-granularity residual**: like the Inter-Cycle Redeploy Checkpoint's own freshness signal,
+this backstop's freshness comparison is commit-granular, not per-file — an uncommitted
+source-store edit at postflight time would make the gate report a false "fresh" (see
+`context/patterns/regeneration-is-manual-only.md`'s "Detecting When You're Stale" section for the
+same limitation stated for `check-deploy-freshness.sh`). The Commit-Per-Green-Substep Mandate
+(`.claude/rules/git-workflow.md`) makes the uncommitted-at-postflight case rare in practice, and
+`scripts/verify-deploy.sh` remains the deep, per-file companion for anyone who needs to check
+beyond commit granularity.
 
 ## Admission-Time vs. Mid-Flight: A Knowability Test
 

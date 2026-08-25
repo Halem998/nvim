@@ -1,0 +1,32 @@
+{
+  "phase": 7,
+  "phase_name": "Documentation — mechanism, carve-out, and the two-tier staleness model",
+  "started_at": "2026-08-24T21:25:00Z",
+  "last_updated": "2026-08-24T22:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "New authoritative subsection in batch-orchestration-guardrails.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 2, "description": "Classification table entry", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Additive carve-out subsection in regeneration-is-manual-only.md, byte-identical existing subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 4, "description": "Two-tier staleness model statement, Related Documentation entries", "status": "done", "files_touched": []},
+    {"id": 5, "description": "D6 residual recorded", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.scope",
+      "description": "check-extension-docs.sh --quiet produces no new findings relative to Phase 1's baseline",
+      "type": "altered",
+      "reason": "Growing batch-orchestration-guardrails.md and regeneration-is-manual-only.md (the two docs Phase 7 edits) triggered NEW index-entries.json line_count mismatches for those two entries specifically. Fixing this required editing agent-system/extensions/core/index-entries.json (line_count correction for the two edited docs only) and agent-system/extensions/core/manifest.json (registering the two new Phase 2/4 files -- lib/deploy-freshness-lib.sh and tests/test-postflight-deploy-gate.sh -- in provides.scripts, without which they would never be copied by deploy-headless.sh in Phase 8). Neither file was in the original 10-entry corrected file_scope; both were added via state-write.sh (now 12 entries) since they are directly necessitated by this task's own edits, not incidental scope creep.",
+      "annotation": null
+    },
+    {
+      "task_id": "7.observation",
+      "description": "check-extension-docs.sh reports a NEW index-entries.json mismatch for 'guides/extension-development.md' (declared 271, actual 308) not present in Phase 1's baseline and not caused by any file this task touched.",
+      "type": "skipped",
+      "reason": "Not this task's file_scope, not this task's edit. Attributed to a concurrent sibling session's own work observed active in this same repo during implementation (git log interleaving with 'task 62'/'task 77' commits from other sessions). Left unfixed per this task's scope boundary; noted here per the observation duty.",
+      "annotation": null
+    }
+  ]
+}
