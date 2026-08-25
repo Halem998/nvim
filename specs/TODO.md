@@ -42,7 +42,7 @@ next_project_number: 101
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-77 [IMPLEMENTING] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
+77 [BLOCKED] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
   └─ 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
@@ -986,7 +986,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 77. Unify the literature global-index schema and end stub-entry invisibility
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 32

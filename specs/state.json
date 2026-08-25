@@ -1314,7 +1314,7 @@
     {
       "project_number": 77,
       "project_name": "unify_literature_global_index_schema",
-      "status": "implementing",
+      "status": "blocked",
       "task_type": "meta",
       "topic": "literature",
       "title": "Unify the literature global-index schema and end stub-entry invisibility",
@@ -1350,7 +1350,7 @@
         }
       ],
       "created": "2026-08-20T18:39:09Z",
-      "last_updated": "2026-08-25T00:49:03Z",
+      "last_updated": "2026-08-25T01:34:04Z",
       "session_id": "sess_1787617685_88b825_77",
       "memory_candidates": [
         {
