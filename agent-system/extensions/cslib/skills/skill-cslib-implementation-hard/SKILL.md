@@ -329,7 +329,7 @@ Regenerate TODO.md after linking.
 
 ```bash
 if [ -f ".claude/scripts/lifecycle-notify.sh" ]; then
-  bash ".claude/scripts/lifecycle-notify.sh" "$STATE_STATUS" &
+  bash ".claude/scripts/lifecycle-notify.sh" "$status" &
 fi
 ```
 

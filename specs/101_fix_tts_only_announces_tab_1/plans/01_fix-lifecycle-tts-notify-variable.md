@@ -326,24 +326,25 @@ respectively) and may be dispatched together.
 
 ---
 
-### Phase 3: Propagate the rename to extension skills [NOT STARTED]
+### Phase 3: Propagate the rename to extension skills [COMPLETED]
 
 - **Goal:** Fix every inlined Stage 8a call site in the `web`, `cslib`, and `epidemiology`
   extensions.
 
 - **Tasks:**
-  - [ ] Apply the same per-file `status`-scope confirmation required by Phase 2 to each file below
-    before editing it.
-  - [ ] `agent-system/extensions/web/skills/skill-web-research/SKILL.md` - change
-    `skill_lifecycle_notify "$STATE_STATUS"` to `skill_lifecycle_notify "$status"`.
-  - [ ] `agent-system/extensions/web/skills/skill-web-implementation/SKILL.md` - same change.
-  - [ ] `agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md` - same change.
-  - [ ] `agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md` - same change.
-  - [ ] `agent-system/extensions/cslib/skills/skill-cslib-research-hard/SKILL.md` - direct
-    `lifecycle-notify.sh` invocation; change the argument only.
-  - [ ] `agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md` - direct
-    `lifecycle-notify.sh` invocation; change the argument only.
-  - [ ] Verify no task numbers were introduced into any edited file.
+  - [x] Apply the same per-file `status`-scope confirmation required by Phase 2 to each file below
+    before editing it. *(completed: all 6 files confirmed, no collisions)*
+  - [x] `agent-system/extensions/web/skills/skill-web-research/SKILL.md` - change
+    `skill_lifecycle_notify "$STATE_STATUS"` to `skill_lifecycle_notify "$status"`. *(completed)*
+  - [x] `agent-system/extensions/web/skills/skill-web-implementation/SKILL.md` - same change. *(completed)*
+  - [x] `agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md` - same change. *(completed)*
+  - [x] `agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md` - same change. *(completed)*
+  - [x] `agent-system/extensions/cslib/skills/skill-cslib-research-hard/SKILL.md` - direct
+    `lifecycle-notify.sh` invocation; change the argument only. *(completed)*
+  - [x] `agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md` - direct
+    `lifecycle-notify.sh` invocation; change the argument only. *(completed)*
+  - [x] Verify no task numbers were introduced into any edited file. *(completed:
+    check-task-references.sh reports 0 occurrences across all three extension trees)*
 
 - **Timing:** 0.5 hours
 

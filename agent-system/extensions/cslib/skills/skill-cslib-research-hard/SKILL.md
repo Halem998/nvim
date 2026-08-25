@@ -253,7 +253,7 @@ Same as `skill-cslib-research` Stage 8 (two-step jq pattern for Issue #1132 safe
 
 ```bash
 lifecycle_script=".claude/scripts/lifecycle-notify.sh"
-if [ -f "$lifecycle_script" ]; then bash "$lifecycle_script" "$STATE_STATUS" & fi
+if [ -f "$lifecycle_script" ]; then bash "$lifecycle_script" "$status" & fi
 ```
 
 ---

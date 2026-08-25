@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Propagate the rename to extension skills",
+  "started_at": "2026-08-25T20:42:00Z",
+  "last_updated": "2026-08-25T20:48:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm status-assignment scope in each file before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "skill-web-research/SKILL.md rename", "status": "done", "files_touched": ["agent-system/extensions/web/skills/skill-web-research/SKILL.md"]},
+    {"id": 3, "description": "skill-web-implementation/SKILL.md rename", "status": "done", "files_touched": ["agent-system/extensions/web/skills/skill-web-implementation/SKILL.md"]},
+    {"id": 4, "description": "skill-epi-research/SKILL.md rename", "status": "done", "files_touched": ["agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md"]},
+    {"id": 5, "description": "skill-epi-implement/SKILL.md rename", "status": "done", "files_touched": ["agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md"]},
+    {"id": 6, "description": "skill-cslib-research-hard/SKILL.md rename (direct invocation)", "status": "done", "files_touched": ["agent-system/extensions/cslib/skills/skill-cslib-research-hard/SKILL.md"]},
+    {"id": 7, "description": "skill-cslib-implementation-hard/SKILL.md rename (direct invocation)", "status": "done", "files_touched": ["agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md"]},
+    {"id": 8, "description": "Verify no task numbers introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

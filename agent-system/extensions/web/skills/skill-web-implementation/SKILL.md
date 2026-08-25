@@ -251,7 +251,7 @@ skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadma
 skill_propagate_memory_candidates "$task_number" "$memory_candidates" "$session_id"
 skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" \
   "$field_name" "$next_field" "$session_id"
-skill_lifecycle_notify "$STATE_STATUS"
+skill_lifecycle_notify "$status"
 ```
 
 **Update plan file** (if exists): Update the Status field to `[COMPLETED]` (not covered by the
