@@ -1,0 +1,52 @@
+{
+  "phase": 6,
+  "phase_name": "Clean-clone CI rehearsal and the reintroduced-mismatch negative test",
+  "started_at": "2026-08-25T06:00:00Z",
+  "last_updated": "2026-08-25T06:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "git clone into scratchpad, confirm no .claude/", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Execute Phase 5 workflow's step commands against the clone verbatim", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Positive case: full verify-deploy.sh run exits 0 with 0 findings", "status": "done", "files_touched": [
+      "agent-system/extensions/core/index-entries.json",
+      "agent-system/extensions/typst/index-entries.json",
+      "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+      "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh"
+    ]},
+    {"id": 4, "description": "Negative case: reintroduce line_count mismatch, confirm non-zero exit naming the file", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Revert the deliberate edit in the clone, confirm green again", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record both transcripts in progress file as acceptance evidence", "status": "done", "files_touched": [
+      "specs/086_expand_ci_to_full_gate_suite_and_go_green/progress/phase6-positive-transcript.txt",
+      "specs/086_expand_ci_to_full_gate_suite_and_go_green/progress/phase6-negative-transcript.txt",
+      "specs/086_expand_ci_to_full_gate_suite_and_go_green/progress/phase6-revert-transcript.txt"
+    ]},
+    {"id": 7, "description": "Delete the scratch clone", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "First positive-case rehearsal attempt (before fixing gate8 regression)", "result": "failed", "reason": "gate8 (tests/run-all.sh) failed: test-deploy-propagation.sh and test-deploy-orphans.sh create bare `git init` scratch repos with no .gitignore, so gate14 (check-runtime-file-tracking.sh, wired in Phase 3) correctly failed Check A on the nested throwaway repo inside the test harness, causing deploy-headless.sh to exit 3 and the test's run_deploy() to report 'deploy did not complete'. Root-caused via direct probe (git init + deploy-headless.sh + check-runtime-file-tracking.sh) confirming Check A fails on a never-onboarded repo. Fixed by seeding the 'Consumer Repo Setup' .gitignore block (from context/standards/orchestrator-runtime-files.md) into both test harnesses' scratch TARGET before their first commit -- this makes the fixture representative of a properly-onboarded consumer repo, without relaxing gate14 or the tests' own deploy-propagation assertions. Verified: both harnesses pass standalone (4/4 and 5/5 assertions), full tests/run-all.sh = 52 passed 0 failed locally, then the clone rehearsal re-run confirmed 25 checks 0 failures."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.pre",
+      "description": "Fix the 16 pre-existing Rule R line_count mismatches (originally Phase 7's job) during Phase 6",
+      "type": "altered",
+      "reason": "Phase 6's positive case requires 0 findings, but the pre-existing Rule R mismatches (present since before this task started, unrelated to Phases 1-5's own edits) were still live at the point Phase 6 runs (wave 5, before Phase 7's wave 6). Phase 6 explicitly authorizes 'fix the underlying cause at the source and re-run -- do not relax the gate' for any failing gate encountered during rehearsal, so generate-context-line-counts.sh --write was run in the working repo (not the rehearsal clone) to close Rule R, committed, and the clone was re-cloned from the updated HEAD before rehearsing. Phase 7 still performs its own final regeneration sweep afterward, which is a lighter confirmatory pass (absorbing only the new ci-deploy-tree-bootstrap.md doc's own line_count) rather than a duplicate of this fix.",
+      "annotation": "*(deviation: altered -- Rule R fix pulled forward into Phase 6 to satisfy its own 0-findings acceptance criterion, per the phase's explicit 'fix at the source' authorization)*"
+    },
+    {
+      "task_id": "6.gate8-regression",
+      "description": "Discovered and fixed a genuine regression: gate14 (added in Phase 3) breaks two shell-test-suite harnesses (test-deploy-propagation.sh, test-deploy-orphans.sh) that create bare, never-onboarded scratch git repos",
+      "type": "altered",
+      "reason": "Not anticipated by the plan. The fix (seed the documented Consumer Repo Setup .gitignore block into both harnesses' scratch fixtures) is scoped to the test fixtures only -- gate14 itself, check-runtime-file-tracking.sh, and the tests' own deploy-propagation/orphan-detection assertions are unchanged. This is not a lint relaxation: gate14 continues to correctly fail any real, un-onboarded consumer repo; the fix only makes the test's throwaway fixture representative of a properly-onboarded one, which is what the harness is actually supposed to be testing against.",
+      "annotation": "*(deviation: altered -- fixed a gate14-caused test-fixture regression discovered during Phase 6's full-suite rehearsal, not present in Phase 1's --skip-slow baseline)*"
+    }
+  ],
+  "verification": {
+    "positive_transcript": "STEP1_EXIT 0 ([verify-deploy] PASS -- 24 check(s), 0 failure(s)); STEP2_EXIT 0 ([verify-deploy] PASS -- 25 check(s), 0 failure(s)); zero FINDING lines",
+    "negative_transcript": "context-layers.md 221->222 (one blank line appended); STEP1_EXIT 3, STEP2_EXIT 1; FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'architecture/context-layers.md' line_count mismatch: declared 221, actual 222 -- exact ACCEPTANCE match",
+    "revert_transcript": "STEP1_EXIT 0 (24 checks, 0 failures), STEP2_EXIT 0 (25 checks, 0 failures), zero findings -- confirms clean revert",
+    "scratch_clone_deleted": true,
+    "working_repo_clean": "git status --porcelain shows no stray edits from the negative-case rehearsal (all mutation was confined to the now-deleted scratch clone)"
+  }
+}

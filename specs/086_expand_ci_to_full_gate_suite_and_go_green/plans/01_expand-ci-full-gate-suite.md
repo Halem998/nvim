@@ -370,27 +370,34 @@ aggregator run, so CI and local deploy share one entry point.
 
 ---
 
-### Phase 6: Clean-clone CI rehearsal and the reintroduced-mismatch negative test [NOT STARTED]
+### Phase 6: Clean-clone CI rehearsal and the reintroduced-mismatch negative test [COMPLETED]
 
 **Goal**: Prove the workflow green, and prove it actually fails on a real regression — the
 ACCEPTANCE criterion — without pushing anything.
 
 **Tasks**:
-- [ ] `git clone` the repo into the scratchpad. This faithfully reproduces the CI condition: the
+- [x] `git clone` the repo into the scratchpad. This faithfully reproduces the CI condition: the
       clone has no `.claude/` (gitignored), exactly like a fresh Actions checkout. Confirm with
-      `test ! -d <clone>/.claude`
-- [ ] Execute the Phase 5 workflow's step commands against the clone, in order, verbatim — do not
-      substitute a shortcut or reuse the working repo's already-deployed `.claude/`
-- [ ] **Positive case**: confirm the full `verify-deploy.sh` run exits 0 with 0 findings. If any
+      `test ! -d <clone>/.claude` *(completed)*
+- [x] Execute the Phase 5 workflow's step commands against the clone, in order, verbatim — do not
+      substitute a shortcut or reuse the working repo's already-deployed `.claude/` *(completed)*
+- [x] **Positive case**: confirm the full `verify-deploy.sh` run exits 0 with 0 findings. If any
       gate fails, fix the underlying cause at the source and re-run — do not relax the gate
-- [ ] **Negative case (ACCEPTANCE)**: in the clone, add one line to any indexed `.md` file whose
+      *(completed: two real defects found and fixed at the source -- 16 pre-existing Rule R
+      mismatches regenerated, and a gate14-caused regression in test-deploy-propagation.sh /
+      test-deploy-orphans.sh fixed by seeding an onboarded .gitignore into their scratch
+      fixtures. Final: STEP1_EXIT 0 (24 checks), STEP2_EXIT 0 (25 checks), 0 findings)*
+- [x] **Negative case (ACCEPTANCE)**: in the clone, add one line to any indexed `.md` file whose
       `line_count` is declared in an `index-entries.json`, re-run the same command sequence from
       the top, and confirm the run exits non-zero with a Rule R `line_count` mismatch naming that
-      file. Capture the exact failing output
-- [ ] Revert the deliberate edit in the clone and confirm the sequence returns to green
-- [ ] Record both transcripts (green run, red run) in the task progress file as the acceptance
-      evidence
-- [ ] Delete the scratch clone
+      file. Capture the exact failing output *(completed: context-layers.md 221->222; STEP1_EXIT 3,
+      STEP2_EXIT 1; FINDING gate3 [core] FAIL: Rule R: index-entries.json entry
+      'architecture/context-layers.md' line_count mismatch: declared 221, actual 222)*
+- [x] Revert the deliberate edit in the clone and confirm the sequence returns to green
+      *(completed: STEP1_EXIT 0, STEP2_EXIT 0, 0 findings)*
+- [x] Record both transcripts (green run, red run) in the task progress file as the acceptance
+      evidence *(completed: progress/phase6-{positive,negative,revert}-transcript.txt)*
+- [x] Delete the scratch clone *(completed)*
 
 **Timing**: 1.5 hours
 

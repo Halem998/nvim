@@ -1,0 +1,166 @@
+=== NEGATIVE CASE: reintroduced line_count mismatch (context-layers.md 221 -> 222) ===
+=== STEP 1: deploy ===
+[deploy-headless] Deploying extension tree into /tmp/claude-1000/-home-benjamin--config-nvim/39e82077-449e-45b4-9fb3-31cbacb27cb8/scratchpad/task86-ci-rehearsal/.claude ...
+[deploy-headless] deploy-lock: acquired (this invocation, pid 1220398)
+[deploy-headless] Resynced 6 extension(s) into /tmp/claude-1000/-home-benjamin--config-nvim/39e82077-449e-45b4-9fb3-31cbacb27cb8/scratchpad/task86-ci-rehearsal/.claude
+[deploy-headless] Verifying deploy (fast gates; shell test suite deferred) ...
+[verify-deploy] Target: /tmp/claude-1000/-home-benjamin--config-nvim/39e82077-449e-45b4-9fb3-31cbacb27cb8/scratchpad/task86-ci-rehearsal
+
+1. Event-store and error-store files (ls .claude/{scripts,hooks,context}/...)
+  [PASS] scripts/events-append.sh
+  [PASS] scripts/events-query.sh
+  [PASS] hooks/events-log-artifact.sh
+  [PASS] hooks/events-log-lifecycle.sh
+  [PASS] context/schemas/events-schema.json
+  [PASS] context/formats/events-format.md
+  [PASS] scripts/errors-append.sh
+  [PASS] context/schemas/errors-schema.json
+  [PASS] context/formats/errors-format.md
+
+2. Hook registrations (jq '.hooks' .claude/settings.json)
+  [PASS] PostToolUse -> events-log-artifact.sh registered
+  [PASS] Stop -> events-log-lifecycle.sh registered
+  [PASS] SubagentStop -> events-log-lifecycle.sh registered
+
+3. Doc-lint (check-extension-docs.sh --quiet)
+  [FAIL] doc-lint reported failures
+         re-run without --quiet for detail: bash .claude/scripts/check-extension-docs.sh
+  [PASS] STRICT_CORE_DEPLOY reports no undeployed event files
+
+4. Task-reference lint (check-task-references.sh --quiet)
+  [PASS] task-reference lint reports no findings
+5. Manifest-driven category parity + content-hash equality (verify.lua)
+  [PASS] declared-vs-deployed parity and content-hash equality (all loaded extensions)
+
+6. Agent contracts lint (lint-agent-contracts.sh --verbose)
+  [PASS] agent contracts lint reports no failures
+7. Routing wiring lint (lint-routing-wiring.sh --verbose)
+  [PASS] routing wiring lint reports no failures
+8. Shell test suite runner (tests/run-all.sh)
+  [SKIP] --skip-slow: shell test suite deferred (run without --skip-slow for the full gate)
+
+9. Postflight boundary lint (lint-postflight-boundary.sh, full corpus)
+  [PASS] postflight boundary lint reports no failures (full corpus)
+
+10. specs/state.json schema validation (validate-state.sh --deep)
+  [PASS] validate-state.sh --deep: specs/state.json passes (no FAIL-level finding)
+
+11. Contract compliance lint (lint-contract-compliance.sh --verbose)
+  [PASS] contract compliance lint reports no failures
+
+12. State-writer boundary lint (lint-state-writer-boundary.sh --verbose)
+  [PASS] state-writer boundary lint reports no hand-rolled writes
+
+13. Whole-tree orphan detection (find_orphans: deployed-but-undeclared files, ghost index rows)
+  [PASS] no deployed-but-undeclared files or ghost context/index.json rows
+
+14. Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)
+  [PASS] runtime-file tracking policy: all three checks passed
+
+[verify-deploy] FAIL -- 1 of 24 check(s) failed
+[deploy-headless] ERROR: the deploy itself landed, but the tree fails verification (fast gates).
+[deploy-headless] Re-run the full gate set for detail: bash /tmp/claude-1000/-home-benjamin--config-nvim/39e82077-449e-45b4-9fb3-31cbacb27cb8/scratchpad/task86-ci-rehearsal/.claude/scripts/verify-deploy.sh
+
+[deploy-headless] Known consumer repos now stale relative to the source store:
+/home/benjamin/.dotfiles                 core           CANNOTVERIFY   -       
+/home/benjamin/.dotfiles                 memory         CANNOTVERIFY   -       
+/home/benjamin/.dotfiles                 nix            CANNOTVERIFY   -       
+/home/benjamin/.dotfiles                 nvim           CANNOTVERIFY   -       
+/home/benjamin/.dotfiles                 python         CANNOTVERIFY   -       
+/home/benjamin/Projects/BimodalLogic     core           STALE          23      
+/home/benjamin/Projects/BimodalLogic     lean           STALE          1       
+/home/benjamin/Projects/BimodalLogic     literature     STALE          16      
+/home/benjamin/Projects/BimodalLogic     typst          STALE          4       
+/home/benjamin/Projects/ModelChecker     core           STALE          37      
+/home/benjamin/Projects/ModelChecker     filetypes      STALE          1       
+/home/benjamin/Projects/ModelChecker     literature     STALE          27      
+/home/benjamin/Projects/ModelChecker     typst          STALE          4       
+/home/benjamin/Projects/PersonalWebsite  core           CANNOTVERIFY   -       
+/home/benjamin/Projects/PersonalWebsite  memory         CANNOTVERIFY   -       
+/home/benjamin/Projects/PersonalWebsite  python         CANNOTVERIFY   -       
+/home/benjamin/Projects/PersonalWebsite  web            CANNOTVERIFY   -       
+/home/benjamin/Projects/cslib            core           CANNOTVERIFY   -       
+/home/benjamin/Projects/cslib            filetypes      CANNOTVERIFY   -       
+/home/benjamin/Projects/cslib            formal         CANNOTVERIFY   -       
+/home/benjamin/Projects/cslib            lean           CANNOTVERIFY   -       
+/home/benjamin/Projects/cslib            literature     CANNOTVERIFY   -       
+/home/benjamin/Projects/cslib            memory         CANNOTVERIFY   -       
+/home/benjamin/Projects/Logos/Theory     core           STALE          23      
+/home/benjamin/Projects/Logos/Theory     lean           STALE          1       
+/home/benjamin/Projects/Logos/Theory     literature     STALE          16      
+/home/benjamin/Projects/Logos/Theory     typst          STALE          4       
+/home/benjamin/Projects/Logos/Hardware   core           CANNOTVERIFY   -       
+/home/benjamin/Projects/Logos/Hardware   filetypes      CANNOTVERIFY   -       
+/home/benjamin/Projects/Logos/Hardware   formal         CANNOTVERIFY   -       
+/home/benjamin/Projects/Logos/Hardware   lean           CANNOTVERIFY   -       
+/home/benjamin/Projects/Logos/Hardware   literature     CANNOTVERIFY   -       
+/home/benjamin/Projects/Logos/Hardware   memory         CANNOTVERIFY   -       
+/home/benjamin/Projects/Logos/Hardware   nix            CANNOTVERIFY   -       
+/home/benjamin/Projects/Logos/Hardware   python         CANNOTVERIFY   -       
+/home/benjamin/Projects/Logos/Hardware   typst          CANNOTVERIFY   -       
+/home/benjamin/Philosophy/Papers/PossibleWorlds core           STALE          37      
+/home/benjamin/Philosophy/Papers/PossibleWorlds filetypes      STALE          1       
+/home/benjamin/Philosophy/Papers/PossibleWorlds latex          STALE          2       
+/home/benjamin/Philosophy/Papers/PossibleWorlds lean           STALE          1       
+/home/benjamin/Philosophy/Papers/PossibleWorlds literature     STALE          27      
+/home/benjamin/Philosophy/Papers/PossibleWorlds present        STALE          1       
+/home/benjamin/Philosophy/Papers/PossibleWorlds typst          STALE          4       
+[deploy-headless] Remedy: run 'bash .claude/scripts/deploy-headless.sh' IN EACH stale repo (this script never redeploys into a consumer).
+STEP1_EXIT: 3
+=== STEP 2: full verify-deploy.sh (no --skip-slow) ===
+[verify-deploy] Target: /tmp/claude-1000/-home-benjamin--config-nvim/39e82077-449e-45b4-9fb3-31cbacb27cb8/scratchpad/task86-ci-rehearsal
+
+1. Event-store and error-store files (ls .claude/{scripts,hooks,context}/...)
+  [PASS] scripts/events-append.sh
+  [PASS] scripts/events-query.sh
+  [PASS] hooks/events-log-artifact.sh
+  [PASS] hooks/events-log-lifecycle.sh
+  [PASS] context/schemas/events-schema.json
+  [PASS] context/formats/events-format.md
+  [PASS] scripts/errors-append.sh
+  [PASS] context/schemas/errors-schema.json
+  [PASS] context/formats/errors-format.md
+
+2. Hook registrations (jq '.hooks' .claude/settings.json)
+  [PASS] PostToolUse -> events-log-artifact.sh registered
+  [PASS] Stop -> events-log-lifecycle.sh registered
+  [PASS] SubagentStop -> events-log-lifecycle.sh registered
+
+3. Doc-lint (check-extension-docs.sh --quiet)
+  [FAIL] doc-lint reported failures
+         re-run without --quiet for detail: bash .claude/scripts/check-extension-docs.sh
+  [PASS] STRICT_CORE_DEPLOY reports no undeployed event files
+
+4. Task-reference lint (check-task-references.sh --quiet)
+  [PASS] task-reference lint reports no findings
+5. Manifest-driven category parity + content-hash equality (verify.lua)
+  [PASS] declared-vs-deployed parity and content-hash equality (all loaded extensions)
+
+6. Agent contracts lint (lint-agent-contracts.sh --verbose)
+  [PASS] agent contracts lint reports no failures
+7. Routing wiring lint (lint-routing-wiring.sh --verbose)
+  [PASS] routing wiring lint reports no failures
+8. Shell test suite runner (tests/run-all.sh)
+  [PASS] run-all.sh: all discovered suites passed
+
+9. Postflight boundary lint (lint-postflight-boundary.sh, full corpus)
+  [PASS] postflight boundary lint reports no failures (full corpus)
+
+10. specs/state.json schema validation (validate-state.sh --deep)
+  [PASS] validate-state.sh --deep: specs/state.json passes (no FAIL-level finding)
+
+11. Contract compliance lint (lint-contract-compliance.sh --verbose)
+  [PASS] contract compliance lint reports no failures
+
+12. State-writer boundary lint (lint-state-writer-boundary.sh --verbose)
+  [PASS] state-writer boundary lint reports no hand-rolled writes
+
+13. Whole-tree orphan detection (find_orphans: deployed-but-undeclared files, ghost index rows)
+  [PASS] no deployed-but-undeclared files or ghost context/index.json rows
+
+14. Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)
+  [PASS] runtime-file tracking policy: all three checks passed
+
+[verify-deploy] FAIL -- 1 of 25 check(s) failed
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'architecture/context-layers.md' line_count mismatch: declared 221, actual 222
+STEP2_EXIT: 1
