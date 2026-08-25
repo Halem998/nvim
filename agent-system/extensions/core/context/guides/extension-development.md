@@ -85,6 +85,43 @@ For the full directory layout including agents, skills, rules, context, and opti
 
 For the complete manifest schema with all fields and examples, see [Extension System Architecture](../../docs/architecture/extension-system.md#manifest-schema).
 
+### keyword_overrides
+
+An optional top-level manifest field giving an extension's task type an early, high-confidence
+match in `/task` step 4's routing sequence:
+
+```json
+{
+  "keyword_overrides": {
+    "<task_type>": {
+      "keywords": ["...", "..."],
+      "aliases": ["..."]
+    }
+  }
+}
+```
+
+- `keywords` — matched at step **4b**, before the step 4d hardcoded fallback table is ever
+  consulted. If any keyword appears as a **whole word**, case-insensitive
+  (`\b<keyword>\b`), in the task description, the scan short-circuits and resolves the task_type
+  immediately — 4d never runs. Because matching is whole-word-anchored, a single common word
+  is a blunt, false-positive-prone lever; a multi-word phrase (`"latex compile"`, not `"compile"`)
+  is how a `keywords` entry gets precision.
+- `aliases` — consulted at step **4e**, *after* a task_type has already been resolved by step 4c
+  (project default) or step 4d (hardcoded table). If the resolved task_type string appears in an
+  extension's `aliases` array, it is remapped to that extension's own task_type. This step has no
+  visibility into which keyword produced the already-resolved string, so it cannot discriminate
+  intent — see the `latex`/`typst` manifests, which both keep `aliases` empty for exactly this
+  reason.
+
+**Scan order caveat**: the step 4b cross-manifest scan iterates
+`.claude/extensions/*/manifest.json` in **alphabetical directory-name order** and stops at the
+first match — first-match-wins is alphabetical, not intent-based. Scope new `keywords` phrases
+narrowly enough that this ordering doesn't matter.
+
+**Worked examples**: see the `email`, `cslib`, `literature`, `latex`, and `typst` manifests for
+the field in practice, rather than duplicating their `keywords`/`aliases` content here.
+
 ## Merge Process
 
 Extensions are loaded via the extension picker. The loader reads each extension's `manifest.json` and merges content according to `merge_targets`:

@@ -311,27 +311,28 @@ paths, extend the phase to cover the additional prose sites and record the widen
 
 ---
 
-### Phase 5: Document the `keyword_overrides` schema in the extension guide [NOT STARTED]
+### Phase 5: Document the `keyword_overrides` schema in the extension guide [COMPLETED]
 
 **Goal**: Close the dangling documentation pointer. The generated root CLAUDE.md tells extension
 authors to see `context/guides/extension-development.md` for the `keyword_overrides` schema, and
 that guide contains zero occurrences of the string `keyword`.
 
 **Tasks**:
-- [ ] Add a `### keyword_overrides` subsection under the guide's existing `## Manifest Format`
+- [x] Add a `### keyword_overrides` subsection under the guide's existing `## Manifest Format`
       section (not a new top-level section — the field is part of the manifest schema the guide
-      already documents).
-- [ ] Document the shape `{"<task_type>": {"keywords": [...], "aliases": [...]}}`, what each array
+      already documents). *(completed)*
+- [x] Document the shape `{"<task_type>": {"keywords": [...], "aliases": [...]}}`, what each array
       does, and when the block is consulted: `keywords` at step 4b (before the 4d hardcoded
       fallback, short-circuiting it), `aliases` at step 4e (remapping an already-resolved
-      task_type).
-- [ ] Document the whole-word `\b<keyword>\b` case-insensitive matching semantics, and note that
-      because matching is whole-word-anchored, multi-word phrases are the way to get precision.
-- [ ] Cross-reference the alphabetical glob-scan-order caveat added to step 4b in Phase 1, so the
+      task_type). *(completed)*
+- [x] Document the whole-word `\b<keyword>\b` case-insensitive matching semantics, and note that
+      because matching is whole-word-anchored, multi-word phrases are the way to get precision. *(completed)*
+- [x] Cross-reference the alphabetical glob-scan-order caveat added to step 4b in Phase 1, so the
       two gaps close together and an author scoping a new block knows first-match-wins is
-      directory-name-alphabetical.
-- [ ] Point at the worked examples (`email`, `cslib`, `literature`, and now `latex`/`typst`) rather
-      than duplicating their content.
+      directory-name-alphabetical. *(completed)*
+- [x] Point at the worked examples (`email`, `cslib`, `literature`, and now `latex`/`typst`) rather
+      than duplicating their content. *(completed)*
+
 
 **Timing**: 0.5 hours
 

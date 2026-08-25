@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Document keyword_overrides schema in extension guide",
+  "started_at": "2026-08-24T00:40:00Z",
+  "last_updated": "2026-08-24T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add ### keyword_overrides subsection under Manifest Format", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]},
+    {"id": 2, "description": "Document shape, keywords/aliases semantics, step 4b/4e consultation", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]},
+    {"id": 3, "description": "Document whole-word matching semantics", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]},
+    {"id": 4, "description": "Cross-reference alphabetical glob-scan-order caveat", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]},
+    {"id": 5, "description": "Point to worked examples (email/cslib/literature/latex/typst)", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
