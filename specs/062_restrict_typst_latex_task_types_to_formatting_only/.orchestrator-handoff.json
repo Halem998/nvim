@@ -1,0 +1,23 @@
+{
+  "dispatch_seq": 2,
+  "status": "researched",
+  "summary": "Identified 8 findings across three independent routing/doc surfaces that let content-bearing work (proofs, theorems, textbook chapters) route to the latex/typst task types instead of being restricted to formatting-only concerns: (1) /task step 4d's hardcoded keyword table, where bare 'latex'/'typst'/'tex' mentions and the overly generic word 'document' cause false-positive routing, with content rows (lean4/formal) currently listed after or not fully ahead of the latex/typst rows; (2) /fix-it's QUESTION: content-based keyword table (skill-fix-it/SKILL.md:443, mirrored in fix-it.md and fix-it-flow-example.md) which directly maps pure math-content vocabulary (theorem, proof, lemma, axiom, logic, formula, derivation, proposition, corollary) to 'latex', inconsistent with task.md's own precedent of routing theorem/proof to lean4; (3) extension purpose framing in the latex/typst implementation-agent files and EXTENSION.md docs that describes 'document creation' rather than formatting-only scope, plus a flagged structural concern that typst's own context library bundles math-content-authoring standards. Additionally found: neither latex nor typst manifest.json has a keyword_overrides field today (both need one added with narrow, high-precision formatting-only phrase keywords); step 4b's cross-manifest scan is alphabetical-glob-order dependent (latent fragility, documented as Finding 7); and the root CLAUDE.md's pointer to extension-development.md for the keyword_overrides schema is dangling -- that guide never documents the schema (Finding 8). Produced concrete before/after revision text for every site, plus a full concrete-revision-targets table and an informal precedence trace.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/reports/01_restrict-latex-typst-formatting-only.md",
+      "summary": "8-finding research report with concrete before/after revisions for task.md step 4, skill-fix-it's keyword table, the latex/typst manifests, extension purpose framing, and two adjacent doc gaps."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "4e alias remapping is not a usable lever for this task -- it only remaps an already-resolved task_type string, with no visibility into whether the resolution came from a content word or a formatting word; the fix belongs entirely in 4b/4d.",
+    "keyword_overrides additions for latex/typst use narrow, multi-word formatting-specific phrases (e.g. 'latex compile', 'bibtex', 'typst package') rather than bare tool names, to keep 4b's early match high-precision.",
+    "typst's textbook-standards.md/type-theory-foundations.md content-authoring library is flagged for a plan-phase relocate-vs-rescope decision, not resolved as part of this research task's stated scope."
+  ],
+  "dead_ends": []
+}
