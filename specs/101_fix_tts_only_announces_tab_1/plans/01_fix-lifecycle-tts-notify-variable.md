@@ -371,31 +371,32 @@ respectively) and may be dispatched together.
 
 ---
 
-### Phase 4: Make empty-status failure loud instead of silent [NOT STARTED]
+### Phase 4: Make empty-status failure loud instead of silent [COMPLETED]
 
 - **Goal:** Ensure that any future call site passing an empty status produces an immediately
   observable artifact, rather than silently no-opping — the property whose absence let this defect
   survive six-plus weeks and a full refactor.
 
 - **Tasks:**
-  - [ ] In `agent-system/extensions/core/scripts/skill-base.sh`, add an empty-argument guard to
+  - [x] In `agent-system/extensions/core/scripts/skill-base.sh`, add an empty-argument guard to
     `skill_lifecycle_notify` that emits a clearly-worded warning to stderr naming the function and
     the fact that no notification will be sent, then returns success without invoking the notifier.
-  - [ ] Confirm the guard preserves the function's never-blocking contract: it must not use
+    *(completed)*
+  - [x] Confirm the guard preserves the function's never-blocking contract: it must not use
     `set -u`, must not change the function's exit status, must not remove the backgrounded
     invocation on the non-empty path, and must not make a failed notification able to abort a
-    postflight.
-  - [ ] In `agent-system/extensions/core/scripts/lifecycle-notify.sh`, make the existing
+    postflight. *(completed: manually verified)*
+  - [x] In `agent-system/extensions/core/scripts/lifecycle-notify.sh`, make the existing
     empty-status branch append a log line to the same log file the success path writes
     (`specs/tmp/claude-tts-notify.log`), recording that an empty status was received and no
     notification was sent. Keep the branch's `exit 0` and its documented no-op contract exactly as
-    they are — change observability only, never control flow.
-  - [ ] Update the usage/behavior comment block at the top of `lifecycle-notify.sh` so the
-    documented `""` no-op behavior mentions that the no-op is now logged.
-  - [ ] Extend `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` with a
+    they are — change observability only, never control flow. *(completed)*
+  - [x] Update the usage/behavior comment block at the top of `lifecycle-notify.sh` so the
+    documented `""` no-op behavior mentions that the no-op is now logged. *(completed)*
+  - [x] Extend `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` with a
     case asserting that `skill_lifecycle_notify ""` warns on stderr and still returns success, and
-    a case asserting the non-empty path still invokes the notifier.
-  - [ ] Verify no task numbers were introduced into any edited file.
+    a case asserting the non-empty path still invokes the notifier. *(completed: new Group 2a)*
+  - [x] Verify no task numbers were introduced into any edited file. *(completed)*
 
 - **Timing:** 0.75 hours
 
@@ -409,12 +410,20 @@ respectively) and may be dispatched together.
   - `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` - guard regression cases.
 
 - **Verification:**
-  - `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` passes.
+  - `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` passes when run
+    against the source-store `skill-base.sh` directly (manually confirmed: empty status warns on
+    stderr naming the function and returns 0; non-empty status still invokes the notifier). The
+    suite's own `resolve_candidate()` prefers the deployed `.claude/scripts/skill-base.sh` tree
+    (matching real SKILL.md runtime), which is known-stale per gate-in's warning until Phase 7
+    deploys — the full official run against the deployed tree is re-verified there (see Phase 4
+    progress-file deviation).
   - Sourcing `skill-base.sh` and calling `skill_lifecycle_notify ""` prints a warning and returns 0.
+    *(confirmed)*
   - `bash agent-system/extensions/core/scripts/lifecycle-notify.sh ""` exits 0 and appends an
-    empty-status line to `specs/tmp/claude-tts-notify.log`.
+    empty-status line to `specs/tmp/claude-tts-notify.log`. *(confirmed)*
   - `bash agent-system/extensions/core/scripts/lifecycle-notify.sh "researched"` still appends a
     `Lifecycle notification sent: Tab N researched` line, unchanged from current behavior.
+    *(confirmed: prior behavior unmodified for the non-empty path)*
 
 ---
 

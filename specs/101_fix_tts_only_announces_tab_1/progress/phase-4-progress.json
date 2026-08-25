@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Make empty-status failure loud instead of silent",
+  "started_at": "2026-08-25T20:50:00Z",
+  "last_updated": "2026-08-25T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add empty-argument guard to skill_lifecycle_notify in skill-base.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 2, "description": "Confirm guard preserves never-blocking contract", "status": "done", "files_touched": [], "note": "no set -u, returns 0, non-empty path unchanged, manually verified"},
+    {"id": 3, "description": "Log empty-status no-op branch in lifecycle-notify.sh to claude-tts-notify.log", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lifecycle-notify.sh"]},
+    {"id": 4, "description": "Update usage/behavior comment in lifecycle-notify.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lifecycle-notify.sh"]},
+    {"id": 5, "description": "Extend test-skill-base-lifecycle.sh with guard regression cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 6, "description": "Verify no task numbers introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh passes",
+      "type": "deferred",
+      "reason": "The suite's own resolve_candidate() prefers the deployed .claude/scripts/skill-base.sh over the source-store copy (matching real SKILL.md runtime cwd assumptions per its own header comment), and the deployed core extension is known-stale per gate-in's warning and Decision 5 (deploy is explicitly Phase 7's job, not this phase's). Manually sourcing the edited source-store skill-base.sh directly and exercising skill_lifecycle_notify confirms the guard logic is correct (empty status warns on stderr naming the function, returns 0, does not invoke the notify script; non-empty status still invokes it). The full official suite run against the deployed tree will show all cases green once Phase 7 deploys; re-verified there.",
+      "annotation": "*(deviation: deferred to Phase 7 -- full suite pass against the deployed tree, pending Phase 7's deploy)*"
+    }
+  ]
+}

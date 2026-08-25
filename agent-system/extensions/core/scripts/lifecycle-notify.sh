@@ -4,7 +4,10 @@
 # Usage:
 #   lifecycle-notify.sh STATUS           # Normal mode: tab color + TTS
 #   lifecycle-notify.sh STATUS --quiet   # Quiet mode: tab color only (no TTS)
-#   lifecycle-notify.sh ""               # Empty status: no-op, exits 0
+#   lifecycle-notify.sh ""               # Empty status: no-op, exits 0. The no-op is now LOGGED
+#                                         # (appended to specs/tmp/claude-tts-notify.log) so a
+#                                         # caller passing an empty/unset status leaves a visible
+#                                         # trace instead of vanishing silently.
 #
 # Called by orchestrator-postflight.sh Stage 8b for lifecycle phase transitions.
 #
@@ -29,13 +32,22 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOKS_DIR="$SCRIPT_DIR/../hooks"
+LOG_FILE="specs/tmp/claude-tts-notify.log"
+
+# Helper: log message (same log file and line shape tts-notify.sh's own log() writes, so the
+# no-op branch below leaves a trace in the same evidence surface as a successful notification).
+log() {
+    echo "[$(date -Iseconds)] $1" >> "$LOG_FILE" 2>/dev/null || true
+}
 
 # Parse arguments
 STATUS="${1:-}"
 QUIET="${2:-}"
 
-# No-op if status is empty
+# No-op if status is empty -- logged (not silent) so an empty/unset-variable regression at a
+# caller's Stage 8a call site produces a visible artifact on its very first execution.
 if [[ -z "$STATUS" ]]; then
+    log "Lifecycle notification skipped: empty status received, no notification sent"
     exit 0
 fi
 

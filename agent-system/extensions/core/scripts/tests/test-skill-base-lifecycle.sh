@@ -219,6 +219,70 @@ else
 fi
 
 # =====================================================================
+# Group 2a: skill_lifecycle_notify -- regression coverage for the empty-status loud-failure guard
+# (a real defect: 12 call sites once passed an undefined $STATE_STATUS, which bash silently
+# expands to "", and skill_lifecycle_notify forwarded that empty string to lifecycle-notify.sh's
+# own silent no-op branch -- six-plus weeks of every lifecycle TTS/tab-color announcement
+# vanishing with zero observable trace). The guard below must be loud (stderr warning) and MUST
+# NOT change skill_lifecycle_notify's never-blocking, always-returns-0 contract. Hardcodes the
+# bare relative path ".claude/scripts/lifecycle-notify.sh", matching skill_preflight_update's own
+# real-cwd assumption above -- isolated via a `cd` into a fixture dir, never touching the real
+# repo's .claude/.
+# =====================================================================
+info "=== skill_lifecycle_notify ==="
+
+LIFECYCLE_FIXTURE_DIR="$WORKDIR/lifecycle_fixture"
+mkdir -p "$LIFECYCLE_FIXTURE_DIR/.claude/scripts"
+
+# Empty-status case: must warn on stderr, must NOT invoke the notify script, and must still
+# return 0 (never-blocking contract preserved).
+LIFECYCLE_EMPTY_MARKER="$LIFECYCLE_FIXTURE_DIR/empty-invoked.marker"
+cat > "$LIFECYCLE_FIXTURE_DIR/.claude/scripts/lifecycle-notify.sh" << EOF
+#!/usr/bin/env bash
+touch "$LIFECYCLE_EMPTY_MARKER"
+EOF
+chmod +x "$LIFECYCLE_FIXTURE_DIR/.claude/scripts/lifecycle-notify.sh"
+
+LIFECYCLE_EMPTY_STDERR="$WORKDIR/lifecycle-empty-stderr.$$"
+if ( cd "$LIFECYCLE_FIXTURE_DIR" && skill_lifecycle_notify "" ) 2>"$LIFECYCLE_EMPTY_STDERR"; then
+  if grep -qi "skill_lifecycle_notify" "$LIFECYCLE_EMPTY_STDERR"; then
+    pass "skill_lifecycle_notify \"\" warns on stderr naming the function, and returns success"
+  else
+    fail "skill_lifecycle_notify \"\" returned success but the stderr warning did not name the function"
+  fi
+else
+  fail "skill_lifecycle_notify \"\" unexpectedly returned nonzero (breaks the never-blocking contract)"
+fi
+if [[ -f "$LIFECYCLE_EMPTY_MARKER" ]]; then
+  fail "skill_lifecycle_notify \"\" invoked lifecycle-notify.sh despite the empty-argument guard"
+else
+  pass "skill_lifecycle_notify \"\" does not invoke lifecycle-notify.sh (guard short-circuits before the call)"
+fi
+rm -f "$LIFECYCLE_EMPTY_STDERR"
+
+# Non-empty-status case: the guard must not regress the existing, working backgrounded-invocation
+# path. skill_lifecycle_notify backgrounds the call (`&`), so poll briefly for the marker rather
+# than assuming synchronous completion.
+LIFECYCLE_REAL_MARKER="$LIFECYCLE_FIXTURE_DIR/real-invoked.marker"
+rm -f "$LIFECYCLE_REAL_MARKER"
+cat > "$LIFECYCLE_FIXTURE_DIR/.claude/scripts/lifecycle-notify.sh" << EOF
+#!/usr/bin/env bash
+echo "\$1" > "$LIFECYCLE_REAL_MARKER"
+EOF
+chmod +x "$LIFECYCLE_FIXTURE_DIR/.claude/scripts/lifecycle-notify.sh"
+( cd "$LIFECYCLE_FIXTURE_DIR" && skill_lifecycle_notify "researched" )
+lifecycle_wait_iter=0
+while [[ ! -f "$LIFECYCLE_REAL_MARKER" ]] && [[ "$lifecycle_wait_iter" -lt 20 ]]; do
+  sleep 0.1
+  lifecycle_wait_iter=$((lifecycle_wait_iter + 1))
+done
+if [[ -f "$LIFECYCLE_REAL_MARKER" ]] && [[ "$(cat "$LIFECYCLE_REAL_MARKER")" == "researched" ]]; then
+  pass "skill_lifecycle_notify \"researched\" still invokes lifecycle-notify.sh with the status argument (non-empty path unregressed)"
+else
+  fail "skill_lifecycle_notify \"researched\" did not invoke lifecycle-notify.sh as expected"
+fi
+
+# =====================================================================
 # Group 3: skill_link_artifacts -- routed through SKILL_REPO_ROOT-qualified state-write.sh calls
 # plus a generate-todo.sh regen. Isolated via SKILL_REPO_ROOT override; never touches the real
 # specs/ tree.

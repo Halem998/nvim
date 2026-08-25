@@ -718,6 +718,10 @@ skill_link_artifacts() {
 skill_lifecycle_notify() {
   local state_status="$1"
   local lifecycle_script=".claude/scripts/lifecycle-notify.sh"
+  if [ -z "$state_status" ]; then
+    echo "WARNING: skill_lifecycle_notify called with an empty status argument -- no lifecycle notification will be sent. This usually means the caller passed an unset/misnamed variable (e.g. a stale \$STATE_STATUS instead of \$status) as its Stage 8a argument." >&2
+    return 0
+  fi
   if [ -f "$lifecycle_script" ]; then
     bash "$lifecycle_script" "$state_status" &
   fi
