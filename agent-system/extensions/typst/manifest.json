@@ -45,6 +45,21 @@
       "typst": "typst-implementation-agent"
     }
   },
+  "keyword_overrides": {
+    "typst": {
+      "keywords": [
+        "typst formatting",
+        "typst compile",
+        "typst compilation",
+        "typst package",
+        "typst template",
+        "typst style",
+        "typst layout",
+        "fletcher diagram"
+      ],
+      "aliases": []
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

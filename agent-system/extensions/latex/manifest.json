@@ -47,6 +47,26 @@
       "latex": "latex-implementation-agent"
     }
   },
+  "keyword_overrides": {
+    "latex": {
+      "keywords": [
+        "latex formatting",
+        "latex compile",
+        "latex compilation",
+        "latexmk",
+        "pdflatex",
+        "bibtex",
+        "biblatex",
+        "latex package",
+        "latex macro",
+        "vimtex",
+        "latex template",
+        "tex compile error",
+        "latex style"
+      ],
+      "aliases": []
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

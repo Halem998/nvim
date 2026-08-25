@@ -213,25 +213,26 @@ appears, fix it in this phase and record the widened file list in the summary.
 
 ---
 
-### Phase 3: Add formatting-scoped `keyword_overrides` to the latex and typst manifests [NOT STARTED]
+### Phase 3: Add formatting-scoped `keyword_overrides` to the latex and typst manifests [COMPLETED]
 
 **Goal**: Give genuinely formatting-scoped requests an early, high-confidence step-4b match on
 precise phrases, without creating any new path by which content vocabulary reaches `latex`/`typst`.
 
 **Tasks**:
-- [ ] Add a top-level `keyword_overrides` object to `agent-system/extensions/latex/manifest.json`
+- [x] Add a top-level `keyword_overrides` object to `agent-system/extensions/latex/manifest.json`
       with a single `"latex"` key whose `keywords` array is
       `["latex formatting", "latex compile", "latex compilation", "latexmk", "pdflatex", "bibtex",
       "biblatex", "latex package", "latex macro", "vimtex", "latex template", "tex compile error",
-      "latex style"]` and whose `aliases` array is empty.
-- [ ] Add the analogous block to `agent-system/extensions/typst/manifest.json` under a `"typst"`
+      "latex style"]` and whose `aliases` array is empty. *(completed)*
+- [x] Add the analogous block to `agent-system/extensions/typst/manifest.json` under a `"typst"`
       key: `["typst formatting", "typst compile", "typst compilation", "typst package",
-      "typst template", "typst style", "typst layout", "fletcher diagram"]`, `aliases: []`.
-- [ ] Keep `aliases` empty in both. A non-empty `aliases` list would make step 4e claim
+      "typst template", "typst style", "typst layout", "fletcher diagram"]`, `aliases: []`. *(completed)*
+- [x] Keep `aliases` empty in both. A non-empty `aliases` list would make step 4e claim
       already-resolved task_types for these extensions — the exact content-capturing behavior this
-      task exists to remove.
-- [ ] Match the field placement and formatting conventions already used by the `email`, `cslib`, and
-      `literature` manifests so the three worked examples stay visually consistent.
+      task exists to remove. *(completed)*
+- [x] Match the field placement and formatting conventions already used by the `email`, `cslib`, and
+      `literature` manifests so the three worked examples stay visually consistent. *(completed)*
+
 
 **Timing**: 0.5 hours
 
