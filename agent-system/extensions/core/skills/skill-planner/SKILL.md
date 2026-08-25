@@ -375,7 +375,7 @@ field_name='**Plan**'
 next_field='**Description**'
 skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" \
   "$field_name" "$next_field" "$session_id"
-skill_lifecycle_notify "$STATE_STATUS"
+skill_lifecycle_notify "$status"
 ```
 
 **Not covered here**: the shared block's own Stage 9 (cleanup) is deliberately NOT invoked at

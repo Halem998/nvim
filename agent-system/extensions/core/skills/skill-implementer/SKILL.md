@@ -591,7 +591,7 @@ Performs the two-step jq pattern internally (Issue #1132-safe) and regenerates T
 Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8a (TTS notify):
 
 ```bash
-skill_lifecycle_notify "$STATE_STATUS"
+skill_lifecycle_notify "$status"
 ```
 
 Non-blocking: called in background after artifacts are linked. Speaks "Tab N STATUS"

@@ -277,26 +277,30 @@ respectively) and may be dispatched together.
 
 ---
 
-### Phase 2: Propagate the rename to core skills [NOT STARTED]
+### Phase 2: Propagate the rename to core skills [COMPLETED]
 
 - **Goal:** Fix every inlined Stage 8a call site inside the `core` extension so the skills that do
   not lazily import the shared pattern also pass a real status.
 
 - **Tasks:**
-  - [ ] For each file below, read its own `status`-assignment history from Stage 6 through Stage 8a
+  - [x] For each file below, read its own `status`-assignment history from Stage 6 through Stage 8a
     and confirm that `status` holds the intended terminal lifecycle value at the call site. Record
-    the confirmation. Do not apply a blind find-and-replace.
-  - [ ] `agent-system/extensions/core/skills/skill-planner/SKILL.md` - change
-    `skill_lifecycle_notify "$STATE_STATUS"` to `skill_lifecycle_notify "$status"`.
-  - [ ] `agent-system/extensions/core/skills/skill-planner-hard/SKILL.md` - same change.
-  - [ ] `agent-system/extensions/core/skills/skill-implementer/SKILL.md` - same change.
-  - [ ] `agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md` - same change; this
+    the confirmation. Do not apply a blind find-and-replace. *(completed: all 5 files confirmed,
+    no collisions)*
+  - [x] `agent-system/extensions/core/skills/skill-planner/SKILL.md` - change
+    `skill_lifecycle_notify "$STATE_STATUS"` to `skill_lifecycle_notify "$status"`. *(completed)*
+  - [x] `agent-system/extensions/core/skills/skill-planner-hard/SKILL.md` - same change. *(completed)*
+  - [x] `agent-system/extensions/core/skills/skill-implementer/SKILL.md` - same change. *(completed)*
+  - [x] `agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md` - same change; this
     file has an extra `status` assignment relative to its siblings, so re-read its control flow
-    with particular care before editing.
-  - [ ] `agent-system/extensions/core/skills/skill-reviser/SKILL.md` - this site calls
+    with particular care before editing. *(completed: confirmed the extra `status="partial"`
+    assignment at Stage 7's phase-check-refusal branch is intentional and correctly scoped)*
+  - [x] `agent-system/extensions/core/skills/skill-reviser/SKILL.md` - this site calls
     `lifecycle-notify.sh` directly rather than via `skill_lifecycle_notify`; change the argument
     `"$STATE_STATUS"` to `"$status"` while leaving the direct-invocation shape unchanged.
-  - [ ] Verify no task numbers were introduced into any edited file.
+    *(completed)*
+  - [x] Verify no task numbers were introduced into any edited file. *(completed:
+    check-task-references.sh reports 0 occurrences)*
 
 - **Timing:** 0.5 hours
 

@@ -427,7 +427,7 @@ Performs the two-step jq pattern internally (Issue #1132-safe) and regenerates T
 Follow `@.claude/context/patterns/skill-postflight-flow.md`'s Stage 8a (TTS notify):
 
 ```bash
-skill_lifecycle_notify "$STATE_STATUS"
+skill_lifecycle_notify "$status"
 ```
 
 ---
