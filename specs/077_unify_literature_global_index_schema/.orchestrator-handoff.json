@@ -1,12 +1,12 @@
 {
-  "dispatch_seq": 3,
-  "status": "researched",
-  "summary": "Research complete. The writer (literature-ingest.sh Step 4) still emits the invisible stub shape; the prior backlog of invisible entries is already at zero, repaired out-of-band in the Literature repo. Live-measured the fourth namespace (chunks_data.doc_id vs index.json .id): 49 documents disagree (32 FTS-only, 17 index-only), unchanged since the task's last addendum. Discovered a second, previously-undocumented breakage in literature-search.sh's project-filtered search (get_project_doc_ids() keys on index .id, filters chunks_data.doc_id) caused by the same mismatch. Completed the full reader survey (most named scripts are not offenders). Confirmed the parent/child chunk-granularity ambiguity live on baier_katoen_2008. Diagnosed why /literature --validate currently misreports stub entries as stale files. Report lays out scoped recommendations and explicit open decisions (sources/ placement for new ingests, chunk granularity, per-document reconciliation strategy for the 17 index-only docs) for the plan phase.",
+  "dispatch_seq": 6,
+  "status": "planned",
+  "summary": "Created a 10-phase (~12h) implementation plan. Core design decision: never rename a live FTS id; instead bridge the index.json .id namespace and .literature.db chunks_data.doc_id namespace through the sources/<dir>/ component of each entry's .path -- a derivation literature-search.sh already performs at four sites. Planning-time re-measurement confirmed the research counts (399 entries, 0 null-id, 189 parents, 204 FTS doc_ids, 32 FTS-only, 17 index-only) and refined the reconciliation residue from '49 disagreements' to 15 FTS-only directories lacking a parent entry, 2 duplicate chunk directories, and 1 index entry whose conversion was rejected. Path derivation covers 202/204 FTS doc_ids vs 172/204 for .id, so 31 of the 49 divergences are closed by code alone. All three open decisions settled explicitly with rationale: (A) new ingests move under sources/<id>/ -- build-index is placement-agnostic (recursive find for chunks.json), so there is no FTS migration risk, and it switches on fidelity-audit targeting for free; (B) chunk granularity 1:1 with chunks.json/FTS rows so briefing counts and --toc counts agree by construction, legacy part-granularity books explicitly not retrofitted; (C) reconcile by path bridge plus parent entries under bare ids for the 15 uncovered directories, with explicit NO ACTION on the 14 paired curated-id entries. Every id-touching phase (2,3,4,5,8) requires verification BY EXECUTION -- running --toc and a project-filtered search, with reading the script named as unacceptable evidence. All code edits target agent-system/extensions/literature/**; Phase 8 is flagged as a manual/scripted data change in the separate ~/Projects/Literature/ repo, committed there, touching no file in this repository.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md",
-      "summary": "Full research report: mechanism confirmation, live corpus measurements, reader survey, validate-gap diagnosis, and scoped recommendations/decisions for planning."
+      "type": "plan",
+      "path": "specs/077_unify_literature_global_index_schema/plans/01_unify-global-index-fts-namespace.md",
+      "summary": "10-phase implementation plan with dependency waves [[1],[2,3,4],[5,7],[6,8],[9],[10]], per-phase verification tiers, and execution-based verification for all id-touching phases."
     }
   ],
   "blockers": []
