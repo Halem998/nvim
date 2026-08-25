@@ -477,24 +477,27 @@ respectively) and may be dispatched together.
 
 ---
 
-### Phase 6: Add a narrow regression lint [NOT STARTED]
+### Phase 6: Add a narrow regression lint [COMPLETED]
 
 - **Goal:** Make it impossible for this exact defect to be reintroduced without a gate failing.
 
 - **Tasks:**
-  - [ ] Add a check that fails when any `SKILL.md` under `agent-system/extensions/*/skills/` or any
+  - [x] Add a check that fails when any `SKILL.md` under `agent-system/extensions/*/skills/` or any
     file under `agent-system/extensions/*/context/patterns/` passes `$STATE_STATUS` as an argument
-    to `skill_lifecycle_notify` or to `lifecycle-notify.sh`.
-  - [ ] Scope the check narrowly and deliberately: it MUST NOT flag `update-task-status.sh`, MUST
+    to `skill_lifecycle_notify` or to `lifecycle-notify.sh`. *(completed: new
+    lint-lifecycle-status-var.sh)*
+  - [x] Scope the check narrowly and deliberately: it MUST NOT flag `update-task-status.sh`, MUST
     NOT flag prose mentions of `STATE_STATUS` that describe that script's internal mapping, and
-    MUST NOT attempt general undefined-variable analysis (see Decision 2).
-  - [ ] Give the failure message a self-explanatory body that names the correct variable
+    MUST NOT attempt general undefined-variable analysis (see Decision 2). *(completed: verified
+    against all three confirmed-legitimate files)*
+  - [x] Give the failure message a self-explanatory body that names the correct variable
     (`$status`), names the shared contract file where the canonical Stage 8a block lives, and
     states that the wrong name causes a silent no-op — so a future reader does not have to
-    rediscover the defect.
-  - [ ] Add a test for the check under `agent-system/extensions/core/scripts/tests/` covering both
-    a passing tree and a synthetic failing input.
-  - [ ] Verify no task numbers were introduced into any edited or created file.
+    rediscover the defect. *(completed)*
+  - [x] Add a test for the check under `agent-system/extensions/core/scripts/tests/` covering both
+    a passing tree and a synthetic failing input. *(completed: test-lint-lifecycle-status-var.sh,
+    9 cases, all passing)*
+  - [x] Verify no task numbers were introduced into any edited or created file. *(completed)*
 
 - **Timing:** 0.75 hours
 
@@ -508,11 +511,24 @@ respectively) and may be dispatched together.
   implementation time that this is the right host by reading that script's existing check
   structure and its `verify-deploy.sh` wiring; if it is not a natural fit, add a new script under
   `agent-system/extensions/core/scripts/lint/` and wire it into `verify-deploy.sh` the same way its
-  siblings are wired. Do not create a new lint entry point that nothing invokes.
+  siblings are wired. Do not create a new lint entry point that nothing invokes. **Resolved**: not
+  a natural fit -- `lint-postflight-boundary.sh` only scans `SKILL.md` files under the DEPLOYED
+  tree (`.claude/skills`, `.claude/extensions`) and has no `context/patterns/*.md` scan surface at
+  all, by design (its own `verify-deploy.sh` wiring comment documents it as auditing deployed
+  content, not source). A new sibling script, `lint-lifecycle-status-var.sh`, was added instead,
+  following `lint-agent-contracts.sh`'s source-store-invocation convention, and wired into
+  `verify-deploy.sh` as gate 15 the same way gates 6/7/11/12 are wired (`REPO_ROOT="$TARGET"`
+  override, SKIP-if-not-source-store).
 
 - **Files to modify:**
-  - `agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh` - new narrow check (or a new sibling lint script plus its `verify-deploy.sh` wiring).
-  - `agent-system/extensions/core/scripts/tests/` - test for the new check.
+  - `agent-system/extensions/core/scripts/lint/lint-lifecycle-status-var.sh` - new sibling lint
+    script (resolved from the Scope Hypothesis above).
+  - `agent-system/extensions/core/scripts/verify-deploy.sh` - gate 15 wiring.
+  - `agent-system/extensions/core/manifest.json` - `provides.scripts` registration for both new
+    files (corollary of adding new source-store files -- otherwise `deploy-headless.sh` never
+    ships them).
+  - `agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh` - test for the
+    new check.
 
 - **Verification:**
   - The lint passes against the current tree (with Phases 2 and 3 applied).

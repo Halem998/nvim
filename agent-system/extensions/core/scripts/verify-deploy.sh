@@ -55,11 +55,11 @@
 #   fast/full split and exit-code contract.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all fifteen gates
-#   (gate0 through gate14) plus a gate0 "could not run" sentinel, printed to stdout after the
+#   Emits a normalized, one-per-line, machine-diffable findings set across all sixteen gates
+#   (gate0 through gate15) plus a gate0 "could not run" sentinel, printed to stdout after the
 #   final narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
 #   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
-#   gate label (`gate0`..`gate14`); the automated consumer is expected to invoke
+#   gate label (`gate0`..`gate15`); the automated consumer is expected to invoke
 #   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
 #   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
@@ -681,6 +681,39 @@ else
       while IFS= read -r runtime_tracking_line; do
         FINDINGS_LIST+=("FINDING gate14 ${runtime_tracking_line#*FAIL }")
       done < <(printf '%s\n' "$runtime_tracking_output" | sed -E 's/\x1b\[[0-9;]*m//g' | grep -E '^  FAIL ')
+    fi
+  fi
+fi
+
+say ""
+
+# ── 15. Lifecycle status-variable regression lint gate ────────────────────────
+# Only meaningful in the source-store repo, mirroring gates 6-7/11-12's SKIP-if-not-source-store
+# precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
+# skips there. Runs the SOURCE-STORE copy (REPO_ROOT="$TARGET" override), matching gates 6/7's
+# convention rather than gate 9's deployed-tree convention: this lint's own default scan corpus
+# is `agent-system/extensions/*/skills/*/SKILL.md` and `agent-system/extensions/*/context/
+# patterns/*` -- source-store paths, not deployed ones -- so invoking the deployed copy would
+# resolve REPO_ROOT to the wrong depth and silently scan nothing, exactly as gate 6/7's own
+# precedent already documents for their scripts.
+say "15. Lifecycle status-variable lint (lint-lifecycle-status-var.sh --verbose)"
+CURRENT_GATE="gate15"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- lifecycle status-variable lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-lifecycle-status-var.sh" ]; then
+  fail "lint-lifecycle-status-var.sh not found in source store"
+else
+  lifecycle_status_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-lifecycle-status-var.sh" --verbose 2>&1)
+  lifecycle_status_lint_status=$?
+  if [ "$lifecycle_status_lint_status" -eq 0 ]; then
+    pass "lifecycle status-variable lint reports no violations"
+  else
+    fail "lifecycle status-variable lint reported violations" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-lifecycle-status-var.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r lifecycle_status_lint_line; do
+        FINDINGS_LIST+=("FINDING gate15 ${lifecycle_status_lint_line#*VIOLATION\] }")
+      done < <(printf '%s\n' "$lifecycle_status_lint_output" | grep -F '[VIOLATION]')
     fi
   fi
 fi

@@ -1,0 +1,45 @@
+{
+  "phase": 6,
+  "phase_name": "Add a narrow regression lint",
+  "started_at": "2026-08-25T21:22:00Z",
+  "last_updated": "2026-08-25T21:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Decide lint host: extend lint-postflight-boundary.sh or add a new sibling script",
+      "status": "done",
+      "files_touched": [],
+      "note": "Confirmed lint-postflight-boundary.sh only scans SKILL.md under .claude/skills and .claude/extensions (deployed tree) and has no context/patterns/*.md scan surface; its own verify-deploy.sh wiring comment explains it audits deployed content by design. Our check needs to scan agent-system/extensions/*/skills/*/SKILL.md AND agent-system/extensions/*/context/patterns/* (source-store paths, matching the plan's own task wording), so a new sibling script following lint-agent-contracts.sh's source-store-invocation convention was the better fit."
+    },
+    {
+      "id": 2,
+      "description": "Write lint-lifecycle-status-var.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-lifecycle-status-var.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Wire into verify-deploy.sh as gate15",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Register both new files in core manifest.json provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"],
+      "note": "Necessary corollary of adding new source-store files: deploy-headless.sh only copies files declared in provides.scripts."
+    },
+    {
+      "id": 5,
+      "description": "Write test-lint-lifecycle-status-var.sh with passing-tree and synthetic-failing cases",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh"]
+    },
+    {"id": 6, "description": "Verify no task numbers introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
