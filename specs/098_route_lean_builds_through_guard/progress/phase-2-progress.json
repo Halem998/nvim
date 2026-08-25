@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Route the census cross-check build through the guard",
+  "started_at": "2026-08-25T17:32:00Z",
+  "last_updated": "2026-08-25T17:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Resolve GUARD_BIN and implement three-way branch with -- build forwarding", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-sorry-census.sh"]},
+    {"id": 2, "description": "Extend non-zero warning to name the guard when guarded path taken", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-sorry-census.sh"]},
+    {"id": 3, "description": "Add inline pressure-line comment and update header Usage/Output docs", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-sorry-census.sh"]},
+    {"id": 4, "description": "Verify: bash -n, shellcheck vs baseline, full test suite A-I green", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Fixture H asserting the guard stub's marker line literally appears (grep) in the census script's own captured stdout/stderr",
+      "result": "failed",
+      "reason": "The census script correctly never echoes its internal BUILD_OUTPUT capture verbatim -- only derived counts (compiler_sorry_count etc.) reach its own output. The marker line is trapped inside BUILD_OUTPUT and can never surface to a caller's captured output by design. Corrected Fixture H (from Phase 1) to prove the guarded path was taken indirectly: gave the guard stub a distinctive sorry-line count (3) different from both Fixture G's plain-lake stub (2) and the unused plain-lake stub also left on PATH in Fixture H (1), then asserted compiler_sorry_count reflects the guard stub's count. This also incidentally exercises the same substring-grep tolerance the real guard's memory-pressure warn line depends on, since the marker line does not match the sorry-declaration pattern."
+    }
+  ],
+  "handoff_count": 0,
+  "verification": {
+    "bash_n": "pass",
+    "shellcheck_census": "0 findings, identical to baseline (empty)",
+    "shellcheck_test": "1 finding (SC2329 on cleanup(), pre-existing baseline false positive), identical set to baseline",
+    "full_suite": "Passed: 14, Failed: 0, exit 0 -- all fixtures A-I green",
+    "scope_hypothesis": "git diff --stat shows exactly 1 file changed (lean-sorry-census.sh); diff hunks confined to the header Usage/Output block and the CROSS_CHECK block"
+  }
+}

@@ -40,6 +40,17 @@
 #   flags any mismatch. Opt-in because `lake build` is slow; intended for use
 #   at wrap-up/final-verification time when a build has already run.
 #
+#   The build is routed through the shared `lake-build-guard.sh` when both
+#   `lake` and the guard are available (serialized against other concurrent
+#   builds of the same project, with opt-in memory bounding), and degrades
+#   gracefully to a plain `lake build` when either is unavailable -- this
+#   command never hard-fails solely because the guard is not deployed.
+#   `LEAN_SORRY_CENSUS_GUARD_BIN` overrides the guard binary path (default:
+#   the sibling `lake-build-guard.sh` next to this script's own directory);
+#   this exists primarily as a test seam, since the census script and the
+#   guard ship from different source-store extensions and are only literal
+#   siblings post-deploy.
+#
 # Exit codes: 0 on success (including sorry_count > 0 -- this is a census,
 # not a pass/fail gate); 64 on usage error.
 
@@ -175,10 +186,35 @@ STRIPPER_COUNT="$(echo "$CENSUS_OUTPUT" | grep -oE '^sorry_count: [0-9]+' | grep
 if [[ $CROSS_CHECK -eq 1 ]]; then
   echo ""
   echo "--- Cross-check: lake build ---"
+  # GUARD_BIN is resolved once, above the three-way branch below. Flat deploy topology: this
+  # script and lake-build-guard.sh ship from different source-store extensions but land as
+  # literal siblings in .claude/scripts/ post-deploy, so a dirname-relative lookup is correct
+  # post-deploy and wrong when this script is run from the source store directly -- hence the
+  # overridable env-var test seam (mirrors the guard's own LAKE_BUILD_GUARD_LAKE_BIN precedent).
+  GUARD_BIN="${LEAN_SORRY_CENSUS_GUARD_BIN:-$(dirname "${BASH_SOURCE[0]:-$0}")/lake-build-guard.sh}"
   if ! command -v lake >/dev/null 2>&1; then
     echo "cross_check: unavailable (lake not found in PATH)"
   else
-    BUILD_OUTPUT="$(lake build 2>&1)"
+    GUARDED=0
+    if [[ -x "$GUARD_BIN" ]]; then
+      GUARDED=1
+      # --quiet --collect is the guard's own problem, not this call site's: run_lake_foreground
+      # already passes them to systemd-run and marks them MANDATORY (not cosmetic), precisely so
+      # systemd's status chatter cannot corrupt this combined 2>&1 capture. Do not re-pass or
+      # second-guess them here. An explicit "-- build" is passed (not left to a guard-side
+      # default) so the forwarded lake_args array is never empty (a set -u hazard inside the
+      # guard) and today's exact `lake build` semantics are preserved. --dir/--memory-bound/
+      # --defer-on-pressure/--no-share are deliberately NOT passed: this call site defaults to
+      # $PWD like today's undirected invocation, and memory bounding stays opt-in/off here
+      # because the census is a verification read-out whose value is a correct count -- an
+      # aborted or deferred build would silently under-count rather than fail loudly. On the
+      # guard's memory-pressure warn-and-proceed path, one extra stderr line lands inside this
+      # capture; harmless, since the "declaration uses 'sorry'" grep below is substring-based,
+      # but a future reader diffing raw census output should not be surprised by it.
+      BUILD_OUTPUT="$("$GUARD_BIN" build -- build 2>&1)"
+    else
+      BUILD_OUTPUT="$(lake build 2>&1)"
+    fi
     BUILD_STATUS=$?
     COMPILER_COUNT="$(echo "$BUILD_OUTPUT" | grep -c "declaration uses 'sorry'")"
     echo "compiler_sorry_count: $COMPILER_COUNT"
@@ -189,7 +225,11 @@ if [[ $CROSS_CHECK -eq 1 ]]; then
       echo "cross_check: MISMATCH (stripper=$STRIPPER_COUNT, compiler=$COMPILER_COUNT)"
     fi
     if [[ $BUILD_STATUS -ne 0 ]]; then
-      echo "Warning: lake build exited non-zero ($BUILD_STATUS); compiler_sorry_count may be incomplete" >&2
+      if [[ $GUARDED -eq 1 ]]; then
+        echo "Warning: guarded lake build exited non-zero ($BUILD_STATUS); compiler_sorry_count may be incomplete" >&2
+      else
+        echo "Warning: lake build exited non-zero ($BUILD_STATUS); compiler_sorry_count may be incomplete" >&2
+      fi
     fi
   fi
 fi

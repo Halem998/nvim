@@ -23,9 +23,11 @@
 #
 # Anti-vacuous-test guard: Fixtures A and D additionally assert that the naive `\bsorry\b`
 # per-line count DIFFERS from the tool's reported count on the same fixture text, and Fixture H
-# additionally asserts its captured output DIFFERS from Fixture G's (the guard marker line is
-# present in exactly one), so a fixture both implementations would agree on can never masquerade
-# as coverage (per context/standards/shell-script-testing.md's mutation-check discipline).
+# additionally asserts its captured output DIFFERS from Fixture G's (a distinctive
+# compiler_sorry_count value proves the guard stub -- not the unused plain-lake stub also left on
+# PATH -- actually supplied the combined capture), so a fixture both implementations would agree
+# on can never masquerade as coverage (per context/standards/shell-script-testing.md's
+# mutation-check discipline).
 #
 # Follows the core shell-test convention (see
 # agent-system/extensions/core/scripts/tests/test-census-count.sh): pass()/fail()/info()
@@ -344,41 +346,42 @@ fi
 
 # =====================================================================
 # Fixture H: --cross-check with `lake` present AND guard present (LEAN_SORRY_CENSUS_GUARD_BIN
-# points at a stub guard). Expect the guard marker line to appear in captured output (proving the
-# guarded path was actually taken) AND compiler_sorry_count to still parse correctly from the
-# combined capture.
+# points at a stub guard). The guard stub's marker line (echoed to stdout ahead of its synthetic
+# "declaration uses 'sorry'" lines) is captured into the script's internal BUILD_OUTPUT along
+# with those lines -- but BUILD_OUTPUT is never echoed verbatim to the census script's own
+# stdout (by design: the production script must not leak a raw build log, only the derived
+# counts), so the marker cannot be grepped for directly in this fixture's captured output. What
+# IS observable, and what this fixture asserts instead, is that compiler_sorry_count reflects the
+# GUARD stub's distinctive sorry-line count rather than the unused plain-lake stub's -- positive
+# proof the guarded path supplied the capture -- and that the marker line (which does not match
+# the "declaration uses 'sorry'" pattern) does not corrupt that count, exercising the same
+# substring-grep tolerance the real guard's memory-pressure warn line depends on.
 # =====================================================================
 
 PROJ_H="$WORKDIR/proj_h"
 make_synthetic_lean_project "$PROJ_H"
 GUARD_STUB_H="$WORKDIR/stub_guard_h.sh"
-make_stub_guard "$GUARD_STUB_H" 2 0
+# Sorry-line count (3) deliberately differs from BOTH Fixture G's plain-lake stub (2, below) and
+# the unused plain-lake stub left on PATH here (1, below) -- a test that accidentally invoked
+# either wrong binary would be caught by the compiler_sorry_count assertion.
+make_stub_guard "$GUARD_STUB_H" 3 0
 STUBBIN_H="$WORKDIR/stubbin_h"
 # A stub `lake` is on PATH too (so the lake-absent check still passes), but it must NOT be the
 # one that supplies the build output when the guard is present -- the guard stub must be invoked
-# instead. Its own sorry-line count (1) deliberately differs from the guard stub's (2) so a test
-# that accidentally invoked the wrong stub would be caught by the compiler_sorry_count assertion
-# below.
+# instead.
 make_stub_lake "$STUBBIN_H" 1 0
 
 OUT_H="$(cd "$PROJ_H" && PATH="$STUBBIN_H:$PATH" LEAN_SORRY_CENSUS_GUARD_BIN="$GUARD_STUB_H" bash "$TOOL_SRC" "$WORKDIR/fixture_e.lean" --cross-check 2>&1)"
 
-if echo "$OUT_H" | grep -q "STUB_GUARD_MARKER"; then
-  pass "Fixture H (lake present, guard present): guard marker line present -- guarded path was taken"
+if echo "$OUT_H" | grep -q '^compiler_sorry_count: 3$' && echo "$OUT_H" | grep -q '^cross_check: MISMATCH (stripper=2, compiler=3)$'; then
+  pass "Fixture H (lake present, guard present): compiler_sorry_count (3) reflects the guard stub, not the unused lake stub (1) -- guarded path was taken, and the guard's marker line did not corrupt the count"
 else
-  fail "Fixture H (lake present, guard present): expected guard marker line; got:
+  fail "Fixture H (lake present, guard present): expected compiler_sorry_count: 3 and cross_check: MISMATCH (stripper=2, compiler=3) from the guarded capture; got:
 $OUT_H"
 fi
 
-if echo "$OUT_H" | grep -q '^compiler_sorry_count: 2$' && echo "$OUT_H" | grep -q '^cross_check: MATCH$'; then
-  pass "Fixture H: compiler_sorry_count parsed correctly from the guarded combined capture (guard stub's count, not the unused lake stub's)"
-else
-  fail "Fixture H: expected compiler_sorry_count: 2 and cross_check: MATCH from the guarded capture; got:
-$OUT_H"
-fi
-
-if [ "$OUT_H" != "$OUT_G" ] && echo "$OUT_H" | grep -q "STUB_GUARD_MARKER" && ! echo "$OUT_G" | grep -q "STUB_GUARD_MARKER"; then
-  pass "Fixture H anti-vacuous: captured output differs from Fixture G's, marker line present in exactly one"
+if [ "$OUT_H" != "$OUT_G" ] && echo "$OUT_H" | grep -q '^compiler_sorry_count: 3$' && echo "$OUT_G" | grep -q '^compiler_sorry_count: 2$'; then
+  pass "Fixture H anti-vacuous: captured output differs from Fixture G's (compiler_sorry_count 3 vs 2) -- guard-present and guard-absent paths are distinguishable"
 else
   fail "Fixture H anti-vacuous: captured output does not discriminate guard-present (H) from guard-absent (G) -- fixture cannot discriminate"
 fi

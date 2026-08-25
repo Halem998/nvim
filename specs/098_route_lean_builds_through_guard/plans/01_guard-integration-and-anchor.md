@@ -191,7 +191,7 @@ rather than declaring the count met.
 
 ---
 
-### Phase 2: Route the census cross-check build through the guard [NOT STARTED]
+### Phase 2: Route the census cross-check build through the guard [COMPLETED]
 
 **Goal**: Replace the unguarded `lake build` command substitution with a three-way branch that
 routes through the guard when available and falls back to today's exact behavior otherwise,
@@ -199,35 +199,37 @@ turning Phase 1's failing fixtures green.
 
 **Tasks**:
 
-- [ ] Locate the call site by content, not line number: `BUILD_OUTPUT="$(lake build 2>&1)"`
-      followed by `BUILD_STATUS=$?` inside the `if [[ $CROSS_CHECK -eq 1 ]]` block.
-- [ ] Resolve the guard path once, above the branch:
+- [x] Locate the call site by content, not line number: `BUILD_OUTPUT="$(lake build 2>&1)"`
+      followed by `BUILD_STATUS=$?` inside the `if [[ $CROSS_CHECK -eq 1 ]]` block. *(completed)*
+- [x] Resolve the guard path once, above the branch:
       `GUARD_BIN="${LEAN_SORRY_CENSUS_GUARD_BIN:-$(dirname "${BASH_SOURCE[0]:-$0}")/lake-build-guard.sh}"`.
       Use the `${BASH_SOURCE[0]:-$0}` form so the script still resolves when sourced or invoked
-      via `bash <path>`.
-- [ ] Implement the three-way branch, preserving branch order so the existing `lake`-absent check
+      via `bash <path>`. *(completed)*
+- [x] Implement the three-way branch, preserving branch order so the existing `lake`-absent check
       is still evaluated FIRST:
       (a) `lake` absent -> unchanged `cross_check: unavailable (lake not found in PATH)`;
       (b) `lake` present, guard not executable -> unchanged `BUILD_OUTPUT="$(lake build 2>&1)"`;
       (c) both present -> `BUILD_OUTPUT="$("$GUARD_BIN" build -- build 2>&1)"`.
       In all three branches `BUILD_STATUS=$?` is captured on the immediately following line and
-      the `COMPILER_COUNT` / `MATCH` / `MISMATCH` reporting is untouched.
-- [ ] Pass `-- build` explicitly. Do not pass `--dir` (defaults to `$PWD`, matching today's
+      the `COMPILER_COUNT` / `MATCH` / `MISMATCH` reporting is untouched. *(completed)*
+- [x] Pass `-- build` explicitly. Do not pass `--dir` (defaults to `$PWD`, matching today's
       undirected invocation exactly), do not pass `--memory-bound`, `--defer-on-pressure`, or
       `--no-share`. Recorded decision: memory bounding stays opt-in and off here, because the
       census is a verification read-out whose value is a correct count, and an aborted or deferred
-      build would silently under-count rather than fail loudly.
-- [ ] Track whether the guarded branch was taken in a small flag variable and use it to extend the
+      build would silently under-count rather than fail loudly. *(completed)*
+- [x] Track whether the guarded branch was taken in a small flag variable and use it to extend the
       existing non-zero warning so the guard is named when it was used — e.g. distinguishing
       "guarded lake build exited non-zero (N)" from today's "lake build exited non-zero (N)". Do
       not build an exit-code taxonomy; a caller needing to disambiguate the guard's reserved 75-79
       band from lake's own codes calls `status`/`preflight` separately, per the guard's header.
-- [ ] Add an inline comment at the call site noting that on the memory-pressure warn-and-proceed
+      *(completed: GUARDED flag variable)*
+- [x] Add an inline comment at the call site noting that on the memory-pressure warn-and-proceed
       path the guard emits one extra stderr line which lands inside the combined `2>&1` capture;
       this is harmless because the `declaration uses 'sorry'` grep is substring-based, but a future
-      reader diffing raw census output should not be surprised by it.
-- [ ] Update the script's header `Usage`/`Output (with --cross-check, ...)` block to describe the
+      reader diffing raw census output should not be surprised by it. *(completed)*
+- [x] Update the script's header `Usage`/`Output (with --cross-check, ...)` block to describe the
       guard routing and the new env var, and document `LEAN_SORRY_CENSUS_GUARD_BIN` as a test seam.
+      *(completed)*
 
 **Timing**: 45 minutes
 
