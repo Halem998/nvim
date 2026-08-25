@@ -1,7 +1,7 @@
 # Implementation Plan: Task #98
 
 - **Task**: 98 - Route lean extension builds through the guard and rewrite the multi-instance operations anchor
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: 97 (lake-build-guard.sh — complete, shipped)
 - **Research Inputs**: specs/098_route_lean_builds_through_guard/reports/01_route-census-through-guard.md
@@ -422,33 +422,45 @@ to stderr; unconditional `exit 0`) registered in BOTH the top-level `hooks` obje
 
 ---
 
-### Phase 5: Acceptance sweep and boundary enforcement [NOT STARTED]
+### Phase 5: Acceptance sweep and boundary enforcement [COMPLETED]
 
 **Goal**: Run the full gate set and check every clause of the task's ACCEPTANCE statement plus the
 two binding scope rules.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh`; require
-      exit 0 with every fixture A-I green.
-- [ ] `bash -n` and `shellcheck` both changed shell scripts; no new findings versus baseline.
-- [ ] Confirm `git diff --name-only` lists ONLY paths from the declared `file_scope`. Any path
-      outside it is a scope violation, not a bonus.
-- [ ] Confirm no `.claude/**` path appears in the diff (source-store rule: such an edit silently
-      vanishes on the next reload).
-- [ ] Confirm none of the eight contract files owned by the background-builds task appear in the
+- [x] Run `bash agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh`; require
+      exit 0 with every fixture A-I green. *(completed: Passed: 14, Failed: 0, exit 0)*
+- [x] `bash -n` and `shellcheck` both changed shell scripts; no new findings versus baseline.
+      *(completed: bash -n clean on both; shellcheck identical finding set to baseline — 0 on
+      lean-sorry-census.sh, 1 pre-existing SC2329 info on test-lean-sorry-census.sh)*
+- [x] Confirm `git diff --name-only` lists ONLY paths from the declared `file_scope`. Any path
+      outside it is a scope violation, not a bonus. *(completed: this task's own four commits
+      touch exactly lean-sorry-census.sh, tests/test-lean-sorry-census.sh, and
+      multi-instance-optimization.md — all three within file_scope; manifest.json,
+      the fourth file_scope entry, correctly untouched)*
+- [x] Confirm no `.claude/**` path appears in the diff (source-store rule: such an edit silently
+      vanishes on the next reload). *(completed: none)*
+- [x] Confirm none of the eight contract files owned by the background-builds task appear in the
       diff: both implementation agent twins, both implementation skills, both research agents,
-      `skill-lake-repair`, and `rules/lean4.md`.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` over the changed
-      files; zero task-number references outside `specs/`.
-- [ ] Walk the ACCEPTANCE clause literally, one condition at a time: guarded routing with both
+      `skill-lake-repair`, and `rules/lean4.md`. *(completed: none)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` over the changed
+      files; zero task-number references outside `specs/`. *(completed via targeted grep for
+      task-number patterns, since the deployed check-task-references.sh cannot run against
+      source-store paths in this undeployed repo state — see its own error message; zero matches
+      across all three changed source files)*
+- [x] Walk the ACCEPTANCE clause literally, one condition at a time: guarded routing with both
       output and status captured; graceful degradation for absent `lake`; graceful degradation for
       absent guard; test covers the new path; hook decision recorded with reasons; anchor no longer
       instructs a human to pause sessions as its primary remedy; anchor documents the guard's
       actual mechanism; no figure contradicted by measurement; sibling anchors cross-reference
       without duplicating; detach amplification stated explicitly; no contract file modified; no
-      `.claude/**` file modified.
-- [ ] Confirm `operations/long-builds.md` was NOT created by this task.
+      `.claude/**` file modified. *(completed: all twelve conditions verified true; see
+      progress/phase-5-progress.json's acceptance_walk for the per-condition record)*
+- [x] Confirm `operations/long-builds.md` was NOT created by this task. *(completed: the file now
+      exists on disk, created by commit c82663d3c "task 66 phase 1: create long-builds.md anchor"
+      — the separate concurrent background-builds task this plan's Non-Goals anticipated, not any
+      commit of this task's own)*
 
 **Timing**: 25 minutes
 

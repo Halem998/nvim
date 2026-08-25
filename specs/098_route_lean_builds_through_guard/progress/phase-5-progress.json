@@ -1,0 +1,43 @@
+{
+  "phase": 5,
+  "phase_name": "Acceptance sweep and boundary enforcement",
+  "started_at": "2026-08-25T18:15:00Z",
+  "last_updated": "2026-08-25T18:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run test suite, require exit 0 with A-I green", "status": "done", "files_touched": []},
+    {"id": 2, "description": "bash -n and shellcheck both changed scripts vs baseline", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm diff is a subset of file_scope", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no .claude/** in diff", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm none of the eight background-builds contract files in diff", "status": "done", "files_touched": []},
+    {"id": 6, "description": "task-reference lint sweep, zero matches outside specs/", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Walk ACCEPTANCE clause literally, condition by condition", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Confirm long-builds.md not created by this task", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "acceptance_walk": {
+    "guarded_routing_output_and_status_captured": "true -- BUILD_OUTPUT and BUILD_STATUS both captured in the guarded branch, identical shape to the plain-lake branch",
+    "graceful_degradation_lake_absent": "true -- Fixture F, unchanged 'cross_check: unavailable (lake not found in PATH)' message, checked first",
+    "graceful_degradation_guard_absent": "true -- Fixture G, byte-identical unguarded-shape output (compiler_sorry_count/stripper_sorry_count/cross_check: MATCH)",
+    "test_covers_new_path": "true -- Fixtures F/G/H/I added, falsifiability gate proven in Phase 1 (F/G PASS, H/I FAIL pre-integration; all green post-integration)",
+    "hook_decision_recorded_with_reasons": "true -- '## Why there is no lean lifecycle hook' section, four reasons, operation-filtering disposition stated as moot",
+    "anchor_no_longer_primary_pause_sessions_remedy": "true -- the pause-sessions/pre-build/soft-throttling remedies were deleted outright, not merely demoted",
+    "anchor_documents_guard_mechanism": "true -- '## The Build Guard' and '## Invoking the guard' sections",
+    "no_figure_contradicted_by_measurement": "true -- forbidden substrings '8GB','16GB+','60-80%' absent; measured 29.9 GB figure present and labeled illustrative",
+    "sibling_anchors_cross_reference_without_duplicating": "true from this side -- forward reference to operations/long-builds.md by filename only, no content/heading claims; the reverse direction is owned by the concurrent background-builds task (long-builds.md was created by that task's own commit c82663d3c, observed on disk during this sweep, not by this task)",
+    "detach_amplification_stated_explicitly": "true -- '## Detached builds and the guard: they must land together' section",
+    "no_contract_file_modified": "true -- none of the eight background-builds-owned files appear in this task's commits",
+    "no_claude_path_modified": "true -- none of this task's commits touch .claude/**"
+  },
+  "verification": {
+    "test_suite": "Passed: 14, Failed: 0, exit 0",
+    "bash_n": "both scripts parse clean",
+    "shellcheck": "no new findings vs pre-change baseline on either script",
+    "diff_scope": "this task's own commits (a18f40d68, 940ba8353, 31b6bf318, 93f26073d) touch only lean-sorry-census.sh, tests/test-lean-sorry-census.sh, multi-instance-optimization.md (all in file_scope) plus specs/098_.../** task artifacts",
+    "no_claude_paths": "confirmed absent",
+    "no_contract_files": "confirmed absent",
+    "task_reference_lint": "zero matches across all three changed source files",
+    "long_builds_not_created_by_this_task": "confirmed -- created by concurrent task 66's own commit c82663d3c"
+  }
+}
