@@ -283,34 +283,34 @@ actual count rather than the claimed one.
 
 ---
 
-### Phase 3: The check-only deploy-freshness backstop in update-task-status.sh [NOT STARTED]
+### Phase 3: The check-only deploy-freshness backstop in update-task-status.sh [COMPLETED]
 
 **Goal**: Add the unconditional, check-only backstop that refuses `postflight … implement` with
 exit 6 when the task's own `modified_files` overlap the source store and a deploy is provably
 pending. It must never invoke `deploy-headless.sh` or `verify-deploy.sh`.
 
 **Tasks**:
-- [ ] Add a "Phase 0.5" block immediately after the existing `--phase-check` Phase 0 block, firing
+- [x] Add a "Phase 0.5" block immediately after the existing `--phase-check` Phase 0 block, firing *(completed)*
       on `operation == "postflight" && target_status == "implement" && state_is_noop != "true"` —
       the same guard triple, so the two backstops cannot disagree about when they apply.
-- [ ] Resolve the task's `.return-meta.json` from `task_number` by reusing the existing
+- [x] Resolve the task's `.return-meta.json` from `task_number` by reusing the existing *(completed)*
       `project_name` -> padded/unpadded `task_dir` chain already implemented for the plan-file
       lookup. No new CLI argument.
-- [ ] Read `modified_files` and test overlap against `["agent-system/extensions"]` using
+- [x] Read `modified_files` and test overlap against `["agent-system/extensions"]` using *(completed)*
       `scopes_overlap()` from `scripts/lib/file-scope-overlap.sh` (call convention:
       `scopes_overlap "$own_scope_json" "$other_scope_json"`, non-empty stdout means overlap).
       Do not re-derive the prefix rule inline.
-- [ ] Source `deploy-freshness-lib.sh` with deploy-tree-first / source-store-fallback resolution;
+- [x] Source `deploy-freshness-lib.sh` with deploy-tree-first / source-store-fallback resolution; *(completed)*
       per D4, a missing library prints a loud `[deploy-check]` note and passes through, never
       exits.
-- [ ] Implement the conclusiveness convention, each branch emitting its own distinguishable
+- [x] Implement the conclusiveness convention, each branch emitting its own distinguishable *(completed: verified 6 branches + missing-library case via fixture)*
       `[deploy-check]` line to stderr: no `.return-meta.json` -> inconclusive pass-through; empty
       or absent `modified_files` -> inconclusive pass-through; no overlap -> not-applicable
       pass-through; cannot-verify freshness -> inconclusive pass-through; overlap and verified
       fresh -> proceed; **overlap and provably stale -> refuse, exit 6**, with no state.json write
       and no plan-file stamp.
-- [ ] Honour `--dry-run` exactly as the phase-check block does: preview the refusal, exit 0.
-- [ ] Update the script's header exit-code table with code 6 and add a paragraph describing the
+- [x] Honour `--dry-run` exactly as the phase-check block does: preview the refusal, exit 0. *(completed)*
+- [x] Update the script's header exit-code table with code 6 and add a paragraph describing the *(completed)*
       backstop, matching the existing `--phase-check` header paragraph's shape.
 
 **Timing**: 1.5 hours

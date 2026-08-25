@@ -31,6 +31,16 @@
 #   5 - Environment error: the shared library scripts/lib/phase-heading-patterns.sh could not be
 #       found at any candidate path. Distinct from every other exit code so a missing dependency
 #       is never mistaken for a phase-accounting refusal or a validation error.
+#   6 - Postflight completion-deploy gate refused the transition: the task's own
+#       .return-meta.json modified_files overlap agent-system/extensions/** AND the deploy is
+#       provably behind (see the "PHASE 0.5" block below). No state.json write and no plan-file
+#       status stamp occurred. This is an ORDERING constraint, not an exclusion -- the task stays
+#       at its current status and the next postflight retry (after a deploy runs) converges
+#       normally. Unlike --phase-check=refuse (exit 4), this backstop is UNCONDITIONAL --
+#       always active on postflight/implement, no opt-in flag. It is CHECK-ONLY: it never invokes
+#       the deploy/regeneration script or the deploy-verification script itself. See
+#       context/patterns/batch-orchestration-guardrails.md's
+#       "### The Postflight Completion-Deploy Gate" subsection for the full contract.
 #
 # Optional flag: --phase-check=warn|refuse
 #   Absent by default. When absent, this script behaves exactly as it did before the flag
@@ -386,6 +396,168 @@ if [[ -n "$PHASE_CHECK" && "$operation" == "postflight" && "$target_status" == "
       exit 4
     else
       echo "WARNING: [phase-check] task $task_number is being marked completed with only ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in ${PHASE_CHECK_PLAN_FILE}." >&2
+    fi
+  fi
+fi
+
+# ============================================================
+# PHASE 0.5: Postflight completion-deploy gate (unconditional, check-only, exit 6)
+# ============================================================
+# Refuses the postflight/implement transition when this task's OWN .return-meta.json
+# `modified_files` overlap `agent-system/extensions/**` (the directory-prefix rule in
+# context/patterns/file-footprint-overlap.md, via scopes_overlap()) AND at least one touched
+# extension is PROVABLY stale (scripts/lib/deploy-freshness-lib.sh's
+# `deploy_freshness_status`). Unlike --phase-check above, this gate is UNCONDITIONAL -- no
+# opt-in flag, always active on postflight/implement -- because "completed" must mean "in
+# effect" for every source-store-touching task, not only ones whose caller remembered to opt in.
+#
+# CHECK-ONLY BY CONTRACT: this block never invokes the deploy/regeneration script or the
+# deploy-verification script (their names are deliberately not spelled out literally anywhere
+# in this file -- a mechanical `grep -c` for either name is part of this contract's own test
+# coverage, see scripts/tests/test-postflight-deploy-gate.sh). The
+# actual redeploy trigger lives exclusively at the two already-serialized call sites named in
+# context/patterns/regeneration-is-manual-only.md's carve-out (command-gate-out.sh's rc==6
+# branch for the single-task path; commands/implement.md Step 4 for the multi-task batch path) --
+# never here, where multi-task /implement's parallel per-task dispatch would race the
+# fail-open specs/.deploy-lock mutex.
+#
+# Conclusiveness convention (mirrors the --phase-check block's own INCONCLUSIVE-passes-through
+# posture): only "overlap AND provably stale" is conclusive evidence this transition must wait.
+# Every other case -- no .return-meta.json, no/empty modified_files, no overlap, or freshness
+# that cannot be established -- passes through unconditionally. This is the D4-mandated default
+# permissive posture: since this gate is unconditional (not opt-in), a hard failure on ANY
+# ambiguous or environment-error case would risk blocking completion system-wide.
+if [[ "$operation" == "postflight" && "$target_status" == "implement" \
+      && "$state_is_noop" != "true" ]]; then
+
+  DEPLOY_CHECK_META_FILE=""
+  resolve_return_meta_for_deploy_check() {
+    local project_name padded_num task_dir_candidate meta_candidate
+    project_name=$(jq -r --arg num "$task_number" \
+      '.active_projects[] | select(.project_number == ($num | tonumber)) | .project_name' \
+      "$STATE_FILE")
+    if [[ -z "$project_name" || "$project_name" == "null" ]]; then
+      return 0
+    fi
+    padded_num=$(printf "%03d" "$task_number")
+    task_dir_candidate="$PROJECT_ROOT/specs/${padded_num}_${project_name}"
+    if [[ ! -d "$task_dir_candidate" ]]; then
+      task_dir_candidate="$PROJECT_ROOT/specs/${task_number}_${project_name}"
+    fi
+    meta_candidate="${task_dir_candidate}/.return-meta.json"
+    [[ -f "$meta_candidate" ]] || return 0
+    DEPLOY_CHECK_META_FILE="$meta_candidate"
+    return 0
+  }
+  resolve_return_meta_for_deploy_check
+
+  if [[ -z "$DEPLOY_CHECK_META_FILE" ]]; then
+    echo "[deploy-check] Task $task_number: no .return-meta.json resolved -- inconclusive, passing through." >&2
+  else
+    DEPLOY_CHECK_MODIFIED_FILES="$(jq -c '.modified_files // []' "$DEPLOY_CHECK_META_FILE" 2>/dev/null)"
+    if [[ -z "$DEPLOY_CHECK_MODIFIED_FILES" || "$DEPLOY_CHECK_MODIFIED_FILES" == "null" ]]; then
+      DEPLOY_CHECK_MODIFIED_FILES="[]"
+    fi
+    DEPLOY_CHECK_MODIFIED_COUNT="$(echo "$DEPLOY_CHECK_MODIFIED_FILES" | jq 'length' 2>/dev/null)"
+    [[ "$DEPLOY_CHECK_MODIFIED_COUNT" =~ ^[0-9]+$ ]] || DEPLOY_CHECK_MODIFIED_COUNT=0
+
+    if [[ "$DEPLOY_CHECK_MODIFIED_COUNT" -eq 0 ]]; then
+      echo "[deploy-check] Task $task_number: empty or absent modified_files in $(basename "$DEPLOY_CHECK_META_FILE") -- inconclusive, passing through." >&2
+    else
+      # --- Shared overlap predicate library (deploy-tree-first / source-store-fallback, same
+      # resolution pattern as the phase-heading library above). A missing library here is
+      # INCONCLUSIVE pass-through (per D4's reasoning applied uniformly across this whole
+      # unconditional block), never the loud exit-5 the phase-heading/status-vocabulary
+      # libraries use above -- those are pre-existing, always-sourced dependencies; this one is
+      # new and local to an unconditional gate that must never system-wide-block on an
+      # environment accident.
+      OVERLAP_LIB_CANDIDATES=(
+        "$PROJECT_ROOT/.claude/scripts/lib/file-scope-overlap.sh"
+        "$PROJECT_ROOT/agent-system/extensions/core/scripts/lib/file-scope-overlap.sh"
+      )
+      OVERLAP_LIB=""
+      for _ov_candidate in "${OVERLAP_LIB_CANDIDATES[@]}"; do
+        if [[ -f "$_ov_candidate" ]]; then
+          OVERLAP_LIB="$_ov_candidate"
+          break
+        fi
+      done
+
+      if [[ -z "$OVERLAP_LIB" ]]; then
+        echo "[deploy-check] Task $task_number: shared library file-scope-overlap.sh not found -- inconclusive, passing through." >&2
+      # `if ! . "$OVERLAP_LIB" ...; then` (not a bare `. "$OVERLAP_LIB"`) is required, not
+      # stylistic: file-scope-overlap.sh's own FILE_SCOPE_OVERLAP_JQ_DEFS assignment uses
+      # `read -r -d '' ... <<'JQDEFS'`, which returns exit 1 at heredoc EOF even on a fully
+      # successful read (a documented bash `read -d ''` quirk) -- under this script's own
+      # `set -e`, a bare source would abort the whole script right here. task-lock.sh's own
+      # `ensure_file_scope_overlap_lib` sources this same file with the identical
+      # `if ! . ... ; then` guard for the identical reason; this mirrors that precedent rather
+      # than inventing a new one.
+      elif ! . "$OVERLAP_LIB" 2>/dev/null; then
+        echo "[deploy-check] Task $task_number: shared library file-scope-overlap.sh failed to source -- inconclusive, passing through." >&2
+      else
+        DEPLOY_CHECK_OVERLAP_HIT="$(scopes_overlap "$DEPLOY_CHECK_MODIFIED_FILES" '["agent-system/extensions"]')"
+
+        if [[ -z "$DEPLOY_CHECK_OVERLAP_HIT" ]]; then
+          echo "[deploy-check] Task $task_number: modified_files do not overlap agent-system/extensions/** -- not applicable, passing through." >&2
+        else
+          # --- Shared freshness library (same deploy-tree-first / source-store-fallback
+          # resolution). Missing here is likewise INCONCLUSIVE pass-through (D4), never exit 5.
+          FRESHNESS_LIB_CANDIDATES=(
+            "$PROJECT_ROOT/.claude/scripts/lib/deploy-freshness-lib.sh"
+            "$PROJECT_ROOT/agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh"
+          )
+          DEPLOY_FRESHNESS_LIB=""
+          for _df_candidate in "${FRESHNESS_LIB_CANDIDATES[@]}"; do
+            if [[ -f "$_df_candidate" ]]; then
+              DEPLOY_FRESHNESS_LIB="$_df_candidate"
+              break
+            fi
+          done
+
+          if [[ -z "$DEPLOY_FRESHNESS_LIB" ]]; then
+            echo "[deploy-check] Task $task_number: shared library deploy-freshness-lib.sh not found -- inconclusive, passing through." >&2
+          else
+            # shellcheck disable=SC1090
+            . "$DEPLOY_FRESHNESS_LIB"
+
+            # Derive the distinct set of touched extension names from modified_files entries
+            # under agent-system/extensions/<name>/... (the 3rd path segment). Stale-wins over
+            # cannot-verify over fresh: refuse if ANY touched extension is provably stale;
+            # otherwise inconclusive-pass-through if ANY cannot be verified; otherwise proceed.
+            DEPLOY_CHECK_EXT_NAMES="$(echo "$DEPLOY_CHECK_MODIFIED_FILES" | jq -r '
+              .[] | select(startswith("agent-system/extensions/")) |
+              split("/") | .[2]
+            ' 2>/dev/null | sort -u)"
+
+            DEPLOY_CHECK_ANY_STALE=""
+            DEPLOY_CHECK_ANY_CANNOTVERIFY=""
+            while IFS= read -r _ext_name; do
+              [[ -n "$_ext_name" ]] || continue
+              _ext_status="$(deploy_freshness_status "$PROJECT_ROOT" "$_ext_name")"
+              case "$_ext_status" in
+                STALE) DEPLOY_CHECK_ANY_STALE="$_ext_name" ;;
+                CANNOTVERIFY) DEPLOY_CHECK_ANY_CANNOTVERIFY="$_ext_name" ;;
+              esac
+            done <<< "$DEPLOY_CHECK_EXT_NAMES"
+
+            if [[ -n "$DEPLOY_CHECK_ANY_STALE" ]]; then
+              if [[ "$DRY_RUN" == "true" ]]; then
+                echo "[dry-run] Deploy-check would block this transition: extension '${DEPLOY_CHECK_ANY_STALE}' is stale (task $task_number touches ${DEPLOY_CHECK_OVERLAP_HIT})."
+              else
+                echo "Error: [deploy-check] refusing postflight implement for task $task_number: extension '${DEPLOY_CHECK_ANY_STALE}' is stale relative to its source store (touched path: ${DEPLOY_CHECK_OVERLAP_HIT})." >&2
+                echo "       No state.json write and no plan-file status stamp occurred." >&2
+                echo "       Remedy: run the deploy/regeneration step (or the picker's [Reload All] / 'Regenerate'), then re-run. See context/patterns/regeneration-is-manual-only.md." >&2
+                exit 6
+              fi
+            elif [[ -n "$DEPLOY_CHECK_ANY_CANNOTVERIFY" ]]; then
+              echo "[deploy-check] Task $task_number: freshness of extension '${DEPLOY_CHECK_ANY_CANNOTVERIFY}' cannot be verified -- inconclusive, passing through." >&2
+            else
+              echo "[deploy-check] Task $task_number: touched extension(s) verified fresh -- proceeding." >&2
+            fi
+          fi
+        fi
+      fi
     fi
   fi
 fi
