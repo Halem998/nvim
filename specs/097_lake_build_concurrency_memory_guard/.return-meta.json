@@ -1,19 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 97,
-  "session_id": "sess_1787672746_2d5892_97",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/097_lake_build_concurrency_memory_guard/plans/01_lake-build-guard-mechanism.md",
-      "summary": "Seven-phase plan delivering lake-build-guard.sh (flock serialization with result sharing, staleness policy, opt-in systemd-run cgroup bounding, PSI/swap preflight), its toolchain-free 13-case test suite, and two core manifest registrations."
-    }
-  ],
-  "phase_count": 7,
-  "estimated_hours": 5.75,
-  "dependency_waves": [[1], [2, 3], [4], [5], [6], [7]],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 97 to execute the plan"
+  "session_id": "sess_1787672746_2d5892",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }

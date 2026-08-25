@@ -1,7 +1,7 @@
 # Implementation Plan: Task #97
 
 - **Task**: 97 - Add shared Lean build concurrency and memory guard script (flock serialization, result sharing, cgroup bounding)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.75 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md`
@@ -138,37 +138,37 @@ specifically because all three edit the same file (`lake-build-guard.sh`); only 
 
 ---
 
-### Phase 1: Script skeleton, CLI contract, and project-root resolution [NOT STARTED]
+### Phase 1: Script skeleton, CLI contract, and project-root resolution [COMPLETED]
 
 **Goal**: Create the executable script with its documented contract header, argument parsing,
 project-root/lock-path derivation, exit-code table, `--help`, and the test seams later phases and
 the test suite depend on. Nothing in this phase runs a build.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lake-build-guard.sh` with `#!/usr/bin/env bash`
+- [x] Create `agent-system/extensions/core/scripts/lake-build-guard.sh` with `#!/usr/bin/env bash` *(completed)*
       and `set -euo pipefail`; `chmod +x`.
-- [ ] Write the contract header comment block in the style of `claude-refresh.sh`: what the script
+- [x] Write the contract header comment block in the style of `claude-refresh.sh`: what the script *(completed)*
       guards (N agent builds racing each other in one package), what it deliberately does NOT do,
       the family conventions it sets for a future `latex-build-guard.sh` (subcommand shape, exit
       codes, silent-when-no-conflict), and the recorded dead ends. The dead-end record MUST state
       plainly: Lake 5.0.0 exposes no `-j`/`--jobs`; `lean`'s own `-j/--threads` is not forwarded by
       Lake; and `LEAN_NUM_THREADS` was experimentally falsified as a build-concurrency lever (it
       sizes one process's internal elaboration pool) and is therefore deliberately unused.
-- [ ] Implement `resolve_project_root()`: walk up from `--dir` (default `$PWD`) looking for
+- [x] Implement `resolve_project_root()`: walk up from `--dir` (default `$PWD`) looking for *(completed)*
       `lakefile.lean` or `lakefile.toml`; return the **nearest** match. MUST NOT use
       `git rev-parse --show-toplevel` — a Lean package is frequently a subdirectory of a larger
       repo and a git-root lock would over-serialize unrelated sibling packages. Exit `78` with an
       actionable message when no lakefile is found.
-- [ ] Derive and export the guard's paths from that root: lock `<root>/.lake/build-guard.lock`,
+- [x] Derive and export the guard's paths from that root: lock `<root>/.lake/build-guard.lock`, *(completed)*
       result record `<root>/.lake/build-guard.result`, shared log `<root>/.lake/build-guard.log`.
       Create `<root>/.lake/` if absent. No absolute path outside `<root>` may be hardcoded.
-- [ ] Implement subcommand dispatch with three separable modes so callers can adopt detection
+- [x] Implement subcommand dispatch with three separable modes so callers can adopt detection *(completed)*
       first: `status` (detect only, never builds), `preflight` (memory check only, never builds),
       `build` (the guarded wrapping mode). Unknown subcommand -> exit `77` with usage.
-- [ ] Implement global flags: `--dir DIR` (mirroring `lake`'s own `--dir, -d` convention),
+- [x] Implement global flags: `--dir DIR` (mirroring `lake`'s own `--dir, -d` convention), *(completed)*
       `--timeout SECS` (lock wait bound), `--memory-bound`, `--memory-high VAL`,
       `--memory-max VAL`, `--defer-on-pressure`, `--no-share`, `--verbose`, `--help`.
-- [ ] Define and document the exit-code table in the header, per mode (this is the family
+- [x] Define and document the exit-code table in the header, per mode (this is the family *(completed)*
       convention a sibling guard will copy):
       - `build` mode: `0` and any code the underlying `lake` returns are passed through
         untouched; guard-specific failures use the reserved band `75`-`79` —
@@ -180,16 +180,16 @@ the test suite depend on. Nothing in this phase runs a build.
       - `status` mode: `0` no in-flight guarded build (and no output), `10` an in-flight guarded
         build was detected (one-line report on stdout).
       - `preflight` mode: `0` no pressure (no output), `11` pressure detected (report on stderr).
-- [ ] Add overridable test seams as plain shell variables with `:-` defaults, following
+- [x] Add overridable test seams as plain shell variables with `:-` defaults, following *(completed)*
       `claude-refresh.sh`'s `_pid_is_alive` seam precedent: `LAKE_BUILD_GUARD_LAKE_BIN`
       (default: resolve `lake` via `PATH`), `LAKE_BUILD_GUARD_PSI_PATH`
       (default `/proc/pressure/memory`), `LAKE_BUILD_GUARD_MEMINFO_PATH` (default
       `/proc/meminfo`), `LAKE_BUILD_GUARD_FINGERPRINT` (default `stat`, alternative `hash`).
       The guard MUST invoke `lake` through `PATH` rather than an absolute path so the suite can
       substitute a fake.
-- [ ] Add the `if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then main "$@"; fi` dual-mode guard at the
+- [x] Add the `if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then main "$@"; fi` dual-mode guard at the *(completed)*
       bottom so the suite can source the file and call predicates by name.
-- [ ] Probe `flock` availability once at startup; when absent, emit a visible stderr notice and
+- [x] Probe `flock` availability once at startup; when absent, emit a visible stderr notice and *(completed)*
       run the build unserialized rather than failing (degrade audibly, never silently).
 
 **Timing**: 0.75 hours
