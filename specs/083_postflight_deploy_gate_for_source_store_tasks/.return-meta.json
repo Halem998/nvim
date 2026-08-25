@@ -1,9 +1,59 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/summaries/01_postflight-deploy-gate-summary.md",
+      "summary": "8-phase implementation of the postflight completion-deploy gate: shared freshness library, check-only exit-6 backstop in update-task-status.sh, regression suite, two serialized baseline-relative deploy triggers, the mandatory carve-out, and a deployed, dogfooded self-demonstration."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented a check-only, unconditional postflight completion-deploy gate (exit 6) in update-task-status.sh that refuses a source-store-touching task's completion while its deploy is provably stale, with two serialized baseline-relative redeploy triggers (single-task and multi-task paths), the mandatory carve-out in regeneration-is-manual-only.md, and a shared deploy-freshness-lib.sh backing both the new blocking tier and the pre-existing advisory check. Deployed and dogfooded against this task's own completion."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-deploy-freshness.sh",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a bash script needs to `source` scripts/lib/file-scope-overlap.sh under `set -e`, use `if ! . \"$LIB\" 2>/dev/null; then ...; fi`, never a bare `. \"$LIB\"`. That library's FILE_SCOPE_OVERLAP_JQ_DEFS assignment uses `read -r -d '' ... <<'JQDEFS'`, which returns exit 1 at heredoc EOF even on a fully successful read (a documented bash `read -d ''` quirk) -- a bare source trips `set -e` and aborts the whole calling script right there. task-lock.sh's own `ensure_file_scope_overlap_lib` already guards this way; mirror it rather than debugging a mysterious abort.",
+      "category": "PATTERN",
+      "source_artifact": "specs/083_postflight_deploy_gate_for_source_store_tasks/summaries/01_postflight-deploy-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["file-scope-overlap.sh", "set -e", "read -d", "heredoc", "source"]
+    },
+    {
+      "content": "A new script added under agent-system/extensions/<ext>/scripts/** (or scripts/lib/**, scripts/tests/**) is invisible to deploy-headless.sh until it is also added to that extension's manifest.json `provides.scripts` array. Without that registration, check-extension-docs.sh reports 'script file on disk NOT in provides.scripts' and the file is never copied to the deployed .claude/ tree on redeploy -- a silent gap that only surfaces later as a byte-diff or a missing-file test failure. When a plan's file_scope lists a NEW script file, manifest.json registration is an implicit, necessary companion edit even if the plan's own file_scope list omits it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/083_postflight_deploy_gate_for_source_store_tasks/summaries/01_postflight-deploy-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "deploy-headless.sh", "new-file", "check-extension-docs.sh"]
+    },
+    {
+      "content": "deploy-headless.sh resyncs the WHOLE deployed tree (every loaded extension), not just the extension a given task edited. Running it while a concurrent sibling session has uncommitted or freshly-committed changes in a DIFFERENT extension will sweep those changes into the deploy too, and a subsequent verify-deploy.sh --findings diff will show findings for files that task never touched. Before treating a post-deploy finding as a regression introduced by your own task, check whether the finding's file is inside your own file_scope -- if not, it is very likely collateral from a concurrent session's own in-flight work, not a defect in what you built.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/083_postflight_deploy_gate_for_source_store_tasks/summaries/01_postflight-deploy-gate-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-headless.sh", "whole-tree-resync", "concurrent-sessions", "verify-deploy.sh", "collateral-findings"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1787617685_88b825",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }

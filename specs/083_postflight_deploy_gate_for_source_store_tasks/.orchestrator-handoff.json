@@ -1,26 +1,17 @@
 {
-  "dispatch_seq": 7,
-  "status": "planned",
-  "summary": "Plan created: 8 phases, ~10.5h, complex. Design decisions resolved explicitly (D1-D7): unconditional check-only backstop in scripts/update-task-status.sh (NOT command-gate-out.sh alone, which is a no-op for the primary meta-task path since skill-implementer flips status inline before gate-out runs); new exit code 6 (0-5 all already allocated -- the research's suggested 5 is superseded, 5 is the missing-shared-library environment error); refusal leaves the task at 'implementing' as a self-resuming ordering constraint mirroring --phase-check=refuse; a missing freshness library degrades to inconclusive pass-through rather than a hard exit, deliberately diverging from the exit-5 precedent because this backstop is unconditional; the backstop performs only the cheap per-extension git-log freshness comparison and never calls deploy-headless.sh OR verify-deploy.sh (enforced by a grep-based contract assertion in the new test suite, not by reviewer memory); baseline-relative verify-deploy.sh --findings set-difference comparison lives exclusively at the two serialized deploy-trigger sites (command-gate-out.sh single-task, commands/implement.md Step 4 multi-task batch), reusing the Inter-Cycle Redeploy Checkpoint's (a)/(b)/(c) failure contract and exit-2-sentinel folding by reference; skill-orchestrate's Stage MT-3 step 7 predicate is NOT widened (its deployed_critical_paths idempotence store is keyed on critical paths, not extensions -- named as follow-up work with the bounded /orchestrate residual recorded and mitigated by making skill_postflight_update stop silently swallowing the postflight rc, which it does today). file_scope corrected from 4 to 10 entries, written to state.json in Phase 1. The mandatory regeneration-is-manual-only.md carve-out is Phase 7, placed immediately after the existing Automated Exception subsection, in its three-part not-a-side-effect/not-silent/bounded shape, naming both new call sites, stating it is not precedent, and verified by byte-comparing the existing subsection between HEAD and the working tree so a single changed byte fails the phase. Every phase verifies by execution (negative controls, stubbed deploy/verify exit codes, byte-diffs, baseline comparisons) rather than by reading.",
+  "status": "implemented",
+  "summary": "Implemented the postflight completion-deploy gate: a check-only, unconditional exit-6 backstop in update-task-status.sh refusing completion while a source-store-touching task's deploy is provably stale, with two serialized baseline-relative redeploy triggers (single-task and multi-task), the mandatory carve-out, and a shared freshness library. All 8 plan phases COMPLETED, deployed, and self-demonstrated against this task's own completion.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md",
-      "summary": "8-phase implementation plan (~10.5h) for the postflight deploy gate: shared freshness library, check-only exit-6 backstop in update-task-status.sh, regression suite, two serialized baseline-relative deploy triggers, the mandatory carve-out, and a deploy/self-demonstration phase."
+      "type": "summary",
+      "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/summaries/01_postflight-deploy-gate-summary.md",
+      "summary": "8-phase implementation of the postflight completion-deploy gate: shared freshness library, check-only exit-6 backstop in update-task-status.sh, regression suite, two serialized baseline-relative deploy triggers, the mandatory carve-out, and a deployed, dogfooded self-demonstration."
     }
   ],
-  "blockers": [],
-  "file_scope_correction_applied_in_plan": [
-    "agent-system/extensions/core/scripts/update-task-status.sh",
-    "agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh",
-    "agent-system/extensions/core/commands/implement.md",
-    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
-    "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
-    "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh"
-  ],
-  "next_steps": "Run /implement 83 to execute the plan. Phase 1 must write the corrected 10-entry file_scope into state.json before any source-store edit.",
   "phases_completed": 8,
   "phases_total": 8,
-  "sorry_inventory": [],
-  "continuation_path": null
+  "blockers": [],
+  "continuation_path": null,
+  "plan_markers_verified": true,
+  "dispatch_seq": 10
 }
