@@ -1,27 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 66,
-  "session_id": "sess_1787672746_2d5892_66",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/066_mandate_background_lake_builds/plans/01_background-lake-builds.md",
-      "summary": "6-phase contract-text pass mandating detached + guarded lake build invocation across 8 lean-extension contract files plus a new long-builds.md anchor."
-    }
-  ],
-  "phase_count": 6,
-  "estimated_hours": 3.25,
-  "dependency_waves": 3,
-  "next_steps": "Run /implement 66 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When a contract change removes an implicit bound (e.g. mandating run_in_background to escape a 10-minute foreground timeout cap), audit what else that bound was silently enforcing before removing it. In the Lean build case the foreground cap was simultaneously (a) the cause of a livelock -- a cap-killed lake build caches no .olean, so retries restart at the identical module -- and (b) the only ceiling on how long redundant concurrent builds survived. Lifting the cap alone would have let ~10 duplicate builds run to completion instead of dying partway, making memory pressure strictly worse. The correct planning move is to pair the removal with a compensating mechanism (here, a flock-based project-granular build guard) and land both obligations in ONE pass over the affected contract files, not two -- a second independent pass over the same engine twins is exactly how twin-file drift is introduced. Corollary: a synchronous command-substitution call site can adopt a guard (which returns stdout/exit code through $(...)) even when it cannot adopt detachment, so 'route through the guard, carve out of the detachment mandate only' is often a third option better than either restructuring or full exemption.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/066_mandate_background_lake_builds/plans/01_background-lake-builds.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["timeout-cap", "concurrency-bound", "contract-pass", "twin-file-drift", "build-guard", "paired-obligations"]
-    }
-  ]
+  "session_id": "sess_1787672746_2d5892",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }

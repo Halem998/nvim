@@ -1,7 +1,7 @@
 # Implementation Plan: Task #66
 
 - **Task**: 66 - Mandate run_in_background for Lean builds and add long-builds anchor
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: core build-guard task (DELIVERED: `agent-system/extensions/core/scripts/lake-build-guard.sh` is committed)
 - **Research Inputs**: specs/066_mandate_background_lake_builds/reports/01_mandate-background-lake-builds.md
@@ -112,75 +112,75 @@ carry no write conflicts with each other.
 
 ---
 
-### Phase 1: Create the `long-builds.md` anchor [NOT STARTED]
+### Phase 1: Create the `long-builds.md` anchor [COMPLETED]
 
 **Goal**: Establish the single canonical file that owns every piece of prose the other eight files
 will point at, and fix the one canonical invocation string those files must copy verbatim.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/lean/context/project/lean4/operations/multi-instance-optimization.md`
+- [x] Read `agent-system/extensions/lean/context/project/lean4/operations/multi-instance-optimization.md`
       in full to match its heading structure and prose-and-table register (this is the sibling
       anchor; do not edit it).
-- [ ] Create `agent-system/extensions/lean/context/project/lean4/operations/long-builds.md` with
+- [x] Create `agent-system/extensions/lean/context/project/lean4/operations/long-builds.md` with
       these sections, in order:
-  - [ ] **Overview** — one paragraph: long Lean builds livelock under a foreground Bash call, and
+  - [x] **Overview** — one paragraph: long Lean builds livelock under a foreground Bash call, and
         the fix is two obligations that must land together.
-  - [ ] **The foreground cap** — the Bash tool kills a plain foreground call at its hard cap
+  - [x] **The foreground cap** — the Bash tool kills a plain foreground call at its hard cap
         (10 minutes / 600000ms max explicit timeout; 120000ms default).
-  - [ ] **Why this is a livelock, not a slowdown** — Lean caches compilation per module; a
+  - [x] **Why this is a livelock, not a slowdown** — Lean caches compilation per module; a
         cap-killed build writes no `.olean` for the module it was working on, so no progress is
         cached and the next attempt restarts at the identical module.
-  - [ ] **The normative statement** — state it generically: "any single module may exceed the
+  - [x] **The normative statement** — state it generically: "any single module may exceed the
         foreground cap." Include the ~11-minute measurement only as an explicitly labelled
         illustrative footnote from one large repo. MUST NOT be written as an assumption the
         contract depends on; the source store deploys to roughly ten repositories.
-  - [ ] **The trigger is ordinary** — Lean hashes whole files, so a comment- or docstring-only edit
+  - [x] **The trigger is ordinary** — Lean hashes whole files, so a comment- or docstring-only edit
         to an upstream module invalidates every downstream `.olean` and re-arms the trap. Any
         docstring pass can trigger this; it is not an exotic failure.
-  - [ ] **Obligation 1: detach** — `Bash(run_in_background: true)` runs detached, survives across
+  - [x] **Obligation 1: detach** — `Bash(run_in_background: true)` runs detached, survives across
         turns, and re-invokes the agent on completion.
-  - [ ] **Obligation 2: route through the guard** — and *why the two must land together*: the
+  - [x] **Obligation 2: route through the guard** — and *why the two must land together*: the
         foreground cap is currently the only thing bounding how long a redundant concurrent build
         survives. Uncapping without serializing makes memory pressure strictly worse (measured on
         one large repo: ~10 simultaneous builds re-elaborating the same modules, 16 `lean`
         processes at 29.9 GB RSS on a 30 GB machine with swap in use). Adopting one half of this
         pair is a regression.
-  - [ ] **The canonical invocation** — fix one string that every contract site copies verbatim:
+  - [x] **The canonical invocation** — fix one string that every contract site copies verbatim:
         `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake args>`, run under
         `Bash(run_in_background: true)`. Explain that `--timeout` is the guard's *lock-wait*
         budget, not a build-duration limit, that its default is 600s (the same value as the cap
         being replaced), and that an explicit larger value is required so a second waiting session
         does not itself time out at exit 75.
-  - [ ] **Scoped builds are covered too** — record the decision and its cost: a single module can
+  - [x] **Scoped builds are covered too** — record the decision and its cost: a single module can
         already exceed the cap on its own, and the guard's lock is project-granular regardless of
         scope, so scoped builds get no exemption. The named tradeoff: phase-end scoped builds from
         concurrent sessions on the same package now serialize project-wide where they could
         previously run in parallel against different modules. This is the deliberate price of
         closing the memory-pressure gap, not a hidden regression. Scoped remains preferred for
         doing less work, never for being categorically safe.
-  - [ ] **Passive progress checks** (four, each with the command shape and what it proves):
+  - [x] **Passive progress checks** (four, each with the command shape and what it proves):
         fresh `.olean` mtime frontier under `.lake/build/`; the live `lean` PID's
         `/proc/PID/cmdline` (which module is being elaborated); accumulated CPU time via
         `ps -o times=` or `/proc/PID/stat` fields 14/15 (the tiebreaker when the `.olean` list
         looks frozen inside one long module); `VmRSS` trend from `/proc/PID/status` (progress
         signal and OOM early-warning).
-  - [ ] **The liveness caveat** — state explicitly that these four prove *liveness*, never
+  - [x] **The liveness caveat** — state explicitly that these four prove *liveness*, never
         *termination*: a process burning CPU with growing RSS can still be stuck in a divergent
         tactic search. They are for interim observability, not a substitute for the harness's
         completion notification.
-  - [ ] **Completion discipline** — detach the build, but the dispatch is not complete and final
+  - [x] **Completion discipline** — detach the build, but the dispatch is not complete and final
         metadata MUST NOT be written until the harness's completion notification for that job has
         arrived. Fire-and-forget is prohibited (see the wrap-up contract's teardown rule).
-  - [ ] **Known gaps** — `mcp__lean-lsp__lean_build` is a second build path invoked as an MCP tool
+  - [x] **Known gaps** — `mcp__lean-lsp__lean_build` is a second build path invoked as an MCP tool
         rather than a Bash command; `run_in_background` cannot wrap it and its own timeout behavior
         is outside this anchor's visibility. It is deliberately not covered by this mandate.
         `skill-lake-repair`'s repair loop is carved out of the detachment obligation only (see that
         file for the reason) and retains residual cap exposure.
-  - [ ] **Cross-reference** — a short paragraph pointing to
+  - [x] **Cross-reference** — a short paragraph pointing to
         `operations/multi-instance-optimization.md` for concurrent-session setup, stating the
         detachment-amplifies-concurrency interaction here (this file owns it) without duplicating
         that anchor's content.
-- [ ] Verify no task-number reference appears anywhere in the new file.
+- [x] Verify no task-number reference appears anywhere in the new file.
 
 **Timing**: 1 hour
 
