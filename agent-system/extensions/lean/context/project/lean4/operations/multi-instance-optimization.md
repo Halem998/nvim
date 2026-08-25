@@ -152,3 +152,47 @@ sixteen-plus gigabyte spikes) and predicted a timeout-frequency reduction in the
 percent range with diagnostics completing within 30s (vs 60s+) — neither of those predictions was
 backed by a measurement, and the eight-gigabyte ceiling claim is directly contradicted by the
 29.9 GB figure above.
+
+---
+
+## Why there is no lean lifecycle hook
+
+Routing the census's `--cross-check` build through the guard raised, and this section settles,
+the question of whether the `lean` extension should also register a lifecycle hook that would run
+the guard (or check its status) automatically around Lean work. The decision is **no hook**, for
+four reasons:
+
+1. **Hook resolution keys strictly on `task_type == "lean4"`.** `skill_get_extension_dir` selects
+   which extension's hooks fire based only on the current task's `task_type`. A `general`- or
+   `meta`-typed task that happens to be working inside a Lean repository — including the task
+   that wrote this very section — would never trigger a lean-registered hook. A hook here would
+   protect exactly the narrow slice of work already typed `lean4` and nothing else, which is not
+   where an untyped or mistyped task doing Lean-adjacent work actually needs protecting.
+2. **Hooks are non-blocking by design.** A lifecycle hook that exits non-zero has that failure
+   caught and downgraded to a `[skill-base] WARNING`; it cannot stop a skill from proceeding. A
+   preflight hook here would imply an enforced refusal — "no unguarded build" — that the hook
+   mechanism is structurally unable to deliver. Advertising protection a hook cannot actually
+   enforce is worse than advertising none.
+3. **The enforceable mechanism already exists and needs no hook to be reached.** The guard's own
+   PSI/swap preflight and `--defer-on-pressure` are directly invocable (`lake-build-guard.sh
+   preflight`, or `build --defer-on-pressure`) by any caller that wants pressure-aware behavior,
+   with no lifecycle-hook plumbing required to get there.
+4. **Any actual refusal obligation belongs in contract text**, not in this scope. If a future
+   change decides an agent contract should refuse to run an unguarded `lake build`, that belongs
+   in the relevant agent/skill/rule prose (see the Non-Goals above on the eight files this task
+   deliberately does not touch), which — unlike a hook — is not non-blocking and can genuinely be
+   read and honored by an agent before acting.
+
+Since no hook is added, the question of whether such a hook should self-filter on `operation`
+(research vs. plan vs. implement) is moot and is recorded as such rather than left silently
+unanswered. For the record, if a lean lifecycle hook is ever added later, `operation` is passed to
+a hook as a positional argument rather than filtered by the dispatch mechanism itself, so a naive
+implementation would fire for every operation including research unless the hook body itself
+chose to filter.
+
+**`manifest.json` therefore requires no edit.** `jq 'has("hooks")' agent-system/extensions/lean/manifest.json`
+returns `false` and `provides.hooks` is `[]`; both were re-verified at implementation time against
+the two live reference implementations that DO register hooks (`nix`, with a top-level `hooks`
+object carrying `preflight` and `context_injection`; `nvim`, with `context_injection` only) to
+confirm the decision is made against the real contract shape, not a summary of it. Leaving
+`manifest.json` unmodified is the recorded outcome of this section, not an oversight.

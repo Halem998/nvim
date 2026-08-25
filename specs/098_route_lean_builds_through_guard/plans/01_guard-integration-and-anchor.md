@@ -355,21 +355,22 @@ split on what the file actually says rather than on this list.
 
 ---
 
-### Phase 4: Record the lifecycle-hook decision and confirm the manifest needs no change [NOT STARTED]
+### Phase 4: Record the lifecycle-hook decision and confirm the manifest needs no change [COMPLETED]
 
 **Goal**: Record "no lean lifecycle hook" as an explicit, reasoned decision in the anchor doc, and
 confirm by inspection that `manifest.json` correctly requires no edit.
 
 **Tasks**:
 
-- [ ] Re-verify the manifest premise before recording anything:
+- [x] Re-verify the manifest premise before recording anything:
       `jq 'has("hooks")' agent-system/extensions/lean/manifest.json` returns `false`, and
       `provides.hooks` is `[]`. If either has changed since research, stop and re-decide rather
-      than recording a stale premise.
-- [ ] Read both live reference implementations before concluding — `nix` (top-level `hooks` with
+      than recording a stale premise. *(completed: re-verified, premise held)*
+- [x] Read both live reference implementations before concluding — `nix` (top-level `hooks` with
       `preflight` + `context_injection`) and `nvim` (`context_injection` only) — so the decision is
       made against the real contract and not a summary of it. This is a lightly-trodden path.
-- [ ] Add a `## Why there is no lean lifecycle hook` section to the anchor doc recording the
+      *(completed)*
+- [x] Add a `## Why there is no lean lifecycle hook` section to the anchor doc recording the
       decision and its four reasons: (1) hook resolution keys strictly on `task_type == "lean4"`
       via `skill_get_extension_dir`, so a `general`- or `meta`-typed task working in a Lean
       repository — including the task that wrote this very section — would get nothing;
@@ -378,16 +379,18 @@ confirm by inspection that `manifest.json` correctly requires no edit.
       protection it cannot deliver; (3) the enforceable mechanism already exists and is directly
       invocable — the guard's own PSI/swap preflight and `--defer-on-pressure`, needing no hook
       machinery; (4) any actual refusal obligation belongs in contract text, which this scope does
-      not own.
-- [ ] State the disposition of the operation-filtering question explicitly: since no hook is added,
+      not own. *(completed)*
+- [x] State the disposition of the operation-filtering question explicitly: since no hook is added,
       the "should the hook self-filter on `operation`" question is moot and is recorded as such
       rather than left silently unanswered — and note that a future hook, if one is ever added,
       would fire for all operations including research, because `operation` is passed as an
-      argument rather than filtered on.
-- [ ] Confirm and record that `manifest.json` therefore requires no edit: no top-level `hooks`
+      argument rather than filtered on. *(completed)*
+- [x] Confirm and record that `manifest.json` therefore requires no edit: no top-level `hooks`
       object is added, and `provides.scripts` already lists both the census script and its test.
       Leaving a `file_scope` file unmodified is the recorded outcome, not an oversight.
-- [ ] Cite no task numbers in the section.
+      *(completed: manifest.json untouched, jq confirms provides.scripts already lists both
+      files)*
+- [x] Cite no task numbers in the section. *(completed: verified via grep)*
 
 **Timing**: 20 minutes
 
