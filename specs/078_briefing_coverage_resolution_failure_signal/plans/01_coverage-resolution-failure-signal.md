@@ -238,34 +238,34 @@ shared exit block (~404-476) is the sole marker-formatting site for both modes. 
 
 ---
 
-### Phase 3: Document the threshold policy [NOT STARTED]
+### Phase 3: Document the threshold policy [COMPLETED]
 
 **Goal**: `sparse-coverage.md` records the decision, the new env var, the marker's new fields, and
 the rationale; the context index entry is resynced.
 
 **Tasks**:
 
-- [ ] Add a `LITERATURE_SKIP_RATE_THRESHOLD` bullet to `sparse-coverage.md`'s `## Mechanisms`
+- [x] Add a `LITERATURE_SKIP_RATE_THRESHOLD` bullet to `sparse-coverage.md`'s `## Mechanisms` *(completed)*
       section, mirroring the existing `LITERATURE_SPARSE_THRESHOLD` bullet's structure: env var,
       default `50` (percent), comparison direction (`>=`, unlike the absolute-count rule's strict
       `<`).
-- [ ] Update the marker-shape line in that file to the full new schema, so the documented shape
+- [x] Update the marker-shape line in that file to the full new schema, so the documented shape *(completed)*
       matches what the script emits.
-- [ ] Add a short subsection stating the **threshold policy decision** explicitly: a skip rate at
+- [x] Add a short subsection stating the **threshold policy decision** explicitly: a skip rate at *(completed)*
       or above the threshold makes the briefing untrustworthy and forces `sparse=true` through the
       *existing* boolean rather than a distinct signal, because both marker consumers already poll
       `sparse=true` — a separate flag nothing greps for would reproduce the silent-degradation
       failure this change closes. Record that `50` is a conservative starting value chosen without
       calibration data, deliberately loose enough not to flag a normal partially-curated sub-index
       (e.g. 1 of 4 entries legitimately superseded).
-- [ ] Note that `skip_count -gt 0` always emits the `[SKIPPED SOURCES ...]` banner and the
+- [x] Note that `skip_count -gt 0` always emits the `[SKIPPED SOURCES ...]` banner and the *(completed)*
       `## Unresolved Documents` section even below threshold, so a low skip rate is visible without
       being treated as untrustworthy.
-- [ ] Resync `index-entries.json`'s `project/literature/domain/sparse-coverage.md` entry:
+- [x] Resync `index-entries.json`'s `project/literature/domain/sparse-coverage.md` entry: *(completed)*
       add `LITERATURE_SKIP_RATE_THRESHOLD` and `skip_rate` to `keywords`, refresh `summary` if the
       file's scope description no longer fits, and set `line_count` to the file's actual new length
       (`wc -l`).
-- [ ] Validate the JSON parses (`jq . index-entries.json > /dev/null`).
+- [x] Validate the JSON parses (`jq . index-entries.json > /dev/null`). *(completed)*
 
 **Timing**: 1 hour
 

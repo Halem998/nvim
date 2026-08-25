@@ -260,10 +260,12 @@
         "lit-coverage",
         "SPARSE_PROMPT_NEEDED",
         "briefing",
-        "orchestrator-mode"
+        "orchestrator-mode",
+        "LITERATURE_SKIP_RATE_THRESHOLD",
+        "skip_rate"
       ],
-      "summary": "Sparse-coverage signalling in literature-briefing.sh/literature-lit-flag-resolve.sh (threshold, lit-coverage marker, SPARSE_PROMPT_NEEDED); points to CLAUDE.md merge source for full flow",
-      "line_count": 33,
+      "summary": "Sparse-coverage signalling in literature-briefing.sh/literature-lit-flag-resolve.sh (absolute-count and skip-rate thresholds, lit-coverage marker schema, SPARSE_PROMPT_NEEDED); points to CLAUDE.md merge source for full flow",
+      "line_count": 61,
       "load_when": {
         "agents": [
           "literature-agent",

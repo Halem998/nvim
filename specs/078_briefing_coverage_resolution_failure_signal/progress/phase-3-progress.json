@@ -1,0 +1,13 @@
+{
+  "phase": 3,
+  "phase_name": "Document the threshold policy",
+  "started_at": "2026-08-25T04:21:59Z",
+  "last_updated": "2026-08-25T04:21:59Z",
+  "objectives": [
+    {"id": 1, "description": "sparse-coverage.md threshold policy doc + index-entries.json resync", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/sparse-coverage.md", "agent-system/extensions/literature/index-entries.json"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
