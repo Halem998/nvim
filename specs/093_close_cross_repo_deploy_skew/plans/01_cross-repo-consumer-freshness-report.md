@@ -1,7 +1,7 @@
 # Implementation Plan: Task #93
 
 - **Task**: 93 - close_cross_repo_deploy_skew
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None (`deploy-freshness-lib.sh` and `source_git_head` stamping already exist and are reused unmodified)
 - **Research Inputs**: `specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md`
