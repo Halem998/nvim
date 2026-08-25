@@ -277,19 +277,19 @@ out of scope (the census prose). An unaccounted occurrence means a site was miss
 
 ---
 
-### Phase 3: `rules/lean4.md` build-command block [NOT STARTED]
+### Phase 3: `rules/lean4.md` build-command block [COMPLETED]
 
 **Goal**: Rewrite the build-command reference so it no longer presents scoped-vs-full as purely a
 speed tradeoff, and point at the anchor.
 
 **Tasks**:
-- [ ] Workflow Pattern items 4-5 (near L44-45): revise so both the phase-end scoped build and the
+- [x] Workflow Pattern items 4-5 (near L44-45): revise so both the phase-end scoped build and the
       final full build are shown in the canonical guarded, detached form.
-- [ ] Build Commands section (near L56-62): revise the "Prefer scoped / Full project / Clean" line
+- [x] Build Commands section (near L56-62): revise the "Prefer scoped / Full project / Clean" line
       and the "When to use each" bullets so scoped is framed as *less work*, not as *safe*. Add the
       canonical invocation shape once and a pointer to
       `context/project/lean4/operations/long-builds.md`.
-- [ ] Add a short pointer line (not a restatement) noting that a plain foreground `lake build` can
+- [x] Add a short pointer line (not a restatement) noting that a plain foreground `lake build` can
       livelock and that the anchor is authoritative.
 
 **Timing**: 25 minutes

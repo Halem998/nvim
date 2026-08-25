@@ -8,7 +8,8 @@ paths: "**/*.lean"
 
 **DO NOT call**: `lean_diagnostic_messages` (hangs), `lean_file_outline` (unreliable)
 
-Use `lean_goal` + `lake build` instead.
+Use `lean_goal` + `lake build` instead (detached, guarded — see
+`context/project/lean4/operations/long-builds.md`).
 
 ## Essential MCP Tools
 
@@ -44,8 +45,11 @@ Use `lean_goal` + `lake build` instead.
 1. After finding name: `lean_local_search` -> verify, `lean_hover_info` -> signature
 2. During proof (inner loop): `lean_goal` constantly; `lean_multi_attempt` BEFORE editing; `lean_verify` for axiom/sorry check
 3. After editing a step: `lean_goal` to confirm; `lean_verify` if axiom safety needed
-4. Phase-end: `lake build Module.Name` (scoped); fall back to `lake build` if module name unknown
-5. Final verification only: `lake build` (full project)
+4. Phase-end: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- Module.Name`
+   (scoped), detached via `Bash(run_in_background: true)`; fall back to the unscoped form if
+   module name unknown
+5. Final verification only: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 --`
+   (full project), same detached, guarded invocation
 
 ## Common Tactics
 
@@ -55,11 +59,26 @@ Rewriting: `rw`, `simp only`, `conv`
 
 ## Build Commands
 
-Prefer scoped: `lake build Module.Name` | Full project: `lake build` | Clean: `lake clean && lake build`
+Every build runs detached via `Bash(run_in_background: true)`, routed through the shared build
+guard, with an explicit `--timeout` — never as a plain foreground `lake build`. A plain foreground
+call can livelock: the tool's own cap kills it mid-module, a killed build caches no `.olean`, and
+the next attempt restarts at the same module. See
+`context/project/lean4/operations/long-builds.md` for the full contract; this section does not
+restate it.
+
+Canonical invocation shape:
+```bash
+bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake args>
+```
+
+Prefer scoped: `-- Module.Name` | Full project: `--` (no module) | Clean: `lake clean` then the
+guarded build.
 
 **When to use each**:
-- `lake build Module.Name` -- phase-end verification (preferred; faster)
-- `lake build` -- final verification only (after all phases complete)
+- Scoped (`Module.Name`) -- phase-end verification; does less work, not categorically safer. A
+  single module can already exceed the foreground cap on its own, and the guard's lock is
+  project-granular regardless of scope.
+- Unscoped (full project) -- final verification only (after all phases complete)
 
 ## Literature Fidelity
 
