@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Regression suite for the backstop",
+  "started_at": "2026-08-24T19:15:00Z",
+  "last_updated": "2026-08-24T19:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-postflight-deploy-gate.sh modelled on test-update-task-status.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh"]},
+    {"id": 2, "description": "Source-store-first resolution for update-task-status.sh and deploy-freshness-lib.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Cover 7 cases + contract assertion", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm run-all.sh auto-discovery", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Fixture with no plan file for cases 2-5", "result": "failed", "reason": "update-plan-status.sh exits 1 when no plan directory exists, which update_plan_file() treats as FATAL (exit 3) on postflight/implement -- unrelated to the deploy-check gate itself but blocks reaching the assertions. Fixed by adding a minimal conforming plan file to build_fixture_repo(), matching test-update-task-status.sh's own fixture pattern."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.verification",
+      "description": "bash .../run-all.sh lists the new suite and its overall exit code is no worse than a pre-change baseline run",
+      "type": "altered",
+      "reason": "Full run-all.sh run launched in background (gate 8 alone costs ~118s); auto-discovery confirmed directly via the same glob pattern (test-*.sh) run-all.sh itself uses, rather than waiting synchronously for the full run before proceeding to Phase 5/6. The background run's result is checked and recorded before Phase 8's final verification.",
+      "annotation": null
+    }
+  ]
+}

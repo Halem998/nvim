@@ -339,28 +339,28 @@ unreachable or two collapse into one, record the actual branch count here rather
 
 ---
 
-### Phase 4: Regression suite for the backstop [NOT STARTED]
+### Phase 4: Regression suite for the backstop [COMPLETED]
 
 **Goal**: A fixture-driven suite pinning every branch of the new backstop, including the
 check-only contract and the refusal's no-write guarantee.
 
 **Tasks**:
-- [ ] Create `scripts/tests/test-postflight-deploy-gate.sh` modelled structurally on
+- [x] Create `scripts/tests/test-postflight-deploy-gate.sh` modelled structurally on *(completed)*
       `test-update-task-status.sh` (mktemp -d fixture repo, EXIT-trap cleanup, pass/fail/info
       helpers, exit 0 all-pass / 1 any-fail / 2 environment error).
-- [ ] **Resolution order inversion**: unlike the existing suites, resolve the files under test
+- [x] **Resolution order inversion**: unlike the existing suites, resolve the files under test *(completed)*
       (`update-task-status.sh`, `lib/deploy-freshness-lib.sh`) **source-store-first**, so the
       suite is meaningful before a deploy has run. Every other dependency keeps the existing
       deploy-tree-first order.
-- [ ] Cover: overlap + stale -> exit 6 with state.json unchanged and plan file unstamped;
+- [x] Cover: overlap + stale -> exit 6 with state.json unchanged and plan file unstamped; *(completed: 7 cases, 19 assertions, all pass)*
       overlap + fresh -> exit 0 and transition applied; no overlap -> exit 0; missing
       `.return-meta.json` -> exit 0 with the inconclusive note; missing freshness library ->
       exit 0 with the loud note (D4); `--dry-run` + stale -> exit 0 with the preview line;
       `postflight … research` -> block does not fire.
-- [ ] Add one contract assertion that the backstop block contains no `deploy-headless` or
+- [x] Add one contract assertion that the backstop block contains no `deploy-headless` or *(completed)*
       `verify-deploy` reference, so research constraint 3 is enforced by a test rather than by
       reviewer memory.
-- [ ] Confirm `scripts/tests/run-all.sh` auto-discovers the new suite (it globs
+- [x] Confirm `scripts/tests/run-all.sh` auto-discovers the new suite (it globs *(completed: confirmed via glob match, no registration needed)*
       `scripts/tests/test-*.sh` per extension; no registration edit should be needed).
 
 **Timing**: 1.5 hours
