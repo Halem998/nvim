@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "phase_name": "Real title / authors / year from Zotero in the ingest path",
+  "started_at": "2026-08-25T02:11:00Z",
+  "last_updated": "2026-08-25T02:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Thread resolved Zotero key through per-file loop to Step 4", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 2, "description": "Look up title/authors/year via zotero-read.sh, populate parent entry + zotero_key", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 3, "description": "Honest-partial marker for local-PDF ingests with no Zotero match", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 4, "description": "authors as array of individual strings, not comma-joined", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_evidence": {
+    "real_zotero_lookup": "Ingested a fixture PDF via --zotero 4JFAFMBY (a real Zotero key present in ~/Documents/Zotero, resolved via the zot CLI/zotero-read.sh item command) into a scratch corpus, with a scratch zotero-library.json mapping that key to the fixture PDF for the legacy PDF-resolution step. Resulting parent entry: title='Guide to Ground', authors=['Kit Fine'] (editors Fabrice Correia/Benjamin Schnieder correctly excluded), year=2012, metadata_status='resolved', zotero_key='4JFAFMBY'.",
+    "briefing_renders_real_metadata": "literature-briefing-invoke.sh (per-repo mode) against the scratch corpus renders '**Guide to Ground** (2012) — Kit Fine', not the bare id and '(?)'.",
+    "honest_partial_no_zotero": "Ingested a second fixture PDF via the plain local-PDF path (no --zotero flag): parent entry has title=<bare id>, authors=[], year=null, metadata_status='unresolved', no zotero_key field -- no fabricated values.",
+    "validate_authors_shape_clean": "Ran the Phase 7 --validate authors-shape check against the scratch index (both entries): 0 authors_shape_warnings, 0 schema_shape_defects."
+  }
+}

@@ -296,6 +296,36 @@ print('yes' if existing else 'no')
 }
 METAEOF
 
+  # Step 3b: Resolve real title/authors/year from Zotero when this ingest came in via
+  # --zotero <key> (the resolved key from the source-resolution block above is threaded
+  # through to here; ZOTERO_KEY is empty for a plain local-PDF ingest). Looked up via
+  # zotero-read.sh (the zot CLI wrapper), NOT the legacy zotero-library.json PDF-path
+  # lookup used above -- that file only resolves a PDF path, it does not carry
+  # title/authors/year. Written to a temp JSON file (never interpolated directly into
+  # the Step 4 python heredoc below) so a title/author containing a quote, backslash,
+  # or backtick cannot corrupt the unquoted heredoc's Python syntax.
+  ZOTERO_META_FILE=$(mktemp)
+  echo "{}" > "$ZOTERO_META_FILE"
+  if [ -n "$ZOTERO_KEY" ] && [ -x "$SCRIPT_DIR/zotero-read.sh" ]; then
+    ZOTERO_ITEM_JSON=$(bash "$SCRIPT_DIR/zotero-read.sh" item "$ZOTERO_KEY" 2>/dev/null) || ZOTERO_ITEM_JSON=""
+    if [ -n "$ZOTERO_ITEM_JSON" ] && echo "$ZOTERO_ITEM_JSON" | jq -e '.title' >/dev/null 2>&1; then
+      # authors: individual "First Last" strings from creator_type == "author" only
+      # (editors/translators excluded) -- never a comma-joined string, matching
+      # --validate's authors-shape check. year: first 4-digit run in Zotero's date
+      # string (format varies, e.g. "2012-00-00 2012"), or null if none found.
+      echo "$ZOTERO_ITEM_JSON" | jq -c '{
+        title: (.title // null),
+        authors: [.creators[]? | select(.creator_type == "author")
+                  | ((.first_name // "") + " " + (.last_name // ""))
+                  | gsub("^\\s+|\\s+$"; "")
+                  | select(length > 0)],
+        year: ((.date // "") | capture("(?<y>[0-9]{4})")? .y | tonumber? )
+      }' > "$ZOTERO_META_FILE" 2>/dev/null || echo "{}" > "$ZOTERO_META_FILE"
+    else
+      log "WARNING: Zotero key '$ZOTERO_KEY' did not resolve to item metadata -- honest partial (unresolved metadata) written instead"
+    fi
+  fi
+
   # Step 4: Update global index.json with a canonical parent entry (id == the bare
   # id literature-chunk.sh stamped into chunks.json's doc_id, and hence into
   # chunks_data.doc_id -- NEVER a longer curated form; see the id-assignment comment
@@ -310,6 +340,29 @@ import os
 index_path = "$LITERATURE_DIR/index.json"
 doc_id = "$DOC_ID"
 doc_dir = "$DOC_DIR"
+zotero_key = "$ZOTERO_KEY"
+zotero_meta_file = "$ZOTERO_META_FILE"
+
+with open(zotero_meta_file) as f:
+    zmeta = json.load(f)
+os.remove(zotero_meta_file)
+
+# Honest partial (never fabricated): only trust Zotero-resolved title/authors/year
+# when Zotero actually returned a title. Otherwise keep the bare-id / [] / null
+# placeholders and stamp metadata_status so --validate and a human can tell "not yet
+# enriched" apart from "enriched to these values" -- never silently indistinguishable.
+zotero_title = zmeta.get('title')
+metadata_resolved = bool(zotero_title)
+if metadata_resolved:
+    parent_title = zotero_title
+    parent_authors = zmeta.get('authors') or []
+    parent_year = zmeta.get('year')
+    metadata_status = "resolved"
+else:
+    parent_title = doc_id
+    parent_authors = []
+    parent_year = None
+    metadata_status = "unresolved"
 source_file = "$source_file"
 ingested_at = "$INGESTED_AT"
 source_format = "$SOURCE_FORMAT"
@@ -386,9 +439,10 @@ parent_entry = {
     "doc_id": doc_id,
     "parent_doc": None,
     "path": f"sources/{doc_id}/",
-    "title": doc_id,
-    "authors": [],
-    "year": None,
+    "title": parent_title,
+    "authors": parent_authors,
+    "year": parent_year,
+    "metadata_status": metadata_status,
     # Parent token_count is 0, not the document total, when children exist --
     # matching the corpus's own established convention (see corpus commit
     # e6ce8bd9's baier_katoen_2008/vardi_wolper_1986 parent entries and its
@@ -405,6 +459,8 @@ parent_entry = {
     "source_path": source_file,
     "ingested_at": ingested_at,
 }
+if zotero_key:
+    parent_entry["zotero_key"] = zotero_key
 
 child_entries = []
 for c in chunks:

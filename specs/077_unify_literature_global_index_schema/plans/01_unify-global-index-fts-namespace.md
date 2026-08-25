@@ -488,23 +488,23 @@ or derive it, rather than emitting a null.
 
 ---
 
-### Phase 6: Real title / authors / year from Zotero in the ingest path [NOT STARTED]
+### Phase 6: Real title / authors / year from Zotero in the ingest path [COMPLETED]
 
 **Goal**: Close the metadata-degradation half of acceptance criterion 1 — a briefing should render
 "To Be F Is To Be G (2016) — Cian Dorr", not "dorr_2016_to_be_f_is_to_be_g (?) — ".
 
 **Tasks**:
-- [ ] Thread the resolved Zotero key (already available on the `--zotero <key>` path) through the
-      per-file loop to Step 4.
-- [ ] Look up title / authors / year via `zotero-read.sh` and populate the parent entry, including
+- [x] Thread the resolved Zotero key (already available on the `--zotero <key>` path) through the
+      per-file loop to Step 4. *(completed: $ZOTERO_KEY is already set from arg parsing before the per-file loop; threaded into a new Step 3b lookup and into the parent entry as `zotero_key`)*
+- [x] Look up title / authors / year via `zotero-read.sh` and populate the parent entry, including
       `zotero_key` so `zotero-attach-chunks.sh` and `zotero-resolve-pdf.sh` can resolve the entry
-      later.
-- [ ] For local-PDF ingests with no Zotero match, emit an **honest partial**: keep the bare id as
+      later. *(completed: verified by execution with a real Zotero key -- see phase notes)*
+- [x] For local-PDF ingests with no Zotero match, emit an **honest partial**: keep the bare id as
       `title` but stamp a field marking the metadata as unresolved so `--validate` and a human can
       see the difference between "not yet enriched" and "enriched to these values". Never fabricate
-      an author or year.
-- [ ] Ensure the `authors` value is a proper array of individual author strings — the shape
-      `/literature --validate`'s existing authors-shape check enforces — not a comma-joined string.
+      an author or year. *(completed: `metadata_status` field, "resolved"|"unresolved"; verified by execution)*
+- [x] Ensure the `authors` value is a proper array of individual author strings — the shape
+      `/literature --validate`'s existing authors-shape check enforces — not a comma-joined string. *(completed: individual "First Last" strings per author creator, editors excluded; verified 0 authors-shape warnings against the fixture)*
 
 **Timing**: 1.5 hours
 
