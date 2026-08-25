@@ -490,6 +490,15 @@ skill_validate_task_artifacts() {
 # Usage: skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
 # Only updates state when status is a success value (researched/planned/implemented)
 # Calls extension hook: hooks.postflight (after status update, non-blocking)
+#
+# RETURN VALUE: as of the postflight completion-deploy gate (update-task-status.sh's exit 6),
+# this function returns update-task-status.sh's OWN exit code verbatim (0 on success, 4 on a
+# --phase-check=refuse refusal, 6 on a deploy-pending refusal, etc.) rather than implicitly
+# returning whatever the trailing hook/events legs happen to exit with. Before this change, a
+# refusal was invisible to every caller: the function's own return value was determined by its
+# LAST executed statement (the events-append call), never by update-task-status.sh's rc, so a
+# refusal was silently swallowed one layer up. The hook and events legs below still run
+# UNCONDITIONALLY regardless of this rc, exactly as before -- only the final `return` changed.
 skill_postflight_update() {
   local task_number="$1"
   local operation="$2"
@@ -507,14 +516,37 @@ skill_postflight_update() {
   fi
   local _t0
   _t0=$(date +%s.%N)
+  local _postflight_rc=0
   case "$status" in
     researched|planned|implemented)
-      bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}"
+      bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}" || _postflight_rc=$?
       ;;
     *)
       echo "[skill-base] Non-success status '${status}' — postflight status update skipped"
       ;;
   esac
+
+  # On a deploy-pending refusal (exit 6) specifically: emit a named line and record a
+  # deploy_pending reason into the task's own .return-meta.json, so /orchestrate's and the team
+  # skills' own reporting surfaces the deferral instead of showing an unexplained
+  # non-completion (the D6 residual mitigation named in the plan's Risks table). Best-effort and
+  # non-blocking -- a failure to annotate .return-meta.json never escalates past a warning, since
+  # the authoritative outcome is already update-task-status.sh's own rc.
+  if [[ "$_postflight_rc" -eq 6 ]]; then
+    echo "[deploy-check] deploy-pending: task ${task_number} postflight refused by the completion-deploy gate (exit 6) — modified_files overlap agent-system/extensions/** and the deploy is stale."
+    if [[ -n "${TASK_DIR:-}" && -f "${TASK_DIR}/.return-meta.json" ]]; then
+      local _dp_tmp
+      _dp_tmp="$(mktemp)"
+      if jq '. + {deploy_pending: true, deploy_pending_reason: "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"}' \
+        "${TASK_DIR}/.return-meta.json" > "$_dp_tmp" 2>/dev/null; then
+        mv "$_dp_tmp" "${TASK_DIR}/.return-meta.json"
+      else
+        rm -f "$_dp_tmp" 2>/dev/null
+        echo "WARNING: [skill-base] failed to record deploy_pending reason into ${TASK_DIR}/.return-meta.json" >&2
+      fi
+    fi
+  fi
+
   # Extension hook: postflight (runs after status update, non-blocking)
   skill_run_extension_hook "postflight" "$task_number" "${TASK_TYPE:-}" "${TASK_DIR:-}" "$session_id" "$operation"
   # Unified event store: one non-blocking milestone event per lifecycle stage
@@ -524,6 +556,8 @@ skill_postflight_update() {
     --event-type lifecycle_stage --category milestone \
     --checkpoint postflight --duration "$_dur" --task "$task_number" --session "$session_id" \
     --message "Postflight stage completed for ${operation} (status: ${status})"
+
+  return "$_postflight_rc"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────

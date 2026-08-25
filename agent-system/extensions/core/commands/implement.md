@@ -243,6 +243,89 @@ bash .claude/scripts/task-lock.sh session-release "$batch_session_id" 2>/dev/nul
 
 Git commit remaining changes (non-blocking). Display results table with session ID, counts (requested/succeeded/failed/skipped), and per-task status. Include partial-success note in commit message. Suggest re-running failed tasks individually.
 
+**Batch-refusal deploy trigger (deploy-pending)**: after the batch commit above, and BEFORE the
+per-task `.return-meta.json` deletion loop below (deletion would otherwise destroy the evidence
+the re-attempt needs), check whether any task this batch dispatched (`validated_tasks`, plus
+`pass2_admitted` if Step 3.5 ran) was refused by the postflight completion-deploy gate
+(`skill_postflight_update`'s rc-6 handling in `scripts/skill-base.sh`, which records
+`deploy_pending: true` into the refused task's own `.return-meta.json`). This multi-task loop
+bypasses `command-gate-out.sh` entirely (Step 3's own header note above), so it never reaches
+that script's rc==6 branch (Phase 5) — this is the second, independent sanctioned automated
+call site the carve-out in `context/patterns/regeneration-is-manual-only.md` names for the
+multi-task path. Already-serialized: Step 3's parallel dispatches have all returned by this
+point (Step 4 runs once, after every dispatch), so there is no race against the fail-open
+`specs/.deploy-lock` mutex the way a trigger fired from inside per-task postflight would create.
+
+Uses the SAME baseline-relative (a)/(b)/(c) contract as Phase 5's single-task trigger in
+`command-gate-out.sh` (`context/patterns/batch-orchestration-guardrails.md`'s "### The
+Inter-Cycle Redeploy Checkpoint" subsection) — fired at most ONCE for the whole batch, never
+once per refused task:
+
+```bash
+deploy_pending_tasks=()
+for task_num in "${validated_tasks[@]}" "${pass2_admitted[@]:-}"; do
+  [ -z "$task_num" ] && continue
+  padded="$(printf "%03d" "$task_num")"
+  proj=$(jq -r --argjson num "$task_num" \
+    '.active_projects[] | select(.project_number == $num) | .project_name' \
+    specs/state.json)
+  meta_file="specs/${padded}_${proj}/.return-meta.json"
+  if [ -f "$meta_file" ] && [ "$(jq -r '.deploy_pending // false' "$meta_file" 2>/dev/null)" = "true" ]; then
+    deploy_pending_tasks+=("$task_num")
+  fi
+done
+
+if [ ${#deploy_pending_tasks[@]} -gt 0 ]; then
+  echo "[implement] Batch deploy-pending: ${#deploy_pending_tasks[@]} task(s) refused by the postflight completion-deploy gate: ${deploy_pending_tasks[*]}. Running the sanctioned batch redeploy trigger." >&2
+
+  batch_vd_findings() {
+    local rc=0 out
+    out="$(bash .claude/scripts/verify-deploy.sh --findings --quiet 2>/dev/null)" || rc=$?
+    if [ "$rc" -eq 2 ]; then
+      echo "FINDING gate0 [SENTINEL] verify-deploy could not run (exit 2)"
+    else
+      printf '%s\n' "$out" | grep '^FINDING ' | sort -u
+    fi
+  }
+
+  batch_pre_findings="$(batch_vd_findings)"
+  batch_deploy_rc=0
+  batch_deploy_log="$(bash .claude/scripts/deploy-headless.sh 2>&1)" || batch_deploy_rc=$?
+
+  if [ "$batch_deploy_rc" -eq 1 ] || [ "$batch_deploy_rc" -eq 2 ]; then
+    # Branch (a): the redeploy failed to land -- no baseline consultation, no re-attempt for
+    # any deploy-pending task this cycle.
+    echo "[implement] Batch redeploy trigger FAILED (deploy-headless.sh exited ${batch_deploy_rc}) -- deploy-pending task(s) remain at 'implementing': ${deploy_pending_tasks[*]}." >&2
+  else
+    batch_post_findings="$(batch_vd_findings)"
+    batch_new_findings="$(comm -13 \
+      <(printf '%s\n' "$batch_pre_findings" | sort -u) \
+      <(printf '%s\n' "$batch_post_findings" | sort -u))"
+
+    if [ -n "$batch_new_findings" ]; then
+      # Branch (b): at least one newly-introduced finding -- no re-attempt.
+      echo "[implement] Batch redeploy trigger introduced NEW verify-deploy finding(s) -- refusing to re-attempt. deploy-pending task(s) remain at 'implementing': ${deploy_pending_tasks[*]}." >&2
+      printf '%s\n' "$batch_new_findings" >&2
+    else
+      # Branch (c): every post-redeploy finding was already present pre-redeploy. Re-attempt
+      # each deploy-pending task's transition exactly once.
+      echo "[PRE-EXISTING VERIFY-DEPLOY FAILURE] batch redeploy landed; post-deploy findings are all pre-existing; deploy-headless.sh exit ${batch_deploy_rc}. Re-attempting ${#deploy_pending_tasks[@]} deploy-pending task(s)." >&2
+      for task_num in "${deploy_pending_tasks[@]}"; do
+        retry_rc=0
+        bash .claude/scripts/update-task-status.sh postflight "$task_num" implement "$batch_session_id" || retry_rc=$?
+        if [ "$retry_rc" -eq 0 ]; then
+          echo "[implement] Task #$task_num transition succeeded after batch redeploy." >&2
+        elif [ "$retry_rc" -eq 6 ]; then
+          echo "[implement] Task #$task_num still refused (deploy-pending) after a successful batch redeploy -- not re-attempted again this cycle." >&2
+        else
+          echo "WARNING: [implement] re-attempt after batch redeploy failed with exit ${retry_rc} for task #$task_num — manual correction may be needed" >&2
+        fi
+      done
+    fi
+  fi
+fi
+```
+
 **Per-task `.return-meta.json` deletion**: this multi-task loop deliberately bypasses
 `command-gate-in.sh`/`command-gate-out.sh` and never reaches the single-task CHECKPOINT 3 above,
 so this batch step — not gate-out, not the skill (`skill_cleanup` no longer deletes the file at

@@ -447,31 +447,31 @@ mapping is not one-to-one, record the divergence and its reason rather than sile
 
 ---
 
-### Phase 6: Refusal propagation in skill-base.sh and the multi-task batch trigger [NOT STARTED]
+### Phase 6: Refusal propagation in skill-base.sh and the multi-task batch trigger [COMPLETED]
 
 **Goal**: Stop `skill_postflight_update` from silently swallowing a refusal, and add the second
 serialized deploy trigger at `commands/implement.md` Step 4 for the multi-task batch path.
 
 **Tasks**:
-- [ ] `skill_postflight_update` currently invokes `update-task-status.sh` and proceeds to hooks
+- [x] `skill_postflight_update` currently invokes `update-task-status.sh` and proceeds to hooks *(completed)*
       and events without capturing its exit code at all — so a refusal (today's exit 4, and now
       exit 6) is invisible to every caller. Capture the rc into a local, keep the hook and event
       legs running unconditionally as they do today, and return the captured rc from the function.
-- [ ] On rc 6 specifically, emit a named `[deploy-check] deploy-pending` line and record a
+- [x] On rc 6 specifically, emit a named `[deploy-check] deploy-pending` line and record a *(completed)*
       `deploy-pending` reason into the task's `.return-meta.json` so `/orchestrate`'s and the team
       skills' own reporting surfaces the deferral instead of showing an unexplained non-completion
       (the D6 residual mitigation).
-- [ ] Confirm by execution that returning a non-zero rc from `skill_postflight_update` does not
+- [x] Confirm by execution that returning a non-zero rc from `skill_postflight_update` does not *(completed: no SKILL.md bash block containing the call carries `set -e`; orchestrate-stage5-postflight.sh, the only non-markdown caller, has no `set -e` either)*
       abort any existing caller that runs under `set -e` — if any caller would newly abort, guard
       the call site pattern rather than reverting the rc capture, and record which callers were
       checked.
-- [ ] In `commands/implement.md` Step 4 (already serial, already runs once after all of Step 3's
+- [x] In `commands/implement.md` Step 4 (already serial, already runs once after all of Step 3's *(completed)*
       parallel dispatches return), add a batch-refusal deploy trigger: if any dispatched task's
       postflight was refused for deploy staleness, run **one** `deploy-headless.sh` for the whole
       batch using the same (a)/(b)/(c) baseline-relative contract as Phase 5, then re-attempt each
       refused task's transition. Place it before the existing per-task `.return-meta.json`
       deletion loop, which would otherwise destroy the evidence the re-attempt needs.
-- [ ] Do not add a trigger anywhere inside Step 3's parallel dispatch region.
+- [x] Do not add a trigger anywhere inside Step 3's parallel dispatch region. *(completed)*
 
 **Timing**: 1.5 hours
 
