@@ -753,7 +753,7 @@ section cleaner, use one and say so.
 
 ---
 
-### Phase 10: Escalate `--validate` to hard failure and document the invariant [NOT STARTED]
+### Phase 10: Escalate `--validate` to hard failure and document the invariant [PARTIAL]
 
 **Goal**: Turn the divergence check into a gate now that the corpus conforms, and write the
 invariant down where the next person will find it before they rename an id.
@@ -761,21 +761,31 @@ invariant down where the next person will find it before they rename an id.
 **Tasks**:
 - [ ] Flip the Phase 7 divergence check from WARN to a hard failure, carrying forward only the
       explicitly enumerated known exceptions from Phase 8 (the `gabbay_2000` class), each with a
-      recorded reason.
-- [ ] Add an FTS-namespace subsection to
+      recorded reason. *(deviation: deferred to a future dispatch — Phase 8 is [BLOCKED], so the
+      corpus does not yet conform (gabbay_2000 still has 0 FTS chunks and is not yet stamped as a
+      recorded known exception; confirmed by running the Phase 7 divergence check against the live
+      corpus in WARN mode: index-only bucket = 1 (gabbay_2000), matching the un-reconciled
+      baseline). Escalating to hard failure now would make `/literature --validate` fail against
+      the live corpus immediately, which the plan's own Rollback/Contingency section identifies as
+      the wrong response to an unfinished Phase 8, not a softening decision. This has real residual
+      work for a future dispatch once Phase 8 unblocks, so it is recorded as deferred, not as a
+      closed exclusion.)*
+- [x] Add an FTS-namespace subsection to
       `agent-system/extensions/literature/context/project/literature/domain/literature-index.md`
       recording: the `chunks_data.doc_id` namespace; the invariant that an entry's FTS key is the
       directory component of its `sources/`-prefixed `.path`; the **never rename a live FTS id**
       rule with the concrete `--toc`-returns-`[]` consequence; the `sources/` placement /
       fidelity-audit-targeting interaction; and the 1:1 chunk-granularity rule for script-written
-      entries. Cite `literature-doc-key.sh` as the single sourced anchor.
-- [ ] Update `literature-fidelity-audit.sh`'s header note: entries outside `sources/` are still
+      entries. Cite `literature-doc-key.sh` as the single sourced anchor. *(completed)*
+- [x] Update `literature-fidelity-audit.sh`'s header note: entries outside `sources/` are still
       never matched, but new ingests now land inside `sources/`, so the exclusion no longer covers
-      the ingest pipeline.
-- [ ] Complete the reader-survey record (acceptance criterion 4): for each surveyed script, state
-      fixed / not-an-offender / deliberate-exclusion, in the domain doc.
-- [ ] Note that the source-store changes reach `.claude/` only on the next deploy; all verification
+      the ingest pipeline. *(completed)*
+- [x] Complete the reader-survey record (acceptance criterion 4): for each surveyed script, state
+      fixed / not-an-offender / deliberate-exclusion, in the domain doc. *(completed: 12-row table
+      covering every script named in the research report's reader survey)*
+- [x] Note that the source-store changes reach `.claude/` only on the next deploy; all verification
       in this plan invoked source-store scripts by absolute path, so no phase depended on a deploy.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,30 @@
+{
+  "phase": 10,
+  "phase_name": "Escalate --validate to hard failure and document the invariant",
+  "started_at": "2026-08-25T03:06:00Z",
+  "last_updated": "2026-08-25T03:20:00Z",
+  "status": "partial",
+  "objectives": [
+    {"id": 1, "description": "Flip Phase 7 divergence check WARN -> FAIL", "status": "blocked", "note": "Deferred: Phase 8 not reconciled, corpus does not yet conform (gabbay_2000 still 0 FTS chunks)"},
+    {"id": 2, "description": "Add FTS-namespace subsection to domain doc", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/literature-index.md"]},
+    {"id": 3, "description": "Update literature-fidelity-audit.sh header note", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
+    {"id": 4, "description": "Complete reader-survey record in domain doc", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/literature-index.md"]},
+    {"id": 5, "description": "Note source-store-vs-deploy in domain doc", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/literature-index.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "10.1",
+      "description": "Flip the Phase 7 divergence check from WARN to a hard failure",
+      "type": "deferred",
+      "reason": "Phase 8 is [BLOCKED] and the corpus does not conform: running the Phase 7 divergence check (WARN mode) against the live corpus confirms index-only bucket = 1 (gabbay_2000, dir key: gabbay_2000), fts-only = 0, id-inconsistent = 0. Escalating to a hard failure now would make /literature --validate fail against the live corpus immediately, which the plan's own Rollback/Contingency section treats as evidence Phase 8 is unfinished, never as license to soften the check. This task has genuine residual work for a future dispatch once Phase 8 unblocks (someone must both reconcile gabbay_2000 -- or record it as a permanent known exception -- and then flip WARN to FAIL), so it does not meet the [COMPLETED WITH EXCLUSIONS] admission test's fifth condition (no residual work); recorded as deferred/[PARTIAL] instead.",
+      "annotation": "*(deviation: deferred to a future dispatch — Phase 8 is [BLOCKED] ...)*"
+    }
+  ],
+  "verification_evidence": {
+    "documentation_tasks_all_by_execution": "Confirmed no task-number references in the modified domain doc and fidelity-audit.sh header (bash .claude/scripts/check-task-references.sh: 0 unexempted occurrences for both).",
+    "live_corpus_warn_mode_check": "Extracted and ran the current Validate Step 1/2/2b logic against the live corpus in WARN mode: exit 0, index_only=1 (gabbay_2000), fts_only=0, id_inconsistent=0 -- matches the un-reconciled baseline exactly, confirming escalation would currently fail against the live corpus."
+  }
+}

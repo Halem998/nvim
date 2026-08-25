@@ -62,7 +62,13 @@
 #       error.
 #   Only entries under sources/<dir>/ are ever touched. Entries using the unrelated
 #   legacy `doc_id`/`chunks_dir` schema (no `path`/`id` fields, from a different
-#   ingestion pipeline, live outside sources/) are never matched or written.
+#   ingestion pipeline, live outside sources/) are never matched or written. This
+#   exclusion no longer covers new ingests as of literature-ingest.sh's sources/<id>/
+#   placement fix: every document written by the current ingest pipeline lands inside
+#   sources/ and is eligible for fidelity stamping. The exclusion remains real for any
+#   pre-existing entry that still predates that fix and was never migrated. See
+#   context/project/literature/domain/literature-index.md's "FTS Namespace and the
+#   Never-Rename Invariant" section for the full sources/-placement rationale.
 #
 # Idempotency: re-running --write on an already-stamped corpus is a no-op relative to
 # the first --write's output (same values, stable key order, no diff). The FIRST
