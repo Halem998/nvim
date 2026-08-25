@@ -158,13 +158,13 @@ row-tails before and after: the multiset must differ only by the single new `→
 
 ---
 
-### Phase 2: Correct `/fix-it` QUESTION content-keyword routing [NOT STARTED]
+### Phase 2: Correct `/fix-it` QUESTION content-keyword routing [COMPLETED]
 
 **Goal**: Stop the `/fix-it` QUESTION content-based detector from mapping pure mathematical
 vocabulary to `latex`, and bring its two illustrative doc mirrors into agreement with it.
 
 **Tasks**:
-- [ ] In `skill-fix-it/SKILL.md` Step 8.5, replace the single
+- [x] In `skill-fix-it/SKILL.md` Step 8.5, replace the single
       `- latex: theorem, proof, lemma, axiom, logic, formula, derivation, proposition, corollary,
       latex, tex` row with the separated row set:
       `lean4: theorem, proof, lemma, axiom, proposition, corollary, derivation` /
@@ -172,18 +172,19 @@ vocabulary to `latex`, and bring its two illustrative doc mirrors into agreement
       `latex: latex, tex, bibtex, biblatex, latex macro, latex package, compile error` /
       `typst: typst, typst package, typst compile` /
       `meta: .claude, command, agent, skill, workflow, state.json, TODO.md, specs/` (unchanged) /
-      `Default: "general"` (unchanged).
-- [ ] Deliberately omit `formula` from every row so it falls through to `general`. Record that
+      `Default: "general"` (unchanged). *(completed)*
+- [x] Deliberately omit `formula` from every row so it falls through to `general`. Record that
       choice in a short parenthetical beside the table: a formula can be either mathematical content
-      or a rendering question, so it is not guessed at.
-- [ ] In `commands/fix-it.md`, update the research-task prose so the illustrative example reads
+      or a rendering question, so it is not guessed at. *(completed)*
+- [x] In `commands/fix-it.md`, update the research-task prose so the illustrative example reads
       `theorem, proof, lemma, etc. -> "lean4"` and add a formatting-side pairing such as
       `bibtex, compile error -> "latex"`, so the example itself demonstrates the formatting-only
-      boundary instead of contradicting it.
-- [ ] In `docs/examples/fix-it-flow-example.md`, apply the same correction to the
+      boundary instead of contradicting it. *(completed)*
+- [x] In `docs/examples/fix-it-flow-example.md`, apply the same correction to the
       "QUESTION: language detection" paragraph (`theorem/proof/lemma -> lean4`, plus a
-      formatting-side example).
-- [ ] Leave every **file-type**-based table untouched (`.tex -> "latex"` in the todo-task path).
+      formatting-side example). *(completed)*
+- [x] Leave every **file-type**-based table untouched (`.tex -> "latex"` in the todo-task path). *(completed)*
+
 
 **Timing**: 0.5 hours
 

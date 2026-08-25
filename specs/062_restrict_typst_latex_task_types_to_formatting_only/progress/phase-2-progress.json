@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Correct /fix-it QUESTION content-keyword routing",
+  "started_at": "2026-08-24T00:10:00Z",
+  "last_updated": "2026-08-24T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Split SKILL.md Step 8.5 keyword row into lean4/formal/latex/typst/meta/Default", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-fix-it/SKILL.md"]},
+    {"id": 2, "description": "Add formula-omission parenthetical", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-fix-it/SKILL.md"]},
+    {"id": 3, "description": "Correct fix-it.md illustrative prose", "status": "done", "files_touched": ["agent-system/extensions/core/commands/fix-it.md"]},
+    {"id": 4, "description": "Correct fix-it-flow-example.md illustrative prose", "status": "done", "files_touched": ["agent-system/extensions/core/docs/examples/fix-it-flow-example.md"]},
+    {"id": 5, "description": "Leave file-type table untouched (verified)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

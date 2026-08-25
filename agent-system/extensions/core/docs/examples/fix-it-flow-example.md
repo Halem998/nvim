@@ -23,7 +23,7 @@ The `/fix-it` command recognizes four tag types in source code comments:
 
 **Dependency behavior**: When NOTE: tags exist and both fix-it and learn-it tasks are selected, the learn-it task is created first and the fix-it task depends on it. This ensures proper workflow: learn-it extracts knowledge to context files (NOTE: tags remain in source), then fix-it addresses the code changes and removes both NOTE: and FIX: tags.
 
-**QUESTION: language detection**: Unlike other tag types, QUESTION: tags use **content-based language detection** instead of file-type detection. The question text is analyzed for domain keywords (e.g., theorem/proof/lemma -> latex, .claude/command/agent -> meta, api/endpoint/route -> web), defaulting to "general" for ambiguous cases. This ensures research questions are routed to the appropriate research agent based on what is being asked, not where the question was written.
+**QUESTION: language detection**: Unlike other tag types, QUESTION: tags use **content-based language detection** instead of file-type detection. The question text is analyzed for domain keywords (e.g., .claude/command/agent -> meta, bibtex/compile error -> latex, api/endpoint/route -> web, theorem/proof/lemma -> lean4), defaulting to "general" for ambiguous cases. This ensures research questions are routed to the appropriate research agent based on what is being asked, not where the question was written.
 
 ---
 

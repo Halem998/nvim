@@ -440,9 +440,15 @@ For each selected TODO item individually:
 Uses `question_grouping_mode` from Step 7.7 (defaults to "separate"). Same grouped/combined/separate modes as TODO tasks (Step 8.4), with these differences:
 
 - **Language detection is content-based** (not file-based): Match question text against keyword lists:
-  - latex: theorem, proof, lemma, axiom, logic, formula, derivation, proposition, corollary, latex, tex
+  - lean4: theorem, proof, lemma, axiom, proposition, corollary, derivation
+  - formal: logic
+  - latex: latex, tex, bibtex, biblatex, latex macro, latex package, compile error
+  - typst: typst, typst package, typst compile
   - meta: .claude, command, agent, skill, workflow, state.json, TODO.md, specs/
   - Default: "general"
+
+  (`formula` is deliberately omitted from every row: it can be either mathematical content or a
+  rendering question, so it is not guessed at and falls through to `general`.)
 - **Effort base**: 1.5 hours (vs 1 hour for TODO tasks), same +30min scaling per additional item
 - **Title prefix**: "Research: {content}" for separate mode
 - **Description format**: Uses blockquote syntax (`> {question text}`) instead of checkboxes
