@@ -1,0 +1,152 @@
+[
+  {
+    "chunk_id": "9faa767937b7bee6",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "Alpern Schneider 198...",
+    "title": "Alpern Schneider 1985 Defining-Liveness",
+    "summary": "Information Processing Letters 21 (1985) 181-185 North-Holland",
+    "token_count": 26,
+    "level": 0,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "7132e3df451b5a44",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "Bowen ALPERN and Fre...",
+    "title": "Bowen ALPERN and Fred B. SCHNEIDER",
+    "summary": "_Department of Computer Science, Cornell University, 405 Upson Hall, Ithaca, NY 14853, U.S.A._",
+    "token_count": 169,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "1d17d6446339e823",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**I. Introduction**",
+    "title": "**I. Introduction**",
+    "summary": "An execution of a concurrent program can be viewed as an infinite sequence of states:",
+    "token_count": 313,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "826a66a57bca8725",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**2. Safety properti...",
+    "title": "**2. Safety properties**",
+    "summary": "Informally, a safety property stipulates that some 'bad thing' does not happen during execution [2].",
+    "token_count": 414,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "7ece559ef8811399",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "Safety",
+    "title": "Safety",
+    "summary": "(Vo: o~ S~:",
+    "token_count": 156,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "f9a57172ab1527bb",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**3. Liveness proper...",
+    "title": "**3. Liveness properties**",
+    "summary": "Informally, a liveness property stipulates that a 'good thing' happens during execution [2].",
+    "token_count": 437,
+    "level": 1,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "21f305b01ebc7008",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**Liveness**",
+    "title": "**Liveness**",
+    "summary": "(Vtx: a ~ S*: (3113:13 ~ S~: ~xlB ~ P)).",
+    "token_count": 308,
+    "level": 1,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "585ef01594c72c52",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**Liveness** > **Uniform Liveness**",
+    "title": "**Uniform Liveness**",
+    "summary": "(:113 : 13E S'~ : (Ve~: a~S*: a13t= P)).",
+    "token_count": 76,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "3d666496c1fc3441",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**Liveness** > **Absolute Liveness*...",
+    "title": "**Absolute Liveness**",
+    "summary": "(3y: \"y ~ S'~: ~, ~ P) A (V13:13 P= (W,: S* : P)).",
+    "token_count": 482,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "e62385dd27100858",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**Liveness** > **Absolute Liveness*...",
+    "title": "**Absolute Liveness** (cont.)",
+    "summary": "**Predictive.** _If A initially holds, then after some partial execution B always holds; otherwise, after some partial execution B never holds._ We be",
+    "token_count": 112,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "0ce906d7b258ed7a",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**Liveness** > **4. Other propertie...",
+    "title": "**4. Other properties**",
+    "summary": "Many properties are neither safety nor liveness.",
+    "token_count": 520,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "e66942acc381eb11",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**Liveness** > **4. Other propertie...",
+    "title": "**4. Other properties** (cont.)",
+    "summary": "Corollary 1.1.",
+    "token_count": 532,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "0e3e338262fe3879",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**Liveness** > **4. Other propertie...",
+    "title": "**4. Other properties** (cont.)",
+    "summary": "7 October 1985",
+    "token_count": 26,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "fb47fdf0362798f6",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**Liveness** > **5. Conclusion**",
+    "title": "**5. Conclusion**",
+    "summary": "A formal definition of liveness should be as general as possible without doing violence to the intuition.",
+    "token_count": 206,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  },
+  {
+    "chunk_id": "6a100b7dd3b7cf9e",
+    "doc_id": "alpern_schneider_1985_defining-liveness",
+    "section_path": "**Liveness** > **References**",
+    "title": "**References**",
+    "summary": "- [1] B.",
+    "token_count": 506,
+    "level": 2,
+    "provenance_fidelity": "unverified_summary"
+  }
+]

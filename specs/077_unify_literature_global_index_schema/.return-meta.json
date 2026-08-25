@@ -1,32 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 77,
-  "session_id": "sess_1787617685_88b825_77",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/077_unify_literature_global_index_schema/plans/01_unify-global-index-fts-namespace.md",
-      "summary": "10-phase, ~12h plan unifying index.json/.literature.db id namespaces via a sources/<dir> path bridge, fixing the ingest writer, adding a --validate divergence check, and reconciling the enumerated corpus residue."
-    }
-  ],
-  "modified_files": [
-    "specs/077_unify_literature_global_index_schema/plans/01_unify-global-index-fts-namespace.md",
-    "specs/077_unify_literature_global_index_schema/.return-meta.json",
-    "specs/077_unify_literature_global_index_schema/.orchestrator-handoff.json"
-  ],
-  "phase_count": 10,
-  "estimated_hours": 12,
-  "dependency_waves": [[1], [2, 3, 4], [5, 7], [6, 8], [9], [10]],
-  "next_steps": "Run /implement 77 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When two id namespaces in a system have drifted (a curated human-facing id vs a machine-authoritative id fixed at write time), renaming to unify them is the trap: it repairs the reader that keyed on the curated id and silently breaks every reader keyed on the machine id. The durable fix is to find an existing third field that already bridges the two -- here, index entries' `path` field, whose `sources/<dir>/` component IS the FTS doc_id -- and derive the machine key from it, leaving both id spaces untouched. Measured effect: coverage of the machine namespace rose from 172/204 (via curated id) to 202/204 (via path derivation) with zero data migration. Look for the bridge before proposing a migration; the codebase often already contains it (literature-search.sh derived exactly this key at four sites already).",
-      "category": "PATTERN",
-      "source_artifact": "specs/077_unify_literature_global_index_schema/plans/01_unify-global-index-fts-namespace.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["id-namespace-divergence", "rename-trap", "path-derived-key", "fts-doc-id", "schema-unification", "bridge-not-migrate"]
-    }
-  ]
+  "session_id": "sess_1787617685_88b825",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [],
+  "modified_files": []
 }

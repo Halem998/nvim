@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Re-measure the corpus and freeze an execution baseline",
+  "started_at": "2026-08-25T00:49:00Z",
+  "last_updated": "2026-08-25T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record corpus git log/status", "status": "done", "files_touched": ["specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md"]},
+    {"id": 2, "description": "Measure core counts", "status": "done", "files_touched": ["specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md"]},
+    {"id": 3, "description": "Compute divergence sets and path-derived coverage", "status": "done", "files_touched": ["specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md"]},
+    {"id": 4, "description": "Re-enumerate Decision C residue", "status": "done", "files_touched": ["specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md"]},
+    {"id": 5, "description": "Capture 5-document probe baseline", "status": "done", "files_touched": [
+      "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_blackburn_2002.json",
+      "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_blackburn_2002_book.json",
+      "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_burgess_1982.json",
+      "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_gabbay_2000.json",
+      "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_toc_alpern_schneider_1985_defining-liveness.json",
+      "specs/077_unify_literature_global_index_schema/reports/baseline-probes/baseline_search_bimodal.json"
+    ]},
+    {"id": 6, "description": "Write baseline report", "status": "done", "files_touched": ["specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md"]},
+    {"id": 7, "description": "Confirm criterion 2 satisfied by inspection", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Corpus tree was NOT clean at Phase 1 start: pre-existing uncommitted leftover from separate completed task 080_exclude_backups_from_literature_index_rebuild (14 renamed .bak->chunks.json files applied in-tree, .literature.db rebuilt, but never committed in ~/Projects/Literature). Not caused by task 77. Reported per observation duty."
+  ]
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "chunk_id": "f15b98cf4adac8cc",
+    "doc_id": "burgess_1982",
+    "section_path": "§1 Preliminaries: Syntax, Semantics, and Axiom System J0",
+    "title": "§1 Preliminaries: Syntax, Semantics, and Axiom System J0",
+    "summary": "Chapter: §1 Preliminaries: Syntax, Semantics, and Axiom System J0",
+    "token_count": 3541,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "188cd55b65dd68b8",
+    "doc_id": "burgess_1982",
+    "section_path": "§2 Completeness Proof: Chronicle Construction and Counterexample Lemmas",
+    "title": "§2 Completeness Proof: Chronicle Construction and Counterexample Lemmas",
+    "summary": "Chapter: §2 Completeness Proof: Chronicle Construction and Counterexample Lemmas",
+    "token_count": 2020,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  }
+]

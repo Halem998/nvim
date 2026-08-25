@@ -1,0 +1,352 @@
+[
+  {
+    "chunk_id": "97beef7dbc5b9de8",
+    "doc_id": "blackburn_2002",
+    "section_path": "Appendix B-C: Algebraic and Computational Toolkits",
+    "title": "Appendix B-C: Algebraic and Computational Toolkits",
+    "summary": "Chapter: Appendix B-C: Algebraic and Computational Toolkits",
+    "token_count": 11498,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "57305e0366adf691",
+    "doc_id": "blackburn_2002",
+    "section_path": "Appendix D: Guide to Literature and Bibliography",
+    "title": "Appendix D: Guide to Literature and Bibliography",
+    "summary": "Chapter: Appendix D: Guide to Literature and Bibliography",
+    "token_count": 23792,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "01a6944e696d21f5",
+    "doc_id": "blackburn_2002",
+    "section_path": "Appendix A: A Logical Toolkit",
+    "title": "Appendix A: A Logical Toolkit",
+    "summary": "Chapter: Appendix A: A Logical Toolkit",
+    "token_count": 6846,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "657f000e100c4422",
+    "doc_id": "blackburn_2002",
+    "section_path": "Front Matter, Table of Contents, and Preface",
+    "title": "Front Matter, Table of Contents, and Preface",
+    "summary": "Chapter: Front Matter, Table of Contents, and Preface",
+    "token_count": 9671,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "8642569be93472ee",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 1: §1.4-1.8 General Frames through Summary",
+    "title": "Chapter 1: §1.4-1.8 General Frames through Summary",
+    "summary": "Chapter: Chapter 1: §1.4-1.8 General Frames through Summary",
+    "token_count": 17020,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "d20a06dafe8a6141",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 1: §1.3 Models and Frames",
+    "title": "Chapter 1: §1.3 Models and Frames",
+    "summary": "Chapter: Chapter 1: §1.3 Models and Frames",
+    "token_count": 6499,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "f7f31e7c5373f2c9",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 1: §1.1 Relational Structures, §1.2 Modal Languages",
+    "title": "Chapter 1: §1.1 Relational Structures, §1.2 Modal Languages",
+    "summary": "Chapter: Chapter 1: §1.1 Relational Structures, §1.2 Modal Languages",
+    "token_count": 8659,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "c7a529004aa76ade",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 2: §2.2 Bisimulations, §2.3 Finite Models",
+    "title": "Chapter 2: §2.2 Bisimulations, §2.3 Finite Models",
+    "summary": "Chapter: Chapter 2: §2.2 Bisimulations, §2.3 Finite Models",
+    "token_count": 11605,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "13b55fc5a959cba4",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 2: §2.6 Characterization and Definability",
+    "title": "Chapter 2: §2.6 Characterization and Definability",
+    "summary": "Chapter: Chapter 2: §2.6 Characterization and Definability",
+    "token_count": 6137,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "81a4e36a25c7be03",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 2: §2.1 Invariance Results",
+    "title": "Chapter 2: §2.1 Invariance Results",
+    "summary": "Chapter: Chapter 2: §2.1 Invariance Results",
+    "token_count": 8777,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "5f37bc716246cc22",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 2: §2.7 Simulation and Safety, §2.8 Summary",
+    "title": "Chapter 2: §2.7 Simulation and Safety, §2.8 Summary",
+    "summary": "Chapter: Chapter 2: §2.7 Simulation and Safety, §2.8 Summary",
+    "token_count": 8849,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "b4c16bb628ddf856",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 2: §2.4 Standard Translation, §2.5 Modal Saturation",
+    "title": "Chapter 2: §2.4 Standard Translation, §2.5 Modal Saturation",
+    "summary": "Chapter: Chapter 2: §2.4 Standard Translation, §2.5 Modal Saturation",
+    "token_count": 12135,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "1fd7d7d2503e767e",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 3: §3.8-3.9 Advanced Frame Theory and Summary",
+    "title": "Chapter 3: §3.8-3.9 Advanced Frame Theory and Summary",
+    "summary": "Chapter: Chapter 3: §3.8-3.9 Advanced Frame Theory and Summary",
+    "token_count": 6348,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "597e0e956f0a9c56",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 3: §3.1-3.4 Frame Definability through Finite Frames",
+    "title": "Chapter 3: §3.1-3.4 Frame Definability through Finite Frames",
+    "summary": "Chapter: Chapter 3: §3.1-3.4 Frame Definability through Finite Frames",
+    "token_count": 17104,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "b378ced6c95b4dd0",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 3: §3.7 More about Sahlqvist Formulas",
+    "title": "Chapter 3: §3.7 More about Sahlqvist Formulas",
+    "summary": "Chapter: Chapter 3: §3.7 More about Sahlqvist Formulas",
+    "token_count": 7194,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "d1b50ef044de7915",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 3: §3.5-3.6 First-Order Correspondence and Sahlqvist Formulas",
+    "title": "Chapter 3: §3.5-3.6 First-Order Correspondence and Sahlqvist Formulas",
+    "summary": "Chapter: Chapter 3: §3.5-3.6 First-Order Correspondence and Sahlqvist Formulas",
+    "token_count": 10270,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "0e5560e81e151464",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 4: §4.3-4.4 Applications and Limitative Results",
+    "title": "Chapter 4: §4.3-4.4 Applications and Limitative Results",
+    "summary": "Chapter: Chapter 4: §4.3-4.4 Applications and Limitative Results",
+    "token_count": 10910,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "24154ac291f5e238",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 4: §4.9-4.10 Finitary Methods II and Summary",
+    "title": "Chapter 4: §4.9-4.10 Finitary Methods II and Summary",
+    "summary": "Chapter: Chapter 4: §4.9-4.10 Finitary Methods II and Summary",
+    "token_count": 10664,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "aa8ff9457f375b74",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 4: §4.1-4.2 Preliminaries and Canonical Models",
+    "title": "Chapter 4: §4.1-4.2 Preliminaries and Canonical Models",
+    "summary": "Chapter: Chapter 4: §4.1-4.2 Preliminaries and Canonical Models",
+    "token_count": 7667,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "f8cea5e38e501e93",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 4: §4.7-4.8 Rules for the Undefinable and Finitary Methods I",
+    "title": "Chapter 4: §4.7-4.8 Rules for the Undefinable and Finitary Methods I",
+    "summary": "Chapter: Chapter 4: §4.7-4.8 Rules for the Undefinable and Finitary Methods I",
+    "token_count": 11444,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "cc7787b5def367b7",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 4: §4.5-4.6 Transforming Canonical Model and Step-by-step",
+    "title": "Chapter 4: §4.5-4.6 Transforming Canonical Model and Step-by-step",
+    "summary": "Chapter: Chapter 4: §4.5-4.6 Transforming Canonical Model and Step-by-step",
+    "token_count": 7991,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "b3e0d5779163839e",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 5: §5.4 Duality Theory",
+    "title": "Chapter 5: §5.4 Duality Theory",
+    "summary": "Chapter: Chapter 5: §5.4 Duality Theory",
+    "token_count": 4489,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "f24b19a90694495d",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 5: §5.5 General Frames",
+    "title": "Chapter 5: §5.5 General Frames",
+    "summary": "Chapter: Chapter 5: §5.5 General Frames",
+    "token_count": 8007,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "86d7ef77df1916ee",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 5: §5.3 The Jonsson-Tarski Theorem",
+    "title": "Chapter 5: §5.3 The Jonsson-Tarski Theorem",
+    "summary": "Chapter: Chapter 5: §5.3 The Jonsson-Tarski Theorem",
+    "token_count": 7225,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "6b03ba9ba6a165f4",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 5: §5.1-5.2 Logic as Algebra and Algebraizing Modal Logic",
+    "title": "Chapter 5: §5.1-5.2 Logic as Algebra and Algebraizing Modal Logic",
+    "summary": "Chapter: Chapter 5: §5.1-5.2 Logic as Algebra and Algebraizing Modal Logic",
+    "token_count": 12370,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "4831f118bfdfcaf6",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 5: §5.6-5.7 Persistence and Summary",
+    "title": "Chapter 5: §5.6-5.7 Persistence and Summary",
+    "summary": "Chapter: Chapter 5: §5.6-5.7 Persistence and Summary",
+    "token_count": 9935,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "43fe56509c0c74ee",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 6: §6.8-6.9 EXPTIME and Summary",
+    "title": "Chapter 6: §6.8-6.9 EXPTIME and Summary",
+    "summary": "Chapter: Chapter 6: §6.8-6.9 EXPTIME and Summary",
+    "token_count": 14746,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "fa623dbe1ad039cf",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 6: §6.6-6.7 NP and PSPACE",
+    "title": "Chapter 6: §6.6-6.7 NP and PSPACE",
+    "summary": "Chapter: Chapter 6: §6.6-6.7 NP and PSPACE",
+    "token_count": 13357,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "298beb22b1edcc34",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 6: §6.4-6.5 Quasi-models, Mosaics, and Tiling",
+    "title": "Chapter 6: §6.4-6.5 Quasi-models, Mosaics, and Tiling",
+    "summary": "Chapter: Chapter 6: §6.4-6.5 Quasi-models, Mosaics, and Tiling",
+    "token_count": 10005,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "c398eea85740bfb4",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 6: §6.1-6.3 Satisfiability and Decidability",
+    "title": "Chapter 6: §6.1-6.3 Satisfiability and Decidability",
+    "summary": "Chapter: Chapter 6: §6.1-6.3 Satisfiability and Decidability",
+    "token_count": 16701,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "f494311aab980345",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 7: §7.4 The Guarded Fragment",
+    "title": "Chapter 7: §7.4 The Guarded Fragment",
+    "summary": "Chapter: Chapter 7: §7.4 The Guarded Fragment",
+    "token_count": 8345,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "f4b19ebfb2c2b6e7",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 7: §7.6-7.7 Lindstrom Theorem and Summary",
+    "title": "Chapter 7: §7.6-7.7 Lindstrom Theorem and Summary",
+    "summary": "Chapter: Chapter 7: §7.6-7.7 Lindstrom Theorem and Summary",
+    "token_count": 10545,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "8e32269b8cd2901b",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 7: §7.1-7.2 Logical Modalities and Since/Until",
+    "title": "Chapter 7: §7.1-7.2 Logical Modalities and Since/Until",
+    "summary": "Chapter: Chapter 7: §7.1-7.2 Logical Modalities and Since/Until",
+    "token_count": 12734,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "bf2a17d9aca1d65c",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 7: §7.5 Multi-Dimensional Modal Logic",
+    "title": "Chapter 7: §7.5 Multi-Dimensional Modal Logic",
+    "summary": "Chapter: Chapter 7: §7.5 Multi-Dimensional Modal Logic",
+    "token_count": 7555,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  },
+  {
+    "chunk_id": "dfea9cdd50f59c8d",
+    "doc_id": "blackburn_2002",
+    "section_path": "Chapter 7: §7.3 Hybrid Logic",
+    "title": "Chapter 7: §7.3 Hybrid Logic",
+    "summary": "Chapter: Chapter 7: §7.3 Hybrid Logic",
+    "token_count": 7971,
+    "level": 1,
+    "provenance_fidelity": "verified_conversion"
+  }
+]

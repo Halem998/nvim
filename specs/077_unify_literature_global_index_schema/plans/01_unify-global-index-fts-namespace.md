@@ -1,7 +1,7 @@
 # Implementation Plan: Unify the literature global-index schema and end stub-entry invisibility
 
 - **Task**: 77 - Unify the literature global-index schema and end stub-entry invisibility
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 12 hours
 - **Dependencies**: 32 (redeploy — already satisfied)
 - **Research Inputs**: specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md
@@ -231,31 +231,31 @@ territory-safe for parallel dispatch.
 
 ---
 
-### Phase 1: Re-measure the corpus and freeze an execution baseline [NOT STARTED]
+### Phase 1: Re-measure the corpus and freeze an execution baseline [COMPLETED]
 
 **Goal**: Replace every count in this plan with a freshly measured one, and capture the
 before-state of the two commands that must not regress, so later phases have something to diff
 against.
 
 **Tasks**:
-- [ ] Record `git -C ~/Projects/Literature log --oneline -1` and `git status --short` (confirm the
-      corpus tree is clean before any change).
-- [ ] Measure: total entries; `[.entries[] | select(.id == null)] | length`; parent-entry count;
-      `SELECT COUNT(DISTINCT doc_id) FROM chunks_data`.
-- [ ] Compute the three divergence sets (FTS-only, index-only, both) and the path-derived-key
-      coverage of FTS doc_ids. Confirm or correct: 32 / 17 / 172, and 202 vs 172 coverage.
-- [ ] Re-enumerate the Decision C residue: FTS-only dirs with no parent entry (expected 15),
-      duplicate chunk directories (expected 2), index dir keys with no FTS chunks (expected 1).
-- [ ] Capture BEFORE output for a fixed 5-document probe set spanning the failure modes — at
+- [x] Record `git -C ~/Projects/Literature log --oneline -1` and `git status --short` (confirm the
+      corpus tree is clean before any change). *(completed: tree NOT clean — pre-existing uncommitted leftover from separate completed task 080_exclude_backups_from_literature_index_rebuild, unrelated to this task; recorded in 02_baseline-measurements.md)*
+- [x] Measure: total entries; `[.entries[] | select(.id == null)] | length`; parent-entry count;
+      `SELECT COUNT(DISTINCT doc_id) FROM chunks_data`. *(completed: 399/0/189/204, matches plan exactly)*
+- [x] Compute the three divergence sets (FTS-only, index-only, both) and the path-derived-key
+      coverage of FTS doc_ids. Confirm or correct: 32 / 17 / 172, and 202 vs 172 coverage. *(completed: confirmed exactly, no correction needed)*
+- [x] Re-enumerate the Decision C residue: FTS-only dirs with no parent entry (expected 15),
+      duplicate chunk directories (expected 2), index dir keys with no FTS chunks (expected 1). *(completed: confirmed 15/2/1 exactly)*
+- [x] Capture BEFORE output for a fixed 5-document probe set spanning the failure modes — at
       minimum `blackburn_2002` (paired FTS id), `blackburn_2002_book` (paired curated id),
       `burgess_1982` (FTS-only, no parent), `gabbay_2000` (index-only, no chunks), and one
       document present in both namespaces as a control:
       - `literature-search.sh --toc <id>` for each
       - `literature-search.sh --project <repo> "<query>"` for a query known to hit at least one
-        curated-id document
-- [ ] Write all of the above to `specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md`.
-- [ ] If the null-`.id` count is still 0, record acceptance criterion 2 as satisfied by inspection
-      and confirm no backfill work is scheduled anywhere in this plan.
+        curated-id document *(completed: control = alpern_schneider_1985_defining-liveness; query = --project BimodalLogic "bisimulation")*
+- [x] Write all of the above to `specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md`. *(completed)*
+- [x] If the null-`.id` count is still 0, record acceptance criterion 2 as satisfied by inspection
+      and confirm no backfill work is scheduled anywhere in this plan. *(completed: 0 confirmed, no backfill scheduled)*
 
 **Timing**: 1 hour
 
