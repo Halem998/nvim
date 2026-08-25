@@ -11,7 +11,7 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,78,81,85,86,87,90,91,93,94,96,97,99,100 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,81,85,86,87,90,91,94,96,97,99,100 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,50,64,66,75,76,88,89,98 | 29,42,48,74,87,97 | agent-system, extensions, essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -42,7 +42,6 @@ next_project_number: 101
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-78 [PLANNED] — literature-briefing.sh's coverage marker counts documents that RE
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
 
@@ -70,7 +69,6 @@ next_project_number: 101
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-93 [PLANNED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
 
 ### Team Mode Lifecycle
 
@@ -375,12 +373,13 @@ source store. Do not mark it verified on a source-store-only check.
 ---
 
 ### 93. Close cross repo deploy skew
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 83
 - **Research**: [093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md]
 - **Plan**: [093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md]
+- **Summary**: [093_close_cross_repo_deploy_skew/summaries/01_cross-repo-consumer-freshness-report-summary.md]
 
 **Description**: The postflight deploy gate makes 'completed' mean 'in effect' IN THIS REPO ONLY. It does nothing for consuming repos, which pull independently -- so a fix verified here stays broken everywhere else until each repo is reloaded by hand. That is not hypothetical drift; it is the measured state today.
 
@@ -929,12 +928,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 78. Make the briefing coverage marker report resolution-failure rate
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 77
 - **Research**: [078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md]
 - **Plan**: [078_briefing_coverage_resolution_failure_signal/plans/01_coverage-resolution-failure-signal.md]
+- **Summary**: [078_briefing_coverage_resolution_failure_signal/summaries/01_coverage-resolution-failure-signal-summary.md]
 
 **Description**: literature-briefing.sh's coverage marker counts documents that RESOLVED and is structurally blind to the resolution FAILURE RATE, so a briefing that dropped every primary source for a task self-reports as healthy. This is the silent-degradation half of the stub-entry defect and is arguably the more dangerous half: the schema bug loses documents, this bug hides that they were lost.
 

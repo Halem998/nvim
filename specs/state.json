@@ -1412,7 +1412,7 @@
     {
       "project_number": 78,
       "project_name": "briefing_coverage_resolution_failure_signal",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "literature",
       "title": "Make the briefing coverage marker report resolution-failure rate",
@@ -1435,11 +1435,17 @@
           "type": "plan",
           "path": "specs/078_briefing_coverage_resolution_failure_signal/plans/01_coverage-resolution-failure-signal.md",
           "summary": "5-phase plan closing literature-briefing.sh's silent resolution-failure gap: skip counters, non-silent total-failure path, extended lit-coverage marker folded into the existing sparse boolean, body surfacing, threshold policy doc, and a Section G regression test."
+        },
+        {
+          "type": "summary",
+          "path": "specs/078_briefing_coverage_resolution_failure_signal/summaries/01_coverage-resolution-failure-signal-summary.md",
+          "summary": "Execution summary for the lit-coverage resolution-failure-signal fix: instrumented skip path, extended marker schema, documented threshold policy, added Section G regression test, verified both marker consumers unchanged."
         }
       ],
       "created": "2026-08-20T18:39:09Z",
-      "last_updated": "2026-08-25T04:17:16Z",
-      "session_id": "sess_1787630527_96eca3_78"
+      "last_updated": "2026-08-25T04:54:42Z",
+      "session_id": "sess_1787630527_96eca3_78",
+      "completion_summary": "Instrumented literature-briefing.sh's repo-mode skip site with a counter/array, ended the silent full-failure exit, extended the lit-coverage marker with requested=/resolved=/skipped=/skip_rate= folded into the existing sparse boolean via a new skip-rate threshold, surfaced skipped doc_ids in the briefing body, documented the policy in sparse-coverage.md, and added a Section G regression test (4 assertion groups, confirmed to fail on revert) to test-lit-pipeline.sh -- full runtime suite passes 30/30 and both existing marker consumers verified unmodified and functioning."
     },
     {
       "project_number": 79,
@@ -1856,7 +1862,7 @@
     {
       "project_number": 93,
       "project_name": "close_cross_repo_deploy_skew",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "high",
@@ -1870,7 +1876,7 @@
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
       ],
       "created": "2026-08-24T20:51:23Z",
-      "last_updated": "2026-08-25T04:17:23Z",
+      "last_updated": "2026-08-25T04:54:49Z",
       "session_id": "sess_1787630527_96eca3_93",
       "artifacts": [
         {
@@ -1882,8 +1888,14 @@
           "type": "plan",
           "path": "specs/093_close_cross_repo_deploy_skew/plans/01_cross-repo-consumer-freshness-report.md",
           "summary": "7-phase, ~6h plan adding a source-side tier-3 cross-repo fleet freshness report: git-tracked consumer registry, new check-consumer-freshness.sh (with --discover), a guarded post-deploy stale-consumer report in deploy-headless.sh, and a non-blocking consecutive-ignore escalation on tier 1."
+        },
+        {
+          "type": "summary",
+          "path": "specs/093_close_cross_repo_deploy_skew/summaries/01_cross-repo-consumer-freshness-report-summary.md",
+          "summary": "Implementation summary: source-side tier-3 cross-repo consumer freshness report, all 7 plan phases completed"
         }
-      ]
+      ],
+      "completion_summary": "Added a git-tracked known-consumer registry, a new check-consumer-freshness.sh fleet report (with --discover reconciliation), a guarded post-deploy stale-consumer hook in deploy-headless.sh, and a non-blocking consecutive-ignore escalation on the existing tier-1 WARN. Verified live against all 8 real consumer repos and two real deploy-headless.sh runs in this repo; the 0/1/2/3 exit-code contract is unchanged."
     },
     {
       "project_number": 97,
