@@ -335,25 +335,25 @@ number — not by inspecting the jq expression.
 
 ---
 
-### Phase 3: Reader tolerance and comment repair in `literature-briefing.sh` [NOT STARTED]
+### Phase 3: Reader tolerance and comment repair in `literature-briefing.sh` [COMPLETED]
 
 **Goal**: Make the briefing resolve a stub-shaped entry (`.doc_id` present, `.id` absent) instead
 of silently skipping it, and correct the header comment that asserts a now-false invariant.
 
 **Tasks**:
-- [ ] At all three `.id`-only lookup sites — `get_doc_fidelity()` (~114), the parent lookup with
+- [x] At all three `.id`-only lookup sites — `get_doc_fidelity()` (~114), the parent lookup with
       the `parent_doc` filter (~175), and the fallback lookup (~181) — accept either key:
       `select((.id // .doc_id) == $id ...)`, mirroring the pattern `literature-discover.sh`
-      already uses at its Tier 1 lookup (`.id // .doc_id // ""`).
-- [ ] Apply the same tolerance to the title / authors / year / `token_count` extraction jq
+      already uses at its Tier 1 lookup (`.id // .doc_id // ""`). *(completed: grep for `select(.id ==` found 9 total hits, not 3 -- the 3 named lookup sites plus 5 metadata-extraction sites (title/authors/year/token_count x2) = 8 fixed; the 9th (path-resolution, ~238) is the explicitly-excluded site below)*
+- [x] Apply the same tolerance to the title / authors / year / `token_count` extraction jq
       expressions so a `.doc_id`-resolved entry does not degrade to "Unknown Title" after the
-      lookup succeeds.
-- [ ] Rewrite the header comment (~105-107) that asserts all lookups are "keyed by index.json's
+      lookup succeeds. *(completed: 5 sites -- title, authors, year, parent_tokens, total_tokens)*
+- [x] Rewrite the header comment (~105-107) that asserts all lookups are "keyed by index.json's
       `.id` field": state the real contract — `.id` preferred, `.doc_id` tolerated, and the FTS
-      `doc_id` derived from `.path`, never from `.id`.
-- [ ] Do **not** touch the path-resolution block (~227-246). The report's fourth-addendum
+      `doc_id` derived from `.path`, never from `.id`. *(completed)*
+- [x] Do **not** touch the path-resolution block (~227-246). The report's fourth-addendum
       correction is explicit: it already prefers `.path` over an id-derived guess and is not an
-      offender on this axis.
+      offender on this axis. *(completed: verified untouched, still reads `select(.id == $id)` at ~238)*
 
 **Timing**: 1 hour
 

@@ -103,15 +103,19 @@ done
 
 # --- provenance_fidelity lookup ---
 # doc_id -> provenance_fidelity, mirroring the existing per-repo relevance/title/
-# authors/year lookups below (all keyed by index.json's .id field -- specs/
-# literature-index.json's doc_id values are curated in that same .id namespace, e.g.
-# "rabinovich_2014", "blackburn_2002_book"). Fail-open: an absent field or entry
-# resolves to "unverified_summary".
+# authors/year lookups below. The real contract: lookups here prefer index.json's
+# curated `.id` field but tolerate a stub-shaped entry keyed only by `.doc_id`
+# (`.id // .doc_id`), mirroring the pattern literature-discover.sh's Tier 1 lookup
+# already uses (`.id // .doc_id // ""`). `.id` and `.doc_id` are NOT the same
+# namespace as the FTS `chunks_data.doc_id` key: the FTS key is always derived from
+# an entry's `sources/`-prefixed `.path` (see literature-doc-key.sh), never from `.id`
+# or `.doc_id` directly -- this script never touches that derivation. Fail-open: an
+# absent field or entry resolves to "unverified_summary".
 get_doc_fidelity() {
   local doc_id="$1"
   local val
   val=$(jq -r --arg id "$doc_id" '
-    .entries[] | select(.id == $id) | .provenance_fidelity // empty
+    .entries[] | select((.id // .doc_id) == $id) | .provenance_fidelity // empty
   ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
   echo "${val:-unverified_summary}"
 }
@@ -169,16 +173,18 @@ if [ "$mode" = "repo" ]; then
   doc_num=0
 
   for doc_id in "${doc_ids[@]}"; do
-    # Find the parent entry (parent_doc == null and id starts with doc_id)
+    # Find the parent entry (parent_doc == null and (id // doc_id) matches doc_id).
+    # Tolerates a stub-shaped entry keyed only by .doc_id (no .id field) -- see
+    # get_doc_fidelity's header comment above for the full contract.
     parent_entry=$(jq -r --arg id "$doc_id" '
       .entries[]
-      | select(.id == $id and (.parent_doc == null or .parent_doc == ""))
+      | select((.id // .doc_id) == $id and (.parent_doc == null or .parent_doc == ""))
     ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
 
     if [ -z "$parent_entry" ]; then
       # Try without parent_doc filter (older entries may lack the field)
       parent_entry=$(jq -r --arg id "$doc_id" '
-        .entries[] | select(.id == $id)
+        .entries[] | select((.id // .doc_id) == $id)
       ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
     fi
 
@@ -187,17 +193,19 @@ if [ "$mode" = "repo" ]; then
       continue
     fi
 
-    # Extract parent metadata
+    # Extract parent metadata. Tolerates a .doc_id-only stub entry (see
+    # get_doc_fidelity's header comment above) so a resolved-by-doc_id entry does not
+    # degrade to "Unknown Title" / empty authors / "?" year after the lookup succeeds.
     title=$(jq -r --arg id "$doc_id" '
-      .entries[] | select(.id == $id) | .title // "Unknown Title"
+      .entries[] | select((.id // .doc_id) == $id) | .title // "Unknown Title"
     ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
 
     authors_raw=$(jq -r --arg id "$doc_id" '
-      .entries[] | select(.id == $id) | (.authors // [] | if type == "array" then . else [.] end | join(", "))
+      .entries[] | select((.id // .doc_id) == $id) | (.authors // [] | if type == "array" then . else [.] end | join(", "))
     ' "$GLOBAL_INDEX" 2>/dev/null | head -1) || authors_raw=""
 
     year=$(jq -r --arg id "$doc_id" '
-      .entries[] | select(.id == $id) | (.year // "?") | tostring
+      .entries[] | select((.id // .doc_id) == $id) | (.year // "?") | tostring
     ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
 
     # Find all chunk entries (children: parent_doc == doc_id)
@@ -210,15 +218,16 @@ if [ "$mode" = "repo" ]; then
       total_tokens=$(jq --arg id "$doc_id" '
         [.entries[] | select(.parent_doc == $id) | .token_count // 0] | add // 0
       ' "$GLOBAL_INDEX" 2>/dev/null || echo 0)
-      # Also include parent entry tokens if present
+      # Also include parent entry tokens if present. (.id // .doc_id) tolerance
+      # mirrors the other extraction sites above.
       parent_tokens=$(jq -r --arg id "$doc_id" '
-        .entries[] | select(.id == $id) | .token_count // 0
+        .entries[] | select((.id // .doc_id) == $id) | .token_count // 0
       ' "$GLOBAL_INDEX" 2>/dev/null | head -1) || parent_tokens=0
       [[ "$parent_tokens" =~ ^[0-9]+$ ]] || { echo "Warning: non-numeric parent token_count for '$doc_id', defaulting to 0" >&2; parent_tokens=0; }
       total_tokens=$(( total_tokens + parent_tokens ))
     else
       total_tokens=$(jq -r --arg id "$doc_id" '
-        .entries[] | select(.id == $id) | .token_count // 0
+        .entries[] | select((.id // .doc_id) == $id) | .token_count // 0
       ' "$GLOBAL_INDEX" 2>/dev/null | head -1) || { echo "Warning: could not read token_count for '$doc_id', defaulting to 0" >&2; total_tokens=0; }
       [[ "$total_tokens" =~ ^[0-9]+$ ]] || total_tokens=0
       chunk_count=1

@@ -1,0 +1,30 @@
+{
+  "phase": 3,
+  "phase_name": "Reader tolerance and comment repair in literature-briefing.sh",
+  "started_at": "2026-08-25T01:06:00Z",
+  "last_updated": "2026-08-25T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Accept .id // .doc_id at three lookup sites", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 2, "description": "Apply same tolerance to title/authors/year/token_count extraction", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 3, "description": "Rewrite header comment stating real contract", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 4, "description": "Confirm path-resolution block untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Scope Hypothesis expected exactly 3 lookup sites",
+      "type": "altered",
+      "reason": "grep for `select(.id ==` found 9 hits total, not 3. Per the Scope Hypothesis instruction ('if the count differs from three lookup sites, fix all of them and record the corrected list'), fixed all 8 sites that are genuine .id-only lookups (3 named lookup sites + 5 metadata-extraction sites: title, authors, year, parent_tokens, total_tokens) and left the 9th (path-resolution, ~238) untouched per task item 4's explicit exclusion.",
+      "annotation": "*(completed: grep found 9 hits, fixed 8, excluded path-resolution per task item 4)*"
+    }
+  ],
+  "verification_evidence": {
+    "fixture_stub_entry": "Fixture global index at a scratch LITERATURE_DIR with one stub-shaped entry (doc_id set, no .id) and a scratch sub-index referencing it via literature-briefing-invoke.sh (symlink-based fixture to satisfy PROJECT_ROOT=$SCRIPT_DIR/../.. path resolution). Zero 'not found in global index — skipping' warnings on stderr. Title/authors/year rendered correctly: 'A Stub-Shaped Test Document (2026) — Test Author', not 'Unknown Title (?) —'.",
+    "fidelity_doc_id_only": "get_doc_fidelity() jq expression against the fixture returns 'verified_conversion' (the stamped value) for the .doc_id-only entry, not the unverified_summary fail-open default.",
+    "live_corpus_regression": "literature-briefing-invoke.sh (no args, per-repo mode) against the live repo: no specs/literature-index.json present in this repo, so it bails early (empty stdout, exit 0) exactly as before the fix -- 0 skip warnings, matching (not exceeding) the Phase 1 baseline of 0.",
+    "toc_untouched": "Path-resolution block at ~238 confirmed still reads the original `select(.id == $id)` (not touched), preserving the report's fourth-addendum finding that this block already prefers .path correctly."
+  }
+}
