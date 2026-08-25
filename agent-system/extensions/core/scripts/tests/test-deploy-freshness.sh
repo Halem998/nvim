@@ -308,6 +308,69 @@ while IFS= read -r line; do
   esac
 done < "$WORKDIR/lib-direct.out"
 
+# =====================================================================
+# Streak-counter cases: consecutive-ignore escalation (see check-deploy-freshness.sh's own
+# header block for the full contract). Uses a dedicated consumer fixture and its own specs/
+# directory so these cases never interact with the STALE/FRESH fixtures above.
+# =====================================================================
+CONSUMER_STREAK="$WORKDIR/consumer-streak"
+mkdir -p "$CONSUMER_STREAK/specs"
+STREAK_FILE="$CONSUMER_STREAK/specs/.freshness-warn-streak.json"
+write_state "$CONSUMER_STREAK" "$EXT_DIR" "0000000000000000000000000000000000dead"
+
+for i in 1 2 3 4; do
+  run_checker "$CONSUMER_STREAK" > "$WORKDIR/streak-run-${i}.out" 2>&1
+done
+if [[ -f "$STREAK_FILE" ]] && [[ "$(jq -r '.streak' "$STREAK_FILE" 2>/dev/null)" == "4" ]]; then
+  pass "streak counter: 4 consecutive stale runs -> streak=4, no escalated banner yet"
+else
+  fail "streak counter: expected streak=4 after 4 runs, got <<<$(cat "$STREAK_FILE" 2>/dev/null || echo MISSING)>>>"
+fi
+if ! grep -q "consecutive" "$WORKDIR/streak-run-4.out"; then
+  pass "streak counter: no escalated banner below threshold (streak=4 < 5)"
+else
+  fail "streak counter: escalated banner appeared before threshold: <<<$(cat "$WORKDIR/streak-run-4.out")>>>"
+fi
+
+run_checker "$CONSUMER_STREAK" > "$WORKDIR/streak-run-5.out" 2>&1
+if [[ "$(jq -r '.streak' "$STREAK_FILE" 2>/dev/null)" == "5" ]] && grep -q "5 consecutive" "$WORKDIR/streak-run-5.out"; then
+  pass "streak counter: 5th consecutive stale run -> escalated banner naming the count"
+else
+  fail "streak counter: expected streak=5 and escalated banner on run 5, got <<<$(cat "$WORKDIR/streak-run-5.out")>>>"
+fi
+
+# Reset-on-fresh: switch the fixture to the recorded-matches-current (fresh) state.
+write_state "$CONSUMER_STREAK" "$EXT_DIR" "$HEAD_V1"
+run_checker "$CONSUMER_STREAK" > "$WORKDIR/streak-run-fresh.out" 2>&1
+if [[ ! -f "$STREAK_FILE" ]]; then
+  pass "streak counter: reset (file removed) on a fresh run"
+else
+  fail "streak counter: expected streak file removed after fresh run, still present: $(cat "$STREAK_FILE")"
+fi
+
+# Cap at 999: pre-seed the counter above the cap and confirm one more stale run clamps it.
+write_state "$CONSUMER_STREAK" "$EXT_DIR" "0000000000000000000000000000000000dead"
+mkdir -p "$CONSUMER_STREAK/specs"
+echo '{"streak": 999, "extensions": ["ext"], "updated": "2020-01-01T00:00:00Z"}' > "$STREAK_FILE"
+run_checker "$CONSUMER_STREAK" > /dev/null 2>&1
+if [[ "$(jq -r '.streak' "$STREAK_FILE" 2>/dev/null)" == "999" ]]; then
+  pass "streak counter: capped at 999, does not grow unbounded"
+else
+  fail "streak counter: expected cap held at 999, got <<<$(cat "$STREAK_FILE")>>>"
+fi
+rm -f "$STREAK_FILE"
+
+# Silent skip when specs/ does not exist.
+CONSUMER_STREAK_NOSPECS="$WORKDIR/consumer-streak-nospecs"
+write_state "$CONSUMER_STREAK_NOSPECS" "$EXT_DIR" "0000000000000000000000000000000000dead"
+run_checker "$CONSUMER_STREAK_NOSPECS" > /dev/null 2>&1
+RC_NOSPECS=$?
+if [[ "$RC_NOSPECS" -eq 0 ]] && [[ ! -d "$CONSUMER_STREAK_NOSPECS/specs" ]]; then
+  pass "streak counter: silent skip when specs/ does not exist (no dir created, exit 0)"
+else
+  fail "streak counter: expected exit 0 and no specs/ dir created, got rc=$RC_NOSPECS dir_exists=$([[ -d "$CONSUMER_STREAK_NOSPECS/specs" ]] && echo yes || echo no)"
+fi
+
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"
 

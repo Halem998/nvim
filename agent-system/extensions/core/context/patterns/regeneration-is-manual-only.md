@@ -205,6 +205,14 @@ whole point of wiring verification in -- not a regression introduced here. The s
 response, until the pre-existing failures are fixed, is to inspect the named failure and fix it;
 reverting the inline call is not the sanctioned response merely because it now reports truthfully.
 
+**Additive: a post-deploy consumer-freshness report.** After the verify-deploy call above (on
+BOTH the exit-0 and exit-3 branches — both mean the tree WAS modified), `deploy-headless.sh`
+additionally calls `scripts/check-consumer-freshness.sh --stale-only`, fully guarded (only when
+the deployed checker exists; its own exit code can never propagate into `deploy-headless.sh`'s
+own exit code). This is purely additive output — see the "Tier 3" subsection under
+`## Detecting When You're Stale` below for the full design — and does NOT change the 0/1/2/3
+exit-code contract documented above in any way.
+
 ## What This Means for Automation
 
 - **Source-store edits still do not deploy themselves.** Edits under
@@ -260,17 +268,87 @@ missing field. Neither limitation is a defect to fix here -- `verify-deploy.sh`'
 content-diffing gates remain the deep-dive companion for per-file drift; this check is the
 preflight-cheap companion that tells a user regeneration is worth running at all.
 
-**A now-two-tier staleness model.** `check-deploy-freshness.sh` is TIER 1: silent, advisory,
+**A now-three-tier staleness model.** `check-deploy-freshness.sh` is TIER 1: silent, advisory,
 CHECKPOINT-1-only (its one sanctioned advisory caller, `command-gate-in.sh`), ALWAYS exits 0,
 and is never a gate -- everything described in this section above. TIER 2 is the postflight
 completion-deploy gate inside `scripts/update-task-status.sh` (the "## Automated Exception: The
 Postflight Completion-Deploy Gate" subsection above): BLOCKING, evidence-gated on a task's own
 `modified_files` actually overlapping `agent-system/extensions/**`, and reachable only at
-postflight/`implement` time. Both tiers share ONE comparison algorithm, factored into
+postflight/`implement` time. TIER 3, described in full immediately below, is the source-repo-
+initiated fleet report: opt-in, reports the WHOLE known consumer fleet, and is the only tier that
+looks outside this repo at all. All three tiers share ONE comparison algorithm, factored into
 `scripts/lib/deploy-freshness-lib.sh` -- tier 1 sources its `deploy_freshness_stale_names`
-function, tier 2 sources its `deploy_freshness_status` function -- so "is the deploy stale" is
-computed exactly once, not reimplemented per tier. Tier 1's always-exit-0 contract must never be
-mistaken for a gate; tier 2 is the gate.
+function, tiers 2 and 3 both source its `deploy_freshness_status` function -- so "is the deploy
+stale" is computed exactly once, not reimplemented per tier. Tier 1's always-exit-0 contract must
+never be mistaken for a gate; tier 2 is the gate; tier 3 is opt-in and reports only.
+
+### Tier 3 (fleet report, source-repo-initiated, opt-in)
+
+Tiers 1 and 2 above both answer "is THIS repo's own deployed tree stale relative to the source
+store" -- a repo checking itself. Neither has any visibility into the fleet of OTHER repos that
+also consume this source store; each of those consumer repos pulls independently and freezes at
+whatever it last reloaded, with no ambient signal back to this repo when it falls behind. Tier 3
+closes that visibility gap, from the source-repo side, without inverting the pull-only
+architecture this document establishes: it never writes to, deploys into, or otherwise mutates
+any consumer repo. Every consumer interaction is a read of that consumer's own
+`.claude-extensions.json`.
+
+**The registry.** `context/reference/known-consumer-repos.json` is a small, git-tracked,
+hand-maintained JSON file naming this source store's known consumer repos (`consumers[]`, each
+`{path, note}`) and a short list of `discover_roots[]` for the reconciliation mode below. It also
+deploys into every consumer's own `.claude/context/reference/` directory, because
+`manifest.json`'s `provides.context` declares `reference` as a whole directory entry -- that
+deployed copy is purely informational and is never authoritative for any consumer's own
+behavior; the file's own top-of-file `_comment` field states this. The registry is deliberately
+NOT derived by a routine filesystem scan on every invocation -- explicit registration means a
+temporarily-unreachable consumer (renamed, on another disk, not yet cloned on this machine)
+never silently drops out of the audit, unlike a scan would.
+
+**The report.** `scripts/check-consumer-freshness.sh` reads the registry and, for each
+registered consumer, enumerates that repo's OWN recorded extensions and calls
+`deploy_freshness_status(repo_path, ext_name)` per extension (the registry stores only a path,
+never a duplicated per-extension list). Unlike tier 1's deliberate silence, this is an
+explicitly-invoked audit command whose entire value is completeness: it reports EVERY registered
+entry, including `MISSING` (path absent), `NOEXTSTATE` (no `.claude-extensions.json` there yet),
+and `CANNOTVERIFY` rows tier 1 would silently omit. `--stale-only` prints only non-fresh rows
+(used by the deploy-headless.sh hook below); `--discover` runs the bounded reconciliation scan
+described next. Exit codes: `0` no registered consumer is stale, `1` at least one is, `2`
+registry missing/unparseable or a usage error -- callers that must never be affected are expected
+to invoke it guarded (`... || true`), the same convention `command-gate-in.sh` already uses for
+tier 1.
+
+**`--discover` reconciliation.** The registry is itself a smaller, bounded version of the same
+staleness-of-knowledge problem this document is about: a new consumer that never gets registered
+stays invisible to the primary report path forever. `--discover` scans `discover_roots[]` for
+on-disk `.claude-extensions.json` files whose `source_dir` traces back to this repo, diffs the
+result against the registry, and prints `UNREGISTERED` (found on disk, not registered) or
+`REGISTERED-BUT-ABSENT` (registered, not found by this scan -- informational, never
+auto-removed) lines, plus the exact JSON object to add for each `UNREGISTERED` hit. It never
+edits the registry itself. This is the expensive path the registry exists to avoid paying
+routinely -- manual/occasional only, and never called from `deploy-headless.sh`.
+
+**The post-deploy hook.** `deploy-headless.sh`'s trailing verification block (see
+`### deploy-headless.sh's Inline Verification and Exit Code 3` above) additionally calls
+`check-consumer-freshness.sh --stale-only` after every non-dry-run deploy, on both the exit-0 and
+exit-3 branches, fully guarded so its own outcome can never affect `deploy-headless.sh`'s exit
+code. A deploy in this repo therefore ends by naming which known consumers are now stale relative
+to what was just deployed -- entirely additive output, changing nothing about the 0/1/2/3
+contract.
+
+**The tier-1 consecutive-ignore escalation.** A per-repo tier-1 WARN nobody acts on is not
+functioning as a warning. `check-deploy-freshness.sh` now tracks a consecutive-invocation streak
+counter at `<repo_root>/specs/.freshness-warn-streak.json` (ephemeral runtime file -- see
+`context/standards/orchestrator-runtime-files.md`'s class table): incremented on every run that
+fires at least one WARN, reset (file deleted) the moment a run fires none. At streak `>= 5`, an
+additional escalated banner is printed naming the consecutive count and the remedy, on top of
+(never instead of) the existing per-extension WARN lines; below the threshold, output is
+byte-identical to before this feature existed. The counter is a consecutive
+COMMAND-INVOCATION count, not wall-clock days, since the check only ever fires on an invocation.
+A `CANNOTVERIFY` result also resets the counter, inheriting tier 1's existing deliberate
+collapse of FRESH and CANNOTVERIFY into the same silence rather than introducing a third
+distinction. This escalation remains **exit-0 and non-blocking** -- tier 2 already provides the
+blocking backstop for this repo's own commits, and a cross-repo blocking mechanism would have no
+enforcement lever anyway (this repo cannot compel a consumer's own commands to run).
 
 ## Merge Semantics That Regeneration Cannot Fix
 
@@ -381,3 +459,11 @@ repo root, masking the invocation-context error this guard exists to surface.
 - `scripts/tests/test-postflight-deploy-gate.sh` -- fixture suite pinning the postflight
   completion-deploy gate's six conclusiveness branches, the check-only contract, and the
   no-worse-than-baseline verification tier this task's own dogfooded completion demonstrates
+- `scripts/check-consumer-freshness.sh` -- the TIER 3 source-repo-initiated fleet freshness
+  report and `--discover` reconciliation mode, documented in full in the "Tier 3" subsection
+  above
+- `context/reference/known-consumer-repos.json` -- the git-tracked known-consumer registry Tier
+  3 reads
+- `scripts/tests/test-consumer-freshness.sh` -- fixture suite pinning Tier 3's report
+  classification, exit codes, `--stale-only`/`--discover` behavior, and the no-write invariant
+  against consumer repos

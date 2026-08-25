@@ -383,29 +383,29 @@ an existing sibling ephemeral file is registered, then matching that set.
 
 ---
 
-### Phase 6: Fixture test suite [NOT STARTED]
+### Phase 6: Fixture test suite [COMPLETED]
 
 **Goal**: Pin the new report's status branches, exit codes, and the escalation counter so a future
 edit cannot silently regress them.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh`, following
+- [x] Create `agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh`, following *(completed)*
       the structure of the existing `tests/test-deploy-freshness.sh`.
-- [ ] Fixtures: temp consumer repos with synthetic `.claude-extensions.json` files (fresh head,
+- [x] Fixtures: temp consumer repos with synthetic `.claude-extensions.json` files (fresh head, *(completed)*
       stale head, missing `source_git_head`, missing directory, missing extension state) plus a
       temp registry pointing at them, injected via an env-var override the script reads for its
       registry path (add that override in Phase 2 if not already present, or inject via a
       scratch `$SCRIPT_DIR` layout).
-- [ ] Assert: one row per registered consumer; correct `STALE`/`FRESH`/`CANNOTVERIFY`/`MISSING`/
+- [x] Assert: one row per registered consumer; correct `STALE`/`FRESH`/`CANNOTVERIFY`/`MISSING`/ *(completed)*
       `NOEXTSTATE` classification; exit `0` with no stale, `1` with a stale, `2` with a missing
       registry; `--stale-only` suppresses `FRESH` rows; `--discover` reports an unregistered repo.
-- [ ] Assert the no-write invariant: consumer fixture directories are byte-identical before and
+- [x] Assert the no-write invariant: consumer fixture directories are byte-identical before and *(completed)*
       after a run.
-- [ ] Add streak-counter cases (increment, threshold banner at 5, reset on fresh, cap, silent skip
+- [x] Add streak-counter cases (increment, threshold banner at 5, reset on fresh, cap, silent skip *(completed)*
       with no `specs/`) either in this suite or appended to `tests/test-deploy-freshness.sh`.
-- [ ] Register `tests/test-consumer-freshness.sh` in `manifest.json`'s `provides.scripts`
+- [x] Register `tests/test-consumer-freshness.sh` in `manifest.json`'s `provides.scripts` *(completed)*
       (`tests/run-all.sh` auto-discovers `tests/test-*.sh`, but rule Q still requires the manifest entry).
-- [ ] `chmod +x` the test file.
+- [x] `chmod +x` the test file. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -426,30 +426,30 @@ edit cannot silently regress them.
 
 ---
 
-### Phase 7: Documentation — tier 3 and the utility inventory [NOT STARTED]
+### Phase 7: Documentation — tier 3 and the utility inventory [COMPLETED]
 
 **Goal**: Record the fleet report as an explicit third tier of the staleness model, and catalogue
 the new operator-facing script.
 
 **Tasks**:
-- [ ] In `context/patterns/regeneration-is-manual-only.md`'s `## Detecting When You're Stale`
+- [x] In `context/patterns/regeneration-is-manual-only.md`'s `## Detecting When You're Stale` *(completed)*
       section, add a clearly-labeled additive subsection **"Tier 3 (fleet report,
       source-repo-initiated, opt-in)"** naming the registry path, the script, its exit-code
       contract, its deliberate report-everything posture (contrasted with tier 1's silence), and
       the explicit no-push invariant.
-- [ ] Update the existing "A now-two-tier staleness model" paragraph to a three-tier model,
+- [x] Update the existing "A now-two-tier staleness model" paragraph to a three-tier model, *(completed)*
       extending rather than rewriting the tier-1/tier-2 description already there.
-- [ ] Document the tier-1 consecutive-ignore escalation in that same section: the threshold, that
+- [x] Document the tier-1 consecutive-ignore escalation in that same section: the threshold, that *(completed)*
       it counts invocations not days, that it remains exit-0 and non-blocking, and that a
       `CANNOTVERIFY` result resets the counter.
-- [ ] Document the post-deploy consumer report in the `## Automated Exception` /
+- [x] Document the post-deploy consumer report in the `## Automated Exception` / *(completed)*
       `### deploy-headless.sh's Inline Verification and Exit Code 3` neighborhood, stating that it
       is additive output that does not change the 0/1/2/3 contract.
-- [ ] Add `## Related Documentation` entries for `scripts/check-consumer-freshness.sh`,
+- [x] Add `## Related Documentation` entries for `scripts/check-consumer-freshness.sh`, *(completed)*
       `context/reference/known-consumer-repos.json`, and `scripts/tests/test-consumer-freshness.sh`.
-- [ ] Add an entry for `.claude/scripts/check-consumer-freshness.sh` to
+- [x] Add an entry for `.claude/scripts/check-consumer-freshness.sh` to *(completed)*
       `docs/reference/utility-scripts-inventory.md`, matching that file's existing one-line style.
-- [ ] Verify no task-number references appear in any file touched outside `specs/**` (per
+- [x] Verify no task-number references appear in any file touched outside `specs/**` (per *(completed)*
       `.claude/rules/no-task-references-in-deliverables.md`); cite filenames and section headings
       as durable anchors instead.
 
