@@ -1,0 +1,12 @@
+{
+  "phase": 2,
+  "phase_name": "Manifest registration",
+  "started_at": "2026-08-25T16:22:00Z",
+  "last_updated": "2026-08-25T16:24:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add lake-build-guard.sh and tests/test-lake-build-guard.sh to provides.scripts; create stub test file", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json", "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -219,23 +219,23 @@ proves genuinely necessary, stop and report rather than silently widening scope.
 
 ---
 
-### Phase 2: Manifest registration [NOT STARTED]
+### Phase 2: Manifest registration [COMPLETED]
 
 **Goal**: Register both new files in core's `provides.scripts` so they deploy, without tripping
 any doc-lint or orphan gate.
 
 **Tasks**:
-- [ ] Add `lake-build-guard.sh` to `provides.scripts` in
+- [x] Add `lake-build-guard.sh` to `provides.scripts` in *(completed)*
       `agent-system/extensions/core/manifest.json`, in alphabetical position between
       `issue-grouping.sh` and `lib/common.sh`.
-- [ ] Add `tests/test-lake-build-guard.sh` to `provides.scripts` within the existing `tests/`
+- [x] Add `tests/test-lake-build-guard.sh` to `provides.scripts` within the existing `tests/` *(completed)*
       block, in alphabetical position among the `tests/test-*.sh` entries (the block's ordering is
       loosely alphabetical with existing drift — match the neighbourhood, do not reorder the
       block).
-- [ ] Create the test file as a valid executable stub in this phase if Phase 6 has not yet run, so
+- [x] Create the test file as a valid executable stub in this phase if Phase 6 has not yet run, so *(completed)*
       the manifest never references a nonexistent file at any commit boundary. (`check-extension-docs.sh`
       fails on manifest entries referencing nonexistent files.)
-- [ ] Validate the JSON parses and no entry was duplicated or dropped.
+- [x] Validate the JSON parses and no entry was duplicated or dropped. *(completed)*
 
 **Timing**: 0.25 hours
 
