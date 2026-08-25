@@ -178,8 +178,14 @@ else
 fi
 
 # =====================================================================
-# Group 2: skill_cleanup -- removes the three lifecycle temp files; must not error when they are
-# already absent (the || true guard's own contract).
+# Group 2: skill_cleanup -- removes .postflight-pending and .postflight-loop-guard only; must not
+# error when they are already absent (the || true guard's own contract). Per skill_cleanup()'s
+# own header comment in skill-base.sh (the contract narrowed by commit 75ec7bfa6):
+#   "Removes .postflight-pending and .postflight-loop-guard only. .return-meta.json is NOT
+#   removed here: ... Ownership of .return-meta.json's deletion belongs to the calling command's
+#   own last step that consumes it."
+# A positive control below asserts .return-meta.json survives, so a future re-narrowing or
+# re-widening of this contract surfaces here immediately instead of silently drifting.
 # =====================================================================
 info "=== skill_cleanup ==="
 
@@ -190,11 +196,18 @@ touch "$CLEANUP_TASK_DIR/.postflight-pending" \
       "$CLEANUP_TASK_DIR/.return-meta.json"
 ( cd "$WORKDIR" && skill_cleanup "002" "cleanup_fixture" )
 if [[ ! -f "$CLEANUP_TASK_DIR/.postflight-pending" ]] && \
-   [[ ! -f "$CLEANUP_TASK_DIR/.postflight-loop-guard" ]] && \
-   [[ ! -f "$CLEANUP_TASK_DIR/.return-meta.json" ]]; then
-  pass "skill_cleanup removes all three lifecycle temp files"
+   [[ ! -f "$CLEANUP_TASK_DIR/.postflight-loop-guard" ]]; then
+  pass "skill_cleanup removes both lifecycle temp files (.postflight-pending, .postflight-loop-guard)"
 else
   fail "skill_cleanup left at least one lifecycle temp file behind"
+fi
+
+# Positive control: .return-meta.json is NOT deleted by skill_cleanup -- ownership of its
+# deletion belongs to the calling command's own last step (see the quoted contract above).
+if [[ -f "$CLEANUP_TASK_DIR/.return-meta.json" ]]; then
+  pass "Positive control: skill_cleanup does not delete .return-meta.json (ownership stays with the caller)"
+else
+  fail "Positive control: .return-meta.json was deleted by skill_cleanup -- contract regression"
 fi
 
 # Failing/degenerate-input case: calling again on an already-clean directory must not error

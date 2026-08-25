@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Correct test-skill-base-lifecycle.sh Group 2 to skill_cleanup()'s two-file contract",
+  "started_at": "2026-08-25T05:30:00Z",
+  "last_updated": "2026-08-25T05:38:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rework Group 2's [[ ! -f ]] conjunction to two-file contract, add positive control, reword messages, update banner comment with quoted contract",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Mutation check: re-added .return-meta.json to a scratch copy of skill_cleanup()'s rm -f list, confirmed positive control goes red, restored real skill-base.sh (untouched throughout)",
+      "result": "confirmed",
+      "reason": "verified the new positive control actually guards the contract"
+    }
+  ],
+  "handoff_count": 0
+}

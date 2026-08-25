@@ -163,21 +163,21 @@ actual output rather than trusting these numbers.
 
 ---
 
-### Phase 2: Correct test-skill-base-lifecycle.sh Group 2 to skill_cleanup()'s two-file contract [NOT STARTED]
+### Phase 2: Correct test-skill-base-lifecycle.sh Group 2 to skill_cleanup()'s two-file contract [COMPLETED]
 
 **Goal**: Group 2 asserts the current, documented contract — `.postflight-pending` and
 `.postflight-loop-guard` are removed, `.return-meta.json` is not — and carries a positive control
 so a future contract change surfaces here immediately.
 
 **Tasks**:
-- [ ] Remove `.return-meta.json` from the Group 2 `touch` list only if the positive control does
+- [x] Remove `.return-meta.json` from the Group 2 `touch` list only if the positive control does *(completed)*
       not need it present; the positive control DOES need it, so keep the `touch` and instead
       remove `.return-meta.json` from the `[[ ! -f ... ]]` conjunction.
-- [ ] Add the positive control: assert `.return-meta.json` is **still present** after
+- [x] Add the positive control: assert `.return-meta.json` is **still present** after *(completed)*
       `skill_cleanup` returns, as its own named pass/fail case.
-- [ ] Reword the passing message from "removes all three lifecycle temp files" to name the actual
+- [x] Reword the passing message from "removes all three lifecycle temp files" to name the actual *(completed)*
       two-file contract.
-- [ ] Update the Group 2 banner comment (currently "removes the three lifecycle temp files") and
+- [x] Update the Group 2 banner comment (currently "removes the three lifecycle temp files") and *(completed)*
       add a code comment quoting `skill_cleanup()`'s header-comment rationale: `.return-meta.json`
       is not deleted here because the calling command's command-gate-out step still reads it, and
       ownership of its deletion belongs to that consumer. Cite the header comment and commit
