@@ -388,34 +388,34 @@ new filename. If auto-discovery does not pick it up, add explicit registration a
 
 ---
 
-### Phase 5: Serialized deploy trigger — single-task path (command-gate-out.sh) [NOT STARTED]
+### Phase 5: Serialized deploy trigger — single-task path (command-gate-out.sh) [COMPLETED]
 
 **Goal**: On a refusal observed at the true single-task `/implement` completion path, run
 `deploy-headless.sh` exactly once from `command-gate-out.sh` — a point with no concurrency — then
 re-attempt the transition, gated by a baseline-relative `verify-deploy.sh --findings` comparison.
 
 **Tasks**:
-- [ ] Extend gate-out's existing `gate_out_rc` handling: alongside the current `rc == 4`
+- [x] Extend gate-out's existing `gate_out_rc` handling: alongside the current `rc == 4` *(completed)*
       phase-check branch, add an `rc == 6` deploy-pending branch.
-- [ ] In that branch: capture `verify-deploy.sh --findings --quiet | grep '^FINDING ' | sort -u`
+- [x] In that branch: capture `verify-deploy.sh --findings --quiet | grep '^FINDING ' | sort -u` *(completed)*
       as the pre-baseline; run `deploy-headless.sh`; capture the post-findings set the same way;
       compute the set difference. Fold a `verify-deploy.sh` exit 2 into the findings vocabulary as
       one synthesized sentinel line, exactly as the Inter-Cycle Redeploy Checkpoint does — do not
       special-case it.
-- [ ] Branch (a) `deploy-headless.sh` failed to land (exit 1 or 2): report loudly, do NOT
+- [x] Branch (a) `deploy-headless.sh` failed to land (exit 1 or 2): report loudly, do NOT *(completed: verified via stub, scenario A)*
       re-attempt the transition, leave the task at `implementing`. Exit 3 is *not* this branch —
       exit 3 means the deploy landed.
-- [ ] Branch (b) at least one newly-introduced finding: report loudly, do NOT re-attempt, leave
+- [x] Branch (b) at least one newly-introduced finding: report loudly, do NOT re-attempt, leave *(completed: verified via stub, scenario B)*
       the task at `implementing`.
-- [ ] Branch (c) every post finding already present in the pre-baseline (the expected case today):
+- [x] Branch (c) every post finding already present in the pre-baseline (the expected case today): *(completed: verified via stub, scenario C, re-attempt observed in stub log)*
       announce with a `[PRE-EXISTING VERIFY-DEPLOY FAILURE …]`-shaped banner naming pre/post/new
       finding counts and the post exit code, then re-attempt
       `update-task-status.sh postflight … implement`.
-- [ ] Log on fire (naming the task and the matched `agent-system/**` paths), on success (deployed
+- [x] Log on fire (naming the task and the matched `agent-system/**` paths), on success (deployed *(completed)*
       artifact count and verify outcome), and on failure (failing gate, exit code, and whether the
       failure is new or pre-existing). This is the "not silent" leg of the Phase 7 carve-out and
       must exist in code before that prose is written.
-- [ ] Never re-attempt more than once per gate-out invocation. A successful redeploy clears the
+- [x] Never re-attempt more than once per gate-out invocation. A successful redeploy clears the *(completed)*
       staleness condition, so no separate idempotence store is needed; a second refusal after a
       successful deploy is a real signal and must surface, not loop.
 

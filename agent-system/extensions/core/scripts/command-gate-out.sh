@@ -131,6 +131,79 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
     bash .claude/scripts/update-task-status.sh postflight "$task_number" "$status_token" "$session_id" ${gate_out_phase_check} || gate_out_rc=$?
     if [ "$gate_out_rc" -eq 4 ]; then
       echo "[gate-out] Phase-accounting backstop refused the defensive correction for task $task_number (plan file shows incomplete phases). Leaving status as '$current_status'." >&2
+    elif [ "$gate_out_rc" -eq 6 ]; then
+      # Postflight completion-deploy gate refused (deploy-pending, update-task-status.sh's
+      # "PHASE 0.5" check-only backstop): this gate-out call is a point with NO concurrency --
+      # the true single-task /implement completion path -- so it is one of the two sanctioned
+      # automated deploy-trigger sites named in
+      # context/patterns/regeneration-is-manual-only.md's carve-out. The failure contract below
+      # is the SAME baseline-relative (a)/(b)/(c) contract
+      # context/patterns/batch-orchestration-guardrails.md's "### The Inter-Cycle Redeploy
+      # Checkpoint" subsection documents -- reused here, not restated as a separate mechanism.
+      gate_out_matched_paths="$(jq -r '.modified_files // [] | .[] | select(startswith("agent-system/extensions/"))' "$meta_file" 2>/dev/null | tr '\n' ' ')"
+      echo "[gate-out] Postflight completion-deploy gate refused task $task_number (deploy-pending: modified_files overlap agent-system/extensions/** and the deploy is stale). Matched path(s): ${gate_out_matched_paths:-<unresolved>}. Running the sanctioned single-task redeploy trigger." >&2
+
+      # _gate_out_deploy_findings: sorted, deduplicated FINDING lines from a --findings run, with
+      # verify-deploy.sh exit 2 ("cannot run") folded into the SAME findings vocabulary as one
+      # synthesized sentinel line rather than special-cased, matching the Inter-Cycle Redeploy
+      # Checkpoint's own "Exit-2 resolution" rule.
+      _gate_out_deploy_findings() {
+        local _vd_rc=0
+        local _vd_out
+        _vd_out="$(bash .claude/scripts/verify-deploy.sh --findings --quiet 2>/dev/null)" || _vd_rc=$?
+        if [ "$_vd_rc" -eq 2 ]; then
+          echo "FINDING gate0 [SENTINEL] verify-deploy could not run (exit 2)"
+        else
+          printf '%s\n' "$_vd_out" | grep '^FINDING ' | sort -u
+        fi
+      }
+
+      gate_out_pre_findings="$(_gate_out_deploy_findings)"
+
+      gate_out_deploy_rc=0
+      gate_out_deploy_log="$(bash .claude/scripts/deploy-headless.sh 2>&1)" || gate_out_deploy_rc=$?
+
+      if [ "$gate_out_deploy_rc" -eq 1 ] || [ "$gate_out_deploy_rc" -eq 2 ]; then
+        # Branch (a): the redeploy itself failed to land -- NO baseline consultation, do not
+        # re-attempt the transition. Exit 3 is deliberately excluded from this branch: it means
+        # the deploy LANDED but inline verification reported failures, which belongs to the
+        # baseline-relative comparison below, not here.
+        echo "[gate-out] Redeploy trigger FAILED for task $task_number (deploy-headless.sh exited ${gate_out_deploy_rc} -- the deploy did not land). Leaving status as '$current_status'." >&2
+        printf '%s\n' "$gate_out_deploy_log" | tail -20 >&2
+      else
+        gate_out_post_findings="$(_gate_out_deploy_findings)"
+        gate_out_new_findings="$(comm -13 \
+          <(printf '%s\n' "$gate_out_pre_findings" | sort -u) \
+          <(printf '%s\n' "$gate_out_post_findings" | sort -u))"
+
+        if [ -n "$gate_out_new_findings" ]; then
+          # Branch (b): at least one newly-introduced finding relative to the pre-redeploy
+          # baseline -- do not re-attempt.
+          echo "[gate-out] Redeploy trigger for task $task_number introduced NEW verify-deploy finding(s) relative to the pre-redeploy baseline -- refusing to re-attempt. Leaving status as '$current_status'." >&2
+          printf '%s\n' "$gate_out_new_findings" >&2
+        else
+          # Branch (c): the deploy landed and every post-redeploy finding was already present
+          # pre-redeploy (the expected case today, per deploy-headless.sh's universal exit 3).
+          # Announced loudly, then the transition is re-attempted exactly once.
+          gate_out_pre_count=$(printf '%s\n' "$gate_out_pre_findings" | grep -c '^FINDING' || true)
+          gate_out_post_count=$(printf '%s\n' "$gate_out_post_findings" | grep -c '^FINDING' || true)
+          gate_out_deployed_count="$(printf '%s\n' "$gate_out_deploy_log" | grep -oE '(Resynced|Wiped and regenerated) [0-9]+ extension' | grep -oE '[0-9]+' | head -1)"
+          echo "[PRE-EXISTING VERIFY-DEPLOY FAILURE] task $task_number: redeploy landed (${gate_out_deployed_count:-unknown} extension(s) deployed); post-deploy findings (${gate_out_post_count}) are all pre-existing (pre-deploy: ${gate_out_pre_count} findings); deploy-headless.sh exit ${gate_out_deploy_rc}. Proceeding." >&2
+          echo "[gate-out] Re-attempting postflight for task $task_number after a successful redeploy." >&2
+          gate_out_retry_rc=0
+          bash .claude/scripts/update-task-status.sh postflight "$task_number" "$status_token" "$session_id" || gate_out_retry_rc=$?
+          if [ "$gate_out_retry_rc" -eq 0 ]; then
+            echo "[gate-out] Task $task_number transition succeeded after redeploy (${gate_out_deployed_count:-unknown} extension(s) deployed, verify-deploy: ${gate_out_post_count} pre-existing finding(s), no new)." >&2
+          elif [ "$gate_out_retry_rc" -eq 6 ]; then
+            # Never re-attempt more than once per gate-out invocation: a second refusal after a
+            # successful redeploy is a real signal (e.g. a still-overlapping newer commit), not
+            # a loop to retry away.
+            echo "[gate-out] Task $task_number still refused (deploy-pending) after a successful redeploy -- this is a real signal, not re-attempted again. Leaving status as '$current_status'." >&2
+          else
+            echo "WARNING: [gate-out] re-attempt after redeploy failed with exit ${gate_out_retry_rc} for task $task_number — manual correction may be needed" >&2
+          fi
+        fi
+      fi
     elif [ "$gate_out_rc" -ne 0 ]; then
       echo "WARNING: update-task-status.sh failed — manual correction may be needed" >&2
     fi
