@@ -20,7 +20,7 @@
         "briefing"
       ],
       "summary": "Unified index schema: global Literature/ repo structure, per-repo sub-index (specs/literature-index.json), and runtime resolution",
-      "line_count": 144,
+      "line_count": 189,
       "load_when": {
         "agents": [
           "literature-agent"
