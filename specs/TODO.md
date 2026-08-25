@@ -65,7 +65,7 @@ next_project_number: 101
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-83 [PLANNING] — Make 'completed' mean 'in effect' for tasks that edit the source 
+83 [PLANNED] — Make 'completed' mean 'in effect' for tasks that edit the source 
   └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
@@ -636,11 +636,12 @@ ACCEPTANCE: the gate fails on a deliberately reintroduced inline sess_$(date in 
 ---
 
 ### 83. Postflight deploy gate for source store tasks
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 82
 - **Research**: [083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md]
+- **Plan**: [083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md]
 
 **Description**: Make 'completed' mean 'in effect' for tasks that edit the source store. TODAY IT DOES NOT: the deploy is 7 days and 133 commits stale, and four completed tasks (the mint-dispatch-seq fix and the three literature fixes) are marked COMPLETED with honest summaries while their fixes are absent from the running system. Deployed .claude/scripts/skill-base.sh:958 still reads `dispatch_seq_counter=$((dispatch_seq_counter + 1))` -- the exact pre-fix ambient-variable code that was replaced; source line 963 reads the corrected `jq -r '(.dispatch_seq_counter // 0) + 1'`. The accompanying test-mint-dispatch-seq.sh was never deployed. The HIGH-severity literature corpus-corruption gate is likewise not live.
 

@@ -1,23 +1,26 @@
 {
-  "dispatch_seq": 4,
-  "status": "researched",
-  "summary": "Research complete. The postflight deploy gate cannot live solely in command-gate-out.sh: for the primary meta-task /implement path, status flips to completed inside skill-implementer/SKILL.md's own inline update-task-status.sh call, which runs before gate-out and makes its defensive-correction branch a no-op. Recommended design: an unconditional deploy-freshness backstop inside scripts/update-task-status.sh itself (mirroring the existing --phase-check=warn|refuse precedent), check-only (never itself invoking deploy-headless.sh, to avoid racing parallel per-task postflight calls in multi-task /implement and skill-orchestrate batches), with the actual auto-deploy trigger confined to already-serialized call sites (command-gate-out.sh for single-task, commands/implement.md Step 4 for multi-task batches, and skill-orchestrate's existing Stage MT-3 step 7 for orchestrate -- possibly widened from its current narrow orchestrator-critical-paths.json predicate to full agent-system/extensions/** overlap). The gate must use baseline-relative verify-deploy.sh comparison (new vs pre-existing findings), not raw exit-code checking, because deploy-headless.sh currently exits 3 on every invocation in this repo due to pre-existing unrelated failures -- a naive gate would brick all meta-task completion today. The required regeneration-is-manual-only.md carve-out is specified: a new additive subsection after the existing '## Automated Exception' subsection, naming the new call site(s), following the same not-a-side-effect/not-silent/bounded three-part justification shape, never editing the existing sanctioned-caller text.",
+  "dispatch_seq": 7,
+  "status": "planned",
+  "summary": "Plan created: 8 phases, ~10.5h, complex. Design decisions resolved explicitly (D1-D7): unconditional check-only backstop in scripts/update-task-status.sh (NOT command-gate-out.sh alone, which is a no-op for the primary meta-task path since skill-implementer flips status inline before gate-out runs); new exit code 6 (0-5 all already allocated -- the research's suggested 5 is superseded, 5 is the missing-shared-library environment error); refusal leaves the task at 'implementing' as a self-resuming ordering constraint mirroring --phase-check=refuse; a missing freshness library degrades to inconclusive pass-through rather than a hard exit, deliberately diverging from the exit-5 precedent because this backstop is unconditional; the backstop performs only the cheap per-extension git-log freshness comparison and never calls deploy-headless.sh OR verify-deploy.sh (enforced by a grep-based contract assertion in the new test suite, not by reviewer memory); baseline-relative verify-deploy.sh --findings set-difference comparison lives exclusively at the two serialized deploy-trigger sites (command-gate-out.sh single-task, commands/implement.md Step 4 multi-task batch), reusing the Inter-Cycle Redeploy Checkpoint's (a)/(b)/(c) failure contract and exit-2-sentinel folding by reference; skill-orchestrate's Stage MT-3 step 7 predicate is NOT widened (its deployed_critical_paths idempotence store is keyed on critical paths, not extensions -- named as follow-up work with the bounded /orchestrate residual recorded and mitigated by making skill_postflight_update stop silently swallowing the postflight rc, which it does today). file_scope corrected from 4 to 10 entries, written to state.json in Phase 1. The mandatory regeneration-is-manual-only.md carve-out is Phase 7, placed immediately after the existing Automated Exception subsection, in its three-part not-a-side-effect/not-silent/bounded shape, naming both new call sites, stating it is not precedent, and verified by byte-comparing the existing subsection between HEAD and the working tree so a single changed byte fails the phase. Every phase verifies by execution (negative controls, stubbed deploy/verify exit codes, byte-diffs, baseline comparisons) rather than by reading.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md",
-      "summary": "Full findings: completion-path topology (3 call sites), recommended unconditional backstop design in update-task-status.sh, concurrency/racing hazard on deploy-headless.sh, mandatory baseline-relative verification, exact carve-out wording/placement, and file_scope corrections needed before planning."
+      "type": "plan",
+      "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md",
+      "summary": "8-phase implementation plan (~10.5h) for the postflight deploy gate: shared freshness library, check-only exit-6 backstop in update-task-status.sh, regression suite, two serialized baseline-relative deploy triggers, the mandatory carve-out, and a deploy/self-demonstration phase."
     }
   ],
   "blockers": [],
-  "file_scope_corrections_needed": [
-    "scripts/update-task-status.sh (currently absent from file_scope; is the required home for the new backstop per the research)",
-    "commands/implement.md (Step 4's serial post-batch point is the recommended multi-task auto-deploy trigger site)",
-    "context/patterns/batch-orchestration-guardrails.md (likely host for the mechanism's authoritative documentation, alongside the existing Inter-Cycle Redeploy Checkpoint, if that mechanism is reused rather than reimplemented)"
+  "file_scope_correction_applied_in_plan": [
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh"
   ],
-  "decisions_needed_by_plan": [
-    "Opt-in flag (--deploy-check=warn|refuse, requiring edits to skill-implementer/SKILL.md and other skill files) vs. unconditional backstop (no flag, no edits outside update-task-status.sh and its callers) -- report recommends unconditional",
-    "Widen skill-orchestrate's existing Stage MT-3 step 7 trigger predicate to agent-system/extensions/** (one checkpoint, one carve-out) vs. add a second parallel checkpoint for the general case",
-    "Refusal target status: stay at 'implementing' as an ordering constraint (mirrors --phase-check=refuse exactly, self-resuming) vs. transition to 'blocked' (stronger human-action signal, also a valid update-task-status.sh postflight target)"
-  ]
+  "next_steps": "Run /implement 83 to execute the plan. Phase 1 must write the corrected 10-entry file_scope into state.json before any source-store edit.",
+  "phases_completed": 8,
+  "phases_total": 8,
+  "sorry_inventory": [],
+  "continuation_path": null
 }

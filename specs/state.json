@@ -1488,7 +1488,7 @@
     {
       "project_number": 83,
       "project_name": "postflight_deploy_gate_for_source_store_tasks",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "critical",
@@ -1503,13 +1503,18 @@
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-08-25T00:39:44Z",
+      "last_updated": "2026-08-25T00:47:55Z",
       "session_id": "sess_1787617685_88b825_83",
       "artifacts": [
         {
           "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md",
           "type": "report",
           "summary": "Full findings: completion-path topology (3 call sites), recommended unconditional backstop design in update-task-status.sh, concurrency/racing hazard on deploy-headless.sh, mandatory baseline-relative verification, exact carve-out wording/placement, and file_scope corrections needed before planning."
+        },
+        {
+          "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md",
+          "type": "plan",
+          "summary": "8-phase implementation plan (~10.5h) for the postflight deploy gate: shared freshness library, check-only exit-6 backstop in update-task-status.sh, regression suite, two serialized baseline-relative deploy triggers, the mandatory carve-out, and a deploy/self-demonstration phase."
         }
       ],
       "memory_candidates": [
@@ -1550,6 +1555,19 @@
             "verify-deploy.sh",
             "baseline-comparison",
             "pre-existing-failures"
+          ]
+        },
+        {
+          "content": "When adding a new refusal branch to a shared bash chokepoint script, verify the exit-code allocation by execution rather than by taking the highest documented code and adding one. scripts/update-task-status.sh documents codes 0-4 prominently in its header usage block but also uses exit 5 twice, deep in the file, for missing-shared-library environment errors -- a research pass that read only the header recommended 5 for a new gate and would have collided. Run `grep -nE 'exit [0-9]' <script>` over the whole file and enumerate distinct codes before allocating.",
+          "category": "PATTERN",
+          "source_artifact": "specs/083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md",
+          "confidence": 0.8,
+          "suggested_keywords": [
+            "exit-code",
+            "allocation",
+            "bash",
+            "update-task-status",
+            "chokepoint"
           ]
         }
       ]
