@@ -1,38 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1787634022_3ba5fb_85",
-  "task_number": 85,
-  "findings_count": 4,
+  "status": "planned",
+  "summary": "Five-phase plan built on the research finding that the suite's apparent flake is two deterministic test-fixture-staleness defects, not lock contention. Phases 1-2 fix the two offending suites (scratch fixture repo with REPO_ROOT override for test-validate-return-meta.sh; two-file skill_cleanup contract plus a positive control for test-skill-base-lifecycle.sh), Phase 3 adds a live-specs-path lint with its own both-polarity fixture suite, Phase 4 writes the isolation rule into shell-script-testing.md, and Phase 5 executes the task's 10-consecutive-runs-under-concurrency acceptance measurement with the deploy-staleness confounder explicitly separated. No changes to task-lock.sh or run-all.sh, both reviewed and found sound.",
   "artifacts": [
     {
       "type": "report",
       "path": "specs/085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md",
-      "summary": "Diagnoses run-all.sh's apparent flake as two confirmed, 100%-deterministic (not race-condition) fixture-staleness defects: test-validate-return-meta.sh depends on a live specs/ task directory archived by /todo on 2026-08-17, and test-skill-base-lifecycle.sh asserts a skill_cleanup() contract that was deliberately changed the same day. task-lock.sh and run-all.sh are reviewed and found sound; both offending tests were reproduced standalone with zero concurrent load, and a validated isolation fix is provided for each."
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1787634022_3ba5fb_85",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo's shell-test-suite (agent-system/extensions/core/scripts/tests/), the established isolation idiom for any suite that needs task-lock.sh/state-write.sh/etc. is to copy those scripts into a per-suite mktemp -d scratch tree ($WORKDIR/.claude/scripts/{,lib/}) and point PROJECT_ROOT/REPO_ROOT at the scratch root before invoking them (see test-skill-base-lifecycle.sh's build_fixture_repo()). validate-return-meta.sh and return-meta-artifacts-lib.sh both honor a REPO_ROOT env var override for path resolution, so the same pattern works for return-meta validation tests too. A suite that resolves an artifact path against the live specs/ tree instead (as test-validate-return-meta.sh did before this fix) will break the moment /todo archives or a vault operation renumbers the referenced task directory.",
-      "category": "PATTERN",
-      "source_artifact": "specs/085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["shell-test-isolation", "task-lock.sh", "REPO_ROOT override", "fixture staleness", "build_fixture_repo"]
+      "summary": "Diagnosis of the two deterministic test-fixture-staleness defects behind the apparent suite flake."
     },
     {
-      "content": "Apparent 'flake' in run-all.sh across different runs/sessions can be caused by ordinary test-fixture bit-rot rather than concurrency races: a test hardcoding a live specs/NNN_* path breaks when that task is later archived, and a test asserting an old contract of a function breaks silently when the function is deliberately changed without updating its test in the same commit. Both reproduce 100% deterministically standalone (no concurrent load needed) and were confirmed by direct execution plus git-blame of the divergence commit. Before attributing suite non-determinism to lock contention, check whether the failing suite touches the live specs/ tree or exercises a function whose header comment/git history shows a recent deliberate contract change.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["flake-diagnosis", "test-staleness", "run-all.sh", "shell-test-suite", "false-flake"]
+      "type": "plan",
+      "path": "specs/085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md",
+      "summary": "Five-phase, 4-hour plan fixing two stale test fixtures, adding a preventive live-specs-path lint and standard, and executing the 10-run concurrency acceptance measurement."
     }
   ],
-  "next_steps": "Run /plan 85 to create implementation plan"
+  "next_steps": "Run /implement 85 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1787634022_3ba5fb_85",
+    "agent_type": "planner-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 4,
+    "dependency_waves": [[1, 2], [3], [4], [5]]
+  },
+  "memory_candidates": [],
+  "modified_files": [
+    "specs/085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md"
+  ]
 }

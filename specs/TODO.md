@@ -43,7 +43,7 @@ next_project_number: 101
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
-96 [RESEARCHED] — Surface the sub-index vs global-index coverage delta when --lit i
+96 [PLANNING] — Surface the sub-index vs global-index coverage delta when --lit i
 
 ### Orchestration Concurrency
 
@@ -63,7 +63,7 @@ next_project_number: 101
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-85 [RESEARCHED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
+85 [PLANNED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
@@ -77,7 +77,7 @@ next_project_number: 101
 
 ### Uncategorized
 
-99 [RESEARCHED] — Make the .orchestrator-handoff.json artifacts[] element shape una
+99 [PLANNING] — Make the .orchestrator-handoff.json artifacts[] element shape una
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
@@ -116,7 +116,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 99. Pin handoff artifacts element shape
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md]
@@ -238,7 +238,7 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 ---
 
 ### 96. Surface literature coverage delta under lit
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 77
@@ -598,11 +598,12 @@ ACCEPTANCE: CI runs the full suite on every push and is green; a deliberately re
 ---
 
 ### 85. Deflake shell test suite under concurrency
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 32
 - **Research**: [085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md]
+- **Plan**: [085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md]
 
 **Description**: THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed no acceptance gate in this repo is trustworthy in either direction -- including the 19/23 verify-deploy figure the 2026-08-24 survey reports. Split out of a former six-item bundle where its value was diluted by hygiene items.
 

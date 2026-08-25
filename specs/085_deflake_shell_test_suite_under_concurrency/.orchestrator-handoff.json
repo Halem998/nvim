@@ -1,17 +1,17 @@
 {
-  "status": "researched",
-  "summary": "Diagnosed the shell-test-suite non-determinism: no defect found in task-lock.sh or run-all.sh (task-lock.sh uses a genuinely atomic mkdir mutex; every consumer test correctly scopes it to an isolated scratch tree; run-all.sh never acquires a lock). Two concrete, 100%-deterministic (not race-condition) defects were found and reproduced standalone with zero concurrent load, fully explaining the observed run-to-run inconsistency: (1) test-validate-return-meta.sh hardcodes a live specs/052_return_meta_artifacts_shape_contract path that was archived by /todo on 2026-08-17 (commit 8a104a17c); (2) test-skill-base-lifecycle.sh's skill_cleanup case still asserts a 3-file cleanup contract that was deliberately changed to 2 files the same day (commit 75ec7bfa6, documented in the function's own header comment). A validated isolation fix (REPO_ROOT override + scratch .claude/scripts copy, mirroring test-skill-base-lifecycle.sh's own build_fixture_repo() pattern) is provided for (1); a one-line assertion correction is provided for (2). Two full concurrent run-all.sh runs at the current commit both produced the identical result (50 passed, 2 failed -- exactly these two suites), confirming the suite is already consistent under concurrency once these two fixture-staleness bugs are fixed.",
+  "status": "planned",
+  "summary": "Plan created: 5 phases, 4 hours, waves [[1,2],[3],[4],[5]]. Built on the research finding that overturns the task's lock-contention hypothesis -- no defect exists in task-lock.sh or run-all.sh, and neither is modified. Phase 1 isolates test-validate-return-meta.sh from the live specs/ tree via a scratch fixture repo plus REPO_ROOT override (replacing the archived specs/052_* path). Phase 2 corrects test-skill-base-lifecycle.sh Group 2 to skill_cleanup()'s documented two-file contract and adds a positive control that .return-meta.json survives. Phase 3 adds scripts/lint/lint-live-specs-path.sh with a both-polarity fixture suite and manifest registration. Phase 4 writes the never-touch-the-live-tree rule into context/standards/shell-script-testing.md. Phase 5 executes the task's acceptance criterion -- 10 consecutive run-all.sh runs under concurrent load, identical results -- with the deploy-staleness confounder separated by diffing source-store against deployed copies before measuring and re-measuring after any deploy.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md",
-      "summary": "Full diagnosis, evidence, and validated fixes for the two confirmed deterministic test-fixture-staleness defects, plus task-lock.sh/run-all.sh review findings (no defect)."
+      "type": "plan",
+      "path": "specs/085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md",
+      "summary": "Five-phase, 4-hour plan fixing two stale test fixtures, adding a preventive live-specs-path lint and standard, and executing the 10-run concurrency acceptance measurement."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 5,
   "blockers": [],
   "continuation_path": null,
   "sorry_inventory": [],
-  "dispatch_seq": 1
+  "dispatch_seq": 4
 }
