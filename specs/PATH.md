@@ -127,10 +127,15 @@ below, where it correctly refused a completion and the sanctioned redeploy trigg
 > fixed. That is the mechanism working as designed, but it means deploys are red starting now, and
 > 85 + 86 are what turn them green again.
 >
-> **Re-measured 2026-08-25, after 85 landed: 1 of 24 failing.** Gate 8 now passes; **doc-lint is
-> the only red gate left**. So 86 is not merely the next step in this stage — it is the single
-> remaining thing standing between the repo and a green `verify-deploy`, and therefore between
-> every future deploy and an exit code of 0 instead of 3.
+> **Re-measured 2026-08-25, after 85 landed: 1 of 13 numbered gates failing.** Gate 8 now passes;
+> **doc-lint (gate 3) is the only red gate left**. So 86 is not merely the next step in this stage —
+> it is the single remaining thing standing between the repo and a green `verify-deploy`, and
+> therefore between every future deploy and an exit code of 0 instead of 3.
+>
+> *Denominator correction*: `verify-deploy.sh` defines **13** numbered gates, counted directly from
+> its own `say "N. …"` lines. The "24" used in the paragraph above is inherited from an earlier
+> revision of this file and was never verified here; it presumably counts sub-checks rather than
+> gates. Treat 13 as the gate denominator until someone reconciles where 24 came from.
 
 > **1.4 caveat — discharged 2026-08-25.** The re-measure was done as instructed: every source-store
 > file the fix touched, plus `run-all.sh` itself, was byte-compared against its deployed `.claude/`
@@ -235,6 +240,40 @@ Each item prevents one class from regrowing. Build the lint **before** migrating
 | 5.2 | Re-measure the orphan set (**11 files**, not the 4 originally named) against the post-deploy tree. | **9** ☑ done (`662d67b95`) |
 | 5.3 | One-line `jq` empty guard in `subagent-postflight.sh`. Cheapest real fix in the backlog. | **79** ☑ done (`5c8de5857`) |
 | 5.4 | Diagnose non-conforming plan Status lines. The `$` anchor at line 69 means `[IMPLEMENTING] (resumed; …)` can never be stamped — confirmed `rc=1`. The original silent-success framing was **false** and has been struck. | **91** |
+
+---
+
+## Batch serialization edges (added 2026-08-25)
+
+`dependencies[]` now encodes a single PATH-ordered chain across the nine remaining tasks, so the
+whole set can be handed to one `/orchestrate` invocation and will serialize itself:
+
+```
+86 -> 87 -> 88 -> 44 -> 89 -> 90 -> 48 -> 50 -> 91
+```
+
+This is a **total order** (max parallelism 1), which is deliberate and costs almost nothing here:
+eight of the nine touch a path in `orchestrator-critical-paths.json`, and the self-modification
+admission gate already admits only one such candidate per cycle. The edges buy determinism and
+PATH-order fidelity rather than trading away real concurrency.
+
+**Collisions the chain resolves** (each would otherwise defer at admission time):
+
+| Pair | Overlapping scope |
+|---|---|
+| 48, 50 vs. everything | both declare the bare `agent-system/extensions/` prefix |
+| 87 vs. 90 | `core/scripts/lint/` |
+| 44 vs. 87, 88, 91 | 44's `core/context/` is a prefix of the others' `context/` paths |
+| 88 vs. 87 | `core/context/patterns/` |
+
+**89 is the one genuine parallelism candidate** — its scope is confined to the `literature` and
+`memory` extensions, so it is neither self-modifying (both sit outside the `core` scope_root) nor
+collides with anything except the two blanket-scope tasks. Pull its chain edge if a future batch
+wants one parallel lane.
+
+**Cost of a total order, stated plainly**: a task that lands in `failed_tasks` marks every
+downstream task blocked. One failure at 86 strands the other eight. That is the trade for
+determinism; batch in smaller groups if that risk is unwanted.
 
 ---
 

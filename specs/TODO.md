@@ -11,8 +11,15 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,81,86,87,90,91,94,97,100 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,50,64,66,75,76,88,89,98 | 29,42,48,74,87,97 | agent-system, extensions, essential-refactor |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,86,94,97,100 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,64,66,75,76,87,98 | 29,42,74,86,97 | agent-system, extensions, essential-refactor |
+| 3 | 88 | 87 | essential-refactor |
+| 4 | 44 | 88 | essential-refactor |
+| 5 | 89 | 44 | essential-refactor |
+| 6 | 90 | 89 | essential-refactor |
+| 7 | 48 | 90 | essential-refactor |
+| 8 | 50 | 48 | essential-refactor |
+| 9 | 91 | 50 | status-marker-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -59,14 +66,14 @@ next_project_number: 101
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-  └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
-87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
-  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
-  └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+  └─ 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
+    └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+      └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+        └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+          └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+            └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+              └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 
 ### Team Mode Lifecycle
 
@@ -452,7 +459,7 @@ ACCEPTANCE: all five recorded false-positive documents pass the gate unmodified;
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
-- **Dependencies**: None
+- **Dependencies**: Task 50
 
 **Description**: update-plan-status.sh reports every non-conforming plan Status line with one generic, undiagnosable message, and hard-fails /orchestrate postflight on a plan shape that a legitimate resume workflow produces. Reported independently by a peer session reviewing a consuming repo (BimodalLogic) and re-derived by execution against the source store on 2026-08-24.
 
@@ -495,7 +502,7 @@ PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 202
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 84
+- **Dependencies**: Task 84, Task 89
 
 **Description**: The largest duplication class in the repo, and it has never been named in any review: the inline task-lookup jq block. 111 files carry a hand-rolled `jq --argjson num ... '.active_projects[] | select(.project_number == $num)'` lookup against specs/state.json, totalling roughly 62,000 duplicated bytes. The canonical helper skill_validate_input() already exists at skill-base.sh:185 and has SIX callers, with ZERO overlap against the 111.
 
@@ -513,7 +520,7 @@ ACCEPTANCE: lint rejects a newly introduced inline task-lookup on an executable 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 87
+- **Dependencies**: Task 44, Task 87
 
 **Description**: Apply the mode-gated section convention to the two remaining large instances, after the pilot proves it.
 
@@ -553,7 +560,7 @@ ACCEPTANCE: single-task /orchestrate no longer loads the multi-task section; mul
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: None
+- **Dependencies**: Task 86
 
 **Description**: Establish the convention that fixes the single largest token lever in the system: MUTUALLY-EXCLUSIVE BRANCH SECTIONS LOADED UNCONDITIONALLY. A skill's SKILL.md body is loaded IN FULL on every invocation -- there is no include, partial, fragment or compose mechanism in install-extension.sh, and deploy is a byte-for-byte copy. Four files carry large sections entered on exactly one branch and skipped on every other invocation:
 
@@ -2105,7 +2112,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: None
+- **Dependencies**: Task 90
 
 **Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
 
@@ -2155,7 +2162,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
-- **Dependencies**: Task 62
+- **Dependencies**: Task 62, Task 88
 - **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 - **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
 
