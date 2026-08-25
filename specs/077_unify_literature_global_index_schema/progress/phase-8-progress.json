@@ -1,0 +1,31 @@
+{
+  "phase": 8,
+  "phase_name": "Reconcile the enumerated corpus residue (separate repo)",
+  "started_at": "2026-08-25T02:26:00Z",
+  "last_updated": "2026-08-25T02:30:00Z",
+  "status": "blocked",
+  "objectives": [
+    {"id": 1, "description": "Confirm corpus tree clean, record HEAD", "status": "blocked", "note": "Precondition fails: tree is dirty from a separate completed task's uncommitted leftover"},
+    {"id": 2, "description": "Add 15 parent entries under bare directory id", "status": "blocked"},
+    {"id": 3, "description": "Adjudicate 2 duplicate chunk directories", "status": "blocked"},
+    {"id": 4, "description": "Adjudicate gabbay_2000", "status": "blocked"},
+    {"id": 5, "description": "Record NO ACTION on 14 paired entries", "status": "blocked"},
+    {"id": 6, "description": "Rebuild global FTS database", "status": "blocked"}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.1-8.6",
+      "description": "Entire Phase 8 corpus reconciliation",
+      "type": "skipped",
+      "reason": "Judged unsafe to perform autonomously: (1) the phase's own clean-tree precondition already fails due to a separate completed task's uncommitted leftover in ~/Projects/Literature; (2) the duplicate-directory adjudication requires real content judgment on the user's personal citation-grade corpus with no loud-failure safety net, unlike every other phase in this plan; (3) the dispatch frames Phase 8 as a single phase-level block-or-complete decision, so partial completion (e.g. only the low-risk 15-parent-entry addition) would leave the corpus in an incoherent half-migrated state. Marked [BLOCKED] per the dispatch's explicit instruction to do so rather than skip silently. Full detailed reasoning recorded in the plan's Phase 8 '#### Block Reason' subsection.",
+      "annotation": "*(deviation: blocked — see plan Phase 8 Block Reason)*"
+    }
+  ],
+  "verification_evidence": {
+    "precondition_check": "git -C ~/Projects/Literature status --short shows 14 uncommitted lines (13 deleted .backups/**/chunks.json.bak, 1 untracked .literature.db.pre-task80-backup-* snapshot), confirmed pre-existing leftover from the separate completed task 080_exclude_backups_from_literature_index_rebuild, not from this task's own work.",
+    "no_this_repo_impact": "git -C /home/benjamin/.config/nvim status --short shows no corpus files -- confirmed nothing in this phase's (attempted) scope touched this repository."
+  }
+}

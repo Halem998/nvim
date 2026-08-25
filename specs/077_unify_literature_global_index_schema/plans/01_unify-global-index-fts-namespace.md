@@ -584,7 +584,7 @@ the defect must be reproduced, not inferred from the jq expression.
 
 ---
 
-### Phase 8: Reconcile the enumerated corpus residue (separate repo — `~/Projects/Literature/`) [NOT STARTED]
+### Phase 8: Reconcile the enumerated corpus residue (separate repo — `~/Projects/Literature/`) [BLOCKED]
 
 **Goal**: Bring the data into agreement with the invariant, so Phase 10 can escalate `--validate`
 to a hard failure.
@@ -594,25 +594,83 @@ to a hard failure.
 file under this repository. Commit the corpus changes in that repo, on its own, with a message
 describing the reconciliation; do not stage them here.
 
+**BLOCKED**: See `#### Block Reason` below. Marked BLOCKED rather than performed, per this task's
+explicit dispatch instruction to do so when the phase is judged unsafe to perform autonomously.
+
 **Tasks**:
 - [ ] Confirm the corpus tree is clean and record its `HEAD` before starting (out-of-band repairs
-      arrive from other repos).
+      arrive from other repos). *(deviation: blocked — see Block Reason. The precondition itself
+      fails: `git -C ~/Projects/Literature status --short` shows 14 uncommitted lines, pre-existing
+      leftover from a separate completed task, not from this task's work — see
+      `02_baseline-measurements.md`.)*
 - [ ] For each of the 15 FTS-only directories with no parent entry, add a parent entry **under the
       bare directory id** — generalizing corpus commit `e6ce8bd9`. Prefer a small script over 15
-      hand edits, but review the generated diff entry by entry before committing.
+      hand edits, but review the generated diff entry by entry before committing. *(deviation:
+      skipped — see Block Reason)*
 - [ ] Adjudicate the 2 duplicate chunk directories (`proofs_and_types` vs `girard_1989`;
       `van_doorn_2015_propositional_calculus_coq` vs `van_doorn_2015`): pick the survivor per pair,
       remove the loser's `chunks.json` (and its chunk files, or move them to a dot-prefixed
       quarantine directory, which `literature-build-index.sh` prunes by design), and record the
-      choice and its reason.
+      choice and its reason. *(deviation: skipped — see Block Reason)*
 - [ ] Adjudicate `gabbay_2000` (index entry, conversion rejected, no chunks): either re-convert and
       re-ingest, or stamp `provenance_fidelity: not_yet_converted` and record it as a known
-      FTS-absent entry in the `--validate` known-exceptions note.
+      FTS-absent entry in the `--validate` known-exceptions note. *(deviation: skipped — see Block
+      Reason)*
 - [ ] Take **no action** on the 14 paired index-only entries. Record that explicitly in the commit
       message: leaving a curated `.id` that differs from its FTS `doc_id` is supported by the path
-      bridge, and renaming it is the specific operation known to break `--toc`.
+      bridge, and renaming it is the specific operation known to break `--toc`. *(deviation:
+      skipped — no commit was made in the corpus repo; this task's substance — recording the NO
+      ACTION rationale — is already captured in Decision C of this plan and in the baseline report)*
 - [ ] Rebuild the global FTS database (`literature-build-index.sh --global`) after the directory
-      adjudications.
+      adjudications. *(deviation: skipped — see Block Reason)*
+
+#### Block Reason
+
+This phase performs destructive/judgment-heavy operations on `~/Projects/Literature/` — the
+user's real personal Zotero-connected literature corpus, not a throwaway fixture — under a
+dispatch that explicitly authorizes marking the phase BLOCKED when judged unsafe to perform
+autonomously rather than skipping it silently. Three independent factors, together, crossed that
+line:
+
+1. **The phase's own hard precondition already fails.** Task 1 above requires confirming the
+   corpus tree is clean before starting. It is not: `git -C ~/Projects/Literature status --short`
+   shows 14 uncommitted lines (13 deleted `.backups/**/chunks.json.bak` files plus one untracked
+   `.literature.db.pre-task80-backup-*` snapshot) left uncommitted by a separate, already-
+   `[COMPLETED]` task (`080_exclude_backups_from_literature_index_rebuild`) whose implementation
+   applied its fix to the working tree but never committed it in that repo. Proceeding on top of
+   this pre-existing dirty state risks conflating two unrelated changesets in the same working
+   tree and the same eventual commit, and risks this phase's own explicit deliverable ("record its
+   HEAD before starting") describing a false baseline.
+2. **The duplicate-directory adjudication requires content judgment on data outside this repo's
+   safety net.** Choosing a survivor between `proofs_and_types`/`girard_1989` and
+   `van_doorn_2015_propositional_calculus_coq`/`van_doorn_2015`, and removing (or quarantining)
+   the loser's chunk files, is a real content decision about which of two independent conversions
+   of the same source work is more faithful — not a mechanical, verifiable-by-execution operation
+   like every other phase in this plan. A wrong call would silently degrade citation-grade
+   provenance data the user relies on, and the failure would not surface as a loud error the way
+   this plan's other phases are specifically designed to (every other id-touching phase carries an
+   executed `--toc`/project-search assertion that fails loudly on regression; a wrong adjudication
+   here would not).
+3. **The additive half (15 new parent entries) is genuinely low-risk but not separable from the
+   phase as dispatched.** The 15-parent-entry addition alone mirrors an already-validated pattern
+   (corpus commit `e6ce8bd9`) and would be safe to perform mechanically. But this task's dispatch
+   instructions frame Phase 8 as a single phase-level BLOCKED-or-complete decision, and partially
+   completing it while leaving the duplicate-directory and `gabbay_2000` adjudications undone would
+   leave the corpus in a half-migrated state without a coherent single commit describing it — worse
+   than leaving it untouched with a clear, actionable block reason recorded here.
+
+**What remains true and unaffected**: nothing in this phase touches a file under this repository
+(`/home/benjamin/.config/nvim`) — confirmed: `git -C /home/benjamin/.config/nvim status --short`
+shows no corpus files. Phases 1-7 and 9-10 (see their own status) do not depend on Phase 8 having
+run, with the single exception of Phase 10's `--validate` hard-failure escalation, which requires
+the corpus to conform first — see Phase 10's own status/notes for how that dependency was handled.
+
+**Recommended follow-up** (for the user or a future dispatch with explicit human review): (a)
+commit or discard task 080's leftover corpus changes first, on their own; (b) run the 15-parent-
+entry addition (low risk, mechanically verifiable against the `e6ce8bd9` precedent this plan
+already cites); (c) review the two duplicate-directory pairs by hand before removing either
+side's files; (d) decide `gabbay_2000` by re-attempting conversion or explicitly stamping
+`not_yet_converted`.
 
 **Timing**: 2 hours
 
