@@ -35,6 +35,9 @@ All lean-specific sections are included inline below.
 - `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure monitoring
 - `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (MANDATORY)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (MANDATORY)
+- `@.claude/context/project/lean4/operations/long-builds.md` - why every `lake build` invocation
+  must be detached via `Bash(run_in_background: true)` and routed through the build guard
+  (MANDATORY, always load before running any build)
 
 ## BLOCKED TOOLS (NEVER USE)
 
@@ -42,7 +45,7 @@ All lean-specific sections are included inline below.
 
 | Tool | Bug | Alternative |
 |------|-----|-------------|
-| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash |
+| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash (detached, guarded — see `context/project/lean4/operations/long-builds.md`) |
 | `lean_file_outline` | lean-lsp-mcp #115 | `Read` + `lean_hover_info` |
 
 ## Allowed Tools
@@ -55,7 +58,8 @@ All lean-specific sections are included inline below.
 - Grep - Search file contents
 
 ### Build Tools
-- Bash - Run `lake build`, `lake exe` for verification
+- Bash - Run `lake build` (detached via `Bash(run_in_background: true)`, routed through the build
+  guard — see `context/project/lean4/operations/long-builds.md`), `lake exe` for verification
 
 ### Lean MCP Tools (via lean-lsp server)
 
@@ -219,9 +223,13 @@ After completing each proof step, update sorry_inventory:
 
 **D. Verify Phase Completion**:
 ```bash
-# Scoped build for current module (faster)
-lake build ModuleName 2>&1
+# Scoped build for current module -- less work, not categorically safe; still guarded and
+# detached (a single module can already exceed the foreground cap on its own -- see
+# context/project/lean4/operations/long-builds.md)
+bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- ModuleName 2>&1
 ```
+Run this via `Bash(run_in_background: true)` and wait for the harness's completion notification
+before recording the result.
 
 **E. Mark Phase Complete**: Edit plan file heading to `[COMPLETED]`.
 
@@ -354,7 +362,8 @@ Before writing final metadata, run the complete verification suite:
    `sorry_inventory` with `strategic: true` and satisfies the five-condition strategic-sorry
    test in `anti-analysis.md`; otherwise `status` cannot be `"implemented"`. `--cross-check`
    runs its own `lake build` and reports both the stripper and compiler counts, feeding the
-   reported inventory into `sorry_inventory`.
+   reported inventory into `sorry_inventory`. That script is not covered by this mandate; do not
+   edit it.
 
 2. **Check for vacuous definitions** (PROHIBITED patterns):
    ```bash
@@ -370,8 +379,12 @@ Before writing final metadata, run the complete verification suite:
 
 4. **Verify build passes**:
    ```bash
-   lake build 2>&1
+   bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- 2>&1
    ```
+   Run via `Bash(run_in_background: true)` — see
+   `context/project/lean4/operations/long-builds.md` for why both the detachment and the guard
+   are mandatory together. Wait for the harness's completion notification before recording the
+   result.
    Record: `build_passed` (true/false)
 
 5. **Plan compliance spot-check**: Verify all named theorems/lemmas from plan exist in Theories/.
@@ -512,7 +525,9 @@ When `lake build` fails:
 4. Commit at every green-build milestone (not one commit at end)
 5. Use lean_goal before and after each tactic application
 6. Use lean_multi_attempt BEFORE applying edits to trial candidate tactics
-7. Run full lake build before returning implemented status
+7. Run full lake build before returning implemented status. Run it via
+   `Bash(run_in_background: true)` through the build guard, never as a plain foreground call —
+   see `context/project/lean4/operations/long-builds.md`.
 8. Verify zero sorries before returning implemented status
 9. NEVER call lean_diagnostic_messages or lean_file_outline
 10. Return brief text summary (3-6 bullets), NOT JSON
@@ -532,3 +547,7 @@ When `lake build` fails:
 10. @-reference lean-implementation-agent (this agent is self-contained)
 11. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
 12. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
+13. **Run a `lake build` as a plain foreground Bash call.** The foreground cap kills it
+    mid-module; a killed build caches no `.olean`, so retries restart at the same module and
+    livelock indefinitely. Use `Bash(run_in_background: true)` through the build guard — see
+    `context/project/lean4/operations/long-builds.md`.

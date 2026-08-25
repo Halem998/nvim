@@ -209,44 +209,44 @@ shorter file.
 
 ---
 
-### Phase 2: Implementation-agent twins [NOT STARTED]
+### Phase 2: Implementation-agent twins [COMPLETED]
 
 **Goal**: Land the substantive mandate — including the new MUST NOT item — in both implementation
 agents, edited together in one phase, located by content.
 
 **Tasks**:
-- [ ] `agents/lean-implementation-agent.md`:
-  - [ ] Add the anchor to the `## Context References` block (around L15-20) as
+- [x] `agents/lean-implementation-agent.md`:
+  - [x] Add the anchor to the `## Context References` block (around L15-20) as
         `` `@.claude/context/project/lean4/operations/long-builds.md` `` with a one-line summary,
         matching the block's existing entry style.
-  - [ ] Verification Steps step 4 (near L165): replace the bare ```` ```bash / lake build 2>&1 ````
+  - [x] Verification Steps step 4 (near L165): replace the bare ```` ```bash / lake build 2>&1 ````
         fence with the canonical guarded invocation, and add one line stating it is run via
         `Bash(run_in_background: true)` with a pointer to the anchor.
-  - [ ] MUST DO item 7 (near L423): revise so scoped is preferred for doing *less work*, not for
+  - [x] MUST DO item 7 (near L423): revise so scoped is preferred for doing *less work*, not for
         being safe. Drop the implication that `(scoped, faster)` exempts it; require the same
         guarded, detached invocation.
-  - [ ] MUST DO item 8 (near L424): append "Run it via `Bash(run_in_background: true)` through the
+  - [x] MUST DO item 8 (near L424): append "Run it via `Bash(run_in_background: true)` through the
         build guard, never as a plain foreground call — see
         `context/project/lean4/operations/long-builds.md`."
-  - [ ] MUST NOT item 3 (near L436): remove the scoped-build exemption clause. Final full `lake
+  - [x] MUST NOT item 3 (near L436): remove the scoped-build exemption clause. Final full `lake
         build` remains mandatory; scoped no longer reads as a category exempt from the mandate.
-  - [ ] Add a NEW MUST NOT item, verbatim in intent: "**Run a `lake build` as a plain foreground
+  - [x] Add a NEW MUST NOT item, verbatim in intent: "**Run a `lake build` as a plain foreground
         Bash call.** The foreground cap kills it mid-module; a killed build caches no `.olean`, so
         retries restart at the same module and livelock indefinitely. Use
         `Bash(run_in_background: true)` through the build guard — see
         `context/project/lean4/operations/long-builds.md`." Placing this in MUST NOT is deliberate
         and MUST NOT be softened into advisory prose elsewhere in the file.
-- [ ] `agents/lean-implementation-hard-agent.md` (twin — locate every site by content, never by
+- [x] `agents/lean-implementation-hard-agent.md` (twin — locate every site by content, never by
       mirroring a line number from the base file):
-  - [ ] Add the same anchor entry to its `## Context References` block.
-  - [ ] Stage 4.D scoped build (near L221-224): replace `lake build ModuleName 2>&1` with the
+  - [x] Add the same anchor entry to its `## Context References` block.
+  - [x] Stage 4.D scoped build (near L221-224): replace `lake build ModuleName 2>&1` with the
         canonical guarded invocation and revise the "(faster)" comment per the scoped decision.
-  - [ ] Stage 6 verification fence (near L371-375): same replacement as the base agent's step 4.
-  - [ ] MUST DO item 7 (near L515, note this is item 7 here, not 8): same append as the base
+  - [x] Stage 6 verification fence (near L371-375): same replacement as the base agent's step 4.
+  - [x] MUST DO item 7 (near L515, note this is item 7 here, not 8): same append as the base
         agent's item 8.
-  - [ ] Add the equivalent new MUST NOT item to its MUST NOT list (near L520-533, currently 12
+  - [x] Add the equivalent new MUST NOT item to its MUST NOT list (near L520-533, currently 12
         items with no equivalent), positioned near the existing build-related items.
-  - [ ] The prose at ~L356 describing the sorry-census `--cross-check` running "its own `lake
+  - [x] The prose at ~L356 describing the sorry-census `--cross-check` running "its own `lake
         build`" may gain at most a note that that script is not covered by this mandate. Do not
         edit the script.
 

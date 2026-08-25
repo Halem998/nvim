@@ -18,6 +18,9 @@ Implementation agent specialized for Lean 4 proof development. Invoked by `skill
   `completion_data` object (always load before writing final metadata)
 - `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
+- `@.claude/context/project/lean4/operations/long-builds.md` - why every `lake build` invocation
+  must be detached via `Bash(run_in_background: true)` and routed through the build guard (always
+  load before running any build)
 
 ## Agent Metadata
 
@@ -32,7 +35,7 @@ Implementation agent specialized for Lean 4 proof development. Invoked by `skill
 
 | Tool | Bug | Alternative |
 |------|-----|-------------|
-| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash |
+| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash (detached, guarded — see `context/project/lean4/operations/long-builds.md`) |
 | `lean_file_outline` | lean-lsp-mcp #115 | `Read` + `lean_hover_info` |
 
 **Why Blocked**:
@@ -51,7 +54,8 @@ This agent has access to:
 - Grep - Search file contents
 
 ### Build Tools
-- Bash - Run `lake build`, `lake exe` for verification
+- Bash - Run `lake build` (detached via `Bash(run_in_background: true)`, routed through the build
+  guard — see `context/project/lean4/operations/long-builds.md`), `lake exe` for verification
 
 ### Lean MCP Tools (via lean-lsp server)
 
@@ -162,8 +166,12 @@ This verification happens at the END of implementation, after all phases are com
 
 4. **Verify build passes**:
    ```bash
-   lake build 2>&1
+   bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- 2>&1
    ```
+   Run this via `Bash(run_in_background: true)` — a foreground call can livelock past the tool's
+   own timeout on a long build. See `context/project/lean4/operations/long-builds.md` for why
+   both the detachment and the guard are mandatory together, and wait for the harness's completion
+   notification before recording the result.
    Record: `build_passed` (true/false), `build_output` (if failed)
 
 5. **Plan compliance spot-check**:
@@ -420,8 +428,11 @@ When approaching context limit:
 4. Always use `lean_goal` before and after each tactic application
 5. Use `lean_multi_attempt` BEFORE applying edits to trial candidate tactics
 6. Use `lean_verify` for axiom/sorry checks at the per-step level
-7. Prefer `lake build Module.Name` for phase-end verification (scoped, faster)
-8. Always run full `lake build` before returning implemented status (final verification only)
+7. Prefer `lake build Module.Name` for phase-end verification — scoped is less work, not
+   categorically safe; it still uses the same guarded, detached invocation as any other build
+8. Always run full `lake build` before returning implemented status (final verification only).
+   Run it via `Bash(run_in_background: true)` through the build guard, never as a plain foreground
+   call — see `context/project/lean4/operations/long-builds.md`.
 9. Always verify proofs are actually complete ("no goals")
 10. **ALWAYS update plan file phase markers with Edit tool**
 11. Always create summary file before returning implemented status
@@ -433,7 +444,9 @@ When approaching context limit:
 **MUST NOT**:
 1. Return JSON to the console
 2. Mark proof complete if goals remain
-3. Skip final `lake build` verification (scoped `lake build Module.Name` is acceptable for phase-end; only full `lake build` is mandatory at the final stage)
+3. Skip final `lake build` verification (scoped `lake build Module.Name` is acceptable for
+   phase-end; only full `lake build` is mandatory at the final stage — both use the same guarded,
+   detached invocation)
 4. Leave plan file with stale status markers
 5. Create empty or placeholder proofs (sorry, admit) or introduce axioms
 6. Ignore build errors
@@ -443,6 +456,10 @@ When approaching context limit:
 10. **Return implemented status if any sorry remains**
 11. **Return implemented status if any new axiom was introduced**
 12. **Defer sorry resolution to a follow-up task**
+13. **Run a `lake build` as a plain foreground Bash call.** The foreground cap kills it
+    mid-module; a killed build caches no `.olean`, so retries restart at the same module and
+    livelock indefinitely. Use `Bash(run_in_background: true)` through the build guard — see
+    `context/project/lean4/operations/long-builds.md`.
 13. **Create vacuous definitions to paper over inability to implement**: The following patterns are STRICTLY PROHIBITED and semantically equivalent to `sorry`:
     - `def X := True` / `def X := Unit` / `def X := trivial` / `def X := Trivial`
     - `theorem X := True` / `theorem X := trivial` / `theorem X := Trivial`
