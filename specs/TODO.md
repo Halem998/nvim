@@ -992,6 +992,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Dependencies**: Task 32
 - **Research**: [077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md]
 - **Plan**: [077_unify_literature_global_index_schema/plans/01_unify-global-index-fts-namespace.md]
+- **Summary**: [077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md]
 
 **Description**: === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a duplicate filed elsewhere ===
 THE MECHANISM IS A WRITER/READER KEY MISMATCH, not a missing write. The ingest DOES write to the global index; it writes the wrong key.

@@ -1342,6 +1342,11 @@
           "path": "specs/077_unify_literature_global_index_schema/plans/01_unify-global-index-fts-namespace.md",
           "type": "plan",
           "summary": "10-phase implementation plan with dependency waves [[1],[2,3,4],[5,7],[6,8],[9],[10]], per-phase verification tiers, and execution-based verification for all id-touching phases."
+        },
+        {
+          "path": "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
+          "type": "summary",
+          "summary": "8 of 10 phases COMPLETED (code-side bridge, writer, briefing tolerance, --validate schema-shape/divergence check, Zotero metadata, regression tests, invariant documentation); Phase 8 (destructive corpus data reconciliation) BLOCKED as unsafe to perform autonomously; Phase 10's --validate WARN->FAIL escalation deferred pending Phase 8."
         }
       ],
       "created": "2026-08-20T18:39:09Z",
@@ -1533,7 +1538,9 @@
         "agent-system/extensions/core/commands/implement.md",
         "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
         "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
-        "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh"
+        "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/index-entries.json"
       ],
       "created": "2026-08-24T18:42:08Z",
       "last_updated": "2026-08-25T00:49:11Z",
