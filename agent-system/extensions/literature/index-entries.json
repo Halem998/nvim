@@ -541,6 +541,59 @@
           "/implement"
         ]
       }
+    },
+    {
+      "path": "project/literature/domain/corpus-directory-conventions.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "summary": "Live-corpus-vs-non-corpus directory predicate (dot-prefixed at any depth), duplicate-doc_id policy, and the traversal survey confirming literature-build-index.sh as the sole unguarded recursive walk",
+      "line_count": 143,
+      "keywords": [
+        "corpus-directory",
+        "dot-prefixed",
+        "prune",
+        "duplicate-doc_id",
+        "literature-build-index",
+        "traversal-survey"
+      ],
+      "topics": [
+        "literature",
+        "corpus",
+        "traversal",
+        "index-build"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
+      "path": "project/literature/patterns/shared-module-extraction-for-gate-checks.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "summary": "Pattern for extracting string-only quality-gate checks out of literature-convert.sh's heredoc into importable, self-testable modules, with a real-corpus calibration worked example",
+      "line_count": 60,
+      "keywords": [
+        "shared-module-extraction",
+        "literature-convert",
+        "quality-gate",
+        "self-test",
+        "calibration"
+      ],
+      "topics": [
+        "literature",
+        "conversion",
+        "quality-gate",
+        "testing"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     }
   ]
 }

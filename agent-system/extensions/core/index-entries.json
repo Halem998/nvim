@@ -3262,6 +3262,31 @@
         ],
         "commands": []
       }
+    },
+    {
+      "path": "contracts/return-meta-artifacts-template.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Canonical copyable artifacts-array template for .return-meta.json; generated-copy source read by lint-agent-contracts.sh Check F, not @-imported at spawn time",
+      "line_count": 96,
+      "keywords": [
+        "return-meta-artifacts-template",
+        "artifacts",
+        "lint-agent-contracts",
+        "generated-copy",
+        "path-segment-inference"
+      ],
+      "topics": [
+        "contracts",
+        "return-meta",
+        "metadata-exchange"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     }
   ]
 }

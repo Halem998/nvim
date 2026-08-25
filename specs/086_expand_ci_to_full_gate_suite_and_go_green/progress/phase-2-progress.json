@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Author the 3 missing index entries (Rule S)",
+  "started_at": "2026-08-25T05:35:00Z",
+  "last_updated": "2026-08-25T05:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read each orphaned file's actual content before writing its summary", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Model each new entry on a sibling in the same subdomain", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write each entry with all required fields", "status": "done", "files_touched": [
+      "agent-system/extensions/core/index-entries.json",
+      "agent-system/extensions/literature/index-entries.json"
+    ]},
+    {"id": 4, "description": "Set each line_count from a live wc -l at edit time", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Validate both JSON files parse", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Redeploy and re-run check-extension-docs.sh, confirm Rule S drops to 0", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": {
+    "grep_pre_check": "grep -rl for all 3 target filenames across agent-system/extensions/*/index-entries.json returned 0 hits before authoring, confirming no existing entry",
+    "jq_parse": "both index-entries.json files parse cleanly",
+    "line_count_check": "all 3 new entries' line_count match live wc -l (96, 143, 60)",
+    "rule_s_after": 0,
+    "rule_r_after": 16,
+    "note": "Rule R unchanged as expected -- Phase 2 scope is Rule S only; Rule R is Phase 7's regeneration"
+  }
+}

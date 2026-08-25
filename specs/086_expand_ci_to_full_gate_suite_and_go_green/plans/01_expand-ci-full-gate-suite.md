@@ -164,26 +164,30 @@ edit; if the set differs, the live set wins and Phases 2 and 7 adjust to it.
 
 ---
 
-### Phase 2: Author the 3 missing index entries (Rule S) [NOT STARTED]
+### Phase 2: Author the 3 missing index entries (Rule S) [COMPLETED]
 
 **Goal**: Close the three Rule S failures with real, schema-conformant index entries in the
 source store — not by suppressing the rule.
 
 **Tasks**:
-- [ ] Read each orphaned file's actual content before writing its summary (do not infer from the
+- [x] Read each orphaned file's actual content before writing its summary (do not infer from the
       filename): `context/contracts/return-meta-artifacts-template.md`,
       `context/project/literature/domain/corpus-directory-conventions.md`,
       `context/project/literature/patterns/shared-module-extraction-for-gate-checks.md`
-- [ ] Model each new entry on a sibling in the same subdomain — `contracts/wrap-up.md`'s entry in
+      *(completed)*
+- [x] Model each new entry on a sibling in the same subdomain — `contracts/wrap-up.md`'s entry in
       `agent-system/extensions/core/index-entries.json` for the return-meta template; existing
       `project/literature/domain/*` and `project/literature/patterns/*` entries in
-      `agent-system/extensions/literature/index-entries.json` for the other two
-- [ ] Write each entry with all required fields: `summary`, `path`, `topics`, `on_demand`,
+      `agent-system/extensions/literature/index-entries.json` for the other two *(completed)*
+- [x] Write each entry with all required fields: `summary`, `path`, `topics`, `on_demand`,
       `line_count`, `load_when.{commands,task_types,agents}`, `keywords`, `subdomain`, `domain`
-- [ ] Set each `line_count` from a live `wc -l` at edit time, not from this plan's numbers
-- [ ] Validate both JSON files parse (`jq . <file> >/dev/null`)
-- [ ] Redeploy so `.claude/context/index.json` picks up the new entries, then re-run
+      *(completed)*
+- [x] Set each `line_count` from a live `wc -l` at edit time, not from this plan's numbers
+      *(completed: 96, 143, 60)*
+- [x] Validate both JSON files parse (`jq . <file> >/dev/null`) *(completed)*
+- [x] Redeploy so `.claude/context/index.json` picks up the new entries, then re-run
       `bash .claude/scripts/check-extension-docs.sh` and confirm the Rule S count drops to 0
+      *(completed: 19 -> 16 issues, Rule S 0)*
 
 **Timing**: 1 hour
 
