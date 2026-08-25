@@ -273,11 +273,14 @@ commit `7e79b2695`, 2026-07-14).
 
 - Log evidence file: `specs/tmp/claude-tts-notify.log` (both the pre-existing historical entries
   and the four new entries written by this session's empirical tests are present there).
-- `verify-deploy.sh --findings` was invoked as directed by the task's H1 investigation line; it did
-  not complete within this session's 120-second foreground window and was moved to background. Its
-  output was not consulted further because the direct `diff` comparisons of every implicated file
-  (`skill-base.sh`, `lifecycle-notify.sh`, `tts-notify.sh`, `wezterm-notify.sh`) already gave a
-  decisive, complete answer to H1 for the files this defect actually touches.
+- `verify-deploy.sh --findings` was invoked as directed by the task's H1 investigation line; it
+  exceeded this session's 120-second foreground window and was moved to background, then completed
+  afterward with 2 unrelated findings: a `lean4` extension doc line-count mismatch
+  (`project/lean4/operations/multi-instance-optimization.md`) and a missing core script
+  (`scripts/lake-build-guard.sh` + its test). Neither finding names `skill-base.sh`,
+  `lifecycle-notify.sh`, `tts-notify.sh`, `wezterm-notify.sh`, or any other file implicated in this
+  defect — consistent with, and additional confirmation of, H1's refutation above (the direct `diff`
+  comparisons of every implicated file were already decisive on their own).
 - Grep commands used: `grep -rn skill_lifecycle_notify`, `grep -rln STATE_STATUS
   agent-system/extensions/*/skills/*/SKILL.md agent-system/extensions/*/context/patterns/*.md`,
   `git log --oneline --all --reverse -S"STATE_STATUS"`.
