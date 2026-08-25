@@ -1,8 +1,53 @@
 {
-  "status": "in_progress",
+  "status": "partial",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md",
+      "summary": "Implementation summary covering phases 1-5, including the full Phase 5 acceptance measurement record"
+    },
+    {
+      "type": "plan",
+      "path": "specs/085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md",
+      "summary": "Plan with phases 1, 2, 4 [COMPLETED], phase 3 [COMPLETED WITH EXCLUSIONS], phase 5 [PARTIAL]"
+    }
+  ],
+  "partial_progress": {
+    "stage": "phase_5_partial_concurrency_criterion_not_fully_demonstrable",
+    "details": "Phases 1-4 fully closed (phase 3 via reasoned exclusions, lint dropped for imprecision). Phase 5's deterministic acceptance measurement is fully met: 10/10 byte-identical run-all.sh outputs (52 passed, 0 failed, 0 skipped, 52 total), HEAD unchanged before/after, deploy-staleness confounder checked clean for all touched files. The concurrency half of the criterion is met only under the plan's literal wording (a distinct session for this task recorded timestamped events inside the measurement window); a stricter contending-for-shared-locks/state reading could not be demonstrated and is structurally unattainable for run-all.sh, which touches no locks (plan Finding 3). Phase 5 is therefore closed [PARTIAL] rather than [COMPLETED].",
+    "phases_completed": 4,
+    "phases_total": 5
+  },
+  "completion_data": {
+    "completion_summary": "Fixed both stale-fixture defects (phases 1-2), wrote the fixture-isolation rule into shell-script-testing.md (phase 4), and executed the 10-run acceptance measurement (phase 5): 10/10 byte-identical run-all.sh results with zero failures and a stable HEAD. Phase 3's mechanical lint was built, verified imprecise (52 false positives), and dropped per its own documented contingency. Phase 5 is closed partial because a stricter lock-contention reading of the concurrency criterion could not be demonstrated for a script that touches no locks."
+  },
+  "modified_files": [
+    "specs/085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md",
+    "specs/085_deflake_shell_test_suite_under_concurrency/progress/phase-5-progress.json",
+    "specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When measuring shell-script determinism under a stated concurrency requirement, check whether the measured script actually touches any shared/lockable state before treating 'contending for shared locks' as an achievable bar. run-all.sh in this repo acquires no task-lock.sh locks and touches no specs/.locks or specs/state.json, so that stricter reading can never be satisfied for it -- only 'another session genuinely active in the same window' is measurable, via specs/events.jsonl timestamped session events (session_stop, lifecycle_stage, etc.) cross-referenced against the measurement window's start/end times.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["concurrency-evidence", "events.jsonl", "run-all.sh", "lock-contention", "acceptance-measurement"]
+    },
+    {
+      "content": "A gitignored, locally-built Python venv (e.g. literature-pyenv/venv/...) will always show as source-vs-deployed 'diff' in a deploy-staleness check because its binaries/bytecode are independently compiled per-copy -- this is not a real staleness signal and should be excluded from deploy-staleness confounder checks by confirming the differing files are runtime-generated/gitignored rather than tracked source, and confirming (via grep) that no test suite has a runtime dependency on the differing content.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["deploy-staleness", "gitignore", "venv", "false-positive", "literature-extension"]
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1787634022_3ba5fb",
+    "session_id": "sess_1787655802_22f60c",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 5
   }
 }

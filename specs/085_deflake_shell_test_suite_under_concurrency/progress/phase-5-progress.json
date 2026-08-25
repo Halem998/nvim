@@ -1,0 +1,26 @@
+{
+  "phase": 5,
+  "phase_name": "Acceptance measurement -- 10 consecutive runs under concurrent load",
+  "started_at": "2026-08-25T11:04:14Z",
+  "last_updated": "2026-08-25T11:34:58Z",
+  "objectives": [
+    {"id": 1, "description": "Record HEAD and git status before measurement block", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Diff source-store touched files against deployed .claude/ counterparts", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run run-all.sh --quiet ten consecutive times, capture summary + FAIL lines", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Ensure concurrent session active during block, demonstrate contention", "status": "done", "note": "Concurrent session activity demonstrated (timestamped events for a distinct task-85 session within the window); lock/shared-state contention not demonstrable because run-all.sh touches no locks (plan Finding 3)", "files_touched": []},
+    {"id": 5, "description": "Compare ten results for identical pass condition, including suite composition", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record full measurement in implementation summary", "status": "done", "files_touched": ["specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "description": "Ensure at least one concurrent session is active during the block; note which runs overlapped concurrent activity",
+      "type": "altered",
+      "reason": "Concurrent session activity was demonstrated with timestamped evidence (a distinct session for this same task recorded events inside the 21-minute measurement window), but genuine lock/shared-state contention could not be demonstrated because run-all.sh acquires no locks and touches no shared state (task-lock.sh, specs/.locks, specs/state.json) per this plan's own Finding 3 -- that stricter bar is structurally unattainable for this specific script. The literal plan-text criterion ('at least one other session active') is met; a stricter 'contending for shared state' reading is not, and cannot be, for this measurement.",
+      "annotation": "*(deviation: altered -- see summary for full evidence)*"
+    }
+  ],
+  "handoff_count": 0
+}

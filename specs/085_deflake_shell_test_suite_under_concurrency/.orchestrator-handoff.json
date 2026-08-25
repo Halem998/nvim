@@ -1,17 +1,31 @@
 {
-  "status": "planned",
-  "summary": "Plan created: 5 phases, 4 hours, waves [[1,2],[3],[4],[5]]. Built on the research finding that overturns the task's lock-contention hypothesis -- no defect exists in task-lock.sh or run-all.sh, and neither is modified. Phase 1 isolates test-validate-return-meta.sh from the live specs/ tree via a scratch fixture repo plus REPO_ROOT override (replacing the archived specs/052_* path). Phase 2 corrects test-skill-base-lifecycle.sh Group 2 to skill_cleanup()'s documented two-file contract and adds a positive control that .return-meta.json survives. Phase 3 adds scripts/lint/lint-live-specs-path.sh with a both-polarity fixture suite and manifest registration. Phase 4 writes the never-touch-the-live-tree rule into context/standards/shell-script-testing.md. Phase 5 executes the task's acceptance criterion -- 10 consecutive run-all.sh runs under concurrent load, identical results -- with the deploy-staleness confounder separated by diffing source-store against deployed copies before measuring and re-measuring after any deploy.",
+  "phase": "implement",
+  "dispatch_seq": 5,
+  "status": "partial",
+  "summary": "Phases 1-4 closed (3 via reasoned exclusions). Phase 5's 10-run acceptance measurement is deterministically clean: 10/10 byte-identical run-all.sh results, 52 passed/0 failed/0 skipped, HEAD stable, deploy-staleness confounder clean. Closed PARTIAL because a stricter lock/shared-state contention reading of the concurrency criterion cannot be demonstrated for run-all.sh, which touches no locks.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/085_deflake_shell_test_suite_under_concurrency/plans/01_fix-stale-test-fixtures.md",
-      "summary": "Five-phase, 4-hour plan fixing two stale test fixtures, adding a preventive live-specs-path lint and standard, and executing the 10-run concurrency acceptance measurement."
+      "type": "summary",
+      "path": "specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_deflake-shell-test-suite-summary.md",
+      "summary": "Full implementation summary including the Phase 5 measurement record"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/085_deflake_shell_test_suite_under_concurrency/handoffs/phase-5-handoff-20260825T113700Z.md",
+      "summary": "Continuation handoff explaining the Phase 5 partial gap and the two closure options"
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 5,
-  "blockers": [],
-  "continuation_path": null,
-  "sorry_inventory": [],
-  "dispatch_seq": 4
+  "blockers": [
+    {
+      "phase": 5,
+      "target": "Demonstrate at least one concurrent session active during the 10-run measurement, per the task's acceptance criterion",
+      "verbatim_goal": "Ensure at least one concurrent session is active during the block (sibling agents in this session satisfy this); note in the record which runs overlapped concurrent activity.",
+      "what_was_tried": "Queried specs/events.jsonl for events timestamped inside the exact 11:07:34Z-11:28:53Z measurement window and found a distinct session (sess_1787634022_3ba5fb_85) recording two session_stop events for this task inside the window.",
+      "why_it_failed": "This demonstrates another session was genuinely active, satisfying the plan's literal wording, but not a stricter lock/shared-state contention reading, because run-all.sh acquires no locks and touches no shared state (plan Finding 3) -- that stricter bar is structurally unattainable for this script."
+    }
+  ],
+  "continuation_path": "specs/085_deflake_shell_test_suite_under_concurrency/handoffs/phase-5-handoff-20260825T113700Z.md",
+  "plan_markers_verified": false
 }

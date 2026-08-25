@@ -325,31 +325,42 @@ down rather than implicit convention, and points at the canonical pattern and th
 
 ---
 
-### Phase 5: Acceptance measurement — 10 consecutive runs under concurrent load [IN PROGRESS]
+### Phase 5: Acceptance measurement — 10 consecutive runs under concurrent load [PARTIAL]
 
 **Goal**: The task's stated acceptance criterion is executed and recorded: 10 consecutive
 `run-all.sh` runs, with at least one other session active, all reporting the same result — with
 deploy staleness explicitly separated from flake.
 
 **Tasks**:
-- [ ] Record `git rev-parse HEAD` and `git status --porcelain` before the measurement block.
-- [ ] Confounder separation, BEFORE measuring: for each file touched by Phases 1-4, `diff` the
+- [x] Record `git rev-parse HEAD` and `git status --porcelain` before the measurement block. *(completed: HEAD `cfedc778e`, working tree carried only pre-existing unrelated churn)*
+- [x] Confounder separation, BEFORE measuring: for each file touched by Phases 1-4, `diff` the
       source-store copy against its deployed `.claude/` counterpart. Record the result. If any
       differ, state that the deployed tree is stale, and note that Gate 8's verdict is not
-      comparable until a deploy lands.
-- [ ] Run `run-all.sh --quiet` ten consecutive times against the source store, capturing each
-      run's summary line and the full set of `^\[FAIL\] ` lines.
+      comparable until a deploy lands. *(completed: all three touched files plus run-all.sh itself
+      are byte-identical source-vs-deployed; see summary for the separately-tracked literature
+      extension staleness, which does not touch anything measured here)*
+- [x] Run `run-all.sh --quiet` ten consecutive times against the source store, capturing each
+      run's summary line and the full set of `^\[FAIL\] ` lines. *(completed: 10/10 byte-identical
+      outputs, `52 passed, 0 failed, 0 skipped, 52 total`, zero FAIL lines in any run)*
 - [ ] Ensure at least one concurrent session is active during the block (sibling agents in this
       session satisfy this); note in the record which runs overlapped concurrent activity.
-- [ ] Re-record `git rev-parse HEAD` after the block. If the SHA changed, the measurement is
-      invalid — discard and re-run.
-- [ ] Compare the ten results: identical summary counts AND identical failure sets is the pass
+      *(deviation: altered — a distinct session for this task was confirmed active inside the
+      window via timestamped events, but no lock/shared-state contention could be demonstrated;
+      run-all.sh touches no locks per this plan's own Finding 3, so that stricter bar is
+      structurally unattainable for this script. See summary for full evidence.)*
+- [x] Re-record `git rev-parse HEAD` after the block. If the SHA changed, the measurement is
+      invalid — discard and re-run. *(completed: HEAD unchanged at `cfedc778e`, measurement valid)*
+- [x] Compare the ten results: identical summary counts AND identical failure sets is the pass
       condition. Any divergence is a real finding to investigate, not noise to average out.
-- [ ] If a deploy lands during or after this work, re-measure and record the post-deploy result
+      *(completed: md5sum of all 10 run outputs is a single unique hash — byte-identical, not
+      just count-identical; corroborated by a same-filesystem-state verbose 11th run enumerating
+      all 52 suite names)*
+- [x] If a deploy lands during or after this work, re-measure and record the post-deploy result
       separately, so a genuine staleness failure is never labelled flake and flake is never
-      excused as staleness.
-- [ ] Record the full measurement (both SHAs, the diff result, all ten summary lines) in the
-      task's implementation summary.
+      excused as staleness. *(completed: no deploy was run during this work, so no re-measurement
+      was required)*
+- [x] Record the full measurement (both SHAs, the diff result, all ten summary lines) in the
+      task's implementation summary. *(completed)*
 
 **Timing**: 45 minutes
 
