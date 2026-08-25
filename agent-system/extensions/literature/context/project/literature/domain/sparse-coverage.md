@@ -48,6 +48,78 @@ most or all requested primary sources" case this mechanism targets.
 `LITERATURE_SKIP_RATE_THRESHOLD` — a low but nonzero skip rate is still visible without being
 treated as untrustworthy enough to force `sparse=true`.
 
+## Coverage-Delta Detection
+
+A structurally prior failure mode to everything above: the mechanisms in "Mechanisms" all measure
+properties of the sub-index's own resolution (how many entries it has, how many of them resolve
+against the global index). None of them notice a source that was **never added to the sub-index
+in the first place** — a sub-index can clear both the absolute-count floor and the skip-rate
+check while topically relevant documents already sitting in the global corpus stay invisible,
+because nothing was ever requested from them, so nothing is ever skipped.
+
+- **`literature-coverage-delta.sh`** computes a **topic-scoped coverage delta**: is there a
+  global top-level document matching this task's own search terms that the sub-index never
+  references? The firing condition is **compound**, never a bare ratio (a bare ratio/absolute-gap
+  trigger would fire on nearly every repo — a curated sub-index of 10-40 entries is always dwarfed
+  by a 200-400-document global corpus, and that is normal, not a defect):
+  1. **`LITERATURE_COVERAGE_GAP_MIN`** (env var, default `25`): a cheap pre-filter —
+     `global_docs - subindex_docs >= LITERATURE_COVERAGE_GAP_MIN`. Its only job is to skip the
+     more expensive keyword-matching pass when the global corpus is not materially larger than
+     the sub-index, or the sub-index is already comprehensive. Comparison is `>=`, exercised at
+     the boundary by the Section H fixture suite (`test-lit-pipeline.sh`).
+  2. **`LITERATURE_COVERAGE_DELTA_THRESHOLD`** (env var, default `1`): the actionable trigger —
+     at least this many global top-level documents must match the query's filtered terms (the
+     same Tier 1 matcher `literature-discover.sh` uses, factored into the sourceable
+     `literature-term-match.sh` helper) and be absent from the sub-index's doc-key set. This half
+     is what makes the signal topic-scoped and actionable rather than an abstract percentage —
+     it names specific candidate documents.
+- **Mandatory `parent_doc == null` filtering on the global side.** The global index's `.entries`
+  array mixes top-level documents with their chunk children in one flat array. Every count on the
+  global side of the delta — the pre-filter's `global_docs` and every candidate the keyword pass
+  considers — filters to `select(.parent_doc == null or .parent_doc == "")`. Counting raw
+  `.entries | length` instead overstates the gap by roughly 2x (measured in one environment: 414
+  total entries, 204 top-level documents) and is the single most load-bearing implementation
+  detail in `literature-coverage-delta.sh`.
+- **Marker fields.** `literature-briefing.sh` repo mode, when called with `--query`, appends
+  `delta_checked=true|false delta_gap=N delta_candidates=M` to the `<!-- lit-coverage ... -->`
+  marker, strictly AFTER the `mode=`/`seg_count=`/`sparse=`/`threshold=`/`requested=`/`resolved=`/
+  `skipped=`/`skip_rate=` fields described above, which stay byte-for-byte adjacent and in order.
+  `delta_checked=false` means the guard never ran (no `--query`, or a fail-open condition) — it is
+  NOT the same as "ran and found zero"; a caller must never treat it as a verified absence of a
+  gap. When it fires, a `[COVERAGE DELTA - M topic-relevant document(s) ...]` banner (same family
+  as `[SPARSE COVERAGE ...]` / `[SKIPPED SOURCES ...]`) lists up to `--top-n` candidate titles and
+  doc_ids, with the untruncated total stated separately.
+- **`literature-lit-flag-resolve.sh`'s `SPARSE_PROMPT_NEEDED` now has a second, independent
+  cause.** A sub-index that clears `LITERATURE_SPARSE_THRESHOLD` is still downgraded from
+  `SUBINDEX_PRESENT` to `SPARSE_PROMPT_NEEDED` when the coverage-delta guard fires. The
+  directive token, the four-option `AskUserQuestion` set, and the autonomy contract are
+  UNCHANGED — only the stderr rationale distinguishes the two causes.
+- **Why the delta does NOT set `sparse=true`.** The "Threshold Policy" section above folds skip
+  rate into `sparse` because both existing consumers already poll `sparse=true` and a separate,
+  unconsumed flag would reproduce the exact silent-degradation failure this mechanism exists to
+  close. The coverage delta is the opposite case: it has two real consumers from day one (the
+  resolver's directive downgrade and the always-emitted in-band banner), so it is not an unpolled
+  field, and overloading `sparse` instead would (a) conflate "this briefing resolved almost
+  nothing" with "more relevant material exists elsewhere in the global corpus" — different
+  operator actions — and (b) leak into the two-checkpoint re-prompt logic keyed on
+  `mode=global .*sparse=true`. The delta gets its own marker fields and its own banner instead.
+- **Fail-open, never fatal.** `literature-coverage-delta.sh` never exits non-zero. A missing
+  global index, missing sub-index, unreadable JSON, or an empty filtered-term list all degrade to
+  `delta_checked=false` plus a stderr rationale — a `--lit` run is never aborted by this guard.
+  Both wiring sites (`literature-lit-flag-resolve.sh`, `literature-briefing.sh`) additionally
+  guard the invocation itself so a missing or non-executable delta script degrades to
+  pre-existing behavior with a visible stderr notice, never a crash.
+
+**Named follow-up, explicitly not covered here**: a claim-level verifier that inspects a draft
+artifact's specific "no counterpart exists" / "there is no existing treatment of X" assertions
+against the full global corpus before the artifact is finalized. This is a materially different,
+more expensive mechanism (post-hoc draft scanning at artifact-write time, needing claim
+extraction the delta guard has no part of) than the briefing-time topic-scoped delta documented
+above, and reduces a different risk: the delta guard above lowers the probability that a
+topically relevant source is invisible to a research run; it does not verify any specific claim
+a draft makes. It is a candidate for a dedicated follow-up task, not something the mechanism
+above should be read as having closed.
+
 ## Authority for the Full Decision Flow
 
 This file is a pointer, not the specification. The full six-directive decision table — including

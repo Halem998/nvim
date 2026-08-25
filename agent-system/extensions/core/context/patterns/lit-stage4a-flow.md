@@ -66,10 +66,13 @@ announced, never silent.
 
 The per-repo sub-index exists and resolves to `>=` the sparsity threshold. Run the per-repo
 briefing via the failure-surfacing wrapper (never the raw script with `2>/dev/null` — that
-collapses a real crash into the same empty value as a legitimately-empty briefing):
+collapses a real crash into the same empty value as a legitimately-empty briefing). Pass
+`--query "$description"` so `literature-briefing.sh`'s repo mode can run the topic-scoped
+coverage-delta guard (see "Coverage-Delta Marker Fields" below) — without `--query` the guard
+never runs and the marker's `delta_checked` field stays `false`:
 
 ```bash
-lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh) || lit_context=""
+lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh --query "$description") || lit_context=""
 ```
 
 ### `AUTONOMOUS_GLOBAL`
@@ -91,24 +94,31 @@ inside `lit_context` makes the limitation visible to the consuming agent.
 
 ### `SPARSE_PROMPT_NEEDED`
 
-The per-repo sub-index exists but resolved to `<` the sparsity threshold (including zero
-resolving entries).
+The per-repo sub-index exists but EITHER (a) resolved to `<` the sparsity threshold (including
+zero resolving entries), OR (b) resolved to `>=` the sparsity threshold but the topic-scoped
+coverage-delta guard found global top-level documents matching this task's search terms that are
+absent from the sub-index (see `literature-lit-flag-resolve.sh`'s stderr rationale for which
+cause applies — the directive token, option set, and autonomy contract are identical for both).
 
 **If `"${orchestrator_mode:-false}" = "true"` (autonomous)**: treat this the same way as
 `AUTONOMOUS_GLOBAL`'s "no human available" rule, but reuse the EXISTING sub-index rather than
 launching a new global search (the sub-index is curated and sparse-but-real; a fresh global
-search would not use it). **MUST NOT call `AskUserQuestion`.**
+search would not use it). **MUST NOT call `AskUserQuestion`.** Pass `--query "$description"` so
+any topic-scoped coverage delta is surfaced in-band inside `lit_context` (the `[COVERAGE DELTA
+...]` banner, see "Coverage-Delta Marker Fields" below) — this is the channel that actually
+reaches this autonomous run, since `AskUserQuestion` is forbidden here and stderr never enters
+the agent's prompt:
 
 ```bash
-lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh) || lit_context=""
-echo "[lit:auto] Per-repo sub-index is sparse (below the configured threshold); autonomous context (orchestrator_mode=true) — proceeding with the existing sub-index rather than prompting. Online ingest is interactive-only and was not triggered. ($rationale)" >&2
+lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh --query "$description") || lit_context=""
+echo "[lit:auto] Per-repo sub-index is sparse or has a topic-scoped coverage delta (below the configured threshold, or topic-relevant global documents are absent from it); autonomous context (orchestrator_mode=true) — proceeding with the existing sub-index rather than prompting. A topic-scoped coverage delta, if any, is surfaced in-band inside lit_context via the [COVERAGE DELTA ...] banner. Online ingest is interactive-only and was not triggered. ($rationale)" >&2
 ```
 
 **If interactive** (`orchestrator_mode` is not `"true"`): issue the SAME four-option
-`AskUserQuestion` as `PROMPT_NEEDED` below, with prompt wording that names the sparse sub-index
-instead of a missing one (e.g. "The per-repo literature sub-index exists but only resolved a few
-relevant entries. How would you like to proceed?"). See "The Four Options" below for the shared
-option definitions — they are identical for `PROMPT_NEEDED` and `SPARSE_PROMPT_NEEDED`.
+`AskUserQuestion` as `PROMPT_NEEDED` below, with prompt wording that covers both causes (e.g.
+"The per-repo literature sub-index is sparse, or topic-relevant global documents are absent from
+it. How would you like to proceed?"). See "The Four Options" below for the shared option
+definitions — they are identical for `PROMPT_NEEDED` and `SPARSE_PROMPT_NEEDED`.
 
 ### `PROMPT_NEEDED`
 
@@ -145,7 +155,7 @@ Present in this order (recommended default listed first):
    `bash .claude/scripts/generate-todo.sh`). After the fork returns, if the sub-index now exists:
 
    ```bash
-   lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh) || lit_context=""
+   lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh --query "$description") || lit_context=""
    ```
 
    If the fork failed or timed out: log a warning, report the task number, suggest
@@ -176,7 +186,7 @@ Present in this order (recommended default listed first):
 
    # The bridge self-registers successfully-ingested records into specs/literature-index.json,
    # so re-run the per-repo briefing (not --global) to pick up whatever was just ingested.
-   lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh) || lit_context=""
+   lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh --query "$description") || lit_context=""
    ```
 
    This option performs live network calls (discovery + PDF download). It is gated strictly as
@@ -219,6 +229,37 @@ corpus now" again with a different query, "Search online to ingest", "Create cur
 
 If `global_search_sparse=true` and the context is autonomous (reached via `AUTONOMOUS_GLOBAL`
 above, not this interactive path), do NOT re-prompt — see `AUTONOMOUS_GLOBAL`'s own rule.
+
+## Coverage-Delta Marker Fields
+
+`literature-briefing.sh` repo mode, when called with `--query` (as every repo-mode call site
+above now does), appends three fields to its `<!-- lit-coverage ... -->` marker, strictly AFTER
+the pre-existing `mode=`/`seg_count=`/`sparse=`/`threshold=`/`requested=`/`resolved=`/`skipped=`/
+`skip_rate=` fields (which stay byte-for-byte adjacent and in order — the "Two-Checkpoint Sparse
+Detection" grep above is unaffected):
+
+```
+delta_checked=true|false delta_gap=N delta_candidates=M
+```
+
+- `delta_checked=false` means the topic-scoped coverage-delta guard never ran at all (no `--query`
+  was passed, or the guard failed open) — it is NOT the same as "ran and found zero". Never treat
+  `delta_checked=false` as a verified absence of a gap.
+- `delta_gap` is the raw `global_docs - subindex_docs` count (top-level documents only); it only
+  gates whether the more expensive keyword pass ran and is not itself the firing condition.
+- `delta_candidates` is the count of global top-level documents matching this task's own filtered
+  search terms that are absent from the sub-index — the actionable, topic-scoped signal.
+
+When the guard fires (`delta_checked=true` and `delta_candidates` at or above
+`LITERATURE_COVERAGE_DELTA_THRESHOLD`), `lit_context` also contains a `[COVERAGE DELTA - ...]`
+banner (same family as `[SPARSE COVERAGE ...]` / `[SKIPPED SOURCES ...]`) listing up to
+`--top-n` candidate titles and doc_ids, with the untruncated total stated separately. This banner
+is the mandatory, unconditional channel that reaches `orchestrator_mode=true` runs — the delta
+guard deliberately does **not** set `sparse=true` (so the two-checkpoint `grep -q 'lit-coverage
+mode=global .*sparse=true'` logic above is unaffected by it), since "this briefing resolved
+almost nothing" and "more relevant material exists elsewhere in the global corpus" are different
+operator actions. See `context/project/literature/domain/sparse-coverage.md`'s "Coverage-Delta
+Detection" section for the full mechanism.
 
 ## Injection Rule
 

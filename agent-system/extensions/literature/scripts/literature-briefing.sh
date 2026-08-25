@@ -80,6 +80,12 @@ LITERATURE_SPARSE_THRESHOLD="${LITERATURE_SPARSE_THRESHOLD:-3}"
 # makes the briefing untrustworthy even when enough documents nominally resolved. See
 # context/project/literature/domain/sparse-coverage.md for the full policy rationale.
 LITERATURE_SKIP_RATE_THRESHOLD="${LITERATURE_SKIP_RATE_THRESHOLD:-50}"
+# Minimum topic-matched missing-candidate count (delta_candidates, from
+# literature-coverage-delta.sh) before the [COVERAGE DELTA ...] banner fires below. Not forwarded
+# to the delta script -- the threshold comparison happens here, mirroring
+# literature-lit-flag-resolve.sh's identical pattern.
+export LITERATURE_COVERAGE_GAP_MIN="${LITERATURE_COVERAGE_GAP_MIN:-25}"
+LITERATURE_COVERAGE_DELTA_THRESHOLD="${LITERATURE_COVERAGE_DELTA_THRESHOLD:-1}"
 
 # --- Argument parsing ---
 mode="repo"
@@ -95,6 +101,17 @@ query_error="null"
 skip_count=0
 requested_count=0
 skipped_doc_ids=()
+# --query (repo mode only) -- the task description text the topic-scoped coverage-delta guard
+# matches against. delta_* defaults below are the D6 "not computed" shape: they stay at these
+# values (delta_checked=false) whenever --query is absent (repo mode) or in --global mode (the
+# guard is a repo-mode/sub-index-present concern by definition -- see the plan's Non-Goals), so
+# a caller can never misread an uncomputed delta as a verified zero.
+repo_query=""
+delta_checked="false"
+delta_gap=0
+delta_candidates=0
+delta_candidate_ids=""
+delta_candidate_titles_json="[]"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -115,12 +132,21 @@ while [ $# -gt 0 ]; do
       top_n="$2"
       shift 2
       ;;
+    --query)
+      repo_query="${2:-}"
+      shift 2
+      ;;
     *)
       echo "Warning: unrecognized argument '$1' ignored" >&2
       shift
       ;;
   esac
 done
+
+if [ "$mode" = "global" ] && [ -n "$repo_query" ]; then
+  echo "Warning: --query is ignored in --global mode (global mode already has its own query argument)." >&2
+  repo_query=""
+fi
 
 # --- provenance_fidelity lookup ---
 # doc_id -> provenance_fidelity, mirroring the existing per-repo relevance/title/
@@ -329,6 +355,36 @@ ${entry}"
   coverage_mode="repo"
   coverage_count="${#briefing_lines[@]}"
 
+  # --- Topic-scoped coverage-delta guard (repo mode only, --query present) ---
+  # Reaches the consuming agent's prompt via the in-band marker/banner below even in
+  # orchestrator_mode=true, where AskUserQuestion is forbidden and stderr never arrives.
+  # Guarded so a delta-script failure or absence degrades to delta_checked=false with a visible
+  # stderr notice -- never a crash, never a silent skip. Does NOT set sparse=true (D5).
+  if [ -n "$repo_query" ]; then
+    delta_script="$SCRIPT_DIR/literature-coverage-delta.sh"
+    delta_line=""
+    if [ -x "$delta_script" ]; then
+      delta_line=$(bash "$delta_script" --query "$repo_query" 2>/dev/null) || delta_line=""
+    else
+      echo "Warning: literature-coverage-delta.sh not found or not executable at $delta_script; coverage-delta guard reports delta_checked=false." >&2
+    fi
+
+    if [ -n "$delta_line" ]; then
+      delta_checked=$(echo "$delta_line" | grep -oE 'delta_checked=[a-z]+' | cut -d= -f2) || delta_checked="false"
+      delta_gap=$(echo "$delta_line" | grep -oE 'delta_gap=[0-9]+' | cut -d= -f2) || delta_gap=0
+      delta_candidates=$(echo "$delta_line" | grep -oE 'delta_candidates=[0-9]+' | cut -d= -f2) || delta_candidates=0
+      # Anchored to a preceding space/start-of-string so this does not also match the
+      # "delta_candidates=" field above (a bare "candidates=" substring search would).
+      delta_candidate_ids=$(echo "$delta_line" | grep -oE '(^| )candidates=[^ ]*' | cut -d= -f2-) || delta_candidate_ids=""
+      delta_candidate_titles_json=$(echo "$delta_line" | grep -oE 'candidate_titles=\[.*\]$') || delta_candidate_titles_json=""
+      delta_candidate_titles_json="${delta_candidate_titles_json#candidate_titles=}"
+      delta_checked="${delta_checked:-false}"
+      delta_gap="${delta_gap:-0}"
+      delta_candidates="${delta_candidates:-0}"
+      [ -z "$delta_candidate_titles_json" ] && delta_candidate_titles_json="[]"
+    fi
+  fi
+
 else
   # ============================================================
   # Global-corpus search mode (--global "<query>")
@@ -462,7 +518,14 @@ if [ "$coverage_count" -lt "$LITERATURE_SPARSE_THRESHOLD" ]; then
 elif [ "$skip_count" -gt 0 ] && [ "$skip_rate" -ge "$LITERATURE_SKIP_RATE_THRESHOLD" ]; then
   sparse="true"
 fi
-echo "<!-- lit-coverage mode=${coverage_mode} seg_count=${coverage_count} sparse=${sparse} threshold=${LITERATURE_SPARSE_THRESHOLD} requested=${requested_count} resolved=${coverage_count} skipped=${skip_count} skip_rate=${skip_rate} -->"
+# delta_checked=/delta_gap=/delta_candidates= are appended strictly AFTER the original eight
+# fields above (mode=/seg_count=/sparse=/threshold=/requested=/resolved=/skipped=/skip_rate=),
+# which stay byte-for-byte adjacent and in their original order for backward compatibility with
+# existing `.*`-tolerant greps (e.g. lit-stage4a-flow.md's `lit-coverage mode=global .*sparse=true`).
+# delta_checked=false is ALWAYS emitted (never omitted) when the guard did not run -- D6: a
+# not-computed delta must never be misread as a verified zero. The delta deliberately does NOT
+# set sparse=true above (D5) -- see context/project/literature/domain/sparse-coverage.md.
+echo "<!-- lit-coverage mode=${coverage_mode} seg_count=${coverage_count} sparse=${sparse} threshold=${LITERATURE_SPARSE_THRESHOLD} requested=${requested_count} resolved=${coverage_count} skipped=${skip_count} skip_rate=${skip_rate} delta_checked=${delta_checked} delta_gap=${delta_gap} delta_candidates=${delta_candidates} -->"
 echo ""
 
 if [ "$sparse" = "true" ]; then
@@ -474,6 +537,28 @@ fi
 # the sparse threshold -- a low but nonzero skip rate is still worth surfacing) ---
 if [ "$skip_count" -gt 0 ]; then
   echo "[SKIPPED SOURCES - ${skip_count} of ${requested_count} requested document(s) could not be resolved (${skip_rate}%); see \"Unresolved Documents\" below]"
+  echo ""
+fi
+
+# --- Coverage-delta banner (never silent when the guard fired; mandatory in-band channel --
+# this is what reaches orchestrator_mode=true runs, where AskUserQuestion is forbidden and
+# stderr never enters the agent's prompt). Fires only when the guard actually ran AND found a
+# candidate count meeting LITERATURE_COVERAGE_DELTA_THRESHOLD -- a delta_checked=false or
+# delta_candidates=0 result stays silent here (no alarm fatigue on an ordinary curated
+# sub-index). Does NOT set sparse=true (D5) -- see the marker comment above. ---
+if [ "$delta_checked" = "true" ] && [ "$delta_candidates" -ge "$LITERATURE_COVERAGE_DELTA_THRESHOLD" ]; then
+  echo "[COVERAGE DELTA - ${delta_candidates} topic-relevant document(s) in the global corpus are absent from this repo's sub-index]"
+  _delta_id_arr=()
+  if [ -n "$delta_candidate_ids" ]; then
+    IFS=',' read -ra _delta_id_arr <<< "$delta_candidate_ids"
+    _delta_title_list=$(echo "$delta_candidate_titles_json" | jq -r '.[]?' 2>/dev/null) || _delta_title_list=""
+    mapfile -t _delta_title_arr <<< "$_delta_title_list"
+    for _i in "${!_delta_id_arr[@]}"; do
+      _delta_title="${_delta_title_arr[$_i]:-Unknown Title}"
+      echo "  - ${_delta_title} (${_delta_id_arr[$_i]})"
+    done
+  fi
+  echo "  (${delta_candidates} total; see above for the top ${#_delta_id_arr[@]} bounded here)"
   echo ""
 fi
 

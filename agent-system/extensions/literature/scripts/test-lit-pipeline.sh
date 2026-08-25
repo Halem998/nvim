@@ -28,6 +28,16 @@
 #       skipped=/skip_rate= fields and the sparse=true skip-rate disjunct, instead of the marker
 #       falsely reporting sparse=false or (in the total-failure case) emitting no marker at all.
 #       A sibling to Section F, following its fixture idiom.
+#   H - topic-scoped coverage-delta guard regression tests (opt-in via --runtime): a sub-index
+#       that clears the absolute sparsity floor still downgrades literature-lit-flag-resolve.sh's
+#       directive to SPARSE_PROMPT_NEEDED, and literature-briefing.sh's marker/banner surface the
+#       same delta, when the global index holds topic-matching documents absent from the
+#       sub-index (H1); a non-matching query stays silent (H2, the anti-alarm-fatigue guarantee);
+#       chunk children never inflate the delta (H3); an unqueried briefing reports
+#       delta_checked=false rather than a false zero (H4); a missing LITERATURE_DIR still
+#       fails open to SUBINDEX_PRESENT (H5); LITERATURE_COVERAGE_GAP_MIN's `>=` (not `>`)
+#       boundary is exercised exactly at and one below the threshold (H6). A sibling to
+#       Section G, following its fixture idiom.
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -108,6 +118,7 @@ ORIGINAL_SUB_INDEX_EXISTS=false
 SUB_INDEX_PATH="$PROJECT_ROOT/specs/literature-index.json"
 TEMP_LIT_DIR_F=""
 TEMP_LIT_DIR_G=""
+TEMP_LIT_DIR_H=""
 
 cleanup() {
   if [[ -n "$TEMP_LIT_DIR" ]] && [[ -d "$TEMP_LIT_DIR" ]]; then
@@ -128,6 +139,10 @@ cleanup() {
   # Section G's own scratch corpus (separate from Sections E/F's TEMP_LIT_DIR/TEMP_LIT_DIR_F)
   if [[ -n "$TEMP_LIT_DIR_G" ]] && [[ -d "$TEMP_LIT_DIR_G" ]]; then
     rm -rf "$TEMP_LIT_DIR_G"
+  fi
+  # Section H's own scratch corpus (separate from Sections E/F/G's own TEMP_LIT_DIR_*)
+  if [[ -n "$TEMP_LIT_DIR_H" ]] && [[ -d "$TEMP_LIT_DIR_H" ]]; then
+    rm -rf "$TEMP_LIT_DIR_H"
   fi
 }
 trap 'cleanup' EXIT
@@ -831,6 +846,252 @@ G4_SUBINDEX
 }
 
 # ============================================================
+# SECTION H: topic-scoped coverage-delta guard regression (opt-in via --runtime)
+# ============================================================
+# Asserts the coverage-delta guard added alongside literature-lit-flag-resolve.sh's
+# SUBINDEX_PRESENT branch and literature-briefing.sh's repo-mode marker/banner: a sub-index that
+# clears the absolute sparsity floor still downgrades to SPARSE_PROMPT_NEEDED and surfaces a
+# [COVERAGE DELTA ...] banner when the global index holds topic-matching documents it never
+# references (H1); a non-matching query stays silent, the anti-alarm-fatigue guarantee (H2);
+# chunk children never inflate the delta (H3, the single most load-bearing implementation
+# detail in literature-coverage-delta.sh); an unqueried repo-mode briefing reports
+# delta_checked=false rather than a false zero, D6 (H4); a missing LITERATURE_DIR still fails
+# open to SUBINDEX_PRESENT, exit 0 (H5); LITERATURE_COVERAGE_GAP_MIN's `>=` (not `>`) boundary is
+# exercised exactly at and one below the threshold (H6).
+section_h() {
+  echo ""
+  log_info "Section H: topic-scoped coverage-delta guard regression tests (--runtime)"
+  echo "----------------------------------------"
+
+  local resolve_script_h="$SCRIPT_DIR/literature-lit-flag-resolve.sh"
+  local briefing_script_h="$SCRIPT_DIR/literature-briefing.sh"
+  local delta_script_h="$SCRIPT_DIR/literature-coverage-delta.sh"
+  local term_match_script_h="$SCRIPT_DIR/literature-term-match.sh"
+
+  if [[ ! -x "$resolve_script_h" ]] || [[ ! -x "$briefing_script_h" ]] || [[ ! -x "$delta_script_h" ]]; then
+    log_fail "Section H: one of literature-lit-flag-resolve.sh/literature-briefing.sh/literature-coverage-delta.sh not found relative to $SCRIPT_DIR"
+    return
+  fi
+  if [[ ! -f "$term_match_script_h" ]]; then
+    log_fail "Section H: literature-term-match.sh not found relative to $SCRIPT_DIR"
+    return
+  fi
+
+  TEMP_LIT_DIR_H=$(mktemp -d)
+
+  # --- Shared global index (H1/H2): 30 top-level documents, one of which
+  # ("wombat_target") topically matches the H1 query and none of which match the H2 query.
+  # 30 top-level docs against a 3-entry sub-index gives delta_gap=27, above the default
+  # LITERATURE_COVERAGE_GAP_MIN=25 pre-filter. ---
+  python3 - "$TEMP_LIT_DIR_H/index.json" <<'PYEOF'
+import json, sys
+entries = [
+    {"id": "wombat_target", "doc_id": "wombat_target", "parent_doc": None,
+     "path": "sources/wombat_target/", "title": "Wombat Marsupial Taxonomy Survey",
+     "authors": ["Regression Tester"], "year": 2026, "token_count": 50}
+]
+for i in range(1, 30):
+    entries.append({
+        "id": f"h_filler{i}", "doc_id": f"h_filler{i}", "parent_doc": None,
+        "path": f"sources/h_filler{i}/", "title": f"Section H Filler Document {i}",
+        "authors": ["Regression Tester"], "year": 2026, "token_count": 50,
+    })
+json.dump({"entries": entries}, open(sys.argv[1], "w"))
+PYEOF
+
+  mkdir -p "$TEMP_LIT_DIR_H/fakerepo/nested/scripts" "$TEMP_LIT_DIR_H/fakerepo/specs"
+  ln -sf "$resolve_script_h" "$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-lit-flag-resolve.sh"
+  ln -sf "$briefing_script_h" "$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-briefing.sh"
+  ln -sf "$delta_script_h" "$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-coverage-delta.sh"
+  ln -sf "$term_match_script_h" "$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-term-match.sh"
+  local sub_index_h="$TEMP_LIT_DIR_H/fakerepo/specs/literature-index.json"
+  local resolve_h="$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-lit-flag-resolve.sh"
+  local briefing_h="$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-briefing.sh"
+  local delta_h="$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-coverage-delta.sh"
+
+  # Sub-index: 3 entries clearing the absolute floor (LITERATURE_SPARSE_THRESHOLD default 3),
+  # none of which are present in the H1/H2 global index above (doc_ids never overlap
+  # wombat_target/h_filler* -- the delta's SUB_KEYS exclusion has nothing to exclude here, and
+  # is exercised separately by the Phase-2-level manual check, not re-duplicated in this suite).
+  cat > "$sub_index_h" <<'H_SUBINDEX'
+{"entries": [{"doc_id": "sub1"}, {"doc_id": "sub2"}, {"doc_id": "sub3"}]}
+H_SUBINDEX
+
+  # --- Case H1 (fires): topic-matching query ---
+  local h1_resolve_out h1_directive h1_briefing_out h1_marker
+  h1_resolve_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_H" bash "$resolve_h" --lit-flag true --orchestrator-mode false --query "wombat marsupial taxonomy" 2>/dev/null)
+  h1_directive=$(echo "$h1_resolve_out" | tail -1)
+  if [[ "$h1_directive" == "SPARSE_PROMPT_NEEDED" ]]; then
+    log_pass "Case H1 (fires): resolver downgrades to SPARSE_PROMPT_NEEDED on a topic-scoped miss"
+  else
+    log_fail "Case H1 (fires): expected SPARSE_PROMPT_NEEDED, got '$h1_directive'"
+  fi
+
+  h1_briefing_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_H" bash "$briefing_h" --query "wombat marsupial taxonomy" 2>/dev/null)
+  h1_marker=$(echo "$h1_briefing_out" | grep -- '<!-- lit-coverage')
+  if echo "$h1_marker" | grep -q 'delta_checked=true' && echo "$h1_marker" | grep -qE 'delta_candidates=[1-9][0-9]*'; then
+    log_pass "Case H1 (fires): briefing marker reports delta_checked=true delta_candidates>=1"
+  else
+    log_fail "Case H1 (fires): unexpected marker fields. Got: $h1_marker"
+  fi
+  if echo "$h1_briefing_out" | grep -q '\[COVERAGE DELTA' && echo "$h1_briefing_out" | grep -q 'wombat_target'; then
+    log_pass "Case H1 (fires): [COVERAGE DELTA ...] banner present and lists wombat_target"
+  else
+    log_fail "Case H1 (fires): [COVERAGE DELTA ...] banner missing or does not list wombat_target"
+  fi
+
+  # --- Case H2 (negative control, does NOT fire): non-matching query. This is the
+  # anti-alarm-fatigue guarantee and must not be dropped. ---
+  local h2_resolve_out h2_directive h2_briefing_out h2_marker
+  h2_resolve_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_H" bash "$resolve_h" --lit-flag true --orchestrator-mode false --query "underwater basket weaving techniques" 2>/dev/null)
+  h2_directive=$(echo "$h2_resolve_out" | tail -1)
+  if [[ "$h2_directive" == "SUBINDEX_PRESENT" ]]; then
+    log_pass "Case H2 (negative control): resolver stays SUBINDEX_PRESENT on a non-matching query"
+  else
+    log_fail "Case H2 (negative control): expected SUBINDEX_PRESENT, got '$h2_directive'"
+  fi
+
+  h2_briefing_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_H" bash "$briefing_h" --query "underwater basket weaving techniques" 2>/dev/null)
+  h2_marker=$(echo "$h2_briefing_out" | grep -- '<!-- lit-coverage')
+  if echo "$h2_marker" | grep -q 'delta_candidates=0'; then
+    log_pass "Case H2 (negative control): briefing marker reports delta_candidates=0"
+  else
+    log_fail "Case H2 (negative control): unexpected marker fields. Got: $h2_marker"
+  fi
+  if echo "$h2_briefing_out" | grep -q '\[COVERAGE DELTA'; then
+    log_fail "Case H2 (negative control): [COVERAGE DELTA ...] banner unexpectedly present -- alarm-fatigue guarantee broken"
+  else
+    log_pass "Case H2 (negative control): [COVERAGE DELTA ...] banner absent"
+  fi
+
+  # --- Case H3 (chunk inflation): a dedicated global index of 30 top-level docs, each with 2
+  # chunk children (parent_doc-bearing), for 90 flat .entries. global_docs must report 30, never
+  # 90 -- this is the plan's single most load-bearing implementation detail. ---
+  local chunk_index_h="$TEMP_LIT_DIR_H/index_chunked.json"
+  python3 - "$chunk_index_h" <<'PYEOF'
+import json, sys
+entries = []
+for i in range(1, 31):
+    doc_id = f"h3_doc{i}"
+    entries.append({"id": doc_id, "doc_id": doc_id, "parent_doc": None,
+                     "path": f"sources/{doc_id}/", "title": f"Chunked Document {i}",
+                     "authors": [], "year": 2026, "token_count": 50})
+    for c in range(1, 3):
+        entries.append({"id": f"{doc_id}_c{c}", "doc_id": f"{doc_id}_c{c}",
+                         "parent_doc": doc_id, "title": f"Chunked Document {i} chunk {c}",
+                         "token_count": 20})
+json.dump({"entries": entries}, open(sys.argv[1], "w"))
+PYEOF
+  local h3_raw_entries h3_top_level
+  h3_raw_entries=$(jq '.entries | length' "$chunk_index_h")
+  h3_top_level=$(jq '[.entries[] | select(.parent_doc == null)] | length' "$chunk_index_h")
+  if [[ "$h3_raw_entries" -eq 90 ]] && [[ "$h3_top_level" -eq 30 ]]; then
+    log_pass "Case H3 (chunk inflation): fixture has 90 raw entries, 30 top-level docs (2 chunks per doc)"
+  else
+    log_fail "Case H3 (chunk inflation): fixture shape unexpected -- raw=$h3_raw_entries top_level=$h3_top_level"
+  fi
+
+  mkdir -p "$TEMP_LIT_DIR_H/chunkrepo/nested/scripts" "$TEMP_LIT_DIR_H/chunkrepo/specs"
+  local chunk_lit_dir="$TEMP_LIT_DIR_H/chunk_lit_dir"
+  mkdir -p "$chunk_lit_dir"
+  cp "$chunk_index_h" "$chunk_lit_dir/index.json"
+  cat > "$TEMP_LIT_DIR_H/chunkrepo/specs/literature-index.json" <<'H3_SUBINDEX'
+{"entries": [{"doc_id": "sub1"}, {"doc_id": "sub2"}, {"doc_id": "sub3"}]}
+H3_SUBINDEX
+  ln -sf "$delta_script_h" "$TEMP_LIT_DIR_H/chunkrepo/nested/scripts/literature-coverage-delta.sh"
+  ln -sf "$term_match_script_h" "$TEMP_LIT_DIR_H/chunkrepo/nested/scripts/literature-term-match.sh"
+
+  local h3_delta_out h3_global_docs h3_gap
+  h3_delta_out=$(LITERATURE_DIR="$chunk_lit_dir" bash "$TEMP_LIT_DIR_H/chunkrepo/nested/scripts/literature-coverage-delta.sh" --query "chunked document survey" 2>/dev/null)
+  h3_global_docs=$(echo "$h3_delta_out" | grep -oE 'global_docs=[0-9]+' | cut -d= -f2)
+  h3_gap=$(echo "$h3_delta_out" | grep -oE 'delta_gap=[0-9]+' | cut -d= -f2)
+  if [[ "$h3_global_docs" == "30" ]]; then
+    log_pass "Case H3 (chunk inflation): literature-coverage-delta.sh reports global_docs=30 (top-level only, not 90)"
+  else
+    log_fail "Case H3 (chunk inflation): expected global_docs=30, got '$h3_global_docs'. Full output: $h3_delta_out"
+  fi
+  if [[ "$h3_gap" == "27" ]]; then
+    log_pass "Case H3 (chunk inflation): delta_gap=27 (30 top-level - 3 sub-index, not chunk-inflated)"
+  else
+    log_fail "Case H3 (chunk inflation): expected delta_gap=27, got '$h3_gap'. Full output: $h3_delta_out"
+  fi
+
+  # --- Case H4 (not computed): repo-mode briefing invoked WITHOUT --query -- delta_checked must
+  # be false, never a false zero (D6), and the pre-existing marker fields must stay as expected
+  # (requested=3 skipped=3, since none of sub1/sub2/sub3 resolve against the H1/H2 global index). ---
+  local h4_out h4_marker
+  h4_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_H" bash "$briefing_h" 2>/dev/null)
+  h4_marker=$(echo "$h4_out" | grep -- '<!-- lit-coverage')
+  if echo "$h4_marker" | grep -q 'delta_checked=false' && echo "$h4_marker" | grep -q 'delta_gap=0' && echo "$h4_marker" | grep -q 'delta_candidates=0'; then
+    log_pass "Case H4 (not computed): marker reports delta_checked=false delta_gap=0 delta_candidates=0 (never a false zero)"
+  else
+    log_fail "Case H4 (not computed): unexpected delta_* fields. Got: $h4_marker"
+  fi
+  if echo "$h4_marker" | grep -q 'requested=3 resolved=0 skipped=3'; then
+    log_pass "Case H4 (not computed): pre-existing marker fields (requested=/resolved=/skipped=) unaffected"
+  else
+    log_fail "Case H4 (not computed): pre-existing marker fields regressed. Got: $h4_marker"
+  fi
+
+  # --- Case H5 (fail-open): LITERATURE_DIR pointing at a nonexistent path -- resolver must
+  # still emit SUBINDEX_PRESENT on stdout with exit 0, never abort a --lit run. ---
+  local h5_out h5_exit
+  h5_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_H/does-not-exist" bash "$resolve_h" --lit-flag true --orchestrator-mode false --query "wombat marsupial taxonomy" 2>/dev/null)
+  h5_exit=$?
+  if [[ "$h5_exit" -eq 0 ]] && [[ "$(echo "$h5_out" | tail -1)" == "SUBINDEX_PRESENT" ]]; then
+    log_pass "Case H5 (fail-open): missing LITERATURE_DIR still yields SUBINDEX_PRESENT, exit 0"
+  else
+    log_fail "Case H5 (fail-open): expected SUBINDEX_PRESENT/exit 0, got '$h5_out' (exit $h5_exit)"
+  fi
+
+  # --- Case H6 (boundary, per the Scope Hypothesis re-check against Section G's boundary
+  # coverage): LITERATURE_COVERAGE_GAP_MIN's comparison is `>=` (D1), not `>` -- reuses the
+  # shared 30-doc global index above (global_docs=30) with two sub-index sizes chosen so
+  # delta_gap lands exactly on, and exactly one below, the default GAP_MIN=25. ---
+  local h6_at_boundary_sub="$TEMP_LIT_DIR_H/h6_at_boundary_subindex.json"
+  local h6_below_boundary_sub="$TEMP_LIT_DIR_H/h6_below_boundary_subindex.json"
+  python3 - "$h6_at_boundary_sub" 5 <<'PYEOF'
+import json, sys
+n = int(sys.argv[2])
+json.dump({"entries": [{"doc_id": f"h6_at_{i}"} for i in range(n)]}, open(sys.argv[1], "w"))
+PYEOF
+  python3 - "$h6_below_boundary_sub" 6 <<'PYEOF'
+import json, sys
+n = int(sys.argv[2])
+json.dump({"entries": [{"doc_id": f"h6_below_{i}"} for i in range(n)]}, open(sys.argv[1], "w"))
+PYEOF
+
+  mkdir -p "$TEMP_LIT_DIR_H/h6repo/nested/scripts" "$TEMP_LIT_DIR_H/h6repo/specs"
+  ln -sf "$delta_script_h" "$TEMP_LIT_DIR_H/h6repo/nested/scripts/literature-coverage-delta.sh"
+  ln -sf "$term_match_script_h" "$TEMP_LIT_DIR_H/h6repo/nested/scripts/literature-term-match.sh"
+  local delta_h6="$TEMP_LIT_DIR_H/h6repo/nested/scripts/literature-coverage-delta.sh"
+
+  local h6_at_out h6_at_gap h6_at_checked h6_at_candidates
+  cp "$h6_at_boundary_sub" "$TEMP_LIT_DIR_H/h6repo/specs/literature-index.json"
+  h6_at_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_H" bash "$delta_h6" --query "wombat marsupial taxonomy" 2>/dev/null)
+  h6_at_gap=$(echo "$h6_at_out" | grep -oE 'delta_gap=[0-9]+' | cut -d= -f2)
+  h6_at_checked=$(echo "$h6_at_out" | grep -oE 'delta_checked=[a-z]+' | cut -d= -f2)
+  h6_at_candidates=$(echo "$h6_at_out" | grep -oE 'delta_candidates=[0-9]+' | cut -d= -f2)
+  if [[ "$h6_at_gap" == "25" ]] && [[ "$h6_at_checked" == "true" ]] && [[ "$h6_at_candidates" -ge 1 ]]; then
+    log_pass "Case H6 (boundary, at GAP_MIN): delta_gap=25 (== LITERATURE_COVERAGE_GAP_MIN) still runs the keyword pass (>=, not >)"
+  else
+    log_fail "Case H6 (boundary, at GAP_MIN): expected gap=25/checked=true/candidates>=1. Got: $h6_at_out"
+  fi
+
+  local h6_below_out h6_below_gap
+  cp "$h6_below_boundary_sub" "$TEMP_LIT_DIR_H/h6repo/specs/literature-index.json"
+  h6_below_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_H" bash "$delta_h6" --query "wombat marsupial taxonomy" 2>/dev/null)
+  h6_below_gap=$(echo "$h6_below_out" | grep -oE 'delta_gap=[0-9]+' | cut -d= -f2)
+  if [[ "$h6_below_gap" == "24" ]] && echo "$h6_below_out" | grep -q 'delta_candidates=0'; then
+    log_pass "Case H6 (boundary, below GAP_MIN): delta_gap=24 (one below GAP_MIN) skips the keyword pass, delta_candidates=0"
+  else
+    log_fail "Case H6 (boundary, below GAP_MIN): expected gap=24/candidates=0 (keyword pass skipped). Got: $h6_below_out"
+  fi
+
+  log_info "Section H complete. Temp corpus will be cleaned up."
+}
+
+# ============================================================
 # MAIN
 # ============================================================
 main() {
@@ -853,6 +1114,7 @@ main() {
     section_e
     section_f
     section_g
+    section_h
   fi
 
   # --- Summary ---

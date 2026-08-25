@@ -1,28 +1,50 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 96,
-  "session_id": "sess_1787634022_3ba5fb_96",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
-      "summary": "7-phase plan for a topic-scoped literature coverage-delta guard: shared term-match helper extraction, a new literature-coverage-delta.sh, resolver + briefing wiring, Stage 4a flow update, Section H fixtures, and docs."
+      "type": "summary",
+      "path": "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
+      "summary": "Execution summary for the topic-scoped literature coverage-delta guard: all 7 phases complete, 44/44 fixture-suite checks passing (Sections A-H), end-to-end autonomous-path verification, and the named claim-level-verifier follow-up recorded rather than folded in."
     }
   ],
-  "phase_count": 7,
-  "estimated_hours": 6.5,
-  "dependency_waves": [[1], [2], [3, 4], [5, 6], [7]],
+  "completion_data": {
+    "completion_summary": "Implemented literature-coverage-delta.sh (compound topic-scoped trigger, parent_doc==null-filtered, fail-open) and wired it into literature-lit-flag-resolve.sh's SUBINDEX_PRESENT branch (reusing the existing SPARSE_PROMPT_NEEDED token) and literature-briefing.sh's repo-mode marker/banner, threaded --query through every lit-stage4a-flow.md and adhoc-navigation-directive.md repo-mode call site, added a 6-case Section H fixture suite (44/44 passing including a trigger-inversion sanity check and a GAP_MIN boundary case), and documented the mechanism in sparse-coverage.md."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-term-match.sh",
+    "agent-system/extensions/literature/scripts/literature-discover.sh",
+    "agent-system/extensions/literature/scripts/literature-coverage-delta.sh",
+    "agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh",
+    "agent-system/extensions/literature/scripts/literature-briefing.sh",
+    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
+    "agent-system/extensions/core/context/patterns/lit-stage4a-flow.md",
+    "agent-system/extensions/literature/context/project/literature/domain/sparse-coverage.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md",
+    "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
+    "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md"
+  ],
   "memory_candidates": [
     {
-      "content": "When adding a new degradation signal to an existing marker/banner family, two design rules recur in this codebase: (1) fold the signal into an already-polled channel OR give it its own consumer on day one -- a new field nothing greps reproduces the silent-degradation failure it exists to close; overloading an existing boolean is only correct when the two conditions call for the SAME operator action, otherwise add distinct fields plus an always-emitted banner. (2) Never let 'not computed' render as a zero: carry an explicit checked=true|false companion field so an uncomputed value cannot be misread as a verified clean result. Both rules were applied when extending the literature --lit sparse-coverage family with a cross-index coverage delta.",
+      "content": "When a shell script's structured stdout line needs a field that itself contains free-text spaces (e.g. a candidate title list), do not try to keep the whole line whitespace-splittable. Put scalar/id fields first (no embedded spaces, extractable via `grep -oE 'field=[^ ]+'`), and put the free-text-bearing field LAST as a JSON-encoded array (`field=[\"a\",\"b\"]`), extracted via `grep -oE 'field=\\[.*\\]$'` anchored to end-of-line, then parsed with `jq`. Also watch for substring-collision between a full field name and a suffix of another (e.g. `candidates=` matching inside `delta_candidates=`) -- anchor extraction patterns to a preceding space/start-of-string, e.g. `grep -oE '(^| )candidates=[^ ]*'`.",
       "category": "PATTERN",
-      "source_artifact": "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
+      "source_artifact": "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["bash", "shell-scripting", "structured-output", "grep-extraction", "field-collision"]
+    },
+    {
+      "content": "For a bash script meant to run from either a source-store location or a deployed .claude/scripts/ location, verify PROJECT_ROOT resolution assumptions (typically `$SCRIPT_DIR/../..`) by testing from BOTH locations, or via a symlinked fixture that mimics the deployed depth (see test-lit-pipeline.sh Section F/G/H's `fakerepo/nested/scripts/` symlink idiom). Running such a script directly from its source-store copy silently resolves the wrong PROJECT_ROOT (one level short), which can mask real bugs in manual verification -- the fix is not to change the script (source-store execution is not a supported entry point) but to test via the same symlink-depth fixture the automated suite already uses.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["silent-degradation", "marker-field", "signal-design", "coverage", "not-computed", "banner"]
+      "suggested_keywords": ["bash", "project-root-resolution", "source-store", "fixture-testing", "literature-extension"]
     }
   ],
-  "summary": "Plan created: 7 phases, 6.5 hours, 5 dependency waves. Settles all four design decisions the task required (materially-less definition, keyword-scoped vs whole-index delta, firing sites, surfacing shape) plus two derived ones (no sparse=true overload, delta_checked convention). Claim-level verifier named as an explicit out-of-scope follow-up.",
-  "next_steps": "Run /implement 96 to execute the plan"
+  "metadata": {
+    "session_id": "sess_1787634022_3ba5fb",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

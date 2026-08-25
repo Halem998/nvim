@@ -121,6 +121,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md]
 - **Plan**: [099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md]
+- **Summary**: [099_pin_handoff_artifacts_element_shape/summaries/01_pin-handoff-artifacts-shape-summary.md]
 
 **Description**: Make the .orchestrator-handoff.json artifacts[] element shape unambiguous in the agent contracts, and stop research dispatches from emitting bare strings where the consumers require objects.
 
@@ -245,6 +246,7 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 - **Dependencies**: Task 77
 - **Research**: [096_surface_literature_coverage_delta_under_lit/reports/01_lit-coverage-delta-guard.md]
 - **Plan**: [096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md]
+- **Summary**: [096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md]
 
 **Description**: Surface the sub-index vs global-index coverage delta when --lit is active, so decision-relevant sources sitting in the global corpus are not silently invisible to research. REPORTED EVIDENCE: in the Logos/Theory repo, specs/literature-index.json holds 37 entries against 399 in ~/Projects/Literature/index.json. Sources that turned out to be decision-relevant were present in the global repo, already chunked and readable, and were never surfaced to the research agents: the canonical branching-time cluster (thomason-1970-indeterminist-time, 78 chunks; reynolds-2003-ockhamist, 30; rumberg-zanardo-2019-transition-structures, 42) and the hyperproperty-monitoring cluster (finkbeiner_etal_2017_monitoring_hyperproperties; finkbeiner_etal_2018_rvhyper; bonakdarpour_sheinvald_2023_finite_word_hyperlanguages, 53; sousa_dillig_2016_cartesian_hoare_logic_k_safety, 69; agrawal_bonakdarpour_2016_runtime_verification_k_safety_hyperltl).
 

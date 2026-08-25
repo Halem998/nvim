@@ -1,15 +1,41 @@
 {
-  "dispatch_seq": 5,
+  "dispatch_seq": 8,
   "task_number": 96,
   "session_id": "sess_1787634022_3ba5fb_96",
-  "status": "planned",
+  "status": "implemented",
+  "summary": "Implemented all 7 phases of the topic-scoped literature coverage-delta guard. Extracted literature-discover.sh's Tier 1 matcher into a shared literature-term-match.sh; added literature-coverage-delta.sh with the D1/D2 compound trigger (LITERATURE_COVERAGE_GAP_MIN cheap pre-filter, LITERATURE_COVERAGE_DELTA_THRESHOLD keyword-matched actionable trigger), mandatory parent_doc==null filtering on the global side, and a fail-open contract; wired it into literature-lit-flag-resolve.sh's SUBINDEX_PRESENT branch (downgrading to the existing SPARSE_PROMPT_NEEDED token, no new directive) and literature-briefing.sh's repo-mode marker/banner (delta_checked=/delta_gap=/delta_candidates= appended after the pre-existing fields, plus a bounded [COVERAGE DELTA ...] banner, never setting sparse=true per D5); threaded --query through every repo-mode call site in lit-stage4a-flow.md and adhoc-navigation-directive.md so the guard is actually reachable in production; added a 6-case Section H fixture suite (fires, negative control, chunk-inflation, not-computed, fail-open, and a GAP_MIN boundary case) with all 44 suite checks passing and a trigger-inversion sanity check confirming the tests exercise real behavior; documented the mechanism in sparse-coverage.md's new Coverage-Delta Detection section, including the explicit rationale for not overloading sparse=true and the named claim-level-verifier follow-up this task does not close. Manually verified end-to-end that the autonomous path (orchestrator_mode=true) surfaces the [COVERAGE DELTA ...] banner inside lit_context without ever calling AskUserQuestion.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
-      "summary": "7-phase, 6.5-hour plan for a topic-scoped literature coverage-delta guard: extract literature-discover.sh's Tier 1 matcher into a shared literature-term-match.sh, add literature-coverage-delta.sh (parent_doc==null-filtered, compound gap+keyword condition, fail-open), downgrade literature-lit-flag-resolve.sh's SUBINDEX_PRESENT branch to the EXISTING SPARSE_PROMPT_NEEDED token on a topic-scoped miss, add a mandatory in-band [COVERAGE DELTA ...] banner plus delta_checked/delta_gap/delta_candidates marker fields to literature-briefing.sh repo mode, thread --query through lit-stage4a-flow.md's repo-mode call sites, add Section H fixtures (fires / negative control / chunk-inflation / not-computed / fail-open), and document the mechanism in sparse-coverage.md."
+      "type": "summary",
+      "path": "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
+      "summary": "Execution summary for the topic-scoped literature coverage-delta guard: all 7 phases complete, 44/44 fixture-suite checks passing (Sections A-H), end-to-end autonomous-path verification, and the named claim-level-verifier follow-up recorded rather than folded in."
     }
   ],
-  "next_steps": "Run /implement 96 to execute the plan",
-  "summary": "Plan complete. All four design decisions the task required are settled explicitly: (D1) 'materially less' is a COMPOUND condition -- an absolute doc-level gap pre-filter (LITERATURE_COVERAGE_GAP_MIN, default 25) AND >= LITERATURE_COVERAGE_DELTA_THRESHOLD (default 1) keyword-matched global top-level documents absent from the sub-index; a bare ratio is explicitly rejected as alarm-fatigue noise. (D2) The delta is computed against keyword-matched entries only; the whole-index count is a pre-filter and a reported context field, never a trigger. (D3) One shared computation (new literature-coverage-delta.sh) with two wiring sites: the resolver's SUBINDEX_PRESENT branch and literature-briefing.sh's repo mode -- no new directive token, no new AskUserQuestion option set. (D4) Surfacing is BOTH: a mandatory, unconditional in-band [COVERAGE DELTA ...] banner inside lit_context (the only channel reaching orchestrator_mode=true runs) plus the existing four-option AskUserQuestion via the reused SPARSE_PROMPT_NEEDED directive in interactive contexts only. Two derived decisions are recorded with rationale: (D5) the delta deliberately does NOT overload sparse=true (different operator action; would leak into the mode=global two-checkpoint re-prompt grep) and instead carries its own marker fields plus an always-emitted banner, satisfying sparse-coverage.md's no-unconsumed-flag discipline by construction; (D6) an uncomputed delta reports delta_checked=false rather than a zero that could read as a verified clean result. The research report's parent_doc==null chunk-inflation gotcha is mandated in Phase 2 and pinned by a dedicated Phase 6 fixture case. The claim-level 'no counterpart exists' verifier is named explicitly in a '## Named Follow-Up' section and in Non-Goals as a /spawn candidate that this task does NOT close -- completion must not be reported as closing that risk class. Waves: [[1],[2],[3,4],[5,6],[7]]. All file targets are under agent-system/extensions/** per the source-store rule."
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/literature/scripts/literature-term-match.sh",
+    "agent-system/extensions/literature/scripts/literature-discover.sh",
+    "agent-system/extensions/literature/scripts/literature-coverage-delta.sh",
+    "agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh",
+    "agent-system/extensions/literature/scripts/literature-briefing.sh",
+    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
+    "agent-system/extensions/core/context/patterns/lit-stage4a-flow.md",
+    "agent-system/extensions/literature/context/project/literature/domain/sparse-coverage.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md",
+    "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
+    "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md"
+  ],
+  "decisions_made": [
+    "Followed D1-D6 verbatim: compound topic-scoped trigger (LITERATURE_COVERAGE_GAP_MIN cheap pre-filter, LITERATURE_COVERAGE_DELTA_THRESHOLD keyword-matched actionable trigger), parent_doc==null filtering mandatory on the global side, one shared literature-coverage-delta.sh with two wiring sites, no new directive/option/autonomy branch, sparse=true left untouched, delta_checked=false never misread as a verified zero",
+    "Extended Phase 5's 'every repo-mode call site now carries --query' verification criterion beyond the two named sites (SUBINDEX_PRESENT, autonomous SPARSE_PROMPT_NEEDED) to all four no-arg literature-briefing-invoke.sh repo-mode call sites in lit-stage4a-flow.md, and mirrored the same --query threading into adhoc-navigation-directive.md's three repo-mode call sites (that file explicitly mirrors Stage 4a; leaving it stale would have left the guard permanently unwired for the primary-session conversational path)",
+    "Added Case H6 (LITERATURE_COVERAGE_GAP_MIN's >= boundary, exercised exactly at and one below the default 25) to the Section H fixture suite beyond the plan's named H1-H5, per Phase 6's Scope Hypothesis instruction to re-check Section G's boundary-case coverage before declaring the case list closed",
+    "The claim-level 'no counterpart exists' verifier stays explicitly unimplemented per the plan's Non-Goals/Named Follow-Up -- recorded in sparse-coverage.md and the summary as a /spawn candidate, not folded in"
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": true,
+  "sorry_inventory": [],
+  "continuation_path": null
 }

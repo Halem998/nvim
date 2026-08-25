@@ -26,10 +26,14 @@ A live user is always present in a conversational request, so the autonomous bra
    `--orchestrator-mode` is always `false`; `LIT_DISABLED` cannot occur since `--lit-flag` is
    always `true` here):
 
-   - **`SUBINDEX_PRESENT`** → run the per-repo briefing with no arguments:
+   - **`SUBINDEX_PRESENT`** → run the per-repo briefing, passing `--query "<user request text>"`
+     so the topic-scoped coverage-delta guard can run (see
+     `.claude/context/project/literature/domain/sparse-coverage.md`'s "Coverage-Delta Detection"
+     section) — without `--query` the guard never runs and the marker's `delta_checked` field
+     stays `false`:
 
      ```bash
-     bash .claude/scripts/literature-briefing-invoke.sh
+     bash .claude/scripts/literature-briefing-invoke.sh --query "<user request text>"
      ```
 
    - **`GLOBAL_MISSING`** → emit a visible chat notice that no literature is available (no
@@ -48,13 +52,13 @@ A live user is always present in a conversational request, so the autonomous bra
      - **"Create curation task"**: run `literature-create-setup-task.sh` to create the
        `populate_literature_sub_index` task, then attempt the same Stage 4a-fork inline
        population Stage 4a uses so this conversation also benefits; once
-       `specs/literature-index.json` exists (or has more entries), run the no-arg
-       `literature-briefing-invoke.sh`.
+       `specs/literature-index.json` exists (or has more entries), run
+       `literature-briefing-invoke.sh --query "<user request text>"`.
      - **"Search online to ingest"**: run `literature-discover.sh "<query>"`, filter candidate
        records to `open_access`/`paywall`/`in_zotero_no_pdf`, ingest each via the STABLE-CONTRACT
-       `literature-ingest-online.sh --record` bridge, then re-run the per-repo briefing to pick up
-       whatever was ingested. Live network calls — this option is always an explicit user choice,
-       never automatic.
+       `literature-ingest-online.sh --record` bridge, then re-run the per-repo briefing (with
+       `--query "<user request text>"`, same as above) to pick up whatever was ingested. Live
+       network calls — this option is always an explicit user choice, never automatic.
      - **"Skip this run"**: an explicit, user-chosen decision. Log `[lit] Skipped by user choice`
        and continue without a briefing — non-silent because it is an explicit, logged choice.
 

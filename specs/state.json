@@ -69,6 +69,12 @@
           "path": "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
           "summary": "7-phase, 6.5-hour plan for a topic-scoped literature coverage-delta guard: extract literature-discover.sh's Tier 1 matcher into a shared literature-term-match.sh, add literature-coverage-delta.sh (parent_doc==null-filtered, compound gap+keyword condition, fail-open), downgrade literature-lit-flag-resolve.sh's SUBINDEX_PRESENT branch to the EXISTING SPARSE_PROMPT_NEEDED token on a topic-scoped miss, add a mandatory in-band [COVERAGE DELTA ...] banner plus delta_checked/delta_gap/delta_candidates marker fields to literature-briefing.sh repo mode, thread --query through lit-stage4a-flow.md's repo-mode call sites, add Section H fixtures (fires / negative control / chunk-inflation / not-computed / fail-open), and document the mechanism in sparse-coverage.md.",
           "created": "2026-08-25T05:21:11Z"
+        },
+        {
+          "type": "summary",
+          "path": "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
+          "summary": "Execution summary for the topic-scoped literature coverage-delta guard: all 7 phases complete, 44/44 fixture-suite checks passing (Sections A-H), end-to-end autonomous-path verification, and the named claim-level-verifier follow-up recorded rather than folded in.",
+          "created": "2026-08-25T05:46:50Z"
         }
       ]
     },
@@ -1997,6 +2003,12 @@
           "path": "specs/099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md",
           "summary": "7-phase plan pinning the handoff artifacts[] element shape, with fold-in/defer decisions and the surfaced maintainer contradiction recorded.",
           "created": "2026-08-25T05:21:26Z"
+        },
+        {
+          "type": "summary",
+          "path": "specs/099_pin_handoff_artifacts_element_shape/summaries/01_pin-handoff-artifacts-shape-summary.md",
+          "summary": "Execution summary recording the settled element shape, all four fold-in/defer scope decisions, the ACCEPTANCE-clause resolution, and the surfaced maintainer contradiction.",
+          "created": "2026-08-25T05:46:57Z"
         }
       ],
       "created": "2026-08-24T23:54:34Z",

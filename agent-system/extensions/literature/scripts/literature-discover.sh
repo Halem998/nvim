@@ -197,52 +197,13 @@ urlencode() {
 }
 
 # ---------------------------------------------------------------------------
-# Helper: lowercase for case-insensitive matching
+# Shared Tier 1 keyword-matching helper (to_lower, term_matches, STOP_WORDS,
+# filter_terms, MULTI_TERM_MATCH_THRESHOLD). Extracted so literature-coverage-delta.sh
+# can reuse the exact same matcher rather than reimplementing it -- see that file's
+# header for the second call site. Definitions below are unchanged from before the
+# extraction; only their location moved.
 # ---------------------------------------------------------------------------
-to_lower() {
-  echo "$1" | tr '[:upper:]' '[:lower:]'
-}
-
-# ---------------------------------------------------------------------------
-# Helper: check if term appears in string (case-insensitive)
-# ---------------------------------------------------------------------------
-term_matches() {
-  local haystack
-  haystack=$(to_lower "$1")
-  local needle
-  needle=$(to_lower "$2")
-  echo "$haystack" | grep -qF "$needle"
-}
-
-# ---------------------------------------------------------------------------
-# Split SEARCH_TERMS into array, filter stop words and short terms
-# ---------------------------------------------------------------------------
-STOP_WORDS="a an the in on at of to and or for by with from is are was were"
-
-filter_terms() {
-  local input="$1"
-  local terms=()
-  IFS=' ' read -ra raw_terms <<< "$input"
-  for raw in "${raw_terms[@]}"; do
-    term=$(to_lower "$raw")
-    # Skip short terms
-    if [ "${#term}" -lt 3 ]; then
-      continue
-    fi
-    # Skip stop words
-    is_stop=false
-    for stop in $STOP_WORDS; do
-      if [ "$term" = "$stop" ]; then
-        is_stop=true
-        break
-      fi
-    done
-    if [ "$is_stop" = "false" ]; then
-      terms+=("$term")
-    fi
-  done
-  printf '%s\n' "${terms[@]:-}"
-}
+source "$SCRIPT_DIR/literature-term-match.sh"
 
 # SEARCH_TERMS already has title-primary/description-capped-supplementary
 # ordering applied above for --task invocations (a plain positional query has
@@ -263,8 +224,8 @@ fi
 # count is large (a long --task description, even capped, can still produce
 # more than a handful of terms); at or below this count, single-term-match
 # behavior is preserved exactly so short, deliberate queries are unaffected.
+# MULTI_TERM_MATCH_THRESHOLD itself now comes from the sourced literature-term-match.sh.
 FILTERED_TERM_COUNT="${#FILTERED_TERMS[@]}"
-MULTI_TERM_MATCH_THRESHOLD=5
 
 # ---------------------------------------------------------------------------
 # Result accumulation

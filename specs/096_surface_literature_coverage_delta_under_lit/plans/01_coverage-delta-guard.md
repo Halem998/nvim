@@ -1,7 +1,7 @@
 # Implementation Plan: Task #96
 
 - **Task**: 96 - surface_literature_coverage_delta_under_lit
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: literature global-index schema-unification (COMPLETE — `literature-doc-key.sh`
   and the `.id // .doc_id` tolerance pattern are already in place and sufficient for a
@@ -162,22 +162,22 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Extract the shared term-matching helper [NOT STARTED]
+### Phase 1: Extract the shared term-matching helper [COMPLETED]
 
 **Goal**: One implementation of the Tier 1 keyword matcher, sourceable by both
 `literature-discover.sh` and the new delta script — no second matcher anywhere.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/literature/scripts/literature-term-match.sh` as a
+- [x] Create `agent-system/extensions/literature/scripts/literature-term-match.sh` as a *(completed)*
       source-only helper (no `set -e`; guarded against double-sourcing), exporting `to_lower`,
       `STOP_WORDS`, `filter_terms`, `term_matches`, and `MULTI_TERM_MATCH_THRESHOLD` verbatim
       from their current definitions in `literature-discover.sh`.
-- [ ] Add a header comment naming both call sites and stating that the multi-term threshold
+- [x] Add a header comment naming both call sites and stating that the multi-term threshold *(completed)*
       semantics (accept-on-first-hit at or below the threshold, `>= 2` distinct hits above it)
       are the contract, not an implementation detail.
-- [ ] Edit `literature-discover.sh` to source the helper and delete its now-duplicated local
+- [x] Edit `literature-discover.sh` to source the helper and delete its now-duplicated local *(completed)*
       definitions, leaving the Tier 1 loop's use of them byte-identical.
-- [ ] Confirm `literature-discover.sh` still resolves the helper from its own `SCRIPT_DIR` (it
+- [x] Confirm `literature-discover.sh` still resolves the helper from its own `SCRIPT_DIR` (it *(completed)*
       must work from both the source-store copy and the deployed `.claude/scripts/` copy).
 
 **Timing**: 0.75 hours
@@ -209,33 +209,33 @@ widen the phase to cover it or record the divergence rather than assuming the li
 
 ---
 
-### Phase 2: Implement `literature-coverage-delta.sh` [NOT STARTED]
+### Phase 2: Implement `literature-coverage-delta.sh` [COMPLETED]
 
 **Goal**: One executable that computes the topic-scoped coverage delta and prints a single
 machine-readable line, with no opinion about who consumes it.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/literature/scripts/literature-coverage-delta.sh` accepting
+- [x] Create `agent-system/extensions/literature/scripts/literature-coverage-delta.sh` accepting *(completed)*
       `--query "<text>"` (required), `--top-n N` (default 5, bounded candidate list),
       and honoring `LITERATURE_DIR`, `LITERATURE_COVERAGE_GAP_MIN` (default 25),
       `LITERATURE_COVERAGE_DELTA_THRESHOLD` (default 1).
-- [ ] Resolve `SUB_INDEX` / `GLOBAL_INDEX` using the same `SCRIPT_DIR`/`PROJECT_ROOT` idiom the
+- [x] Resolve `SUB_INDEX` / `GLOBAL_INDEX` using the same `SCRIPT_DIR`/`PROJECT_ROOT` idiom the *(completed)*
       resolver and briefing scripts already use.
-- [ ] Count the global side as top-level documents only: `select(.parent_doc == null or
+- [x] Count the global side as top-level documents only: `select(.parent_doc == null or *(completed)*
       .parent_doc == "")` — never raw `.entries | length`. This is the plan's single most
       load-bearing implementation detail.
-- [ ] Build the sub-index doc-key set from `.entries[].doc_id`, and compare against global
+- [x] Build the sub-index doc-key set from `.entries[].doc_id`, and compare against global *(completed)*
       `(.id // .doc_id)` (the tolerant pattern already used throughout the extension).
-- [ ] Source `literature-term-match.sh`; filter the query; apply the same match rule as Tier 1
+- [x] Source `literature-term-match.sh`; filter the query; apply the same match rule as Tier 1 *(completed)*
       (title/keywords, `>= 2` distinct hits when the filtered term count exceeds
       `MULTI_TERM_MATCH_THRESHOLD`, accept-on-first-hit otherwise).
-- [ ] Apply the compound condition from D1: compute `delta_gap` always; run the keyword pass only
+- [x] Apply the compound condition from D1: compute `delta_gap` always; run the keyword pass only *(completed)*
       when `delta_gap >= LITERATURE_COVERAGE_GAP_MIN`.
-- [ ] Print exactly one stdout line:
+- [x] Print exactly one stdout line: *(completed)*
       `delta_checked=true delta_gap=N global_docs=G subindex_docs=S delta_candidates=M
       candidates=<id1,id2,...>` plus a parallel `candidate_titles=` payload the banner can render
       (bounded to `--top-n`; the untruncated total stays in `delta_candidates`).
-- [ ] Fail open, never fatal: missing global index, missing sub-index, unreadable JSON, or an
+- [x] Fail open, never fatal: missing global index, missing sub-index, unreadable JSON, or an *(completed)*
       empty filtered-term list all exit 0 with `delta_checked=false` and a stderr rationale.
       A `--lit` run must never be aborted by this script.
 
@@ -259,24 +259,24 @@ machine-readable line, with no opinion about who consumes it.
 
 ---
 
-### Phase 3: Wire the guard into the resolver's `SUBINDEX_PRESENT` branch [NOT STARTED]
+### Phase 3: Wire the guard into the resolver's `SUBINDEX_PRESENT` branch [COMPLETED]
 
 **Goal**: A sub-index that clears the absolute floor but has topic-scoped misses downgrades to
 the EXISTING `SPARSE_PROMPT_NEEDED` directive instead of short-circuiting as healthy.
 
 **Tasks**:
-- [ ] In `literature-lit-flag-resolve.sh`, after the existing `entry_count -lt threshold` check
+- [x] In `literature-lit-flag-resolve.sh`, after the existing `entry_count -lt threshold` check *(completed)*
       passes, invoke `literature-coverage-delta.sh --query "$query"` and parse
       `delta_checked`/`delta_candidates`.
-- [ ] When `delta_checked=true` and `delta_candidates >= LITERATURE_COVERAGE_DELTA_THRESHOLD`,
+- [x] When `delta_checked=true` and `delta_candidates >= LITERATURE_COVERAGE_DELTA_THRESHOLD`, *(completed)*
       emit `SPARSE_PROMPT_NEEDED` (unchanged token) with a stderr rationale that explicitly
       distinguishes this cause ("sub-index clears the count floor but N topic-relevant global
       documents are absent from it: id1, id2, ...") from the absolute-count cause.
-- [ ] Otherwise emit `SUBINDEX_PRESENT` exactly as today, with the delta result appended to the
+- [x] Otherwise emit `SUBINDEX_PRESENT` exactly as today, with the delta result appended to the *(completed)*
       existing rationale line so a non-firing check is still visible to an operator.
-- [ ] Guard the invocation so a delta-script failure or absence degrades to today's behavior
+- [x] Guard the invocation so a delta-script failure or absence degrades to today's behavior *(completed)*
       (`SUBINDEX_PRESENT`) with a visible stderr notice — never a crash, never a silent skip.
-- [ ] Update the script's header directive documentation: `SPARSE_PROMPT_NEEDED` now has two
+- [x] Update the script's header directive documentation: `SPARSE_PROMPT_NEEDED` now has two *(completed)*
       causes; the token, option set, and autonomy contract are unchanged.
 
 **Timing**: 0.75 hours
@@ -301,29 +301,29 @@ the EXISTING `SPARSE_PROMPT_NEEDED` directive instead of short-circuiting as hea
 
 ---
 
-### Phase 4: Wire the in-band banner into `literature-briefing.sh` repo mode [NOT STARTED]
+### Phase 4: Wire the in-band banner into `literature-briefing.sh` repo mode [COMPLETED]
 
 **Goal**: The delta reaches the consuming agent's prompt — including in `orchestrator_mode=true`,
 where `AskUserQuestion` is forbidden and stderr never arrives.
 
 **Tasks**:
-- [ ] Add an optional `--query "<text>"` argument to `literature-briefing.sh` (repo mode only;
+- [x] Add an optional `--query "<text>"` argument to `literature-briefing.sh` (repo mode only; *(completed)*
       ignored with a warning in `--global` mode, which has its own query).
-- [ ] In repo mode, when `--query` is present, invoke `literature-coverage-delta.sh` and capture
+- [x] In repo mode, when `--query` is present, invoke `literature-coverage-delta.sh` and capture *(completed)*
       `delta_checked` / `delta_gap` / `delta_candidates` / the bounded candidate list.
-- [ ] Append `delta_checked=` `delta_gap=` `delta_candidates=` to the `<!-- lit-coverage ... -->`
+- [x] Append `delta_checked=` `delta_gap=` `delta_candidates=` to the `<!-- lit-coverage ... -->` *(completed)*
       marker **strictly after** the existing `mode=`/`seg_count=`/`sparse=`/`threshold=`/
       `requested=`/`resolved=`/`skipped=`/`skip_rate=` fields, which stay byte-for-byte adjacent
       and in order (the established backward-compatibility rule for `.*`-tolerant greps).
-- [ ] When `--query` is absent, emit `delta_checked=false delta_gap=0 delta_candidates=0` (D6) —
+- [x] When `--query` is absent, emit `delta_checked=false delta_gap=0 delta_candidates=0` (D6) — *(completed)*
       never omit the fields, never report an uncomputed zero as a verified zero.
-- [ ] Emit a `[COVERAGE DELTA - M topic-relevant document(s) in the global corpus are absent from
+- [x] Emit a `[COVERAGE DELTA - M topic-relevant document(s) in the global corpus are absent from *(completed)*
       this repo's sub-index]` banner when the trigger fires, in the same family as
       `[SPARSE COVERAGE ...]`, listing up to top-N candidate titles + doc_ids and stating the
       untruncated total separately.
-- [ ] Do NOT set `sparse=true` from the delta (D5). Leave the existing `sparse` computation
+- [x] Do NOT set `sparse=true` from the delta (D5). Leave the existing `sparse` computation *(completed)*
       untouched.
-- [ ] Confirm `literature-briefing-invoke.sh` needs no change (it forwards `"$@"` unchanged) and
+- [x] Confirm `literature-briefing-invoke.sh` needs no change (it forwards `"$@"` unchanged) and *(completed)*
       record that in the phase notes rather than editing it speculatively.
 
 **Timing**: 1.25 hours
@@ -349,26 +349,26 @@ where `AskUserQuestion` is forbidden and stderr never arrives.
 
 ---
 
-### Phase 5: Update the shared Stage 4a flow [NOT STARTED]
+### Phase 5: Update the shared Stage 4a flow [COMPLETED]
 
 **Goal**: The `--query` actually reaches repo mode at every production call site, and the
 interactive prompt wording distinguishes the two `SPARSE_PROMPT_NEEDED` causes.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/patterns/lit-stage4a-flow.md`, update the
+- [x] In `agent-system/extensions/core/context/patterns/lit-stage4a-flow.md`, update the *(completed)*
       `SUBINDEX_PRESENT` branch's call to
       `literature-briefing-invoke.sh --query "$description"`.
-- [ ] Update the autonomous `SPARSE_PROMPT_NEEDED` branch's repo-briefing call the same way, and
+- [x] Update the autonomous `SPARSE_PROMPT_NEEDED` branch's repo-briefing call the same way, and *(completed)*
       extend its `[lit:auto]` notice to mention that a topic-scoped coverage delta, if any, is
       surfaced in-band inside `lit_context`.
-- [ ] Update the interactive `SPARSE_PROMPT_NEEDED` prompt wording so it covers both causes
+- [x] Update the interactive `SPARSE_PROMPT_NEEDED` prompt wording so it covers both causes *(completed)*
       ("the sub-index is sparse, or topic-relevant global documents are absent from it"),
       keeping the four options and their order unchanged.
-- [ ] Add a short subsection documenting the `delta_checked=`/`delta_gap=`/`delta_candidates=`
+- [x] Add a short subsection documenting the `delta_checked=`/`delta_gap=`/`delta_candidates=` *(completed)*
       marker fields and stating that the delta deliberately does not set `sparse=true` (so the
       existing `grep 'lit-coverage mode=global .*sparse=true'` two-checkpoint logic is
       unaffected).
-- [ ] Do not add a directive token, an option, or an autonomy branch.
+- [x] Do not add a directive token, an option, or an autonomy branch. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -391,31 +391,31 @@ interactive prompt wording distinguishes the two `SPARSE_PROMPT_NEEDED` causes.
 
 ---
 
-### Phase 6: Fixture regression suite (Section H) [NOT STARTED]
+### Phase 6: Fixture regression suite (Section H) [COMPLETED]
 
 **Goal**: The guard's firing and — more importantly — its **non**-firing behavior is pinned by
 fixtures, in the idiom Section G already established.
 
 **Tasks**:
-- [ ] Add `section_h` to `agent-system/extensions/literature/scripts/test-lit-pipeline.sh`,
+- [x] Add `section_h` to `agent-system/extensions/literature/scripts/test-lit-pipeline.sh`, *(completed)*
       following Section G's fixture idiom (own `TEMP_LIT_DIR_H`, symlinked script under a
       `fakerepo/nested/scripts` tree, own cleanup registration), and call it from `main` under
       the `--runtime` guard.
-- [ ] Case H1 (fires): sub-index of >= 3 entries clearing the absolute floor; global index with
+- [x] Case H1 (fires): sub-index of >= 3 entries clearing the absolute floor; global index with *(completed)*
       topic-matching documents absent from it; assert the resolver prints `SPARSE_PROMPT_NEEDED`
       and the briefing marker reports `delta_checked=true` with `delta_candidates >= 1` plus a
       `[COVERAGE DELTA ...]` banner.
-- [ ] Case H2 (negative control, does NOT fire): same sub-index, global index whose documents do
+- [x] Case H2 (negative control, does NOT fire): same sub-index, global index whose documents do *(completed)*
       not match the query terms; assert `SUBINDEX_PRESENT`, `delta_candidates=0`, and no banner.
       This case is the anti-alarm-fatigue guarantee and must not be dropped.
-- [ ] Case H3 (chunk inflation): global index with top-level docs plus `parent_doc`-bearing chunk
+- [x] Case H3 (chunk inflation): global index with top-level docs plus `parent_doc`-bearing chunk *(completed)*
       children; assert `global_docs` counts only the top-level docs (and specifically that the
       chunk children do not inflate `delta_gap`).
-- [ ] Case H4 (not computed): repo-mode briefing invoked without `--query`; assert
+- [x] Case H4 (not computed): repo-mode briefing invoked without `--query`; assert *(completed)*
       `delta_checked=false` and that the pre-existing marker fields are unchanged.
-- [ ] Case H5 (fail-open): `LITERATURE_DIR` pointing at a nonexistent path; assert the resolver
+- [x] Case H5 (fail-open): `LITERATURE_DIR` pointing at a nonexistent path; assert the resolver *(completed)*
       still emits `SUBINDEX_PRESENT` on stdout with exit 0.
-- [ ] Confirm Sections A-G still pass unchanged.
+- [x] Confirm Sections A-G still pass unchanged. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -442,13 +442,13 @@ closed if a gap is found.
 
 ---
 
-### Phase 7: Documentation [NOT STARTED]
+### Phase 7: Documentation [COMPLETED]
 
 **Goal**: The new mechanism is documented where the sparse family is documented, and the
 out-of-scope claim-level verifier is recorded as a named follow-up rather than silently dropped.
 
 **Tasks**:
-- [ ] Add a "Coverage-Delta Detection" section to
+- [x] Add a "Coverage-Delta Detection" section to *(completed)*
       `agent-system/extensions/literature/context/project/literature/domain/sparse-coverage.md`
       covering: the compound topic-scoped condition and both env vars with their defaults; the
       mandatory `parent_doc == null` filtering rule; the new marker fields and their
@@ -456,12 +456,12 @@ out-of-scope claim-level verifier is recorded as a named follow-up rather than s
       and the explicit rationale for NOT overloading `sparse=true` (D5), written to sit
       consistently beside that file's existing "Threshold Policy" section rather than
       contradicting it.
-- [ ] Follow the file's existing "Authority for the Full Decision Flow" pointer convention —
+- [x] Follow the file's existing "Authority for the Full Decision Flow" pointer convention — *(completed)*
       point at `lit-stage4a-flow.md` for the decision flow, do not duplicate it.
-- [ ] Check `agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md`'s
+- [x] Check `agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md`'s *(completed)*
       `<!-- lit-coverage ... -->` references and update them only if the added fields make an
       existing statement inaccurate.
-- [ ] Record the claim-level verifier as future work in the documentation's own terms (durable
+- [x] Record the claim-level verifier as future work in the documentation's own terms (durable *(completed)*
       description, no task-number reference in any file outside `specs/**`).
 
 **Timing**: 0.5 hours
@@ -500,21 +500,21 @@ relevant sources are invisible; it does not verify any particular claim.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on every modified/created shell script.
-- [ ] `literature-discover.sh` output byte-identical before/after the Phase 1 extraction.
-- [ ] `literature-coverage-delta.sh` `global_docs` equals `jq '[.entries[] | select(.parent_doc ==
+- [x] `bash -n` clean on every modified/created shell script. *(completed)*
+- [x] `literature-discover.sh` output byte-identical before/after the Phase 1 extraction. *(completed)*
+- [x] `literature-coverage-delta.sh` `global_docs` equals `jq '[.entries[] | select(.parent_doc == *(completed)*
       null)] | length'` on the same index (anti-inflation).
-- [ ] Resolver emits exactly one directive token on stdout in every branch, including all failure
+- [x] Resolver emits exactly one directive token on stdout in every branch, including all failure *(completed)*
       modes.
-- [ ] `literature-briefing.sh` repo-mode marker without `--query` is byte-identical to the
+- [x] `literature-briefing.sh` repo-mode marker without `--query` is byte-identical to the *(completed)*
       pre-change output except for the appended `delta_*` fields.
-- [ ] `bash agent-system/extensions/literature/scripts/test-lit-pipeline.sh --runtime` passes
+- [x] `bash agent-system/extensions/literature/scripts/test-lit-pipeline.sh --runtime` passes *(completed)*
       with zero failures, Sections A-H.
-- [ ] Manual autonomous-path check: with `orchestrator_mode=true` semantics (no
+- [x] Manual autonomous-path check: with `orchestrator_mode=true` semantics (no *(completed)*
       `AskUserQuestion`), the `[COVERAGE DELTA ...]` banner is present inside the returned
       `<literature-briefing>` block.
-- [ ] No file under `.claude/**` was hand-edited (source-store rule).
-- [ ] No task-number references introduced outside `specs/**` (deliverable rule).
+- [x] No file under `.claude/**` was hand-edited (source-store rule). *(completed)*
+- [x] No task-number references introduced outside `specs/**` (deliverable rule). *(completed)*
 
 ## Artifacts & Outputs
 
