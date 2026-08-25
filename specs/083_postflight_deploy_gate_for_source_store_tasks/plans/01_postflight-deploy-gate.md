@@ -1,7 +1,7 @@
 # Implementation Plan: Postflight Deploy Gate for Source-Store Tasks
 
 - **Task**: 83 - Make 'completed' mean 'in effect' for tasks that edit the source store — a postflight deploy gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10.5 hours
 - **Dependencies**: 82 (complete — `deploy-headless.sh` runs `verify-deploy.sh --skip-slow` inline and exits 3 for "deploy landed, verification failed")
 - **Research Inputs**: specs/083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md

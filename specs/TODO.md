@@ -11,8 +11,8 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,77,81,83,85,86,87,90,91,94,97,99,100 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,50,64,66,75,76,78,88,89,93,96,98 | 29,42,48,74,77,83,87,97 | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,77,81,85,86,87,90,91,93,94,97,99,100 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,50,64,66,75,76,78,88,89,96,98 | 29,42,48,74,77,87,97 | agent-system, extensions, literature, ... |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -65,14 +65,13 @@ next_project_number: 101
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-83 [IMPLEMENTING] — Make 'completed' mean 'in effect' for tasks that edit the source 
-  └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
 
 ### Team Mode Lifecycle
 
@@ -635,12 +634,13 @@ ACCEPTANCE: the gate fails on a deliberately reintroduced inline sess_$(date in 
 ---
 
 ### 83. Postflight deploy gate for source store tasks
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 82
 - **Research**: [083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md]
 - **Plan**: [083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md]
+- **Summary**: [083_postflight_deploy_gate_for_source_store_tasks/summaries/01_postflight-deploy-gate-summary.md]
 
 **Description**: Make 'completed' mean 'in effect' for tasks that edit the source store. TODAY IT DOES NOT: the deploy is 7 days and 133 commits stale, and four completed tasks (the mint-dispatch-seq fix and the three literature fixes) are marked COMPLETED with honest summaries while their fixes are absent from the running system. Deployed .claude/scripts/skill-base.sh:958 still reads `dispatch_seq_counter=$((dispatch_seq_counter + 1))` -- the exact pre-fix ambient-variable code that was replaced; source line 963 reads the corrected `jq -r '(.dispatch_seq_counter // 0) + 1'`. The accompanying test-mint-dispatch-seq.sh was never deployed. The HIGH-severity literature corpus-corruption gate is likewise not live.
 

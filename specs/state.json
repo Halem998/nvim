@@ -1532,7 +1532,7 @@
     {
       "project_number": 83,
       "project_name": "postflight_deploy_gate_for_source_store_tasks",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "critical",
@@ -1555,7 +1555,7 @@
         "agent-system/extensions/core/index-entries.json"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-08-25T00:49:11Z",
+      "last_updated": "2026-08-25T01:42:13Z",
       "session_id": "sess_1787617685_88b825_83",
       "artifacts": [
         {
@@ -1567,6 +1567,11 @@
           "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md",
           "type": "plan",
           "summary": "8-phase implementation plan (~10.5h) for the postflight deploy gate: shared freshness library, check-only exit-6 backstop in update-task-status.sh, regression suite, two serialized baseline-relative deploy triggers, the mandatory carve-out, and a deploy/self-demonstration phase."
+        },
+        {
+          "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/summaries/01_postflight-deploy-gate-summary.md",
+          "type": "summary",
+          "summary": "8-phase implementation of the postflight completion-deploy gate: shared freshness library, check-only exit-6 backstop in update-task-status.sh, regression suite, two serialized baseline-relative deploy triggers, the mandatory carve-out, and a deployed, dogfooded self-demonstration."
         }
       ],
       "memory_candidates": [
@@ -1622,7 +1627,8 @@
             "chokepoint"
           ]
         }
-      ]
+      ],
+      "completion_summary": "Implemented a check-only, unconditional postflight completion-deploy gate (exit 6) in update-task-status.sh that refuses a source-store-touching task's completion while its deploy is provably stale, with two serialized baseline-relative redeploy triggers (single-task and multi-task paths), the mandatory carve-out in regeneration-is-manual-only.md, and a shared deploy-freshness-lib.sh backing both the new blocking tier and the pre-existing advisory check. Deployed and dogfooded against this task's own completion."
     },
     {
       "project_number": 84,
