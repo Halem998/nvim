@@ -55,6 +55,8 @@
       "literature-schema.sql",
       "literature-briefing-invoke.sh",
       "literature-lit-flag-resolve.sh",
+      "literature-coverage-delta.sh",
+      "literature-term-match.sh",
       "literature-audit.sh",
       "literature-pyenv-provision.sh",
       "zotero-resolve-pdf.sh",

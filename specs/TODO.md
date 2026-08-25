@@ -11,7 +11,7 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,81,85,86,87,90,91,94,96,97,99,100 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,81,85,86,87,90,91,94,97,100 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,50,64,66,75,76,88,89,98 | 29,42,48,74,87,97 | agent-system, extensions, essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -43,7 +43,6 @@ next_project_number: 101
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
-96 [IMPLEMENTING] — Surface the sub-index vs global-index coverage delta when --lit i
 
 ### Orchestration Concurrency
 
@@ -77,7 +76,6 @@ next_project_number: 101
 
 ### Uncategorized
 
-99 [IMPLEMENTING] — Make the .orchestrator-handoff.json artifacts[] element shape una
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
@@ -116,7 +114,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 99. Pin handoff artifacts element shape
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md]
@@ -240,7 +238,7 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 ---
 
 ### 96. Surface literature coverage delta under lit
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 77

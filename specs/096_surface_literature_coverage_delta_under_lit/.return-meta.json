@@ -4,39 +4,32 @@
     {
       "type": "summary",
       "path": "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
-      "summary": "Execution summary for the topic-scoped literature coverage-delta guard: all 7 phases complete, 44/44 fixture-suite checks passing (Sections A-H), end-to-end autonomous-path verification, and the named claim-level-verifier follow-up recorded rather than folded in."
+      "summary": "Updated with a 'Post-Completion Defect and Fix' section documenting the manifest registration gap that left the coverage-delta guard inert in production, the fix, and the generalizable source-store-vs-deployed-tree verification lesson."
     }
   ],
   "completion_data": {
-    "completion_summary": "Implemented literature-coverage-delta.sh (compound topic-scoped trigger, parent_doc==null-filtered, fail-open) and wired it into literature-lit-flag-resolve.sh's SUBINDEX_PRESENT branch (reusing the existing SPARSE_PROMPT_NEEDED token) and literature-briefing.sh's repo-mode marker/banner, threaded --query through every lit-stage4a-flow.md and adhoc-navigation-directive.md repo-mode call site, added a 6-case Section H fixture suite (44/44 passing including a trigger-inversion sanity check and a GAP_MIN boundary case), and documented the mechanism in sparse-coverage.md."
+    "completion_summary": "Fixed a confirmed deploy defect: literature-coverage-delta.sh and literature-term-match.sh were never registered in manifest.json's provides.scripts array, so they never reached .claude/scripts/ and the coverage-delta guard was inert in production despite a passing source-store test suite. Registered both scripts, fixed two related stale index-entries.json line_count values, redeployed, and verified directly against the deployed .claude/scripts/ tree (44/0/0 including all Section H coverage-delta cases)."
   },
   "modified_files": [
-    "agent-system/extensions/literature/scripts/literature-term-match.sh",
-    "agent-system/extensions/literature/scripts/literature-discover.sh",
-    "agent-system/extensions/literature/scripts/literature-coverage-delta.sh",
-    "agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh",
-    "agent-system/extensions/literature/scripts/literature-briefing.sh",
-    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
-    "agent-system/extensions/core/context/patterns/lit-stage4a-flow.md",
-    "agent-system/extensions/literature/context/project/literature/domain/sparse-coverage.md",
-    "agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md",
-    "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
-    "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md"
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/index-entries.json",
+    "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
+    "specs/096_surface_literature_coverage_delta_under_lit/.orchestrator-handoff.json"
   ],
   "memory_candidates": [
     {
-      "content": "When a shell script's structured stdout line needs a field that itself contains free-text spaces (e.g. a candidate title list), do not try to keep the whole line whitespace-splittable. Put scalar/id fields first (no embedded spaces, extractable via `grep -oE 'field=[^ ]+'`), and put the free-text-bearing field LAST as a JSON-encoded array (`field=[\"a\",\"b\"]`), extracted via `grep -oE 'field=\\[.*\\]$'` anchored to end-of-line, then parsed with `jq`. Also watch for substring-collision between a full field name and a suffix of another (e.g. `candidates=` matching inside `delta_candidates=`) -- anchor extraction patterns to a preceding space/start-of-string, e.g. `grep -oE '(^| )candidates=[^ ]*'`.",
-      "category": "PATTERN",
+      "content": "In a source-store/deploy-split extension system (agent-system/extensions/** deployed flat into .claude/**), a new script's manifest.json provides.scripts entry is a SEPARATE, unverified precondition from the script existing and passing tests. A source-store test suite (run against agent-system/extensions/<ext>/scripts/) can pass 100% while the script is completely unreachable in production, because deploy-headless.sh only copies files that provides.scripts explicitly names (a ~40-entry literal list, not a glob) -- an omitted script is silently skipped, and a consumer that calls it with a not-found/not-executable guard (a common fail-open pattern) degrades silently rather than erroring. After adding any new extension script, run check-extension-docs.sh (its Rule Q: 'script file on disk not in provides.scripts') BEFORE claiming the feature works, and separately re-run the exercising test suite against the deployed .claude/scripts/ copy (not just the source-store copy) after a real deploy-headless.sh cycle -- these are the only two checks that catch this gap; a green source-store test run provides zero evidence either way.",
+      "category": "INSIGHT",
       "source_artifact": "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["bash", "shell-scripting", "structured-output", "grep-extraction", "field-collision"]
+      "confidence": 0.9,
+      "suggested_keywords": ["manifest-registration", "provides-scripts", "deploy-headless", "source-store-deploy-boundary", "fail-open", "check-extension-docs"]
     },
     {
-      "content": "For a bash script meant to run from either a source-store location or a deployed .claude/scripts/ location, verify PROJECT_ROOT resolution assumptions (typically `$SCRIPT_DIR/../..`) by testing from BOTH locations, or via a symlinked fixture that mimics the deployed depth (see test-lit-pipeline.sh Section F/G/H's `fakerepo/nested/scripts/` symlink idiom). Running such a script directly from its source-store copy silently resolves the wrong PROJECT_ROOT (one level short), which can mask real bugs in manual verification -- the fix is not to change the script (source-store execution is not a supported entry point) but to test via the same symlink-depth fixture the automated suite already uses.",
-      "category": "TECHNIQUE",
+      "content": "provides.context entries in an extension manifest.json are directory-level declarations (e.g. \"project/literature\"), not an explicit per-file list like provides.scripts. A new context .md file added under an already-declared directory deploys automatically with no separate registration step and cannot suffer the provides.scripts-style omission bug. When auditing a task's manifest hygiene after the fact, check provides.scripts (explicit list -- can silently omit a new file) and provides.context's companion index-entries.json (which DOES need explicit per-file entries, including an accurate line_count field checked by check-extension-docs.sh Rule R) separately from the context directory registration itself, since they are governed by different mechanisms.",
+      "category": "PATTERN",
       "source_artifact": "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["bash", "project-root-resolution", "source-store", "fixture-testing", "literature-extension"]
+      "confidence": 0.8,
+      "suggested_keywords": ["provides-context", "index-entries", "manifest-json", "extension-development", "line-count-drift"]
     }
   ],
   "metadata": {

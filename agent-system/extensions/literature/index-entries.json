@@ -88,7 +88,7 @@
         "orchestrator-mode"
       ],
       "summary": "How the primary/root session reproduces skill Stage 4a's --lit navigation conversationally by reusing literature-lit-flag-resolve.sh and literature-briefing.sh with --orchestrator-mode false",
-      "line_count": 107,
+      "line_count": 111,
       "load_when": {
         "agents": [
           "literature-agent",
@@ -265,7 +265,7 @@
         "skip_rate"
       ],
       "summary": "Sparse-coverage signalling in literature-briefing.sh/literature-lit-flag-resolve.sh (absolute-count and skip-rate thresholds, lit-coverage marker schema, SPARSE_PROMPT_NEEDED); points to CLAUDE.md merge source for full flow",
-      "line_count": 61,
+      "line_count": 133,
       "load_when": {
         "agents": [
           "literature-agent",

@@ -1,14 +1,14 @@
 {
-  "dispatch_seq": 8,
+  "dispatch_seq": 11,
   "task_number": 96,
-  "session_id": "sess_1787634022_3ba5fb_96",
+  "session_id": "sess_1787634022_3ba5fb",
   "status": "implemented",
-  "summary": "Implemented all 7 phases of the topic-scoped literature coverage-delta guard. Extracted literature-discover.sh's Tier 1 matcher into a shared literature-term-match.sh; added literature-coverage-delta.sh with the D1/D2 compound trigger (LITERATURE_COVERAGE_GAP_MIN cheap pre-filter, LITERATURE_COVERAGE_DELTA_THRESHOLD keyword-matched actionable trigger), mandatory parent_doc==null filtering on the global side, and a fail-open contract; wired it into literature-lit-flag-resolve.sh's SUBINDEX_PRESENT branch (downgrading to the existing SPARSE_PROMPT_NEEDED token, no new directive) and literature-briefing.sh's repo-mode marker/banner (delta_checked=/delta_gap=/delta_candidates= appended after the pre-existing fields, plus a bounded [COVERAGE DELTA ...] banner, never setting sparse=true per D5); threaded --query through every repo-mode call site in lit-stage4a-flow.md and adhoc-navigation-directive.md so the guard is actually reachable in production; added a 6-case Section H fixture suite (fires, negative control, chunk-inflation, not-computed, fail-open, and a GAP_MIN boundary case) with all 44 suite checks passing and a trigger-inversion sanity check confirming the tests exercise real behavior; documented the mechanism in sparse-coverage.md's new Coverage-Delta Detection section, including the explicit rationale for not overloading sparse=true and the named claim-level-verifier follow-up this task does not close. Manually verified end-to-end that the autonomous path (orchestrator_mode=true) surfaces the [COVERAGE DELTA ...] banner inside lit_context without ever calling AskUserQuestion.",
+  "summary": "Fixed a confirmed deploy defect from the prior dispatch: literature-coverage-delta.sh and literature-term-match.sh were created but never registered in agent-system/extensions/literature/manifest.json's provides.scripts array (an explicit 40-entry list, not a glob), so deploy-headless.sh never copied them into .claude/scripts/ and the deployed literature-lit-flag-resolve.sh silently took its fail-open path -- the coverage-delta guard was inert in production despite a fully passing source-store test suite. Registered both scripts in provides.scripts. Also found and fixed a related, same-class metadata drift while auditing: agent-system/extensions/literature/index-entries.json carried stale line_count values for sparse-coverage.md (61 vs actual 133) and adhoc-navigation-directive.md (107 vs actual 111), both touched by the prior dispatch. Checked all other manifest categories (agents/commands/skills/context) the prior dispatch touched; those resolve correctly (context is directory-deployed, not an explicit per-file list, so no registration gap was possible there). Redeployed via deploy-headless.sh (exit 0; the only fast-gate failure -- verify-deploy's doc-lint check -- is pre-existing and traces to unrelated core/typst/project-wide issues from tasks predating this one, confirmed via git log). Verified against the DEPLOYED tree directly, not the source store: .claude/scripts/literature-coverage-delta.sh and .claude/scripts/literature-term-match.sh now exist with correct permissions, and the deployed copy of test-lit-pipeline.sh --runtime (run from .claude/scripts/, exercising the deployed sibling scripts) passes 44/0/0 including all six Section H coverage-delta cases -- confirming the resolver now reaches the guard rather than its fail-open branch. Re-ran the source-store suite too (44/0/0, no regression). Appended a 'Post-Completion Defect and Fix' section to the existing summary recording the defect, the fix, and the generalizable lesson that source-store-only test verification cannot catch a manifest registration gap.",
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md",
-      "summary": "Execution summary for the topic-scoped literature coverage-delta guard: all 7 phases complete, 44/44 fixture-suite checks passing (Sections A-H), end-to-end autonomous-path verification, and the named claim-level-verifier follow-up recorded rather than folded in."
+      "summary": "Updated with a new 'Post-Completion Defect and Fix' section documenting the manifest registration gap, its fix, and the generalizable source-store-vs-deployed-tree verification lesson."
     }
   ],
   "phases_completed": 7,
@@ -16,23 +16,15 @@
   "blockers": [],
   "next_action_hint": "none",
   "files_modified": [
-    "agent-system/extensions/literature/scripts/literature-term-match.sh",
-    "agent-system/extensions/literature/scripts/literature-discover.sh",
-    "agent-system/extensions/literature/scripts/literature-coverage-delta.sh",
-    "agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh",
-    "agent-system/extensions/literature/scripts/literature-briefing.sh",
-    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
-    "agent-system/extensions/core/context/patterns/lit-stage4a-flow.md",
-    "agent-system/extensions/literature/context/project/literature/domain/sparse-coverage.md",
-    "agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md",
-    "specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/index-entries.json",
     "specs/096_surface_literature_coverage_delta_under_lit/summaries/01_coverage-delta-guard-summary.md"
   ],
   "decisions_made": [
-    "Followed D1-D6 verbatim: compound topic-scoped trigger (LITERATURE_COVERAGE_GAP_MIN cheap pre-filter, LITERATURE_COVERAGE_DELTA_THRESHOLD keyword-matched actionable trigger), parent_doc==null filtering mandatory on the global side, one shared literature-coverage-delta.sh with two wiring sites, no new directive/option/autonomy branch, sparse=true left untouched, delta_checked=false never misread as a verified zero",
-    "Extended Phase 5's 'every repo-mode call site now carries --query' verification criterion beyond the two named sites (SUBINDEX_PRESENT, autonomous SPARSE_PROMPT_NEEDED) to all four no-arg literature-briefing-invoke.sh repo-mode call sites in lit-stage4a-flow.md, and mirrored the same --query threading into adhoc-navigation-directive.md's three repo-mode call sites (that file explicitly mirrors Stage 4a; leaving it stale would have left the guard permanently unwired for the primary-session conversational path)",
-    "Added Case H6 (LITERATURE_COVERAGE_GAP_MIN's >= boundary, exercised exactly at and one below the default 25) to the Section H fixture suite beyond the plan's named H1-H5, per Phase 6's Scope Hypothesis instruction to re-check Section G's boundary-case coverage before declaring the case list closed",
-    "The claim-level 'no counterpart exists' verifier stays explicitly unimplemented per the plan's Non-Goals/Named Follow-Up -- recorded in sparse-coverage.md and the summary as a /spawn candidate, not folded in"
+    "Registered literature-coverage-delta.sh and literature-term-match.sh in manifest.json's provides.scripts, placed immediately after literature-lit-flag-resolve.sh (the consumer script) to keep the related trio adjacent",
+    "Audited all other provides.* categories the prior dispatch touched (context files under project/literature) and confirmed no equivalent gap exists there: provides.context registers directories, not individual files, so a file added under an already-declared directory (project/literature) deploys automatically -- this category cannot suffer the same class of omission as the explicit-list provides.scripts",
+    "Fixed two stale index-entries.json line_count values found via check-extension-docs.sh while auditing (Rule R), since they were introduced by edits to files the prior dispatch touched and are the same root-cause class (manifest metadata not kept in sync with an edited file) -- did not attempt to fix two unrelated, pre-existing Rule S failures in corpus-directory-conventions.md and shared-module-extraction-for-gate-checks.md, confirmed via git log to predate this task (tasks 80 and 69 respectively) and out of this defect's scope",
+    "Verified strictly against the deployed .claude/scripts/ tree (not the source store) per the explicit instruction: re-ran the deployed copy of test-lit-pipeline.sh --runtime, which passed 44/0/0 including the coverage-delta Section H cases, confirming production reachability rather than re-trusting the source-store result"
   ],
   "dead_ends": [],
   "plan_markers_verified": true,

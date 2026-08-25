@@ -116,6 +116,43 @@ unavailable there.
   briefing-time topic-scoped delta guard delivered here, and is a candidate for a dedicated
   follow-up task (`/spawn`), not something this task's completion should be read as having closed.
 
+## Post-Completion Defect and Fix
+
+A confirmed deploy defect was found in the dispatch above and fixed in a follow-up dispatch to
+this same task.
+
+- **Defect**: `literature-coverage-delta.sh` and `literature-term-match.sh` (both created above)
+  were never added to `agent-system/extensions/literature/manifest.json`'s `provides.scripts`
+  array — an explicit 40-entry list, not a glob. `deploy-headless.sh` ran successfully and
+  resynced extensions, but since these two files were undeclared, neither reached
+  `.claude/scripts/`. The deployed `literature-lit-flag-resolve.sh` calls
+  `$SCRIPT_DIR/literature-coverage-delta.sh`, did not find it, and silently took its fail-open
+  path — so the entire coverage-delta guard was inert in production even though the source-store
+  test suite reported 44/0/0.
+- **Why the test suite didn't catch it**: `test-lit-pipeline.sh` (both the original run and the
+  fixture-based Section H added above) was exercised directly against the source-store
+  `scripts/` directory, never against the deployed `.claude/scripts/` tree the resolver actually
+  runs from at runtime. A fully passing source-store test suite is therefore not sufficient
+  evidence that a new script is reachable in production — manifest registration is a separate,
+  unverified precondition that source-store-only testing structurally cannot exercise.
+- **Fix**: registered both scripts in `provides.scripts`; also found and fixed two related
+  `index-entries.json` metadata drifts (stale `line_count` values on
+  `sparse-coverage.md` and `adhoc-navigation-directive.md`, also touched by the original
+  dispatch) via `check-extension-docs.sh`. Redeployed and re-verified against the deployed tree
+  directly: confirmed `.claude/scripts/literature-coverage-delta.sh` and
+  `.claude/scripts/literature-term-match.sh` exist with correct permissions, and re-ran the
+  deployed copy of `test-lit-pipeline.sh --runtime` (not the source-store copy) — 44/0/0,
+  including Section H's coverage-delta cases, confirming the resolver now reaches the guard
+  rather than its fail-open branch.
+- **Generalizable lesson**: for any extension using the source-store/deploy split, "the test
+  suite passes" is a claim about the source store only. Verifying a new script's *production*
+  effect requires either (a) explicitly checking the new file is named in the manifest's
+  `provides.*` array before running tests, or (b) re-running the exercising test against the
+  deployed `.claude/` tree after a real `deploy-headless.sh`/reload cycle, not the extension
+  source directory. `check-extension-docs.sh`'s Rule Q (undeclared script files) exists
+  specifically to catch this class of gap and should be run as a standard post-implementation
+  check for any task that adds new extension scripts.
+
 ## References
 
 - specs/096_surface_literature_coverage_delta_under_lit/plans/01_coverage-delta-guard.md
