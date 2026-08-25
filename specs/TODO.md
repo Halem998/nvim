@@ -11,7 +11,7 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,68,72,73,74,77,81,83,85,86,87,90,91,94,97,99,100 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,48,51,53,62,68,72,73,74,77,81,83,85,86,87,90,91,94,97,99,100 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,44,50,64,66,75,76,78,88,89,93,96,98 | 29,42,48,62,74,77,83,87,97 | agent-system, extensions, literature, ... |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -22,7 +22,6 @@ next_project_number: 101
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
-28 [IMPLEMENTING] — === REVISED 2026-08-24 (refactor survey) ===
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
@@ -33,7 +32,7 @@ next_project_number: 101
 22 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
-62 [NOT STARTED] — Restrict typst and latex task types to formatting-only concerns. 
+62 [RESEARCHING] — Restrict typst and latex task types to formatting-only concerns. 
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
@@ -44,7 +43,7 @@ next_project_number: 101
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-77 [NOT STARTED] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
+77 [RESEARCHING] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
   └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
   └─ 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
@@ -66,7 +65,7 @@ next_project_number: 101
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-83 [NOT STARTED] — Make 'completed' mean 'in effect' for tasks that edit the source 
+83 [RESEARCHING] — Make 'completed' mean 'in effect' for tasks that edit the source 
   └─ 93 [NOT STARTED] — The postflight deploy gate makes 'completed' mean 'in effect' IN 
 85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
@@ -637,7 +636,7 @@ ACCEPTANCE: the gate fails on a deliberately reintroduced inline sess_$(date in 
 ---
 
 ### 83. Postflight deploy gate for source store tasks
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 82
@@ -986,7 +985,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 77. Unify the literature global-index schema and end stub-entry invisibility
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 32
@@ -1886,7 +1885,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 62. Restrict typst latex task types to formatting only
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -2421,12 +2420,13 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 ---
 
 ### 28. Correct mcp ownership model and purge dead declarations
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 32
 - **Research**: [028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md]
 - **Plan**: [028_correct_mcp_ownership_model_and_purge_dead_declarations/plans/01_mcp-ownership-hybrid-rewrite.md]
+- **Summary**: [028_correct_mcp_ownership_model_and_purge_dead_declarations/summaries/01_mcp-ownership-hybrid-rewrite-summary.md]
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 NOT COMPLETE -- CORRECTION TO AN EARLIER READ. A survey pass reported this task as finished-but-unclosed, on the basis that all its plan phases read [COMPLETED]. That was wrong: the plan has EIGHT phases, not seven. Phases 1-7 are [COMPLETED] with progress files through phase-7-progress.json, but Phase 8 (Full verification sweep) is [IN PROGRESS] with all nine of its checkboxes unchecked and no phase-8-progress.json. This task keeps status implementing and needs its verification sweep run -- it was NOT closed out.

@@ -1,7 +1,7 @@
 # Implementation Plan: MCP Ownership Hybrid Rewrite and Dead-Declaration Purge
 
 - **Task**: 28 - Correct the MCP ownership model and purge the dead declarations
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/028_correct_mcp_ownership_model_and_purge_dead_declarations/reports/01_mcp-ownership-rewrite-and-purge-spec.md
