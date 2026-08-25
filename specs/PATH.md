@@ -2,6 +2,7 @@
 
 *Generated 2026-08-24 from `specs/reviews/review-2026-08-24-refactor-survey.md`.*
 *Status refreshed 2026-08-24 after 82, 84, 80, 92, 9 and 79 completed.*
+*Refreshed again 2026-08-24 (second pass) after the 0.2 reload landed in both consuming repos.*
 
 **Goal**: finish the agent-system refactor — token efficiency, performance, and uniformity in
 implementation and documentation — and close the cross-repo drift that is currently making
@@ -27,13 +28,13 @@ of call sites, the staleness detector always exits 0, and `deploy-headless.sh:23
 ## Stage 0 — Get every repo onto one version
 
 **0.1 is DONE** (2026-08-24, commits `a1cddc5d5`..`a064b8b5c`). Measurements taken against
-`.claude/` are trustworthy again, for this repo. `0.2` remains open, so the two consuming repos
-are still on the old tree.
+`.claude/` are trustworthy again, for this repo. **0.2 is now DONE as well** (reload run by hand in
+both consuming repos), so Stage 0 is closed: all three repos are on one version, verified below.
 
 | # | Step | Task | State |
 |---|------|------|-------|
 | 0.1 | Run the deploy. Rescoped: its original premise (that `mcp-server-ownership.md` was never deployed) is **false** — that file is present and byte-identical. Its purpose is revalidated by measured script drift instead. Capture `verify-deploy --findings` **before and after**. | **32** | ☑ done |
-| 0.2 | Reload the two consuming repos: `<leader>al` in `~/Projects/Logos/Theory` and `~/Projects/BimodalLogic`. | *manual* | ☐ **open — your action** |
+| 0.2 | Reload the two consuming repos: `<leader>al` in `~/Projects/Logos/Theory` and `~/Projects/BimodalLogic`. | *manual* | ☑ done |
 
 **Measured at execution, correcting this file's own earlier figures**: the drift was **44 commits
 and 16 files** under `agent-system/`, not "133 commits / 15 files". The deploy resolved **29 of 45**
@@ -69,18 +70,24 @@ is syncprotected in each, and it survives reload.
 fixes, one of them a HIGH-severity corpus-corruption gate. Note in `CHANGE_LOG.md` which
 previously-completed tasks became live here, so a future reader does not misdate them.
 
-**Current skew** (measured 2026-08-24 — the source-of-truth repo is behind one of its consumers):
+**Current skew: none.** Re-measured 2026-08-24 after the 0.2 reload, by comparison rather than by
+assertion — for each of the three deployed trees, every `.claude/scripts/*.sh` also present in this
+repo's deployed tree was byte-compared:
 
-| Repo | `skill-base.sh` |
-|---|---|
-| BimodalLogic | current source |
-| `.config/nvim` (here) | **current** (deployed 2026-08-24) |
-| Logos/Theory | stale, was identical to nvim's *former* copy — now the sole laggard |
+| Repo | `skill-base.sh` | Deployed scripts vs. here |
+|---|---|---|
+| `.config/nvim` (here) | `819aa8b0…` | — (reference) |
+| BimodalLogic | `819aa8b0…` | **110 compared, 0 differing** |
+| Logos/Theory | `819aa8b0…` | **110 compared, 0 differing** |
+
+All four copies (source store + three deploys) of `skill-base.sh` share one checksum. The
+`Only in …` entries a naive `diff -rq` reports are extension-set differences (each repo loads a
+different extension mix), not drift.
 
 Verified live after the deploy: `skill_orchestrate_mint_dispatch_seq` returns a correct
 incrementing value in a fresh shell. Before the deploy it returned empty and aborted under
 `set -u` — a failure this very orchestration run hit at its first dispatch and had to work around
-inline. The fix is now in effect here, and **not** in Theory until 0.2 runs.
+inline. With 0.2 done, that fix is now in effect in **all three** repos, not just here.
 
 ---
 
@@ -247,10 +254,10 @@ Verified against `orchestrate-batch-admit.sh` on 2026-08-24, not assumed:
 > their own in-batch relationships go unmentioned. Keep 20 and 85 in separate batches by hand, or
 > add a `dependencies[]` edge, until this is filed and fixed.
 
-## Next batch (recommended 2026-08-24)
+## Next batch (recommended 2026-08-24, re-verified after the 0.2 reload)
 
-Verified by execution, not assumed — `orchestrate-dry-run-report.sh 28 62 77 83` admits **all
-four, zero exclusions, one wave**:
+Verified by execution, not assumed — `orchestrate-dry-run-report.sh 28 62 77 83` was re-run today
+after Stage 0 closed and still admits **all four, zero exclusions, one wave**:
 
 ```
 /orchestrate 28, 62, 77, 83
@@ -266,6 +273,16 @@ four, zero exclusions, one wave**:
 Every one of the four unblocks something downstream, and the four touch four disjoint areas
 (deploy gate / literature / task-type routing / MCP ownership).
 
+**Optional fifth: 99.** `orchestrate-dry-run-report.sh 28 62 77 83 99` also admits all five, zero
+exclusions, one wave. 99 (the `.orchestrator-handoff.json` `artifacts[]` shape defect) is
+scope-disjoint from the other four at file granularity — hand-checked, because the scan reports
+only the *first* overlap it finds, and both 28 and 99 have their in-batch relationship masked by a
+cross-batch idle advisory against #44's coarse `core/context/` scope. Add it if you want the
+throughput; the four-task batch is the safer default.
+
+**Do not add 100** to this batch. It edits `orchestrate-batch-admit.sh`, so it is self-modifying
+and would contend with 83 for the single designated slot — buying a cycle, not work.
+
 **Then, solo, in this order** — each names an orchestrator-critical path, so each takes the
 designated-candidate slot and batching them together only buys cycles:
 
@@ -276,8 +293,39 @@ designated-candidate slot and batching them together only buys cycles:
    (~24.8k), the largest measured payoff in the file.
 4. **91**, then **90**, then **48** → **50**.
 
-**Still your action, unchanged**: step 0.2, the `<leader>al` reload in `~/Projects/Logos/Theory`
-and `~/Projects/BimodalLogic`. Theory remains the sole laggard on `skill-base.sh`.
+**Nothing is left in Stage 0.** The `<leader>al` reload is done and verified in both consuming
+repos; all three deployed trees are byte-identical on every shared script.
+
+### Two new observations from today's re-run
+
+1. **The dry-run misreport has a second instance, in the same file.** The note emitted for 83 reads
+   *"admitted only because this invocation carries a single candidate (solo run); alongside any
+   sibling it would instead be excluded and deferred to a solo re-run"* — emitted on an invocation
+   carrying **four** candidates, in which 83 was in fact admitted alongside three siblings. Same
+   defect class as the hardcoded exclusion string at `orchestrate-dry-run-report.sh:361`: report
+   prose asserting the opposite of the verdict it is reporting. **Still not filed as a task**, now
+   with two instances.
+2. **The lock-contention check silently degrades.** Today's report shows
+   `lock contention: SKIPPED (degraded: task-lock.sh check exit 3 for: 62 77 83)`. Exit 3 is
+   `task-lock.sh check`'s *usage* error (`task-lock.sh:1588`, `[ "$#" -lt 1 ]`) — the caller passed
+   no task number. That is not a lock verdict at all; a caller-side argument bug is being surfaced
+   as a degraded-check notice, and the admission run proceeds with one of its checks silently not
+   run. **Not filed as a task.**
+
+### Filed since the last refresh, not yet placed in a stage
+
+**96** (surface the sub-index vs global-index coverage delta under `--lit`; depends on 77, so it
+belongs with Stage 2 behind 2.1), **99** (handoff `artifacts[]` shape), **100** (aggregator
+`file_scope` blind spot — the too-narrow-scope mirror of the completed coarse-declaration work;
+self-modifying), **94** (`--lit` through the three team skills), and **97 → 98** (shared Lean
+build concurrency/memory guard, then its lean-extension wiring). None are on the critical path;
+place them on the next full refresh.
+
+### Still unfiled, carried forward
+
+- `validate-meta-write.sh`'s `is_meta_path` misses **root-level** `.claude/` files such as
+  `settings.json` — the install-once class a redeploy cannot restore (recorded in Stage 0).
+- Both dry-run report defects above.
 
 ---
 
@@ -299,7 +347,7 @@ and `~/Projects/BimodalLogic`. Theory remains the sole laggard on `skill-base.sh
 
 | Stage | Tasks | Done |
 |-------|-------|------|
-| 0 — one version | 32 + manual reload | **32 ☑** · reload ☐ |
+| 0 — one version | 32 + manual reload | **32 ☑ · reload ☑** — stage closed |
 | 1 — consequence | 82, 83, 84, 85, 86, 93 | **82 ☑ 84 ☑** · 83, 85, 86, 93 ☐ |
 | 2 — literature | 77, 78, 80, 92 | **80 ☑ 92 ☑** · 77, 78 ☐ |
 | 3 — token | 87, 88, 44, 89 (+62) | ☐ |
