@@ -325,7 +325,7 @@ down rather than implicit convention, and points at the canonical pattern and th
 
 ---
 
-### Phase 5: Acceptance measurement — 10 consecutive runs under concurrent load [NOT STARTED]
+### Phase 5: Acceptance measurement — 10 consecutive runs under concurrent load [IN PROGRESS]
 
 **Goal**: The task's stated acceptance criterion is executed and recorded: 10 consecutive
 `run-all.sh` runs, with at least one other session active, all reporting the same result — with
