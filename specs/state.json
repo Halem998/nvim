@@ -1969,7 +1969,7 @@
     {
       "project_number": 97,
       "project_name": "lake_build_concurrency_memory_guard",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Add shared Lean build concurrency and memory guard script (flock serialization, result sharing, cgroup bounding)",
@@ -1982,10 +1982,16 @@
       ],
       "effort": "4 hours",
       "priority": "high",
-      "session_id": "sess_1787613711_3ff8d5de",
-      "artifacts": [],
+      "session_id": "sess_1787672746_2d5892_97",
+      "artifacts": [
+        {
+          "path": "specs/097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md",
+          "type": "report",
+          "summary": "Verifies Lake's missing -j flag, falsifies LEAN_NUM_THREADS as a concurrency lever, confirms flock/systemd-run/PSI availability, documents lock-derivation, staleness, and self-match-safety recommendations."
+        }
+      ],
       "created": "2026-08-24T23:21:51Z",
-      "last_updated": "2026-08-24T23:21:51Z"
+      "last_updated": "2026-08-25T15:55:11Z"
     },
     {
       "project_number": 98,
