@@ -234,24 +234,24 @@ flags those behind source. This is acceptance criterion (a).
 
 ---
 
-### Phase 3: `--discover` reconciliation mode [NOT STARTED]
+### Phase 3: `--discover` reconciliation mode [COMPLETED]
 
 **Goal**: Keep the registry from silently going stale by naming on-disk consumers that are not
 registered.
 
 **Tasks**:
-- [ ] Add a `--discover` flag to `check-consumer-freshness.sh`.
-- [ ] For each `discover_roots[]` entry, run a bounded scan (`find <root> -maxdepth 3 -name
+- [x] Add a `--discover` flag to `check-consumer-freshness.sh`. *(completed)*
+- [x] For each `discover_roots[]` entry, run a bounded scan (`find <root> -maxdepth 3 -name *(completed)*
       .claude-extensions.json`, pruning `.git`) and keep files where any extension's `source_dir`
       is under this repo's `agent-system/extensions/`.
-- [ ] Diff the discovered set against `consumers[].path`; print an `UNREGISTERED` line per repo
+- [x] Diff the discovered set against `consumers[].path`; print an `UNREGISTERED` line per repo *(completed)*
       found on disk but absent from the registry, and a `REGISTERED-BUT-ABSENT` line per registry
       entry not found by the scan (informational — an absent entry is deliberately NOT auto-removed).
-- [ ] Print the exact registry edit to make (the JSON object to add), never edit the registry
+- [x] Print the exact registry edit to make (the JSON object to add), never edit the registry *(completed)*
       automatically.
-- [ ] Document in the header that `--discover` is the expensive path the registry exists to avoid
+- [x] Document in the header that `--discover` is the expensive path the registry exists to avoid *(completed)*
       paying routinely; it is manual/occasional and is never called from `deploy-headless.sh`.
-- [ ] Make `--discover` degrade cleanly on an unreadable root (skip with a named note, never abort).
+- [x] Make `--discover` degrade cleanly on an unreadable root (skip with a named note, never abort). *(completed)*
 
 **Timing**: 1 hour
 

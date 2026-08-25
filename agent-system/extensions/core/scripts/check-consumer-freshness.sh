@@ -212,8 +212,20 @@ if $DISCOVER; then
     while IFS= read -r found; do
       [ -n "$found" ] || continue
       found_dir="$(dirname "$found")"
-      src="$(jq -r --arg root "$SOURCE_REPO" '.extensions // {} | to_entries[] | select(.value.source_dir != null and (.value.source_dir | startswith($root + "/extensions/"))) | .value.source_dir' "$found" 2>/dev/null | head -1)"
+      src="$(jq -r --arg root "$SOURCE_REPO" '.extensions // {} | to_entries[] | select(.value.source_dir != null and (.value.source_dir | startswith($root + "/agent-system/extensions/"))) | .value.source_dir' "$found" 2>/dev/null | head -1)"
       [ -n "$src" ] || continue
+      # The source repo itself may carry its own .claude-extensions.json (it self-hosts a
+      # deploy for development) with source_dir pointing at itself -- that is not a fleet
+      # consumer and is already shown distinctly as the "(source)" row above, so it is excluded
+      # from both the found-set (informational REGISTERED-BUT-ABSENT pass below) and the
+      # UNREGISTERED report.
+      [ "$found_dir" = "$SOURCE_REPO" ] && continue
+      # discover_roots may overlap (e.g. a broad root and a narrower root both covering the same
+      # consumer within --maxdepth 3) -- dedupe against FOUND_TMPFILE so an overlapping root
+      # never produces a duplicate UNREGISTERED line for the same directory.
+      if [ -n "$FOUND_TMPFILE" ] && grep -qxF "$found_dir" "$FOUND_TMPFILE" 2>/dev/null; then
+        continue
+      fi
       [ -n "$FOUND_TMPFILE" ] && echo "$found_dir" >> "$FOUND_TMPFILE"
       if ! echo "$REGISTERED_PATHS" | grep -qxF "$found_dir"; then
         echo "  UNREGISTERED: $found_dir (found on disk, not in registry)"
