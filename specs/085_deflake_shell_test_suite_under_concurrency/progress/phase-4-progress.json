@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Write the fixture-isolation rule into shell-script-testing.md",
+  "started_at": "2026-08-25T06:08:00Z",
+  "last_updated": "2026-08-25T06:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add 'Never resolve a path against the live tree' subsection under Fixture convention, naming build_fixture_repo() and the failure mode, noting enforcement is manual (lint dropped in Phase 3)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Cross-reference scripts/lint/lint-live-specs-path.sh as the mechanical enforcement",
+      "type": "altered",
+      "reason": "The lint was dropped in Phase 3; the written rule states enforcement is currently manual rather than pointing at a nonexistent script",
+      "annotation": "See Phase 4 Task 4's inline annotation in the plan file"
+    }
+  ]
+}

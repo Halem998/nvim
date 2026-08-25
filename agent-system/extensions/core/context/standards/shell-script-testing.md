@@ -68,6 +68,32 @@ heredocs are impractical) remains a reasonable choice for a future suite whose f
 expressed as plain text — this convention governs core's own suites, which to date are entirely
 text-based.
 
+### Never resolve a path against the live tree
+
+A suite must never resolve an artifact path against the live `specs/` tree or the deployed
+`.claude/` tree. Build or copy a scratch fixture repo (`build_fixture_repo()` in
+`test-skill-base-lifecycle.sh` is the canonical structural model: a `mktemp -d` root with a real
+`.claude/scripts/{,lib/}` copied in and a synthetic `specs/` task directory underneath) and
+redirect `REPO_ROOT`/`PROJECT_ROOT` at it before invoking the code under test, rather than
+pointing at, or falling back to, the real repository root for anything the suite itself reads.
+
+The concrete failure mode this guards against: a suite that hardcodes a real, numbered task
+directory as an "exists on disk" fixture breaks the moment `/todo` archives that task or a vault
+operation renumbers it — a failure that looks exactly like flake (a suite that used to pass now
+fails, on no code change of its own) and is not one. `test-validate-return-meta.sh` hit this
+defect: it hardcoded `specs/052_return_meta_artifacts_shape_contract/...` as its "well-formed"
+fixture, never overrode `REPO_ROOT`, and failed three cases deterministically on every run for a
+week after `/todo` archived that directory. The fix was to build its own scratch fixture repo and
+inject `REPO_ROOT` at every call site, exactly per the `build_fixture_repo()` pattern above.
+
+A mechanical lint for this class of defect was attempted and dropped: distinguishing a live-path
+literal that will actually be filesystem-checked from a synthetic literal used as inert JSON/text
+fixture content requires per-validator data-flow knowledge a grep-level heuristic does not have,
+and the attempt produced too many false positives against this codebase's real suites to be
+trustworthy. Enforcement of this rule is therefore currently manual (author/reviewer discipline
+at fixture-authoring and code-review time), not mechanical — read this section, not a lint
+output, as the source of truth.
+
 ## Loud-skip discipline
 
 A prerequisite that is unavailable (a missing interpreter, a missing script under test, a missing

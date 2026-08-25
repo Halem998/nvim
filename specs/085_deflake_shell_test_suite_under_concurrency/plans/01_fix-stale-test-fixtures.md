@@ -284,24 +284,24 @@ positive (tighten the heuristic). Do not suppress a hit to make the count match.
 
 ---
 
-### Phase 4: Write the fixture-isolation rule into shell-script-testing.md [NOT STARTED]
+### Phase 4: Write the fixture-isolation rule into shell-script-testing.md [COMPLETED]
 
 **Goal**: The "never resolve a path against the live `specs/` or `.claude/` tree" rule is written
 down rather than implicit convention, and points at the canonical pattern and the new lint.
 
 **Tasks**:
-- [ ] Add a short subsection to
+- [x] Add a short subsection to *(completed)*
       `agent-system/extensions/core/context/standards/shell-script-testing.md`'s "Fixture
       convention" section stating the rule: a suite must never resolve an artifact path against
       the live `specs/` tree or the deployed `.claude/` tree; it builds or copies a scratch
       fixture and redirects `REPO_ROOT`/`PROJECT_ROOT` at it.
-- [ ] Name `build_fixture_repo()` in `test-skill-base-lifecycle.sh` as the canonical structural
+- [x] Name `build_fixture_repo()` in `test-skill-base-lifecycle.sh` as the canonical structural *(completed)*
       model (it is already treated as such by several suites' header comments).
-- [ ] State the failure mode concretely: a suite that reads a live numbered task directory breaks
+- [x] State the failure mode concretely: a suite that reads a live numbered task directory breaks *(completed)*
       the moment `/todo` archives it or a vault operation renumbers it — a failure that presents
       as flake and is not one.
-- [ ] Cross-reference `scripts/lint/lint-live-specs-path.sh` as the mechanical enforcement.
-- [ ] Keep the wording free of task-number references (deliverable rule).
+- [x] Cross-reference `scripts/lint/lint-live-specs-path.sh` as the mechanical enforcement. *(deviation: altered — the lint was dropped per Phase 3's Reasoned Exclusions, so the written rule instead states enforcement is currently manual, not mechanical, rather than pointing at a script that does not exist)*
+- [x] Keep the wording free of task-number references (deliverable rule). *(completed)*
 
 **Timing**: 15 minutes
 
@@ -319,7 +319,9 @@ down rather than implicit convention, and points at the canonical pattern and th
 - Diff read-through confirms every changed hunk is prose inside that file (no executable content).
 - `bash agent-system/extensions/core/scripts/check-task-references.sh` (or the repo-wide task-
   reference lint) reports no new violations.
-- The referenced lint path and the referenced `build_fixture_repo()` symbol both exist.
+- The referenced `build_fixture_repo()` symbol exists; no lint path is referenced (see Phase 3's
+  Reasoned Exclusions — the lint was dropped, and the written rule says so rather than pointing at
+  a nonexistent script).
 
 ---
 
