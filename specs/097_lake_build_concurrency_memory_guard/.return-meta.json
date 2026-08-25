@@ -1,55 +1,19 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 97,
+  "session_id": "sess_1787672746_2d5892_97",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md",
-      "summary": "Verifies Lake's missing -j flag, falsifies LEAN_NUM_THREADS as a concurrency lever via a controlled A/B experiment, confirms flock/systemd-run/PSI availability, and documents lock-derivation, staleness, and self-match-safety recommendations for lake-build-guard.sh."
+      "type": "plan",
+      "path": "specs/097_lake_build_concurrency_memory_guard/plans/01_lake-build-guard-mechanism.md",
+      "summary": "Seven-phase plan delivering lake-build-guard.sh (flock serialization with result sharing, staleness policy, opt-in systemd-run cgroup bounding, PSI/swap preflight), its toolchain-free 13-case test suite, and two core manifest registrations."
     }
   ],
-  "next_steps": "Run /plan 97 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1787672746_2d5892_97",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
-  "findings_count": 9,
-  "memory_candidates": [
-    {
-      "content": "Lake (Lean build tool) 5.0.0-src has no -j/--jobs flag on `lake build` or `lake`, confirmed by direct invocation (both forms error 'unknown short option -j'). The underlying `lean` binary DOES expose `-j, --threads=num` in `lean --help`, but Lake does not forward any user flag to it -- this is a dead end for a job-count lever via lake build, not a hidden escape hatch.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["lake", "lean", "build", "jobs", "flag", "concurrency"]
-    },
-    {
-      "content": "LEAN_NUM_THREADS does not control Lake's build scheduling/job concurrency: a controlled A/B experiment (same dependency fan-out, only LEAN_NUM_THREADS varied between 1 and 8) on a real Lean project showed identical max concurrent lean-worker descendant count (1) in both trials. A single lean --worker process's own thread count DID vary with the value (Threads: 9 with LEAN_NUM_THREADS=8), consistent with it being an intra-process elaboration thread-pool size, not a job-count lever. Do not ship it as a -j substitute.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lean", "LEAN_NUM_THREADS", "concurrency", "experiment", "lake-build"]
-    },
-    {
-      "content": "Lake's build staleness tracking is content-hash-based, not mtime-based: `touch`ing an already-built Lean source file does not dirty the build or trigger any rebuild. A genuine content edit is required to force a rebuild for testing/experimentation purposes.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lake", "lean", "staleness", "hash", "mtime", "rebuild"]
-    },
-    {
-      "content": "`systemd-run --user --scope -p MemoryHigh=<v> -p MemoryMax=<v> -- <cmd>` works without root or extra cgroup delegation setup on a standard NixOS/systemd user session, propagates the wrapped command's real exit code correctly, and is composable with command substitution ($(...)) capture patterns.",
-      "category": "PATTERN",
-      "source_artifact": "specs/097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["systemd-run", "cgroup", "memory", "scope", "MemoryMax", "sandboxing"]
-    },
-    {
-      "content": "A Lean project can have long-lived `lean --worker`/`lean --server` LSP elaboration processes coexisting for many hours (observed up to ~11.5 hours) with unrelated `lake build` invocations in the same directory. Any process-based detection of 'is a build in flight' must discriminate build-owned descendants (e.g. via process-tree walk from the launching build's PID) from these ambient editor/LSP workers -- a bare `pgrep lean` or `pgrep -f 'lake build'` will misattribute them.",
-      "category": "PATTERN",
-      "source_artifact": "specs/097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lean", "lsp", "process-detection", "self-match", "pgrep", "lake-build"]
-    }
-  ]
+  "phase_count": 7,
+  "estimated_hours": 5.75,
+  "dependency_waves": [[1], [2, 3], [4], [5], [6], [7]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 97 to execute the plan"
 }

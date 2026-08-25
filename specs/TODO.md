@@ -41,7 +41,7 @@ next_project_number: 101
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-97 [RESEARCHED] — Ship a shared, portable build-concurrency and memory guard for Le
+97 [PLANNED] — Ship a shared, portable build-concurrency and memory guard for Le
   └─ 66 [NOT STARTED] — Mandate detached (run_in_background) invocation for Lean full bui
   └─ 98 [NOT STARTED] — Integrate the shared Lean build guard into the lean extension: ro
 
@@ -193,11 +193,12 @@ ACCEPTANCE: `lean-sorry-census.sh --cross-check` routes its build through the gu
 
 ### 97. Add shared Lean build concurrency and memory guard script (flock serialization, result sharing, cgroup bounding)
 - **Effort**: 4 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md]
+- **Plan**: [097_lake_build_concurrency_memory_guard/plans/01_lake-build-guard-mechanism.md]
 
 **Description**: Ship a shared, portable build-concurrency and memory guard for Lean projects as a core script, so that many concurrent agent sessions working in the same Lean repository serialize their `lake build` invocations, share a single build's result instead of duplicating it, and cannot exhaust machine memory. This task delivers the MECHANISM only; wiring it into the lean extension's contracts and scripts is handled by the dependent task and by the revised background-builds task.
 
