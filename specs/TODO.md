@@ -11,7 +11,7 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,81,85,86,87,90,91,94,97,100 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,81,86,87,90,91,94,97,100 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,50,64,66,75,76,88,89,98 | 29,42,48,74,87,97 | agent-system, extensions, essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -62,7 +62,6 @@ next_project_number: 101
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-85 [IMPLEMENTING] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
@@ -600,7 +599,7 @@ ACCEPTANCE: CI runs the full suite on every push and is green; a deliberately re
 ---
 
 ### 85. Deflake shell test suite under concurrency
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 32

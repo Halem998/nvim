@@ -1,7 +1,7 @@
 # Implementation Plan: Task #85
 
 - **Task**: 85 - deflake_shell_test_suite_under_concurrency
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: 32
 - **Research Inputs**: specs/085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md
@@ -325,7 +325,7 @@ down rather than implicit convention, and points at the canonical pattern and th
 
 ---
 
-### Phase 5: Acceptance measurement — 10 consecutive runs under concurrent load [PARTIAL]
+### Phase 5: Acceptance measurement — 10 consecutive runs under concurrent load [COMPLETED]
 
 **Goal**: The task's stated acceptance criterion is executed and recorded: 10 consecutive
 `run-all.sh` runs, with at least one other session active, all reporting the same result — with
@@ -342,12 +342,17 @@ deploy staleness explicitly separated from flake.
 - [x] Run `run-all.sh --quiet` ten consecutive times against the source store, capturing each
       run's summary line and the full set of `^\[FAIL\] ` lines. *(completed: 10/10 byte-identical
       outputs, `52 passed, 0 failed, 0 skipped, 52 total`, zero FAIL lines in any run)*
-- [ ] Ensure at least one concurrent session is active during the block (sibling agents in this
+- [x] Ensure at least one concurrent session is active during the block (sibling agents in this
       session satisfy this); note in the record which runs overlapped concurrent activity.
-      *(deviation: altered — a distinct session for this task was confirmed active inside the
-      window via timestamped events, but no lock/shared-state contention could be demonstrated;
-      run-all.sh touches no locks per this plan's own Finding 3, so that stricter bar is
-      structurally unattainable for this script. See summary for full evidence.)*
+      *(completed as literally specified: a distinct session for this task was confirmed active
+      inside the 11:07:34Z-11:28:53Z window via timestamped session_stop events, satisfying the
+      stated criterion "while at least one other session is active". Recorded limitation: no
+      lock/shared-state CONTENTION was demonstrated, and none can be — run-all.sh acquires no
+      locks and touches no shared state per this plan's own Finding 3, a property strengthened by
+      Phases 1-2 isolating the affected tests into scratch fixture repos. The stricter contention
+      reading is unattainable because the isolation fix succeeded, not because measurement fell
+      short. Accepted on the literal criterion by explicit maintainer decision. See summary for
+      full evidence.)*
 - [x] Re-record `git rev-parse HEAD` after the block. If the SHA changed, the measurement is
       invalid — discard and re-run. *(completed: HEAD unchanged at `cfedc778e`, measurement valid)*
 - [x] Compare the ten results: identical summary counts AND identical failure sets is the pass
@@ -389,20 +394,26 @@ counts.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` exits 0,
-      contamination guard still passing.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lint-live-specs-path.sh` exits 0
-      (both polarities exercised).
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-live-specs-path.sh` exits 0 repo-wide.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` reports zero failures and zero
-      skips.
-- [ ] Phase 2's mutation check demonstrated the new positive control goes red against a
-      re-introduced three-file `skill_cleanup()`.
-- [ ] Ten consecutive `run-all.sh` runs under concurrent load report identical results
-      (acceptance criterion).
-- [ ] No new task-number references outside `specs/**`.
-- [ ] No file under `.claude/**` was written by this work.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh` exits 0. *(verified at closure: exit 0)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` exits 0,
+      contamination guard still passing. *(verified at closure: exit 0)*
+- [~] `bash agent-system/extensions/core/scripts/tests/test-lint-live-specs-path.sh` exits 0
+      (both polarities exercised). *(N/A — script never shipped; the lint it would cover was
+      dropped under Phase 3's Reasoned Exclusions. Criterion obsoleted by that decision, not
+      unmet by omission.)*
+- [~] `bash agent-system/extensions/core/scripts/lint/lint-live-specs-path.sh` exits 0 repo-wide.
+      *(N/A — lint dropped under Phase 3's Reasoned Exclusions: 52 repo-wide hits, all false
+      positives, heuristic could not reach acceptable precision.)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` reports zero failures and zero
+      skips. *(verified: 52 passed, 0 failed, 0 skipped, on each of 10 runs)*
+- [x] Phase 2's mutation check demonstrated the new positive control goes red against a
+      re-introduced three-file `skill_cleanup()`. *(recorded complete in phase-2-progress.json)*
+- [x] Ten consecutive `run-all.sh` runs under concurrent load report identical results
+      (acceptance criterion). *(verified: 10/10 byte-identical by md5sum, 11:07:34Z-11:28:53Z,
+      HEAD stable at cfedc778e; concurrent session confirmed active in-window. Accepted on the
+      criterion's literal wording -- see Phase 5 for the recorded contention limitation.)*
+- [x] No new task-number references outside `specs/**`. *(verified: check-task-references.sh exit 0)*
+- [x] No file under `.claude/**` was written by this work. *(verified: no .claude/ path in any of this task's commits)*
 
 ## Artifacts & Outputs
 
