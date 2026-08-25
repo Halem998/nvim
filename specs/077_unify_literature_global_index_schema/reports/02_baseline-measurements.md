@@ -1,6 +1,13 @@
 # Baseline Measurements — Phase 1
 
 - **Task**: 77 - Unify the literature global-index schema and end stub-entry invisibility
+- **Started**: TBD
+- **Completed**: TBD
+- **Effort**: TBD
+- **Dependencies**: TBD
+- **Sources/Inputs**: TBD
+- **Artifacts**: TBD
+- **Standards**: TBD
 - **Purpose**: Freeze an execution baseline (Phase 1 of plans/01_unify-global-index-fts-namespace.md)
   before any code or corpus change, per the plan's Scope Hypothesis / rollback requirement that
   execution verification — never a code read — is the evidence standard for every id-touching

@@ -1314,7 +1314,7 @@
     {
       "project_number": 77,
       "project_name": "unify_literature_global_index_schema",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "literature",
       "title": "Unify the literature global-index schema and end stub-entry invisibility",
@@ -1346,11 +1346,11 @@
         {
           "path": "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
           "type": "summary",
-          "summary": "8 of 10 phases COMPLETED (code-side bridge, writer, briefing tolerance, --validate schema-shape/divergence check, Zotero metadata, regression tests, invariant documentation); Phase 8 (destructive corpus data reconciliation) BLOCKED as unsafe to perform autonomously; Phase 10's --validate WARN->FAIL escalation deferred pending Phase 8."
+          "summary": "Updated to [COMPLETED]: all 10 phases done. Phase 8 reconciled the enumerated corpus residue directly in ~/Projects/Literature/ (17 new parent entries, 2 duplicate directories quarantined, gabbay_2000 recorded as sole exception); Phase 10 escalated /literature --validate's namespace-divergence check from WARN to a hard failure and fixed a latent deploy-manifest gap for literature-doc-key.sh."
         }
       ],
       "created": "2026-08-20T18:39:09Z",
-      "last_updated": "2026-08-25T02:07:11Z",
+      "last_updated": "2026-08-25T03:46:44Z",
       "session_id": "sess_1787622743_99a1da",
       "memory_candidates": [
         {
@@ -1366,8 +1366,48 @@
             "schema-unification",
             "bridge-not-migrate"
           ]
+        },
+        {
+          "content": "When reconciling a namespace-divergence residue by hand-editing a JSON index, re-measure the live data before acting even when a prior report already enumerated the residue -- the strict-.id-only count (32 FTS-only / 17 index-only) and the bridged/deduplicated count used for actual remediation (17 unpaired needing a new entry, 15 already-bridged needing no action, 1 recorded exception) are BOTH correct but answer different questions. Conflating them either causes wasted work (adding parent entries for ids that already resolve via a path-derived bridge) or missed work (skipping ids that genuinely lack any index coverage). Reconcile by classifying each strict-divergence id: does its bare-directory FTS key already resolve via SOME other index entry's path? If yes, no action; if no, it needs a new entry.",
+          "category": "TECHNIQUE",
+          "source_artifact": "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "namespace-divergence",
+            "id-reconciliation",
+            "path-derived-bridge",
+            "re-measurement",
+            "index-json"
+          ]
+        },
+        {
+          "content": "A newly-created script cited by name inside a skill/SKILL.md (e.g. a `literature-doc-key.sh` sourced anchor) is not automatically deployed -- deploy manifests (manifest.json's `scripts` list) require explicit per-file registration, and a missing entry produces no error at deploy time, only a silent runtime no-op (e.g. `[ -x \"$SCRIPT\" ]` guards failing closed and skipping a whole check). When a phase adds a new script file that another phase's logic depends on at runtime, verify its presence in the deployed tree by diffing source-store vs. deployed paths (not just checking the source store), and grep the manifest's file list for the new filename -- do not assume a file existing in the source store means it reached the deployed tree.",
+          "category": "PATTERN",
+          "source_artifact": "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "deploy-manifest",
+            "silent-no-op",
+            "source-store-vs-deploy",
+            "fail-closed",
+            "registration-gap"
+          ]
+        },
+        {
+          "content": "When escalating a WARN-only check to a hard failure gated on a known-exceptions list, verify the gate variable itself fires true/false by execution against both the clean case and a known-bad fixture -- do not rely on an existing test that only checks the raw (pre-classification) bucket membership, since a new classification layer added on top of that bucket could silently swallow the case the old test still 'passes' against. Building a minimal standalone fixture and directly inspecting the new gate variable (not just the report text) caught this distinction here.",
+          "category": "TECHNIQUE",
+          "source_artifact": "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "warn-to-fail-escalation",
+            "known-exceptions",
+            "gate-verification",
+            "fixture-testing",
+            "validate-mode"
+          ]
         }
-      ]
+      ],
+      "completion_summary": "Completed task 77's remaining Phase 8 (corpus data reconciliation in the separate ~/Projects/Literature/ repo: 17 new parent entries, 2 duplicate directories quarantined, gabbay_2000 recorded as the sole known exception) and Phase 10 (escalated /literature --validate's namespace-divergence check from WARN to a hard failure; also fixed a deploy-manifest gap for literature-doc-key.sh). All 10 plan phases are now [COMPLETED]."
     },
     {
       "project_number": 78,

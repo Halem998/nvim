@@ -11,8 +11,8 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,77,81,85,86,87,90,91,93,94,97,99,100 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,50,64,66,75,76,78,88,89,96,98 | 29,42,48,74,77,87,97 | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,44,45,46,48,51,53,68,72,73,74,78,81,85,86,87,90,91,93,94,96,97,99,100 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,50,64,66,75,76,88,89,98 | 29,42,48,74,87,97 | agent-system, extensions, essential-refactor |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -42,10 +42,9 @@ next_project_number: 101
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-77 [IMPLEMENTING] — === ADDENDUM 2026-08-24: exact writer/reader mismatch, and a dupl
-  └─ 78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
-  └─ 96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
+78 [NOT STARTED] — literature-briefing.sh's coverage marker counts documents that RE
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
+96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
 
 ### Orchestration Concurrency
 
@@ -986,7 +985,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 77. Unify the literature global-index schema and end stub-entry invisibility
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 32
