@@ -59,7 +59,7 @@ next_project_number: 102
 
 ### Wezterm Notifications
 
-101 [PLANNED] — Fix TTS announcements that only ever say 'Tab 1' -- across the ag
+101 [IMPLEMENTING] — Fix TTS announcements that only ever say 'Tab 1' -- across the ag
 
 ### Essential Refactor
 
@@ -86,7 +86,7 @@ next_project_number: 102
 ## Tasks
 
 ### 101. Fix tts only announces tab 1
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: wezterm-notifications
 - **Dependencies**: None

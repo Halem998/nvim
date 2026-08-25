@@ -1,7 +1,7 @@
 # Implementation Plan: Fix lifecycle TTS notify variable (`$STATE_STATUS` -> `$status`)
 
 - **Task**: 101 - fix_tts_only_announces_tab_1
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/101_fix_tts_only_announces_tab_1/reports/01_tts-tab-announcements-not-firing.md`
@@ -215,32 +215,35 @@ respectively) and may be dispatched together.
 
 ---
 
-### Phase 1: Confirm scope and fix the shared origin [NOT STARTED]
+### Phase 1: Confirm scope and fix the shared origin [COMPLETED]
 
 - **Goal:** Establish the confirmed, exclusion-aware file inventory for the whole task, and correct
   the single canonical source from which the defect propagated.
 
 - **Tasks:**
-  - [ ] Run `grep -rn "STATE_STATUS" agent-system/extensions/` and record the full result as the
-    scope baseline.
-  - [ ] Partition the results into **defect sites** (a `$STATE_STATUS` passed as the status
+  - [x] Run `grep -rn "STATE_STATUS" agent-system/extensions/` and record the full result as the
+    scope baseline. *(completed: 16 files matched)*
+  - [x] Partition the results into **defect sites** (a `$STATE_STATUS` passed as the status
     argument to `skill_lifecycle_notify` or `lifecycle-notify.sh`) and **legitimate uses**. Record
-    the partition in the implementation summary.
-  - [ ] Confirm the following are **legitimate and MUST NOT be edited**:
+    the partition in the implementation summary. *(completed: 12 defect sites, 3 legitimate uses,
+    1 stale doc for Phase 5)*
+  - [x] Confirm the following are **legitimate and MUST NOT be edited**:
     `agent-system/extensions/core/scripts/update-task-status.sh` (assigns `STATE_STATUS` itself in
     `map_status()` and references it throughout — it is correctly scoped within that one script);
     `agent-system/extensions/core/context/standards/status-markers.md` (prose describing that
     script's internal mapping); `agent-system/extensions/core/skills/skill-team-implement/SKILL.md`
-    (prose describing that same mapping — see Phase 5 for what this file *does* need).
-  - [ ] Edit `agent-system/extensions/core/context/patterns/skill-postflight-flow.md`: change the
+    (prose describing that same mapping — see Phase 5 for what this file *does* need). *(completed)*
+  - [x] Edit `agent-system/extensions/core/context/patterns/skill-postflight-flow.md`: change the
     Stage 8a code block from `skill_lifecycle_notify "$STATE_STATUS"` to
-    `skill_lifecycle_notify "$status"`.
-  - [ ] Update the two explanatory prose references in the same file that also name `$STATE_STATUS`
+    `skill_lifecycle_notify "$status"`. *(completed)*
+  - [x] Update the two explanatory prose references in the same file that also name `$STATE_STATUS`
     (the Stage 8a paragraph beginning "Fires the TTS + WezTerm tab-coloring notification", and the
     "Ordering" section's parenthetical about the value being derived from an already-read value) so
-    the prose names `$status` and no longer implies a distinct variable exists.
-  - [ ] Confirm the file's own Preconditions section already lists `status` and needs no change.
-  - [ ] Verify no task numbers were introduced into the edited file.
+    the prose names `$status` and no longer implies a distinct variable exists. *(completed)*
+  - [x] Confirm the file's own Preconditions section already lists `status` and needs no change.
+    *(completed: confirmed at line 37)*
+  - [x] Verify no task numbers were introduced into the edited file. *(completed:
+    check-task-references.sh reports 0 occurrences)*
 
 - **Timing:** 0.5 hours
 

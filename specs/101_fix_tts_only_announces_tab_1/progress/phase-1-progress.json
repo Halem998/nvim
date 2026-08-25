@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Confirm scope and fix the shared origin",
+  "started_at": "2026-08-25T20:20:00Z",
+  "last_updated": "2026-08-25T20:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run grep and record scope baseline", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Partition results into defect sites and legitimate uses", "status": "done", "files_touched": [], "note": "16 files total: 12 defect sites (1 shared origin + 5 core skills + 6 extension skills), 3 legitimate (update-task-status.sh, status-markers.md prose, skill-team-implement/SKILL.md prose), 1 stale doc (tts-stt-integration.md, Phase 5). Matches research's 12 skills + 1 pattern file = 13 rename targets."},
+    {"id": 3, "description": "Confirm legitimate-use exclusion list", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Edit skill-postflight-flow.md Stage 8a code block and prose", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/skill-postflight-flow.md"]},
+    {"id": 5, "description": "Confirm Preconditions section already lists status", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Verify no task numbers introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

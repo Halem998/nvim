@@ -96,13 +96,13 @@ two-step pattern by hand at an importing skill's call site.
 ## Stage 8a: Lifecycle TTS Notification
 
 ```bash
-skill_lifecycle_notify "$STATE_STATUS"
+skill_lifecycle_notify "$status"
 ```
 
 Fires the TTS + WezTerm tab-coloring notification (e.g. "Tab 3 researched") in the background,
-guarded on the notify script's presence, never blocking. `$STATE_STATUS` is the same
-lifecycle-status string the importing skill already threads through (its own `status` value, or
-an operation-specific rendering of it).
+guarded on the notify script's presence, never blocking. `$status` is the same
+lifecycle-status string the importing skill already threads through (its own `status` value, read
+directly, not a separately named variable).
 
 ## Stage 9: Cleanup
 
@@ -131,7 +131,7 @@ earlier stages (`artifact_path`/`artifact_type`/`artifact_summary` were read fro
 `.return-meta.json` at Stage 6, but Stage 8's `skill_link_artifacts` call itself has no file
 dependency on the marker — the ordering constraint here is about not deleting
 `.postflight-pending`/`.postflight-loop-guard` before every stage that reads them has run, and
-Stage 8a's `$STATE_STATUS` is derived from the same already-read `status` value, not a fresh file
+Stage 8a's `$status` argument is the same already-read `status` value, not a fresh file
 read). This same "delete only after every consumer has read it" discipline now extends PAST the
 skill boundary: `.return-meta.json` must not be deleted until every consumer downstream of
 DELEGATE — inside this skill AND inside the calling command that invoked it — has finished
