@@ -1,0 +1,35 @@
+{
+  "phase": 5,
+  "phase_name": "Canonical index-entry write with 1:1 chunk children (Decisions B + C)",
+  "started_at": "2026-08-25T01:26:00Z",
+  "last_updated": "2026-08-25T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Step 4 to emit canonical parent entry", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 2, "description": "Emit one child entry per chunks.json row", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 3, "description": "Idempotent pre-write removal (parent + children)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 4, "description": "Keep title/authors/year honest placeholders", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Anti-rename invariant inline comment", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Set parent token_count to the document total (literal plan wording)", "result": "failed", "reason": "Discovered by execution: literature-briefing.sh's chunk_count>0 branch computes total_tokens = sum(children.token_count) + parent.token_count. A non-zero document-total parent token_count double-counts (briefing would report 2676 tokens for a 1338-token fixture). Reverted to token_count=0 for the parent, matching the corpus's own established precedent at commit e6ce8bd9 (baier_katoen_2008/vardi_wolper_1986 parent entries), whose commit message explicitly documents this exact rationale."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Parent entry token_count = document total",
+      "type": "altered",
+      "reason": "Verified by execution that literature-briefing.sh double-counts when a parent with children carries a non-zero token_count (sums children's token_count and adds the parent's on top). Corpus commit e6ce8bd9 already discovered and fixed this exact issue by setting parent token_count to 0 for its two newly-added parent entries, with a commit message stating the rationale explicitly. Followed the same established, execution-verified convention rather than the plan's literal 'document total' wording, which would reintroduce the double-count.",
+      "annotation": "*(deviation: altered — token_count set to 0, not document total; see phase notes)*"
+    }
+  ],
+  "verification_evidence": {
+    "end_to_end_fixture": "6-page synthetic fixture PDF ingested into a scratch LITERATURE_DIR. Resulting index.json: exactly 1 parent entry (.id == doc_id, parent_doc == null) and exactly 6 child entries (parent_doc == doc_id), matching chunk_count.",
+    "toc_matches_children": "literature-search.sh --toc phase5_fixture_doc returns 6 chunks; index child count is 6. Equal by construction.",
+    "briefing_zero_skip_zero_double_count": "literature-briefing-invoke.sh (per-repo mode, symlink fixture) resolves the document with zero skip warnings and reports '6 chunk(s), ~1338 tokens' -- matches --toc's own token sum (1338) exactly, confirming the token_count=0 parent choice avoids double-counting.",
+    "project_filtered_search": "literature-search.sh --project Phase5Test --include-unverified 'bisimulation' returns phase5_fixture_doc (--include-unverified required because a freshly-ingested doc has no provenance_fidelity stamp yet and fails open to unverified_summary, which do_search quarantines from default ranking by design -- unrelated to this fix, and exactly the mechanism Decision A's 'switches on fidelity stamping for free' rationale describes).",
+    "idempotent_reingest": "Re-ran the same fixture ingest a second time: index.json entry count for this doc_id unchanged (7: 1 parent + 6 children) both before and after -- no duplicate parent, no orphaned children.",
+    "entry_count_delta_note": "Fixture measured delta: 1 document -> 7 entries (1 parent + 6 children). Real-world worst case already measured in the plan's own Overview/Phase-1 baseline: baier_katoen_2008 has 1263 FTS chunks; a script-driven 1:1 ingest of a document that size would add ~1264 entries. Not re-ingested here (would require re-processing an entire real book, infeasible within this phase's scope); the plan's Risk table already accepts this as 'entry count grows but the file stays JSON-manageable.'"
+  }
+}

@@ -296,13 +296,23 @@ print('yes' if existing else 'no')
 }
 METAEOF
 
-  # Step 4: Update global index.json
+  # Step 4: Update global index.json with a canonical parent entry (id == the bare
+  # id literature-chunk.sh stamped into chunks.json's doc_id, and hence into
+  # chunks_data.doc_id -- NEVER a longer curated form; see the id-assignment comment
+  # below) plus one child entry per chunks.json row (Decision B: 1:1 granularity, so
+  # the briefing's chunk count and --toc's chunk count agree by construction).
+  SOURCE_EXT="${source_file##*.}"
+  SOURCE_FORMAT=$(echo "$SOURCE_EXT" | tr '[:upper:]' '[:lower:]')
   python3 << PYEOF
 import json
 import os
 
-index_path = "$GLOBAL_INDEX" if "$GLOBAL_INDEX" else "$LITERATURE_DIR/index.json"
 index_path = "$LITERATURE_DIR/index.json"
+doc_id = "$DOC_ID"
+doc_dir = "$DOC_DIR"
+source_file = "$source_file"
+ingested_at = "$INGESTED_AT"
+source_format = "$SOURCE_FORMAT"
 
 # Read or create index
 if os.path.isfile(index_path):
@@ -321,26 +331,102 @@ if isinstance(idx, dict) and 'entries' not in idx:
 elif isinstance(idx, list):
     idx = {"entries": idx}
 
-# Remove old entry for this doc_id
-idx['entries'] = [e for e in idx['entries'] if e.get('doc_id', '') != '$DOC_ID']
+# Idempotent pre-write removal: drop the existing parent entry AND all of its
+# existing children for this doc_id before appending, so a re-ingest never
+# accumulates duplicate parents or orphaned stale children. Matches on either
+# .id or the legacy .doc_id key (belt-and-braces back-compat with the 35
+# existing dual-keyed entries) for the parent, and on .parent_doc == doc_id
+# for children.
+idx['entries'] = [
+    e for e in idx['entries']
+    if not (
+        (e.get('id') == doc_id or e.get('doc_id') == doc_id)
+        and not e.get('parent_doc')
+    )
+    and e.get('parent_doc') != doc_id
+]
 
-# Add new entry
-new_entry = {
-    "doc_id": "$DOC_ID",
-    "title": "$DOC_ID",
+# Load this document's chunks.json (already written by literature-chunk.sh above)
+# to project real per-chunk fields into 1:1 child entries -- never synthesized.
+chunks_path = os.path.join(doc_dir, "chunks.json")
+with open(chunks_path) as f:
+    chunks = json.load(f)
+
+def kw_to_list(raw):
+    # chunks.json's own keywords field is a whitespace-separated string (see
+    # literature-chunk.sh output); index.json's established convention elsewhere
+    # in the corpus is a JSON array (e.g. SKILL.md's convert flow, existing
+    # curated entries) -- convert here rather than introduce a second shape.
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, str):
+        return raw.split()
+    return []
+
+doc_total_tokens = sum(int(c.get('token_count') or 0) for c in chunks)
+
+# Document-level keywords/summary are a straight projection of real chunk data
+# (union of chunk keywords, first chunk's summary) -- never fabricated. title/
+# authors/year stay honest placeholders here (bare id / [] / null); Phase 6
+# populates them from Zotero where available.
+doc_keywords = []
+for c in chunks:
+    for kw in kw_to_list(c.get('keywords')):
+        if kw not in doc_keywords:
+            doc_keywords.append(kw)
+doc_summary = chunks[0].get('summary', '') if chunks else ''
+
+# THE ANTI-RENAME INVARIANT: this id MUST equal chunks_data.doc_id (the same bare
+# id literature-chunk.sh already stamped into every row of chunks.json/the FTS
+# database for this document). Renaming it to a curated long form is the specific
+# operation known to break literature-search.sh's --toc flag and project-filtered
+# search -- see literature-doc-key.sh's header for the full invariant.
+parent_entry = {
+    "id": doc_id,
+    "doc_id": doc_id,
+    "parent_doc": None,
+    "path": f"sources/{doc_id}/",
+    "title": doc_id,
     "authors": [],
     "year": None,
-    "source_path": "$source_file",
-    "chunks_dir": "$DOC_DIR",
-    "chunk_count": $CHUNK_COUNT,
-    "ingested_at": "$INGESTED_AT"
+    # Parent token_count is 0, not the document total, when children exist --
+    # matching the corpus's own established convention (see corpus commit
+    # e6ce8bd9's baier_katoen_2008/vardi_wolper_1986 parent entries and its
+    # commit message: "Parent token_count is 0 to avoid double-counting against
+    # the children"). literature-briefing.sh's chunk_count>0 branch sums
+    # children's token_count AND adds the parent's token_count; a non-zero
+    # document-total value here would double the reported token count.
+    "token_count": 0,
+    "chunk_count": len(chunks),
+    "doc_type": "paper",
+    "source_format": source_format,
+    "keywords": doc_keywords,
+    "summary": doc_summary,
+    "source_path": source_file,
+    "ingested_at": ingested_at,
 }
-idx['entries'].append(new_entry)
+
+child_entries = []
+for c in chunks:
+    child_entries.append({
+        "id": c.get("chunk_id"),
+        "doc_id": doc_id,
+        "parent_doc": doc_id,
+        "path": f"sources/{doc_id}/{c.get('source_path', '')}",
+        "title": c.get("title", ""),
+        "keywords": kw_to_list(c.get("keywords")),
+        "summary": c.get("summary", ""),
+        "token_count": int(c.get("token_count") or 0),
+        "ingested_at": ingested_at,
+    })
+
+idx['entries'].append(parent_entry)
+idx['entries'].extend(child_entries)
 
 with open(index_path, 'w') as f:
     json.dump(idx, f, indent=2)
 
-print(f"Updated index.json: {len(idx['entries'])} total entries", file=__import__('sys').stderr)
+print(f"Updated index.json: {len(idx['entries'])} total entries ({len(child_entries)} children for {doc_id}, doc total {doc_total_tokens} tokens)", file=__import__('sys').stderr)
 PYEOF
 
   INGESTED_DOC_IDS+=("$DOC_ID")

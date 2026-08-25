@@ -431,29 +431,29 @@ non-`sources/` path). Confirm by grepping the whole extension for `LITERATURE_DI
 
 ---
 
-### Phase 5: Canonical index-entry write with 1:1 chunk children (Decisions B + C) [NOT STARTED]
+### Phase 5: Canonical index-entry write with 1:1 chunk children (Decisions B + C) [COMPLETED]
 
 **Goal**: Replace the 8-field stub write in `literature-ingest.sh` Step 4 with a canonical parent
 entry keyed by the bare FTS id, plus one child entry per chunk.
 
 **Tasks**:
-- [ ] Rewrite the Step 4 python heredoc to emit a **parent** entry: `id` = `$DOC_ID` (the same bare
+- [x] Rewrite the Step 4 python heredoc to emit a **parent** entry: `id` = `$DOC_ID` (the same bare
       id `literature-chunk.sh` stamped into `chunks.json` — never a longer curated form),
       `doc_id` = the same value (belt-and-braces back-compat, matching the 35 existing dual-keyed
       entries), `parent_doc: null`, `path: "sources/<id>/"`, `token_count` (document total),
       `chunk_count`, `doc_type`, `source_format`, `keywords`, `summary`, `ingested_at`,
-      `source_path`.
-- [ ] Emit one **child** entry per row in `chunks.json`: `id` = the chunk's `chunk_id`,
+      `source_path`. *(deviation: altered — token_count set to 0, not document total; see phase notes)*
+- [x] Emit one **child** entry per row in `chunks.json`: `id` = the chunk's `chunk_id`,
       `parent_doc` = `$DOC_ID`, `path` = `"sources/<id>/<source_path>"`, and `title`, `keywords`,
-      `summary`, `token_count` projected straight from the chunk record.
-- [ ] Make the pre-write removal idempotent across re-ingest: remove the existing parent entry
+      `summary`, `token_count` projected straight from the chunk record. *(completed: keywords converted string->array to match established index.json convention)*
+- [x] Make the pre-write removal idempotent across re-ingest: remove the existing parent entry
       **and all its children** for this `doc_id` before appending, matching on either `.id` or
-      `.doc_id` and on `parent_doc == $DOC_ID`.
-- [ ] Keep the `title`/`authors`/`year` placeholders honest for now — bare id / `[]` / `null` — and
-      leave real metadata to Phase 6. Do not fabricate values.
-- [ ] Add an inline comment recording the anti-rename invariant at the point where `id` is
+      `.doc_id` and on `parent_doc == $DOC_ID`. *(completed: verified by execution -- re-ingest of the same fixture produced 7 entries both times, no duplicates, no orphans)*
+- [x] Keep the `title`/`authors`/`year` placeholders honest for now — bare id / `[]` / `null` — and
+      leave real metadata to Phase 6. Do not fabricate values. *(completed)*
+- [x] Add an inline comment recording the anti-rename invariant at the point where `id` is
       assigned: **the id written here MUST equal `chunks_data.doc_id`; renaming it to a curated
-      long form breaks `--toc` and project-filtered search.**
+      long form breaks `--toc` and project-filtered search.** *(completed)*
 
 **Timing**: 2 hours
 
