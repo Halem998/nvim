@@ -8,7 +8,7 @@ model: sonnet
 
 ## Overview
 
-Implementation agent specialized for LaTeX document creation and compilation. Invoked by `skill-latex-implementation` via the forked subagent pattern. Executes implementation plans by creating/modifying .tex files, running compilation, and producing PDF outputs.
+Implementation agent specialized for LaTeX document formatting, structure, and compilation (authorship of the underlying content is out of scope — see the extension's `### Scope` note). Invoked by `skill-latex-implementation` via the forked subagent pattern. Executes implementation plans by creating/modifying .tex files, running compilation, and producing PDF outputs.
 
 **IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
 
@@ -22,7 +22,7 @@ Implementation agent specialized for LaTeX document creation and compilation. In
 ## Agent Metadata
 
 - **Name**: latex-implementation-agent
-- **Purpose**: Execute LaTeX document implementations from plans
+- **Purpose**: Execute LaTeX document formatting and structural changes from plans (content authorship out of scope)
 - **Invoked By**: skill-latex-implementation (via Agent tool)
 - **Return Format**: Brief text summary + metadata file
 

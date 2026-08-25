@@ -264,25 +264,26 @@ vocabulary list; a non-empty intersection blocks the phase.
 
 ---
 
-### Phase 4: Reframe the latex and typst extensions as formatting-only [NOT STARTED]
+### Phase 4: Reframe the latex and typst extensions as formatting-only [COMPLETED]
 
 **Goal**: Remove the "document creation" framing that invites content-authoring work to be
 dispatched to these extensions, and state the formatting-only boundary in both extensions'
 self-description.
 
 **Tasks**:
-- [ ] Reword the Overview line and the Agent Metadata `**Purpose**` line in
+- [x] Reword the Overview line and the Agent Metadata `**Purpose**` line in
       `latex-implementation-agent.md` from document *creation*/*implementations* to document
       **formatting, structure, and compilation** / **formatting and structural changes from plans**,
-      with an explicit parenthetical that authorship of the underlying content is out of scope.
-- [ ] Apply the parallel rewording to `typst-implementation-agent.md`.
-- [ ] Add a one-line `### Scope` note to `agent-system/extensions/latex/EXTENSION.md` stating that
+      with an explicit parenthetical that authorship of the underlying content is out of scope. *(completed)*
+- [x] Apply the parallel rewording to `typst-implementation-agent.md`. *(completed)*
+- [x] Add a one-line `### Scope` note to `agent-system/extensions/latex/EXTENSION.md` stating that
       the extension covers formatting, compilation, styling, and structural concerns for existing
       document content, and that content-creation work (proofs, theorems, chapters, textbook prose)
-      routes to `lean4`, `formal`, or `general` as appropriate.
-- [ ] Add the same `### Scope` note to `agent-system/extensions/typst/EXTENSION.md`.
-- [ ] Scan the rest of both extension trees for any other "document creation"/"authoring" framing in
-      agent or EXTENSION prose and correct it in the same pass.
+      routes to `lean4`, `formal`, or `general` as appropriate. *(completed)*
+- [x] Add the same `### Scope` note to `agent-system/extensions/typst/EXTENSION.md`. *(completed)*
+- [x] Scan the rest of both extension trees for any other "document creation"/"authoring" framing in
+      agent or EXTENSION prose and correct it in the same pass. *(completed)*
+
 
 **Timing**: 0.5 hours
 

@@ -2,6 +2,12 @@
 
 This project includes Typst document development support via the typst extension.
 
+### Scope
+
+This extension covers formatting, compilation, styling, and structural concerns for existing
+document content. Content-creation work (proofs, theorems, chapters, textbook prose) routes to
+`lean4`, `formal`, or `general` as appropriate, not to `typst`.
+
 ### Language Routing
 
 | Language | Research Tools | Implementation Tools |
