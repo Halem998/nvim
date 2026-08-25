@@ -214,31 +214,44 @@ declared scope and must be reported, not silently absorbed.
 
 ---
 
-### Phase 3: Add a live-specs-path lint plus its own both-polarity fixture suite [NOT STARTED]
+### Phase 3: Add a live-specs-path lint plus its own both-polarity fixture suite [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: A mechanical guard exists that fails if any file in a `scripts/tests/` directory
 resolves a path against the live `specs/` tree, so Finding 1's defect class cannot silently
 recur.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `lint/lint-live-specs-path.sh` shipped as a repo-wide-clean mechanical guard | Built exactly per the Tasks below (token-prefix heuristic: a bare `specs/[0-9][0-9][0-9]_` literal is a violation unless the containing path token starts with `$`). Run repo-wide it reported 52 violations across 4 files — none a genuine live-path dependency. All 4 are pre-existing suites that embed a synthetic `specs/NNN_` path as pure test-fixture DATA (a JSON `"path"` field value inside `test-validate-handoff.sh`/`test-validate-state.sh` heredocs, or a `file_path` argument string in `test-validate-no-task-references.sh`) fed to a validator/hook that never performs filesystem existence-checking on that field at all — `validate-handoff.sh` has zero `-e`/`-f` checks in its whole file; `validate-no-task-references.sh` matches content, not paths on disk. The one true positive-shaped case, `test-validate-return-meta.sh`'s own `EXISTING_PATH` (Phase 1's fixed fixture), is a false positive too post-fix: it is genuinely confined via a `REPO_ROOT="$FIXTURE_REPO"` override injected at every call site, but the override is decoupled from the literal's own token (no `$`-prefix on the path string itself), so the same heuristic that must flag Finding 1's original bug cannot help flagging it. Distinguishing "reaches a `-e`/`-f`/`-d` check downstream" from "used as inert text/JSON-content" is a data-flow/semantic question a line-level grep heuristic cannot answer without per-validator knowledge, and no tightening attempted (JSON-embedding exclusion, REPO_ROOT-unset-in-file heuristic) eliminated the false positives without also reintroducing false negatives or losing generality across "any suite." This is precisely the risk this phase's own Risks & Mitigations row anticipated, with its own stated fallback: "if precision cannot be achieved... drop the lint script and its suite... only the mechanical enforcement is deferred." | Lint run captured during implementation: `Files checked: 44`, `Files with violations: 4`, `Total violations: 52` (`test-validate-handoff.sh`, `test-validate-no-task-references.sh`, `test-validate-return-meta.sh`, `test-validate-state.sh`), all 52 hand-inspected and confirmed non-live (no `-e`/`-f`/`-d` check reaches any of the flagged literals). The lint script and a would-be both-polarity fixture suite were built, verified against this exact repo-wide run, then reverted (never committed) per the contingency; nothing under `agent-system/extensions/core/scripts/lint/lint-live-specs-path.sh` or `.../tests/test-lint-live-specs-path.sh` exists in the final tree, and `manifest.json` carries no registration for either. |
+
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lint/lint-live-specs-path.sh` following the
+- [x] Create `agent-system/extensions/core/scripts/lint/lint-live-specs-path.sh` following the
       structural model of the existing `lint/lint-*.sh` scripts (same argument handling, same
-      exit-code convention, same output shape).
-- [ ] Detection rule: flag a `specs/[0-9][0-9][0-9]_` literal in any `scripts/tests/test-*.sh`
+      exit-code convention, same output shape). *(deviation: altered — built, verified imprecise
+      per the next task's finding, then reverted per this phase's Reasoned Exclusions below; not
+      present in the final tree)*
+- [x] Detection rule: flag a `specs/[0-9][0-9][0-9]_` literal in any `scripts/tests/test-*.sh`
       that is not confined to a scratch-root variable expansion (`$WORKDIR`, `$root`,
       `$LINK_ROOT`, or equivalent). Document the chosen heuristic and its known limits in the
       script's header comment — an approximate check that is honest about its bounds is
-      acceptable; a silently over-broad one is not.
+      acceptable; a silently over-broad one is not. *(completed: implemented and repo-wide-run;
+      see Reasoned Exclusions below for why this heuristic could not reach acceptable precision)*
 - [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-live-specs-path.sh` as a
       both-polarity fixture suite (model: `test-lint-postflight-boundary.sh`): a synthetic test
       file with a bare live path must make the lint exit non-zero; the same file with the path
       under a scratch root must exit 0. Build fixtures inline via heredocs into a `mktemp -d`
-      workdir per the fixture convention.
+      workdir per the fixture convention. *(deviation: skipped — the lint itself was dropped per
+      this phase's contingency before a fixture suite would have been meaningful; see Reasoned
+      Exclusions)*
 - [ ] Register both new scripts in `agent-system/extensions/core/manifest.json`'s
       `provides.scripts` array, subdirectory-qualified (`lint/lint-live-specs-path.sh`,
-      `tests/test-lint-live-specs-path.sh`).
-- [ ] Run the new lint across the whole `scripts/tests/` tree in every extension and resolve or
-      explicitly document every hit.
+      `tests/test-lint-live-specs-path.sh`). *(deviation: skipped — nothing to register; the lint
+      and its suite were dropped, not shipped)*
+- [x] Run the new lint across the whole `scripts/tests/` tree in every extension and resolve or
+      explicitly document every hit. *(completed: run repo-wide, all 52 hits across 4 files
+      documented as false positives — see Reasoned Exclusions below)*
 
 **Timing**: 1 hour
 
@@ -384,11 +397,14 @@ counts.
   fixture repo, `REPO_ROOT` override, no live-tree dependency)
 - `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` (modified — two-file
   `skill_cleanup` contract plus positive control)
-- `agent-system/extensions/core/scripts/lint/lint-live-specs-path.sh` (new)
-- `agent-system/extensions/core/scripts/tests/test-lint-live-specs-path.sh` (new)
-- `agent-system/extensions/core/manifest.json` (modified — two `provides.scripts` registrations)
+- `agent-system/extensions/core/scripts/lint/lint-live-specs-path.sh` (built, verified, then
+  dropped per Phase 3's Reasoned Exclusions — not present in the final tree)
+- `agent-system/extensions/core/scripts/tests/test-lint-live-specs-path.sh` (not created — the
+  lint it would cover was dropped)
+- `agent-system/extensions/core/manifest.json` (not modified — no registrations, nothing shipped)
 - `agent-system/extensions/core/context/standards/shell-script-testing.md` (modified — fixture
-  isolation rule)
+  isolation rule, cross-referencing the mechanical enforcement as deferred rather than the
+  dropped lint script)
 - `specs/085_deflake_shell_test_suite_under_concurrency/summaries/01_*-summary.md` (new — includes
   the full acceptance measurement record)
 

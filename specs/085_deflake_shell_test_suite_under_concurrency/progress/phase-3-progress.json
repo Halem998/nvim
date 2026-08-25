@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Add a live-specs-path lint plus its own both-polarity fixture suite",
+  "started_at": "2026-08-25T05:45:00Z",
+  "last_updated": "2026-08-25T06:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Build lint-live-specs-path.sh with a token-prefix heuristic and run it repo-wide",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Token-prefix heuristic: flag bare specs/[0-9]{3}_ literals not confined to a $-prefixed scratch-root variable token",
+      "result": "failed",
+      "reason": "52 false positives across 4 pre-existing suites (test-validate-handoff.sh, test-validate-no-task-references.sh, test-validate-return-meta.sh, test-validate-state.sh) that embed synthetic specs/NNN_ paths as inert JSON/text fixture data never filesystem-checked; distinguishing this from a genuine live-path dependency requires per-validator data-flow knowledge a grep-level lint cannot have"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1-3.5",
+      "description": "Ship lint-live-specs-path.sh + test-lint-live-specs-path.sh + manifest.json registrations",
+      "type": "altered",
+      "reason": "Lint built and verified per plan, but produced 52 false positives with no achievable tightening that preserved generality; exercised the plan's own pre-authorized contingency to drop the lint and its suite, keeping the rule documentation in Phase 4",
+      "annotation": "See Phase 3's #### Reasoned Exclusions in the plan file"
+    }
+  ]
+}
