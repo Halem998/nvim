@@ -355,30 +355,31 @@ that guide contains zero occurrences of the string `keyword`.
 
 ---
 
-### Phase 6: Scope decision on the typst content standards, and cross-surface consistency check [NOT STARTED]
+### Phase 6: Scope decision on the typst content standards, and cross-surface consistency check [COMPLETED]
 
 **Goal**: Resolve the flagged question about the typst extension's mathematical-content standards
 library, and verify that all four routing/documentation surfaces now tell the same story.
 
 **Tasks**:
-- [ ] Record the scope decision: **re-scope in place, do not relocate.** Relocating an entire
+- [x] Record the scope decision: **re-scope in place, do not relocate.** Relocating an entire
       content-standards library is a materially larger structural change than the routing fix this
       task scopes, and doing it here would put an unreviewed cross-extension move inside a routing
-      change.
-- [ ] Add a short scope-boundary note at the top of
+      change. *(completed)*
+- [x] Add a short scope-boundary note at the top of
       `typst/context/project/typst/standards/textbook-standards.md` and
       `.../type-theory-foundations.md` stating that these are content conventions consulted when
       formatting existing material, and that authoring the underlying mathematical content is not a
       `typst` task type concern. Cite durable anchors only — no task-number references, since these
-      files live outside `specs/**`.
-- [ ] Record a follow-up recommendation in the implementation summary (which lives under `specs/**`,
+      files live outside `specs/**`. *(completed)*
+- [x] Record a follow-up recommendation in the implementation summary (which lives under `specs/**`,
       where task references are permitted) proposing a dedicated task to decide whether this
-      standards library should move to a content-focused extension.
-- [ ] Run the cross-surface consistency sweep: confirm the vocabulary assignments in `/task` step 4d
+      standards library should move to a content-focused extension. *(completed)*
+- [x] Run the cross-surface consistency sweep: confirm the vocabulary assignments in `/task` step 4d
       (Phase 1) and `/fix-it` Step 8.5 (Phase 2) agree row-for-row on which words are content
-      (`lean4`/`formal`/`general`) and which are formatting (`latex`/`typst`).
-- [ ] Confirm the source-store boundary held: `git diff --name-only` lists only paths under
-      `agent-system/extensions/**` and `specs/**`.
+      (`lean4`/`formal`/`general`) and which are formatting (`latex`/`typst`). *(completed)*
+- [x] Confirm the source-store boundary held: `git diff --name-only` lists only paths under
+      `agent-system/extensions/**` and `specs/**`. *(completed)*
+
 
 **Timing**: 0.75 hours
 

@@ -1,5 +1,10 @@
 # Textbook Standards
 
+**Scope note**: These are content conventions consulted when *formatting* existing mathematical
+material in a Typst document. Authoring the underlying mathematical content (proofs, theorems,
+narrative chapters) is not a `typst` task type concern — that work routes to `lean4`, `formal`,
+or `general` as appropriate.
+
 ## Overview
 
 These standards ensure consistency, rigor, and accessibility for Typst textbook documents.
