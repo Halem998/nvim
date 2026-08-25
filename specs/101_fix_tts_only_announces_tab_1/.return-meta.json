@@ -40,29 +40,52 @@
       "category": "PATTERN",
       "source_artifact": "specs/101_fix_tts_only_announces_tab_1/summaries/01_fix-lifecycle-tts-notify-variable-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy.sh", "lint-gate-wiring", "source-store-vs-deployed", "REPO_ROOT-override", "manifest-provides-scripts"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "lint-gate-wiring",
+        "source-store-vs-deployed",
+        "REPO_ROOT-override",
+        "manifest-provides-scripts"
+      ]
     },
     {
       "content": "test-skill-base-lifecycle.sh (and similarly-structured lint/function test suites in this repo) resolve their target script via a deployed-tree-first, source-store-fallback candidate list, matching real SKILL.md runtime assumptions. This means such a suite can show a false pre-deploy failure for a source-store-only fix even though the fix's logic is already correct -- verify by sourcing/invoking the source-store copy directly as an interim check, and re-run the official suite after deploy-headless.sh to get the true, fully-green result. Don't mistake this deploy-staleness artifact for a logic defect in the new code.",
       "category": "INSIGHT",
       "source_artifact": "specs/101_fix_tts_only_announces_tab_1/summaries/01_fix-lifecycle-tts-notify-variable-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["test-skill-base-lifecycle", "deployed-tree-first", "pre-deploy-false-failure", "resolve_candidate", "deploy-staleness"]
+      "suggested_keywords": [
+        "test-skill-base-lifecycle",
+        "deployed-tree-first",
+        "pre-deploy-false-failure",
+        "resolve_candidate",
+        "deploy-staleness"
+      ]
     },
     {
       "content": "When editing a context/patterns or project doc file tracked in an extension's index-entries.json, always check for and update that file's own declared line_count entry in the same commit -- check-extension-docs.sh's Rule R fails on any drift, and it is easy to grow or shrink a doc file during an unrelated content fix (e.g. rewriting a stale section) without noticing the index entry needs a matching update. This surfaced as a real, self-introduced regression during this task's own pre-deploy verify-deploy.sh baseline capture.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/101_fix_tts_only_announces_tab_1/summaries/01_fix-lifecycle-tts-notify-variable-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["index-entries.json", "line_count", "check-extension-docs.sh", "Rule-R", "doc-drift"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "check-extension-docs.sh",
+        "Rule-R",
+        "doc-drift"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1787689012_cb7592",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true
 }

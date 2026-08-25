@@ -11,7 +11,7 @@ next_project_number: 102
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,101 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,64,75,76,88 | 29,42,74,87 | agent-system, extensions, essential-refactor |
 | 3 | 44 | 88 | essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
@@ -57,10 +57,6 @@ next_project_number: 102
 
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 
-### Wezterm Notifications
-
-101 [IMPLEMENTING] — Fix TTS announcements that only ever say 'Tab 1' -- across the ag
-
 ### Essential Refactor
 
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -86,12 +82,13 @@ next_project_number: 102
 ## Tasks
 
 ### 101. Fix tts only announces tab 1
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: wezterm-notifications
 - **Dependencies**: None
 - **Research**: [101_fix_tts_only_announces_tab_1/reports/01_tts-tab-announcements-not-firing.md]
 - **Plan**: [101_fix_tts_only_announces_tab_1/plans/01_fix-lifecycle-tts-notify-variable.md]
+- **Summary**: [101_fix_tts_only_announces_tab_1/summaries/01_fix-lifecycle-tts-notify-variable-summary.md]
 
 **Description**: Fix TTS announcements that only ever say 'Tab 1' -- across the agent systems loaded in various repos, <leader>al in nvim never announces 'Tab n' for any other n, nor lifecycle events such as 'Tab n researched' or 'Tab n planned', nor 'Tab n needs input' when a question is pending. Review what is not working and why, then make the appropriate fixes Observed counterexample during task creation: an AskUserQuestion prompt in this session DID announce 'Tab 5', so the needs-input path is not uniformly broken -- narrow the investigation to which hook paths, repos, or tab-number resolution steps fail rather than assuming a total outage. Confirmed: tab 5 is the tab this session actually occupies, so tab-number resolution itself was correct in that instance.
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Fix lifecycle TTS notify variable (`$STATE_STATUS` -> `$status`)
 
 - **Task**: 101 - fix_tts_only_announces_tab_1
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/101_fix_tts_only_announces_tab_1/reports/01_tts-tab-announcements-not-firing.md`
