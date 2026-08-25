@@ -1,7 +1,7 @@
 {
   "status": "implemented",
-  "dispatch_seq": 3,
-  "summary": "CI rewritten to deploy-then-verify via verify-deploy.sh; all 19 originally-live gate failures fixed at the source; gate14 (check-runtime-file-tracking.sh) wired in; minimal-init nvim hatch removes the lazy.nvim bootstrap from CI; reintroduced-line_count-mismatch ACCEPTANCE test demonstrated in a clean-clone rehearsal (positive green, negative correctly red, revert back to green). Two unplanned-but-genuine defects found and fixed at the source during Phase 6 rehearsal (16 pre-existing Rule R mismatches, and a gate14-caused regression in two deploy-engine test harnesses) -- neither was a lint relaxation.",
+  "dispatch_seq": 4,
+  "summary": "CI rewritten to deploy-then-verify via verify-deploy.sh; all 19 originally-live gate failures fixed at the source; gate14 (check-runtime-file-tracking.sh) wired in; minimal-init nvim hatch removes the lazy.nvim bootstrap from CI; reintroduced-line_count-mismatch ACCEPTANCE test demonstrated in a clean-clone rehearsal (positive green, negative correctly red, revert back to green). This dispatch (seq 4) redeployed the REAL repo's .claude/ tree from the updated source store and re-ran the full verify-deploy.sh --findings suite directly against the real working tree (not the scratch clone): PASS -- 25 check(s), 0 failure(s), empty FINDING set. No further source-store churn resulted -- the deploy tree was already content-identical to the source store (confirmed via diff of verify-deploy.sh deployed vs source-store copy before redeploying), so this dispatch is a confirmatory redeploy + verification, not a new fix.",
   "phases_completed": 7,
   "phases_total": 7,
   "artifacts": [

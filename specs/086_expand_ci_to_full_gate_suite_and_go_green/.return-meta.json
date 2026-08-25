@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 86,
   "session_id": "sess_1787659350_14cea9",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "artifacts": [
     {
       "type": "summary",
@@ -12,8 +16,10 @@
     }
   ],
   "completion_data": {
-    "completion_summary": "CI now materializes .claude/ from the source store then runs the full verify-deploy.sh gate suite (25 checks) instead of failing with exit 127 on every run. All 19 originally-live gate failures fixed at the source, check-runtime-file-tracking.sh wired in as gate14, a minimal-init nvim hatch removes the lazy.nvim bootstrap from CI, and the reintroduced-line_count-mismatch acceptance test is demonstrated in a clean-clone rehearsal (positive: 25 checks/0 failures/0 findings; negative: correctly red naming the edited file; revert: back to green).",
-    "roadmap_items": ["CI enforcement of doc-lint: Add a GitHub Actions workflow that runs `.claude/scripts/check-extension-docs.sh` on every push and fails the build on doc drift"]
+    "completion_summary": "CI now materializes .claude/ from the source store then runs the full verify-deploy.sh gate suite (25 checks) instead of failing with exit 127 on every run. All 19 originally-live gate failures fixed at the source, check-runtime-file-tracking.sh wired in as gate14, a minimal-init nvim hatch removes the lazy.nvim bootstrap from CI, and the reintroduced-line_count-mismatch acceptance test is demonstrated in a clean-clone rehearsal (positive: 25 checks/0 failures/0 findings; negative: correctly red naming the edited file; revert: back to green). Confirmed with a real-repo redeploy + full verify-deploy.sh --findings run (not just the scratch clone): PASS -- 25 check(s), 0 failure(s), empty FINDING set.",
+    "roadmap_items": [
+      "CI enforcement of doc-lint: Add a GitHub Actions workflow that runs `.claude/scripts/check-extension-docs.sh` on every push and fails the build on doc drift"
+    ]
   },
   "modified_files": [
     ".github/workflows/check-extension-docs.yml",
@@ -32,21 +38,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/086_expand_ci_to_full_gate_suite_and_go_green/summaries/01_expand-ci-full-gate-suite-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "gate-suite", "test-harness", "scratch-repo", "gitignore", "onboarding-fixture"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "gate-suite",
+        "test-harness",
+        "scratch-repo",
+        "gitignore",
+        "onboarding-fixture"
+      ]
     },
     {
       "content": "For CI running a repo whose gitignored deploy tree (.claude/) must be materialized before any gate can run, and where the deploy engine drives headless nvim: probe whether the deploy/verify engine's Lua code actually needs a full lazy.nvim plugin bootstrap before assuming it does. If the engine's require() chain has no plugin dependency, add an opt-in --minimal-init DIR flag to both the deploy and verify scripts (`nvim --headless --clean --cmd \"set rtp+=DIR\"` instead of plain `nvim --headless`), default OFF so unset behavior stays byte-for-byte unchanged, and thread the flag from the deploy script into its own inline verify call. This avoids a plugin-clone network dependency in CI entirely. Confirmed by probing manager.load/resync_all/verify_all/find_orphans individually under --clean before wiring the flag into production scripts.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/086_expand_ci_to_full_gate_suite_and_go_green/summaries/01_expand-ci-full-gate-suite-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["nvim-headless", "minimal-init", "ci-bootstrap", "lazy-nvim", "deploy-verify"]
+      "suggested_keywords": [
+        "nvim-headless",
+        "minimal-init",
+        "ci-bootstrap",
+        "lazy-nvim",
+        "deploy-verify"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1787659350_14cea9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   }
