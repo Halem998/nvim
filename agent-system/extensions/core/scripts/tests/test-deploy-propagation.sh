@@ -90,6 +90,25 @@ trap cleanup EXIT
 TARGET="$WORKDIR/scratch-repo"
 mkdir -p "$TARGET"
 git -C "$TARGET" init -q
+cat > "$TARGET/.gitignore" <<'GITIGNORE_EOF'
+# Ephemeral orchestrator runtime state: per-dispatch scratch, mutex directories, and loop
+# guards. Mirrors the "Consumer Repo Setup" block in
+# context/standards/orchestrator-runtime-files.md, seeded here so this scratch repo represents
+# a properly-onboarded consumer for gate14 (check-runtime-file-tracking.sh)'s ignore-coverage
+# check -- a bare, never-onboarded git repo would fail Check A for reasons unrelated to what
+# this harness actually tests (deploy propagation).
+**/.lock/
+**/.orchestrator-loop-guard
+**/.continuation-loop-guard
+**/.orchestrator-churn-state.json
+**/.postflight-loop-guard
+**/.orchestrator-multi-state*.json
+**/.drift-inspection.json
+**/.return-meta-*.json
+**/.events.lock
+**/.sessions/
+**/.freshness-warn-streak.json
+GITIGNORE_EOF
 git -C "$TARGET" -c user.email="test@test.local" -c user.name="deploy-propagation-test" \
   commit -q --allow-empty -m "scratch init"
 
